@@ -197,7 +197,7 @@ class RenderViewHostManagerTest
 // a regression test for bug 9364.
 TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
-  const GURL kNtpUrl(chrome::kTestNewTabURL);
+  const GURL kNtpUrl(content::kTestNewTabURL);
   const GURL kDestUrl("http://www.google.com/");
 
   // Navigate our first tab to the new tab page and then to the destination.
@@ -262,7 +262,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 // renderer in a stuck state.  See http://crbug.com/93427.
 TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
-  const GURL kNtpUrl(chrome::kTestNewTabURL);
+  const GURL kNtpUrl(content::kTestNewTabURL);
   const GURL kDestUrl("http://www.google.com/");
 
   // Navigate our first tab to the new tab page and then to the destination.
@@ -340,7 +340,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
 // RenderView is being newly created or reused.
 TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
-  const GURL kNtpUrl(chrome::kTestNewTabURL);
+  const GURL kNtpUrl(content::kTestNewTabURL);
   const GURL kUrl("view-source:http://foo");
 
   // We have to navigate to some page at first since without this, the first
@@ -661,7 +661,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
-  const GURL kUrl(chrome::kTestNewTabURL);
+  const GURL kUrl(content::kTestNewTabURL);
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl,
                             content::Referrer(), string16() /* title */,
                             content::PAGE_TRANSITION_TYPED,
@@ -781,7 +781,7 @@ TEST_F(RenderViewHostManagerTest, NavigateAfterMissingSwapOutACK) {
 TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
-  const GURL kNtpUrl(chrome::kTestNewTabURL);
+  const GURL kNtpUrl(content::kTestNewTabURL);
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);

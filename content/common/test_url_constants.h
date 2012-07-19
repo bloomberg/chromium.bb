@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Contains constants for known URLs and portions thereof.
-
 #ifndef CONTENT_COMMON_TEST_URL_CONSTANTS_H_
 #define CONTENT_COMMON_TEST_URL_CONSTANTS_H_
 
-#include "content/public/common/url_constants.h"
-
-namespace chrome {
+// Contains constants for known URLs and portions thereof.
+namespace content {
 
 // Various special URLs used for testing. They have the same values as the URLs
 // in chrome/common/url_constants.h, but are duplicated here so that the reverse
@@ -33,6 +30,6 @@ extern const char kTestHistoryURL[];
 // not be the case.
 extern const char kTestBookmarksURL[];
 
-}  // namespace chrome
+}  // namespace content
 
 #endif  // CONTENT_COMMON_TEST_URL_CONSTANTS_H_

@@ -71,7 +71,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     content::RenderProcessHost* rph3 = NULL;
 
     // Change the first tab to be the new tab page (TYPE_WEBUI).
-    GURL newtab(chrome::kTestNewTabURL);
+    GURL newtab(content::kTestNewTabURL);
     ui_test_utils::NavigateToURL(browser(), newtab);
     EXPECT_EQ(tab_count, browser()->tab_count());
     tab1 = chrome::GetWebContentsAt(browser(), tab_count - 1);
@@ -109,7 +109,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     // Note: intentionally create this tab after the TYPE_TABBED tabs to
     // exercise bug 43448 where extension and WebUI tabs could get combined into
     // normal renderers.
-    GURL history(chrome::kTestHistoryURL);
+    GURL history(content::kTestHistoryURL);
     chrome::ShowSingletonTab(browser(), history);
     if (browser()->tab_count() == tab_count)
       ui_test_utils::WaitForNewTab(browser());
@@ -122,7 +122,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
 
     // Create a TYPE_EXTENSION tab.  It should be in its own process.
     // (the bookmark manager is implemented as an extension)
-    GURL bookmarks(chrome::kTestBookmarksURL);
+    GURL bookmarks(content::kTestBookmarksURL);
     chrome::ShowSingletonTab(browser(), bookmarks);
     if (browser()->tab_count() == tab_count)
       ui_test_utils::WaitForNewTab(browser());
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   int host_count = 1;
 
   // Change the first tab to be the new tab page (TYPE_WEBUI).
-  GURL newtab(chrome::kTestNewTabURL);
+  GURL newtab(content::kTestNewTabURL);
   ui_test_utils::NavigateToURL(browser(), newtab);
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, Backgrounding) {
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
 
   // Change the first tab to be the new tab page (TYPE_WEBUI).
-  GURL newtab(chrome::kTestNewTabURL);
+  GURL newtab(content::kTestNewTabURL);
   ui_test_utils::NavigateToURL(browser(), newtab);
 
   // Create a new tab. It should be foreground.

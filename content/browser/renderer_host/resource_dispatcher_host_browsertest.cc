@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        CrossSiteFailedRequest) {
   // Visit another URL first to trigger a cross-site navigation.
-  GURL url(chrome::kTestNewTabURL);
+  GURL url(content::kTestNewTabURL);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Visit a URL that fails without calling ResourceDispatcherHost::Read.
