@@ -702,7 +702,8 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragOneDetachedPanel) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, CloseDetachedPanelOnDrag) {
+IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest,
+    DISABLED_CloseDetachedPanelOnDrag) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelDragController* drag_controller = panel_manager->drag_controller();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
