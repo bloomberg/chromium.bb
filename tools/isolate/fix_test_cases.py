@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 
-import list_test_cases
+import run_test_cases
 
 
 if sys.platform == 'win32':
@@ -80,7 +80,7 @@ def run_all(result, executable):
 
   Then make sure the test passes afterward.
   """
-  test_cases = list_test_cases.list_test_cases(
+  test_cases = run_test_cases.list_test_cases(
       executable, 0, 0, False, False, False)
   print 'Found %d test cases.' % len(test_cases)
   failures = []

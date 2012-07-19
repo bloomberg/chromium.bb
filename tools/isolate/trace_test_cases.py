@@ -18,7 +18,7 @@ import sys
 import time
 
 import isolate_common
-import list_test_cases
+import run_test_cases
 import trace_inputs
 import worker_pool
 
@@ -37,7 +37,7 @@ class Tracer(object):
   def map(self, test_case):
     """Traces a single test case and returns its output."""
     cmd = [self.executable, '--gtest_filter=%s' % test_case]
-    cmd = list_test_cases.fix_python_path(cmd)
+    cmd = run_test_cases.fix_python_path(cmd)
     tracename = test_case.replace('/', '-')
 
     out = []
@@ -75,9 +75,9 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
   This is done synchronously.
   """
   try:
-    tests = list_test_cases.list_test_cases(
+    tests = run_test_cases.list_test_cases(
         executable, index, shards, False, False, False)
-  except list_test_cases.Failure, e:
+  except run_test_cases.Failure, e:
     print e.args[0]
     return None
 
