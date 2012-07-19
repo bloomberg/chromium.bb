@@ -4,8 +4,11 @@
 
 #include "content/public/test/test_launcher.h"
 
+#include <stack>
+
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/test/test_file_util.h"
@@ -114,17 +117,21 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
 
   virtual void PreRunMessageLoop(base::RunLoop* run_loop) OVERRIDE {
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
-    DCHECK(!handler_.get());
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-      handler_.reset(new views::AcceleratorHandler);
-      run_loop->set_dispatcher(handler_.get());
+      linked_ptr<views::AcceleratorHandler> handler(
+          new views::AcceleratorHandler);
+      handlers_.push(handler);
+      run_loop->set_dispatcher(handler.get());
     }
 #endif
   }
 
   virtual void PostRunMessageLoop() {
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
-    handler_.reset();
+    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+      DCHECK_EQ(handlers_.empty(), false);
+      handlers_.pop();
+    }
 #endif
   }
 
@@ -132,7 +139,7 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   ScopedTempDir temp_dir_;
 
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
-  scoped_ptr<views::AcceleratorHandler> handler_;
+  std::stack<linked_ptr<views::AcceleratorHandler> > handlers_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestLauncherDelegate);
