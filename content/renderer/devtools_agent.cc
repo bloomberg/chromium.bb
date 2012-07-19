@@ -89,8 +89,9 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (message.type() == ViewMsg_Navigate::ID)
-    OnNavigate();  // Don't want to swallow the message.
+  if (message.type() == ViewMsg_Navigate::ID ||
+      message.type() == ViewMsg_Close::ID)
+    ContinueProgram();  // Don't want to swallow the message.
 
   return handled;
 }
@@ -199,11 +200,12 @@ void DevToolsAgent::OnAddMessageToConsole(content::ConsoleMessageLevel level,
       WebConsoleMessage(target_level, WebString::fromUTF8(message)));
 }
 
-void DevToolsAgent::OnNavigate() {
+void DevToolsAgent::ContinueProgram() {
   WebDevToolsAgent* web_agent = GetWebAgent();
-  if (web_agent) {
+  // TODO(pfeldman): rename didNavigate to continueProgram upstream.
+  // That is in fact the purpose of the signal.
+  if (web_agent)
     web_agent->didNavigate();
-  }
 }
 
 void DevToolsAgent::OnSetupDevToolsClient() {

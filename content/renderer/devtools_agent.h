@@ -58,7 +58,7 @@ class DevToolsAgent : public content::RenderViewObserver,
   void OnInspectElement(int x, int y);
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
-  void OnNavigate();
+  void ContinueProgram();
   void OnSetupDevToolsClient();
 
   bool is_attached_;
