@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_LAUNCHER_H_
 #define CONTENT_PUBLIC_TEST_TEST_LAUNCHER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
@@ -30,7 +32,7 @@ extern const char kWarmupFlag[];
 
 class TestLauncherDelegate {
  public:
-  virtual void EarlyInitialize() = 0;
+  virtual std::string GetEmptyTestName() = 0;
   virtual bool Run(int argc, char** argv, int* return_code) = 0;
   virtual int RunTestSuite(int argc, char** argv) = 0;
   virtual bool AdjustChildProcessCommandLine(CommandLine* command_line) = 0;

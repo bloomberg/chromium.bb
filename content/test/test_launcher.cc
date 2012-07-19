@@ -57,8 +57,6 @@ const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
 // Quit test execution after this number of tests has timed out.
 const int kMaxTimeouts = 5;  // 45s timeout * (5 + 1) = 270s max run time.
 
-const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
-
 namespace {
 
 // Parses the environment variable var as an Int32.  If it is unset, returns
@@ -444,9 +442,9 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
       test_name.append(".");
       test_name.append(test_info->name());
 
-      // Skip our special test so it's not run twice. That confuses
-      // the log parser.
-      if (test_name == kEmptyTestName)
+      // Skip our special test so it's not run twice. That confuses the log
+      // parser.
+      if (test_name == launcher_delegate->GetEmptyTestName())
         continue;
 
       // Skip disabled tests.
@@ -579,7 +577,6 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 char** argv) {
   DCHECK(!g_launcher_delegate);
   g_launcher_delegate = launcher_delegate;
-  launcher_delegate->EarlyInitialize();
 
   CommandLine::Init(argc, argv);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -630,22 +627,25 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   TestTimeouts::Initialize();
   int exit_code = 0;
 
-  // Make sure the entire browser code is loaded into memory. Reading it
-  // from disk may be slow on a busy bot, and can easily exceed the default
-  // timeout causing flaky test failures. Use an empty test that only starts
-  // and closes a browser with a long timeout to avoid those problems.
-  // NOTE: We don't do this when specifying a filter because this slows down the
-  // common case of running one test locally, and also on trybots when sharding
-  // as this one test runs ~200 times and wastes a few minutes.
-  bool warmup = command_line->HasSwitch(kWarmupFlag);
-  bool has_filter = command_line->HasSwitch(kGTestFilterFlag);
-  if (warmup || (!should_shard && !has_filter)) {
-    exit_code = RunTest(launcher_delegate,
-                        kEmptyTestName,
-                        TestTimeouts::large_test_timeout(),
-                        NULL);
-    if (exit_code != 0 || warmup)
-      return exit_code;
+  std::string empty_test = launcher_delegate->GetEmptyTestName();
+  if (!empty_test.empty()) {
+    // Make sure the entire browser code is loaded into memory. Reading it
+    // from disk may be slow on a busy bot, and can easily exceed the default
+    // timeout causing flaky test failures. Use an empty test that only starts
+    // and closes a browser with a long timeout to avoid those problems.
+    // NOTE: We don't do this when specifying a filter because this slows down
+    // the common case of running one test locally, and also on trybots when
+    // sharding as this one test runs ~200 times and wastes a few minutes.
+    bool warmup = command_line->HasSwitch(kWarmupFlag);
+    bool has_filter = command_line->HasSwitch(kGTestFilterFlag);
+    if (warmup || (!should_shard && !has_filter)) {
+      exit_code = RunTest(launcher_delegate,
+                          empty_test,
+                          TestTimeouts::large_test_timeout(),
+                          NULL);
+      if (exit_code != 0 || warmup)
+        return exit_code;
+    }
   }
 
   int cycles = 1;

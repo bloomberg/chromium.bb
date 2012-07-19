@@ -32,18 +32,15 @@
 #include "ui/views/focus/accelerator_handler.h"
 #endif
 
+const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
+
 class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
  public:
-  ChromeTestLauncherDelegate() {
-  }
+  ChromeTestLauncherDelegate() {}
+  virtual ~ChromeTestLauncherDelegate() {}
 
-  virtual ~ChromeTestLauncherDelegate() {
-  }
-
-  virtual void EarlyInitialize() OVERRIDE {
-#if defined(OS_MACOSX)
-    chrome_browser_application_mac::RegisterBrowserCrApp();
-#endif
+  virtual std::string GetEmptyTestName() OVERRIDE {
+    return kEmptyTestName;
   }
 
   virtual bool Run(int argc, char** argv, int* return_code) OVERRIDE {
@@ -146,6 +143,9 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
 };
 
 int main(int argc, char** argv) {
+#if defined(OS_MACOSX)
+  chrome_browser_application_mac::RegisterBrowserCrApp();
+#endif
   ChromeTestLauncherDelegate launcher_delegate;
   return test_launcher::LaunchTests(&launcher_delegate, argc, argv);
 }

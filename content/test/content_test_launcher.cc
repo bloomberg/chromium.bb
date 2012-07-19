@@ -87,13 +87,11 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
 
 class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
  public:
-  ContentTestLauncherDelegate() {
-  }
+  ContentTestLauncherDelegate() {}
+  virtual ~ContentTestLauncherDelegate() {}
 
-  virtual ~ContentTestLauncherDelegate() {
-  }
-
-  virtual void EarlyInitialize() OVERRIDE {
+  virtual std::string GetEmptyTestName() OVERRIDE {
+    return std::string();
   }
 
   virtual bool Run(int argc, char** argv, int* return_code) OVERRIDE {
