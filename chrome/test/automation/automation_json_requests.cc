@@ -203,7 +203,7 @@ bool SendAutomationJSONRequest(AutomationMessageSender* sender,
                                int timeout_ms,
                                std::string* reply,
                                bool* success) {
-  return sender->Send(new AutomationMsg_SendJSONRequestWithBrowserHandle(
+  return sender->Send(new AutomationMsg_SendJSONRequest(
       -1, request, reply, success), timeout_ms);
 }
 
@@ -212,7 +212,7 @@ bool SendAutomationJSONRequestWithDefaultTimeout(
     const std::string& request,
     std::string* reply,
     bool* success) {
-  return sender->Send(new AutomationMsg_SendJSONRequestWithBrowserHandle(
+  return sender->Send(new AutomationMsg_SendJSONRequest(
       -1, request, reply, success));
 }
 
