@@ -31,6 +31,7 @@ class AccessibilityTest(pyauto.PyUITest):
     cryptohome.remove_all_vaults()
     cros_ui.start(wait_for_login_prompt=False)
     pyauto.PyUITest.setUp(self)
+    self.SkipToLogin()
 
   def tearDown(self):
     self._DisableSpokenFeedback()
