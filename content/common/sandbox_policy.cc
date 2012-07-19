@@ -343,7 +343,8 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
     } else {
       if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
           gfx::kGLImplementationSwiftShaderName ||
-          cmd_line->HasSwitch(switches::kReduceGpuSandbox)) {
+          cmd_line->HasSwitch(switches::kReduceGpuSandbox) ||
+          cmd_line->HasSwitch(switches::kDisableImageTransportSurface)) {
         // Swiftshader path.
         policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                               sandbox::USER_LIMITED);

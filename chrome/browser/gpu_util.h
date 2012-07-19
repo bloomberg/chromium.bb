@@ -50,7 +50,8 @@ std::string GpuFeatureTypeToString(content::GpuFeatureType feature);
 //    'webgl',
 //    'multisampling',
 //    'flash_3d',
-//    'flash_stage3d'
+//    'flash_stage3d',
+//    'texture_sharing'
 //
 // Each problems has:
 // {

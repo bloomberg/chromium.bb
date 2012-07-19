@@ -194,6 +194,8 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   if ((flags & content::GPU_FEATURE_TYPE_MULTISAMPLING) &&
       !command_line->HasSwitch(switches::kDisableGLMultisampling))
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
+  if (flags & content::GPU_FEATURE_TYPE_TEXTURE_SHARING)
+    command_line->AppendSwitch(switches::kDisableImageTransportSurface);
 
   if (software_rendering_) {
     command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");

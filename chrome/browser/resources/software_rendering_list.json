@@ -34,7 +34,8 @@
 // 14. "exceptions" is a list of entries.
 // 15. "blacklist" is a list of gpu feature strings, valid values include
 //     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
-//     "multisampling", "flash_3d", "flash_stage3d", and "all".
+//     "multisampling", "flash_3d", "flash_stage3d", "texture_sharing",
+//     and "all".
 //     This field is mandatory.
 // 16. "description" has the description of the entry.
 // 17. "webkit_bugs" is an array of associated webkit bug numbers.
