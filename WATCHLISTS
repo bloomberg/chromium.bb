@@ -50,6 +50,9 @@
     'base': {
       'filepath': '^base/',
     },
+    'base_memory': {
+      'filepath': '^base/memory',
+    },
     'browser': {
       'filepath': 'chrome/browser/',
     },
@@ -410,6 +413,7 @@
     'automation': ['kkania@chromium.org',
                    'robertshield@chromium.org'],
     'base': ['brettw-cc@chromium.org', 'erikwright@chromium.org'],
+    'base_memory': ['gavinp+memory@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org',
                          'stevenjb+watch@chromium.org',
                          'nkostylev+watch@chromium.org'],
