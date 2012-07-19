@@ -16,6 +16,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -32,6 +33,43 @@ InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
 namespace {
 // The horizontal margin between the menu and the Extension (HTML) view.
 const int kMenuHorizontalMargin = 1;
+
+class MenuImageSource: public gfx::CanvasImageSource {
+ public:
+  MenuImageSource(const gfx::ImageSkia& icon, const gfx::ImageSkia& drop_image)
+      : gfx::CanvasImageSource(ComputeSize(drop_image), false),
+        icon_(icon),
+        drop_image_(drop_image) {
+  }
+
+  virtual ~MenuImageSource() {
+  }
+
+  // Overridden from gfx::CanvasImageSource
+  void Draw(gfx::Canvas* canvas) OVERRIDE {
+    int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
+    canvas->DrawImageInt(icon_, 0, 0, icon_.width(), icon_.height(), 0, 0,
+                         image_size, image_size, false);
+    canvas->DrawImageInt(drop_image_, image_size + kDropArrowLeftMargin,
+                         image_size / 2);
+  }
+
+ private:
+  gfx::Size ComputeSize(const gfx::ImageSkia& drop_image) const {
+    int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
+    return gfx::Size(image_size + kDropArrowLeftMargin + drop_image.width(),
+                     image_size);
+  }
+
+  // The margin between the extension icon and the drop-down arrow image.
+  static const int kDropArrowLeftMargin = 3;
+
+  const gfx::ImageSkia icon_;
+  const gfx::ImageSkia drop_image_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuImageSource);
+};
+
 }  // namespace
 
 ExtensionInfoBar::ExtensionInfoBar(Browser* browser,
@@ -119,17 +157,9 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image,
   const gfx::ImageSkia* drop_image =
       rb.GetImageNamed(IDR_APP_DROPARROW).ToImageSkia();
 
-  int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
-  // The margin between the extension icon and the drop-down arrow image.
-  static const int kDropArrowLeftMargin = 3;
-  scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
-      gfx::Size(image_size + kDropArrowLeftMargin + drop_image->width(),
-                image_size), false));
-  canvas->DrawImageInt(*icon, 0, 0, icon->width(), icon->height(), 0, 0,
-                       image_size, image_size, false);
-  canvas->DrawImageInt(*drop_image, image_size + kDropArrowLeftMargin,
-                       image_size / 2);
-  menu_->SetIcon(canvas->ExtractBitmap());
+  gfx::CanvasImageSource* source = new MenuImageSource(*icon, *drop_image);
+  gfx::ImageSkia menu_image = gfx::ImageSkia(source, source->size());
+  menu_->SetIcon(menu_image);
   menu_->SetVisible(true);
 
   Layout();

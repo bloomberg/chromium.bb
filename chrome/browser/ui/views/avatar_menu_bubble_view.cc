@@ -19,6 +19,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -60,6 +61,58 @@ gfx::Rect GetCenteredAndScaledRect(int src_width, int src_height,
   return gfx::Rect(x, y, scaled_width, scaled_height);
 }
 
+// BadgeImageSource -----------------------------------------------------------
+class BadgeImageSource: public gfx::CanvasImageSource {
+ public:
+  BadgeImageSource(const gfx::ImageSkia& icon,
+                   const gfx::Size& icon_size,
+                   const gfx::ImageSkia& badge);
+
+  ~BadgeImageSource();
+
+  // Overridden from CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) OVERRIDE;
+
+ private:
+  gfx::Size ComputeSize(const gfx::ImageSkia& icon,
+                        const gfx::Size& size,
+                        const gfx::ImageSkia& badge);
+
+  const gfx::ImageSkia icon_;
+  gfx::Size icon_size_;
+  const gfx::ImageSkia badge_;
+
+  DISALLOW_COPY_AND_ASSIGN(BadgeImageSource);
+};
+
+BadgeImageSource::BadgeImageSource(const gfx::ImageSkia& icon,
+                                   const gfx::Size& icon_size,
+                                   const gfx::ImageSkia& badge)
+    : gfx::CanvasImageSource(ComputeSize(icon, icon_size, badge), false),
+      icon_(icon),
+      icon_size_(icon_size),
+      badge_(badge) {
+}
+
+BadgeImageSource::~BadgeImageSource() {
+}
+
+void BadgeImageSource::Draw(gfx::Canvas* canvas) {
+  canvas->DrawImageInt(icon_, 0, 0, icon_.width(), icon_.height(), 0, 0,
+                       icon_size_.width(), icon_size_.height(), true);
+  canvas->DrawImageInt(badge_, size().width() - badge_.width(),
+                       size().height() - badge_.height());
+}
+
+gfx::Size BadgeImageSource::ComputeSize(const gfx::ImageSkia& icon,
+                                        const gfx::Size& icon_size,
+                                        const gfx::ImageSkia& badge) {
+  const float kBadgeOverlapRatioX = 1.0f / 5.0f;
+  int width = icon_size.width() + badge.width() * kBadgeOverlapRatioX;
+  const float kBadgeOverlapRatioY = 1.0f / 3.0f;
+  int height = icon_size.height() + badge.height() * kBadgeOverlapRatioY;
+  return gfx::Size(width, height);
+}
 
 // HighlightDelegate ----------------------------------------------------------
 
@@ -313,23 +366,15 @@ void ProfileItemView::OnFocusStateChanged(bool has_focus) {
 
 // static
 gfx::ImageSkia ProfileItemView::GetBadgedIcon(const gfx::ImageSkia& icon) {
-  gfx::Rect icon_rect = GetCenteredAndScaledRect(icon.width(), icon.height(),
-      0, 0, profiles::kAvatarIconWidth, kItemHeight);
-
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* badge = rb.GetImageNamed(
       IDR_PROFILE_SELECTED).ToImageSkia();
-  const float kBadgeOverlapRatioX = 1.0f / 5.0f;
-  int width = icon_rect.width() + badge->width() * kBadgeOverlapRatioX;
-  const float kBadgeOverlapRatioY = 1.0f / 3.0f;
-  int height = icon_rect.height() + badge->height() * kBadgeOverlapRatioY;
-
-  gfx::Canvas canvas(gfx::Size(width, height), false);
-  canvas.DrawImageInt(icon, 0, 0, icon.width(), icon.height(), 0, 0,
-                      icon_rect.width(), icon_rect.height(), true);
-  canvas.DrawImageInt(*badge, width - badge->width(),
-                      height - badge->height());
-  return canvas.ExtractBitmap();
+  gfx::Size icon_size = GetCenteredAndScaledRect(icon.width(), icon.height(),
+      0, 0, profiles::kAvatarIconWidth, kItemHeight).size();
+  gfx::CanvasImageSource* source =
+      new BadgeImageSource(icon, icon_size, *badge);
+  // ImageSkia takes ownership of |source|.
+  return gfx::ImageSkia(source, source->size());
 }
 
 bool ProfileItemView::IsHighlighted() {

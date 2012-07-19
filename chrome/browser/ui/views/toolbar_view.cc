@@ -52,7 +52,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/views/controls/button/button_dropdown.h"
 #include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/focus/view_storage.h"
@@ -127,6 +127,31 @@ int location_bar_vert_spacing() {
   }
   return value;
 }
+
+class BadgeImageSource: public gfx::CanvasImageSource {
+ public:
+  BadgeImageSource(const gfx::ImageSkia& icon, const gfx::ImageSkia& badge)
+      : gfx::CanvasImageSource(icon.size(), false),
+        icon_(icon),
+        badge_(badge) {
+  }
+
+  ~BadgeImageSource() {
+  }
+
+  // Overridden from gfx::CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) OVERRIDE {
+    canvas->DrawImageInt(icon_, 0, 0);
+    canvas->DrawImageInt(badge_, icon_.width() - badge_.width(),
+                         kBadgeTopMargin);
+  }
+
+ private:
+  const gfx::ImageSkia icon_;
+  const gfx::ImageSkia badge_;
+
+  DISALLOW_COPY_AND_ASSIGN(BadgeImageSource);
+};
 
 }  // namespace
 
@@ -348,10 +373,6 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
   if (!add_badge)
     return icon;
 
-  // Draw the chrome app menu icon onto the canvas.
-  gfx::ImageSkiaRep image_rep = gfx::ImageSkiaRep(icon, ui::SCALE_FACTOR_100P);
-  scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(image_rep, false));
-
   gfx::ImageSkia badge;
   // Only one badge can be active at any given time. The Upgrade notification
   // is deemed most important, then the DLL conflict badge.
@@ -374,9 +395,9 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
     NOTREACHED();
   }
 
-  canvas->DrawImageInt(badge, icon.width() - badge.width(), kBadgeTopMargin);
-
-  return canvas->ExtractBitmap();
+  gfx::CanvasImageSource* source = new BadgeImageSource(icon, badge);
+  // ImageSkia takes ownership of |source|.
+  return gfx::ImageSkia(source, source->size());
 }
 
 void ToolbarView::LayoutForSearch() {
