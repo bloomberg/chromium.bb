@@ -21,7 +21,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/controls/image_view.h"
 
@@ -228,6 +227,14 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
       bar_(new BarView),
       state_(STATE_NORMAL) {
   set_accessibility_focusable(true);
+
+  const gfx::ShadowValue kShadows[] = {
+    gfx::ShadowValue(gfx::Point(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
+    gfx::ShadowValue(gfx::Point(0, 3), 1, SkColorSetARGB(0x1A, 0, 0, 0)),
+    gfx::ShadowValue(gfx::Point(0, 0), 1, SkColorSetARGB(0x54, 0, 0, 0)),
+  };
+  icon_shadows_.assign(kShadows, kShadows + arraysize(kShadows));
+
   AddChildView(bar_);
 }
 
@@ -235,14 +242,8 @@ LauncherButton::~LauncherButton() {
 }
 
 void LauncherButton::SetShadowedImage(const gfx::ImageSkia& image) {
-  const gfx::ShadowValue kShadows[] = {
-    gfx::ShadowValue(gfx::Point(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
-    gfx::ShadowValue(gfx::Point(0, 3), 1, SkColorSetARGB(0x1A, 0, 0, 0)),
-    gfx::ShadowValue(gfx::Point(0, 0), 1, SkColorSetARGB(0x54, 0, 0, 0)),
-  };
-
   icon_view_->SetImage(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
-      image, gfx::ShadowValues(kShadows, kShadows + arraysize(kShadows))));
+      image, icon_shadows_));
 }
 
 void LauncherButton::SetImage(const gfx::ImageSkia& image) {
@@ -389,6 +390,11 @@ void LauncherButton::Layout() {
     }
   }
 
+  // Offset to compensate for shadows.
+  gfx::Insets icon_shadow_padding = -gfx::ShadowValue::GetMargin(icon_shadows_);
+  image_x -= icon_shadow_padding.left() - icon_shadow_padding.right();
+  image_y -= icon_shadow_padding.top() - icon_shadow_padding.bottom();
+
   icon_view_->SetPosition(gfx::Point(image_x, image_y));
   bar_->SetBoundsRect(rect);
 }
@@ -405,12 +411,21 @@ void LauncherButton::OnBlur() {
 
 void LauncherButton::Init() {
   icon_view_ = CreateIconView();
+
+  gfx::Insets icon_shadow_padding = -gfx::ShadowValue::GetMargin(icon_shadows_);
+  const int horiz_padding = std::max(icon_shadow_padding.left(),
+                                     icon_shadow_padding.right());
+  const int vert_padding = std::max(icon_shadow_padding.top(),
+                                    icon_shadow_padding.bottom());
+
   // TODO: refactor the layers so each button doesn't require 2.
   icon_view_->SetPaintToLayer(true);
   icon_view_->SetFillsBoundsOpaquely(false);
-  icon_view_->SetSize(gfx::Size(kIconSize, kIconSize));
+  icon_view_->SetSize(gfx::Size(kIconSize + horiz_padding,
+                                kIconSize + vert_padding));
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
   icon_view_->SetVerticalAlignment(views::ImageView::CENTER);
+
   AddChildView(icon_view_);
 }
 
