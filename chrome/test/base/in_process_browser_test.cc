@@ -161,17 +161,11 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
 
-#if defined(OS_WIN)
-  // The Windows sandbox requires that the browser and child processes are the
-  // same binary.  So we launch browser_process.exe which loads chrome.dll
-  command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
-                                 command_line->GetProgram());
-#else
+#if defined(OS_MACOSX)
   // Explicitly set the path of the binary used for child processes, otherwise
   // they'll try to use browser_tests which doesn't contain ChromeMain.
   FilePath subprocess_path;
   PathService::Get(base::FILE_EXE, &subprocess_path);
-#if defined(OS_MACOSX)
   // Recreate the real environment, run the helper within the app bundle.
   subprocess_path = subprocess_path.DirName().DirName();
   DCHECK_EQ(subprocess_path.BaseName().value(), "Contents");
@@ -179,7 +173,6 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
       subprocess_path.Append("Versions").Append(chrome::kChromeVersion);
   subprocess_path =
       subprocess_path.Append(chrome::kHelperProcessExecutablePath);
-#endif
   command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
                                  subprocess_path);
 #endif
