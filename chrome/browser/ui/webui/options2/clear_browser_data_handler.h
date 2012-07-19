@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_CLEAR_BROWSER_DATA_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CLEAR_BROWSER_DATA_HANDLER_H_
 
-#include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 

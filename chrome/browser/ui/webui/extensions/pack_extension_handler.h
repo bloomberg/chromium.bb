@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/plugin_data_remover_helper.h"
 #include "chrome/browser/ui/select_file_dialog.h"

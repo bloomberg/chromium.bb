@@ -5,7 +5,7 @@
 // Implementation of DeleteChromeHistory
 #include "chrome_frame/delete_chrome_history.h"
 
-#include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 
 #include "base/win/windows_version.h"
 #include "chrome_frame/chrome_frame_activex.h"

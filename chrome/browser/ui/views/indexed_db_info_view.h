@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_VIEWS_INDEXED_DB_INFO_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_INDEXED_DB_INFO_VIEW_H_
 
-#include "chrome/browser/browsing_data_indexed_db_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "ui/views/view.h"
 
 namespace views {

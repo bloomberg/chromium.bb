@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 class PluginPrefs;
