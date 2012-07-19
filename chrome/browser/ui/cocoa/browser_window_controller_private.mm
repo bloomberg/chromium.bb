@@ -292,14 +292,16 @@ willPositionSheet:(NSWindow*)sheet
 
   // Calculate the right indentation.  The default indentation built into the
   // tabstrip leaves enough room for the fullscreen button or presentation mode
-  // toggle button on Lion.  On non-Lion systems, the default indentation also
-  // looks fine.
+  // toggle button on Lion.  On non-Lion systems, the right indent needs to be
+  // adjusted to make room for the new tab button when an avatar is present.
   CGFloat rightIndent = 0;
   if (base::mac::IsOSLionOrLater()) {
     FramedBrowserWindow* window =
         static_cast<FramedBrowserWindow*>([self window]);
     DCHECK([window isKindOfClass:[FramedBrowserWindow class]]);
     rightIndent += -[window fullScreenButtonOriginAdjustment].x;
+  } else if ([self shouldShowAvatar]) {
+    rightIndent += kAvatarTabStripShrink;
   }
   [tabStripController_ setRightIndentForControls:rightIndent];
 

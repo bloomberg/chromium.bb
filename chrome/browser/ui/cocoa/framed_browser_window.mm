@@ -326,7 +326,7 @@ const CGFloat kWindowGradientHeight = 24.0;
     return NSZeroPoint;
 
   // Vertically center the button.
-  NSPoint origin = NSMakePoint(0, -7);
+  NSPoint origin = NSMakePoint(0, -6);
 
   // If there is a profile avatar present, shift the button over by its
   // width and some padding.
@@ -336,6 +336,8 @@ const CGFloat kWindowGradientHeight = 24.0;
     AvatarButtonController* avatarButtonVC = [bwc avatarButtonController];
     NSView* avatarButton = [avatarButtonVC view];
     origin.x = -(NSWidth([avatarButton frame]) + 3);
+  } else {
+    origin.x -= 5;
   }
 
   return origin;
