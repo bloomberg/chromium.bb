@@ -261,6 +261,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     These are flags needed to facilitate testing.  Override this function to
     use a custom set of Chrome flags.
     """
+    auth_ext_path = ('--auth-ext-path=/usr/local/autotest/deps/pyauto_dep/' +
+        'test_src/chrome/browser/resources/gaia_auth')
+    # TODO(nirnimesh): remove when chromeos side changes land.
+    if not os.path.exists(auth_ext_path):
+      auth_ext_path = '/usr/share/chromeos-assets/gaia_auth'
     if self.IsChromeOS():
       return [
         '--homepage=about:blank',
@@ -270,8 +275,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         '--dom-automation',
         '--skip-oauth-login',
         # Enables injection of test content script for webui login automation
-        '--auth-ext-path=/usr/local/autotest/deps/pyauto_dep/' +
-            'test_src/chrome/browser/resources/gaia_auth',
+        '--auth-ext-path=%s' % auth_ext_path,
         # Enable automation provider and chromeos net logs
         '--vmodule=*/browser/automation/*=2,*/chromeos/net/*=2',
       ]
