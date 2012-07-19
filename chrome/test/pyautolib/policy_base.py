@@ -399,16 +399,42 @@ class PolicyTestBase(pyauto.PyUITest):
                cr.ui.Oobe.getInstance().currentScreen.loading);
         """)
 
-  def _WaitForLoginFormReload(self):
+  def PrepareToWaitForLoginFormReload(self):
     self.assertEqual('gaia-signin',
                      self._GetCurrentLoginScreenId(),
                      msg='Expected the login form to be visible.')
     self.assertTrue(
-        self.WaitUntil(function=self._CheckLoginFormLoading),
-                       msg='Expected the login form to start reloading.')
-    self.assertTrue(
         self.WaitUntil(function=self._CheckLoginFormLoading,
                        expect_retval=False),
+                       msg='Expected the login form to finish loading.')
+    # Set up a sentinel variable that is false now and will toggle to true when
+    # the login form starts reloading.
+    self.ExecuteJavascriptInOOBEWebUI(
+        """var screen = cr.ui.Oobe.getInstance().currentScreen;
+           if (!('reload_started' in screen)) {
+             screen.orig_loadAuthExtension_ = screen.loadAuthExtension_;
+             screen.loadAuthExtension_ = function(data) {
+               this.orig_loadAuthExtension_(data);
+               if (this.loading)
+                 this.reload_started = true;
+             }
+           }
+           screen.reload_started = false;
+           window.domAutomationController.send(true);""")
+
+  def _CheckLoginFormReloaded(self):
+    return self.ExecuteJavascriptInOOBEWebUI(
+        """window.domAutomationController.send(
+               cr.ui.Oobe.getInstance().currentScreen.reload_started &&
+               !cr.ui.Oobe.getInstance().currentScreen.loading);
+        """)
+
+  def WaitForLoginFormReload(self):
+    self.assertEqual('gaia-signin',
+                     self._GetCurrentLoginScreenId(),
+                     msg='Expected the login form to be visible.')
+    self.assertTrue(
+        self.WaitUntil(function=self._CheckLoginFormReloaded),
                        msg='Expected the login form to finish reloading.')
 
   def _SetUserPolicyChromeOS(self, user_policy=None):

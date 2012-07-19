@@ -125,8 +125,9 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
 
   def testEnablingBeforeSession(self):
     """Checks that a new session can be made ephemeral."""
+    self.PrepareToWaitForLoginFormReload()
     self._SetEphemeralUsersEnabled(True)
-    self._WaitForLoginFormReload()
+    self.WaitForLoginFormReload()
 
     self.Login(user_index=0)
     self._AssertLocalStatePrefsEmpty()
@@ -139,8 +140,9 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
 
   def testEnablingDuringSession(self):
     """Checks that an existing non-ephemeral session is not made ephemeral."""
+    self.PrepareToWaitForLoginFormReload()
     self._SetEphemeralUsersEnabled(False)
-    self._WaitForLoginFormReload()
+    self.WaitForLoginFormReload()
 
     self.Login(user_index=0)
     self._AssertLocalStatePrefsSet(user_indexes=[0])
@@ -156,8 +158,9 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
 
   def testDisablingDuringSession(self):
     """Checks that an existing ephemeral session is not made non-ephemeral."""
+    self.PrepareToWaitForLoginFormReload()
     self._SetEphemeralUsersEnabled(True)
-    self._WaitForLoginFormReload()
+    self.WaitForLoginFormReload()
 
     self.Login(user_index=0)
     # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
@@ -176,8 +179,9 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
 
   def testEnablingEphemeralUsersCleansUp(self):
     """Checks that persistent information is cleared."""
+    self.PrepareToWaitForLoginFormReload()
     self._SetEphemeralUsersEnabled(False)
-    self._WaitForLoginFormReload()
+    self.WaitForLoginFormReload()
 
     self.Login(user_index=0)
     # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.

@@ -208,8 +208,9 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
 
     # Disable the account picker so that the login form is shown and the Login()
     # automation call can be used.
+    self.PrepareToWaitForLoginFormReload()
     self.SetDevicePolicy({'show_user_names': False})
-    self._WaitForLoginFormReload()
+    self.WaitForLoginFormReload()
 
     # Log in to populate the list of existing users.
     self.Login(user_index=0, expect_success=True)
