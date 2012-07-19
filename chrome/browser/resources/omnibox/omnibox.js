@@ -104,7 +104,9 @@ cr.define('omniboxDebug', function() {
     new PresentationInfoRecord(
         'Is This Provider Done', '', 'provider_done', false),
     new PresentationInfoRecord(
-        'Template URL', '', 'template_url', false)
+        'Template URL', '', 'template_url', false),
+    new PresentationInfoRecord(
+        'Associated Keyword', '', 'associated_keyword', false)
   ];
 
   /**
