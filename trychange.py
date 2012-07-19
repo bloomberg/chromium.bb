@@ -399,7 +399,8 @@ def _SendChangeSVN(options):
       file_name = (Escape(options.user) + '.' + Escape(options.name) +
                    '.%s.diff' % current_time)
       full_path = os.path.join(temp_dir, file_name)
-      gclient_utils.FileWrite(full_path, options.diff, 'wb')
+      with open(full_path, 'wb') as f:
+        f.write(options.diff)
 
       # Committing it will trigger a try job.
       if sys.platform == "cygwin":
