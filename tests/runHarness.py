@@ -131,7 +131,7 @@ class BrailleTest():
         # FIXME: liblouis currently crashes if we dont add space at end of the word, probably due to a counter running past the end of the string.
         # medium/longterm this hack should be removed, and the root of the problem found/resolved.
         hyphen_mask=hyphenate(tables, word+' ', mode)
-        return "".join(map(lambda a,b: "-"+a if b=='1' else a, word, hyphen_mask)[:-1])
+        return "".join( list(map(lambda a,b: "-"+a if b=='1' else a, word, hyphen_mask))[:-1] )
 
     def check_translate(self):
         if self.cursorPos is not None:
