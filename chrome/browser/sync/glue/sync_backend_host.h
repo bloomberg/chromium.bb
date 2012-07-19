@@ -299,7 +299,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         syncer::SyncManagerFactory* sync_manager_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
-        syncer::SyncManager::TestingMode testing_mode,
+        syncer::InternalComponentsFactory* internal_components_factory,
         syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
         syncer::ReportUnrecoverableErrorFunction
             report_unrecoverable_error_function);
@@ -321,7 +321,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     std::string lsid;
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
-    syncer::SyncManager::TestingMode testing_mode;
+    syncer::InternalComponentsFactory* internal_components_factory;
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler;
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function;

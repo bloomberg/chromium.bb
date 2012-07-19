@@ -30,6 +30,7 @@
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/internal_api/public/http_bridge.h"
+#include "sync/internal_api/public/internal_components_factory_impl.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
@@ -347,8 +348,6 @@ int main(int argc, char* argv[]) {
   syncer::ExtensionsActivityMonitor* extensions_activity_monitor = NULL;
   LoggingChangeDelegate change_delegate;
   const char kRestoredKeyForBootstrapping[] = "";
-  const syncer::SyncManager::TestingMode kTestingMode =
-      syncer::SyncManager::NON_TEST;
   NullEncryptor null_encryptor;
   LoggingUnrecoverableErrorHandler unrecoverable_error_handler;
   sync_manager->Init(database_dir.path(),
@@ -367,7 +366,8 @@ int main(int argc, char* argv[]) {
                     scoped_ptr<syncer::SyncNotifier>(
                         sync_notifier_factory.CreateSyncNotifier()),
                     kRestoredKeyForBootstrapping,
-                    kTestingMode,
+                    scoped_ptr<syncer::InternalComponentsFactory>(
+                        new syncer::InternalComponentsFactoryImpl()),
                     &null_encryptor,
                     &unrecoverable_error_handler,
                     &LogUnrecoverableErrorContext);

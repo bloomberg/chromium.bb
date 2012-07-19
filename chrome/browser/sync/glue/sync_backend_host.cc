@@ -42,6 +42,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/internal_components_factory_impl.h"
 #include "sync/internal_api/public/http_bridge.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
@@ -62,6 +63,8 @@ typedef GoogleServiceAuthError AuthError;
 namespace browser_sync {
 
 using content::BrowserThread;
+using syncer::InternalComponentsFactory;
+using syncer::InternalComponentsFactoryImpl;
 using syncer::sessions::SyncSessionSnapshot;
 using syncer::SyncCredentials;
 
@@ -410,7 +413,7 @@ void SyncBackendHost::Initialize(
       sync_manager_factory,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
-      syncer::SyncManager::NON_TEST,
+      new InternalComponentsFactoryImpl(),
       unrecoverable_error_handler,
       report_unrecoverable_error_function));
 }
@@ -779,7 +782,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     syncer::SyncManagerFactory* sync_manager_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
-    syncer::SyncManager::TestingMode testing_mode,
+    InternalComponentsFactory* internal_components_factory,
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function)
@@ -797,7 +800,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       sync_manager_factory(sync_manager_factory),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
-      testing_mode(testing_mode),
+      internal_components_factory(internal_components_factory),
       unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(
           report_unrecoverable_error_function) {
@@ -980,7 +983,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
           options.chrome_sync_notification_bridge,
           options.sync_notifier_factory->CreateSyncNotifier())),
       options.restored_key_for_bootstrapping,
-      options.testing_mode,
+      scoped_ptr<InternalComponentsFactory>(
+          options.internal_components_factory),
       &encryptor_,
       options.unrecoverable_error_handler,
       options.report_unrecoverable_error_function);

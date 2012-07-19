@@ -46,7 +46,7 @@ class SyncManagerImpl : public SyncManager {
       const SyncCredentials& credentials,
       scoped_ptr<syncer::SyncNotifier> sync_notifier,
       const std::string& restored_key_for_bootstrapping,
-      TestingMode testing_mode,
+      scoped_ptr<InternalComponentsFactory> internal_components_factory,
       syncer::Encryptor* encryptor,
       syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
@@ -109,11 +109,6 @@ class SyncManagerImpl : public SyncManager {
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnIncomingNotification);
 
   base::TimeDelta GetNudgeDelayTimeDelta(const syncer::ModelType& model_type);
-
-  // Set the internal scheduler for testing purposes.
-  // TODO(sync): Use dependency injection instead. crbug.com/133061
-  void SetSyncSchedulerForTest(
-      scoped_ptr<syncer::SyncScheduler> scheduler);
 
   base::ThreadChecker thread_checker_;
 

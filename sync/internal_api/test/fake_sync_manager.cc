@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
+#include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/sync_notifier.h"
 
@@ -58,7 +59,7 @@ bool FakeSyncManager::Init(
     const SyncCredentials& credentials,
     scoped_ptr<syncer::SyncNotifier> sync_notifier,
     const std::string& restored_key_for_bootstrapping,
-    TestingMode testing_mode,
+    scoped_ptr<InternalComponentsFactory> internal_components_factory,
     syncer::Encryptor* encryptor,
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction

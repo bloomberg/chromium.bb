@@ -26,7 +26,7 @@
 #include "sync/engine/get_commit_ids_command.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/process_updates_command.h"
-#include "sync/engine/sync_scheduler.h"
+#include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/throttled_data_type_tracker.h"
@@ -185,10 +185,10 @@ class SyncerTest : public testing::Test,
   }
 
   bool SyncShareAsDelegate(
-      SyncScheduler::SyncSessionJob::SyncSessionJobPurpose purpose) {
+      SyncSchedulerImpl::SyncSessionJob::SyncSessionJobPurpose purpose) {
     SyncerStep start;
     SyncerStep end;
-    SyncScheduler::SetSyncerStepsForPurpose(purpose, &start, &end);
+    SyncSchedulerImpl::SetSyncerStepsForPurpose(purpose, &start, &end);
 
     session_.reset(MakeSession());
     syncer_->SyncShare(session_.get(), start, end);
@@ -197,12 +197,13 @@ class SyncerTest : public testing::Test,
 
   bool SyncShareNudge() {
     session_.reset(MakeSession());
-    return SyncShareAsDelegate(SyncScheduler::SyncSessionJob::NUDGE);
+    return SyncShareAsDelegate(SyncSchedulerImpl::SyncSessionJob::NUDGE);
   }
 
   bool SyncShareConfigure() {
     session_.reset(MakeSession());
-    return SyncShareAsDelegate(SyncScheduler::SyncSessionJob::CONFIGURATION);
+    return SyncShareAsDelegate(
+        SyncSchedulerImpl::SyncSessionJob::CONFIGURATION);
   }
 
   void LoopSyncShare() {

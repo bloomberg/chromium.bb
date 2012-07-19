@@ -21,7 +21,6 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
-#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
 
@@ -29,9 +28,11 @@ namespace syncer {
 class Encryptor;
 struct Experiments;
 class ExtensionsActivityMonitor;
+class InternalComponentsFactory;
 class JsBackend;
 class JsEventHandler;
 class SyncScheduler;
+class UnrecoverableErrorHandler;
 
 namespace sessions {
 class SyncSessionSnapshot;
@@ -337,12 +338,6 @@ class SyncManager {
     virtual ~Observer();
   };
 
-  enum TestingMode {
-    NON_TEST,
-    TEST_ON_DISK,
-    TEST_IN_MEMORY,
-  };
-
   SyncManager();
   virtual ~SyncManager();
 
@@ -382,7 +377,7 @@ class SyncManager {
       const SyncCredentials& credentials,
       scoped_ptr<syncer::SyncNotifier> sync_notifier,
       const std::string& restored_key_for_bootstrapping,
-      TestingMode testing_mode,
+      scoped_ptr<InternalComponentsFactory> internal_components_factory,
       syncer::Encryptor* encryptor,
       syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction

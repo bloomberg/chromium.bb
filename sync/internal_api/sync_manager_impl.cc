@@ -33,6 +33,7 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
+#include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/user_share.h"
@@ -87,7 +88,6 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
     default:
       NOTREACHED();
   }
-
   return GetUpdatesCallerInfo::UNKNOWN;
 }
 
@@ -123,14 +123,12 @@ class SyncManagerImpl::SyncInternal
         weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         change_delegate_(NULL),
         initialized_(false),
-        testing_mode_(NON_TEST),
         observing_ip_address_changes_(false),
         throttled_data_type_tracker_(&allstatus_),
         traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord),
         encryptor_(NULL),
         unrecoverable_error_handler_(NULL),
         report_unrecoverable_error_function_(NULL),
-        created_on_loop_(MessageLoop::current()),
         nigori_overwrite_count_(0) {
     // Pre-fill |notification_info_map_|.
     for (int i = syncer::FIRST_REAL_MODEL_TYPE;
@@ -185,7 +183,7 @@ class SyncManagerImpl::SyncInternal
             const SyncCredentials& credentials,
             scoped_ptr<syncer::SyncNotifier> sync_notifier,
             const std::string& restored_key_for_bootstrapping,
-            SyncManager::TestingMode testing_mode,
+            scoped_ptr<InternalComponentsFactory> internal_components_factory,
             Encryptor* encryptor,
             UnrecoverableErrorHandler* unrecoverable_error_handler,
             ReportUnrecoverableErrorFunction
@@ -396,8 +394,6 @@ class SyncManagerImpl::SyncInternal
       const std::string& name, const JsArgList& args,
       const WeakHandle<JsReplyHandler>& reply_handler) OVERRIDE;
 
-  void SetSyncSchedulerForTest(scoped_ptr<SyncScheduler> scheduler);
-
  private:
   struct NotificationInfo {
     int total_count;
@@ -588,12 +584,6 @@ class SyncManagerImpl::SyncInternal
   // Set to true once Init has been called.
   bool initialized_;
 
-  // Controls the disabling of certain SyncManager features.
-  // Can be used to disable communication with the server and the use of an
-  // on-disk file for maintaining syncer state.
-  // TODO(117836): Clean up implementation of SyncManager unit tests.
-  SyncManager::TestingMode testing_mode_;
-
   bool observing_ip_address_changes_;
 
   // Map used to store the notification info to be displayed in
@@ -616,8 +606,6 @@ class SyncManagerImpl::SyncInternal
   Encryptor* encryptor_;
   UnrecoverableErrorHandler* unrecoverable_error_handler_;
   ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
-
-  MessageLoop* const created_on_loop_;
 
   // The number of times we've automatically (i.e. not via SetPassphrase or
   // conflict resolver) updated the nigori's encryption keys in this chrome
@@ -686,7 +674,7 @@ class NudgeStrategy {
                kPreferencesNudgeDelayMilliseconds);
            break;
          case syncer::SESSIONS:
-           delay = core->scheduler()->sessions_commit_delay();
+           delay = core->scheduler()->GetSessionsCommitDelay();
            break;
          default:
            NOTREACHED();
@@ -717,7 +705,7 @@ bool SyncManagerImpl::Init(
     const SyncCredentials& credentials,
     scoped_ptr<syncer::SyncNotifier> sync_notifier,
     const std::string& restored_key_for_bootstrapping,
-    SyncManager::TestingMode testing_mode,
+    scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
@@ -739,7 +727,7 @@ bool SyncManagerImpl::Init(
                      credentials,
                      sync_notifier.Pass(),
                      restored_key_for_bootstrapping,
-                     testing_mode,
+                     internal_components_factory.Pass(),
                      encryptor,
                      unrecoverable_error_handler,
                      report_unrecoverable_error_function);
@@ -869,7 +857,7 @@ bool SyncManagerImpl::SyncInternal::Init(
     const SyncCredentials& credentials,
     scoped_ptr<syncer::SyncNotifier> sync_notifier,
     const std::string& restored_key_for_bootstrapping,
-    SyncManager::TestingMode testing_mode,
+    scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
@@ -884,7 +872,6 @@ bool SyncManagerImpl::SyncInternal::Init(
   blocking_task_runner_ = blocking_task_runner;
 
   change_delegate_ = change_delegate;
-  testing_mode_ = testing_mode;
 
   sync_notifier_ = sync_notifier.Pass();
 
@@ -899,25 +886,18 @@ bool SyncManagerImpl::SyncInternal::Init(
   unrecoverable_error_handler_ = unrecoverable_error_handler;
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 
-  syncable::DirectoryBackingStore* backing_store = NULL;
-  if (testing_mode_ == TEST_IN_MEMORY) {
-    // TODO(tim): 117836. Use a factory or delegate to create this and don't
-    // depend on TEST_IN_MEMORY here.
-    backing_store =
-        new syncable::InMemoryDirectoryBackingStore(credentials.email);
-  } else {
-    FilePath absolute_db_path(database_path_);
-    file_util::AbsolutePath(&absolute_db_path);
-    backing_store = new syncable::OnDiskDirectoryBackingStore(
-        credentials.email, absolute_db_path);
-  }
+  FilePath absolute_db_path(database_path_);
+  file_util::AbsolutePath(&absolute_db_path);
+  scoped_ptr<syncable::DirectoryBackingStore> backing_store =
+      internal_components_factory->BuildDirectoryBackingStore(
+          credentials.email, absolute_db_path).Pass();
 
-  DCHECK(backing_store);
+  DCHECK(backing_store.get());
   share_.directory.reset(
       new syncable::Directory(encryptor_,
                               unrecoverable_error_handler_,
                               report_unrecoverable_error_function_,
-                              backing_store));
+                              backing_store.release()));
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, post_factory.release()));
@@ -927,33 +907,29 @@ bool SyncManagerImpl::SyncInternal::Init(
 
   connection_manager()->AddListener(this);
 
-  // Test mode does not use a syncer context or syncer thread.
-  if (testing_mode_ == NON_TEST) {
-    // Build a SyncSessionContext and store the worker in it.
-    DVLOG(1) << "Sync is bringing up SyncSessionContext.";
-    std::vector<SyncEngineEventListener*> listeners;
-    listeners.push_back(&allstatus_);
-    listeners.push_back(this);
-    session_context_.reset(new SyncSessionContext(
-        connection_manager_.get(),
-        directory(),
-        model_safe_routing_info,
-        workers,
-        extensions_activity_monitor,
-        &throttled_data_type_tracker_,
-        listeners,
-        &debug_info_event_listener_,
-        &traffic_recorder_));
-    session_context()->set_account_name(credentials.email);
-    scheduler_.reset(new SyncScheduler(name_, session_context(), new Syncer()));
-  }
+  // Build a SyncSessionContext and store the worker in it.
+  DVLOG(1) << "Sync is bringing up SyncSessionContext.";
+  std::vector<SyncEngineEventListener*> listeners;
+  listeners.push_back(&allstatus_);
+  listeners.push_back(this);
+  session_context_ = internal_components_factory->BuildContext(
+      connection_manager_.get(),
+      directory(),
+      model_safe_routing_info,
+      workers,
+      extensions_activity_monitor,
+      &throttled_data_type_tracker_,
+      listeners,
+      &debug_info_event_listener_,
+      &traffic_recorder_).Pass();
+  session_context()->set_account_name(credentials.email);
+  scheduler_ = internal_components_factory->BuildScheduler(
+      name_, session_context()).Pass();
 
   bool success = SignIn(credentials);
 
   if (success) {
-    if (scheduler()) {
-      scheduler()->Start(syncer::SyncScheduler::CONFIGURATION_MODE);
-    }
+    scheduler()->Start(syncer::SyncScheduler::CONFIGURATION_MODE);
 
     initialized_ = true;
 
@@ -989,8 +965,7 @@ bool SyncManagerImpl::SyncInternal::Init(
                     OnInitializationComplete(
                         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
                         success));
-
-  if (!success && testing_mode_ == NON_TEST)
+  if (!success)
     return false;
 
   sync_notifier_->AddObserver(this);
@@ -1072,7 +1047,6 @@ void SyncManagerImpl::SyncInternal::UpdateCryptographerAndNigoriCallback(
                                                pending_keys));
       }
 
-
       // Add or update device information.
       bool contains_this_device = false;
       for (int i = 0; i < nigori.device_information_size(); ++i) {
@@ -1140,14 +1114,12 @@ void SyncManagerImpl::SyncInternal::NotifyCryptographerState(
 void SyncManagerImpl::SyncInternal::StartSyncingNormally(
     const syncer::ModelSafeRoutingInfo& routing_info) {
   // Start the sync scheduler.
-  if (scheduler()) {  // NULL during certain unittests.
-    // TODO(sync): We always want the newest set of routes when we switch back
-    // to normal mode. Figure out how to enforce set_routing_info is always
-    // appropriately set and that it's only modified when switching to normal
-    // mode.
-    session_context()->set_routing_info(routing_info);
-    scheduler()->Start(SyncScheduler::NORMAL_MODE);
-  }
+  // TODO(sync): We always want the newest set of routes when we switch back
+  // to normal mode. Figure out how to enforce set_routing_info is always
+  // appropriately set and that it's only modified when switching to normal
+  // mode.
+  session_context()->set_routing_info(routing_info);
+  scheduler()->Start(SyncScheduler::NORMAL_MODE);
 }
 
 bool SyncManagerImpl::SyncInternal::OpenDirectory() {
@@ -1691,11 +1663,7 @@ void SyncManagerImpl::StopSyncingForShutdown(const base::Closure& callback) {
 void SyncManagerImpl::SyncInternal::StopSyncingForShutdown(
     const base::Closure& callback) {
   DVLOG(2) << "StopSyncingForShutdown";
-  if (scheduler())  // May be null in tests.
-    scheduler()->RequestStop(callback);
-  else
-    created_on_loop_->PostTask(FROM_HERE, callback);
-
+  scheduler()->RequestStop(callback);
   if (connection_manager_.get())
     connection_manager_->TerminateAllIO();
 }
@@ -1768,8 +1736,7 @@ void SyncManagerImpl::SyncInternal::OnIPAddressChanged() {
 
 void SyncManagerImpl::SyncInternal::OnIPAddressChangedImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (scheduler())
-    scheduler()->OnConnectionStatusChange();
+  scheduler()->OnConnectionStatusChange();
 }
 
 void SyncManagerImpl::SyncInternal::OnServerConnectionEvent(
@@ -1979,11 +1946,9 @@ SyncStatus SyncManagerImpl::SyncInternal::GetStatus() {
 
 void SyncManagerImpl::SyncInternal::RequestNudge(
     const tracked_objects::Location& location) {
-  if (scheduler()) {
-     scheduler()->ScheduleNudgeAsync(
-        TimeDelta::FromMilliseconds(0), syncer::NUDGE_SOURCE_LOCAL,
-        ModelTypeSet(), location);
-  }
+  scheduler()->ScheduleNudgeAsync(
+      TimeDelta::FromMilliseconds(0), syncer::NUDGE_SOURCE_LOCAL,
+      ModelTypeSet(), location);
 }
 
 TimeDelta SyncManagerImpl::SyncInternal::GetNudgeDelayTimeDelta(
@@ -2311,9 +2276,8 @@ void SyncManagerImpl::SyncInternal::UpdateNotificationInfo(
 void SyncManagerImpl::SyncInternal::OnNotificationsEnabled() {
   DVLOG(1) << "Notifications enabled";
   allstatus_.SetNotificationsEnabled(true);
-  if (scheduler()) {
-    scheduler()->set_notifications_enabled(true);
-  }
+  scheduler()->SetNotificationsEnabled(true);
+
   // TODO(akalin): Separate onNotificationStateChange into
   // enabled/disabled events.
   if (js_event_handler_.IsInitialized()) {
@@ -2331,9 +2295,7 @@ void SyncManagerImpl::SyncInternal::OnNotificationsDisabled(
   DVLOG(1) << "Notifications disabled with reason "
            << syncer::NotificationsDisabledReasonToString(reason);
   allstatus_.SetNotificationsEnabled(false);
-  if (scheduler()) {
-    scheduler()->set_notifications_enabled(false);
-  }
+  scheduler()->SetNotificationsEnabled(false);
   if (js_event_handler_.IsInitialized()) {
     DictionaryValue details;
     details.Set("enabled", Value::CreateBooleanValue(false));
@@ -2351,19 +2313,15 @@ void SyncManagerImpl::SyncInternal::OnIncomingNotification(
     syncer::IncomingNotificationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (source == syncer::LOCAL_NOTIFICATION) {
-    if (scheduler()) {
-      scheduler()->ScheduleNudgeWithPayloadsAsync(
-          TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
-          syncer::NUDGE_SOURCE_LOCAL_REFRESH,
-          type_payloads, FROM_HERE);
-    }
+    scheduler()->ScheduleNudgeWithPayloadsAsync(
+        TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
+        syncer::NUDGE_SOURCE_LOCAL_REFRESH,
+        type_payloads, FROM_HERE);
   } else if (!type_payloads.empty()) {
-    if (scheduler()) {
-      scheduler()->ScheduleNudgeWithPayloadsAsync(
-          TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
-          syncer::NUDGE_SOURCE_NOTIFICATION,
-          type_payloads, FROM_HERE);
-    }
+    scheduler()->ScheduleNudgeWithPayloadsAsync(
+        TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
+        syncer::NUDGE_SOURCE_NOTIFICATION,
+        type_payloads, FROM_HERE);
     allstatus_.IncrementNotificationsReceived();
     UpdateNotificationInfo(type_payloads);
     debug_info_event_listener_.OnIncomingNotification(type_payloads);
@@ -2401,11 +2359,6 @@ void SyncManagerImpl::SyncInternal::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void SyncManagerImpl::SyncInternal::SetSyncSchedulerForTest(
-    scoped_ptr<SyncScheduler> sync_scheduler) {
-  scheduler_ = sync_scheduler.Pass();
-}
-
 SyncStatus SyncManagerImpl::GetDetailedStatus() const {
   return data_->GetStatus();
 }
@@ -2434,11 +2387,6 @@ void SyncManagerImpl::RefreshNigori(const std::string& chrome_version,
 TimeDelta SyncManagerImpl::GetNudgeDelayTimeDelta(
     const ModelType& model_type) {
   return data_->GetNudgeDelayTimeDelta(model_type);
-}
-
-void SyncManagerImpl::SetSyncSchedulerForTest(
-    scoped_ptr<SyncScheduler> scheduler) {
-  data_->SetSyncSchedulerForTest(scheduler.Pass());
 }
 
 syncer::ModelTypeSet SyncManagerImpl::GetEncryptedDataTypesForTest() const {

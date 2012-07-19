@@ -32,6 +32,7 @@
 #include "sync/internal_api/public/http_post_provider_interface.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
@@ -61,6 +62,7 @@
 #include "sync/test/callback_counter.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/test/fake_extensions_activity_monitor.h"
+#include "sync/test/engine/fake_sync_scheduler.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/extensions_activity_monitor.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
@@ -775,7 +777,7 @@ class SyncManagerTest : public testing::Test,
                        credentials,
                        scoped_ptr<SyncNotifier>(sync_notifier_mock_),
                        "",
-                       syncer::SyncManager::TEST_IN_MEMORY,
+                       scoped_ptr<InternalComponentsFactory>(GetFactory()),
                        &encryptor_,
                        &handler_,
                        NULL);
@@ -913,8 +915,9 @@ class SyncManagerTest : public testing::Test,
     return true;
   }
 
-  void SetScheduler(scoped_ptr<SyncScheduler> scheduler) {
-    sync_manager_.SetSyncSchedulerForTest(scheduler.Pass());
+  virtual InternalComponentsFactory* GetFactory() {
+    return new TestInternalComponentsFactory(
+        TestInternalComponentsFactory::IN_MEMORY);
   }
 
  private:
@@ -2496,30 +2499,54 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
   }
 }
 
-class MockSyncScheduler : public SyncScheduler {
+class MockSyncScheduler : public FakeSyncScheduler {
  public:
-  MockSyncScheduler() : SyncScheduler("name", NULL, NULL) {}
+  MockSyncScheduler() : FakeSyncScheduler() {}
   virtual ~MockSyncScheduler() {}
 
   MOCK_METHOD1(Start, void(SyncScheduler::Mode));
   MOCK_METHOD1(ScheduleConfiguration, bool(const ConfigurationParams&));
 };
 
+class ComponentsFactory : public TestInternalComponentsFactory {
+ public:
+  ComponentsFactory(SyncScheduler* scheduler_to_use)
+      : TestInternalComponentsFactory(
+            TestInternalComponentsFactory::IN_MEMORY),
+        scheduler_to_use_(scheduler_to_use) {}
+  virtual ~ComponentsFactory() {}
+
+  virtual scoped_ptr<SyncScheduler> BuildScheduler(
+      const std::string& name,
+      sessions::SyncSessionContext* context) OVERRIDE {
+    return scheduler_to_use_.Pass();
+  }
+  scoped_ptr<SyncScheduler> scheduler_to_use_;
+};
+
+class SyncManagerTestWithMockScheduler : public SyncManagerTest {
+ public:
+  SyncManagerTestWithMockScheduler() : scheduler_(NULL) {}
+  virtual InternalComponentsFactory* GetFactory() OVERRIDE {
+    scheduler_ = new MockSyncScheduler();
+    return new ComponentsFactory(scheduler_);
+  }
+  MockSyncScheduler* scheduler_;
+};
+
 // Test that the configuration params are properly created and sent to
 // ScheduleConfigure. No callback should be invoked.
-TEST_F(SyncManagerTest, BasicConfiguration) {
+TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
   ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
   syncer::ModelTypeSet types_to_download(syncer::BOOKMARKS,
                                          syncer::PREFERENCES);
   syncer::ModelSafeRoutingInfo new_routing_info;
   GetModelSafeRoutingInfo(&new_routing_info);
 
-  scoped_ptr<MockSyncScheduler> scheduler(new MockSyncScheduler());
   ConfigurationParams params;
-  EXPECT_CALL(*scheduler, Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler, ScheduleConfiguration(_)).
+  EXPECT_CALL(*scheduler_, Start(SyncScheduler::CONFIGURATION_MODE));
+  EXPECT_CALL(*scheduler_, ScheduleConfiguration(_)).
       WillOnce(DoAll(SaveArg<0>(&params), Return(true)));
-  SetScheduler(scheduler.PassAs<SyncScheduler>());
 
   CallbackCounter ready_task_counter, retry_task_counter;
   sync_manager_.ConfigureSyncer(
@@ -2539,19 +2566,17 @@ TEST_F(SyncManagerTest, BasicConfiguration) {
 }
 
 // Test that the retry callback is invoked on configuration failure.
-TEST_F(SyncManagerTest, ConfigurationRetry) {
+TEST_F(SyncManagerTestWithMockScheduler, ConfigurationRetry) {
   ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
   syncer::ModelTypeSet types_to_download(syncer::BOOKMARKS,
                                          syncer::PREFERENCES);
   syncer::ModelSafeRoutingInfo new_routing_info;
   GetModelSafeRoutingInfo(&new_routing_info);
 
-  scoped_ptr<MockSyncScheduler> scheduler(new MockSyncScheduler());
   ConfigurationParams params;
-  EXPECT_CALL(*scheduler, Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler, ScheduleConfiguration(_)).
+  EXPECT_CALL(*scheduler_, Start(SyncScheduler::CONFIGURATION_MODE));
+  EXPECT_CALL(*scheduler_, ScheduleConfiguration(_)).
       WillOnce(DoAll(SaveArg<0>(&params), Return(false)));
-  SetScheduler(scheduler.PassAs<SyncScheduler>());
 
   CallbackCounter ready_task_counter, retry_task_counter;
   sync_manager_.ConfigureSyncer(

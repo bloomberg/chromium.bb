@@ -64,7 +64,7 @@ class FakeSyncManager : public SyncManager {
       const SyncCredentials& credentials,
       scoped_ptr<syncer::SyncNotifier> sync_notifier,
       const std::string& restored_key_for_bootstrapping,
-      TestingMode testing_mode,
+      scoped_ptr<InternalComponentsFactory> internal_components_factory,
       syncer::Encryptor* encryptor,
       syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction

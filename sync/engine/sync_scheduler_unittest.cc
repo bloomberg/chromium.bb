@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
-#include "sync/engine/sync_scheduler.h"
+#include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/sessions/test_util.h"
@@ -88,7 +88,7 @@ class SyncSchedulerTest : public testing::Test {
         syncer_(NULL),
         delay_(NULL) {}
 
-  class MockDelayProvider : public SyncScheduler::DelayProvider {
+  class MockDelayProvider : public SyncSchedulerImpl::DelayProvider {
    public:
     MOCK_METHOD1(GetDelay, TimeDelta(const TimeDelta&));
   };
@@ -124,10 +124,10 @@ class SyncSchedulerTest : public testing::Test {
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
-        new SyncScheduler("TestSyncScheduler", context(), syncer_));
+        new SyncSchedulerImpl("TestSyncScheduler", context(), syncer_));
   }
 
-  SyncScheduler* scheduler() { return scheduler_.get(); }
+  SyncSchedulerImpl* scheduler() { return scheduler_.get(); }
   MockSyncer* syncer() { return syncer_; }
   MockDelayProvider* delay() { return delay_; }
   MockConnectionManager* connection() { return connection_.get(); }
@@ -215,7 +215,7 @@ class SyncSchedulerTest : public testing::Test {
   TestDirectorySetterUpper dir_maker_;
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<SyncSessionContext> context_;
-  scoped_ptr<SyncScheduler> scheduler_;
+  scoped_ptr<SyncSchedulerImpl> scheduler_;
   MockSyncer* syncer_;
   MockDelayProvider* delay_;
   std::vector<scoped_refptr<FakeModelWorker> > workers_;
@@ -618,7 +618,7 @@ TEST_F(SyncSchedulerTest, PollNotificationsDisabled) {
            WithArg<0>(RecordSyncShareMultiple(&records, kMinNumSamples))));
 
   scheduler()->OnReceivedShortPollIntervalUpdate(poll_interval);
-  scheduler()->set_notifications_enabled(false);
+  scheduler()->SetNotificationsEnabled(false);
 
   TimeTicks optimal_start = TimeTicks::Now() + poll_interval;
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
@@ -670,16 +670,16 @@ TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
               Invoke(sessions::test_util::SimulateSuccess),
               QuitLoopNowAction()));
 
-  EXPECT_EQ(delay1, scheduler()->sessions_commit_delay());
+  EXPECT_EQ(delay1, scheduler()->GetSessionsCommitDelay());
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
-  EXPECT_EQ(delay1, scheduler()->sessions_commit_delay());
+  EXPECT_EQ(delay1, scheduler()->GetSessionsCommitDelay());
   const ModelTypeSet model_types(syncer::BOOKMARKS);
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
   RunLoop();
 
-  EXPECT_EQ(delay2, scheduler()->sessions_commit_delay());
+  EXPECT_EQ(delay2, scheduler()->GetSessionsCommitDelay());
   StopSyncScheduler();
 }
 
@@ -1047,18 +1047,20 @@ TEST_F(SyncSchedulerTest, TransientPollFailure) {
 
 TEST_F(SyncSchedulerTest, GetRecommendedDelay) {
   EXPECT_LE(TimeDelta::FromSeconds(0),
-            SyncScheduler::GetRecommendedDelay(TimeDelta::FromSeconds(0)));
+            SyncSchedulerImpl::GetRecommendedDelay(TimeDelta::FromSeconds(0)));
   EXPECT_LE(TimeDelta::FromSeconds(1),
-            SyncScheduler::GetRecommendedDelay(TimeDelta::FromSeconds(1)));
+            SyncSchedulerImpl::GetRecommendedDelay(TimeDelta::FromSeconds(1)));
   EXPECT_LE(TimeDelta::FromSeconds(50),
-            SyncScheduler::GetRecommendedDelay(TimeDelta::FromSeconds(50)));
+            SyncSchedulerImpl::GetRecommendedDelay(
+                TimeDelta::FromSeconds(50)));
   EXPECT_LE(TimeDelta::FromSeconds(10),
-            SyncScheduler::GetRecommendedDelay(TimeDelta::FromSeconds(10)));
+            SyncSchedulerImpl::GetRecommendedDelay(
+                TimeDelta::FromSeconds(10)));
   EXPECT_EQ(TimeDelta::FromSeconds(kMaxBackoffSeconds),
-            SyncScheduler::GetRecommendedDelay(
+            SyncSchedulerImpl::GetRecommendedDelay(
                 TimeDelta::FromSeconds(kMaxBackoffSeconds)));
   EXPECT_EQ(TimeDelta::FromSeconds(kMaxBackoffSeconds),
-            SyncScheduler::GetRecommendedDelay(
+            SyncSchedulerImpl::GetRecommendedDelay(
                 TimeDelta::FromSeconds(kMaxBackoffSeconds + 1)));
 }
 
