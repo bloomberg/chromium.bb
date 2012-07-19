@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <ucontext.h>
 #include <unistd.h>
 
 #include <string>
@@ -152,12 +153,13 @@ TEST(MinidumpWriterTest, MappingInfo) {
   strcpy(info.name, kMemoryName);
 
   MappingList mappings;
+  AppMemoryList memory_list;
   MappingEntry mapping;
   mapping.first = info;
   memcpy(mapping.second, kModuleGUID, sizeof(MDGUID));
   mappings.push_back(mapping);
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context),
-                            mappings));
+                            mappings, memory_list));
 
   // Read the minidump. Load the module list, and ensure that
   // the mmap'ed |memory| is listed with the given module name
@@ -256,13 +258,14 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   strcpy(info.name, kMemoryName);
 
   MappingList mappings;
+  AppMemoryList memory_list;
   MappingEntry mapping;
   mapping.first = info;
   memcpy(mapping.second, kModuleGUID, sizeof(MDGUID));
   mappings.push_back(mapping);
   ASSERT_TRUE(
       WriteMinidump(dumpfile.c_str(), child, &context, sizeof(context),
-                    mappings));
+                    mappings, memory_list));
 
   // Read the minidump. Load the module list, and ensure that
   // the mmap'ed |memory| is listed with the given module name
@@ -382,4 +385,70 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   // which is always zero on Linux.
   module_identifier += "0";
   EXPECT_EQ(module_identifier, module->debug_identifier());
+}
+
+// Test that an additional memory region can be added to the minidump.
+TEST(MinidumpWriterTest, AdditionalMemory) {
+  int fds[2];
+  ASSERT_NE(-1, pipe(fds));
+
+  // These are defined here so the parent can use them to check the
+  // data from the minidump afterwards.
+  const u_int32_t kMemorySize = sysconf(_SC_PAGESIZE);
+  // Get some heap memory.
+  u_int8_t* memory = new u_int8_t[kMemorySize];
+  const uintptr_t kMemoryAddress = reinterpret_cast<uintptr_t>(memory);
+  ASSERT_TRUE(memory);
+  // Stick some data into the memory so the contents can be verified.
+  for (int i = 0; i < kMemorySize; ++i) {
+    memory[i] = i % 255;
+  }
+
+  const pid_t child = fork();
+  if (child == 0) {
+    close(fds[1]);
+    char b;
+    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    close(fds[0]);
+    syscall(__NR_exit);
+  }
+  close(fds[0]);
+
+  ExceptionHandler::CrashContext context;
+  // This needs a valid context for minidump writing to work, but getting
+  // a useful one from the child is too much work, so just use one from
+  // the parent since the child is just a forked copy anyway.
+  //TODO(ted): this won't work for Android if unit tests ever get run there.
+  ASSERT_EQ(0, getcontext(&context.context));
+  context.tid = child;
+
+  AutoTempDir temp_dir;
+  string templ = "/tmp/minidump-memory.dmp"; //temp_dir.path() + "/minidump-writer-unittest";
+  unlink(templ.c_str());
+
+  MappingList mappings;
+  AppMemoryList memory_list;
+  // Add the memory region to the list of memory to be included.
+  memory_list.push_back(AppMemory(memory, kMemorySize));
+  ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context),
+                            mappings, memory_list));
+
+  // Read the minidump. Ensure that the memory region is present
+  Minidump minidump(templ.c_str());
+  ASSERT_TRUE(minidump.Read());
+
+  MinidumpMemoryList* dump_memory_list = minidump.GetMemoryList();
+  ASSERT_TRUE(dump_memory_list);
+  const MinidumpMemoryRegion* region =
+    dump_memory_list->GetMemoryRegionForAddress(kMemoryAddress);
+  ASSERT_TRUE(region);
+
+  EXPECT_EQ(kMemoryAddress, region->GetBase());
+  EXPECT_EQ(kMemorySize, region->GetSize());
+
+  // Verify memory contents.
+  EXPECT_EQ(0, memcmp(region->GetMemory(), memory, kMemorySize));
+
+  delete[] memory;
+  close(fds[1]);
 }

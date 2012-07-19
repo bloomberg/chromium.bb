@@ -465,7 +465,8 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                                         crashing_process,
                                         context,
                                         context_size,
-                                        mapping_list_);
+                                        mapping_list_,
+                                        app_memory_list_);
 }
 
 // static
@@ -513,6 +514,21 @@ void ExceptionHandler::AddMappingInfo(const string& name,
   mapping.first = info;
   memcpy(mapping.second, identifier, sizeof(MDGUID));
   mapping_list_.push_back(mapping);
+}
+
+void ExceptionHandler::RegisterAppMemory(void *ptr, size_t length) {
+  app_memory_list_.push_back(AppMemory(ptr, length));
+}
+
+void ExceptionHandler::UnregisterAppMemory(void *ptr) {
+  for (AppMemoryList::iterator iter = app_memory_list_.begin();
+       iter != app_memory_list_.end();
+       ++iter) {
+    if (iter->ptr == ptr) {
+      app_memory_list_.erase(iter);
+      return;
+    }
+  }
 }
 
 }  // namespace google_breakpad
