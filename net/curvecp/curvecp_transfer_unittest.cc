@@ -307,7 +307,7 @@ TEST_F(CurveCPTransferTest, MinTimer) {
 }  // namespace net
 
 int main(int argc, char**argv) {
-  base::StatisticsRecorder recorder;
+  base::StatisticsRecorder::Initialize();
   NetTestSuite test_suite(argc, argv);
   return test_suite.Run();
 }

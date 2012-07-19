@@ -9,6 +9,7 @@
 #endif
 
 #include "base/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
@@ -31,6 +32,8 @@ ChildProcess::ChildProcess()
       io_thread_("Chrome_ChildIOThread") {
   DCHECK(!child_process_);
   child_process_ = this;
+
+  base::StatisticsRecorder::Initialize();
 
   // We can't recover from failing to start the IO thread.
   CHECK(io_thread_.StartWithOptions(

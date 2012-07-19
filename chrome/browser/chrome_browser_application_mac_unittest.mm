@@ -45,7 +45,8 @@ TEST(ChromeApplicationMacTest, ExceptionBinning) {
 
 TEST(ChromeApplicationMacTest, RecordException) {
   // Start up a histogram recorder.
-  StatisticsRecorder recorder;
+  // TODO(rtenneti): Leaks StatisticsRecorder and will update suppressions.
+  base::StatisticsRecorder::Initialize();
 
   StatisticsRecorder::Histograms histograms;
   StatisticsRecorder::GetSnapshot("OSX.NSException", &histograms);

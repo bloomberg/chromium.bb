@@ -85,6 +85,9 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
+    // Start up a histogram recorder.
+    // TODO(rtenneti): Leaks StatisticsRecorder and will update suppressions.
+    base::StatisticsRecorder::Initialize();
     ASSERT_TRUE(test_server_.Start());
     context_ = new TestURLRequestContextGetter(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
@@ -225,7 +228,6 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
   static std::map<std::string, base::Histogram*> histograms_;
   std::map<std::string, base::Histogram::SampleSet> samples_;
   std::map<std::string, base::Histogram::SampleSet> original_samples_;
-  base::StatisticsRecorder recorder_;
 };
 
 // static
