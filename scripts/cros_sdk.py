@@ -116,7 +116,11 @@ def FetchRemoteTarballs(urls):
         # These are the return codes of failing certs as per 'man curl'.
         print 'Download failed with certificate error? Try "sudo c_rehash".'
       else:
-        print "Curl failed w/ exit code %i" % code
+        try:
+          return cros_build_lib.RunCommandWithRetries(
+             5, cmd, sleep=60, retry_on=retriable_exits, **kwargs)
+        except cros_build_lib.RunCommandError, e:
+          print "Curl failed w/ exit code %i" % code
       sys.exit(1)
 
   def RemoteTarballExists(url):
