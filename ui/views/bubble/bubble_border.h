@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_BUBBLE_BUBBLE_BORDER_H_
 #define UI_VIEWS_BUBBLE_BUBBLE_BORDER_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -17,7 +18,7 @@ namespace views {
 
 // Renders a border, with optional arrow, and a custom dropshadow.
 // This can be used to produce floating "bubble" objects with rounded corners.
-class VIEWS_EXPORT BubbleBorder : public views::Border {
+class VIEWS_EXPORT BubbleBorder : public Border {
  public:
   // Possible locations for the (optional) arrow.
   // 0 bit specifies left or right.
@@ -113,7 +114,7 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   // overflow it differ from desired.
   int SetArrowOffset(int offset, const gfx::Size& contents_size);
 
-  // Overridden from views::Border:
+  // Overridden from Border:
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
   // How many pixels the bubble border is from the edge of the images.
@@ -128,8 +129,8 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   // Loads images if necessary.
   static BorderImages* GetBorderImages(Shadow shadow);
 
-  // Overridden from views::Border:
-  virtual void Paint(const views::View& view,
+  // Overridden from Border:
+  virtual void Paint(const View& view,
                      gfx::Canvas* canvas) const OVERRIDE;
 
   void DrawEdgeWithArrow(gfx::Canvas* canvas,
@@ -170,12 +171,12 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
 
 // A Background that clips itself to the specified BubbleBorder and uses
 // the background color of the BubbleBorder.
-class VIEWS_EXPORT BubbleBackground : public views::Background {
+class VIEWS_EXPORT BubbleBackground : public Background {
  public:
   explicit BubbleBackground(BubbleBorder* border) : border_(border) {}
 
-  // Background overrides.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE;
+  // Overridden from Background:
+  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE;
 
  private:
   BubbleBorder* border_;

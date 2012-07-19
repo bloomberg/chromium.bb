@@ -5,18 +5,17 @@
 #ifndef UI_VIEWS_BUBBLE_BUBBLE_FRAME_VIEW_H_
 #define UI_VIEWS_BUBBLE_BUBBLE_FRAME_VIEW_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/insets.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
 
-class BorderContentsView;
-
-//  BubbleFrameView to render BubbleBorder.
-//
-////////////////////////////////////////////////////////////////////////////////
+// This is a NonClientFrameView used to render the BubbleBorder.
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
  public:
   BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
