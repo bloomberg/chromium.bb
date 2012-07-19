@@ -800,6 +800,12 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
   if (part.is_scroll())
     return;  // Ignore presses on scroll buttons.
 
+  // When this menu is opened through a touch event, a simulated right-click
+  // is sent before the menu appears.  Ignore it.
+  if ((event.flags() & ui::EF_RIGHT_MOUSE_BUTTON) &&
+      (event.flags() & ui::EF_FROM_TOUCH))
+    return;
+
   if (part.type == MenuPart::NONE ||
       (part.type == MenuPart::MENU_ITEM && part.menu &&
        part.menu->GetRootMenuItem() != state_.item->GetRootMenuItem())) {
