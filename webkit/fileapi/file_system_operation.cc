@@ -26,20 +26,6 @@
 
 namespace fileapi {
 
-namespace {
-
-void GetMetadataForSnapshot(
-    const FileSystemOperationInterface::SnapshotFileCallback& callback,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
-  // We don't want the third party to delete our local file, so just returning
-  // NULL as |file_reference|.
-  callback.Run(result, file_info, platform_path, NULL);
-}
-
-}  // anonymous namespace
-
 class FileSystemOperation::ScopedQuotaNotifier {
  public:
   ScopedQuotaNotifier(FileSystemContext* context,
@@ -444,7 +430,19 @@ void FileSystemOperation::SyncGetPlatformPath(const FileSystemURL& url,
 void FileSystemOperation::CreateSnapshotFile(
     const FileSystemURL& url,
     const SnapshotFileCallback& callback) {
-  GetMetadata(url, base::Bind(&GetMetadataForSnapshot, callback));
+  DCHECK(SetPendingOperationType(kOperationCreateSnapshotFile));
+
+  base::PlatformFileError result = SetUp(url, &src_util_, SETUP_FOR_READ);
+  if (result != base::PLATFORM_FILE_OK) {
+    callback.Run(result, base::PlatformFileInfo(), FilePath(), NULL);
+    delete this;
+    return;
+  }
+
+  FileSystemFileUtilProxy::CreateSnapshotFile(
+      &operation_context_, src_util_, url,
+      base::Bind(&FileSystemOperation::DidCreateSnapshotFile,
+                 base::Owned(this), callback));
 }
 
 FileSystemOperation::FileSystemOperation(
@@ -661,6 +659,15 @@ void FileSystemOperation::DidOpenFile(
   if (rv == base::PLATFORM_FILE_OK)
     CHECK_NE(base::kNullProcessHandle, peer_handle_);
   callback.Run(rv, file.ReleaseValue(), peer_handle_);
+}
+
+void FileSystemOperation::DidCreateSnapshotFile(
+    const SnapshotFileCallback& callback,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  callback.Run(result, file_info, platform_path, file_ref);
 }
 
 base::PlatformFileError FileSystemOperation::SetUp(

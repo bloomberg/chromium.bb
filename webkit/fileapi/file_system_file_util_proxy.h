@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/tracked_objects.h"
+#include "webkit/fileapi/file_system_operation_interface.h"
 
 namespace fileapi {
 
@@ -37,13 +38,11 @@ class FileSystemFileUtilProxy {
   typedef base::Callback<void(PlatformFileError status)> StatusCallback;
   typedef base::Callback<void(PlatformFileError status,
                               bool created)> EnsureFileExistsCallback;
-  typedef base::Callback<void(PlatformFileError status,
-                              const PlatformFileInfo& info,
-                              const FilePath& platform_path)>
-      GetFileInfoCallback;
-  typedef base::Callback<void(PlatformFileError,
-                              const std::vector<Entry>&,
-                              bool has_more)> ReadDirectoryCallback;
+  typedef FileSystemOperationInterface::GetMetadataCallback GetFileInfoCallback;
+  typedef FileSystemOperationInterface::SnapshotFileCallback
+      SnapshotFileCallback;
+  typedef FileSystemOperationInterface::ReadDirectoryCallback
+      ReadDirectoryCallback;
 
   // Deletes a file or a directory on the given context's file_task_runner.
   // It is an error to delete a non-empty directory with recursive=false.
@@ -124,6 +123,14 @@ class FileSystemFileUtilProxy {
       FileSystemFileUtil* file_util,
       const FileSystemURL& url,
       const GetFileInfoCallback& callback);
+
+  // Creates a snapshot file by calling |file_util|'s CreateSnapshotFile
+  // method on the given context's file_task_runner.
+  static bool CreateSnapshotFile(
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* file_util,
+      const FileSystemURL& url,
+      const SnapshotFileCallback& callback);
 
   // Reads the filenames in |url| by calling |file_util|'s
   // ReadDirectory method on the given context's file_task_runner.

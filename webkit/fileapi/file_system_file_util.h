@@ -7,12 +7,17 @@
 
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
+#include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/fileapi_export.h"
 
 namespace base {
 class Time;
+}
+
+namespace webkit_blob {
+class ShareableFileReference;
 }
 
 namespace fileapi {
@@ -169,6 +174,29 @@ class FILEAPI_EXPORT FileSystemFileUtil {
   virtual PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) = 0;
+
+  // Creates a local snapshot file for a given |url| and returns the
+  // metadata and platform path of the snapshot file via |callback|.
+  // In regular filesystem cases the implementation may simply return
+  // the metadata of the file itself (as well as GetMetadata does),
+  // while in non-regular filesystem case the backend may create a
+  // temporary snapshot file which holds the file data and return
+  // the metadata of the temporary file.
+  //
+  // |result| is the return code of the operation.
+  // |file_info| is the metadata of the snapshot file created.
+  // |platform_path| is the path to the snapshot file created.
+  //
+  // The implementation can optionally return a file reference
+  // to let the fileapi backend manage the lifetime of the returned
+  // snapshot file. Otherwise it is ok to return NULL.
+  // Please see the comment for ShareableFileReference for details.
+  virtual scoped_refptr<webkit_blob::ShareableFileReference>
+      CreateSnapshotFile(FileSystemOperationContext* context,
+                         const FileSystemURL& url,
+                         base::PlatformFileError* result,
+                         base::PlatformFileInfo* file_info,
+                         FilePath* platform_path) = 0;
 
  protected:
   FileSystemFileUtil() {}

@@ -223,6 +223,12 @@ class FILEAPI_EXPORT FileSystemOperation
                    base::PlatformFileError rv,
                    base::PassPlatformFile file,
                    bool created);
+  void DidCreateSnapshotFile(
+      const SnapshotFileCallback& callback,
+      base::PlatformFileError rv,
+      const base::PlatformFileInfo& file_info,
+      const FilePath& platform_path,
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   // Checks the validity of a given |url| and populates |file_util| for |mode|.
   base::PlatformFileError SetUp(

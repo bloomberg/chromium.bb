@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -369,6 +370,18 @@ PlatformFileError IsolatedFileUtil::DeleteSingleDirectory(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
+scoped_refptr<webkit_blob::ShareableFileReference>
+IsolatedFileUtil::CreateSnapshotFile(
+    FileSystemOperationContext* context,
+    const FileSystemURL& url,
+    base::PlatformFileError* result,
+    base::PlatformFileInfo* file_info,
+    FilePath* platform_path) {
+  DCHECK(result);
+  *result = GetFileInfo(context, url, file_info, platform_path);
+  return NULL;
 }
 
 bool IsolatedFileUtil::GetPlatformPath(const FileSystemURL& url,

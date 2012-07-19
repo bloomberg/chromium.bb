@@ -89,6 +89,12 @@ class FILEAPI_EXPORT_PRIVATE IsolatedFileUtil : public FileSystemFileUtil {
   virtual base::PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
+  virtual scoped_refptr<webkit_blob::ShareableFileReference>
+      CreateSnapshotFile(FileSystemOperationContext* context,
+                         const FileSystemURL& url,
+                         base::PlatformFileError* result,
+                         base::PlatformFileInfo* file_info,
+                         FilePath* platform_path) OVERRIDE;
 
  private:
   // Returns false if the given |url| is not a valid path.

@@ -49,22 +49,34 @@ class GetFileInfoHelper {
  public:
   GetFileInfoHelper() : error_(base::PLATFORM_FILE_OK) {}
 
-  void RunWork(FileSystemFileUtil* file_util,
-               FileSystemOperationContext* context,
-               const FileSystemURL& url) {
-    error_ = file_util->GetFileInfo(
-        context, url, &file_info_, &platform_path_);
+  void GetFileInfo(FileSystemFileUtil* file_util,
+                   FileSystemOperationContext* context,
+                   const FileSystemURL& url) {
+    error_ = file_util->GetFileInfo(context, url, &file_info_, &platform_path_);
   }
 
-  void Reply(const Proxy::GetFileInfoCallback& callback) {
+  void CreateSnapshotFile(FileSystemFileUtil* file_util,
+                          FileSystemOperationContext* context,
+                          const FileSystemURL& url) {
+    file_ref_ = file_util->CreateSnapshotFile(
+        context, url, &error_, &file_info_, &platform_path_);
+  }
+
+  void ReplyFileInfo(const Proxy::GetFileInfoCallback& callback) {
     if (!callback.is_null())
       callback.Run(error_, file_info_, platform_path_);
+  }
+
+  void ReplySnapshotFile(const Proxy::SnapshotFileCallback& callback) {
+    if (!callback.is_null())
+      callback.Run(error_, file_info_, platform_path_, file_ref_);
   }
 
  private:
   base::PlatformFileError error_;
   base::PlatformFileInfo file_info_;
   FilePath platform_path_;
+  scoped_refptr<webkit_blob::ShareableFileReference> file_ref_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
 
@@ -188,9 +200,23 @@ bool FileSystemFileUtilProxy::GetFileInfo(
   GetFileInfoHelper* helper = new GetFileInfoHelper;
   return context->file_task_runner()->PostTaskAndReply(
         FROM_HERE,
-        Bind(&GetFileInfoHelper::RunWork, Unretained(helper),
+        Bind(&GetFileInfoHelper::GetFileInfo, Unretained(helper),
              file_util, context, url),
-        Bind(&GetFileInfoHelper::Reply, Owned(helper), callback));
+        Bind(&GetFileInfoHelper::ReplyFileInfo, Owned(helper), callback));
+}
+
+// static
+bool FileSystemFileUtilProxy::CreateSnapshotFile(
+    FileSystemOperationContext* context,
+    FileSystemFileUtil* file_util,
+    const FileSystemURL& url,
+    const SnapshotFileCallback& callback) {
+  GetFileInfoHelper* helper = new GetFileInfoHelper;
+  return context->file_task_runner()->PostTaskAndReply(
+        FROM_HERE,
+        Bind(&GetFileInfoHelper::CreateSnapshotFile, Unretained(helper),
+             file_util, context, url),
+        Bind(&GetFileInfoHelper::ReplySnapshotFile, Owned(helper), callback));
 }
 
 // static

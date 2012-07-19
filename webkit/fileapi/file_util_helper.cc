@@ -6,6 +6,7 @@
 
 #include <stack>
 
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -249,8 +250,11 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
   // Resolve the src_url's underlying file path.
   base::PlatformFileInfo file_info;
   FilePath platform_file_path;
-  PlatformFileError error = src_util_->GetFileInfo(
-      context_, src_url, &file_info, &platform_file_path);
+  PlatformFileError error = base::PLATFORM_FILE_OK;
+
+  scoped_refptr<webkit_blob::ShareableFileReference> file_ref =
+      src_util_->CreateSnapshotFile(context_, src_url,
+                                    &error, &file_info, &platform_file_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 

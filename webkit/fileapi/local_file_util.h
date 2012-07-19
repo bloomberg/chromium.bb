@@ -14,6 +14,7 @@
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -105,6 +106,12 @@ class FILEAPI_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
   virtual PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
+  virtual scoped_refptr<webkit_blob::ShareableFileReference>
+      CreateSnapshotFile(FileSystemOperationContext* context,
+                         const FileSystemURL& url,
+                         base::PlatformFileError* result,
+                         base::PlatformFileInfo* file_info,
+                         FilePath* platform_path) OVERRIDE;
 
  private:
   // Given the filesystem url, produces a real, full local path for the

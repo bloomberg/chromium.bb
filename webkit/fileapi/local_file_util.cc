@@ -269,4 +269,18 @@ PlatformFileError LocalFileUtil::DeleteSingleDirectory(
   return NativeFileUtil::DeleteSingleDirectory(file_path);
 }
 
+scoped_refptr<webkit_blob::ShareableFileReference>
+LocalFileUtil::CreateSnapshotFile(
+    FileSystemOperationContext* context,
+    const FileSystemURL& url,
+    base::PlatformFileError* result,
+    base::PlatformFileInfo* file_info,
+    FilePath* platform_path) {
+  DCHECK(result);
+  *result = GetFileInfo(context, url, file_info, platform_path);
+  // We don't want the third party to delete our local file, so just returning
+  // NULL.
+  return NULL;
+}
+
 }  // namespace fileapi
