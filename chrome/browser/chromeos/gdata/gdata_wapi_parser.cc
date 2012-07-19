@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 using base::Value;
@@ -249,27 +250,6 @@ bool SortBySize(const InstalledApp::IconList::value_type& a,
                 const InstalledApp::IconList::value_type& b) {
   return a.first < b.first;
 }
-
-bool ParseTimezone(const base::StringPiece& timezone,
-                   bool ahead,
-                   int* out_offset_to_utc_in_minutes) {
-  DCHECK(out_offset_to_utc_in_minutes);
-
-  std::vector<base::StringPiece> parts;
-  int num_of_token = Tokenize(timezone, ":", &parts);
-
-  int hour = 0;
-  if (!base::StringToInt(parts[0], &hour))
-    return false;
-
-  int minute = 0;
-  if (num_of_token > 1 && !base::StringToInt(parts[1], &minute))
-    return false;
-
-  *out_offset_to_utc_in_minutes = (hour * 60 + minute) * (ahead ? +1 : -1);
-  return true;
-}
-
 
 }  // namespace
 
@@ -593,109 +573,7 @@ void FeedEntry::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kUpdatedField,
       &FeedEntry::updated_time_,
-      &FeedEntry::GetTimeFromString);
-}
-
-// static
-bool FeedEntry::GetTimeFromString(const base::StringPiece& raw_value,
-                                  base::Time* parsed_time) {
-  base::StringPiece date;
-  base::StringPiece time_and_tz;
-  base::StringPiece time;
-  base::Time::Exploded exploded = {0};
-  bool has_timezone = false;
-  int offset_to_utc_in_minutes = 0;
-
-  // Splits the string into "date" part and "time" part.
-  {
-    std::vector<base::StringPiece> parts;
-    if (Tokenize(raw_value, "T", &parts) != 2)
-      return false;
-    date = parts[0];
-    time_and_tz = parts[1];
-  }
-
-  // Parses timezone suffix on the time part if available.
-  {
-    std::vector<base::StringPiece> parts;
-    if (time_and_tz[time_and_tz.size() - 1] == 'Z') {
-      // Timezone is 'Z' (UTC)
-      has_timezone = true;
-      offset_to_utc_in_minutes = 0;
-      time = time_and_tz;
-      time.remove_suffix(1);
-    } else if (Tokenize(time_and_tz, "+", &parts) == 2) {
-      // Timezone is "+hh:mm" format
-      if (!ParseTimezone(parts[1], true, &offset_to_utc_in_minutes))
-        return false;
-      has_timezone = true;
-      time = parts[0];
-    } else if (Tokenize(time_and_tz, "-", &parts) == 2) {
-      // Timezone is "-hh:mm" format
-      if (!ParseTimezone(parts[1], false, &offset_to_utc_in_minutes))
-        return false;
-      has_timezone = true;
-      time = parts[0];
-    } else {
-      // No timezone (uses local timezone)
-      time = time_and_tz;
-    }
-  }
-
-  // Parses the date part.
-  {
-    std::vector<base::StringPiece> parts;
-    if (Tokenize(date, "-", &parts) != 3)
-      return false;
-
-    if (!base::StringToInt(parts[0], &exploded.year) ||
-        !base::StringToInt(parts[1], &exploded.month) ||
-        !base::StringToInt(parts[2], &exploded.day_of_month)) {
-      return false;
-    }
-  }
-
-  // Parses the time part.
-  {
-    std::vector<base::StringPiece> parts;
-    int num_of_token = Tokenize(time, ":", &parts);
-    if (num_of_token != 3)
-      return false;
-
-    if (!base::StringToInt(parts[0], &exploded.hour) ||
-        !base::StringToInt(parts[1], &exploded.minute)) {
-      return false;
-    }
-
-    std::vector<base::StringPiece> seconds_parts;
-    int num_of_seconds_token = Tokenize(parts[2], ".", &seconds_parts);
-    if (num_of_seconds_token >= 3)
-      return false;
-
-    if (!base::StringToInt(seconds_parts[0], &exploded.second))
-        return false;
-
-    // Only accept milli-seconds (3-digits).
-    if (num_of_seconds_token > 1 &&
-        seconds_parts[1].length() == 3 &&
-        !base::StringToInt(seconds_parts[1], &exploded.millisecond)) {
-      return false;
-    }
-  }
-
-  exploded.day_of_week = 0;
-  if (!exploded.HasValidValues())
-    return false;
-
-  if (has_timezone) {
-    *parsed_time = base::Time::FromUTCExploded(exploded);
-    if (offset_to_utc_in_minutes != 0)
-      *parsed_time -= base::TimeDelta::FromMinutes(offset_to_utc_in_minutes);
-  } else {
-    *parsed_time = base::Time::FromLocalExploded(exploded);
-  }
-
-  return true;
+      &gdata::util::GetTimeFromString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -729,7 +607,7 @@ void DocumentEntry::RegisterJSONConverter(
   converter->RegisterStringField(kTitleTField, &DocumentEntry::title_);
   converter->RegisterCustomField<base::Time>(
       kPublishedField, &DocumentEntry::published_time_,
-      &FeedEntry::GetTimeFromString);
+      &gdata::util::GetTimeFromString);
   converter->RegisterRepeatedMessage(
       kFeedLinkField, &DocumentEntry::feed_links_);
   converter->RegisterNestedField(kContentField, &DocumentEntry::content_);
@@ -880,12 +758,12 @@ DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
     } else if (xml_reader->NodeName() == kUpdatedNode) {
       std::string time;
       if (xml_reader->ReadElementContent(&time))
-        GetTimeFromString(time, &entry->updated_time_);
+        gdata::util::GetTimeFromString(time, &entry->updated_time_);
       skip_read = true;
     } else if (xml_reader->NodeName() == kPublishedNode) {
       std::string time;
       if (xml_reader->ReadElementContent(&time))
-        GetTimeFromString(time, &entry->published_time_);
+        gdata::util::GetTimeFromString(time, &entry->published_time_);
       skip_read = true;
     } else if (xml_reader->NodeName() == kIDNode) {
       xml_reader->ReadElementContent(&entry->id_);

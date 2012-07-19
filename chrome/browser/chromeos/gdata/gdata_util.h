@@ -101,6 +101,11 @@ bool IsDriveV2ApiEnabled();
 // Returns a PlatformFileError that corresponds to the GDataFileError provided.
 base::PlatformFileError GDataFileErrorToPlatformError(GDataFileError error);
 
+// Returns true when time string is successfully parsed and output as |time|.
+// The time string must be in format yyyy-mm-ddThh:mm:ss.dddTZ (TZ is either
+// '+hh:mm', '-hh:mm', 'Z' (representing UTC) or empty string).
+bool GetTimeFromString(const base::StringPiece& raw_value, base::Time* time);
+
 }  // namespace util
 }  // namespace gdata
 
