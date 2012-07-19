@@ -126,7 +126,7 @@ class Identifier(object):
     if self._startsWithThis:
       name = name[len(thisDot):]
 
-    if not re.match('^[a-zA-Z0-9._]+$', name):
+    if not re.match('^[a-zA-Z0-9._\\-/]+$', name):
       raise ParseException(name + " is not a valid identifier", line)
     self._path = name.split('.')
 
