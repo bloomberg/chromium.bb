@@ -27,7 +27,7 @@
  *
  * Modified for mach64 by:
  *    Leif Delgass <ldelgass@retinalburn.net>
- *    José Fonseca <j_r_fonseca@yahoo.co.uk>
+ *    JosÃ© Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 

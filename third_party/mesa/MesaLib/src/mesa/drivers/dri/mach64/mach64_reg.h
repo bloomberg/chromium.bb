@@ -26,7 +26,7 @@
  * Authors:
  *	Gareth Hughes <gareth@valinux.com>
  *	Leif Delgass <ldelgass@retinalburn.net>
- *	José Fonseca <j_r_fonseca@yahoo.co.uk>
+ *	JosÃ© Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 #ifndef __MACH64_REG_H__

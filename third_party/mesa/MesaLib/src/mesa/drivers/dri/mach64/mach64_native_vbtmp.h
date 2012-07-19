@@ -26,7 +26,7 @@
  *    Keith Whitwell <keithw@valinux.com>
  *
  * Adapted to Mach64 by:
- *    José Fonseca <j_r_fonseca@yahoo.co.uk>
+ *    JosÃ© Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,8 +85,8 @@ buzz::XmlElement* PushNotificationsSubscribeTask::MakeSubscriptionMessage(
       kPushNotificationsNamespace, "subscribe");
 
   // Create the subscription stanza using the notifications protocol.
-  // <iq from={full_jid} to={bare_jid} type=’set’ id={id}>
-  //  <subscribe xmlns=’google:push’>
+  // <iq from={full_jid} to={bare_jid} type="set" id={id}>
+  //  <subscribe xmlns="google:push">
   //    <item channel={channel_name} from={domain_name or bare_jid}/>
   //    <item channel={channel_name2} from={domain_name or bare_jid}/>
   //    <item channel={channel_name3} from={domain_name or bare_jid}/>

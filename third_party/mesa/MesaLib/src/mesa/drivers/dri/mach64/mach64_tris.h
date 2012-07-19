@@ -25,7 +25,7 @@
 /*
  * Authors:
  *	Gareth Hughes <gareth@valinux.com>
- *	José Fonseca <j_r_fonseca@yahoo.co.uk>
+ *	JosÃ© Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 #ifndef __MACH64_TRIS_H__

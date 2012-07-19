@@ -26,7 +26,7 @@
  * Authors:
  *	Gareth Hughes <gareth@valinux.com>
  *	Leif Delgass <ldelgass@retinalburn.net>
- *	José Fonseca <j_r_fonseca@yahoo.co.uk>
+ *	JosÃ© Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 #include "mach64_context.h"
@@ -66,7 +66,7 @@ static const GLubyte *mach64DDGetString( GLcontext *ctx, GLenum name )
 
    switch ( name ) {
    case GL_VENDOR:
-      return (GLubyte*)"Gareth Hughes, Leif Delgass, José Fonseca";
+      return (GLubyte*)"Gareth Hughes, Leif Delgass, JosÃ© Fonseca";
 
    case GL_RENDERER:
  

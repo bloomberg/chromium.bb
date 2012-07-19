@@ -16,6 +16,8 @@ SGI GLU library   src/glu/sgi/
 The license is in MesaLib/docs/license.html.
  
 Modifications made with initial commit:
+- Converted to utf-8 with: vim +"argdo write ++enc=utf-8" *.c
+
 - Added the file README.chromium (this file)
 
 Later modifications (see chromium.patch):

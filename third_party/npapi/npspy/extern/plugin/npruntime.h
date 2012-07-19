@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * Copyright © 2004, Apple Computer, Inc. and The Mozilla Foundation. 
+ * Copyright Â© 2004, Apple Computer, Inc. and The Mozilla Foundation. 
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without

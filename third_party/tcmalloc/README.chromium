@@ -81,3 +81,7 @@ HOWTOs:
         $ gcl change CL
         $ gcl upload CL
         $ gcl commit CL
+
+
+Modifications:
+- Converted to utf-8 with: vim +"argdo write ++enc=utf-8" *.h *.c

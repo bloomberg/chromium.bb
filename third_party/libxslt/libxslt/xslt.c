@@ -5167,7 +5167,7 @@ xsltParseXSLTTemplate(xsltCompilerCtxtPtr cctxt, xmlNodePtr templNode) {
 	/*
 	* TODO: We need a standardized function for extraction
 	*  of namespace names and local names from QNames.
-	*  Don't use xsltGetQNameURI() as it cannot channeö
+	*  Don't use xsltGetQNameURI() as it cannot channel
 	*  reports through the context.
 	*/
 	modeURI = xsltGetQNameURI(templNode, &prop);
