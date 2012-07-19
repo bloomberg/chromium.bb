@@ -90,38 +90,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
  protected:
   MockPowerManagerClient* mock_power_manager_client_;
 
-  // Test the no password mode with different unlock scheme given by
-  // |unlock| function.
-  void TestNoPassword(void (unlock)(views::Widget*)) {
-    EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
-        .Times(1)
-        .RetiresOnSaturation();
-    UserManager::Get()->GuestUserLoggedIn();
-    ScreenLocker::Show();
-    scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-    tester->EmulateWindowManagerReady();
-    ui_test_utils::WindowedNotificationObserver lock_state_observer(
-        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-        content::NotificationService::AllSources());
-    if (!chromeos::ScreenLocker::GetTester()->IsLocked())
-      lock_state_observer.Wait();
-    EXPECT_TRUE(tester->IsLocked());
-    tester->InjectMockAuthenticator("", "");
-
-    unlock(tester->GetWidget());
-
-    ui_test_utils::RunAllPendingInMessageLoop();
-    EXPECT_TRUE(tester->IsLocked());
-
-    // Emulate UnlockScreen request from SessionManager.
-    ScreenLocker::Hide();
-    ui_test_utils::RunAllPendingInMessageLoop();
-    EXPECT_FALSE(tester->IsLocked());
-  }
-
-  void LockScreenWithUser(test::ScreenLockerTester* tester,
-                          const std::string& user) {
-    UserManager::Get()->UserLoggedIn(user, true);
+  void LockScreen(test::ScreenLockerTester* tester) {
     ScreenLocker::Show();
     tester->EmulateWindowManagerReady();
     ui_test_utils::WindowedNotificationObserver lock_state_observer(
@@ -242,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
       .Times(2)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-  LockScreenWithUser(tester.get(), UserManager::kStubUser);
+  LockScreen(tester.get());
 
   // Ensure there's a profile or this test crashes.
   ProfileManager::GetDefaultProfile();
@@ -264,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
       .Times(1)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-  LockScreenWithUser(tester.get(), UserManager::kStubUser);
+  LockScreen(tester.get());
 
   // Ensure there's a profile or this test crashes.
   ProfileManager::GetDefaultProfile();
