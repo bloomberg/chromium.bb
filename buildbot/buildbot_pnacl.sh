@@ -404,6 +404,9 @@ mode-buildbot-x86() {
   scons-stage-noirt "${arch}" "${flags_run} pnacl_generate_pexe=0" \
       "nonpexe_tests"
 
+  # also run some tests with the irt
+  scons-stage-irt "${arch}" "${flags_run}" "small_tests_irt"
+
   # PIC
   scons-stage-noirt "${arch}" "${flags_build} nacl_pic=1 pnacl_generate_pexe=0" \
       "${SCONS_EVERYTHING}"
@@ -443,6 +446,9 @@ mode-buildbot-arm() {
   # build-everything step)
   scons-stage-noirt "arm" "${qemuflags}" "${SCONS_S_M_L}"
 
+  # also run some tests with the irt
+  scons-stage-irt "arm" "${qemuflags}" "small_tests_irt"
+
   # PIC
   # Don't bother to build everything here, just the tests we want to run
   scons-stage-noirt "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
@@ -467,6 +473,10 @@ mode-buildbot-arm-hw() {
   scons-stage-noirt "arm" "${hwflags}" "${SCONS_S_M_L}"
   scons-stage-noirt "arm" "${hwflags} nacl_pic=1 pnacl_generate_pexe=0" \
     "${SCONS_S_M_L}"
+
+  # also run some tests with the irt
+  scons-stage-irt "arm" "${hwflags}" "small_tests_irt"
+
   scons-stage-noirt "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
   scons-stage-noirt "arm" \
     "${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
@@ -485,6 +495,9 @@ mode-trybot-qemu() {
 
   scons-stage-noirt "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
   scons-stage-noirt "arm" "${qemuflags} -j1" "${SCONS_S_M_L}"
+
+  # also run some tests with the irt
+  scons-stage-irt "arm" "${qemuflags}" "small_tests_irt"
 
   scons-stage-noirt "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
       "${SCONS_EVERYTHING}"
