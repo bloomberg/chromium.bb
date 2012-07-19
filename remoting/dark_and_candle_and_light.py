@@ -33,29 +33,29 @@ def main():
 
   parameters['basename'] = os.path.splitext(os.path.basename(options.output))[0]
 
-  dark_template = ('%(wix_path)s\\dark ' +
+  dark_template = ('"%(wix_path)s\\dark" ' +
                    '-nologo ' +
-                   '%(input)s ' +
-                   '-o %(intermediate_dir)s/%(basename)s.wxs ' +
-                   '-x %(intermediate_dir)s')
+                   '"%(input)s" ' +
+                   '-o "%(intermediate_dir)s/%(basename)s.wxs" ' +
+                   '-x "%(intermediate_dir)s"')
   rc = run(dark_template % parameters)
   if rc:
     return rc
 
-  candle_template = ('%(wix_path)s\\candle ' +
+  candle_template = ('"%(wix_path)s\\candle" ' +
                    '-nologo ' +
-                     '%(intermediate_dir)s/%(basename)s.wxs ' +
-                     '-o %(intermediate_dir)s/%(basename)s.wixobj ' +
-                     '-ext %(wix_path)s\\WixFirewallExtension.dll')
+                     '"%(intermediate_dir)s/%(basename)s.wxs" ' +
+                     '-o "%(intermediate_dir)s/%(basename)s.wixobj" ' +
+                     '-ext "%(wix_path)s\\WixFirewallExtension.dll"')
   rc = run(candle_template % parameters, parameters['basename'] + '.wxs')
   if rc:
     return rc
 
-  light_template = ('%(wix_path)s\\light ' +
+  light_template = ('"%(wix_path)s\\light" ' +
                    '-nologo ' +
-                    '%(intermediate_dir)s/%(basename)s.wixobj ' +
-                    '-o %(output)s ' +
-                    '-ext %(wix_path)s\\WixFirewallExtension.dll ' +
+                    '"%(intermediate_dir)s/%(basename)s.wixobj" ' +
+                    '-o "%(output)s" ' +
+                    '-ext "%(wix_path)s\\WixFirewallExtension.dll" ' +
                     '-sw1076 ')
   rc = run(light_template % parameters)
   if rc:

@@ -39,30 +39,30 @@ def main():
 
   common = (
       '-nologo '
-      '-ext %(wix_path)s\\WixFirewallExtension.dll '
-      '-ext %(wix_path)s\\WixUIExtension.dll '
-      '-ext %(wix_path)s\\WixUtilExtension.dll '
+      '-ext "%(wix_path)s\\WixFirewallExtension.dll" '
+      '-ext "%(wix_path)s\\WixUIExtension.dll" '
+      '-ext "%(wix_path)s\\WixUtilExtension.dll" '
       '-dVersion=%(version)s '
-      '-dFileSource=%(product_dir)s '
+      '"-dFileSource=%(product_dir)s" '
       '-dIconPath=resources/chromoting.ico '
-      '-dSasDllPath=%(sas_dll_path)s/sas.dll '
+      '"-dSasDllPath=%(sas_dll_path)s/sas.dll" '
       '%(defines)s '
       )
 
-  candle_template = ('%(wix_path)s\\candle ' +
+  candle_template = ('"%(wix_path)s\\candle" ' +
                     common +
-                    '-out %(intermediate_dir)s/%(basename)s.wixobj ' +
-                    '%(input)s ')
+                    '-out "%(intermediate_dir)s/%(basename)s.wixobj" ' +
+                    '"%(input)s" ')
   rc = run(candle_template % parameters, os.path.basename(parameters['input']))
   if rc:
     return rc
 
-  light_template = ('%(wix_path)s\\light ' +
+  light_template = ('"%(wix_path)s\\light" ' +
                     common +
                     '-cultures:en-us ' +
                     '-sw1076 ' +
-                    '-out %(output)s ' +
-                    '%(intermediate_dir)s/%(basename)s.wixobj ')
+                    '-out "%(output)s" ' +
+                    '"%(intermediate_dir)s/%(basename)s.wixobj" ')
   rc = run(light_template % parameters)
   if rc:
     return rc
