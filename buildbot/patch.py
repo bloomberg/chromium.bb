@@ -445,7 +445,7 @@ class GitRepoPatch(object):
 
     def _PullData(rev):
       ret = cros_build_lib.RunGitCommand(
-          git_repo, ['log', '--format=%H%x00%B', '-n1', rev],
+          git_repo, ['log', '--pretty=format:%H%x00%B', '-n1', rev],
           error_code_ok=True)
       if ret.returncode != 0:
         return None, None
@@ -622,7 +622,7 @@ class GitRepoPatch(object):
 
     try:
       return_obj = cros_build_lib.RunGitCommand(
-          git_repo, ['log', '-z', '-n1', '--format=%H\n%B',
+          git_repo, ['log', '-z', '-n1', '--pretty=format:%H%n%B',
                      '%s..%s^' % (upstream, rev)])
     except cros_build_lib.RunCommandError, e:
       if e.result.returncode != 128:
