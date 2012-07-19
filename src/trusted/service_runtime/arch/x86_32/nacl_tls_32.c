@@ -29,12 +29,10 @@ void NaClTlsFini() {
 }
 
 
-uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void                 *base_addr) {
-  UNREFERENCED_PARAMETER(natp);
+uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
   return (uint32_t) NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
                                                 /* read_exec_only= */ 1,
-                                                base_addr,
+                                                &natp->tls1,
                                                 4);
 }
 
@@ -44,13 +42,8 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 }
 
 
-uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void                 *base_addr) {
-  return (uint32_t)NaClLdtChangeByteSelector(natp->user.gs >> 3,
-                                             NACL_LDT_DESCRIPTOR_DATA,
-                                             /* read_exec_only= */ 1,
-                                             base_addr,
-                                             4);
+void NaClTlsChange(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
 }
 
 

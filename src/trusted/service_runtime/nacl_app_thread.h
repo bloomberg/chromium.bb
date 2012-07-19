@@ -72,14 +72,10 @@ struct NaClAppThread {
 
   int                       thread_num;  /* index into nap->threads */
   /*
-   * sys_tls and tls2 are TLS values used by user code and the
-   * integrated runtime (IRT) respectively.  The first TLS area may be
-   * accessed via the %gs segment register on x86-32 so must point
-   * into untrusted address space; we store it as a system pointer.
-   * The second TLS may be an arbitrary value.
+   * tls1 and tls2 are TLS values used by user code and the
+   * integrated runtime (IRT) respectively.
    */
-  uintptr_t                 sys_tls;  /* first saved TLS ptr */
-  uint32_t                  *usr_tlsp;
+  uint32_t                  tls1;     /* first saved TLS value */
   uint32_t                  tls2;     /* second saved TLS value */
 
   struct NaClThread         thread;  /* low level thread representation */
@@ -157,8 +153,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
                       uintptr_t             usr_entry,
                       uintptr_t             usr_stack_ptr,
-                      uintptr_t             sys_tls,
-                      uint32_t              usr_tls2) NACL_WUR;
+                      uint32_t              user_tls1,
+                      uint32_t              user_tls2) NACL_WUR;
 
 void NaClAppThreadDtor(struct NaClAppThread *natp);
 

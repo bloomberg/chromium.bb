@@ -17,6 +17,7 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
 static struct NaClMutex gNaClTlsMu;
@@ -104,10 +105,8 @@ static void NaClThreadIdxFree(uint32_t i) {
  * not that thread.  The setting of the TSD must wait until the thread
  * actually launches.
  */
-uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void                 *base_addr) {
+uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
   UNREFERENCED_PARAMETER(natp);
-  UNREFERENCED_PARAMETER(base_addr);
 
   return NaClThreadIdxAllocate();
 }
@@ -125,11 +124,8 @@ void NaClTlsFree(struct NaClAppThread *natp) {
    */
 }
 
-uint32_t NaClTlsChange(struct NaClAppThread   *natp,
-                       void                   *base_addr) {
-  UNREFERENCED_PARAMETER(base_addr);
-
-  return NaClGetThreadIdx(natp);
+void NaClTlsChange(struct NaClAppThread *natp) {
+  nacl_tls[NaClGetThreadIdx(natp)] = natp->tls1;
 }
 
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {

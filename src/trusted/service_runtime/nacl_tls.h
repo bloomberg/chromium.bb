@@ -32,18 +32,17 @@ void NaClTlsFini();
 #define NACL_TLS_INDEX_INVALID 0
 
 /*
- * Allocate a new tls descriptor and return it.
- * On x86 this the value for the gs segment register; on arm
- * it is the value we keep in r9.
+ * Allocates a thread index for the thread.  On x86-32, the thread
+ * index is the gs segment number.  On x86-64 and ARM, the thread
+ * index is used internally in NaCl but has no other meaning.
  * This is called for the main thread and all subsequent threads
  * being created via NaClAppThreadCtor().
  * On error, returns NACL_TLS_INDEX_INVALID.
  */
-uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void                 *thread_ptr) NACL_WUR;
+uint32_t NaClTlsAllocate(struct NaClAppThread *natp) NACL_WUR;
 
 /*
- * Free a tls descriptor (almost a nop on ARM).
+ * Free a tls descriptor.
  * This is called from NaClAppThreadDtor which in turn is called
  * after a thread terminates.
  */
@@ -70,10 +69,9 @@ uint32_t NaClTlsGetIdx(void);
 /*
  * This is only called from the sycall TlsInit which is typically
  * call at module startup time.
- * It installs tls descriptor for the main thread and also returns it.
+ * It installs tls descriptor for the main thread.
  */
-uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void                 *thread_ptr) NACL_WUR;
+void NaClTlsChange(struct NaClAppThread *natp);
 
 /*
  * Get the current thread index which is used to look up information in a

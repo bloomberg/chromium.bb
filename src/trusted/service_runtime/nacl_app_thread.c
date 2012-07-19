@@ -43,8 +43,7 @@ void WINAPI NaClThreadLauncher(void *state) {
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = GetCurrentThreadId();
 #endif
-  nacl_tls[thread_idx] = (uint32_t) NaClSysToUser(natp->nap, natp->sys_tls);
-  natp->usr_tlsp = &nacl_tls[thread_idx];
+  nacl_tls[thread_idx] = natp->tls1;
 
   /*
    * We have to hold the threads_mu lock until after thread_num field
@@ -153,7 +152,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
                       uintptr_t             usr_entry,
                       uintptr_t             usr_stack_ptr,
-                      uintptr_t             sys_tls,
+                      uint32_t              user_tls1,
                       uint32_t              user_tls2) {
   int rv;
   uint32_t tls_idx;
@@ -163,9 +162,12 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   NaClLog(4, "usr_stack_ptr = 0x%016"NACL_PRIxPTR"\n", usr_stack_ptr);
 
   /*
-   * Set this early, in case NaClTlsAllocate wants to examine it.
+   * Set these early, in case NaClTlsAllocate() wants to examine them.
    */
   natp->nap = nap;
+  natp->thread_num = -1;  /* illegal index */
+  natp->tls1 = user_tls1;
+  natp->tls2 = user_tls2;
 
   /*
    * Even though we don't know what segment base/range should gs/r9/nacl_tls_idx
@@ -175,7 +177,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
    * main or much of libc can run).  Other threads are spawned with the thread
    * pointer address as a parameter.
    */
-  tls_idx = NaClTlsAllocate(natp, (void *) sys_tls);
+  tls_idx = NaClTlsAllocate(natp);
   if (NACL_TLS_INDEX_INVALID == tls_idx) {
     NaClLog(LOG_ERROR, "No tls for thread, num_thread %d\n", nap->num_threads);
     return 0;
@@ -202,11 +204,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   }
   natp->suspend_state = NACL_APP_THREAD_TRUSTED;
   natp->suspended_registers = NULL;
-
-  natp->thread_num = -1;  /* illegal index */
-  natp->sys_tls = sys_tls;
-  natp->tls2 = user_tls2;
-  natp->usr_tlsp = NULL;
 
   natp->dynamic_delete_generation = 0;
 

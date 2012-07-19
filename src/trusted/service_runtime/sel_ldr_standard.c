@@ -850,8 +850,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
                          nap,
                          nap->initial_entry_pt,
                          NaClSysToUserStackAddr(nap, stack_ptr),
-                         NaClUserToSys(nap, nap->break_addr),
-                         0)) {
+                         /* user_tls1= */ (uint32_t) nap->break_addr,
+                         /* user_tls2= */ 0)) {
     retval = 0;
     goto cleanup;
   }
@@ -893,7 +893,7 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      prog_ctr,
                                    uintptr_t      sys_stack_ptr,
-                                   uintptr_t      sys_tls,
+                                   uint32_t       user_tls1,
                                    uint32_t       user_tls2) {
   struct NaClAppThread  *natp;
   uintptr_t             stack_ptr;
@@ -919,7 +919,7 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                          nap,
                          prog_ctr,
                          stack_ptr,
-                         sys_tls,
+                         user_tls1,
                          user_tls2)) {
     NaClLog(LOG_WARNING,
             ("NaClCreateAdditionalThread: could not allocate thread index."

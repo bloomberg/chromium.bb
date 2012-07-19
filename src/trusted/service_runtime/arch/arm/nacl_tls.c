@@ -93,22 +93,17 @@ static int NaClThreadIdxAllocate() {
  * Allocation does not mean we can set gNaClThreadIdx, since we are not
  * that thread.  Setting it must wait until the thread actually launches.
  */
-uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void *thread_ptr) {
+uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
   int idx = NaClThreadIdxAllocate();
 
-  UNREFERENCED_PARAMETER(natp);
-
-  NaClLog(2,
-          "NaClTlsAllocate: $tp %x idx %d\n",
-          (uint32_t) thread_ptr, idx);
+  NaClLog(2, "NaClTlsAllocate: $tp %x idx %d\n", natp->tls1, idx);
   if (-1 == idx) {
     NaClLog(LOG_FATAL,
             "NaClTlsAllocate: thread limit reached\n");
     return NACL_TLS_INDEX_INVALID;
   }
 
-  natp->user.r9 = (uint32_t) thread_ptr;
+  natp->user.r9 = natp->tls1;
 
   /*
    * Bias by 1: successful return value is never 0.
@@ -131,13 +126,8 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 }
 
 
-uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void *thread_ptr) {
-  NaClLog(2,
-          "NaClTlsChange: $tp %x\n",
-          (uint32_t) thread_ptr);
+void NaClTlsChange(struct NaClAppThread *natp) {
+  NaClLog(2, "NaClTlsChange: $tp %x\n", natp->tls1);
 
-  natp->user.r9 = (uint32_t) thread_ptr;
-
-  return natp->user.tls_idx;
+  natp->user.r9 = natp->tls1;
 }

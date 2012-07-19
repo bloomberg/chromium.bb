@@ -508,7 +508,7 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap);
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      prog_ctr,
                                    uintptr_t      stack_ptr,
-                                   uintptr_t      sys_tls,
+                                   uint32_t       user_tls1,
                                    uint32_t       user_tls2) NACL_WUR;
 
 void NaClLoadTrampoline(struct NaClApp *nap);
