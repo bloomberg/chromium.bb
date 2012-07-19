@@ -446,6 +446,14 @@ FileTasks.prototype.display_ = function(combobutton) {
 };
 
 /**
+ * Updates context menu with default item.
+ * @private
+ */
+FileTasks.prototype.updateMenuItem_ = function() {
+  this.fileManager_.setDefaultActionMenuItem(this.defaultTask_);
+};
+
+/**
  * Returns a list of external tasks (i.e. not defined in file manager).
  * @param {function(Array.<Object>)} callback The callback.
  * @private
@@ -496,6 +504,8 @@ FileTasks.decorate = function(method) {
 };
 
 FileTasks.decorate('display');
+FileTasks.decorate('updateMenuItem');
 FileTasks.decorate('execute');
 FileTasks.decorate('executeDefault');
 FileTasks.decorate('getExternals');
+

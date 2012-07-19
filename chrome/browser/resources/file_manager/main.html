@@ -110,6 +110,9 @@
     </commands>
 
     <menu class="file-context-menu chrome-menu">
+      <menuitem id="default-action"
+          visibleif="full-page" hidden></menuitem>
+      <hr id="default-action-separator" visibleif="full-page" hidden>
       <menuitem command="#cut" visibleif="full-page"></menuitem>
       <menuitem command="#copy" visibleif="full-page"></menuitem>
       <menuitem command="#paste" visibleif="full-page"></menuitem>

@@ -697,6 +697,11 @@ FileManager.prototype = {
     this.dialogDom_.querySelector('#search-box').addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
 
+    this.defaultActionMenuItem_ =
+        this.dialogDom_.querySelector('#default-action');
+    this.defaultActionMenuItem_.addEventListener('activate',
+        this.dispatchSelectionAction_.bind(this));
+
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
   };
@@ -2335,10 +2340,13 @@ FileManager.prototype = {
         FileManager.THUMBNAIL_SHOW_DELAY);
     onThumbnailLoaded();
 
+    this.setDefaultActionMenuItem(null);
+
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
         selection.directoryCount == 0 && selection.fileCount > 0) {
       selection.tasks = new FileTasks(this, selection.urls).
-          display(this.taskItems_);
+          display(this.taskItems_).
+          updateMenuItem();
     } else {
       this.taskItems_.hidden = true;
     }
@@ -4259,5 +4267,24 @@ FileManager.prototype = {
                 str('GDATA_FAILED_SPACE_INFO');
           }
         }.bind(this));
+  }
+
+  /**
+   * Updates default action menu item to match passed taskItem(icon,
+   * label and action).
+   * @param {Object} taskItem - taskItem to match.
+   */
+  FileManager.prototype.setDefaultActionMenuItem = function(taskItem) {
+    if (taskItem) {
+      this.defaultActionMenuItem_.iconUrl = taskItem.iconUrl;
+      this.defaultActionMenuItem_.label = taskItem.title;
+      this.defaultActionMenuItem_.taskId = taskItem.taskId;
+    }
+
+    var defaultActionSeparator =
+        this.dialogDom_.querySelector('#default-action-separator');
+
+    this.defaultActionMenuItem_.hidden = !taskItem;
+    defaultActionSeparator.hidden = !taskItem;
   }
 })();
