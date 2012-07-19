@@ -253,7 +253,8 @@ class AuthorizeAppsOperation : public GetDataOperation {
 
   // Must override GetDataOperation's ParseResponse because the response is XML
   // not JSON.
-  virtual base::Value* ParseResponse(const std::string& data) OVERRIDE;
+  virtual bool ParseResponse(GDataErrorCode fetch_error_code,
+                             const std::string& data) OVERRIDE;
  private:
   std::string app_id_;
   GURL document_url_;

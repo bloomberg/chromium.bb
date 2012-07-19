@@ -502,7 +502,8 @@ bool AuthorizeAppsOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-base::Value* AuthorizeAppsOperation::ParseResponse(const std::string& data) {
+bool AuthorizeAppsOperation::ParseResponse(GDataErrorCode fetch_error_code,
+                                           const std::string& data) {
   // Parse entry XML.
   XmlReader xml_reader;
   scoped_ptr<DocumentEntry> entry;
@@ -531,7 +532,8 @@ base::Value* AuthorizeAppsOperation::ParseResponse(const std::string& data) {
     }
   }
 
-  return link_list.release();
+  RunCallback(fetch_error_code, link_list.PassAs<base::Value>());
+  return true;
 }
 
 GURL AuthorizeAppsOperation::GetURL() const {
