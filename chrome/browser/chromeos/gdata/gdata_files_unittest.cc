@@ -111,8 +111,6 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   mutable_entry->set_title(kGDataRootDirectory);
   mutable_entry->set_resource_id(kGDataRootDirectoryResourceId);
   mutable_entry->set_upload_url(kResumableCreateMediaUrl);
-  // Set the origin to the server.
-  root_directory_proto.mutable_gdata_directory()->set_origin(FROM_SERVER);
 
   // Add an empty sub directory under the root directory. This directory is
   // added to ensure that nothing is left when the parsing failed.
@@ -141,7 +139,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   GDataDirectoryService directory_service;
   GDataDirectory* root(directory_service.root());
   // The origin is set to UNINITIALIZED by default.
-  ASSERT_EQ(UNINITIALIZED, root->origin());
+  ASSERT_EQ(UNINITIALIZED, directory_service.origin());
   std::string serialized_proto;
   // Serialize the proto and check if it's loaded.
   // This should fail as the upload URL is not set for |file_proto|.
@@ -151,7 +149,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   ASSERT_TRUE(root->child_files().empty());
   ASSERT_TRUE(root->child_directories().empty());
   // The origin should remain UNINITIALIZED because the loading failed.
-  ASSERT_EQ(UNINITIALIZED, root->origin());
+  ASSERT_EQ(UNINITIALIZED, directory_service.origin());
 
   // Set an upload URL.
   file_proto->mutable_gdata_entry()->set_upload_url(kResumableEditMediaUrl);
@@ -165,7 +163,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   // Two directories ("empty", "dir") should be added to the root directory.
   ASSERT_EQ(2U, root->child_directories().size());
   // The origin should change to FROM_CACHE because we loaded from the cache.
-  ASSERT_EQ(FROM_CACHE, root->origin());
+  ASSERT_EQ(FROM_CACHE, directory_service.origin());
 }
 
 TEST(GDataRootDirectoryTest, RefreshFile) {

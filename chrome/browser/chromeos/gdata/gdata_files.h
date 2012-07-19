@@ -34,16 +34,16 @@ class GDataDirectoryProto;
 class GDataRootDirectoryProto;
 class PlatformFileInfoProto;
 
-// Directory content origin.
+// The root directory content origin.
 enum ContentOrigin {
   UNINITIALIZED,
-  // Directory content is currently loading from somewhere.  needs to wait.
+  // Content is currently loading from somewhere.  Needs to wait.
   INITIALIZING,
-  // Directory content is initialized, but during refreshing.
+  // Content is initialized, but during refreshing.
   REFRESHING,
-  // Directory content is initialized from disk cache.
+  // Content is initialized from disk cache.
   FROM_CACHE,
-  // Directory content is initialized from the direct server response.
+  // Content is initialized from the direct server response.
   FROM_SERVER,
 };
 
@@ -304,9 +304,6 @@ class GDataDirectory : public GDataEntry {
   const GDataDirectoryCollection& child_directories() const {
     return child_directories_;
   }
-  // Directory content origin.
-  const ContentOrigin origin() const { return origin_; }
-  void set_origin(ContentOrigin value) { origin_ = value; }
 
  private:
   // Add |entry| to children.
@@ -320,9 +317,6 @@ class GDataDirectory : public GDataEntry {
   GURL start_feed_url_;
   // Continuing feed's url.
   GURL next_feed_url_;
-
-  // Directory content origin.
-  ContentOrigin origin_;
 
   // Collection of children GDataEntry items.
   GDataFileCollection child_files_;
@@ -353,6 +347,10 @@ class GDataDirectoryService {
   // state of the root directory.
   const int largest_changestamp() const { return largest_changestamp_; }
   void set_largest_changestamp(int value) { largest_changestamp_ = value; }
+
+  // The root directory content origin.
+  const ContentOrigin origin() const { return origin_; }
+  void set_origin(ContentOrigin value) { origin_ = value; }
 
   // Adds the entry to resource map.
   void AddEntryToResourceMap(GDataEntry* entry);
@@ -391,6 +389,7 @@ class GDataDirectoryService {
   base::Time last_serialized_;
   size_t serialized_size_;
   int largest_changestamp_;  // Stored in the serialized proto.
+  ContentOrigin origin_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDirectoryService);
 };

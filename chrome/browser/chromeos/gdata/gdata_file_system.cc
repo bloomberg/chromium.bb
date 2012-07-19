@@ -792,9 +792,9 @@ void GDataFileSystem::Initialize() {
 
 void GDataFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ContentOrigin initial_origin = directory_service_->root()->origin();
+  ContentOrigin initial_origin = directory_service_->origin();
   if (initial_origin == FROM_SERVER) {
-    directory_service_->root()->set_origin(REFRESHING);
+    directory_service_->set_origin(REFRESHING);
     ReloadFeedFromServerIfNeeded(
         initial_origin,
         directory_service_->largest_changestamp(),
@@ -811,7 +811,7 @@ void GDataFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != GDATA_FILE_OK) {
-    directory_service_->root()->set_origin(initial_origin);
+    directory_service_->set_origin(initial_origin);
   }
 }
 
@@ -896,7 +896,7 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (directory_service_->root()->origin() == INITIALIZING) {
+  if (directory_service_->origin() == INITIALIZING) {
     // If root feed is not initialized but the initialization process has
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
@@ -907,10 +907,10 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
                    search_file_path,
                    callback)));
     return;
-  } else if (directory_service_->root()->origin() == UNINITIALIZED) {
+  } else if (directory_service_->origin() == UNINITIALIZED) {
     // Load root feed from this disk cache. Upon completion, kick off server
     // fetching.
-    directory_service_->root()->set_origin(INITIALIZING);
+    directory_service_->set_origin(INITIALIZING);
     LoadRootFeedFromCache(
         true,  // should_load_from_server
         search_file_path,
@@ -1020,7 +1020,7 @@ void GDataFileSystem::OnGetAccountMetadata(
                    << ", server = "
                    << account_metadata->largest_changestamp();
     }
-    directory_service_->root()->set_origin(initial_origin);
+    directory_service_->set_origin(initial_origin);
     changes_detected = false;
   }
 
@@ -2340,7 +2340,7 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
     return;
   }
 
-  LoadFeedFromServer(directory_service_->root()->origin(),
+  LoadFeedFromServer(directory_service_->origin(),
                      0,  // Not delta feed.
                      0,  // Not used.
                      true,  // multiple feeds
@@ -2703,7 +2703,7 @@ void GDataFileSystem::SearchAsyncOnUIThread(
   scoped_ptr<std::vector<DocumentFeed*> > feed_list(
       new std::vector<DocumentFeed*>);
 
-  ContentOrigin initial_origin = directory_service_->root()->origin();
+  ContentOrigin initial_origin = directory_service_->origin();
   LoadFeedFromServer(initial_origin,
                      0, 0,  // We don't use change stamps when fetching search
                             // data; we always fetch the whole result feed.
@@ -2738,7 +2738,7 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
   }
 
   if (error != GDATA_FILE_OK) {
-    directory_service_->root()->set_origin(initial_origin);
+    directory_service_->set_origin(initial_origin);
 
     if (!callback.is_null())
       callback.Run(params, error);
@@ -2849,7 +2849,7 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If we have already received updates from the server, bail out.
-  if (directory_service_->root()->origin() == FROM_SERVER)
+  if (directory_service_->origin() == FROM_SERVER)
     return;
 
   int local_changestamp = 0;
@@ -2885,11 +2885,11 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   // By default, if directory content is not yet initialized, restore content
   // origin to UNINITIALIZED in case of failure.
   ContentOrigin initial_origin = UNINITIALIZED;
-  if (directory_service_->root()->origin() != INITIALIZING) {
+  if (directory_service_->origin() != INITIALIZING) {
     // If directory content is already initialized, restore content origin
     // to FROM_CACHE in case of failure.
     initial_origin = FROM_CACHE;
-    directory_service_->root()->set_origin(REFRESHING);
+    directory_service_->set_origin(REFRESHING);
   }
 
   // Kick of the retrieval of the feed from server. If we have previously
@@ -3256,7 +3256,7 @@ GDataFileError GDataFileSystem::UpdateFromFeed(
 
   bool is_delta_feed = start_changestamp != 0;
 
-  directory_service_->root()->set_origin(origin);
+  directory_service_->set_origin(origin);
 
   int delta_feed_changestamp = 0;
   FeedToFileResourceMapUmaStats uma_stats;

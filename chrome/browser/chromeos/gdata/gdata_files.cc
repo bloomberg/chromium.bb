@@ -237,8 +237,7 @@ GDataEntry* GDataFile::FromDocumentEntry(
 
 GDataDirectory::GDataDirectory(GDataDirectory* parent,
                                GDataDirectoryService* directory_service)
-    : GDataEntry(parent, directory_service),
-      origin_(UNINITIALIZED) {
+    : GDataEntry(parent, directory_service) {
   file_info_.is_directory = true;
 }
 
@@ -440,7 +439,9 @@ void GDataDirectory::RemoveChildDirectories() {
 // GDataDirectoryService class implementation.
 
 GDataDirectoryService::GDataDirectoryService()
-    : serialized_size_(0) {
+    : serialized_size_(0),
+      largest_changestamp_(0),
+      origin_(UNINITIALIZED) {
   root_.reset(new GDataDirectory(NULL, this));
   root_->set_title(kGDataRootDirectory);
   root_->SetBaseNameFromTitle();
@@ -661,7 +662,6 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
 
   start_feed_url_ = GURL(proto.start_feed_url());
   next_feed_url_ = GURL(proto.next_feed_url());
-  origin_ = ContentOrigin(proto.origin());
 
   return true;
 }
@@ -671,7 +671,6 @@ void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   DCHECK(proto->gdata_entry().file_info().is_directory());
   proto->set_start_feed_url(start_feed_url_.spec());
   proto->set_next_feed_url(next_feed_url_.spec());
-  proto->set_origin(origin_);
   for (GDataFileCollection::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
     GDataFile* file = iter->second;
@@ -750,7 +749,7 @@ bool GDataDirectoryService::ParseFromString(
   if (!root_->FromProto(proto.gdata_directory()))
     return false;
 
-  root_->set_origin(FROM_CACHE);
+  origin_ = FROM_CACHE;
   largest_changestamp_ = proto.largest_changestamp();
 
   return true;
