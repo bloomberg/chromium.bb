@@ -36,7 +36,7 @@ static GURL GetStartupURL() {
 }
 
 ShellBrowserMainParts::ShellBrowserMainParts(
-    const content::MainFunctionParams& parameters)
+    const MainFunctionParams& parameters)
     : BrowserMainParts(),
       parameters_(parameters),
       run_message_loop_(true),

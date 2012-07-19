@@ -13,7 +13,7 @@ namespace content {
 
 class ShellURLRequestContextGetter;
 
-class ShellResourceContext : public content::ResourceContext {
+class ShellResourceContext : public ResourceContext {
  public:
   explicit ShellResourceContext(ShellURLRequestContextGetter* getter);
   virtual ~ShellResourceContext();

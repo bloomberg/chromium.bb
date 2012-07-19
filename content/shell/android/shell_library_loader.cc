@@ -32,7 +32,7 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
                                             arraysize(kRegistrationMethods)))
     return -1;
 
-  content::SetContentMainDelegate(new ShellMainDelegate());
+  content::SetContentMainDelegate(new content::ShellMainDelegate());
 
   return JNI_VERSION_1_4;
 }

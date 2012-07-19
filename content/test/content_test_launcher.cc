@@ -85,8 +85,6 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
   DISALLOW_COPY_AND_ASSIGN(ContentBrowserTestSuite);
 };
 
-}  // namespace content
-
 class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
  public:
   ContentTestLauncherDelegate() {
@@ -105,11 +103,11 @@ class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
       ShellMainDelegate delegate;
 #if defined(OS_WIN)
       sandbox::SandboxInterfaceInfo sandbox_info = {0};
-      content::InitializeSandboxInfo(&sandbox_info);
+      InitializeSandboxInfo(&sandbox_info);
       *return_code =
-          content::ContentMain(GetModuleHandle(NULL), &sandbox_info, &delegate);
+          ContentMain(GetModuleHandle(NULL), &sandbox_info, &delegate);
 #elif defined(OS_LINUX)
-      *return_code = content::ContentMain(argc,
+      *return_code = ContentMain(argc,
                                           const_cast<const char**>(argv),
                                           &delegate);
 #endif  // defined(OS_WIN)
@@ -121,7 +119,7 @@ class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
-    return content::ContentBrowserTestSuite(argc, argv).Run();
+    return ContentBrowserTestSuite(argc, argv).Run();
   }
 
   virtual bool AdjustChildProcessCommandLine(
@@ -133,11 +131,13 @@ class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   DISALLOW_COPY_AND_ASSIGN(ContentTestLauncherDelegate);
 };
 
+}  // namespace content
+
 int main(int argc, char** argv) {
 #if defined(USE_AURA)
   LOG(INFO) << "content_browsertests not supported on aura yet.";
   return 0;
 #endif
-  ContentTestLauncherDelegate launcher_delegate;
+  content::ContentTestLauncherDelegate launcher_delegate;
   return test_launcher::LaunchTests(&launcher_delegate, argc, argv);
 }

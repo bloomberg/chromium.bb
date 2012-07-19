@@ -55,7 +55,7 @@ class Shell : public WebContentsDelegate,
   // This is called indirectly by the modules that need access resources.
   static base::StringPiece PlatformResourceProvider(int key);
 
-  static Shell* CreateNewWindow(content::BrowserContext* browser_context,
+  static Shell* CreateNewWindow(BrowserContext* browser_context,
                                 const GURL& url,
                                 SiteInstance* site_instance,
                                 int routing_id,
@@ -122,7 +122,7 @@ class Shell : public WebContentsDelegate,
 
   gfx::NativeView GetContentView();
 
-  // content::WebContentsDelegate
+  // WebContentsDelegate
   virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual void LoadProgressChanged(double progress) OVERRIDE;
@@ -144,7 +144,7 @@ class Shell : public WebContentsDelegate,
                                    int32 line_no,
                                    const string16& source_id) OVERRIDE;
 
-  // content::NotificationObserver
+  // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;

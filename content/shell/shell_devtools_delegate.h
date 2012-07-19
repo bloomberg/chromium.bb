@@ -19,7 +19,7 @@ namespace content {
 
 class DevToolsHttpHandler;
 
-class ShellDevToolsDelegate : public content::DevToolsHttpHandlerDelegate {
+class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
  public:
   ShellDevToolsDelegate(int port, net::URLRequestContextGetter* context_getter);
   virtual ~ShellDevToolsDelegate();

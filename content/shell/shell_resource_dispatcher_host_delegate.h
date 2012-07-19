@@ -11,7 +11,7 @@
 namespace content {
 
 class ShellResourceDispatcherHostDelegate
-    : public content::ResourceDispatcherHostDelegate {
+    : public ResourceDispatcherHostDelegate {
  public:
   ShellResourceDispatcherHostDelegate();
   virtual ~ShellResourceDispatcherHostDelegate();
@@ -19,7 +19,7 @@ class ShellResourceDispatcherHostDelegate
   // ResourceDispatcherHostDelegate implementation.
   virtual bool AcceptAuthRequest(net::URLRequest* request,
                                  net::AuthChallengeInfo* auth_info) OVERRIDE;
-  virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info, net::URLRequest* request) OVERRIDE;
 
  private:

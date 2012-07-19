@@ -25,8 +25,6 @@
 #include "base/base_paths_mac.h"
 #endif
 
-using content::BrowserThread;
-
 namespace content {
 
 ShellBrowserContext::ShellBrowserContext() {

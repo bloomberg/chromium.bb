@@ -43,7 +43,7 @@ bool ShellDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
     download->OnTargetPathDetermined(
         download->GetForcedFilePath(),
         DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+        DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
     return true;
   }
 
@@ -92,7 +92,7 @@ void ShellDownloadManagerDelegate::RestartDownload(
   // Since we have no download UI, show the user a dialog always.
   download->OnTargetPathDetermined(suggested_path,
                                    DownloadItem::TARGET_DISPOSITION_PROMPT,
-                                   content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+                                   DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   download_manager_->RestartDownload(download_id);
 }
 

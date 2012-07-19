@@ -20,6 +20,8 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+namespace content {
+
 ContentBrowserTest::ContentBrowserTest() {
 #if defined(OS_MACOSX)
   // See comment in InProcessBrowserTest::InProcessBrowserTest().
@@ -36,7 +38,7 @@ ContentBrowserTest::~ContentBrowserTest() {
 }
 
 void ContentBrowserTest::SetUp() {
-  shell_main_delegate_.reset(new ShellMainDelegate);
+  shell_main_delegate_.reset(new content::ShellMainDelegate);
   shell_main_delegate_->PreSandboxStartup();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -74,8 +76,8 @@ static void DumpStackTraceSignalHandler(int signal) {
 #endif  // defined(OS_POSIX)
 
 void ContentBrowserTest::RunTestOnMainThreadLoop() {
-  CHECK_EQ(content::Shell::windows().size(), 1u);
-  shell_ = content::Shell::windows()[0];
+  CHECK_EQ(Shell::windows().size(), 1u);
+  shell_ = Shell::windows()[0];
 
 #if defined(OS_POSIX)
   signal(SIGTERM, DumpStackTraceSignalHandler);
@@ -104,3 +106,5 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   pool.Recycle();
 #endif
 }
+
+}  // namespace content

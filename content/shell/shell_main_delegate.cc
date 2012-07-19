@@ -44,6 +44,8 @@ void InitLogging() {
 
 }  // namespace
 
+namespace content {
+
 ShellMainDelegate::ShellMainDelegate() {
 }
 
@@ -62,7 +64,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(OS_MACOSX)
   OverrideFrameworkBundlePath();
 #endif
-  content::SetContentClient(&content_client_);
+  SetContentClient(&content_client_);
   return false;
 }
 
@@ -75,7 +77,7 @@ void ShellMainDelegate::PreSandboxStartup() {
 
 int ShellMainDelegate::RunProcess(
     const std::string& process_type,
-    const content::MainFunctionParams& main_function_params) {
+    const MainFunctionParams& main_function_params) {
   if (!process_type.empty())
     return -1;
 
@@ -83,7 +85,7 @@ int ShellMainDelegate::RunProcess(
   return ShellBrowserMain(main_function_params);
 #else
   // If no process type is specified, we are creating the main browser process.
-  browser_runner_.reset(content::BrowserMainRunner::Create());
+  browser_runner_.reset(BrowserMainRunner::Create());
   int exit_code = browser_runner_->Initialize(main_function_params);
   DCHECK(exit_code < 0)
       << "BrowserRunner::Initialize failed in ShellMainDelegate";
@@ -126,13 +128,14 @@ void ShellMainDelegate::InitializeResourceBundle() {
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 
-content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(new content::ShellContentBrowserClient);
+ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
+  browser_client_.reset(new ShellContentBrowserClient);
   return browser_client_.get();
 }
 
-content::ContentRendererClient*
-    ShellMainDelegate::CreateContentRendererClient() {
-  renderer_client_.reset(new content::ShellContentRendererClient);
+ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
+  renderer_client_.reset(new ShellContentRendererClient);
   return renderer_client_.get();
 }
+
+}  // namespace content

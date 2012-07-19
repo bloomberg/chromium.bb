@@ -89,7 +89,7 @@ Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
   return NULL;
 }
 
-Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
+Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
                               const GURL& url,
                               SiteInstance* site_instance,
                               int routing_id,
@@ -109,8 +109,8 @@ Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
 void Shell::LoadURL(const GURL& url) {
   web_contents_->GetController().LoadURL(
       url,
-      content::Referrer(),
-      content::PAGE_TRANSITION_TYPED,
+      Referrer(),
+      PAGE_TRANSITION_TYPED,
       std::string());
   web_contents_->Focus();
 }

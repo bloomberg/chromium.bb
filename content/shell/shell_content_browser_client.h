@@ -22,9 +22,9 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
 
-  // content::ContentBrowserClient overrides.
+  // ContentBrowserClient overrides.
   virtual BrowserMainParts* CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) OVERRIDE;
+      const MainFunctionParams& parameters) OVERRIDE;
   virtual void RenderViewHostCreated(
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,

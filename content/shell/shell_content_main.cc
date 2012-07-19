@@ -10,7 +10,7 @@
 #if defined(OS_MACOSX)
 int ContentMain(int argc,
                 const char** argv) {
-  ShellMainDelegate delegate;
+  content::ShellMainDelegate delegate;
   return content::ContentMain(argc, argv, &delegate);
 }
 #endif  // OS_MACOSX

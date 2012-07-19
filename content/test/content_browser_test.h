@@ -9,11 +9,10 @@
 #include "content/public/test/browser_test.h"
 #include "content/test/browser_test_base.h"
 
-class ShellMainDelegate;
 
 namespace content {
 class Shell;
-}
+class ShellMainDelegate;
 
 class ContentBrowserTest : public BrowserTestBase {
  protected:
@@ -28,12 +27,14 @@ class ContentBrowserTest : public BrowserTestBase {
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
   // Returns the window for the test.
-  content::Shell* shell() const { return shell_; }
+  Shell* shell() const { return shell_; }
 
  private:
-  scoped_ptr<ShellMainDelegate> shell_main_delegate_;
+   scoped_ptr<content::ShellMainDelegate> shell_main_delegate_;
 
-  content::Shell* shell_;
+  Shell* shell_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_CONTENT_BROWSER_TEST_H_

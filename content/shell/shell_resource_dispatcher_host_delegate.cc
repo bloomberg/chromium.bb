@@ -21,7 +21,7 @@ bool ShellResourceDispatcherHostDelegate::AcceptAuthRequest(
   return true;
 }
 
-content::ResourceDispatcherHostLoginDelegate*
+ResourceDispatcherHostLoginDelegate*
 ShellResourceDispatcherHostDelegate::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info, net::URLRequest* request) {
 #if !defined(OS_MACOSX)

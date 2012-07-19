@@ -34,7 +34,7 @@ ShellContentBrowserClient::~ShellContentBrowserClient() {
 }
 
 BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
-    const content::MainFunctionParams& parameters) {
+    const MainFunctionParams& parameters) {
   shell_browser_main_parts_ = new ShellBrowserMainParts(parameters);
   return shell_browser_main_parts_;
 }

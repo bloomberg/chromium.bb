@@ -26,7 +26,7 @@ void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
 
-  new content::LayoutTestController(render_view);
+  new LayoutTestController(render_view);
 }
 
 }  // namespace content
