@@ -81,6 +81,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -130,6 +131,7 @@
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/search_view_controller.h"
 #include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 #endif
 
@@ -1322,18 +1324,28 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
 void BrowserView::Cut() {
-  ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_X,
-                            true, false, false, false);
+  // If a WebContent is focused, call RenderWidgetHost::Cut. Otherwise, e.g. if
+  // Omnibox is focused, send a Ctrl+x key event to Chrome. Using RWH interface
+  // rather than the fake key event for a WebContent is important since the fake
+  // event might be consumed by the web content (crbug.com/137908).
+  if (!DoCutCopyPaste(&content::RenderWidgetHost::Cut)) {
+    ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_X,
+                              true, false, false, false);
+  }
 }
 
 void BrowserView::Copy() {
-  ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_C,
-                            true, false, false, false);
+  if (!DoCutCopyPaste(&content::RenderWidgetHost::Copy)) {
+    ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_C,
+                              true, false, false, false);
+  }
 }
 
 void BrowserView::Paste() {
-  ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_V,
-                            true, false, false, false);
+  if (!DoCutCopyPaste(&content::RenderWidgetHost::Paste)) {
+    ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_V,
+                              true, false, false, false);
+  }
 }
 
 void BrowserView::ShowInstant(TabContents* preview) {
@@ -2571,4 +2583,18 @@ void BrowserView::RestackLocationBarContainer() {
     search_view_controller_->StackAtTop();
 #endif
   toolbar_->location_bar_container()->StackAtTop();
+}
+
+bool BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)()) {
+#if defined(USE_AURA)
+  WebContents* contents = chrome::GetActiveWebContents(browser_.get());
+  if (contents && contents->GetContentNativeView() &&
+      contents->GetContentNativeView()->HasFocus()) {
+    (contents->GetRenderViewHost()->*method)();
+    return true;
+  }
+#elif defined(OS_WIN)
+  // TODO(yusukes): Support non-Aura Windows.
+#endif
+  return false;
 }

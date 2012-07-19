@@ -63,6 +63,10 @@ namespace autofill {
 class PasswordGenerator;
 }
 
+namespace content {
+class RenderWidgetHost;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -553,6 +557,10 @@ class BrowserView : public BrowserWindow,
   // order. This is needed for the Instant extended API when the location bar
   // can be placed over web contents.
   void RestackLocationBarContainer();
+
+  // Calls |method| which is either RenderWidgetHost::Cut, ::Copy, or ::Paste
+  // and returns true if the focus is currently on a WebContent.
+  bool DoCutCopyPaste(void (content::RenderWidgetHost::*method)());
 
   // Last focused view that issued a tab traversal.
   int last_focused_view_storage_id_;
