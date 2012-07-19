@@ -23,7 +23,7 @@ PP_Resource Create(PP_Instance instance) {
 
 int32_t GetPermission(PP_Resource resource,
                       PP_CompletionCallback callback) {
-  EnterResource<PPB_Talk_Private_API> enter(resource, true);
+  EnterResource<PPB_Talk_Private_API> enter(resource, callback, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
   return enter.SetResult(enter.object()->GetPermission(enter.callback()));
