@@ -900,7 +900,7 @@ void AsyncInitializationCallback(
   ASSERT_EQ(GDATA_FILE_OK, error);
   ASSERT_TRUE(entry_proto.get());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
-  EXPECT_EQ(expected_file_path.value(), entry_proto->file_name());
+  EXPECT_EQ(expected_file_path.value(), entry_proto->base_name());
 
   (*counter)++;
   if (*counter >= expected_counter)

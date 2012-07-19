@@ -115,7 +115,7 @@ void OnGetFileInfoByResourceId(Profile* profile,
     return;
 
   DCHECK(file_proto.get());
-  const std::string& file_name = file_proto->gdata_entry().file_name();
+  const std::string& file_name = file_proto->gdata_entry().base_name();
   const GURL edit_url = GetFileResourceUrl(resource_id, file_name);
   OpenEditURLUIThread(profile, &edit_url);
   DVLOG(1) << "OnFindEntryByResourceId " << edit_url;

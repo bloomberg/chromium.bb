@@ -240,7 +240,7 @@ void OnGDataFileFound(Profile* profile,
     if (file_type == gdata::REGULAR_FILE) {
       page_url = gdata::util::GetFileResourceUrl(
           file_proto->gdata_entry().resource_id(),
-          file_proto->gdata_entry().file_name());
+          file_proto->gdata_entry().base_name());
     } else if (file_type == gdata::HOSTED_DOCUMENT) {
       page_url = GURL(file_proto->alternate_url());
     } else {

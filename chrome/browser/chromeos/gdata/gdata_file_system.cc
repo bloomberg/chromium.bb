@@ -3338,7 +3338,7 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
         directory_service_->GetEntryByResourceId(entry->resource_id());
     GDataDirectory* dest_dir = NULL;
     if (entry->is_deleted()) {  // Deleted file/directory.
-      DVLOG(1) << "Removing file " << entry->file_name();
+      DVLOG(1) << "Removing file " << entry->base_name();
       if (!old_entry)
         continue;
 
@@ -3352,7 +3352,7 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
     } else if (old_entry) {  // Change or move of existing entry.
       // Please note that entry rename is just a special case of change here
       // since name is just one of the properties that can change.
-      DVLOG(1) << "Changed file " << entry->file_name();
+      DVLOG(1) << "Changed file " << entry->base_name();
       dest_dir = old_entry->parent();
       if (!dest_dir) {
         NOTREACHED();
@@ -3420,7 +3420,7 @@ GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
   const std::string& parent_id = new_entry->parent_resource_id();
   if (parent_id.empty()) {
     dir = directory_service_->root();
-    DVLOG(1) << "Root parent for " << new_entry->file_name();
+    DVLOG(1) << "Root parent for " << new_entry->base_name();
   } else {
     GDataEntry* entry = directory_service_->GetEntryByResourceId(parent_id);
     dir = entry ? entry->AsGDataDirectory() : NULL;
@@ -3432,7 +3432,7 @@ GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
              find_iter->second) ?
                 find_iter->second->AsGDataDirectory() : NULL;
       if (dir) {
-        DVLOG(1) << "Found parent for " << new_entry->file_name()
+        DVLOG(1) << "Found parent for " << new_entry->base_name()
                  << " in file_map " << parent_id;
       } else {
         DVLOG(1) << "Adding orphan " << new_entry->GetFilePath().value();
@@ -3497,7 +3497,7 @@ GDataFileError GDataFileSystem::FeedToFileResourceMap(
       // entry with another GDataEntry instance.
       if (map_entry != file_map->end()) {
         LOG(WARNING) << "Found duplicate file "
-                     << map_entry->second->file_name();
+                     << map_entry->second->base_name();
 
         delete map_entry->second;
         file_map->erase(map_entry);

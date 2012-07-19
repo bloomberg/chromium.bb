@@ -167,7 +167,7 @@ base::FileUtilProxy::Entry GDataEntryProtoToFileUtilProxyEntry(
   GDataEntry::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info);
 
   base::FileUtilProxy::Entry entry;
-  entry.name = proto.file_name();
+  entry.name = proto.base_name();
   entry.is_directory = file_info.is_directory;
   entry.size = file_info.size;
   entry.last_modified_time = file_info.last_modified;

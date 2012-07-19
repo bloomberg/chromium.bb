@@ -115,12 +115,11 @@ class GDataEntry {
   const base::PlatformFileInfo& file_info() const { return file_info_; }
 
   // This is not the full path, use GetFilePath for that.
-  // Note that file_name_ gets reset by SetFileNameFromTitle() in a number of
+  // Note that base_name_ gets reset by SetBaseNameFromTitle() in a number of
   // situations due to de-duplication (see AddEntry).
-  // TODO(achuith/satorux): Rename this to base_name.
-  const FilePath::StringType& file_name() const { return file_name_; }
+  const FilePath::StringType& base_name() const { return base_name_; }
   // TODO(achuith): Make this private when GDataDB no longer uses path as a key.
-  void set_file_name(const FilePath::StringType& name) { file_name_ = name; }
+  void set_base_name(const FilePath::StringType& name) { base_name_ = name; }
 
   const FilePath::StringType& title() const { return title_; }
   void set_title(const FilePath::StringType& title) { title_ = title; }
@@ -154,9 +153,9 @@ class GDataEntry {
   // class.
   FilePath GetFilePath() const;
 
-  // Sets |file_name_| based on the value of |title_| without name
+  // Sets |base_name_| based on the value of |title_| without name
   // de-duplication (see AddEntry() for details on de-duplication).
-  virtual void SetFileNameFromTitle();
+  virtual void SetBaseNameFromTitle();
 
  protected:
   // For access to SetParent from AddEntry.
@@ -169,8 +168,8 @@ class GDataEntry {
   base::PlatformFileInfo file_info_;
   // Title of this file (i.e. the 'title' attribute associated with a regular
   // file, hosted document, or collection). The title is used to derive
-  // |file_name_| but may be different from |file_name_|. For example,
-  // |file_name_| has an added .g<something> extension for hosted documents or
+  // |base_name_| but may be different from |base_name_|. For example,
+  // |base_name_| has an added .g<something> extension for hosted documents or
   // may have an extra suffix for name de-duplication on the gdata file system.
   FilePath::StringType title_;
   std::string resource_id_;
@@ -187,7 +186,7 @@ class GDataEntry {
 
   // Name of this file in the gdata virtual file system. This can change
   // due to de-duplication (See AddEntry).
-  FilePath::StringType file_name_;
+  FilePath::StringType base_name_;
 
   GDataDirectory* parent_;
   // Weak pointer to GDataDirectoryService.
@@ -231,10 +230,10 @@ class GDataFile : public GDataEntry {
   bool is_hosted_document() const { return is_hosted_document_; }
   void set_file_info(const base::PlatformFileInfo& info) { file_info_ = info; }
 
-  // Overrides GDataEntry::SetFileNameFromTitle() to set |file_name_| based
+  // Overrides GDataEntry::SetBaseNameFromTitle() to set |base_name_| based
   // on the value of |title_| as well as |is_hosted_document_| and
   // |document_extension_| for hosted documents.
-  virtual void SetFileNameFromTitle() OVERRIDE;
+  virtual void SetBaseNameFromTitle() OVERRIDE;
 
  private:
   // Content URL for files.

@@ -23,7 +23,7 @@ message PlatformFileInfoProto {
 // Represents GDataEntry.
 message GDataEntryProto {
   optional PlatformFileInfoProto file_info = 1;
-  optional string file_name = 2;
+  optional string base_name = 2;
   optional string title = 3;
   optional string resource_id = 4;
   optional string edit_url = 5;

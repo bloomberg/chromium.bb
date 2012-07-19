@@ -99,7 +99,7 @@ FilePath GDataEntry::GetFilePath() const {
   FilePath path;
   if (parent())
     path = parent()->GetFilePath();
-  path = path.Append(file_name());
+  path = path.Append(base_name());
   return path;
 }
 
@@ -108,8 +108,8 @@ void GDataEntry::SetParent(GDataDirectory* parent) {
   parent_resource_id_ = parent ? parent->resource_id() : "";
 }
 
-void GDataEntry::SetFileNameFromTitle() {
-  file_name_ = EscapeUtf8FileName(title_);
+void GDataEntry::SetBaseNameFromTitle() {
+  base_name_ = EscapeUtf8FileName(title_);
 }
 
 // static.
@@ -159,11 +159,11 @@ GDataFile* GDataFile::AsGDataFile() {
   return this;
 }
 
-void GDataFile::SetFileNameFromTitle() {
+void GDataFile::SetBaseNameFromTitle() {
   if (is_hosted_document_) {
-    file_name_ = EscapeUtf8FileName(title_ + document_extension_);
+    base_name_ = EscapeUtf8FileName(title_ + document_extension_);
   } else {
-    GDataEntry::SetFileNameFromTitle();
+    GDataEntry::SetBaseNameFromTitle();
   }
 }
 
@@ -218,9 +218,9 @@ GDataEntry* GDataFile::FromDocumentEntry(
   if (parent_link)
     file->parent_resource_id_ = ExtractResourceId(parent_link->href());
 
-  // SetFileNameFromTitle() must be called after |title_|,
+  // SetBaseNameFromTitle() must be called after |title_|,
   // |is_hosted_document_| and |document_extension_| are set.
-  file->SetFileNameFromTitle();
+  file->SetBaseNameFromTitle();
 
   const Link* thumbnail_link = doc->GetLinkByType(Link::THUMBNAIL);
   if (thumbnail_link)
@@ -258,8 +258,8 @@ GDataEntry* GDataDirectory::FromDocumentEntry(
   DCHECK(doc->is_folder());
   GDataDirectory* dir = new GDataDirectory(parent, directory_service);
   dir->title_ = UTF16ToUTF8(doc->title());
-  // SetFileNameFromTitle() must be called after |title_| is set.
-  dir->SetFileNameFromTitle();
+  // SetBaseNameFromTitle() must be called after |title_| is set.
+  dir->SetBaseNameFromTitle();
   dir->file_info_.last_modified = doc->updated_time();
   dir->file_info_.last_accessed = doc->updated_time();
   dir->file_info_.creation_time = doc->published_time();
@@ -289,12 +289,12 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
   // The entry name may have been changed due to prior name de-duplication.
   // We need to first restore the file name based on the title before going
   // through name de-duplication again when it is added to another directory.
-  entry->SetFileNameFromTitle();
+  entry->SetBaseNameFromTitle();
 
   // Do file name de-duplication - find files with the same name and
   // append a name modifier to the name.
   int max_modifier = 1;
-  FilePath full_file_name(entry->file_name());
+  FilePath full_file_name(entry->base_name());
   const std::string extension = full_file_name.Extension();
   const std::string file_name = full_file_name.RemoveExtension().value();
   while (FindChild(full_file_name.value())) {
@@ -309,10 +309,10 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
                                                    ++max_modifier));
     }
   }
-  entry->set_file_name(full_file_name.value());
+  entry->set_base_name(full_file_name.value());
 
   DVLOG(1) << "AddEntry: dir = " << GetFilePath().value()
-           << ", file = " + entry->file_name()
+           << ", file = " + entry->base_name()
            << ", parent resource = " << entry->parent_resource_id()
            << ", resource = " + entry->resource_id();
 
@@ -381,17 +381,17 @@ void GDataDirectory::AddChild(GDataEntry* entry) {
 
   GDataFile* file = entry->AsGDataFile();
   if (file)
-    child_files_.insert(std::make_pair(entry->file_name(), file));
+    child_files_.insert(std::make_pair(entry->base_name(), file));
 
   GDataDirectory* directory = entry->AsGDataDirectory();
   if (directory)
-    child_directories_.insert(std::make_pair(entry->file_name(), directory));
+    child_directories_.insert(std::make_pair(entry->base_name(), directory));
 }
 
 bool GDataDirectory::RemoveChild(GDataEntry* entry) {
   DCHECK(entry);
 
-  const std::string file_name(entry->file_name());
+  const std::string file_name(entry->base_name());
   GDataEntry* found_entry = FindChild(file_name);
   if (!found_entry)
     return false;
@@ -443,7 +443,7 @@ GDataDirectoryService::GDataDirectoryService()
     : serialized_size_(0) {
   root_.reset(new GDataDirectory(NULL, this));
   root_->set_title(kGDataRootDirectory);
-  root_->SetFileNameFromTitle();
+  root_->SetBaseNameFromTitle();
   root_->set_resource_id(kGDataRootDirectoryResourceId);
   AddEntryToResourceMap(root_.get());
 }
@@ -480,11 +480,11 @@ void GDataDirectoryService::FindEntryByPath(const FilePath& file_path,
   FilePath directory_path;
 
   for (size_t i = 0; i < components.size() && current_dir; i++) {
-    directory_path = directory_path.Append(current_dir->file_name());
+    directory_path = directory_path.Append(current_dir->base_name());
 
     // Last element must match, if not last then it must be a directory.
     if (i == components.size() - 1) {
-      if (current_dir->file_name() == components[i])
+      if (current_dir->base_name() == components[i])
         callback.Run(GDATA_FILE_OK, current_dir);
       else
         callback.Run(GDATA_FILE_ERROR_NOT_FOUND, NULL);
@@ -569,15 +569,15 @@ void GDataEntry::ConvertPlatformFileInfoToProto(
 bool GDataEntry::FromProto(const GDataEntryProto& proto) {
   ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info_);
 
-  // Don't copy from proto.file_name() as file_name_ is computed in
-  // SetFileNameFromTitle().
+  // Don't copy from proto.base_name() as base_name_ is computed in
+  // SetBaseNameFromTitle().
   title_ = proto.title();
   resource_id_ = proto.resource_id();
   parent_resource_id_ = proto.parent_resource_id();
   edit_url_ = GURL(proto.edit_url());
   content_url_ = GURL(proto.content_url());
   upload_url_ = GURL(proto.upload_url());
-  SetFileNameFromTitle();
+  SetBaseNameFromTitle();
 
   // Reject older protobuf that does not contain the upload URL.  This URL is
   // necessary for uploading files.
@@ -593,9 +593,9 @@ bool GDataEntry::FromProto(const GDataEntryProto& proto) {
 void GDataEntry::ToProto(GDataEntryProto* proto) const {
   ConvertPlatformFileInfoToProto(file_info_, proto->mutable_file_info());
 
-  // The file_name field is used in GetFileInfoByPathAsync(). As shown in
+  // The base_name field is used in GetFileInfoByPathAsync(). As shown in
   // FromProto(), the value is discarded when deserializing from proto.
-  proto->set_file_name(file_name_);
+  proto->set_base_name(base_name_);
   proto->set_title(title_);
   proto->set_resource_id(resource_id_);
   proto->set_parent_resource_id(parent_resource_id_);
