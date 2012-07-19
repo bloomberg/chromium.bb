@@ -8,7 +8,7 @@
 #include "base/time.h"
 #include "base/logging.h"
 
-#include "jni/touch_point_jni.h"
+#include "jni/TouchPoint_jni.h"
 
 using WebKit::WebTouchEvent;
 using WebKit::WebTouchPoint;

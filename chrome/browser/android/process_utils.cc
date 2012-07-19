@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_process_host.h"
-#include "jni/process_utils_jni.h"
+#include "jni/ProcessUtils_jni.h"
 
 namespace {
 

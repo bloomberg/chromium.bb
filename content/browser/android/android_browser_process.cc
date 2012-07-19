@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "content/browser/android/content_startup_flags.h"
 #include "content/public/common/content_constants.h"
-#include "jni/android_browser_process_jni.h"
+#include "jni/AndroidBrowserProcess_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 

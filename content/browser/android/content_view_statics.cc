@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/common/android/address_parser.h"
-#include "jni/content_view_statics_jni.h"
+#include "jni/ContentViewStatics_jni.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;

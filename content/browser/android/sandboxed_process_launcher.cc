@@ -8,7 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "jni/sandboxed_process_launcher_jni.h"
+#include "jni/SandboxedProcessLauncher_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ToJavaArrayOfStrings;

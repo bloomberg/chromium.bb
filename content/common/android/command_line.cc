@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "jni/command_line_jni.h"
+#include "jni/CommandLine_jni.h"
 
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::ConvertJavaStringToUTF8;

@@ -11,7 +11,7 @@
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/common/content_descriptors.h"
 #include "ipc/ipc_descriptors.h"
-#include "jni/sandboxed_process_service_jni.h"
+#include "jni/SandboxedProcessService_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;

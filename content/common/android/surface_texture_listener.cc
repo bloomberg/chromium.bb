@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/android/surface_texture_bridge.h"
-#include "jni/surface_texture_listener_jni.h"
+#include "jni/SurfaceTextureListener_jni.h"
 
 namespace content {
 

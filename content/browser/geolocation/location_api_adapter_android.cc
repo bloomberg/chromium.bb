@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "content/browser/geolocation/location_provider_android.h"
-#include "jni/location_provider_jni.h"
+#include "jni/LocationProvider_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;

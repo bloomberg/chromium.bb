@@ -5453,13 +5453,11 @@
         {
           'target_name': 'chrome_browser_jni_headers',
           'type': 'none',
+          'sources': [
+            'android/java/src/org/chromium/chrome/browser/ProcessUtils.java',
+          ],
           'variables': {
-            'java_sources': [
-              'android/java/src/org/chromium/chrome/browser/ProcessUtils.java',
-            ],
-            'jni_headers': [
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/jni/process_utils_jni.h',
-            ],
+            'jni_gen_dir': 'chrome',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },

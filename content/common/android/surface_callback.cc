@@ -15,7 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/gl/android_native_window.h"
-#include "jni/surface_callback_jni.h"
+#include "jni/SurfaceCallback_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;

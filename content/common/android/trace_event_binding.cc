@@ -10,7 +10,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
-#include "jni/trace_event_jni.h"
+#include "jni/TraceEvent_jni.h"
 
 namespace {
 

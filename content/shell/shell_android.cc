@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "content/shell/android/shell_manager.h"
-#include "jni/shell_jni.h"
+#include "jni/Shell_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

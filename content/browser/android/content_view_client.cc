@@ -23,7 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
-#include "jni/content_view_client_jni.h"
+#include "jni/ContentViewClient_jni.h"
 #include "net/http/http_request_headers.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"

@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/browser/device_orientation/orientation.h"
-#include "jni/device_orientation_jni.h"
+#include "jni/DeviceOrientation_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;

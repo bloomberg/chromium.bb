@@ -24,7 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
-#include "jni/library_loader_jni.h"
+#include "jni/LibraryLoader_jni.h"
 
 namespace {
 base::AtExitManager* g_at_exit_manager = NULL;

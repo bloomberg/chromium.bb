@@ -12,7 +12,7 @@
 
 // Auto generated jni class from MediaPlayerListener.java.
 // Check base/android/jni_generator/golden_sample_for_tests_jni.h for example.
-#include "jni/media_player_listener_jni.h"
+#include "jni/MediaPlayerListener_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;

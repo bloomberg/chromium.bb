@@ -7,7 +7,7 @@
 #include <jni.h>
 
 #include "content/public/browser/android/devtools_server.h"
-#include "jni/remote_debugging_controller_jni.h"
+#include "jni/RemoteDebuggingController_jni.h"
 
 namespace content {
 

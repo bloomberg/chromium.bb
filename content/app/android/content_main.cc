@@ -12,7 +12,7 @@
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/common/content_switches.h"
-#include "jni/content_main_jni.h"
+#include "jni/ContentMain_jni.h"
 #include "webkit/glue/user_agent.h"
 
 using base::LazyInstance;

@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
-#include "jni/shell_manager_jni.h"
+#include "jni/ShellManager_jni.h"
 
 using base::android::ScopedJavaLocalRef;
 

@@ -503,15 +503,12 @@
           # require specifying the java directory and generate the rest.
           'target_name': 'content_shell_jni_headers',
           'type': 'none',
+          'sources': [
+            'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
+            'shell/android/java/src/org/chromium/content_shell/Shell.java',
+          ],
           'variables': {
-            'java_sources': [
-              'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
-              'shell/android/java/src/org/chromium/content_shell/Shell.java',
-            ],
-            'jni_headers': [
-              '<(SHARED_INTERMEDIATE_DIR)/content/shell/jni/shell_manager_jni.h',
-              '<(SHARED_INTERMEDIATE_DIR)/content/shell/jni/shell_jni.h',
-            ],
+            'jni_gen_dir': 'content/shell',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },

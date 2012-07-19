@@ -13,7 +13,7 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/content_view_core_jni.h"
+#include "jni/ContentViewCore_jni.h"
 #include "webkit/glue/webmenuitem.h"
 
 using base::android::AttachCurrentThread;
