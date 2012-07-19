@@ -4,8 +4,6 @@
 
 #include "ui/gfx/color_profile.h"
 
-#include "base/basictypes.h"
-
 namespace gfx {
 
 #if defined(OS_WIN) || defined(OS_MAC)

@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
+
 #include "ui/base/ui_export.h"
 
 namespace gfx {
