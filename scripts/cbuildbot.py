@@ -388,6 +388,10 @@ class SimpleBuilder(Builder):
         else:
           stage_list.append([stages.HWTestStage, board, archive_stage, suite])
 
+      for suite in config['async_hw_tests']:
+        stage_list.append([stages.ASyncHWTestStage, board, archive_stage,
+                           suite])
+
     steps = [self._GetStageInstance(*x, config=config).Run for x in stage_list]
     background.RunParallelSteps(steps + [archive_stage.Run])
 

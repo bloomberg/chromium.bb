@@ -187,7 +187,7 @@ class PatchChangesStage(bs.BuilderStage):
     patches actually pulled in by that patch.  This method detects when
     we're dealing w/ the old incomplete version, and fills in those gaps."""
     broken = [x for x in changes
-              if isinstance(x,  cros_patch.UploadedLocalPatch)]
+              if isinstance(x, cros_patch.UploadedLocalPatch)]
     if not broken:
       return changes
 
@@ -596,7 +596,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     CommitQueueSyncStage.pool = \
         validation_pool.ValidationPool.AcquirePoolFromManifest(
             manifest, self._build_config['overlays'],
-            self._build_root, self._options.buildnumber,  self.builder_name,
+            self._build_root, self._options.buildnumber, self.builder_name,
             self._build_config['master'], self._options.debug)
 
   def GetNextManifest(self):
@@ -1146,21 +1146,13 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
       return self._HandleExceptionAsWarning(exception)
 
 
-class PaladinHWTestStage(HWTestStage, BoardSpecificBuilderStage,
-                         ForgivingBuilderStage):
-  """Stage that runs tests in the Autotest lab for paladin builders.
-
-  This step differs from the HW Test stage as it has a lower threshold for
-  timeouts and does not block changes from being committed.
-  """
-  # TODO(sosa):  Major hack alert!!! Right now this step takes too long but we
-  # still want to schedule these hw test jobs to ensure the workflow is getting
-  # faster. However, as the script is a synchronous blocking call (waiting for
-  # the job to finish) and we only want this functionality temporarily, I'm just
-  # re-using the timeout logic to stop the call after 60 seconeds. This should
-  # be removed soon.
-
-  # If the tests take longer than an hour and a half, abort.
+class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,
+                       ForgivingBuilderStage):
+  """Stage that fires and forgets hw test suites to the Autotest lab."""
+  # TODO(sosa):  Major hack alert!!! This is intended to be used to verify
+  # test suites work and monitor them on the lab side without adversly affecting
+  # a build. Ideally we'd use a fire-and-forget script but none currently
+  # exists.
   INFRASTRUCTURE_TIMEOUT = 60
 
   # Disable use of calling parents _HandleExceptionAsWarning class.
@@ -1168,6 +1160,17 @@ class PaladinHWTestStage(HWTestStage, BoardSpecificBuilderStage,
   def _HandleExceptionAsWarning(self, exception):
     """Override and treat timeout's as success."""
     return self._HandleExceptionAsSuccess(exception)
+
+
+class PaladinHWTestStage(HWTestStage):
+  """Stage that runs tests in the Autotest lab for paladin builders.
+
+  This step differs from the HW Test stage as it has a lower threshold for
+  timeouts and does not block changes from being committed.
+  """
+  # Timeout after 30 minutes if the infrastructure hasn't completed running the
+  # tests. We'd rather abort after 30 minutes.
+  INFRASTRUCTURE_TIMEOUT = 30 * 60
 
 
 class SDKTestStage(bs.BuilderStage):

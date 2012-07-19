@@ -206,6 +206,8 @@ _settings = dict(
 
 # hw_tests -- A list of autotest suites to run on remote hardware.
   hw_tests=[],
+# async_hw_tests -- A list of autotest suites to kick off and forget about.
+  async_hw_tests=[],
 
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,
@@ -564,6 +566,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   prebuilts=False,
   useflags=official['useflags'] + ['pgo_generate'],
   hw_tests=['PGO_record'],
+  async_hw_tests=['pyauto_perf'],
   upload_hw_test_artifacts=True,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
 )
