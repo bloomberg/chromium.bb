@@ -427,7 +427,9 @@ class GitRepoPatch(object):
   def LookupAliases(self):
     """Return the list of lookup keys this change is known by."""
     l = [self.change_id, self.sha1]
-    return [x for x in l if x is not None]
+    return [FormatPatchDep(x, gerrit_number=False,
+                           force_internal=self.internal)
+            for x in l if x is not None]
 
   def ProjectDir(self, checkout_root):
     """Returns the local directory where this patch will be applied."""
@@ -900,7 +902,7 @@ class UploadedLocalPatch(GitRepoPatch):
     """Return the list of lookup keys this change is known by."""
     l = GitRepoPatch.LookupAliases(self)
     if self._original_sha1_valid:
-      l.append(self.original_sha1)
+      l.append(FormatSha1(self.original_sha1, force_internal=self.internal))
     return l
 
   def __str__(self):
@@ -955,7 +957,8 @@ class GerritPatch(GitRepoPatch):
   def LookupAliases(self):
     """Return the list of lookup keys this change is known by."""
     l = GitRepoPatch.LookupAliases(self)
-    l.append(self.gerrit_number)
+    l.append(FormatGerritNumber(self.gerrit_number,
+                                force_internal=self.internal))
     return l
 
   def IsAlreadyMerged(self):

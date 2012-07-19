@@ -219,6 +219,23 @@ I am the first commit.
       raise AssertionError("patch1.Apply didn't throw a failing "
                            "exception.")
 
+  def _assertLookupAliases(self, internal):
+    git1 = self._MakeRepo('git1', self.source)
+    patch = self.CommitChangeIdFile(git1)
+    patch.internal = internal
+    prefix = '*' if internal else ''
+    vals = [patch.change_id, patch.sha1, getattr(patch, 'gerrit_number', None),
+            getattr(patch, 'original_sha1', None)]
+    vals = [x for x in vals if x is not None]
+    self.assertEqual(set(prefix + x for x in vals),
+                     set(patch.LookupAliases()))
+
+  def testExternalLookupAliases(self):
+    self._assertLookupAliases(False)
+
+  def testInternalLookupAliases(self):
+    self._assertLookupAliases(True)
+
   def MakeChangeId(self, how_many=1):
     l = [cros_patch.MakeChangeId() for _ in xrange(how_many)]
     if how_many == 1:

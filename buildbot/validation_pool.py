@@ -290,7 +290,11 @@ class PatchSeries(object):
         raise DependencyNotReadyForCommit(parent, dep)
 
       if dep_change is not None:
-        assert dep == dep_change.id
+        # Note the startswith; that is to handle short form ChangeIds
+        # from CQ-DEPEND, when we decide to allow it.
+        assert (dep in dep_change.LookupAliases() or
+                x.startswith(cros_patch.FormatChangeId(dep_change.change_id,
+                                                       force_external=True)))
 
       unsatisfied.append(dep_change)
     return unsatisfied
