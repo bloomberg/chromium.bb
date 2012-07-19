@@ -184,14 +184,12 @@ I am the first commit.
 
   def testAlreadyApplied(self):
     git1 = self._MakeRepo('git1', self.source)
-    patch = self.CommitFile(git1, 'monkeys', 'rule')
-    # Note that apply switches to a separate branch; thus the
-    # double apply.  The first lands the change, the second
-    # verifies the machinery doesn't scream when we try
-    # landing it a second time.
-    patch.Apply(git1, self.DEFAULT_TRACKING)
-    self.assertRaises(cros_patch.PatchAlreadyApplied, patch.Apply, git1,
-                      self.DEFAULT_TRACKING)
+    patch1 = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))
+    self.assertRaises2(cros_patch.PatchAlreadyApplied, patch1.Apply, git1,
+                       self.DEFAULT_TRACKING, check_attrs={'inflight':False})
+    patch2 = self.CommitFile(git1, 'monkeys', 'rule')
+    self.assertRaises2(cros_patch.PatchAlreadyApplied, patch2.Apply, git1,
+                       self.DEFAULT_TRACKING, check_attrs={'inflight':True})
 
   def testCleanlyApply(self):
     git1, git2, patch = self._CommonGitSetup()
@@ -209,19 +207,104 @@ I am the first commit.
     patch.Apply(git3, self.DEFAULT_TRACKING)
     self.assertEqual(patch.sha1, self._GetSha1(git3, 'HEAD'))
 
+  def assertRaises2(self, exception, functor, *args, **kwargs):
+    exact_kls = kwargs.pop('exact_kls', None)
+    check_attrs = kwargs.pop('check_attrs', {})
+    msg = kwargs.pop('msg', None)
+    if msg is None:
+      msg = ("%s(*%r, **%r) didn't throw an exception"
+             % (functor.__name__, args, kwargs))
+    try:
+      functor(*args, **kwargs)
+      raise AssertionError(msg)
+    except exception, e:
+      if exact_kls:
+        self.assertEqual(e.__class__, exception)
+      bad = []
+      for attr, required in check_attrs.iteritems():
+        self.assertTrue(hasattr(e, attr),
+                        msg="%s lacks attr %s" % (e, attr))
+        value = getattr(e, attr)
+        if value != required:
+          bad.append("%s attr is %s, needed to be %s"
+                     % (attr, value, required))
+      if bad:
+        raise AssertionError("\n".join(bad))
+
   def testFailsApply(self):
     git1, git2, patch1 = self._CommonGitSetup()
     patch2 = self.CommitFile(git2, 'monkeys', 'not foon')
     # Note that Apply creates it's own branch, resetting to master
     # thus we have to re-apply (even if it looks stupid, it's right).
     patch2.Apply(git2, self.DEFAULT_TRACKING)
-    try:
-      patch1.Apply(git2, self.DEFAULT_TRACKING)
-    except cros_patch.ApplyPatchException, e:
-      self.assertTrue(e.inflight)
-    else:
-      raise AssertionError("patch1.Apply didn't throw a failing "
-                           "exception.")
+    self.assertRaises2(cros_patch.ApplyPatchException,
+                       patch1.Apply, git2, self.DEFAULT_TRACKING,
+                       exact_kls=True, check_attrs={'inflight':True})
+
+  def testTrivial(self):
+    git1, git2, patch1 = self._CommonGitSetup()
+    # Throw in a bunch of newlines so that content-merging would work.
+    content = 'not foon%s' % ('\n' * 100)
+    patch1 = self._MkPatch(git2, self._GetSha1(git2, 'HEAD'))
+    patch1 = self.CommitFile(git2, 'monkeys', content)
+    cros_build_lib.RunGitCommand(
+        git2, ['update-ref', self.DEFAULT_TRACKING, patch1.sha1])
+    patch2 = self.CommitFile(git2, 'monkeys', '%sblah' % content)
+    patch3 = self.CommitFile(git2, 'monkeys', '%sblahblah' % content)
+    # Get us a back to the basic, then derive from there; this is used to
+    # verify that even if content merging works, trivial is flagged.
+    self.CommitFile(git2, 'monkeys', 'foon')
+    patch4 = self.CommitFile(git2, 'monkeys', content)
+    patch5 = self.CommitFile(git2, 'monkeys', '%sfoon' % content)
+    # Reset so we derive the next changes from patch1.
+    cros_build_lib.RunGitCommand(git2, ['reset', '--hard', patch1.sha1])
+    patch6 = self.CommitFile(git2, 'blah', 'some-other-file')
+    patch7 = self.CommitFile(git2, 'monkeys',
+                             '%sblah' % content.replace('not', 'bot'))
+
+    self.assertRaises2(cros_patch.PatchAlreadyApplied,
+                       patch1.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
+                       check_attrs={'inflight':False, 'trivial':False})
+
+    # Now test conflicts since we're still at ToT; note that this is an actual
+    # conflict because the fuzz anchors have changed.
+    self.assertRaises2(cros_patch.ApplyPatchException,
+                       patch3.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
+                       check_attrs={'inflight':False, 'trivial':False},
+                       exact_kls=True)
+
+    # Now test trivial conflict; this would've merged fine were it not for
+    # trivial.
+    self.assertRaises2(cros_patch.PatchAlreadyApplied,
+                       patch4.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
+                       check_attrs={'inflight':False, 'trivial':False},
+                       exact_kls=True)
+
+    # Move us into inflight testing.
+    patch2.Apply(git2, self.DEFAULT_TRACKING, trivial=True)
+
+    # Repeat the tests from above; should still be the same.
+    self.assertRaises2(cros_patch.PatchAlreadyApplied,
+                       patch4.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
+                       check_attrs={'inflight':False, 'trivial':False})
+
+    # Actual conflict merge conflict due to inflight; non trivial induced.
+    self.assertRaises2(cros_patch.ApplyPatchException,
+                       patch5.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
+                       check_attrs={'inflight':True, 'trivial':False},
+                       exact_kls=True)
+
+    self.assertRaises2(cros_patch.PatchAlreadyApplied,
+                       patch1.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
+                       check_attrs={'inflight':False})
+
+    self.assertRaises2(cros_patch.ApplyPatchException,
+                       patch5.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
+                       check_attrs={'inflight':True, 'trivial':False},
+                       exact_kls=True)
+
+    # And this should apply without issue, despite the differing history.
+    patch6.Apply(git2, self.DEFAULT_TRACKING, trivial=True)
 
   def _assertLookupAliases(self, internal):
     git1 = self._MakeRepo('git1', self.source)
@@ -300,14 +383,11 @@ I am the first commit.
                                       raw_changeid_text='Change-Id: I%s'
                                       % content, internal=internal)
       patch = self.CommitChangeIdFile(git1, cid3, content='update')
-      # assertRaises doesn't allow us to specify the message, thus handle
-      # this manually.
-      try:
-        patch.GerritDependencies(git1, 'refs/remotes/origin/master')
-        raise AssertionError("Change-Id: I%s failed to trigger a BrokenChangeId"
-                             % (content,))
-      except cros_patch.BrokenChangeID:
-        pass
+      self.assertRaises2(cros_patch.BrokenChangeID,
+                         patch.GerritDependencies, git1,
+                         'refs/remotes/origin/master',
+                         msg="Change-Id: I%s failed to trigger a "
+                         "BrokenChangeId" % (content,))
       # Now wipe those commits since they'll interfere w/ the next run, and the
       # following code.
       cros_build_lib.RunGitCommand(git1, ['reset', '--hard', 'HEAD^^'])

@@ -561,12 +561,11 @@ class GitRepoPatch(object):
       cmd += ['--strategy', 'resolve', '-X', 'trivial']
     cmd.append(self.sha1)
 
-    skip_cleanup = False
-    trivial_induced = False
+    reset_target = 'HEAD'
 
     try:
       cros_build_lib.RunGitCommand(git_repo, cmd)
-      skip_cleanup = True
+      reset_target = None
       return
     except cros_build_lib.RunCommandError, error:
       ret = error.result.returncode
@@ -578,35 +577,47 @@ class GitRepoPatch(object):
             self, inflight=inflight,
             message=("Unknown exit code %s returned from cherry-pick "
                      "command: %s" % (ret, error)))
-      elif ret == 2:
-        # This was directly induced by a trivial file conflict; do an assert
-        # check to make sure git's error codes haven't changed under our feet.
-        # From there, the actual ApplyPatchException raised below sets trivial
-        # appropriately.
-        assert trivial
-        trivial_induced = True
+      elif ret == 1:
+        # This means merge resolution was fine, but there was content conflicts.
+        # If there are no conflicts, then this is caused by the change already
+        # being merged.
+        result = cros_build_lib.RunGitCommand(
+            git_repo, ['status', '--porcelain'])
 
-      # If there are no conflicts, then this is caused by the change already
-      # being merged.
-      result = cros_build_lib.RunGitCommand(
-          git_repo, ['status', '--porcelain'])
+        # Porcelain format is line per file, first two chars are the status
+        # code, then a space, then the filename.
+        # ?? means "untracked"; everything else is git tracked conflicts.
+        conflicts = [x[3:] for x in result.output.splitlines()
+                     if x and not x[:2] == '??']
+        if not conflicts:
+          # No conflicts means the git repo is in a pristine state.
+          reset_target = None
+          raise PatchAlreadyApplied(self, inflight=inflight)
 
-      # Porcelain format is line per file, first two chars are the status code,
-      # then a space, then the filename.
-      # ?? means "untracked"; everything else is git tracked conflicts.
-      conflicts = [x[3:] for x in result.output.splitlines()
-                   if x and not x[:2] == '??']
-      if not conflicts:
-        skip_cleanup = True
-        raise PatchAlreadyApplied(self, inflight=inflight)
+        # Making it here means that it wasn't trivial, nor was it already
+        # applied.
+        assert not trivial
+        raise ApplyPatchException(self, inflight=inflight, files=conflicts)
 
-      raise ApplyPatchException(self, inflight=inflight, files=conflicts,
-                                trivial=trivial_induced)
+      # ret=2 handling, this deals w/ trivial conflicts; including figuring
+      # out if it was trivial induced or not.
+      assert trivial
+      # Here's the kicker; trivial conflicts can mask content conflicts.
+      # We would rather state if it's a content conflict since in solving the
+      # content conflict, the trivial conflict is solved.  Thus this
+      # second run, where we let the exception fly through if one occurs.
+      # Note that a trivial conflict means the tree is unmodified; thus
+      # no need for cleanup prior to this invocation.
+      reset_target = None
+      self._CherryPick(git_repo, trivial=False, inflight=inflight)
+      # Since it succeeded, we need to rewind.
+      reset_target = 'HEAD^'
 
+      raise ApplyPatchException(self, trivial=True, inflight=inflight)
     finally:
-      if not skip_cleanup:
+      if reset_target is not None:
         cros_build_lib.RunGitCommand(
-            git_repo, ['reset', '--hard', 'HEAD'], error_code_ok=True)
+            git_repo, ['reset', '--hard', reset_target], error_code_ok=True)
 
   def Apply(self, git_repo, upstream, trivial=False):
     """Apply patch into a standalone git repo.
@@ -627,28 +638,26 @@ class GitRepoPatch(object):
                                                constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
       cros_build_lib.RunGitCommand(git_repo, cmd)
+      inflight = False
+    else:
+      # Figure out if we're inflight.
+      upstream, head = [
+        cros_build_lib.RunGitCommand(
+            git_repo, ['rev-list', '-n1', x]).output.strip()
+        for x in (upstream, 'HEAD')]
+      inflight = (head != upstream)
 
-    # Run the sanity checks against current HEAD; if they fail, see if
-    # it's induced by our current series of patches, or if it is
-    # due to a conflict against ToT itself.
-    try:
-      self._SanityChecks(git_repo, 'HEAD', True)
-    except ApplyPatchException:
-      self._SanityChecks(git_repo, upstream, False)
-      raise
+    # Run appropriate sanity checks.
+    self._SanityChecks(git_repo, upstream, inflight=inflight)
 
     do_checkout = True
     try:
-      self._CherryPick(git_repo, trivial=trivial, inflight=True)
+      self._CherryPick(git_repo, trivial=trivial, inflight=inflight)
       do_checkout = False
       return
     except ApplyPatchException:
-      # So the cherry-pick failed; question is if it was due to a patch in the
-      # series, or if the patch is incompatible w/ ToT.  We identify this
-      # by switching to ToT, retrying, then restoring on the way out.
-      # Note the --detach; this is done so that if upstream is a short name,
-      # git isn't allowed to create a branch for this checkout- instead
-      # just goes to detached HEAD for the rev in question.
+      if not inflight:
+        raise
       cros_build_lib.RunGitCommand(
           git_repo, ['checkout', '-f', '--detach', upstream])
 
@@ -838,27 +847,40 @@ class GitRepoPatch(object):
                    self)
     return dependencies
 
-  def _SanityChecks(self, git_repo, tree_revision, is_inflight=False):
+  def _SanityChecks(self, git_repo, upstream, inflight=False):
     ebuilds = [path for (path, mtype) in
                self.GetDiffStatus(git_repo).iteritems()
                if mtype == 'A' and path.endswith('.ebuild')]
 
-    if not ebuilds:
+    conflicts = self._FindTrivialConflicts(git_repo, 'HEAD', ebuilds)
+    if not conflicts:
       return
+
+    if inflight:
+      # If we're inflight, test against ToT for an accurate error message.
+      tot_conflicts = self._FindTrivialConflicts(git_repo, upstream, ebuilds)
+      if tot_conflicts:
+        inflight = False
+        conflicts = tot_conflicts
+
+    raise ApplyPatchException(
+        self, inflight=inflight,
+        message="Ebuild rename conflicts detected.",
+        files=ebuilds)
+
+  def _FindTrivialConflicts(self, git_repo, tree_revision, targets):
+    if not targets:
+      return []
 
     # Note the output of this ls-tree invocation is filename per line;
     # basically equivalent to ls -1.
     conflicts = cros_build_lib.RunGitCommand(
         git_repo,
         ['ls-tree', '--full-name', '--name-only', '-z', tree_revision,
-         '--'] + ebuilds,
+         '--'] + targets,
         error_code_ok=True).output.split('\0')[:-1]
 
-    if conflicts:
-      raise ApplyPatchException(
-          self, inflight=is_inflight,
-          message="Ebuild rename conflicts detected.",
-          files=conflicts)
+    return conflicts
 
   def __str__(self):
     """Returns custom string to identify this patch."""
