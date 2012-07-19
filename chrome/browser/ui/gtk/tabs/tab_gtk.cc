@@ -326,6 +326,11 @@ void TabGtk::DestroyDragWidget() {
 }
 
 void TabGtk::StartDragging(gfx::Point drag_offset) {
+  // If the drag is processed after the selection change it's possible
+  // that the tab has been deselected, in which case we don't want to drag.
+  if (!IsSelected())
+    return;
+
   CreateDragWidget();
 
   GtkTargetList* list = ui::GetTargetListFromCodeMask(ui::CHROME_TAB);

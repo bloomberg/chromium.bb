@@ -1280,9 +1280,11 @@ void TabStripGtk::MaybeStartDrag(TabGtk* tab, const gfx::Point& point) {
 
   std::vector<TabGtk*> tabs;
   for (size_t i = 0; i < model()->selection_model().size(); i++) {
-    TabGtk* tab = GetTabAt(model()->selection_model().selected_indices()[i]);
-    if (!tab->closing())
-      tabs.push_back(tab);
+    TabGtk* selected_tab =
+        GetTabAtAdjustForAnimation(
+            model()->selection_model().selected_indices()[i]);
+    if (!selected_tab->closing())
+      tabs.push_back(selected_tab);
   }
 
   drag_controller_.reset(new DraggedTabControllerGtk(this, tab, tabs));
