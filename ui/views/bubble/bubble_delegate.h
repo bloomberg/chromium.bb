@@ -30,10 +30,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // The default bubble background color.
   static const SkColor kBackgroundColor;
 
-  // TODO(msw): Remove magic debugging numbers; see crbug.com/134504
-  static const ptrdiff_t kDebugClosing1;
-  static const ptrdiff_t kDebugClosing2;
-
   BubbleDelegateView();
   BubbleDelegateView(View* anchor_view,
                      BubbleBorder::ArrowLocation arrow_location);
