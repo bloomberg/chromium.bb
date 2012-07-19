@@ -43,7 +43,7 @@ const ImageSkia ImageSkiaFromGdkPixbuf(GdkPixbuf* pixbuf) {
 
 class ImageRepSkia;
 class ImageRepGdk;
-class ImageRepCairoCached;
+class ImageRepCairo;
 class ImageRepCocoa;
 
 // An ImageRep is the object that holds the backing memory for an Image. Each
@@ -70,9 +70,9 @@ class ImageRep {
     return reinterpret_cast<ImageRepGdk*>(this);
   }
 
-  ImageRepCairoCached* AsImageRepCairo() {
-    CHECK_EQ(type_, Image::kImageRepCairoCache);
-    return reinterpret_cast<ImageRepCairoCached*>(this);
+  ImageRepCairo* AsImageRepCairo() {
+    CHECK_EQ(type_, Image::kImageRepCairo);
+    return reinterpret_cast<ImageRepCairo*>(this);
   }
 #endif
 
@@ -133,16 +133,16 @@ class ImageRepGdk : public ImageRep {
 };
 
 // Represents data that lives on the display server instead of in the client.
-class ImageRepCairoCached : public ImageRep {
+class ImageRepCairo : public ImageRep {
  public:
-  explicit ImageRepCairoCached(GdkPixbuf* pixbuf)
-      : ImageRep(Image::kImageRepCairoCache),
+  explicit ImageRepCairo(GdkPixbuf* pixbuf)
+      : ImageRep(Image::kImageRepCairo),
         cairo_cache_(new CairoCachedSurface) {
     CHECK(pixbuf);
     cairo_cache_->UsePixbuf(pixbuf);
   }
 
-  virtual ~ImageRepCairoCached() {
+  virtual ~ImageRepCairo() {
     delete cairo_cache_;
   }
 
@@ -151,7 +151,7 @@ class ImageRepCairoCached : public ImageRep {
  private:
   CairoCachedSurface* cairo_cache_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageRepCairoCached);
+  DISALLOW_COPY_AND_ASSIGN(ImageRepCairo);
 };
 #endif  // defined(TOOLKIT_GTK)
 
@@ -268,30 +268,69 @@ Image::~Image() {
 }
 
 const SkBitmap* Image::ToSkBitmap() const {
-  internal::ImageRep* rep = GetRepresentation(Image::kImageRepSkia);
-  return rep->AsImageRepSkia()->image()->bitmap();
+  // Possibly create and cache an intermediate ImageRepSkia.
+  return ToImageSkia()->bitmap();
 }
 
 const ImageSkia* Image::ToImageSkia() const {
-  internal::ImageRep* rep = GetRepresentation(Image::kImageRepSkia);
+  internal::ImageRep* rep = GetRepresentation(kImageRepSkia, false);
+  if (!rep) {
+#if defined(TOOLKIT_GTK)
+    internal::ImageRepGdk* native_rep =
+        GetRepresentation(kImageRepGdk, true)->AsImageRepGdk();
+    rep = new internal::ImageRepSkia(new ImageSkia(
+        internal::ImageSkiaFromGdkPixbuf(native_rep->pixbuf())));
+#elif defined(OS_MACOSX)
+    internal::ImageRepCocoa* native_rep =
+        GetRepresentation(kImageRepCocoa, true)->AsImageRepCocoa();
+    rep = new internal::ImageRepSkia(new ImageSkia(
+        ImageSkiaFromNSImage(native_rep->image())));
+#endif
+    CHECK(rep);
+    AddRepresentation(rep);
+  }
   return rep->AsImageRepSkia()->image();
 }
 
 #if defined(TOOLKIT_GTK)
 GdkPixbuf* Image::ToGdkPixbuf() const {
-  internal::ImageRep* rep = GetRepresentation(Image::kImageRepGdk);
+  internal::ImageRep* rep = GetRepresentation(kImageRepGdk, false);
+  if (!rep) {
+    internal::ImageRepSkia* skia_rep =
+        GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
+    rep = new internal::ImageRepGdk(gfx::GdkPixbufFromSkBitmap(
+        *skia_rep->image()->bitmap()));
+    CHECK(rep);
+    AddRepresentation(rep);
+  }
   return rep->AsImageRepGdk()->pixbuf();
 }
 
 CairoCachedSurface* const Image::ToCairo() const {
-  internal::ImageRep* rep = GetRepresentation(Image::kImageRepCairoCache);
+  internal::ImageRep* rep = GetRepresentation(kImageRepCairo, false);
+  if (!rep) {
+    // Handle any-to-Cairo conversion. This may create and cache an intermediate
+    // pixbuf before sending the data to the display server.
+    rep = new internal::ImageRepCairo(ToGdkPixbuf());
+    CHECK(rep);
+    AddRepresentation(rep);
+  }
   return rep->AsImageRepCairo()->surface();
 }
 #endif
 
 #if defined(OS_MACOSX)
 NSImage* Image::ToNSImage() const {
-  internal::ImageRep* rep = GetRepresentation(Image::kImageRepCocoa);
+  internal::ImageRep* rep = GetRepresentation(kImageRepCocoa, false);
+  if (!rep) {
+    internal::ImageRepSkia* skia_rep =
+        GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
+    NSImage* image = NSImageFromImageSkia(*skia_rep->image());
+    base::mac::NSObjectRetain(image);
+    rep = new internal::ImageRepCocoa(image);
+    CHECK(rep);
+    AddRepresentation(rep);
+  }
   return rep->AsImageRepCocoa()->image();
 }
 #endif
@@ -345,94 +384,24 @@ void Image::SwapRepresentations(gfx::Image* other) {
   storage_.swap(other->storage_);
 }
 
-internal::ImageRep* Image::DefaultRepresentation() const {
+Image::RepresentationType Image::DefaultRepresentationType() const {
   CHECK(storage_.get());
-  RepresentationMap& representations = storage_->representations();
-  RepresentationMap::iterator it =
-      representations.find(storage_->default_representation_type());
-  DCHECK(it != representations.end());
-  return it->second;
+  RepresentationType default_type = storage_->default_representation_type();
+  // The conversions above assume that the default representation type is never
+  // kImageRepCairo.
+  DCHECK_NE(default_type, kImageRepCairo);
+  return default_type;
 }
 
 internal::ImageRep* Image::GetRepresentation(
-    RepresentationType rep_type) const {
+    RepresentationType rep_type, bool must_exist) const {
   CHECK(storage_.get());
-  // If the requested rep is the default, return it.
-  internal::ImageRep* default_rep = DefaultRepresentation();
-  if (rep_type == storage_->default_representation_type())
-    return default_rep;
-
-  // Check to see if the representation already exists.
   RepresentationMap::iterator it = storage_->representations().find(rep_type);
-  if (it != storage_->representations().end())
-    return it->second;
-
-  // At this point, the requested rep does not exist, so it must be converted
-  // from the default rep.
-
-  // Handle native-to-Skia conversion.
-  if (rep_type == Image::kImageRepSkia) {
-    internal::ImageRepSkia* rep = NULL;
-#if defined(TOOLKIT_GTK)
-    if (storage_->default_representation_type() == Image::kImageRepGdk) {
-      internal::ImageRepGdk* pixbuf_rep = default_rep->AsImageRepGdk();
-      rep = new internal::ImageRepSkia(new ImageSkia(
-          internal::ImageSkiaFromGdkPixbuf(pixbuf_rep->pixbuf())));
-    }
-    // We don't do conversions from CairoCachedSurfaces to Skia because the
-    // data lives on the display server and we'll always have a GdkPixbuf if we
-    // have a CairoCachedSurface.
-#elif defined(OS_MACOSX)
-    if (storage_->default_representation_type() == Image::kImageRepCocoa) {
-      internal::ImageRepCocoa* nsimage_rep = default_rep->AsImageRepCocoa();
-      ImageSkia image_skia = ImageSkiaFromNSImage(nsimage_rep->image());
-      rep = new internal::ImageRepSkia(new ImageSkia(image_skia));
-    }
-#endif
-    CHECK(rep);
-    AddRepresentation(rep);
-    return rep;
+  if (it == storage_->representations().end()) {
+    CHECK(!must_exist);
+    return NULL;
   }
-#if defined(TOOLKIT_GTK)
-  else if (rep_type == Image::kImageRepCairoCache) {
-    // Handle any-to-Cairo conversion. This may recursively create an
-    // intermediate pixbuf before we send the data to the display server.
-    internal::ImageRep* rep = GetRepresentation(Image::kImageRepGdk);
-    internal::ImageRepCairoCached* native_rep =
-        new internal::ImageRepCairoCached(rep->AsImageRepGdk()->pixbuf());
-
-    CHECK(native_rep);
-    AddRepresentation(native_rep);
-    return native_rep;
-  }
-#endif
-
-  // Handle Skia-to-native conversions.
-  if (default_rep->type() == Image::kImageRepSkia) {
-    internal::ImageRep* native_rep = NULL;
-#if defined(USE_AURA)
-    NOTIMPLEMENTED();
-#elif defined(TOOLKIT_GTK)
-    if (rep_type == Image::kImageRepGdk) {
-      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(
-          *default_rep->AsImageRepSkia()->image()->bitmap());
-      native_rep = new internal::ImageRepGdk(pixbuf);
-    }
-#elif defined(OS_MACOSX)
-    if (rep_type == Image::kImageRepCocoa) {
-      NSImage* image = NSImageFromImageSkia(
-          *default_rep->AsImageRepSkia()->image());
-      base::mac::NSObjectRetain(image);
-      native_rep = new internal::ImageRepCocoa(image);
-    }
-#endif
-    CHECK(native_rep);
-    AddRepresentation(native_rep);
-    return native_rep;
-  }
-
-  // Something went seriously wrong...
-  return NULL;
+  return it->second;
 }
 
 void Image::AddRepresentation(internal::ImageRep* rep) const {

@@ -53,7 +53,7 @@ class UI_EXPORT Image {
   enum RepresentationType {
     kImageRepGdk,
     kImageRepCocoa,
-    kImageRepCairoCache,
+    kImageRepCairo,
     kImageRepSkia,
   };
 
@@ -141,12 +141,13 @@ class UI_EXPORT Image {
   void SwapRepresentations(gfx::Image* other);
 
  private:
-  // Returns the ImageRep for the default representation.
-  internal::ImageRep* DefaultRepresentation() const;
+  // Returns the type of the default representation.
+  RepresentationType DefaultRepresentationType() const;
 
-  // Returns a ImageRep for the given representation type, converting and
-  // caching if necessary.
-  internal::ImageRep* GetRepresentation(RepresentationType rep) const;
+  // Returns the ImageRep of the appropriate type or NULL if there is no
+  // representation of that type (and must_exist is false).
+  internal::ImageRep* GetRepresentation(
+      RepresentationType rep_type, bool must_exist) const;
 
   // Stores a representation into the map.
   void AddRepresentation(internal::ImageRep* rep) const;
