@@ -901,7 +901,7 @@ TEST_F(OncNetworkParserTest, TestProxySettingsManual) {
 
 TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
   ScopedMockUserManagerEnabler mock_user_manager;
-  mock_user_manager.user_manager()->SetLoggedInUser("onc@example.com", false);
+  mock_user_manager.user_manager()->SetLoggedInUser("onc@example.com");
 
   EXPECT_CALL(*mock_user_manager.user_manager(), IsUserLoggedIn())
       .Times(2)

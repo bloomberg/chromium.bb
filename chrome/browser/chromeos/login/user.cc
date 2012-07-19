@@ -29,22 +29,23 @@ std::string GetUserName(const std::string& email) {
 
 }  // namespace
 
-User::User(const std::string& email, bool is_guest)
+// The demo user is represented by a domainless username.
+const char kDemoUser[] = "demouser";
+// Incognito user is represented by an empty string (since some code already
+// depends on that and it's hard to figure out what).
+const char kGuestUser[] = "";
+
+User::User(const std::string& email)
     : email_(email),
       user_image_(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           kDefaultImageResources[0])),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
       image_index_(kInvalidImageIndex),
-      image_is_stub_(false),
-      is_guest_(is_guest) {
+      image_is_stub_(false) {
   // The email address of a demo user is for internal purposes only,
   // never meant for display.
-  if (email != kDemoUser) {
+  if (!is_demo_user())
     display_email_ = email;
-    is_demo_user_ = false;
-  } else {
-    is_demo_user_ = true;
-  }
 }
 
 User::~User() {}

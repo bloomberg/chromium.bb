@@ -14,10 +14,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 
-// The demo user is represented by a domainless username.
-const char kDemoUser[] = "demouser";
-
 namespace chromeos {
+
+// Fake username for the demo user.
+extern const char kDemoUser[];
+
+// Username for incognito login.
+extern const char kGuestUser[];
 
 // A class representing information about a previously logged in user.
 // Each user has a canonical email (username), returned by |email()| and
@@ -92,8 +95,8 @@ class User {
   // The displayed (non-canonical) user email.
   std::string display_email() const { return display_email_; }
 
-  bool is_demo_user() const { return is_demo_user_; }
-  bool is_guest() const { return is_guest_; }
+  bool is_demo_user() const { return email_ == kDemoUser; }
+  bool is_guest() const { return email_ == kGuestUser; }
 
  private:
   friend class UserManagerImpl;
@@ -101,7 +104,7 @@ class User {
   friend class UserManagerTest;
 
   // Do not allow anyone else to create new User instances.
-  User(const std::string& email, bool is_guest);
+  explicit User(const std::string& email_guest);
   ~User();
 
   // Setters are private so only UserManager can call them.
@@ -142,12 +145,6 @@ class User {
 
   // True if current user image is a stub set by a |SetStubImage| call.
   bool image_is_stub_;
-
-  // Is this a guest account?
-  bool is_guest_;
-
-  // Is this a demo user account?
-  bool is_demo_user_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

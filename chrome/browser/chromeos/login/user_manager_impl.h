@@ -298,7 +298,7 @@ class UserManagerImpl : public UserManager,
   virtual void OnProfileDownloadFailure(ProfileDownloader* downloader) OVERRIDE;
 
   // Creates a new User instance.
-  User* CreateUser(const std::string& email) const;
+  User* CreateUser(const std::string& email, bool is_ephemeral) const;
 
   // Removes the user from the persistent list only. Also removes the user's
   // picture.

@@ -80,13 +80,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 
-namespace {
-
-// Username for stub login when not running on ChromeOS.
-const char kStubUsername[] = "stub-user@example.com";
-
-}
-
 class MessageLoopObserver : public MessageLoopForUI::Observer {
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
@@ -254,8 +247,8 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
       !parsed_command_line().HasSwitch(switches::kLoginManager) &&
       !parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kGuestSession)) {
-    singleton_command_line->AppendSwitchASCII(switches::kLoginUser,
-                                              kStubUsername);
+    singleton_command_line->AppendSwitchASCII(
+        switches::kLoginUser, chromeos::UserManager::kStubUser);
     if (!parsed_command_line().HasSwitch(switches::kLoginProfile)) {
       // This must be kept in sync with TestingProfile::kTestUserProfileDir.
       singleton_command_line->AppendSwitchASCII(

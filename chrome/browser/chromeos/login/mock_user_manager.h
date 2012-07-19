@@ -80,7 +80,7 @@ class MockUserManager : public UserManager {
   virtual User& GetLoggedInUser() OVERRIDE;
 
   // Sets a new User instance.
-  void SetLoggedInUser(const std::string& email, bool guest);
+  void SetLoggedInUser(const std::string& email);
 
   User* user_;
 };

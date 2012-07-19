@@ -14,9 +14,6 @@
 
 namespace chromeos {
 
-// This is used in various authenticator classes.
-const char kDemoUser[] = "demouser";
-
 class LoginFailure {
  public:
   enum FailureReason {

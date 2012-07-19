@@ -58,8 +58,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     EXPECT_CALL(*user_manager_.user_manager(), IsUserLoggedIn())
         .WillRepeatedly(Return(true));
-    user_manager_.user_manager()->SetLoggedInUser(PolicyBuilder::kFakeUsername,
-                                                  false);
+    user_manager_.user_manager()->SetLoggedInUser(PolicyBuilder::kFakeUsername);
     store_.reset(new UserCloudPolicyStoreChromeOS(&session_manager_client_,
                                                   token_file(),
                                                   policy_file()));

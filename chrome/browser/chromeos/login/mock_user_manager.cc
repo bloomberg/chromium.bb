@@ -21,9 +21,9 @@ User& MockUserManager::GetLoggedInUser() {
 }
 
 // Creates a new User instance.
-void MockUserManager::SetLoggedInUser(const std::string& email, bool guest) {
+void MockUserManager::SetLoggedInUser(const std::string& email) {
   delete user_;
-  user_ = new User(email, guest);
+  user_ = new User(email);
 }
 
 ScopedMockUserManagerEnabler::ScopedMockUserManagerEnabler() {

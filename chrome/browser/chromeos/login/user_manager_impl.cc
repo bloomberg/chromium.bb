@@ -66,10 +66,6 @@ namespace chromeos {
 
 namespace {
 
-// Incognito user is represented by an empty string (since some code already
-// depends on that and it's hard to figure out what).
-const char kGuestUser[] = "";
-
 // Names of nodes with info about user image.
 const char kImagePathNodeName[] = "path";
 const char kImageIndexNodeName[] = "index";
@@ -252,6 +248,7 @@ const UserList& UserManagerImpl::GetUsers() const {
 void UserManagerImpl::UserLoggedIn(const std::string& email,
                                    bool browser_restart) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!IsUserLoggedIn());
 
   if (email == kGuestUser) {
     GuestUserLoggedIn();
@@ -289,7 +286,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
 
   if (logged_in_user == users_.end()) {
     is_current_user_new_ = true;
-    logged_in_user_ = CreateUser(email);
+    logged_in_user_ = CreateUser(email, /* is_ephemeral= */ false);
   } else {
     logged_in_user_ = *logged_in_user;
     users_.erase(logged_in_user);
@@ -353,7 +350,7 @@ void UserManagerImpl::DemoUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
   is_current_user_ephemeral_ = true;
-  logged_in_user_ = new User(kDemoUser, false);
+  logged_in_user_ = CreateUser(kDemoUser, /* is_ephemeral= */ true);
   SetInitialUserImage(kDemoUser);
   SetInitialUserWallpaper(kDemoUser);
   NotifyOnLogin();
@@ -363,7 +360,7 @@ void UserManagerImpl::GuestUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_ephemeral_ = true;
   SetInitialUserWallpaper(kGuestUser);
-  logged_in_user_ = new User(kGuestUser, true);
+  logged_in_user_ = CreateUser(kGuestUser, /* is_ephemeral= */ true);
   NotifyOnLogin();
 }
 
@@ -371,7 +368,7 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
   is_current_user_ephemeral_ = true;
-  logged_in_user_ = CreateUser(email);
+  logged_in_user_ = CreateUser(email, /* is_ephemeral= */ true);
   SetInitialUserImage(email);
   SetInitialUserWallpaper(email);
   NotifyOnLogin();
@@ -830,7 +827,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
          it != prefs_users->end(); ++it) {
       std::string email;
       if ((*it)->GetAsString(&email)) {
-        User* user = CreateUser(email);
+        User* user = CreateUser(email, /* is_ephemeral= */ false);
         users_.push_back(user);
 
         if (prefs_images) {
@@ -1617,9 +1614,11 @@ void UserManagerImpl::OnProfileDownloadFailure(ProfileDownloader* downloader) {
       content::NotificationService::NoDetails());
 }
 
-User* UserManagerImpl::CreateUser(const std::string& email) const {
-  User* user = new User(email, email == kGuestUser);
-  user->set_oauth_token_status(LoadUserOAuthStatus(email));
+User* UserManagerImpl::CreateUser(const std::string& email,
+                                  bool is_ephemeral) const {
+  User* user = new User(email);
+  if (!is_ephemeral)
+    user->set_oauth_token_status(LoadUserOAuthStatus(email));
   return user;
 }
 
