@@ -837,9 +837,6 @@ class StoreRegisterList : public LoadStoreRegisterList {
 //     coproc=1010. coproc=1010 implies the register size is 64-bit.
 // D:<Vd> defines the first D (vector) register in this operation if
 //     coproc=1011. coproc=1011 implies the register size is 32-bit
-//
-// NaCl Constraints:
-//    Rn!=Pc.
 class LoadStoreVectorOp : public CondVfpOp {
  public:
   // Interfaces for components in the instruction.
@@ -853,7 +850,6 @@ class LoadStoreVectorOp : public CondVfpOp {
 
   inline LoadStoreVectorOp() {}
   virtual ~LoadStoreVectorOp() {}
-  virtual SafetyLevel safety(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   // Returns the first register in the register list.
@@ -877,7 +873,6 @@ class LoadStoreVectorOp : public CondVfpOp {
 // Constraints:
 //    P=U && W=1 then undefined.
 //    if Rn=15  && (W=1 || CurrentInstSet() != ARM) then UNPREDICTABLE.
-//       Note: NaCl constraint of Rn!=15 handles this case (in base class).
 //    if imm8=0 || (first_reg +imm8) > 32 then UNPREDICTABLE.
 //    if coproc=1011 and imm8 > 16 then UNPREDICTABLE.
 //
@@ -897,6 +892,31 @@ class LoadStoreVectorRegisterList : public LoadStoreVectorOp {
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegisterList);
 };
 
+// Models a load of a LoadStoreVectorRegisterList.
+//
+class LoadVectorRegisterList : public LoadStoreVectorRegisterList {
+ public:
+  inline LoadVectorRegisterList() {}
+  virtual ~LoadVectorRegisterList() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadVectorRegisterList);
+};
+
+// Models a store of a LoadStoreVectorRegisterList.
+//
+// Adds NaCl Constraint:
+//    Rn != PC  (i.e. don't change code space).
+class StoreVectorRegisterList : public LoadStoreVectorRegisterList {
+ public:
+  inline StoreVectorRegisterList() {}
+  virtual ~StoreVectorRegisterList() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreVectorRegisterList);
+};
+
 // Models a load/store of a vector register into/out of memory.
 // Op<c> <Dd>, [<Rn>{, #+/-<imm8>}]
 // Op<c> <Sd>, [<Rn>{, #+/-<imm8>}]
@@ -904,10 +924,6 @@ class LoadStoreVectorRegisterList : public LoadStoreVectorOp {
 // See base class LoadStoreVectorOp for layout of this instruction.
 //
 // <imm8> defines the offset to add to Rn to compute the memory address.
-//
-// Constraints:
-//    if Rn=15 && CurrentInstSet() != ARM then UNPREDICTABLE.
-//       Note: NaCl constraint of Rn!=15 handles this case (in base class).
 class LoadStoreVectorRegister : public LoadStoreVectorOp {
  public:
   inline LoadStoreVectorRegister() {}
@@ -916,6 +932,33 @@ class LoadStoreVectorRegister : public LoadStoreVectorOp {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegister);
+};
+
+// Models a LoadStoreVectorRegister where it is a load.
+class LoadVectorRegister : public LoadStoreVectorRegister {
+ public:
+  inline LoadVectorRegister() {}
+  virtual ~LoadVectorRegister() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadVectorRegister);
+};
+
+// Models a LoadStoreVectorRegister where it is a store.
+//
+// Adds ARM Constraint:
+//    if Rn=PC && CurrentInstSet() != ARM then UNPREDICTABLE.
+//
+// Adds NaCl Constraint:
+//    Rn != PC  (i.e. don't change code space).
+class StoreVectorRegister : public LoadStoreVectorRegister {
+ public:
+  inline StoreVectorRegister() {}
+  virtual ~StoreVectorRegister() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreVectorRegister);
 };
 
 // Models a 3-register binary operation of the form:

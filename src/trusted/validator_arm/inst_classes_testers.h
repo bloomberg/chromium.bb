@@ -1131,6 +1131,55 @@ class LoadStoreVectorRegisterListTesterNotRnIsSp
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegisterListTesterNotRnIsSp);
 };
 
+// Implements a decoder tester for StoreVectorRegisterList, which adds
+// the following constraint:
+//
+// Adds NaCl Constraint:
+//    Rn != PC  (i.e. don't change code space).
+class StoreVectorRegisterListTester : public LoadStoreVectorRegisterListTester {
+ public:
+  explicit StoreVectorRegisterListTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreVectorRegisterListTester);
+};
+
+// Implements a decoder tester for decoder StoreVectorRegisterList
+// where register Rn is not SP.
+class StoreVectorRegisterListTesterNotRnIsSp
+    : public StoreVectorRegisterListTester {
+ public:
+  explicit StoreVectorRegisterListTesterNotRnIsSp(
+      const NamedClassDecoder& decoder);
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreVectorRegisterListTesterNotRnIsSp);
+};
+
+
+// Implements a decoder tester for StoreVectorRegister, which adds the
+// following constraint:
+//
+// Adds NaCl Constraint:
+//    Rn != PC  (i.e. don't change code space).
+class StoreVectorRegisterTester : public LoadStoreVectorOpTester {
+ public:
+  explicit StoreVectorRegisterTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreVectorRegisterTester);
+};
+
 // Models a 3-register load/store operation of the forms:
 // Op<c> <Rt>, [<Rn>, +/-<Rm>]{!}
 // Op<c> <Rt>, [<Rn>], +/-<Rm>

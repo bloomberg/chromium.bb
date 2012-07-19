@@ -1280,10 +1280,6 @@ ApplySanityChecks(Instruction inst,
   EXPECT_EQ(expected_decoder_.direction.IsAdd(inst), inst.Bit(23));
   EXPECT_EQ(expected_decoder_.indexing.IsDefined(inst), inst.Bit(24));
 
-  // Other NaCl constraints.
-  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc))
-      << "Expected UNPREDICTABLE for " << InstContents();
-
   return true;
 }
 
@@ -1299,6 +1295,11 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(LoadStoreVectorOpTester::ApplySanityChecks(inst, decoder));
 
   // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder_.wback.IsDefined(inst) &&
+               (expected_decoder_.indexing.IsDefined(inst) ==
+                expected_decoder_.direction.IsAdd(inst)));
+  EXPECT_FALSE(expected_decoder_.wback.IsDefined(inst) &&
+               expected_decoder_.n.reg(inst).Equals(kRegisterPc));
   EXPECT_NE(expected_decoder_.NumRegisters(inst), static_cast<uint32_t>(0))
       << "Expected UNPREDICTABLE for " << InstContents();
   EXPECT_LE(expected_decoder_.FirstReg(inst).number()
@@ -1325,6 +1326,55 @@ bool LoadStoreVectorRegisterListTesterNotRnIsSp::PassesParsePreconditions(
   NC_PRECOND(!expected_decoder_.n.reg(inst).Equals(kRegisterStack));
   return LoadStoreVectorRegisterListTester::PassesParsePreconditions(
       inst, decoder);
+}
+
+// StoreVectorRegisterListTester
+StoreVectorRegisterListTester::StoreVectorRegisterListTester(
+    const NamedClassDecoder& decoder)
+    : LoadStoreVectorRegisterListTester(decoder) {}
+
+bool StoreVectorRegisterListTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name (etc) is found.
+  NC_PRECOND(
+      LoadStoreVectorRegisterListTester::ApplySanityChecks(inst, decoder));
+
+  // Other constraints about this instruction.
+  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc));
+
+  return true;
+}
+
+// StoreVectorRegisterListTesterNotRnIsSp
+StoreVectorRegisterListTesterNotRnIsSp::
+StoreVectorRegisterListTesterNotRnIsSp(const NamedClassDecoder& decoder)
+    : StoreVectorRegisterListTester(decoder) {}
+
+bool StoreVectorRegisterListTesterNotRnIsSp::PassesParsePreconditions(
+    Instruction inst,
+    const NamedClassDecoder& decoder) {
+  NC_PRECOND(!expected_decoder_.n.reg(inst).Equals(kRegisterStack));
+  return StoreVectorRegisterListTester::PassesParsePreconditions(
+      inst, decoder);
+}
+
+// StoreVectorRegisterTester
+StoreVectorRegisterTester::StoreVectorRegisterTester(
+    const NamedClassDecoder& decoder)
+    : LoadStoreVectorOpTester(decoder) {}
+
+bool StoreVectorRegisterTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name (etc) is found.
+  NC_PRECOND(
+      LoadStoreVectorOpTester::ApplySanityChecks(inst, decoder));
+
+  // Other constraints about this instruction.
+  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc));
+
+  return true;
 }
 
 // LoadStore3RegisterOpTester

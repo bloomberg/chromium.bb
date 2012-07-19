@@ -936,6 +936,18 @@ TEST_F(ValidatorTests, AddConstToSpBicTestDoesntFollows) {
                          "tests provably_follows fails");
 }
 
+TEST_F(ValidatorTests, CheckVectorLoadPcRelative) {
+  // Run test where we do a vector load using a pc relative address.
+  // Corresponds to issue 2906.
+  static const arm_inst load_inst[] = {
+    0xed9f0b04,  // vldr        d0, [pc, #16]
+  };
+  validation_should_pass(load_inst,
+                         NACL_ARRAY_SIZE(load_inst),
+                         kDefaultBaseAddr,
+                         "Load vector register using pc relative address");
+}
+
 // Implementation of the ValidatorTests utility methods.  These are documented
 // toward the top of this file.
 

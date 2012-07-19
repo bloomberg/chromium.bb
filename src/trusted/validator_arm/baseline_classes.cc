@@ -523,19 +523,6 @@ Register LoadStoreVectorOp::FirstReg(const Instruction& i) const {
   return Register(first_reg);
 }
 
-SafetyLevel LoadStoreVectorOp::safety(const Instruction i) const {
-  // NaCl constraint.
-  if (n.reg(i).Equals(kRegisterPc)) {
-    // Note: covers ARM constraints:
-    //   Rn=15  && (W=1 || CurrentInstSet() != ARM) then UNPREDICTABLE.
-    //   Rn=15  && CurrentInstSet() != ARM then UNPREDICTABLE.
-    return UNPREDICTABLE;
-  }
-
-  // Make sure coprocessor value is safe.
-  return CondVfpOp::safety(i);
-}
-
 Register LoadStoreVectorOp::
 base_address_register(const Instruction i) const {
   return n.reg(i);
@@ -554,6 +541,9 @@ SafetyLevel LoadStoreVectorRegisterList::safety(const Instruction i) const {
   // ARM constraints.
   if (wback.IsDefined(i) && (indexing.IsDefined(i) == direction.IsAdd(i)))
     return UNDEFINED;
+
+  if (wback.IsDefined(i) && n.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
 
   // Register list must have at least one register.
   uint32_t first_reg = FirstReg(i).number();
@@ -583,7 +573,6 @@ SafetyLevel LoadStoreVectorRegisterList::safety(const Instruction i) const {
       break;
   }
 
-  // Make sure coprocessor value is safe.
   return LoadStoreVectorOp::safety(i);
 }
 
@@ -596,10 +585,34 @@ immediate_addressing_defs(const Instruction i) const {
   return RegisterList(wback.IsDefined(i) ? n.reg(i) : kRegisterNone);
 }
 
+// LoadVectorRegisterList
+
+// StoreVectorRegisterList
+SafetyLevel StoreVectorRegisterList::safety(const Instruction i) const {
+  if (n.reg(i).Equals(kRegisterPc))
+    return FORBIDDEN_OPERANDS;
+  return LoadStoreVectorRegisterList::safety(i);
+}
+
 // LoadStoreVectorRegister
 bool LoadStoreVectorRegister::offset_is_immediate(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return true;
+}
+
+// LoadVectorRegister
+
+// StoreVectorRegister
+SafetyLevel StoreVectorRegister::safety(const Instruction i) const {
+  if (n.reg(i).Equals(kRegisterPc)) {
+    // Note: covers ARM and NaCl constraints:
+    //   Rn!=PC
+    //   Rn=PC  && CurrentInstSet() != ARM then UNPREDICTABLE.
+    return UNPREDICTABLE;
+  }
+
+  // Make sure coprocessor value is safe.
+  return LoadStoreVectorRegister::safety(i);
 }
 
 // LoadStore3RegisterOp

@@ -115,6 +115,8 @@ class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
 class ForbiddenCondNop : UnsafeCondNop
 class LoadRegisterList : LoadStoreRegisterList      
 class LoadStoreVectorRegister : LoadStoreVectorOp
+class LoadVectorRegister : LoadStoreVectorRegister
+class LoadVectorRegisterList : LoadStoreVectorRegisterList
 class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Load2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
 class Load2RegisterImm8Op : LoadStore2RegisterImm8Op
@@ -1421,36 +1423,36 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 #
 | opcode(24:20) Rn(19:16)
 | 0010x         -         -> ext_reg_transfers
-| 01x00         -         = LoadStoreVectorRegisterList
+| 01x00         -         = StoreVectorRegisterList
                             Vstm_Rule_399_A1_A2_P784
                             cccc11001d00nnnndddd101xiiiiiiii
-| 01x10         -         = LoadStoreVectorRegisterList
+| 01x10         -         = StoreVectorRegisterList
                             Vstm_Rule_399_A1_A2_P784
                             cccc11001d10nnnndddd101xiiiiiiii
-| 1xx00         -         = LoadStoreVectorRegister
+| 1xx00         -         = StoreVectorRegister
                             Vstr_Rule_400_A1_A2_P786
                             cccc1101ud00nnnndddd101xiiiiiiii
-| 10x10         ~1101     = LoadStoreVectorRegisterList
+| 10x10         ~1101     = StoreVectorRegisterList
                             Vstm_Rule_399_A1_A2_P784
                             cccc11010d10nnnndddd101xiiiiiiii
                             NotRnIsSp
-| "             1101      = LoadStoreVectorRegisterList
-                            Vpush_355_A1_A2_P694
+| "             1101      = StoreVectorRegisterList
+                            Vpush_355_A1_A2_P696
                             cccc11010d101101dddd101xiiiiiiii
-| 01x01         -         = LoadStoreVectorRegisterList
+| 01x01         -         = LoadVectorRegisterList
                             Vldm_Rule_319_A1_A2_P626
                             cccc11001d01nnnndddd101xiiiiiiii
-| 01x11         ~1101     = LoadStoreVectorRegisterList
+| 01x11         ~1101     = LoadVectorRegisterList
                             Vldm_Rule_319_A1_A2_P626
                             cccc11001d11nnnndddd101xiiiiiiii
                             NotRnIsSp
-| "             1101      = LoadStoreVectorRegisterList
+| "             1101      = LoadVectorRegisterList
                             Vpop_Rule_354_A1_A2_P694
                             cccc11001d111101dddd101xiiiiiiii
-| 1xx01         -         = LoadStoreVectorRegister
+| 1xx01         -         = LoadVectorRegister
                             Vldr_Rule_320_A1_A2_P628
                             cccc1101ud01nnnndddd101xiiiiiiii
-| 10x11         -         = LoadStoreVectorRegisterList
+| 10x11         -         = LoadVectorRegisterList
                             Vldm_Rule_318_A1_A2_P626
                             cccc11010d11nnnndddd101xiiiiiiii
 +--

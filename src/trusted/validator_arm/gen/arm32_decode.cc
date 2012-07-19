@@ -42,8 +42,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LoadBasedOffsetMemoryDouble_instance_()
   , LoadCoprocessor_instance_()
   , LoadMultiple_instance_()
-  , LoadStoreVectorRegister_instance_()
-  , LoadStoreVectorRegisterList_instance_()
+  , LoadVectorRegister_instance_()
+  , LoadVectorRegisterList_instance_()
   , MaskAddress_instance_()
   , MoveDoubleFromCoprocessor_instance_()
   , MoveFromCoprocessor_instance_()
@@ -56,6 +56,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreBasedOffsetMemoryDouble_instance_()
   , StoreCoprocessor_instance_()
   , StoreRegisterList_instance_()
+  , StoreVectorRegister_instance_()
+  , StoreVectorRegisterList_instance_()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRange_instance_()
   , Unary1RegisterSet_instance_()
@@ -639,46 +641,46 @@ const ClassDecoder& Arm32DecoderState::decode_ext_reg_load_store(
 {
   if ((insn.Bits() & 0x01B00000) == 0x00800000 /* opcode(24:20) == 01x00 */ &&
       (insn.Bits() & 0x0FB00E00) == 0x0C800A00 /* $pattern(31:0) == xxxx11001x00xxxxxxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegisterList_instance_;
+    return StoreVectorRegisterList_instance_;
   }
 
   if ((insn.Bits() & 0x01B00000) == 0x00900000 /* opcode(24:20) == 01x01 */ &&
       (insn.Bits() & 0x0FB00E00) == 0x0C900A00 /* $pattern(31:0) == xxxx11001x01xxxxxxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegisterList_instance_;
+    return LoadVectorRegisterList_instance_;
   }
 
   if ((insn.Bits() & 0x01B00000) == 0x00A00000 /* opcode(24:20) == 01x10 */ &&
       (insn.Bits() & 0x0FB00E00) == 0x0CA00A00 /* $pattern(31:0) == xxxx11001x10xxxxxxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegisterList_instance_;
+    return StoreVectorRegisterList_instance_;
   }
 
   if ((insn.Bits() & 0x01B00000) == 0x00B00000 /* opcode(24:20) == 01x11 */ &&
       (insn.Bits() & 0x000F0000) != 0x000D0000 /* Rn(19:16) == ~1101 */ &&
       (insn.Bits() & 0x0FB00E00) == 0x0CB00A00 /* $pattern(31:0) == xxxx11001x11xxxxxxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegisterList_instance_;
+    return LoadVectorRegisterList_instance_;
   }
 
   if ((insn.Bits() & 0x01B00000) == 0x00B00000 /* opcode(24:20) == 01x11 */ &&
       (insn.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16) == 1101 */ &&
       (insn.Bits() & 0x0FBF0E00) == 0x0CBD0A00 /* $pattern(31:0) == xxxx11001x111101xxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegisterList_instance_;
+    return LoadVectorRegisterList_instance_;
   }
 
   if ((insn.Bits() & 0x01B00000) == 0x01200000 /* opcode(24:20) == 10x10 */ &&
       (insn.Bits() & 0x000F0000) != 0x000D0000 /* Rn(19:16) == ~1101 */ &&
       (insn.Bits() & 0x0FB00E00) == 0x0D200A00 /* $pattern(31:0) == xxxx11010x10xxxxxxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegisterList_instance_;
+    return StoreVectorRegisterList_instance_;
   }
 
   if ((insn.Bits() & 0x01B00000) == 0x01200000 /* opcode(24:20) == 10x10 */ &&
       (insn.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16) == 1101 */ &&
       (insn.Bits() & 0x0FBF0E00) == 0x0D2D0A00 /* $pattern(31:0) == xxxx11010x101101xxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegisterList_instance_;
+    return StoreVectorRegisterList_instance_;
   }
 
   if ((insn.Bits() & 0x01B00000) == 0x01300000 /* opcode(24:20) == 10x11 */ &&
       (insn.Bits() & 0x0FB00E00) == 0x0D300A00 /* $pattern(31:0) == xxxx11010x11xxxxxxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegisterList_instance_;
+    return LoadVectorRegisterList_instance_;
   }
 
   if ((insn.Bits() & 0x01E00000) == 0x00400000 /* opcode(24:20) == 0010x */) {
@@ -687,12 +689,12 @@ const ClassDecoder& Arm32DecoderState::decode_ext_reg_load_store(
 
   if ((insn.Bits() & 0x01300000) == 0x01000000 /* opcode(24:20) == 1xx00 */ &&
       (insn.Bits() & 0x0F300E00) == 0x0D000A00 /* $pattern(31:0) == xxxx1101xx00xxxxxxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegister_instance_;
+    return StoreVectorRegister_instance_;
   }
 
   if ((insn.Bits() & 0x01300000) == 0x01100000 /* opcode(24:20) == 1xx01 */ &&
       (insn.Bits() & 0x0F300E00) == 0x0D100A00 /* $pattern(31:0) == xxxx1101xx01xxxxxxxx101xxxxxxxxx */) {
-    return LoadStoreVectorRegister_instance_;
+    return LoadVectorRegister_instance_;
   }
 
   // Catch any attempt to fall though ...
