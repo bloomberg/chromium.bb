@@ -141,6 +141,10 @@ var BrowserBridge = (function() {
       this.send('getHostResolverInfo');
     },
 
+    sendRunIPv6Probe: function() {
+      this.send('onRunIPv6Probe');
+    },
+
     sendClearBadProxies: function() {
       this.send('clearBadProxies');
     },

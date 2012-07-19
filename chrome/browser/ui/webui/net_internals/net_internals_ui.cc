@@ -459,6 +459,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnGetBadProxies(const ListValue* list);
   void OnClearBadProxies(const ListValue* list);
   void OnGetHostResolverInfo(const ListValue* list);
+  void OnRunIPv6Probe(const ListValue* list);
   void OnClearHostResolverCache(const ListValue* list);
   void OnEnableIPv6(const ListValue* list);
   void OnStartConnectionTests(const ListValue* list);
@@ -603,6 +604,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "getHostResolverInfo",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetHostResolverInfo, proxy_));
+  web_ui()->RegisterMessageCallback(
+      "onRunIPv6Probe",
+      base::Bind(&IOThreadImpl::CallbackHelper,
+                 &IOThreadImpl::OnRunIPv6Probe, proxy_));
   web_ui()->RegisterMessageCallback(
       "clearHostResolverCache",
       base::Bind(&IOThreadImpl::CallbackHelper,
@@ -1029,6 +1034,17 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
   dict->Set("cache", cache_info_dict);
 
   SendJavascriptCommand("receivedHostResolverInfo", dict);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnRunIPv6Probe(
+    const ListValue* list) {
+  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::HostResolver* resolver = context->host_resolver();
+
+  // Have to set the default address family manually before calling
+  // ProbeIPv6Support.
+  resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_UNSPECIFIED);
+  resolver->ProbeIPv6Support();
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(

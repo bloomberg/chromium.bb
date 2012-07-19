@@ -101,6 +101,10 @@
   color: rgb(112, 0, 112);
 }
 
+#events-view-source-list-tbody .source-ipv6-probe-job {
+  color: red;
+}
+
 #events-view-source-list-tbody .source-none {
   color: red;
 }
