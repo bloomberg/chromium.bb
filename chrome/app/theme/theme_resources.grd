@@ -22,6 +22,7 @@
         <structure type="chrome_scaled_image" name="IDR_ACCESSIBILITY_ICON" file="accessibility_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON" file="action_box_button.png" />
+      <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON_PRESSED" file="action_box_button_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DEFAULT_ICON" file="app_default_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DROPARROW" file="app_droparrow.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB" file="nub.png" />
