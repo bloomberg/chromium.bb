@@ -54,6 +54,15 @@ class FileSystemGetWritableFileEntryFunction : public FileSystemEntryFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class FileSystemIsWritableFileEntryFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.isWritableFileEntry");
+
+ protected:
+  virtual ~FileSystemIsWritableFileEntryFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class FileSystemChooseFileFunction : public FileSystemEntryFunction {
  public:
   // Allow picker UI to be skipped in testing.

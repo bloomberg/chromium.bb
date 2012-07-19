@@ -47,6 +47,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual bool CanReadFile(int child_id, const FilePath& file) OVERRIDE;
   virtual bool CanReadFileSystem(int child_id,
                                  const std::string& filesystem_id) OVERRIDE;
+  virtual bool CanReadWriteFileSystem(
+      int child_id,
+      const std::string& filesystem_id) OVERRIDE;
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking

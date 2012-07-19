@@ -7,6 +7,13 @@
 
 function checkEntry(entry, expectedName, isNew, shouldBeWritable) {
   chrome.test.assertEq(expectedName, entry.name);
+
+  // Test that we are writable (or not), as expected.
+  chrome.fileSystem.isWritableFileEntry(entry, chrome.test.callbackPass(
+      function(isWritable) {
+    chrome.test.assertEq(isWritable, shouldBeWritable);
+  }));
+
   // Test that the file can be read.
   entry.file(chrome.test.callback(function(file) {
     var reader = new FileReader();

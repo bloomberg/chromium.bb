@@ -24,7 +24,8 @@ namespace fileSystem {
     DOMString? suggestedName;
   };
   callback GetDisplayPathCallback = void (DOMString displayPath);
-  callback FileEntryCallback = void ([instanceOf=fileEntry] object fileEntry);
+  callback FileEntryCallback = void ([instanceOf=FileEntry] object fileEntry);
+  callback IsWritableCallback = void (boolean isWritable);
 
   interface Functions {
     // Get the display path of a FileEntry object. The display path is based on
@@ -37,6 +38,10 @@ namespace fileSystem {
     // if the application does not have the fileSystemWrite permission.
     static void getWritableFileEntry([instanceOf=FileEntry] object fileEntry,
                                      FileEntryCallback callback);
+
+    // Gets whether this FileEntry is writable or not.
+    static void isWritableFileEntry([instanceOf=FileEntry] object fileEntry,
+                                    IsWritableCallback callback);
 
     // Ask the user to choose a file.
     static void chooseFile(optional ChooseFileOptions options,

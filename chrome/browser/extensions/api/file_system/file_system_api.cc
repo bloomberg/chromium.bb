@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
@@ -233,6 +234,28 @@ bool FileSystemGetWritableFileEntryFunction::RunImpl() {
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&FileSystemGetWritableFileEntryFunction::CheckWritableFile,
           this, path));
+  return true;
+}
+
+bool FileSystemIsWritableFileEntryFunction::RunImpl() {
+  std::string filesystem_name;
+  std::string filesystem_path;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
+
+  std::string filesystem_id;
+  if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
+    error_ = kInvalidParameters;
+    return false;
+  }
+
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  int renderer_id = render_view_host_->GetProcess()->GetID();
+  bool is_writable = policy->CanReadWriteFileSystem(renderer_id,
+                                                    filesystem_id);
+
+  SetResult(base::Value::CreateBooleanValue(is_writable));
   return true;
 }
 

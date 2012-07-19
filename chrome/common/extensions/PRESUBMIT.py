@@ -87,7 +87,7 @@ def IsSkippedFile(path, input_api):
 
 def IsApiFile(path, input_api):
   return (input_api.os_path.dirname(path) == API_DIR and
-          path.endswith('.json'))
+          (path.endswith('.json') or path.endswith('.idl')))
 
 def IsBuildFile(path, input_api):
   return input_api.os_path.dirname(path) == BUILD_DIR

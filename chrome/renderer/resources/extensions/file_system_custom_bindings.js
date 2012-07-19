@@ -19,7 +19,8 @@ chromeHidden.registerCustomHook('fileSystem', function(bindingsAPI) {
       return [fileSystemName, relativePath, callback];
     });
   }
-  ['getDisplayPath', 'getWritableFileEntry'].forEach(bindFileEntryFunction);
+  ['getDisplayPath', 'getWritableFileEntry', 'isWritableFileEntry']
+      .forEach(bindFileEntryFunction);
 
   function bindFileEntryCallback(functionName) {
     apiFunctions.setCustomCallback(functionName,
