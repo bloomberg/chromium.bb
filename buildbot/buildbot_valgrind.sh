@@ -29,7 +29,7 @@ else
 fi
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
+rm -rf scons-out hg ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
 
 echo @@@BUILD_STEP gclient_runhooks@@@
