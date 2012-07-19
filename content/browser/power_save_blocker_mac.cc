@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,11 +74,8 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
       break;
   }
   if (level) {
-    // TODO(avi): Switch to IOPMAssertionCreateWithName when 10.6 is the minimum
-    // system supported by Chromium.
-    IOReturn result = IOPMAssertionCreate(level,
-                                          kIOPMAssertionLevelOn,
-                                          &assertion_);
+    IOReturn result = IOPMAssertionCreateWithName(level, kIOPMAssertionLevelOn,
+        base::SysUTF8ToCFStringRef(reason_), &assertion_);
     LOG_IF(ERROR, result != kIOReturnSuccess)
         << "IOPMAssertionCreate: " << result;
   }
