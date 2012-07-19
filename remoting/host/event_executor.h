@@ -16,7 +16,7 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class Capturer;
+class VideoFrameCapturer;
 
 class EventExecutor : public protocol::HostEventStub {
  public:
@@ -27,7 +27,7 @@ class EventExecutor : public protocol::HostEventStub {
   static scoped_ptr<EventExecutor> Create(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      Capturer* capturer);
+      VideoFrameCapturer* capturer);
 
   // Initialises any objects needed to execute events.
   virtual void OnSessionStarted(

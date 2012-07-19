@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_CAPTURER_HELPER_H_
-#define REMOTING_HOST_CAPTURER_HELPER_H_
+#ifndef REMOTING_HOST_VIDEO_FRAME_CAPTURER_HELPER_H_
+#define REMOTING_HOST_VIDEO_FRAME_CAPTURER_HELPER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -11,13 +11,14 @@
 
 namespace remoting {
 
-// CapturerHelper is intended to be used by an implementation of the Capturer
-// interface. It maintains a thread-safe invalid region, and the size of the
-// most recently captured screen, on behalf of the Capturer that owns it.
-class CapturerHelper {
+// VideoFrameCapturerHelper is intended to be used by an implementation of the
+// VideoFrameCapturer interface. It maintains a thread-safe invalid region, and
+// the size of the most recently captured screen, on behalf of the
+// VideoFrameCapturer that owns it.
+class VideoFrameCapturerHelper {
  public:
-  CapturerHelper();
-  ~CapturerHelper();
+  VideoFrameCapturerHelper();
+  ~VideoFrameCapturerHelper();
 
   // Clear out the invalid region.
   void ClearInvalidRegion();
@@ -74,9 +75,9 @@ class CapturerHelper {
   // If the value is <= 0, then the invalid region is not expanded to a grid.
   int log_grid_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(CapturerHelper);
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerHelper);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_CAPTURER_HELPER_H_
+#endif  // REMOTING_HOST_VIDEO_FRAME_CAPTURER_HELPER_H_

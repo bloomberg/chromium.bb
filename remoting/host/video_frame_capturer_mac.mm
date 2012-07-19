@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capturer.h"
+#include "remoting/host/video_frame_capturer.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <Cocoa/Cocoa.h>
@@ -20,7 +20,7 @@
 #include "base/time.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
-#include "remoting/host/capturer_helper.h"
+#include "remoting/host/video_frame_capturer_helper.h"
 #include "remoting/proto/control.pb.h"
 
 namespace remoting {
@@ -38,8 +38,8 @@ SkIRect CGRectToSkIRect(const CGRect& rect) {
 }
 
 #if (MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5)
-// Possibly remove CapturerMac::CgBlitPreLion as well depending on performance
-// of CapturerMac::CgBlitPostLion on 10.6.
+// Possibly remove VideoFrameCapturerMac::CgBlitPreLion as well depending on
+// performance of VideoFrameCapturerMac::CgBlitPostLion on 10.6.
 #error No longer need to import CGDisplayCreateImage.
 #else
 // Declared here because CGDisplayCreateImage does not exist in the 10.5 SDK,
@@ -151,15 +151,15 @@ class VideoFrameBuffer {
   DISALLOW_COPY_AND_ASSIGN(VideoFrameBuffer);
 };
 
-// A class to perform capturing for mac.
-class CapturerMac : public Capturer {
+// A class to perform video frame capturing for mac.
+class VideoFrameCapturerMac : public VideoFrameCapturer {
  public:
-  CapturerMac();
-  virtual ~CapturerMac();
+  VideoFrameCapturerMac();
+  virtual ~VideoFrameCapturerMac();
 
   bool Init();
 
-  // Capturer interface.
+  // Overridden from VideoFrameCapturer:
   virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
@@ -208,7 +208,7 @@ class CapturerMac : public Capturer {
 
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
-  CapturerHelper helper_;
+  VideoFrameCapturerHelper helper_;
 
   // Callback notified whenever the cursor shape is changed.
   CursorShapeChangedCallback cursor_shape_changed_callback_;
@@ -242,10 +242,10 @@ class CapturerMac : public Capturer {
   // Power management assertion to indicate that the user is active.
   IOPMAssertionID power_assertion_id_user_;
 
-  DISALLOW_COPY_AND_ASSIGN(CapturerMac);
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerMac);
 };
 
-CapturerMac::CapturerMac()
+VideoFrameCapturerMac::VideoFrameCapturerMac()
     : cgl_context_(NULL),
       current_buffer_(0),
       last_buffer_(NULL),
@@ -256,34 +256,35 @@ CapturerMac::CapturerMac()
       power_assertion_id_user_(kIOPMNullAssertionID) {
 }
 
-CapturerMac::~CapturerMac() {
+VideoFrameCapturerMac::~VideoFrameCapturerMac() {
   ReleaseBuffers();
-  CGUnregisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback, this);
-  CGScreenUnregisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback, this);
+  CGUnregisterScreenRefreshCallback(
+      VideoFrameCapturerMac::ScreenRefreshCallback, this);
+  CGScreenUnregisterMoveCallback(
+      VideoFrameCapturerMac::ScreenUpdateMoveCallback, this);
   CGError err = CGDisplayRemoveReconfigurationCallback(
-      CapturerMac::DisplaysReconfiguredCallback, this);
+      VideoFrameCapturerMac::DisplaysReconfiguredCallback, this);
   if (err != kCGErrorSuccess) {
     LOG(ERROR) << "CGDisplayRemoveReconfigurationCallback " << err;
   }
 }
 
-bool CapturerMac::Init() {
-  CGError err =
-      CGRegisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback,
-                                      this);
+bool VideoFrameCapturerMac::Init() {
+  CGError err = CGRegisterScreenRefreshCallback(
+      VideoFrameCapturerMac::ScreenRefreshCallback, this);
   if (err != kCGErrorSuccess) {
     LOG(ERROR) << "CGRegisterScreenRefreshCallback " << err;
     return false;
   }
 
-  err = CGScreenRegisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback,
-                                     this);
+  err = CGScreenRegisterMoveCallback(
+      VideoFrameCapturerMac::ScreenUpdateMoveCallback, this);
   if (err != kCGErrorSuccess) {
     LOG(ERROR) << "CGScreenRegisterMoveCallback " << err;
     return false;
   }
   err = CGDisplayRegisterReconfigurationCallback(
-      CapturerMac::DisplaysReconfiguredCallback, this);
+      VideoFrameCapturerMac::DisplaysReconfiguredCallback, this);
   if (err != kCGErrorSuccess) {
     LOG(ERROR) << "CGDisplayRegisterReconfigurationCallback " << err;
     return false;
@@ -302,7 +303,7 @@ bool CapturerMac::Init() {
   return true;
 }
 
-void CapturerMac::ReleaseBuffers() {
+void VideoFrameCapturerMac::ReleaseBuffers() {
   if (cgl_context_) {
     pixel_buffer_object_.Release();
     CGLDestroyContext(cgl_context_);
@@ -316,8 +317,7 @@ void CapturerMac::ReleaseBuffers() {
   }
 }
 
-void CapturerMac::Start(
-    const CursorShapeChangedCallback& callback) {
+void VideoFrameCapturerMac::Start(const CursorShapeChangedCallback& callback) {
   cursor_shape_changed_callback_ = callback;
 
   // Create power management assertions to wake the display and prevent it from
@@ -330,7 +330,7 @@ void CapturerMac::Start(
                       &power_assertion_id_user_);
 }
 
-void CapturerMac::Stop() {
+void VideoFrameCapturerMac::Stop() {
   if (power_assertion_id_display_ != kIOPMNullAssertionID) {
     IOPMAssertionRelease(power_assertion_id_display_);
     power_assertion_id_display_ = kIOPMNullAssertionID;
@@ -341,7 +341,7 @@ void CapturerMac::Stop() {
   }
 }
 
-void CapturerMac::ScreenConfigurationChanged() {
+void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   ReleaseBuffers();
   helper_.ClearInvalidRegion();
   last_buffer_ = NULL;
@@ -383,27 +383,27 @@ void CapturerMac::ScreenConfigurationChanged() {
   pixel_buffer_object_.Init(cgl_context_, buffer_size);
 }
 
-media::VideoFrame::Format CapturerMac::pixel_format() const {
+media::VideoFrame::Format VideoFrameCapturerMac::pixel_format() const {
   return pixel_format_;
 }
 
-void CapturerMac::ClearInvalidRegion() {
+void VideoFrameCapturerMac::ClearInvalidRegion() {
   helper_.ClearInvalidRegion();
 }
 
-void CapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
+void VideoFrameCapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void CapturerMac::InvalidateScreen(const SkISize& size) {
+void VideoFrameCapturerMac::InvalidateScreen(const SkISize& size) {
   helper_.InvalidateScreen(size);
 }
 
-void CapturerMac::InvalidateFullScreen() {
+void VideoFrameCapturerMac::InvalidateFullScreen() {
   helper_.InvalidateFullScreen();
 }
 
-void CapturerMac::CaptureInvalidRegion(
+void VideoFrameCapturerMac::CaptureInvalidRegion(
     const CaptureCompletedCallback& callback) {
   // Only allow captures when the display configuration is not occurring.
   scoped_refptr<CaptureData> data;
@@ -454,7 +454,7 @@ void CapturerMac::CaptureInvalidRegion(
   callback.Run(data);
 }
 
-void CapturerMac::CaptureCursor() {
+void VideoFrameCapturerMac::CaptureCursor() {
   if (cursor_shape_changed_callback_.is_null()) {
     return;
     }
@@ -540,8 +540,8 @@ void CapturerMac::CaptureCursor() {
   current_cursor_.reset(CGImageCreateCopy(image));
 }
 
-void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
-           const SkRegion& region) {
+void VideoFrameCapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
+                                       const SkRegion& region) {
   const int buffer_height = buffer.size().height();
   const int buffer_width = buffer.size().width();
 
@@ -608,7 +608,7 @@ void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 }
 
-void CapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
+void VideoFrameCapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glReadBuffer(GL_FRONT);
   glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
@@ -622,8 +622,8 @@ void CapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
   glPopClientAttrib();
 }
 
-void CapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
-                                const SkRegion& region) {
+void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
+                                          const SkRegion& region) {
   const int buffer_height = buffer.size().height();
   const int buffer_width = buffer.size().width();
 
@@ -654,8 +654,8 @@ void CapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
   }
 }
 
-void CapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
-                                 const SkRegion& region) {
+void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
+                                           const SkRegion& region) {
   const int buffer_height = buffer.size().height();
   const int buffer_width = buffer.size().width();
 
@@ -693,11 +693,12 @@ void CapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
   }
 }
 
-const SkISize& CapturerMac::size_most_recent() const {
+const SkISize& VideoFrameCapturerMac::size_most_recent() const {
   return helper_.size_most_recent();
 }
 
-void CapturerMac::ScreenRefresh(CGRectCount count, const CGRect *rect_array) {
+void VideoFrameCapturerMac::ScreenRefresh(CGRectCount count,
+                                          const CGRect* rect_array) {
   SkIRect skirect_array[count];
   for (CGRectCount i = 0; i < count; ++i) {
     skirect_array[i] = CGRectToSkIRect(rect_array[i]);
@@ -707,9 +708,9 @@ void CapturerMac::ScreenRefresh(CGRectCount count, const CGRect *rect_array) {
   InvalidateRegion(region);
 }
 
-void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
-                                   size_t count,
-                                   const CGRect *rect_array) {
+void VideoFrameCapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
+                                             size_t count,
+                                             const CGRect* rect_array) {
   SkIRect skirect_new_array[count];
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
@@ -721,8 +722,9 @@ void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
   InvalidateRegion(region);
 }
 
-void CapturerMac::DisplaysReconfigured(CGDirectDisplayID display,
-                                       CGDisplayChangeSummaryFlags flags) {
+void VideoFrameCapturerMac::DisplaysReconfigured(
+    CGDirectDisplayID display,
+    CGDisplayChangeSummaryFlags flags) {
   if (display == CGMainDisplayID()) {
     if (flags & kCGDisplayBeginConfigurationFlag) {
       // Wait on |display_configuration_capture_event_| to prevent more
@@ -739,34 +741,38 @@ void CapturerMac::DisplaysReconfigured(CGDirectDisplayID display,
   }
 }
 
-void CapturerMac::ScreenRefreshCallback(CGRectCount count,
-                                        const CGRect *rect_array,
-                                        void *user_parameter) {
-  CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
+void VideoFrameCapturerMac::ScreenRefreshCallback(CGRectCount count,
+                                                  const CGRect* rect_array,
+                                                  void* user_parameter) {
+  VideoFrameCapturerMac* capturer = reinterpret_cast<VideoFrameCapturerMac*>(
+      user_parameter);
   capturer->ScreenRefresh(count, rect_array);
 }
 
-void CapturerMac::ScreenUpdateMoveCallback(CGScreenUpdateMoveDelta delta,
-                                           size_t count,
-                                           const CGRect *rect_array,
-                                           void *user_parameter) {
-  CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
+void VideoFrameCapturerMac::ScreenUpdateMoveCallback(
+    CGScreenUpdateMoveDelta delta,
+    size_t count,
+    const CGRect* rect_array,
+    void* user_parameter) {
+  VideoFrameCapturerMac* capturer = reinterpret_cast<VideoFrameCapturerMac*>(
+      user_parameter);
   capturer->ScreenUpdateMove(delta, count, rect_array);
 }
 
-void CapturerMac::DisplaysReconfiguredCallback(
+void VideoFrameCapturerMac::DisplaysReconfiguredCallback(
     CGDirectDisplayID display,
     CGDisplayChangeSummaryFlags flags,
-    void *user_parameter) {
-  CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
+    void* user_parameter) {
+  VideoFrameCapturerMac* capturer = reinterpret_cast<VideoFrameCapturerMac*>(
+      user_parameter);
   capturer->DisplaysReconfigured(display, flags);
 }
 
 }  // namespace
 
 // static
-Capturer* Capturer::Create() {
-  CapturerMac* capturer = new CapturerMac();
+VideoFrameCapturer* VideoFrameCapturer::Create() {
+  VideoFrameCapturerMac* capturer = new VideoFrameCapturerMac();
   if (!capturer->Init()) {
     delete capturer;
     capturer = NULL;

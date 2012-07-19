@@ -6,7 +6,7 @@
 #define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
 #include "net/base/ip_endpoint.h"
-#include "remoting/host/capturer.h"
+#include "remoting/host/video_frame_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/continue_window.h"
@@ -31,10 +31,10 @@ class MockCaptureCompletedCallback {
   DISALLOW_COPY_AND_ASSIGN(MockCaptureCompletedCallback);
 };
 
-class MockCapturer : public Capturer {
+class MockVideoFrameCapturer : public VideoFrameCapturer {
  public:
-  MockCapturer();
-  virtual ~MockCapturer();
+  MockVideoFrameCapturer();
+  virtual ~MockVideoFrameCapturer();
 
   MOCK_METHOD1(Start, void(const CursorShapeChangedCallback& callback));
   MOCK_METHOD0(Stop, void());
@@ -49,7 +49,7 @@ class MockCapturer : public Capturer {
   MOCK_CONST_METHOD0(size_most_recent, const SkISize&());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockCapturer);
+  DISALLOW_COPY_AND_ASSIGN(MockVideoFrameCapturer);
 };
 
 class MockDisconnectWindow : public DisconnectWindow {

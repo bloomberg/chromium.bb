@@ -14,13 +14,13 @@
 namespace remoting {
 
 class AudioCapturer;
-class Capturer;
 class ChromotingHostContext;
+class VideoFrameCapturer;
 
 namespace protocol {
 class ClipboardStub;
 class HostEventStub;
-};
+}
 
 class DesktopEnvironment {
  public:
@@ -34,13 +34,13 @@ class DesktopEnvironment {
 
   static scoped_ptr<DesktopEnvironment> CreateFake(
       ChromotingHostContext* context,
-      scoped_ptr<Capturer> capturer,
+      scoped_ptr<VideoFrameCapturer> capturer,
       scoped_ptr<EventExecutor> event_executor,
       scoped_ptr<AudioCapturer> audio_capturer);
 
   virtual ~DesktopEnvironment();
 
-  Capturer* capturer() const { return capturer_.get(); }
+  VideoFrameCapturer* capturer() const { return capturer_.get(); }
   EventExecutor* event_executor() const { return event_executor_.get(); }
   AudioCapturer* audio_capturer() const { return audio_capturer_.get(); }
   void OnSessionStarted(scoped_ptr<protocol::ClipboardStub> client_clipboard);
@@ -48,7 +48,7 @@ class DesktopEnvironment {
 
  private:
   DesktopEnvironment(ChromotingHostContext* context,
-                     scoped_ptr<Capturer> capturer,
+                     scoped_ptr<VideoFrameCapturer> capturer,
                      scoped_ptr<EventExecutor> event_executor,
                      scoped_ptr<AudioCapturer> audio_capturer);
 
@@ -57,7 +57,7 @@ class DesktopEnvironment {
   ChromotingHostContext* context_;
 
   // Used to capture video to deliver to clients.
-  scoped_ptr<Capturer> capturer_;
+  scoped_ptr<VideoFrameCapturer> capturer_;
 
   // Used to capture audio to deliver to clients.
   scoped_ptr<AudioCapturer> audio_capturer_;

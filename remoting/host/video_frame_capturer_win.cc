@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capturer.h"
+#include "remoting/host/video_frame_capturer.h"
 
 #include <windows.h>
 
@@ -14,10 +14,10 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "remoting/base/capture_data.h"
-#include "remoting/host/capturer_helper.h"
 #include "remoting/host/desktop_win.h"
 #include "remoting/host/differ.h"
 #include "remoting/host/scoped_thread_desktop_win.h"
+#include "remoting/host/video_frame_capturer_helper.h"
 #include "remoting/proto/control.pb.h"
 
 namespace remoting {
@@ -37,16 +37,16 @@ const uint32 kPixelBgraBlack = 0xff000000;
 const uint32 kPixelBgraWhite = 0xffffffff;
 const uint32 kPixelBgraTransparent = 0x00000000;
 
-// CapturerGdi captures 32bit RGB using GDI.
+// VideoFrameCapturerWin captures 32bit RGB using GDI.
 //
-// CapturerGdi is double-buffered as required by Capturer. See
-// remoting/host/capturer.h.
-class CapturerGdi : public Capturer {
+// VideoFrameCapturerWin is double-buffered as required by VideoFrameCapturer.
+// See remoting/host/video_frame_capturer.h.
+class VideoFrameCapturerWin : public VideoFrameCapturer {
  public:
-  CapturerGdi();
-  virtual ~CapturerGdi();
+  VideoFrameCapturerWin();
+  virtual ~VideoFrameCapturerWin();
 
-  // Capturer interface.
+  // Overridden from VideoFrameCapturer:
   virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
@@ -103,7 +103,7 @@ class CapturerGdi : public Capturer {
 
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
-  CapturerHelper helper_;
+  VideoFrameCapturerHelper helper_;
 
   // Callback notified whenever the cursor shape is changed.
   CursorShapeChangedCallback cursor_shape_changed_callback_;
@@ -141,7 +141,7 @@ class CapturerGdi : public Capturer {
   base::ScopedNativeLibrary dwmapi_library_;
   DwmEnableCompositionFunc composition_func_;
 
-  DISALLOW_COPY_AND_ASSIGN(CapturerGdi);
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerWin);
 };
 
 // 3780 pixels per meter is equivalent to 96 DPI, typical on desktop monitors.
@@ -149,7 +149,7 @@ static const int kPixelsPerMeter = 3780;
 // 32 bit RGBA is 4 bytes per pixel.
 static const int kBytesPerPixel = 4;
 
-CapturerGdi::CapturerGdi()
+VideoFrameCapturerWin::VideoFrameCapturerWin()
     : last_cursor_size_(SkISize::Make(0, 0)),
       desktop_dc_rect_(SkIRect::MakeEmpty()),
       resource_generation_(0),
@@ -159,30 +159,30 @@ CapturerGdi::CapturerGdi()
   ScreenConfigurationChanged();
 }
 
-CapturerGdi::~CapturerGdi() {
+VideoFrameCapturerWin::~VideoFrameCapturerWin() {
 }
 
-media::VideoFrame::Format CapturerGdi::pixel_format() const {
+media::VideoFrame::Format VideoFrameCapturerWin::pixel_format() const {
   return pixel_format_;
 }
 
-void CapturerGdi::ClearInvalidRegion() {
+void VideoFrameCapturerWin::ClearInvalidRegion() {
   helper_.ClearInvalidRegion();
 }
 
-void CapturerGdi::InvalidateRegion(const SkRegion& invalid_region) {
+void VideoFrameCapturerWin::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void CapturerGdi::InvalidateScreen(const SkISize& size) {
+void VideoFrameCapturerWin::InvalidateScreen(const SkISize& size) {
   helper_.InvalidateScreen(size);
 }
 
-void CapturerGdi::InvalidateFullScreen() {
+void VideoFrameCapturerWin::InvalidateFullScreen() {
   helper_.InvalidateFullScreen();
 }
 
-void CapturerGdi::CaptureInvalidRegion(
+void VideoFrameCapturerWin::CaptureInvalidRegion(
     const CaptureCompletedCallback& callback) {
   // Force the system to power-up display hardware, if it has been suspended.
   SetThreadExecutionState(ES_DISPLAY_REQUIRED);
@@ -197,11 +197,11 @@ void CapturerGdi::CaptureInvalidRegion(
   CaptureCursor();
 }
 
-const SkISize& CapturerGdi::size_most_recent() const {
+const SkISize& VideoFrameCapturerWin::size_most_recent() const {
   return helper_.size_most_recent();
 }
 
-void CapturerGdi::Start(
+void VideoFrameCapturerWin::Start(
     const CursorShapeChangedCallback& callback) {
   cursor_shape_changed_callback_ = callback;
 
@@ -224,18 +224,18 @@ void CapturerGdi::Start(
   }
 }
 
-void CapturerGdi::Stop() {
+void VideoFrameCapturerWin::Stop() {
   // Restore Aero.
   if (composition_func_ != NULL) {
     (*composition_func_)(DWM_EC_ENABLECOMPOSITION);
   }
 }
 
-void CapturerGdi::ScreenConfigurationChanged() {
+void VideoFrameCapturerWin::ScreenConfigurationChanged() {
   // We poll for screen configuration changes, so ignore notifications.
 }
 
-void CapturerGdi::PrepareCaptureResources() {
+void VideoFrameCapturerWin::PrepareCaptureResources() {
   // Switch to the desktop receiving user input if different from the current
   // one.
   scoped_ptr<DesktopWin> input_desktop = DesktopWin::GetInputDesktop();
@@ -283,10 +283,9 @@ void CapturerGdi::PrepareCaptureResources() {
   }
 }
 
-void CapturerGdi::AllocateBuffer(int buffer_index) {
+void VideoFrameCapturerWin::AllocateBuffer(int buffer_index) {
   DCHECK(desktop_dc_.get() != NULL);
   DCHECK(memory_dc_.Get() != NULL);
-
   // Windows requires DIB sections' rows to start DWORD-aligned, which is
   // implicit when working with RGB32 pixels.
   DCHECK_EQ(pixel_format_, media::VideoFrame::RGB32);
@@ -316,7 +315,7 @@ void CapturerGdi::AllocateBuffer(int buffer_index) {
       bmi.bmiHeader.biSizeImage / std::abs(bmi.bmiHeader.biHeight);
 }
 
-void CapturerGdi::CalculateInvalidRegion() {
+void VideoFrameCapturerWin::CalculateInvalidRegion() {
   CaptureImage();
 
   const VideoFrameBuffer& current = buffers_[current_buffer_];
@@ -353,8 +352,9 @@ void CapturerGdi::CalculateInvalidRegion() {
   InvalidateRegion(region);
 }
 
-void CapturerGdi::CaptureRegion(const SkRegion& region,
-                                const CaptureCompletedCallback& callback) {
+void VideoFrameCapturerWin::CaptureRegion(
+    const SkRegion& region,
+    const CaptureCompletedCallback& callback) {
   const VideoFrameBuffer& buffer = buffers_[current_buffer_];
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 
@@ -372,7 +372,7 @@ void CapturerGdi::CaptureRegion(const SkRegion& region,
   callback.Run(data);
 }
 
-void CapturerGdi::CaptureImage() {
+void VideoFrameCapturerWin::CaptureImage() {
   // Make sure the GDI capture resources are up-to-date.
   PrepareCaptureResources();
 
@@ -386,7 +386,9 @@ void CapturerGdi::CaptureImage() {
       SRCCOPY | CAPTUREBLT);
 }
 
-void CapturerGdi::AddCursorOutline(int width, int height, uint32* dst) {
+void VideoFrameCapturerWin::AddCursorOutline(int width,
+                                             int height,
+                                             uint32* dst) {
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       // If this is a transparent pixel (bgr == 0 and alpha = 0), check the
@@ -406,7 +408,7 @@ void CapturerGdi::AddCursorOutline(int width, int height, uint32* dst) {
   }
 }
 
-void CapturerGdi::CaptureCursor() {
+void VideoFrameCapturerWin::CaptureCursor() {
   CURSORINFO cursor_info;
   cursor_info.cbSize = sizeof(CURSORINFO);
   if (!GetCursorInfo(&cursor_info)) {
@@ -562,8 +564,8 @@ void CapturerGdi::CaptureCursor() {
 }  // namespace
 
 // static
-Capturer* Capturer::Create() {
-  return new CapturerGdi();
+VideoFrameCapturer* VideoFrameCapturer::Create() {
+  return new VideoFrameCapturerWin();
 }
 
 }  // namespace remoting

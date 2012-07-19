@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_CAPTURER_H_
-#define REMOTING_HOST_CAPTURER_H_
+#ifndef REMOTING_HOST_VIDEO_FRAME_CAPTURER_H_
+#define REMOTING_HOST_VIDEO_FRAME_CAPTURER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -49,7 +49,7 @@ class CaptureData;
 // Implementation has to ensure the following guarantees:
 // 1. Double buffering
 //    Since data can be read while another capture action is happening.
-class Capturer {
+class VideoFrameCapturer {
  public:
   // CaptureCompletedCallback is called when the capturer has completed.
   typedef base::Callback<void(scoped_refptr<CaptureData>)>
@@ -59,21 +59,22 @@ class Capturer {
   typedef base::Callback<void(scoped_ptr<protocol::CursorShapeInfo>)>
       CursorShapeChangedCallback;
 
-  virtual ~Capturer() {}
+  virtual ~VideoFrameCapturer() {}
 
   // Create platform-specific capturer.
-  static Capturer* Create();
+  static VideoFrameCapturer* Create();
 
 #if defined(OS_LINUX)
-  // Set whether the Capturer should try to use X DAMAGE support if it is
-  // available.  This needs to be called before the Capturer is created.
+  // Set whether the VideoFrameCapturer should try to use X DAMAGE support if it
+  // is available. This needs to be called before the VideoFrameCapturer is
+  // created.
   // This is used by the Virtual Me2Me host, since the XDamage extension is
   // known to work reliably in this case.
 
   // TODO(lambroslambrou): This currently sets a global flag, referenced during
-  // Capturer::Create().  This is a temporary solution, until the
+  // VideoFrameCapturer::Create().  This is a temporary solution, until the
   // DesktopEnvironment class is refactored to allow applications to control
-  // the creation of various stubs (including the Capturer) - see
+  // the creation of various stubs (including the VideoFrameCapturer) - see
   // http://crbug.com/104544
   static void EnableXDamage(bool enable);
 #endif  // defined(OS_LINUX)
@@ -122,4 +123,4 @@ class Capturer {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_CAPTURER_H_
+#endif  // REMOTING_HOST_VIDEO_FRAME_CAPTURER_H_

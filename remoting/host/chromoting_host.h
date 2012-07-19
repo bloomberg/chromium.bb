@@ -13,7 +13,6 @@
 #include "base/threading/thread.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/base/encoder.h"
-#include "remoting/host/capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_key_pair.h"
@@ -33,11 +32,11 @@ class CandidateSessionConfig;
 }  // namespace protocol
 
 class AudioScheduler;
-class Capturer;
 class ChromotingHostContext;
 class DesktopEnvironment;
 class Encoder;
 class ScreenRecorder;
+class VideoFrameCapturer;
 
 // A class to implement the functionality of a host process.
 //
@@ -49,7 +48,7 @@ class ScreenRecorder;
 //
 // 2. We listen for incoming connection using libjingle. We will create
 //    a ConnectionToClient object that wraps around linjingle for transport.
-//    A ScreenRecorder is created with an Encoder and a Capturer.
+//    A ScreenRecorder is created with an Encoder and a VideoFrameCapturer.
 //    A ConnectionToClient is added to the ScreenRecorder for transporting
 //    the screen captures. An InputStub is created and registered with the
 //    ConnectionToClient to receive mouse / keyboard events from the remote

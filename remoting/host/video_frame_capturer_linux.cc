@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capturer.h"
+#include "remoting/host/video_frame_capturer.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -15,8 +15,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/capture_data.h"
-#include "remoting/host/capturer_helper.h"
 #include "remoting/host/differ.h"
+#include "remoting/host/video_frame_capturer_helper.h"
 #include "remoting/host/x_server_pixel_buffer.h"
 #include "remoting/proto/control.pb.h"
 
@@ -71,11 +71,11 @@ class VideoFrameBuffer {
   DISALLOW_COPY_AND_ASSIGN(VideoFrameBuffer);
 };
 
-// A class to perform capturing for Linux.
-class CapturerLinux : public Capturer {
+// A class to perform video frame capturing for Linux.
+class VideoFrameCapturerLinux : public VideoFrameCapturer {
  public:
-  CapturerLinux();
-  virtual ~CapturerLinux();
+  VideoFrameCapturerLinux();
+  virtual ~VideoFrameCapturerLinux();
 
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
 
@@ -97,15 +97,15 @@ class CapturerLinux : public Capturer {
 
   // Read and handle all currently-pending XEvents.
   // In the DAMAGE case, process the XDamage events and store the resulting
-  // damage rectangles in the CapturerHelper.
+  // damage rectangles in the VideoFrameCapturerHelper.
   // In all cases, call ScreenConfigurationChanged() in response to any
   // ConfigNotify events.
   void ProcessPendingXEvents();
 
   // Capture screen pixels, and return the data in a new CaptureData object,
   // to be freed by the caller.
-  // In the DAMAGE case, the CapturerHelper already holds the list of invalid
-  // rectangles from ProcessPendingXEvents().
+  // In the DAMAGE case, the VideoFrameCapturerHelper already holds the list of
+  // invalid rectangles from ProcessPendingXEvents().
   // In the non-DAMAGE case, this captures the whole screen, then calculates
   // some invalid rectangles that include any differences between this and the
   // previous capture.
@@ -155,7 +155,7 @@ class CapturerLinux : public Capturer {
 
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
-  CapturerHelper helper_;
+  VideoFrameCapturerHelper helper_;
 
   // Callback notified whenever the cursor shape is changed.
   CursorShapeChangedCallback cursor_shape_changed_callback_;
@@ -178,10 +178,10 @@ class CapturerLinux : public Capturer {
   // |Differ| for use when polling for changes.
   scoped_ptr<Differ> differ_;
 
-  DISALLOW_COPY_AND_ASSIGN(CapturerLinux);
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerLinux);
 };
 
-CapturerLinux::CapturerLinux()
+VideoFrameCapturerLinux::VideoFrameCapturerLinux()
     : display_(NULL),
       gc_(NULL),
       root_window_(BadValue),
@@ -199,11 +199,11 @@ CapturerLinux::CapturerLinux()
   helper_.SetLogGridSize(4);
 }
 
-CapturerLinux::~CapturerLinux() {
+VideoFrameCapturerLinux::~VideoFrameCapturerLinux() {
   DeinitXlib();
 }
 
-bool CapturerLinux::Init() {
+bool VideoFrameCapturerLinux::Init() {
   // TODO(ajwong): We should specify the display string we are attaching to
   // in the constructor.
   display_ = XOpenDisplay(NULL);
@@ -253,7 +253,7 @@ bool CapturerLinux::Init() {
   return true;
 }
 
-void CapturerLinux::InitXDamage() {
+void VideoFrameCapturerLinux::InitXDamage() {
   // Our use of XDamage requires XFixes.
   if (!has_xfixes_) {
     return;
@@ -291,15 +291,15 @@ void CapturerLinux::InitXDamage() {
   LOG(INFO) << "Using XDamage extension.";
 }
 
-void CapturerLinux::Start(
+void VideoFrameCapturerLinux::Start(
     const CursorShapeChangedCallback& callback) {
   cursor_shape_changed_callback_ = callback;
 }
 
-void CapturerLinux::Stop() {
+void VideoFrameCapturerLinux::Stop() {
 }
 
-void CapturerLinux::ScreenConfigurationChanged() {
+void VideoFrameCapturerLinux::ScreenConfigurationChanged() {
   last_buffer_ = NULL;
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].set_needs_update();
@@ -308,28 +308,28 @@ void CapturerLinux::ScreenConfigurationChanged() {
   x_server_pixel_buffer_.Init(display_);
 }
 
-media::VideoFrame::Format CapturerLinux::pixel_format() const {
+media::VideoFrame::Format VideoFrameCapturerLinux::pixel_format() const {
   return pixel_format_;
 }
 
-void CapturerLinux::ClearInvalidRegion() {
+void VideoFrameCapturerLinux::ClearInvalidRegion() {
   helper_.ClearInvalidRegion();
 }
 
-void CapturerLinux::InvalidateRegion(const SkRegion& invalid_region) {
+void VideoFrameCapturerLinux::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void CapturerLinux::InvalidateScreen(const SkISize& size) {
+void VideoFrameCapturerLinux::InvalidateScreen(const SkISize& size) {
   helper_.InvalidateScreen(size);
 }
 
-void CapturerLinux::InvalidateFullScreen() {
+void VideoFrameCapturerLinux::InvalidateFullScreen() {
   helper_.InvalidateFullScreen();
   last_buffer_ = NULL;
 }
 
-void CapturerLinux::CaptureInvalidRegion(
+void VideoFrameCapturerLinux::CaptureInvalidRegion(
     const CaptureCompletedCallback& callback) {
   // Process XEvents for XDamage and cursor shape tracking.
   ProcessPendingXEvents();
@@ -351,7 +351,7 @@ void CapturerLinux::CaptureInvalidRegion(
   callback.Run(capture_data);
 }
 
-void CapturerLinux::ProcessPendingXEvents() {
+void VideoFrameCapturerLinux::ProcessPendingXEvents() {
   // Find the number of events that are outstanding "now."  We don't just loop
   // on XPending because we want to guarantee this terminates.
   int events_to_process = XPending(display_);
@@ -377,7 +377,7 @@ void CapturerLinux::ProcessPendingXEvents() {
   }
 }
 
-void CapturerLinux::CaptureCursor() {
+void VideoFrameCapturerLinux::CaptureCursor() {
   DCHECK(has_xfixes_);
   if (cursor_shape_changed_callback_.is_null())
     return;
@@ -414,7 +414,7 @@ void CapturerLinux::CaptureCursor() {
   cursor_shape_changed_callback_.Run(cursor_proto.Pass());
 }
 
-CaptureData* CapturerLinux::CaptureFrame() {
+CaptureData* VideoFrameCapturerLinux::CaptureFrame() {
   VideoFrameBuffer& buffer = buffers_[current_buffer_];
   DataPlanes planes;
   planes.data[0] = buffer.ptr();
@@ -484,7 +484,7 @@ CaptureData* CapturerLinux::CaptureFrame() {
   return capture_data;
 }
 
-void CapturerLinux::SynchronizeFrame() {
+void VideoFrameCapturerLinux::SynchronizeFrame() {
   // Synchronize the current buffer with the previous one since we do not
   // capture the entire desktop. Note that encoder may be reading from the
   // previous buffer at this time so thread access complaints are false
@@ -506,7 +506,7 @@ void CapturerLinux::SynchronizeFrame() {
   }
 }
 
-void CapturerLinux::DeinitXlib() {
+void VideoFrameCapturerLinux::DeinitXlib() {
   if (gc_) {
     XFreeGC(display_, gc_);
     gc_ = NULL;
@@ -526,8 +526,8 @@ void CapturerLinux::DeinitXlib() {
   }
 }
 
-void CapturerLinux::CaptureRect(const SkIRect& rect,
-                                CaptureData* capture_data) {
+void VideoFrameCapturerLinux::CaptureRect(const SkIRect& rect,
+                                          CaptureData* capture_data) {
   uint8* image = x_server_pixel_buffer_.CaptureRect(rect);
   int depth = x_server_pixel_buffer_.GetDepth();
   int bpp = x_server_pixel_buffer_.GetBitsPerPixel();
@@ -541,8 +541,8 @@ void CapturerLinux::CaptureRect(const SkIRect& rect,
   }
 }
 
-void CapturerLinux::FastBlit(uint8* image, const SkIRect& rect,
-                             CaptureData* capture_data) {
+void VideoFrameCapturerLinux::FastBlit(uint8* image, const SkIRect& rect,
+                                       CaptureData* capture_data) {
   uint8* src_pos = image;
   int src_stride = x_server_pixel_buffer_.GetStride();
   int dst_x = rect.fLeft, dst_y = rect.fTop;
@@ -563,8 +563,8 @@ void CapturerLinux::FastBlit(uint8* image, const SkIRect& rect,
   }
 }
 
-void CapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
-                             CaptureData* capture_data) {
+void VideoFrameCapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
+                                       CaptureData* capture_data) {
   DataPlanes planes = capture_data->data_planes();
   uint8* dst_buffer = planes.data[0];
   const int dst_stride = planes.strides[0];
@@ -614,15 +614,15 @@ void CapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
   }
 }
 
-const SkISize& CapturerLinux::size_most_recent() const {
+const SkISize& VideoFrameCapturerLinux::size_most_recent() const {
   return helper_.size_most_recent();
 }
 
 }  // namespace
 
 // static
-Capturer* Capturer::Create() {
-  CapturerLinux* capturer = new CapturerLinux();
+VideoFrameCapturer* VideoFrameCapturer::Create() {
+  VideoFrameCapturerLinux* capturer = new VideoFrameCapturerLinux();
   if (!capturer->Init()) {
     delete capturer;
     capturer = NULL;
@@ -631,7 +631,7 @@ Capturer* Capturer::Create() {
 }
 
 // static
-void Capturer::EnableXDamage(bool enable) {
+void VideoFrameCapturer::EnableXDamage(bool enable) {
   g_should_use_x_damage = enable;
 }
 

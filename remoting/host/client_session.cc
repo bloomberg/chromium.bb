@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/message_loop_proxy.h"
-#include "remoting/host/capturer.h"
+#include "remoting/host/video_frame_capturer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/client_stub.h"
@@ -19,7 +19,7 @@ ClientSession::ClientSession(
     EventHandler* event_handler,
     scoped_ptr<protocol::ConnectionToClient> connection,
     protocol::HostEventStub* host_event_stub,
-    Capturer* capturer,
+    VideoFrameCapturer* capturer,
     const base::TimeDelta& max_duration)
     : event_handler_(event_handler),
       connection_(connection.Pass()),

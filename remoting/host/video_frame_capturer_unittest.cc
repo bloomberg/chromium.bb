@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/video_frame_capturer.h"
+
 #include "base/bind.h"
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif  // defined(OS_MACOSX)
 #include "remoting/base/capture_data.h"
-#include "remoting/host/capturer.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,17 +42,17 @@ MATCHER(DirtyRegionIsNonEmptyRect, "") {
   return dirty_region == SkRegion(dirty_region_bounds);
 }
 
-class CapturerTest : public testing::Test {
+class VideoFrameCapturerTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-    capturer_.reset(Capturer::Create());
+  virtual void SetUp() OVERRIDE {
+    capturer_.reset(VideoFrameCapturer::Create());
   }
 
-  scoped_ptr<Capturer> capturer_;
+  scoped_ptr<VideoFrameCapturer> capturer_;
   MockCaptureCompletedCallback capture_completed_callback_;
 };
 
-TEST_F(CapturerTest, StartCapturer) {
+TEST_F(VideoFrameCapturerTest, StartCapturer) {
   if (!IsOsSupported()) {
     return;
   }
@@ -66,7 +67,7 @@ TEST_F(CapturerTest, StartCapturer) {
 #define MAYBE_Capture Capture
 #endif
 
-TEST_F(CapturerTest, MAYBE_Capture) {
+TEST_F(VideoFrameCapturerTest, MAYBE_Capture) {
   if (!IsOsSupported()) {
     return;
   }

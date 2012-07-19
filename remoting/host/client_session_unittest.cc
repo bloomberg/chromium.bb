@@ -65,7 +65,7 @@ class ClientSessionTest : public testing::Test {
   std::string client_jid_;
   MockHostStub host_stub_;
   MockHostEventStub host_event_stub_;
-  MockCapturer capturer_;
+  MockVideoFrameCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
   scoped_ptr<ClientSession> client_session_;
 };

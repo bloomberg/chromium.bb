@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_CAPTURER_FAKE_H_
-#define REMOTING_HOST_CAPTURER_FAKE_H_
+#ifndef REMOTING_HOST_VIDEO_FRAME_CAPTURER_FAKE_H_
+#define REMOTING_HOST_VIDEO_FRAME_CAPTURER_FAKE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "remoting/host/capturer.h"
-#include "remoting/host/capturer_helper.h"
+#include "remoting/host/video_frame_capturer.h"
+#include "remoting/host/video_frame_capturer_helper.h"
 
 namespace remoting {
 
-// A CapturerFake generates artificial image for testing purpose.
+// A VideoFrameCapturerFake generates artificial image for testing purpose.
 //
-// CapturerFake is double-buffered as required by Capturer. See
-// remoting/host/capturer.h.
-class CapturerFake : public Capturer {
+// VideoFrameCapturerFake is double-buffered as required by VideoFrameCapturer.
+// See remoting/host/video_frame_capturer.h.
+class VideoFrameCapturerFake : public VideoFrameCapturer {
  public:
-  CapturerFake();
-  virtual ~CapturerFake();
+  VideoFrameCapturerFake();
+  virtual ~VideoFrameCapturerFake();
 
-  // Capturer interface.
+  // Overridden from VideoFrameCapturer:
   virtual void Start(
       const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
@@ -45,7 +45,7 @@ class CapturerFake : public Capturer {
   int box_speed_x_;
   int box_speed_y_;
 
-  CapturerHelper helper;
+  VideoFrameCapturerHelper helper_;
 
   // We have two buffers for the screen images as required by Capturer.
   static const int kNumBuffers = 2;
@@ -57,9 +57,9 @@ class CapturerFake : public Capturer {
   // Format of pixels returned in buffer.
   media::VideoFrame::Format pixel_format_;
 
-  DISALLOW_COPY_AND_ASSIGN(CapturerFake);
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerFake);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_CAPTURER_FAKE_H_
+#endif  // REMOTING_HOST_VIDEO_FRAME_CAPTURER_FAKE_H_

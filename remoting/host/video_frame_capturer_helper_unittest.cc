@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capturer_helper.h"
+#include "remoting/host/video_frame_capturer_helper.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
-class CapturerHelperTest : public testing::Test {
+class VideoFrameCapturerHelperTest : public testing::Test {
  protected:
-  CapturerHelper capturer_helper_;
+  VideoFrameCapturerHelper capturer_helper_;
 };
 
 bool Equals(const SkRegion& region1, const SkRegion& region2) {
@@ -35,7 +35,7 @@ bool Equals(const SkRegion& region1, const SkRegion& region2) {
   return true;
 }
 
-TEST_F(CapturerHelperTest, ClearInvalidRegion) {
+TEST_F(VideoFrameCapturerHelperTest, ClearInvalidRegion) {
   SkRegion region;
   capturer_helper_.InvalidateRegion(SkRegion(SkIRect::MakeXYWH(1, 2, 3, 4)));
   capturer_helper_.ClearInvalidRegion();
@@ -43,7 +43,7 @@ TEST_F(CapturerHelperTest, ClearInvalidRegion) {
   ASSERT_TRUE(region.isEmpty());
 }
 
-TEST_F(CapturerHelperTest, InvalidateRegion) {
+TEST_F(VideoFrameCapturerHelperTest, InvalidateRegion) {
   SkRegion region;
   capturer_helper_.SwapInvalidRegion(&region);
   ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeEmpty()), region));
@@ -60,14 +60,14 @@ TEST_F(CapturerHelperTest, InvalidateRegion) {
   ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeXYWH(1, 2, 6, 4)), region));
 }
 
-TEST_F(CapturerHelperTest, InvalidateScreen) {
+TEST_F(VideoFrameCapturerHelperTest, InvalidateScreen) {
   SkRegion region;
   capturer_helper_.InvalidateScreen(SkISize::Make(12, 34));
   capturer_helper_.SwapInvalidRegion(&region);
   ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeWH(12, 34)), region));
 }
 
-TEST_F(CapturerHelperTest, InvalidateFullScreen) {
+TEST_F(VideoFrameCapturerHelperTest, InvalidateFullScreen) {
   SkRegion region;
   capturer_helper_.set_size_most_recent(SkISize::Make(12, 34));
   capturer_helper_.InvalidateFullScreen();
@@ -75,13 +75,13 @@ TEST_F(CapturerHelperTest, InvalidateFullScreen) {
   ASSERT_TRUE(Equals(SkRegion(SkIRect::MakeWH(12, 34)), region));
 }
 
-TEST_F(CapturerHelperTest, SizeMostRecent) {
+TEST_F(VideoFrameCapturerHelperTest, SizeMostRecent) {
   ASSERT_EQ(SkISize::Make(0, 0), capturer_helper_.size_most_recent());
   capturer_helper_.set_size_most_recent(SkISize::Make(12, 34));
   ASSERT_EQ(SkISize::Make(12, 34), capturer_helper_.size_most_recent());
 }
 
-TEST_F(CapturerHelperTest, SetLogGridSize) {
+TEST_F(VideoFrameCapturerHelperTest, SetLogGridSize) {
   capturer_helper_.set_size_most_recent(SkISize::Make(10, 10));
 
   SkRegion region;
@@ -127,10 +127,10 @@ TEST_F(CapturerHelperTest, SetLogGridSize) {
 void TestExpandRegionToGrid(const SkRegion& region, int log_grid_size,
                             const SkRegion& expandedRegionExpected) {
   scoped_ptr<SkRegion> expandedRegion1(
-      CapturerHelper::ExpandToGrid(region, log_grid_size));
+      VideoFrameCapturerHelper::ExpandToGrid(region, log_grid_size));
   ASSERT_TRUE(Equals(expandedRegionExpected, *expandedRegion1));
   scoped_ptr<SkRegion> expandedRegion2(
-      CapturerHelper::ExpandToGrid(*expandedRegion1, log_grid_size));
+      VideoFrameCapturerHelper::ExpandToGrid(*expandedRegion1, log_grid_size));
   ASSERT_TRUE(Equals(*expandedRegion1, *expandedRegion2));
 }
 
@@ -142,7 +142,7 @@ void TestExpandRectToGrid(int l, int t, int r, int b, int log_grid_size,
                                                     rExpanded, bExpanded)));
 }
 
-TEST_F(CapturerHelperTest, ExpandToGrid) {
+TEST_F(VideoFrameCapturerHelperTest, ExpandToGrid) {
   const int LOG_GRID_SIZE = 4;
   const int GRID_SIZE = 1 << LOG_GRID_SIZE;
   for (int i = -2; i <= 2; i++) {

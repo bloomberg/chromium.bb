@@ -7,11 +7,11 @@
 #include "base/message_loop_proxy.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/capturer_fake.h"
-#include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/chromoting_host.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/it2me_host_user_interface.h"
+#include "remoting/host/video_frame_capturer_fake.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -83,7 +83,7 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber())
         .WillRepeatedly(Return(message_loop_proxy_.get()));
 
-    scoped_ptr<Capturer> capturer(new CapturerFake());
+    scoped_ptr<VideoFrameCapturer> capturer(new VideoFrameCapturerFake());
     scoped_ptr<AudioCapturer> audio_capturer(NULL);
     event_executor_ = new MockEventExecutor();
     desktop_environment_ = DesktopEnvironment::CreateFake(

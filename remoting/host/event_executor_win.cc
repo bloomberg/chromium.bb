@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/host/capturer.h"
+#include "remoting/host/video_frame_capturer.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/event.pb.h"
 
@@ -32,7 +32,7 @@ class EventExecutorWin : public EventExecutor {
  public:
   EventExecutorWin(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
                    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-                   Capturer* capturer);
+                   VideoFrameCapturer* capturer);
   virtual ~EventExecutorWin() {}
 
   // ClipboardStub interface.
@@ -54,7 +54,7 @@ class EventExecutorWin : public EventExecutor {
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  Capturer* capturer_;
+  VideoFrameCapturer* capturer_;
   scoped_ptr<Clipboard> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);
@@ -63,7 +63,7 @@ class EventExecutorWin : public EventExecutor {
 EventExecutorWin::EventExecutorWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    Capturer* capturer)
+    VideoFrameCapturer* capturer)
     : main_task_runner_(main_task_runner),
       ui_task_runner_(ui_task_runner),
       capturer_(capturer),
@@ -290,7 +290,7 @@ void EventExecutorWin::HandleMouse(const MouseEvent& event) {
 scoped_ptr<EventExecutor> EventExecutor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    Capturer* capturer) {
+    VideoFrameCapturer* capturer) {
   return scoped_ptr<EventExecutor>(
       new EventExecutorWin(main_task_runner, ui_task_runner, capturer));
 }

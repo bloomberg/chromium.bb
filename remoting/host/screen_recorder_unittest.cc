@@ -73,7 +73,7 @@ class ScreenRecorderTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    // Capturer and Encoder are owned by ScreenRecorder.
+    // VideoFrameCapturer and Encoder are owned by ScreenRecorder.
     encoder_ = new MockEncoder();
 
     session_ = new MockSession();
@@ -107,7 +107,7 @@ class ScreenRecorderTest : public testing::Test {
   scoped_ptr<MockConnectionToClient> connection_;
 
   // The following mock objects are owned by ScreenRecorder.
-  MockCapturer capturer_;
+  MockVideoFrameCapturer capturer_;
   MockEncoder* encoder_;
 
  private:

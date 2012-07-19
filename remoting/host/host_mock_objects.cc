@@ -12,9 +12,9 @@
 
 namespace remoting {
 
-MockCapturer::MockCapturer() {}
+MockVideoFrameCapturer::MockVideoFrameCapturer() {}
 
-MockCapturer::~MockCapturer() {}
+MockVideoFrameCapturer::~MockVideoFrameCapturer() {}
 
 MockCaptureCompletedCallback::MockCaptureCompletedCallback() {}
 

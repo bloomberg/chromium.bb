@@ -14,7 +14,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "remoting/base/encoder.h"
-#include "remoting/host/capturer.h"
 #include "remoting/host/capture_scheduler.h"
 #include "remoting/proto/video.pb.h"
 
@@ -24,14 +23,15 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
+class CaptureData;
+class VideoFrameCapturer;
+
 namespace protocol {
 class ConnectionToClient;
 class CursorShapeInfo;
 }  // namespace protocol
 
-class CaptureData;
-
-// A class for controlling and coordinate Capturer, Encoder
+// A class for controlling and coordinate VideoFrameCapturer, Encoder
 // and NetworkChannel in a record session.
 //
 // THREADING
@@ -75,14 +75,13 @@ class CaptureData;
 //                      if set to false.
 class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
  public:
-
   // Construct a ScreenRecorder. Message loops and threads are provided.
   // This object does not own capturer but owns encoder.
   ScreenRecorder(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      Capturer* capturer,
+      VideoFrameCapturer* capturer,
       Encoder* encoder);
 
   // Start recording.
@@ -109,7 +108,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   virtual ~ScreenRecorder();
 
   // Getters for capturer and encoder.
-  Capturer* capturer();
+  VideoFrameCapturer* capturer();
   Encoder* encoder();
 
   bool is_recording();
@@ -163,7 +162,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   // Reference to the capturer. This member is always accessed on the capture
   // thread.
-  Capturer* capturer_;
+  VideoFrameCapturer* capturer_;
 
   // Reference to the encoder. This member is always accessed on the encode
   // thread.

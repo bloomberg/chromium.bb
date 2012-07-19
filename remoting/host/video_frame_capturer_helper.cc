@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capturer_helper.h"
+#include "remoting/host/video_frame_capturer_helper.h"
 
 #include <algorithm>
 
@@ -11,36 +11,37 @@
 
 namespace remoting {
 
-CapturerHelper::CapturerHelper() :
+VideoFrameCapturerHelper::VideoFrameCapturerHelper() :
     size_most_recent_(SkISize::Make(0, 0)),
     log_grid_size_(0) {
 }
 
-CapturerHelper::~CapturerHelper() {
+VideoFrameCapturerHelper::~VideoFrameCapturerHelper() {
 }
 
-void CapturerHelper::ClearInvalidRegion() {
+void VideoFrameCapturerHelper::ClearInvalidRegion() {
   base::AutoLock auto_invalid_region_lock(invalid_region_lock_);
   invalid_region_.setEmpty();
 }
 
-void CapturerHelper::InvalidateRegion(const SkRegion& invalid_region) {
+void VideoFrameCapturerHelper::InvalidateRegion(
+    const SkRegion& invalid_region) {
   base::AutoLock auto_invalid_region_lock(invalid_region_lock_);
   invalid_region_.op(invalid_region, SkRegion::kUnion_Op);
 }
 
-void CapturerHelper::InvalidateScreen(const SkISize& size) {
+void VideoFrameCapturerHelper::InvalidateScreen(const SkISize& size) {
   base::AutoLock auto_invalid_region_lock(invalid_region_lock_);
   invalid_region_.op(SkIRect::MakeWH(size.width(), size.height()),
                      SkRegion::kUnion_Op);
 }
 
-void CapturerHelper::InvalidateFullScreen() {
+void VideoFrameCapturerHelper::InvalidateFullScreen() {
   if (!size_most_recent_.isZero())
     InvalidateScreen(size_most_recent_);
 }
 
-void CapturerHelper::SwapInvalidRegion(SkRegion* invalid_region) {
+void VideoFrameCapturerHelper::SwapInvalidRegion(SkRegion* invalid_region) {
   {
     base::AutoLock auto_invalid_region_lock(invalid_region_lock_);
     invalid_region->swap(invalid_region_);
@@ -54,15 +55,15 @@ void CapturerHelper::SwapInvalidRegion(SkRegion* invalid_region) {
   }
 }
 
-void CapturerHelper::SetLogGridSize(int log_grid_size) {
+void VideoFrameCapturerHelper::SetLogGridSize(int log_grid_size) {
   log_grid_size_ = log_grid_size;
 }
 
-const SkISize& CapturerHelper::size_most_recent() const {
+const SkISize& VideoFrameCapturerHelper::size_most_recent() const {
   return size_most_recent_;
 }
 
-void CapturerHelper::set_size_most_recent(const SkISize& size) {
+void VideoFrameCapturerHelper::set_size_most_recent(const SkISize& size) {
   size_most_recent_ = size;
 }
 
@@ -78,8 +79,9 @@ static int UpToMultiple(int x, int n, int nMask) {
   return ((x + n - 1) & nMask);
 }
 
-scoped_ptr<SkRegion> CapturerHelper::ExpandToGrid(const SkRegion& region,
-                                                  int log_grid_size) {
+scoped_ptr<SkRegion> VideoFrameCapturerHelper::ExpandToGrid(
+    const SkRegion& region,
+    int log_grid_size) {
   DCHECK(log_grid_size >= 1);
   int grid_size = 1 << log_grid_size;
   int grid_size_mask = ~(grid_size - 1);

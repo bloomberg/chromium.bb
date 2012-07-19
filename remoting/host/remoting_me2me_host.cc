@@ -29,7 +29,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/constants.h"
-#include "remoting/host/capturer.h"
+#include "remoting/host/video_frame_capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
@@ -128,7 +128,7 @@ class HostProcess
     }
 
 #if defined(OS_LINUX)
-    Capturer::EnableXDamage(true);
+    VideoFrameCapturer::EnableXDamage(true);
 #endif
   }
 

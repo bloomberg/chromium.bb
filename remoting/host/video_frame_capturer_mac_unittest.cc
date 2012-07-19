@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capturer.h"
+#include "remoting/host/video_frame_capturer.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -26,10 +26,10 @@ bool CheckSnowLeopard() {
   return majorVersion == 10 && minorVersion > 5;
 }
 
-class CapturerMacTest : public testing::Test {
+class VideoFrameCapturerMacTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-    capturer_.reset(Capturer::Create());
+  virtual void SetUp() OVERRIDE {
+    capturer_.reset(VideoFrameCapturer::Create());
   }
 
   void AddDirtyRect() {
@@ -37,21 +37,22 @@ class CapturerMacTest : public testing::Test {
     region_.op(rect, SkRegion::kUnion_Op);
   }
 
-  scoped_ptr<Capturer> capturer_;
+  scoped_ptr<VideoFrameCapturer> capturer_;
   SkRegion region_;
 };
 
 // CapturerCallback1 verifies that the whole screen is initially dirty.
-class CapturerCallback1 {
+class VideoFrameCapturerCallback1 {
  public:
-  CapturerCallback1() { }
+  VideoFrameCapturerCallback1() {}
+
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CapturerCallback1);
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerCallback1);
 };
 
-void CapturerCallback1::CaptureDoneCallback(
+void VideoFrameCapturerCallback1::CaptureDoneCallback(
     scoped_refptr<CaptureData> capture_data) {
   CGDirectDisplayID mainDevice = CGMainDisplayID();
   int width = CGDisplayPixelsWide(mainDevice);
@@ -60,22 +61,23 @@ void CapturerCallback1::CaptureDoneCallback(
   EXPECT_EQ(initial_region, capture_data->dirty_region());
 }
 
-// CapturerCallback2 verifies that a rectangle explicitly marked as dirty is
-// propagated correctly.
-class CapturerCallback2 {
+// VideoFrameCapturerCallback2 verifies that a rectangle explicitly marked as
+// dirty is propagated correctly.
+class VideoFrameCapturerCallback2 {
  public:
-  explicit CapturerCallback2(const SkRegion& expected_dirty_region)
-      : expected_dirty_region_(expected_dirty_region) { }
+  explicit VideoFrameCapturerCallback2(const SkRegion& expected_dirty_region)
+      : expected_dirty_region_(expected_dirty_region) {}
+
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
 
  protected:
   SkRegion expected_dirty_region_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CapturerCallback2);
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerCallback2);
 };
 
-void CapturerCallback2::CaptureDoneCallback(
+void VideoFrameCapturerCallback2::CaptureDoneCallback(
     scoped_refptr<CaptureData> capture_data) {
   CGDirectDisplayID mainDevice = CGMainDisplayID();
   int width = CGDisplayPixelsWide(mainDevice);
@@ -98,7 +100,8 @@ void CapturerCallback2::CaptureDoneCallback(
 
 class CursorCallback {
  public:
-  CursorCallback() { }
+  CursorCallback() {}
+
   void CursorShapeChangedCallback(
       scoped_ptr<protocol::CursorShapeInfo> cursor_data);
 
@@ -110,7 +113,7 @@ void CursorCallback::CursorShapeChangedCallback(
     scoped_ptr<protocol::CursorShapeInfo> cursor_data) {
 }
 
-TEST_F(CapturerMacTest, Capture) {
+TEST_F(VideoFrameCapturerMacTest, Capture) {
   if (!CheckSnowLeopard()) {
     return;
   }
@@ -120,15 +123,17 @@ TEST_F(CapturerMacTest, Capture) {
   capturer_->Start(base::Bind(&CursorCallback::CursorShapeChangedCallback,
                               base::Unretained(&cursor_callback)));
   // Check that we get an initial full-screen updated.
-  CapturerCallback1 callback1;
+  VideoFrameCapturerCallback1 callback1;
   capturer_->CaptureInvalidRegion(base::Bind(
-      &CapturerCallback1::CaptureDoneCallback, base::Unretained(&callback1)));
+      &VideoFrameCapturerCallback1::CaptureDoneCallback,
+      base::Unretained(&callback1)));
   // Check that subsequent dirty rects are propagated correctly.
   AddDirtyRect();
-  CapturerCallback2 callback2(region_);
+  VideoFrameCapturerCallback2 callback2(region_);
   capturer_->InvalidateRegion(region_);
   capturer_->CaptureInvalidRegion(base::Bind(
-      &CapturerCallback2::CaptureDoneCallback, base::Unretained(&callback2)));
+      &VideoFrameCapturerCallback2::CaptureDoneCallback,
+      base::Unretained(&callback2)));
   capturer_->Stop();
 }
 

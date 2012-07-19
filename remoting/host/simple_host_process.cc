@@ -34,9 +34,8 @@
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/capturer_fake.h"
-#include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/chromoting_host.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
@@ -50,6 +49,7 @@
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
+#include "remoting/host/video_frame_capturer_fake.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
@@ -225,7 +225,7 @@ class SimpleHost : public HeartbeatSender::Listener {
         base::Bind(&SimpleHost::OnAuthFailed, base::Unretained(this))));
 
     if (fake_) {
-      scoped_ptr<Capturer> capturer(new CapturerFake());
+      scoped_ptr<VideoFrameCapturer> capturer(new VideoFrameCapturerFake());
       scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
           context_.desktop_task_runner(),
           context_.ui_task_runner(), capturer.get());

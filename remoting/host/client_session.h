@@ -24,7 +24,7 @@
 
 namespace remoting {
 
-class Capturer;
+class VideoFrameCapturer;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
@@ -69,7 +69,7 @@ class ClientSession : public protocol::HostEventStub,
   ClientSession(EventHandler* event_handler,
                 scoped_ptr<protocol::ConnectionToClient> connection,
                 protocol::HostEventStub* host_event_stub,
-                Capturer* capturer,
+                VideoFrameCapturer* capturer,
                 const base::TimeDelta& max_duration);
   virtual ~ClientSession();
 
@@ -164,11 +164,11 @@ class ClientSession : public protocol::HostEventStub,
   // it.
   base::WeakPtrFactory<ClipboardStub> client_clipboard_factory_;
 
-  // Capturer, used to determine current screen size for ensuring injected
-  // mouse events fall within the screen area.
+  // VideoFrameCapturer, used to determine current screen size for ensuring
+  // injected mouse events fall within the screen area.
   // TODO(lambroslambrou): Move floor-control logic, and clamping to screen
   // area, out of this class (crbug.com/96508).
-  Capturer* capturer_;
+  VideoFrameCapturer* capturer_;
 
   // The maximum duration of this session.
   // There is no maximum if this value is <= 0.
