@@ -2191,7 +2191,8 @@ least @code{inlen} elements. On return, this array will contain the
 position in @code{outbuf} corresponding to each input position.
 Similarly, @code{inputPos} must point to an array of integers of at
 least @code{outlen} elements. On return, this array will contain the
-position in @code{inbuf} corresponding to each position in @code{inbuf}.
+position in @code{inbuf} corresponding to each position in 
+@code{outbuf}.
 @code{cursorPos} must point to an integer containing the position of the
 cursor in the input. On return, it will contain the cursor position in
 the output. Any parameter after @code{outlen} may be @code{NULL}. In
