@@ -12,7 +12,7 @@ import sys
 import tempfile
 import unittest
 
-import worker_pool
+import run_test_cases
 
 FULLNAME = os.path.abspath(__file__)
 ROOT_DIR = os.path.dirname(FULLNAME)
@@ -432,7 +432,7 @@ class TraceInputsImport(TraceInputsBase):
           cmd, cwd, tracename, True)
       return (tracename, resultcode, output)
 
-    with worker_pool.ThreadPool(PARALLEL) as pool:
+    with run_test_cases.ThreadPool(PARALLEL) as pool:
       api = self.trace_inputs.get_api()
       with api.get_tracer(self.log) as tracer:
         pool.add_task(

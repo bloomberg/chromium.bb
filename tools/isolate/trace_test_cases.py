@@ -20,7 +20,6 @@ import time
 import isolate_common
 import run_test_cases
 import trace_inputs
-import worker_pool
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
@@ -111,8 +110,8 @@ def trace_test_cases(
   assert os.path.isdir(full_cwd_dir)
   logname = output_file + '.logs'
 
-  progress = worker_pool.Progress(len(test_cases))
-  with worker_pool.ThreadPool(jobs or multiprocessing.cpu_count()) as pool:
+  progress = run_test_cases.Progress(len(test_cases))
+  with run_test_cases.ThreadPool(jobs or multiprocessing.cpu_count()) as pool:
     api = trace_inputs.get_api()
     api.clean_trace(logname)
     with api.get_tracer(logname) as tracer:

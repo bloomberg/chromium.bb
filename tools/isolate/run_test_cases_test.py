@@ -97,6 +97,31 @@ class RunTestCases(unittest.TestCase):
     self.assertEquals(0, code)
 
 
+class WorkerPoolTest(unittest.TestCase):
+  def test_normal(self):
+    mapper = lambda value: -value
+    with run_test_cases.ThreadPool(8) as pool:
+      for i in range(32):
+        pool.add_task(mapper, i)
+      results = pool.join()
+    self.assertEquals(range(-31, 1), sorted(results))
+
+  def test_exception(self):
+    class FearsomeException(Exception):
+      pass
+    def mapper(value):
+      raise FearsomeException(value)
+    task_added = False
+    try:
+      with run_test_cases.ThreadPool(8) as pool:
+        pool.add_task(mapper, 0)
+        task_added = True
+        pool.join()
+        self.fail()
+    except FearsomeException:
+      self.assertEquals(True, task_added)
+
+
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
