@@ -57,14 +57,6 @@ class ThumbnailGenerator : public content::NotificationObserver,
     kNotClipped,
   };
 
-  // Bitmasks of options for generating a thumbnail.
-  enum ThumbnailOptions {
-    // No options.
-    kNoOptions = 0,
-    // Request a clipped thumbnail with the aspect ratio preserved.
-    kClippedThumbnail = 1 << 0,
-  };
-
   // This class will do nothing until you call StartThumbnailing.
   ThumbnailGenerator();
   virtual ~ThumbnailGenerator();

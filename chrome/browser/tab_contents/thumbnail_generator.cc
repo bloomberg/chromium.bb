@@ -97,7 +97,6 @@ SkBitmap CreateThumbnail(
     const SkBitmap& bmp_with_scrollbars,
     int desired_width,
     int desired_height,
-    int options,
     ThumbnailGenerator::ClipResult* clip_result) {
   base::TimeTicks begin_compute_thumbnail = base::TimeTicks::Now();
 
@@ -109,46 +108,32 @@ SkBitmap CreateThumbnail(
         std::max(1, bmp_with_scrollbars.height() - 15) };
   SkBitmap bmp;
   bmp_with_scrollbars.extractSubset(&bmp, scrollbarless_rect);
-  SkBitmap result;
-  // Check if a clipped thumbnail is requested.
-  if (options & ThumbnailGenerator::kClippedThumbnail) {
-    SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
-        bmp, desired_width, desired_height, clip_result);
 
-    // Need to resize it to the size we want, so downsample until it's
-    // close, and let the caller make it the exact size if desired.
-    result = SkBitmapOperations::DownsampleByTwoUntilSize(
-        clipped_bitmap, desired_width, desired_height);
+  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+      bmp, desired_width, desired_height, clip_result);
+
+  // Need to resize it to the size we want, so downsample until it's
+  // close, and let the caller make it the exact size if desired.
+  SkBitmap result = SkBitmapOperations::DownsampleByTwoUntilSize(
+      clipped_bitmap, desired_width, desired_height);
 #if !defined(USE_AURA)
-    // This is a bit subtle. SkBitmaps are refcounted, but the magic
-    // ones in PlatformCanvas can't be assigned to SkBitmap with proper
-    // refcounting.  If the bitmap doesn't change, then the downsampler
-    // will return the input bitmap, which will be the reference to the
-    // weird PlatformCanvas one insetad of a regular one. To get a
-    // regular refcounted bitmap, we need to copy it.
-    //
-    // On Aura, the PlatformCanvas is platform-independent and does not have
-    // any native platform resources that can't be refounted, so this issue does
-    // not occur.
-    //
-    // Note that GetClippedBitmap() does extractSubset() but it won't copy
-    // the pixels, hence we check result size == clipped_bitmap size here.
-    if (clipped_bitmap.width() == result.width() &&
-        clipped_bitmap.height() == result.height())
-      clipped_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
+  // This is a bit subtle. SkBitmaps are refcounted, but the magic
+  // ones in PlatformCanvas can't be assigned to SkBitmap with proper
+  // refcounting.  If the bitmap doesn't change, then the downsampler
+  // will return the input bitmap, which will be the reference to the
+  // weird PlatformCanvas one insetad of a regular one. To get a
+  // regular refcounted bitmap, we need to copy it.
+  //
+  // On Aura, the PlatformCanvas is platform-independent and does not have
+  // any native platform resources that can't be refounted, so this issue does
+  // not occur.
+  //
+  // Note that GetClippedBitmap() does extractSubset() but it won't copy
+  // the pixels, hence we check result size == clipped_bitmap size here.
+  if (clipped_bitmap.width() == result.width() &&
+      clipped_bitmap.height() == result.height())
+    clipped_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
 #endif
-  } else {
-    // Need to resize it to the size we want, so downsample until it's
-    // close, and let the caller make it the exact size if desired.
-    result = SkBitmapOperations::DownsampleByTwoUntilSize(
-        bmp, desired_width, desired_height);
-#if !defined(USE_AURA)
-    // See comments above about why we are making copy here.
-    if (bmp.width() == result.width() &&
-        bmp.height() == result.height())
-      bmp.copyTo(&result, SkBitmap::kARGB_8888_Config);
-#endif
-  }
 
   HISTOGRAM_TIMES(kThumbnailHistogramName,
                   base::TimeTicks::Now() - begin_compute_thumbnail);
@@ -534,7 +519,6 @@ void ThumbnailGenerator::UpdateThumbnailWithBitmap(
   SkBitmap thumbnail = CreateThumbnail(bitmap,
                                        kThumbnailWidth,
                                        kThumbnailHeight,
-                                       ThumbnailGenerator::kClippedThumbnail,
                                        &clip_result);
   UpdateThumbnail(web_contents, thumbnail, clip_result);
 }
