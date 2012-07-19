@@ -472,14 +472,11 @@ TEST(IPCTest, ClientFastServer) {
   if (SBOX_ERROR_CHANNEL_ERROR != result)
     client.FreeBuffer(buff0);
 
-#if 0
-  // This fails on XP, investigate
   EXPECT_TRUE(SBOX_ALL_OK == result);
   EXPECT_EQ(tag, client_control->channels[0].ipc_tag);
   EXPECT_EQ(kFreeChannel, client_control->channels[0].state);
   EXPECT_EQ(kFreeChannel, client_control->channels[1].state);
   EXPECT_EQ(kFreeChannel, client_control->channels[2].state);
-#endif
 
   CloseChannelEvents(client_control);
   ::CloseHandle(client_control->server_alive);
