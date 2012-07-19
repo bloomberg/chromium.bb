@@ -1748,7 +1748,6 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 
 	surface->configure = shell_surface_configure;
 	surface->private = shsurf;
-	surface->compositor->shell_interface.shell = shell;
 
 	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
@@ -3314,6 +3313,7 @@ shell_init(struct weston_compositor *ec)
 	shell->hide_input_panel_listener.notify = hide_input_panels;
 	wl_signal_add(&ec->hide_input_panel_signal, &shell->hide_input_panel_listener);
 	ec->ping_handler = ping_handler;
+	ec->shell_interface.shell = shell;
 	ec->shell_interface.create_shell_surface = create_shell_surface;
 	ec->shell_interface.set_toplevel = set_toplevel;
 	ec->shell_interface.set_transient = set_transient;
