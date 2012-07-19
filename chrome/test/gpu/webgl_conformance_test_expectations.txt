@@ -170,6 +170,15 @@ UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 121139 WIN INTEL : conformance_textures_texture_size = FAIL
 121139 LINUX AMD : conformance_textures_texture_size = FAIL
 
+137892 LINUX INTEL : conformance_glsl_functions_glsl_function_acos = FAIL
+137892 LINUX INTEL : conformance_glsl_functions_glsl_function_asin = FAIL
+137892 LINUX INTEL : conformance_glsl_functions_glsl_function_atan = FAIL
+137892 LINUX INTEL : conformance_glsl_functions_glsl_function_atan_xy = FAIL
+137892 LINUX INTEL : conformance_glsl_functions_glsl_function_sin = FAIL
+137892 LINUX INTEL : conformance_reading_read_pixels_test = FAIL
+137892 LINUX INTEL : conformance_rendering_point_size = FAIL
+137892 LINUX INTEL : conformance_textures_texture_mips = FAIL
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Temprory entries: they should be removed once the bugs are fixed.
