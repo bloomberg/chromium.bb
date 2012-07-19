@@ -54,18 +54,17 @@ namespace ash {
 typedef ash::test::AshTestBase FramePainterTest;
 
 TEST_F(FramePainterTest, Basics) {
-  // We start with a null instances pointer, as we don't initialize until the
-  // first FramePainter is created.
-  EXPECT_FALSE(FramePainter::instances_);
+  // Other tests might have created a FramePainter, so we cannot assert that
+  // FramePainter::instances_ is NULL here.
 
   // Creating a painter bumps the instance count.
-  {
-    FramePainter painter;
-    EXPECT_TRUE(FramePainter::instances_);
-    EXPECT_EQ(1u, FramePainter::instances_->size());
-  }
+  scoped_ptr<FramePainter> painter(new FramePainter);
+  ASSERT_TRUE(FramePainter::instances_);
+  EXPECT_EQ(1u, FramePainter::instances_->size());
+
   // Destroying that painter leaves a valid pointer but no instances.
-  EXPECT_TRUE(FramePainter::instances_);
+  painter.reset();
+  ASSERT_TRUE(FramePainter::instances_);
   EXPECT_EQ(0u, FramePainter::instances_->size());
 }
 
