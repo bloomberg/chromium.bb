@@ -293,8 +293,9 @@ class PatchSeries(object):
         # Note the startswith; that is to handle short form ChangeIds
         # from CQ-DEPEND, when we decide to allow it.
         assert (dep in dep_change.LookupAliases() or
-                x.startswith(cros_patch.FormatChangeId(dep_change.change_id,
-                                                       force_external=True)))
+                cros_patch.FormatChangeId(
+                    dep_change.change_id, force_external=True
+                    ).startswith(dep))
 
       unsatisfied.append(dep_change)
     return unsatisfied
