@@ -29,12 +29,12 @@ GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit)),
       watchdog_(watchdog),
       sync_point_manager_(new SyncPointManager),
-      program_cache_(NULL) {
-  if (gfx::g_GL_ARB_get_program_binary &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuProgramCache) ) {
-    program_cache_.reset(new gpu::gles2::MemoryProgramCache());
-  }
+      program_cache_(
+          gfx::g_glProgramBinary &&
+          gfx::g_glGetProgramBinary &&
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableGpuProgramCache) ?
+              new gpu::gles2::MemoryProgramCache() : NULL) {
   DCHECK(gpu_child_thread);
   DCHECK(io_message_loop);
   DCHECK(shutdown_event);
