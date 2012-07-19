@@ -5560,14 +5560,37 @@
    fun:_ZN7WebCore13WorkerContext11clearScriptEv
    fun:_ZN7WebCore30WorkerThreadShutdownFinishTask11performTaskEPNS_22ScriptExecutionContextE
    fun:_ZN7WebCore13WorkerRunLoop4Task11performTaskERKS0_PNS_22ScriptExecutionContextE
-   fun:_ZN7WebCore13WorkerRunLoop15runCleanupTasksEPNS_13WorkerContextE
+   ...
    fun:_ZN7WebCore13WorkerRunLoop3runEPNS_13WorkerContextE
    fun:_ZN7WebCore12WorkerThread12runEventLoopEv
    fun:_ZN7WebCore21DedicatedWorkerThread12runEventLoopEv
    fun:_ZN7WebCore12WorkerThread12workerThreadEv
    fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
 }
-
+{
+   bug_138045
+   Memcheck:Unaddressable
+   ...
+   fun:_ZSteqIcEN9__gnu_cxx11__enable_ifIXsrSt9__is_charIT_E7__valueEbE6__typeERKSbIS3_St11char_traitsIS3_ESaIS3_EESC_
+   fun:_ZL12getDirectivePKN2pp5TokenE
+   fun:_ZN2pp15DirectiveParser14parseDirectiveEPNS_5TokenE
+   fun:_ZN2pp15DirectiveParser3lexEPNS_5TokenE
+   fun:_ZN2pp13MacroExpander8getTokenEPNS_5TokenE
+   fun:_ZN2pp13MacroExpander3lexEPNS_5TokenE
+   fun:_ZN2pp12Preprocessor3lexEPNS_5TokenE
+   fun:_ZL12string_inputPciPv
+   fun:_ZL18yy_get_next_bufferPv
+   fun:_Z5yylexP7YYSTYPEPv
+   fun:_Z7yyparseP13TParseContext
+   fun:_Z13glslang_parseP13TParseContext
+   fun:_Z14PaParseStringsiPKPKcPKiP13TParseContext
+   fun:_ZN9TCompiler7compileEPKPKcii
+   fun:ShCompile
+   fun:_ZN3gpu5gles216ShaderTranslator9TranslateEPKc
+   fun:_ZN3gpu5gles214ProgramManager18ForceCompileShaderEPKSsPNS0_13ShaderManager10ShaderInfoEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_13ShaderManager10ShaderInfoEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
