@@ -55,8 +55,8 @@ function __init_set_frame_callback() {
 // Initializes the most realistic scrolling method.
 function __init_scroll_by() {
   if (__is_gmail_test) {
-    __scroll_by = function(x) {
-      __scrollable_element.scrollByLines(x / __scroll_delta);
+    __scroll_by = function(x, y) {
+      __scrollable_element.scrollByLines(1);
     };
   } else if (window.chrome && window.chrome.benchmarking &&
              window.chrome.benchmarking.smoothScrollBy) {
