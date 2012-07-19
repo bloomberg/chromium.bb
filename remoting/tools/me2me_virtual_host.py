@@ -33,6 +33,14 @@ import uuid
 import gaia_auth
 import keygen
 
+# By default this script will try to determine the most appropriate X session
+# command for the system.  To use a specific session instead, set this variable
+# to the executable filename, or a list containing the executable and any
+# arguments, for example:
+# XSESSION_COMMAND = "/usr/bin/gnome-session-fallback"
+# XSESSION_COMMAND = ["/usr/bin/gnome-session", "--session=ubuntu-2d"]
+XSESSION_COMMAND = None
+
 REMOTING_COMMAND = "remoting_me2me_host"
 
 # Command-line switch for passing the config path to remoting_me2me_host.
@@ -352,14 +360,13 @@ class Desktop:
 
   def launch_x_session(self):
     # Start desktop session
-    # The /dev/null input redirection is necessary to prevent Xsession from
+    # The /dev/null input redirection is necessary to prevent the X session
     # reading from stdin.  If this code runs as a shell background job in a
     # terminal, any reading from stdin causes the job to be suspended.
     # Daemonization would solve this problem by separating the process from the
     # controlling terminal.
-    #
-    # This assumes that GDM is installed and configured on the system.
-    self.session_proc = subprocess.Popen("/etc/gdm/Xsession",
+    logging.info("Launching X session: %s" % XSESSION_COMMAND)
+    self.session_proc = subprocess.Popen(XSESSION_COMMAND,
                                          stdin=open(os.devnull, "r"),
                                          cwd=HOME_DIR,
                                          env=self.child_env)
@@ -456,6 +463,38 @@ class PidFile:
     """
     if self.created:
       os.remove(self.filename)
+
+
+def choose_x_session():
+  """Chooses the most appropriate X session command for this system.
+
+  If XSESSION_COMMAND is already set, its value is returned directly.
+  Otherwise, a session is chosen for this system.
+
+  Returns:
+    A string containing the command to run, or a list of strings containing
+    the executable program and its arguments, which is suitable for passing as
+    the first parameter of subprocess.Popen().  If a suitable session cannot
+    be found, returns None.
+  """
+  if XSESSION_COMMAND is not None:
+    return XSESSION_COMMAND
+
+  # Unity-2d would normally be the preferred choice on Ubuntu 12.04.  At the
+  # time of writing, this session does not work properly (missing launcher and
+  # panel), so gnome-session-fallback is used in preference.
+  # "unity-2d-panel" was chosen here simply because it appears in the TryExec
+  # line of the session's .desktop file; other choices might be just as good.
+  for test_file, command in [
+    ("/usr/bin/gnome-session-fallback", "/usr/bin/gnome-session-fallback"),
+    ("/etc/gdm/Xsession", "/etc/gdm/Xsession"),
+    ("/usr/bin/unity-2d-panel",
+      ["/usr/bin/gnome-session", "--session=ubuntu-2d"]),
+  ]:
+    if os.path.exists(test_file):
+      return command
+
+  return None
 
 
 def locate_executable(exe_name):
@@ -617,6 +656,18 @@ def main():
       parser.error("Width and height should be 100 pixels or greater")
 
     sizes.append((width, height))
+
+  global XSESSION_COMMAND
+  XSESSION_COMMAND = choose_x_session()
+  if XSESSION_COMMAND is None:
+    print >> sys.stderr, "Unable to choose suitable X session command."
+    return 1
+
+  if "--session=ubuntu-2d" in XSESSION_COMMAND:
+    print >> sys.stderr, (
+      "The Unity 2D desktop session will be used.\n"
+      "If you encounter problems with this choice of desktop, please install\n"
+      "the gnome-session-fallback package, and restart this script.\n")
 
   atexit.register(cleanup)
 
