@@ -90,6 +90,32 @@ const char16 kIEFavoritesOrderKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\"
     L"MenuOrder\\Favorites";
 
+const char16 kFaviconStreamSuffix[] = L"url:favicon:$DATA";
+const char kDummyFaviconImageData[] =
+    "\x42\x4D"          // Magic signature 'BM'
+    "\x1E\x00\x00\x00"  // File size
+    "\x00\x00\x00\x00"  // Reserved
+    "\x1A\x00\x00\x00"  // Offset of the pixel data
+    "\x0C\x00\x00\x00"  // Header Size
+    "\x01\x00\x01\x00"  // Size: 1x1
+    "\x01\x00"          // Reserved
+    "\x18\x00"          // 24-bits
+    "\x00\xFF\x00\x00"; // The pixel
+
+struct FaviconGroup {
+  const char16* favicon_url;
+  const char16* site_url[2];
+};
+
+const FaviconGroup kIEFaviconGroup[2] = {
+  {L"http://www.google.com/favicon.ico",
+   {L"http://www.google.com/",
+    L"http://www.subfolder.com/"}},
+  {L"http://example.com/favicon.ico",
+   {L"http://host:8080/cgi?q=query",
+    L"http://chinese-title-favorite/"}},
+};
+
 bool CreateOrderBlob(const FilePath& favorites_folder,
                      const string16& path,
                      const std::vector<string16>& entries) {
@@ -135,7 +161,9 @@ bool CreateOrderBlob(const FilePath& favorites_folder,
   return true;
 }
 
-bool CreateUrlFile(const FilePath& file, const string16& url) {
+bool CreateUrlFileWithFavicon(const FilePath& file,
+                              const std::wstring& url,
+                              const std::wstring& favicon_url) {
   base::win::ScopedComPtr<IUniformResourceLocator> locator;
   HRESULT result = locator.CreateInstance(CLSID_InternetShortcut, NULL,
                                           CLSCTX_INPROC_SERVER);
@@ -148,10 +176,38 @@ bool CreateUrlFile(const FilePath& file, const string16& url) {
   result = locator->SetURL(url.c_str(), 0);
   if (FAILED(result))
     return false;
+
+  // Write favicon url if specified.
+  if (!favicon_url.empty()) {
+    base::win::ScopedComPtr<IPropertySetStorage> property_set_storage;
+    if (FAILED(property_set_storage.QueryFrom(locator)))
+      return false;
+    base::win::ScopedComPtr<IPropertyStorage> property_storage;
+    if (FAILED(property_set_storage->Open(FMTID_Intshcut,
+                                          STGM_WRITE,
+                                          property_storage.Receive()))) {
+      return false;
+    }
+    PROPSPEC properties[] = {{PRSPEC_PROPID, PID_IS_ICONFILE}};
+    PROPVARIANT values[] = {{VT_LPWSTR}};
+    values[0].pwszVal = const_cast<wchar_t*>(favicon_url.c_str());
+    if (FAILED(property_storage->WriteMultiple(1, properties, values, 0)))
+      return false;
+  }
+
+  // Save the .url file.
   result = persist_file->Save(file.value().c_str(), TRUE);
   if (FAILED(result))
     return false;
-  return true;
+
+  // Write dummy favicon image data in NTFS alternate data stream.
+  return favicon_url.empty() || (file_util::WriteFile(
+      file.ReplaceExtension(kFaviconStreamSuffix), kDummyFaviconImageData,
+      sizeof kDummyFaviconImageData) != -1);
+}
+
+bool CreateUrlFile(const FilePath& file, const std::wstring& url) {
+  return CreateUrlFileWithFavicon(file, url, std::wstring());
 }
 
 void ClearPStoreType(IPStore* pstore, const GUID* type, const GUID* subtype) {
@@ -201,6 +257,7 @@ class TestObserver : public ProfileWriter,
     bookmark_count_ = 0;
     history_count_ = 0;
     password_count_ = 0;
+    favicon_count_ = 0;
   }
 
   // importer::ImporterProgressObserver:
@@ -211,6 +268,7 @@ class TestObserver : public ProfileWriter,
     MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
     EXPECT_EQ(1, history_count_);
+    EXPECT_EQ(arraysize(kIEFaviconGroup), favicon_count_);
   }
 
   virtual bool BookmarkModelIsLoaded() const {
@@ -265,12 +323,38 @@ class TestObserver : public ProfileWriter,
     STLDeleteContainerPointers(template_url.begin(), template_url.end());
   }
 
+  virtual void AddFavicons(
+      const std::vector<history::ImportedFaviconUsage>& usage) OVERRIDE {
+    // Importer should group the favicon information for each favicon URL.
+    for (size_t i = 0; i < arraysize(kIEFaviconGroup); ++i) {
+      GURL favicon_url(kIEFaviconGroup[i].favicon_url);
+      std::set<GURL> urls;
+      for (size_t j = 0; j < arraysize(kIEFaviconGroup[i].site_url); ++j)
+        urls.insert(GURL(kIEFaviconGroup[i].site_url[j]));
+
+      SCOPED_TRACE(testing::Message() << "Expected Favicon: " << favicon_url);
+
+      bool expected_favicon_url_found = false;
+      for (size_t j = 0; j < usage.size(); ++j) {
+        if (usage[j].favicon_url == favicon_url) {
+          EXPECT_EQ(urls, usage[j].urls);
+          expected_favicon_url_found = true;
+          break;
+        }
+      }
+      EXPECT_TRUE(expected_favicon_url_found);
+    }
+
+    favicon_count_ += usage.size();
+  }
+
  private:
   ~TestObserver() {}
 
   size_t bookmark_count_;
   size_t history_count_;
   size_t password_count_;
+  size_t favicon_count_;
 };
 
 class MalformedFavoritesRegistryTestObserver
@@ -361,19 +445,23 @@ TEST_F(IEImporterTest, IEImporter) {
   CreateDirectory(links_path.AppendASCII("SubFolderOfLinks").value().c_str(),
                   NULL);
   CreateDirectory(path.AppendASCII("\x0061").value().c_str(), NULL);
-  ASSERT_TRUE(CreateUrlFile(path.AppendASCII("Google Home Page.url"),
-                            L"http://www.google.com/"));
+  ASSERT_TRUE(CreateUrlFileWithFavicon(path.AppendASCII("Google Home Page.url"),
+                                       L"http://www.google.com/",
+                                       L"http://www.google.com/favicon.ico"));
   ASSERT_TRUE(CreateUrlFile(path.AppendASCII("SubFolder\\Title.url"),
                             L"http://www.link.com/"));
-  ASSERT_TRUE(CreateUrlFile(path.AppendASCII("SubFolder.url"),
-                            L"http://www.subfolder.com/"));
+  ASSERT_TRUE(CreateUrlFileWithFavicon(path.AppendASCII("SubFolder.url"),
+                                       L"http://www.subfolder.com/",
+                                       L"http://www.google.com/favicon.ico"));
   ASSERT_TRUE(CreateUrlFile(path.AppendASCII("TheLink.url"),
                             L"http://www.links-thelink.com/"));
-  ASSERT_TRUE(CreateUrlFile(path.AppendASCII("WithPortAndQuery.url"),
-                            L"http://host:8080/cgi?q=query"));
-  ASSERT_TRUE(CreateUrlFile(
+  ASSERT_TRUE(CreateUrlFileWithFavicon(path.AppendASCII("WithPortAndQuery.url"),
+                                       L"http://host:8080/cgi?q=query",
+                                       L"http://example.com/favicon.ico"));
+  ASSERT_TRUE(CreateUrlFileWithFavicon(
       path.AppendASCII("\x0061").Append(L"\x4E2D\x6587.url"),
-      L"http://chinese-title-favorite/"));
+      L"http://chinese-title-favorite/",
+      L"http://example.com/favicon.ico"));
   ASSERT_TRUE(CreateUrlFile(links_path.AppendASCII("TheLink.url"),
                             L"http://www.links-thelink.com/"));
   ASSERT_TRUE(CreateUrlFile(

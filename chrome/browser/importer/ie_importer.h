@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,17 +62,15 @@ class IEImporter : public Importer {
   // machine default.
   void ImportHomepage();
 
-  // Resolves what's the .url file actually targets.
-  // Returns empty string if failed.
-  string16 ResolveInternetShortcut(const string16& file);
-
   // Gets the information of Favorites folder. Returns true if successful.
   bool GetFavoritesInfo(FavoritesInfo* info);
 
-  // This function will read the files in the Favorite folder, and store
-  // the bookmark items in |bookmarks|.
-  void ParseFavoritesFolder(const FavoritesInfo& info,
-                            BookmarkVector* bookmarks);
+  // This function will read the files in the Favorites folder, and store
+  // the bookmark items in |bookmarks| and favicon information in |favicons|.
+  void ParseFavoritesFolder(
+      const FavoritesInfo& info,
+      BookmarkVector* bookmarks,
+      std::vector<history::ImportedFaviconUsage>* favicons);
 
   // Determines which version of IE is in use.
   int CurrentIEVersion() const;

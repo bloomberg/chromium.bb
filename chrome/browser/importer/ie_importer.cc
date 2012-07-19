@@ -9,6 +9,7 @@
 #include <pstore.h>
 #include <shlobj.h>
 #include <urlhist.h>
+#include <wininet.h>
 
 #include <algorithm>
 #include <map>
@@ -30,6 +31,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_util.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -57,6 +59,9 @@ const char16 kIEVersionKey[] =
   L"Software\\Microsoft\\Internet Explorer";
 const char16 kIEToolbarKey[] =
   L"Software\\Microsoft\\Internet Explorer\\Toolbar";
+
+// NTFS stream name of favicon image data.
+const char16 kFaviconStreamName[] = L":favicon:$DATA";
 
 // A struct that hosts the information of AutoComplete data in PStore.
 struct AutoCompleteInfo {
@@ -251,7 +256,7 @@ bool ParseFavoritesOrderInfo(
   return ParseFavoritesOrderRegistryTree(importer, key, FilePath(), sort_index);
 }
 
-// Read the sort order from registry. If failed, we don't touch the list
+// Reads the sort order from registry. If failed, we don't touch the list
 // and use the default (alphabetical) order.
 void SortBookmarksInIEOrder(
     const Importer* importer,
@@ -261,6 +266,128 @@ void SortBookmarksInIEOrder(
     return;
   IEOrderBookmarkComparator compare = {&sort_index};
   std::sort(bookmarks->begin(), bookmarks->end(), compare);
+}
+
+// Reads an internet shortcut (*.url) |file| and returns a COM object
+// representing it.
+bool LoadInternetShortcut(
+    const string16& file,
+    base::win::ScopedComPtr<IUniformResourceLocator>* shortcut) {
+  base::win::ScopedComPtr<IUniformResourceLocator> url_locator;
+  if (FAILED(url_locator.CreateInstance(CLSID_InternetShortcut, NULL,
+                                        CLSCTX_INPROC_SERVER)))
+    return false;
+
+  base::win::ScopedComPtr<IPersistFile> persist_file;
+  if (FAILED(persist_file.QueryFrom(url_locator)))
+    return false;
+
+  // Loads the Internet Shortcut from persistent storage.
+  if (FAILED(persist_file->Load(file.c_str(), STGM_READ)))
+    return false;
+
+  std::swap(url_locator, *shortcut);
+  return true;
+}
+
+// Reads the URL stored in the internet shortcut.
+GURL ReadURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
+  base::win::ScopedCoMem<wchar_t> url;
+  // GetURL can return S_FALSE (FAILED(S_FALSE) is false) when url == NULL.
+  return (FAILED(url_locator->GetURL(&url)) || !url) ?
+      GURL() : GURL(WideToUTF16(std::wstring(url)));
+}
+
+// Reads the URL of the favicon of the internet shortcut.
+GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
+  base::win::ScopedComPtr<IPropertySetStorage> property_set_storage;
+  if (FAILED(property_set_storage.QueryFrom(url_locator)))
+    return GURL();
+
+  base::win::ScopedComPtr<IPropertyStorage> property_storage;
+  if (FAILED(property_set_storage->Open(FMTID_Intshcut, STGM_READ,
+                                        property_storage.Receive()))) {
+    return GURL();
+  }
+
+  PROPSPEC properties[] = {{PRSPEC_PROPID, PID_IS_ICONFILE}};
+  PROPVARIANT output[1];
+  // ReadMultiple can return S_FALSE (FAILED(S_FALSE) is false) when the
+  // property is not found, in which case output[0].vt is set to VT_EMPTY.
+  if (FAILED(property_storage->ReadMultiple(1, properties, output)) ||
+      (output[0].vt != VT_LPWSTR))
+    return GURL();
+  return GURL(WideToUTF16(output[0].pwszVal));
+}
+
+// Reads the favicon imaga data in an NTFS alternate data stream. This is where
+// IE7 and above store the data.
+bool ReadFaviconDataFromInternetShortcut(const string16& file,
+                                         std::string* data) {
+  return file_util::ReadFileToString(FilePath(file + kFaviconStreamName), data);
+}
+
+// Reads the favicon imaga data in the Internet cache. IE6 doesn't hold the data
+// explicitly, but it might be found in the cache.
+bool ReadFaviconDataFromCache(const GURL& favicon_url, std::string* data) {
+  std::wstring url_wstring(UTF8ToWide(favicon_url.spec()));
+  DWORD info_size = 0;
+  GetUrlCacheEntryInfoEx(url_wstring.c_str(), NULL, &info_size, NULL, NULL,
+                         NULL, 0);
+  if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+    return false;
+
+  std::vector<char> buf(info_size);
+  INTERNET_CACHE_ENTRY_INFO* cache =
+      reinterpret_cast<INTERNET_CACHE_ENTRY_INFO*>(&buf[0]);
+  if (!GetUrlCacheEntryInfoEx(url_wstring.c_str(), cache, &info_size, NULL,
+                              NULL, NULL, 0)) {
+    return false;
+  }
+  return file_util::ReadFileToString(FilePath(cache->lpszLocalFileName), data);
+}
+
+// Reads the binary image data of favicon of an internet shortcut file |file|.
+// |favicon_url| read by ReadFaviconURLFromInternetShortcut is also needed to
+// examine the IE cache.
+bool ReadReencodedFaviconData(const string16& file,
+                              const GURL& favicon_url,
+                              std::vector<unsigned char>* data) {
+  std::string image_data;
+  if (!ReadFaviconDataFromInternetShortcut(file, &image_data) &&
+      !ReadFaviconDataFromCache(favicon_url, &image_data)) {
+    return false;
+  }
+
+  const unsigned char* ptr =
+      reinterpret_cast<const unsigned char*>(image_data.c_str());
+  return importer::ReencodeFavicon(ptr, image_data.size(), data);
+}
+
+// Loads favicon image data and registers to |favicon_map|.
+void UpdateFaviconMap(
+    const string16& url_file,
+    const GURL& url,
+    IUniformResourceLocator* url_locator,
+    std::map<GURL, history::ImportedFaviconUsage>* favicon_map) {
+  GURL favicon_url = ReadFaviconURLFromInternetShortcut(url_locator);
+  if (!favicon_url.is_valid())
+    return;
+
+  std::map<GURL, history::ImportedFaviconUsage>::iterator it =
+    favicon_map->find(favicon_url);
+  if (it != favicon_map->end()) {
+    // Known favicon URL.
+    it->second.urls.insert(url);
+  } else {
+    // New favicon URL. Read the image data and store.
+    history::ImportedFaviconUsage usage;
+    if (ReadReencodedFaviconData(url_file, favicon_url, &usage.png_data)) {
+      usage.favicon_url = favicon_url;
+      usage.urls.insert(url);
+      favicon_map->insert(std::make_pair(favicon_url, usage));
+    }
+  }
 }
 
 }  // namespace
@@ -330,13 +457,16 @@ void IEImporter::ImportFavorites() {
     return;
 
   BookmarkVector bookmarks;
-  ParseFavoritesFolder(info, &bookmarks);
+  std::vector<history::ImportedFaviconUsage> favicons;
+  ParseFavoritesFolder(info, &bookmarks, &favicons);
 
   if (!bookmarks.empty() && !cancelled()) {
     const string16& first_folder_name =
         l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE);
     bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
+  if (!favicons.empty() && !cancelled())
+    bridge_->SetFavicons(favicons);
 }
 
 void IEImporter::ImportHistory() {
@@ -630,32 +760,6 @@ void IEImporter::ImportHomepage() {
   bridge_->AddHomePage(homepage);
 }
 
-string16 IEImporter::ResolveInternetShortcut(const string16& file) {
-  base::win::ScopedCoMem<wchar_t> url;
-  base::win::ScopedComPtr<IUniformResourceLocator> url_locator;
-  HRESULT result = url_locator.CreateInstance(CLSID_InternetShortcut, NULL,
-                                              CLSCTX_INPROC_SERVER);
-  if (FAILED(result))
-    return string16();
-
-  base::win::ScopedComPtr<IPersistFile> persist_file;
-  result = persist_file.QueryFrom(url_locator);
-  if (FAILED(result))
-    return string16();
-
-  // Loads the Internet Shortcut from persistent storage.
-  result = persist_file->Load(file.c_str(), STGM_READ);
-  if (FAILED(result))
-    return string16();
-
-  result = url_locator->GetURL(&url);
-  // GetURL can return S_FALSE (FAILED(S_FALSE) is false) when url == NULL.
-  if (FAILED(result) || (url == NULL))
-    return string16();
-
-  return string16(url);
-}
-
 bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
   if (!source_path_.empty()) {
     // Source path exists during testing.
@@ -691,8 +795,10 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
   return true;
 }
 
-void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
-                                      BookmarkVector* bookmarks) {
+void IEImporter::ParseFavoritesFolder(
+    const FavoritesInfo& info,
+    BookmarkVector* bookmarks,
+    std::vector<history::ImportedFaviconUsage>* favicons) {
   FilePath file;
   std::vector<FilePath::StringType> file_list;
   FilePath favorites_path(info.path);
@@ -707,6 +813,11 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
   // Keep the bookmarks in alphabetical order.
   std::sort(file_list.begin(), file_list.end());
 
+  // Map from favicon URLs to the favicon data (the binary image data and the
+  // set of bookmark URLs referring to the favicon).
+  typedef std::map<GURL, history::ImportedFaviconUsage> FaviconMap;
+  FaviconMap favicon_map;
+
   for (std::vector<FilePath::StringType>::iterator it = file_list.begin();
        it != file_list.end(); ++it) {
     FilePath shortcut(*it);
@@ -714,9 +825,15 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
       continue;
 
     // Skip the bookmark with invalid URL.
-    GURL url = GURL(ResolveInternetShortcut(*it));
+    base::win::ScopedComPtr<IUniformResourceLocator> url_locator;
+    if (!LoadInternetShortcut(*it, &url_locator))
+      continue;
+    GURL url = ReadURLFromInternetShortcut(url_locator);
     if (!url.is_valid())
       continue;
+
+    // Read favicon.
+    UpdateFaviconMap(*it, url, url_locator, &favicon_map);
 
     // Make the relative path from the Favorites folder, without the basename.
     // ex. Suppose that the Favorites folder is C:\Users\Foo\Favorites.
@@ -746,6 +863,11 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
 
   // Reflect the menu order in IE.
   SortBookmarksInIEOrder(this, bookmarks);
+
+  // Record favicon data.
+  for (FaviconMap::iterator iter = favicon_map.begin();
+       iter != favicon_map.end(); ++iter)
+    favicons->push_back(iter->second);
 }
 
 int IEImporter::CurrentIEVersion() const {
