@@ -9,7 +9,6 @@
 #endif
 
 #include "base/debug/trace_event.h"
-#include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
@@ -95,13 +94,6 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   gpu_info.driver_version =
       command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
   content::GetContentClient()->SetGpuInfo(gpu_info);
-
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, we can now sandbox the GPU process using seccomp filter.
-  // This restricts calls to open(), so set the config line in /etc/drirc as
-  // an environment variable.
-  base::Environment::Create()->SetVar("force_s3tc_enable", "true");
-#endif
 
   // Load and initialize the GL implementation and locate the GL entry points.
   if (gfx::GLSurface::InitializeOneOff()) {
