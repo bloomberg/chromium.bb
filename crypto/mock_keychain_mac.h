@@ -214,7 +214,7 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
 
   // Tracks the allocations and frees of password data in |FindGenericPassword|
   // and |ItemFreeContent|.
-  mutable unsigned int password_data_count_;
+  mutable int password_data_count_;
 
   // Records the password being set when |AddGenericPassword()| gets called.
   mutable std::string add_generic_password_;
