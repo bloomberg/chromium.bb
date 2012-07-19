@@ -14,12 +14,14 @@
 #include "base/string_number_conversions.h"
 #include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
@@ -48,6 +50,8 @@
 
 using content::BrowserThread;
 using content::NativeWebKeyboardEvent;
+using content::RenderViewHost;
+using content::RenderViewHostDelegate;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
@@ -1147,6 +1151,12 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     return ui::GESTURE_STATUS_CONSUMED;
   }
 
+  RenderViewHostDelegate* delegate = RenderViewHost::From(host_)->GetDelegate();
+  if (event->type() == ui::ET_GESTURE_BEGIN &&
+      event->details().touch_points() == 1) {
+    delegate->HandleGestureBegin();
+  }
+
   WebKit::WebGestureEvent gesture = content::MakeWebGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
@@ -1155,6 +1165,7 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     fling_cancel.type = WebKit::WebInputEvent::GestureFlingCancel;
     host_->ForwardGestureEvent(fling_cancel);
   }
+
   if (gesture.type != WebKit::WebInputEvent::Undefined) {
     host_->ForwardGestureEvent(gesture);
 
@@ -1166,6 +1177,11 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
       content::RecordAction(
           content::UserMetricsAction("TouchscreenScrollFling"));
     }
+  }
+
+  if (event->type() == ui::ET_GESTURE_END &&
+      event->details().touch_points() == 1) {
+    delegate->HandleGestureEnd();
   }
 
   // If a gesture is not processed by the webpage, then WebKit processes it
@@ -1233,8 +1249,17 @@ void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 // RenderWidgetHostViewAura, aura::client::ActivationDelegate implementation:
 
 bool RenderWidgetHostViewAura::ShouldActivate(const aura::Event* event) {
-  if (event && event->type() == ui::ET_MOUSE_PRESSED)
-    host_->OnMouseActivate();
+  bool activate = false;
+  if (event) {
+    if (event->type() == ui::ET_MOUSE_PRESSED) {
+      activate = true;
+    } else if (event->type() == ui::ET_GESTURE_BEGIN) {
+      activate = static_cast<const aura::GestureEvent*>(event)->
+          details().touch_points() == 1;
+    }
+  }
+  if (activate)
+    host_->OnPointerEventActivate();
   return is_fullscreen_;
 }
 

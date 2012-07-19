@@ -125,17 +125,7 @@ bool CompoundEventFilter::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
-  ui::TouchStatus status = FilterTouchEvent(target, event);
-  if (status != ui::TOUCH_STATUS_UNKNOWN)
-    return status;
-
-  if (event->type() == ui::ET_TOUCH_PRESSED) {
-    SetVisibilityOnEvent(event, false);
-    target->GetFocusManager()->SetFocusedWindow(
-        FindFocusableWindowFor(target), event);
-  }
-
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return FilterTouchEvent(target, event);
 }
 
 ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
@@ -150,6 +140,16 @@ ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
       status = filter->PreHandleGestureEvent(target, event);
     }
   }
+
+  if (event->type() == ui::ET_GESTURE_BEGIN &&
+      event->details().touch_points() == 1 &&
+      target->GetRootWindow() &&
+      GetActiveWindow(target) != target) {
+    SetVisibilityOnEvent(event, false);
+    target->GetFocusManager()->SetFocusedWindow(
+        FindFocusableWindowFor(target), event);
+  }
+
   return status;
 }
 

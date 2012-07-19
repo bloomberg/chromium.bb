@@ -238,8 +238,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   void CancelUpdateTextDirection();
 
-  // Called when a mouse click activates the renderer.
-  virtual void OnMouseActivate();
+  // Called when a mouse click/gesture tap activates the renderer.
+  virtual void OnPointerEventActivate();
 
   // Notifies the renderer whether or not the input method attached to this
   // process is activated.

@@ -31,8 +31,9 @@ class InstantLoaderDelegate {
   // Returns the bounds of instant.
   virtual gfx::Rect GetInstantBounds() = 0;
 
-  // Returns true if instant should be committed on mouse up.
-  virtual bool ShouldCommitInstantOnMouseUp() = 0;
+  // Returns true if instant should be committed on mouse up or at the end of a
+  // touch-gesture.
+  virtual bool ShouldCommitInstantOnPointerRelease() = 0;
 
   // Invoked when the the loader should be committed.
   virtual void CommitInstantLoader(InstantLoader* loader) = 0;

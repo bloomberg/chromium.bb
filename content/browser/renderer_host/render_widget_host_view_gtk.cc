@@ -318,7 +318,7 @@ class RenderWidgetHostViewGtkWidget {
 
     // If we don't have focus already, this mouse click will focus us.
     if (!gtk_widget_is_focus(widget))
-      host_view->host_->OnMouseActivate();
+      host_view->host_->OnPointerEventActivate();
 
     // Confirm existing composition text on mouse click events, to make sure
     // the input caret won't be moved with an ongoing composition session.

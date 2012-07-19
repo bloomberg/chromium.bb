@@ -362,7 +362,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void LostCapture() OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
-  virtual void HandleMouseActivate() OVERRIDE;
+  virtual void HandlePointerActivate() OVERRIDE;
+  virtual void HandleGestureBegin() OVERRIDE;
+  virtual void HandleGestureEnd() OVERRIDE;
   virtual void RunFileChooser(
       content::RenderViewHost* render_view_host,
       const content::FileChooserParams& params) OVERRIDE;

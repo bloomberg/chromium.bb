@@ -1497,7 +1497,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // TODO(rohitrao): Probably need to handle other mouse down events here.
   if ([theEvent type] == NSLeftMouseDown && takesFocusOnlyOnMouseDown_) {
     if (renderWidgetHostView_->render_widget_host_)
-      renderWidgetHostView_->render_widget_host_->OnMouseActivate();
+      renderWidgetHostView_->render_widget_host_->OnPointerEventActivate();
 
     // Manually take focus after the click but before forwarding it to the
     // renderer.

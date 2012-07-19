@@ -366,7 +366,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void LostMouseLock() OVERRIDE;
   virtual void ForwardMouseEvent(
       const WebKit::WebMouseEvent& mouse_event) OVERRIDE;
-  virtual void OnMouseActivate() OVERRIDE;
+  virtual void OnPointerEventActivate() OVERRIDE;
   virtual void ForwardKeyboardEvent(
       const content::NativeWebKeyboardEvent& key_event) OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;

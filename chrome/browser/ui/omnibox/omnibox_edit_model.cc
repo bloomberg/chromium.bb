@@ -439,7 +439,7 @@ void OmniboxEditModel::StartAutocomplete(
 void OmniboxEditModel::StopAutocomplete() {
   if (popup_->IsOpen() && !in_revert_) {
     InstantController* instant = controller_->GetInstant();
-    if (instant && !instant->commit_on_mouse_up())
+    if (instant && !instant->commit_on_pointer_release())
       instant->DestroyPreviewContents();
   }
 
@@ -1107,7 +1107,7 @@ bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match,
   // omnibox view if the user clicked the renderer while IME composition was
   // active. In that case we still want to commit on mouse up, so don't call
   // Hide().
-  if (!instant->commit_on_mouse_up())
+  if (!instant->commit_on_pointer_release())
     instant->Hide();
   return false;
 }

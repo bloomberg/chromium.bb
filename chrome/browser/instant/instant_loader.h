@@ -69,9 +69,9 @@ class InstantLoader : public content::NotificationObserver {
   // when showing results for a search provider that supports instant.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
-  // Returns true if the mouse is down as the result of activating the preview
-  // content.
-  bool IsMouseDownFromActivate();
+  // Returns true if the mouse or a touch-pointer is down as the result of
+  // activating the preview content.
+  bool IsPointerDownFromActivate();
 
   // Releases the preview TabContents passing ownership to the caller.
   // This is intended to be called when the preview TabContents is
@@ -83,7 +83,7 @@ class InstantLoader : public content::NotificationObserver {
                                       TabContents* tab_contents);
 
   // Calls through to method of same name on delegate.
-  bool ShouldCommitInstantOnMouseUp();
+  bool ShouldCommitInstantOnPointerRelease();
   void CommitInstantLoader();
 
   // Preload |template_url|'s instant URL, if the loader doesn't already have

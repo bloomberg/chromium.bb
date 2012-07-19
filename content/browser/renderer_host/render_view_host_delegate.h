@@ -317,7 +317,9 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Listener {
   virtual void HandleMouseDown() {}
   virtual void HandleMouseLeave() {}
   virtual void HandleMouseUp() {}
-  virtual void HandleMouseActivate() {}
+  virtual void HandlePointerActivate() {}
+  virtual void HandleGestureBegin() {}
+  virtual void HandleGestureEnd() {}
 
   // Called when a file selection is to be done.
   virtual void RunFileChooser(

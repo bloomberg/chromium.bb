@@ -255,7 +255,13 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   virtual void HandleMouseDown() {}
   virtual void HandleMouseUp() {}
-  virtual void HandleMouseActivate() {}
+
+  // Handles activation resulting from a pointer event (e.g. when mouse is
+  // pressed, or a touch-gesture begins).
+  virtual void HandlePointerActivate() {}
+
+  virtual void HandleGestureBegin() {}
+  virtual void HandleGestureEnd() {}
 
   // Render view drag n drop ended.
   virtual void DragEnded() {}

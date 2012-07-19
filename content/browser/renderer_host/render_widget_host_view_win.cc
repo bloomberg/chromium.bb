@@ -2362,7 +2362,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
     }
   }
   handled = FALSE;
-  render_widget_host_->OnMouseActivate();
+  render_widget_host_->OnPointerEventActivate();
   return MA_ACTIVATE;
 }
 

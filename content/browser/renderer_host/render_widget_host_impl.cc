@@ -782,7 +782,7 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   ForwardInputEvent(mouse_event, sizeof(WebMouseEvent), false);
 }
 
-void RenderWidgetHostImpl::OnMouseActivate() {
+void RenderWidgetHostImpl::OnPointerEventActivate() {
 }
 
 void RenderWidgetHostImpl::ForwardWheelEvent(

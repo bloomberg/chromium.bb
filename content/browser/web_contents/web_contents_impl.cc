@@ -1095,9 +1095,19 @@ void WebContentsImpl::HandleMouseUp() {
     delegate_->HandleMouseUp();
 }
 
-void WebContentsImpl::HandleMouseActivate() {
+void WebContentsImpl::HandlePointerActivate() {
   if (delegate_)
-    delegate_->HandleMouseActivate();
+    delegate_->HandlePointerActivate();
+}
+
+void WebContentsImpl::HandleGestureBegin() {
+  if (delegate_)
+    delegate_->HandleGestureBegin();
+}
+
+void WebContentsImpl::HandleGestureEnd() {
+  if (delegate_)
+    delegate_->HandleGestureEnd();
 }
 
 void WebContentsImpl::ToggleFullscreenMode(bool enter_fullscreen) {

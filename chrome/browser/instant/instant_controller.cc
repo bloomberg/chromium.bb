@@ -38,7 +38,7 @@ InstantController::InstantController(InstantControllerDelegate* delegate,
     : delegate_(delegate),
       is_displayable_(false),
       is_out_of_date_(true),
-      commit_on_mouse_up_(false),
+      commit_on_pointer_release_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       mode_(mode) {
@@ -103,7 +103,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   suggested_text->clear();
 
   is_out_of_date_ = false;
-  commit_on_mouse_up_ = false;
+  commit_on_pointer_release_ = false;
   last_transition_type_ = match.transition;
   last_url_ = match.destination_url;
   last_user_text_ = user_text;
@@ -171,7 +171,7 @@ void InstantController::DestroyPreviewContents() {
 
 void InstantController::Hide() {
   is_out_of_date_ = true;
-  commit_on_mouse_up_ = false;
+  commit_on_pointer_release_ = false;
   if (is_displayable_) {
     is_displayable_ = false;
     delegate_->HideInstant();
@@ -241,25 +241,25 @@ bool InstantController::CommitIfCurrent() {
   return false;
 }
 
-void InstantController::SetCommitOnMouseUp() {
-  commit_on_mouse_up_ = true;
+void InstantController::SetCommitOnPointerRelease() {
+  commit_on_pointer_release_ = true;
 }
 
-bool InstantController::IsMouseDownFromActivate() {
+bool InstantController::IsPointerDownFromActivate() {
   DCHECK(loader_.get());
-  return loader_->IsMouseDownFromActivate();
+  return loader_->IsPointerDownFromActivate();
 }
 
 #if defined(OS_MACOSX)
 void InstantController::OnAutocompleteLostFocus(
     gfx::NativeView view_gaining_focus) {
-  // If |IsMouseDownFromActivate()| returns false, the RenderWidgetHostView did
-  // not receive a mouseDown event.  Therefore, we should destroy the preview.
-  // Otherwise, the RWHV was clicked, so we commit the preview.
-  if (!IsCurrent() || !IsMouseDownFromActivate())
+  // If |IsPointerDownFromActivate()| returns false, the RenderWidgetHostView
+  // did not receive a mouseDown event. Therefore, we should destroy the
+  // preview. Otherwise, the RWHV was clicked, so we commit the preview.
+  if (!IsCurrent() || !IsPointerDownFromActivate())
     DestroyPreviewContents();
   else
-    SetCommitOnMouseUp();
+    SetCommitOnPointerRelease();
 }
 #else
 void InstantController::OnAutocompleteLostFocus(
@@ -298,7 +298,7 @@ void InstantController::OnAutocompleteLostFocus(
   // Focus is going to the renderer.
   if (rwhv->GetNativeView() == view_gaining_focus ||
       tab_view == view_gaining_focus) {
-    if (!IsMouseDownFromActivate()) {
+    if (!IsPointerDownFromActivate()) {
       // If the mouse is not down, focus is not going to the renderer. Someone
       // else moved focus and we shouldn't commit.
       DestroyPreviewContents();
@@ -308,7 +308,7 @@ void InstantController::OnAutocompleteLostFocus(
     // We're showing instant results. As instant results may shift when
     // committing we commit on the mouse up. This way a slow click still works
     // fine.
-    SetCommitOnMouseUp();
+    SetCommitOnPointerRelease();
     return;
   }
 
@@ -358,7 +358,7 @@ TabContents* InstantController::ReleasePreviewContents(
   ClearBlacklist();
   is_out_of_date_ = true;
   is_displayable_ = false;
-  commit_on_mouse_up_ = false;
+  commit_on_pointer_release_ = false;
   omnibox_bounds_ = gfx::Rect();
   loader_.reset();
   return tab;
@@ -392,8 +392,8 @@ gfx::Rect InstantController::GetInstantBounds() {
   return delegate_->GetInstantBounds();
 }
 
-bool InstantController::ShouldCommitInstantOnMouseUp() {
-  return commit_on_mouse_up_;
+bool InstantController::ShouldCommitInstantOnPointerRelease() {
+  return commit_on_pointer_release_;
 }
 
 void InstantController::CommitInstantLoader(InstantLoader* loader) {

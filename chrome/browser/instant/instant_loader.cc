@@ -197,8 +197,8 @@ class InstantLoader::WebContentsDelegateImpl
   // Invoked when the preview paints. Invokes PreviewPainted on the loader.
   void PreviewPainted();
 
-  bool is_mouse_down_from_activate() const {
-    return is_mouse_down_from_activate_;
+  bool is_pointer_down_from_activate() const {
+    return is_pointer_down_from_activate_;
   }
 
   void set_user_typed_before_load() { user_typed_before_load_ = true; }
@@ -240,7 +240,9 @@ class InstantLoader::WebContentsDelegateImpl
                            int request_id,
                            const std::string& request_method) OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
-  virtual void HandleMouseActivate() OVERRIDE;
+  virtual void HandlePointerActivate() OVERRIDE;
+  virtual void HandleGestureBegin() OVERRIDE;
+  virtual void HandleGestureEnd() OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
@@ -278,7 +280,8 @@ class InstantLoader::WebContentsDelegateImpl
   // instant.
   void OnInstantSupportDetermined(int32 page_id, bool result);
 
-  void CommitFromMouseReleaseIfNecessary();
+  // Commits, if applicable, on mouse is released, or a gesture ends.
+  void CommitOnPointerReleaseIfNecessary();
 
   InstantLoader* loader_;
 
@@ -298,8 +301,8 @@ class InstantLoader::WebContentsDelegateImpl
   // NEW_PAGE navigation we don't add history items to add_page_vector_.
   bool waiting_for_new_page_;
 
-  // True if the mouse is down from an activate.
-  bool is_mouse_down_from_activate_;
+  // True if mouse-pointer or a touch-pointer is down from an activate.
+  bool is_pointer_down_from_activate_;
 
   // True if the user typed in the search box before the page loaded.
   bool user_typed_before_load_;
@@ -313,7 +316,7 @@ InstantLoader::WebContentsDelegateImpl::WebContentsDelegateImpl(
       loader_(loader),
       registered_render_widget_host_(NULL),
       waiting_for_new_page_(true),
-      is_mouse_down_from_activate_(false),
+      is_pointer_down_from_activate_(false),
       user_typed_before_load_(false) {
   DCHECK(loader->preview_contents());
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
@@ -492,11 +495,11 @@ void InstantLoader::WebContentsDelegateImpl::WebContentsFocused(
 }
 
 void InstantLoader::WebContentsDelegateImpl::LostCapture() {
-  CommitFromMouseReleaseIfNecessary();
+  CommitOnPointerReleaseIfNecessary();
 }
 
 void InstantLoader::WebContentsDelegateImpl::DragEnded() {
-  CommitFromMouseReleaseIfNecessary();
+  CommitOnPointerReleaseIfNecessary();
 }
 
 bool InstantLoader::WebContentsDelegateImpl::CanDownload(
@@ -508,11 +511,18 @@ bool InstantLoader::WebContentsDelegateImpl::CanDownload(
 }
 
 void InstantLoader::WebContentsDelegateImpl::HandleMouseUp() {
-  CommitFromMouseReleaseIfNecessary();
+  CommitOnPointerReleaseIfNecessary();
 }
 
-void InstantLoader::WebContentsDelegateImpl::HandleMouseActivate() {
-  is_mouse_down_from_activate_ = true;
+void InstantLoader::WebContentsDelegateImpl::HandlePointerActivate() {
+  is_pointer_down_from_activate_ = true;
+}
+
+void InstantLoader::WebContentsDelegateImpl::HandleGestureBegin() {
+}
+
+void InstantLoader::WebContentsDelegateImpl::HandleGestureEnd() {
+  CommitOnPointerReleaseIfNecessary();
 }
 
 bool InstantLoader::WebContentsDelegateImpl::OnGoToEntryOffset(int offset) {
@@ -623,10 +633,10 @@ void InstantLoader::WebContentsDelegateImpl::OnInstantSupportDetermined(
 }
 
 void InstantLoader::WebContentsDelegateImpl
-    ::CommitFromMouseReleaseIfNecessary() {
-  bool was_down = is_mouse_down_from_activate_;
-  is_mouse_down_from_activate_ = false;
-  if (was_down && loader_->ShouldCommitInstantOnMouseUp())
+    ::CommitOnPointerReleaseIfNecessary() {
+  bool was_down = is_pointer_down_from_activate_;
+  is_pointer_down_from_activate_ = false;
+  if (was_down && loader_->ShouldCommitInstantOnPointerRelease())
     loader_->CommitInstantLoader();
 }
 
@@ -758,7 +768,7 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
     return;
 
   // Don't update the page while the mouse is down. http://crbug.com/71952
-  if (IsMouseDownFromActivate())
+  if (IsPointerDownFromActivate())
     return;
 
   omnibox_bounds_ = bounds;
@@ -779,9 +789,9 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
   }
 }
 
-bool InstantLoader::IsMouseDownFromActivate() {
+bool InstantLoader::IsPointerDownFromActivate() {
   return preview_tab_contents_delegate_.get() &&
-      preview_tab_contents_delegate_->is_mouse_down_from_activate();
+      preview_tab_contents_delegate_->is_pointer_down_from_activate();
 }
 
 TabContents* InstantLoader::ReleasePreviewContents(
@@ -854,8 +864,8 @@ TabContents* InstantLoader::ReleasePreviewContents(
   return preview_contents_.release();
 }
 
-bool InstantLoader::ShouldCommitInstantOnMouseUp() {
-  return delegate_->ShouldCommitInstantOnMouseUp();
+bool InstantLoader::ShouldCommitInstantOnPointerRelease() {
+  return delegate_->ShouldCommitInstantOnPointerRelease();
 }
 
 void InstantLoader::CommitInstantLoader() {

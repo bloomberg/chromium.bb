@@ -1527,8 +1527,8 @@ void RenderViewHostImpl::ForwardMouseEvent(
   }
 }
 
-void RenderViewHostImpl::OnMouseActivate() {
-  delegate_->HandleMouseActivate();
+void RenderViewHostImpl::OnPointerEventActivate() {
+  delegate_->HandlePointerActivate();
 }
 
 void RenderViewHostImpl::ForwardKeyboardEvent(
