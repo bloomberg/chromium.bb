@@ -135,7 +135,8 @@ void OAuth2ApiCallFlow::OnURLFetchComplete(const net::URLFetcher* source) {
   EndApiCall(source);
 }
 
-void OAuth2ApiCallFlow::OnGetTokenSuccess(const std::string& access_token) {
+void OAuth2ApiCallFlow::OnGetTokenSuccess(const std::string& access_token,
+                                          const base::Time& expiration_time) {
   access_token_ = access_token;
   EndMintAccessToken(NULL);
 }

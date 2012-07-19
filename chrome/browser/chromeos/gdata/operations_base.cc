@@ -107,7 +107,8 @@ void AuthOperation::DoCancel() {
 
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
 // used to start fetching user data.
-void AuthOperation::OnGetTokenSuccess(const std::string& access_token) {
+void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
+                                      const base::Time& expiration_time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",

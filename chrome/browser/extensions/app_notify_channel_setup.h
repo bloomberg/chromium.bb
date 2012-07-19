@@ -86,7 +86,8 @@ class AppNotifyChannelSetup
   void Start();
 
   // OAuth2AccessTokenConsumer implementation.
-  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
+  virtual void OnGetTokenSuccess(const std::string& access_token,
+                                 const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
 
