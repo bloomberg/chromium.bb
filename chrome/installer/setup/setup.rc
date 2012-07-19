@@ -134,5 +134,15 @@ IDR_OEMPG_ZH_TW.HTML    HTML   "eula\\oem_zh-TW.html"
 #include "setup_exe_version.rc"
 
 /////////////////////////////////////////////////////////////////////////////
+//
+// GOOGLEUPDATEAPPLICATIONCOMMANDS is a "well-known" marker resource defined
+// by Omaha. Executables must both be signed by Google and contain the marker
+// in order to expose application commands.
+//
+#define IDR_GOOGLE_UPDATE_APP_COMMANDS_MARKUP 1
+
+IDR_GOOGLE_UPDATE_APP_COMMANDS_MARKUP GOOGLEUPDATEAPPLICATIONCOMMANDS { 1L }
+
+/////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
