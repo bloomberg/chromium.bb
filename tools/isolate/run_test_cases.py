@@ -269,7 +269,7 @@ class Progress(object):
   def update_item(self, name):
     with self.lock:
       self.index += 1
-      self.next_line = '%d of %d (%.1f%%), %.1fs: %s' % (
+      self.next_line = '[%d/%d] (%.1f%%) %.1fs: %s' % (
           self.index,
           self.size,
           self.index * 100. / self.size,
@@ -407,7 +407,7 @@ class Runner(object):
     for retry in range(self.retry_count):
       start = time.time()
       output, returncode = call_with_timeout(
-          cmd, self.timeout, cwd=self.cwd_dir)
+          cmd, self.timeout, cwd=self.cwd_dir, stderr=subprocess.STDOUT)
       duration = time.time() - start
       out.append(
           {
@@ -419,9 +419,10 @@ class Runner(object):
       if returncode and retry != self.retry_count - 1:
         self.progress.increase_count()
       if retry:
-        self.progress.update_item('%s - %d' % (test_case, retry))
+        self.progress.update_item(
+            '%s (%.2fs) - retry #%d' % (test_case, duration, retry))
       else:
-        self.progress.update_item(test_case)
+        self.progress.update_item('%s (%.2fs)' % (test_case, duration))
       if not returncode:
         break
     return out
@@ -523,6 +524,7 @@ def main():
   parser.add_option(
       '-t', '--timeout',
       type='int',
+      default=120,
       help='Timeout for a single test case, in seconds default:%default')
   parser.add_option(
       '-S', '--stats',
