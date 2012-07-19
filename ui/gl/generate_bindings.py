@@ -298,7 +298,8 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glGetProgramBinary', 'glGetProgramBinaryOES'],
   'arguments': 'GLuint program, GLsizei bufSize, GLsizei* length, '
-               'GLenum* binaryFormat, GLvoid* binary', },
+               'GLenum* binaryFormat, GLvoid* binary',
+  'other_extensions': ['GL_ARB_get_program_binary'] },
 { 'return_type': 'void',
   'names': ['glGetProgramiv'],
   'arguments': 'GLuint program, GLenum pname, GLint* params', },
@@ -430,7 +431,8 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glProgramBinary', 'glProgramBinaryOES'],
   'arguments': 'GLuint program, GLenum binaryFormat, '
-               'const GLvoid* binary, GLsizei length', },
+               'const GLvoid* binary, GLsizei length',
+  'other_extensions': ['GL_ARB_get_program_binary'] },
 { 'return_type': 'void',
   'names': ['glQueryCounter'],
   'arguments': 'GLuint id, GLenum target', },
