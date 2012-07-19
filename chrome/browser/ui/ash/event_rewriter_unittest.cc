@@ -1608,4 +1608,42 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
                                       keycode_down_,
                                       ShiftMask | Mod1Mask | Mod4Mask));
 }
+
+TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
+  // Remap Control to Alt.
+  TestingPrefService prefs;
+  chromeos::Preferences::RegisterUserPrefs(&prefs);
+  IntegerPrefMember control;
+  control.Init(prefs::kLanguageXkbRemapControlKeyTo, &prefs, NULL);
+  control.SetValue(chromeos::input_method::kAltKey);
+
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+
+  // Send left control press.
+  std::string rewritten_event;
+  {
+    XEvent xev;
+    InitXKeyEvent(ui::VKEY_CONTROL, 0, ui::ET_KEY_PRESSED,
+                  keycode_control_l_, 0U, &xev);
+    xev.xkey.send_event = True;  // XSendEvent() always does this.
+    aura::KeyEvent keyevent(&xev, false /* is_char */);
+    rewriter.RewriteForTesting(&keyevent);
+    rewritten_event = StringPrintf(
+        "ui_keycode=%d ui_flags=%d ui_type=%d "
+        "x_keycode=%u x_state=%u x_type=%d",
+        keyevent.key_code(), keyevent.flags(), keyevent.type(),
+        xev.xkey.keycode, xev.xkey.state, xev.xkey.type);
+  }
+
+  // XK_Control_L (left Control key) should NOT be remapped to Alt if send_event
+  // flag in the event is True.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_control_l_,
+                                      0U,
+                                      KeyPress),
+            rewritten_event);
+}
 #endif  // OS_CHROMEOS

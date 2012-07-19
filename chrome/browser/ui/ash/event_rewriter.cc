@@ -333,6 +333,12 @@ KeyCode EventRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
 #endif
 
 void EventRewriter::Rewrite(aura::KeyEvent* event) {
+#if defined(OS_CHROMEOS)
+  // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
+  // crbug.com/136465.
+  if (event->native_event()->xkey.send_event)
+    return;
+#endif
   RewriteModifiers(event);
   RewriteNumPadKeys(event);
   RewriteBackspaceAndArrowKeys(event);
