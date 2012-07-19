@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -42,6 +42,7 @@ typedef struct {
 typedef void (*FunctionPointer)();
 typedef void *Pointer;
 typedef long long long_long;
+typedef long double long_double;
 
 int CheckSizes() {
   int nerror = 0;
@@ -57,6 +58,7 @@ int CheckSizes() {
 
   CHECK_SIZEOF(float, 4);
   CHECK_SIZEOF(double, 8);
+  CHECK_SIZEOF(long_double, 8);
 
   CHECK_SIZEOF(S1, 16);
   CHECK_SIZEOF(S1[2], 16*2);
@@ -116,6 +118,7 @@ int CheckAlignment() {
   CHECK_ALIGNMENT(long, 4);
   CHECK_ALIGNMENT(float, 4);
   CHECK_ALIGNMENT(double, 8);
+  CHECK_ALIGNMENT(long_double, 8);
   CHECK_ALIGNMENT(Pointer, 4);
   CHECK_ALIGNMENT(FunctionPointer, 4);
   CHECK_ALIGNMENT(long_long, 8);
