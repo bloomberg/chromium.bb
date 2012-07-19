@@ -538,11 +538,9 @@ DirectoryContentsGDataSearch.prototype.scan = function() {
 };
 
 /**
- * All the results are read in one chunk, so when we try to read second chunk,
- * it means we're done.
+ * Empty because all the results are read in one chunk.
  */
 DirectoryContentsGDataSearch.prototype.readNextChunk = function() {
-  this.onCompleted();
 };
 
 
