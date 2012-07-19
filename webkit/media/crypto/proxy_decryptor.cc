@@ -61,10 +61,13 @@ void ProxyDecryptor::Decrypt(
     base::AutoLock auto_lock(lock_);
     decryptor = decryptor_.get();
   }
-  if (!decryptor)
+  if (!decryptor) {
+    DVLOG(1) << "ProxyDecryptor::Decrypt(): decryptor not initialized.";
     decrypt_cb.Run(kError, NULL);
+    return;
+  }
 
-  return decryptor->Decrypt(encrypted, decrypt_cb);
+  decryptor->Decrypt(encrypted, decrypt_cb);
 }
 
 }  // namespace webkit_media
