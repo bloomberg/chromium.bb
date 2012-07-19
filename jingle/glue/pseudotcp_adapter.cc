@@ -573,9 +573,19 @@ base::TimeDelta PseudoTcpAdapter::GetConnectTimeMicros() const {
   return base::TimeDelta::FromMicroseconds(-1);
 }
 
+bool PseudoTcpAdapter::WasNpnNegotiated() const {
+  DCHECK(CalledOnValidThread());
+  return false;
+}
+
 net::NextProto PseudoTcpAdapter::GetNegotiatedProtocol() const {
   DCHECK(CalledOnValidThread());
   return net::kProtoUnknown;
+}
+
+bool PseudoTcpAdapter::GetSSLInfo(net::SSLInfo* ssl_info) {
+  DCHECK(CalledOnValidThread());
+  return false;
 }
 
 void PseudoTcpAdapter::SetAckDelay(int delay_ms) {

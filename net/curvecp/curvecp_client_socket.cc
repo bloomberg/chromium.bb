@@ -85,8 +85,16 @@ base::TimeDelta CurveCPClientSocket::GetConnectTimeMicros() const {
   return base::TimeDelta::FromMicroseconds(-1);
 }
 
+bool CurveCPClientSocket::WasNpnNegotiated() const {
+  return false;
+}
+
 NextProto CurveCPClientSocket::GetNegotiatedProtocol() const {
   return kProtoUnknown;
+}
+
+bool CurveCPClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
+  return false;
 }
 
 int CurveCPClientSocket::Read(IOBuffer* buf,

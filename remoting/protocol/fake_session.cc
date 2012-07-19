@@ -165,9 +165,17 @@ base::TimeDelta FakeSocket::GetConnectTimeMicros() const {
   return base::TimeDelta();
 }
 
+bool FakeSocket::WasNpnNegotiated() const {
+  return false;
+}
+
 net::NextProto FakeSocket::GetNegotiatedProtocol() const {
   NOTIMPLEMENTED();
   return net::kProtoUnknown;
+}
+
+bool FakeSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
+  return false;
 }
 
 FakeUdpSocket::FakeUdpSocket()

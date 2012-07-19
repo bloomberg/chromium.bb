@@ -368,11 +368,19 @@ base::TimeDelta ProxyResolvingClientSocket::GetConnectTimeMicros() const {
   return base::TimeDelta::FromMicroseconds(-1);
 }
 
+bool ProxyResolvingClientSocket::WasNpnNegotiated() const {
+  return false;
+}
+
 net::NextProto ProxyResolvingClientSocket::GetNegotiatedProtocol() const {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->GetNegotiatedProtocol();
   NOTREACHED();
   return net::kProtoUnknown;
+}
+
+bool ProxyResolvingClientSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
+  return false;
 }
 
 void ProxyResolvingClientSocket::CloseTransportSocket() {

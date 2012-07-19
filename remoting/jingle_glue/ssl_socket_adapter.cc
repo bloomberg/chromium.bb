@@ -349,9 +349,19 @@ base::TimeDelta TransportSocket::GetConnectTimeMicros() const {
   return base::TimeDelta::FromMicroseconds(-1);
 }
 
+bool TransportSocket::WasNpnNegotiated() const {
+  NOTREACHED();
+  return false;
+}
+
 net::NextProto TransportSocket::GetNegotiatedProtocol() const {
   NOTREACHED();
   return net::kProtoUnknown;
+}
+
+bool TransportSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
+  NOTREACHED();
+  return false;
 }
 
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,

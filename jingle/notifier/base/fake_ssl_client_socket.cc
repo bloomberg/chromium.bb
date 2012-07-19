@@ -338,8 +338,16 @@ base::TimeDelta FakeSSLClientSocket::GetConnectTimeMicros() const {
   return transport_socket_->GetConnectTimeMicros();
 }
 
+bool FakeSSLClientSocket::WasNpnNegotiated() const {
+  return transport_socket_->WasNpnNegotiated();
+}
+
 net::NextProto FakeSSLClientSocket::GetNegotiatedProtocol() const {
   return transport_socket_->GetNegotiatedProtocol();
+}
+
+bool FakeSSLClientSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
+  return transport_socket_->GetSSLInfo(ssl_info);
 }
 
 }  // namespace notifier

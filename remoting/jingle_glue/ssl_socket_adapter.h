@@ -54,7 +54,9 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
   virtual bool UsingTCPFastOpen() const OVERRIDE;
   virtual int64 NumBytesRead() const OVERRIDE;
   virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
+  virtual bool WasNpnNegotiated() const OVERRIDE;
   virtual net::NextProto GetNegotiatedProtocol() const OVERRIDE;
+  virtual bool GetSSLInfo(net::SSLInfo* ssl_info) OVERRIDE;
 
   // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
