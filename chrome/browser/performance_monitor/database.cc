@@ -75,9 +75,8 @@ enum MetricKeyPosition {
   METRIC_ACTIVITY  // The unique identifier for the activity.
 };
 
-// If the db is quiet for this number of microseconds, then it is considered
-// down.
-const base::TimeDelta kActiveIntervalTimeout = base::TimeDelta::FromSeconds(5);
+// If the db is quiet for this number of minutes, then it is considered down.
+const base::TimeDelta kActiveIntervalTimeout = base::TimeDelta::FromMinutes(5);
 
 // Create the key used for internal active interval monitoring.
 // Key Schema: <Time>
@@ -140,6 +139,19 @@ int EventKeyToType(const std::string& event_key) {
   base::StringToInt(split[EVENT_TYPE], &event_type);
   return event_type;
 }
+
+performance_monitor::TimeRange ActiveIntervalToTimeRange(
+    const std::string& start_time,
+    const std::string& end_time) {
+  int64 start_time_int = 0;
+  int64 end_time_int = 0;
+  base::StringToInt64(start_time, &start_time_int);
+  base::StringToInt64(end_time, &end_time_int);
+  return performance_monitor::TimeRange(
+      base::Time::FromInternalValue(start_time_int),
+      base::Time::FromInternalValue(end_time_int));
+}
+
 }  // namespace
 
 namespace performance_monitor {
@@ -207,26 +219,23 @@ std::vector<TimeRange> Database::GetActiveIntervals(const base::Time& start,
   scoped_ptr<leveldb::Iterator> it(active_interval_db_->NewIterator(
         read_options_));
   it->Seek(start_key);
-  int64 start_time;
-  int64 end_time;
-  // Check the previous value in case we jumped in in the middle of an active
-  // interval.
-  if (it->Valid()) {
+  // If the interator is valid, we check the previous value in case we jumped
+  // into the middle of an active interval. If the iterator is not valid, then
+  // the key may be in the current active interval.
+  if (it->Valid())
     it->Prev();
-    if (it->Valid() && it->value().ToString() > start_key) {
-      base::StringToInt64(it->key().ToString(), &start_time);
-      base::StringToInt64(it->value().ToString(), &end_time);
-      results.push_back(TimeRange(base::Time::FromInternalValue(start_time),
-                                  base::Time::FromInternalValue(end_time)));
-    }
+  else
+    it->SeekToLast();
+  if (it->Valid() && it->value().ToString() > start_key) {
+    results.push_back(ActiveIntervalToTimeRange(it->key().ToString(),
+                                                it->value().ToString()));
   }
+
   for (it->Seek(start_key);
        it->Valid() && it->key().ToString() < end_key;
        it->Next()) {
-    base::StringToInt64(it->key().ToString(), &start_time);
-    base::StringToInt64(it->value().ToString(), &end_time);
-    results.push_back(TimeRange(base::Time::FromInternalValue(start_time),
-                                base::Time::FromInternalValue(end_time)));
+    results.push_back(ActiveIntervalToTimeRange(it->key().ToString(),
+                                                it->value().ToString()));
   }
   return results;
 }
@@ -513,6 +522,7 @@ void Database::UpdateActiveInterval() {
   } else {
     end_time = CreateActiveIntervalKey(clock_->GetTime());
   }
+  last_update_time_ = current_time;
   active_interval_db_->Put(write_options_, start_time_key_, end_time);
 }
 

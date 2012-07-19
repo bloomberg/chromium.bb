@@ -168,11 +168,49 @@ TEST(PerformanceMonitorDatabaseSetupTest, ActiveInterval) {
 
   std::vector<TimeRange> active_interval = db_3->GetActiveIntervals(start_time,
                                                                     end_time);
-  ASSERT_EQ(active_interval.size(), static_cast<size_t>(2));
+  ASSERT_EQ(active_interval.size(), 2u);
   ASSERT_TRUE(active_interval[0].start > start_time &&
               active_interval[0].end < mid_time);
   ASSERT_TRUE(active_interval[1].start > mid_time &&
               active_interval[1].end < end_time);
+}
+
+TEST(PerformanceMonitorDatabaseSetupTest,
+     ActiveIntervalRetrievalDuringActiveInterval) {
+  FilePath alternate_path;
+  file_util::CreateNewTempDirectory(FilePath::StringType(), &alternate_path);
+
+  TestingClock* clock = new TestingClock();
+  scoped_ptr<Database> db = Database::Create(alternate_path);
+  db->set_clock(scoped_ptr<Database::Clock>(clock));
+  db->AddStateValue("test", "test");
+  base::Time start_time = clock->GetTime();
+  db->AddStateValue("test", "test");
+  base::Time end_time = clock->GetTime();
+  db->AddStateValue("test", "test");
+
+  std::vector<TimeRange> active_interval = db->GetActiveIntervals(start_time,
+                                                                  end_time);
+  ASSERT_EQ(1u, active_interval.size());
+  EXPECT_LT(active_interval[0].start, start_time);
+  EXPECT_GT(active_interval[0].end, start_time);
+}
+
+TEST(PerformanceMonitorDatabaseSetupTest,
+     ActiveIntervalRetrievalAfterActiveInterval) {
+  FilePath alternate_path;
+  file_util::CreateNewTempDirectory(FilePath::StringType(), &alternate_path);
+
+  TestingClock* clock = new TestingClock();
+  scoped_ptr<Database> db = Database::Create(alternate_path);
+  db->set_clock(scoped_ptr<Database::Clock>(clock));
+  db->AddStateValue("test", "test");
+
+  base::Time start_time = clock->GetTime();
+  base::Time end_time = clock->GetTime();
+  std::vector<TimeRange> active_interval = db->GetActiveIntervals(start_time,
+                                                                  end_time);
+  EXPECT_TRUE(active_interval.empty());
 }
 
 ////// PerformanceMonitorDatabaseEventTests ////////////////////////////////////

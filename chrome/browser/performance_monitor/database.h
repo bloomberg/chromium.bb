@@ -52,7 +52,7 @@ struct TimeRange {
 // database is constructed, the time is noted as the start of the active
 // interval. Then, every write operation the current time is marked as the end
 // of the current active interval. If the database has no write operations for
-// a certian amount of time, then the database is considered inactive for that
+// a certain amount of time, then the database is considered inactive for that
 // time period and a new start time is noted. Having the key be the beginning
 // of the active interval allows for efficient upserts to the current active
 // interval. If the end of the active interval was in the key, then every update
@@ -192,7 +192,8 @@ class Database {
     return GetStatsForMetricByActivity(metric, base::Time(), clock_->GetTime());
   }
 
-  // Returns the times for which there is data in the database.
+  // Returns the active time intervals that overlap with the time interval
+  // defined by |start| and |end|.
   std::vector<TimeRange> GetActiveIntervals(const base::Time& start,
                                             const base::Time& end);
 
