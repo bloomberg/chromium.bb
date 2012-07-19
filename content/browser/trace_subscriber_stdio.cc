@@ -58,6 +58,9 @@ class TraceSubscriberStdioImpl
       fclose(file_);
       file_ = 0;
     }
+    // This is important, as it breaks a reference cycle.
+    trace_buffer_.SetOutputCallback(
+        base::debug::TraceResultBuffer::OutputCallback());
   }
 
   void Write(const std::string& output_str) {
@@ -79,7 +82,7 @@ TraceSubscriberStdio::TraceSubscriberStdio(const FilePath& path)
     : impl_(new TraceSubscriberStdioImpl(path)) {
   BrowserThread::PostBlockingPoolSequencedTask(
       __FILE__, FROM_HERE,
-      base::Bind(&TraceSubscriberStdioImpl::OnStart, impl_.get()));
+      base::Bind(&TraceSubscriberStdioImpl::OnStart, impl_));
 }
 
 TraceSubscriberStdio::~TraceSubscriberStdio() {
@@ -88,14 +91,14 @@ TraceSubscriberStdio::~TraceSubscriberStdio() {
 void TraceSubscriberStdio::OnEndTracingComplete() {
   BrowserThread::PostBlockingPoolSequencedTask(
       __FILE__, FROM_HERE,
-      base::Bind(&TraceSubscriberStdioImpl::OnEnd, impl_.get()));
+      base::Bind(&TraceSubscriberStdioImpl::OnEnd, impl_));
 }
 
 void TraceSubscriberStdio::OnTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& data_ptr) {
   BrowserThread::PostBlockingPoolSequencedTask(
       __FILE__, FROM_HERE,
-      base::Bind(&TraceSubscriberStdioImpl::OnData, impl_.get(), data_ptr));
+      base::Bind(&TraceSubscriberStdioImpl::OnData, impl_, data_ptr));
 }
 
 }  // namespace content

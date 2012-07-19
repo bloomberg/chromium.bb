@@ -4959,21 +4959,6 @@
    fun:_ZN17AudioRendererHost14OnCreateStreamEiRK15AudioParameters
 }
 {
-   bug_115411_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7content20TraceSubscriberStdioC1ERK8FilePath
-   fun:_ZN48TraceSubscriberStdioTest_CanWriteDataToFile_Test8TestBodyEv
-}
-{
-   bug_115411_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7content24TraceSubscriberStdioImpl7OnStartEv
-}
-{
    bug_115419_1
    Memcheck:Uninitialized
    fun:fetch_texel_2d_f_rgba8888
