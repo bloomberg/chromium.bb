@@ -348,7 +348,7 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
-  gfx::Rect parent_bounds(window_->parent()->GetRootWindowBounds());
+  gfx::Rect parent_bounds(window_->parent()->GetBoundsInRootWindow());
   // When centering window, we take the intersection of the host and
   // the parent. We assume the root window represents the visible
   // rect of a single screen.
@@ -370,7 +370,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   // center it with respect to the transient parent.
   if (window_->transient_parent()) {
     gfx::Rect transient_parent_rect = window_->transient_parent()->
-        GetRootWindowBounds().Intersect(work_area);
+        GetBoundsInRootWindow().Intersect(work_area);
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width())
       parent_bounds = transient_parent_rect;
@@ -428,14 +428,14 @@ void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
     window_->SetProperty(aura::client::kModalKey, modal_type);
 }
 
-gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
-  return window_->GetScreenBounds();
+gfx::Rect NativeWidgetAura::GetWindowBoundsInScreen() const {
+  return window_->GetBoundsInScreen();
 }
 
-gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
+gfx::Rect NativeWidgetAura::GetClientAreaBoundsInScreen() const {
   // View-to-screen coordinate system transformations depend on this returning
   // the full window bounds, for example View::ConvertPointToScreen().
-  return window_->GetScreenBounds();
+  return window_->GetBoundsInScreen();
 }
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
@@ -650,7 +650,7 @@ void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
   window_->GetFocusManager()->SetFocusedWindow(native_view, NULL);
 }
 
-gfx::Rect NativeWidgetAura::GetWorkAreaScreenBounds() const {
+gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
   return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
 }
 

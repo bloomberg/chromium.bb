@@ -267,9 +267,9 @@ TEST_F(ShellTest, MAYBE_ManagedWindowModeBasics) {
   views::Widget* launcher_widget = shell->launcher()->widget();
   EXPECT_TRUE(launcher_widget->IsVisible());
   // Launcher is at bottom-left of screen.
-  EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
+  EXPECT_EQ(0, launcher_widget->GetWindowBoundsInScreen().x());
   EXPECT_EQ(Shell::GetPrimaryRootWindow()->GetHostSize().height(),
-            launcher_widget->GetWindowScreenBounds().bottom());
+            launcher_widget->GetWindowBoundsInScreen().bottom());
   // We have a desktop background but not a bare layer.
   EXPECT_TRUE(test_api.root_window_layout()->background_widget());
   EXPECT_FALSE(test_api.root_window_layout()->background_layer());

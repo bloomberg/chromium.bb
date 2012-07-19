@@ -55,7 +55,7 @@ TEST_F(BaseLayoutManagerTest, Maximize) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   // Maximized window fills the work area, not the whole display.
   EXPECT_EQ(
-      ScreenAsh::GetMaximizedWindowParentBounds(window.get()).ToString(),
+      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window->bounds().ToString());
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
@@ -79,15 +79,16 @@ TEST_F(BaseLayoutManagerTest, MaximizeRootWindowResize) {
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   gfx::Rect initial_work_area_bounds =
-      ScreenAsh::GetMaximizedWindowParentBounds(window.get());
+      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get());
   EXPECT_EQ(initial_work_area_bounds.ToString(), window->bounds().ToString());
   // Enlarge the root window.  We should still match the work area size.
   Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(900, 700));
   EXPECT_EQ(
-      ScreenAsh::GetMaximizedWindowParentBounds(window.get()).ToString(),
+      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window->bounds().ToString());
-  EXPECT_NE(initial_work_area_bounds.ToString(),
-            ScreenAsh::GetMaximizedWindowParentBounds(window.get()).ToString());
+  EXPECT_NE(
+      initial_work_area_bounds.ToString(),
+      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString());
 }
 
 // Tests normal->fullscreen->normal.
@@ -169,7 +170,7 @@ TEST_F(BaseLayoutManagerTest, BoundsWithScreenEdgeVisible) {
   // It should have the default maximized window bounds, inset by the grid size.
   int grid_size = ash::Shell::GetInstance()->GetGridSize();
   gfx::Rect max_bounds =
-      ash::ScreenAsh::GetMaximizedWindowParentBounds(window.get());
+      ash::ScreenAsh::GetMaximizedWindowBoundsInParent(window.get());
   max_bounds.Inset(grid_size, grid_size);
   EXPECT_EQ(max_bounds.ToString(), window->bounds().ToString());
 }

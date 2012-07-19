@@ -783,7 +783,7 @@ int AboutChromeView::EnlargeWindowSizeIfNeeded() {
 
   // This will enlarge the window each time the function is called, which is
   // fine since we only receive status once from Google Update.
-  gfx::Rect window_rect = GetWidget()->GetWindowScreenBounds();
+  gfx::Rect window_rect = GetWidget()->GetWindowBoundsInScreen();
   int height = error_label_->GetHeightForWidth(
       dialog_dimensions_.width() - (2 * views::kPanelHorizMargin)) +
           views::kRelatedControlVerticalSpacing;

@@ -363,7 +363,7 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(SnapType type) const {
     case SNAP_MAXIMIZE:
       return ScreenAsh::ConvertRectToScreen(
           window->parent(),
-          ScreenAsh::GetMaximizedWindowParentBounds(window));
+          ScreenAsh::GetMaximizedWindowBoundsInParent(window));
     case SNAP_MINIMIZE: {
       Launcher* launcher = Shell::GetInstance()->launcher();
       gfx::Rect item_rect(launcher->GetScreenBoundsOfItemIconForWindow(window));
@@ -373,11 +373,12 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(SnapType type) const {
         item_rect.Inset(-8, -8);
         return item_rect;
       }
-      return launcher->widget()->GetWindowScreenBounds();
+      return launcher->widget()->GetWindowBoundsInScreen();
     }
     case SNAP_RESTORE: {
       const gfx::Rect* restore = GetRestoreBoundsInScreen(window);
-      return restore ? *restore : frame_->GetWidget()->GetWindowScreenBounds();
+      return restore ?
+          *restore : frame_->GetWidget()->GetWindowBoundsInScreen();
     }
     case SNAP_NONE:
       NOTREACHED();

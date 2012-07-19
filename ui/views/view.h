@@ -204,7 +204,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   gfx::Rect GetVisibleBounds() const;
 
   // Return the bounds of the View in screen coordinate system.
-  gfx::Rect GetScreenBounds() const;
+  gfx::Rect GetBoundsInScreen() const;
 
   // Returns the baseline of this view, or -1 if this view has no baseline. The
   // return value is relative to the preferred height.

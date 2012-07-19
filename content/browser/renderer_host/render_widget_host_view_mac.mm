@@ -1111,7 +1111,7 @@ void RenderWidgetHostViewMac::GetScreenInfo(WebKit::WebScreenInfo* results) {
   *results = WebKit::WebScreenInfoFactory::screenInfo(GetNativeView());
 }
 
-gfx::Rect RenderWidgetHostViewMac::GetRootWindowBounds() {
+gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
   // the information from the main tab for our window.
@@ -1257,7 +1257,7 @@ void RenderWidgetHostViewMac::SetWindowVisibility(bool visible) {
 void RenderWidgetHostViewMac::WindowFrameChanged() {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_WindowFrameChanged(
-        render_widget_host_->GetRoutingID(), GetRootWindowBounds(),
+        render_widget_host_->GetRoutingID(), GetBoundsInRootWindow(),
         GetViewBounds()));
   }
 }

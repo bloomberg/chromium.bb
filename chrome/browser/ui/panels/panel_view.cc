@@ -191,7 +191,7 @@ void PanelView::SetBoundsInternal(const gfx::Rect& new_bounds, bool animate) {
     return;
   }
 
-  animation_start_bounds_ = window_->GetWindowScreenBounds();
+  animation_start_bounds_ = window_->GetWindowBoundsInScreen();
 
   bounds_animator_.reset(new PanelBoundsAnimation(
       this, panel_.get(), animation_start_bounds_, new_bounds));
@@ -460,7 +460,7 @@ void PanelView::OnWindowEndUserBoundsChange() {
   panel_->OnPanelEndUserResizing();
 
   // No need to proceed with post-resizing update when there is no size change.
-  gfx::Rect new_bounds = window_->GetWindowScreenBounds();
+  gfx::Rect new_bounds = window_->GetWindowBoundsInScreen();
   if (bounds_ == new_bounds)
     return;
   bounds_ = new_bounds;
@@ -642,7 +642,7 @@ bool PanelView::IsAnimatingBounds() const {
 }
 
 bool PanelView::IsWithinResizingArea(const gfx::Point& mouse_location) const {
-  gfx::Rect bounds = window_->GetWindowScreenBounds();
+  gfx::Rect bounds = window_->GetWindowBoundsInScreen();
   DCHECK(bounds.Contains(mouse_location));
   return mouse_location.x() < bounds.x() + kResizeInsideBoundsSize ||
          mouse_location.x() >= bounds.right() - kResizeInsideBoundsSize ||

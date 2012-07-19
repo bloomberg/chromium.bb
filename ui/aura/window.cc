@@ -236,7 +236,7 @@ bool Window::IsVisible() const {
   return visible_ && layer_ && layer_->IsDrawn();
 }
 
-gfx::Rect Window::GetRootWindowBounds() const {
+gfx::Rect Window::GetBoundsInRootWindow() const {
   // TODO(beng): There may be a better way to handle this, and the existing code
   //             is likely wrong anyway in a multi-display world, but this will
   //             do for now.
@@ -247,8 +247,8 @@ gfx::Rect Window::GetRootWindowBounds() const {
   return gfx::Rect(origin, bounds().size());
 }
 
-gfx::Rect Window::GetScreenBounds() const {
-  gfx::Rect bounds(GetRootWindowBounds());
+gfx::Rect Window::GetBoundsInScreen() const {
+  gfx::Rect bounds(GetBoundsInRootWindow());
   const RootWindow* root = GetRootWindow();
   if (root) {
     aura::client::ScreenPositionClient* screen_position_client =
@@ -292,7 +292,7 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
     SetBoundsInternal(new_bounds);
 }
 
-void Window::SetScreenBounds(const gfx::Rect& new_bounds_in_screen) {
+void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen) {
   RootWindow* root = GetRootWindow();
   if (root) {
     gfx::Point origin = new_bounds_in_screen.origin();

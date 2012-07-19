@@ -1553,8 +1553,8 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     // The context menu and child_menu can be overlapped, calculate the
     // non-intersected Rect of the child menu and click on its center to make
     // sure the click is always on the child menu.
-    gfx::Rect context_rect = context_menu->GetSubmenu()->GetScreenBounds();
-    gfx::Rect child_menu_rect = child_menu->GetScreenBounds();
+    gfx::Rect context_rect = context_menu->GetSubmenu()->GetBoundsInScreen();
+    gfx::Rect child_menu_rect = child_menu->GetBoundsInScreen();
     gfx::Rect clickable_rect = child_menu_rect.Subtract(context_rect);
     ASSERT_FALSE(clickable_rect.IsEmpty());
     observer_.set_task(CreateEventTask(this, &BookmarkBarViewTest17::Step4));

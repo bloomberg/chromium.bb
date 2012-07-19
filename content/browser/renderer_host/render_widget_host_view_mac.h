@@ -288,7 +288,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
-  virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
+  virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 
   void DrawAcceleratedSurfaceInstance(

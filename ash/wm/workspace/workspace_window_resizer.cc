@@ -281,7 +281,7 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds, int grid_size) const {
   // Always keep kMinOnscreenHeight on the bottom.
   gfx::Rect work_area(
-      ScreenAsh::GetDisplayWorkAreaParentBounds(details_.window));
+      ScreenAsh::GetDisplayWorkAreaBoundsInParent(details_.window));
   int max_y = AlignToGridRoundUp(work_area.bottom() - kMinOnscreenHeight,
                                  grid_size);
   if (bounds->y() > max_y)
@@ -335,7 +335,7 @@ void WorkspaceWindowResizer::SnapToWorkAreaEdges(
 
 bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {
   gfx::Rect work_area(
-      ScreenAsh::GetDisplayWorkAreaParentBounds(details_.window));
+      ScreenAsh::GetDisplayWorkAreaBoundsInParent(details_.window));
   return (attached_windows_.empty() &&
           details_.window->bounds().bottom() == work_area.bottom()) ||
       (!attached_windows_.empty() &&
@@ -423,7 +423,7 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total display area, not the area of a single
   // display.
-  gfx::Rect area(ScreenAsh::GetDisplayParentBounds(details_.window));
+  gfx::Rect area(ScreenAsh::GetDisplayBoundsInParent(details_.window));
   if (location.x() <= area.x())
     return SNAP_LEFT_EDGE;
   if (location.x() >= area.right() - 1)

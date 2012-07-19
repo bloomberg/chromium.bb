@@ -73,7 +73,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
   drag_image_.reset(new DragImageView);
   drag_image_->SetImage(provider.drag_image());
   drag_image_offset_ = provider.drag_image_offset();
-  drag_image_->SetScreenBounds(gfx::Rect(
+  drag_image_->SetBoundsInScreen(gfx::Rect(
         root_location.Subtract(drag_image_offset_),
         drag_image_->GetPreferredSize()));
   drag_image_->SetWidgetVisible(true);

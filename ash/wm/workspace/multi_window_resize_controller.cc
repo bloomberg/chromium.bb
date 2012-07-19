@@ -427,7 +427,7 @@ void MultiWindowResizeController::CompleteResize(int event_flags) {
 
   // Mouse may still be over resizer, if not hide.
   gfx::Point screen_loc = gfx::Screen::GetCursorScreenPoint();
-  if (!resize_widget_->GetWindowScreenBounds().Contains(screen_loc))
+  if (!resize_widget_->GetWindowBoundsInScreen().Contains(screen_loc))
     Hide();
 }
 
@@ -466,7 +466,7 @@ bool MultiWindowResizeController::IsOverWindows(
   if (window_resizer_.get())
     return true;  // Ignore hides while actively resizing.
 
-  if (resize_widget_->GetWindowScreenBounds().Contains(screen_location))
+  if (resize_widget_->GetWindowBoundsInScreen().Contains(screen_location))
     return true;
 
   int hit1, hit2;

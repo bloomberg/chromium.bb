@@ -89,7 +89,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
-  virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
+  virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,

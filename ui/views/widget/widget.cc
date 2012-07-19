@@ -415,12 +415,12 @@ View* Widget::GetContentsView() {
   return root_view_->GetContentsView();
 }
 
-gfx::Rect Widget::GetWindowScreenBounds() const {
-  return native_widget_->GetWindowScreenBounds();
+gfx::Rect Widget::GetWindowBoundsInScreen() const {
+  return native_widget_->GetWindowBoundsInScreen();
 }
 
-gfx::Rect Widget::GetClientAreaScreenBounds() const {
-  return native_widget_->GetClientAreaScreenBounds();
+gfx::Rect Widget::GetClientAreaBoundsInScreen() const {
+  return native_widget_->GetClientAreaBoundsInScreen();
 }
 
 gfx::Rect Widget::GetRestoredBounds() const {
@@ -891,8 +891,8 @@ View* Widget::GetChildViewParent() {
   return GetContentsView() ? GetContentsView() : GetRootView();
 }
 
-gfx::Rect Widget::GetWorkAreaScreenBounds() const {
-  return native_widget_->GetWorkAreaScreenBounds();
+gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
+  return native_widget_->GetWorkAreaBoundsInScreen();
 }
 
 void Widget::OnOwnerClosing() {
@@ -1031,7 +1031,7 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
       // Determine if the layer fills the client area.
       gfx::Rect layer_bounds = GetRootView()->layer()->bounds();
       layer_transform.TransformRect(&layer_bounds);
-      gfx::Rect client_bounds = GetClientAreaScreenBounds();
+      gfx::Rect client_bounds = GetClientAreaBoundsInScreen();
       // Translate bounds to origin (client area bounds are offset to account
       // for buttons, etc).
       client_bounds.set_origin(gfx::Point(0, 0));

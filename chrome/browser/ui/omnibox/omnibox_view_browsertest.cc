@@ -1281,7 +1281,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   // Move the mouse to the center of the browser window and left-click.
   void ClickBrowserWindowCenter() {
     ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
-                    GetBrowserView()->GetScreenBounds().CenterPoint()));
+                    GetBrowserView()->GetBoundsInScreen().CenterPoint()));
     ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                     ui_controls::LEFT, ui_controls::DOWN));
     ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
@@ -1294,7 +1294,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void ClickFocusViewOrigin(ui_controls::MouseButton button,
                             const gfx::Point& press_offset,
                             const gfx::Point& release_offset) {
-    gfx::Point focus_view_origin = GetFocusView()->GetScreenBounds().origin();
+    gfx::Point focus_view_origin = GetFocusView()->GetBoundsInScreen().origin();
     gfx::Point press_point = focus_view_origin;
     press_point.Offset(press_offset.x(), press_offset.y());
     ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(press_point));

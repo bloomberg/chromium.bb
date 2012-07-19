@@ -154,7 +154,7 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
   }
 
   gfx::Point GetScreenPosition() {
-    return widget_->GetClientAreaScreenBounds().origin();
+    return widget_->GetClientAreaBoundsInScreen().origin();
   }
 
  private:
@@ -231,7 +231,7 @@ class TouchSelectionControllerImpl::TouchContextMenuView
   }
 
   gfx::Point GetScreenPosition() {
-    return widget_->GetClientAreaScreenBounds().origin();
+    return widget_->GetClientAreaBoundsInScreen().origin();
   }
 
   void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
@@ -413,7 +413,7 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
 void TouchSelectionControllerImpl::ConvertPointToClientView(
     SelectionHandleView* source, gfx::Point* point) {
   View::ConvertPointToScreen(source, point);
-  gfx::Rect r = client_view_->GetWidget()->GetClientAreaScreenBounds();
+  gfx::Rect r = client_view_->GetWidget()->GetClientAreaBoundsInScreen();
   point->SetPoint(point->x() - r.x(), point->y() - r.y());
   View::ConvertPointFromWidget(client_view_, point);
 }

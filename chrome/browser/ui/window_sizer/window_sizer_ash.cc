@@ -84,7 +84,7 @@ bool WindowSizer::GetBoundsIgnoringPreviousStateAsh(
     if (top_window == NULL) {
       GetDefaultWindowBounds(bounds);
     } else {
-      *bounds = top_window->GetRootWindowBounds();
+      *bounds = top_window->GetBoundsInRootWindow();
       gfx::Rect work_area =
           monitor_info_provider_->GetMonitorWorkAreaMatching(*bounds);
       *bounds = bounds->AdjustToFit(work_area);

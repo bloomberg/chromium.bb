@@ -350,7 +350,7 @@ void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
       // No need to show the launcher if the mouse isn't over the status area
       // anymore.
       aura::RootWindow* root = GetWidget()->GetNativeView()->GetRootWindow();
-      should_show_launcher_ = GetWidget()->GetWindowScreenBounds().Contains(
+      should_show_launcher_ = GetWidget()->GetWindowBoundsInScreen().Contains(
           root->last_mouse_location());
       if (!should_show_launcher_)
         Shell::GetInstance()->shelf()->UpdateAutoHideState();

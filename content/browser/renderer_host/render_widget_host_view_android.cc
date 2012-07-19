@@ -296,7 +296,7 @@ void RenderWidgetHostViewAndroid::GetScreenInfo(WebKit::WebScreenInfo* result) {
 
 // TODO(jrg): Find out the implications and answer correctly here,
 // as we are returning the WebView and not root window bounds.
-gfx::Rect RenderWidgetHostViewAndroid::GetRootWindowBounds() {
+gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
   return GetViewBounds();
 }
 

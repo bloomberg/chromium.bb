@@ -395,8 +395,8 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   scoped_ptr<views::Widget> widget2(CreateNewWidget());
   DragTestView* drag_view2 = new DragTestView;
   AddViewToWidgetAndResize(widget2.get(), drag_view2);
-  gfx::Rect widget1_bounds = widget1->GetClientAreaScreenBounds();
-  gfx::Rect widget2_bounds = widget2->GetClientAreaScreenBounds();
+  gfx::Rect widget1_bounds = widget1->GetClientAreaBoundsInScreen();
+  gfx::Rect widget2_bounds = widget2->GetClientAreaBoundsInScreen();
   widget2->SetBounds(gfx::Rect(widget1_bounds.width(), 0,
       widget2_bounds.width(), widget2_bounds.height()));
 

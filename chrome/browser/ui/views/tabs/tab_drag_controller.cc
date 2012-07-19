@@ -1883,7 +1883,7 @@ Browser* TabDragController::CreateBrowserForDrag(
   Browser* browser = Browser::Create(drag_data_[0].contents->profile());
   gfx::Point center(0, source->height() / 2);
   views::View::ConvertPointToWidget(source, &center);
-  gfx::Rect new_bounds(source->GetWidget()->GetWindowScreenBounds());
+  gfx::Rect new_bounds(source->GetWidget()->GetWindowBoundsInScreen());
   new_bounds.set_y(screen_point.y() - center.y());
   switch (GetDetachPosition(screen_point)) {
     case DETACH_BEFORE:

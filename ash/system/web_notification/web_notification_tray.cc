@@ -634,7 +634,7 @@ class WebNotificationTray::Bubble : public internal::TrayBubbleView::Host,
   }
 
   virtual gfx::Rect GetAnchorRect() const OVERRIDE {
-    gfx::Rect anchor_rect = tray_->tray_container()->GetScreenBounds();
+    gfx::Rect anchor_rect = tray_->tray_container()->GetBoundsInScreen();
     return anchor_rect;
   }
 

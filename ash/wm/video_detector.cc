@@ -100,7 +100,7 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
     return;
 
   gfx::Rect root_bounds = window->GetRootWindow()->bounds();
-  if (!window->GetRootWindowBounds().Intersects(root_bounds))
+  if (!window->GetBoundsInRootWindow().Intersects(root_bounds))
     return;
 
   FOR_EACH_OBSERVER(VideoDetectorObserver, observers_, OnVideoDetected());

@@ -233,7 +233,7 @@ void BalloonViewImpl::RepositionToBalloon() {
   anim_frame_end_ = gfx::Rect(
       balloon_->GetPosition().x(), balloon_->GetPosition().y(),
       GetTotalWidth(), GetTotalHeight());
-  anim_frame_start_ = frame_container_->GetClientAreaScreenBounds();
+  anim_frame_start_ = frame_container_->GetClientAreaBoundsInScreen();
   animation_.reset(new ui::SlideAnimation(this));
   animation_->Show();
 }
@@ -500,7 +500,7 @@ gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
 
   gfx::Size content_size = balloon_->content_size();
   gfx::Point offset = GetContentsOffset();
-  gfx::Rect frame_rect = frame_container_->GetWindowScreenBounds();
+  gfx::Rect frame_rect = frame_container_->GetWindowBoundsInScreen();
   return gfx::Rect(frame_rect.x() + offset.x(),
                    frame_rect.y() + GetShelfHeight() + offset.y(),
                    content_size.width(),

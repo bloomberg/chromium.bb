@@ -220,7 +220,7 @@ void BubbleDelegateView::OnWidgetMoved(Widget* widget) {
 }
 
 gfx::Rect BubbleDelegateView::GetAnchorRect() {
-  return anchor_view() ? anchor_view()->GetScreenBounds() : gfx::Rect();
+  return anchor_view() ? anchor_view()->GetBoundsInScreen() : gfx::Rect();
 }
 
 void BubbleDelegateView::Show() {
@@ -328,7 +328,7 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
 #if defined(OS_WIN) && !defined(USE_AURA)
 gfx::Rect BubbleDelegateView::GetBubbleClientBounds() const {
   gfx::Rect client_bounds(GetBubbleFrameView()->GetBoundsForClientView());
-  client_bounds.Offset(border_widget_->GetWindowScreenBounds().origin());
+  client_bounds.Offset(border_widget_->GetWindowBoundsInScreen().origin());
   return client_bounds;
 }
 #endif

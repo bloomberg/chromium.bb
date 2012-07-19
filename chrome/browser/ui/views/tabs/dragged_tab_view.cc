@@ -86,7 +86,7 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
   SetWindowPos(container_->GetNativeView(), HWND_TOP, x, y, 0, 0,
                SWP_NOSIZE | SWP_NOACTIVATE | show_flags);
 #else
-  gfx::Rect bounds = container_->GetWindowScreenBounds();
+  gfx::Rect bounds = container_->GetWindowBoundsInScreen();
   container_->SetBounds(gfx::Rect(x, y, bounds.width(), bounds.height()));
   if (!container_->IsVisible())
     container_->Show();

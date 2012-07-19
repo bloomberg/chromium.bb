@@ -347,7 +347,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
       theme_service_->GetColor(ThemeService::COLOR_TOOLBAR);
   paint.setColor(toolbar_color);
 
-  gfx::Rect popup_bounds = popup_->GetWindowScreenBounds();
+  gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
 
   // Figure out how to round the bubble's four corners.
   SkScalar rad[8];
@@ -655,7 +655,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
   }
 
   // Set Elided Text corresponding to the GURL object.
-  gfx::Rect popup_bounds = popup_->GetWindowScreenBounds();
+  gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int text_width = static_cast<int>(popup_bounds.width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
   url_text_ = ui::ElideUrl(url, view_->Label::font(), text_width, languages);
@@ -811,7 +811,7 @@ bool StatusBubbleViews::IsFrameVisible() {
 void StatusBubbleViews::ExpandBubble() {
   // Elide URL to maximum possible size, then check actual length (it may
   // still be too long to fit) before expanding bubble.
-  gfx::Rect popup_bounds = popup_->GetWindowScreenBounds();
+  gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int max_status_bubble_width = GetMaxStatusBubbleWidth();
   url_text_ = ui::ElideUrl(url_, view_->Label::font(),
       max_status_bubble_width, languages_);

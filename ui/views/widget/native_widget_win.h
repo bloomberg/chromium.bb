@@ -216,8 +216,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
   virtual void InitModalType(ui::ModalType modal_type) OVERRIDE;
-  virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
-  virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
+  virtual gfx::Rect GetWindowBoundsInScreen() const OVERRIDE;
+  virtual gfx::Rect GetClientAreaBoundsInScreen() const OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
@@ -256,7 +256,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual void FocusNativeView(gfx::NativeView native_view) OVERRIDE;
-  virtual gfx::Rect GetWorkAreaScreenBounds() const OVERRIDE;
+  virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
   virtual void SetInactiveRenderingDisabled(bool value) OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop() OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;

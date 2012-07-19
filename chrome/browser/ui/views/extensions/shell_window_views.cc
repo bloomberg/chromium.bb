@@ -398,7 +398,7 @@ gfx::Rect ShellWindowViews::GetRestoredBounds() const {
 }
 
 gfx::Rect ShellWindowViews::GetBounds() const {
-  return window_->GetWindowScreenBounds();
+  return window_->GetWindowBoundsInScreen();
 }
 
 void ShellWindowViews::Show() {

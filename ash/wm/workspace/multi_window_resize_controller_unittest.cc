@@ -150,7 +150,7 @@ TEST_F(MultiWindowResizeControllerTest, DeleteWindow) {
 
   // Move the mouse over the resize widget.
   ASSERT_TRUE(resize_widget());
-  gfx::Rect bounds(resize_widget()->GetWindowScreenBounds());
+  gfx::Rect bounds(resize_widget()->GetWindowBoundsInScreen());
   generator.MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
@@ -193,7 +193,7 @@ TEST_F(MultiWindowResizeControllerTest, Drag) {
 
   // Move the mouse over the resize widget.
   ASSERT_TRUE(resize_widget());
-  gfx::Rect bounds(resize_widget()->GetWindowScreenBounds());
+  gfx::Rect bounds(resize_widget()->GetWindowBoundsInScreen());
   generator.MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
@@ -240,7 +240,7 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   EXPECT_FALSE(HasPendingHide());
 
   // w3 should be picked up when resize is started.
-  gfx::Rect bounds(resize_widget()->GetWindowScreenBounds());
+  gfx::Rect bounds(resize_widget()->GetWindowBoundsInScreen());
   generator.MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
   generator.PressLeftButton();
   generator.MoveMouseTo(bounds.x() + 11, bounds.y() + 10);

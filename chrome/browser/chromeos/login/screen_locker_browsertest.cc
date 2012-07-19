@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   // Test to make sure that the widget is actually appearing and is of
   // reasonable size, preventing a regression of
   // http://code.google.com/p/chromium-os/issues/detail?id=5987
-  gfx::Rect lock_bounds = tester->GetChildWidget()->GetWindowScreenBounds();
+  gfx::Rect lock_bounds = tester->GetChildWidget()->GetWindowBoundsInScreen();
   EXPECT_GT(lock_bounds.width(), 10);
   EXPECT_GT(lock_bounds.height(), 10);
 

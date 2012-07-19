@@ -934,22 +934,22 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   EXPECT_EQ(NULL, aura::client::GetCaptureWindow(root_window()));
 }
 
-TEST_F(WindowTest, GetRootWindowBounds) {
+TEST_F(WindowTest, GetBoundsInRootWindow) {
   scoped_ptr<Window> viewport(CreateTestWindowWithBounds(
       gfx::Rect(0, 0, 300, 300), NULL));
   scoped_ptr<Window> child(CreateTestWindowWithBounds(
       gfx::Rect(0, 0, 100, 100), viewport.get()));
   // Sanity check.
-  EXPECT_EQ("0,0 100x100", child->GetRootWindowBounds().ToString());
+  EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
 
   // The |child| window's screen bounds should move along with the |viewport|.
   viewport->SetBounds(gfx::Rect(-100, -100, 300, 300));
-  EXPECT_EQ("-100,-100 100x100", child->GetRootWindowBounds().ToString());
+  EXPECT_EQ("-100,-100 100x100", child->GetBoundsInRootWindow().ToString());
 
   // The |child| window is moved to the 0,0 in screen coordinates.
-  // |GetRootWindowBounds()| should return 0,0.
+  // |GetBoundsInRootWindow()| should return 0,0.
   child->SetBounds(gfx::Rect(100, 100, 100, 100));
-  EXPECT_EQ("0,0 100x100", child->GetRootWindowBounds().ToString());
+  EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
 }
 
 class MouseEnterExitWindowDelegate : public TestWindowDelegate {

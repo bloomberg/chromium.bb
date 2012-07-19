@@ -303,10 +303,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   View* GetContentsView();
 
   // Returns the bounds of the Widget in screen coordinates.
-  gfx::Rect GetWindowScreenBounds() const;
+  gfx::Rect GetWindowBoundsInScreen() const;
 
   // Returns the bounds of the Widget's client area in screen coordinates.
-  gfx::Rect GetClientAreaScreenBounds() const;
+  gfx::Rect GetClientAreaBoundsInScreen() const;
 
   // Retrieves the restored bounds for the window.
   gfx::Rect GetRestoredBounds() const;
@@ -616,7 +616,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool is_top_level() const { return is_top_level_; }
 
   // Returns the work are bounds of the screen the Widget belongs to.
-  gfx::Rect GetWorkAreaScreenBounds() const;
+  gfx::Rect GetWorkAreaBoundsInScreen() const;
 
   // Notification that our owner is closing.
   // NOTE: this is not invoked for aura as it's currently not needed there.

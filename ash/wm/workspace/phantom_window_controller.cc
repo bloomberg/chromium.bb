@@ -86,10 +86,10 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
   if (!phantom_widget_.get()) {
     // Show the phantom at the bounds of the window. We'll animate to the target
     // bounds.
-    start_bounds_ = window_->GetScreenBounds();
+    start_bounds_ = window_->GetBoundsInScreen();
     CreatePhantomWidget(start_bounds_);
   } else {
-    start_bounds_ = phantom_widget_->GetWindowScreenBounds();
+    start_bounds_ = phantom_widget_->GetWindowBoundsInScreen();
   }
   animation_.reset(new ui::SlideAnimation(this));
   animation_->Show();

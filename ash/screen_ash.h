@@ -22,17 +22,17 @@ class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
 
   // Returns the bounds for maximized windows in parent coordinates.
   // Maximized windows trigger auto-hiding the shelf.
-  static gfx::Rect GetMaximizedWindowParentBounds(aura::Window* window);
+  static gfx::Rect GetMaximizedWindowBoundsInParent(aura::Window* window);
 
   // Returns work area when a maximized window is not present in
   // parent coordinates.
-  static gfx::Rect GetUnmaximizedWorkAreaParentBounds(aura::Window* window);
+  static gfx::Rect GetUnmaximizedWorkAreaBoundsInParent(aura::Window* window);
 
   // Returns the display bounds in parent coordinates.
-  static gfx::Rect GetDisplayParentBounds(aura::Window* window);
+  static gfx::Rect GetDisplayBoundsInParent(aura::Window* window);
 
   // Returns the display's work area bounds in parent coordinates.
-  static gfx::Rect GetDisplayWorkAreaParentBounds(aura::Window* window);
+  static gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window);
 
   // Converts |rect| from |window|'s coordinates to the virtual screen
   // coordinates.

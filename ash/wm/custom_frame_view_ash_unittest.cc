@@ -112,7 +112,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonToggleMaximize) {
   CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
   CustomFrameViewAsh::TestApi test(frame);
   views::View* view = test.maximize_button();
-  gfx::Point center = view->GetScreenBounds().CenterPoint();
+  gfx::Point center = view->GetBoundsInScreen().CenterPoint();
 
   aura::test::EventGenerator generator(window->GetRootWindow(), center);
 
@@ -122,22 +122,22 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonToggleMaximize) {
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
 
-  center = view->GetScreenBounds().CenterPoint();
+  center = view->GetBoundsInScreen().CenterPoint();
   generator.MoveMouseTo(center);
   generator.ClickLeftButton();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
 
-  generator.GestureTapAt(view->GetScreenBounds().CenterPoint());
+  generator.GestureTapAt(view->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
 
-  generator.GestureTapAt(view->GetScreenBounds().CenterPoint());
+  generator.GestureTapAt(view->GetBoundsInScreen().CenterPoint());
   EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
 
-  generator.GestureTapDownAndUp(view->GetScreenBounds().CenterPoint());
+  generator.GestureTapDownAndUp(view->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
 
-  generator.GestureTapDownAndUp(view->GetScreenBounds().CenterPoint());
+  generator.GestureTapDownAndUp(view->GetBoundsInScreen().CenterPoint());
   EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
 
   widget->Close();
@@ -150,7 +150,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
   CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
   CustomFrameViewAsh::TestApi test(frame);
   views::View* view = test.maximize_button();
-  gfx::Point center = view->GetScreenBounds().CenterPoint();
+  gfx::Point center = view->GetBoundsInScreen().CenterPoint();
   const int kGridSize = ash::Shell::GetInstance()->GetGridSize();
 
   aura::test::EventGenerator generator(window->GetRootWindow(), center);
@@ -173,7 +173,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
 
   // Snap left.
   {
-    center = view->GetScreenBounds().CenterPoint();
+    center = view->GetBoundsInScreen().CenterPoint();
     generator.MoveMouseTo(center);
     generator.PressLeftButton();
     generator.MoveMouseBy(-10, 0);
@@ -189,7 +189,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
 
   // Minimize.
   {
-    center = view->GetScreenBounds().CenterPoint();
+    center = view->GetBoundsInScreen().CenterPoint();
     generator.MoveMouseTo(center);
     generator.PressLeftButton();
     generator.MoveMouseBy(0, 10);
@@ -205,7 +205,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
 
   // Snap right.
   {
-    center = view->GetScreenBounds().CenterPoint();
+    center = view->GetBoundsInScreen().CenterPoint();
     gfx::Point end = center;
     end.Offset(40, 0);
     generator.GestureScrollSequence(center, end,
@@ -222,7 +222,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
 
   // Snap left.
   {
-    center = view->GetScreenBounds().CenterPoint();
+    center = view->GetBoundsInScreen().CenterPoint();
     gfx::Point end = center;
     end.Offset(-40, 0);
     generator.GestureScrollSequence(center, end,
@@ -239,7 +239,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
 
   // Minimize.
   {
-    center = view->GetScreenBounds().CenterPoint();
+    center = view->GetBoundsInScreen().CenterPoint();
     gfx::Point end = center;
     end.Offset(0, 40);
     generator.GestureScrollSequence(center, end,

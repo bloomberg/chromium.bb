@@ -167,8 +167,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void InitModalType(ui::ModalType modal_type) = 0;
 
   // See method documentation in Widget.
-  virtual gfx::Rect GetWindowScreenBounds() const = 0;
-  virtual gfx::Rect GetClientAreaScreenBounds() const = 0;
+  virtual gfx::Rect GetWindowBoundsInScreen() const = 0;
+  virtual gfx::Rect GetClientAreaBoundsInScreen() const = 0;
   virtual gfx::Rect GetRestoredBounds() const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual void SetSize(const gfx::Size& size) = 0;
@@ -208,7 +208,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
   virtual void ClearNativeFocus() = 0;
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
-  virtual gfx::Rect GetWorkAreaScreenBounds() const = 0;
+  virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
   virtual void SetInactiveRenderingDisabled(bool value) = 0;
   virtual Widget::MoveLoopResult RunMoveLoop() = 0;
   virtual void EndMoveLoop() = 0;

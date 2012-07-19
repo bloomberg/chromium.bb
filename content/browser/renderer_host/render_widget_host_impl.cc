@@ -1629,9 +1629,9 @@ void RenderWidgetHostImpl::OnMsgGetWindowRect(gfx::NativeViewId window_id,
 }
 
 void RenderWidgetHostImpl::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
-                                              gfx::Rect* results) {
+                                                  gfx::Rect* results) {
   if (view_)
-    *results = view_->GetRootWindowBounds();
+    *results = view_->GetBoundsInRootWindow();
 }
 #endif
 

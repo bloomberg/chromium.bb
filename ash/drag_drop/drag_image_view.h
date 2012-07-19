@@ -19,8 +19,11 @@ class DragImageView : public views::ImageView {
   DragImageView();
   virtual ~DragImageView();
 
-  // Sets the bounds of the native widget.
-  void SetScreenBounds(const gfx::Rect& bounds);
+  // Sets the bounds of the native widget in screen
+  // coordinates.
+  // TODO(oshima): Looks like this is root window's
+  // coordinate. Change this to screen's coordinate.
+  void SetBoundsInScreen(const gfx::Rect& bounds);
 
   // Sets the position of the native widget.
   void SetScreenPosition(const gfx::Point& position);

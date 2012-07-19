@@ -143,9 +143,9 @@ TEST_F(WorkspaceManagerTest, SingleMaximizeWindow) {
   EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
   ASSERT_EQ(1u, workspaces()[1]->windows().size());
   EXPECT_EQ(w1.get(), workspaces()[1]->windows()[0]);
-  EXPECT_EQ(ScreenAsh::GetMaximizedWindowParentBounds(w1.get()).width(),
+  EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()).width(),
             w1->bounds().width());
-  EXPECT_EQ(ScreenAsh::GetMaximizedWindowParentBounds(w1.get()).height(),
+  EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()).height(),
             w1->bounds().height());
 
   // Restore the window.
@@ -204,7 +204,7 @@ TEST_F(WorkspaceManagerTest, AddMaximizedWindowWhenEmpty) {
   ASSERT_TRUE(w1->layer() != NULL);
   EXPECT_TRUE(w1->layer()->visible());
   gfx::Rect work_area(
-      ScreenAsh::GetMaximizedWindowParentBounds(w1.get()));
+      ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()));
   EXPECT_EQ(work_area.width(), w1->bounds().width());
   EXPECT_EQ(work_area.height(), w1->bounds().height());
 
@@ -242,7 +242,7 @@ TEST_F(WorkspaceManagerTest, MaximizeWithNormalWindow) {
   ASSERT_TRUE(w2->layer() != NULL);
   EXPECT_TRUE(w2->layer()->visible());
 
-  gfx::Rect work_area(ScreenAsh::GetMaximizedWindowParentBounds(w1.get()));
+  gfx::Rect work_area(ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()));
   EXPECT_EQ(work_area.width(), w2->bounds().width());
   EXPECT_EQ(work_area.height(), w2->bounds().height());
 
@@ -512,7 +512,7 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   w1->Show();
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
-  EXPECT_EQ(ScreenAsh::GetMaximizedWindowParentBounds(w2.get()).ToString(),
+  EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w2.get()).ToString(),
             w2->bounds().ToString());
 
   // Switch to w2.
@@ -520,7 +520,7 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
-  EXPECT_EQ(ScreenAsh::GetMaximizedWindowParentBounds(w2.get()).ToString(),
+  EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w2.get()).ToString(),
             w2->bounds().ToString());
 }
 

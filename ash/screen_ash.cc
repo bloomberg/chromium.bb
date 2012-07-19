@@ -29,30 +29,31 @@ ScreenAsh::~ScreenAsh() {
 }
 
 // static
-gfx::Rect ScreenAsh::GetMaximizedWindowParentBounds(aura::Window* window) {
+gfx::Rect ScreenAsh::GetMaximizedWindowBoundsInParent(aura::Window* window) {
   if (window->GetRootWindow() == Shell::GetPrimaryRootWindow())
     return Shell::GetInstance()->shelf()->GetMaximizedWindowBounds(window);
   else
-    return GetDisplayParentBounds(window);
+    return GetDisplayBoundsInParent(window);
 }
 
 // static
-gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaParentBounds(aura::Window* window) {
+gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaBoundsInParent(
+    aura::Window* window) {
   if (window->GetRootWindow() == Shell::GetPrimaryRootWindow())
     return Shell::GetInstance()->shelf()->GetUnmaximizedWorkAreaBounds(window);
   else
-    return GetDisplayWorkAreaParentBounds(window);
+    return GetDisplayWorkAreaBoundsInParent(window);
 }
 
 // static
-gfx::Rect ScreenAsh::GetDisplayParentBounds(aura::Window* window) {
+gfx::Rect ScreenAsh::GetDisplayBoundsInParent(aura::Window* window) {
   return ConvertRectFromScreen(
       window->parent(),
       gfx::Screen::GetDisplayNearestWindow(window).bounds());
 }
 
 // static
-gfx::Rect ScreenAsh::GetDisplayWorkAreaParentBounds(aura::Window* window) {
+gfx::Rect ScreenAsh::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
   return ConvertRectFromScreen(
       window->parent(),
       gfx::Screen::GetDisplayNearestWindow(window).work_area());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ void WidgetExample::CreateChild(View* parent, bool transparent) {
   // Compute where to place the child widget.
   // We'll place it at the center of the root widget.
   Widget* parent_widget = parent->GetWidget();
-  gfx::Rect bounds = parent_widget->GetClientAreaScreenBounds();
+  gfx::Rect bounds = parent_widget->GetClientAreaBoundsInScreen();
   // Child widget is 200x200 square.
   bounds.SetRect((bounds.width() - 200) / 2, (bounds.height() - 200) / 2,
       200, 200);

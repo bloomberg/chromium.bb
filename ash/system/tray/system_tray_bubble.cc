@@ -351,7 +351,7 @@ gfx::Rect SystemTrayBubble::GetAnchorRect() const {
   gfx::Rect rect;
   views::Widget* widget = bubble_view()->anchor_widget();
   if (widget->IsVisible()) {
-    rect = widget->GetWindowScreenBounds();
+    rect = widget->GetWindowBoundsInScreen();
     if (anchor_type_ == ANCHOR_TYPE_TRAY) {
       if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
         rect.Inset(
@@ -373,7 +373,7 @@ gfx::Rect SystemTrayBubble::GetAnchorRect() const {
       // the anchor can include arrow on left or right, which should
       // be deducted out from the anchor rect.
       views::View* anchor_view = bubble_view()->anchor_view();
-      rect = anchor_view->GetScreenBounds();
+      rect = anchor_view->GetBoundsInScreen();
       gfx::Insets insets = anchor_view->GetInsets();
       rect.Inset(insets);
     }

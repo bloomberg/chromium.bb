@@ -123,7 +123,7 @@ string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
       return PropertyWithBounds("Bounds: ", window_->bounds());
     case ROW_BOUNDSINROOTWINDOW:
       return PropertyWithBounds("Bounds in Root Window: ",
-                                window_->GetRootWindowBounds());
+                                window_->GetBoundsInRootWindow());
     case ROW_TRANSFORM:
       return ASCIIToUTF16("Transform:");
     case ROW_PARENT:

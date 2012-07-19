@@ -80,7 +80,7 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
-    gfx::Rect window_bounds = panel->GetRootWindowBounds();
+    gfx::Rect window_bounds = panel->GetBoundsInRootWindow();
 
     // 1-pixel tolerance--since we center panels over their icons, panels with
     // odd pixel widths won't be perfectly lined up with even pixel width
@@ -88,7 +88,7 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     EXPECT_NEAR(icon_bounds.CenterPoint().x(),
                 window_bounds.CenterPoint().x(),
                 1);
-    EXPECT_EQ(launcher->widget()->GetWindowScreenBounds().y(),
+    EXPECT_EQ(launcher->widget()->GetWindowBoundsInScreen().y(),
               window_bounds.bottom());
   }
 
@@ -98,10 +98,10 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     views::Widget* widget = NULL;
     GetCalloutWidget(&widget);
     EXPECT_TRUE(widget->IsVisible());
-    EXPECT_EQ(panel->GetRootWindowBounds().bottom(),
-              widget->GetWindowScreenBounds().y());
-    EXPECT_NEAR(panel->GetRootWindowBounds().CenterPoint().x(),
-                widget->GetWindowScreenBounds().CenterPoint().x(),
+    EXPECT_EQ(panel->GetBoundsInRootWindow().bottom(),
+              widget->GetWindowBoundsInScreen().y());
+    EXPECT_NEAR(panel->GetBoundsInRootWindow().CenterPoint().x(),
+                widget->GetWindowBoundsInScreen().CenterPoint().x(),
                 1);
   }
 

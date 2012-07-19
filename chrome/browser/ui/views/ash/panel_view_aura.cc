@@ -398,7 +398,7 @@ gfx::Rect PanelViewAura::GetRestoredBounds() const {
 }
 
 gfx::Rect PanelViewAura::GetBounds() const {
-  return GetWidget()->GetWindowScreenBounds();
+  return GetWidget()->GetWindowBoundsInScreen();
 }
 
 void PanelViewAura::Show() {

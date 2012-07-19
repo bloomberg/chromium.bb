@@ -431,7 +431,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 // Assertions around dragging to the left/right edge of the screen.
 TEST_F(WorkspaceWindowResizerTest, Edge) {
   int bottom =
-      ScreenAsh::GetUnmaximizedWorkAreaParentBounds(window_.get()).bottom();
+      ScreenAsh::GetUnmaximizedWorkAreaBoundsInParent(window_.get()).bottom();
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
   {
     SetGridSize(0);

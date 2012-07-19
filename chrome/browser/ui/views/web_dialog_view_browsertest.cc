@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   // TestWebDialogView should quit current message loop on size change.
   view->set_should_quit_on_size_change(true);
 
-  gfx::Rect bounds = view->GetWidget()->GetClientAreaScreenBounds();
+  gfx::Rect bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
 
   gfx::Rect set_bounds = bounds;
   gfx::Rect actual_bounds, rwhv_bounds;
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
 
   view->MoveContents(web_contents, set_bounds);
   ui_test_utils::RunMessageLoop();  // TestWebDialogView will quit.
-  actual_bounds = view->GetWidget()->GetClientAreaScreenBounds();
+  actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
   rwhv_bounds =
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
 
   view->MoveContents(web_contents, set_bounds);
   ui_test_utils::RunMessageLoop();  // TestWebDialogView will quit.
-  actual_bounds = view->GetWidget()->GetClientAreaScreenBounds();
+  actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
   rwhv_bounds =
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
 
   view->MoveContents(web_contents, set_bounds);
   ui_test_utils::RunMessageLoop();  // TestWebDialogView will quit.
-  actual_bounds = view->GetWidget()->GetClientAreaScreenBounds();
+  actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
   rwhv_bounds =
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
 
   view->MoveContents(web_contents, set_bounds);
   ui_test_utils::RunMessageLoop();  // TestWebDialogView will quit.
-  actual_bounds = view->GetWidget()->GetClientAreaScreenBounds();
+  actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_LT(0, actual_bounds.width());
   EXPECT_LT(0, actual_bounds.height());
 }

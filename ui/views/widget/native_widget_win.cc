@@ -801,13 +801,13 @@ void NativeWidgetWin::InitModalType(ui::ModalType modal_type) {
   }
 }
 
-gfx::Rect NativeWidgetWin::GetWindowScreenBounds() const {
+gfx::Rect NativeWidgetWin::GetWindowBoundsInScreen() const {
   RECT r;
   GetWindowRect(&r);
   return gfx::Rect(r);
 }
 
-gfx::Rect NativeWidgetWin::GetClientAreaScreenBounds() const {
+gfx::Rect NativeWidgetWin::GetClientAreaBoundsInScreen() const {
   RECT r;
   GetClientRect(&r);
   POINT point = { r.left, r.top };
@@ -1169,7 +1169,7 @@ void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
     ::SetFocus(native_view);
 }
 
-gfx::Rect NativeWidgetWin::GetWorkAreaScreenBounds() const {
+gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
   return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
 }
 

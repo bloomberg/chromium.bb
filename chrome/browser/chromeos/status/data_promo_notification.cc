@@ -160,7 +160,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
       return;
     }
 
-    gfx::Rect button_bounds = host->GetScreenBounds();
+    gfx::Rect button_bounds = host->GetBoundsInScreen();
     // StatusArea button Y position is usually -1, fix it so that
     // Contains() method for screen bounds works correctly.
     button_bounds.set_y(button_bounds.y() + 1);

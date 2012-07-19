@@ -756,24 +756,24 @@ TEST_F(WidgetObserverTest, DestroyBubble) {
 // NativeWidgetGtk doesn't implement GetRestoredBounds.
 TEST_F(WidgetTest, GetRestoredBounds) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
-  EXPECT_EQ(toplevel->GetWindowScreenBounds().ToString(),
+  EXPECT_EQ(toplevel->GetWindowBoundsInScreen().ToString(),
             toplevel->GetRestoredBounds().ToString());
   toplevel->Show();
   toplevel->Maximize();
   RunPendingMessages();
-  EXPECT_NE(toplevel->GetWindowScreenBounds().ToString(),
+  EXPECT_NE(toplevel->GetWindowBoundsInScreen().ToString(),
             toplevel->GetRestoredBounds().ToString());
   EXPECT_GT(toplevel->GetRestoredBounds().width(), 0);
   EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
 
   toplevel->Restore();
   RunPendingMessages();
-  EXPECT_EQ(toplevel->GetWindowScreenBounds().ToString(),
+  EXPECT_EQ(toplevel->GetWindowBoundsInScreen().ToString(),
             toplevel->GetRestoredBounds().ToString());
 
   toplevel->SetFullscreen(true);
   RunPendingMessages();
-  EXPECT_NE(toplevel->GetWindowScreenBounds().ToString(),
+  EXPECT_NE(toplevel->GetWindowBoundsInScreen().ToString(),
             toplevel->GetRestoredBounds().ToString());
   EXPECT_GT(toplevel->GetRestoredBounds().width(), 0);
   EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);

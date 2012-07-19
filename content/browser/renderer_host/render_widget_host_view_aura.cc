@@ -343,7 +343,7 @@ bool RenderWidgetHostViewAura::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
-  return window_->GetRootWindowBounds();
+  return window_->GetBoundsInRootWindow();
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
@@ -703,8 +703,8 @@ void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
   GetScreenInfoForWindow(results, window_);
 }
 
-gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
-  return window_->GetToplevelWindow()->bounds();
+gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
+  return window_->GetToplevelWindow()->GetBoundsInRootWindow();
 }
 
 void RenderWidgetHostViewAura::ProcessTouchAck(

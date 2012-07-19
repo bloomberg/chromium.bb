@@ -250,7 +250,7 @@ void PanelLayoutManager::Relayout() {
     return;
   AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  int launcher_top = launcher_->widget()->GetWindowScreenBounds().y();
+  int launcher_top = launcher_->widget()->GetWindowBoundsInScreen().y();
   aura::Window* active_panel = NULL;
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
@@ -353,8 +353,8 @@ void PanelLayoutManager::UpdateCallout(aura::Window* active_panel) {
 
 void PanelLayoutManager::ShowCalloutHelper(aura::Window* active_panel) {
   DCHECK(active_panel);
-  gfx::Rect bounds = active_panel->GetRootWindowBounds();
-  gfx::Rect callout_bounds = callout_widget_->GetWindowScreenBounds();
+  gfx::Rect bounds = active_panel->GetBoundsInRootWindow();
+  gfx::Rect callout_bounds = callout_widget_->GetWindowBoundsInScreen();
   callout_bounds.set_x(
       bounds.x() + (bounds.width() - callout_bounds.width()) / 2);
   callout_bounds.set_y(bounds.bottom());

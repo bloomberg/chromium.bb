@@ -137,7 +137,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #endif
 #if defined(OS_POSIX) || defined(USE_AURA)
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
-  virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
+  virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
 #endif
   virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
                                bool processed) OVERRIDE { }

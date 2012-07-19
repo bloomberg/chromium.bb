@@ -237,7 +237,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   static void GetDefaultScreenInfo(
       WebKit::WebScreenInfo* results);
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
-  virtual gfx::Rect GetRootWindowBounds() = 0;
+  virtual gfx::Rect GetBoundsInRootWindow() = 0;
 #endif
 
   virtual gfx::GLSurfaceHandle GetCompositingSurface() = 0;

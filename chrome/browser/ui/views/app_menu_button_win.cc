@@ -15,7 +15,7 @@ bool AppMenuButtonWin::OnKeyPressed(const views::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE) {
     // Typical windows behavior is to show the system menu on space.
     views::Widget* widget = GetWidget();
-    gfx::Rect bounds = widget->GetClientAreaScreenBounds();
+    gfx::Rect bounds = widget->GetClientAreaBoundsInScreen();
     ui::ShowSystemMenu(widget->GetNativeView(), bounds.x(), bounds.y() + 10);
     return false;
   }

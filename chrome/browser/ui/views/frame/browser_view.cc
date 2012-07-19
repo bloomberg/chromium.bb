@@ -715,7 +715,7 @@ gfx::Rect BrowserView::GetRestoredBounds() const {
 }
 
 gfx::Rect BrowserView::GetBounds() const {
-  return frame_->GetWindowScreenBounds();
+  return frame_->GetWindowBoundsInScreen();
 }
 
 bool BrowserView::IsMaximized() const {

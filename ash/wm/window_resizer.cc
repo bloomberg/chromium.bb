@@ -204,7 +204,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
       details.window_component == HTBOTTOMRIGHT ||
       details.window_component == HTBOTTOMLEFT) {
     gfx::Rect work_area =
-        ScreenAsh::GetDisplayWorkAreaParentBounds(details.window);
+        ScreenAsh::GetDisplayWorkAreaBoundsInParent(details.window);
     if (new_bounds.bottom() > work_area.bottom())
       new_bounds.Inset(0, 0, 0,
                        new_bounds.bottom() - work_area.bottom());

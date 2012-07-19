@@ -1274,7 +1274,7 @@ void RenderWidgetHostViewGtk::GetScreenInfo(WebKit::WebScreenInfo* results) {
   content::GetScreenInfoFromNativeWindow(gdk_window, results);
 }
 
-gfx::Rect RenderWidgetHostViewGtk::GetRootWindowBounds() {
+gfx::Rect RenderWidgetHostViewGtk::GetBoundsInRootWindow() {
   GtkWidget* toplevel = gtk_widget_get_toplevel(view_.get());
   if (!toplevel)
     return gfx::Rect();

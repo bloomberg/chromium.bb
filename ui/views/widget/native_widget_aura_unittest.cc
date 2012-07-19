@@ -172,7 +172,7 @@ TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
   widget->Init(params);
 
   // For Aura, client area bounds match window bounds.
-  gfx::Rect client_bounds = widget->GetClientAreaScreenBounds();
+  gfx::Rect client_bounds = widget->GetClientAreaBoundsInScreen();
   EXPECT_EQ(10, client_bounds.x());
   EXPECT_EQ(20, client_bounds.y());
   EXPECT_EQ(300, client_bounds.width());

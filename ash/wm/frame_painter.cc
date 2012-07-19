@@ -369,7 +369,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   // of the screen.
   // TODO(oshima): This will not work under multi-display, need to add method
   // like GetWindowBoundsInDisplay().
-  if (frame_->GetWindowScreenBounds().y() == 0)
+  if (frame_->GetWindowBoundsInScreen().y() == 0)
     return;
 
   // Draw the top corners and edge.

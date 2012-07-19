@@ -349,7 +349,7 @@ gfx::Rect View::GetVisibleBounds() const {
   return vis_bounds;
 }
 
-gfx::Rect View::GetScreenBounds() const {
+gfx::Rect View::GetBoundsInScreen() const {
   gfx::Point origin;
   View::ConvertPointToScreen(this, &origin);
   return gfx::Rect(origin, size());
@@ -622,7 +622,7 @@ void View::ConvertPointToView(const View* source,
   // API defines NULL |source| as returning the point in screen coordinates.
   if (!source) {
     *point = point->Subtract(
-        root->GetWidget()->GetClientAreaScreenBounds().origin());
+        root->GetWidget()->GetClientAreaBoundsInScreen().origin());
   }
 }
 
@@ -651,7 +651,7 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
   const Widget* widget = src->GetWidget();
   if (widget) {
     ConvertPointToWidget(src, p);
-    gfx::Rect r = widget->GetClientAreaScreenBounds();
+    gfx::Rect r = widget->GetClientAreaBoundsInScreen();
     p->SetPoint(p->x() + r.x(), p->y() + r.y());
   }
 }
@@ -664,7 +664,7 @@ void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
   const views::Widget* widget = dst->GetWidget();
   if (!widget)
     return;
-  const gfx::Rect r = widget->GetClientAreaScreenBounds();
+  const gfx::Rect r = widget->GetClientAreaBoundsInScreen();
   p->Offset(-r.x(), -r.y());
   views::View::ConvertPointFromWidget(dst, p);
 }

@@ -449,7 +449,7 @@ class SystemPinchHandler {
       phantom_state_ = PHANTOM_WINDOW_MAXIMIZED;
       return ScreenAsh::ConvertRectToScreen(
           target_->parent(),
-          ScreenAsh::GetMaximizedWindowParentBounds(target_));
+          ScreenAsh::GetMaximizedWindowBoundsInParent(target_));
     }
 
     if (pinch_factor_ < kPinchThresholdForMinimize) {
@@ -465,7 +465,7 @@ class SystemPinchHandler {
       Launcher* launcher = Shell::GetInstance()->launcher();
       gfx::Rect rect = launcher->GetScreenBoundsOfItemIconForWindow(target_);
       if (rect.IsEmpty())
-        rect = launcher->widget()->GetWindowScreenBounds();
+        rect = launcher->widget()->GetWindowBoundsInScreen();
       else
         rect.Inset(-8, -8);
       phantom_state_ = PHANTOM_WINDOW_MINIMIZED;

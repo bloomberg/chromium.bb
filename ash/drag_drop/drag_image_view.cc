@@ -41,7 +41,7 @@ DragImageView::~DragImageView() {
   widget_->Hide();
 }
 
-void DragImageView::SetScreenBounds(const gfx::Rect& bounds) {
+void DragImageView::SetBoundsInScreen(const gfx::Rect& bounds) {
   widget_->SetBounds(bounds);
 }
 
