@@ -1590,6 +1590,53 @@ class TestingAutomationProvider : public AutomationProvider,
                            size_t target_count,
                            IPC::Message* reply_message);
 
+  // Web Intents
+
+  // Launches a Web Intents picker dialog in the |browser| with the
+  // data specified by |args|.  Returns error message or success status via
+  // |reply_message|.
+  // Example:
+  //   input: { "action": "http://webintents.org/pick",
+  //            "data_type": "image/*",
+  //            "extensions": [ { "name": "Cloud Image Picker",
+  //                              "id": "blah",
+  //                              "average_rating": 1.5,
+  //                              "icon_url": "http://icon.example.com/blah",
+  //                             },
+  //                             ...
+  //                           ]
+  //          }
+  //   output: none
+  void CreateWebIntentsPicker(Browser* browser,
+                              base::DictionaryValue* args,
+                              IPC::Message* reply_message);
+
+  // Retrieves the information of the Web Intents picker dialog in the browser
+  // |browser| and returns it via |reply_message|:
+  //   - List of installed services.
+  //   - List of installed extensions.
+  // Should be called only after CreateWebIntentsPicker is.
+  // Example:
+  //   input: none
+  //   output: { "installed_services": [ { "title": "QuickSnapr",
+  //                                       "id": "blahblah",
+  //                                       "has_favicon": true,
+  //                                       "is_inline": false,
+  //                                     },
+  //                                     ...
+  //                                   ],
+  //             "suggested_extensions": [ { "title": "Cloud Image Picker",
+  //                                         "id": "blah",
+  //                                         "average_rating": 1.5,
+  //                                         "has_icon": true,
+  //                                       },
+  //                                       ...
+  //                                     ]
+  //           }
+  void GetWebIntentsPickerInfo(Browser* browser,
+                               base::DictionaryValue* /*args*/,
+                               IPC::Message* reply_message);
+
   // Resets to the default theme.
   void ResetToDefaultTheme();
 

@@ -1,0 +1,23 @@
+# List of suggested extensions for picking an image.
+
+[ {
+    'name': 'Cloud File Picker',
+    'id': 'kpeiggegnjmcinljkdmjglpjopdjihff',
+    'average_rating': 1,
+    'icon_url': 'http://lh4.ggpht.com/iBfnIFlHCAEVsqRedk_RhlucIBE3xMmdweFrWJSZlsS3PnJzGXHRX-uCQa4p-boa3Cjtf5sc2w',
+  }, {
+    'name': 'QuickSnapr',
+    'id': 'lgelahlckjkaijbgbfofnccgfojdnkde',
+    'average_rating': 0,
+    'icon_url': 'http://lh4.ggpht.com/6Ha5boWaShZx6HbcHsCFWU-yNezOIxolggp8Mypr2ZSUFt5AZDsHvDqDQTIEgZVdozq9uYwBrg',
+  }, {
+    'name': 'Mememator',
+    'id': 'lkinojipklbmjkgmmpppmbhlhfpkhmed',
+    'average_rating': 3,
+    'icon_url': 'http://lh4.ggpht.com/v5O6f9SzZyNqxdKMzinWLSvlleWp2t4smPLYaB2x2uDuEWKCoMcYlDJM9Hss21u4p0fUlwWUKw',
+  }, {
+    'name': 'Inspirationmator',
+    'id': 'nnepdeiagpljmekibdibppkfoecaaiak',
+    'average_rating': 5,
+    'icon_url': 'http://lh3.ggpht.com/CJdgP7QNUYCKwrYorib67j5ExMbKl04ck_MdXVGjIHyafDZzu6N6qHOoqN1r1Zg8dDJ0mXgl0X8',
+  }, ]

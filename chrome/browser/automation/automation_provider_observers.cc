@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -3157,4 +3158,71 @@ void BrowserOpenedWithExistingProfileNotificationObserver::Observe(
   } else {
     NOTREACHED();
   }
+}
+
+WebIntentsPickerObserver::WebIntentsPickerObserver(
+    const base::WeakPtr<AutomationProvider>& automation,
+    IPC::Message* reply_message,
+    WebIntentPickerModel* picker_model)
+    : automation_(automation),
+      reply_message_(reply_message),
+      picker_model_(picker_model) {
+  registrar_.Add(this, chrome::NOTIFICATION_WEB_INTENT_PICKER_LOADED,
+                 content::NotificationService::AllSources());
+}
+
+WebIntentsPickerObserver::~WebIntentsPickerObserver() {
+}
+
+// Sends the basic info of the picker after it's loaded.
+//   - List of installed services.
+//   - List of suggested extensions.
+// See TestingAutomationProvider::GetWebIntentsPickerInfo()
+// in src/chrome/browser/automation/testing_automation_provider.h for detailed
+// format of the reply.
+// Deletes itself upon return.
+void WebIntentsPickerObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_WEB_INTENT_PICKER_LOADED);
+
+  if (!automation_.get() || !reply_message_ || !picker_model_) {
+    delete this;
+    return;
+  }
+
+  DictionaryValue return_value;
+
+  // Adds the list of installed services to the returned data.
+  ListValue* return_services = new ListValue;
+  for (size_t i = 0; i < picker_model_->GetInstalledServiceCount(); ++i) {
+    const WebIntentPickerModel::InstalledService& service =
+        picker_model_->GetInstalledServiceAt(i);
+    DictionaryValue* return_service = new DictionaryValue;
+    return_service->SetString("title", service.title);
+    return_service->SetString("url", service.url.spec());
+    return_service->SetBoolean("has_favicon", !service.favicon.IsEmpty());
+    return_service->SetBoolean(
+        "is_inline",
+        service.disposition == WebIntentPickerModel::DISPOSITION_INLINE);
+    return_services->Append(return_service);
+  }
+  return_value.Set("installed_services", return_services);
+
+  // Adds the list of suggested extensions to the returned data.
+  ListValue* return_extensions = new ListValue;
+  for (size_t i = 0; i < picker_model_->GetSuggestedExtensionCount(); ++i) {
+    const WebIntentPickerModel::SuggestedExtension& extension =
+        picker_model_->GetSuggestedExtensionAt(i);
+    DictionaryValue* return_extension = new DictionaryValue;
+    return_extension->SetString("id", extension.id);
+    return_extension->SetString("title", extension.title);
+    return_extension->SetDouble("average_rating", extension.average_rating);
+    return_extension->SetBoolean("has_icon", !extension.icon.IsEmpty());
+    return_extensions->Append(return_extension);
+  }
+  return_value.Set("suggested_extensions", return_extensions);
+  AutomationJSONReply(automation_, reply_message_).SendSuccess(&return_value);
+  delete this;
 }

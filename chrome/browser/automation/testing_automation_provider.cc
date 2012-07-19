@@ -112,6 +112,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/intents/web_intents_automation_provider.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -2033,6 +2034,10 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest;
   browser_handler_map_["DenyCurrentFullscreenOrMouseLockRequest"] =
       &TestingAutomationProvider::DenyCurrentFullscreenOrMouseLockRequest;
+  browser_handler_map_["CreateWebIntentsPicker"] =
+      &TestingAutomationProvider::CreateWebIntentsPicker;
+  browser_handler_map_["GetWebIntentsPickerInfo"] =
+      &TestingAutomationProvider::GetWebIntentsPickerInfo;
 
 #if defined(OS_CHROMEOS)
   browser_handler_map_["CaptureProfilePhoto"] =
@@ -6890,6 +6895,86 @@ void TestingAutomationProvider::WaitForInfoBarCount(
   // The delegate will delete itself.
   new InfoBarCountObserver(this, reply_message,
       TabContents::FromWebContents(controller->GetWebContents()), target_count);
+}
+
+void TestingAutomationProvider::CreateWebIntentsPicker(
+    Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  string16 action, data_type;
+  AutomationJSONReply automation_reply(this, reply_message);
+
+  if (!args->GetString("action", &action)) {
+    automation_reply.
+        SendError("Missing 'action' parameter for the web intents.");
+    return;
+  }
+
+  if (!args->GetString("data_type", &data_type)) {
+    automation_reply.
+        SendError("Missing 'data_type' parameter for the web intents.");
+    return;
+  }
+
+  // Gets the list of suggested extensions for mocking out interaction to
+  // the Chrome Web Store.
+  ListValue* extensions = NULL;
+  if (!args->GetList("extensions", &extensions)) {
+    automation_reply.SendError("Missing 'extensions' list.");
+    return;
+  }
+
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser);
+  DCHECK(tab_contents);
+  WebIntentPickerController* controller =
+      tab_contents->web_intent_picker_controller();
+  DCHECK(controller);
+
+  // Creates a provider to simulate CWS.
+  scoped_ptr<WebIntentsAutomationProvider> service_provider(
+      new WebIntentsAutomationProvider(controller));
+
+  if (!service_provider->FillSuggestedExtensionList(extensions)) {
+    automation_reply.
+        SendError("Error when parsing the suggested extension list.");
+    return;
+  }
+
+  WebIntentPickerController::AutomationCallback set_extensions = base::Bind(
+      &WebIntentsAutomationProvider::SetSuggestedExtensions,
+      base::Unretained(service_provider.get()));
+  controller->ShowDialog(action, data_type, &set_extensions);
+
+  automation_reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::GetWebIntentsPickerInfo(
+    Browser* browser,
+    base::DictionaryValue*,
+    IPC::Message* reply_message) {
+  WebIntentPickerController* controller =
+      chrome::GetActiveTabContents(browser)->web_intent_picker_controller();
+
+  if (!controller->picker_) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Web intent picker hasn't been created.  Call CreateWebIntentsPicker()"
+        "first.");
+    return;
+  }
+
+  // The following observer will delete itself when done.
+  WebIntentsPickerObserver* observer = new WebIntentsPickerObserver(
+      this->AsWeakPtr(),
+      reply_message,
+      controller->picker_model_.get());
+
+  // If the picker is already initialized, just grabs the info and returns.
+  if (controller->picker_shown_ && controller->pending_async_count_ == 0) {
+    observer->Observe(
+        chrome::NOTIFICATION_WEB_INTENT_PICKER_LOADED,
+        content::Source<WebContents>(controller->tab_contents_->web_contents()),
+        content::Details<std::string>(NULL));
+  }
 }
 
 void TestingAutomationProvider::ResetToDefaultTheme() {
