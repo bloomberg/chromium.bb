@@ -56,6 +56,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "ui/gfx/color_profile.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_group.h"
@@ -68,6 +69,9 @@
 #endif
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
+#endif
+#if defined(OS_WIN)
+#include "content/browser/renderer_host/backing_store_win.h"
 #endif
 
 using content::BrowserContext;
@@ -392,6 +396,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnGetHardwareSampleRate)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputChannelLayout,
                         OnGetHardwareInputChannelLayout)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetMonitorColorProfile,
+                        OnGetMonitorColorProfile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -401,6 +407,15 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void RenderMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
+}
+
+void RenderMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message, BrowserThread::ID* thread) {
+#if defined(OS_WIN)
+  // Windows monitor profile must be read from a file.
+  if (message.type() == ViewHostMsg_GetMonitorColorProfile::ID)
+    *thread = BrowserThread::FILE;
+#endif
 }
 
 bool RenderMessageFilter::OffTheRecord() const {
@@ -708,6 +723,14 @@ void RenderMessageFilter::OnGetHardwareInputChannelLayout(
   // TODO(henrika): add support for all available input devices.
   *layout = media::GetAudioInputHardwareChannelLayout(
       media::AudioManagerBase::kDefaultDeviceId);
+}
+
+void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
+#if defined(OS_WIN)
+  if (BackingStoreWin::ColorManagementEnabled())
+    return;
+#endif
+  gfx::GetColorProfile(profile);
 }
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,

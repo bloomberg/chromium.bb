@@ -89,6 +89,9 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
+  virtual void OverrideThreadForMessage(
+      const IPC::Message& message,
+      content::BrowserThread::ID* thread) OVERRIDE;
 
   bool OffTheRecord() const;
 
@@ -181,6 +184,9 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   void OnGetHardwareInputSampleRate(int* sample_rate);
   void OnGetHardwareSampleRate(int* sample_rate);
   void OnGetHardwareInputChannelLayout(ChannelLayout* layout);
+
+  // Used to look up the monitor color profile.
+  void OnGetMonitorColorProfile(std::vector<char>* profile);
 
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created

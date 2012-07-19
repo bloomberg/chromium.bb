@@ -658,6 +658,16 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
 
 //------------------------------------------------------------------------------
 
+void RendererWebKitPlatformSupportImpl::screenColorProfile(
+    WebVector<char>* to_profile) {
+  std::vector<char> profile;
+  RenderThreadImpl::current()->Send(
+      new ViewHostMsg_GetMonitorColorProfile(&profile));
+  *to_profile = profile;
+}
+
+//------------------------------------------------------------------------------
+
 WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
   // ChildThread::current can be NULL when running some tests.
   if (!blob_registry_.get() && ChildThread::current()) {

@@ -62,6 +62,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       unsigned key_size_index,
       const WebKit::WebString& challenge,
       const WebKit::WebURL& url) OVERRIDE;
+  virtual void screenColorProfile(WebKit::WebVector<char>* to_profile) OVERRIDE;
   virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
   virtual void createIDBKeysFromSerializedValuesAndKeyPath(
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
