@@ -3245,8 +3245,6 @@
         'browser/ui/intents/web_intent_picker_model_observer.h',
         'browser/ui/intents/web_intents_model.cc',
         'browser/ui/intents/web_intents_model.h',
-        'browser/ui/intents/web_intents_automation_provider.cc',
-        'browser/ui/intents/web_intents_automation_provider.h',
         'browser/ui/login/login_model.h',
         'browser/ui/login/login_prompt.cc',
         'browser/ui/login/login_prompt.h',

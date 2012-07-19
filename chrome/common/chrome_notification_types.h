@@ -1230,11 +1230,6 @@ enum NotificationType {
   // if it is leaving.
   NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
 
-  // Web Intents
-  // Sent when the web intents picker's initialization is completed, i.e.
-  // when the web intents picker dialog is about to be displayed.
-  NOTIFICATION_WEB_INTENT_PICKER_LOADED,
-
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

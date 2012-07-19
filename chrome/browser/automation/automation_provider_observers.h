@@ -66,7 +66,6 @@ class Profile;
 class SavePackage;
 class TabContents;
 class TranslateInfoBarDelegate;
-class WebIntentPickerModel;
 
 namespace automation {
 class Error;
@@ -1992,43 +1991,6 @@ class BrowserOpenedWithExistingProfileNotificationObserver
 
   DISALLOW_COPY_AND_ASSIGN(
       BrowserOpenedWithExistingProfileNotificationObserver);
-};
-
-// Web Intents
-
-// Wait for Web Intents picker dialog to be loaded.
-class WebIntentsPickerObserver : public content::NotificationObserver {
- public:
-  // The observer accesses the following:
-  // - The handle to the automation proxy |automation| which provides access to
-  //   the browser.
-  // - The messaging channel for pyauto tests |reply_message|.
-  // - The picker data container |picker_model|.
-  WebIntentsPickerObserver(
-      const base::WeakPtr<AutomationProvider>& automation,
-      IPC::Message* reply_message,
-      WebIntentPickerModel* picker_model);
-  virtual ~WebIntentsPickerObserver();
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  // Handle to the automation proxy.
-  base::WeakPtr<AutomationProvider> automation_;
-
-  // Messaging channel to pyauto tests which is owned by the automation
-  // provider.
-  IPC::Message* reply_message_;
-
-  content::NotificationRegistrar registrar_;
-
-  // The picker data container which is owned by the picker.
-  WebIntentPickerModel* picker_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebIntentsPickerObserver);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

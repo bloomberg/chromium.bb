@@ -33,7 +33,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
@@ -171,10 +170,8 @@ void WebIntentPickerController::SetIntentsDispatcher(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WebIntentPickerController::ShowDialog(
-    const string16& action,
-    const string16& type,
-    const AutomationCallback* set_extensions) {
+void WebIntentPickerController::ShowDialog(const string16& action,
+                                           const string16& type) {
   // Only show a picker once.
   // TODO(gbillock): There's a hole potentially admitting multiple
   // in-flight dispatches since we don't create the picker
@@ -246,15 +243,11 @@ void WebIntentPickerController::ShowDialog(
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (set_extensions) {
-    set_extensions->Run();
-  } else {
     GetCWSIntentsRegistry(tab_contents_)->GetIntentServices(
         action, type,
         base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
                    weak_ptr_factory_.GetWeakPtr()));
   }
-}
 
 void WebIntentPickerController::Observe(
     int type,
@@ -578,7 +571,26 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
       continue;
     }
 
-    AddSuggestedExtension(info);
+    picker_model_->AddSuggestedExtension(
+        info.name,
+        info.id,
+        info.average_rating);
+
+    pending_async_count_++;
+    net::URLFetcher* icon_url_fetcher = net::URLFetcher::Create(
+        0,
+        info.icon_url,
+        net::URLFetcher::GET,
+        new URLFetcherTrampoline(
+            base::Bind(
+                &WebIntentPickerController::OnExtensionIconURLFetchComplete,
+                weak_ptr_factory_.GetWeakPtr(), info.id)));
+
+    icon_url_fetcher->SetLoadFlags(
+        net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+    icon_url_fetcher->SetRequestContext(
+        tab_contents_->profile()->GetRequestContext());
+    icon_url_fetcher->Start();
   }
 
   AsyncOperationFinished();
@@ -685,34 +697,9 @@ void WebIntentPickerController::OnExtensionInstallServiceAvailable(
   AsyncOperationFinished();
 }
 
-void WebIntentPickerController::AddSuggestedExtension(
-    const CWSIntentsRegistry::IntentExtensionInfo& info) {
-  picker_model_->AddSuggestedExtension(info.name, info.id, info.average_rating);
-
-  pending_async_count_++;
-  net::URLFetcher* icon_url_fetcher = net::URLFetcher::Create(
-      0,
-      info.icon_url,
-      net::URLFetcher::GET,
-      new URLFetcherTrampoline(
-          base::Bind(
-              &WebIntentPickerController::OnExtensionIconURLFetchComplete,
-              weak_ptr_factory_.GetWeakPtr(), info.id)));
-
-  icon_url_fetcher->SetLoadFlags(
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
-  icon_url_fetcher->SetRequestContext(
-      tab_contents_->profile()->GetRequestContext());
-  icon_url_fetcher->Start();
-}
-
 void WebIntentPickerController::AsyncOperationFinished() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (--pending_async_count_ == 0) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_WEB_INTENT_PICKER_LOADED,
-        content::Source<content::WebContents>(tab_contents_->web_contents()),
-        content::Details<std::string>(NULL));
     if (picker_)
       picker_->OnPendingAsyncCompleted();
   }

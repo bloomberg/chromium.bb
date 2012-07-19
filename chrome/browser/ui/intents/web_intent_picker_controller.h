@@ -45,8 +45,6 @@ class WebIntentPickerController
       public WebIntentPickerDelegate,
       public extensions::WebstoreInstaller::Delegate {
  public:
-  typedef base::Closure AutomationCallback;
-
   explicit WebIntentPickerController(TabContents* tab_contents);
   virtual ~WebIntentPickerController();
 
@@ -56,12 +54,8 @@ class WebIntentPickerController
   void SetIntentsDispatcher(content::WebIntentsDispatcher* intents_dispatcher);
 
   // Shows the web intent picker given the intent |action| and MIME-type |type|.
-  // When using automation framework, such as in a pyauto test, the callback
-  // |set_extensions| is run to build the list of suggested extensions, since
-  // the API key for accessing CWS is not available in that context.
   void ShowDialog(const string16& action,
-                  const string16& type,
-                  const AutomationCallback* set_extensions = NULL);
+                  const string16& type);
 
  protected:
   // content::NotificationObserver implementation.
@@ -91,8 +85,6 @@ class WebIntentPickerController
   friend class WebIntentPickerControllerBrowserTest;
   friend class WebIntentPickerControllerIncognitoBrowserTest;
   friend class InvokingTabObserver;
-  friend class TestingAutomationProvider;
-  friend class WebIntentsAutomationProvider;
 
   // Gets a notification when the return message is sent to the source tab,
   // so we can close the picker dialog or service tab.
@@ -161,10 +153,6 @@ class WebIntentPickerController
   // |services| must be a non-empty list.
   void OnExtensionInstallServiceAvailable(
       const std::vector<webkit_glue::WebIntentServiceData>& services);
-
-  // Adds suggested extension |info| to the picker dialog.
-  void AddSuggestedExtension(
-      const CWSIntentsRegistry::IntentExtensionInfo& info);
 
   // Decrements the |pending_async_count_| and notifies the picker if it
   // reaches zero.

@@ -4257,63 +4257,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'SimulateAsanMemoryBug' }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
-  ## Web Intents
-
-  def CreateWebIntentsPicker(self, action, data_type, extensions, windex=0):
-    """Creates a web intents picker dialog.
-
-    Args:
-      action: the web intents action string, such as
-        'http://webintents.org/share'.
-      data_type: the MIME type of web intents data, such as 'text/*'.
-      extensions: the dictionary of suggested extensions.
-      windex: the index of the window to work on.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'CreateWebIntentsPicker',
-      'action': action,
-      'data_type': data_type,
-      'extensions': extensions,
-    }
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
-
-  def GetWebIntentsPickerInfo(self, windex=0):
-    """Gets the basic info of the web intents picker.
-
-    Args:
-      windex: the index of the window to work on.
-
-    Returns:
-      A dictionary.  See chrome/browser/automation/testing_automation_provider.h
-      for detailed format.
-      Sample:
-      { u'installed_services': [ { 'title': 'QuickSnapr',
-                                   'id': 'blahblah',
-                                   'has_favicon': true,
-                                   'is_inline': false,
-                                },
-                                ...
-                              ],
-        u'suggested_extensions': [ { 'title': 'Cloud Image Picker',
-                                     'id': 'blah',
-                                     'average_rating': 1.5,
-                                     'has_icon': true,
-                                   },
-                                   ...
-                                 ]
-      }
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-        'command': 'GetWebIntentsPickerInfo',
-    }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
-
   ## ChromeOS section
 
   def GetLoginInfo(self):
