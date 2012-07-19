@@ -10,10 +10,10 @@ from zipfile import ZipFile
 class ExampleZipper(object):
   """This class creates a zip file given a samples directory.
   """
-  def __init__(self, fetcher, cache_builder, base_path, match_path):
+  def __init__(self, file_system, cache_builder, base_path, match_path):
     self._base_path = base_path
     self._zip_cache = cache_builder.build(self._MakeZipFile)
-    self._fetcher = fetcher
+    self._file_system = file_system
     self._match_path = match_path
 
   def _MakeZipFile(self, files):
@@ -24,18 +24,16 @@ class ExampleZipper(object):
     zip_bytes = BytesIO()
     zip_file = ZipFile(zip_bytes, mode='w')
     try:
-      for filename in files:
-          zip_file.writestr(
-              filename[len(prefix):].strip('/'),
-              self._fetcher.FetchResource(filename).content)
+      for filename, contents in self._file_system.Read(files).Get().iteritems():
+        zip_file.writestr(filename[len(prefix):].strip('/'), contents)
     finally:
       zip_file.close()
     return zip_bytes.getvalue()
 
-  def create(self, path):
+  def Create(self, path):
     """ Creates a new zip file from the recursive contents of |path|
     as returned by |_zip_cache|.
     Paths within the zip file are given relative to and including |path|.
     """
-    return self._zip_cache.getFromFileListing(self._base_path + '/' + path,
-                                              recursive=True)
+    return self._zip_cache.GetFromFileListing(
+        self._base_path + '/' + path)

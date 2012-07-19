@@ -13,31 +13,32 @@ class SamplesDataSource(object):
     self._cache = cache_builder.build(self._MakeSamplesList)
     self._samples_path = samples_path
 
-  def _GetApiItems(self, api_items, js_file):
-    return set(re.findall('(chrome\.[a-zA-Z0-9\.]+)',
-                          self._fetcher.FetchResource(js_file).content))
+  def _GetApiItems(self, js_file):
+    return set(re.findall('(chrome\.[a-zA-Z0-9\.]+)', js_file))
 
   def _MakeApiLink(self, prefix, item):
     api, name = item.replace('chrome.', '').split('.', 1)
     return api + '.html#' + prefix + '-' + name
 
   def _GetDataFromManifest(self, path):
-    manifest = self._fetcher.FetchResource(path + '/manifest.json').content
+    manifest_path = path + '/manifest.json'
+    manifest = self._fetcher.Read([manifest_path]).Get()[manifest_path]
     manifest_json = json.loads(manifest)
     return (manifest_json.get('name'), manifest_json.get('description'))
 
   def _MakeSamplesList(self, files):
     samples_list = []
-    for filename in files:
+    for filename in sorted(files):
       if filename.rsplit('/')[-1] != 'manifest.json':
         continue
       # This is a little hacky, but it makes a sample page.
       sample_path = filename.rsplit('/', 1)[-2]
       sample_files = filter(lambda x: x.startswith(sample_path + '/'), files)
-      api_items = set([])
-      for file_ in sample_files:
-        if file_.endswith('.js'):
-          api_items.update(self._GetApiItems(api_items, file_))
+      js_files = filter(lambda x: x.endswith('.js'), sample_files)
+      js_contents = self._fetcher.Read(js_files).Get()
+      api_items = set()
+      for js in js_contents.values():
+        api_items.update(self._GetApiItems(js))
 
       api_calls = []
       for item in api_items:
@@ -68,4 +69,4 @@ class SamplesDataSource(object):
     return self.get(key)
 
   def get(self, key):
-    return self._cache.getFromFileListing('docs/' + self._samples_path, True)
+    return self._cache.GetFromFileListing(self._samples_path + '/')

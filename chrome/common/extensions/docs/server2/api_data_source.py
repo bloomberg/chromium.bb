@@ -39,9 +39,9 @@ class APIDataSource(object):
     json_path = unix_name + '.json'
     idl_path = unix_name + '.idl'
     try:
-      return self._json_cache.getFromFile(self._base_path + '/' + json_path)
-    except:
+      return self._json_cache.GetFromFile(self._base_path + '/' + json_path)
+    except Exception:
       try:
-        return self._idl_cache.getFromFile(self._base_path + '/' + idl_path)
-      except:
+        return self._idl_cache.GetFromFile(self._base_path + '/' + idl_path)
+      except Exception:
         return None

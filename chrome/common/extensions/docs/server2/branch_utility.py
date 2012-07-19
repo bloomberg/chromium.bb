@@ -4,49 +4,61 @@
 
 import json
 
-OMAHA_PROXY_URL = 'http://omahaproxy.appspot.com/json'
+import appengine_memcache as memcache
+import operator
 
-def SplitChannelNameFromPath(path, default='stable'):
-  try:
-    first, second = path.split('/', 1)
-  except ValueError:
-    first = path
-    second =''
-  if first in ['trunk', 'dev', 'beta', 'stable']:
-    return (first, second)
-  else:
-    return (default, path)
+class BranchUtility(object):
+  def __init__(self, base_path, default_branch, fetcher, memcache):
+    self._base_path = base_path
+    self._default_branch = default_branch
+    self._fetcher = fetcher
+    self._memcache = memcache
 
-def GetBranchNumberForChannelName(channel_name,
-                                  urlfetch,
-                                  base_path=OMAHA_PROXY_URL):
-  """Returns an empty string if the branch number cannot be found.
-  Throws exception on network errors.
-  """
-  if channel_name == 'trunk' or channel_name == 'local':
-    return channel_name
+  def SplitChannelNameFromPath(self, path):
+    try:
+      first, second = path.split('/', 1)
+    except ValueError:
+      first = path
+      second = ''
+    if first in ['trunk', 'dev', 'beta', 'stable']:
+      return (first, second)
+    else:
+      return (self._default_branch, path)
 
-  fetch_data = urlfetch.fetch(base_path)
-  if fetch_data.content == '':
-    raise Exception('Fetch returned zero results.')
+  def GetBranchNumberForChannelName(self, channel_name):
+    """Returns an empty string if the branch number cannot be found.
+    Throws exception on network errors.
+    """
+    if channel_name in ['trunk', 'local']:
+      return channel_name
 
-  version_json = json.loads(fetch_data.content)
-  branch_numbers = {}
-  for entry in version_json:
-    if entry['os'] not in ['win', 'linux', 'mac', 'cros']:
-      continue
-    for version in entry['versions']:
-      if version['channel'] != channel_name:
+    branch_number = self._memcache.Get(channel_name + '.' + self._base_path,
+                                       memcache.MEMCACHE_BRANCH_UTILITY)
+    if branch_number is not None:
+      return branch_number
+
+    fetch_data = self._fetcher.Fetch(self._base_path).content
+    version_json = json.loads(fetch_data)
+    branch_numbers = {}
+    for entry in version_json:
+      if entry['os'] not in ['win', 'linux', 'mac', 'cros']:
         continue
-      if version['true_branch'] not in branch_numbers:
-        branch_numbers[version['true_branch']] = 0
-      else:
-        branch_numbers[version['true_branch']] += 1
+      for version in entry['versions']:
+        if version['channel'] != channel_name:
+          continue
+        if version['true_branch'] not in branch_numbers:
+          branch_numbers[version['true_branch']] = 0
+        else:
+          branch_numbers[version['true_branch']] += 1
 
-  sorted_list = [x for x in branch_numbers.iteritems()]
-  sorted_list.sort(key = lambda x: x[1])
-  sorted_list.reverse()
+    sorted_branches = sorted(branch_numbers.iteritems(),
+                             None,
+                             operator.itemgetter(1),
+                             True)
+    # Cache for 24 hours.
+    self._memcache.Set(channel_name + '.' + self._base_path,
+                       sorted_branches[0][0],
+                       memcache.MEMCACHE_BRANCH_UTILITY,
+                       86400)
 
-  branch_number, _ = sorted_list[0]
-
-  return branch_number
+    return sorted_branches[0][0]

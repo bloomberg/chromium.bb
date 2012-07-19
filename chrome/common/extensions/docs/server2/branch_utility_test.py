@@ -3,46 +3,44 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import branch_utility
+from branch_utility import BranchUtility
+from fake_url_fetcher import FakeUrlFetcher
+from in_memory_memcache import InMemoryMemcache
 import unittest
-import test_urlfetch
 
 class BranchUtilityTest(unittest.TestCase):
+  def setUp(self):
+    self._branch_util = BranchUtility('branch_utility/first.json',
+                                      'stable',
+                                      FakeUrlFetcher('test_data'),
+                                      InMemoryMemcache())
+
   def testSplitChannelNameFromPath(self):
     self.assertEquals(('dev', 'hello/stuff.html'),
-                      branch_utility.SplitChannelNameFromPath(
+                      self._branch_util.SplitChannelNameFromPath(
                       'dev/hello/stuff.html'))
     self.assertEquals(('beta', 'hello/stuff.html'),
-                      branch_utility.SplitChannelNameFromPath(
+                      self._branch_util.SplitChannelNameFromPath(
                       'beta/hello/stuff.html'))
     self.assertEquals(('trunk', 'hello/stuff.html'),
-                      branch_utility.SplitChannelNameFromPath(
+                      self._branch_util.SplitChannelNameFromPath(
                       'trunk/hello/stuff.html'))
     self.assertEquals(('stable', 'hello/stuff.html'),
-                      branch_utility.SplitChannelNameFromPath(
+                      self._branch_util.SplitChannelNameFromPath(
                       'hello/stuff.html'))
     self.assertEquals(('stable', 'hello/dev/stuff.html'),
-                      branch_utility.SplitChannelNameFromPath(
+                      self._branch_util.SplitChannelNameFromPath(
                       'hello/dev/stuff.html'))
 
   def testGetBranchNumberForChannelName(self):
-    base_path = 'branch_utility/first.json'
     self.assertEquals('1132',
-        branch_utility.GetBranchNumberForChannelName('dev',
-                                                     test_urlfetch,
-                                                     base_path))
+                      self._branch_util.GetBranchNumberForChannelName('dev'))
     self.assertEquals('1084',
-        branch_utility.GetBranchNumberForChannelName('beta',
-                                                     test_urlfetch,
-                                                     base_path))
+                      self._branch_util.GetBranchNumberForChannelName('beta'))
     self.assertEquals('1234',
-        branch_utility.GetBranchNumberForChannelName('stable',
-                                                     test_urlfetch,
-                                                     base_path))
+                      self._branch_util.GetBranchNumberForChannelName('stable'))
     self.assertEquals('trunk',
-        branch_utility.GetBranchNumberForChannelName('trunk',
-                                                     test_urlfetch,
-                                                     base_path))
+                      self._branch_util.GetBranchNumberForChannelName('trunk'))
 
 if __name__ == '__main__':
   unittest.main()

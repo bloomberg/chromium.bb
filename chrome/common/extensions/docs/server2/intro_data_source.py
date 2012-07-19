@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import re
 from path_utils import FormatKey
 from third_party.handlebar import Handlebar
@@ -38,7 +37,7 @@ class IntroDataSource(object):
     real_path = FormatKey(key)
     for base_path in self._base_paths:
       try:
-        return self._cache.getFromFile(base_path + '/' + real_path)
-      except:
+        return self._cache.GetFromFile(base_path + '/' + real_path)
+      except Exception:
         pass
     return None

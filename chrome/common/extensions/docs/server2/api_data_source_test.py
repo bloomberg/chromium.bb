@@ -7,8 +7,8 @@ import json
 import os
 import unittest
 
-from fetcher_cache import FetcherCache
-from local_fetcher import LocalFetcher
+from file_system_cache import FileSystemCache
+from local_file_system import LocalFileSystem
 from api_data_source import APIDataSource
 
 class APIDataSourceTest(unittest.TestCase):
@@ -20,8 +20,7 @@ class APIDataSourceTest(unittest.TestCase):
       return f.read()
 
   def testSimple(self):
-    fetcher = LocalFetcher(self._base_path)
-    cache_builder = FetcherCache.Builder(fetcher, 0)
+    cache_builder = FileSystemCache.Builder(LocalFileSystem(self._base_path))
     data_source = APIDataSource(cache_builder, './')
 
     # Take the dict out of the list.

@@ -29,7 +29,7 @@ def CopyThirdParty(src, dest, files=None):
     return
   try:
     os.makedirs(dest_path)
-  except:
+  except Exception:
     pass
   MakeInit(dest_path)
   for filename in files:

@@ -67,7 +67,7 @@ class TemplateDataSource(object):
     real_path = FormatKey(key)
     for base_path in self._base_paths:
       try:
-        return self._cache.getFromFile(base_path + '/' + real_path)
-      except:
+        return self._cache.GetFromFile(base_path + '/' + real_path)
+      except Exception:
         pass
     return None

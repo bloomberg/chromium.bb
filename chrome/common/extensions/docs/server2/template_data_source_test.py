@@ -7,8 +7,8 @@ import json
 import os
 import unittest
 
-from fetcher_cache import FetcherCache
-from local_fetcher import LocalFetcher
+from file_system_cache import FileSystemCache
+from local_file_system import LocalFileSystem
 from template_data_source import TemplateDataSource
 from third_party.handlebar import Handlebar
 
@@ -36,12 +36,12 @@ class TemplateDataSourceTest(unittest.TestCase):
                               self._fake_intro_data_source,
                               self._fake_samples_data_source,
                               cache_builder,
-                              ['./'])
+                              ['./', './'])
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')
-    fetcher = LocalFetcher(self._base_path)
-    cache_builder = FetcherCache.Builder(fetcher, 0)
+    fetcher = LocalFileSystem(self._base_path)
+    cache_builder = FileSystemCache.Builder(fetcher)
     t_data_source = self._CreateTemplateDataSource(self._fake_api_data_source,
                                                     cache_builder)
     template_a1 = Handlebar(self._ReadLocalFile('test1.html'))
@@ -56,8 +56,8 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def testPartials(self):
     self._base_path = os.path.join(self._base_path, 'partials')
-    fetcher = LocalFetcher(self._base_path)
-    cache_builder = FetcherCache.Builder(fetcher, 0)
+    fetcher = LocalFileSystem(self._base_path)
+    cache_builder = FileSystemCache.Builder(fetcher)
     t_data_source = self._CreateTemplateDataSource(self._fake_api_data_source,
                                                     cache_builder)
     self.assertEqual(self._ReadLocalFile('test_expected.html'),
@@ -66,9 +66,9 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def testRender(self):
     self._base_path = os.path.join(self._base_path, 'render')
-    fetcher = LocalFetcher(self._base_path)
+    fetcher = LocalFileSystem(self._base_path)
     context = json.loads(self._ReadLocalFile('test1.json'))
-    cache_builder = FetcherCache.Builder(fetcher, 0)
+    cache_builder = FileSystemCache.Builder(fetcher)
     self._RenderTest(
         'test1',
         self._CreateTemplateDataSource(
