@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 // A base class for generated localizers.
 //
 // To use this, include your xib file in the list generate_localizer scans (see
-// chrome.gyp).  Then add an instance of ChromeUILocalizer to the xib.
+// chrome_browser.gypi).  Then add an instance of ChromeUILocalizer to the xib.
 // Connect the owner_ outlet of the instance to the "File's Owner" of the xib.
 // It expects the owner_ outlet to be an instance or subclass of
 // NSWindowController or NSViewController.  It will then localize any items in
