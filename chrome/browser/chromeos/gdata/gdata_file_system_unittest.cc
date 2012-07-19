@@ -75,28 +75,27 @@ struct PathToVerify {
 };
 
 struct SearchResultPair {
-  const char* search_path;
-  const char* real_path;
+  const char* path;
+  const bool is_directory;
 };
 
-// Callback to GDataFileSystem::Search used in ContentSearch test.
+// Callback to GDataFileSystem::Search used in ContentSearch tests.
 // Verifies returned vector of results.
 void DriveSearchCallback(
     MessageLoop* message_loop,
+    const SearchResultPair* expected_results,
+    size_t expected_results_size,
     GDataFileError error,
     scoped_ptr<std::vector<SearchResultInfo> > results) {
-  // Search feed contains 2 entries. One file (SubDirectory File 1.txt) and one
-  // directory (Directory 1). Entries generated from the feed should have names
-  // in format resource_id.actual_file_name.
   ASSERT_TRUE(results.get());
-  ASSERT_EQ(2u, results->size());
+  ASSERT_EQ(expected_results_size, results->size());
 
-  EXPECT_EQ(FilePath("drive/Directory 1/SubDirectory File 1.txt"),
-            results->at(0).path);
-  EXPECT_FALSE(results->at(0).is_directory);
-
-  EXPECT_EQ(FilePath("drive/Directory 1"), results->at(1).path);
-  EXPECT_TRUE(results->at(1).is_directory);
+  for (size_t i = 0; i < results->size(); i++) {
+    EXPECT_EQ(FilePath(expected_results[i].path),
+              results->at(i).path);
+    EXPECT_EQ(expected_results[i].is_directory,
+              results->at(i).is_directory);
+  }
 
   message_loop->Quit();
 }
@@ -2442,13 +2441,38 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
 TEST_F(GDataFileSystemTest, ContentSearch) {
   LoadRootFeedDocument("root_feed.json");
 
+  mock_doc_service_->set_search_result("search_result_feed.json");
+
   EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
-  SearchCallback callback = base::Bind(&DriveSearchCallback, &message_loop_);
+  const SearchResultPair expected_results[] = {
+    { "drive/Directory 1/SubDirectory File 1.txt", false },
+    { "drive/Directory 1", true }
+  };
+
+  SearchCallback callback = base::Bind(&DriveSearchCallback,
+      &message_loop_, expected_results, 2u);
 
   file_system_->Search("foo", callback);
-  message_loop_.Run();  // Wait to get our result
+  message_loop_.Run();  // Wait to get our result.
+}
+
+TEST_F(GDataFileSystemTest, ContentSearchEmptyResult) {
+  LoadRootFeedDocument("root_feed.json");
+
+  mock_doc_service_->set_search_result("empty_feed.json");
+
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
+      .Times(1);
+
+  const SearchResultPair* expected_results = NULL;
+
+  SearchCallback callback = base::Bind(&DriveSearchCallback,
+      &message_loop_, expected_results, 0u);
+
+  file_system_->Search("foo", callback);
+  message_loop_.Run();  // Wait to get our result.
 }
 
 TEST_F(GDataFileSystemTest, GetAvailableSpace) {
