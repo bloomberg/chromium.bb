@@ -16,7 +16,7 @@ it will ask you whether it is good or bad before continuing the search.
 BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
 
 # The root URL for official builds.
-OFFICIAL_BASE_URL = 'http://chrome4linux.mtv.corp.google.com/archives'
+OFFICIAL_BASE_URL = 'http://master.chrome.corp.google.com/official_builds'
 
 # Changelogs URL.
 CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
