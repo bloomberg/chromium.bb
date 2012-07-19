@@ -354,7 +354,7 @@ FileTasks.prototype.openGallery_ = function(urls) {
   fm.updateLocation_(false /*push*/, dirPath);
 
   var getShareActions = function(urls, callback) {
-    this.getExternals_(callback);
+    this.getExternals(callback);
   }.bind(this);
 
   galleryFrame.onload = function() {
@@ -395,7 +395,7 @@ FileTasks.prototype.openGallery_ = function(urls) {
   };
 
   galleryFrame.src = 'gallery.html';
-  fm.openFilePopup_(galleryFrame, fm.updateTitle_.bind(this));
+  fm.openFilePopup_(galleryFrame, fm.updateTitle_.bind(fm));
 };
 
 /**
@@ -453,8 +453,8 @@ FileTasks.prototype.display_ = function(combobutton) {
 FileTasks.prototype.getExternals_ = function(callback) {
   var externals = [];
   var id = this.fileManager_.getExtensionId();
-  for (var index = 0; index < this.tasks.length; index++) {
-    var task = this.tasks[index];
+  for (var index = 0; index < this.tasks_.length; index++) {
+    var task = this.tasks_[index];
     var task_parts = task.taskId.split('|');
     if (task_parts[0] != id) {
       // Add callback, so gallery can execute the task.

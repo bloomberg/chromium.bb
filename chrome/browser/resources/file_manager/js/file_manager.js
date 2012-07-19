@@ -1573,7 +1573,9 @@ FileManager.prototype = {
       var self = this;
       function onLoadedActivateLeaf() {
         if (foundLeaf) {
-          var tasks = new FileTasks(self, [util.makeFilesystemUrl(path)]);
+          // TODO(kaznacheev): use |makeFIlesystemUrl| instead of
+          // self.selection.
+          var tasks = new FileTasks(self, [self.selection.urls[0]]);
           // There are 3 ways we can get here:
           // 1. Invoked from file_manager_util::ViewFile. This can only
           //    happen for 'gallery' and 'mount-archive' actions.
