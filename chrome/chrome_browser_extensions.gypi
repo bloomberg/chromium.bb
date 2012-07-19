@@ -725,5 +725,30 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'app_host',
+          'type': 'executable',
+          'include_dirs': [
+              '..',
+            ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '..',
+            ],
+          },
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/chrome/chrome.gyp:launcher_support',
+          ],
+          'sources': [
+            'browser/extensions/app_host_stub_main.cc',
+          ],
+        },
+      ],
+    }, ],  # 'OS=="win"'
+  ],  # 'conditions'
 }
 
