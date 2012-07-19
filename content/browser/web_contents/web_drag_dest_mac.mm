@@ -142,7 +142,8 @@ int GetModifierFlags() {
   if (currentRVH_ != webContents_->GetRenderViewHost())
     return;
 
-  // Nothing to do in the interstitial case.
+  if ([self onlyAllowsNavigation])
+    return;
 
   if (delegate_)
     delegate_->OnDragLeave();
@@ -187,7 +188,6 @@ int GetModifierFlags() {
     [self draggingEntered:info view:view];
 
   // Check if we only allow navigation and navigate to a url on the pasteboard.
-  BOOL result = YES;
   if ([self onlyAllowsNavigation]) {
     NSPasteboard* pboard = [info draggingPasteboard];
     if ([pboard containsURLData]) {
@@ -196,13 +196,14 @@ int GetModifierFlags() {
       webContents_->OpenURL(OpenURLParams(
           url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK,
           false));
+      return YES;
     } else {
-      result = NO;
+      return NO;
     }
-  } else {
-    if (delegate_)
-      delegate_->OnDrop();
   }
+
+  if (delegate_)
+    delegate_->OnDrop();
 
   currentRVH_ = NULL;
 
@@ -218,7 +219,7 @@ int GetModifierFlags() {
 
   dropData_.reset();
 
-  return result;
+  return YES;
 }
 
 // Given |data|, which should not be nil, fill it in using the contents of the
