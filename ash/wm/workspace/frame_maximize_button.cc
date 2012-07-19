@@ -162,18 +162,19 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
     return ui::GESTURE_STATUS_CONSUMED;
   }
 
-  if (event.type() == ui::ET_GESTURE_END &&
-      event.details().touch_points() == 1 &&
-      is_snap_enabled_) {
-    snap_type_ = SnapTypeForLocation(event.location());
-    ProcessEndEvent(event);
-    return ui::GESTURE_STATUS_CONSUMED;
-  }
+  if (is_snap_enabled_) {
+    if (event.type() == ui::ET_GESTURE_END &&
+        event.details().touch_points() == 1) {
+      snap_type_ = SnapTypeForLocation(event.location());
+      ProcessEndEvent(event);
+      return ui::GESTURE_STATUS_CONSUMED;
+    }
 
-  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-      event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    ProcessUpdateEvent(event);
-    return ui::GESTURE_STATUS_CONSUMED;
+    if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+        event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+      ProcessUpdateEvent(event);
+      return ui::GESTURE_STATUS_CONSUMED;
+    }
   }
 
   return ImageButton::OnGestureEvent(event);
