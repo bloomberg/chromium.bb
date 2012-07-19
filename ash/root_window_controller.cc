@@ -195,9 +195,11 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
   SetChildWindowVisibilityChangesAnimated(lock_modal_container);
   SetUsesScreenCoordinates(lock_modal_container);
 
-  CreateContainer(internal::kShellWindowId_StatusContainer,
-                  "StatusContainer",
-                  lock_screen_related_containers);
+  aura::Window* status_container =
+      CreateContainer(internal::kShellWindowId_StatusContainer,
+                      "StatusContainer",
+                      lock_screen_related_containers);
+  SetUsesScreenCoordinates(status_container);
 
   aura::Window* settings_bubble_container = CreateContainer(
       internal::kShellWindowId_SettingBubbleContainer,
