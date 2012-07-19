@@ -125,7 +125,7 @@ void ExtensionRequestSender::StartRequest(
 
 void ExtensionRequestSender::HandleResponse(int request_id,
                                             bool success,
-                                            const base::ListValue& response,
+                                            const base::ListValue& responseList,
                                             const std::string& error) {
   linked_ptr<PendingRequest> request = RemoveRequest(request_id);
 
@@ -141,25 +141,15 @@ void ExtensionRequestSender::HandleResponse(int request_id,
     return;  // The frame went away.
 
   v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> response_value = v8::Undefined();
-  DCHECK(response.GetSize() <= 1);
-  if (response.GetSize() == 1) {
-    // We use a ListValue as a wrapper (our IPC system can't handle Value
-    // directly since it has a private constructor) so we need to extract the
-    // value at index 0.
-    Value* value = NULL;
-    CHECK(response.Get(0, &value));
-    CHECK(value);
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    response_value = converter->ToV8Value(value, v8_context->v8_context());
-  }
 
-  v8::Handle<v8::Value> argv[5];
-  argv[0] = v8::Integer::New(request_id);
-  argv[1] = v8::String::New(request->name.c_str());
-  argv[2] = v8::Boolean::New(success);
-  argv[3] = response_value;
-  argv[4] = v8::String::New(error.c_str());
+  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  v8::Handle<v8::Value> argv[] = {
+    v8::Integer::New(request_id),
+    v8::String::New(request->name.c_str()),
+    v8::Boolean::New(success),
+    converter->ToV8Value(&responseList, v8_context->v8_context()),
+    v8::String::New(error.c_str())
+  };
 
   v8::Handle<v8::Value> retval;
   CHECK(v8_context->CallChromeHiddenMethod("handleResponse",
