@@ -611,11 +611,6 @@ void UpdateAppIconDownloadProgress(int download_count,
 }
 #endif
 
-int GetUniquePathNumberWithCrDownload(const FilePath& path) {
-  return file_util::GetUniquePathNumber(
-      path, FILE_PATH_LITERAL(".crdownload"));
-}
-
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {
   return FilePath(suggested_path.value() + FILE_PATH_LITERAL(".crdownload"));
 }
