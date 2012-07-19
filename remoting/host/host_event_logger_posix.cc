@@ -56,6 +56,7 @@ HostEventLoggerPosix::HostEventLoggerPosix(ChromotingHost* host,
       application_name_(application_name) {
   openlog(application_name_.c_str(), 0, LOG_USER);
   host_->AddStatusObserver(this);
+  Log("Started");
 }
 
 HostEventLoggerPosix::~HostEventLoggerPosix() {
