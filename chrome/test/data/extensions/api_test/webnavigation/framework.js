@@ -130,6 +130,14 @@ function captureEvent(name, details) {
     }
     details.replacedTabId = tabIds[details.replacedTabId];
   }
+  // Don't bother testing those before we don't correctly dispatch events for
+  // cross process navigations.
+  if ('processId' in details) {
+    delete details.processId;
+  }
+  if ('sourceProcessId' in details) {
+    delete details.sourceProcessId;
+  }
 
   // find |details| in expectedEventData
   var found = false;
