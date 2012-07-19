@@ -35,6 +35,8 @@ readonly TC_SRC="${PNACL_ROOT}/src"
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
 
+readonly REPO_LLVM_MASTER="http://llvm.org/svn/llvm-project/llvm/trunk"
+
 readonly PREDIFF="${TC_SRC}/prediff"
 readonly POSTDIFF="${TC_SRC}/postdiff"
 
@@ -78,10 +80,9 @@ set-master-revision() {
   echo "@@@BUILD_STEP Set LLVM revision: ${MERGE_REVISION}@@@"
   echo "MERGE REVISION: ${MERGE_REVISION}"
 
-  # Set environmental variable for build.sh
-  export LLVM_PROJECT_REV=${MERGE_REVISION}
-  pnacl-build svn-checkout-llvm-master
-  pnacl-build svn-update-llvm-master
+  svn-checkout "${REPO_LLVM_MASTER}" "${TC_SRC_LLVM_MASTER}" "${MERGE_REVISION}"
+  pnacl-build svn-update-common "llvm-master" \
+      "${MERGE_REVISION}" "${TC_SRC_LLVM_MASTER}"
 }
 
 get-upstream() {

@@ -90,7 +90,6 @@ readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_GOLD="${TC_SRC}/gold"
 
 # LLVM sources (svn)
-readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
 readonly TC_SRC_CLANG="${TC_SRC}/clang"
 
 # Git sources
@@ -242,16 +241,14 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
+# NOTE: this can be overwritten by merge-tool.sh
 readonly UPSTREAM_REV=${UPSTREAM_REV:-530b4a7e88c3}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=95a4e0cd6450
 readonly GOLD_REV=c136b51e9dcb
 readonly COMPILER_RT_REV=1a3a6ffb31ea
-
-readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-158408}
-readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
-readonly CLANG_REV=${LLVM_PROJECT_REV}
+readonly CLANG_REV=158408
 
 # Repositories
 readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
@@ -262,7 +259,6 @@ readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 readonly REPO_GOLD="nacl-llvm-branches.gold"
 
 # LLVM repos (svn)
-readonly REPO_LLVM_MASTER="http://llvm.org/svn/llvm-project/llvm/trunk"
 readonly REPO_CLANG="http://llvm.org/svn/llvm-project/cfe/trunk"
 
 CC=${CC:-gcc}
@@ -471,10 +467,6 @@ hg-bot-sanity() {
   local name="$1"
   local dir="$2"
 
-  if ! ${PNACL_BUILDBOT} ; then
-    return 0
-  fi
-
   if ! hg-on-branch "${dir}" pnacl-sfi ||
      hg-has-changes "${dir}" ; then
     Banner "WARNING: ${name} repository is in an illegal state." \
@@ -488,10 +480,6 @@ svn-bot-sanity() {
   local name="$1"
   local dir="$2"
 
-  if ! ${PNACL_BUILDBOT} ; then
-    return 0
-  fi
-
   if svn-has-changes "${dir}" ; then
     Banner "WARNING: ${name} repository is in an illegal state." \
            "         Wiping and trying again."
@@ -500,14 +488,14 @@ svn-bot-sanity() {
   fi
 }
 
-
 hg-update-common() {
   local name="$1"
   local rev="$2"
   local dir="$3"
 
-  # If this is a buildbot, do sanity checks here.
-  hg-bot-sanity "${name}" "${dir}"
+  if ${PNACL_BUILDBOT} ; then
+      hg-bot-sanity "${name}" "${dir}"
+  fi
 
   # Make sure it is safe to update
   hg-assert-branch "${dir}" pnacl-sfi
@@ -522,13 +510,15 @@ hg-update-common() {
   fi
 }
 
+# NOTE: this is used by merge-tool.sh
 svn-update-common() {
   local name="$1"
   local rev="$2"
   local dir="$3"
 
-  # If this is a buildbot, do sanity checks here.
-  svn-bot-sanity "${name}" "${dir}"
+  if ${PNACL_BUILDBOT} ; then
+      svn-bot-sanity "${name}" "${dir}"
+  fi
 
   # Make sure it is safe to update
   svn-assert-safe-to-update "${name}" "${dir}" "${rev}"
@@ -547,10 +537,6 @@ hg-update-upstream() {
     hg-update-common "upstream" ${UPSTREAM_REV} "${TC_SRC_UPSTREAM}"
   fi
   llvm-link-clang
-}
-
-svn-update-llvm-master() {
-  svn-update-common "llvm-master" ${LLVM_MASTER_REV} "${TC_SRC_LLVM_MASTER}"
 }
 
 svn-update-clang() {
@@ -611,10 +597,6 @@ hg-checkout-upstream() {
     hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
   fi
   llvm-link-clang
-}
-
-svn-checkout-llvm-master() {
-  svn-checkout "${REPO_LLVM_MASTER}" "${TC_SRC_LLVM_MASTER}" ${LLVM_MASTER_REV}
 }
 
 svn-checkout-clang() {
