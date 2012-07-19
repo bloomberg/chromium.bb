@@ -5001,7 +5001,7 @@
    fun:link_program
    fun:_mesa_LinkProgramARB
    fun:glLinkProgram
-   fun:_ZN3gpu5gles214ProgramManager11ProgramInfo4LinkEv
+   ...
    fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
    fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgramEjRKNS0_11LinkProgramE
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
@@ -5591,6 +5591,49 @@
    fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_13ShaderManager10ShaderInfoEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
    fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
 }
+{
+   bug_138058
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore12WebVTTParser13collectDigitsERKN3WTF6StringEPj
+   fun:_ZN7WebCore12WebVTTParser16collectTimeStampERKN3WTF6StringEPj
+   fun:_ZN7WebCore12WebVTTParser22constructTreeFromTokenEPNS_8DocumentE
+   fun:_ZN7WebCore12WebVTTParser33createDocumentFragmentFromCueTextERKN3WTF6StringE
+   fun:_ZN7WebCore12TextTrackCue12getCueAsHTMLEv
+   fun:_ZN7WebCore12TextTrackCue17updateDisplayTreeEf
+   fun:_ZN7WebCore16HTMLMediaElement25updateActiveTextTrackCuesEf
+   fun:_ZN7WebCore16HTMLMediaElement22mediaPlayerTimeChangedEPNS_11MediaPlayerE
+   fun:_ZN7WebCore11MediaPlayer11timeChangedEv
+   fun:_ZN6WebKit24WebMediaPlayerClientImpl11timeChangedEv
+   fun:_ZN12webkit_media18WebMediaPlayerImpl14OnPipelineSeekEN5media14PipelineStatusE
+   fun:_ZN12webkit_media19WebMediaPlayerProxy16PipelineSeekTaskEN5media14PipelineStatusE
+}
+{
+   bug_138060
+   Memcheck:Uninitialized
+   fun:_NPN_EvaluateHelper
+   fun:_NPN_Evaluate
+   fun:_ZN6WebKit11WebBindings8evaluateEP4_NPPP8NPObjectP9_NPStringP10_NPVariant
+   fun:_ZL13executeScriptPK12PluginObjectPKc
+   fun:NPP_Destroy
+   fun:_ZN6webkit5npapi14PluginInstance11NPP_DestroyEv
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl15DestroyInstanceEv
+   fun:_ZN6webkit5npapi21WebPluginDelegateImplD0Ev
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl15PluginDestroyedEv
+   fun:_ZN6webkit5npapi13WebPluginImpl22TearDownPluginInstanceEPN6WebKit12WebURLLoaderE
+   fun:_ZN6webkit5npapi13WebPluginImpl12SetContainerEPN6WebKit18WebPluginContainerE
+   fun:_ZN6webkit5npapi13WebPluginImpl7destroyEv
+   fun:_ZN6WebKit22WebPluginContainerImplD0Ev
+   fun:_ZN3WTF10RefCountedIN7WebCore6WidgetEE5derefEv
+   fun:_ZNSt4pairIN3WTF6RefPtrIN7WebCore6WidgetEEEPNS2_9FrameViewEED1Ev
+   fun:_ZN3WTF9HashTableINS_6RefPtrIN7WebCore6WidgetEEESt4pairIS4_PNS2_9FrameViewEENS_18PairFirstExtractorIS8_EENS_7PtrHashIS4_EENS_14PairHashTraitsINS_10HashTraitsIS4_EENSE_IS7_EEEESF_E15deallocateTableEPS8_i
+   fun:_ZN3WTF9HashTableINS_6RefPtrIN7WebCore6WidgetEEESt4pairIS4_PNS2_9FrameViewEENS_18PairFirstExtractorIS8_EENS_7PtrHashIS4_EENS_14PairHashTraitsINS_10HashTraitsIS4_EENSE_IS7_EEEESF_ED1Ev
+   fun:_ZN3WTF7HashMapINS_6RefPtrIN7WebCore6WidgetEEEPNS2_9FrameViewENS_7PtrHashIS4_EENS_10HashTraitsIS4_EENS9_IS6_EEED1Ev
+   fun:_ZN7WebCore12RenderWidget28resumeWidgetHierarchyUpdatesEv
+   fun:_ZN7WebCore7Element6detachEv
+   fun:_ZN7WebCore13ContainerNode14detachChildrenEv
+   fun:_ZN7WebCore13ContainerNode6detachEv
+}
+
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
