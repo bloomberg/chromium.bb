@@ -534,9 +534,17 @@ class GitRepoPatch(object):
 
     self.Fetch(git_repo)
 
-    lines = cros_build_lib.RunGitCommand(
-        git_repo, ['diff', '--no-renames', '--name-status',
-                   '%s^..%s' % (self.sha1, self.sha1)])
+    try:
+      lines = cros_build_lib.RunGitCommand(
+          git_repo, ['diff', '--no-renames', '--name-status',
+                     '%s^..%s' % (self.sha1, self.sha1)])
+    except cros_build_lib.RunCommandError, e:
+      # If we get a 128, that means git couldn't find the the parent of our
+      # sha1- meaning we're the first commit in the repository (there is no
+      # parent).
+      if e.result.returncode != 128:
+        raise
+      return {}
     lines = lines.output.splitlines()
     return dict(line.split('\t', 1)[::-1] for line in lines)
 

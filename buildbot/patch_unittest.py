@@ -156,6 +156,21 @@ I am the first commit.
     patch = self.CommitFile(git1, 'monkeys', 'foon')
     return git1, git2, patch
 
+  def testGetDiffStatus(self):
+    git1, git2, patch1 = self._CommonGitSetup()
+    # Ensure that it can work on the first commit, even if it
+    # doesn't report anything (no delta; it's the first files).
+    patch1 = self._MkPatch(git1, self._GetSha1(git1, self.DEFAULT_TRACKING))
+    self.assertEqual({}, patch1.GetDiffStatus(git1))
+    patch2 = self.CommitFile(git1, 'monkeys', 'blah')
+    self.assertEqual({'monkeys': 'M'}, patch2.GetDiffStatus(git1))
+    cros_build_lib.RunGitCommand(git1, ['mv', 'monkeys', 'monkeys2'])
+    patch3 = self._MkPatch(git1, self._MakeCommit(git1, commit="mv"))
+    self.assertEqual({'monkeys': 'D', 'monkeys2': 'A'},
+                     patch3.GetDiffStatus(git1))
+    patch4 = self.CommitFile(git1, 'monkey2', 'blah')
+    self.assertEqual({'monkey2': 'A'}, patch4.GetDiffStatus(git1))
+
   def testFetch(self):
     git1, git2, patch = self._CommonGitSetup()
     patch.Fetch(git2)
