@@ -89,7 +89,7 @@
         },
       ],
     }],
-    ['OS=="win" and buildtype=="Official"', {
+    ['OS=="win" and branding=="Chrome"', {
       'sources': [
         '../third_party/amd/AmdCfxPxExt.h',
         '../third_party/amd/amd_videocard_info_win.cc',

@@ -153,7 +153,7 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
 
 namespace gpu_info_collector {
 
-#if !defined(OFFICIAL_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD)
 AMDVideoCardType GetAMDVideocardType() {
   return UNKNOWN;
 }
