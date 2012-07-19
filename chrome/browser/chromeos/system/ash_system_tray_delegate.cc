@@ -331,8 +331,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowDriveSettings() OVERRIDE {
     // TODO(hshi): Open the drive-specific settings page once we put it in.
-    // For now just show the generic settings page.
-    chrome::ShowSettings(GetAppropriateBrowser());
+    // For now just show search result for downoads settings.
+    std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
+        l10n_util::GetStringUTF8(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME);
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
   }
 
   virtual void ShowIMESettings() OVERRIDE {
