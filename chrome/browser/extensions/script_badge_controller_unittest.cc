@@ -35,8 +35,8 @@ namespace {
 class ScriptBadgeControllerTest : public TabContentsTestHarness {
  public:
   ScriptBadgeControllerTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()) {
-  }
+      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     // Note that this sets a PageActionController into the
@@ -82,6 +82,7 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
 
  private:
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 struct CountingNotificationObserver : public content::NotificationObserver {

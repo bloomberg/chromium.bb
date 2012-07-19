@@ -27,10 +27,10 @@ namespace {
 class PageActionControllerTest : public TabContentsTestHarness {
  public:
   PageActionControllerTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()) {
-  }
+      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     TabContentsTestHarness::SetUp();
     // Create an ExtensionService so the PageActionController can find its
     // extensions.
@@ -51,6 +51,7 @@ class PageActionControllerTest : public TabContentsTestHarness {
 
  private:
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 };
 
 TEST_F(PageActionControllerTest, NavigationClearsState) {

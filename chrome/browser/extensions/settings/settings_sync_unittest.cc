@@ -223,6 +223,8 @@ class ExtensionSettingsSyncTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     frontend_.reset();
     profile_.reset();
+    // Execute any pending deletion tasks.
+    message_loop_.RunAllPending();
   }
 
  protected:

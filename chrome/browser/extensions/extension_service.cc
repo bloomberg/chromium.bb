@@ -1804,7 +1804,7 @@ void ExtensionService::UnloadExtension(
   // Clean up runtime data.
   extension_runtime_data_.erase(extension_id);
 
-if (disabled_extensions_.Contains(extension->id())) {
+  if (disabled_extensions_.Contains(extension->id())) {
     UnloadedExtensionInfo details(extension, reason);
     details.already_disabled = true;
     disabled_extensions_.Remove(extension->id());
@@ -1819,7 +1819,7 @@ if (disabled_extensions_.Contains(extension->id())) {
     return;
   }
 
-// Remove the extension from our list.
+  // Remove the extension from our list.
   extensions_.Remove(extension->id());
 
   NotifyExtensionUnloaded(extension.get(), reason);

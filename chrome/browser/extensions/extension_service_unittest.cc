@@ -4138,6 +4138,8 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   // Explicitly delete all the resources used in this test.
   profile.reset();
   service = NULL;
+  // Execute any pending deletion tasks.
+  loop.RunAllPending();
 }
 
 // Test loading extensions that require limited and unlimited storage quotas.

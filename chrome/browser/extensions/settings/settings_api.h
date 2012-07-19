@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/settings/settings_backend.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
+#include "chrome/browser/extensions/settings/settings_observer.h"
 #include "chrome/browser/value_store/value_store.h"
 
 namespace extensions {
@@ -30,8 +30,7 @@ class SettingsFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   // Extension settings function implementations should do their work here.
-  // This runs on the FILE thread.
-  //
+  // The SettingsFrontend makes sure this is posted to the appropriate thread.
   // Implementations should fill in args themselves, though (like RunImpl)
   // may return false to imply failure.
   virtual bool RunWithStorage(ValueStore* storage) = 0;
@@ -48,7 +47,7 @@ class SettingsFunction : public AsyncExtensionFunction {
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then
   // SendReponse with its success value.
-  void RunWithStorageOnFileThread(ValueStore* storage);
+  void AsyncRunWithStorage(ValueStore* storage);
 
   // The settings namespace the call was for.  For example, SYNC if the API
   // call was chrome.settings.experimental.sync..., LOCAL if .local, etc.

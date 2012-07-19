@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,25 +11,29 @@ namespace extensions {
 namespace settings_namespace {
 
 namespace {
-const char* kLocalNamespace = "local";
-const char* kSyncNamespace  = "sync";
+const char kLocalNamespace[] = "local";
+const char kSyncNamespace[]  = "sync";
+const char kManagedNamespace[] = "managed";
 }  // namespace
 
 std::string ToString(Namespace settings_namespace) {
   switch (settings_namespace) {
-    case LOCAL: return kLocalNamespace;
-    case SYNC:  return kSyncNamespace;
-    case INVALID:
-    default: NOTREACHED();
+    case LOCAL:   return kLocalNamespace;
+    case SYNC:    return kSyncNamespace;
+    case MANAGED: return kManagedNamespace;
+    case INVALID: break;
   }
+  NOTREACHED();
   return std::string();
 }
 
 Namespace FromString(const std::string& namespace_string) {
   if (namespace_string == kLocalNamespace)
     return LOCAL;
-  else if (namespace_string == kSyncNamespace)
+  if (namespace_string == kSyncNamespace)
     return SYNC;
+  if (namespace_string == kManagedNamespace)
+    return MANAGED;
   return INVALID;
 }
 

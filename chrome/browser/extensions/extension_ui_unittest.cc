@@ -21,22 +21,31 @@ using extensions::Extension;
 
 class ExtensionUITest : public testing::Test {
  public:
-  ExtensionUITest() : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
+  ExtensionUITest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        file_thread_(content::BrowserThread::FILE, &message_loop_) {}
 
  protected:
-  void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // Create an ExtensionService and ManagementPolicy to inject into the
     // ExtensionSettingsHandler.
+    profile_.reset(new TestingProfile());
     extensions::TestExtensionSystem* system =
         static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(&profile_));
+            extensions::ExtensionSystem::Get(profile_.get()));
     extension_service_ = system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), FilePath(), false);
     management_policy_ = system->CreateManagementPolicy();
 
     handler_.reset(new ExtensionSettingsHandler(extension_service_,
                                                 management_policy_));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    handler_.reset();
+    profile_.reset();
+    // Execute any pending deletion tasks.
+    message_loop_.RunAllPending();
   }
 
   static DictionaryValue* DeserializeJSONTestData(const FilePath& path,
@@ -110,7 +119,8 @@ class ExtensionUITest : public testing::Test {
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
-  TestingProfile profile_;
+  content::TestBrowserThread file_thread_;
+  scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
   extensions::ManagementPolicy* management_policy_;
   scoped_ptr<ExtensionSettingsHandler> handler_;
