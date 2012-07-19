@@ -725,7 +725,7 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 {
 	struct weston_surface *es = (struct weston_surface *) surface;
 	struct weston_compositor *ec = es->compositor;
-	EGLint attribs[3], components;
+	EGLint attribs[3], format;
 	int i, num_planes;
 
 	if (es->buffer) {
@@ -773,28 +773,27 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 		else
 			es->blend = 1;
 	} else if (ec->query_buffer(ec->egl_display, buffer,
-				    EGL_WAYLAND_BUFFER_COMPONENTS_WL,
-				    &components)) {
+				    EGL_TEXTURE_FORMAT, &format)) {
 		for (i = 0; i < es->num_images; i++)
 			ec->destroy_image(ec->egl_display, es->images[i]);
 		es->num_images = 0;
 
-		switch (components) {
-		case EGL_WAYLAND_BUFFER_RGB_WL:
-		case EGL_WAYLAND_BUFFER_RGBA_WL:
+		switch (format) {
+		case EGL_TEXTURE_RGB:
+		case EGL_TEXTURE_RGBA:
 		default:
 			num_planes = 1;
 			es->shader = &ec->texture_shader_rgba;
 			break;
-		case EGL_WAYLAND_BUFFER_Y_UV_WL:
+		case EGL_TEXTURE_Y_UV_WL:
 			num_planes = 2;
 			es->shader = &ec->texture_shader_y_uv;
 			break;
-		case EGL_WAYLAND_BUFFER_Y_U_V_WL:
+		case EGL_TEXTURE_Y_U_V_WL:
 			num_planes = 3;
 			es->shader = &ec->texture_shader_y_u_v;
 			break;
-		case EGL_WAYLAND_BUFFER_Y_XUXV_WL:
+		case EGL_TEXTURE_Y_XUXV_WL:
 			num_planes = 2;
 			es->shader = &ec->texture_shader_y_xuxv;
 			break;
