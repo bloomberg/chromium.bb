@@ -8,7 +8,6 @@
 
 #include "base/property_bag.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
@@ -35,27 +34,15 @@ using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 using ui::WebDialogUI;
 
-namespace chrome {
-
-// Declared in browser_dialogs.h so that others don't need to depend on our .h.
-gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
-                                content::BrowserContext* context,
-                                WebDialogDelegate* delegate) {
-  views::Widget* widget = views::Widget::CreateWindowWithParent(
-      new WebDialogView(context, delegate), parent);
-  widget->Show();
-  return widget->GetNativeWindow();
-}
-
-}  // namespace chrome
-
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, public:
 
-WebDialogView::WebDialogView(content::BrowserContext* context,
-                             WebDialogDelegate* delegate)
+WebDialogView::WebDialogView(
+    content::BrowserContext* context,
+    WebDialogDelegate* delegate,
+    WebContentsHandler* handler)
     : ClientView(NULL, NULL),
-      WebDialogWebContentsDelegate(context),
+      WebDialogWebContentsDelegate(context, handler),
       initialized_(false),
       delegate_(delegate),
       web_view_(new views::WebView(context)) {

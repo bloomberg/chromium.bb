@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/ash/user_action_handler.h"
 #include "chrome/browser/ui/views/ash/window_positioner.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -262,8 +263,8 @@ bool ChromeShellDelegate::RotatePaneFocus(ash::Shell::Direction direction) {
 
 void ChromeShellDelegate::ShowKeyboardOverlay() {
 #if defined(OS_CHROMEOS)
-  KeyboardOverlayDialogView::ShowDialog(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  KeyboardOverlayDialogView::ShowDialog(profile, new ChromeWebContentsHandler);
 #endif
 }
 

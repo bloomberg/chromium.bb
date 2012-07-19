@@ -8,11 +8,11 @@
 
 #include "base/property_bag.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -60,7 +60,7 @@ void SetDialogStyle() {
 WebDialogGtk::WebDialogGtk(content::BrowserContext* context,
                            WebDialogDelegate* delegate,
                            gfx::NativeWindow parent_window)
-    : WebDialogWebContentsDelegate(context),
+    : WebDialogWebContentsDelegate(context, new ChromeWebContentsHandler),
       delegate_(delegate),
       parent_window_(parent_window),
       dialog_(NULL) {
@@ -203,8 +203,8 @@ void WebDialogGtk::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // WebDialogGtk:
 
 gfx::NativeWindow WebDialogGtk::InitDialog() {
-  tab_.reset(new TabContents(
-      WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
+  tab_.reset(new TabContents(WebContents::Create(
+      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
   tab_->web_contents()->SetDelegate(this);
 
   // This must be done before loading the page; see the comments in

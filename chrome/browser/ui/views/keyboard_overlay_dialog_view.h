@@ -20,11 +20,13 @@ class WebDialogDelegate;
 class KeyboardOverlayDialogView : public WebDialogView {
  public:
   KeyboardOverlayDialogView(content::BrowserContext* context,
-                            ui::WebDialogDelegate* delegate);
+                            ui::WebDialogDelegate* delegate,
+                            WebContentsHandler* handler);
   virtual ~KeyboardOverlayDialogView();
 
   // Shows the keyboard overlay.
-  static void ShowDialog(content::BrowserContext* context);
+  static void ShowDialog(content::BrowserContext* context,
+                         WebContentsHandler* handler);
 
  private:
   // Overridden from views::WidgetDelegate:

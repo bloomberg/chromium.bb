@@ -42,8 +42,10 @@ class WebDialogView : public views::ClientView,
                       public ui::WebDialogDelegate,
                       public views::WidgetDelegate {
  public:
+  // |handler| must not be NULL and this class takes the ownership.
   WebDialogView(content::BrowserContext* context,
-                ui::WebDialogDelegate* delegate);
+                ui::WebDialogDelegate* delegate,
+                WebContentsHandler* handler);
   virtual ~WebDialogView();
 
   // For testing.

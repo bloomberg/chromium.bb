@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/web_dialog_view.h"
+#include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -24,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget.h"
 
+using content::BrowserContext;
 using content::WebContents;
 using testing::Eq;
 using ui::WebDialogDelegate;
@@ -36,9 +38,9 @@ const int kInitialHeight = 40;
 
 class TestWebDialogView : public WebDialogView {
  public:
-  TestWebDialogView(Profile* profile,
+  TestWebDialogView(content::BrowserContext* context,
                     WebDialogDelegate* delegate)
-      : WebDialogView(profile, delegate),
+      : WebDialogView(context, delegate, new ChromeWebContentsHandler),
         should_quit_on_size_change_(false) {
     delegate->GetDialogSize(&last_size_);
   }

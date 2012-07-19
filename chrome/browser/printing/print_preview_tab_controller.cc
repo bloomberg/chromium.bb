@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "chrome/common/chrome_content_client.h"
@@ -175,7 +176,7 @@ class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate,
 PrintPreviewWebContentDelegate::PrintPreviewWebContentDelegate(
     Profile* profile,
     TabContents* initiator_tab)
-    : WebDialogWebContentsDelegate(profile),
+    : WebDialogWebContentsDelegate(profile, new ChromeWebContentsHandler),
       tab_(initiator_tab) {}
 
 PrintPreviewWebContentDelegate::~PrintPreviewWebContentDelegate() {}

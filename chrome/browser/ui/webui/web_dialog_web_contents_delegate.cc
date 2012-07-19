@@ -4,15 +4,10 @@
 
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "base/logging.h"
 #include "content/public/browser/web_contents.h"
 
+using content::BrowserContext;
 using content::OpenURLParams;
 using content::WebContents;
 
@@ -23,97 +18,31 @@ using content::WebContents;
 // profile that's long-lived?  Of course, we'd still have to clear it out
 // when all incognito browsers close.
 WebDialogWebContentsDelegate::WebDialogWebContentsDelegate(
-    content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
+    content::BrowserContext* browser_context,
+    WebContentsHandler* handler)
+    : browser_context_(browser_context),
+      handler_(handler) {
+  CHECK(handler_.get());
 }
 
 WebDialogWebContentsDelegate::~WebDialogWebContentsDelegate() {
 }
 
-Profile* WebDialogWebContentsDelegate::profile() const { return profile_; }
-
 void WebDialogWebContentsDelegate::Detach() {
-  profile_ = NULL;
+  browser_context_ = NULL;
 }
 
 WebContents* WebDialogWebContentsDelegate::OpenURLFromTab(
     WebContents* source, const OpenURLParams& params) {
-  WebContents* new_contents = NULL;
-  StaticOpenURLFromTab(profile_, source, params, &new_contents);
-  return new_contents;
-}
-
-// static
-Browser* WebDialogWebContentsDelegate::StaticOpenURLFromTab(
-    Profile* profile, WebContents* source, const OpenURLParams& params,
-    WebContents** out_new_contents) {
-  if (!profile)
-    return NULL;
-
-  Browser* browser = browser::FindTabbedBrowser(profile, false);
-  const bool browser_created = !browser;
-  if (!browser)
-    browser = Browser::Create(profile);
-  chrome::NavigateParams nav_params(browser, params.url, params.transition);
-  nav_params.referrer = params.referrer;
-  if (source && source->IsCrashed() &&
-      params.disposition == CURRENT_TAB &&
-      params.transition == content::PAGE_TRANSITION_LINK) {
-    nav_params.disposition = NEW_FOREGROUND_TAB;
-  } else {
-    nav_params.disposition = params.disposition;
-  }
-  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  nav_params.user_gesture = true;
-  chrome::Navigate(&nav_params);
-  *out_new_contents = nav_params.target_contents ?
-      nav_params.target_contents->web_contents() : NULL;
-
-  // Close the browser if chrome::Navigate created a new one.
-  if (browser_created && (browser != nav_params.browser))
-    browser->window()->Close();
-
-  return nav_params.browser;
+  return handler_->OpenURLFromTab(browser_context_, source, params);
 }
 
 void WebDialogWebContentsDelegate::AddNewContents(
     WebContents* source, WebContents* new_contents,
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
     bool user_gesture) {
-  StaticAddNewContents(profile_, source, new_contents, disposition,
-                       initial_pos, user_gesture);
-}
-
-// static
-Browser* WebDialogWebContentsDelegate::StaticAddNewContents(
-    Profile* profile,
-    WebContents* source,
-    WebContents* new_contents,
-    WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
-    bool user_gesture) {
-  if (!profile)
-    return NULL;
-
-  Browser* browser = browser::FindTabbedBrowser(profile, false);
-  const bool browser_created = !browser;
-  if (!browser)
-    browser = Browser::Create(profile);
-  TabContents* tab_contents = new TabContents(new_contents);
-  chrome::NavigateParams params(browser, tab_contents);
-  // TODO(pinkerton): no way to get a TabContents for this.
-  // params.source_contents = source;
-  params.disposition = disposition;
-  params.window_bounds = initial_pos;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  params.user_gesture = true;
-  chrome::Navigate(&params);
-
-  // Close the browser if chrome::Navigate created a new one.
-  if (browser_created && (browser != params.browser))
-    browser->window()->Close();
-
-  return params.browser;
+  handler_->AddNewContents(browser_context_, source, new_contents, disposition,
+                           initial_pos, user_gesture);
 }
 
 bool WebDialogWebContentsDelegate::IsPopupOrPanel(

@@ -26,14 +26,17 @@ KeyboardOverlayDialogView* g_instance = NULL;
 
 KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     content::BrowserContext* context,
-    WebDialogDelegate* delegate)
-    : WebDialogView(context, delegate) {
+    WebDialogDelegate* delegate,
+    WebContentsHandler* handler)
+    : WebDialogView(context, delegate, handler) {
 }
 
 KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {
 }
 
-void KeyboardOverlayDialogView::ShowDialog(content::BrowserContext* context) {
+void KeyboardOverlayDialogView::ShowDialog(
+    content::BrowserContext* context,
+    WebContentsHandler* handler) {
   // Ignore the call if another view is already shown.
   if (g_instance)
     return;
@@ -47,7 +50,7 @@ void KeyboardOverlayDialogView::ShowDialog(content::BrowserContext* context) {
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
   KeyboardOverlayDialogView* view =
-      new KeyboardOverlayDialogView(context, delegate);
+      new KeyboardOverlayDialogView(context, delegate, handler);
   delegate->Show(view);
 
   g_instance = view;
