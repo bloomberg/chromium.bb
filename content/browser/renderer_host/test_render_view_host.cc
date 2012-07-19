@@ -261,9 +261,12 @@ void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
 
 void TestRenderViewHost::SendNavigateWithTransition(
     int page_id, const GURL& url, PageTransition transition) {
+  OnMsgDidStartProvisionalLoadForFrame(0, true, GURL(), url);
+
   ViewHostMsg_FrameNavigate_Params params;
 
   params.page_id = page_id;
+  params.frame_id = 0;
   params.url = url;
   params.referrer = Referrer();
   params.transition = transition;
