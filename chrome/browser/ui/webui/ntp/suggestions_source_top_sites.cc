@@ -13,6 +13,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "chrome/common/chrome_switches.h"
@@ -61,8 +62,8 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
   STLDeleteElements(&items_);
 
   history_consumer_.CancelAllRequests();
-  HistoryService* history =
-      profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
   // |history| may be null during unit tests.
   if (history) {
     history::VisitFilter time_filter;

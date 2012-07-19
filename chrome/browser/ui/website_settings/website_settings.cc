@@ -23,6 +23,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings_pattern.h"
@@ -77,8 +78,8 @@ WebsiteSettings::WebsiteSettings(
       content_settings_(profile->GetHostContentSettingsMap()) {
   Init(profile, url, ssl);
 
-  HistoryService* history_service =
-      profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         site_url_,
