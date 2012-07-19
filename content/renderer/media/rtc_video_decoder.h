@@ -10,12 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
+#include "base/task_runner.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "media/base/video_decoder.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
-class MessageLoop;
 
 namespace cricket {
 class VideoFrame;
@@ -33,8 +33,8 @@ class CONTENT_EXPORT RTCVideoDecoder
     : public media::VideoDecoder,
       NON_EXPORTED_BASE(public webrtc::VideoRendererInterface) {
  public:
-  RTCVideoDecoder(MessageLoop* video_decoder_thread,  // For video decoder
-                  MessageLoop* main_thread,  // For accessing VideoTracks.
+  RTCVideoDecoder(base::TaskRunner* video_decoder_thread,  // For video decoder
+                  base::TaskRunner* main_thread,  // For accessing VideoTracks.
                   webrtc::VideoTrackInterface* video_track);
 
   // media::VideoDecoder implementation.
@@ -76,8 +76,8 @@ class CONTENT_EXPORT RTCVideoDecoder
   void RegisterToVideoTrack();
   void DeregisterFromVideoTrack();
 
-  MessageLoop* video_decoder_thread_;
-  MessageLoop* main_thread_;
+  scoped_refptr<base::TaskRunner> video_decoder_thread_;
+  scoped_refptr<base::TaskRunner> main_thread_;
   gfx::Size visible_size_;
   std::string url_;
   DecoderState state_;

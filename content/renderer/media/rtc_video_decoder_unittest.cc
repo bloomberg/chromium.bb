@@ -190,7 +190,8 @@ class RTCVideoDecoderTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     video_track_ = MockVideoTrack::Create();
-    decoder_ = new RTCVideoDecoder(&message_loop_, &message_loop_,
+    decoder_ = new RTCVideoDecoder(message_loop_.message_loop_proxy(),
+                                   message_loop_.message_loop_proxy(),
                                    video_track_);
     renderer_ = new MockVideoRenderer();
     read_cb_ = base::Bind(&RTCVideoDecoderTest::FrameReady,
