@@ -43,12 +43,6 @@ class ShaderTranslatorInterface {
           size(_size),
           name(_name) {
     }
-    bool operator==(
-        const ShaderTranslatorInterface::VariableInfo& other) const {
-      return type == other.type &&
-          size == other.size &&
-          strcmp(name.c_str(), other.name.c_str()) == 0;
-    }
 
     int type;
     int size;

@@ -81,11 +81,6 @@ class TestHelper {
       UniformInfo* uniforms, size_t num_uniforms,
       GLuint service_id);
 
-  static void SetupProgramSuccessExpectations(::gfx::MockGLInterface* gl,
-      AttribInfo* attribs, size_t num_attribs,
-      UniformInfo* uniforms, size_t num_uniforms,
-      GLuint service_id);
-
  private:
   static void SetupTextureInitializationExpectations(
        ::gfx::MockGLInterface* gl, GLenum target);

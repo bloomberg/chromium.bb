@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -40,7 +41,6 @@ class GpuWatchdog;
 
 namespace gpu {
 namespace gles2 {
-class ProgramCache;
 class MailboxManager;
 }
 }
@@ -105,8 +105,7 @@ class GpuCommandBufferStub
       int32 surface_id,
       GpuWatchdog* watchdog,
       bool software,
-      const GURL& active_url,
-      gpu::gles2::ProgramCache* program_cache);
+      const GURL& active_url);
 
   virtual ~GpuCommandBufferStub();
 

@@ -4,8 +4,6 @@
 
 #include "gpu/demos/framework/window.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
@@ -79,9 +77,7 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
     return false;
   }
 
-  gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(NULL,
-                                                                   true,
-                                                                   NULL));
+  gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(NULL, true));
 
   decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));
   if (!decoder_.get())

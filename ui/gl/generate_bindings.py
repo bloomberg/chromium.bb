@@ -296,10 +296,6 @@ GL_FUNCTIONS = [
   'names': ['glGetIntegerv'],
   'arguments': 'GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'names': ['glGetProgramBinary', 'glGetProgramBinaryOES'],
-  'arguments': 'GLuint program, GLsizei bufSize, GLsizei* length, '
-               'GLenum* binaryFormat, GLvoid* binary', },
-{ 'return_type': 'void',
   'names': ['glGetProgramiv'],
   'arguments': 'GLuint program, GLenum pname, GLint* params', },
 { 'return_type': 'void',
@@ -427,10 +423,6 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glPolygonOffset'],
   'arguments': 'GLfloat factor, GLfloat units', },
-{ 'return_type': 'void',
-  'names': ['glProgramBinary', 'glProgramBinaryOES'],
-  'arguments': 'GLuint program, GLenum binaryFormat, '
-               'const GLvoid* binary, GLsizei length', },
 { 'return_type': 'void',
   'names': ['glQueryCounter'],
   'arguments': 'GLuint id, GLenum target', },
