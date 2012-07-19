@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_IBUS_IBUS_ENGINE_SERVICE_H_
 #define CHROMEOS_DBUS_IBUS_IBUS_ENGINE_SERVICE_H_
 
+#include <string>
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
@@ -68,14 +69,14 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
   virtual void Disable() = 0;
 
   // Called when a property is activated or changed.
-  virtual void PropertyActivate(std::string property_name,
+  virtual void PropertyActivate(const std::string& property_name,
                                 IBusPropertyState property_state) = 0;
 
   // Called when a property is shown.
-  virtual void PropertyShow(std::string property_name) = 0;
+  virtual void PropertyShow(const std::string& property_name) = 0;
 
   // Called when a property is hidden.
-  virtual void PropertyHide(std::string property_name) = 0;
+  virtual void PropertyHide(const std::string& property_name) = 0;
 
   // Called when the Chrome input field set their capabilities.
   virtual void SetCapability(IBusCapability capability) = 0;
@@ -105,8 +106,9 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
   // Otherwise |anchor_pos| is equal to |cursor_pos|.
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
                                   uint32 anchor_pos) = 0;
+
  protected:
-  IBusEngineHandlerInterface() {};
+  IBusEngineHandlerInterface() {}
 };
 
 // A class to make the actual DBus method call handling for IBusEngine service.
