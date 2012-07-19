@@ -1,0 +1,42 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+
+namespace experimental.identity {
+
+  [inline_doc] dictionary TokenDetails {
+    // Whether to prompt the user to log in or grant scope permissions (if they
+    // have not already done so). Default is false.
+    boolean? interactive;
+  };
+
+  [inline_doc] dictionary WebAuthFlowDetails {
+    // The URL that initiates the auth flow.
+    DOMString url;
+
+    // Whether to launch auth flow in interactive mode. Default is false.
+    boolean? interactive;
+  };
+
+  callback GetAuthTokenCallback = void (optional DOMString token);
+  callback LaunchWebAuthFlowCallback = void (optional DOMString responseUrl);
+
+  interface Functions {
+    // Gets an OAuth2 access token as specified by the manifest.
+    //
+    // |details| : Token options.
+    // |callback| : Called with an OAuth2 access token as specified by the
+    // manifest, or undefined if there was an error.
+    static void getAuthToken(optional TokenDetails details,
+                             GetAuthTokenCallback callback);
+
+    // Starts an auth flow at the specified URL.
+    //
+    // |details| : WebAuth flow options.
+    // |callback| : Called with the URL redirected back to your application.
+    static void launchWebAuthFlow(WebAuthFlowDetails details,
+                                  LaunchWebAuthFlowCallback callback);
+  };
+};

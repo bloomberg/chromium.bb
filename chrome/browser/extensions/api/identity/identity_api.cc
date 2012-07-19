@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 
 #include "base/values.h"
+#include "chrome/common/extensions/api/experimental_identity.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -29,13 +30,19 @@ const char kUserRejected[] = "The user did not approve access.";
 
 }  // namespace
 
-GetAuthTokenFunction::GetAuthTokenFunction() : interactive_(false) {}
-GetAuthTokenFunction::~GetAuthTokenFunction() {}
+namespace GetAuthToken = extensions::api::experimental_identity::GetAuthToken;
+namespace LaunchWebAuthFlow =
+    extensions::api::experimental_identity::LaunchWebAuthFlow;
 
-bool GetAuthTokenFunction::RunImpl() {
-  DictionaryValue* arg = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &arg));
-  arg->GetBoolean("interactive", &interactive_);
+IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
+    : interactive_(false) {}
+IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {}
+
+bool IdentityGetAuthTokenFunction::RunImpl() {
+  scoped_ptr<GetAuthToken::Params> params(GetAuthToken::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  if (params->details.get() && params->details->interactive.get())
+    interactive_ = *params->details->interactive;
 
   // Balanced in OnIssueAdviceSuccess|OnMintTokenSuccess|OnMintTokenFailure|
   // InstallUIAbort.
@@ -51,20 +58,21 @@ bool GetAuthTokenFunction::RunImpl() {
   }
 }
 
-void GetAuthTokenFunction::OnMintTokenSuccess(const std::string& access_token) {
+void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
+    const std::string& access_token) {
   SetResult(Value::CreateStringValue(access_token));
   SendResponse(true);
   Release();  // Balanced in RunImpl.
 }
 
-void GetAuthTokenFunction::OnMintTokenFailure(
+void IdentityGetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
   error_ = std::string(kAuthFailure) + error.ToString();
   SendResponse(false);
   Release();  // Balanced in RunImpl.
 }
 
-void GetAuthTokenFunction::OnIssueAdviceSuccess(
+void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
   // Existing grant was revoked and we used NO_FORCE, so we got info back
   // instead.
@@ -79,7 +87,7 @@ void GetAuthTokenFunction::OnIssueAdviceSuccess(
   }
 }
 
-void GetAuthTokenFunction::InstallUIProceed() {
+void IdentityGetAuthTokenFunction::InstallUIProceed() {
   DCHECK(install_ui_->record_oauth2_grant());
   // The user has accepted the scopes, so we may now force (recording a grant
   // and receiving a token).
@@ -87,13 +95,13 @@ void GetAuthTokenFunction::InstallUIProceed() {
   DCHECK(success);
 }
 
-void GetAuthTokenFunction::InstallUIAbort(bool user_initiated) {
+void IdentityGetAuthTokenFunction::InstallUIAbort(bool user_initiated) {
   error_ = kUserRejected;
   SendResponse(false);
   Release();  // Balanced in RunImpl.
 }
 
-bool GetAuthTokenFunction::StartFlow(OAuth2MintTokenFlow::Mode mode) {
+bool IdentityGetAuthTokenFunction::StartFlow(OAuth2MintTokenFlow::Mode mode) {
   const Extension* extension = GetExtension();
   Extension::OAuth2Info oauth2_info = extension->oauth2_info();
 
@@ -121,38 +129,34 @@ bool GetAuthTokenFunction::StartFlow(OAuth2MintTokenFlow::Mode mode) {
   return true;
 }
 
-LaunchWebAuthFlowFunction::LaunchWebAuthFlowFunction() {}
-LaunchWebAuthFlowFunction::~LaunchWebAuthFlowFunction() {}
+IdentityLaunchWebAuthFlowFunction::IdentityLaunchWebAuthFlowFunction() {}
+IdentityLaunchWebAuthFlowFunction::~IdentityLaunchWebAuthFlowFunction() {}
 
-bool LaunchWebAuthFlowFunction::RunImpl() {
-  DictionaryValue* arg = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &arg));
+bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
+  scoped_ptr<LaunchWebAuthFlow::Params> params(
+      LaunchWebAuthFlow::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string url;
-  EXTENSION_FUNCTION_VALIDATE(arg->GetString("url", &url));
-
-  bool interactive = false;
-  arg->GetBoolean("interactive", &interactive);
-
-  WebAuthFlow::Mode mode = interactive ?
+  GURL auth_url(params->details.url);
+  WebAuthFlow::Mode mode =
+      params->details.interactive.get() && *params->details.interactive ?
       WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT;
 
   AddRef();  // Balanced in OnAuthFlowSuccess/Failure.
-  GURL auth_url(url);
   auth_flow_.reset(new WebAuthFlow(
       this, profile(), GetExtension()->id(), auth_url, mode));
   auth_flow_->Start();
   return true;
 }
 
-void LaunchWebAuthFlowFunction::OnAuthFlowSuccess(
+void IdentityLaunchWebAuthFlowFunction::OnAuthFlowSuccess(
     const std::string& redirect_url) {
   SetResult(Value::CreateStringValue(redirect_url));
   SendResponse(true);
   Release();  // Balanced in RunImpl.
 }
 
-void LaunchWebAuthFlowFunction::OnAuthFlowFailure() {
+void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure() {
   error_ = kInvalidRedirect;
   SendResponse(false);
   Release();  // Balanced in RunImpl.

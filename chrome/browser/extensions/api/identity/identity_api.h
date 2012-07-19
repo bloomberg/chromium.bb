@@ -19,16 +19,16 @@ class GoogleServiceAuthError;
 
 namespace extensions {
 
-class GetAuthTokenFunction : public AsyncExtensionFunction,
-                             public OAuth2MintTokenFlow::Delegate,
-                             public ExtensionInstallPrompt::Delegate {
+class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
+                                     public OAuth2MintTokenFlow::Delegate,
+                                     public ExtensionInstallPrompt::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.identity.getAuthToken");
 
-  GetAuthTokenFunction();
+  IdentityGetAuthTokenFunction();
 
  private:
-  virtual ~GetAuthTokenFunction();
+  virtual ~IdentityGetAuthTokenFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -54,15 +54,15 @@ class GetAuthTokenFunction : public AsyncExtensionFunction,
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
 };
 
-class LaunchWebAuthFlowFunction : public AsyncExtensionFunction,
-                                  public WebAuthFlow::Delegate {
+class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
+                                          public WebAuthFlow::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.identity.launchWebAuthFlow");
 
-  LaunchWebAuthFlowFunction();
+  IdentityLaunchWebAuthFlowFunction();
 
  private:
-  virtual ~LaunchWebAuthFlowFunction();
+  virtual ~IdentityLaunchWebAuthFlowFunction();
   virtual bool RunImpl() OVERRIDE;
 
   // WebAuthFlow::Delegate implementation.

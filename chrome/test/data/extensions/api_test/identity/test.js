@@ -8,7 +8,6 @@ var pass = chrome.test.callbackPass;
 chrome.test.runTests([
   function getAuthToken() {
     chrome.experimental.identity.getAuthToken(
-        {},
         pass(function(token) {
       assertEq('auth_token', token);
     }));

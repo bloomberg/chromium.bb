@@ -375,8 +375,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER));
   RegisterSchema("experimental.fontSettings", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_FONTSSETTINGS));
-  RegisterSchema("experimental.identity", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_IDENTITY));
   RegisterSchema("experimental.infobars", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS));
   RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(

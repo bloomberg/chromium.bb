@@ -37,6 +37,7 @@
           'experimental_bluetooth.idl',
           'experimental_discovery.idl',
           'experimental_dns.idl',
+          'experimental_identity.idl',
           'experimental_idltest.idl',
           'experimental_serial.idl',
           'experimental_socket.idl',

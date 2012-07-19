@@ -232,9 +232,9 @@
               <h4>getAuthToken</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.identity.getAuthToken</span>(<span class="null"><span>object</span>
+                  <span>chrome.experimental.identity.getAuthToken</span>(<span class="optional"><span>object</span>
                       <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
+                      <var><span>GetAuthTokenCallback</span></var></span>)</div>
               <div class="description">
                 <p>Gets an OAuth2 access token as specified by the manifest.</p>
                 <!-- PARAMETERS -->
@@ -248,6 +248,7 @@
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>object</span>
@@ -257,9 +258,7 @@
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>Token options.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -281,7 +280,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Whether to prompt the user in case of failure. Default is false.</dd>
+          <dd>Whether to prompt the user to log in or grant scope permissions (if they have not already done so). Default is false.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -297,7 +296,7 @@
                   </div><div>
                     <div>
           <dt>
-            <var>callback</var>
+            <var>GetAuthTokenCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -318,6 +317,39 @@
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>token</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
         </div>
                   </div>
                 </dl>
@@ -352,7 +384,9 @@
                 </div>
               </em>
           </dt>
-          <dd>OAuth2 access token as specified by the manifest.</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -370,8 +404,8 @@
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.identity.launchWebAuthFlow</span>(<span class="null"><span>object</span>
-                      <var><span>launchInfo</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
+                      <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>LaunchWebAuthFlowCallback</span></var></span>)</div>
               <div class="description">
                 <p>Starts an auth flow at the specified URL.</p>
                 <!-- PARAMETERS -->
@@ -380,7 +414,7 @@
                   <div>
                     <div>
           <dt>
-            <var>launchInfo</var>
+            <var>details</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -394,36 +428,11 @@
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>WebAuth flow options.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
               <div>
-                <div>
-          <dt>
-            <var>url</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The URL that initiates the auth flow</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
                 <div>
           <dt>
             <var>interactive</var>
@@ -447,6 +456,29 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>url</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The URL that initiates the auth flow.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
               </div>
             </dl>
           </dd>
@@ -457,7 +489,7 @@
                   </div><div>
                     <div>
           <dt>
-            <var>callback</var>
+            <var>LaunchWebAuthFlowCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -478,6 +510,39 @@
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>responseUrl</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
         </div>
                   </div>
                 </dl>
@@ -493,12 +558,12 @@
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>string reponseUrl</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>string responseUrl</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>reponseUrl</var>
+            <var>responseUrl</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -512,7 +577,9 @@
                 </div>
               </em>
           </dt>
-          <dd>The URL redirected back to your application</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
-#include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/media_gallery/media_gallery_api.h"
 #include "chrome/browser/extensions/api/metrics/metrics.h"
@@ -488,10 +487,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SendMouseEventOffscreenTabFunction>();
   RegisterFunction<ToDataUrlOffscreenTabFunction>();
   RegisterFunction<UpdateOffscreenTabFunction>();
-
-  // Identity
-  RegisterFunction<extensions::GetAuthTokenFunction>();
-  RegisterFunction<extensions::LaunchWebAuthFlowFunction>();
 
   // Runtime
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
