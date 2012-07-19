@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/metro_pin_tab_helper.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -599,10 +600,10 @@ bool CanBookmarkAllTabs(const Browser* browser) {
   return browser->tab_count() > 1 && CanBookmarkCurrentPage(browser);
 }
 
-#if !defined(OS_WIN)
-void PinCurrentPageToStartScreen(Browser* browser) {
+void TogglePagePinnedToStartScreen(Browser* browser) {
+  GetActiveTabContents(browser)->metro_pin_tab_helper()->
+      TogglePinnedToStartScreen();
 }
-#endif
 
 void SavePage(Browser* browser) {
   content::RecordAction(UserMetricsAction("SavePage"));

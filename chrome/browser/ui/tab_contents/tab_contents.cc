@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
+#include "chrome/browser/ui/metro_pin_tab_helper.h"
 #include "chrome/browser/ui/pdf/pdf_tab_observer.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
@@ -112,6 +113,7 @@ TabContents::TabContents(WebContents* contents)
   history_tab_helper_.reset(new HistoryTabHelper(contents));
   hung_plugin_tab_helper_.reset(new HungPluginTabHelper(contents));
   infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
+  metro_pin_tab_helper_.reset(new MetroPinTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));

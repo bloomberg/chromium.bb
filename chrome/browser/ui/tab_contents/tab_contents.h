@@ -27,6 +27,7 @@ class FindTabHelper;
 class HistoryTabHelper;
 class HungPluginTabHelper;
 class InfoBarTabHelper;
+class MetroPinTabHelper;
 class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
@@ -175,6 +176,10 @@ class TabContents : public content::WebContentsObserver {
   }
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
 
+  MetroPinTabHelper* metro_pin_tab_helper() {
+    return metro_pin_tab_helper_.get();
+  }
+
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   OneClickSigninHelper* one_click_signin_helper() {
     return one_click_signin_helper_.get();
@@ -272,6 +277,7 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<HistoryTabHelper> history_tab_helper_;
   scoped_ptr<HungPluginTabHelper> hung_plugin_tab_helper_;
   scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
+  scoped_ptr<MetroPinTabHelper> metro_pin_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,
   // per documentation in password_manager.h.

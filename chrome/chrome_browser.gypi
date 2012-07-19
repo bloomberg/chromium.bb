@@ -3250,6 +3250,8 @@
         'browser/ui/login/login_prompt.h',
         'browser/ui/media_stream_infobar_delegate.h',
         'browser/ui/media_stream_infobar_delegate.cc',
+        'browser/ui/metro_pin_tab_helper.cc',
+        'browser/ui/metro_pin_tab_helper.h',
         'browser/ui/network_profile_bubble.cc',
         'browser/ui/network_profile_bubble.h',
         'browser/ui/omnibox/location_bar.h',

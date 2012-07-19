@@ -352,7 +352,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       BookmarkCurrentPage(browser_);
       break;
     case IDC_PIN_TO_START_SCREEN:
-      PinCurrentPageToStartScreen(browser_);
+      TogglePagePinnedToStartScreen(browser_);
       break;
     case IDC_BOOKMARK_ALL_TABS:
       BookmarkAllTabs(browser_);

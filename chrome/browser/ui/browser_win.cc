@@ -58,30 +58,6 @@ void NewIncognitoWindow(Browser* browser) {
   NewEmptyWindow(browser->profile()->GetOffTheRecordProfile());
 }
 
-void PinCurrentPageToStartScreen(Browser* browser) {
-  HMODULE metro_module = base::win::GetMetroModule();
-  if (metro_module) {
-    GURL url;
-    string16 title;
-    TabContents* tab = chrome::GetActiveTabContents(browser);
-    bookmark_utils::GetURLAndTitleToBookmark(tab->web_contents(), &url, &title);
-
-    typedef BOOL (*MetroPinUrlToStartScreen)(const string16&, const string16&);
-    MetroPinUrlToStartScreen metro_pin_url_to_start_screen =
-        reinterpret_cast<MetroPinUrlToStartScreen>(
-            ::GetProcAddress(metro_module, "MetroPinUrlToStartScreen"));
-    if (!metro_pin_url_to_start_screen) {
-      NOTREACHED();
-      return;
-    }
-
-    VLOG(1) << __FUNCTION__ << " calling pin with title: " << title
-            << " and url " << UTF8ToUTF16(url.spec());
-    metro_pin_url_to_start_screen(title, UTF8ToUTF16(url.spec()));
-    return;
-  }
-}
-
 }  // namespace chrome
 
 void Browser::SetMetroSnapMode(bool enable) {

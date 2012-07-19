@@ -32,6 +32,8 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/metro_pin_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -239,7 +241,8 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
 #endif
          command_id == IDC_VIEW_BACKGROUND_PAGES ||
          command_id == IDC_UPGRADE_DIALOG ||
-         command_id == IDC_SHOW_SYNC_SETUP;
+         command_id == IDC_SHOW_SYNC_SETUP ||
+         command_id == IDC_PIN_TO_START_SCREEN;
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -280,6 +283,14 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       }
       return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_PRE_SYNCED_LABEL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+    }
+    case IDC_PIN_TO_START_SCREEN: {
+      int string_id = IDS_PIN_TO_START_SCREEN;
+      TabContents* tab_contents = chrome::GetActiveTabContents(browser_);
+      if (tab_contents && tab_contents->metro_pin_tab_helper()->is_pinned()) {
+        string_id = IDS_UNPIN_FROM_START_SCREEN;
+      }
+      return l10n_util::GetStringUTF16(string_id);
     }
     default:
       NOTREACHED();

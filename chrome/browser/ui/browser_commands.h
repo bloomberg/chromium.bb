@@ -90,7 +90,7 @@ void BookmarkCurrentPage(Browser* browser);
 bool CanBookmarkCurrentPage(const Browser* browser);
 void BookmarkAllTabs(Browser* browser);
 bool CanBookmarkAllTabs(const Browser* browser);
-void PinCurrentPageToStartScreen(Browser* browser);
+void TogglePagePinnedToStartScreen(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void ShowFindBar(Browser* browser);
