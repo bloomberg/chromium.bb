@@ -11,10 +11,23 @@
 
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
+#include "base/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 
 class GpuCommandBufferStubBase;
+
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
+template<>
+struct hash<GpuCommandBufferStubBase*> {
+  size_t operator()(GpuCommandBufferStubBase* ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+} // namespace BASE_HASH_NAMESPACE
+#endif // COMPILER
 
 class CONTENT_EXPORT GpuMemoryManagerClient {
 public:
@@ -46,6 +59,14 @@ class CONTENT_EXPORT GpuMemoryManager :
 #endif
   };
 
+  // StubMemoryStat is used to store memory-allocation-related information about
+  // a GpuCommandBufferStubBase for some time point.
+  struct StubMemoryStat {
+    bool visible;
+    GpuMemoryAllocationRequest requested_allocation;
+    GpuMemoryAllocation allocation;
+  };
+
   GpuMemoryManager(GpuMemoryManagerClient* client,
                    size_t max_surfaces_with_frontbuffer_soft_limit);
   ~GpuMemoryManager();
@@ -56,6 +77,27 @@ class CONTENT_EXPORT GpuMemoryManager :
   // lower priority situations. An immediate schedule manage will cancel any
   // queued delayed manage.
   void ScheduleManage(bool immediate);
+
+  // Returns StubMemoryStat's for each GpuCommandBufferStubBase, which were
+  // assigned during the most recent call to Manage().
+  // Useful for tracking the memory-allocation-related presumed state of the
+  // system, as seen by GpuMemoryManager.
+  typedef base::hash_map<GpuCommandBufferStubBase*, StubMemoryStat>
+      StubMemoryStatMap;
+  const StubMemoryStatMap& stub_memory_stats_for_last_manage() const {
+    return stub_memory_stats_for_last_manage_;
+  }
+
+  // Tries to estimate the total available gpu memory for use by
+  // GpuMemoryManager.  Ideally should consider other system applications and
+  // other internal but non GpuMemoryManager managed sources, etc.
+  size_t GetAvailableGpuMemory() const;
+
+  // GetPeakAssignedAllocationSum() will return the historical max value for the
+  // sum of all assigned client allocations (ie, peak system memory allocation).
+  size_t peak_assigned_allocation_sum() const {
+    return peak_assigned_allocation_sum_;
+  }
 
  private:
   friend class GpuMemoryManagerTest;
@@ -73,6 +115,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   bool manage_immediate_scheduled_;
 
   size_t max_surfaces_with_frontbuffer_soft_limit_;
+
+  StubMemoryStatMap stub_memory_stats_for_last_manage_;
+  size_t peak_assigned_allocation_sum_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
 };

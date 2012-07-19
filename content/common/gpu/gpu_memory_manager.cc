@@ -48,11 +48,17 @@ size_t CalculateBonusMemoryAllocationBasedOnSize(gfx::Size size) {
 #endif
 
 void AssignMemoryAllocations(
-    std::vector<GpuCommandBufferStubBase*>& stubs,
-    GpuMemoryAllocation allocation) {
-  for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
-      it != stubs.end(); ++it) {
+    GpuMemoryManager::StubMemoryStatMap* stub_memory_stats,
+    const std::vector<GpuCommandBufferStubBase*>& stubs,
+    GpuMemoryAllocation allocation,
+    bool visible) {
+  for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
+          stubs.begin();
+      it != stubs.end();
+      ++it) {
     (*it)->SetMemoryAllocation(allocation);
+    (*stub_memory_stats)[*it].allocation = allocation;
+    (*stub_memory_stats)[*it].visible = visible;
   }
 }
 
@@ -63,7 +69,8 @@ GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
     : client_(client),
       manage_immediate_scheduled_(false),
       max_surfaces_with_frontbuffer_soft_limit_(
-          max_surfaces_with_frontbuffer_soft_limit) {
+          max_surfaces_with_frontbuffer_soft_limit),
+      peak_assigned_allocation_sum_(0) {
 }
 
 GpuMemoryManager::~GpuMemoryManager() {
@@ -101,6 +108,11 @@ void GpuMemoryManager::ScheduleManage(bool immediate) {
       delayed_manage_callback_.callback(),
       base::TimeDelta::FromMilliseconds(kDelayedScheduleManageTimeoutMs));
   }
+}
+
+size_t GpuMemoryManager::GetAvailableGpuMemory() const {
+  // TODO(mmocny): Implement this with real system figures.
+  return kMaximumAllocationForTabs;
 }
 
 // The current Manage algorithm simply classifies contexts (stubs) into
@@ -216,28 +228,59 @@ void GpuMemoryManager::Manage() {
         stubs_with_surface_foreground[0]->GetSurfaceSize());
 #endif
 
+  stub_memory_stats_for_last_manage_.clear();
+
   // Now give out allocations to everyone.
-  AssignMemoryAllocations(stubs_with_surface_foreground,
+  AssignMemoryAllocations(
+      &stub_memory_stats_for_last_manage_,
+      stubs_with_surface_foreground,
       GpuMemoryAllocation(kMinimumAllocationForTab + bonus_allocation,
           GpuMemoryAllocation::kHasFrontbuffer |
-          GpuMemoryAllocation::kHasBackbuffer));
+          GpuMemoryAllocation::kHasBackbuffer),
+      true);
 
-  AssignMemoryAllocations(stubs_with_surface_background,
-      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasFrontbuffer));
+  AssignMemoryAllocations(
+      &stub_memory_stats_for_last_manage_,
+      stubs_with_surface_background,
+      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasFrontbuffer),
+      false);
 
-  AssignMemoryAllocations(stubs_with_surface_hibernated,
-      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers));
+  AssignMemoryAllocations(
+      &stub_memory_stats_for_last_manage_,
+      stubs_with_surface_hibernated,
+      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers),
+      false);
 
-  AssignMemoryAllocations(stubs_without_surface_foreground,
+  AssignMemoryAllocations(
+      &stub_memory_stats_for_last_manage_,
+      stubs_without_surface_foreground,
       GpuMemoryAllocation(kMinimumAllocationForTab,
-          GpuMemoryAllocation::kHasNoBuffers));
+          GpuMemoryAllocation::kHasNoBuffers),
+      true);
 
-  AssignMemoryAllocations(stubs_without_surface_background,
+  AssignMemoryAllocations(
+      &stub_memory_stats_for_last_manage_,
+      stubs_without_surface_background,
       GpuMemoryAllocation(kMinimumAllocationForTab,
-          GpuMemoryAllocation::kHasNoBuffers));
+          GpuMemoryAllocation::kHasNoBuffers),
+      false);
 
-  AssignMemoryAllocations(stubs_without_surface_hibernated,
-      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers));
+  AssignMemoryAllocations(
+      &stub_memory_stats_for_last_manage_,
+      stubs_without_surface_hibernated,
+      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers),
+      false);
+
+  size_t assigned_allocation_sum = 0;
+  for (StubMemoryStatMap::iterator it =
+          stub_memory_stats_for_last_manage_.begin();
+      it != stub_memory_stats_for_last_manage_.end();
+      ++it) {
+    assigned_allocation_sum += it->second.allocation.gpu_resource_size_in_bytes;
+  }
+
+  if (assigned_allocation_sum > peak_assigned_allocation_sum_)
+    peak_assigned_allocation_sum_ = assigned_allocation_sum;
 }
 
 #endif

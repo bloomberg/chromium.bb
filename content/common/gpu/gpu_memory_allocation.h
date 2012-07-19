@@ -97,4 +97,29 @@ struct GpuMemoryAllocation : public GpuMemoryAllocationForRenderer,
   }
 };
 
+// Memory Allocation request which is sent by a client, to help GpuMemoryManager
+// more ideally split memory allocations across clients.
+struct GpuMemoryAllocationRequest {
+  size_t min_allocation_bytes;
+  size_t ideal_allocation_bytes;
+
+  GpuMemoryAllocationRequest()
+      : min_allocation_bytes(0),
+        ideal_allocation_bytes(0) {
+  }
+
+  GpuMemoryAllocationRequest(size_t min_bytes, size_t ideal_bytes)
+      : min_allocation_bytes(min_bytes),
+        ideal_allocation_bytes(ideal_bytes) {
+  }
+
+  bool operator==(const GpuMemoryAllocationRequest& other) const {
+    return min_allocation_bytes == other.min_allocation_bytes &&
+        ideal_allocation_bytes == other.ideal_allocation_bytes;
+  }
+  bool operator!=(const GpuMemoryAllocationRequest& other) const {
+    return !(*this == other);
+  }
+};
+
 #endif // CONTENT_COMMON_GPU_GPU_MEMORY_ALLOCATION_H_

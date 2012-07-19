@@ -599,3 +599,72 @@ TEST_F(GpuMemoryManagerTest, GpuMemoryAllocationCompareTests) {
     }
   }
 }
+
+// Test GpuMemoryManager Stub Memory Stats functionality:
+// Creats various surface/non-surface stubs and switches stub visibility and
+// tests to see that stats data structure values are correct.
+TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
+  GpuMemoryManager::StubMemoryStatMap stats;
+
+  Manage();
+  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  EXPECT_EQ(stats.size(), 0ul);
+
+  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_);
+  client_.stubs_.push_back(&stub1);
+  Manage();
+  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  size_t stub1allocation1 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
+
+  EXPECT_EQ(stats.size(), 1ul);
+  EXPECT_TRUE(stats[&stub1].visible);
+  EXPECT_GT(stub1allocation1, 0ul);
+
+  FakeCommandBufferStubWithoutSurface stub2;
+  client_.stubs_.push_back(&stub2);
+  stub2.share_group_.push_back(&stub1);
+  Manage();
+  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  size_t stub1allocation2 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
+  size_t stub2allocation2 = stats[&stub2].allocation.gpu_resource_size_in_bytes;
+
+  EXPECT_EQ(stats.size(), 2ul);
+  EXPECT_TRUE(stats[&stub1].visible);
+  EXPECT_TRUE(stats[&stub2].visible);
+  EXPECT_GT(stub1allocation2, 0ul);
+  EXPECT_GT(stub2allocation2, 0ul);
+  EXPECT_LT(stub1allocation2, stub1allocation1);
+
+  FakeCommandBufferStub stub3(GenerateUniqueSurfaceId(), true, older_);
+  client_.stubs_.push_back(&stub3);
+  Manage();
+  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  size_t stub1allocation3 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
+  size_t stub2allocation3 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
+  size_t stub3allocation3 = stats[&stub3].allocation.gpu_resource_size_in_bytes;
+
+  EXPECT_EQ(stats.size(), 3ul);
+  EXPECT_TRUE(stats[&stub1].visible);
+  EXPECT_TRUE(stats[&stub2].visible);
+  EXPECT_TRUE(stats[&stub3].visible);
+  EXPECT_GT(stub1allocation3, 0ul);
+  EXPECT_GT(stub2allocation3, 0ul);
+  EXPECT_GT(stub3allocation3, 0ul);
+  EXPECT_LT(stub1allocation3, stub1allocation2);
+
+  stub1.surface_state_.visible = false;
+  Manage();
+  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  size_t stub1allocation4 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
+  size_t stub2allocation4 = stats[&stub2].allocation.gpu_resource_size_in_bytes;
+  size_t stub3allocation4 = stats[&stub3].allocation.gpu_resource_size_in_bytes;
+
+  EXPECT_EQ(stats.size(), 3ul);
+  EXPECT_FALSE(stats[&stub1].visible);
+  EXPECT_FALSE(stats[&stub2].visible);
+  EXPECT_TRUE(stats[&stub3].visible);
+  EXPECT_EQ(stub1allocation4, 0ul);
+  EXPECT_GE(stub2allocation4, 0ul);
+  EXPECT_GT(stub3allocation4, 0ul);
+  EXPECT_GT(stub3allocation4, stub3allocation3);
+}
