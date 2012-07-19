@@ -995,3 +995,9 @@
    fun:disk_cache::BackendIO::ExecuteBackendOperation
    fun:base::internal::RunnableAdapter::Run
 }
+{
+   bug_137973
+   ThreadSanitizer:Race
+   fun:media::Pipeline::OnVideoTimeUpdate
+   fun:base::internal::RunnableAdapter::Run
+}
