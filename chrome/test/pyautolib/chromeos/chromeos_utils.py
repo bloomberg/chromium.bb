@@ -31,7 +31,6 @@ class ChromeosUtils(pyauto.PyUITest):
     if self.GetLoginInfo()['is_logged_in']:
       logging.info('Already logged in as %s.' % self.GetLoginInfo()['email'])
       return
-    self.SkipToLogin()
     creds = constants.CREDENTIALS['$default']
     username = creds[0]
     passwd = creds[1]

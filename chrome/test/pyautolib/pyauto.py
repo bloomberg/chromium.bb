@@ -211,6 +211,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     if self.IsChromeOS():
       self.WaitUntil(lambda: not self.GetNetworkInfo()['offline_mode'])
 
+    if (self.IsChromeOS() and self.ShouldOOBESkipToLogin() and
+        not self.GetLoginInfo()['is_logged_in'] and
+        self.GetOOBEScreenInfo()['screen_name'] != 'login'):
+      self.SkipToLogin()
+
     # If we are connected to any RemoteHosts, create PyAuto
     # instances on the remote sides and set them up too.
     for remote in self.remotes:
@@ -281,6 +286,23 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       ]
     else:
       return []
+
+  def ShouldOOBESkipToLogin(self):
+    """Determine if we should skip the OOBE flow on ChromeOS.
+
+    This makes automation skip the OOBE flow during setUp() and land directly
+    to the login screen. Applies only if not logged in already.
+
+    Override and return False if OOBE flow is required, for OOBE tests, for
+    example. Calling this function directly will have no effect.
+
+    Returns:
+      True, if the OOBE should be skipped and automation should
+            go to the 'Add user' login screen directly
+      False, if the OOBE should not be skipped.
+    """
+    assert self.IsChromeOS()
+    return True
 
   def CloseChromeOnChromeOS(self):
     """Gracefully exit chrome on ChromeOS."""

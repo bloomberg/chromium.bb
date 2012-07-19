@@ -736,16 +736,10 @@
   'CHROMEOS_LOGIN': {
     'chromeos': [
       'chromeos_login',
+      'chromeos_oobe',
+
       # crosbug.com/32583
       '-chromeos_login.ChromeosLogin.testCachedCredentials',
-    ],
-  },
-
-  # ChromeOS OOBE tests.
-  # TODO(ivankr): schedule this for running after .forget_usernames is removed.
-  'CHROMEOS_OOBE': {
-    'chromeos': [
-      'chromeos_oobe',
     ],
   },
 

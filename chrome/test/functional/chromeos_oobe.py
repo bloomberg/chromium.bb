@@ -21,6 +21,10 @@ class ChromeosOOBE(pyauto.PyUITest):
 
   assert os.geteuid() == 0, 'Need to run this test as root'
 
+  def ShouldOOBESkipToLogin(self):
+    """Do not skip OOBE."""
+    return False
+
   def setUp(self):
     # We want a clean session_manager instance for every run,
     # so restart ui now.
@@ -48,9 +52,10 @@ class ChromeosOOBE(pyauto.PyUITest):
       # EULA (accepted) -> Update.
       ret = self.AcceptOOBEEula(accepted=True)
     # Update may have already been completed, so don't check for it.
-    # Update (canceled) -> Login.
-    ret = self.CancelOOBEUpdate()
-    self.assertEquals('login', ret['next_screen'])
+    else:  # Cancel the update check in non-official build.
+      # Update (canceled) -> Login.
+      ret = self.CancelOOBEUpdate()
+      self.assertEquals('login', ret['next_screen'])
     self._AssertCurrentScreen('login')
     # Login -> User picker.
     credentials = self.GetPrivateInfo()['test_google_account']

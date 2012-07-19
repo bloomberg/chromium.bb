@@ -144,7 +144,6 @@ class NetflixTest(pyauto.PyUITest, NetflixTestHelper):
 
   def _Login(self):
     """Perform login"""
-    self.SkipToLogin()
     credentials = self.GetPrivateInfo()['test_google_account']
     self.Login(credentials['username'], credentials['password'])
     logging.info('Logged in as %s' % credentials['username'])
@@ -214,7 +213,6 @@ class NetflixGuestModeTest(pyauto.PyUITest, NetflixTestHelper):
     pyauto.PyUITest.setUp(self)
     if self.GetLoginInfo()['is_logged_in']:
       self.Logout()
-    self.SkipToLogin()
     self.LoginAsGuest()
     login_info = self.GetLoginInfo()
     self.assertTrue(login_info['is_logged_in'], msg='Not logged in at all.')
