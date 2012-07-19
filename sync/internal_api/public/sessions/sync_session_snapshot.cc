@@ -21,7 +21,8 @@ SyncSessionSnapshot::SyncSessionSnapshot()
       num_server_conflicts_(0),
       notifications_enabled_(false),
       num_entries_(0),
-      retry_scheduled_(false) {
+      retry_scheduled_(false),
+      is_initialized_(false) {
 }
 
 SyncSessionSnapshot::SyncSessionSnapshot(
@@ -54,7 +55,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       notifications_enabled_(notifications_enabled),
       num_entries_(num_entries),
       sync_start_time_(sync_start_time),
-      retry_scheduled_(retry_scheduled) {
+      retry_scheduled_(retry_scheduled),
+      is_initialized_(true) {
 }
 
 SyncSessionSnapshot::~SyncSessionSnapshot() {}
@@ -168,6 +170,10 @@ base::Time SyncSessionSnapshot::sync_start_time() const {
 
 bool SyncSessionSnapshot::retry_scheduled() const {
   return retry_scheduled_;
+}
+
+bool SyncSessionSnapshot::is_initialized() const {
+  return is_initialized_;
 }
 
 }  // namespace sessions

@@ -78,8 +78,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetLastSessionSnapshot,
                      syncer::sessions::SyncSessionSnapshot());
 
-  MOCK_METHOD0(QueryDetailedSyncStatus,
-               browser_sync::SyncBackendHost::Status());
+  MOCK_METHOD1(QueryDetailedSyncStatus,
+               bool(browser_sync::SyncBackendHost::Status* result));
   MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
   MOCK_CONST_METHOD0(FirstSetupInProgress, bool());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, string16());

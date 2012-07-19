@@ -145,8 +145,8 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
   SyncGlobalError error(&service, signin);
 
   browser_sync::SyncBackendHost::Status status;
-  EXPECT_CALL(service, QueryDetailedSyncStatus())
-              .WillRepeatedly(Return(status));
+  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
+              .WillRepeatedly(Return(false));
 
   EXPECT_CALL(service, IsPassphraseRequired())
               .WillRepeatedly(Return(true));
@@ -171,8 +171,8 @@ TEST_F(SyncGlobalErrorTest, AuthStateGlobalError) {
   SyncGlobalError error(&service, signin);
 
   browser_sync::SyncBackendHost::Status status;
-  EXPECT_CALL(service, QueryDetailedSyncStatus())
-              .WillRepeatedly(Return(status));
+  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
+              .WillRepeatedly(Return(false));
 
   struct {
     GoogleServiceAuthError::State error_state;

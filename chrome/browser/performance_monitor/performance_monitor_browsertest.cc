@@ -410,7 +410,8 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, KilledByOSEvent) {
 }
 #endif  // !defined(OS_WIN)
 
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
+                       DISABLED_RendererCrashEvent) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));
 
   std::vector<linked_ptr<Event> > events = GetEvents();

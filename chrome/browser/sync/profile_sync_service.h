@@ -290,7 +290,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Get various information for displaying in the user interface.
   std::string QuerySyncStatusSummary();
-  virtual browser_sync::SyncBackendHost::Status QueryDetailedSyncStatus();
+
+  // Initializes a struct of status indicators with data from the backend.
+  // Returns false if the backend was not available for querying; in that case
+  // the struct will be filled with default data.
+  virtual bool QueryDetailedSyncStatus(
+      browser_sync::SyncBackendHost::Status* result);
 
   virtual const GoogleServiceAuthError& GetAuthError() const;
 

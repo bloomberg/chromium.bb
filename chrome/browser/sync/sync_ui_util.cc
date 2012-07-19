@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -209,7 +208,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
   }
 
   if (service->HasSyncSetupCompleted()) {
-    ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
+    ProfileSyncService::Status status;
+    service->QueryDetailedSyncStatus(&status);
     const AuthError& auth_error = service->GetAuthError();
 
     // The order or priority is going to be: 1. Unrecoverable errors.
@@ -277,7 +277,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     // or provide a link to continue with setup.
     result_type = PRE_SYNCED;
     if (service->FirstSetupInProgress()) {
-      ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
+      ProfileSyncService::Status status;
+      service->QueryDetailedSyncStatus(&status);
       const AuthError& auth_error = service->GetAuthError();
       if (status_label) {
         status_label->assign(
@@ -299,7 +300,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       }
     } else if (service->HasUnrecoverableError()) {
       result_type = SYNC_ERROR;
-      ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
+      ProfileSyncService::Status status;
+      service->QueryDetailedSyncStatus(&status);
       if (ShouldShowActionOnUI(status.sync_protocol_error)) {
         if (status_label) {
           GetStatusForActionableError(status.sync_protocol_error,
@@ -433,49 +435,6 @@ string16 GetSyncMenuLabel(
     return l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
 }
 
-void AddBoolSyncDetail(ListValue* details,
-                       const std::string& stat_name,
-                       bool stat_value) {
-  DictionaryValue* val = new DictionaryValue;
-  val->SetString("stat_name", stat_name);
-  val->SetBoolean("stat_value", stat_value);
-  details->Append(val);
-}
-
-void AddStringSyncDetails(ListValue* details, const std::string& stat_name,
-                          const string16& stat_value) {
-  DictionaryValue* val = new DictionaryValue;
-  val->SetString("stat_name", stat_name);
-  val->SetString("stat_value", stat_value);
-  details->Append(val);
-}
-
-void AddStringSyncDetails(ListValue* details, const std::string& stat_name,
-                          const std::string& stat_value) {
-  DictionaryValue* val = new DictionaryValue;
-  val->SetString("stat_name", stat_name);
-  val->SetString("stat_value", stat_value);
-  details->Append(val);
-}
-
-ListValue* AddSyncDetailsSection(ListValue* details,
-                                  const std::string& name) {
-  DictionaryValue* val = new DictionaryValue;
-  details->Append(val);
-  val->SetString("title", name);
-  ListValue* list = new ListValue;
-  val->Set("data", list);
-  return list;
-}
-
-void AddIntSyncDetail(ListValue* details, const std::string& stat_name,
-                      int64 stat_value) {
-  DictionaryValue* val = new DictionaryValue;
-  val->SetString("stat_name", stat_name);
-  val->SetString("stat_value", base::FormatNumber(stat_value));
-  details->Append(val);
-}
-
 string16 ConstructTime(int64 time_in_int) {
   base::Time time = base::Time::FromInternalValue(time_in_int);
 
@@ -500,285 +459,6 @@ std::string MakeSyncAuthErrorText(
     default:
       return std::string();
   }
-}
-
-void ConstructAboutInformation(ProfileSyncService* service,
-                               DictionaryValue* strings) {
-
-  ListValue* details = new ListValue();
-  strings->Set("details", details);
-  ListValue* sync_summary = AddSyncDetailsSection(details, "Summary");
-
-  CHECK(strings);
-  if (!service) {
-    sync_ui_util::AddStringSyncDetails(sync_summary, "Summary",
-                                       "Sync service does not exist");
-  } else {
-    // This bypasses regular inter-thread communication mechanisms to grab a
-    // very recent snapshot from the syncer thread.  It should be up to date
-    // with the last snapshot emitted by the syncer.  Keep in mind, though, that
-    // not all events that update these values will ping the UI thread, so you
-    // might not see all intermediate values.
-    syncer::SyncStatus full_status(service->QueryDetailedSyncStatus());
-
-    // This is a cache of the last snapshot of type SYNC_CYCLE_ENDED where
-    // !snapshot.has_more_to_sync().  In other words, it's the last in this
-    // series of sync cycles.  The series ends only when we've done all we can
-    // to resolve conflicts and there is nothing left to commit, or an error
-    // occurs.
-    //
-    // Despite the fact that it is updated only at the end of a series of
-    // commits, its values do not reflect the series.  Its counters are based on
-    // the values from a single sync cycle.
-    //
-    // |snapshot| could be NULL if sync is not yet initialized.
-    const syncer::sessions::SyncSessionSnapshot& snapshot =
-        service->sync_initialized() ?
-        service->GetLastSessionSnapshot() :
-        syncer::sessions::SyncSessionSnapshot();
-
-    sync_ui_util::AddStringSyncDetails(sync_summary, "Summary",
-                                       service->QuerySyncStatusSummary());
-
-    ListValue* version_info = AddSyncDetailsSection(details, "Version Info");
-    sync_ui_util::AddStringSyncDetails(version_info, "Client Version",
-                                       GetVersionString());
-    sync_ui_util::AddStringSyncDetails(version_info, "Server URL",
-                                       service->sync_service_url().spec());
-
-    ListValue* user_state = AddSyncDetailsSection(details, "Credentials");
-    sync_ui_util::AddStringSyncDetails(user_state, "Client ID",
-        full_status.unique_id.empty() ? "none" : full_status.unique_id);
-    sync_ui_util::AddStringSyncDetails(
-        user_state, "Username",
-        service->signin() ? service->signin()->GetAuthenticatedUsername() : "");
-    sync_ui_util::AddBoolSyncDetail(
-        user_state, "Sync Token Available", service->IsSyncTokenAvailable());
-
-    ListValue* local_state = AddSyncDetailsSection(details, "Local State");
-    sync_ui_util::AddStringSyncDetails(local_state, "Last Synced",
-                                       service->GetLastSyncedTimeString());
-
-    // Some global status indicators.  These will change only in exceptional
-    // circumstances, like encryption changes, new data types, throttling, etc.
-    sync_ui_util::AddBoolSyncDetail(local_state,
-                                    "Sync First-Time Setup Complete",
-                                    service->HasSyncSetupCompleted());
-    sync_ui_util::AddBoolSyncDetail(local_state, "Initial Download Complete",
-                                    full_status.initial_sync_ended);
-    sync_ui_util::AddBoolSyncDetail(local_state, "Sync Backend Initialized",
-                                    service->sync_initialized());
-
-    // Whether or not we're currently syncing.  Will almost always be false
-    // because we do not usually update about:sync until a sync cycle has
-    // completed.
-    sync_ui_util::AddBoolSyncDetail(local_state, "Syncing",
-                                    full_status.syncing);
-
-    // Network status indicators.
-    ListValue* network = AddSyncDetailsSection(details, "Network");
-    sync_ui_util::AddBoolSyncDetail(network, "Throttled",
-                                    snapshot.is_silenced());
-    sync_ui_util::AddBoolSyncDetail(network, "Notifications Enabled",
-                                    full_status.notifications_enabled);
-
-    // Encryption status indicators.
-    //
-    // Only safe to call IsUsingSecondaryPassphrase() if the backend is
-    // initialized already - otherwise, we have no idea whether we are
-    // using a secondary passphrase or not.
-    ListValue* encryption = AddSyncDetailsSection(details, "Encryption");
-    if (service->sync_initialized()) {
-      sync_ui_util::AddBoolSyncDetail(encryption,
-                                      "Explicit Passphrase",
-                                      service->IsUsingSecondaryPassphrase());
-    }
-    sync_ui_util::AddBoolSyncDetail(encryption,
-                                    "Passphrase Required",
-                                    service->IsPassphraseRequired());
-    sync_ui_util::AddBoolSyncDetail(encryption,
-                                    "Cryptographer Ready",
-                                    full_status.cryptographer_ready);
-    sync_ui_util::AddBoolSyncDetail(encryption,
-                                    "Cryptographer Has Pending Keys",
-                                    full_status.crypto_has_pending_keys);
-    sync_ui_util::AddStringSyncDetails(encryption,
-        "Encrypted Types",
-        syncer::ModelTypeSetToString(full_status.encrypted_types));
-
-
-    ListValue* cycles = AddSyncDetailsSection(
-        details, "Status from Last Completed Session");
-    sync_ui_util::AddStringSyncDetails(
-        cycles, "Sync Source",
-        syncer::GetUpdatesSourceString(
-        snapshot.source().updates_source));
-    sync_ui_util::AddStringSyncDetails(
-        cycles, "Download Step Result",
-        GetSyncerErrorString(
-            snapshot.model_neutral_state().last_download_updates_result));
-    sync_ui_util::AddStringSyncDetails(
-        cycles, "Commit Step Result",
-        GetSyncerErrorString(snapshot.model_neutral_state().commit_result));
-
-    // Strictly increasing counters.
-    ListValue* counters = AddSyncDetailsSection(details, "Running Totals");
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Notifications Received",
-                                   full_status.notifications_received);
-
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Cycles Without Updates",
-                                   full_status.empty_get_updates);
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Cycles With Updates",
-                                   full_status.nonempty_get_updates);
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Cycles Without Commits",
-                                   full_status.sync_cycles_without_commits);
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Cycles With Commits",
-                                   full_status.sync_cycles_with_commits);
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Cycles Without Commits or Updates",
-                                   full_status.useless_sync_cycles);
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Cycles With Commit or Update",
-                                   full_status.useful_sync_cycles);
-
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Updates Downloaded",
-                                   full_status.updates_received);
-    sync_ui_util::AddIntSyncDetail(
-        counters, "Tombstone Updates",
-        full_status.tombstone_updates_received);
-    sync_ui_util::AddIntSyncDetail(
-        counters, "Reflected Updates",
-        full_status.reflected_updates_received);
-
-    sync_ui_util::AddIntSyncDetail(
-        counters, "Successful Commits",
-        full_status.num_commits_total);
-
-    sync_ui_util::AddIntSyncDetail(
-        counters, "Conflict Resolved: Client Wins",
-        full_status.num_local_overwrites_total);
-    sync_ui_util::AddIntSyncDetail(
-        counters, "Conflict Resolved: Server Wins",
-        full_status.num_server_overwrites_total);
-
-    // This is counted when we prepare the commit message.
-    ListValue* transient_cycle = AddSyncDetailsSection(
-        details, "Transient Counters (this cycle)");
-
-    // These are counted during the ApplyUpdates step.
-    sync_ui_util::AddIntSyncDetail(
-        transient_cycle, "Encryption Conflicts",
-        full_status.encryption_conflicts);
-    sync_ui_util::AddIntSyncDetail(
-        transient_cycle, "Hierarchy Conflicts",
-        full_status.hierarchy_conflicts);
-    sync_ui_util::AddIntSyncDetail(
-        transient_cycle, "Simple Conflicts",
-        full_status.simple_conflicts);
-    sync_ui_util::AddIntSyncDetail(
-        transient_cycle, "Server Conflicts",
-        full_status.server_conflicts);
-
-    sync_ui_util::AddIntSyncDetail(
-        transient_cycle, "Committed Items",
-        full_status.committed_count);
-    sync_ui_util::AddIntSyncDetail(
-        transient_cycle, "Updates Remaining",
-        full_status.updates_available);
-
-    ListValue* transient_session = AddSyncDetailsSection(
-        details, "Transient Counters (last cycle of last completed session)");
-    sync_ui_util::AddIntSyncDetail(
-        transient_session, "Updates Downloaded",
-        snapshot.model_neutral_state().num_updates_downloaded_total);
-    sync_ui_util::AddIntSyncDetail(
-        transient_session, "Committed Count",
-        snapshot.model_neutral_state().num_successful_commits);
-
-    // This counter is stale.  The warnings related to the snapshot still
-    // apply, see the comments near call to GetLastSessionSnapshot() above.
-    // Also, because this is updated only following a complete sync cycle,
-    // local changes affecting this count will not be displayed until the
-    // syncer has attempted to commit those changes.
-    sync_ui_util::AddIntSyncDetail(transient_session, "Entries",
-                                   snapshot.num_entries());
-
-    if (!full_status.throttled_types.Empty()) {
-      strings->Set("throttled_data_types", base::Value::CreateStringValue(
-              ModelTypeSetToString(full_status.throttled_types)));
-    }
-
-    // Now set the actionable errors.
-    if ((full_status.sync_protocol_error.error_type !=
-         syncer::UNKNOWN_ERROR) &&
-        (full_status.sync_protocol_error.error_type !=
-         syncer::SYNC_SUCCESS)) {
-      strings->Set("actionable_error_detected",
-                   base::Value::CreateBooleanValue(true));
-      ListValue* actionable_error = new ListValue();
-      strings->Set("actionable_error", actionable_error);
-      sync_ui_util::AddStringSyncDetails(actionable_error, "Error Type",
-          syncer::GetSyncErrorTypeString(
-              full_status.sync_protocol_error.error_type));
-      sync_ui_util::AddStringSyncDetails(actionable_error, "Action",
-          syncer::GetClientActionString(
-              full_status.sync_protocol_error.action));
-      sync_ui_util::AddStringSyncDetails(actionable_error, "url",
-          full_status.sync_protocol_error.url);
-      sync_ui_util::AddStringSyncDetails(actionable_error, "Error Description",
-          full_status.sync_protocol_error.error_description);
-    } else {
-      strings->Set("actionable_error_detected",
-                   base::Value::CreateBooleanValue(false));
-    }
-
-    if (service->HasUnrecoverableError()) {
-      strings->Set("unrecoverable_error_detected",
-                   new base::FundamentalValue(true));
-      tracked_objects::Location loc(service->unrecoverable_error_location());
-      std::string location_str;
-      loc.Write(true, true, &location_str);
-      std::string unrecoverable_error_message =
-          "Unrecoverable error detected at " + location_str +
-          ": " + service->unrecoverable_error_message();
-      strings->SetString("unrecoverable_error_message",
-                         unrecoverable_error_message);
-    }
-
-    if (service->sync_initialized()) {
-      strings->Set("type_status", service->GetTypeStatusMap());
-    }
-  }
-}
-
-std::string GetVersionString() {
-  // Build a version string that matches MakeUserAgentForSyncApi with the
-  // addition of channel info and proper OS names.
-  chrome::VersionInfo chrome_version;
-  if (!chrome_version.is_valid())
-    return "invalid";
-  // GetVersionStringModifier returns empty string for stable channel or
-  // unofficial builds, the channel string otherwise. We want to have "-devel"
-  // for unofficial builds only.
-  std::string version_modifier =
-      chrome::VersionInfo::GetVersionStringModifier();
-  if (version_modifier.empty()) {
-    if (chrome::VersionInfo::GetChannel() !=
-            chrome::VersionInfo::CHANNEL_STABLE) {
-      version_modifier = "-devel";
-    }
-  } else {
-    version_modifier = " " + version_modifier;
-  }
-  return chrome_version.Name() + " " + chrome_version.OSType() + " " +
-      chrome_version.Version() + " (" + chrome_version.LastChange() + ")" +
-      version_modifier;
 }
 
 }  // namespace sync_ui_util

@@ -5,19 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 #define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 
-#include <string>
-
 #include "base/string16.h"
-#include "base/values.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 
-class Browser;
-class Profile;
-
-namespace base {
-class ListValue;
-class DictionaryValue;
-}
+class ProfileSyncService;
+class SigninManager;
 
 // Utility functions to gather current sync status information from the sync
 // service and constructs messages suitable for showing in UI.
@@ -69,28 +60,6 @@ MessageType GetStatus(ProfileSyncService* service, const SigninManager& signin);
 // Returns a string with the synchronization status.
 string16 GetSyncMenuLabel(ProfileSyncService* service,
                           const SigninManager& signin);
-
-void AddBoolSyncDetail(base::ListValue* details,
-                       const std::string& stat_name,
-                       bool stat_value);
-
-// |service| can be NULL.
-void ConstructAboutInformation(ProfileSyncService* service,
-                               DictionaryValue* strings);
-
-void AddIntSyncDetail(base::ListValue* details,
-                      const std::string& stat_name,
-                      int64 stat_value);
-
-void AddStringSyncDetails(ListValue* details, const std::string& stat_name,
-                          const std::string& stat_value);
-
-// Returns a string describing the chrome version environment. Version format:
-// <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
-// If version information is unavailable, returns "invalid."
-// TODO(zea): this approximately matches MakeUserAgentForSyncApi in
-// sync_backend_host.cc. Unify the two if possible.
-std::string GetVersionString();
 
 }  // namespace sync_ui_util
 #endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_

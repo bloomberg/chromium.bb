@@ -12,6 +12,7 @@
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -109,11 +110,10 @@ bool SyncInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
   // the sync service doesn't exist.
   if (name == "getAboutInfo") {
     ListValue return_args;
-    DictionaryValue* about_info = new DictionaryValue();
-    return_args.Append(about_info);
     Profile* profile = Profile::FromWebUI(web_ui());
     ProfileSyncService* service = GetProfileSyncService(profile);
-    sync_ui_util::ConstructAboutInformation(service, about_info);
+    return_args.Append(
+        sync_ui_util::ConstructAboutInformation(service).release());
     HandleJsReply(name, JsArgList(&return_args));
   } else {
     if (js_controller_.get()) {

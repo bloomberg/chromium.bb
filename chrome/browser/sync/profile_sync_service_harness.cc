@@ -22,9 +22,9 @@
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
@@ -758,7 +758,9 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
 
 ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
   DCHECK(service() != NULL) << "GetStatus(): service() is NULL.";
-  return service()->QueryDetailedSyncStatus();
+  ProfileSyncService::Status result;
+  service()->QueryDetailedSyncStatus(&result);
+  return result;
 }
 
 // We use this function to share code between IsFullySynced and IsDataSynced
@@ -1105,10 +1107,10 @@ size_t ProfileSyncServiceHarness::GetNumDatatypes() const {
 }
 
 std::string ProfileSyncServiceHarness::GetServiceStatus() {
-  DictionaryValue value;
-  sync_ui_util::ConstructAboutInformation(service_, &value);
+  scoped_ptr<DictionaryValue> value(
+      sync_ui_util::ConstructAboutInformation(service_));
   std::string service_status;
-  base::JSONWriter::WriteWithOptions(&value,
+  base::JSONWriter::WriteWithOptions(value.get(),
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &service_status);
   return service_status;

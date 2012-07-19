@@ -71,6 +71,9 @@ class SyncSessionSnapshot {
   base::Time sync_start_time() const;
   bool retry_scheduled() const;
 
+  // Set iff this snapshot was not built using the default constructor.
+  bool is_initialized() const;
+
  private:
   ModelNeutralState model_neutral_state_;
   bool is_share_usable_;
@@ -87,6 +90,8 @@ class SyncSessionSnapshot {
   size_t num_entries_;
   base::Time sync_start_time_;
   bool retry_scheduled_;
+
+  bool is_initialized_;
 };
 
 }  // namespace sessions

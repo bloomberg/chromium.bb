@@ -970,13 +970,16 @@ std::string ProfileSyncService::QuerySyncStatusSummary() {
   }
 }
 
-SyncBackendHost::Status ProfileSyncService::QueryDetailedSyncStatus() {
+bool ProfileSyncService::QueryDetailedSyncStatus(
+    SyncBackendHost::Status* result) {
   if (backend_.get() && backend_initialized_) {
-    return backend_->GetDetailedStatus();
+    *result = backend_->GetDetailedStatus();
+    return true;
   } else {
     SyncBackendHost::Status status;
     status.sync_protocol_error = last_actionable_error_;
-    return status;
+    *result = status;
+    return false;
   }
 }
 

@@ -70,13 +70,20 @@ table.aboutDetails tr[highlighted]:nth-child(odd) {
   -webkit-animation-duration: 3s;
   -webkit-animation-timing-function: linear;
 }
+
+table.aboutDetails tr.uninitialized {
+  color: #7f7f7f;
+}
+
 </style>
 
 <div id='aboutInfo'>
   <div class="section" jsselect="details">
     <h2 jscontent="title"></h2>
     <table class="aboutDetails">
-      <tr jsselect="data" jseval='highlightIfChanged(this, this.children[1].innerText, stat_value)'>
+      <tr jsselect="data"
+            jsvalues="class:$this.is_valid ? '' : 'uninitialized'"
+            jseval='highlightIfChanged(this, this.children[1].innerText, stat_value)'>
         <td class="detail" jscontent="stat_name" width=50%></td>
         <td class="value" jscontent="stat_value" width=50%></td>
       </tr>
@@ -87,8 +94,8 @@ table.aboutDetails tr[highlighted]:nth-child(odd) {
     <h2>Type Info</h2>
     <table id="typeInfo">
       <tr jsselect="type_status" jsvalues="class:$this.status">
-        <td jscontent="name"/>
-        <td jscontent="value"/>
+        <td jscontent="name" width=50% />
+        <td jscontent="value" width=50% />
       </tr>
     </table>
   </div>
@@ -100,8 +107,8 @@ table.aboutDetails tr[highlighted]:nth-child(odd) {
   </div>
 
   <div class="section" jsdisplay="actionable_error_detected">
-    <p jsdisplay="actionable_error_detected">
-      <h2 jsdisplay="actionable_error_detected">Actionable Error</h2>
+    <p>
+      <h2>Actionable Error</h2>
       <table id="actionableError">
         <tr jsselect="actionable_error">
           <td jscontent="stat_name"/>
