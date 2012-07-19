@@ -409,6 +409,7 @@ FileTasks.prototype.display_ = function(combobutton) {
     return;
   }
 
+  combobutton.clear();
   combobutton.hidden = false;
   combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_);
 

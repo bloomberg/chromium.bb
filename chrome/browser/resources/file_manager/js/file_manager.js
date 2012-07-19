@@ -2337,6 +2337,8 @@ FileManager.prototype = {
         selection.directoryCount == 0 && selection.fileCount > 0) {
       selection.tasks = new FileTasks(this, selection.urls).
           display(this.taskItems_);
+    } else {
+      this.taskItems_.hidden = true;
     }
 
     this.metadataCache_.get(selection.entries, 'filesystem', function(props) {
@@ -2554,7 +2556,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onDefaultTaskDone_ = function(task) {
     chrome.fileBrowserPrivate.setDefaultTask(task.taskId);
-    this.selection.tasks = new FileTasks(this, this.selection.url).
+    this.selection.tasks = new FileTasks(this, this.selection.urls).
         display(this.taskItems_);
   };
 
