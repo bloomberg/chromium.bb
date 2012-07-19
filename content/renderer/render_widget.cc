@@ -872,14 +872,14 @@ void RenderWidget::DoDeferredUpdate() {
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.AccelDoDeferredUpdateDelay",
                                  delay,
                                  base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMilliseconds(60),
-                                 30);
+                                 base::TimeDelta::FromMilliseconds(120),
+                                 60);
     } else {
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.SoftwareDoDeferredUpdateDelay",
                                  delay,
                                  base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMilliseconds(60),
-                                 30);
+                                 base::TimeDelta::FromMilliseconds(120),
+                                 60);
     }
 
     // Calculate filtered time per frame:
