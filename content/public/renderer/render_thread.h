@@ -104,6 +104,9 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   virtual void SetIdleNotificationDelayInMs(
       int64 idle_notification_delay_in_ms) = 0;
 
+  // Suspend/resume the webkit timer for this renderer.
+  virtual void ToggleWebKitSharedTimer(bool suspend) = 0;
+
   virtual void UpdateHistograms(int sequence_number) = 0;
 
 #if defined(OS_WIN)

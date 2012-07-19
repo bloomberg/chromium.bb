@@ -342,6 +342,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetFPS)
 // Tells the view it is displaying an interstitial page.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 
+// Tells the renderer to suspend/resume the webkit timers.
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_ToggleWebKitSharedTimer,
+                     bool /* suspend */)
+
 //-----------------------------------------------------------------------------
 // Misc messages
 // These are messages sent from the renderer to the browser process.

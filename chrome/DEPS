@@ -2,6 +2,7 @@ include_rules = [
   "+ash",
   "+crypto",
   "+gpu",
+  "+jni",
   "+native_client",
   "+net",
   "+printing",

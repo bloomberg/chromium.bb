@@ -69,11 +69,12 @@ class MockRenderThread : public RenderThread {
   virtual int64 GetIdleNotificationDelayInMs() const OVERRIDE;
   virtual void SetIdleNotificationDelayInMs(
       int64 idle_notification_delay_in_ms) OVERRIDE;
+  virtual void ToggleWebKitSharedTimer(bool suspend) OVERRIDE;
+  virtual void UpdateHistograms(int sequence_number) OVERRIDE;
 #if defined(OS_WIN)
   virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
-  virtual void UpdateHistograms(int sequence_number) OVERRIDE;
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.

@@ -165,6 +165,12 @@ void MockRenderThread::SetIdleNotificationDelayInMs(
     int64 idle_notification_delay_in_ms) {
 }
 
+void MockRenderThread::ToggleWebKitSharedTimer(bool suspend) {
+}
+
+void MockRenderThread::UpdateHistograms(int sequence_number) {
+}
+
 #if defined(OS_WIN)
 void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 }
@@ -173,9 +179,6 @@ void MockRenderThread::ReleaseCachedFonts() {
 }
 
 #endif  // OS_WIN
-
-void MockRenderThread::UpdateHistograms(int sequence_number) {
-}
 
 void MockRenderThread::SendCloseMessage() {
   ViewMsg_Close msg(routing_id_);

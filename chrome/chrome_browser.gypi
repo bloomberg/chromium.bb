@@ -106,6 +106,8 @@
         'browser/accessibility/invert_bubble_prefs.h',
         'browser/android/chrome_startup_flags.cc',
         'browser/android/chrome_startup_flags.h',
+        'browser/android/process_utils.cc',
+        'browser/android/process_utils.h',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
         'browser/app_controller_mac.h',
@@ -4856,6 +4858,9 @@
           ],
         }],
         ['OS=="android"', {
+          'dependencies': [
+            'chrome_browser_jni_headers',
+          ],
           'sources': [
             'browser/sync/glue/synced_window_delegate_registry.cc',
             'browser/sync/glue/synced_window_delegate_registry.h',
@@ -5442,5 +5447,25 @@
       },
       'includes': [ '../build/protoc.gypi' ]
     },
+  ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'chrome_browser_jni_headers',
+          'type': 'none',
+          'variables': {
+            'java_sources': [
+              'android/java/src/org/chromium/chrome/browser/ProcessUtils.java',
+            ],
+            'jni_headers': [
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/jni/process_utils_jni.h',
+            ],
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+      ],
+     },
+    ],
   ],
 }
