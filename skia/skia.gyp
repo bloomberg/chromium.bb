@@ -438,6 +438,8 @@
         '../third_party/skia/src/gpu/effects/GrGradientEffects.h',
         '../third_party/skia/src/gpu/effects/GrSingleTextureEffect.cpp',
         '../third_party/skia/src/gpu/effects/GrSingleTextureEffect.h',
+        '../third_party/skia/src/gpu/effects/GrTextureDomainEffect.cpp',
+        '../third_party/skia/src/gpu/effects/GrTextureDomainEffect.h',
         '../third_party/skia/src/gpu/gl/GrGLCaps.cpp',
         '../third_party/skia/src/gpu/gl/GrGLCaps.h',
         '../third_party/skia/src/gpu/gl/GrGLContextInfo.cpp',
