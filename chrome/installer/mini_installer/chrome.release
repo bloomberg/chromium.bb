@@ -41,6 +41,7 @@ theme_resources_touch_1x.pak: %(VersionDir)s\
 [GOOGLE_CHROME]
 FlashPlayerApp.exe: %(VersionDir)s\
 FlashPlayerCPLApp.cpl: %(VersionDir)s\
+SecondaryTile.png: %(VersionDir)s\
 delegate_execute.exe: %(VersionDir)s\
 gcswf32.dll: %(VersionDir)s\
 metro_driver.dll: %(VersionDir)s\
