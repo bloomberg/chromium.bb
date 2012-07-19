@@ -3,7 +3,7 @@
     {
       "callback": {
         "simple_type": {
-          "type": "function"
+          "simple_type": "function"
         },
         "last": true,
         "name": "callback",
@@ -12,20 +12,18 @@
             "functions": [],
             "last": true,
             "name": "results",
-            "optional": false,
             "array": {
               "functions": [],
               "name": "resultsElement",
-              "optional": false,
               "link": {
                 "text": "TypeA",
                 "href": "tester.html#type-TypeA"
               },
-              "type": "ref",
+              "optional": false,
               "properties": [],
               "description": null
             },
-            "type": "array",
+            "optional": false,
             "properties": [],
             "description": null
           }
@@ -38,16 +36,14 @@
         {
           "functions": [],
           "name": "a",
-          "optional": false,
           "choices": [
             {
               "functions": [],
               "name": "a",
               "simple_type": {
-                "type": "string"
+                "simple_type": "string"
               },
               "optional": true,
-              "type": "string",
               "properties": [],
               "description": null
             },
@@ -55,30 +51,28 @@
               "functions": [],
               "last": true,
               "name": "a",
-              "optional": true,
               "array": {
                 "functions": [],
                 "name": "aElement",
                 "simple_type": {
-                  "type": "string"
+                  "simple_type": "string"
                 },
                 "optional": false,
-                "type": "string",
                 "properties": [],
                 "description": null
               },
-              "type": "array",
+              "optional": true,
               "properties": [],
               "description": null
             }
           ],
-          "type": "choices",
+          "optional": false,
           "properties": [],
           "description": "a param"
         },
         {
           "simple_type": {
-            "type": "function"
+            "simple_type": "function"
           },
           "last": true,
           "name": "callback",
@@ -87,20 +81,18 @@
               "functions": [],
               "last": true,
               "name": "results",
-              "optional": false,
               "array": {
                 "functions": [],
                 "name": "resultsElement",
-                "optional": false,
                 "link": {
                   "text": "TypeA",
                   "href": "tester.html#type-TypeA"
                 },
-                "type": "ref",
+                "optional": false,
                 "properties": [],
                 "description": null
               },
-              "type": "array",
+              "optional": false,
               "properties": [],
               "description": null
             }
@@ -116,34 +108,31 @@
   "name": "tester",
   "types": [
     {
-      "functions": [],
-      "name": "TypeA",
-      "simple_type": {
-        "type": "object"
-      },
-      "type": "object",
       "properties": [
         {
           "functions": [],
           "name": "b",
-          "optional": true,
           "array": {
             "functions": [],
             "name": "bElement",
-            "optional": false,
             "link": {
               "text": "TypeA",
               "href": "tester.html#type-TypeA"
             },
-            "type": "ref",
+            "optional": false,
             "properties": [],
             "description": null
           },
-          "type": "array",
+          "optional": true,
           "properties": [],
           "description": "List of TypeA."
         }
       ],
+      "functions": [],
+      "name": "TypeA",
+      "simple_type": {
+        "simple_type": "object"
+      },
       "description": "A cool thing."
     }
   ],
@@ -155,10 +144,9 @@
           "functions": [],
           "name": "id",
           "simple_type": {
-            "type": "string"
+            "simple_type": "string"
           },
           "optional": false,
-          "type": "string",
           "properties": [],
           "description": null
         },
@@ -166,12 +154,11 @@
           "functions": [],
           "last": true,
           "name": "bookmark",
-          "optional": false,
           "link": {
             "text": "TypeA",
             "href": "tester.html#type-TypeA"
           },
-          "type": "ref",
+          "optional": false,
           "properties": [],
           "description": null
         }

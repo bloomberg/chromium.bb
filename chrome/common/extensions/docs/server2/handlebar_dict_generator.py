@@ -108,7 +108,7 @@ class HandlebarDictGenerator(object):
     callback_dict = {
       'name': 'callback',
       'description': callback.description,
-      'simple_type': {'type': 'function'},
+      'simple_type': {'simple_type': 'function'},
       'optional': callback.optional,
       'parameters': []
     }
@@ -139,12 +139,9 @@ class HandlebarDictGenerator(object):
     return property_dict
 
   def _RenderTypeInformation(self, property_, dst_dict):
-    dst_dict['type'] = property_.type_.name.lower()
     if property_.type_ == model.PropertyType.CHOICES:
-      dst_dict['choices'] = []
-      for choice_name in property_.choices:
-        dst_dict['choices'].append(self._GenerateProperty(
-            property_.choices[choice_name]))
+      dst_dict['choices'] = map(self._GenerateProperty,
+                                property_.choices.values())
       # We keep track of which is last for knowing when to add "or" between
       # choices in templates.
       if len(dst_dict['choices']) > 0:
@@ -154,5 +151,11 @@ class HandlebarDictGenerator(object):
                                         property_.ref_type)
     elif property_.type_ == model.PropertyType.ARRAY:
       dst_dict['array'] = self._GenerateProperty(property_.item_type)
+    elif property_.type_ == model.PropertyType.ENUM:
+      dst_dict['enum_values'] = []
+      for enum_value in property_.enum_values:
+        dst_dict['enum_values'].append({'name': enum_value})
+      if len(dst_dict['enum_values']) > 0:
+        dst_dict['enum_values'][-1]['last'] = True
     else:
-      dst_dict['simple_type'] = {'type': dst_dict['type']}
+      dst_dict['simple_type'] = {'simple_type': property_.type_.name.lower()}
