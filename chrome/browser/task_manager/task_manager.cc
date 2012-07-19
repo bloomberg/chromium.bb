@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
@@ -94,6 +93,7 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
   AddResourceProvider(
       new TaskManagerBackgroundContentsResourceProvider(task_manager));
   AddResourceProvider(new TaskManagerTabContentsResourceProvider(task_manager));
+  AddResourceProvider(new TaskManagerPanelResourceProvider(task_manager));
   AddResourceProvider(
       new TaskManagerChildProcessResourceProvider(task_manager));
   AddResourceProvider(
@@ -482,9 +482,9 @@ TaskManager::Resource::Type TaskManagerModel::GetResourceType(int index) const {
   return resources_[index]->GetType();
 }
 
-TabContents* TaskManagerModel::GetResourceTabContents(int index) const {
+WebContents* TaskManagerModel::GetResourceWebContents(int index) const {
   CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetTabContents();
+  return resources_[index]->GetWebContents();
 }
 
 const extensions::Extension* TaskManagerModel::GetResourceExtension(
@@ -606,7 +606,7 @@ bool TaskManagerModel::GetV8MemoryUsed(int index, size_t* result) const {
 
 bool TaskManagerModel::CanActivate(int index) const {
   CHECK_LT(index, ResourceCount());
-  return GetResourceTabContents(index) != NULL;
+  return GetResourceWebContents(index) != NULL;
 }
 
 bool TaskManagerModel::CanInspect(int index) const {
@@ -1096,15 +1096,13 @@ void TaskManager::KillProcess(int index) {
 }
 
 void TaskManager::ActivateProcess(int index) {
-  // GetResourceTabContents returns a pointer to the relevant tab contents for
-  // the resource.  If the index doesn't correspond to a Tab (i.e. refers to
-  // the Browser process or a plugin), GetTabContents will return NULL.
-  TabContents* chosen_tab_contents = model_->GetResourceTabContents(index);
-  if (chosen_tab_contents) {
-    WebContents* web_contents = chosen_tab_contents->web_contents();
-    if (web_contents->GetDelegate())
-      web_contents->GetDelegate()->ActivateContents(web_contents);
-  }
+  // GetResourceWebContents returns a pointer to the relevant web contents for
+  // the resource.  If the index doesn't correspond to any web contents
+  // (i.e. refers to the Browser process or a plugin), GetWebContents will
+  // return NULL.
+  WebContents* chosen_web_contents = model_->GetResourceWebContents(index);
+  if (chosen_web_contents && chosen_web_contents->GetDelegate())
+    chosen_web_contents->GetDelegate()->ActivateContents(chosen_web_contents);
 }
 
 void TaskManager::AddResource(Resource* resource) {

@@ -1573,7 +1573,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderTaskManager) {
 
   const TaskManagerModel* model = GetModel();
   for (int i = 0; i < model->ResourceCount(); ++i) {
-    if (model->GetResourceTabContents(i)) {
+    if (model->GetResourceWebContents(i)) {
       prerender_title = model->GetResourceTitle(i);
       if (StartsWith(prerender_title, prefix, true))
         ++num_prerender_tabs;
@@ -1590,7 +1590,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderTaskManager) {
   num_prerender_tabs = 0;
   int num_tabs_with_prerender_page_title = 0;
   for (int i = 0; i < model->ResourceCount(); ++i) {
-    if (model->GetResourceTabContents(i)) {
+    if (model->GetResourceWebContents(i)) {
       string16 tab_title = model->GetResourceTitle(i);
       if (StartsWith(tab_title, prefix, true)) {
         ++num_prerender_tabs;

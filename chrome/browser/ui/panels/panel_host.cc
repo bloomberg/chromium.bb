@@ -58,6 +58,7 @@ void PanelHost::Init(const GURL& url) {
 
 void PanelHost::DestroyWebContents() {
   web_contents_.reset();
+  favicon_tab_helper_.reset();
 }
 
 SkBitmap PanelHost::GetPageIcon() const {

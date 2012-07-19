@@ -20,11 +20,14 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
-class TabContents;
 class TaskManagerModel;
 
 namespace base {
 class ProcessMetrics;
+}
+
+namespace content {
+class WebContents;
 }
 
 namespace extensions {
@@ -103,9 +106,10 @@ class TaskManager {
     // Invokes or reveals developer tools window for this resource.
     virtual void Inspect() const {}
 
-    // A helper function for ActivateFocusedTab.  Returns NULL by default
-    // because not all resources have an associated tab.
-    virtual TabContents* GetTabContents() const { return NULL; }
+    // A helper function for ActivateProcess when selected resource refers
+    // to a Tab or other window containing web contents.  Returns NULL by
+    // default because not all resources have an associated web contents.
+    virtual content::WebContents* GetWebContents() const { return NULL; }
 
     // Whether this resource does report the network usage accurately.
     // This controls whether 0 or N/A is displayed when no bytes have been
@@ -401,8 +405,8 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Returns the type of the given resource.
   TaskManager::Resource::Type GetResourceType(int index) const;
 
-  // Returns TabContents of given resource or NULL if not applicable.
-  TabContents* GetResourceTabContents(int index) const;
+  // Returns WebContents of given resource or NULL if not applicable.
+  content::WebContents* GetResourceWebContents(int index) const;
 
   // Returns Extension of given resource or NULL if not applicable.
   const extensions::Extension* GetResourceExtension(int index) const;
