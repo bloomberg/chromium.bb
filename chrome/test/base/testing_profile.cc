@@ -53,6 +53,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_resource_context.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -396,8 +397,7 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
   if (GetBookmarkModel()->IsLoaded())
     return;
   base::RunLoop run_loop;
-  BookmarkLoadObserver observer(
-      ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
+  BookmarkLoadObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
   GetBookmarkModel()->AddObserver(&observer);
   run_loop.Run();
   GetBookmarkModel()->RemoveObserver(&observer);

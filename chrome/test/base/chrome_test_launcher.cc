@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_main_delegate.h"
@@ -13,6 +14,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -22,6 +24,10 @@
 #include "content/public/app/startup_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #endif  // defined(OS_WIN)
+
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/focus/accelerator_handler.h"
+#endif
 
 class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
  public:
@@ -106,8 +112,28 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
     return true;
   }
 
+  virtual void PreRunMessageLoop(base::RunLoop* run_loop) OVERRIDE {
+#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
+    DCHECK(!handler_.get());
+    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+      handler_.reset(new views::AcceleratorHandler);
+      run_loop->set_dispatcher(handler_.get());
+    }
+#endif
+  }
+
+  virtual void PostRunMessageLoop() {
+#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
+    handler_.reset();
+#endif
+  }
+
  private:
   ScopedTempDir temp_dir_;
+
+#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
+  scoped_ptr<views::AcceleratorHandler> handler_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestLauncherDelegate);
 };

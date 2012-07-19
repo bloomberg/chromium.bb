@@ -26,7 +26,6 @@
   ],
   'defines': [
     'HAS_OUT_OF_PROC_TEST_RUNNER',
-    'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
   ],
   'include_dirs': [
     '<(src_dir)',

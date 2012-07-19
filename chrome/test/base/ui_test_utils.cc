@@ -63,6 +63,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/geoposition.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -72,10 +73,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 #include "ui/ui_controls/ui_controls.h"
-
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/focus/accelerator_handler.h"
-#endif
 
 #if defined(USE_AURA)
 #include "ash/shell.h"
@@ -93,17 +90,6 @@ using content::Referrer;
 using content::WebContents;
 
 static const int kDefaultWsPort = 8880;
-
-// Number of times to repost a Quit task so that the MessageLoop finishes up
-// pending tasks and tasks posted by those pending tasks without risking the
-// potential hang behavior of MessageLoop::QuitWhenIdle.
-// The criteria for choosing this number: it should be high enough to make the
-// quit act like QuitWhenIdle, while taking into account that any page which is
-// animating may be rendering another frame for each quit deferral. For an
-// animating page, the potential delay to quitting the RunLoop would be
-// kNumQuitDeferrals * frame_render_time. Some perf tests run slow, such as
-// 200ms/frame.
-static const int kNumQuitDeferrals = 10;
 
 namespace ui_test_utils {
 
@@ -291,35 +277,7 @@ void RunAllPendingMessageAndSendQuit(content::BrowserThread::ID thread_id,
 
 void RunMessageLoop() {
   base::RunLoop run_loop;
-  RunThisRunLoop(&run_loop);
-}
-
-void RunThisRunLoop(base::RunLoop* run_loop) {
-  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
-  scoped_ptr<views::AcceleratorHandler> handler;
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    handler.reset(new views::AcceleratorHandler);
-    run_loop->set_dispatcher(handler.get());
-  }
-#endif
-  run_loop->Run();
-}
-
-// TODO(jbates) move this to a new test_utils.cc in content/test/
-static void DeferredQuitRunLoop(const base::Closure& quit_task,
-                                int num_quit_deferrals) {
-  if (num_quit_deferrals <= 0) {
-    quit_task.Run();
-  } else {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&DeferredQuitRunLoop, quit_task, num_quit_deferrals - 1));
-  }
-}
-
-base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop) {
-  return base::Bind(&DeferredQuitRunLoop, run_loop->QuitClosure(),
-                    kNumQuitDeferrals);
+  content::RunThisRunLoop(&run_loop);
 }
 
 void RunAllPendingInMessageLoop() {
@@ -343,7 +301,7 @@ void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id) {
   content::BrowserThread::PostTask(thread_id, FROM_HERE,
       base::Bind(&RunAllPendingMessageAndSendQuit, current_thread_id,
                  run_loop.QuitClosure()));
-  ui_test_utils::RunThisRunLoop(&run_loop);
+  content::RunThisRunLoop(&run_loop);
 }
 
 bool GetCurrentTabTitle(const Browser* browser, string16* title) {
@@ -364,8 +322,8 @@ void WaitForNavigations(NavigationController* controller,
       number_of_navigations);
   base::RunLoop run_loop;
   observer.WaitForObservation(
-      base::Bind(&ui_test_utils::RunThisRunLoop, base::Unretained(&run_loop)),
-      ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
+      base::Bind(&content::RunThisRunLoop, base::Unretained(&run_loop)),
+      content::GetQuitTaskForRunLoop(&run_loop));
 }
 
 void WaitForNewTab(Browser* browser) {
@@ -412,8 +370,8 @@ void NavigateToURL(chrome::NavigateParams* params) {
   chrome::Navigate(params);
   base::RunLoop run_loop;
   observer.WaitForObservation(
-      base::Bind(&ui_test_utils::RunThisRunLoop, base::Unretained(&run_loop)),
-      ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
+      base::Bind(&content::RunThisRunLoop, base::Unretained(&run_loop)),
+      content::GetQuitTaskForRunLoop(&run_loop));
 }
 
 void NavigateToURL(Browser* browser, const GURL& url) {
@@ -486,8 +444,8 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   if (disposition == CURRENT_TAB) {
     base::RunLoop run_loop;
     same_tab_observer.WaitForObservation(
-        base::Bind(&ui_test_utils::RunThisRunLoop, base::Unretained(&run_loop)),
-        ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
+        base::Bind(&content::RunThisRunLoop, base::Unretained(&run_loop)),
+        content::GetQuitTaskForRunLoop(&run_loop));
     return;
   } else if (web_contents) {
     NavigationController* controller = &web_contents->GetController();
@@ -738,9 +696,9 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   if (model->IsLoaded())
     return;
   base::RunLoop run_loop;
-  BookmarkLoadObserver observer(GetQuitTaskForRunLoop(&run_loop));
+  BookmarkLoadObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
   model->AddObserver(&observer);
-  RunThisRunLoop(&run_loop);
+  content::RunThisRunLoop(&run_loop);
   model->RemoveObserver(&observer);
   ASSERT_TRUE(model->IsLoaded());
 }
@@ -864,7 +822,7 @@ MessageLoopRunner::~MessageLoopRunner() {
 }
 
 void MessageLoopRunner::Run() {
-  ui_test_utils::RunThisRunLoop(&run_loop_);
+  content::RunThisRunLoop(&run_loop_);
 }
 
 base::Closure MessageLoopRunner::QuitClosure() {
@@ -872,7 +830,7 @@ base::Closure MessageLoopRunner::QuitClosure() {
 }
 
 void MessageLoopRunner::Quit() {
-  ui_test_utils::GetQuitTaskForRunLoop(&run_loop_).Run();
+  content::GetQuitTaskForRunLoop(&run_loop_).Run();
 }
 
 TestWebSocketServer::TestWebSocketServer()

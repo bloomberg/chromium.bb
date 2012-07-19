@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_devtools_delegate.h"
@@ -37,6 +38,8 @@ static GURL GetStartupURL() {
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
     : BrowserMainParts(),
+      parameters_(parameters),
+      run_message_loop_(true),
       devtools_delegate_(NULL) {
 }
 
@@ -88,6 +91,16 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                            MSG_ROUTING_NONE,
                            NULL);
   }
+
+  if (parameters_.ui_task) {
+    parameters_.ui_task->Run();
+    delete parameters_.ui_task;
+    run_message_loop_ = false;
+  }
+}
+
+bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
+  return !run_message_loop_;
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {

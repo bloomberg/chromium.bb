@@ -48,6 +48,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -1017,9 +1018,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
           content::NotificationService::AllSources(), NULL, 1);
       base::RunLoop run_loop;
       observer.WaitForObservation(
-          base::Bind(&ui_test_utils::RunThisRunLoop,
+          base::Bind(&content::RunThisRunLoop,
                      base::Unretained(&run_loop)),
-          ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
+          content::GetQuitTaskForRunLoop(&run_loop));
     }
   }
 

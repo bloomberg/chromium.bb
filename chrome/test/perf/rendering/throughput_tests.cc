@@ -28,6 +28,7 @@
 #include "chrome/test/perf/perf_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/gpu/gpu_test_config.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
@@ -201,7 +202,7 @@ class ThroughputTest : public BrowserPerfTest {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(),
         base::TimeDelta::FromMilliseconds(ms));
-    ui_test_utils::RunThisRunLoop(&run_loop);
+    content::RunThisRunLoop(&run_loop);
   }
 
   // Take snapshot of the current tab, encode it as PNG, and save to a SkBitmap.

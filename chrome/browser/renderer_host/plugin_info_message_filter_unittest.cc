@@ -8,9 +8,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/test/test_browser_thread.h"
@@ -91,7 +91,8 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
     PluginService::GetInstance()->GetPlugins(
         base::Bind(&PluginInfoMessageFilterTest::PluginsLoaded,
                    base::Unretained(this)));
-    ui_test_utils::RunMessageLoop();
+    base::RunLoop run_loop;
+    run_loop.Run();
   }
 
  protected:

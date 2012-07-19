@@ -41,6 +41,10 @@
 
 namespace test_launcher {
 
+namespace {
+TestLauncherDelegate* g_launcher_delegate;
+}
+
 // The environment variable name for the total number of test shards.
 const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
 // The environment variable name for the test shard index.
@@ -573,6 +577,8 @@ TestLauncherDelegate::~TestLauncherDelegate() {
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 int argc,
                 char** argv) {
+  DCHECK(!g_launcher_delegate);
+  g_launcher_delegate = launcher_delegate;
   launcher_delegate->EarlyInitialize();
 
   CommandLine::Init(argc, argv);
@@ -662,6 +668,10 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       cycles--;
   }
   return exit_code;
+}
+
+TestLauncherDelegate* GetCurrentTestLauncherDelegate() {
+  return g_launcher_delegate;
 }
 
 }  // namespace test_launcher

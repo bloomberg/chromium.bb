@@ -10,6 +10,10 @@
 
 class CommandLine;
 
+namespace base {
+class RunLoop;
+}
+
 namespace test_launcher {
 
 extern const char kEmptyTestName[];
@@ -30,6 +34,8 @@ class TestLauncherDelegate {
   virtual bool Run(int argc, char** argv, int* return_code) = 0;
   virtual int RunTestSuite(int argc, char** argv) = 0;
   virtual bool AdjustChildProcessCommandLine(CommandLine* command_line) = 0;
+  virtual void PreRunMessageLoop(base::RunLoop* run_loop) {}
+  virtual void PostRunMessageLoop() {}
 
  protected:
   virtual ~TestLauncherDelegate();
@@ -38,6 +44,8 @@ class TestLauncherDelegate {
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 int argc,
                 char** argv) WARN_UNUSED_RESULT;
+
+TestLauncherDelegate* GetCurrentTestLauncherDelegate();
 
 }  // namespace test_launcher
 

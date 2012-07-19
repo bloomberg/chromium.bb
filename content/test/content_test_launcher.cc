@@ -12,12 +12,80 @@
 #include "base/test/test_suite.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/content_test_suite_base.h"
+#include "content/shell/shell_content_browser_client.h"
+#include "content/shell/shell_content_client.h"
 #include "content/shell/shell_main_delegate.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
 #include "content/public/app/startup_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "ui/base/win/scoped_ole_initializer.h"
 #endif  // defined(OS_WIN)
+
+namespace content {
+
+class ContentShellTestSuiteInitializer
+    : public testing::EmptyTestEventListener {
+ public:
+  ContentShellTestSuiteInitializer() {
+  }
+
+  virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
+    DCHECK(!GetContentClient());
+    content_client_.reset(new ShellContentClient);
+    browser_content_client_.reset(new ShellContentBrowserClient());
+    content_client_->set_browser_for_testing(browser_content_client_.get());
+    SetContentClient(content_client_.get());
+  }
+
+  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
+    DCHECK_EQ(content_client_.get(), GetContentClient());
+    browser_content_client_.reset();
+    content_client_.reset();
+    SetContentClient(NULL);
+  }
+
+ private:
+  scoped_ptr<ShellContentClient> content_client_;
+  scoped_ptr<ShellContentBrowserClient> browser_content_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentShellTestSuiteInitializer);
+};
+
+class ContentBrowserTestSuite : public ContentTestSuiteBase {
+ public:
+  ContentBrowserTestSuite(int argc, char** argv)
+      : ContentTestSuiteBase(argc, argv) {
+  }
+  virtual ~ContentBrowserTestSuite() {
+  }
+
+ protected:
+  virtual void Initialize() OVERRIDE {
+    ContentTestSuiteBase::Initialize();
+
+    testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+    listeners.Append(new ContentShellTestSuiteInitializer);
+  }
+  virtual void Shutdown() OVERRIDE {
+    base::TestSuite::Shutdown();
+  }
+
+  virtual ContentClient* CreateClientForInitialization() OVERRIDE {
+    return new ShellContentClient();
+  }
+
+#if defined(OS_WIN)
+  ui::ScopedOleInitializer ole_initializer_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ContentBrowserTestSuite);
+};
+
+}  // namespace content
 
 class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
  public:
@@ -31,31 +99,33 @@ class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
   virtual bool Run(int argc, char** argv, int* return_code) OVERRIDE {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kProcessType)) {
+      ShellMainDelegate delegate;
+#if defined(OS_WIN)
       sandbox::SandboxInterfaceInfo sandbox_info = {0};
       content::InitializeSandboxInfo(&sandbox_info);
-      ShellMainDelegate delegate;
       *return_code =
           content::ContentMain(GetModuleHandle(NULL), &sandbox_info, &delegate);
+#elif defined(OS_LINUX)
+      *return_code = content::ContentMain(argc,
+                                          const_cast<const char**>(argv),
+                                          &delegate);
+#endif  // defined(OS_WIN)
       return true;
     }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
     return false;
   }
 
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
-    return base::TestSuite(argc, argv).Run();
+    return content::ContentBrowserTestSuite(argc, argv).Run();
   }
 
   virtual bool AdjustChildProcessCommandLine(
       CommandLine* command_line) OVERRIDE {
-    FilePath file_exe;
-    if (!PathService::Get(base::FILE_EXE, &file_exe))
-      return false;
-    command_line->AppendSwitchPath(switches::kBrowserSubprocessPath, file_exe);
     return true;
   }
 

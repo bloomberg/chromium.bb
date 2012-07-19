@@ -27,6 +27,7 @@
       'sources': [
         'public/test/accessibility_test_utils_win.h',
         'public/test/browser_test.h',
+        'public/test/browser_test_utils.h',
         'public/test/content_test_suite_base.h',
         'public/test/js_injection_ready_observer.h',
         'public/test/mock_download_item.h',
@@ -74,6 +75,7 @@
         'test/accessibility_test_utils_win.cc',
         'test/browser_test_base.cc',
         'test/browser_test_base.h',
+        'test/browser_test_utils.cc',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
         'test/content_test_suite_base.cc',
@@ -521,6 +523,7 @@
         'content_plugin',
         'content_renderer',
         'content_shell_lib',
+        'content_shell_pak',
         'test_support_content',
         '../base/base.gyp:test_support_base',
         '../ipc/ipc.gyp:test_support_ipc',
@@ -543,8 +546,10 @@
       'sources': [
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
+        'test/content_browser_test_utils.cc',
+        'test/content_browser_test_utils.h',
+        'test/content_browser_test_test.cc',
         'test/content_test_launcher.cc',
-        'renderer/pepper/pepper_file_chooser_host_browsertest.cc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -582,6 +587,11 @@
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+        ['OS=="mac"', {
+          'dependencies': [
+            'content_shell',  # Needed for Content Shell.app's Helper.
           ],
         }],
       ],

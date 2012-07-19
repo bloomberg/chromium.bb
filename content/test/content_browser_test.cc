@@ -4,8 +4,13 @@
 
 #include "content/test/content_browser_test.h"
 
+#include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/file_path.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_main_delegate.h"
 #include "content/test/test_content_client.h"
@@ -15,15 +20,36 @@
 #endif
 
 ContentBrowserTest::ContentBrowserTest() {
+#if defined(OS_MACOSX)
+  // See comment in InProcessBrowserTest::InProcessBrowserTest().
+  FilePath content_shell_path;
+  CHECK(PathService::Get(base::FILE_EXE, &content_shell_path));
+  content_shell_path = content_shell_path.DirName();
+  content_shell_path = content_shell_path.Append(
+      FILE_PATH_LITERAL("Content Shell.app/Contents/MacOS/Content Shell"));
+  CHECK(PathService::Override(base::FILE_EXE, content_shell_path));
+#endif
 }
 
 ContentBrowserTest::~ContentBrowserTest() {
 }
 
 void ContentBrowserTest::SetUp() {
-  DCHECK(!content::GetContentClient());
   shell_main_delegate_.reset(new ShellMainDelegate);
   shell_main_delegate_->PreSandboxStartup();
+
+#if defined(OS_MACOSX)
+  // See InProcessBrowserTest::PrepareTestCommandLine().
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  FilePath subprocess_path;
+  PathService::Get(base::FILE_EXE, &subprocess_path);
+  subprocess_path = subprocess_path.DirName().DirName();
+  DCHECK_EQ(subprocess_path.BaseName().value(), "Contents");
+  subprocess_path = subprocess_path.Append(
+      "Frameworks/Content Shell Helper.app/Contents/MacOS/Content Shell Helper");
+  command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
+                                 subprocess_path);
+#endif
 
   BrowserTestBase::SetUp();
 }
@@ -45,6 +71,9 @@ static void DumpStackTraceSignalHandler(int signal) {
 #endif  // defined(OS_POSIX)
 
 void ContentBrowserTest::RunTestOnMainThreadLoop() {
+  CHECK_EQ(content::Shell::windows().size(), 1u);
+  shell_ = content::Shell::windows()[0];
+
 #if defined(OS_POSIX)
   signal(SIGTERM, DumpStackTraceSignalHandler);
 #endif  // defined(OS_POSIX)
@@ -68,11 +97,6 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
 #endif
 
   RunTestOnMainThread();
-#if defined(OS_MACOSX)
-  pool.Recycle();
-#endif
-
-  MessageLoopForUI::current()->Quit();
 #if defined(OS_MACOSX)
   pool.Recycle();
 #endif

@@ -13,13 +13,6 @@
 // anyway - otherwise the second test crashes.
 #if defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
-#if defined(BROWSER_TESTS_HEADER_OVERRIDE)
-#include BROWSER_TESTS_HEADER_OVERRIDE
-#else
-#include "content/test/content_browser_test.h"
-typedef ContentBrowserTest InProcessBrowserTest;
-#endif
-
 #include "base/compiler_specific.h"
 
 #define IN_PROC_BROWSER_TEST_(test_case_name, test_name, parent_class,\

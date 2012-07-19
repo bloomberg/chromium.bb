@@ -64,6 +64,9 @@ class Shell : public WebContentsDelegate,
   // Returns the Shell object corresponding to the given RenderViewHost.
   static Shell* FromRenderViewHost(RenderViewHost* rvh);
 
+  // Returns the currently open windows.
+  static std::vector<Shell*>& windows() { return windows_; }
+
   // Closes all windows and returns. This runs a message loop.
   static void CloseAllWindows();
 

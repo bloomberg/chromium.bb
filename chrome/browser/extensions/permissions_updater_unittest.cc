@@ -6,6 +6,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
@@ -15,7 +16,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -47,7 +47,8 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
       return;
 
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    base::RunLoop run_loop;
+    run_loop.Run();
   }
 
   bool received_notification() const { return received_notification_; }

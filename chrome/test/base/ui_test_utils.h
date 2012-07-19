@@ -95,13 +95,6 @@ enum BrowserTestWaitFlags {
 // process browser tests that need to block until a condition is met.
 void RunMessageLoop();
 
-// Variant of RunMessageLoop that takes RunLoop.
-void RunThisRunLoop(base::RunLoop* run_loop);
-
-// Get task to quit the given RunLoop. It allows a few generations of pending
-// tasks to run as opposed to run_loop->QuitClosure().
-base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop);
-
 // Turns on nestable tasks, runs all pending tasks in the message loop,
 // then resets nestable tasks to what they were originally. Prefer this
 // over MessageLoop::RunAllPending for in process browser tests to run

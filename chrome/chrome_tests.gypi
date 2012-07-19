@@ -487,7 +487,6 @@
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
-        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
       ],
       'sources': [
         'browser/browser_focus_uitest.cc',
@@ -2640,7 +2639,6 @@
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
-        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
       ],
       'sources': [
         'app/breakpad_mac_stubs.mm',
@@ -3441,7 +3439,6 @@
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
-        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
       ],
       'sources': [
         'app/breakpad_mac_stubs.mm',
@@ -3591,7 +3588,6 @@
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
-        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
       ],
       'sources': [
         'app/chrome_dll.rc',
@@ -3888,7 +3884,6 @@
       # TODO(phajdan.jr): Only temporary, to make transition easier.
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
-        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
       ],
       'sources': [
         'app/chrome_command_ids.h',
@@ -4039,7 +4034,6 @@
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
-        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
       ],
       'sources': [
         'app/chrome_command_ids.h',
