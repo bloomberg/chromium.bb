@@ -350,7 +350,7 @@ void SyncTest::CleanUpOnMainThread() {
   // All browsers should be closed at this point, or else we could see memory
   // corruption in QuitBrowser().
   CHECK_EQ(0U, BrowserList::size());
-  clients_.reset();
+  clients_.clear();
 }
 
 void SyncTest::SetUpInProcessBrowserTestFixture() {

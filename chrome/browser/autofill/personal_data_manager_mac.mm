@@ -66,7 +66,7 @@ class AuxiliaryProfilesImpl {
 // information and translates it to the internal list of |AutofillProfile| data
 // structures.
 void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
-  profiles_.reset();
+  profiles_.clear();
 
   ABAddressBook* addressBook = [ABAddressBook sharedAddressBook];
   ABPerson* me = [addressBook me];

@@ -128,7 +128,7 @@ bool CHROMEOS_EXPORT PopIBusPropertyList(dbus::MessageReader* reader,
                << "1st argument should be array.";
     return false;
   }
-  property_list->reset();
+  property_list->clear();
   while (property_array_reader.HasMoreData()) {
     IBusProperty* property = new IBusProperty;
     if (!PopIBusProperty(&property_array_reader, property)) {

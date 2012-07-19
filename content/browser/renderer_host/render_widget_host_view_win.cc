@@ -1372,7 +1372,7 @@ void RenderWidgetHostViewWin::OnDestroy() {
   // sequence as part of the usual cleanup when the plugin instance goes away.
   EnumChildWindows(m_hWnd, DetachPluginWindowsCallback, NULL);
 
-  props_.reset();
+  props_.clear();
 
   if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
       IsTouchWindow(m_hWnd, NULL)) {

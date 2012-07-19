@@ -422,7 +422,7 @@ void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
   DCHECK_NE(LOADING_STATE_REFRESHING, loading_state_);
   loading_state_ = LOADING_STATE_UP_TO_DATE;
 
-  plugin_groups_.reset();
+  plugin_groups_.clear();
   for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end();
        ++it) {

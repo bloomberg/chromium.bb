@@ -894,7 +894,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
 }
 
 void AutofillManager::Reset() {
-  form_structures_.reset();
+  form_structures_.clear();
   has_logged_autofill_enabled_ = false;
   has_logged_address_suggestions_count_ = false;
   did_show_suggestions_ = false;

@@ -593,7 +593,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 }
 
 void RenderTextWin::ItemizeLogicalText() {
-  runs_.reset();
+  runs_.clear();
   string_size_ = Size(0, GetFont().GetHeight());
   common_baseline_ = 0;
 

@@ -47,7 +47,7 @@ class ListModel {
   // Removes all items from the model. This does NOT delete the items.
   void RemoveAll() {
     size_t count = item_count();
-    items_.clear();
+    items_.weak_clear();
     NotifyItemsRemoved(0, count);
   }
 

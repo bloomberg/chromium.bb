@@ -739,7 +739,7 @@ void LocationBarViewGtk::UpdatePageActions() {
   // loaded or added after startup.
   if (new_page_actions != page_actions_) {
     page_actions_.swap(new_page_actions);
-    page_action_views_.reset();
+    page_action_views_.clear();
 
     for (size_t i = 0; i < page_actions_.size(); ++i) {
       page_action_views_.push_back(
@@ -771,7 +771,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
 void LocationBarViewGtk::InvalidatePageActions() {
   size_t count_before = page_action_views_.size();
-  page_action_views_.reset();
+  page_action_views_.clear();
   if (page_action_views_.size() != count_before) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,

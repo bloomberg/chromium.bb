@@ -122,11 +122,11 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   void ClearAutofillProfiles() {
-    web_profiles_.reset();
+    web_profiles_.clear();
   }
 
   void ClearCreditCards() {
-    credit_cards_.reset();
+    credit_cards_.clear();
   }
 
   void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {

@@ -38,7 +38,7 @@ void SetProperty(const std::string& prefix, IBusProperty* property) {
   property->set_tooltip(prefix + kSampleTooltip);
   property->set_visible(kSampleVisible);
   property->set_checked(kSampleChecked);
-  property->mutable_sub_properties()->reset();
+  property->mutable_sub_properties()->clear();
 }
 
 // Checks testing data in |property| with |prefix|.

@@ -154,7 +154,7 @@ RenderViewHost* HungPagesTableModel::GetRenderViewHost() {
 }
 
 void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
-  tab_observers_.reset();
+  tab_observers_.clear();
   if (hung_contents) {
     // Force hung_contents to be first.
     TabContents* hung_tab_contents =

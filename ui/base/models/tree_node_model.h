@@ -98,7 +98,7 @@ class TreeNode : public TreeModelNode {
   void RemoveAll() {
     for (size_t i = 0; i < children_.size(); ++i)
       children_[i]->parent_ = NULL;
-    children_.clear();
+    children_.weak_clear();
   }
 
   // Returns the parent node, or NULL if this is the root node.

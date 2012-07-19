@@ -848,7 +848,7 @@ void PrerenderManager::DestroyPendingPrerenderData(
 void PrerenderManager::DoShutdown() {
   DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
   STLDeleteElements(&prerender_conditions_);
-  on_close_tab_contents_deleters_.reset();
+  on_close_tab_contents_deleters_.clear();
   profile_ = NULL;
 
   DCHECK(active_prerender_list_.empty());
@@ -1231,4 +1231,3 @@ PrerenderManager* FindPrerenderManagerUsingRenderProcessId(
 }
 
 }  // namespace prerender
-

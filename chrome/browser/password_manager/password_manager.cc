@@ -171,7 +171,7 @@ void PasswordManager::DidNavigateAnyFrame(
   // There might be password data to provisionally save. Other than that, we're
   // ready to reset and move on.
   ProvisionallySavePassword(params.password_form);
-  pending_login_managers_.reset();
+  pending_login_managers_.clear();
 }
 
 bool PasswordManager::OnMessageReceived(const IPC::Message& message) {

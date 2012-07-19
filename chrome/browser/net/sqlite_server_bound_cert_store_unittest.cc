@@ -136,7 +136,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   ASSERT_TRUE(helper->Run());
-  certs.reset();
+  certs.clear();
   store_ = new SQLiteServerBoundCertStore(
       temp_dir_.path().Append(chrome::kOBCertFilename), NULL);
 
@@ -569,7 +569,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestClearOnExitPolicy) {
       temp_dir_.path().AppendASCII("ClearOnExitDB"), clear_policy.get());
 
   // Reload and test for persistence
-  certs.reset();
+  certs.clear();
   ASSERT_TRUE(store_->Load(&certs.get()));
   ASSERT_EQ(3U, certs.size());
 
@@ -582,7 +582,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestClearOnExitPolicy) {
       temp_dir_.path().AppendASCII("ClearOnExitDB"), clear_policy.get());
 
   // Reload and test for persistence
-  certs.reset();
+  certs.clear();
   ASSERT_TRUE(store_->Load(&certs.get()));
   ASSERT_EQ(2U, certs.size());
 

@@ -591,7 +591,7 @@ void LocationBarViewMac::DeletePageActionDecorations() {
   // least fail safe.
   [[field_ cell] clearDecorations];
 
-  page_action_decorations_.reset();
+  page_action_decorations_.clear();
 }
 
 void LocationBarViewMac::RefreshPageActionDecorations() {

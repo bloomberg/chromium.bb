@@ -507,5 +507,5 @@ void InstantController::ScheduleDestroy(InstantLoader* loader) {
 }
 
 void InstantController::DestroyLoaders() {
-  loaders_to_destroy_.reset();
+  loaders_to_destroy_.clear();
 }

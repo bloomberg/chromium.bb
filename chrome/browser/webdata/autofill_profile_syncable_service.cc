@@ -168,7 +168,7 @@ void AutofillProfileSyncableService::StopSyncing(syncer::ModelType type) {
 
   sync_processor_.reset();
   sync_error_factory_.reset();
-  profiles_.reset();
+  profiles_.clear();
   profiles_map_.clear();
 }
 

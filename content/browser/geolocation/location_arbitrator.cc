@@ -84,7 +84,7 @@ void GeolocationArbitrator::DoStartProviders() {
 }
 
 void GeolocationArbitrator::StopProviders() {
-  providers_.reset();
+  providers_.clear();
 }
 
 void GeolocationArbitrator::OnAccessTokenStoresLoaded(

@@ -243,7 +243,7 @@ void GeolocationPermissionContextTests::SetUp() {
 }
 
 void GeolocationPermissionContextTests::TearDown() {
-  extra_tabs_.reset();
+  extra_tabs_.clear();
   TabContentsTestHarness::TearDown();
   // Schedule another task on the DB thread to notify us that it's safe to
   // carry on with the test.

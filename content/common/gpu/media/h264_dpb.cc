@@ -14,7 +14,7 @@ H264DPB::H264DPB() {}
 H264DPB::~H264DPB() {}
 
 void H264DPB::Clear() {
-  pics_.reset();
+  pics_.clear();
 }
 
 void H264DPB::RemoveByPOC(int poc) {
@@ -115,4 +115,3 @@ void H264DPB::GetLongTermRefPicsAppending(H264Picture::PtrVector& out) {
 }
 
 }  // namespace content
-

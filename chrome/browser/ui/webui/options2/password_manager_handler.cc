@@ -125,8 +125,8 @@ void PasswordManagerHandler::Observe(
 
 void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
   // Reset the current lists.
-  password_list_.reset();
-  password_exception_list_.reset();
+  password_list_.clear();
+  password_exception_list_.clear();
 
   languages_ = Profile::FromWebUI(web_ui())->GetPrefs()->
       GetString(prefs::kAcceptLanguages);
@@ -244,7 +244,7 @@ void PasswordManagerHandler::PasswordListPopulater::
         const std::vector<webkit::forms::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
-  page_->password_list_.reset();
+  page_->password_list_.clear();
   page_->password_list_.insert(page_->password_list_.end(),
                                result.begin(), result.end());
   page_->SetPasswordList();
@@ -273,7 +273,7 @@ void PasswordManagerHandler::PasswordExceptionListPopulater::
         const std::vector<webkit::forms::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
-  page_->password_exception_list_.reset();
+  page_->password_exception_list_.clear();
   page_->password_exception_list_.insert(page_->password_exception_list_.end(),
                                          result.begin(), result.end());
   page_->SetPasswordExceptionList();

@@ -705,7 +705,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   }
 
   // Copy in the new profiles.
-  web_profiles_.reset();
+  web_profiles_.clear();
   for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
     web_profiles_.push_back(new AutofillProfile(*iter));
@@ -756,7 +756,7 @@ void PersonalDataManager::SetCreditCards(
   }
 
   // Copy in the new credit cards.
-  credit_cards_.reset();
+  credit_cards_.clear();
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
     credit_cards_.push_back(new CreditCard(*iter));
@@ -804,7 +804,7 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
   DCHECK_EQ(pending_profiles_query_, h);
 
   pending_profiles_query_ = 0;
-  web_profiles_.reset();
+  web_profiles_.clear();
 
   const WDResult<std::vector<AutofillProfile*> >* r =
       static_cast<const WDResult<std::vector<AutofillProfile*> >*>(result);
@@ -824,7 +824,7 @@ void PersonalDataManager::ReceiveLoadedCreditCards(
   DCHECK_EQ(pending_creditcards_query_, h);
 
   pending_creditcards_query_ = 0;
-  credit_cards_.reset();
+  credit_cards_.clear();
 
   const WDResult<std::vector<CreditCard*> >* r =
       static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
