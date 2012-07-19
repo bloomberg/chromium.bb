@@ -236,8 +236,7 @@ class GDataFile : public GDataEntry {
   virtual void SetBaseNameFromTitle() OVERRIDE;
 
  private:
-  // Content URL for files.
-  DocumentEntry::EntryKind kind_;
+  DocumentEntry::EntryKind kind_;  // Not saved in proto.
   GURL thumbnail_url_;
   GURL alternate_url_;
   std::string content_mime_type_;

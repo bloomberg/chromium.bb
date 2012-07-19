@@ -611,7 +611,6 @@ bool GDataFile::FromProto(const GDataFileProto& proto) {
   if (!GDataEntry::FromProto(proto.gdata_entry()))
     return false;
 
-  kind_ = DocumentEntry::EntryKind(proto.kind());
   thumbnail_url_ = GURL(proto.thumbnail_url());
   alternate_url_ = GURL(proto.alternate_url());
   content_mime_type_ = proto.content_mime_type();
@@ -625,7 +624,6 @@ bool GDataFile::FromProto(const GDataFileProto& proto) {
 void GDataFile::ToProto(GDataFileProto* proto) const {
   GDataEntry::ToProto(proto->mutable_gdata_entry());
   DCHECK(!proto->gdata_entry().file_info().is_directory());
-  proto->set_kind(kind_);
   proto->set_thumbnail_url(thumbnail_url_.spec());
   proto->set_alternate_url(alternate_url_.spec());
   proto->set_content_mime_type(content_mime_type_);

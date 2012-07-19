@@ -39,7 +39,6 @@ message GDataEntryProto {
 // Represents GDataFile.
 message GDataFileProto {
   optional GDataEntryProto gdata_entry = 1;
-  optional uint32 kind = 2;
   optional string thumbnail_url = 3;
   optional string alternate_url = 4;
   optional string content_mime_type = 5;
