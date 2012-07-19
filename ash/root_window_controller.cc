@@ -61,11 +61,6 @@ void MoveAllWindows(aura::RootWindow* src,
     internal::kShellWindowId_SystemModalContainer,
     internal::kShellWindowId_LockSystemModalContainer,
   };
-  const gfx::Point src_origin =
-      gfx::Screen::GetDisplayNearestWindow(src).bounds().origin();
-  const gfx::Point dst_origin =
-      gfx::Screen::GetDisplayNearestWindow(src).bounds().origin();
-
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
     aura::Window* src_container = Shell::GetContainer(src, id);

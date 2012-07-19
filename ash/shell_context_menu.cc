@@ -8,7 +8,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -36,12 +35,8 @@ void ShellContextMenu::ShowMenu(views::Widget* widget,
       l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
   views::MenuModelAdapter menu_model_adapter(&menu_model);
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
-  aura::Window* window = widget->GetNativeView();
-  gfx::Point menu_origin = location;
-  aura::client::GetScreenPositionClient(window->GetRootWindow())->
-      ConvertPointToScreen(window, &menu_origin);
   if (menu_runner_->RunMenuAt(
-          widget, NULL, gfx::Rect(menu_origin, gfx::Size()),
+          widget, NULL, gfx::Rect(location, gfx::Size()),
           views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
