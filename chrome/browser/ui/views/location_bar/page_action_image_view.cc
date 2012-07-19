@@ -153,7 +153,8 @@ void PageActionImageView::OnMouseReleased(const views::MouseEvent& event) {
   } else if (event.IsMiddleMouseButton()) {
     button = 2;
   } else if (event.IsRightMouseButton()) {
-    ShowContextMenu(gfx::Point(), true);
+    // Don't show a menu here, its handled in View::ProcessMouseReleased. We
+    // show the context menu by way of being the ContextMenuController.
     return;
   }
 
