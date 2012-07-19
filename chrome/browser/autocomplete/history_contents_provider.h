@@ -34,7 +34,7 @@ class HistoryContentsProvider : public HistoryProvider {
   // done SetResults is invoked.
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void Stop(bool clear_cached_results) OVERRIDE;
 
  private:
   // When processing the results from the history query, this structure points

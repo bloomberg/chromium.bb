@@ -30,7 +30,7 @@ AutocompleteProvider::AutocompleteProvider(
       name_(name) {
 }
 
-void AutocompleteProvider::Stop() {
+void AutocompleteProvider::Stop(bool clear_cached_results) {
   done_ = true;
 }
 
@@ -76,7 +76,7 @@ string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
 }
 
 AutocompleteProvider::~AutocompleteProvider() {
-  Stop();
+  Stop(false);
 }
 
 // static

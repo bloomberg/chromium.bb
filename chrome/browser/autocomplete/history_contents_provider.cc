@@ -72,7 +72,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
       !(HistoryServiceFactory::GetForProfile(profile_,
                                              Profile::EXPLICIT_ACCESS) ||
         profile_->GetBookmarkModel())) {
-    Stop();
+    Stop(false);
     return;
   }
 
@@ -83,13 +83,13 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
       (((input.type() == AutocompleteInput::REQUESTED_URL) ||
         (input.type() == AutocompleteInput::UNKNOWN)) &&
        (input.text().find('.') != string16::npos))) {
-    Stop();
+    Stop(false);
     return;
   }
 
   if (input.matches_requested() == AutocompleteInput::BEST_MATCH) {
     // None of our results are applicable for best match.
-    Stop();
+    Stop(false);
     return;
   }
 
@@ -100,7 +100,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
   // Decide what to do about any previous query/results.
   if (!minimal_changes) {
     // Any in-progress request is irrelevant, cancel it.
-    Stop();
+    Stop(false);
   } else if (have_results_) {
     // We finished the previous query and still have its results.  Mark them up
     // again for the new input.
@@ -150,7 +150,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
   }
 }
 
-void HistoryContentsProvider::Stop() {
+void HistoryContentsProvider::Stop(bool clear_cached_results) {
   done_ = true;
   request_consumer_.CancelAllRequests();
 

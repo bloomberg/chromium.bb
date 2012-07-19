@@ -176,7 +176,7 @@ void AutocompleteController::Start(
 void AutocompleteController::Stop(bool clear_result) {
   for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
        ++i) {
-    (*i)->Stop();
+    (*i)->Stop(clear_result);
   }
 
   expire_timer_.Stop();

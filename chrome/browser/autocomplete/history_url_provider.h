@@ -158,7 +158,7 @@ class HistoryURLProvider : public HistoryProvider {
   // AutocompleteProvider
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void Stop(bool clear_cached_results) OVERRIDE;
 
   // Runs the history query on the history thread, called by the history
   // system. The history database MAY BE NULL in which case it is not

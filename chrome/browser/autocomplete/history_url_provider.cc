@@ -306,12 +306,12 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // re-run the query from scratch and ignore |minimal_changes|.
 
   // Cancel any in-progress query.
-  Stop();
+  Stop(false);
 
   RunAutocompletePasses(input, true);
 }
 
-void HistoryURLProvider::Stop() {
+void HistoryURLProvider::Stop(bool clear_cached_results) {
   done_ = true;
 
   if (params_)

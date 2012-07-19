@@ -198,8 +198,9 @@ class AutocompleteProvider
 
   // Called when a provider must not make any more callbacks for the current
   // query. This will be called regardless of whether the provider is already
-  // done.
-  virtual void Stop();
+  // done.  If the provider caches any results, it should clear the cache based
+  // on the value of |clear_cached_results|.
+  virtual void Stop(bool clear_cached_results);
 
   // Returns the set of matches for the current query.
   const ACMatches& matches() const { return matches_; }

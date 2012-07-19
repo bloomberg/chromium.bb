@@ -72,7 +72,7 @@ class SearchProvider : public AutocompleteProvider,
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void Stop(bool clear_cached_results) OVERRIDE;
 
   // Adds search-provider-specific information to omnibox event logs.
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;

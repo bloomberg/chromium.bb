@@ -223,7 +223,7 @@ void SearchBuilder::StopSearch() {
   if (controller_.get())
     controller_->Stop(true);
   else
-    apps_provider_->Stop();
+    apps_provider_->Stop(true);
 }
 
 void SearchBuilder::OpenResult(const app_list::SearchResult& result,

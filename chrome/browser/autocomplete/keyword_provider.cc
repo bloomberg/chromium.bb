@@ -339,7 +339,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   }
 }
 
-void KeywordProvider::Stop() {
+void KeywordProvider::Stop(bool clear_cached_results) {
   done_ = true;
   MaybeEndExtensionKeywordMode();
 }

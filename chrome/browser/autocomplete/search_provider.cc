@@ -189,7 +189,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   // Can't return search/suggest results for bogus input or without a profile.
   if (!profile_ || (input.type() == AutocompleteInput::INVALID)) {
-    Stop();
+    Stop(false);
     return;
   }
 
@@ -212,7 +212,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   if (!default_provider && !keyword_provider) {
     // No valid providers.
-    Stop();
+    Stop(false);
     return;
   }
 
@@ -227,7 +227,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
     if (done_)
       default_provider_suggest_text_.clear();
     else
-      Stop();
+      Stop(false);
   }
 
   providers_.set(default_provider_keyword, keyword_provider_keyword);
@@ -244,7 +244,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
       match.keyword = providers_.default_provider();
       matches_.push_back(match);
     }
-    Stop();
+    Stop(false);
     return;
   }
 
@@ -313,10 +313,13 @@ void SearchProvider::Run() {
   }
 }
 
-void SearchProvider::Stop() {
+void SearchProvider::Stop(bool clear_cached_results) {
   StopSuggest();
   done_ = true;
   default_provider_suggest_text_.clear();
+
+  if (clear_cached_results)
+    ClearResults();
 }
 
 void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
