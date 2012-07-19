@@ -14,6 +14,8 @@
 
 #if defined(OS_WIN)
 #include "ui/base/dialogs/select_file_dialog_win.h"
+#elif defined(OS_MACOSX)
+#include "ui/base/dialogs/select_file_dialog_mac.h"
 #endif
 
 namespace {
@@ -52,10 +54,7 @@ void SelectFileDialog::SetFactory(ui::SelectFileDialogFactory* factory) {
   dialog_factory_ = factory;
 }
 
-// TODO(erg): As each implementation moves into ui/base/dialogs, consolidate
-// the Create() methods into the following single method, which has to check
-// all options.
-#if defined(USE_AURA) || defined(OS_WIN)
+#if !defined(TOOLKIT_GTK)
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener,
                                            ui::SelectFilePolicy* policy) {
@@ -70,7 +69,13 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener,
   // TODO(erg): Add other OSs one by one here.
 
 #if defined(OS_WIN) && !defined(USE_AURA)
+  // TODO(port): The windows people need this to work in aura, too.
   return CreateWinSelectFileDialog(listener, policy);
+#elif defined(OS_MACOSX) && !defined(USE_AURA)
+  return CreateMacSelectFileDialog(listener, policy);
+#elif defined(OS_ANDROID)
+  // see crbug.com/116131 to track implemenation of SelectFileDialog
+  NOTIMPLEMENTED();
 #endif
 
   return NULL;

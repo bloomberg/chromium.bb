@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 #import <Cocoa/Cocoa.h>
 #include <CoreServices/CoreServices.h>
@@ -21,7 +21,7 @@
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #import "ui/base/cocoa/nib_loading.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -59,7 +59,7 @@ class SelectFileDialogImpl;
 
 // Implementation of SelectFileDialog that shows Cocoa dialogs for choosing a
 // file or folder.
-class SelectFileDialogImpl : public SelectFileDialog {
+class SelectFileDialogImpl : public ui::SelectFileDialog {
  public:
   explicit SelectFileDialogImpl(Listener* listener,
                                 ui::SelectFilePolicy* policy);
@@ -120,12 +120,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
-
-// static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener,
-                                           ui::SelectFilePolicy* policy) {
-  return new SelectFileDialogImpl(listener, policy);
-}
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
                                            ui::SelectFilePolicy* policy)
@@ -392,16 +386,16 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
   SelectFileDialogImpl::SheetContext* context_struct =
       (SelectFileDialogImpl::SheetContext*)context;
 
-  SelectFileDialog::Type type = context_struct->type;
+  ui::SelectFileDialog::Type type = context_struct->type;
   NSWindow* parentWindow = context_struct->owning_window;
   delete context_struct;
 
-  bool isMulti = type == SelectFileDialog::SELECT_OPEN_MULTI_FILE;
+  bool isMulti = type == ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
 
   std::vector<FilePath> paths;
   bool did_cancel = returnCode == NSCancelButton;
   if (!did_cancel) {
-    if (type == SelectFileDialog::SELECT_SAVEAS_FILE) {
+    if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE) {
       paths.push_back(FilePath(base::SysNSStringToUTF8([panel filename])));
 
       NSView* accessoryView = [panel accessoryView];
@@ -436,3 +430,13 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
 }
 
 @end
+
+namespace ui {
+
+SelectFileDialog* CreateMacSelectFileDialog(
+    SelectFileDialog::Listener* listener,
+    SelectFilePolicy* policy) {
+  return new SelectFileDialogImpl(listener, policy);
+}
+
+}  // namespace ui

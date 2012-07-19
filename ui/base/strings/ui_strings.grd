@@ -194,6 +194,12 @@ need to be translated for each locale.-->
         <ph name="SAVEAS_EXTENSION_TYPE">$1<ex>EXE</ex></ph> File (.<ph name="SAVEAS_EXTENSION_NAME">$2<ex>exe</ex></ph>)
       </message>
 
+      <if expr="is_macosx">
+        <message name="IDS_SELECT_FOLDER_BUTTON_TITLE" desc="The name of the Select button in the folder selection dialog.">
+          Select
+        </message>
+      </if>
+
       <!--Accessible name/action strings-->
       <message name="IDS_APP_ACCACTION_PRESS" desc="The accessible default action for a button.">
         Press
