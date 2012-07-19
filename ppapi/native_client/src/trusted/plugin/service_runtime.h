@@ -235,6 +235,8 @@ class ServiceRuntime {
   int exit_status();  // const, but grabs mutex etc.
   void set_exit_status(int exit_status);
 
+  nacl::string GetCrashLogOutput();
+
   // To establish quota callbacks the pnacl coordinator needs to communicate
   // with the reverse interface.
   PluginReverseInterface* rev_interface() const { return rev_interface_; }
