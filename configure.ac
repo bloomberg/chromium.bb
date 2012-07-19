@@ -247,13 +247,3 @@ AC_CONFIG_FILES([Makefile
 		 protocol/Makefile
 		 tests/Makefile])
 AC_OUTPUT
-
-if test "x$enable_setuid_install" = xyes; then
-AC_MSG_WARN([
-
- *** You've enabled the setuid install hook.  Weston is still a 
- *** pre-alpha project and may have bugs and issues that make a
- *** setuid install unsafe. Proceed at your own risk.
-])
-fi
-

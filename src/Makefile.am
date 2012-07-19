@@ -62,14 +62,6 @@ install-exec-hook:
 	chmod u+s $(DESTDIR)$(bindir)/weston-launch
 endif
 
-else # BUILD_WESTON_LAUNCH
-
-if ENABLE_SETUID_INSTALL
-install-exec-hook:
-	chown root $(DESTDIR)$(bindir)/weston
-	chmod u+s $(DESTDIR)$(bindir)/weston
-endif
-
 endif # BUILD_WESTON_LAUNCH
 
 moduledir = @libdir@/weston
