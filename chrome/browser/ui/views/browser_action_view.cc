@@ -165,8 +165,8 @@ void BrowserActionButton::UpdateState() {
     SetState(views::CustomButton::BS_DISABLED);
   } else {
     SetState(menu_visible_ ?
-             views::CustomButton::BS_NORMAL :
-             views::CustomButton::BS_PUSHED);
+             views::CustomButton::BS_PUSHED :
+             views::CustomButton::BS_NORMAL);
   }
 
   SkBitmap icon(browser_action()->GetIcon(tab_id));
