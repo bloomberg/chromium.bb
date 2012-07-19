@@ -13,6 +13,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_main_delegate.h"
+#include "content/shell/shell_switches.h"
 #include "content/test/test_content_client.h"
 
 #if defined(OS_MACOSX)
@@ -38,9 +39,11 @@ void ContentBrowserTest::SetUp() {
   shell_main_delegate_.reset(new ShellMainDelegate);
   shell_main_delegate_->PreSandboxStartup();
 
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kContentBrowserTest);
+
 #if defined(OS_MACOSX)
   // See InProcessBrowserTest::PrepareTestCommandLine().
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
   FilePath subprocess_path;
   PathService::Get(base::FILE_EXE, &subprocess_path);
   subprocess_path = subprocess_path.DirName().DirName();

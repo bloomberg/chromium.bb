@@ -41,7 +41,9 @@ ShellBrowserContext::~ShellBrowserContext() {
 }
 
 void ShellBrowserContext::InitWhileIOAllowed() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kContentBrowserTest) ||
+      cmd_line->HasSwitch(switches::kDumpRenderTree)) {
     CHECK(testing_path_.CreateUniqueTempDir());
     path_ = testing_path_.path();
     return;

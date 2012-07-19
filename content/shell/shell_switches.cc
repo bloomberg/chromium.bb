@@ -9,6 +9,9 @@ namespace switches {
 // Check whether all system dependencies for running layout tests are met.
 const char kCheckLayoutTestSysDeps[] = "check-layout-test-sys-deps";
 
+// Tells Content Shell that it's running as a content_browsertest.
+const char kContentBrowserTest[] = "browser-test";
+
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 
