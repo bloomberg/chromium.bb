@@ -63,9 +63,6 @@ class TabHelper : public content::WebContentsObserver,
     pending_web_app_action_ = action;
   }
 
-  // Gets the window ID of the tab.
-  int window_id() const;
-
   // App extensions ------------------------------------------------------------
 
   // Sets the extension denoting this as an app. If |extension| is non-null this

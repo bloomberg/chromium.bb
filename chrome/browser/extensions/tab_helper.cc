@@ -107,10 +107,6 @@ bool TabHelper::CanCreateApplicationShortcuts() const {
 #endif
 }
 
-int TabHelper::window_id() const {
-  return SessionID::IdForWindowContainingTab(tab_contents_);
-}
-
 void TabHelper::SetExtensionApp(const Extension* extension) {
   DCHECK(!extension || extension->GetFullLaunchURL().is_valid());
   extension_app_ = extension;
