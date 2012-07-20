@@ -76,13 +76,24 @@ const char kGTalkPluginExtension[] = ".googletalk";
 const char kGTalkPluginDescription[] = "Google Talk Plugin";
 
 #if defined(ENABLE_REMOTING)
-const char kRemotingViewerPluginName[] = "Remoting Viewer";
+#if defined(GOOGLE_CHROME_BUILD)
+const char kRemotingViewerPluginName[] = "Chrome Remote Desktop Viewer";
+#else
+const char kRemotingViewerPluginName[] = "Chromoting Viewer";
+#endif  // defined(GOOGLE_CHROME_BUILD)
+const char kRemotingViewerPluginDescription[] =
+    "This plugin allows you to securely access other computers that have been "
+    "shared with you. To use this plugin you must first install the "
+    "<a href=\"https://chrome.google.com/remotedesktop\">"
+    "Chrome Remote Desktop</a> webapp.";
 const FilePath::CharType kRemotingViewerPluginPath[] =
     FILE_PATH_LITERAL("internal-remoting-viewer");
 // Use a consistent MIME-type regardless of branding.
 const char kRemotingViewerPluginMimeType[] =
     "application/vnd.chromium.remoting-viewer";
-#endif
+const char kRemotingViewerPluginMimeExtension[] = "";
+const char kRemotingViewerPluginMimeDescription[] = "";
+#endif  // defined(ENABLE_REMOTING)
 
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
@@ -181,11 +192,12 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   content::PepperPluginInfo info;
   info.is_internal = true;
   info.name = kRemotingViewerPluginName;
+  info.description = kRemotingViewerPluginDescription;
   info.path = FilePath(kRemotingViewerPluginPath);
   webkit::WebPluginMimeType remoting_mime_type(
       kRemotingViewerPluginMimeType,
-      std::string(),
-      std::string());
+      kRemotingViewerPluginMimeExtension,
+      kRemotingViewerPluginMimeDescription);
   info.mime_types.push_back(remoting_mime_type);
   info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
   info.internal_entry_points.initialize_module =
