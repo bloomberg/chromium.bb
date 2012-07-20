@@ -1077,7 +1077,7 @@ weston_wm_handle_motion(struct weston_wm *wm, xcb_generic_event_t *event)
 	int cursor, width, height;
 
 	window = hash_table_lookup(wm->window_hash, motion->event);
-	if (!window)
+	if (!window || !window->decorate)
 		return;
 
 	weston_wm_window_get_frame_size(window, &width, &height);
@@ -1095,7 +1095,7 @@ weston_wm_handle_enter(struct weston_wm *wm, xcb_generic_event_t *event)
 	int cursor, width, height;
 
 	window = hash_table_lookup(wm->window_hash, enter->event);
-	if (!window)
+	if (!window || !window->decorate)
 		return;
 
 	weston_wm_window_get_frame_size(window, &width, &height);
@@ -1112,7 +1112,7 @@ weston_wm_handle_leave(struct weston_wm *wm, xcb_generic_event_t *event)
 	struct weston_wm_window *window;
 
 	window = hash_table_lookup(wm->window_hash, leave->event);
-	if (!window)
+	if (!window || !window->decorate)
 		return;
 
 	weston_wm_window_set_cursor(wm, window->frame_id, XWM_CURSOR_LEFT_PTR);
