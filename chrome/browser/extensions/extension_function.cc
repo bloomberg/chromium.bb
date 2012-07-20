@@ -188,12 +188,14 @@ void UIThreadExtensionFunction::SetRenderViewHost(
 // TODO(stevenjb): Replace this with GetExtensionWindowController().
 Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
   // If the delegate has an associated browser, return it.
-  extensions::WindowController* window_controller =
-      dispatcher()->delegate()->GetExtensionWindowController();
-  if (window_controller) {
-    Browser* browser = window_controller->GetBrowser();
-    if (browser)
-      return browser;
+  if (dispatcher()) {
+    extensions::WindowController* window_controller =
+        dispatcher()->delegate()->GetExtensionWindowController();
+    if (window_controller) {
+      Browser* browser = window_controller->GetBrowser();
+      if (browser)
+        return browser;
+    }
   }
 
   // Otherwise, try to default to a reasonable browser. If |include_incognito_|
@@ -217,10 +219,12 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
 extensions::WindowController*
 UIThreadExtensionFunction::GetExtensionWindowController() {
   // If the delegate has an associated window controller, return it.
-  extensions::WindowController* window_controller =
-      dispatcher()->delegate()->GetExtensionWindowController();
-  if (window_controller)
-    return window_controller;
+  if (dispatcher()) {
+    extensions::WindowController* window_controller =
+        dispatcher()->delegate()->GetExtensionWindowController();
+    if (window_controller)
+      return window_controller;
+  }
 
   return extensions::WindowControllerList::GetInstance()->
       CurrentWindowForFunction(this);
