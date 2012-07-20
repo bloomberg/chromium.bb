@@ -289,6 +289,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeNumTouchEvents,
                         OnMsgDidChangeNumTouchEvents)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
+                        OnMsgHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnMsgTextInputStateChanged)
@@ -1558,6 +1560,10 @@ void RenderWidgetHostImpl::OnMsgBlur() {
 
 void RenderWidgetHostImpl::OnMsgDidChangeNumTouchEvents(int count) {
   has_touch_handler_ = count > 0;
+}
+
+void RenderWidgetHostImpl::OnMsgHasTouchEventHandlers(bool has_handlers) {
+  has_touch_handler_ = has_handlers;
 }
 
 void RenderWidgetHostImpl::OnMsgSetCursor(const WebCursor& cursor) {

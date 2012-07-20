@@ -498,6 +498,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
   void OnMsgDidChangeNumTouchEvents(int count);
+  void OnMsgHasTouchEventHandlers(bool has_handlers);
 
   void OnMsgSetCursor(const WebCursor& cursor);
   void OnMsgTextInputStateChanged(ui::TextInputType type,

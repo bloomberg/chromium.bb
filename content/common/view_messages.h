@@ -1768,6 +1768,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumWheelEvents,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumTouchEvents,
                     int /* count */)
 
+// Notifies whether there are JavaScript touche event handlers or not.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_HasTouchEventHandlers,
+                    bool /* has_handlers */)
+
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,

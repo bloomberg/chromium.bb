@@ -3600,6 +3600,10 @@ void RenderViewImpl::numberOfTouchEventHandlersChanged(unsigned num_handlers) {
   Send(new ViewHostMsg_DidChangeNumTouchEvents(routing_id_, num_handlers));
 }
 
+void RenderViewImpl::hasTouchEventHandlers(bool has_handlers) {
+  Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
+}
+
 void RenderViewImpl::reportFindInPageMatchCount(int request_id, int count,
                                                 bool final_update) {
   int active_match_ordinal = -1;  // -1 = don't update active match ordinal
