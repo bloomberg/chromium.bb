@@ -1,4 +1,4 @@
-SUBDIRS = tables doctests harness
+SUBDIRS = tables doctests harness harnessSources
 
 AM_CPPFLAGS = -I$(top_srcdir)/liblouis
 

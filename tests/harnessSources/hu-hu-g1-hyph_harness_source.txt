@@ -1,0 +1,2317 @@
+tables: hu-hu-g1.ctb, hyph_hu_HU.dic
+
+testmode: hyphenate
+adásszerű
+
+testmode: hyphenate
+adásszünet
+
+testmode: hyphenate
+adósszámla
+
+testmode: hyphenate
+Agyagosszergény
+
+testmode: hyphenate
+agyaggyűrűiken
+
+testmode: hyphenate
+agyonnyom
+
+testmode: hyphenate
+agyonnyúzott
+
+testmode: hyphenate
+agyonnyűtt
+
+testmode: hyphenate
+ágyússzekerek
+
+testmode: hyphenate
+ájulásszerű
+
+testmode: hyphenate
+akácsövény
+
+testmode: hyphenate
+ákácsövény
+
+testmode: hyphenate
+alásszolgája
+
+testmode: hyphenate
+alásszolgájuk
+
+testmode: hyphenate
+alkalmazásszerver
+
+testmode: hyphenate
+állásszög
+
+testmode: hyphenate
+almásszürke
+
+testmode: hyphenate
+alvásszegény
+
+testmode: hyphenate
+alvásszükséglete
+
+testmode: hyphenate
+alvászavar
+
+testmode: hyphenate
+anyaggyőző
+
+testmode: hyphenate
+anyaggyűjtés
+
+testmode: hyphenate
+aranyosszőke
+
+testmode: hyphenate
+árboccsúcs
+
+testmode: hyphenate
+árbóccsúcs
+
+testmode: hyphenate
+árbocsudarat
+
+testmode: hyphenate
+arcüreggyulladás
+
+testmode: hyphenate
+arccsont
+
+testmode: hyphenate
+arcseb
+
+testmode: hyphenate
+arcsebe
+
+testmode: hyphenate
+arcsérülés
+
+testmode: hyphenate
+árgusszemű
+
+testmode: hyphenate
+árvízsújtotta
+
+testmode: hyphenate
+autósszemüveg
+
+testmode: hyphenate
+azonnyomban
+
+testmode: hyphenate
+bádoggyűjtemény
+
+testmode: hyphenate
+barnásszőke
+
+testmode: hyphenate
+barnásszőkét
+
+testmode: hyphenate
+barnásszürke
+
+testmode: hyphenate
+barnesszal
+
+testmode: hyphenate
+becslésszerűen
+
+testmode: hyphenate
+berendezésszerű
+
+testmode: hyphenate
+berendezésszett
+
+testmode: hyphenate
+Békésszentandrás
+
+testmode: hyphenate
+bélésszövet
+
+testmode: hyphenate
+bélyeggyűjtemény
+
+testmode: hyphenate
+bércsüveg
+
+testmode: hyphenate
+beteggyógyász
+
+testmode: hyphenate
+bilincszörgés
+
+testmode: hyphenate
+binsenggyökér
+
+testmode: hyphenate
+bohócsapkája
+
+testmode: hyphenate
+bonbonmeggy
+
+testmode: hyphenate
+borsszem
+
+testmode: hyphenate
+borsszóró
+
+testmode: hyphenate
+borzasszőrű
+
+testmode: hyphenate
+borzzsír
+
+testmode: hyphenate
+bőgésszerű
+
+testmode: hyphenate
+börtönnyelve
+
+testmode: hyphenate
+búcsújárásszerű
+
+testmode: hyphenate
+brekegésszerű
+
+testmode: hyphenate
+bronzsáska
+
+testmode: hyphenate
+bronzsáskák
+
+testmode: hyphenate
+bronzsasokkal
+
+testmode: hyphenate
+bronzsisak
+
+testmode: hyphenate
+bűnnyomok
+
+testmode: hyphenate
+chipseszacskó
+
+testmode: hyphenate
+csapásszám
+
+testmode: hyphenate
+csárdásszóló
+
+testmode: hyphenate
+csattanásszerű
+
+testmode: hyphenate
+csavarásszerű
+
+testmode: hyphenate
+csikósszámadó
+
+testmode: hyphenate
+csipkésszélű
+
+testmode: hyphenate
+csobbanásszerű
+
+testmode: hyphenate
+csuklásszerű
+
+testmode: hyphenate
+disszertáció
+
+testmode: hyphenate
+dobpergésszerűen
+
+testmode: hyphenate
+döggyapjú
+
+testmode: hyphenate
+dőlésszög
+
+testmode: hyphenate
+dörgésszerű
+
+testmode: hyphenate
+dörgésszerű
+
+testmode: hyphenate
+dragonyosszázad
+
+testmode: hyphenate
+dragonyoszászlóalj
+
+testmode: hyphenate
+droggyanús
+
+testmode: hyphenate
+dússzakállú
+
+testmode: hyphenate
+édesszájú
+
+testmode: hyphenate
+édesszesztestvér
+
+testmode: hyphenate
+égésszabály
+
+testmode: hyphenate
+égésszag
+
+testmode: hyphenate
+égésszám
+
+testmode: hyphenate
+égésszigetelés
+
+testmode: hyphenate
+egyenesszálú
+
+testmode: hyphenate
+egyenesszárnyúak
+
+testmode: hyphenate
+egyenesszög
+
+testmode: hyphenate
+egyezség
+
+testmode: hyphenate
+éhesszájat
+
+testmode: hyphenate
+ejtőernyősszárnyak
+
+testmode: hyphenate
+ejtőernyősszázad
+
+testmode: hyphenate
+ejtőernyőszászlóalj
+
+testmode: hyphenate
+ékesszólás
+
+testmode: hyphenate
+ékesszóló
+
+testmode: hyphenate
+ekhósszekér
+
+testmode: hyphenate
+ekhósszekerek
+
+testmode: hyphenate
+eleséggyűjtés
+
+testmode: hyphenate
+élesszemű
+
+testmode: hyphenate
+ellátásszerű
+
+testmode: hyphenate
+ellenállásszekrény
+
+testmode: hyphenate
+ellennyilatkozat
+
+testmode: hyphenate
+ellennyomás
+
+testmode: hyphenate
+elméncség
+
+testmode: hyphenate
+előírásszerű
+
+testmode: hyphenate
+elrémisszék
+
+testmode: hyphenate
+emberhússzagot
+
+testmode: hyphenate
+emelésszerű
+
+testmode: hyphenate
+erőforrászabáló
+
+testmode: hyphenate
+érccsapadék
+
+testmode: hyphenate
+érccsengés
+
+testmode: hyphenate
+érccsatorna
+
+testmode: hyphenate
+ércsalak
+
+testmode: hyphenate
+ércsas
+
+testmode: hyphenate
+ércselyem
+
+testmode: hyphenate
+ércsíp
+
+testmode: hyphenate
+ércsípjába
+
+testmode: hyphenate
+ércsípláda
+
+testmode: hyphenate
+ércsíptető
+
+testmode: hyphenate
+ércsisak
+
+testmode: hyphenate
+ércsodrony
+
+testmode: hyphenate
+érzékelésszint
+
+testmode: hyphenate
+ésszerű
+
+testmode: hyphenate
+eszközsor
+
+testmode: hyphenate
+eszközsorán
+
+testmode: hyphenate
+evészavar
+
+testmode: hyphenate
+fagyosszentek
+
+testmode: hyphenate
+fáklyászene
+
+testmode: hyphenate
+farkasszáj
+
+testmode: hyphenate
+farkasszem
+
+testmode: hyphenate
+farkasszemet
+
+testmode: hyphenate
+Farkassziget
+
+testmode: hyphenate
+fásszárú
+
+testmode: hyphenate
+fegyenccsoport
+
+testmode: hyphenate
+fegyencsapkát
+
+testmode: hyphenate
+fehéresszőke
+
+testmode: hyphenate
+fehéresszürke
+
+testmode: hyphenate
+feketésszürke
+
+testmode: hyphenate
+feleséggyilkos
+
+testmode: hyphenate
+felséggyilkolás
+
+testmode: hyphenate
+felfedezésszámba
+
+testmode: hyphenate
+felszerelésszettet
+
+testmode: hyphenate
+fertőzésszerű
+
+testmode: hyphenate
+filccsizma
+
+testmode: hyphenate
+filigránnyelű
+
+testmode: hyphenate
+fogasszeg
+
+testmode: hyphenate
+fogfájásszerű
+
+testmode: hyphenate
+foglalkozásszerű
+
+testmode: hyphenate
+foggyalu
+
+testmode: hyphenate
+foggyökér
+
+testmode: hyphenate
+foggyulladás
+
+testmode: hyphenate
+foggyűrű
+
+testmode: hyphenate
+forgásszabály
+
+testmode: hyphenate
+forrásszöveg
+
+testmode: hyphenate
+fosszínű
+
+testmode: hyphenate
+földcsuszamlásszerűen
+
+testmode: hyphenate
+fölélesszem
+
+testmode: hyphenate
+főzőkalánnyelet
+
+testmode: hyphenate
+fuvarosszekér
+
+testmode: hyphenate
+fúvósszerszám
+
+testmode: hyphenate
+fúvósszimfónia
+
+testmode: hyphenate
+fúvószenekar
+
+testmode: hyphenate
+fűtésszag
+
+testmode: hyphenate
+garaboncsereg
+
+testmode: hyphenate
+gázspray
+
+testmode: hyphenate
+gázsugár
+
+testmode: hyphenate
+gerincsérült
+
+testmode: hyphenate
+gerincsérv
+
+testmode: hyphenate
+ginszenggyökér
+
+testmode: hyphenate
+ginzenggyökér
+
+testmode: hyphenate
+Gombosszeg
+
+testmode: hyphenate
+gondviselésszerű
+
+testmode: hyphenate
+gőzsíp
+
+testmode: hyphenate
+gőzsugár
+
+testmode: hyphenate
+gőzszivattyú
+
+testmode: hyphenate
+gránátoszászlóalj
+
+testmode: hyphenate
+gúnyversszerző
+
+testmode: hyphenate
+gyalogosszázad
+
+testmode: hyphenate
+gyalogoszászlóalj
+
+testmode: hyphenate
+gyorsszárnyú
+
+testmode: hyphenate
+gyorsszekér
+
+testmode: hyphenate
+gyorsszűrő
+
+testmode: hyphenate
+gyújtásszabály
+
+testmode: hyphenate
+gyújtászsinór
+
+testmode: hyphenate
+gyűlésszíne
+
+testmode: hyphenate
+habarccsal
+
+testmode: hyphenate
+habitusszerűen
+
+testmode: hyphenate
+hadianyaggyár
+
+testmode: hyphenate
+hadsereggyűjtés
+
+testmode: hyphenate
+hajlásszög
+
+testmode: hyphenate
+hajósszekerce
+
+testmode: hyphenate
+hajósszemélyzet
+
+testmode: hyphenate
+hallászavar
+
+testmode: hyphenate
+halottasszekér
+
+testmode: hyphenate
+halottasszoba
+
+testmode: hyphenate
+halottasszobába
+
+testmode: hyphenate
+hamvasszőke
+
+testmode: hyphenate
+hamvasszürke
+
+testmode: hyphenate
+hanggyakorlat
+
+testmode: hyphenate
+hanggyűjtemény
+
+testmode: hyphenate
+hányásszag
+
+testmode: hyphenate
+haragoszöld
+
+testmode: hyphenate
+harcosszellem
+
+testmode: hyphenate
+harccselekmény
+
+testmode: hyphenate
+harccsoport
+
+testmode: hyphenate
+harcsor
+
+testmode: hyphenate
+hármasszámú
+
+testmode: hyphenate
+hársszén
+
+testmode: hyphenate
+hársszenet
+
+testmode: hyphenate
+hártyásszárnyú
+
+testmode: hyphenate
+hasisszagot
+
+testmode: hyphenate
+hatásszünet
+
+testmode: hyphenate
+házsárkodását
+
+testmode: hyphenate
+hegyesszög
+
+testmode: hyphenate
+hekusszagot
+
+testmode: hyphenate
+hegyszorosszerű
+
+testmode: hyphenate
+hentesszaktanfolyamát
+
+testmode: hyphenate
+hirdetésszöveg
+
+testmode: hyphenate
+hivatásszerűen
+
+testmode: hyphenate
+hízelkedésszámba
+
+testmode: hyphenate
+hörgésszerű
+
+testmode: hyphenate
+hősszínész
+
+testmode: hyphenate
+hősszövetség
+
+testmode: hyphenate
+hólyaggyulladás
+
+testmode: hyphenate
+húslevesszag
+
+testmode: hyphenate
+hússzaft
+
+testmode: hyphenate
+hússzag
+
+testmode: hyphenate
+hússzagú
+
+testmode: hyphenate
+hússzállítmány
+
+testmode: hyphenate
+hússzállító
+
+testmode: hyphenate
+hússzalonna
+
+testmode: hyphenate
+hússzekrény
+
+testmode: hyphenate
+hússzelet
+
+testmode: hyphenate
+Hússziget
+
+testmode: hyphenate
+hússzínű
+
+testmode: hyphenate
+hűvösszemű
+
+testmode: hyphenate
+ideggyengeség
+
+testmode: hyphenate
+ideggyógyászat
+
+testmode: hyphenate
+ideggyógyintézet
+
+testmode: hyphenate
+ideggyönge
+
+testmode: hyphenate
+ideggyötrő
+
+testmode: hyphenate
+ideggyulladás
+
+testmode: hyphenate
+identitászavar
+
+testmode: hyphenate
+időjárásszolgálat
+
+testmode: hyphenate
+imádsággyűjtemény
+
+testmode: hyphenate
+inasszerep
+
+testmode: hyphenate
+inasszerepet
+
+testmode: hyphenate
+inasszeretetet
+
+testmode: hyphenate
+indiánnyelv
+
+testmode: hyphenate
+ínnyújtó
+
+testmode: hyphenate
+ínnyújtót
+
+testmode: hyphenate
+ínyencség
+
+testmode: hyphenate
+írásszeretet
+
+testmode: hyphenate
+irtásszél
+
+testmode: hyphenate
+istennyila
+
+testmode: hyphenate
+járásszerű
+
+testmode: hyphenate
+jáspisszobor
+
+testmode: hyphenate
+jegeccsoport
+
+testmode: hyphenate
+jéggyártás
+
+testmode: hyphenate
+jelenésszerű
+
+testmode: hyphenate
+jelentésszerű
+
+testmode: hyphenate
+jelentésszint
+
+testmode: hyphenate
+jelzésszerű
+
+testmode: hyphenate
+jósszavai
+
+testmode: hyphenate
+jósszelleme
+
+testmode: hyphenate
+kabinnyíláson
+
+testmode: hyphenate
+kabinnyomás
+
+testmode: hyphenate
+kakasszó
+
+testmode: hyphenate
+kalapácszengés
+
+testmode: hyphenate
+kamionnyi
+
+testmode: hyphenate
+kaparásszerű
+
+testmode: hyphenate
+Kaposszekcső
+
+testmode: hyphenate
+Kaposszerdahely
+
+testmode: hyphenate
+kapusszoba
+
+testmode: hyphenate
+karosszék
+
+testmode: hyphenate
+kartácszápor
+
+testmode: hyphenate
+kartonnyi
+
+testmode: hyphenate
+kasszék
+
+testmode: hyphenate
+katalógusszám
+
+testmode: hyphenate
+katekizmusszerű
+
+testmode: hyphenate
+kavarásszerű
+
+testmode: hyphenate
+kavicsszerű
+
+testmode: hyphenate
+kavicszápor
+
+testmode: hyphenate
+kavicszátony
+
+testmode: hyphenate
+kavicszuzalék
+
+testmode: hyphenate
+kékesszürke
+
+testmode: hyphenate
+Kemenesszentmárton
+
+testmode: hyphenate
+Kemenesszentpéter
+
+testmode: hyphenate
+képmásszerű
+
+testmode: hyphenate
+képzésszerű
+
+testmode: hyphenate
+képzésszervezés
+
+testmode: hyphenate
+kerekesszék
+
+testmode: hyphenate
+keresésszolgáltató
+
+testmode: hyphenate
+kérésszerűen
+
+testmode: hyphenate
+késszúrás
+
+testmode: hyphenate
+kevésszavú
+
+testmode: hyphenate
+kevésszer
+
+testmode: hyphenate
+kerítésszaggató
+
+testmode: hyphenate
+kifejlesszem
+
+testmode: hyphenate
+kihívásszerű
+
+testmode: hyphenate
+kilenccsatorna
+
+testmode: hyphenate
+kilincszörgést
+
+testmode: hyphenate
+Kisszállás
+
+testmode: hyphenate
+kisszámú
+
+testmode: hyphenate
+Kisszeben
+
+testmode: hyphenate
+kisszék
+
+testmode: hyphenate
+kisszekrény
+
+testmode: hyphenate
+Kisszentmárton
+
+testmode: hyphenate
+kisszerű
+
+testmode: hyphenate
+Kissziget
+
+testmode: hyphenate
+kisszobában
+
+testmode: hyphenate
+kisszótár
+
+testmode: hyphenate
+Kiszombor
+
+testmode: hyphenate
+kiszögellésszerűen
+
+testmode: hyphenate
+Kiszsidány
+
+testmode: hyphenate
+kitörésszerű
+
+testmode: hyphenate
+kitüntetésszalagokat
+
+testmode: hyphenate
+kliensszoftver
+
+testmode: hyphenate
+kóccsomó
+
+testmode: hyphenate
+koldusszáj
+
+testmode: hyphenate
+koldusszakáll
+
+testmode: hyphenate
+koldusszegény
+
+testmode: hyphenate
+kolduszene
+
+testmode: hyphenate
+kommunikációsszoba
+
+testmode: hyphenate
+komposszesszor
+
+testmode: hyphenate
+komposszesszorátus
+
+testmode: hyphenate
+kormosszürke
+
+testmode: hyphenate
+kosszarv
+
+testmode: hyphenate
+kosszem
+
+testmode: hyphenate
+köhögésszerű
+
+testmode: hyphenate
+könyöklésszéles
+
+testmode: hyphenate
+könyvesszekrény
+
+testmode: hyphenate
+kötelességgyakorlás
+
+testmode: hyphenate
+kőművesszem
+
+testmode: hyphenate
+kőművesszerszámait
+
+testmode: hyphenate
+köntösszegély
+
+testmode: hyphenate
+kőrisszár
+
+testmode: hyphenate
+kőrisszárat
+
+testmode: hyphenate
+körösszakál
+
+testmode: hyphenate
+körösszakáli
+
+testmode: hyphenate
+Köröszug
+
+testmode: hyphenate
+közsáv
+
+testmode: hyphenate
+közsereg
+
+testmode: hyphenate
+kudarcsorozat
+
+testmode: hyphenate
+kulcszörgés
+
+testmode: hyphenate
+kuplunggyár
+
+testmode: hyphenate
+kurucság
+
+testmode: hyphenate
+küldetésszaga
+
+testmode: hyphenate
+különcség
+
+testmode: hyphenate
+labirintusszerű
+
+testmode: hyphenate
+lakásszentelő
+
+testmode: hyphenate
+lakásszövetkezet
+
+testmode: hyphenate
+lakosszám
+
+testmode: hyphenate
+lánccsörgés
+
+testmode: hyphenate
+láncszem
+
+testmode: hyphenate
+lánggyújtogató
+
+testmode: hyphenate
+laposszárú
+
+testmode: hyphenate
+látásszög
+
+testmode: hyphenate
+látászavar
+
+testmode: hyphenate
+látomásszerű
+
+testmode: hyphenate
+lazaccsontváz
+
+testmode: hyphenate
+lázsebességgel
+
+testmode: hyphenate
+lázsóhajtás
+
+testmode: hyphenate
+léggyök
+
+testmode: hyphenate
+léggyökér
+
+testmode: hyphenate
+lejtésszög
+
+testmode: hyphenate
+lejtésszöge
+
+testmode: hyphenate
+lemezstúdió
+
+testmode: hyphenate
+lengésszabály
+
+testmode: hyphenate
+lépcsősszárnyú
+
+testmode: hyphenate
+lépésszám
+
+testmode: hyphenate
+lépészaj
+
+testmode: hyphenate
+léptennyomon
+
+testmode: hyphenate
+levesszag
+
+testmode: hyphenate
+levesszagot
+
+testmode: hyphenate
+levesszedő
+
+testmode: hyphenate
+liberty
+
+testmode: hyphenate
+licenccsalád
+
+testmode: hyphenate
+licencsértés
+
+testmode: hyphenate
+liszteszacskó
+
+testmode: hyphenate
+loggyűjtemény
+
+testmode: hyphenate
+lovasszázad
+
+testmode: hyphenate
+lovasszekeret
+
+testmode: hyphenate
+lökésszám
+
+testmode: hyphenate
+lökésszerű
+
+testmode: hyphenate
+lőporosszekerek
+
+testmode: hyphenate
+lőrésszerű
+
+testmode: hyphenate
+lugasszerű
+
+testmode: hyphenate
+luxusszálloda
+
+testmode: hyphenate
+macskakaparásszerű
+
+testmode: hyphenate
+magánnyelvmesterek
+
+testmode: hyphenate
+magasszárú
+
+testmode: hyphenate
+magánnyugdíjpénztár
+
+testmode: hyphenate
+mágnásszámba
+
+testmode: hyphenate
+mágnesszalag
+
+testmode: hyphenate
+mágnesszerű
+
+testmode: hyphenate
+mágneszár
+
+testmode: hyphenate
+malacság
+
+testmode: hyphenate
+malacsült
+
+testmode: hyphenate
+málhásszekér
+
+testmode: hyphenate
+málhásszekereiket
+
+testmode: hyphenate
+mandarinnyelv
+
+testmode: hyphenate
+Marosszék
+
+testmode: hyphenate
+Marosszentgyörgy
+
+testmode: hyphenate
+Maroszug
+
+testmode: hyphenate
+Martraversszal
+
+testmode: hyphenate
+másszínű
+
+testmode: hyphenate
+másszor
+
+testmode: hyphenate
+másszóval
+
+testmode: hyphenate
+másszőrűek
+
+testmode: hyphenate
+mécsesszem
+
+testmode: hyphenate
+medresszék
+
+testmode: hyphenate
+meggybefőtt
+
+testmode: hyphenate
+meggyel
+
+testmode: hyphenate
+meggyen
+
+testmode: hyphenate
+meggyes
+
+testmode: hyphenate
+Meggyesi
+
+testmode: hyphenate
+meggyet
+
+testmode: hyphenate
+meggyfa
+
+testmode: hyphenate
+meggyhez
+
+testmode: hyphenate
+meggyízű
+
+testmode: hyphenate
+meggylekvár
+
+testmode: hyphenate
+meggymag
+
+testmode: hyphenate
+meggynek
+
+testmode: hyphenate
+meggypiros
+
+testmode: hyphenate
+meggyszín
+
+testmode: hyphenate
+meggytől
+
+testmode: hyphenate
+meggytől
+
+testmode: hyphenate
+meggyvörös
+
+testmode: hyphenate
+méhesszín
+
+testmode: hyphenate
+méhesszínben
+
+testmode: hyphenate
+ménesszárnyékok
+
+testmode: hyphenate
+méreggyökeret
+
+testmode: hyphenate
+méreggyökérré
+
+testmode: hyphenate
+méreggyümölccsé
+
+testmode: hyphenate
+mérleggyár
+
+testmode: hyphenate
+meszesszürke
+
+testmode: hyphenate
+mézsárga
+
+testmode: hyphenate
+mézser
+
+testmode: hyphenate
+mézsör
+
+testmode: hyphenate
+Mikosszéplak
+
+testmode: hyphenate
+mikrofonnyílás
+
+testmode: hyphenate
+mikronnyi
+
+testmode: hyphenate
+mitesszer
+
+testmode: hyphenate
+mohaszöld
+
+testmode: hyphenate
+mókusszerű
+
+testmode: hyphenate
+mókusszőr
+
+testmode: hyphenate
+motorosszán
+
+testmode: hyphenate
+mozgásszerű
+
+testmode: hyphenate
+mozgászavar
+
+testmode: hyphenate
+munkásszálló
+
+testmode: hyphenate
+muzsikusszem
+
+testmode: hyphenate
+műjéggyár
+
+testmode: hyphenate
+működészavar
+
+testmode: hyphenate
+nászutazásszerű
+
+testmode: hyphenate
+nedvesszürke
+
+testmode: hyphenate
+négyzetyard
+
+testmode: hyphenate
+nehézség
+
+testmode: hyphenate
+nehézsúlyú
+
+testmode: hyphenate
+Nemesszalók
+
+testmode: hyphenate
+Nemesszentandrás
+
+testmode: hyphenate
+nemesszőrme
+
+testmode: hyphenate
+nemezsapka
+
+testmode: hyphenate
+nemezsapkát
+
+testmode: hyphenate
+nemezsátor
+
+testmode: hyphenate
+nercstóla
+
+testmode: hyphenate
+nyargonccsizma
+
+testmode: hyphenate
+nyereggyártók
+
+testmode: hyphenate
+nyikkanásszerű
+
+testmode: hyphenate
+nyílászáró
+
+testmode: hyphenate
+nyolcvannyolc
+
+testmode: hyphenate
+nyolccsatornás
+
+testmode: hyphenate
+nyolcsebességes
+
+testmode: hyphenate
+nyomásszabályzó
+
+testmode: hyphenate
+nyomásszerű
+
+testmode: hyphenate
+ordasszőrű
+
+testmode: hyphenate
+óriásszalamandra
+
+testmode: hyphenate
+oroszlánnyom
+
+testmode: hyphenate
+orvosszakértő
+
+testmode: hyphenate
+orvosszázados
+
+testmode: hyphenate
+orvosszemély
+
+testmode: hyphenate
+orvosszereikkel
+
+testmode: hyphenate
+orvosszerű
+
+testmode: hyphenate
+orvosszövetség
+
+testmode: hyphenate
+óvodásszintű
+
+testmode: hyphenate
+ökrösszekér
+
+testmode: hyphenate
+önállásszerű
+
+testmode: hyphenate
+önnyomása
+
+testmode: hyphenate
+önnyomatú
+
+testmode: hyphenate
+örvénylésszerű
+
+testmode: hyphenate
+ősszármazású
+
+testmode: hyphenate
+ősszékelyek
+
+testmode: hyphenate
+összekeresgélt
+
+testmode: hyphenate
+összekéregetett
+
+testmode: hyphenate
+összekéregettek
+
+testmode: hyphenate
+ősszel
+
+testmode: hyphenate
+ősszellem
+
+testmode: hyphenate
+őzsebesen
+
+testmode: hyphenate
+őzsörét
+
+testmode: hyphenate
+őzsuta
+
+testmode: hyphenate
+padlásszoba
+
+testmode: hyphenate
+padlászugoly
+
+testmode: hyphenate
+palócság
+
+testmode: hyphenate
+paprikásszalonna
+
+testmode: hyphenate
+papirosszeletre
+
+testmode: hyphenate
+papucszápor
+
+testmode: hyphenate
+párnásszék
+
+testmode: hyphenate
+pátosszal
+
+testmode: hyphenate
+pedagógusszervezet
+
+testmode: hyphenate
+pedagógusszobába
+
+testmode: hyphenate
+pedagógussztrájk
+
+testmode: hyphenate
+pénzeszacskó
+
+testmode: hyphenate
+pénzeszsák
+
+testmode: hyphenate
+pénzzsidóságban
+
+testmode: hyphenate
+pénzsegély
+
+testmode: hyphenate
+pénzsorozat
+
+testmode: hyphenate
+pénzsóvár
+
+testmode: hyphenate
+pénzszűke
+
+testmode: hyphenate
+perecsütőnő
+
+testmode: hyphenate
+pergamennyaláb
+
+testmode: hyphenate
+piaccsarnok
+
+testmode: hyphenate
+Pilisszántó
+
+testmode: hyphenate
+Pilisszentkereszt
+
+testmode: hyphenate
+pirítósszeleteken
+
+testmode: hyphenate
+pirosszem
+
+testmode: hyphenate
+piroszászlós
+
+testmode: hyphenate
+piszkosszőke
+
+testmode: hyphenate
+piszkosszürke
+
+testmode: hyphenate
+piszkoszöld
+
+testmode: hyphenate
+pisztolylövésszerűen
+
+testmode: hyphenate
+plüsszerű
+
+testmode: hyphenate
+plüsszsák
+
+testmode: hyphenate
+plüsszsiráf
+
+testmode: hyphenate
+plüsszsölyét
+
+testmode: hyphenate
+pokróccsík
+
+testmode: hyphenate
+polcsor
+
+testmode: hyphenate
+policájkomisszér
+
+testmode: hyphenate
+porcsérülés
+
+testmode: hyphenate
+portásszoba
+
+testmode: hyphenate
+postásszakszervezet
+
+testmode: hyphenate
+precízség
+
+testmode: hyphenate
+présszerű
+
+testmode: hyphenate
+priamossza
+
+testmode: hyphenate
+princséged
+
+testmode: hyphenate
+proggyak
+
+testmode: hyphenate
+pulzusszám
+
+testmode: hyphenate
+puskásszakasz
+
+testmode: hyphenate
+puskásszázad
+
+testmode: hyphenate
+puskászászlóalj
+
+testmode: hyphenate
+rácság
+
+testmode: hyphenate
+rádiósszoba
+
+testmode: hyphenate
+rakásszámra
+
+testmode: hyphenate
+rándulásszerűen
+
+testmode: hyphenate
+rántásszag
+
+testmode: hyphenate
+rántásszerű
+
+testmode: hyphenate
+recésszárú
+
+testmode: hyphenate
+régiséggyűjtő
+
+testmode: hyphenate
+rémisszétek
+
+testmode: hyphenate
+részárás
+
+testmode: hyphenate
+rendelkezésszerű
+
+testmode: hyphenate
+repülésszerű
+
+testmode: hyphenate
+repülősszárny
+
+testmode: hyphenate
+rézsut
+
+testmode: hyphenate
+ritkasággyűjtő
+
+testmode: hyphenate
+ritmusszabályozó
+
+testmode: hyphenate
+ritmuszavar
+
+testmode: hyphenate
+robbanásszerű
+
+testmode: hyphenate
+robbanászajt
+
+testmode: hyphenate
+rongyosszélű
+
+testmode: hyphenate
+rosszemlékű
+
+testmode: hyphenate
+rothadásszag
+
+testmode: hyphenate
+rózsásszőkés
+
+testmode: hyphenate
+rozszabálás
+
+testmode: hyphenate
+rubinnyaklánc
+
+testmode: hyphenate
+ruhásszekrény
+
+testmode: hyphenate
+ruhásszobámé
+
+testmode: hyphenate
+szanitéccsoport
+
+testmode: hyphenate
+sárgásszínű
+
+testmode: hyphenate
+sasszárnyú
+
+testmode: hyphenate
+sasszeg
+
+testmode: hyphenate
+sásszéna
+
+testmode: hyphenate
+sásszerű
+
+testmode: hyphenate
+sasszömöd
+
+testmode: hyphenate
+sátáncsapat
+
+testmode: hyphenate
+selymesszőke
+
+testmode: hyphenate
+sereggyűjtés
+
+testmode: hyphenate
+sertésszelet
+
+testmode: hyphenate
+sertésszűzpecsenyére
+
+testmode: hyphenate
+sertészsír
+
+testmode: hyphenate
+sonkásszelet
+
+testmode: hyphenate
+sonkásszerű
+
+testmode: hyphenate
+sonkászsemle
+
+testmode: hyphenate
+sorscsapásszerű
+
+testmode: hyphenate
+spanyolmeggyen
+
+testmode: hyphenate
+sugárzásszerű
+
+testmode: hyphenate
+sugárzásszintek
+
+testmode: hyphenate
+suhanccsürhe
+
+testmode: hyphenate
+suhancsereg
+
+testmode: hyphenate
+szaglásszék
+
+testmode: hyphenate
+szalonnyelv
+
+testmode: hyphenate
+szalonnyelven
+
+testmode: hyphenate
+Szamosszeg
+
+testmode: hyphenate
+szárazság
+
+testmode: hyphenate
+szárazsült
+
+testmode: hyphenate
+szarvasszív
+
+testmode: hyphenate
+szarvaszsír
+
+testmode: hyphenate
+szénásszekér
+
+testmode: hyphenate
+szentségesszűzmáriám
+
+testmode: hyphenate
+szentséggyalázás
+
+testmode: hyphenate
+Szepesszombat
+
+testmode: hyphenate
+szerződésszegés
+
+testmode: hyphenate
+szerződésszegő
+
+testmode: hyphenate
+szétossza
+
+testmode: hyphenate
+szétosszák
+
+testmode: hyphenate
+Szilvásszentmárton
+
+testmode: hyphenate
+szindikátusszervező
+
+testmode: hyphenate
+színnyomás
+
+testmode: hyphenate
+szocsegély
+
+testmode: hyphenate
+szódásszifon
+
+testmode: hyphenate
+szólásszabadság
+
+testmode: hyphenate
+szokásszerű
+
+testmode: hyphenate
+szólásszapulás
+
+testmode: hyphenate
+szórakozásszámba
+
+testmode: hyphenate
+szorongásszerű
+
+testmode: hyphenate
+szorongásszint
+
+testmode: hyphenate
+szöggyár
+
+testmode: hyphenate
+szöveggyűjtemény
+
+testmode: hyphenate
+szúrásszerű
+
+testmode: hyphenate
+szúrósszemű
+
+testmode: hyphenate
+születésszabályozás
+
+testmode: hyphenate
+szűzsült
+
+testmode: hyphenate
+tágulásszabály
+
+testmode: hyphenate
+társalgásszámba
+
+testmode: hyphenate
+taggyűlés
+
+testmode: hyphenate
+tánccsoport
+
+testmode: hyphenate
+társalgásszerű
+
+testmode: hyphenate
+társszekér
+
+testmode: hyphenate
+társszövetség
+
+testmode: hyphenate
+teásszervíz
+
+testmode: hyphenate
+tejfölösszájú
+
+testmode: hyphenate
+településszerkezet
+
+testmode: hyphenate
+templomosszakértő
+
+testmode: hyphenate
+tetszészaj
+
+testmode: hyphenate
+tetszészsivaj
+
+testmode: hyphenate
+tigrisszemek
+
+testmode: hyphenate
+tigrisszerű
+
+testmode: hyphenate
+tipusszám
+
+testmode: hyphenate
+típusszám
+
+testmode: hyphenate
+típusszöveg
+
+testmode: hyphenate
+típuszubbony
+
+testmode: hyphenate
+titkosszolgálat
+
+testmode: hyphenate
+tizedesszállás
+
+testmode: hyphenate
+tízgallonnyi
+
+testmode: hyphenate
+tojásszerű
+
+testmode: hyphenate
+topázsárgája
+
+testmode: hyphenate
+torzság
+
+testmode: hyphenate
+többesszám
+
+testmode: hyphenate
+töltésszabályozó
+
+testmode: hyphenate
+töltésszám
+
+testmode: hyphenate
+töltésszerűen
+
+testmode: hyphenate
+törlesszem
+
+testmode: hyphenate
+tövisszár
+
+testmode: hyphenate
+tövisszúrás
+
+testmode: hyphenate
+trichinnyavalya
+
+testmode: hyphenate
+tudásszint
+
+testmode: hyphenate
+tudásszomj
+
+testmode: hyphenate
+tükrösszélű
+
+testmode: hyphenate
+tüntetésszerűen
+
+testmode: hyphenate
+tüzesszemű
+
+testmode: hyphenate
+tűzzsonglőr
+
+testmode: hyphenate
+tűzsebesség
+
+testmode: hyphenate
+tűzsugár
+
+testmode: hyphenate
+udvaroncsereg
+
+testmode: hyphenate
+ugrásszerűen
+
+testmode: hyphenate
+újoncság
+
+testmode: hyphenate
+ulánusszázad
+
+testmode: hyphenate
+university
+
+testmode: hyphenate
+utalásszerűen
+
+testmode: hyphenate
+utánpótlásszállítmánnyal
+
+testmode: hyphenate
+utánnyomás
+
+testmode: hyphenate
+utasszállító
+
+testmode: hyphenate
+utasszám
+
+testmode: hyphenate
+utasszerep
+
+testmode: hyphenate
+utasszint
+
+testmode: hyphenate
+utasszolgálat
+
+testmode: hyphenate
+utazásszerű
+
+testmode: hyphenate
+utazásszervező
+
+testmode: hyphenate
+ülésszak
+
+testmode: hyphenate
+ülésszak
+
+testmode: hyphenate
+ütésszerű
+
+testmode: hyphenate
+ütészápor
+
+testmode: hyphenate
+üveggyapot
+
+testmode: hyphenate
+üveggyártás
+
+testmode: hyphenate
+üveggyöngy
+
+testmode: hyphenate
+üveggyűrű
+
+testmode: hyphenate
+vagonnyi
+
+testmode: hyphenate
+vakarccsal
+
+testmode: hyphenate
+vallásszabadság
+
+testmode: hyphenate
+vallomásszámba
+
+testmode: hyphenate
+vállpereccsontjából
+
+testmode: hyphenate
+Vámosszabadi
+
+testmode: hyphenate
+városszépe
+
+testmode: hyphenate
+városszerte
+
+testmode: hyphenate
+várossziluett
+
+testmode: hyphenate
+városzajon
+
+testmode: hyphenate
+városzajt
+
+testmode: hyphenate
+városzsarnok
+
+testmode: hyphenate
+vasasszakosztály
+
+testmode: hyphenate
+vasutassztrájk
+
+testmode: hyphenate
+vasszállítmány
+
+testmode: hyphenate
+Vaszar
+
+testmode: hyphenate
+Vázsnok
+
+testmode: hyphenate
+végiggyalogolhatja
+
+testmode: hyphenate
+végiggyakorolni
+
+testmode: hyphenate
+vendéggyermek
+
+testmode: hyphenate
+vendéggyülekezet
+
+testmode: hyphenate
+veresszakállú
+
+testmode: hyphenate
+veresszemű
+
+testmode: hyphenate
+versszak
+
+testmode: hyphenate
+versszakában
+
+testmode: hyphenate
+versszerű
+
+testmode: hyphenate
+vértesszázad
+
+testmode: hyphenate
+vértesszázadbeli
+
+testmode: hyphenate
+Vértesszőlős
+
+testmode: hyphenate
+vetésszalag
+
+testmode: hyphenate
+viccsor
+
+testmode: hyphenate
+világosszőke
+
+testmode: hyphenate
+világosszürke
+
+testmode: hyphenate
+világossággyújtásra
+
+testmode: hyphenate
+világgyűlölő
+
+testmode: hyphenate
+villanásszerűen
+
+testmode: hyphenate
+villamosszék
+
+testmode: hyphenate
+villamosszerű
+
+testmode: hyphenate
+virággyapjaikat
+
+testmode: hyphenate
+virággyűjtemény
+
+testmode: hyphenate
+virággyűjtés
+
+testmode: hyphenate
+virgoncság
+
+testmode: hyphenate
+vírusszerű
+
+testmode: hyphenate
+visually
+
+testmode: hyphenate
+viselkedésszerű
+
+testmode: hyphenate
+viselkedészavar
+
+testmode: hyphenate
+visszér
+
+testmode: hyphenate
+visszeres
+
+testmode: hyphenate
+visszérműtét
+
+testmode: hyphenate
+vitorlásszezon
+
+testmode: hyphenate
+vizeleteszacskó
+
+testmode: hyphenate
+vizeszsemle
+
+testmode: hyphenate
+vízsáv
+
+testmode: hyphenate
+vízsivatag
+
+testmode: hyphenate
+vízsodor
+
+testmode: hyphenate
+vonósszerenád
+
+testmode: hyphenate
+vonószenekar
+
+testmode: hyphenate
+vörhenyesszőke
+
+testmode: hyphenate
+vörösesszőke
+
+testmode: hyphenate
+vörösesszőke
+
+testmode: hyphenate
+vörösszakállú
+
+testmode: hyphenate
+vörösszem
+
+testmode: hyphenate
+vörösszínű
+
+testmode: hyphenate
+vörösszőke
+
+testmode: hyphenate
+vöröszászló
+
+testmode: hyphenate
+záloggyűrűmet
+
+testmode: hyphenate
+zavarosszürke
+
+testmode: hyphenate
+zökkenésszerű
+
+testmode: hyphenate
+zörgésszerű
+
+testmode: hyphenate
+zuhanásszerű
+
+testmode: hyphenate
+zsírosszén
+
+testmode: hyphenate
+zsoldosszokás

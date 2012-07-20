@@ -24,3 +24,5 @@ lou_debug_SOURCES = \
 	lou_debug.c
 lou_translate_SOURCES = \
 	lou_translate.c
+
+bin_SCRIPTS = lou_harnessGenerator

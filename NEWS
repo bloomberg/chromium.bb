@@ -19,6 +19,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     are only run if either Python 2.x or 3.x with the related nose python module is installed on the system. See the
     documentation for more information.
     Thanks to Mesar Hameed.
+*** Add a test harness generator
+    A harness generator that uses simple text files with a little formatting to help to generate the json harness files.
+    The purpose of this tool is to make it much easier and faster to add checks for a given table.
+    You are expected to read the generated harness file and make necessary changes, the tool only helps you to get the tests into the harness format, not check their validity.
 *** Support for Python 3 in the Python bindings
     The Python bindings now work for both Python 2 and Python 3.
     Thanks to Michael Whapples.
