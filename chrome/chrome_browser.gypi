@@ -2786,6 +2786,8 @@
         'browser/ui/cocoa/location_bar/location_icon_decoration.mm',
         'browser/ui/cocoa/location_bar/page_action_decoration.h',
         'browser/ui/cocoa/location_bar/page_action_decoration.mm',
+        'browser/ui/cocoa/location_bar/plus_decoration.h',
+        'browser/ui/cocoa/location_bar/plus_decoration.mm',
         'browser/ui/cocoa/location_bar/selected_keyword_decoration.h',
         'browser/ui/cocoa/location_bar/selected_keyword_decoration.mm',
         'browser/ui/cocoa/location_bar/star_decoration.h',

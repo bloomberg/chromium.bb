@@ -43,6 +43,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/plus_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
@@ -55,6 +56,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -96,6 +98,7 @@ LocationBarViewMac::LocationBarViewMac(
       ev_bubble_decoration_(
           new EVBubbleDecoration(location_icon_decoration_.get(),
                                  OmniboxViewMac::GetFieldFont())),
+      plus_decoration_(NULL),
       star_decoration_(new StarDecoration(command_updater)),
       chrome_to_mobile_decoration_(nil),
       keyword_hint_decoration_(
@@ -116,6 +119,10 @@ LocationBarViewMac::LocationBarViewMac(
         new ChromeToMobileDecoration(profile, command_updater));
     ChromeToMobileServiceFactory::GetForProfile(profile)->
         RequestMobileListUpdate();
+  }
+
+  if (extensions::switch_utils::IsActionBoxEnabled()) {
+    plus_decoration_.reset(new PlusDecoration(command_updater));
   }
 
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
@@ -641,6 +648,8 @@ void LocationBarViewMac::Layout() {
   [cell addLeftDecoration:location_icon_decoration_.get()];
   [cell addLeftDecoration:selected_keyword_decoration_.get()];
   [cell addLeftDecoration:ev_bubble_decoration_.get()];
+  if (plus_decoration_.get())
+    [cell addRightDecoration:plus_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
   if (chrome_to_mobile_decoration_.get())
     [cell addRightDecoration:chrome_to_mobile_decoration_.get()];

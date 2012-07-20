@@ -32,6 +32,7 @@ class KeywordHintDecoration;
 class LocationBarDecoration;
 class LocationIconDecoration;
 class PageActionDecoration;
+class PlusDecoration;
 class Profile;
 class SelectedKeywordDecoration;
 class SkBitmap;
@@ -215,6 +216,9 @@ class LocationBarViewMac : public LocationBar,
   // A decoration that shows a lock icon and ev-cert label in a bubble
   // on the left.
   scoped_ptr<EVBubbleDecoration> ev_bubble_decoration_;
+
+  // Action "plus" button right of bookmark star.
+  scoped_ptr<PlusDecoration> plus_decoration_;
 
   // Bookmark star right of page actions.
   scoped_ptr<StarDecoration> star_decoration_;
