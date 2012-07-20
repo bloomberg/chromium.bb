@@ -274,6 +274,10 @@ def BuildScript(status, context):
           'scons-out/opt-linux-x86-64/staging/validator-test')
     return
 
+  # Run checkdeps script to vet #includes.
+  with Step('checkdeps', status):
+    Command(context, cmd=[sys.executable, 'tools/checkdeps/checkdeps.py'])
+
   # Make sure our Gyp build is working.
   with Step('gyp_compile', status):
     if context.Windows():

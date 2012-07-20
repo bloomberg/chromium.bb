@@ -1,0 +1,4 @@
+include_rules = [
+  "+ppapi/c",
+  "+ppapi/cpp",
+]

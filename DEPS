@@ -137,3 +137,8 @@ hooks = [
     "action": ["python", "native_client/build/gyp_nacl"],
   },
 ]
+
+include_rules = [
+  "+native_client/src/include",
+  "+gtest",
+]
