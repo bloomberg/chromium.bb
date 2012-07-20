@@ -511,6 +511,8 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 	if (wm->focus_window)
 		weston_wm_window_schedule_repaint(wm->focus_window);
 	wm->focus_window = window;
+	if (window)
+		wm->focus_latest = window;
 	if (wm->focus_window)
 		weston_wm_window_schedule_repaint(wm->focus_window);
 }
@@ -1562,7 +1564,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 		&wm->server->compositor->shell_interface;
 	struct weston_wm_window *parent;
 	struct theme *t = window->wm->theme;
-	int x = 0, y = 0;
+	int parent_id, x = 0, y = 0;
 
 	if (!shell_interface->create_shell_surface)
 		return;
@@ -1573,12 +1575,20 @@ xserver_map_shell_surface(struct weston_wm *wm,
 						      &shell_client);
 
 	/* ICCCM 4.1.1 */
-	if (!window->override_redirect || !window->transient_for) {
+	if (!window->override_redirect) {
 		shell_interface->set_toplevel(window->shsurf);
 		return;
 	}
 
-	parent = hash_table_lookup(wm->window_hash, window->transient_for->id);
+	/* not all non-toplevel has transient_for set. So we need this
+	 * workaround to guess a parent that will determine the relative
+	 * position of the transient surface */
+	if (!window->transient_for)
+		parent_id = wm->focus_latest->id;
+	else
+		parent_id = window->transient_for->id;
+
+	parent = hash_table_lookup(wm->window_hash, parent_id);
 
 	/* non-decorated and non-toplevel windows, e.g. sub-menus */
 	if (!parent->decorate && parent->override_redirect) {
