@@ -5,8 +5,12 @@
 chrome.test.getConfig(function(config) {
   var url = 'http://localhost:' + config.testServer.port +
       '/files/extensions/platform_apps/browser_tag_isolation/cookie.html';
+  var url2 = 'http://localhost:' + config.testServer.port +
+      '/files/extensions/platform_apps/browser_tag_isolation/cookie2.html';
   var node = document.getElementById('browser_container');
   node.innerHTML = "<object id='browser' src=" + url +
+      " type='application/browser-plugin' width=500 height=550></object>" +
+      "<object id='browser2' src=" + url2 +
       " type='application/browser-plugin' width=500 height=550></object>";
   chrome.test.sendMessage('Launched');
 });

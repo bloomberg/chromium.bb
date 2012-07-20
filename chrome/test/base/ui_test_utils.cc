@@ -979,6 +979,26 @@ void WindowedTabAddedNotificationObserver::Observe(
   content::WindowedNotificationObserver::Observe(type, source, details);
 }
 
+UrlLoadObserver::UrlLoadObserver(const GURL& url,
+                                 const content::NotificationSource& source)
+    : WindowedNotificationObserver(content::NOTIFICATION_LOAD_STOP, source),
+      url_(url) {
+}
+
+UrlLoadObserver::~UrlLoadObserver() {}
+
+void UrlLoadObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  NavigationController* controller =
+      content::Source<NavigationController>(source).ptr();
+  if (controller->GetWebContents()->GetURL() != url_)
+    return;
+
+  WindowedNotificationObserver::Observe(type, source, details);
+}
+
 BrowserAddedObserver::BrowserAddedObserver()
     : notification_observer_(
           chrome::NOTIFICATION_BROWSER_OPENED,

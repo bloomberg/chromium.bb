@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -44,7 +45,6 @@ class Browser;
 class CommandLine;
 class ExtensionAction;
 class FilePath;
-class GURL;
 class HistoryService;
 class MessageLoop;
 class Profile;
@@ -423,6 +423,27 @@ class WindowedNotificationObserverWithDetails
   std::map<uintptr_t, U> details_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserverWithDetails);
+};
+
+// Notification observer which waits for navigation events and blocks until
+// a specific URL is loaded. The URL must be an exact match.
+class UrlLoadObserver : public content::WindowedNotificationObserver {
+ public:
+  // Register to listen for notifications of the given type from either a
+  // specific source, or from all sources if |source| is
+  // NotificationService::AllSources().
+  UrlLoadObserver(const GURL& url, const content::NotificationSource& source);
+  virtual ~UrlLoadObserver();
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(UrlLoadObserver);
 };
 
 // Convenience class for waiting for a new browser to be created.
