@@ -132,6 +132,7 @@ extern const char kChromeFrameReadyModeOptIn[];
 extern const char kChromeFrameReadyModeTempOptOut[];
 extern const char kChromeFrameReadyModeEndTempOptOut[];
 extern const char kChromeSxS[];
+extern const char kConfigureUserSettings[];
 extern const char kCreateAllShortcuts[];
 extern const char kCriticalUpdateVersion[];
 extern const char kDeleteProfile[];

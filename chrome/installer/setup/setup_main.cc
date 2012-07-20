@@ -1077,6 +1077,14 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
           original_state, BrowserDistribution::GetDistribution(), true);
     }
   } else if (cmd_line.HasSwitch(
+      installer::switches::kConfigureUserSettings)) {
+    DCHECK(installer_state->system_install());
+    const Product* chrome_install =
+        installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
+    DCHECK(chrome_install);
+    // TODO(gab): Implement the new shortcut functionality here.
+    LOG(ERROR) << "--configure-user-settings is not implemented.";
+  } else if (cmd_line.HasSwitch(
       installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;
     const Product* chrome_install =

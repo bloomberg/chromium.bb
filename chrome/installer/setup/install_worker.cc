@@ -18,6 +18,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -27,13 +28,15 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
+#include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
@@ -908,6 +911,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
     AddDelegateExecuteWorkItems(installer_state, src_path, new_version,
                                 *product, install_list);
+
+    AddActiveSetupWorkItems(installer_state, new_version, *product,
+                            install_list);
   }
 
   // Add any remaining work items that involve special settings for
@@ -1228,6 +1234,50 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
     list->AddDeleteRegKeyWorkItem(root, typelib_path);
     list->AddDeleteRegKeyWorkItem(root, interface_path);
   }
+}
+
+void AddActiveSetupWorkItems(const InstallerState& installer_state,
+                             const Version& new_version,
+                             const Product& product,
+                             WorkItemList* list) {
+  DCHECK(installer_state.operation() != InstallerState::UNINSTALL);
+  BrowserDistribution* distribution = product.distribution();
+
+  if (!product.is_chrome() || !installer_state.system_install()) {
+    const char* install_level =
+        installer_state.system_install() ? "system" : "user";
+    VLOG(1) << "No Active Setup processing to do for " << install_level
+            << "-level " << distribution->GetAppShortCutName();
+    return;
+  }
+
+  const HKEY root = HKEY_LOCAL_MACHINE;
+  const string16 active_setup_path(GetActiveSetupPath(distribution));
+
+  VLOG(1) << "Adding registration items for Active Setup.";
+  list->AddCreateRegKeyWorkItem(root, active_setup_path);
+  list->AddSetRegValueWorkItem(root, active_setup_path, L"",
+                               distribution->GetAppShortCutName(), true);
+
+  CommandLine cmd(installer_state.GetInstallerDirectory(new_version).
+      Append(installer::kSetupExe));
+  cmd.AppendSwitch(installer::switches::kConfigureUserSettings);
+  cmd.AppendSwitch(installer::switches::kVerboseLogging);
+  list->AddSetRegValueWorkItem(root, active_setup_path, L"StubPath",
+                               cmd.GetCommandLineString(), true);
+
+  // TODO(grt): http://crbug.com/75152 Write a reference to a localized
+  // resource.
+  list->AddSetRegValueWorkItem(root, active_setup_path, L"Localized Name",
+                               distribution->GetAppShortCutName(), true);
+
+  list->AddSetRegValueWorkItem(root, active_setup_path, L"IsInstalled",
+                               static_cast<DWORD>(1U), true);
+
+  string16 comma_separated_version(ASCIIToUTF16(new_version.GetString()));
+  ReplaceChars(comma_separated_version, L".", L",", &comma_separated_version);
+  list->AddSetRegValueWorkItem(root, active_setup_path, L"Version",
+                               comma_separated_version, true);
 }
 
 namespace {

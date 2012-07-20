@@ -42,6 +42,12 @@ const char kChromeFrameReadyModeEndTempOptOut[] = "ready-mode-end-temp-opt-out";
 // Run the installer for Chrome SxS.
 const char kChromeSxS[] = "chrome-sxs";
 
+// Create shortcuts for this user to point to a system-level install (which
+// must already be installed on the machine). The shortcuts created will
+// match the preferences of the already present system-level install as such
+// this option is not compatible with any other installer options.
+const char kConfigureUserSettings[] = "configure-user-settings";
+
 // Create Desktop and QuickLaunch shortcuts (also forces all other shortcuts
 // to be recreated if they were deleted).
 const char kCreateAllShortcuts[] = "create-all-shortcuts";

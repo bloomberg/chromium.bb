@@ -4,17 +4,22 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/time.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-class SetupUtilTest : public testing::Test {
+
+class SetupUtilTestWithDir : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
@@ -36,10 +41,56 @@ class SetupUtilTest : public testing::Test {
   // The path to input data used in tests.
   FilePath data_dir_;
 };
+
+// The privilege tested in ScopeTokenPrivilege tests below.
+// Use SE_RESTORE_NAME as it is one of the many privileges that is available,
+// but not enabled by default on processes running at high integrity.
+static const wchar_t kTestedPrivilege[] = SE_RESTORE_NAME;
+
+// Returns true if the current process' token has privilege |privilege_name|
+// enabled.
+bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
+  base::win::ScopedHandle token;
+  if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY,
+                          token.Receive())) {
+    ADD_FAILURE();
+    return false;
+  }
+
+  // First get the size of the buffer needed for |privileges| below.
+  DWORD size;
+  EXPECT_FALSE(::GetTokenInformation(token, TokenPrivileges, NULL, 0, &size));
+
+  scoped_array<BYTE> privileges_bytes(new BYTE[size]);
+  TOKEN_PRIVILEGES* privileges =
+      reinterpret_cast<TOKEN_PRIVILEGES*>(privileges_bytes.get());
+
+  if (!::GetTokenInformation(token, TokenPrivileges, privileges, size, &size)) {
+    ADD_FAILURE();
+    return false;
+  }
+
+  // There is no point getting a buffer to store more than |privilege_name|\0 as
+  // anything longer will obviously not be equal to |privilege_name|.
+  const DWORD desired_size = wcslen(privilege_name);
+  const DWORD buffer_size = desired_size + 1;
+  scoped_array<wchar_t> name_buffer(new wchar_t[buffer_size]);
+  for (int i = privileges->PrivilegeCount - 1; i >= 0 ; --i) {
+    LUID_AND_ATTRIBUTES& luid_and_att = privileges->Privileges[i];
+    DWORD size = buffer_size;
+    ::LookupPrivilegeName(NULL, &luid_and_att.Luid, name_buffer.get(), &size);
+    if (size == desired_size &&
+        wcscmp(name_buffer.get(), privilege_name) == 0) {
+      return luid_and_att.Attributes == SE_PRIVILEGE_ENABLED;
+    }
+  }
+  return false;
 }
 
+}  // namespace
+
 // Test that we are parsing Chrome version correctly.
-TEST_F(SetupUtilTest, ApplyDiffPatchTest) {
+TEST_F(SetupUtilTestWithDir, ApplyDiffPatchTest) {
   FilePath work_dir(test_dir_.path());
   work_dir = work_dir.AppendASCII("ApplyDiffPatchTest");
   ASSERT_FALSE(file_util::PathExists(work_dir));
@@ -58,7 +109,7 @@ TEST_F(SetupUtilTest, ApplyDiffPatchTest) {
 }
 
 // Test that we are parsing Chrome version correctly.
-TEST_F(SetupUtilTest, GetMaxVersionFromArchiveDirTest) {
+TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
   // Create a version dir
   FilePath chrome_dir = test_dir_.path().AppendASCII("1.0.0.0");
   file_util::CreateDirectory(chrome_dir);
@@ -94,7 +145,7 @@ TEST_F(SetupUtilTest, GetMaxVersionFromArchiveDirTest) {
   ASSERT_EQ(version->GetString(), "9.9.9.9");
 }
 
-TEST_F(SetupUtilTest, DeleteFileFromTempProcess) {
+TEST_F(SetupUtilTestWithDir, DeleteFileFromTempProcess) {
   FilePath test_file;
   file_util::CreateTemporaryFileInDir(test_dir_.path(), &test_file);
   ASSERT_TRUE(file_util::PathExists(test_file));
@@ -102,4 +153,38 @@ TEST_F(SetupUtilTest, DeleteFileFromTempProcess) {
   EXPECT_TRUE(installer::DeleteFileFromTempProcess(test_file, 0));
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
   EXPECT_FALSE(file_util::PathExists(test_file));
+}
+
+// Note: This test is only valid when run at high integrity (i.e. it will fail
+// at medium integrity).
+TEST(SetupUtilTest, ScopedTokenPrivilegeBasic) {
+  ASSERT_FALSE(CurrentProcessHasPrivilege(kTestedPrivilege));
+
+  {
+    installer::ScopedTokenPrivilege test_scoped_privilege(kTestedPrivilege);
+    ASSERT_TRUE(test_scoped_privilege.is_enabled());
+    ASSERT_TRUE(CurrentProcessHasPrivilege(kTestedPrivilege));
+  }
+
+  ASSERT_FALSE(CurrentProcessHasPrivilege(kTestedPrivilege));
+}
+
+// Note: This test is only valid when run at high integrity (i.e. it will fail
+// at medium integrity).
+TEST(SetupUtilTest, ScopedTokenPrivilegeAlreadyEnabled) {
+  ASSERT_FALSE(CurrentProcessHasPrivilege(kTestedPrivilege));
+
+  {
+    installer::ScopedTokenPrivilege test_scoped_privilege(kTestedPrivilege);
+    ASSERT_TRUE(test_scoped_privilege.is_enabled());
+    ASSERT_TRUE(CurrentProcessHasPrivilege(kTestedPrivilege));
+    {
+      installer::ScopedTokenPrivilege dup_scoped_privilege(kTestedPrivilege);
+      ASSERT_TRUE(dup_scoped_privilege.is_enabled());
+      ASSERT_TRUE(CurrentProcessHasPrivilege(kTestedPrivilege));
+    }
+    ASSERT_TRUE(CurrentProcessHasPrivilege(kTestedPrivilege));
+  }
+
+  ASSERT_FALSE(CurrentProcessHasPrivilege(kTestedPrivilege));
 }

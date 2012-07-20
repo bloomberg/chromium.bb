@@ -6,11 +6,14 @@
 
 #include "chrome/installer/setup/uninstall.h"
 
+#include <windows.h>
+
 #include <vector>
 
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -737,6 +740,128 @@ bool ProcessDelegateExecuteWorkItems(const InstallerState& installer_state,
   return item_list->Do();
 }
 
+// Removes Active Setup entries from the registry. This cannot be done through
+// a work items list as usual because of different paths based on conditionals,
+// but otherwise respects the no rollback/best effort uninstall mentality.
+// This will only apply for system-level installs of Chrome/Chromium and will be
+// a no-op for all other types of installs.
+void UninstallActiveSetupEntries(const InstallerState& installer_state,
+                                 const Product& product) {
+  VLOG(1) << "Uninstalling registry entries for ActiveSetup.";
+  BrowserDistribution* distribution = product.distribution();
+
+  if (!product.is_chrome() || !installer_state.system_install()) {
+    const char* install_level =
+        installer_state.system_install() ? "system" : "user";
+    VLOG(1) << "No Active Setup processing to do for " << install_level
+            << "-level " << distribution->GetAppShortCutName();
+    return;
+  }
+
+  const string16 active_setup_path(GetActiveSetupPath(distribution));
+  InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, active_setup_path);
+
+  // Windows leaves keys behind in HKCU\\Software\\(Wow6432Node\\)?Microsoft\\
+  //     Active Setup\\Installed Components\\{guid}
+  // for every user that logged in since system-level Chrome was installed.
+  // This is a problem because Windows compares the value of the Version subkey
+  // in there with the value of the Version subkey in the matching HKLM entries
+  // before running Chrome's Active Setup so if Chrome was to be reinstalled
+  // with a lesser version (e.g. switching back to a more stable channel), the
+  // affected users would not have Chrome's Active Setup called until Chrome
+  // eventually updated passed that user's registered Version.
+  //
+  // It is however very hard to delete those values as the registry hives for
+  // other users are not loaded by default under HKEY_USERS (unless a user is
+  // logged on or has a process impersonating him).
+  //
+  // Following our best effort uninstall practices, try to delete the value in
+  // all users hives. If a given user's hive is not loaded, try to load it to
+  // proceed with the deletion (failure to do so is ignored).
+
+  static const wchar_t kProfileList[] =
+      L"Software\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\";
+
+  // Windows automatically adds Wow6432Node when creating/deleting the HKLM key,
+  // but doesn't seem to do so when manually deleting the user-level keys it
+  // created.
+  string16 alternate_active_setup_path(active_setup_path);
+  alternate_active_setup_path.insert(arraysize("Software\\") - 1,
+                                     L"Wow6432Node\\");
+
+  // These two privileges are required by RegLoadKey() and RegUnloadKey() below.
+  ScopedTokenPrivilege se_restore_name_privilege(SE_RESTORE_NAME);
+  ScopedTokenPrivilege se_backup_name_privilege(SE_BACKUP_NAME);
+  if (!se_restore_name_privilege.is_enabled() ||
+      !se_backup_name_privilege.is_enabled()) {
+    // This is not a critical failure as those privileges aren't required to
+    // clean hives that are already loaded, but attempts to LoadRegKey() below
+    // will fail.
+    LOG(WARNING) << "Failed to enable privileges required to load registry "
+                    "hives.";
+  }
+
+  for (base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE, kProfileList);
+       it.Valid(); ++it) {
+    const wchar_t* profile_sid = it.Name();
+
+    // First check if this user's registry hive needs to be loaded in
+    // HKEY_USERS.
+    base::win::RegKey user_reg_root_probe(
+        HKEY_USERS, profile_sid, KEY_READ);
+    bool loaded_hive = false;
+    if (!user_reg_root_probe.Valid()) {
+      VLOG(1) << "Attempting to load registry hive for " << profile_sid;
+
+      string16 reg_profile_info_path(kProfileList);
+      reg_profile_info_path.append(profile_sid);
+      base::win::RegKey reg_profile_info_key(
+          HKEY_LOCAL_MACHINE, reg_profile_info_path.c_str(), KEY_READ);
+
+      string16 profile_path;
+      LONG result = reg_profile_info_key.ReadValue(L"ProfileImagePath",
+                                                   &profile_path);
+      if (result != ERROR_SUCCESS) {
+        LOG(ERROR) << "Error reading ProfileImagePath: " << result;
+        continue;
+      }
+      FilePath registry_hive_file(profile_path);
+      registry_hive_file = registry_hive_file.AppendASCII("NTUSER.DAT");
+
+      result = RegLoadKey(HKEY_USERS, profile_sid,
+                          registry_hive_file.value().c_str());
+      if (result != ERROR_SUCCESS) {
+        LOG(ERROR) << "Error loading registry hive: " << result;
+        continue;
+      }
+
+      VLOG(1) << "Loaded registry hive for " << profile_sid;
+      loaded_hive = true;
+    }
+
+    base::win::RegKey user_reg_root(
+        HKEY_USERS, profile_sid, KEY_ALL_ACCESS);
+
+    LONG result = user_reg_root.DeleteKey(active_setup_path.c_str());
+    if (result != ERROR_SUCCESS) {
+      result = user_reg_root.DeleteKey(alternate_active_setup_path.c_str());
+      if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+        LOG(ERROR) << "Failed to delete key at " << active_setup_path
+                   << " and at " << alternate_active_setup_path
+                   << ", result: " << result;
+      }
+    }
+
+    if (loaded_hive) {
+      user_reg_root.Close();
+      if (RegUnLoadKey(HKEY_USERS, profile_sid) == ERROR_SUCCESS)
+        VLOG(1) << "Unloaded registry hive for " << profile_sid;
+      else
+        LOG(ERROR) << "Error unloading registry hive for " << profile_sid;
+    }
+  }
+}
+
 bool ProcessChromeFrameWorkItems(const InstallationState& original_state,
                                  const InstallerState& installer_state,
                                  const FilePath& setup_path,
@@ -901,6 +1026,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     }
 
     ProcessDelegateExecuteWorkItems(installer_state, product);
+
+    UninstallActiveSetupEntries(installer_state, product);
   }
 
   if (product.is_chrome_frame()) {

@@ -128,6 +128,16 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                  const Product& product,
                                  WorkItemList* list);
 
+// Adds Active Setup registration for sytem-level setup to be called by Windows
+// on user-login post-install/update.
+// This method should be called for installation only.
+// |product|: The product being installed. This method is a no-op if this is
+// anything other than system-level Chrome/Chromium.
+void AddActiveSetupWorkItems(const InstallerState& installer_state,
+                             const Version& new_version,
+                             const Product& product,
+                             WorkItemList* list);
+
 // This method adds work items to create (or update) Chrome uninstall entry in
 // either the Control Panel->Add/Remove Programs list or in the Omaha client
 // state key if running under an MSI installer.
