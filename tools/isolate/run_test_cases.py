@@ -258,38 +258,52 @@ class ThreadPool(object):
 class Progress(object):
   """Prints progress and accepts updates thread-safely."""
   def __init__(self, size):
+    # To be used in the primary thread
     self.last_printed_line = ''
-    self.next_line = ''
-    self.index = -1
-    self.size = size
+    self.index = 0
     self.start = time.time()
-    self.lock = threading.Lock()
-    self.update_item('')
+    self.size = size
 
-  def update_item(self, name):
-    with self.lock:
-      self.index += 1
-      self.next_line = '[%d/%d] (%.1f%%) %.1fs: %s' % (
-          self.index,
-          self.size,
-          self.index * 100. / self.size,
-          time.time() - self.start,
-          name)
+    # To be used in all threads.
+    self.queued_lines = Queue.Queue()
+
+  def update_item(self, name, index=True, size=False):
+    self.queued_lines.put((name, index, size))
 
   def print_update(self):
     """Prints the current status."""
-    with self.lock:
-      if self.next_line == self.last_printed_line:
-        return
-      line = '\r%s%s' % (
-          self.next_line,
-          ' ' * max(0, len(self.last_printed_line) - len(self.next_line)))
-      self.last_printed_line = self.next_line
-    sys.stderr.write(line)
+    while True:
+      try:
+        name, index, size = self.queued_lines.get_nowait()
+      except Queue.Empty:
+        break
 
-  def increase_count(self):
-    with self.lock:
-      self.size += 1
+      if size:
+        self.size += 1
+      if index:
+        self.index += 1
+        alignment = str(len(str(self.size)))
+        next_line = ('[%' + alignment + 'd/%d] %6.2fs %s') % (
+            self.index,
+            self.size,
+            time.time() - self.start,
+            name)
+        # Fill it with whitespace.
+        # TODO(maruel): Read the console width when prossible and trim
+        # next_line.
+        # TODO(maruel): When not a console is used, do not fill with whitepace
+        # but use \n instead.
+        prefix = '\r' if self.last_printed_line else ''
+        line = '%s%s%s' % (
+            prefix,
+            next_line,
+            ' ' * max(0, len(self.last_printed_line) - len(next_line)))
+        self.last_printed_line = next_line
+      else:
+        line = '\n%s\n' % name.strip('\n')
+        self.last_printed_line = ''
+
+      sys.stdout.write(line)
 
 
 def fix_python_path(cmd):
@@ -416,15 +430,22 @@ class Runner(object):
             'duration': duration,
             'output': output,
           })
-      if returncode and retry != self.retry_count - 1:
-        self.progress.increase_count()
+      size = returncode and retry != self.retry_count - 1
       if retry:
         self.progress.update_item(
-            '%s (%.2fs) - retry #%d' % (test_case, duration, retry))
+            '%s (%.2fs) - retry #%d' % (test_case, duration, retry),
+            True,
+            size)
       else:
-        self.progress.update_item('%s (%.2fs)' % (test_case, duration))
+        self.progress.update_item(
+            '%s (%.2fs)' % (test_case, duration), True, size)
       if not returncode:
         break
+    else:
+      # The test failed. Print its output.
+      if sys.platform == 'win32':
+        output = output.replace('\r\n', '\n')
+      self.progress.update_item(output, False, False)
     return out
 
 
@@ -453,7 +474,7 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
   return tests
 
 
-def run_test_cases(executable, test_cases, jobs, timeout, stats_only, no_dump):
+def run_test_cases(executable, test_cases, jobs, timeout, no_dump):
   """Traces test cases one by one."""
   progress = Progress(len(test_cases))
   with ThreadPool(jobs or multiprocessing.cpu_count()) as pool:
@@ -466,7 +487,7 @@ def run_test_cases(executable, test_cases, jobs, timeout, stats_only, no_dump):
   if not no_dump:
     with open('%s.run_test_cases' % executable, 'wb') as f:
       json.dump(results, f, sort_keys=True, indent=2)
-  sys.stderr.write('\n')
+  sys.stdout.write('\n')
   total = len(results)
   if not total:
     return 1
@@ -488,15 +509,9 @@ def run_test_cases(executable, test_cases, jobs, timeout, stats_only, no_dump):
     else:
       assert False, items
 
-  if not stats_only:
-    for test_case in sorted(fail):
-      # Failed, print the last one:
-      items = results[test_case]
-      print items[-1]['output']
-
-    for test_case in sorted(flaky):
-      items = results[test_case]
-      print '%s is flaky (tried %d times)' % (test_case, len(items))
+  for test_case in sorted(flaky):
+    items = results[test_case]
+    print '%s is flaky (tried %d times)' % (test_case, len(items))
 
   print 'Success: %4d %5.2f%%' % (len(success), len(success) * 100. / total)
   print 'Flaky:   %4d %5.2f%%' % (len(flaky), len(flaky) * 100. / total)
@@ -526,10 +541,6 @@ def main():
       type='int',
       default=120,
       help='Timeout for a single test case, in seconds default:%default')
-  parser.add_option(
-      '-S', '--stats',
-      action='store_true',
-      help='Only prints stats, not output')
   parser.add_option(
       '-v', '--verbose',
       action='count',
@@ -583,6 +594,9 @@ def main():
   executable = args[0]
   if not os.path.isabs(executable):
     executable = os.path.abspath(executable)
+  if sys.platform in ('cygwin', 'win32'):
+    if not os.path.splitext(executable)[1]:
+      executable += '.exe'
   if not os.path.isfile(executable):
     parser.error('"%s" doesn\'t exist.' % executable)
 
@@ -606,7 +620,6 @@ def main():
       test_cases,
       options.jobs,
       options.timeout,
-      options.stats,
       options.no_dump)
 
 

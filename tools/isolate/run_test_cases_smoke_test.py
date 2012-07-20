@@ -32,31 +32,37 @@ class TraceTestCases(unittest.TestCase):
     out, err = proc.communicate() or ('', '')
     self.assertEquals(0, proc.returncode)
     if sys.platform == 'win32':
-      # TODO(maruel): Figure out why replace('\r\n', '\n') doesn't work.
-      out = out.replace('\r', '')
-    expected = (
-      'Note: Google Test filter = Baz.Fail\n'
-      '\n'
-      '%(test_output)s\n'
-      '%(test_footer)s\n'
-      '\n'
-      'Success:    3 75.00%%\n'
-      'Flaky:      0  0.00%%\n'
-      'Fail:       1 25.00%%\n') % {
-        'test_output': gtest_fake.get_test_output('Baz.Fail'),
-        'test_footer': gtest_fake.get_footer(1),
-      }
-
-    self.assertTrue(
-        out.startswith(expected),
-        '\n'.join(['XXX', expected, 'XXX', out[:len(expected)], 'XXX']))
-    remaining_actual = out[len(expected):]
-    regexp = (
-        r'\d+\.\ds Done running 4 tests with 6 executions. \d+\.\d test/s'
-        + '\n')
-    self.assertTrue(re.match(regexp, remaining_actual), remaining_actual)
-    # Progress junk went to stderr.
-    self.assertTrue(err.startswith('\r'), err)
+      out = out.replace('\r\n', '\n')
+    lines = out.splitlines()
+    expected_out_re = [
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      re.escape('Note: Google Test filter = Baz.Fail'),
+      r'',
+    ] + [
+      re.escape(l) for l in gtest_fake.get_test_output('Baz.Fail').splitlines()
+    ] + [
+      '',
+    ] + [
+      re.escape(l) for l in gtest_fake.get_footer(1).splitlines()
+    ] + [
+      '',
+      re.escape('Success:    3 75.00%'),
+      re.escape('Flaky:      0  0.00%'),
+      re.escape('Fail:       1 25.00%'),
+      r'\d+\.\ds Done running 4 tests with 6 executions. \d+\.\d test/s',
+    ]
+    for index in range(len(expected_out_re)):
+      line = lines.pop(0)
+      self.assertTrue(
+          re.match('^%s$' % expected_out_re[index], line),
+          (index, expected_out_re[index], repr(line)))
+    self.assertEquals([], lines)
+    self.assertEquals('', err)
 
 
 if __name__ == '__main__':

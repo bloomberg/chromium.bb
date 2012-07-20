@@ -56,12 +56,11 @@ class Tracer(object):
           })
       logging.debug(
           'Tracing %s done: %d, %.1fs' % (test_case, returncode,  duration))
-      if not valid:
-        self.progress.increase_count()
       if retry:
-        self.progress.update_item('%s - %d' % (test_case, retry))
+        self.progress.update_item(
+            '%s - %d' % (test_case, retry), True, not valid)
       else:
-        self.progress.update_item(test_case)
+        self.progress.update_item(test_case, True, not valid)
       if valid:
         break
     return out
