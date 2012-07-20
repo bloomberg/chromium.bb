@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <string.h>
 #include <pthread.h>
 
 void foo() {
@@ -25,7 +26,7 @@ void *f2(void *arg) {
   return NULL;
 }
 
-int main() {
+void test_break_continue_thread() {
   pthread_t t1;
   pthread_t t2;
   int rc;
@@ -37,5 +38,14 @@ int main() {
   assert(rc == 0);
   rc = pthread_join(t2, NULL);
   assert(rc == 0);
-  return 0;
+}
+
+int main(int argc, char **argv) {
+  assert(argc >= 2);
+
+  if (strcmp(argv[1], "break_continue_thread") == 0) {
+    test_break_continue_thread();
+    return 0;
+  }
+  return 1;
 }

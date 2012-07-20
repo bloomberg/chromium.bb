@@ -8,7 +8,7 @@ import os
 
 
 def test(gdb):
-  gdb.Command('break main')
+  gdb.Command('break test_stepi_after_break')
   assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
   # From GDB/MI documentation, 'stepi' statement should be
   #   assert gdb.ResumeCommand('stepi')['reason'] == 'end-stepping-range'

@@ -21,7 +21,7 @@ def LaunchSelLdr(program, name):
   if os.environ.has_key('NACL_LD_SO'):
     args += ['-a', '--', os.environ['NACL_LD_SO'],
              '--library-path', os.environ['NACL_LIBS']]
-  args += [program]
+  args += [program, name]
   return subprocess.Popen(args, stdout=stdout, stderr=stderr)
 
 
