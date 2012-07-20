@@ -85,7 +85,8 @@ deps_os = {
 }
 
 include_rules = [
-    
+    '+native_client/src/include',
+    '+gtest'
 ]
 
 skip_child_includes = [
