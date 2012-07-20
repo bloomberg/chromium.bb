@@ -810,7 +810,6 @@ move_grab_button(struct wl_pointer_grab *grab,
 	if (pointer->button_count == 0 &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		shell_grab_end(shell_grab);
-		wl_pointer_end_grab(pointer);
 		free(grab);
 	}
 }
@@ -826,11 +825,9 @@ busy_cursor_grab_focus(struct wl_pointer_grab *base,
 		       struct wl_surface *surface, int32_t x, int32_t y)
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
-	struct wl_pointer *pointer = base->pointer;
 
 	if (grab->grab.focus != surface) {
 		shell_grab_end(grab);
-		wl_pointer_end_grab(pointer);
 		free(grab);
 	}
 }
