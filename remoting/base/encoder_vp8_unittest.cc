@@ -73,8 +73,8 @@ class EncoderDpiCallback {
 // Test that the DPI information is correctly propagated from the CaptureData
 // to the VideoPacket.
 TEST(EncoderVp8Test, TestDpiPropagation) {
-  int height = 1;
-  int width = 1;
+  int height = 32;
+  int width = 32;
   const int kBytesPerPixel = 4;
 
   EncoderVp8 encoder;

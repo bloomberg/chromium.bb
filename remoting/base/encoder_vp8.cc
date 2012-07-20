@@ -225,6 +225,9 @@ void EncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
 void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
                         bool key_frame,
                         const DataAvailableCallback& data_available_callback) {
+  DCHECK_LE(32, capture_data->size().width());
+  DCHECK_LE(32, capture_data->size().height());
+
   if (!initialized_ || (capture_data->size() != size_)) {
     bool ret = Init(capture_data->size());
     // TODO(hclam): Handle error better.
