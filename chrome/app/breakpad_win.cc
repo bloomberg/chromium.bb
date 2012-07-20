@@ -48,12 +48,14 @@ namespace breakpad_win {
 std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
 size_t g_num_of_experiments_offset = 0;
 size_t g_experiment_chunks_offset = 0;
+bool g_deferred_crash_uploads = false;
 
 }   // namespace breakpad_win
 
 using breakpad_win::g_custom_entries;
 using breakpad_win::g_experiment_chunks_offset;
 using breakpad_win::g_num_of_experiments_offset;
+using breakpad_win::g_deferred_crash_uploads;
 
 namespace {
 
@@ -82,6 +84,10 @@ const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 
 // This is the well known SID for the system principal.
 const wchar_t kSystemPrincipalSid[] =L"S-1-5-18";
+
+// This is the minimum version of google update that is required for deferred
+// crash uploads to work.
+const char kMinUpdateVersion[] = "1.3.21.115";
 
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 google_breakpad::ExceptionHandler* g_dumphandler_no_crash = NULL;
@@ -305,6 +311,10 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"profile-type",
                                        GetProfileType().c_str()));
+
+  if (g_deferred_crash_uploads)
+    g_custom_entries->push_back(
+        google_breakpad::CustomInfoEntry(L"deferred-upload", L"true"));
 
   if (!special_build.empty())
     g_custom_entries->push_back(
@@ -727,6 +737,18 @@ static bool MetricsReportingControlledByPolicy(bool* result) {
   return false;
 }
 
+// Check whether the installed version of google update supports deferred
+// uploads of crash reports.
+static bool DeferredUploadsSupported(bool system_install) {
+  Version update_version =
+      GoogleUpdateSettings::GetGoogleUpdateVersion(system_install);
+  if (!update_version.IsValid() ||
+      update_version.IsOlderThan(std::string(kMinUpdateVersion)))
+    return false;
+
+  return true;
+}
+
 static void InitPipeNameEnvVar(bool is_per_user_install) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasVar(kPipeNameVar)) {
@@ -757,7 +779,11 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
       crash_reporting_enabled = GoogleUpdateSettings::GetCollectStatsConsent();
 
     if (!crash_reporting_enabled) {
-      return;
+      if (!controlled_by_policy &&
+          DeferredUploadsSupported(!is_per_user_install))
+        g_deferred_crash_uploads = true;
+      else
+        return;
     }
 
     // Build the pipe name. It can be either:
