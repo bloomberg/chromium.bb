@@ -20,17 +20,18 @@
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_job_factory.h"
 
 // This is where handlers for protocols registered with
 // navigator.registerProtocolHandler() are registered. Each Profile owns an
 // instance of this class, which is initialized on browser start through
 // Profile::InitRegisteredProtocolHandlers(), and they should be the only
 // instances of this class.
+class ProtocolHandlerRegistry : public ProfileKeyedService {
 
-class ProtocolHandlerRegistry
-    : public base::RefCountedThreadSafe<
-          ProtocolHandlerRegistry, content::BrowserThread::DeleteOnIOThread> {
  public:
+  // Provides notification of when the OS level user agent settings
+  // are changed.
   class DefaultClientObserver
       : public ShellIntegration::DefaultWebClientObserver {
    public:
@@ -59,9 +60,9 @@ class ProtocolHandlerRegistry
     DISALLOW_COPY_AND_ASSIGN(DefaultClientObserver);
   };
 
-  // TODO(koz): Refactor this to eliminate the unnecessary virtuals. All that
-  // should be needed is a way to ensure that the list of websafe protocols is
-  // updated.
+  // |Delegate| provides an interface for interacting asynchronously
+  // with the underlying OS for the purposes of registering Chrome
+  // as the default handler for specific protocols.
   class Delegate {
    public:
     virtual ~Delegate();
@@ -83,7 +84,14 @@ class ProtocolHandlerRegistry
   typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
   typedef std::vector<DefaultClientObserver*> DefaultClientObserverList;
 
+  // Creates a new instance. Assumes ownership of |delegate|.
   ProtocolHandlerRegistry(Profile* profile, Delegate* delegate);
+  virtual ~ProtocolHandlerRegistry();
+
+  // Returns a net::URLRequestJobFactory::Interceptor suitable
+  // for use on the IO thread, but is initialized on the UI thread.
+  // Callers assume responsibility for deleting this object.
+  net::URLRequestJobFactory::Interceptor* CreateURLInterceptor();
 
   // Called when a site tries to register as a protocol handler. If the request
   // can be handled silently by the registry - either to ignore the request
@@ -116,8 +124,10 @@ class ProtocolHandlerRegistry
   // Returns true if this handler is the default handler for its protocol.
   bool IsDefault(const ProtocolHandler& handler) const;
 
-  // Loads a user's registered protocol handlers.
-  void Load();
+  // Initializes default protocol settings and loads them from prefs.
+  // This method must be called to complete initialization of the
+  // registry after creation, and prior to use.
+  void InitProtocolSettings();
 
   // Returns the offset in the list of handlers for a protocol of the default
   // handler for that protocol.
@@ -155,10 +165,6 @@ class ProtocolHandlerRegistry
   // Returns true if the protocol has a default protocol handler.
   bool IsHandledProtocol(const std::string& scheme) const;
 
-  // Returns true if the protocol has a default protocol handler.
-  // Should be called only from the IO thread.
-  bool IsHandledProtocolIO(const std::string& scheme) const;
-
   // Removes the given protocol handler from the registry.
   void RemoveHandler(const ProtocolHandler& handler);
 
@@ -168,10 +174,6 @@ class ProtocolHandlerRegistry
   // Returns the default handler for this protocol, or an empty handler if none
   // exists.
   const ProtocolHandler& GetHandlerFor(const std::string& scheme) const;
-
-  // Creates a URL request job for the given request if there is a matching
-  // protocol handler, returns NULL otherwise.
-  net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const;
 
   // Puts this registry in the enabled state - registered protocol handlers
   // will handle requests.
@@ -183,7 +185,7 @@ class ProtocolHandlerRegistry
 
   // This is called by the UI thread when the system is shutting down. This
   // does finalization which must be done on the UI thread.
-  void Finalize();
+  virtual void Shutdown() OVERRIDE;
 
   // Registers the preferences that we store registered protocol handlers in.
   static void RegisterPrefs(PrefService* prefService);
@@ -201,27 +203,13 @@ class ProtocolHandlerRegistry
   friend class ProtocolHandlerRegistryTest;
   friend class RegisterProtocolHandlerBrowserTest;
 
-  ~ProtocolHandlerRegistry();
+  // Forward declaration of the internal implementation classes.
+  class Core;
+  class URLInterceptor;
 
   // Puts the given handler at the top of the list of handlers for its
   // protocol.
   void PromoteHandler(const ProtocolHandler& handler);
-
-  // Clears the default for the provided protocol.
-  // Should be called only from the IO thread.
-  void ClearDefaultIO(const std::string& scheme);
-
-  // Makes this ProtocolHandler the default handler for its protocol.
-  // Should be called only from the IO thread.
-  void SetDefaultIO(const ProtocolHandler& handler);
-
-  // Indicate that the registry has been enabled in the IO thread's copy of the
-  // data.
-  void EnableIO() { enabled_io_ = true; }
-
-  // Indicate that the registry has been disabled in the IO thread's copy of
-  // the data.
-  void DisableIO() { enabled_io_ = false; }
 
   // Saves a user's registered protocol handlers.
   void Save();
@@ -277,9 +265,6 @@ class ProtocolHandlerRegistry
   // requests.
   bool enabled_;
 
-  // Copy of enabled_ that is only accessed on the IO thread.
-  bool enabled_io_;
-
   // Whether or not we are loading.
   bool is_loading_;
 
@@ -287,10 +272,11 @@ class ProtocolHandlerRegistry
   // AddPredefinedHandler will be rejected.
   bool is_loaded_;
 
-  DefaultClientObserverList default_client_observers_;
+  // Copy of registry data for use on the IO thread. Changes to the registry
+  // are posted to the IO thread where updates are applied to this object.
+  scoped_refptr<Core> core_;
 
-  // Copy of default_handlers_ that is only accessed on the IO thread.
-  ProtocolHandlerMap default_handlers_io_;
+  DefaultClientObserverList default_client_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistry);
 };

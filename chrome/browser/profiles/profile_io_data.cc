@@ -20,6 +20,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -117,42 +118,6 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
   const base::Callback<Profile*(void)> profile_getter_;
 };
 
-class ProtocolHandlerRegistryInterceptor
-    : public net::URLRequestJobFactory::Interceptor {
- public:
-  explicit ProtocolHandlerRegistryInterceptor(
-      ProtocolHandlerRegistry* protocol_handler_registry)
-      : protocol_handler_registry_(protocol_handler_registry) {
-    DCHECK(protocol_handler_registry_);
-  }
-
-  virtual ~ProtocolHandlerRegistryInterceptor() {}
-
-  virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request) const OVERRIDE {
-    return protocol_handler_registry_->MaybeCreateJob(request);
-  }
-
-  virtual bool WillHandleProtocol(const std::string& protocol) const {
-    return protocol_handler_registry_->IsHandledProtocolIO(protocol);
-  }
-
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
-      const GURL& url, net::URLRequest* request) const OVERRIDE {
-    return NULL;
-  }
-
-  virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request) const OVERRIDE {
-    return NULL;
-  }
-
- private:
-  const scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistryInterceptor);
-};
-
 Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
@@ -215,7 +180,15 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       DesktopNotificationServiceFactory::GetForProfile(profile);
 #endif
 
-  params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
+  ProtocolHandlerRegistry* protocol_handler_registry =
+      ProtocolHandlerRegistryFactory::GetForProfile(profile);
+  DCHECK(protocol_handler_registry);
+
+  // the profile instance is only available here in the InitializeOnUIThread
+  // method, so we create the url interceptor here, then save it for
+  // later delivery to the job factory in LazyInitialize
+  params->protocol_handler_url_interceptor.reset(
+      protocol_handler_registry->CreateURLInterceptor());
 
   ChromeProxyConfigService* proxy_config_service =
       ProxyServiceFactory::CreateProxyConfigService(true);
@@ -545,11 +518,12 @@ void ProfileIOData::SetUpJobFactoryDefaults(
     net::URLRequestJobFactory* job_factory) const {
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ProfileIOData::IsHandledProtocol().
-  if (profile_params_->protocol_handler_registry) {
+
+  if (profile_params_->protocol_handler_url_interceptor.get()) {
     job_factory->AddInterceptor(
-        new ProtocolHandlerRegistryInterceptor(
-            profile_params_->protocol_handler_registry));
+        profile_params_->protocol_handler_url_interceptor.release());
   }
+
   bool set_protocol = job_factory->SetProtocolHandler(
       chrome::kExtensionScheme,
       CreateExtensionProtocolHandler(is_incognito(),

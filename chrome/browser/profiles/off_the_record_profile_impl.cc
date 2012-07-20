@@ -375,10 +375,6 @@ void OffTheRecordProfileImpl::InitPromoResources() {
   NOTREACHED();
 }
 
-void OffTheRecordProfileImpl::InitRegisteredProtocolHandlers() {
-  NOTREACHED();
-}
-
 FilePath OffTheRecordProfileImpl::last_selected_directory() {
   const FilePath& directory = last_selected_directory_;
   if (directory.empty()) {

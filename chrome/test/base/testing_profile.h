@@ -105,14 +105,6 @@ class TestingProfile : public Profile {
   // BlockUntilBookmarkModelLoaded.
   void CreateBookmarkModel(bool delete_file);
 
-  // Creates a ProtocolHandlerRegistry. If not invoked the protocol handler
-  // registry is NULL.
-  void CreateProtocolHandlerRegistry();
-
-  // Creates a ProtocolHandlerRegistry with the provided delegate.
-  void CreateProtocolHandlerRegistry(
-      ProtocolHandlerRegistry::Delegate* delegate);
-
   // Creates a WebDataService. If not invoked, the web data service is NULL.
   void CreateWebDataService();
 
@@ -214,7 +206,6 @@ class TestingProfile : public Profile {
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual void MarkAsCleanShutdown() OVERRIDE {}
   virtual void InitPromoResources() OVERRIDE {}
-  virtual void InitRegisteredProtocolHandlers() OVERRIDE {}
 
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
@@ -268,10 +259,6 @@ class TestingProfile : public Profile {
 
   // The favicon service. Only created if CreateFaviconService is invoked.
   scoped_ptr<FaviconService> favicon_service_;
-
-  // The ProtocolHandlerRegistry. Only created if CreateProtocolHandlerRegistry
-  // is invoked.
-  scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
   // The policy service. Lazily created as a stub.
   scoped_ptr<policy::PolicyService> policy_service_;

@@ -19,6 +19,7 @@
 
 class ContentSettingBubbleModelDelegate;
 class Profile;
+class ProtocolHandlerRegistry;
 class TabContents;
 
 // This model provides data for ContentSettingBubble, and also controls
@@ -158,6 +159,7 @@ class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
   ContentSettingRPHBubbleModel(Delegate* delegate,
                                TabContents* tab_contents,
                                Profile* profile,
+                               ProtocolHandlerRegistry* registry,
                                ContentSettingsType content_type);
 
   virtual void OnRadioClicked(int radio_index) OVERRIDE;
@@ -177,6 +179,7 @@ class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
   void ClearOrSetPreviousHandler();
 
   int selected_item_;
+  ProtocolHandlerRegistry* registry_;
   ProtocolHandler pending_handler_;
   ProtocolHandler previous_handler_;
 };
