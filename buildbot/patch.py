@@ -697,7 +697,7 @@ class GitRepoPatch(object):
       Note that if the commit lacks a ChangeId, the parent's sha1 is returned.
     """
     dependencies = []
-    logging.info('Checking for Gerrit dependencies for change %s', self)
+    logging.debug('Checking for Gerrit dependencies for change %s', self)
 
     rev = self.Fetch(git_repo)
 
@@ -744,7 +744,7 @@ class GitRepoPatch(object):
       dependencies.append(dep)
 
     if dependencies:
-      logging.info('Found %s Gerrit dependencies for change %s', dependencies,
+      logging.debug('Found %s Gerrit dependencies for change %s', dependencies,
                    self)
       # Ensure that our parent's ChangeId's are internal if we are.
 
@@ -825,7 +825,7 @@ class GitRepoPatch(object):
     CQ-DEPEND=10001,10002
     """
     dependencies = []
-    logging.info('Checking for CQ-DEPEND dependencies for change %s', self)
+    logging.debug('Checking for CQ-DEPEND dependencies for change %s', self)
 
     self.Fetch(git_repo)
 
@@ -843,7 +843,7 @@ class GitRepoPatch(object):
           dependencies.append(chunk)
 
     if dependencies:
-      logging.info('Found %s Paladin dependencies for change %s', dependencies,
+      logging.debug('Found %s Paladin dependencies for change %s', dependencies,
                    self)
     return dependencies
 
