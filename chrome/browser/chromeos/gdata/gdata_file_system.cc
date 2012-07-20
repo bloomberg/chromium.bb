@@ -2753,8 +2753,6 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
     return;
   }
 
-  // TODO(zelidrag): Find a faster way to get next url rather than parsing
-  // the entire feed.
   GURL next_feed_url;
   scoped_ptr<DocumentFeed> current_feed(DocumentFeed::ExtractAndParse(*data));
   if (!current_feed.get()) {
