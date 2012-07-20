@@ -341,7 +341,7 @@ void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(const ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FOLDER);
   platform_util::OpenItem(
-      DownloadPrefs::FromDownloadManager(download_manager_)->download_path());
+      DownloadPrefs::FromDownloadManager(download_manager_)->DownloadPath());
 }
 
 // DownloadsDOMHandler, private: ----------------------------------------------

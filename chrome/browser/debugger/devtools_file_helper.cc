@@ -4,6 +4,8 @@
 
 #include "chrome/browser/debugger/devtools_file_helper.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -18,8 +20,12 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_manager.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
+using content::DownloadManager;
 
 namespace {
 
@@ -147,8 +153,9 @@ void DevToolsFileHelper::Save(const std::string& url,
       initial_path = g_last_save_path.Pointer()->DirName().AppendASCII(
           suggested_file_name);
     } else {
-      DownloadPrefs prefs(profile_->GetPrefs());
-      initial_path = prefs.download_path().AppendASCII(suggested_file_name);
+      FilePath download_path = DownloadPrefs::FromDownloadManager(
+          BrowserContext::GetDownloadManager(profile_))->DownloadPath();
+      initial_path = download_path.AppendASCII(suggested_file_name);
     }
   }
 

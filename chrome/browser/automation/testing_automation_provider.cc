@@ -1152,7 +1152,7 @@ void TestingAutomationProvider::GetDownloadDirectory(
     DownloadManager* dlm =
         BrowserContext::GetDownloadManager(tab->GetBrowserContext());
     *download_directory =
-        DownloadPrefs::FromDownloadManager(dlm)->download_path();
+        DownloadPrefs::FromDownloadManager(dlm)->DownloadPath();
   }
 }
 

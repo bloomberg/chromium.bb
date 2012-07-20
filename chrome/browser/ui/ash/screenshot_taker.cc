@@ -153,7 +153,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
   if (is_logged_in) {
     DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
         ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
-    screenshot_directory = download_prefs->download_path();
+    screenshot_directory = download_prefs->DownloadPath();
   } else {
     if (!file_util::GetTempDir(&screenshot_directory)) {
       LOG(ERROR) << "Failed to find temporary directory.";

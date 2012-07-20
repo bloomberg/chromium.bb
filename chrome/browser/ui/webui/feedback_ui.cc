@@ -98,7 +98,7 @@ void GetSavedScreenshots(std::vector<std::string>* saved_screenshots) {
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
       ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
   FeedbackUI::GetMostRecentScreenshots(
-      download_prefs->download_path(),
+      download_prefs->DownloadPath(),
       saved_screenshots,
       kMaxSavedScreenshots);
 }

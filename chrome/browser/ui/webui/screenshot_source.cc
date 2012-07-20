@@ -104,7 +104,7 @@ void ScreenshotSource::SendSavedScreenshot(const std::string& screenshot_path,
   int64 file_size = 0;
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
       ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
-  FilePath file = download_prefs->download_path().Append(decoded_filename);
+  FilePath file = download_prefs->DownloadPath().Append(decoded_filename);
   if (!file_util::GetFileSize(file, &file_size)) {
     CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
     return;
