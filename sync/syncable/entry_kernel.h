@@ -216,8 +216,7 @@ struct EntryKernel {
     // Round-trip to proto time format and back so that we have
     // consistent time resolutions (ms).
     time_fields[field - TIME_FIELDS_BEGIN] =
-        syncer::ProtoTimeToTime(
-            syncer::TimeToProtoTime(value));
+        ProtoTimeToTime(TimeToProtoTime(value));
   }
   inline void put(IdField field, const Id& value) {
     id_fields[field - ID_FIELDS_BEGIN] = value;
@@ -290,7 +289,7 @@ struct EntryKernel {
     return id_fields[field - ID_FIELDS_BEGIN];
   }
 
-  syncer::ModelType GetServerModelType() const;
+  ModelType GetServerModelType() const;
 
   // Dumps all kernel info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
@@ -307,8 +306,7 @@ struct EntryKernelMutation {
 
 typedef std::map<int64, EntryKernelMutation> EntryKernelMutationMap;
 
-typedef syncer::Immutable<EntryKernelMutationMap>
-    ImmutableEntryKernelMutationMap;
+typedef Immutable<EntryKernelMutationMap> ImmutableEntryKernelMutationMap;
 
 // Caller owns the return value.
 base::DictionaryValue* EntryKernelMutationToValue(

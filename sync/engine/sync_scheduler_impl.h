@@ -45,11 +45,11 @@ class SyncSchedulerImpl : public SyncScheduler {
   virtual void ScheduleNudgeAsync(
       const base::TimeDelta& delay,
       NudgeSource source,
-      syncer::ModelTypeSet types,
+      ModelTypeSet types,
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void ScheduleNudgeWithPayloadsAsync(
       const base::TimeDelta& delay, NudgeSource source,
-      const syncer::ModelTypePayloadMap& types_with_payloads,
+      const ModelTypePayloadMap& types_with_payloads,
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void SetNotificationsEnabled(bool notifications_enabled) OVERRIDE;
 
@@ -260,7 +260,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-      const syncer::ModelTypePayloadMap& types_with_payloads,
+      const ModelTypePayloadMap& types_with_payloads,
       bool is_canary_job, const tracked_objects::Location& nudge_location);
 
   // Returns true if the client is currently in exponential backoff.
@@ -282,8 +282,8 @@ class SyncSchedulerImpl : public SyncScheduler {
   void OnServerConnectionErrorFixed();
 
   // The pointer is owned by the caller.
-  syncer::sessions::SyncSession* CreateSyncSession(
-      const syncer::sessions::SyncSourceInfo& info);
+  sessions::SyncSession* CreateSyncSession(
+      const sessions::SyncSourceInfo& info);
 
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();

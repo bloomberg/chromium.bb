@@ -22,7 +22,6 @@
 namespace syncer {
 
 using syncable::GET_BY_ID;
-using syncer::ModelTypeSet;
 using syncable::SYNCER;
 using syncable::WriteTransaction;
 
@@ -86,7 +85,7 @@ std::set<ModelSafeGroup> VerifyUpdatesCommand::GetGroupsToChange(
       session.status_controller().updates_response().get_updates();
   for (int i = 0; i < updates.entries().size(); i++) {
     groups_with_updates.insert(
-        GetGroupForModelType(syncer::GetModelType(updates.entries(i)),
+        GetGroupForModelType(GetModelType(updates.entries(i)),
                              session.routing_info()));
   }
 
@@ -103,7 +102,7 @@ SyncerError VerifyUpdatesCommand::ModelChangingExecuteImpl(
       status->updates_response().get_updates();
   int update_count = updates.entries().size();
 
-  ModelTypeSet requested_types = syncer::GetRoutingInfoTypes(
+  ModelTypeSet requested_types = GetRoutingInfoTypes(
       session->routing_info());
 
   DVLOG(1) << update_count << " entries to verify";
@@ -137,7 +136,7 @@ VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
 
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = IsFolder(entry);
-  const syncer::ModelType model_type = GetModelType(entry);
+  const ModelType model_type = GetModelType(entry);
 
   if (!id.ServerKnows()) {
     LOG(ERROR) << "Illegal negative id in received updates";
@@ -154,8 +153,8 @@ VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
   syncable::MutableEntry same_id(trans, GET_BY_ID, id);
   result.value = VerifyNewEntry(entry, &same_id, deleted);
 
-  syncer::ModelType placement_type = !deleted ? GetModelType(entry)
-      : same_id.good() ? same_id.GetModelType() : syncer::UNSPECIFIED;
+  ModelType placement_type = !deleted ? GetModelType(entry)
+      : same_id.good() ? same_id.GetModelType() : UNSPECIFIED;
   result.placement = GetGroupForModelType(placement_type, routes);
 
   if (VERIFY_UNDECIDED == result.value) {

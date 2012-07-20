@@ -30,7 +30,7 @@ InternalComponentsFactoryImpl::BuildContext(
     ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
-    syncer::TrafficRecorder* traffic_recorder) {
+    TrafficRecorder* traffic_recorder) {
   return scoped_ptr<sessions::SyncSessionContext>(
       new sessions::SyncSessionContext(connection_manager, directory,
           routing_info, workers, monitor, throttled_data_type_tracker,

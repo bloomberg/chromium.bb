@@ -11,7 +11,7 @@ namespace syncer {
 typedef testing::Test DebugInfoEventListenerTest;
 
 TEST_F(DebugInfoEventListenerTest, VerifyEventsAdded) {
-  syncer::DebugInfoEventListener debug_info_event_listener;
+  DebugInfoEventListener debug_info_event_listener;
   debug_info_event_listener.CreateAndAddEvent(
       sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
   ASSERT_EQ(debug_info_event_listener.events_.size(), 1U);
@@ -22,17 +22,16 @@ TEST_F(DebugInfoEventListenerTest, VerifyEventsAdded) {
 }
 
 TEST_F(DebugInfoEventListenerTest, VerifyQueueSize) {
-  syncer::DebugInfoEventListener debug_info_event_listener;
+  DebugInfoEventListener debug_info_event_listener;
   for (int i = 0; i < 10; ++i) {
     debug_info_event_listener.CreateAndAddEvent(
         sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
   }
-  ASSERT_EQ(debug_info_event_listener.events_.size(),
-      syncer::kMaxEntries);
+  ASSERT_EQ(debug_info_event_listener.events_.size(), kMaxEntries);
 }
 
 TEST_F(DebugInfoEventListenerTest, VerifyGetAndClearEvents) {
-  syncer::DebugInfoEventListener debug_info_event_listener;
+  DebugInfoEventListener debug_info_event_listener;
   debug_info_event_listener.CreateAndAddEvent(
       sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
   ASSERT_EQ(debug_info_event_listener.events_.size(), 1U);

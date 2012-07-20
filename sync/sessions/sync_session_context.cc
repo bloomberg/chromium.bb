@@ -23,7 +23,7 @@ SyncSessionContext::SyncSessionContext(
     ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter,
-    syncer::TrafficRecorder* traffic_recorder)
+    TrafficRecorder* traffic_recorder)
     : resolver_(NULL),
       connection_manager_(connection_manager),
       directory_(directory),

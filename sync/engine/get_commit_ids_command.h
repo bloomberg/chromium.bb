@@ -58,8 +58,8 @@ class GetCommitIdsCommand : public SyncerCommand {
   // 4. It's a delete but has not been committed.
   void FilterUnreadyEntries(
       syncable::BaseTransaction* trans,
-      syncer::ModelTypeSet throttled_types,
-      syncer::ModelTypeSet encrypted_types,
+      ModelTypeSet throttled_types,
+      ModelTypeSet encrypted_types,
       bool passphrase_missing,
       const syncable::Directory::UnsyncedMetaHandles& unsynced_handles,
       std::set<int64>* ready_unsynced_set);

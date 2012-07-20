@@ -68,11 +68,10 @@ class SYNC_EXPORT ModelSafeWorker
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;
 };
 
-// A map that details which ModelSafeGroup each syncer::ModelType
+// A map that details which ModelSafeGroup each ModelType
 // belongs to.  Routing info can change in response to the user enabling /
 // disabling sync for certain types, as well as model association completions.
-typedef std::map<syncer::ModelType, ModelSafeGroup>
-    ModelSafeRoutingInfo;
+typedef std::map<ModelType, ModelSafeGroup> ModelSafeRoutingInfo;
 
 // Caller takes ownership of return value.
 base::DictionaryValue* ModelSafeRoutingInfoToValue(
@@ -83,15 +82,15 @@ SYNC_EXPORT std::string ModelSafeRoutingInfoToString(
 
 // Make a ModelTypePayloadMap for all the enabled types in a
 // ModelSafeRoutingInfo using a default payload.
-syncer::ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
+ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
     const ModelSafeRoutingInfo& routes,
     const std::string& payload);
 
-SYNC_EXPORT syncer::ModelTypeSet GetRoutingInfoTypes(
+SYNC_EXPORT ModelTypeSet GetRoutingInfoTypes(
     const ModelSafeRoutingInfo& routing_info);
 
 SYNC_EXPORT ModelSafeGroup GetGroupForModelType(
-    const syncer::ModelType type,
+    const ModelType type,
     const ModelSafeRoutingInfo& routes);
 
 }  // namespace syncer

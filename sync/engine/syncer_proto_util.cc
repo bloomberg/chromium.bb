@@ -114,9 +114,9 @@ void SyncerProtoUtil::HandleMigrationDoneResponse(
   sessions::SyncSession* session) {
   LOG_IF(ERROR, 0 >= response->migrated_data_type_id_size())
       << "MIGRATION_DONE but no types specified.";
-  syncer::ModelTypeSet to_migrate;
+  ModelTypeSet to_migrate;
   for (int i = 0; i < response->migrated_data_type_id_size(); i++) {
-    to_migrate.Put(syncer::GetModelTypeFromSpecificsFieldNumber(
+    to_migrate.Put(GetModelTypeFromSpecificsFieldNumber(
         response->migrated_data_type_id(i)));
   }
   // TODO(akalin): This should be a set union.
@@ -230,7 +230,7 @@ void SyncerProtoUtil::HandleThrottleError(
     const base::TimeTicks& throttled_until,
     ThrottledDataTypeTracker* tracker,
     sessions::SyncSession::Delegate* delegate) {
-  DCHECK_EQ(error.error_type, syncer::THROTTLED);
+  DCHECK_EQ(error.error_type, THROTTLED);
   if (error.error_data_types.Empty()) {
     // No datatypes indicates the client should be completely throttled.
     delegate->OnSilencedUntil(throttled_until);
@@ -257,53 +257,53 @@ SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
     const sync_pb::SyncEnums::ErrorType& error_type) {
   switch (error_type) {
     case sync_pb::SyncEnums::SUCCESS:
-      return syncer::SYNC_SUCCESS;
+      return SYNC_SUCCESS;
     case sync_pb::SyncEnums::NOT_MY_BIRTHDAY:
-      return syncer::NOT_MY_BIRTHDAY;
+      return NOT_MY_BIRTHDAY;
     case sync_pb::SyncEnums::THROTTLED:
-      return syncer::THROTTLED;
+      return THROTTLED;
     case sync_pb::SyncEnums::CLEAR_PENDING:
-      return syncer::CLEAR_PENDING;
+      return CLEAR_PENDING;
     case sync_pb::SyncEnums::TRANSIENT_ERROR:
-      return syncer::TRANSIENT_ERROR;
+      return TRANSIENT_ERROR;
     case sync_pb::SyncEnums::MIGRATION_DONE:
-      return syncer::MIGRATION_DONE;
+      return MIGRATION_DONE;
     case sync_pb::SyncEnums::UNKNOWN:
-      return syncer::UNKNOWN_ERROR;
+      return UNKNOWN_ERROR;
     case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
     case sync_pb::SyncEnums::AUTH_INVALID:
     case sync_pb::SyncEnums::ACCESS_DENIED:
-      return syncer::INVALID_CREDENTIAL;
+      return INVALID_CREDENTIAL;
     default:
       NOTREACHED();
-      return syncer::UNKNOWN_ERROR;
+      return UNKNOWN_ERROR;
   }
 }
 
-syncer::ClientAction ConvertClientActionPBToLocalClientAction(
+ClientAction ConvertClientActionPBToLocalClientAction(
     const sync_pb::SyncEnums::Action& action) {
   switch (action) {
     case sync_pb::SyncEnums::UPGRADE_CLIENT:
-      return syncer::UPGRADE_CLIENT;
+      return UPGRADE_CLIENT;
     case sync_pb::SyncEnums::CLEAR_USER_DATA_AND_RESYNC:
-      return syncer::CLEAR_USER_DATA_AND_RESYNC;
+      return CLEAR_USER_DATA_AND_RESYNC;
     case sync_pb::SyncEnums::ENABLE_SYNC_ON_ACCOUNT:
-      return syncer::ENABLE_SYNC_ON_ACCOUNT;
+      return ENABLE_SYNC_ON_ACCOUNT;
     case sync_pb::SyncEnums::STOP_AND_RESTART_SYNC:
-      return syncer::STOP_AND_RESTART_SYNC;
+      return STOP_AND_RESTART_SYNC;
     case sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT:
-      return syncer::DISABLE_SYNC_ON_CLIENT;
+      return DISABLE_SYNC_ON_CLIENT;
     case sync_pb::SyncEnums::UNKNOWN_ACTION:
-      return syncer::UNKNOWN_ACTION;
+      return UNKNOWN_ACTION;
     default:
       NOTREACHED();
-      return syncer::UNKNOWN_ACTION;
+      return UNKNOWN_ACTION;
   }
 }
 
-syncer::SyncProtocolError ConvertErrorPBToLocalType(
+SyncProtocolError ConvertErrorPBToLocalType(
     const ClientToServerResponse::Error& error) {
-  syncer::SyncProtocolError sync_protocol_error;
+  SyncProtocolError sync_protocol_error;
   sync_protocol_error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(
       error.error_type());
   sync_protocol_error.error_description = error.error_description();
@@ -316,7 +316,7 @@ syncer::SyncProtocolError ConvertErrorPBToLocalType(
     DCHECK_EQ(error.error_type(), sync_pb::SyncEnums::THROTTLED);
     for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
       sync_protocol_error.error_data_types.Put(
-          syncer::GetModelTypeFromSpecificsFieldNumber(
+          GetModelTypeFromSpecificsFieldNumber(
               error.error_data_type_ids(i)));
     }
   }
@@ -325,13 +325,13 @@ syncer::SyncProtocolError ConvertErrorPBToLocalType(
 }
 
 // TODO(lipalani) : Rename these function names as per the CR for issue 7740067.
-syncer::SyncProtocolError ConvertLegacyErrorCodeToNewError(
+SyncProtocolError ConvertLegacyErrorCodeToNewError(
     const sync_pb::SyncEnums::ErrorType& error_type) {
-  syncer::SyncProtocolError error;
+  SyncProtocolError error;
   error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(error_type);
   if (error_type == sync_pb::SyncEnums::CLEAR_PENDING ||
       error_type == sync_pb::SyncEnums::NOT_MY_BIRTHDAY) {
-      error.action = syncer::DISABLE_SYNC_ON_CLIENT;
+      error.action = DISABLE_SYNC_ON_CLIENT;
   }  // There is no other action we can compute for legacy server.
   return error;
 }
@@ -358,11 +358,11 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
                              msg, response)) {
     // There was an error establishing communication with the server.
     // We can not proceed beyond this point.
-    const syncer::HttpResponse::ServerConnectionCode server_status =
+    const HttpResponse::ServerConnectionCode server_status =
         session->context()->connection_manager()->server_status();
 
-    DCHECK_NE(server_status, syncer::HttpResponse::NONE);
-    DCHECK_NE(server_status, syncer::HttpResponse::SERVER_CONNECTION_OK);
+    DCHECK_NE(server_status, HttpResponse::NONE);
+    DCHECK_NE(server_status, HttpResponse::SERVER_CONNECTION_OK);
 
     return ServerConnectionErrorAsSyncerError(server_status);
   }
@@ -371,13 +371,13 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   session->context()->traffic_recorder()->RecordClientToServerResponse(
       *response);
 
-  syncer::SyncProtocolError sync_protocol_error;
+  SyncProtocolError sync_protocol_error;
 
   // Birthday mismatch overrides any error that is sent by the server.
   if (!VerifyResponseBirthday(dir, response)) {
-    sync_protocol_error.error_type = syncer::NOT_MY_BIRTHDAY;
+    sync_protocol_error.error_type = NOT_MY_BIRTHDAY;
      sync_protocol_error.action =
-         syncer::DISABLE_SYNC_ON_CLIENT;
+         DISABLE_SYNC_ON_CLIENT;
   } else if (response->has_error()) {
     // This is a new server. Just get the error from the protocol.
     sync_protocol_error = ConvertErrorPBToLocalType(response->error());
@@ -397,28 +397,28 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   // Now do any special handling for the error type and decide on the return
   // value.
   switch (sync_protocol_error.error_type) {
-    case syncer::UNKNOWN_ERROR:
+    case UNKNOWN_ERROR:
       LOG(WARNING) << "Sync protocol out-of-date. The server is using a more "
                    << "recent version.";
       return SERVER_RETURN_UNKNOWN_ERROR;
-    case syncer::SYNC_SUCCESS:
+    case SYNC_SUCCESS:
       LogResponseProfilingData(*response);
       return SYNCER_OK;
-    case syncer::THROTTLED:
+    case THROTTLED:
       LOG(WARNING) << "Client silenced by server.";
       HandleThrottleError(sync_protocol_error,
                           base::TimeTicks::Now() + GetThrottleDelay(*response),
                           session->context()->throttled_data_type_tracker(),
                           session->delegate());
       return SERVER_RETURN_THROTTLED;
-    case syncer::TRANSIENT_ERROR:
+    case TRANSIENT_ERROR:
       return SERVER_RETURN_TRANSIENT_ERROR;
-    case syncer::MIGRATION_DONE:
+    case MIGRATION_DONE:
       HandleMigrationDoneResponse(response, session);
       return SERVER_RETURN_MIGRATION_DONE;
-    case syncer::CLEAR_PENDING:
+    case CLEAR_PENDING:
       return SERVER_RETURN_CLEAR_PENDING;
-    case syncer::NOT_MY_BIRTHDAY:
+    case NOT_MY_BIRTHDAY:
       return SERVER_RETURN_NOT_MY_BIRTHDAY;
     default:
       NOTREACHED();

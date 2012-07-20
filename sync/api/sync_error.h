@@ -32,7 +32,7 @@ class SyncError {
   // Will print the new error to LOG(ERROR).
   SyncError(const tracked_objects::Location& location,
             const std::string& message,
-            syncer::ModelType type);
+            ModelType type);
 
   // Copy and assign via deep copy.
   SyncError(const SyncError& other);
@@ -45,7 +45,7 @@ class SyncError {
   // Will print the new error to LOG(ERROR).
   void Reset(const tracked_objects::Location& location,
              const std::string& message,
-             syncer::ModelType type);
+             ModelType type);
 
   // Whether this is a valid error or not.
   bool IsSet() const;
@@ -53,7 +53,7 @@ class SyncError {
   // These must only be called if IsSet() is true.
   const tracked_objects::Location& location() const;
   const std::string& message() const;
-  syncer::ModelType type() const;
+  ModelType type() const;
 
   // Returns empty string is IsSet() is false.
   std::string ToString() const;
@@ -69,7 +69,7 @@ class SyncError {
   // is called, IsSet() will return true.
   void Init(const tracked_objects::Location& location,
             const std::string& message,
-            syncer::ModelType type);
+            ModelType type);
 
   // Reset the error to it's default (unset) values.
   void Clear();
@@ -77,7 +77,7 @@ class SyncError {
   // scoped_ptr is necessary because Location objects aren't assignable.
   scoped_ptr<tracked_objects::Location> location_;
   std::string message_;
-  syncer::ModelType type_;
+  ModelType type_;
 };
 
 // gmock printer helper.

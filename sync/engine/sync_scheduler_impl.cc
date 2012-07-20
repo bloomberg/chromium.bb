@@ -31,23 +31,22 @@ using sessions::SyncSourceInfo;
 using sync_pb::GetUpdatesCallerInfo;
 
 namespace {
-bool ShouldRequestEarlyExit(
-    const syncer::SyncProtocolError& error) {
+bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
   switch (error.error_type) {
-    case syncer::SYNC_SUCCESS:
-    case syncer::MIGRATION_DONE:
-    case syncer::THROTTLED:
-    case syncer::TRANSIENT_ERROR:
+    case SYNC_SUCCESS:
+    case MIGRATION_DONE:
+    case THROTTLED:
+    case TRANSIENT_ERROR:
       return false;
-    case syncer::NOT_MY_BIRTHDAY:
-    case syncer::CLEAR_PENDING:
+    case NOT_MY_BIRTHDAY:
+    case CLEAR_PENDING:
       // If we send terminate sync early then |sync_cycle_ended| notification
       // would not be sent. If there were no actions then |ACTIONABLE_ERROR|
       // notification wouldnt be sent either. Then the UI layer would be left
       // waiting forever. So assert we would send something.
-      DCHECK(error.action != syncer::UNKNOWN_ACTION);
+      DCHECK_NE(error.action, UNKNOWN_ACTION);
       return true;
-    case syncer::INVALID_CREDENTIAL:
+    case INVALID_CREDENTIAL:
       // The notification for this is handled by PostAndProcessHeaders|.
       // Server does no have to send any action for this.
       return true;
@@ -60,8 +59,8 @@ bool ShouldRequestEarlyExit(
 }
 
 bool IsActionableError(
-    const syncer::SyncProtocolError& error) {
-  return (error.action != syncer::UNKNOWN_ACTION);
+    const SyncProtocolError& error) {
+  return (error.action != UNKNOWN_ACTION);
 }
 }  // namespace
 
@@ -70,8 +69,8 @@ ConfigurationParams::ConfigurationParams()
       keystore_key_status(KEYSTORE_KEY_UNNECESSARY) {}
 ConfigurationParams::ConfigurationParams(
     const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
-    const syncer::ModelTypeSet& types_to_download,
-    const syncer::ModelSafeRoutingInfo& routing_info,
+    const ModelTypeSet& types_to_download,
+    const ModelSafeRoutingInfo& routing_info,
     KeystoreKeyStatus keystore_key_status,
     const base::Closure& ready_task)
     : source(source),
@@ -314,7 +313,7 @@ void BuildModelSafeParams(
   active_groups.insert(GROUP_PASSIVE);
   for (ModelTypeSet::Iterator iter = types_to_download.First(); iter.Good();
        iter.Inc()) {
-    syncer::ModelType type = iter.Get();
+    ModelType type = iter.Get();
     ModelSafeRoutingInfo::const_iterator route = current_routes.find(type);
     DCHECK(route != current_routes.end());
     ModelSafeGroup group = route->second;
@@ -346,7 +345,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
   // TODO(sync): now that ModelChanging commands only use those workers within
   // the routing info, we don't really need |restricted_workers|. Remove it.
   // crbug.com/133030
-  syncer::ModelSafeRoutingInfo restricted_routes;
+  ModelSafeRoutingInfo restricted_routes;
   std::vector<ModelSafeWorker*> restricted_workers;
   BuildModelSafeParams(params.types_to_download,
                        params.routing_info,
@@ -449,11 +448,11 @@ SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
     return CONTINUE;
 
   // See if our type is throttled.
-  syncer::ModelTypeSet throttled_types =
+  ModelTypeSet throttled_types =
       session_context_->throttled_data_type_tracker()->GetThrottledTypes();
   if (job.purpose == SyncSessionJob::NUDGE &&
       job.session->source().updates_source == GetUpdatesCallerInfo::LOCAL) {
-    syncer::ModelTypeSet requested_types;
+    ModelTypeSet requested_types;
     for (ModelTypePayloadMap::const_iterator i =
          job.session->source().types.begin();
          i != job.session->source().types.end();
@@ -588,7 +587,7 @@ void SyncSchedulerImpl::ScheduleNudgeAsync(
       << "types " << ModelTypeSetToString(types);
 
   ModelTypePayloadMap types_with_payloads =
-      syncer::ModelTypePayloadMapFromEnumSet(types, std::string());
+      ModelTypePayloadMapFromEnumSet(types, std::string());
   SyncSchedulerImpl::ScheduleNudgeImpl(delay,
                                        GetUpdatesFromNudgeSource(source),
                                        types_with_payloads,
@@ -605,7 +604,7 @@ void SyncSchedulerImpl::ScheduleNudgeWithPayloadsAsync(
       << "Nudge scheduled with delay " << delay.InMilliseconds() << " ms, "
       << "source " << GetNudgeSourceString(source) << ", "
       << "payloads "
-      << syncer::ModelTypePayloadMapToString(types_with_payloads);
+      << ModelTypePayloadMapToString(types_with_payloads);
 
   SyncSchedulerImpl::ScheduleNudgeImpl(delay,
                                        GetUpdatesFromNudgeSource(source),
@@ -626,7 +625,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
       << delay.InMilliseconds() << " ms, "
       << "source " << GetUpdatesSourceString(source) << ", "
       << "payloads "
-      << syncer::ModelTypePayloadMapToString(types_with_payloads)
+      << ModelTypePayloadMapToString(types_with_payloads)
       << (is_canary_job ? " (canary)" : "");
 
   SyncSourceInfo info(source, types_with_payloads);

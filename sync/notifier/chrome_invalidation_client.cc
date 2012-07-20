@@ -51,8 +51,7 @@ void ChromeInvalidationClient::Start(
     const std::string& client_id, const std::string& client_info,
     const std::string& state,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const syncer::WeakHandle<InvalidationStateTracker>&
-        invalidation_state_tracker,
+    const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     Listener* listener) {
   DCHECK(CalledOnValidThread());
   Stop();

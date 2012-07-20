@@ -26,8 +26,8 @@ class ResolveConflictsCommandTest : public SyncerCommandTest {
         make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers()->push_back(
         make_scoped_refptr(new FakeModelWorker(GROUP_PASSWORD)));
-    (*mutable_routing_info())[syncer::BOOKMARKS] = GROUP_UI;
-    (*mutable_routing_info())[syncer::PASSWORDS] = GROUP_PASSWORD;
+    (*mutable_routing_info())[BOOKMARKS] = GROUP_UI;
+    (*mutable_routing_info())[PASSWORDS] = GROUP_PASSWORD;
     SyncerCommandTest::SetUp();
   }
 

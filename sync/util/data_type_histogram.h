@@ -36,54 +36,54 @@
 #define SYNC_DATA_TYPE_HISTOGRAM(datatype) \
   do { \
     switch (datatype) { \
-      case syncer::BOOKMARKS: \
+      case ::syncer::BOOKMARKS: \
         PER_DATA_TYPE_MACRO("Bookmarks"); \
         break; \
-      case syncer::PREFERENCES: \
+      case ::syncer::PREFERENCES: \
         PER_DATA_TYPE_MACRO("Preferences"); \
         break; \
-      case syncer::PASSWORDS: \
+      case ::syncer::PASSWORDS: \
         PER_DATA_TYPE_MACRO("Passwords"); \
         break; \
-      case syncer::AUTOFILL: \
+      case ::syncer::AUTOFILL: \
         PER_DATA_TYPE_MACRO("Autofill"); \
         break; \
-      case syncer::AUTOFILL_PROFILE: \
+      case ::syncer::AUTOFILL_PROFILE: \
         PER_DATA_TYPE_MACRO("AutofillProfiles"); \
         break; \
-      case syncer::THEMES: \
+      case ::syncer::THEMES: \
         PER_DATA_TYPE_MACRO("Themes"); \
         break; \
-      case syncer::TYPED_URLS: \
+      case ::syncer::TYPED_URLS: \
         PER_DATA_TYPE_MACRO("TypedUrls"); \
         break; \
-      case syncer::EXTENSIONS: \
+      case ::syncer::EXTENSIONS: \
         PER_DATA_TYPE_MACRO("Extensions"); \
         break; \
-      case syncer::NIGORI: \
+      case ::syncer::NIGORI: \
         PER_DATA_TYPE_MACRO("Nigori"); \
         break; \
-      case syncer::SEARCH_ENGINES: \
+      case ::syncer::SEARCH_ENGINES: \
         PER_DATA_TYPE_MACRO("SearchEngines"); \
         break; \
-      case syncer::SESSIONS: \
+      case ::syncer::SESSIONS: \
         PER_DATA_TYPE_MACRO("Sessions"); \
         break; \
-      case syncer::APPS: \
+      case ::syncer::APPS: \
         PER_DATA_TYPE_MACRO("Apps"); \
         break; \
-      case syncer::APP_SETTINGS: \
+      case ::syncer::APP_SETTINGS: \
         PER_DATA_TYPE_MACRO("AppSettings"); \
         break; \
-      case syncer::EXTENSION_SETTINGS: \
+      case ::syncer::EXTENSION_SETTINGS: \
         PER_DATA_TYPE_MACRO("ExtensionSettings"); \
         break; \
-      case syncer::APP_NOTIFICATIONS: \
+      case ::syncer::APP_NOTIFICATIONS: \
         PER_DATA_TYPE_MACRO("AppNotifications"); \
         break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
-                     << syncer::ModelTypeToString(datatype); \
+                     << ::syncer::ModelTypeToString(datatype);  \
     } \
   } while (0)
 

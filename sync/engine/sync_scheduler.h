@@ -33,8 +33,8 @@ struct ConfigurationParams {
   ConfigurationParams();
   ConfigurationParams(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
-      const syncer::ModelTypeSet& types_to_download,
-      const syncer::ModelSafeRoutingInfo& routing_info,
+      const ModelTypeSet& types_to_download,
+      const ModelSafeRoutingInfo& routing_info,
       KeystoreKeyStatus keystore_key_status,
       const base::Closure& ready_task);
   ~ConfigurationParams();
@@ -42,7 +42,7 @@ struct ConfigurationParams {
   // Source for the configuration.
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source;
   // The types that should be downloaded.
-  syncer::ModelTypeSet types_to_download;
+  ModelTypeSet types_to_download;
   // The new routing info (superset of types to be downloaded).
   ModelSafeRoutingInfo routing_info;
   // Whether we need to perform a GetKey command.
@@ -95,11 +95,11 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   virtual void ScheduleNudgeAsync(
       const base::TimeDelta& delay,
       NudgeSource source,
-      syncer::ModelTypeSet types,
+      ModelTypeSet types,
       const tracked_objects::Location& nudge_location) = 0;
   virtual void ScheduleNudgeWithPayloadsAsync(
       const base::TimeDelta& delay, NudgeSource source,
-      const syncer::ModelTypePayloadMap& types_with_payloads,
+      const ModelTypePayloadMap& types_with_payloads,
       const tracked_objects::Location& nudge_location) = 0;
 
   // Change status of notifications in the SyncSessionContext.

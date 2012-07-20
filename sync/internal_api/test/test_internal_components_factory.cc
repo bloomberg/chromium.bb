@@ -33,7 +33,7 @@ TestInternalComponentsFactory::BuildContext(
     ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
-    syncer::TrafficRecorder* traffic_recorder) {
+    TrafficRecorder* traffic_recorder) {
 
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;

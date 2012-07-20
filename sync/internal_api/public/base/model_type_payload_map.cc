@@ -14,11 +14,10 @@
 namespace syncer {
 
 ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
-    syncer::ModelTypeSet types,
+    ModelTypeSet types,
     const std::string& payload) {
   ModelTypePayloadMap types_with_payloads;
-  for (syncer::ModelTypeSet::Iterator it = types.First();
-       it.Good(); it.Inc()) {
+  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     types_with_payloads[it.Get()] = payload;
   }
   return types_with_payloads;
@@ -52,7 +51,7 @@ DictionaryValue* ModelTypePayloadMapToValue(
     std::string base64_marker;
     bool encoded = base::Base64Encode(it->second, &base64_marker);
     DCHECK(encoded);
-    value->SetString(syncer::ModelTypeToString(it->first), base64_marker);
+    value->SetString(ModelTypeToString(it->first), base64_marker);
   }
   return value;
 }

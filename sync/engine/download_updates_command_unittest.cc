@@ -27,9 +27,9 @@ class DownloadUpdatesCommandTest : public SyncerCommandTest {
         make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
     workers()->push_back(
         make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
-    (*mutable_routing_info())[syncer::AUTOFILL] = GROUP_DB;
-    (*mutable_routing_info())[syncer::BOOKMARKS] = GROUP_UI;
-    (*mutable_routing_info())[syncer::PREFERENCES] = GROUP_UI;
+    (*mutable_routing_info())[AUTOFILL] = GROUP_DB;
+    (*mutable_routing_info())[BOOKMARKS] = GROUP_UI;
+    (*mutable_routing_info())[PREFERENCES] = GROUP_UI;
     SyncerCommandTest::SetUp();
   }
 
@@ -49,9 +49,9 @@ TEST_F(DownloadUpdatesCommandTest, ExecuteNoPayloads) {
 TEST_F(DownloadUpdatesCommandTest, ExecuteWithPayloads) {
   ConfigureMockServerConnection();
   sessions::SyncSourceInfo source;
-  source.types[syncer::AUTOFILL] = "autofill_payload";
-  source.types[syncer::BOOKMARKS] = "bookmark_payload";
-  source.types[syncer::PREFERENCES] = "preferences_payload";
+  source.types[AUTOFILL] = "autofill_payload";
+  source.types[BOOKMARKS] = "bookmark_payload";
+  source.types[PREFERENCES] = "preferences_payload";
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
   mock_server()->ExpectGetUpdatesRequestPayloads(source.types);

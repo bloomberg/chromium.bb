@@ -21,8 +21,6 @@
 
 namespace syncer {
 
-using syncer::SyncProtocolError;
-
 JsSyncManagerObserver::JsSyncManagerObserver() {}
 
 JsSyncManagerObserver::~JsSyncManagerObserver() {}
@@ -42,13 +40,12 @@ void JsSyncManagerObserver::OnSyncCycleCompleted(
   HandleJsEvent(FROM_HERE, "onSyncCycleCompleted", JsEventDetails(&details));
 }
 
-void JsSyncManagerObserver::OnConnectionStatusChange(
-    syncer::ConnectionStatus status) {
+void JsSyncManagerObserver::OnConnectionStatusChange(ConnectionStatus status) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("status", syncer::ConnectionStatusToString(status));
+  details.SetString("status", ConnectionStatusToString(status));
   HandleJsEvent(FROM_HERE,
                 "onConnectionStatusChange", JsEventDetails(&details));
 }
@@ -63,14 +60,14 @@ void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
 }
 
 void JsSyncManagerObserver::OnPassphraseRequired(
-    syncer::PassphraseRequiredReason reason,
+    PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.SetString("reason",
-                     syncer::PassphraseRequiredReasonToString(reason));
+                     PassphraseRequiredReasonToString(reason));
   HandleJsEvent(FROM_HERE, "onPassphraseRequired", JsEventDetails(&details));
 }
 
@@ -93,14 +90,14 @@ void JsSyncManagerObserver::OnBootstrapTokenUpdated(
 }
 
 void JsSyncManagerObserver::OnEncryptedTypesChanged(
-    syncer::ModelTypeSet encrypted_types,
+    ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.Set("encryptedTypes",
-              syncer::ModelTypeSetToValue(encrypted_types));
+              ModelTypeSetToValue(encrypted_types));
   details.SetBoolean("encryptEverything", encrypt_everything);
   HandleJsEvent(FROM_HERE,
                 "onEncryptedTypesChanged", JsEventDetails(&details));

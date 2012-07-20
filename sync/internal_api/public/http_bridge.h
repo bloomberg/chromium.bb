@@ -37,7 +37,7 @@ namespace syncer {
 // It is RefCountedThreadSafe because it can PostTask to the io loop, and thus
 // needs to stick around across context switches, etc.
 class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
-                   public syncer::HttpPostProviderInterface,
+                   public HttpPostProviderInterface,
                    public net::URLFetcherDelegate {
  public:
   // A request context used for HTTP requests bridged from the sync backend.
@@ -97,7 +97,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
   explicit HttpBridge(RequestContextGetter* context);
 
-  // syncer::HttpPostProvider implementation.
+  // HttpPostProvider implementation.
   virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE;
   virtual void SetURL(const char* url, int port) OVERRIDE;
   virtual void SetPostPayload(const char* content_type, int content_length,
@@ -204,16 +204,16 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };
 
-class HttpBridgeFactory : public syncer::HttpPostProviderFactory {
+class HttpBridgeFactory : public HttpPostProviderFactory {
  public:
   HttpBridgeFactory(
       net::URLRequestContextGetter* baseline_context_getter,
       const std::string& user_agent);
   virtual ~HttpBridgeFactory();
 
-  // syncer::HttpPostProviderFactory:
-  virtual syncer::HttpPostProviderInterface* Create() OVERRIDE;
-  virtual void Destroy(syncer::HttpPostProviderInterface* http) OVERRIDE;
+  // HttpPostProviderFactory:
+  virtual HttpPostProviderInterface* Create() OVERRIDE;
+  virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE;
 
  private:
   // This request context is built on top of the baseline context and shares

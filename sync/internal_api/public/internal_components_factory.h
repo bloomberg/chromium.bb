@@ -52,7 +52,7 @@ class InternalComponentsFactory {
       ThrottledDataTypeTracker* throttled_data_type_tracker,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
-      syncer::TrafficRecorder* traffic_recorder) = 0;
+      TrafficRecorder* traffic_recorder) = 0;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(

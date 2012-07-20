@@ -60,7 +60,7 @@ struct ChangeRecord {
 
 typedef std::vector<ChangeRecord> ChangeRecordList;
 
-typedef syncer::Immutable<ChangeRecordList> ImmutableChangeRecordList;
+typedef Immutable<ChangeRecordList> ImmutableChangeRecordList;
 
 }  // namespace syncer
 

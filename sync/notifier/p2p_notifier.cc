@@ -64,7 +64,7 @@ P2PNotificationData::P2PNotificationData() : target_(NOTIFY_SELF) {}
 P2PNotificationData::P2PNotificationData(
     const std::string& sender_id,
     P2PNotificationTarget target,
-    syncer::ModelTypeSet changed_types)
+    ModelTypeSet changed_types)
     : sender_id_(sender_id),
       target_(target),
       changed_types_(changed_types) {}
@@ -85,7 +85,7 @@ bool P2PNotificationData::IsTargeted(const std::string& id) const {
   }
 }
 
-syncer::ModelTypeSet P2PNotificationData::GetChangedTypes() const {
+ModelTypeSet P2PNotificationData::GetChangedTypes() const {
   return changed_types_;
 }
 
@@ -101,7 +101,7 @@ std::string P2PNotificationData::ToString() const {
   dict->SetString(kSenderIdKey, sender_id_);
   dict->SetString(kNotificationTypeKey,
                   P2PNotificationTargetToString(target_));
-  dict->Set(kChangedTypesKey, syncer::ModelTypeSetToValue(changed_types_));
+  dict->Set(kChangedTypesKey, ModelTypeSetToValue(changed_types_));
   std::string json;
   base::JSONWriter::Write(dict.get(), &json);
   return json;
@@ -136,7 +136,7 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
                  << kChangedTypesKey;
     return false;
   }
-  changed_types_ = syncer::ModelTypeSetFromValue(*changed_types_list);
+  changed_types_ = ModelTypeSetFromValue(*changed_types_list);
   return true;
 }
 
@@ -193,10 +193,9 @@ void P2PNotifier::UpdateCredentials(
   logged_in_ = true;
 }
 
-void P2PNotifier::UpdateEnabledTypes(
-    syncer::ModelTypeSet enabled_types) {
+void P2PNotifier::UpdateEnabledTypes(ModelTypeSet enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const syncer::ModelTypeSet new_enabled_types =
+  const ModelTypeSet new_enabled_types =
       Difference(enabled_types, enabled_types_);
   enabled_types_ = enabled_types;
   const P2PNotificationData notification_data(
@@ -204,8 +203,7 @@ void P2PNotifier::UpdateEnabledTypes(
   SendNotificationData(notification_data);
 }
 
-void P2PNotifier::SendNotification(
-    syncer::ModelTypeSet changed_types) {
+void P2PNotifier::SendNotification(ModelTypeSet changed_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const P2PNotificationData notification_data(
       unique_id_, send_notification_target_, changed_types);
@@ -266,8 +264,8 @@ void P2PNotifier::OnIncomingNotification(
     DVLOG(1) << "No changed types -- not emitting notification";
     return;
   }
-  const syncer::ModelTypePayloadMap& type_payloads =
-      syncer::ModelTypePayloadMapFromEnumSet(
+  const ModelTypePayloadMap& type_payloads =
+      ModelTypePayloadMapFromEnumSet(
           notification_data.GetChangedTypes(), std::string());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
                     OnIncomingNotification(type_payloads, REMOTE_NOTIFICATION));

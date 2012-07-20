@@ -61,7 +61,7 @@ void CheckChangeRecordValue(
     EXPECT_TRUE(Value::Equals(extra_value, expected_extra_value.get()));
 
     scoped_ptr<DictionaryValue> expected_specifics_value(
-        syncer::EntitySpecificsToValue(record.specifics));
+        EntitySpecificsToValue(record.specifics));
     ExpectDictDictionaryValue(*expected_specifics_value,
                               value, "specifics");
   }

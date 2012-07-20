@@ -57,7 +57,7 @@ class SyncSessionContext {
                      ThrottledDataTypeTracker* throttled_data_type_tracker,
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter,
-                     syncer::TrafficRecorder* traffic_recorder);
+                     TrafficRecorder* traffic_recorder);
   ~SyncSessionContext();
 
   ConflictResolver* resolver() { return resolver_; }
@@ -123,7 +123,7 @@ class SyncSessionContext {
                       OnSyncEngineEvent(event));
   }
 
-  syncer::TrafficRecorder* traffic_recorder() {
+  TrafficRecorder* traffic_recorder() {
     return traffic_recorder_;
   }
 
@@ -173,7 +173,7 @@ class SyncSessionContext {
   // client behavior on server side.
   DebugInfoGetter* const debug_info_getter_;
 
-  syncer::TrafficRecorder* traffic_recorder_;
+  TrafficRecorder* traffic_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

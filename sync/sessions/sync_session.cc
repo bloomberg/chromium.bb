@@ -48,17 +48,17 @@ std::set<ModelSafeGroup> ComputeEnabledGroups(
   return enabled_groups;
 }
 
-void PurgeStalePayload(syncer::ModelTypePayloadMap* original,
+void PurgeStalePayload(ModelTypePayloadMap* original,
                        const ModelSafeRoutingInfo& routing_info) {
-  std::vector<syncer::ModelTypePayloadMap::iterator> iterators_to_delete;
-  for (syncer::ModelTypePayloadMap::iterator i = original->begin();
+  std::vector<ModelTypePayloadMap::iterator> iterators_to_delete;
+  for (ModelTypePayloadMap::iterator i = original->begin();
        i != original->end(); ++i) {
     if (routing_info.end() == routing_info.find(i->first)) {
       iterators_to_delete.push_back(i);
     }
   }
 
-  for (std::vector<syncer::ModelTypePayloadMap::iterator>::iterator
+  for (std::vector<ModelTypePayloadMap::iterator>::iterator
        it = iterators_to_delete.begin(); it != iterators_to_delete.end();
        ++it) {
     original->erase(*it);
@@ -156,11 +156,10 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   syncable::Directory* dir = context_->directory();
 
   bool is_share_useable = true;
-  syncer::ModelTypeSet initial_sync_ended;
-  syncer::ModelTypePayloadMap download_progress_markers;
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
-       i < syncer::MODEL_TYPE_COUNT; ++i) {
-    syncer::ModelType type(syncer::ModelTypeFromInt(i));
+  ModelTypeSet initial_sync_ended;
+  ModelTypePayloadMap download_progress_markers;
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    ModelType type(ModelTypeFromInt(i));
     if (routing_info_.count(type) != 0) {
       if (dir->initial_sync_ended_for_type(type))
         initial_sync_ended.Put(type);

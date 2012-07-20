@@ -54,7 +54,7 @@ TEST_F(SyncNotifierFactoryTest, Basic) {
   SyncNotifierFactory factory(
       notifier_options_,
       "test client info",
-      base::WeakPtr<syncer::InvalidationStateTracker>());
+      base::WeakPtr<InvalidationStateTracker>());
   scoped_ptr<SyncNotifier> notifier(factory.CreateSyncNotifier());
 #if defined(OS_ANDROID)
   ASSERT_FALSE(notifier.get());
@@ -71,7 +71,7 @@ TEST_F(SyncNotifierFactoryTest, Basic_P2P) {
   SyncNotifierFactory factory(
       notifier_options_,
       "test client info",
-      base::WeakPtr<syncer::InvalidationStateTracker>());
+      base::WeakPtr<InvalidationStateTracker>());
   scoped_ptr<SyncNotifier> notifier(factory.CreateSyncNotifier());
 #if defined(OS_ANDROID)
   ASSERT_FALSE(notifier.get());

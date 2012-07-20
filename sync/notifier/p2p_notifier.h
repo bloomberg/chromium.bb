@@ -55,14 +55,14 @@ class P2PNotificationData {
   P2PNotificationData();
   P2PNotificationData(const std::string& sender_id,
                       P2PNotificationTarget target,
-                      syncer::ModelTypeSet changed_types);
+                      ModelTypeSet changed_types);
 
   ~P2PNotificationData();
 
   // Returns true if the given ID is targeted by this notification.
   bool IsTargeted(const std::string& id) const;
 
-  syncer::ModelTypeSet GetChangedTypes() const;
+  ModelTypeSet GetChangedTypes() const;
 
   bool Equals(const P2PNotificationData& other) const;
 
@@ -78,7 +78,7 @@ class P2PNotificationData {
   // The intendent recipient(s) of the notification.
   P2PNotificationTarget target_;
   // The types the notification is for.
-  syncer::ModelTypeSet changed_types_;
+  ModelTypeSet changed_types_;
 };
 
 class P2PNotifier
@@ -102,10 +102,8 @@ class P2PNotifier
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void UpdateEnabledTypes(
-      syncer::ModelTypeSet enabled_types) OVERRIDE;
-  virtual void SendNotification(
-      syncer::ModelTypeSet changed_types) OVERRIDE;
+  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) OVERRIDE;
+  virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
 
   // PushClientObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
@@ -134,7 +132,7 @@ class P2PNotifier
   // Which set of clients should be sent notifications.
   P2PNotificationTarget send_notification_target_;
 
-  syncer::ModelTypeSet enabled_types_;
+  ModelTypeSet enabled_types_;
 };
 
 }  // namespace syncer

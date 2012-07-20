@@ -53,8 +53,8 @@ class SyncSessionTest : public testing::Test,
             throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL));
     routes_.clear();
-    routes_[syncer::BOOKMARKS] = GROUP_UI;
-    routes_[syncer::AUTOFILL] = GROUP_DB;
+    routes_[BOOKMARKS] = GROUP_UI;
+    routes_[AUTOFILL] = GROUP_DB;
     scoped_refptr<ModelSafeWorker> passive_worker(
         new FakeModelWorker(GROUP_PASSIVE));
     scoped_refptr<ModelSafeWorker> ui_worker(
@@ -118,13 +118,13 @@ class SyncSessionTest : public testing::Test,
       FAIL() << msg;
   }
 
-  syncer::ModelTypeSet ParamsMeaningAllEnabledTypes() {
-    syncer::ModelTypeSet request_params(syncer::BOOKMARKS, syncer::AUTOFILL);
+  ModelTypeSet ParamsMeaningAllEnabledTypes() {
+    ModelTypeSet request_params(BOOKMARKS, AUTOFILL);
     return request_params;
   }
 
-  syncer::ModelTypeSet ParamsMeaningJustOneEnabledType() {
-    return syncer::ModelTypeSet(syncer::AUTOFILL);
+  ModelTypeSet ParamsMeaningJustOneEnabledType() {
+    return ModelTypeSet(AUTOFILL);
   }
 
   MessageLoop message_loop_;
@@ -266,12 +266,12 @@ TEST_F(SyncSessionTest, ResetTransientState) {
 TEST_F(SyncSessionTest, Coalesce) {
   std::vector<ModelSafeWorker*> workers_one, workers_two;
   ModelSafeRoutingInfo routes_one, routes_two;
-  syncer::ModelTypePayloadMap one_type =
-      syncer::ModelTypePayloadMapFromEnumSet(
+  ModelTypePayloadMap one_type =
+      ModelTypePayloadMapFromEnumSet(
           ParamsMeaningJustOneEnabledType(),
           std::string());
-  syncer::ModelTypePayloadMap all_types =
-      syncer::ModelTypePayloadMapFromEnumSet(
+  ModelTypePayloadMap all_types =
+      ModelTypePayloadMapFromEnumSet(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
@@ -286,9 +286,9 @@ TEST_F(SyncSessionTest, Coalesce) {
   workers_two.push_back(passive_worker);
   workers_two.push_back(db_worker);
   workers_two.push_back(ui_worker);
-  routes_one[syncer::AUTOFILL] = GROUP_DB;
-  routes_two[syncer::AUTOFILL] = GROUP_DB;
-  routes_two[syncer::BOOKMARKS] = GROUP_UI;
+  routes_one[AUTOFILL] = GROUP_DB;
+  routes_two[AUTOFILL] = GROUP_DB;
+  routes_two[BOOKMARKS] = GROUP_UI;
   SyncSession one(context_.get(), this, source_one, routes_one, workers_one);
   SyncSession two(context_.get(), this, source_two, routes_two, workers_two);
 
@@ -323,12 +323,12 @@ TEST_F(SyncSessionTest, Coalesce) {
 TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
   std::vector<ModelSafeWorker*> workers_one, workers_two;
   ModelSafeRoutingInfo routes_one, routes_two;
-  syncer::ModelTypePayloadMap one_type =
-      syncer::ModelTypePayloadMapFromEnumSet(
+  ModelTypePayloadMap one_type =
+      ModelTypePayloadMapFromEnumSet(
           ParamsMeaningJustOneEnabledType(),
           std::string());
-  syncer::ModelTypePayloadMap all_types =
-      syncer::ModelTypePayloadMapFromEnumSet(
+  ModelTypePayloadMap all_types =
+      ModelTypePayloadMapFromEnumSet(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
@@ -343,9 +343,9 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
   workers_two.push_back(passive_worker);
   workers_two.push_back(db_worker);
   workers_two.push_back(ui_worker);
-  routes_one[syncer::AUTOFILL] = GROUP_DB;
-  routes_two[syncer::AUTOFILL] = GROUP_DB;
-  routes_two[syncer::BOOKMARKS] = GROUP_UI;
+  routes_one[AUTOFILL] = GROUP_DB;
+  routes_two[AUTOFILL] = GROUP_DB;
+  routes_two[BOOKMARKS] = GROUP_UI;
   SyncSession one(context_.get(), this, source_one, routes_one, workers_one);
   SyncSession two(context_.get(), this, source_two, routes_two, workers_two);
 
@@ -384,7 +384,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
 
   // Make sure the model safe routing info is reduced to one type.
   ModelSafeRoutingInfo::const_iterator it =
-      two.routing_info().find(syncer::AUTOFILL);
+      two.routing_info().find(AUTOFILL);
   // Note that attempting to use EXPECT_NE would fail for an Android build due
   // to seeming incompatibility with gtest and stlport.
   EXPECT_TRUE(it != two.routing_info().end());
@@ -395,8 +395,8 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
 TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   std::vector<ModelSafeWorker*> workers_first, workers_second;
   ModelSafeRoutingInfo routes_first, routes_second;
-  syncer::ModelTypePayloadMap all_types =
-      syncer::ModelTypePayloadMapFromEnumSet(
+  ModelTypePayloadMap all_types =
+      ModelTypePayloadMapFromEnumSet(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_first(sync_pb::GetUpdatesCallerInfo::PERIODIC,
@@ -414,10 +414,10 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   workers_second.push_back(passive_worker);
   workers_second.push_back(db_worker);
   workers_second.push_back(ui_worker);
-  routes_first[syncer::AUTOFILL] = GROUP_DB;
-  routes_first[syncer::BOOKMARKS] = GROUP_UI;
-  routes_second[syncer::AUTOFILL] = GROUP_DB;
-  routes_second[syncer::BOOKMARKS] = GROUP_UI;
+  routes_first[AUTOFILL] = GROUP_DB;
+  routes_first[BOOKMARKS] = GROUP_UI;
+  routes_second[AUTOFILL] = GROUP_DB;
+  routes_second[BOOKMARKS] = GROUP_UI;
   SyncSession first(context_.get(), this, source_first, routes_first,
       workers_first);
   SyncSession second(context_.get(), this, source_second, routes_second,
@@ -458,9 +458,9 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
 
   // Make sure the model safe routing info is reduced to first type.
   ModelSafeRoutingInfo::const_iterator it1 =
-      second.routing_info().find(syncer::AUTOFILL);
+      second.routing_info().find(AUTOFILL);
   ModelSafeRoutingInfo::const_iterator it2 =
-      second.routing_info().find(syncer::BOOKMARKS);
+      second.routing_info().find(BOOKMARKS);
 
   // Note that attempting to use EXPECT_NE would fail for an Android build due
   // to seeming incompatibility with gtest and stlport.
@@ -476,23 +476,22 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
 
 
 TEST_F(SyncSessionTest, MakeTypePayloadMapFromBitSet) {
-  syncer::ModelTypeSet types;
+  ModelTypeSet types;
   std::string payload = "test";
-  syncer::ModelTypePayloadMap types_with_payloads =
-      syncer::ModelTypePayloadMapFromEnumSet(types, payload);
+  ModelTypePayloadMap types_with_payloads =
+      ModelTypePayloadMapFromEnumSet(types, payload);
   EXPECT_TRUE(types_with_payloads.empty());
 
-  types.Put(syncer::BOOKMARKS);
-  types.Put(syncer::PASSWORDS);
-  types.Put(syncer::AUTOFILL);
+  types.Put(BOOKMARKS);
+  types.Put(PASSWORDS);
+  types.Put(AUTOFILL);
   payload = "test2";
-  types_with_payloads =
-      syncer::ModelTypePayloadMapFromEnumSet(types, payload);
+  types_with_payloads = ModelTypePayloadMapFromEnumSet(types, payload);
 
   ASSERT_EQ(3U, types_with_payloads.size());
-  EXPECT_EQ(types_with_payloads[syncer::BOOKMARKS], payload);
-  EXPECT_EQ(types_with_payloads[syncer::PASSWORDS], payload);
-  EXPECT_EQ(types_with_payloads[syncer::AUTOFILL], payload);
+  EXPECT_EQ(types_with_payloads[BOOKMARKS], payload);
+  EXPECT_EQ(types_with_payloads[PASSWORDS], payload);
+  EXPECT_EQ(types_with_payloads[AUTOFILL], payload);
 }
 
 }  // namespace

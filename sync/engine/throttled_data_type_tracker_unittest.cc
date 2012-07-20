@@ -13,19 +13,19 @@ using base::TimeTicks;
 namespace syncer {
 
 TEST(ThrottledDataTypeTrackerTest, AddUnthrottleTimeTest) {
-  const syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::PASSWORDS);
+  const ModelTypeSet types(BOOKMARKS, PASSWORDS);
 
   ThrottledDataTypeTracker throttler(NULL);
   TimeTicks now = TimeTicks::Now();
   throttler.SetUnthrottleTime(types, now);
 
   EXPECT_EQ(throttler.unthrottle_times_.size(), 2U);
-  EXPECT_EQ(throttler.unthrottle_times_[syncer::BOOKMARKS], now);
-  EXPECT_EQ(throttler.unthrottle_times_[syncer::PASSWORDS], now);
+  EXPECT_EQ(throttler.unthrottle_times_[BOOKMARKS], now);
+  EXPECT_EQ(throttler.unthrottle_times_[PASSWORDS], now);
 }
 
 TEST(ThrottledDataTypeTrackerTest, GetCurrentlyThrottledTypesTest) {
-  const syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::PASSWORDS);
+  const ModelTypeSet types(BOOKMARKS, PASSWORDS);
 
   ThrottledDataTypeTracker throttler(NULL);
   TimeTicks now = TimeTicks::Now();
@@ -44,8 +44,8 @@ TEST(ThrottledDataTypeTrackerTest, GetCurrentlyThrottledTypesTest) {
 
 // Have two data types whose throttling is set to expire at different times.
 TEST(ThrottledDataTypeTrackerTest, UnthrottleSomeTypesTest) {
-  const syncer::ModelTypeSet long_throttled(syncer::BOOKMARKS);
-  const syncer::ModelTypeSet short_throttled(syncer::PASSWORDS);
+  const ModelTypeSet long_throttled(BOOKMARKS);
+  const ModelTypeSet short_throttled(PASSWORDS);
 
   const TimeTicks start_time = TimeTicks::Now();
   const TimeTicks short_throttle_time = start_time + TimeDelta::FromSeconds(1);

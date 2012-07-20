@@ -28,8 +28,8 @@ SyncSessionSnapshot::SyncSessionSnapshot()
 SyncSessionSnapshot::SyncSessionSnapshot(
     const ModelNeutralState& model_neutral_state,
     bool is_share_usable,
-    syncer::ModelTypeSet initial_sync_ended,
-    const syncer::ModelTypePayloadMap& download_progress_markers,
+    ModelTypeSet initial_sync_ended,
+    const ModelTypePayloadMap& download_progress_markers,
     bool more_to_sync,
     bool is_silenced,
     int num_encryption_conflicts,
@@ -82,9 +82,9 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
       static_cast<int>(model_neutral_state_.num_server_changes_remaining));
   value->SetBoolean("isShareUsable", is_share_usable_);
   value->Set("initialSyncEnded",
-             syncer::ModelTypeSetToValue(initial_sync_ended_));
+             ModelTypeSetToValue(initial_sync_ended_));
   value->Set("downloadProgressMarkers",
-             syncer::ModelTypePayloadMapToValue(download_progress_markers_));
+             ModelTypePayloadMapToValue(download_progress_markers_));
   value->SetBoolean("hasMoreToSync", has_more_to_sync_);
   value->SetBoolean("isSilenced", is_silenced_);
   // We don't care too much if we lose precision here, also.
@@ -119,12 +119,11 @@ bool SyncSessionSnapshot::is_share_usable() const {
   return is_share_usable_;
 }
 
-syncer::ModelTypeSet SyncSessionSnapshot::initial_sync_ended() const {
+ModelTypeSet SyncSessionSnapshot::initial_sync_ended() const {
   return initial_sync_ended_;
 }
 
-syncer::ModelTypePayloadMap
-    SyncSessionSnapshot::download_progress_markers() const {
+ModelTypePayloadMap SyncSessionSnapshot::download_progress_markers() const {
   return download_progress_markers_;
 }
 

@@ -39,7 +39,7 @@ using syncable::WriteTransaction;
 namespace {
 sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
   sync_pb::EntitySpecifics result;
-  AddDefaultFieldValue(syncer::BOOKMARKS, &result);
+  AddDefaultFieldValue(BOOKMARKS, &result);
   return result;
 }
 } // namespace
@@ -58,9 +58,9 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
         make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers()->push_back(
         make_scoped_refptr(new FakeModelWorker(GROUP_PASSWORD)));
-    (*mutable_routing_info())[syncer::BOOKMARKS] = GROUP_UI;
-    (*mutable_routing_info())[syncer::PASSWORDS] = GROUP_PASSWORD;
-    (*mutable_routing_info())[syncer::NIGORI] = GROUP_PASSIVE;
+    (*mutable_routing_info())[BOOKMARKS] = GROUP_UI;
+    (*mutable_routing_info())[PASSWORDS] = GROUP_PASSWORD;
+    (*mutable_routing_info())[NIGORI] = GROUP_PASSIVE;
     SyncerCommandTest::SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
     ExpectNoGroupsToChange(apply_updates_command_);
@@ -138,7 +138,7 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
 // to detect that this update can't be applied because it is in a CONFLICT
 // state.
 TEST_F(ApplyUpdatesCommandTest, SimpleConflict) {
-  entry_factory_->CreateUnappliedAndUnsyncedItem("item", syncer::BOOKMARKS);
+  entry_factory_->CreateUnappliedAndUnsyncedItem("item", BOOKMARKS);
 
   ExpectGroupToChange(apply_updates_command_, GROUP_UI);
   apply_updates_command_.ExecuteImpl(session());
@@ -158,7 +158,7 @@ TEST_F(ApplyUpdatesCommandTest, SimpleConflict) {
 TEST_F(ApplyUpdatesCommandTest, HierarchyAndSimpleConflict) {
   // Create a simply-conflicting item.  It will start with valid parent ids.
   int64 handle = entry_factory_->CreateUnappliedAndUnsyncedItem(
-      "orphaned_by_server", syncer::BOOKMARKS);
+      "orphaned_by_server", BOOKMARKS);
   {
     // Manually set the SERVER_PARENT_ID to bad value.
     // A bad parent indicates a hierarchy conflict.
@@ -195,8 +195,7 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDirectoryLoop) {
   // parent of 'Y'.
   {
     // Create it as a child of root node.
-    int64 handle = entry_factory_->CreateSyncedItem(
-        "X", syncer::BOOKMARKS, true);
+    int64 handle = entry_factory_->CreateSyncedItem("X", BOOKMARKS, true);
 
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
@@ -211,7 +210,7 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDirectoryLoop) {
   // Item 'Y' is child of 'X'.
   entry_factory_->CreateUnsyncedItem(
       id_factory_.MakeServer("Y"), id_factory_.MakeServer("X"), "Y", true,
-      syncer::BOOKMARKS, NULL);
+      BOOKMARKS, NULL);
 
   // If the server's update were applied, we would have X be a child of Y, and Y
   // as a child of X.  That's a directory loop.  The UpdateApplicator should
@@ -241,7 +240,7 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeletedParent) {
   int64 parent_handle;
   entry_factory_->CreateUnsyncedItem(
       Id::CreateFromServerId("parent"), id_factory_.root(),
-      "parent", true, syncer::BOOKMARKS, &parent_handle);
+      "parent", true, BOOKMARKS, &parent_handle);
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, parent_handle);
@@ -276,8 +275,8 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeleteNonEmptyDirectory) {
   // Create a server-deleted directory.
   {
     // Create it as a child of root node.
-    int64 handle = entry_factory_->CreateSyncedItem(
-        "parent", syncer::BOOKMARKS, true);
+    int64 handle =
+        entry_factory_->CreateSyncedItem("parent", BOOKMARKS, true);
 
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
@@ -293,7 +292,7 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeleteNonEmptyDirectory) {
   // Create a local child of the server-deleted directory.
   entry_factory_->CreateUnsyncedItem(
       id_factory_.MakeServer("child"), id_factory_.MakeServer("parent"),
-      "child", false, syncer::BOOKMARKS, NULL);
+      "child", false, BOOKMARKS, NULL);
 
   // The server's request to delete the directory must be ignored, otherwise our
   // unsynced new child would be orphaned.  This is a hierarchy conflict.
@@ -379,7 +378,7 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
     cryptographer = directory()->GetCryptographer(&trans);
   }
 
-  syncer::KeyParams params = {"localhost", "dummy", "foobar"};
+  KeyParams params = {"localhost", "dummy", "foobar"};
   cryptographer->AddKey(params);
 
   sync_pb::EntitySpecifics specifics;
@@ -409,7 +408,7 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
   // Undecryptable updates should not be applied.
   sync_pb::EntitySpecifics encrypted_bookmark;
   encrypted_bookmark.mutable_encrypted();
-  AddDefaultFieldValue(syncer::BOOKMARKS, &encrypted_bookmark);
+  AddDefaultFieldValue(BOOKMARKS, &encrypted_bookmark);
   string root_server_id = syncable::GetNullId().GetServerId();
   entry_factory_->CreateUnappliedNewItemWithParent(
       "folder", encrypted_bookmark, root_server_id);
@@ -518,9 +517,9 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
-  syncer::ModelTypeSet encrypted_types;
-  encrypted_types.Put(syncer::PASSWORDS);
-  encrypted_types.Put(syncer::NIGORI);
+  ModelTypeSet encrypted_types;
+  encrypted_types.Put(PASSWORDS);
+  encrypted_types.Put(NIGORI);
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -536,9 +535,9 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
   nigori->set_encrypt_bookmarks(true);
-  encrypted_types.Put(syncer::BOOKMARKS);
+  encrypted_types.Put(BOOKMARKS);
   entry_factory_->CreateUnappliedNewItem(
-      syncer::ModelTypeToRootTag(syncer::NIGORI), specifics, true);
+      ModelTypeToRootTag(NIGORI), specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
   ExpectGroupToChange(apply_updates_command_, GROUP_PASSIVE);
@@ -558,16 +557,16 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
   EXPECT_TRUE(
-      cryptographer->GetEncryptedTypes().Equals(syncer::ModelTypeSet::All()));
+      cryptographer->GetEncryptedTypes().Equals(ModelTypeSet::All()));
 }
 
 TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
-  syncer::ModelTypeSet encrypted_types;
-  encrypted_types.Put(syncer::PASSWORDS);
-  encrypted_types.Put(syncer::NIGORI);
+  ModelTypeSet encrypted_types;
+  encrypted_types.Put(PASSWORDS);
+  encrypted_types.Put(NIGORI);
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -584,10 +583,10 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
   nigori->set_encrypt_sessions(true);
   nigori->set_encrypt_themes(true);
-  encrypted_types.Put(syncer::SESSIONS);
-  encrypted_types.Put(syncer::THEMES);
+  encrypted_types.Put(SESSIONS);
+  encrypted_types.Put(THEMES);
   entry_factory_->CreateUnappliedNewItem(
-      syncer::ModelTypeToRootTag(syncer::NIGORI), specifics, true);
+      ModelTypeToRootTag(NIGORI), specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
   ExpectGroupToChange(apply_updates_command_, GROUP_PASSIVE);
@@ -607,7 +606,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
   EXPECT_TRUE(
-      cryptographer->GetEncryptedTypes().Equals(syncer::ModelTypeSet::All()));
+      cryptographer->GetEncryptedTypes().Equals(ModelTypeSet::All()));
 }
 
 // Create some local unsynced and unencrypted data. Apply a nigori update that
@@ -619,9 +618,9 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
-  syncer::ModelTypeSet encrypted_types;
-  encrypted_types.Put(syncer::PASSWORDS);
-  encrypted_types.Put(syncer::NIGORI);
+  ModelTypeSet encrypted_types;
+  encrypted_types.Put(PASSWORDS);
+  encrypted_types.Put(NIGORI);
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -639,21 +638,21 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   // First item is a folder
   Id folder_id = id_factory_.NewLocalId();
   entry_factory_->CreateUnsyncedItem(folder_id, id_factory_.root(), "folder",
-                                     true, syncer::BOOKMARKS, NULL);
+                                     true, BOOKMARKS, NULL);
   // Next five items are children of the folder
   size_t i;
   size_t batch_s = 5;
   for (i = 0; i < batch_s; ++i) {
     entry_factory_->CreateUnsyncedItem(id_factory_.NewLocalId(), folder_id,
                                        base::StringPrintf("Item %"PRIuS"", i),
-                                       false, syncer::BOOKMARKS, NULL);
+                                       false, BOOKMARKS, NULL);
   }
   // Next five items are children of the root.
   for (; i < 2*batch_s; ++i) {
     entry_factory_->CreateUnsyncedItem(
         id_factory_.NewLocalId(), id_factory_.root(),
         base::StringPrintf("Item %"PRIuS"", i), false,
-        syncer::BOOKMARKS, NULL);
+        BOOKMARKS, NULL);
   }
 
   KeyParams params = {"localhost", "dummy", "foobar"};
@@ -662,9 +661,9 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   cryptographer->GetKeys(nigori->mutable_encrypted());
   nigori->set_encrypt_bookmarks(true);
-  encrypted_types.Put(syncer::BOOKMARKS);
+  encrypted_types.Put(BOOKMARKS);
   entry_factory_->CreateUnappliedNewItem(
-      syncer::ModelTypeToRootTag(syncer::NIGORI), specifics, true);
+      ModelTypeToRootTag(NIGORI), specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
 
@@ -702,7 +701,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
-    EXPECT_TRUE(syncer::ModelTypeSet::All().Equals(
+    EXPECT_TRUE(ModelTypeSet::All().Equals(
         cryptographer->GetEncryptedTypes()));
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
@@ -715,7 +714,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_SERVER_TAG,
-                       syncer::ModelTypeToRootTag(syncer::NIGORI));
+                       ModelTypeToRootTag(NIGORI));
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::SERVER_VERSION, entry_factory_->GetNextRevision());
     entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
@@ -742,7 +741,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     syncable::ReadTransaction trans(FROM_HERE, directory());
 
     // All our changes should still be encrypted.
-    EXPECT_TRUE(syncer::ModelTypeSet::All().Equals(
+    EXPECT_TRUE(ModelTypeSet::All().Equals(
         cryptographer->GetEncryptedTypes()));
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
@@ -756,9 +755,9 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
-  syncer::ModelTypeSet encrypted_types;
-  encrypted_types.Put(syncer::PASSWORDS);
-  encrypted_types.Put(syncer::NIGORI);
+  ModelTypeSet encrypted_types;
+  encrypted_types.Put(PASSWORDS);
+  encrypted_types.Put(NIGORI);
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -777,21 +776,21 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   Id folder_id = id_factory_.NewLocalId();
   entry_factory_->CreateUnsyncedItem(
       folder_id, id_factory_.root(), "folder", true,
-      syncer::BOOKMARKS, NULL);
+      BOOKMARKS, NULL);
   // Next five items are children of the folder
   size_t i;
   size_t batch_s = 5;
   for (i = 0; i < batch_s; ++i) {
     entry_factory_->CreateUnsyncedItem(id_factory_.NewLocalId(), folder_id,
                                        base::StringPrintf("Item %"PRIuS"", i),
-                                       false, syncer::BOOKMARKS, NULL);
+                                       false, BOOKMARKS, NULL);
   }
   // Next five items are children of the root.
   for (; i < 2*batch_s; ++i) {
     entry_factory_->CreateUnsyncedItem(
         id_factory_.NewLocalId(), id_factory_.root(),
         base::StringPrintf("Item %"PRIuS"", i), false,
-        syncer::BOOKMARKS, NULL);
+        BOOKMARKS, NULL);
   }
 
   // We encrypt with new keys, triggering the local cryptographer to be unready
@@ -803,9 +802,9 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
   nigori->set_encrypt_bookmarks(true);
-  encrypted_types.Put(syncer::BOOKMARKS);
+  encrypted_types.Put(BOOKMARKS);
   entry_factory_->CreateUnappliedNewItem(
-      syncer::ModelTypeToRootTag(syncer::NIGORI), specifics, true);
+      ModelTypeToRootTag(NIGORI), specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
   {
@@ -843,7 +842,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     // cryptographer should be updated.
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(
-                syncer::ModelTypeSet().All()));
+        ModelTypeSet().All()));
     EXPECT_FALSE(cryptographer->is_ready());
     EXPECT_TRUE(cryptographer->has_pending_keys());
 

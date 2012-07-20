@@ -76,7 +76,7 @@ VerifyResult VerifyUpdateConsistency(syncable::WriteTransaction* trans,
                                      syncable::MutableEntry* target,
                                      const bool deleted,
                                      const bool is_directory,
-                                     syncer::ModelType model_type);
+                                     ModelType model_type);
 
 // Assumes we have an existing entry; verify an update that seems to be
 // expressing an 'undelete'

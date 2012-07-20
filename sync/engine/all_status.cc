@@ -24,11 +24,11 @@ AllStatus::AllStatus() {
 AllStatus::~AllStatus() {
 }
 
-syncer::SyncStatus AllStatus::CreateBlankStatus() const {
+SyncStatus AllStatus::CreateBlankStatus() const {
   // Status is initialized with the previous status value.  Variables
   // whose values accumulate (e.g. lifetime counters like updates_received)
   // are not to be cleared here.
-  syncer::SyncStatus status = status_;
+  SyncStatus status = status_;
   status.encryption_conflicts = 0;
   status.hierarchy_conflicts = 0;
   status.simple_conflicts = 0;
@@ -39,9 +39,8 @@ syncer::SyncStatus AllStatus::CreateBlankStatus() const {
   return status;
 }
 
-syncer::SyncStatus AllStatus::CalcSyncing(
-    const SyncEngineEvent &event) const {
-  syncer::SyncStatus status = CreateBlankStatus();
+SyncStatus AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
+  SyncStatus status = CreateBlankStatus();
   const sessions::SyncSessionSnapshot& snapshot = event.snapshot;
   status.encryption_conflicts = snapshot.num_encryption_conflicts();
   status.hierarchy_conflicts = snapshot.num_hierarchy_conflicts();
@@ -120,7 +119,7 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
   }
 }
 
-syncer::SyncStatus AllStatus::status() const {
+SyncStatus AllStatus::status() const {
   base::AutoLock lock(mutex_);
   return status_;
 }
@@ -135,12 +134,12 @@ void AllStatus::IncrementNotificationsReceived() {
   ++status_.notifications_received;
 }
 
-void AllStatus::SetEncryptedTypes(syncer::ModelTypeSet types) {
+void AllStatus::SetEncryptedTypes(ModelTypeSet types) {
   ScopedStatusLock lock(this);
   status_.encrypted_types = types;
 }
 
-void AllStatus::SetThrottledTypes(const syncer::ModelTypeSet& types) {
+void AllStatus::SetThrottledTypes(const ModelTypeSet& types) {
   ScopedStatusLock lock(this);
   status_.throttled_types = types;
 }

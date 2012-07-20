@@ -12,7 +12,7 @@
 namespace syncer {
 namespace syncable {
 
-MockDirectory::MockDirectory(syncer::UnrecoverableErrorHandler* handler)
+MockDirectory::MockDirectory(UnrecoverableErrorHandler* handler)
     : Directory(&encryptor_, handler, NULL,
                 new syncable::InMemoryDirectoryBackingStore("store")) {
   InitKernelForTest("myk", &delegate_, syncable::NullTransactionObserver());

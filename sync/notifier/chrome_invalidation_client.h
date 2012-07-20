@@ -73,8 +73,7 @@ class ChromeInvalidationClient
       const std::string& client_id, const std::string& client_info,
       const std::string& state,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const syncer::WeakHandle<InvalidationStateTracker>&
-          invalidation_state_tracker,
+      const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
       Listener* listener);
 
   void UpdateCredentials(const std::string& email, const std::string& token);
@@ -139,8 +138,7 @@ class ChromeInvalidationClient
   notifier::PushClient* const push_client_;
   ChromeSystemResources chrome_system_resources_;
   InvalidationVersionMap max_invalidation_versions_;
-  syncer::WeakHandle<InvalidationStateTracker>
-      invalidation_state_tracker_;
+  WeakHandle<InvalidationStateTracker> invalidation_state_tracker_;
   Listener* listener_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<RegistrationManager> registration_manager_;

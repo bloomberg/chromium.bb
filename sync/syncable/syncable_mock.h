@@ -19,20 +19,20 @@ namespace syncable {
 
 class MockDirectory : public Directory {
  public:
-  explicit MockDirectory(syncer::UnrecoverableErrorHandler* handler);
+  explicit MockDirectory(UnrecoverableErrorHandler* handler);
   virtual ~MockDirectory();
 
   MOCK_METHOD1(GetEntryByHandle, syncable::EntryKernel*(int64));
 
-  MOCK_METHOD2(set_last_downloadstamp, void(syncer::ModelType, int64));
+  MOCK_METHOD2(set_last_downloadstamp, void(ModelType, int64));
 
   MOCK_METHOD1(GetEntryByClientTag,
                syncable::EntryKernel*(const std::string&));
 
-  MOCK_METHOD1(PurgeEntriesWithTypeIn, bool(syncer::ModelTypeSet));
+  MOCK_METHOD1(PurgeEntriesWithTypeIn, bool(ModelTypeSet));
 
  private:
-  syncer::FakeEncryptor encryptor_;
+  FakeEncryptor encryptor_;
   syncable::NullDirectoryChangeDelegate delegate_;
 };
 

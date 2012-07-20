@@ -59,41 +59,41 @@ class SyncManagerImpl : public SyncManager,
   // SyncManager implementation.
   virtual bool Init(
       const FilePath& database_location,
-      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+      const WeakHandle<JsEventHandler>& event_handler,
       const std::string& sync_server_and_path,
       int sync_server_port,
       bool use_ssl,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner,
       scoped_ptr<HttpPostProviderFactory> post_factory,
-      const syncer::ModelSafeRoutingInfo& model_safe_routing_info,
-      const std::vector<syncer::ModelSafeWorker*>& workers,
-      syncer::ExtensionsActivityMonitor* extensions_activity_monitor,
+      const ModelSafeRoutingInfo& model_safe_routing_info,
+      const std::vector<ModelSafeWorker*>& workers,
+      ExtensionsActivityMonitor* extensions_activity_monitor,
       SyncManager::ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
-      scoped_ptr<syncer::SyncNotifier> sync_notifier,
+      scoped_ptr<SyncNotifier> sync_notifier,
       const std::string& restored_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory> internal_components_factory,
-      syncer::Encryptor* encryptor,
-      syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
-      syncer::ReportUnrecoverableErrorFunction
+      Encryptor* encryptor,
+      UnrecoverableErrorHandler* unrecoverable_error_handler,
+      ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function) OVERRIDE;
   virtual void ThrowUnrecoverableError() OVERRIDE;
-  virtual syncer::ModelTypeSet InitialSyncEndedTypes() OVERRIDE;
-  virtual syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-      syncer::ModelTypeSet types) OVERRIDE;
+  virtual ModelTypeSet InitialSyncEndedTypes() OVERRIDE;
+  virtual ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+      ModelTypeSet types) OVERRIDE;
   virtual bool PurgePartiallySyncedTypes() OVERRIDE;
   virtual void UpdateCredentials(const SyncCredentials& credentials) OVERRIDE;
   virtual void UpdateEnabledTypes(
-      const syncer::ModelTypeSet& enabled_types) OVERRIDE;
+      const ModelTypeSet& enabled_types) OVERRIDE;
   virtual void StartSyncingNormally(
-      const syncer::ModelSafeRoutingInfo& routing_info) OVERRIDE;
+      const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void SetEncryptionPassphrase(const std::string& passphrase,
                                        bool is_explicit) OVERRIDE;
   virtual void SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE;
   virtual void ConfigureSyncer(
       ConfigureReason reason,
-      const syncer::ModelTypeSet& types_to_config,
-      const syncer::ModelSafeRoutingInfo& new_routing_info,
+      const ModelTypeSet& types_to_config,
+      const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;
   virtual void AddObserver(SyncManager::Observer* observer) OVERRIDE;
@@ -117,7 +117,7 @@ class SyncManagerImpl : public SyncManager,
                              const base::Closure& done_callback) OVERRIDE;
 
   virtual void EnableEncryptEverything() OVERRIDE;
-  virtual bool ReceivedExperiment(syncer::Experiments* experiments) OVERRIDE;
+  virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
 
   // Return the currently active (validated) username for use with syncable
@@ -132,11 +132,11 @@ class SyncManagerImpl : public SyncManager,
 
   // Gets the set of encrypted types from the cryptographer
   // Note: opens a transaction.  May be called from any thread.
-  syncer::ModelTypeSet GetEncryptedDataTypesForTest();
+  ModelTypeSet GetEncryptedDataTypesForTest();
 
   void SimulateEnableNotificationsForTest();
   void SimulateDisableNotificationsForTest(int reason);
-  void TriggerOnIncomingNotificationForTest(syncer::ModelTypeSet model_types);
+  void TriggerOnIncomingNotificationForTest(ModelTypeSet model_types);
 
   static int GetDefaultNudgeDelay();
   static int GetPreferencesNudgeDelay();
@@ -173,16 +173,16 @@ class SyncManagerImpl : public SyncManager,
 
   // Cryptographer::Observer implementation.
   virtual void OnEncryptedTypesChanged(
-      syncer::ModelTypeSet encrypted_types,
+      ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
 
   // SyncNotifierObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
-      syncer::NotificationsDisabledReason reason) OVERRIDE;
+      NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const syncer::ModelTypePayloadMap& type_payloads,
-      syncer::IncomingNotificationSource source) OVERRIDE;
+      const ModelTypePayloadMap& type_payloads,
+      IncomingNotificationSource source) OVERRIDE;
 
   // Called only by our NetworkChangeNotifier.
   virtual void OnIPAddressChanged() OVERRIDE;
@@ -206,9 +206,9 @@ class SyncManagerImpl : public SyncManager,
     DictionaryValue* ToValue() const;
   };
 
-  base::TimeDelta GetNudgeDelayTimeDelta(const syncer::ModelType& model_type);
+  base::TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
 
-  typedef std::map<syncer::ModelType, NotificationInfo> NotificationInfoMap;
+  typedef std::map<ModelType, NotificationInfo> NotificationInfoMap;
   typedef JsArgList (SyncManagerImpl::*UnboundJsMessageHandler)(
       const JsArgList&);
   typedef base::Callback<JsArgList(const JsArgList&)> JsMessageHandler;
@@ -251,7 +251,7 @@ class SyncManagerImpl : public SyncManager,
   // ExtraPasswordChangeRecordData field of |buffer|. Otherwise sets
   // |buffer|'s specifics field to contain the unencrypted data.
   void SetExtraChangeRecordData(int64 id,
-                                syncer::ModelType type,
+                                ModelType type,
                                 ChangeReorderBuffer* buffer,
                                 Cryptographer* cryptographer,
                                 const syncable::EntryKernel& original,
@@ -298,7 +298,7 @@ class SyncManagerImpl : public SyncManager,
   // Called for every notification. This updates the notification statistics
   // to be displayed in about:sync.
   void UpdateNotificationInfo(
-      const syncer::ModelTypePayloadMap& type_payloads);
+      const ModelTypePayloadMap& type_payloads);
 
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();
@@ -352,7 +352,7 @@ class SyncManagerImpl : public SyncManager,
 
   // This can be called from any thread, but only between calls to
   // OpenDirectory() and ShutdownOnSyncThread().
-  syncer::WeakHandle<SyncManager::ChangeObserver> change_observer_;
+  WeakHandle<SyncManager::ChangeObserver> change_observer_;
 
   ObserverList<SyncManager::Observer> observers_;
 
@@ -369,7 +369,7 @@ class SyncManagerImpl : public SyncManager,
   scoped_ptr<SyncScheduler> scheduler_;
 
   // The SyncNotifier which notifies us when updates need to be downloaded.
-  scoped_ptr<syncer::SyncNotifier> sync_notifier_;
+  scoped_ptr<SyncNotifier> sync_notifier_;
 
   // A multi-purpose status watch object that aggregates stats from various
   // sync components.
@@ -381,7 +381,7 @@ class SyncManagerImpl : public SyncManager,
   // forwarded to the observer slightly later, at the TRANSACTION_ENDING
   // step by HandleTransactionEndingChangeEvent. The list is cleared in the
   // TRANSACTION_COMPLETE step by HandleTransactionCompleteChangeEvent.
-  ChangeReorderBuffer change_buffers_[syncer::MODEL_TYPE_COUNT];
+  ChangeReorderBuffer change_buffers_[MODEL_TYPE_COUNT];
 
   SyncManager::ChangeDelegate* change_delegate_;
 
@@ -400,12 +400,12 @@ class SyncManagerImpl : public SyncManager,
   JsSyncManagerObserver js_sync_manager_observer_;
   JsMutationEventObserver js_mutation_event_observer_;
 
-  syncer::ThrottledDataTypeTracker throttled_data_type_tracker_;
+  ThrottledDataTypeTracker throttled_data_type_tracker_;
 
   // This is for keeping track of client events to send to the server.
   DebugInfoEventListener debug_info_event_listener_;
 
-  syncer::TrafficRecorder traffic_recorder_;
+  TrafficRecorder traffic_recorder_;
 
   Encryptor* encryptor_;
   UnrecoverableErrorHandler* unrecoverable_error_handler_;

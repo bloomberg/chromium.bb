@@ -23,7 +23,7 @@ struct ModelNeutralState {
 
   // We GetUpdates for some combination of types at once.
   // requested_update_types stores the set of types which were requested.
-  syncer::ModelTypeSet updates_request_types;
+  ModelTypeSet updates_request_types;
 
   sync_pb::ClientToServerResponse updates_response;
 
@@ -39,7 +39,7 @@ struct ModelNeutralState {
 
   // If the syncer encountered a MIGRATION_DONE code, these are the types that
   // the client must now "migrate", by purging and re-downloading all updates.
-  syncer::ModelTypeSet types_needing_local_migration;
+  ModelTypeSet types_needing_local_migration;
 
   // Overwrites due to conflict resolution counters.
   int num_local_overwrites;

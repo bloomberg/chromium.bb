@@ -79,8 +79,7 @@ class ChromeInvalidationClientTest : public testing::Test {
   virtual void SetUp() {
     client_.Start(kClientId, kClientInfo, kState,
                   InvalidationVersionMap(),
-                  syncer::MakeWeakHandle(
-                      mock_invalidation_state_tracker_.AsWeakPtr()),
+                  MakeWeakHandle(mock_invalidation_state_tracker_.AsWeakPtr()),
                   &mock_listener_);
   }
 

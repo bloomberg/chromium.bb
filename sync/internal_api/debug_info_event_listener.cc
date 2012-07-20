@@ -6,7 +6,7 @@
 
 namespace syncer {
 
-using syncer::sessions::SyncSessionSnapshot;
+using sessions::SyncSessionSnapshot;
 
 DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
@@ -45,18 +45,18 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
 }
 
 void DebugInfoEventListener::OnInitializationComplete(
-    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+    const WeakHandle<JsBackend>& js_backend,
     bool success) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::INITIALIZATION_COMPLETE);
 }
 
 void DebugInfoEventListener::OnConnectionStatusChange(
-    syncer::ConnectionStatus status) {
+    ConnectionStatus status) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::CONNECTION_STATUS_CHANGE);
 }
 
 void DebugInfoEventListener::OnPassphraseRequired(
-    syncer::PassphraseRequiredReason reason,
+    PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_REQUIRED);
 }
@@ -79,7 +79,7 @@ void DebugInfoEventListener::OnUpdatedToken(const std::string& token) {
 }
 
 void DebugInfoEventListener::OnEncryptedTypesChanged(
-    syncer::ModelTypeSet encrypted_types,
+    ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ENCRYPTED_TYPES_CHANGED);
 }
@@ -89,7 +89,7 @@ void DebugInfoEventListener::OnEncryptionComplete() {
 }
 
 void DebugInfoEventListener::OnActionableError(
-    const syncer::SyncProtocolError& sync_error) {
+    const SyncProtocolError& sync_error) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ACTIONABLE_ERROR);
 }
 
@@ -101,22 +101,21 @@ void DebugInfoEventListener::SetCryptographerReady(bool ready) {
   cryptographer_ready_ = ready;
 }
 
-void DebugInfoEventListener::OnNudgeFromDatatype(syncer::ModelType datatype) {
+void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
   sync_pb::DebugEventInfo event_info;
   event_info.set_nudging_datatype(
-      syncer::GetSpecificsFieldNumberFromModelType(datatype));
+      GetSpecificsFieldNumberFromModelType(datatype));
   AddEventToQueue(event_info);
 }
 
 void DebugInfoEventListener::OnIncomingNotification(
-     const syncer::ModelTypePayloadMap& type_payloads) {
+     const ModelTypePayloadMap& type_payloads) {
   sync_pb::DebugEventInfo event_info;
-  syncer::ModelTypeSet types = ModelTypePayloadMapToEnumSet(type_payloads);
+  ModelTypeSet types = ModelTypePayloadMapToEnumSet(type_payloads);
 
-  for (syncer::ModelTypeSet::Iterator it = types.First();
-       it.Good(); it.Inc()) {
+  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     event_info.add_datatypes_notified_from_server(
-        syncer::GetSpecificsFieldNumberFromModelType(it.Get()));
+        GetSpecificsFieldNumberFromModelType(it.Get()));
   }
 
   AddEventToQueue(event_info);
@@ -124,7 +123,7 @@ void DebugInfoEventListener::OnIncomingNotification(
 
 void DebugInfoEventListener::GetAndClearDebugInfo(
     sync_pb::DebugInfo* debug_info) {
-  DCHECK(events_.size() <= syncer::kMaxEntries);
+  DCHECK_LE(events_.size(), kMaxEntries);
   while (!events_.empty()) {
     sync_pb::DebugEventInfo* event_info = debug_info->add_events();
     const sync_pb::DebugEventInfo& debug_event_info = events_.front();
@@ -149,7 +148,7 @@ void DebugInfoEventListener::CreateAndAddEvent(
 
 void DebugInfoEventListener::AddEventToQueue(
   const sync_pb::DebugEventInfo& event_info) {
-  if (events_.size() >= syncer::kMaxEntries) {
+  if (events_.size() >= kMaxEntries) {
     DVLOG(1) << "DebugInfoEventListener::AddEventToQueue Dropping an old event "
              << "because of full queue";
 

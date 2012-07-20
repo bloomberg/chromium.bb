@@ -9,8 +9,8 @@
 namespace syncer {
 namespace syncable {
 
-syncer::WeakHandle<TransactionObserver> NullTransactionObserver() {
-  return syncer::MakeWeakHandle(base::WeakPtr<TransactionObserver>());
+WeakHandle<TransactionObserver> NullTransactionObserver() {
+  return MakeWeakHandle(base::WeakPtr<TransactionObserver>());
 }
 
 }  // namespace syncable

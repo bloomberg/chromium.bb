@@ -7,8 +7,6 @@
 #include "sync/syncable/directory.h"
 #include "sync/util/cryptographer.h"
 
-using syncer::Cryptographer;
-
 namespace syncer {
 
 //////////////////////////////////////////////////////////////////////////
@@ -20,11 +18,11 @@ BaseTransaction::BaseTransaction(UserShare* share) {
 BaseTransaction::~BaseTransaction() {
 }
 
-syncer::Cryptographer* BaseTransaction::GetCryptographer() const {
+Cryptographer* BaseTransaction::GetCryptographer() const {
   return directory_->GetCryptographer(this->GetWrappedTrans());
 }
 
-syncer::ModelTypeSet GetEncryptedTypes(const syncer::BaseTransaction* trans) {
+ModelTypeSet GetEncryptedTypes(const BaseTransaction* trans) {
   return trans->GetCryptographer()->GetEncryptedTypes();
 }
 

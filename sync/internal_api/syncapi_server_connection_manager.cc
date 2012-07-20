@@ -9,12 +9,10 @@
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/http_post_provider_interface.h"
 
-using syncer::HttpResponse;
-
 namespace syncer {
 
 SyncAPIBridgedConnection::SyncAPIBridgedConnection(
-    syncer::ServerConnectionManager* scm,
+    ServerConnectionManager* scm,
     HttpPostProviderFactory* factory)
     : Connection(scm), factory_(factory) {
   post_provider_ = factory_->Create();
@@ -97,7 +95,7 @@ SyncAPIServerConnectionManager::SyncAPIServerConnectionManager(
 
 SyncAPIServerConnectionManager::~SyncAPIServerConnectionManager() {}
 
-syncer::ServerConnectionManager::Connection*
+ServerConnectionManager::Connection*
 SyncAPIServerConnectionManager::MakeConnection() {
   return new SyncAPIBridgedConnection(this, post_provider_factory_.get());
 }

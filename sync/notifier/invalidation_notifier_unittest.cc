@@ -48,7 +48,7 @@ class InvalidationNotifierTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
             InvalidationVersionMap(),
             initial_invalidation_state,
-            syncer::MakeWeakHandle(mock_tracker_.AsWeakPtr()),
+            MakeWeakHandle(mock_tracker_.AsWeakPtr()),
             "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
   }
@@ -75,10 +75,10 @@ TEST_F(InvalidationNotifierTest, Basic) {
   CreateAndObserveNotifier("fake_state");
   InSequence dummy;
 
-  syncer::ModelTypePayloadMap type_payloads;
-  type_payloads[syncer::PREFERENCES] = "payload";
-  type_payloads[syncer::BOOKMARKS] = "payload";
-  type_payloads[syncer::AUTOFILL] = "payload";
+  ModelTypePayloadMap type_payloads;
+  type_payloads[PREFERENCES] = "payload";
+  type_payloads[BOOKMARKS] = "payload";
+  type_payloads[AUTOFILL] = "payload";
 
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
@@ -100,7 +100,7 @@ TEST_F(InvalidationNotifierTest, Basic) {
   invalidation_notifier_->OnNotificationsEnabled();
 
   ObjectIdPayloadMap id_payloads;
-  for (syncer::ModelTypePayloadMap::const_iterator it = type_payloads.begin();
+  for (ModelTypePayloadMap::const_iterator it = type_payloads.begin();
        it != type_payloads.end(); ++it) {
     invalidation::ObjectId id;
     ASSERT_TRUE(RealModelTypeToObjectId(it->first, &id));

@@ -64,7 +64,7 @@ class Cryptographer {
     // set of encrypted types is SensitiveTypes() and that the encrypt
     // everything flag is false.
     virtual void OnEncryptedTypesChanged(
-        syncer::ModelTypeSet encrypted_types,
+        ModelTypeSet encrypted_types,
         bool encrypt_everything) = 0;
 
    protected:
@@ -180,7 +180,7 @@ class Cryptographer {
   UpdateResult Update(const sync_pb::NigoriSpecifics& nigori);
 
   // The set of types that are always encrypted.
-  static syncer::ModelTypeSet SensitiveTypes();
+  static ModelTypeSet SensitiveTypes();
 
   // Reset our set of encrypted types based on the contents of the nigori
   // specifics.
@@ -197,10 +197,10 @@ class Cryptographer {
   bool encrypt_everything() const;
 
   // Return the set of encrypted types.
-  syncer::ModelTypeSet GetEncryptedTypes() const;
+  ModelTypeSet GetEncryptedTypes() const;
 
   // Forwards to MergeEncryptedTypes.
-  void MergeEncryptedTypesForTest(syncer::ModelTypeSet encrypted_types);
+  void MergeEncryptedTypesForTest(ModelTypeSet encrypted_types);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncCryptographerTest, PackUnpack);
@@ -208,7 +208,7 @@ class Cryptographer {
 
   // Merges the given set of encrypted types with the existing set and emits a
   // notification if necessary.
-  void MergeEncryptedTypes(syncer::ModelTypeSet encrypted_types);
+  void MergeEncryptedTypes(ModelTypeSet encrypted_types);
 
   void EmitEncryptedTypesChangedNotification();
 
@@ -240,7 +240,7 @@ class Cryptographer {
 
   scoped_ptr<sync_pb::EncryptedData> pending_keys_;
 
-  syncer::ModelTypeSet encrypted_types_;
+  ModelTypeSet encrypted_types_;
   bool encrypt_everything_;
 
   DISALLOW_COPY_AND_ASSIGN(Cryptographer);

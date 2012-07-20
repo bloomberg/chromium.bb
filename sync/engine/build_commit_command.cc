@@ -37,7 +37,6 @@ using syncable::IS_UNSYNCED;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::SPECIFICS;
-using syncer::UNSPECIFIED;
 
 // static
 int64 BuildCommitCommand::GetFirstPosition() {

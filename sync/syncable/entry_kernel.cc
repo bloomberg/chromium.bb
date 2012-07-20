@@ -20,7 +20,7 @@ EntryKernel::EntryKernel() : dirty_(false) {
 
 EntryKernel::~EntryKernel() {}
 
-syncer::ModelType EntryKernel::GetServerModelType() const {
+ModelType EntryKernel::GetServerModelType() const {
   ModelType specifics_type = GetModelTypeFromSpecifics(ref(SERVER_SPECIFICS));
   if (specifics_type != UNSPECIFIED)
     return specifics_type;
@@ -62,7 +62,7 @@ StringValue* Int64ToValue(int64 i) {
 }
 
 StringValue* TimeToValue(const base::Time& t) {
-  return Value::CreateStringValue(syncer::GetTimeDebugString(t));
+  return Value::CreateStringValue(GetTimeDebugString(t));
 }
 
 StringValue* IdToValue(const Id& id) {
@@ -120,7 +120,7 @@ DictionaryValue* EntryKernel::ToValue() const {
 
   // Proto fields.
   SetFieldValues(*this, kernel_info,
-                 &GetProtoFieldString, &syncer::EntitySpecificsToValue,
+                 &GetProtoFieldString, &EntitySpecificsToValue,
                  PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
 
   // Bit temps.

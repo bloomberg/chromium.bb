@@ -60,7 +60,7 @@ enum ConnectionStatus {
   CONNECTION_SERVER_ERROR
 };
 
-// Reasons due to which syncer::Cryptographer might require a passphrase.
+// Reasons due to which Cryptographer might require a passphrase.
 enum PassphraseRequiredReason {
   REASON_PASSPHRASE_NOT_REQUIRED = 0,  // Initial value.
   REASON_ENCRYPTION = 1,               // The cryptographer requires a
@@ -120,7 +120,7 @@ class SyncManager {
     // operations, a delete may temporarily orphan a node that is
     // updated later in the list.
     virtual void OnChangesApplied(
-        syncer::ModelType model_type,
+        ModelType model_type,
         const BaseTransaction* trans,
         const ImmutableChangeRecordList& changes) = 0;
 
@@ -135,7 +135,7 @@ class SyncManager {
     // those changes, let the transaction fall out of scope, and then commit
     // those changes from within OnChangesComplete (postponing the blocking
     // I/O to when it no longer holds any lock).
-    virtual void OnChangesComplete(syncer::ModelType model_type) = 0;
+    virtual void OnChangesComplete(ModelType model_type) = 0;
 
    protected:
     virtual ~ChangeDelegate();
@@ -163,11 +163,11 @@ class SyncManager {
     // be able to apply changes without being under a transaction.
     // But that's a ways off...
     virtual void OnChangesApplied(
-        syncer::ModelType model_type,
+        ModelType model_type,
         int64 write_transaction_id,
         const ImmutableChangeRecordList& changes) = 0;
 
-    virtual void OnChangesComplete(syncer::ModelType model_type) = 0;
+    virtual void OnChangesComplete(ModelType model_type) = 0;
 
    protected:
     virtual ~ChangeObserver();
@@ -182,7 +182,7 @@ class SyncManager {
     // A round-trip sync-cycle took place and the syncer has resolved any
     // conflicts that may have arisen.
     virtual void OnSyncCycleCompleted(
-        const syncer::sessions::SyncSessionSnapshot& snapshot) = 0;
+        const sessions::SyncSessionSnapshot& snapshot) = 0;
 
     // Called when the status of the connection to the sync server has
     // changed.
@@ -298,8 +298,7 @@ class SyncManager {
     // function getChildNodeIds(id);
 
     virtual void OnInitializationComplete(
-        const syncer::WeakHandle<syncer::JsBackend>&
-            js_backend, bool success) = 0;
+        const WeakHandle<JsBackend>& js_backend, bool success) = 0;
 
     // We are no longer permitted to communicate with the server. Sync should
     // be disabled and state cleaned up at once.  This can happen for a number
@@ -322,7 +321,7 @@ class SyncManager {
     //
     // Called from within a transaction.
     virtual void OnEncryptedTypesChanged(
-        syncer::ModelTypeSet encrypted_types,
+        ModelTypeSet encrypted_types,
         bool encrypt_everything) = 0;
 
     // Called after we finish encrypting the current set of encrypted
@@ -332,7 +331,7 @@ class SyncManager {
     virtual void OnEncryptionComplete() = 0;
 
     virtual void OnActionableError(
-        const syncer::SyncProtocolError& sync_protocol_error) = 0;
+        const SyncProtocolError& sync_protocol_error) = 0;
 
    protected:
     virtual ~Observer();
@@ -364,35 +363,34 @@ class SyncManager {
   // URLFetcher parameter.
   virtual bool Init(
       const FilePath& database_location,
-      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+      const WeakHandle<JsEventHandler>& event_handler,
       const std::string& sync_server_and_path,
       int sync_server_port,
       bool use_ssl,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner,
       scoped_ptr<HttpPostProviderFactory> post_factory,
-      const syncer::ModelSafeRoutingInfo& model_safe_routing_info,
-      const std::vector<syncer::ModelSafeWorker*>& workers,
-      syncer::ExtensionsActivityMonitor* extensions_activity_monitor,
+      const ModelSafeRoutingInfo& model_safe_routing_info,
+      const std::vector<ModelSafeWorker*>& workers,
+      ExtensionsActivityMonitor* extensions_activity_monitor,
       ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
-      scoped_ptr<syncer::SyncNotifier> sync_notifier,
+      scoped_ptr<SyncNotifier> sync_notifier,
       const std::string& restored_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory> internal_components_factory,
-      syncer::Encryptor* encryptor,
-      syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
-      syncer::ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function) = 0;
+      Encryptor* encryptor,
+      UnrecoverableErrorHandler* unrecoverable_error_handler,
+      ReportUnrecoverableErrorFunction report_unrecoverable_error_function) = 0;
 
   // Throw an unrecoverable error from a transaction (mostly used for
   // testing).
   virtual void ThrowUnrecoverableError() = 0;
 
-  virtual syncer::ModelTypeSet InitialSyncEndedTypes() = 0;
+  virtual ModelTypeSet InitialSyncEndedTypes() = 0;
 
   // Returns those types within |types| that have an empty progress marker
   // token.
-  virtual syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-      syncer::ModelTypeSet types) = 0;
+  virtual ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+      ModelTypeSet types) = 0;
 
   // Purge from the directory those types with non-empty progress markers
   // but without initial synced ended set.
@@ -404,11 +402,11 @@ class SyncManager {
 
   // Called when the user disables or enables a sync type.
   virtual void UpdateEnabledTypes(
-      const syncer::ModelTypeSet& enabled_types) = 0;
+      const ModelTypeSet& enabled_types) = 0;
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(
-      const syncer::ModelSafeRoutingInfo& routing_info) = 0;
+      const ModelSafeRoutingInfo& routing_info) = 0;
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
@@ -438,8 +436,8 @@ class SyncManager {
   //              does finish.
   virtual void ConfigureSyncer(
       ConfigureReason reason,
-      const syncer::ModelTypeSet& types_to_config,
-      const syncer::ModelSafeRoutingInfo& new_routing_info,
+      const ModelTypeSet& types_to_config,
+      const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) = 0;
 
@@ -508,7 +506,7 @@ class SyncManager {
   // Reads the nigori node to determine if any experimental features should
   // be enabled.
   // Note: opens a transaction.  May be called on any thread.
-  virtual bool ReceivedExperiment(syncer::Experiments* experiments) = 0;
+  virtual bool ReceivedExperiment(Experiments* experiments) = 0;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.  May be called on any thread.

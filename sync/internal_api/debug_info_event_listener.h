@@ -23,22 +23,22 @@ const unsigned int kMaxEntries = 6;
 
 // Listens to events and records them in a queue. And passes the events to
 // syncer when requested.
-class DebugInfoEventListener : public syncer::SyncManager::Observer,
-                               public syncer::sessions::DebugInfoGetter {
+class DebugInfoEventListener : public SyncManager::Observer,
+                               public sessions::DebugInfoGetter {
  public:
   DebugInfoEventListener();
   virtual ~DebugInfoEventListener();
 
   // SyncManager::Observer implementation.
   virtual void OnSyncCycleCompleted(
-    const syncer::sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
+    const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnInitializationComplete(
-    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+    const WeakHandle<JsBackend>& js_backend,
       bool success) OVERRIDE;
   virtual void OnConnectionStatusChange(
-      syncer::ConnectionStatus connection_status) OVERRIDE;
+      ConnectionStatus connection_status) OVERRIDE;
   virtual void OnPassphraseRequired(
-      syncer::PassphraseRequiredReason reason,
+      PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnBootstrapTokenUpdated(
@@ -46,16 +46,15 @@ class DebugInfoEventListener : public syncer::SyncManager::Observer,
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnEncryptedTypesChanged(
-      syncer::ModelTypeSet encrypted_types,
+      ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnActionableError(
-      const syncer::SyncProtocolError& sync_error) OVERRIDE;
+      const SyncProtocolError& sync_error) OVERRIDE;
 
   // Sync manager events.
-  void OnNudgeFromDatatype(syncer::ModelType datatype);
-  void OnIncomingNotification(
-      const syncer::ModelTypePayloadMap& type_payloads);
+  void OnNudgeFromDatatype(ModelType datatype);
+  void OnIncomingNotification(const ModelTypePayloadMap& type_payloads);
 
   // DebugInfoGetter Implementation.
   virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;

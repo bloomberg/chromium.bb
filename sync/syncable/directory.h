@@ -207,9 +207,9 @@ class Directory {
   // |report_unrecoverable_error_function| may be NULL.
   // Takes ownership of |store|.
   Directory(
-      syncer::Encryptor* encryptor,
-      syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
-      syncer::ReportUnrecoverableErrorFunction
+      Encryptor* encryptor,
+      UnrecoverableErrorHandler* unrecoverable_error_handler,
+      ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function,
       DirectoryBackingStore* store);
   virtual ~Directory();
@@ -220,7 +220,7 @@ class Directory {
   // thread.  |transaction_observer| must be initialized.
   DirOpenResult Open(const std::string& name,
                      DirectoryChangeDelegate* delegate,
-                     const syncer::WeakHandle<TransactionObserver>&
+                     const WeakHandle<TransactionObserver>&
                          transaction_observer);
 
   // Stops sending events to the delegate and the transaction
@@ -268,7 +268,7 @@ class Directory {
   // Returns a pointer to our cryptographer.  Does not transfer ownership.  The
   // cryptographer is not thread safe; it should not be accessed after the
   // transaction has been released.
-  syncer::Cryptographer* GetCryptographer(const BaseTransaction* trans);
+  Cryptographer* GetCryptographer(const BaseTransaction* trans);
 
   // Returns true if the directory had encountered an unrecoverable error.
   // Note: Any function in |Directory| that can be called without holding a
@@ -314,8 +314,7 @@ class Directory {
   DirOpenResult OpenImpl(
       const std::string& name,
       DirectoryChangeDelegate* delegate,
-      const syncer::WeakHandle<TransactionObserver>&
-          transaction_observer);
+      const WeakHandle<TransactionObserver>& transaction_observer);
 
  private:
   // These private versions expect the kernel lock to already be held
@@ -485,8 +484,7 @@ class Directory {
   void InitKernelForTest(
       const std::string& name,
       DirectoryChangeDelegate* delegate,
-      const syncer::WeakHandle<TransactionObserver>&
-          transaction_observer);
+      const WeakHandle<TransactionObserver>& transaction_observer);
 
  private:
   struct Kernel {
@@ -494,8 +492,7 @@ class Directory {
     // initialized.
     Kernel(const std::string& name, const KernelLoadInfo& info,
            DirectoryChangeDelegate* delegate,
-           const syncer::WeakHandle<TransactionObserver>&
-               transaction_observer);
+           const WeakHandle<TransactionObserver>& transaction_observer);
 
     ~Kernel();
 
@@ -562,7 +559,7 @@ class Directory {
     DirectoryChangeDelegate* const delegate;
 
     // The transaction observer.
-    const syncer::WeakHandle<TransactionObserver> transaction_observer;
+    const WeakHandle<TransactionObserver> transaction_observer;
   };
 
   // Helper method used to do searches on |parent_id_child_index|.
@@ -595,15 +592,14 @@ class Directory {
   EntryKernel* GetPossibleFirstChild(
       const ScopedKernelLock& lock, const Id& parent_id);
 
-  syncer::Cryptographer cryptographer_;
+  Cryptographer cryptographer_;
 
   Kernel* kernel_;
 
   scoped_ptr<DirectoryBackingStore> store_;
 
-  syncer::UnrecoverableErrorHandler* const unrecoverable_error_handler_;
-  const syncer::ReportUnrecoverableErrorFunction
-      report_unrecoverable_error_function_;
+  UnrecoverableErrorHandler* const unrecoverable_error_handler_;
+  const ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
   bool unrecoverable_error_set_;
 
   InvariantCheckLevel invariant_check_level_;

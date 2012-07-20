@@ -78,7 +78,7 @@ class BaseNode {
   // by doing a client tag lookup. Returns false on failure. A deleted node
   // will return FALSE.
   virtual InitByLookupResult InitByClientTagLookup(
-      syncer::ModelType model_type,
+      ModelType model_type,
       const std::string& tag) = 0;
 
   // Each object is identified by a 64-bit id (internally, the syncable
@@ -106,7 +106,7 @@ class BaseNode {
 
   // Returns the model type of this object.  The model type is set at node
   // creation time and is expected never to change.
-  syncer::ModelType GetModelType() const;
+  ModelType GetModelType() const;
 
   // Getter specific to the BOOKMARK datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == BOOKMARK.
@@ -202,7 +202,8 @@ class BaseNode {
   virtual ~BaseNode();
   // The server has a size limit on client tags, so we generate a fixed length
   // hash locally. This also ensures that ModelTypes have unique namespaces.
-  static std::string GenerateSyncableHash(syncer::ModelType model_type,
+  static std::string GenerateSyncableHash(
+      ModelType model_type,
       const std::string& client_tag);
 
   // Determines whether part of the entry is encrypted, and if so attempts to

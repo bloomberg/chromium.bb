@@ -28,11 +28,11 @@ struct ObjectIdLessThan {
 
 typedef std::set<invalidation::ObjectId, ObjectIdLessThan> ObjectIdSet;
 
-bool RealModelTypeToObjectId(syncer::ModelType model_type,
+bool RealModelTypeToObjectId(ModelType model_type,
                              invalidation::ObjectId* object_id);
 
 bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
-                             syncer::ModelType* model_type);
+                             ModelType* model_type);
 
 std::string ObjectIdToString(const invalidation::ObjectId& object_id);
 

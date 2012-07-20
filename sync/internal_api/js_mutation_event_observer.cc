@@ -44,21 +44,21 @@ const size_t kChangeLimit = 100;
 }  // namespace
 
 void JsMutationEventObserver::OnChangesApplied(
-    syncer::ModelType model_type,
+    ModelType model_type,
     int64 write_transaction_id,
-    const syncer::ImmutableChangeRecordList& changes) {
+    const ImmutableChangeRecordList& changes) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("modelType", syncer::ModelTypeToString(model_type));
+  details.SetString("modelType", ModelTypeToString(model_type));
   details.SetString("writeTransactionId",
                     base::Int64ToString(write_transaction_id));
   base::Value* changes_value = NULL;
   const size_t changes_size = changes.Get().size();
   if (changes_size <= kChangeLimit) {
     ListValue* changes_list = new ListValue();
-    for (syncer::ChangeRecordList::const_iterator it =
+    for (ChangeRecordList::const_iterator it =
              changes.Get().begin(); it != changes.Get().end(); ++it) {
       changes_list->Append(it->ToValue());
     }
@@ -73,19 +73,18 @@ void JsMutationEventObserver::OnChangesApplied(
   HandleJsEvent(FROM_HERE, "onChangesApplied", JsEventDetails(&details));
 }
 
-void JsMutationEventObserver::OnChangesComplete(
-    syncer::ModelType model_type) {
+void JsMutationEventObserver::OnChangesComplete(ModelType model_type) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("modelType", syncer::ModelTypeToString(model_type));
+  details.SetString("modelType", ModelTypeToString(model_type));
   HandleJsEvent(FROM_HERE, "onChangesComplete", JsEventDetails(&details));
 }
 
 void JsMutationEventObserver::OnTransactionWrite(
     const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-    syncer::ModelTypeSet models_with_changes) {
+    ModelTypeSet models_with_changes) {
   DCHECK(CalledOnValidThread());
   if (!event_handler_.IsInitialized()) {
     return;
@@ -94,7 +93,7 @@ void JsMutationEventObserver::OnTransactionWrite(
   details.Set("writeTransactionInfo",
               write_transaction_info.Get().ToValue(kChangeLimit));
   details.Set("modelsWithChanges",
-              syncer::ModelTypeSetToValue(models_with_changes));
+              ModelTypeSetToValue(models_with_changes));
   HandleJsEvent(FROM_HERE, "onTransactionWrite", JsEventDetails(&details));
 }
 

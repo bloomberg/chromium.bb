@@ -40,8 +40,8 @@ void WriteNode::SetIsFolder(bool folder) {
 }
 
 void WriteNode::SetTitle(const std::wstring& title) {
-  DCHECK_NE(GetModelType(), syncer::UNSPECIFIED);
-  syncer::ModelType type = GetModelType();
+  DCHECK_NE(GetModelType(), UNSPECIFIED);
+  ModelType type = GetModelType();
   Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
   // It's possible the nigori lost the set of encrypted types. If the current
   // specifics are already encrypted, we want to ensure we continue encrypting.
@@ -53,14 +53,14 @@ void WriteNode::SetTitle(const std::wstring& title) {
   // NON_UNIQUE_NAME will still be kEncryptedString, but we store the real title
   // into the specifics. All strings compared are server legal strings.
   std::string new_legal_title;
-  if (type != syncer::BOOKMARKS && needs_encryption) {
+  if (type != BOOKMARKS && needs_encryption) {
     new_legal_title = kEncryptedString;
   } else {
     SyncAPINameToServerName(WideToUTF8(title), &new_legal_title);
   }
 
   std::string current_legal_title;
-  if (syncer::BOOKMARKS == type &&
+  if (BOOKMARKS == type &&
       entry_->Get(syncable::SPECIFICS).has_encrypted()) {
     // Encrypted bookmarks only have their title in the unencrypted specifics.
     current_legal_title = GetBookmarkSpecifics().title();
@@ -84,7 +84,7 @@ void WriteNode::SetTitle(const std::wstring& title) {
 
   // For bookmarks, we also set the title field in the specifics.
   // TODO(zea): refactor bookmarks to not need this functionality.
-  if (GetModelType() == syncer::BOOKMARKS) {
+  if (GetModelType() == BOOKMARKS) {
     sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
     specifics.mutable_bookmark()->set_title(new_legal_title);
     SetEntitySpecifics(specifics);  // Does it's own encryption checking.
@@ -100,7 +100,7 @@ void WriteNode::SetTitle(const std::wstring& title) {
     entry_->Put(syncable::NON_UNIQUE_NAME, new_legal_title);
 
   DVLOG(1) << "Overwriting title of type "
-           << syncer::ModelTypeToString(type)
+           << ModelTypeToString(type)
            << " and marking for syncing.";
   MarkForSyncing();
 }
@@ -149,7 +149,7 @@ void WriteNode::SetNigoriSpecifics(
 
 void WriteNode::SetPasswordSpecifics(
     const sync_pb::PasswordSpecificsData& data) {
-  DCHECK_EQ(syncer::PASSWORDS, GetModelType());
+  DCHECK_EQ(GetModelType(), PASSWORDS);
 
   Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
 
@@ -159,10 +159,10 @@ void WriteNode::SetPasswordSpecifics(
   const sync_pb::EntitySpecifics& old_specifics = GetEntry()->Get(SPECIFICS);
   sync_pb::EntitySpecifics entity_specifics;
   // Copy over the old specifics if they exist.
-  if (syncer::GetModelTypeFromSpecifics(old_specifics) == syncer::PASSWORDS) {
+  if (GetModelTypeFromSpecifics(old_specifics) == PASSWORDS) {
     entity_specifics.CopyFrom(old_specifics);
   } else {
-    syncer::AddDefaultFieldValue(syncer::PASSWORDS, &entity_specifics);
+    AddDefaultFieldValue(PASSWORDS, &entity_specifics);
   }
   sync_pb::PasswordSpecifics* password_specifics =
       entity_specifics.mutable_password();
@@ -192,19 +192,18 @@ void WriteNode::SetSessionSpecifics(
 
 void WriteNode::SetEntitySpecifics(
     const sync_pb::EntitySpecifics& new_value) {
-  syncer::ModelType new_specifics_type =
-      syncer::GetModelTypeFromSpecifics(new_value);
-  DCHECK_NE(new_specifics_type, syncer::UNSPECIFIED);
+  ModelType new_specifics_type =
+      GetModelTypeFromSpecifics(new_value);
+  DCHECK_NE(new_specifics_type, UNSPECIFIED);
   DVLOG(1) << "Writing entity specifics of type "
-           << syncer::ModelTypeToString(new_specifics_type);
+           << ModelTypeToString(new_specifics_type);
   // GetModelType() can be unspecified if this is the first time this
   // node is being initialized (see PutModelType()).  Otherwise, it
   // should match |new_specifics_type|.
-  if (GetModelType() != syncer::UNSPECIFIED) {
+  if (GetModelType() != UNSPECIFIED) {
     DCHECK_EQ(new_specifics_type, GetModelType());
   }
-  syncer::Cryptographer* cryptographer =
-      GetTransaction()->GetCryptographer();
+  Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
 
   // Preserve unknown fields.
   const sync_pb::EntitySpecifics& old_specifics = entry_->Get(SPECIFICS);
@@ -279,7 +278,7 @@ BaseNode::InitByLookupResult WriteNode::InitByIdLookup(int64 id) {
 // Return true if the write node was found, and was not deleted.
 // Undeleting a deleted node is possible by ClientTag.
 BaseNode::InitByLookupResult WriteNode::InitByClientTagLookup(
-    syncer::ModelType model_type,
+    ModelType model_type,
     const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
@@ -307,25 +306,25 @@ BaseNode::InitByLookupResult WriteNode::InitByTagLookup(
     return INIT_FAILED_ENTRY_NOT_GOOD;
   if (entry_->Get(syncable::IS_DEL))
     return INIT_FAILED_ENTRY_IS_DEL;
-  syncer::ModelType model_type = GetModelType();
-  DCHECK_EQ(syncer::NIGORI, model_type);
+  ModelType model_type = GetModelType();
+  DCHECK_EQ(model_type, NIGORI);
   return INIT_OK;
 }
 
-void WriteNode::PutModelType(syncer::ModelType model_type) {
+void WriteNode::PutModelType(ModelType model_type) {
   // Set an empty specifics of the appropriate datatype.  The presence
   // of the specific field will identify the model type.
   DCHECK(GetModelType() == model_type ||
-         GetModelType() == syncer::UNSPECIFIED);  // Immutable once set.
+         GetModelType() == UNSPECIFIED);  // Immutable once set.
 
   sync_pb::EntitySpecifics specifics;
-  syncer::AddDefaultFieldValue(model_type, &specifics);
+  AddDefaultFieldValue(model_type, &specifics);
   SetEntitySpecifics(specifics);
 }
 
 // Create a new node with default properties, and bind this WriteNode to it.
 // Return true on success.
-bool WriteNode::InitByCreation(syncer::ModelType model_type,
+bool WriteNode::InitByCreation(ModelType model_type,
                                const BaseNode& parent,
                                const BaseNode* predecessor) {
   DCHECK(!entry_) << "Init called twice";
@@ -363,7 +362,7 @@ bool WriteNode::InitByCreation(syncer::ModelType model_type,
 // TODO(chron): Code datatype into hash tag.
 // TODO(chron): Is model type ever lost?
 WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
-    syncer::ModelType model_type,
+    ModelType model_type,
     const BaseNode& parent,
     const std::string& tag) {
   // This DCHECK will only fail if init is called twice.

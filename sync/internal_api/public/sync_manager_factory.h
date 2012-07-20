@@ -19,7 +19,7 @@ class SyncManagerFactory {
   SyncManagerFactory();
   virtual ~SyncManagerFactory();
 
-  virtual scoped_ptr<syncer::SyncManager> CreateSyncManager(std::string name);
+  virtual scoped_ptr<SyncManager> CreateSyncManager(std::string name);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncManagerFactory);

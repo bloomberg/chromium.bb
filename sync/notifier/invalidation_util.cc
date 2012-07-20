@@ -17,11 +17,10 @@ bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
          (lhs.source() == rhs.source() && lhs.name() < rhs.name());
 }
 
-bool RealModelTypeToObjectId(syncer::ModelType model_type,
+bool RealModelTypeToObjectId(ModelType model_type,
                              invalidation::ObjectId* object_id) {
   std::string notification_type;
-  if (!syncer::RealModelTypeToNotificationType(
-          model_type, &notification_type)) {
+  if (!RealModelTypeToNotificationType(model_type, &notification_type)) {
     return false;
   }
   object_id->Init(ipc::invalidation::ObjectSource::CHROME_SYNC,
@@ -30,10 +29,8 @@ bool RealModelTypeToObjectId(syncer::ModelType model_type,
 }
 
 bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
-                             syncer::ModelType* model_type) {
-  return
-      syncer::NotificationTypeToRealModelType(
-          object_id.name(), model_type);
+                             ModelType* model_type) {
+  return NotificationTypeToRealModelType(object_id.name(), model_type);
 }
 
 std::string ObjectIdToString(

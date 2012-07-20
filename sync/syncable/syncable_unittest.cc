@@ -36,14 +36,11 @@
 #include "sync/util/test_unrecoverable_error_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::ExpectDictBooleanValue;
-using base::ExpectDictStringValue;
-using syncer::FakeEncryptor;
-using syncer::TestIdFactory;
-using syncer::TestUnrecoverableErrorHandler;
-
 namespace syncer {
 namespace syncable {
+
+using base::ExpectDictBooleanValue;
+using base::ExpectDictStringValue;
 
 class SyncableKernelTest : public testing::Test {};
 
@@ -548,7 +545,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
     }
   }
 
-  syncer::ModelTypeSet to_purge(BOOKMARKS);
+  ModelTypeSet to_purge(BOOKMARKS);
   dir_->PurgeEntriesWithTypeIn(to_purge);
 
   Directory::SaveChangesSnapshot snapshot1;
@@ -829,7 +826,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
 TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   std::vector<int64> handles;
   int64 handle1, handle2;
-  const syncer::FullModelTypeSet all_types = syncer::FullModelTypeSet::All();
+  const FullModelTypeSet all_types = FullModelTypeSet::All();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
 
@@ -1403,7 +1400,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
 
-  syncer::ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
+  ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
 
   TestIdFactory id_factory;
   // Create some items for each type.
@@ -1695,7 +1692,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   SwapInUnsaveableDirectory();
   ASSERT_TRUE(dir_->good());
 
-  syncer::ModelTypeSet set(BOOKMARKS);
+  ModelTypeSet set(BOOKMARKS);
   dir_->PurgeEntriesWithTypeIn(set);
   EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
   ASSERT_FALSE(dir_->SaveChanges());

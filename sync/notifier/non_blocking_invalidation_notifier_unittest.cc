@@ -43,8 +43,7 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
             notifier_options,
             InvalidationVersionMap(),
             std::string(),  // initial_invalidation_state
-            syncer::MakeWeakHandle(
-                base::WeakPtr<syncer::InvalidationStateTracker>()),
+            MakeWeakHandle(base::WeakPtr<InvalidationStateTracker>()),
             "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
   }
@@ -68,10 +67,10 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
 TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
   InSequence dummy;
 
-  syncer::ModelTypePayloadMap type_payloads;
-  type_payloads[syncer::PREFERENCES] = "payload";
-  type_payloads[syncer::BOOKMARKS] = "";
-  type_payloads[syncer::AUTOFILL] = "";
+  ModelTypePayloadMap type_payloads;
+  type_payloads[PREFERENCES] = "payload";
+  type_payloads[BOOKMARKS] = "";
+  type_payloads[AUTOFILL] = "";
 
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,

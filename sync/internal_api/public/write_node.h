@@ -64,7 +64,7 @@ class WriteNode : public BaseNode {
   // BaseNode implementation.
   virtual InitByLookupResult InitByIdLookup(int64 id) OVERRIDE;
   virtual InitByLookupResult InitByClientTagLookup(
-      syncer::ModelType model_type,
+      ModelType model_type,
       const std::string& tag) OVERRIDE;
 
   // Create a new node with the specified parent and predecessor.  |model_type|
@@ -73,7 +73,7 @@ class WriteNode : public BaseNode {
   // to indicate that this is to be the first child.
   // |predecessor| must be a child of |new_parent| or NULL. Returns false on
   // failure.
-  bool InitByCreation(syncer::ModelType model_type,
+  bool InitByCreation(ModelType model_type,
                       const BaseNode& parent,
                       const BaseNode* predecessor);
 
@@ -84,7 +84,7 @@ class WriteNode : public BaseNode {
   // actually undelete it
   // Client unique tagged nodes must NOT be folders.
   InitUniqueByCreationResult InitUniqueByCreation(
-      syncer::ModelType model_type,
+      ModelType model_type,
       const BaseNode& parent,
       const std::string& client_tag);
 
@@ -177,7 +177,7 @@ class WriteNode : public BaseNode {
   void* operator new(size_t size);  // Node is meant for stack use only.
 
   // Helper to set model type. This will clear any specifics data.
-  void PutModelType(syncer::ModelType model_type);
+  void PutModelType(ModelType model_type);
 
   // Helper to set the previous node.
   bool PutPredecessor(const BaseNode* predecessor) WARN_UNUSED_RESULT;

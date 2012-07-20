@@ -65,10 +65,10 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
-  syncer::ModelTypePayloadMap download_progress_markers;
+  ModelTypePayloadMap download_progress_markers;
   sessions::SyncSessionSnapshot snapshot(sessions::ModelNeutralState(),
                                          false,
-                                         syncer::ModelTypeSet(),
+                                         ModelTypeSet(),
                                          download_progress_markers,
                                          false,
                                          true,
@@ -93,9 +93,9 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnActionableError) {
-  syncer::SyncProtocolError sync_error;
-  sync_error.action = syncer::CLEAR_USER_DATA_AND_RESYNC;
-  sync_error.error_type = syncer::TRANSIENT_ERROR;
+  SyncProtocolError sync_error;
+  sync_error.action = CLEAR_USER_DATA_AND_RESYNC;
+  sync_error.error_type = TRANSIENT_ERROR;
   DictionaryValue expected_details;
   expected_details.Set("syncError", sync_error.ToValue());
 
@@ -109,11 +109,10 @@ TEST_F(JsSyncManagerObserverTest, OnActionableError) {
 
 
 TEST_F(JsSyncManagerObserverTest, OnConnectionStatusChange) {
-  const syncer::ConnectionStatus kStatus =
-      syncer::CONNECTION_AUTH_ERROR;
+  const ConnectionStatus kStatus = CONNECTION_AUTH_ERROR;
   DictionaryValue expected_details;
   expected_details.SetString("status",
-                             syncer::ConnectionStatusToString(kStatus));
+                             ConnectionStatusToString(kStatus));
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onConnectionStatusChange",
@@ -132,14 +131,13 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
 
   reason_passphrase_not_required_details.SetString(
       "reason",
-      syncer::PassphraseRequiredReasonToString(
-          syncer::REASON_PASSPHRASE_NOT_REQUIRED));
+      PassphraseRequiredReasonToString(REASON_PASSPHRASE_NOT_REQUIRED));
   reason_encryption_details.SetString(
       "reason",
-      syncer::PassphraseRequiredReasonToString(syncer::REASON_ENCRYPTION));
+      PassphraseRequiredReasonToString(REASON_ENCRYPTION));
   reason_decryption_details.SetString(
       "reason",
-      syncer::PassphraseRequiredReasonToString(syncer::REASON_DECRYPTION));
+      PassphraseRequiredReasonToString(REASON_DECRYPTION));
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseRequired",
@@ -153,11 +151,11 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
                            HasDetailsAsDictionary(reason_decryption_details)));
 
   js_sync_manager_observer_.OnPassphraseRequired(
-      syncer::REASON_PASSPHRASE_NOT_REQUIRED,
+      REASON_PASSPHRASE_NOT_REQUIRED,
       sync_pb::EncryptedData());
-  js_sync_manager_observer_.OnPassphraseRequired(syncer::REASON_ENCRYPTION,
+  js_sync_manager_observer_.OnPassphraseRequired(REASON_ENCRYPTION,
                                                  sync_pb::EncryptedData());
-  js_sync_manager_observer_.OnPassphraseRequired(syncer::REASON_DECRYPTION,
+  js_sync_manager_observer_.OnPassphraseRequired(REASON_DECRYPTION,
                                                  sync_pb::EncryptedData());
   PumpLoop();
 }
@@ -187,14 +185,13 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptedTypesChanged) {
   const bool encrypt_everything = false;
   expected_details.Set("encryptedTypes", encrypted_type_values);
   expected_details.SetBoolean("encryptEverything", encrypt_everything);
-  syncer::ModelTypeSet encrypted_types;
+  ModelTypeSet encrypted_types;
 
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
-       i < syncer::MODEL_TYPE_COUNT; ++i) {
-    syncer::ModelType type = syncer::ModelTypeFromInt(i);
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    ModelType type = ModelTypeFromInt(i);
     encrypted_types.Put(type);
     encrypted_type_values->Append(Value::CreateStringValue(
-        syncer::ModelTypeToString(type)));
+        ModelTypeToString(type)));
   }
 
   EXPECT_CALL(mock_js_event_handler_,

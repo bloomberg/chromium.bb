@@ -40,7 +40,7 @@ class AllStatus : public SyncEngineEventListener {
 
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE;
 
-  syncer::SyncStatus status() const;
+  SyncStatus status() const;
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
@@ -48,9 +48,9 @@ class AllStatus : public SyncEngineEventListener {
 
   void IncrementNotificationsReceived();
 
-  void SetThrottledTypes(const syncer::ModelTypeSet &types);
+  void SetThrottledTypes(const ModelTypeSet &types);
 
-  void SetEncryptedTypes(syncer::ModelTypeSet types);
+  void SetEncryptedTypes(ModelTypeSet types);
   void SetCryptographerReady(bool ready);
   void SetCryptoHasPendingKeys(bool has_pending_keys);
 
@@ -59,10 +59,10 @@ class AllStatus : public SyncEngineEventListener {
  protected:
   // Examines syncer to calculate syncing and the unsynced count,
   // and returns a Status with new values.
-  syncer::SyncStatus CalcSyncing(const SyncEngineEvent& event) const;
-  syncer::SyncStatus CreateBlankStatus() const;
+  SyncStatus CalcSyncing(const SyncEngineEvent& event) const;
+  SyncStatus CreateBlankStatus() const;
 
-  syncer::SyncStatus status_;
+  SyncStatus status_;
 
   mutable base::Lock mutex_;  // Protects all data members.
   DISALLOW_COPY_AND_ASSIGN(AllStatus);

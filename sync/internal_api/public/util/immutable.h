@@ -25,8 +25,7 @@
 // The last line incurs the cost of copying my_stuff, which is
 // undesirable.  Here's the above code re-written using Immutable<T>:
 //
-//   void ProcessStuff(
-//       const syncer::Immutable<LargeObjectList>& stuff) {
+//   void ProcessStuff(const Immutable<LargeObjectList>& stuff) {
 //     for (LargeObjectList::const_iterator it = stuff.Get().begin();
 //          it != stuff.Get().end(); ++it) {
 //       ... process it ...

@@ -36,6 +36,7 @@
 // This is a simple utility that initializes a sync notifier and
 // listens to any received notifications.
 
+namespace syncer {
 namespace {
 
 const char kEmailSwitch[] = "email";
@@ -46,7 +47,7 @@ const char kAllowInsecureConnectionSwitch[] = "allow-insecure-connection";
 const char kNotificationMethodSwitch[] = "notification-method";
 
 // Class to print received notifications events.
-class NotificationPrinter : public syncer::SyncNotifierObserver {
+class NotificationPrinter : public SyncNotifierObserver {
  public:
   NotificationPrinter() {}
   virtual ~NotificationPrinter() {}
@@ -56,20 +57,19 @@ class NotificationPrinter : public syncer::SyncNotifierObserver {
   }
 
   virtual void OnNotificationsDisabled(
-      syncer::NotificationsDisabledReason reason) OVERRIDE {
+      NotificationsDisabledReason reason) OVERRIDE {
     LOG(INFO) << "Notifications disabled with reason "
-              << syncer::NotificationsDisabledReasonToString(reason);
+              << NotificationsDisabledReasonToString(reason);
   }
 
   virtual void OnIncomingNotification(
-      const syncer::ModelTypePayloadMap& type_payloads,
-      syncer::IncomingNotificationSource source) OVERRIDE {
-    for (syncer::ModelTypePayloadMap::const_iterator it =
+      const ModelTypePayloadMap& type_payloads,
+      IncomingNotificationSource source) OVERRIDE {
+    for (ModelTypePayloadMap::const_iterator it =
              type_payloads.begin(); it != type_payloads.end(); ++it) {
-      LOG(INFO) << (source == syncer::REMOTE_NOTIFICATION ?
-                    "Remote" : "Local")
+      LOG(INFO) << (source == REMOTE_NOTIFICATION ? "Remote" : "Local")
                 << " Notification: type = "
-                << syncer::ModelTypeToString(it->first)
+                << ModelTypeToString(it->first)
                 << ", payload = " << it->second;
     }
   }
@@ -80,22 +80,20 @@ class NotificationPrinter : public syncer::SyncNotifierObserver {
 
 class NullInvalidationStateTracker
     : public base::SupportsWeakPtr<NullInvalidationStateTracker>,
-      public syncer::InvalidationStateTracker {
+      public InvalidationStateTracker {
  public:
   NullInvalidationStateTracker() {}
   virtual ~NullInvalidationStateTracker() {}
 
-  virtual syncer::InvalidationVersionMap
-      GetAllMaxVersions() const OVERRIDE {
-    return syncer::InvalidationVersionMap();
+  virtual InvalidationVersionMap GetAllMaxVersions() const OVERRIDE {
+    return InvalidationVersionMap();
   }
 
   virtual void SetMaxVersion(
       const invalidation::ObjectId& id,
       int64 max_invalidation_version) OVERRIDE {
     LOG(INFO) << "Setting max invalidation version for "
-              << syncer::ObjectIdToString(id) << " to "
-              << max_invalidation_version;
+              << ObjectIdToString(id) << " to " << max_invalidation_version;
   }
 
   virtual std::string GetInvalidationState() const OVERRIDE {
@@ -178,9 +176,8 @@ notifier::NotifierOptions ParseNotifierOptions(
   return notifier_options;
 }
 
-}  // namespace
-
-int main(int argc, char* argv[]) {
+int SyncListenNotificationsMain(int argc, char* argv[]) {
+  using namespace syncer;
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
@@ -230,10 +227,10 @@ int main(int argc, char* argv[]) {
           new MyTestURLRequestContextGetter(io_thread.message_loop_proxy()));
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
-  syncer::SyncNotifierFactory sync_notifier_factory(
+  SyncNotifierFactory sync_notifier_factory(
       notifier_options, kClientInfo,
       null_invalidation_state_tracker.AsWeakPtr());
-  scoped_ptr<syncer::SyncNotifier> sync_notifier(
+  scoped_ptr<SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());
   NotificationPrinter notification_printer;
   sync_notifier->AddObserver(&notification_printer);
@@ -242,11 +239,18 @@ int main(int argc, char* argv[]) {
   sync_notifier->SetUniqueId(kUniqueId);
   sync_notifier->UpdateCredentials(email, token);
   // Listen for notifications for all known types.
-  sync_notifier->UpdateEnabledTypes(syncer::ModelTypeSet::All());
+  sync_notifier->UpdateEnabledTypes(ModelTypeSet::All());
 
   ui_loop.Run();
 
   sync_notifier->RemoveObserver(&notification_printer);
   io_thread.Stop();
   return 0;
+}
+
+}  // namespace
+}  // namespace syncer
+
+int main(int argc, char* argv[]) {
+  return syncer::SyncListenNotificationsMain(argc, argv);
 }

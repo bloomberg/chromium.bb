@@ -27,10 +27,10 @@ TEST_F(SyncChangeTest, LocalDelete) {
   std::string tag = "client_tag";
   SyncChange e(FROM_HERE,
                change_type,
-               SyncData::CreateLocalDelete(tag, syncer::PREFERENCES));
+               SyncData::CreateLocalDelete(tag, PREFERENCES));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
-  EXPECT_EQ(syncer::PREFERENCES, e.sync_data().GetDataType());
+  EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
 }
 
 TEST_F(SyncChangeTest, LocalUpdate) {
@@ -46,7 +46,7 @@ TEST_F(SyncChangeTest, LocalUpdate) {
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
-  EXPECT_EQ(syncer::PREFERENCES, e.sync_data().GetDataType());
+  EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
   scoped_ptr<DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
   scoped_ptr<DictionaryValue> e_spec(EntitySpecificsToValue(
       e.sync_data().GetSpecifics()));
@@ -66,7 +66,7 @@ TEST_F(SyncChangeTest, LocalAdd) {
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
-  EXPECT_EQ(syncer::PREFERENCES, e.sync_data().GetDataType());
+  EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
   scoped_ptr<DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
   scoped_ptr<DictionaryValue> e_spec(EntitySpecificsToValue(
       e.sync_data().GetSpecifics()));
@@ -109,7 +109,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   // Verify update.
   SyncChange e = change_list[0];
   EXPECT_EQ(SyncChange::ACTION_UPDATE, e.change_type());
-  EXPECT_EQ(syncer::PREFERENCES, e.sync_data().GetDataType());
+  EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
   scoped_ptr<DictionaryValue> ref_spec(EntitySpecificsToValue(
       update_specifics));
   scoped_ptr<DictionaryValue> e_spec(EntitySpecificsToValue(
@@ -119,7 +119,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   // Verify add.
   e = change_list[1];
   EXPECT_EQ(SyncChange::ACTION_ADD, e.change_type());
-  EXPECT_EQ(syncer::PREFERENCES, e.sync_data().GetDataType());
+  EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
   ref_spec.reset(EntitySpecificsToValue(add_specifics));
   e_spec.reset(EntitySpecificsToValue(e.sync_data().GetSpecifics()));
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
@@ -127,7 +127,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   // Verify delete.
   e = change_list[2];
   EXPECT_EQ(SyncChange::ACTION_DELETE, e.change_type());
-  EXPECT_EQ(syncer::PREFERENCES, e.sync_data().GetDataType());
+  EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
   ref_spec.reset(EntitySpecificsToValue(delete_specifics));
   e_spec.reset(EntitySpecificsToValue(e.sync_data().GetSpecifics()));
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));

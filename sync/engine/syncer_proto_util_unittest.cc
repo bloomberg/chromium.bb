@@ -207,7 +207,7 @@ TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
   EXPECT_EQ(msg.store_birthday(), "meat");
 }
 
-class DummyConnectionManager : public syncer::ServerConnectionManager {
+class DummyConnectionManager : public ServerConnectionManager {
  public:
   DummyConnectionManager()
       : ServerConnectionManager("unused", 0, false),
@@ -268,10 +268,10 @@ TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
 TEST_F(SyncerProtoUtilTest, HandleThrottlingWithDatatypes) {
   ThrottledDataTypeTracker tracker(NULL);
   SyncProtocolError error;
-  error.error_type = syncer::THROTTLED;
-  syncer::ModelTypeSet types;
-  types.Put(syncer::BOOKMARKS);
-  types.Put(syncer::PASSWORDS);
+  error.error_type = THROTTLED;
+  ModelTypeSet types;
+  types.Put(BOOKMARKS);
+  types.Put(PASSWORDS);
   error.error_data_types = types;
 
   base::TimeTicks ticks = base::TimeTicks::FromInternalValue(1);
@@ -283,7 +283,7 @@ TEST_F(SyncerProtoUtilTest, HandleThrottlingNoDatatypes) {
   ThrottledDataTypeTracker tracker(NULL);
   MockDelegate delegate;
   SyncProtocolError error;
-  error.error_type = syncer::THROTTLED;
+  error.error_type = THROTTLED;
 
   base::TimeTicks ticks = base::TimeTicks::FromInternalValue(1);
 

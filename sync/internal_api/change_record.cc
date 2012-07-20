@@ -41,8 +41,7 @@ DictionaryValue* ChangeRecord::ToValue() const {
     if (extra.get()) {
       value->Set("extra", extra->ToValue());
     }
-    value->Set("specifics",
-               syncer::EntitySpecificsToValue(specifics));
+    value->Set("specifics", EntitySpecificsToValue(specifics));
   }
   return value;
 }
@@ -57,7 +56,7 @@ ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData(
 ExtraPasswordChangeRecordData::~ExtraPasswordChangeRecordData() {}
 
 DictionaryValue* ExtraPasswordChangeRecordData::ToValue() const {
-  return syncer::PasswordSpecificsDataToValue(unencrypted_);
+  return PasswordSpecificsDataToValue(unencrypted_);
 }
 
 const sync_pb::PasswordSpecificsData&

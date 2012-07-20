@@ -16,9 +16,8 @@ class DataTypeHistogramTest : public testing::Test {
 // Create a histogram of type HISTOGRAM_COUNTS for each model type. Nothing
 // should break.
 TEST(DataTypeHistogramTest, BasicCount) {
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
-       i <= syncer::LAST_REAL_MODEL_TYPE; ++i) {
-    syncer::ModelType type = syncer::ModelTypeFromInt(i);
+  for (int i = FIRST_REAL_MODEL_TYPE; i <= LAST_REAL_MODEL_TYPE; ++i) {
+    ModelType type = ModelTypeFromInt(i);
 #define PER_DATA_TYPE_MACRO(type_str) \
     HISTOGRAM_COUNTS("Prefix" type_str "Suffix", 1);
     SYNC_DATA_TYPE_HISTOGRAM(type);
@@ -29,9 +28,8 @@ TEST(DataTypeHistogramTest, BasicCount) {
 // Create a histogram of type SYNC_FREQ_HISTOGRAM for each model type. Nothing
 // should break.
 TEST(DataTypeHistogramTest, BasicFreq) {
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
-       i <= syncer::LAST_REAL_MODEL_TYPE; ++i) {
-    syncer::ModelType type = syncer::ModelTypeFromInt(i);
+  for (int i = FIRST_REAL_MODEL_TYPE; i <= LAST_REAL_MODEL_TYPE; ++i) {
+    ModelType type = ModelTypeFromInt(i);
 #define PER_DATA_TYPE_MACRO(type_str) \
     SYNC_FREQ_HISTOGRAM("Prefix" type_str "Suffix", \
                         base::TimeDelta::FromSeconds(1));
@@ -48,9 +46,8 @@ TEST(DataTypeHistogramTest, BasicEnum) {
     TYPE_2,
     TYPE_COUNT,
   };
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
-       i <= syncer::LAST_REAL_MODEL_TYPE; ++i) {
-    syncer::ModelType type = syncer::ModelTypeFromInt(i);
+  for (int i = FIRST_REAL_MODEL_TYPE; i <= LAST_REAL_MODEL_TYPE; ++i) {
+    ModelType type = ModelTypeFromInt(i);
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_ENUMERATION("Prefix" type_str "Suffix", \
                               (i % 2 ? TYPE_1 : TYPE_2), TYPE_COUNT);

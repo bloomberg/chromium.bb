@@ -67,7 +67,7 @@ struct SyncProtocolError {
   std::string error_description;
   std::string url;
   ClientAction action;
-  syncer::ModelTypeSet error_data_types;
+  ModelTypeSet error_data_types;
   SyncProtocolError();
   ~SyncProtocolError();
   DictionaryValue* ToValue() const;

@@ -27,7 +27,7 @@ class BaseTransaction {
  public:
   // Provide access to the underlying syncable objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;
-  syncer::Cryptographer* GetCryptographer() const;
+  Cryptographer* GetCryptographer() const;
 
   syncable::Directory* GetDirectory() const {
     return directory_;
@@ -45,7 +45,7 @@ class BaseTransaction {
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };
 
-syncer::ModelTypeSet GetEncryptedTypes(const syncer::BaseTransaction* trans);
+ModelTypeSet GetEncryptedTypes(const BaseTransaction* trans);
 
 }  // namespace syncer
 

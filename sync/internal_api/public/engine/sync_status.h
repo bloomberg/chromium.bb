@@ -30,7 +30,7 @@ struct SYNC_EXPORT SyncStatus {
   // Notifications counters updated by the actions in synapi.
   int notifications_received;
 
-  syncer::SyncProtocolError sync_protocol_error;
+  SyncProtocolError sync_protocol_error;
 
   // Number of encryption conflicts counted during most recent sync cycle.
   int encryption_conflicts;
@@ -81,12 +81,12 @@ struct SYNC_EXPORT SyncStatus {
   int useful_sync_cycles;
 
   // Encryption related.
-  syncer::ModelTypeSet encrypted_types;
+  ModelTypeSet encrypted_types;
   bool cryptographer_ready;
   bool crypto_has_pending_keys;
 
   // Per-datatype throttled status.
-  syncer::ModelTypeSet throttled_types;
+  ModelTypeSet throttled_types;
 
   // The unique identifer for this client.
   std::string unique_id;

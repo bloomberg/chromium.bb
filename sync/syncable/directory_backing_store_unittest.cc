@@ -287,8 +287,7 @@ std::map<int64, base::Time> GetExpectedMetaTimes() {
   for (std::map<int64, int64>::const_iterator it =
            expected_meta_proto_times.begin();
        it != expected_meta_proto_times.end(); ++it) {
-    expected_meta_times[it->first] =
-        syncer::ProtoTimeToTime(it->second);
+    expected_meta_times[it->first] = ProtoTimeToTime(it->second);
   }
   return expected_meta_times;
 }
@@ -328,8 +327,8 @@ std::map<int64, int64> GetMetaProtoTimes(sql::Connection *db) {
       << t1_expr << " and " << t2_expr
       << " (internal values: " << t1.ToInternalValue()
       << " and " << t2.ToInternalValue()
-      << ") (proto time: " << syncer::TimeToProtoTime(t1)
-      << " and " << syncer::TimeToProtoTime(t2)
+      << ") (proto time: " << TimeToProtoTime(t1)
+      << " and " << TimeToProtoTime(t2)
       << ") do not match";
 }
 
@@ -1952,25 +1951,25 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   // Check download_progress state (v75 migration)
   ASSERT_EQ(694,
-      dir_info.kernel_info.download_progress[syncer::BOOKMARKS]
+      dir_info.kernel_info.download_progress[BOOKMARKS]
       .timestamp_token_for_migration());
   ASSERT_FALSE(
-      dir_info.kernel_info.download_progress[syncer::BOOKMARKS]
+      dir_info.kernel_info.download_progress[BOOKMARKS]
       .has_token());
   ASSERT_EQ(32904,
-      dir_info.kernel_info.download_progress[syncer::BOOKMARKS]
+      dir_info.kernel_info.download_progress[BOOKMARKS]
       .data_type_id());
   ASSERT_FALSE(
-      dir_info.kernel_info.download_progress[syncer::THEMES]
+      dir_info.kernel_info.download_progress[THEMES]
       .has_timestamp_token_for_migration());
   ASSERT_TRUE(
-      dir_info.kernel_info.download_progress[syncer::THEMES]
+      dir_info.kernel_info.download_progress[THEMES]
       .has_token());
   ASSERT_TRUE(
-      dir_info.kernel_info.download_progress[syncer::THEMES]
+      dir_info.kernel_info.download_progress[THEMES]
       .token().empty());
   ASSERT_EQ(41210,
-      dir_info.kernel_info.download_progress[syncer::THEMES]
+      dir_info.kernel_info.download_progress[THEMES]
       .data_type_id());
 
   // Check metas

@@ -232,8 +232,7 @@ bool MutableEntry::Put(ProtoField field,
     if (update_unapplied_updates_index) {
       // Remove ourselves from unapplied_update_metahandles with our
       // old server type.
-      const syncer::ModelType old_server_type =
-          kernel_->GetServerModelType();
+      const ModelType old_server_type = kernel_->GetServerModelType();
       const int64 metahandle = kernel_->ref(META_HANDLE);
       size_t erase_count =
           dir()->kernel_->unapplied_update_metahandles[old_server_type]
@@ -247,8 +246,7 @@ bool MutableEntry::Put(ProtoField field,
     if (update_unapplied_updates_index) {
       // Add ourselves back into unapplied_update_metahandles with our
       // new server type.
-      const syncer::ModelType new_server_type =
-          kernel_->GetServerModelType();
+      const ModelType new_server_type = kernel_->GetServerModelType();
       const int64 metahandle = kernel_->ref(META_HANDLE);
       dir()->kernel_->unapplied_update_metahandles[new_server_type]
           .insert(metahandle);

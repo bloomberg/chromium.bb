@@ -30,11 +30,11 @@ class SessionStateTest : public testing::Test {};
 TEST_F(SessionStateTest, SyncSourceInfoToValue) {
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source =
       sync_pb::GetUpdatesCallerInfo::PERIODIC;
-  syncer::ModelTypePayloadMap types;
-  types[syncer::PREFERENCES] = "preferencespayload";
-  types[syncer::EXTENSIONS] = "";
+  ModelTypePayloadMap types;
+  types[PREFERENCES] = "preferencespayload";
+  types[EXTENSIONS] = "";
   scoped_ptr<DictionaryValue> expected_types_value(
-      syncer::ModelTypePayloadMapToValue(types));
+      ModelTypePayloadMapToValue(types));
 
   SyncSourceInfo source_info(updates_source, types);
 
@@ -57,16 +57,15 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
 
   const bool kIsShareUsable = true;
 
-  const syncer::ModelTypeSet initial_sync_ended(
-      syncer::BOOKMARKS, syncer::PREFERENCES);
+  const ModelTypeSet initial_sync_ended(BOOKMARKS, PREFERENCES);
   scoped_ptr<ListValue> expected_initial_sync_ended_value(
-      syncer::ModelTypeSetToValue(initial_sync_ended));
+      ModelTypeSetToValue(initial_sync_ended));
 
-  syncer::ModelTypePayloadMap download_progress_markers;
-  download_progress_markers[syncer::BOOKMARKS] = "test";
-  download_progress_markers[syncer::APPS] = "apps";
+  ModelTypePayloadMap download_progress_markers;
+  download_progress_markers[BOOKMARKS] = "test";
+  download_progress_markers[APPS] = "apps";
   scoped_ptr<DictionaryValue> expected_download_progress_markers_value(
-      syncer::ModelTypePayloadMapToValue(download_progress_markers));
+      ModelTypePayloadMapToValue(download_progress_markers));
 
   const bool kHasMoreToSync = false;
   const bool kIsSilenced = true;

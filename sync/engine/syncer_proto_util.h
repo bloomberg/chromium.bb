@@ -77,7 +77,7 @@ class SyncerProtoUtil {
   // EntitySpecifics is used as a filter for the GetUpdates message to tell
   // the server which datatypes to send back.  This adds a datatype so that
   // it's included in the filter.
-  static void AddToEntitySpecificDatatypesFilter(syncer::ModelType datatype,
+  static void AddToEntitySpecificDatatypesFilter(ModelType datatype,
       sync_pb::EntitySpecifics* filter);
 
   // Get a debug string representation of the client to server response.
@@ -113,7 +113,7 @@ class SyncerProtoUtil {
 
   // Post the message using the scm, and do some processing on the returned
   // headers. Decode the server response.
-  static bool PostAndProcessHeaders(syncer::ServerConnectionManager* scm,
+  static bool PostAndProcessHeaders(ServerConnectionManager* scm,
                                     sessions::SyncSession* session,
                                     const sync_pb::ClientToServerMessage& msg,
                                     sync_pb::ClientToServerResponse* response);
@@ -124,7 +124,7 @@ class SyncerProtoUtil {
   static void HandleThrottleError(
       const SyncProtocolError& error,
       const base::TimeTicks& throttled_until,
-      syncer::ThrottledDataTypeTracker* tracker,
+      ThrottledDataTypeTracker* tracker,
       sessions::SyncSession::Delegate* delegate);
 
   friend class SyncerProtoUtilTest;

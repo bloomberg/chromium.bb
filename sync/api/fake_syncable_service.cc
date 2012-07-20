@@ -11,7 +11,7 @@ namespace syncer {
 
 FakeSyncableService::FakeSyncableService()
     : syncing_(false),
-      type_(syncer::UNSPECIFIED) {}
+      type_(UNSPECIFIED) {}
 
 FakeSyncableService::~FakeSyncableService() {}
 
@@ -31,7 +31,7 @@ bool FakeSyncableService::syncing() const {
 
 // SyncableService implementation.
 SyncError FakeSyncableService::MergeDataAndStartSyncing(
-    syncer::ModelType type,
+    ModelType type,
     const SyncDataList& initial_sync_data,
     scoped_ptr<SyncChangeProcessor> sync_processor,
     scoped_ptr<SyncErrorFactory> sync_error_factory) {
@@ -43,13 +43,12 @@ SyncError FakeSyncableService::MergeDataAndStartSyncing(
   return merge_data_and_start_syncing_error_;
 }
 
-void FakeSyncableService::StopSyncing(syncer::ModelType type) {
+void FakeSyncableService::StopSyncing(ModelType type) {
   syncing_ = false;
   sync_processor_.reset();
 }
 
-SyncDataList FakeSyncableService::GetAllSyncData(
-    syncer::ModelType type) const {
+SyncDataList FakeSyncableService::GetAllSyncData(ModelType type) const {
   return SyncDataList();
 }
 

@@ -23,22 +23,20 @@ class NonBlockingInvalidationNotifier::Core
   // Called on parent thread.  |delegate_observer| should be
   // initialized.
   explicit Core(
-      const syncer::WeakHandle<SyncNotifierObserver>&
-          delegate_observer);
+      const WeakHandle<SyncNotifierObserver>& delegate_observer);
 
   // Helpers called on I/O thread.
   void Initialize(
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const std::string& initial_invalidation_state,
-      const syncer::WeakHandle<InvalidationStateTracker>&
-          invalidation_state_tracker,
+      const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
       const std::string& client_info);
   void Teardown();
   void SetUniqueId(const std::string& unique_id);
   void SetStateDeprecated(const std::string& state);
   void UpdateCredentials(const std::string& email, const std::string& token);
-  void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types);
+  void UpdateEnabledTypes(ModelTypeSet enabled_types);
 
   // SyncNotifierObserver implementation (all called on I/O thread by
   // InvalidationNotifier).
@@ -46,7 +44,7 @@ class NonBlockingInvalidationNotifier::Core
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const syncer::ModelTypePayloadMap& type_payloads,
+      const ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) OVERRIDE;
 
  private:
@@ -56,7 +54,7 @@ class NonBlockingInvalidationNotifier::Core
   ~Core();
 
   // The variables below should be used only on the I/O thread.
-  const syncer::WeakHandle<SyncNotifierObserver> delegate_observer_;
+  const WeakHandle<SyncNotifierObserver> delegate_observer_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
@@ -64,8 +62,7 @@ class NonBlockingInvalidationNotifier::Core
 };
 
 NonBlockingInvalidationNotifier::Core::Core(
-    const syncer::WeakHandle<SyncNotifierObserver>&
-        delegate_observer)
+    const WeakHandle<SyncNotifierObserver>& delegate_observer)
     : delegate_observer_(delegate_observer) {
   DCHECK(delegate_observer_.IsInitialized());
 }
@@ -77,8 +74,7 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
-    const syncer::WeakHandle<InvalidationStateTracker>&
-        invalidation_state_tracker,
+    const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info) {
   DCHECK(notifier_options.request_context_getter);
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
@@ -123,7 +119,7 @@ void NonBlockingInvalidationNotifier::Core::UpdateCredentials(
 }
 
 void NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes(
-    syncer::ModelTypeSet enabled_types) {
+    ModelTypeSet enabled_types) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateEnabledTypes(enabled_types);
 }
@@ -142,7 +138,7 @@ void NonBlockingInvalidationNotifier::Core::OnNotificationsDisabled(
 }
 
 void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
-    const syncer::ModelTypePayloadMap& type_payloads,
+    const ModelTypePayloadMap& type_payloads,
     IncomingNotificationSource source) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
@@ -155,13 +151,12 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
-    const syncer::WeakHandle<InvalidationStateTracker>&
+    const WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info)
         : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
           core_(
-              new Core(syncer::MakeWeakHandle(
-                  weak_ptr_factory_.GetWeakPtr()))),
+              new Core(MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()))),
           parent_task_runner_(
               base::ThreadTaskRunnerHandle::Get()),
           network_task_runner_(notifier_options.request_context_getter->
@@ -237,7 +232,7 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
 }
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
-    syncer::ModelTypeSet enabled_types) {
+    ModelTypeSet enabled_types) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
@@ -248,7 +243,7 @@ void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
 }
 
 void NonBlockingInvalidationNotifier::SendNotification(
-    syncer::ModelTypeSet changed_types) {
+    ModelTypeSet changed_types) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   // InvalidationClient doesn't implement SendNotification(), so no
   // need to forward on the call.
@@ -268,7 +263,7 @@ void NonBlockingInvalidationNotifier::OnNotificationsDisabled(
 }
 
 void NonBlockingInvalidationNotifier::OnIncomingNotification(
-        const syncer::ModelTypePayloadMap& type_payloads,
+        const ModelTypePayloadMap& type_payloads,
         IncomingNotificationSource source) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,

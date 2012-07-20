@@ -221,7 +221,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     }
 
     // We manually merge nigori data.
-    if (entry.GetModelType() == syncer::NIGORI) {
+    if (entry.GetModelType() == NIGORI) {
       // Create a new set of specifics based on the server specifics (which
       // preserves their encryption keys).
       sync_pb::EntitySpecifics specifics =

@@ -29,7 +29,7 @@ class ReadNode : public BaseNode {
   // BaseNode implementation.
   virtual InitByLookupResult InitByIdLookup(int64 id) OVERRIDE;
   virtual InitByLookupResult InitByClientTagLookup(
-      syncer::ModelType model_type,
+      ModelType model_type,
       const std::string& tag) OVERRIDE;
 
   // There is always a root node, so this can't fail.  The root node is

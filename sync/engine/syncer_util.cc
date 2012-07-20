@@ -251,7 +251,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
       !cryptographer->CanDecrypt(specifics.encrypted())) {
     // We can't decrypt this node yet.
     DVLOG(1) << "Received an undecryptable "
-             << syncer::ModelTypeToString(entry->GetServerModelType())
+             << ModelTypeToString(entry->GetServerModelType())
              << " update, returning encryption_conflict.";
     return CONFLICT_ENCRYPTION;
   } else if (specifics.has_password() &&
@@ -303,11 +303,11 @@ UpdateAttemptResponse AttemptToUpdateEntry(
 
   if (specifics.has_encrypted()) {
     DVLOG(2) << "Received a decryptable "
-             << syncer::ModelTypeToString(entry->GetServerModelType())
+             << ModelTypeToString(entry->GetServerModelType())
              << " update, applying normally.";
   } else {
     DVLOG(2) << "Received an unencrypted "
-             << syncer::ModelTypeToString(entry->GetServerModelType())
+             << ModelTypeToString(entry->GetServerModelType())
              << " update, applying normally.";
   }
 
@@ -596,7 +596,7 @@ VerifyResult VerifyUpdateConsistency(
     syncable::MutableEntry* target,
     const bool deleted,
     const bool is_directory,
-    syncer::ModelType model_type) {
+    ModelType model_type) {
 
   CHECK(target->good());
   const syncable::Id& update_id = SyncableIdFromProto(update.id_string());
@@ -605,7 +605,7 @@ VerifyResult VerifyUpdateConsistency(
   if (deleted)
     return VERIFY_SUCCESS;
 
-  if (model_type == syncer::UNSPECIFIED) {
+  if (model_type == UNSPECIFIED) {
     // This update is to an item of a datatype we don't recognize. The server
     // shouldn't have sent it to us.  Throw it on the ground.
     return VERIFY_SKIP;

@@ -21,7 +21,7 @@ namespace syncable {
 
 bool ProcessUnsyncedChangesForEncryption(
     WriteTransaction* const trans,
-    syncer::Cryptographer* cryptographer) {
+    Cryptographer* cryptographer) {
   DCHECK(cryptographer->is_ready());
   // Get list of all datatypes with unsynced changes. It's possible that our
   // local changes need to be encrypted if encryption for that datatype was
@@ -69,7 +69,7 @@ bool EntryNeedsEncryption(ModelTypeSet encrypted_types,
                           const Entry& entry) {
   if (!entry.Get(UNIQUE_SERVER_TAG).empty())
     return false;  // We don't encrypt unique server nodes.
-  syncer::ModelType type = entry.GetModelType();
+  ModelType type = entry.GetModelType();
   if (type == PASSWORDS || type == NIGORI)
     return false;
   // Checking NON_UNIQUE_NAME is not necessary for the correctness of encrypting
@@ -93,7 +93,7 @@ bool SpecificsNeedsEncryption(ModelTypeSet encrypted_types,
 // Mainly for testing.
 bool VerifyDataTypeEncryptionForTest(
     BaseTransaction* const trans,
-    syncer::Cryptographer* cryptographer,
+    Cryptographer* cryptographer,
     ModelType type,
     bool is_encrypted) {
   if (type == PASSWORDS || type == NIGORI) {
@@ -157,14 +157,13 @@ bool VerifyDataTypeEncryptionForTest(
 }
 
 bool UpdateEntryWithEncryption(
-    syncer::Cryptographer* cryptographer,
+    Cryptographer* cryptographer,
     const sync_pb::EntitySpecifics& new_specifics,
     syncable::MutableEntry* entry) {
-  syncer::ModelType type = syncer::GetModelTypeFromSpecifics(new_specifics);
-  DCHECK_GE(type, syncer::FIRST_REAL_MODEL_TYPE);
+  ModelType type = GetModelTypeFromSpecifics(new_specifics);
+  DCHECK_GE(type, FIRST_REAL_MODEL_TYPE);
   const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
-  const syncer::ModelTypeSet encrypted_types =
-      cryptographer->GetEncryptedTypes();
+  const ModelTypeSet encrypted_types = cryptographer->GetEncryptedTypes();
   // It's possible the nigori lost the set of encrypted types. If the current
   // specifics are already encrypted, we want to ensure we continue encrypting.
   bool was_encrypted = old_specifics.has_encrypted();
@@ -187,7 +186,7 @@ bool UpdateEntryWithEncryption(
                                          base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                          &info);
       DVLOG(2) << "Encrypting specifics of type "
-               << syncer::ModelTypeToString(type)
+               << ModelTypeToString(type)
                << " with content: "
                << info;
     }
@@ -195,18 +194,18 @@ bool UpdateEntryWithEncryption(
     // encrypted. The first time we encrypt a node we start from scratch, hence
     // removing all the unencrypted data, but from then on we only want to
     // update the node if the data changes or the encryption key changes.
-    if (syncer::GetModelTypeFromSpecifics(old_specifics) == type &&
+    if (GetModelTypeFromSpecifics(old_specifics) == type &&
         was_encrypted) {
       generated_specifics.CopyFrom(old_specifics);
     } else {
-      syncer::AddDefaultFieldValue(type, &generated_specifics);
+      AddDefaultFieldValue(type, &generated_specifics);
     }
     // Does not change anything if underlying encrypted blob was already up
     // to date and encrypted with the default key.
     if (!cryptographer->Encrypt(new_specifics,
                                 generated_specifics.mutable_encrypted())) {
       NOTREACHED() << "Could not encrypt data for node of type "
-                   << syncer::ModelTypeToString(type);
+                   << ModelTypeToString(type);
       return false;
     }
   }
@@ -221,7 +220,7 @@ bool UpdateEntryWithEncryption(
   if (!encrypted_without_overwriting_name &&
       old_specifics.SerializeAsString() ==
           generated_specifics.SerializeAsString()) {
-    DVLOG(2) << "Specifics of type " << syncer::ModelTypeToString(type)
+    DVLOG(2) << "Specifics of type " << ModelTypeToString(type)
              << " already match, dropping change.";
     return true;
   }
@@ -231,7 +230,7 @@ bool UpdateEntryWithEncryption(
     entry->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
     // For bookmarks we actually put bogus data into the unencrypted specifics,
     // else the server will try to do it for us.
-    if (type == syncer::BOOKMARKS) {
+    if (type == BOOKMARKS) {
       sync_pb::BookmarkSpecifics* bookmark_specifics =
           generated_specifics.mutable_bookmark();
       if (!entry->Get(syncable::IS_DIR))
@@ -241,7 +240,7 @@ bool UpdateEntryWithEncryption(
   }
   entry->Put(syncable::SPECIFICS, generated_specifics);
   DVLOG(1) << "Overwriting specifics of type "
-           << syncer::ModelTypeToString(type)
+           << ModelTypeToString(type)
            << " and marking for syncing.";
   syncable::MarkForSyncing(entry);
   return true;

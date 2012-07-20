@@ -40,7 +40,7 @@ class SyncNotifierFactory {
   const std::string client_info_;
   const InvalidationVersionMap initial_max_invalidation_versions_;
   const std::string initial_invalidation_state_;
-  const syncer::WeakHandle<InvalidationStateTracker>
+  const WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
 };
 

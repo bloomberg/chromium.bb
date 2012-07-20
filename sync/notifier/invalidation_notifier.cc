@@ -20,8 +20,7 @@ InvalidationNotifier::InvalidationNotifier(
     scoped_ptr<notifier::PushClient> push_client,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
-    const syncer::WeakHandle<InvalidationStateTracker>&
-        invalidation_state_tracker,
+    const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info)
     : state_(STOPPED),
       initial_max_invalidation_versions_(initial_max_invalidation_versions),
@@ -86,12 +85,11 @@ void InvalidationNotifier::UpdateCredentials(
   invalidation_client_.UpdateCredentials(email, token);
 }
 
-void InvalidationNotifier::UpdateEnabledTypes(
-    syncer::ModelTypeSet enabled_types) {
+void InvalidationNotifier::UpdateEnabledTypes(ModelTypeSet enabled_types) {
   DCHECK(CalledOnValidThread());
   CHECK(!invalidation_client_id_.empty());
   ObjectIdSet ids;
-  for (syncer::ModelTypeSet::Iterator it = enabled_types.First(); it.Good();
+  for (ModelTypeSet::Iterator it = enabled_types.First(); it.Good();
        it.Inc()) {
     invalidation::ObjectId id;
     if (!RealModelTypeToObjectId(it.Get(), &id)) {
@@ -103,8 +101,7 @@ void InvalidationNotifier::UpdateEnabledTypes(
   invalidation_client_.RegisterIds(ids);
 }
 
-void InvalidationNotifier::SendNotification(
-    syncer::ModelTypeSet changed_types) {
+void InvalidationNotifier::SendNotification(ModelTypeSet changed_types) {
   DCHECK(CalledOnValidThread());
   // Do nothing.
 }
@@ -112,10 +109,10 @@ void InvalidationNotifier::SendNotification(
 void InvalidationNotifier::OnInvalidate(const ObjectIdPayloadMap& id_payloads) {
   DCHECK(CalledOnValidThread());
   // TODO(dcheng): This should probably be a utility function somewhere...
-  syncer::ModelTypePayloadMap type_payloads;
+  ModelTypePayloadMap type_payloads;
   for (ObjectIdPayloadMap::const_iterator it = id_payloads.begin();
        it != id_payloads.end(); ++it) {
-    syncer::ModelType model_type;
+    ModelType model_type;
     if (!ObjectIdToRealModelType(it->first, &model_type)) {
       DLOG(WARNING) << "Invalid object ID: " << ObjectIdToString(it->first);
       continue;
@@ -124,8 +121,7 @@ void InvalidationNotifier::OnInvalidate(const ObjectIdPayloadMap& id_payloads) {
   }
   FOR_EACH_OBSERVER(
       SyncNotifierObserver, observers_,
-      OnIncomingNotification(type_payloads,
-                             syncer::REMOTE_NOTIFICATION));
+      OnIncomingNotification(type_payloads, REMOTE_NOTIFICATION));
 }
 
 void InvalidationNotifier::OnNotificationsEnabled() {

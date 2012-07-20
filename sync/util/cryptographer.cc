@@ -309,12 +309,12 @@ Cryptographer::UpdateResult Cryptographer::Update(
 }
 
 // Static
-syncer::ModelTypeSet Cryptographer::SensitiveTypes() {
+ModelTypeSet Cryptographer::SensitiveTypes() {
   // Both of these have their own encryption schemes, but we include them
   // anyways.
-  syncer::ModelTypeSet types;
-  types.Put(syncer::PASSWORDS);
-  types.Put(syncer::NIGORI);
+  ModelTypeSet types;
+  types.Put(PASSWORDS);
+  types.Put(NIGORI);
   return types;
 }
 
@@ -325,33 +325,33 @@ void Cryptographer::UpdateEncryptedTypesFromNigori(
     return;
   }
 
-  syncer::ModelTypeSet encrypted_types(SensitiveTypes());
+  ModelTypeSet encrypted_types(SensitiveTypes());
   if (nigori.encrypt_bookmarks())
-    encrypted_types.Put(syncer::BOOKMARKS);
+    encrypted_types.Put(BOOKMARKS);
   if (nigori.encrypt_preferences())
-    encrypted_types.Put(syncer::PREFERENCES);
+    encrypted_types.Put(PREFERENCES);
   if (nigori.encrypt_autofill_profile())
-    encrypted_types.Put(syncer::AUTOFILL_PROFILE);
+    encrypted_types.Put(AUTOFILL_PROFILE);
   if (nigori.encrypt_autofill())
-    encrypted_types.Put(syncer::AUTOFILL);
+    encrypted_types.Put(AUTOFILL);
   if (nigori.encrypt_themes())
-    encrypted_types.Put(syncer::THEMES);
+    encrypted_types.Put(THEMES);
   if (nigori.encrypt_typed_urls())
-    encrypted_types.Put(syncer::TYPED_URLS);
+    encrypted_types.Put(TYPED_URLS);
   if (nigori.encrypt_extension_settings())
-    encrypted_types.Put(syncer::EXTENSION_SETTINGS);
+    encrypted_types.Put(EXTENSION_SETTINGS);
   if (nigori.encrypt_extensions())
-    encrypted_types.Put(syncer::EXTENSIONS);
+    encrypted_types.Put(EXTENSIONS);
   if (nigori.encrypt_search_engines())
-    encrypted_types.Put(syncer::SEARCH_ENGINES);
+    encrypted_types.Put(SEARCH_ENGINES);
   if (nigori.encrypt_sessions())
-    encrypted_types.Put(syncer::SESSIONS);
+    encrypted_types.Put(SESSIONS);
   if (nigori.encrypt_app_settings())
-    encrypted_types.Put(syncer::APP_SETTINGS);
+    encrypted_types.Put(APP_SETTINGS);
   if (nigori.encrypt_apps())
-    encrypted_types.Put(syncer::APPS);
+    encrypted_types.Put(APPS);
   if (nigori.encrypt_app_notifications())
-    encrypted_types.Put(syncer::APP_NOTIFICATIONS);
+    encrypted_types.Put(APP_NOTIFICATIONS);
 
   // Note: the initial version with encryption did not support the
   // encrypt_everything field. If anything more than the sensitive types were
@@ -369,38 +369,38 @@ void Cryptographer::UpdateNigoriFromEncryptedTypes(
     sync_pb::NigoriSpecifics* nigori) const {
   nigori->set_encrypt_everything(encrypt_everything_);
   nigori->set_encrypt_bookmarks(
-      encrypted_types_.Has(syncer::BOOKMARKS));
+      encrypted_types_.Has(BOOKMARKS));
   nigori->set_encrypt_preferences(
-      encrypted_types_.Has(syncer::PREFERENCES));
+      encrypted_types_.Has(PREFERENCES));
   nigori->set_encrypt_autofill_profile(
-      encrypted_types_.Has(syncer::AUTOFILL_PROFILE));
-  nigori->set_encrypt_autofill(encrypted_types_.Has(syncer::AUTOFILL));
-  nigori->set_encrypt_themes(encrypted_types_.Has(syncer::THEMES));
+      encrypted_types_.Has(AUTOFILL_PROFILE));
+  nigori->set_encrypt_autofill(encrypted_types_.Has(AUTOFILL));
+  nigori->set_encrypt_themes(encrypted_types_.Has(THEMES));
   nigori->set_encrypt_typed_urls(
-      encrypted_types_.Has(syncer::TYPED_URLS));
+      encrypted_types_.Has(TYPED_URLS));
   nigori->set_encrypt_extension_settings(
-      encrypted_types_.Has(syncer::EXTENSION_SETTINGS));
+      encrypted_types_.Has(EXTENSION_SETTINGS));
   nigori->set_encrypt_extensions(
-      encrypted_types_.Has(syncer::EXTENSIONS));
+      encrypted_types_.Has(EXTENSIONS));
   nigori->set_encrypt_search_engines(
-      encrypted_types_.Has(syncer::SEARCH_ENGINES));
-  nigori->set_encrypt_sessions(encrypted_types_.Has(syncer::SESSIONS));
+      encrypted_types_.Has(SEARCH_ENGINES));
+  nigori->set_encrypt_sessions(encrypted_types_.Has(SESSIONS));
   nigori->set_encrypt_app_settings(
-      encrypted_types_.Has(syncer::APP_SETTINGS));
-  nigori->set_encrypt_apps(encrypted_types_.Has(syncer::APPS));
+      encrypted_types_.Has(APP_SETTINGS));
+  nigori->set_encrypt_apps(encrypted_types_.Has(APPS));
   nigori->set_encrypt_app_notifications(
-      encrypted_types_.Has(syncer::APP_NOTIFICATIONS));
+      encrypted_types_.Has(APP_NOTIFICATIONS));
 }
 
 void Cryptographer::set_encrypt_everything() {
   if (encrypt_everything_) {
-    DCHECK(encrypted_types_.Equals(syncer::ModelTypeSet::All()));
+    DCHECK(encrypted_types_.Equals(ModelTypeSet::All()));
     return;
   }
   encrypt_everything_ = true;
   // Change |encrypted_types_| directly to avoid sending more than one
   // notification.
-  encrypted_types_ = syncer::ModelTypeSet::All();
+  encrypted_types_ = ModelTypeSet::All();
   EmitEncryptedTypesChangedNotification();
 }
 
@@ -408,17 +408,15 @@ bool Cryptographer::encrypt_everything() const {
   return encrypt_everything_;
 }
 
-syncer::ModelTypeSet Cryptographer::GetEncryptedTypes() const {
+ModelTypeSet Cryptographer::GetEncryptedTypes() const {
   return encrypted_types_;
 }
 
-void Cryptographer::MergeEncryptedTypesForTest(
-    syncer::ModelTypeSet encrypted_types) {
+void Cryptographer::MergeEncryptedTypesForTest(ModelTypeSet encrypted_types) {
   MergeEncryptedTypes(encrypted_types);
 }
 
-void Cryptographer::MergeEncryptedTypes(
-    syncer::ModelTypeSet encrypted_types) {
+void Cryptographer::MergeEncryptedTypes(ModelTypeSet encrypted_types) {
   if (encrypted_types_.HasAll(encrypted_types)) {
     return;
   }

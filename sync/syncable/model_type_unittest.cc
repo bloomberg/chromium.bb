@@ -17,8 +17,7 @@ namespace {
 class ModelTypeTest : public testing::Test {};
 
 TEST_F(ModelTypeTest, ModelTypeToValue) {
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
-       i < syncer::MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
     base::ExpectStringValue(ModelTypeToString(model_type),
                             ModelTypeToValue(model_type));
@@ -30,8 +29,7 @@ TEST_F(ModelTypeTest, ModelTypeToValue) {
 }
 
 TEST_F(ModelTypeTest, ModelTypeFromValue) {
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
-       i < syncer::MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
     scoped_ptr<StringValue> value(ModelTypeToValue(model_type));
     EXPECT_EQ(model_type, ModelTypeFromValue(*value));
@@ -39,7 +37,7 @@ TEST_F(ModelTypeTest, ModelTypeFromValue) {
 }
 
 TEST_F(ModelTypeTest, ModelTypeSetToValue) {
-  const ModelTypeSet model_types(syncer::BOOKMARKS, syncer::APPS);
+  const ModelTypeSet model_types(BOOKMARKS, APPS);
 
   scoped_ptr<ListValue> value(ModelTypeSetToValue(model_types));
   EXPECT_EQ(2u, value->GetSize());

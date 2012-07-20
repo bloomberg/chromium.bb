@@ -29,6 +29,6 @@ bool VlogIsOnForLocation(const tracked_objects::Location& from_here,
       VLOG_LOC_STREAM(from_here, verbose_level),                        \
       ::logging::DEBUG_MODE &&                                          \
       (VLOG_IS_ON(verbose_level) ||                                     \
-       ::syncer::VlogIsOnForLocation(from_here, verbose_level)))  \
+       ::syncer::VlogIsOnForLocation(from_here, verbose_level)))        \
 
 #endif  // SYNC_UTIL_LOGGING_H_

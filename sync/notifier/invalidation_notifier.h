@@ -42,7 +42,7 @@ class InvalidationNotifier
       scoped_ptr<notifier::PushClient> push_client,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const std::string& initial_invalidation_state,
-      const syncer::WeakHandle<InvalidationStateTracker>&
+      const WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       const std::string& client_info);
 
@@ -55,10 +55,8 @@ class InvalidationNotifier
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void UpdateEnabledTypes(
-      syncer::ModelTypeSet enabled_types) OVERRIDE;
-  virtual void SendNotification(
-      syncer::ModelTypeSet changed_types) OVERRIDE;
+  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) OVERRIDE;
+  virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
 
   // ChromeInvalidationClient::Listener implementation.
   virtual void OnInvalidate(const ObjectIdPayloadMap& id_payloads) OVERRIDE;
@@ -82,7 +80,7 @@ class InvalidationNotifier
   const InvalidationVersionMap initial_max_invalidation_versions_;
 
   // Passed to |invalidation_client_|.
-  const syncer::WeakHandle<InvalidationStateTracker>
+  const WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
 
   // Passed to |invalidation_client_|.

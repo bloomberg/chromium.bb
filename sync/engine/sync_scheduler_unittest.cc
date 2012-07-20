@@ -99,10 +99,10 @@ class SyncSchedulerTest : public testing::Test {
     delay_ = NULL;
 
     ModelSafeRoutingInfo routing_info;
-    routing_info[syncer::BOOKMARKS] = GROUP_UI;
-    routing_info[syncer::AUTOFILL] = GROUP_DB;
-    routing_info[syncer::THEMES] = GROUP_UI;
-    routing_info[syncer::NIGORI] = GROUP_PASSIVE;
+    routing_info[BOOKMARKS] = GROUP_UI;
+    routing_info[AUTOFILL] = GROUP_DB;
+    routing_info[THEMES] = GROUP_UI;
+    routing_info[NIGORI] = GROUP_PASSIVE;
 
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
@@ -191,9 +191,9 @@ class SyncSchedulerTest : public testing::Test {
   // payload values.
   bool CompareModelTypeSetToModelTypePayloadMap(
       ModelTypeSet lhs,
-      const syncer::ModelTypePayloadMap& rhs) {
+      const ModelTypePayloadMap& rhs) {
     size_t count = 0;
-    for (syncer::ModelTypePayloadMap::const_iterator i = rhs.begin();
+    for (ModelTypePayloadMap::const_iterator i = rhs.begin();
          i != rhs.end(); ++i, ++count) {
       if (!lhs.Has(i->first))
         return false;
@@ -255,7 +255,7 @@ ACTION(QuitLoopNowAction) {
 // Test nudge scheduling.
 TEST_F(SyncSchedulerTest, Nudge) {
   SyncShareRecords records;
-  ModelTypeSet model_types(syncer::BOOKMARKS);
+  ModelTypeSet model_types(BOOKMARKS);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
@@ -278,8 +278,8 @@ TEST_F(SyncSchedulerTest, Nudge) {
 
   // Make sure a second, later, nudge is unaffected by first (no coalescing).
   SyncShareRecords records2;
-  model_types.Remove(syncer::BOOKMARKS);
-  model_types.Put(syncer::AUTOFILL);
+  model_types.Remove(BOOKMARKS);
+  model_types.Put(AUTOFILL);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&records2))));
@@ -298,7 +298,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
 // errors.
 TEST_F(SyncSchedulerTest, Config) {
   SyncShareRecords records;
-  const ModelTypeSet model_types(syncer::BOOKMARKS);
+  const ModelTypeSet model_types(BOOKMARKS);
 
   EXPECT_CALL(*syncer(),
               SyncShare(_,_,_))
@@ -331,7 +331,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
   SyncShareRecords records;
-  const ModelTypeSet model_types(syncer::BOOKMARKS);
+  const ModelTypeSet model_types(BOOKMARKS);
 
   EXPECT_CALL(*syncer(),
               SyncShare(_,_,_))
@@ -368,7 +368,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
 // Issue a nudge when the config has failed. Make sure both the config and
 // nudge are executed.
 TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
-  const ModelTypeSet model_types(syncer::BOOKMARKS);
+  const ModelTypeSet model_types(BOOKMARKS);
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(50)));
@@ -433,10 +433,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&r))));
-  const ModelTypeSet
-      types1(syncer::BOOKMARKS),
-      types2(syncer::AUTOFILL),
-      types3(syncer::THEMES);
+  const ModelTypeSet types1(BOOKMARKS), types2(AUTOFILL), types3(THEMES);
   TimeDelta delay = zero();
   TimeTicks optimal_time = TimeTicks::Now() + delay;
   scheduler()->ScheduleNudgeAsync(
@@ -477,8 +474,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescingWithDifferentTimings) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&r))));
-  syncer::ModelTypeSet types1(syncer::BOOKMARKS),
-      types2(syncer::AUTOFILL), types3;
+  ModelTypeSet types1(BOOKMARKS), types2(AUTOFILL), types3;
 
   // Create a huge time delay.
   TimeDelta delay = TimeDelta::FromDays(1);
@@ -509,8 +505,8 @@ TEST_F(SyncSchedulerTest, NudgeWithPayloads) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   SyncShareRecords records;
-  syncer::ModelTypePayloadMap model_types_with_payloads;
-  model_types_with_payloads[syncer::BOOKMARKS] = "test";
+  ModelTypePayloadMap model_types_with_payloads;
+  model_types_with_payloads[BOOKMARKS] = "test";
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
@@ -529,8 +525,8 @@ TEST_F(SyncSchedulerTest, NudgeWithPayloads) {
 
   // Make sure a second, later, nudge is unaffected by first (no coalescing).
   SyncShareRecords records2;
-  model_types_with_payloads.erase(syncer::BOOKMARKS);
-  model_types_with_payloads[syncer::AUTOFILL] = "test2";
+  model_types_with_payloads.erase(BOOKMARKS);
+  model_types_with_payloads[AUTOFILL] = "test2";
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&records2))));
@@ -552,10 +548,10 @@ TEST_F(SyncSchedulerTest, NudgeWithPayloadsCoalescing) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&r))));
-  syncer::ModelTypePayloadMap types1, types2, types3;
-  types1[syncer::BOOKMARKS] = "test1";
-  types2[syncer::AUTOFILL] = "test2";
-  types3[syncer::THEMES] = "test3";
+  ModelTypePayloadMap types1, types2, types3;
+  types1[BOOKMARKS] = "test1";
+  types2[AUTOFILL] = "test2";
+  types3[THEMES] = "test3";
   TimeDelta delay = zero();
   TimeTicks optimal_time = TimeTicks::Now() + delay;
   scheduler()->ScheduleNudgeWithPayloadsAsync(
@@ -566,9 +562,9 @@ TEST_F(SyncSchedulerTest, NudgeWithPayloadsCoalescing) {
 
   ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
-  syncer::ModelTypePayloadMap coalesced_types;
-  syncer::CoalescePayloads(&coalesced_types, types1);
-  syncer::CoalescePayloads(&coalesced_types, types2);
+  ModelTypePayloadMap coalesced_types;
+  CoalescePayloads(&coalesced_types, types1);
+  CoalescePayloads(&coalesced_types, types2);
   EXPECT_EQ(coalesced_types, r.snapshots[0].source().types);
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0].source().updates_source);
@@ -674,7 +670,7 @@ TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   EXPECT_EQ(delay1, scheduler()->GetSessionsCommitDelay());
-  const ModelTypeSet model_types(syncer::BOOKMARKS);
+  const ModelTypeSet model_types(BOOKMARKS);
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
   RunLoop();
@@ -716,7 +712,7 @@ TEST_F(SyncSchedulerTest, HasMoreToSyncThenFails) {
 // Test that no syncing occurs when throttled (although CleanupDisabledTypes
 // is allowed).
 TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
-  const ModelTypeSet types(syncer::BOOKMARKS);
+  const ModelTypeSet types(BOOKMARKS);
   TimeDelta poll(TimeDelta::FromMilliseconds(5));
   TimeDelta throttle(TimeDelta::FromMinutes(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
@@ -784,13 +780,13 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
 
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
 
-  const ModelTypeSet nudge_types(syncer::AUTOFILL);
+  const ModelTypeSet nudge_types(AUTOFILL);
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
 
-  const ModelTypeSet config_types(syncer::BOOKMARKS);
+  const ModelTypeSet config_types(BOOKMARKS);
 
   CallbackCounter counter;
   ConfigurationParams params(
@@ -865,7 +861,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailDownloadTwice) {
 TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   SyncShareRecords r;
   TimeDelta poll(TimeDelta::FromMilliseconds(5));
-  const ModelTypeSet types(syncer::BOOKMARKS);
+  const ModelTypeSet types(BOOKMARKS);
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
@@ -1088,7 +1084,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
       .WillOnce(Invoke(sessions::test_util::SimulateSuccess));
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
 
-  syncer::ModelTypeSet model_types(syncer::BOOKMARKS);
+  ModelTypeSet model_types(BOOKMARKS);
   CallbackCounter counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION,

@@ -30,7 +30,7 @@ class SyncNotifierObserver {
   // Called when a notification is received.  The per-type payloads
   // are in |type_payloads| and the source is in |source|.
   virtual void OnIncomingNotification(
-      const syncer::ModelTypePayloadMap& type_payloads,
+      const ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) = 0;
 
  protected:

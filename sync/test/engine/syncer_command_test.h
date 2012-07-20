@@ -31,7 +31,7 @@ using ::testing::NiceMock;
 
 namespace syncer {
 
-class MockDebugInfoGetter : public syncer::sessions::DebugInfoGetter {
+class MockDebugInfoGetter : public sessions::DebugInfoGetter {
  public:
   MockDebugInfoGetter();
   virtual ~MockDebugInfoGetter();
@@ -100,7 +100,7 @@ class SyncerCommandTestBase : public testing::Test,
 
   // Lazily create a session requesting all datatypes with no payload.
   sessions::SyncSession* session() {
-    syncer::ModelTypePayloadMap types =
+    ModelTypePayloadMap types =
         ModelSafeRoutingInfoToPayloadMap(routing_info_, std::string());
     return session(sessions::SyncSourceInfo(types));
   }

@@ -16,13 +16,10 @@
 #include "sync/internal_api/public/http_post_provider_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::TimeDelta;
-using syncer::HttpResponse;
-using syncer::ServerConnectionManager;
-using syncer::ScopedServerStatusWatcher;
-
 namespace syncer {
 namespace {
+
+using base::TimeDelta;
 
 class BlockingHttpPost : public HttpPostProviderInterface {
  public:

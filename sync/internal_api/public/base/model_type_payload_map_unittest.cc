@@ -43,30 +43,30 @@ TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {
 }
 
 TEST_F(ModelTypePayloadMapTest, CoalescePayloads) {
-  syncer::ModelTypePayloadMap original;
+  ModelTypePayloadMap original;
   std::string empty_payload;
   std::string payload1 = "payload1";
   std::string payload2 = "payload2";
   std::string payload3 = "payload3";
-  original[syncer::BOOKMARKS] = empty_payload;
-  original[syncer::PASSWORDS] = payload1;
-  original[syncer::AUTOFILL] = payload2;
-  original[syncer::THEMES] = payload3;
+  original[BOOKMARKS] = empty_payload;
+  original[PASSWORDS] = payload1;
+  original[AUTOFILL] = payload2;
+  original[THEMES] = payload3;
 
-  syncer::ModelTypePayloadMap update;
-  update[syncer::BOOKMARKS] = empty_payload;  // Same.
-  update[syncer::PASSWORDS] = empty_payload;  // Overwrite with empty.
-  update[syncer::AUTOFILL] = payload1;        // Overwrite with non-empty.
-  update[syncer::SESSIONS] = payload2;        // New.
+  ModelTypePayloadMap update;
+  update[BOOKMARKS] = empty_payload;  // Same.
+  update[PASSWORDS] = empty_payload;  // Overwrite with empty.
+  update[AUTOFILL] = payload1;        // Overwrite with non-empty.
+  update[SESSIONS] = payload2;        // New.
   // Themes untouched.
 
   CoalescePayloads(&original, update);
   ASSERT_EQ(5U, original.size());
-  EXPECT_EQ(empty_payload, original[syncer::BOOKMARKS]);
-  EXPECT_EQ(payload1, original[syncer::PASSWORDS]);
-  EXPECT_EQ(payload1, original[syncer::AUTOFILL]);
-  EXPECT_EQ(payload2, original[syncer::SESSIONS]);
-  EXPECT_EQ(payload3, original[syncer::THEMES]);
+  EXPECT_EQ(empty_payload, original[BOOKMARKS]);
+  EXPECT_EQ(payload1, original[PASSWORDS]);
+  EXPECT_EQ(payload1, original[AUTOFILL]);
+  EXPECT_EQ(payload2, original[SESSIONS]);
+  EXPECT_EQ(payload3, original[THEMES]);
 }
 
 }  // namespace

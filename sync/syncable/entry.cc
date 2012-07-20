@@ -64,7 +64,7 @@ const string& Entry::Get(StringField field) const {
   return kernel_->ref(field);
 }
 
-syncer::ModelType Entry::GetServerModelType() const {
+ModelType Entry::GetServerModelType() const {
   ModelType specifics_type = kernel_->GetServerModelType();
   if (specifics_type != UNSPECIFIED)
     return specifics_type;
@@ -81,7 +81,7 @@ syncer::ModelType Entry::GetServerModelType() const {
   return UNSPECIFIED;
 }
 
-syncer::ModelType Entry::GetModelType() const {
+ModelType Entry::GetModelType() const {
   ModelType specifics_type = GetModelTypeFromSpecifics(Get(SPECIFICS));
   if (specifics_type != UNSPECIFIED)
     return specifics_type;
@@ -111,8 +111,7 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
   }
   for ( ; i < TIME_FIELDS_END; ++i) {
     os << g_metas_columns[i].name << ": "
-       << syncer::GetTimeDebugString(
-           kernel->ref(static_cast<TimeField>(i))) << ", ";
+       << GetTimeDebugString(kernel->ref(static_cast<TimeField>(i))) << ", ";
   }
   for ( ; i < ID_FIELDS_END; ++i) {
     os << g_metas_columns[i].name << ": "

@@ -30,8 +30,7 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   virtual ~ModelChangingSyncerCommand() { }
 
   // SyncerCommand implementation. Sets work_session to session.
-  virtual syncer::SyncerError ExecuteImpl(
-      sessions::SyncSession* session) OVERRIDE;
+  virtual SyncerError ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
   // Wrapper so implementations don't worry about storing work_session.
   SyncerError StartChangingModel() {

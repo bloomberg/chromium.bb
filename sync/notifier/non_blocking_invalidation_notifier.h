@@ -37,7 +37,7 @@ class NonBlockingInvalidationNotifier
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const std::string& initial_invalidation_state,
-      const syncer::WeakHandle<InvalidationStateTracker>&
+      const WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       const std::string& client_info);
 
@@ -50,17 +50,15 @@ class NonBlockingInvalidationNotifier
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void UpdateEnabledTypes(
-      syncer::ModelTypeSet enabled_types) OVERRIDE;
-  virtual void SendNotification(
-      syncer::ModelTypeSet changed_types) OVERRIDE;
+  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) OVERRIDE;
+  virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
 
   // SyncNotifierObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const syncer::ModelTypePayloadMap& type_payloads,
+      const ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) OVERRIDE;
 
  private:

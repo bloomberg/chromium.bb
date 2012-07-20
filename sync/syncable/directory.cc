@@ -108,8 +108,7 @@ const FilePath::CharType Directory::kSyncDatabaseFilename[] =
 void Directory::InitKernelForTest(
     const std::string& name,
     DirectoryChangeDelegate* delegate,
-    const syncer::WeakHandle<TransactionObserver>&
-        transaction_observer) {
+    const WeakHandle<TransactionObserver>& transaction_observer) {
   DCHECK(!kernel_);
   kernel_ = new Kernel(name, KernelLoadInfo(), delegate, transaction_observer);
 }
@@ -140,8 +139,7 @@ Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 Directory::Kernel::Kernel(
     const std::string& name,
     const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
-    const syncer::WeakHandle<TransactionObserver>&
-        transaction_observer)
+    const WeakHandle<TransactionObserver>& transaction_observer)
     : next_write_transaction_id(0),
       name(name),
       metahandles_index(new Directory::MetahandlesIndex),
@@ -194,8 +192,7 @@ Directory::~Directory() {
 DirOpenResult Directory::Open(
     const string& name,
     DirectoryChangeDelegate* delegate,
-    const syncer::WeakHandle<TransactionObserver>&
-        transaction_observer) {
+    const WeakHandle<TransactionObserver>& transaction_observer) {
   TRACE_EVENT0("sync", "SyncDatabaseOpen");
 
   const DirOpenResult result =
@@ -228,7 +225,7 @@ void Directory::InitializeIndices() {
 DirOpenResult Directory::OpenImpl(
     const string& name,
     DirectoryChangeDelegate* delegate,
-    const syncer::WeakHandle<TransactionObserver>&
+    const WeakHandle<TransactionObserver>&
         transaction_observer) {
 
   KernelLoadInfo info;
@@ -623,7 +620,7 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
       }
 
       // Ensure meta tracking for these data types reflects the deleted state.
-      for (syncer::ModelTypeSet::Iterator it = types.First();
+      for (ModelTypeSet::Iterator it = types.First();
            it.Good(); it.Inc()) {
         set_initial_sync_ended_for_type_unsafe(it.Get(), false);
         kernel_->persisted_info.reset_download_progress(it.Get());
@@ -757,8 +754,7 @@ string Directory::cache_guid() const {
   return kernel_->cache_guid;
 }
 
-syncer::Cryptographer* Directory::GetCryptographer(
-    const BaseTransaction* trans) {
+Cryptographer* Directory::GetCryptographer(const BaseTransaction* trans) {
   DCHECK_EQ(this, trans->directory());
   return &cryptographer_;
 }
@@ -799,7 +795,7 @@ int64 Directory::unsynced_entity_count() const {
 
 FullModelTypeSet Directory::GetServerTypesWithUnappliedUpdates(
     BaseTransaction* trans) const {
-  syncer::FullModelTypeSet server_types;
+  FullModelTypeSet server_types;
   ScopedKernelLock lock(this);
   for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
     const ModelType type = ModelTypeFromInt(i);

@@ -29,11 +29,11 @@ bool SyncChange::IsValid() const {
 
   // Data from the syncer must always have valid specifics.
   if (!sync_data_.IsLocal())
-    return syncer::IsRealDataType(sync_data_.GetDataType());
+    return IsRealDataType(sync_data_.GetDataType());
 
   // Local changes must always have a tag and specify a valid datatype.
   if (sync_data_.GetTag().empty() ||
-      !syncer::IsRealDataType(sync_data_.GetDataType())) {
+      !IsRealDataType(sync_data_.GetDataType())) {
     return false;
   }
 

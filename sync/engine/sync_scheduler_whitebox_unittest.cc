@@ -19,7 +19,6 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 namespace syncer {
-using syncer::Syncer;
 using sessions::SyncSession;
 using sessions::SyncSessionContext;
 using sessions::SyncSourceInfo;
@@ -32,8 +31,8 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     Syncer* syncer = new Syncer();
 
     ModelSafeRoutingInfo routes;
-    routes[syncer::BOOKMARKS] = GROUP_UI;
-    routes[syncer::NIGORI] = GROUP_PASSIVE;
+    routes[BOOKMARKS] = GROUP_UI;
+    routes[NIGORI] = GROUP_PASSIVE;
 
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
@@ -143,15 +142,15 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudge) {
 TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
   InitializeSyncerOnNormalMode();
 
-  syncer::ModelTypeSet types;
-  types.Put(syncer::BOOKMARKS);
+  ModelTypeSet types;
+  types.Put(BOOKMARKS);
 
   // Mark bookmarks as throttled.
   context()->throttled_data_type_tracker()->SetUnthrottleTime(
       types, base::TimeTicks::Now() + base::TimeDelta::FromHours(2));
 
-  syncer::ModelTypePayloadMap types_with_payload;
-  types_with_payload[syncer::BOOKMARKS] = "";
+  ModelTypePayloadMap types_with_payload;
+  types_with_payload[BOOKMARKS] = "";
 
   SyncSourceInfo info(GetUpdatesCallerInfo::LOCAL, types_with_payload);
   SyncSession* s = scheduler_->CreateSyncSession(info);

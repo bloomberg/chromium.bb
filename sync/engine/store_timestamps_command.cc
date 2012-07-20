@@ -26,12 +26,12 @@ SyncerError StoreTimestampsCommand::ExecuteImpl(
   // Update the progress marker tokens from the server result.  If a marker
   // was omitted for any one type, that indicates no change from the previous
   // state.
-  syncer::ModelTypeSet forward_progress_types;
+  ModelTypeSet forward_progress_types;
   for (int i = 0; i < updates.new_progress_marker_size(); ++i) {
-    syncer::ModelType model =
-        syncer::GetModelTypeFromSpecificsFieldNumber(
+    ModelType model =
+        GetModelTypeFromSpecificsFieldNumber(
             updates.new_progress_marker(i).data_type_id());
-    if (model == syncer::UNSPECIFIED || model == syncer::TOP_LEVEL_FOLDER) {
+    if (model == UNSPECIFIED || model == TOP_LEVEL_FOLDER) {
       NOTREACHED() << "Unintelligible server response.";
       continue;
     }
@@ -43,9 +43,9 @@ SyncerError StoreTimestampsCommand::ExecuteImpl(
   if (VLOG_IS_ON(1)) {
     DVLOG_IF(1, !forward_progress_types.Empty())
         << "Get Updates got new progress marker for types: "
-        << syncer::ModelTypeSetToString(forward_progress_types)
+        << ModelTypeSetToString(forward_progress_types)
         << " out of possible: "
-        << syncer::ModelTypeSetToString(status->updates_request_types());
+        << ModelTypeSetToString(status->updates_request_types());
   }
   if (updates.has_changes_remaining()) {
     int64 changes_left = updates.changes_remaining();

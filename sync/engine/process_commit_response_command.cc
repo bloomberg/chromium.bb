@@ -135,7 +135,7 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
         case CommitResponse::SUCCESS:
           // TODO(sync): worry about sync_rate_ rate calc?
           ++successes;
-          if (commit_set_.GetModelTypeAt(proj[i]) == syncer::BOOKMARKS)
+          if (commit_set_.GetModelTypeAt(proj[i]) == BOOKMARKS)
             status->increment_num_successful_bookmark_commits();
           status->increment_num_successful_commits();
           break;

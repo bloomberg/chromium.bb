@@ -78,7 +78,7 @@ bool ReverifyEntry(syncable::WriteTransaction* trans,
 
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = IsFolder(entry);
-  const syncer::ModelType model_type = GetModelType(entry);
+  const ModelType model_type = GetModelType(entry);
 
   return VERIFY_SUCCESS == VerifyUpdateConsistency(trans,
                                                    entry,
@@ -160,7 +160,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     // We only store the old specifics if they were decryptable and applied and
     // there is no BASE_SERVER_SPECIFICS already. Else do nothing.
     if (!target_entry.Get(syncable::IS_UNAPPLIED_UPDATE) &&
-        !syncer::IsRealDataType(syncer::GetModelTypeFromSpecifics(
+        !IsRealDataType(GetModelTypeFromSpecifics(
             target_entry.Get(syncable::BASE_SERVER_SPECIFICS))) &&
         (!prev_specifics.has_encrypted() ||
          cryptographer->CanDecrypt(prev_specifics.encrypted()))) {
@@ -168,7 +168,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
                << prev_specifics.SerializeAsString();
       target_entry.Put(syncable::BASE_SERVER_SPECIFICS, prev_specifics);
     }
-  } else if (syncer::IsRealDataType(syncer::GetModelTypeFromSpecifics(
+  } else if (IsRealDataType(GetModelTypeFromSpecifics(
                  target_entry.Get(syncable::BASE_SERVER_SPECIFICS)))) {
     // We have a BASE_SERVER_SPECIFICS, but a subsequent non-specifics-only
     // change arrived. As a result, we can't use the specifics alone to detect

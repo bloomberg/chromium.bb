@@ -46,8 +46,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
            << ModelTypeSetToString(enabled_types);
   DCHECK(!enabled_types.Empty());
 
-  const syncer::ModelTypePayloadMap& type_payload_map =
-      session->source().types;
+  const ModelTypePayloadMap& type_payload_map = session->source().types;
   for (ModelTypeSet::Iterator it = enabled_types.First();
        it.Good(); it.Inc()) {
     sync_pb::DataTypeProgressMarker* progress_marker =
@@ -55,7 +54,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     dir->GetDownloadProgress(it.Get(), progress_marker);
 
     // Set notification hint if present.
-    syncer::ModelTypePayloadMap::const_iterator type_payload =
+    ModelTypePayloadMap::const_iterator type_payload =
         type_payload_map.find(it.Get());
     if (type_payload != type_payload_map.end()) {
       progress_marker->set_notification_hint(type_payload->second);

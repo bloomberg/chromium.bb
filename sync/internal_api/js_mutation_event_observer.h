@@ -27,7 +27,7 @@ class JsEventHandler;
 // Observes all change- and transaction-related events and routes a
 // summarized version to a JsEventHandler.
 class JsMutationEventObserver
-    : public syncer::SyncManager::ChangeObserver,
+    : public SyncManager::ChangeObserver,
       public syncable::TransactionObserver,
       public base::NonThreadSafe {
  public:
@@ -41,17 +41,17 @@ class JsMutationEventObserver
 
   void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
-  // syncer::SyncManager::ChangeObserver implementation.
+  // SyncManager::ChangeObserver implementation.
   virtual void OnChangesApplied(
-      syncer::ModelType model_type,
+      ModelType model_type,
       int64 write_transaction_id,
-      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
-  virtual void OnChangesComplete(syncer::ModelType model_type) OVERRIDE;
+      const ImmutableChangeRecordList& changes) OVERRIDE;
+  virtual void OnChangesComplete(ModelType model_type) OVERRIDE;
 
   // syncable::TransactionObserver implementation.
   virtual void OnTransactionWrite(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-      syncer::ModelTypeSet models_with_changes) OVERRIDE;
+      ModelTypeSet models_with_changes) OVERRIDE;
 
  private:
   base::WeakPtrFactory<JsMutationEventObserver> weak_ptr_factory_;

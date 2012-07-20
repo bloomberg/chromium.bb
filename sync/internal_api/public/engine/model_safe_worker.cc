@@ -15,7 +15,7 @@ base::DictionaryValue* ModelSafeRoutingInfoToValue(
   base::DictionaryValue* dict = new base::DictionaryValue();
   for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
        it != routing_info.end(); ++it) {
-    dict->SetString(syncer::ModelTypeToString(it->first),
+    dict->SetString(ModelTypeToString(it->first),
                     ModelSafeGroupToString(it->second));
   }
   return dict;
@@ -29,10 +29,10 @@ std::string ModelSafeRoutingInfoToString(
   return json;
 }
 
-syncer::ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
+ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
     const ModelSafeRoutingInfo& routes,
     const std::string& payload) {
-  syncer::ModelTypePayloadMap types_with_payloads;
+  ModelTypePayloadMap types_with_payloads;
   for (ModelSafeRoutingInfo::const_iterator i = routes.begin();
        i != routes.end(); ++i) {
     types_with_payloads[i->first] = payload;
@@ -40,9 +40,8 @@ syncer::ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
   return types_with_payloads;
 }
 
-syncer::ModelTypeSet GetRoutingInfoTypes(
-    const ModelSafeRoutingInfo& routing_info) {
-  syncer::ModelTypeSet types;
+ModelTypeSet GetRoutingInfoTypes(const ModelSafeRoutingInfo& routing_info) {
+  ModelTypeSet types;
   for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
        it != routing_info.end(); ++it) {
     types.Put(it->first);
@@ -50,11 +49,11 @@ syncer::ModelTypeSet GetRoutingInfoTypes(
   return types;
 }
 
-ModelSafeGroup GetGroupForModelType(const syncer::ModelType type,
+ModelSafeGroup GetGroupForModelType(const ModelType type,
                                     const ModelSafeRoutingInfo& routes) {
   ModelSafeRoutingInfo::const_iterator it = routes.find(type);
   if (it == routes.end()) {
-    if (type != syncer::UNSPECIFIED && type != syncer::TOP_LEVEL_FOLDER)
+    if (type != UNSPECIFIED && type != TOP_LEVEL_FOLDER)
       LOG(WARNING) << "Entry does not belong to active ModelSafeGroup!";
     return GROUP_PASSIVE;
   }

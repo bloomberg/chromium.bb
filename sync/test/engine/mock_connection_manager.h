@@ -22,7 +22,7 @@
 
 namespace syncer {
 
-class MockConnectionManager : public syncer::ServerConnectionManager {
+class MockConnectionManager : public ServerConnectionManager {
  public:
   class MidCommitObserver {
    public:
@@ -40,7 +40,7 @@ class MockConnectionManager : public syncer::ServerConnectionManager {
       PostBufferParams*,
       const std::string& path,
       const std::string& auth_token,
-      syncer::ScopedServerStatusWatcher* watcher) OVERRIDE;
+      ScopedServerStatusWatcher* watcher) OVERRIDE;
 
   // Control of commit response.
   // NOTE: Commit callback is invoked only once then reset.
@@ -182,13 +182,11 @@ class MockConnectionManager : public syncer::ServerConnectionManager {
 
   // Expect that GetUpdates will request exactly the types indicated in
   // the bitset.
-  void ExpectGetUpdatesRequestTypes(
-      syncer::ModelTypeSet expected_filter) {
+  void ExpectGetUpdatesRequestTypes(ModelTypeSet expected_filter) {
     expected_filter_ = expected_filter;
   }
 
-  void ExpectGetUpdatesRequestPayloads(
-      const syncer::ModelTypePayloadMap& payloads) {
+  void ExpectGetUpdatesRequestPayloads(const ModelTypePayloadMap& payloads) {
     expected_payloads_ = payloads;
   }
 
@@ -259,12 +257,12 @@ class MockConnectionManager : public syncer::ServerConnectionManager {
   bool IsModelTypePresentInSpecifics(
       const google::protobuf::RepeatedPtrField<
           sync_pb::DataTypeProgressMarker>& filter,
-      syncer::ModelType value);
+      ModelType value);
 
   sync_pb::DataTypeProgressMarker const* GetProgressMarkerForType(
       const google::protobuf::RepeatedPtrField<
           sync_pb::DataTypeProgressMarker>& filter,
-      syncer::ModelType value);
+      ModelType value);
 
   // When false, we pretend to have network connectivity issues.
   bool server_reachable_;
@@ -336,9 +334,9 @@ class MockConnectionManager : public syncer::ServerConnectionManager {
   // use the older sync_pb::SyncEntity_BookmarkData-style protocol.
   bool use_legacy_bookmarks_protocol_;
 
-  syncer::ModelTypeSet expected_filter_;
+  ModelTypeSet expected_filter_;
 
-  syncer::ModelTypePayloadMap expected_payloads_;
+  ModelTypePayloadMap expected_payloads_;
 
   int num_get_updates_requests_;
 
