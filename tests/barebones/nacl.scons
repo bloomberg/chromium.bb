@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -72,3 +72,19 @@ for basename in barebones_tests:
                          ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
                          test,
                          is_broken=is_broken)
+
+# The top_of_sandbox test does not apply to x86-32 because the bug
+# it tests for cannot happen in a segment-based sandbox, only with
+# a sandbox where some kind of address-masking is done.
+if not env.Bit('pnacl_generate_pexe') and not env.Bit('build_x86_32'):
+  native_env = env.Clone()
+  if native_env.Bit('bitcode'):
+    native_env.AddBiasForPNaCl()
+    native_env.PNaClForceNative()
+
+    nexe = native_env.ComponentProgram('top_of_sandbox', ['top_of_sandbox.c'])
+    node = native_env.CommandSelLdrTestNacl('top_of_sandbox.out', nexe)
+    native_env.AddNodeToTestSuite(
+        node, ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
+        'run_top_of_sandbox_test',
+        is_broken=is_glibc)

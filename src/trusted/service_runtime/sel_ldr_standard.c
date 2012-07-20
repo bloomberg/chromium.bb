@@ -762,8 +762,19 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     goto cleanup;
   }
 
-  /* write strings and char * arrays to stack */
-  stack_ptr = (nap->mem_start + ((uintptr_t) 1U << nap->addr_bits) - size);
+  /*
+   * Write strings and char * arrays to stack.  We keep the top of useful
+   * memory a page below the top of the sandbox region so that compilers
+   * can do tricks like computing a base register of sp + constant and then
+   * using a register-minus-constant addressing mode, which comes up at
+   * least on ARM where the compiler is trying to optimize given the
+   * limited size of immediate offsets available.  The maximum such
+   * negative constant on ARM will be -4095, but we use page size (64k)
+   * for good measure and do it on all machines just for uniformity.
+   */
+  stack_ptr = (nap->mem_start +
+               ((uintptr_t) 1U << nap->addr_bits) - NACL_MAP_PAGESIZE -
+               size);
 
   NaClLog(2, "setting stack to : %016"NACL_PRIxPTR"\n", stack_ptr);
 
