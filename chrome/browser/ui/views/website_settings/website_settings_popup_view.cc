@@ -56,14 +56,14 @@ const int kIdentityNameFontSize = 14;
 const int kIdentityVerifiedTextColor = 0xFF298a27;
 
 // Left icon margin.
-const int kIconMarginLeft = 6;
+const int kIconMarginLeft = 4;
 
 // Margin and padding values for the |PopupHeaderView|.
 const int kHeaderMarginBottom = 10;
 const int kHeaderPaddingBottom = 12;
-const int kHeaderPaddingLeft = 10;
+const int kHeaderPaddingLeft = 18;
 const int kHeaderPaddingRight = 8;
-const int kHeaderPaddingTop = 8;
+const int kHeaderPaddingTop = 12;
 
 // Spacing between the site identity label and the site identity status text in
 // the popup header.
@@ -72,23 +72,23 @@ const int kHeaderRowSpacing = 4;
 // The margins between the popup border and the popup content.
 const int kPopupMarginTop = 4;
 const int kPopupMarginLeft = 0;
-const int kPopupMarginBottom = 12;
+const int kPopupMarginBottom = 10;
 const int kPopupMarginRight = 0;
 
 // Padding values for sections.
 const int kSectionPaddingBottom = 6;
-const int kSectionPaddingLeft = 10;
-const int kSectionPaddingTop = 14;
+const int kSectionPaddingLeft = 18;
+const int kSectionPaddingTop = 16;
 
 // Space between a section headline and the section content.
-const int kSectionHeadlineMarginBottom = 10;
+const int kSectionHeadlineMarginBottom = 12;
 // The content of the "Permissions" section and of the "Cookies and Site Data"
 // section, is structured in individual rows. |kSectionRowSpaceing| is the
 // space between these rows.
 const int kSectionRowSpacing = 6;
 
 // The max width of the popup.
-const int kPopupWidth = 300;
+const int kPopupWidth = 310;
 
 // Returns true if the passed |url| refers to an internal chrome page.
 bool InternalChromePage(const GURL& url) {
