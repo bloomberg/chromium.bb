@@ -475,7 +475,7 @@ cr.define('login', function() {
      * @type {NodeList}
      */
     get pods() {
-      return this.childNodes;
+      return this.children;
     },
 
     hideTitles: function() {
