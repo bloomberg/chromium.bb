@@ -5811,6 +5811,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_ASYNCHRONOUS_SPELLCHECKING_DESCRIPTION" desc="Description for the flag to disable asynchronous spellchecking.">
         Disable experimental asynchronous spellchecking. It also disallows Chrome to use a web service to get spellchecking results.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_DISCOVERY_NAME" desc="Name for the flag to enable discovery in the new tab page.">
+        Enable discovery in the new tab page.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_DISCOVERY_DESCRIPTION" desc="Description for the flag to enable discovery in the new tab page.">
+        Enable this and the Experimental Extension APIs and install discovery extensions to see some suggested links in the new tab page.
+      </message>
       <message name="IDS_FLAGS_NO_DISCARD_TABS_NAME" desc="Name for the flag to disable the tab discarding feature.">
         Don't discard tabs.
       </message>

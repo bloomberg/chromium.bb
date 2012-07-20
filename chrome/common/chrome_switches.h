@@ -143,6 +143,7 @@ extern const char kEnableCloudPrintProxy[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableCrxlessWebApps[];
 extern const char kEnableDevToolsExperiments[];
+extern const char kEnableDiscoveryInNewTabPage[];
 extern const char kEnableEasyOffStoreExtensionInstall[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];

@@ -647,6 +647,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSuggestionsTabPage)
   },
   {
+    "enable-discovery-ntp",
+    IDS_FLAGS_ENABLE_NTP_DISCOVERY_NAME,
+    IDS_FLAGS_ENABLE_NTP_DISCOVERY_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableDiscoveryInNewTabPage)
+  },
+  {
     "disable-chrome-to-mobile",  // FLAGS:RECORD_UMA
     IDS_FLAGS_DISABLE_CHROME_TO_MOBILE_NAME,
     IDS_FLAGS_DISABLE_CHROME_TO_MOBILE_DESCRIPTION,

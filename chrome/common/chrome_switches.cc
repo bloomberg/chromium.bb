@@ -503,6 +503,9 @@ const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 
+// Enables experimental discovery slots in New Tab page.
+const char kEnableDiscoveryInNewTabPage[]   = "enable-discovery-ntp";
+
 // Enables extensions to be easily installed from sites other than the web
 // store. Without this flag, they can still be installed, but must be manually
 // dragged onto chrome://extensions/.
