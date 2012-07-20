@@ -162,12 +162,8 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   // Overridden from VideoFrameCapturer:
   virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
-  virtual void ClearInvalidRegion() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
-  virtual void InvalidateFullScreen() OVERRIDE;
   virtual void CaptureInvalidRegion(
       const CaptureCompletedCallback& callback) OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
@@ -181,6 +177,9 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   void CgBlitPostLion(const VideoFrameBuffer& buffer, const SkRegion& region);
   void CaptureRegion(const SkRegion& region,
                      const CaptureCompletedCallback& callback);
+
+  // Called when the screen configuration is changed.
+  void ScreenConfigurationChanged();
 
   void ScreenRefresh(CGRectCount count, const CGRect *rect_array);
   void ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
@@ -341,66 +340,12 @@ void VideoFrameCapturerMac::Stop() {
   }
 }
 
-void VideoFrameCapturerMac::ScreenConfigurationChanged() {
-  ReleaseBuffers();
-  helper_.ClearInvalidRegion();
-  last_buffer_ = NULL;
-
-  CGDirectDisplayID mainDevice = CGMainDisplayID();
-  int width = CGDisplayPixelsWide(mainDevice);
-  int height = CGDisplayPixelsHigh(mainDevice);
-  InvalidateScreen(SkISize::Make(width, height));
-
-  if (!CGDisplayUsesOpenGLAcceleration(mainDevice)) {
-    VLOG(3) << "OpenGL support not available.";
-    return;
-  }
-
-  if (display_create_image_func_ != NULL) {
-    // No need for any OpenGL support on Lion
-    return;
-  }
-
-  CGLPixelFormatAttribute attributes[] = {
-    kCGLPFAFullScreen,
-    kCGLPFADisplayMask,
-    (CGLPixelFormatAttribute)CGDisplayIDToOpenGLDisplayMask(mainDevice),
-    (CGLPixelFormatAttribute)0
-  };
-  CGLPixelFormatObj pixel_format = NULL;
-  GLint matching_pixel_format_count = 0;
-  CGLError err = CGLChoosePixelFormat(attributes,
-                                      &pixel_format,
-                                      &matching_pixel_format_count);
-  DCHECK_EQ(err, kCGLNoError);
-  err = CGLCreateContext(pixel_format, NULL, &cgl_context_);
-  DCHECK_EQ(err, kCGLNoError);
-  CGLDestroyPixelFormat(pixel_format);
-  CGLSetFullScreen(cgl_context_);
-  CGLSetCurrentContext(cgl_context_);
-
-  size_t buffer_size = width * height * sizeof(uint32_t);
-  pixel_buffer_object_.Init(cgl_context_, buffer_size);
-}
-
 media::VideoFrame::Format VideoFrameCapturerMac::pixel_format() const {
   return pixel_format_;
 }
 
-void VideoFrameCapturerMac::ClearInvalidRegion() {
-  helper_.ClearInvalidRegion();
-}
-
 void VideoFrameCapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
-}
-
-void VideoFrameCapturerMac::InvalidateScreen(const SkISize& size) {
-  helper_.InvalidateScreen(size);
-}
-
-void VideoFrameCapturerMac::InvalidateFullScreen() {
-  helper_.InvalidateFullScreen();
 }
 
 void VideoFrameCapturerMac::CaptureInvalidRegion(
@@ -695,6 +640,48 @@ void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
 
 const SkISize& VideoFrameCapturerMac::size_most_recent() const {
   return helper_.size_most_recent();
+}
+
+void VideoFrameCapturerMac::ScreenConfigurationChanged() {
+  ReleaseBuffers();
+  helper_.ClearInvalidRegion();
+  last_buffer_ = NULL;
+
+  CGDirectDisplayID mainDevice = CGMainDisplayID();
+  int width = CGDisplayPixelsWide(mainDevice);
+  int height = CGDisplayPixelsHigh(mainDevice);
+  helper_.InvalidateScreen(SkISize::Make(width, height));
+
+  if (!CGDisplayUsesOpenGLAcceleration(mainDevice)) {
+    VLOG(3) << "OpenGL support not available.";
+    return;
+  }
+
+  if (display_create_image_func_ != NULL) {
+    // No need for any OpenGL support on Lion
+    return;
+  }
+
+  CGLPixelFormatAttribute attributes[] = {
+    kCGLPFAFullScreen,
+    kCGLPFADisplayMask,
+    (CGLPixelFormatAttribute)CGDisplayIDToOpenGLDisplayMask(mainDevice),
+    (CGLPixelFormatAttribute)0
+  };
+  CGLPixelFormatObj pixel_format = NULL;
+  GLint matching_pixel_format_count = 0;
+  CGLError err = CGLChoosePixelFormat(attributes,
+                                      &pixel_format,
+                                      &matching_pixel_format_count);
+  DCHECK_EQ(err, kCGLNoError);
+  err = CGLCreateContext(pixel_format, NULL, &cgl_context_);
+  DCHECK_EQ(err, kCGLNoError);
+  CGLDestroyPixelFormat(pixel_format);
+  CGLSetFullScreen(cgl_context_);
+  CGLSetCurrentContext(cgl_context_);
+
+  size_t buffer_size = width * height * sizeof(uint32_t);
+  pixel_buffer_object_.Init(cgl_context_, buffer_size);
 }
 
 void VideoFrameCapturerMac::ScreenRefresh(CGRectCount count,

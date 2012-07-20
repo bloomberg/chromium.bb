@@ -49,12 +49,8 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   // Overridden from VideoFrameCapturer:
   virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
-  virtual void ClearInvalidRegion() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
-  virtual void InvalidateFullScreen() OVERRIDE;
   virtual void CaptureInvalidRegion(
       const CaptureCompletedCallback& callback) OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
@@ -156,7 +152,6 @@ VideoFrameCapturerWin::VideoFrameCapturerWin()
       current_buffer_(0),
       pixel_format_(media::VideoFrame::RGB32),
       composition_func_(NULL) {
-  ScreenConfigurationChanged();
 }
 
 VideoFrameCapturerWin::~VideoFrameCapturerWin() {
@@ -166,20 +161,8 @@ media::VideoFrame::Format VideoFrameCapturerWin::pixel_format() const {
   return pixel_format_;
 }
 
-void VideoFrameCapturerWin::ClearInvalidRegion() {
-  helper_.ClearInvalidRegion();
-}
-
 void VideoFrameCapturerWin::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
-}
-
-void VideoFrameCapturerWin::InvalidateScreen(const SkISize& size) {
-  helper_.InvalidateScreen(size);
-}
-
-void VideoFrameCapturerWin::InvalidateFullScreen() {
-  helper_.InvalidateFullScreen();
 }
 
 void VideoFrameCapturerWin::CaptureInvalidRegion(
@@ -231,10 +214,6 @@ void VideoFrameCapturerWin::Stop() {
   }
 }
 
-void VideoFrameCapturerWin::ScreenConfigurationChanged() {
-  // We poll for screen configuration changes, so ignore notifications.
-}
-
 void VideoFrameCapturerWin::PrepareCaptureResources() {
   // Switch to the desktop receiving user input if different from the current
   // one.
@@ -279,7 +258,11 @@ void VideoFrameCapturerWin::PrepareCaptureResources() {
   // may still be reading from them.
   if (resource_generation_ != buffers_[current_buffer_].resource_generation) {
     AllocateBuffer(current_buffer_);
-    InvalidateFullScreen();
+
+    SkRegion region;
+    region.op(SkIRect::MakeSize(helper_.size_most_recent()),
+              SkRegion::kUnion_Op);
+    InvalidateRegion(region);
   }
 }
 
@@ -331,7 +314,7 @@ void VideoFrameCapturerWin::CalculateInvalidRegion() {
   if ((current.size != prev.size) ||
       (current.bytes_per_pixel != prev.bytes_per_pixel) ||
       (current.bytes_per_row != prev.bytes_per_row)) {
-    InvalidateScreen(current.size);
+    helper_.InvalidateScreen(current.size);
     return;
   }
 

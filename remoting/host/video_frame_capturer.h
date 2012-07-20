@@ -86,24 +86,11 @@ class VideoFrameCapturer {
   // Called at the end of a capturing session.
   virtual void Stop() = 0;
 
-  // Called when the screen configuration is changed.
-  virtual void ScreenConfigurationChanged() = 0;
-
   // Return the pixel format of the screen.
   virtual media::VideoFrame::Format pixel_format() const = 0;
 
-  // Clear out the invalid region.
-  virtual void ClearInvalidRegion() = 0;
-
   // Invalidate the specified region.
   virtual void InvalidateRegion(const SkRegion& invalid_region) = 0;
-
-  // Invalidate the entire screen, of a given size.
-  virtual void InvalidateScreen(const SkISize& size) = 0;
-
-  // Invalidate the entire screen, using the size of the most recently
-  // captured screen.
-  virtual void InvalidateFullScreen() = 0;
 
   // Capture the screen data associated with each of the accumulated
   // dirty region.

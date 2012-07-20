@@ -28,6 +28,7 @@ using ::testing::Expectation;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::SaveArg;
 
 namespace remoting {
@@ -130,7 +131,11 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
 
   SkISize size(SkISize::Make(kWidth, kHeight));
   scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
-  EXPECT_CALL(capturer_, InvalidateFullScreen());
+
+  EXPECT_CALL(capturer_, size_most_recent())
+      .WillRepeatedly(ReturnRef(size));
+
+  EXPECT_CALL(capturer_, InvalidateRegion(_));
 
   // First the capturer is called.
   Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureInvalidRegion(_))

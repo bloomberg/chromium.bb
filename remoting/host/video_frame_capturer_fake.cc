@@ -44,42 +44,18 @@ void VideoFrameCapturerFake::Start(const CursorShapeChangedCallback& callback) {
 void VideoFrameCapturerFake::Stop() {
 }
 
-void VideoFrameCapturerFake::ScreenConfigurationChanged() {
-  size_ = SkISize::Make(kWidth, kHeight);
-  bytes_per_row_ = size_.width() * kBytesPerPixel;
-  pixel_format_ = media::VideoFrame::RGB32;
-
-  // Create memory for the buffers.
-  int buffer_size = size_.height() * bytes_per_row_;
-  for (int i = 0; i < kNumBuffers; i++) {
-    buffers_[i].reset(new uint8[buffer_size]);
-  }
-}
-
 media::VideoFrame::Format VideoFrameCapturerFake::pixel_format() const {
   return pixel_format_;
-}
-
-void VideoFrameCapturerFake::ClearInvalidRegion() {
-  helper_.ClearInvalidRegion();
 }
 
 void VideoFrameCapturerFake::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerFake::InvalidateScreen(const SkISize& size) {
-  helper_.InvalidateScreen(size);
-}
-
-void VideoFrameCapturerFake::InvalidateFullScreen() {
-  helper_.InvalidateFullScreen();
-}
-
 void VideoFrameCapturerFake::CaptureInvalidRegion(
     const CaptureCompletedCallback& callback) {
   GenerateImage();
-  InvalidateScreen(size_);
+  helper_.InvalidateScreen(size_);
 
   SkRegion invalid_region;
   helper_.SwapInvalidRegion(&invalid_region);
@@ -133,6 +109,18 @@ void VideoFrameCapturerFake::GenerateImage() {
       row[x * kBytesPerPixel+3] = 0xff;
     }
     row += bytes_per_row_;
+  }
+}
+
+void VideoFrameCapturerFake::ScreenConfigurationChanged() {
+  size_ = SkISize::Make(kWidth, kHeight);
+  bytes_per_row_ = size_.width() * kBytesPerPixel;
+  pixel_format_ = media::VideoFrame::RGB32;
+
+  // Create memory for the buffers.
+  int buffer_size = size_.height() * bytes_per_row_;
+  for (int i = 0; i < kNumBuffers; i++) {
+    buffers_[i].reset(new uint8[buffer_size]);
   }
 }
 

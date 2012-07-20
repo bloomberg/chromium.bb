@@ -250,7 +250,10 @@ void ScreenRecorder::DoFinishOneRecording() {
 void ScreenRecorder::DoInvalidateFullScreen() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  capturer_->InvalidateFullScreen();
+  SkRegion region;
+  region.op(SkIRect::MakeSize(capturer_->size_most_recent()),
+            SkRegion::kUnion_Op);
+  capturer_->InvalidateRegion(region);
 }
 
 // Network thread --------------------------------------------------------------

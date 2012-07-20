@@ -82,12 +82,8 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // Capturer interface.
   virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
-  virtual void ClearInvalidRegion() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
-  virtual void InvalidateFullScreen() OVERRIDE;
   virtual void CaptureInvalidRegion(
       const CaptureCompletedCallback& callback) OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
@@ -114,6 +110,9 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // Capture the cursor image and call the CursorShapeChangedCallback if it
   // has been set (using SetCursorShapeChangedCallback).
   void CaptureCursor();
+
+  // Called when the screen configuration is changed.
+  void ScreenConfigurationChanged();
 
   // Synchronize the current buffer with |last_buffer_|, by copying pixels from
   // the area of |last_invalid_rects|.
@@ -299,34 +298,12 @@ void VideoFrameCapturerLinux::Start(
 void VideoFrameCapturerLinux::Stop() {
 }
 
-void VideoFrameCapturerLinux::ScreenConfigurationChanged() {
-  last_buffer_ = NULL;
-  for (int i = 0; i < kNumBuffers; ++i) {
-    buffers_[i].set_needs_update();
-  }
-  helper_.ClearInvalidRegion();
-  x_server_pixel_buffer_.Init(display_);
-}
-
 media::VideoFrame::Format VideoFrameCapturerLinux::pixel_format() const {
   return pixel_format_;
 }
 
-void VideoFrameCapturerLinux::ClearInvalidRegion() {
-  helper_.ClearInvalidRegion();
-}
-
 void VideoFrameCapturerLinux::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
-}
-
-void VideoFrameCapturerLinux::InvalidateScreen(const SkISize& size) {
-  helper_.InvalidateScreen(size);
-}
-
-void VideoFrameCapturerLinux::InvalidateFullScreen() {
-  helper_.InvalidateFullScreen();
-  last_buffer_ = NULL;
 }
 
 void VideoFrameCapturerLinux::CaptureInvalidRegion(
@@ -482,6 +459,15 @@ CaptureData* VideoFrameCapturerLinux::CaptureFrame() {
   last_invalid_region_ = invalid_region;
   last_buffer_ = buffer.ptr();
   return capture_data;
+}
+
+void VideoFrameCapturerLinux::ScreenConfigurationChanged() {
+  last_buffer_ = NULL;
+  for (int i = 0; i < kNumBuffers; ++i) {
+    buffers_[i].set_needs_update();
+  }
+  helper_.ClearInvalidRegion();
+  x_server_pixel_buffer_.Init(display_);
 }
 
 void VideoFrameCapturerLinux::SynchronizeFrame() {
