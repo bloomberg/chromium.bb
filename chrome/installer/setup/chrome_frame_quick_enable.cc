@@ -100,6 +100,8 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
 
       FilePath setup_path(chrome_state->GetSetupPath());
       const Version& new_version = chrome_state->version();
+      FilePath new_chrome_exe(
+          installer_state->target_path().Append(installer::kChromeNewExe));
 
       // This creates the uninstallation entry for GCF.
       AddUninstallShortcutWorkItems(*installer_state, setup_path, new_version,
@@ -112,7 +114,7 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
                               new_version, *cf, item_list.get());
 
       const Version* opv = chrome_state->old_version();
-      AppendPostInstallTasks(*installer_state, setup_path, opv,
+      AppendPostInstallTasks(*installer_state, setup_path, new_chrome_exe, opv,
                              new_version, temp_path.path(), item_list.get());
 
       // Before updating the channel values, add Chrome back to the mix so that
@@ -123,11 +125,10 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
                                item_list.get());
 
       // Add the items to remove the quick-enable-cf command from the registry.
-      AddQuickEnableChromeFrameWorkItems(
-          *installer_state, machine_state,
-          &chrome_state->uninstall_command().GetProgram(),
-          &chrome_state->version(),
-          item_list.get());
+      AddQuickEnableWorkItems(*installer_state, machine_state,
+                              &chrome_state->uninstall_command().GetProgram(),
+                              &chrome_state->version(),
+                              item_list.get());
 
       if (!item_list->Do()) {
         item_list->Rollback();

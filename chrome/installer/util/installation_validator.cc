@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/version.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/installation_state.h"
@@ -113,44 +112,6 @@ bool InstallationValidator::ChromeFrameRules::UsageStatsAllowed(
 }
 
 BrowserDistribution::Type
-    InstallationValidator::ChromeAppHostRules::distribution_type() const {
-  return BrowserDistribution::CHROME_APP_HOST;
-}
-
-void InstallationValidator::ChromeAppHostRules::AddUninstallSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
-    SwitchExpectations* expectations) const {
-  DCHECK(!system_install);
-
-  // --chrome-app-host must be present.
-  expectations->push_back(std::make_pair(std::string(switches::kChromeAppHost),
-                                         true));
-  // --chrome must not be present.
-  expectations->push_back(std::make_pair(std::string(switches::kChrome),
-                                         false));
-
-  // --chrome-frame must not be present.
-  expectations->push_back(std::make_pair(std::string(switches::kChromeFrame),
-                                         false));
-}
-
-void InstallationValidator::ChromeAppHostRules::AddRenameSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
-    SwitchExpectations* expectations) const {
-  // TODO(erikwright): I guess there will be none?
-}
-
-bool InstallationValidator::ChromeAppHostRules::UsageStatsAllowed(
-    const ProductState& product_state) const {
-  // App Host doesn't manage usage stats. The Chrome Binaries will.
-  return false;
-}
-
-BrowserDistribution::Type
     InstallationValidator::ChromeBinariesRules::distribution_type() const {
   return BrowserDistribution::CHROME_BINARIES;
 }
@@ -188,58 +149,8 @@ const InstallationValidator::InstallationType
   CHROME_FRAME_SINGLE_CHROME_MULTI,
   CHROME_FRAME_MULTI,
   CHROME_FRAME_MULTI_CHROME_MULTI,
-  CHROME_FRAME_READY_MODE_CHROME_MULTI,
-  CHROME_APP_HOST,
-  CHROME_APP_HOST_CHROME_FRAME_SINGLE,
-  CHROME_APP_HOST_CHROME_FRAME_SINGLE_CHROME_MULTI,
-  CHROME_APP_HOST_CHROME_FRAME_MULTI,
-  CHROME_APP_HOST_CHROME_FRAME_MULTI_CHROME_MULTI,
-  CHROME_APP_HOST_CHROME_MULTI,
-  CHROME_APP_HOST_CHROME_MULTI_CHROME_FRAME_READY_MODE,
+  CHROME_FRAME_READY_MODE_CHROME_MULTI
 };
-
-// Validates the "install-application" Google Update product command.
-void InstallationValidator::ValidateInstallAppCommand(
-    const ProductContext& ctx,
-    const AppCommand& command,
-    bool* is_valid) {
-  DCHECK(is_valid);
-
-  CommandLine the_command(CommandLine::FromString(command.command_line()));
-
-  FilePath expected_path(
-      installer::GetChromeInstallPath(ctx.system_install, ctx.dist)
-      .Append(installer::kChromeAppHostExe));
-
-  if (!FilePath::CompareEqualIgnoreCase(expected_path.value(),
-                                        the_command.GetProgram().value())) {
-    *is_valid = false;
-    LOG(ERROR) << "install-application command's path is not "
-               << expected_path.value() << ": "
-               << the_command.GetProgram().value();
-  }
-
-
-  SwitchExpectations expected;
-
-  expected.push_back(
-      std::make_pair(std::string(::switches::kAppsInstallFromManifestURL),
-                     true));
-
-  ValidateCommandExpectations(ctx, the_command, expected, "install application",
-                              is_valid);
-
-  if (!command.sends_pings()) {
-    *is_valid = false;
-    LOG(ERROR) << "install-application command is not configured to send "
-               << "pings.";
-  }
-
-  if (!command.is_web_accessible()) {
-    *is_valid = false;
-    LOG(ERROR) << "install-application command is not web accessible.";
-  }
-}
 
 // Validates the "quick-enable-cf" Google Update product command.
 void InstallationValidator::ValidateQuickEnableCfCommand(
@@ -272,48 +183,6 @@ void InstallationValidator::ValidateQuickEnableCfCommand(
   if (!command.is_web_accessible()) {
     *is_valid = false;
     LOG(ERROR) << "Quick-enable-cf command is not web accessible.";
-  }
-}
-
-// Validates the "quick-enable-application-host" Google Update product command.
-void InstallationValidator::ValidateQuickEnableApplicationHostCommand(
-    const ProductContext& ctx,
-    const AppCommand& command,
-    bool* is_valid) {
-  DCHECK(is_valid);
-
-  CommandLine the_command(CommandLine::FromString(command.command_line()));
-
-  ValidateSetupPath(ctx,
-                    the_command.GetProgram(),
-                    "quick enable application host",
-                    is_valid);
-
-  SwitchExpectations expected;
-
-  expected.push_back(
-      std::make_pair(std::string(switches::kChromeAppHost), true));
-  expected.push_back(std::make_pair(std::string(switches::kSystemLevel),
-                                    false));
-  expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
-                                    true));
-
-  ValidateCommandExpectations(ctx,
-                              the_command,
-                              expected,
-                              "quick enable application host",
-                              is_valid);
-
-  if (!command.sends_pings()) {
-    *is_valid = false;
-    LOG(ERROR) << "Quick-enable-application-host command is not configured to "
-               << "send pings.";
-  }
-
-  if (!command.is_web_accessible()) {
-    *is_valid = false;
-    LOG(ERROR) << "Quick-enable-application-host command is not web "
-               << "accessible.";
   }
 }
 
@@ -363,23 +232,18 @@ void InstallationValidator::ValidateBinariesCommands(
     bool* is_valid) {
   DCHECK(is_valid);
 
-  // The quick-enable-cf command must be present if Chrome Binaries are
-  // installed and Chrome Frame is not installed (or installed in ready mode).
+  // The quick-enable-cf command must be present if Chrome is installed either
+  // alone or with CF in ready-mode.
   const ChannelInfo& channel = ctx.state.channel();
-  const ProductState* binaries_state = ctx.machine_state.GetProductState(
-      ctx.system_install, BrowserDistribution::CHROME_BINARIES);
+  const ProductState* chrome_state = ctx.machine_state.GetProductState(
+      ctx.system_install, BrowserDistribution::CHROME_BROWSER);
   const ProductState* cf_state = ctx.machine_state.GetProductState(
       ctx.system_install, BrowserDistribution::CHROME_FRAME);
 
   CommandExpectations expectations;
 
-  if (binaries_state != NULL) {
-    if (cf_state == NULL || channel.IsReadyMode())
-      expectations[kCmdQuickEnableCf] = &ValidateQuickEnableCfCommand;
-
-    expectations[kCmdQuickEnableApplicationHost] =
-        &ValidateQuickEnableApplicationHostCommand;
-  }
+  if (chrome_state != NULL && (cf_state == NULL || channel.IsReadyMode()))
+    expectations[kCmdQuickEnableCf] = &ValidateQuickEnableCfCommand;
 
   ValidateAppCommandExpectations(ctx, expectations, is_valid);
 }
@@ -446,28 +310,8 @@ void InstallationValidator::ValidateBinaries(
                << "\"";
   }
 
-  // ap must have -apphost iff Chrome Frame is installed multi
-  const ProductState* app_host_state = machine_state.GetProductState(
-      system_install, BrowserDistribution::CHROME_APP_HOST);
-  if (app_host_state != NULL) {
-    if (!app_host_state->is_multi_install()) {
-      *is_valid = false;
-      LOG(ERROR) << "Chrome App Host is installed in non-multi mode.";
-    }
-    if (!channel.IsAppHost()) {
-      *is_valid = false;
-      LOG(ERROR) << "Chrome Binaries are missing \"-apphost\" in channel"
-                    " name: \"" << channel.value() << "\"";
-    }
-  } else if (channel.IsAppHost()) {
-    *is_valid = false;
-    LOG(ERROR) << "Chrome Binaries have \"-apphost\" in channel name, yet "
-                  "Chrome App Host is not installed: \"" << channel.value()
-               << "\"";
-  }
-
-  // Chrome, Chrome Frame, or App Host must be present
-  if (chrome_state == NULL && cf_state == NULL && app_host_state == NULL) {
+  // Chrome or Chrome Frame must be present
+  if (chrome_state == NULL && cf_state == NULL) {
     *is_valid = false;
     LOG(ERROR) << "Chrome Binaries are present with no other products.";
   }
@@ -479,12 +323,12 @@ void InstallationValidator::ValidateBinaries(
         << "Chrome Binaries are present yet Chrome is not multi-install.";
   }
 
-  // Chrome Frame must be multi-install if Chrome & App Host are not present.
-  if (cf_state != NULL && app_host_state == NULL && chrome_state == NULL &&
+  // Chrome Frame must be multi-install if Chrome is not present.
+  if (cf_state != NULL && chrome_state == NULL &&
       !cf_state->is_multi_install()) {
     *is_valid = false;
-    LOG(ERROR) << "Chrome Binaries are present without Chrome nor App Host "
-               << "yet Chrome Frame is not multi-install.";
+    LOG(ERROR) << "Chrome Binaries are present without Chrome yet Chrome Frame "
+                  "is not multi-install.";
   }
 
   ChromeBinariesRules binaries_rules;
@@ -639,44 +483,24 @@ void InstallationValidator::ValidateMultiInstallProduct(
   const ProductState* binaries =
       ctx.machine_state.GetProductState(ctx.system_install,
                                         BrowserDistribution::CHROME_BINARIES);
-  if (!binaries) {
-    if (ctx.dist->GetType() == BrowserDistribution::CHROME_APP_HOST) {
-      if (!ctx.machine_state.GetProductState(
-              true,  // system-level
-              BrowserDistribution::CHROME_BINARIES) &&
-          !ctx.machine_state.GetProductState(
-              true,  // system-level
-              BrowserDistribution::CHROME_BROWSER)) {
-        *is_valid = false;
-        LOG(ERROR) << ctx.dist->GetAppShortCutName()
-                   << " (" << ctx.state.version().GetString() << ") is "
-                   << "installed without Chrome Binaries or a system-level "
-                   << "Chrome.";
-      }
-    } else {
-      *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName()
-                 << " (" << ctx.state.version().GetString() << ") is installed "
-                 << "without Chrome Binaries.";
-    }
-  } else {
-    // Version must match that of binaries.
-    if (ctx.state.version().CompareTo(binaries->version()) != 0) {
-      *is_valid = false;
-      LOG(ERROR) << "Version of " << ctx.dist->GetAppShortCutName()
-                 << " (" << ctx.state.version().GetString() << ") does not "
-                    "match that of Chrome Binaries ("
-                 << binaries->version().GetString() << ").";
-    }
+  DCHECK(binaries);
 
-    // Channel value must match that of binaries.
-    if (!ctx.state.channel().Equals(binaries->channel())) {
-      *is_valid = false;
-      LOG(ERROR) << "Channel name of " << ctx.dist->GetAppShortCutName()
-                 << " (" << ctx.state.channel().value()
-                 << ") does not match that of Chrome Binaries ("
-                 << binaries->channel().value() << ").";
-    }
+  // Version must match that of binaries.
+  if (ctx.state.version().CompareTo(binaries->version()) != 0) {
+    *is_valid = false;
+    LOG(ERROR) << "Version of " << ctx.dist->GetAppShortCutName()
+               << " (" << ctx.state.version().GetString() << ") does not "
+                  "match that of Chrome Binaries ("
+               << binaries->version().GetString() << ").";
+  }
+
+  // Channel value must match that of binaries.
+  if (!ctx.state.channel().Equals(binaries->channel())) {
+    *is_valid = false;
+    LOG(ERROR) << "Channel name of " << ctx.dist->GetAppShortCutName()
+               << " (" << ctx.state.channel().value()
+               << ") does not match that of Chrome Binaries ("
+               << binaries->channel().value() << ").";
   }
 }
 
@@ -686,13 +510,8 @@ void InstallationValidator::ValidateAppCommands(
     bool* is_valid) {
   DCHECK(is_valid);
 
-  CommandExpectations expectations;
-
-  if (ctx.dist->GetType() == BrowserDistribution::CHROME_APP_HOST) {
-    expectations[kCmdInstallApp] = &ValidateInstallAppCommand;
-  }
-
-  ValidateAppCommandExpectations(ctx, expectations, is_valid);
+  // Products are not expected to have any commands.
+  ValidateAppCommandExpectations(ctx, CommandExpectations(), is_valid);
 }
 
 // Validates usagestats for the product or binaries in |ctx|.
@@ -788,25 +607,6 @@ bool InstallationValidator::ValidateInstallationTypeForState(
                  ProductBits::CHROME_FRAME_READY_MODE :
                  ProductBits::CHROME_FRAME_MULTI);
     *type = static_cast<InstallationType>(*type | cf_bit);
-  }
-
-  // Is Chrome App Host installed?
-  product_state =
-      machine_state.GetProductState(system_level,
-                                    BrowserDistribution::CHROME_APP_HOST);
-  if (product_state != NULL) {
-    ChromeAppHostRules chrome_app_host_rules;
-    ValidateProduct(machine_state, system_level, *product_state,
-                    chrome_app_host_rules, &rock_on);
-    *type = static_cast<InstallationType>(*type | ProductBits::CHROME_APP_HOST);
-    if (system_level) {
-      LOG(ERROR) << "Chrome App Host must not be installed at system level.";
-      rock_on = false;
-    }
-    if (!product_state->is_multi_install()) {
-      LOG(ERROR) << "Chrome App Host must always be multi-install.";
-      rock_on = false;
-    }
   }
 
   DCHECK_NE(std::find(&kInstallationTypes[0],

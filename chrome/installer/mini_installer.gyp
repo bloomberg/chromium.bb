@@ -16,7 +16,6 @@
     ['OS=="win"', {
       'target_defaults': {
         'dependencies': [
-          '../chrome.gyp:app_host',
           '../chrome.gyp:chrome',
           '../chrome.gyp:chrome_nacl_win64',
           '../chrome.gyp:chrome_dll',
@@ -235,7 +234,6 @@
               ],
               'inputs': [
                 '<(create_installer_archive_py_path)',
-                '<(PRODUCT_DIR)/app_host.exe',
                 '<(PRODUCT_DIR)/chrome.exe',
                 '<(PRODUCT_DIR)/chrome.dll',
                 '<(PRODUCT_DIR)/nacl64.exe',

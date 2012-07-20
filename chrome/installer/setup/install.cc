@@ -427,8 +427,6 @@ InstallStatus InstallOrUpdateProduct(
 
   // TODO(robertshield): Removing the pending on-reboot moves should be done
   // elsewhere.
-  // TODO(erikwright): Understand why this is Chrome Frame only and whether
-  // it also applies to App Host. Shouldn't it apply to any multi-install too?
   const Products& products = installer_state.products();
   DCHECK(products.size());
   if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {

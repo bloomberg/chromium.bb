@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,8 +21,6 @@
           'installer/util/browser_distribution.h',
           'installer/util/channel_info.cc',
           'installer/util/channel_info.h',
-          'installer/util/chrome_app_host_distribution.cc',
-          'installer/util/chrome_app_host_distribution.h',
           'installer/util/chrome_frame_distribution.cc',
           'installer/util/chrome_frame_distribution.h',
           'installer/util/chromium_binaries_distribution.cc',
@@ -116,10 +114,6 @@
             '<(DEPTH)/third_party/lzma_sdk/lzma_sdk.gyp:lzma_sdk',
           ],
           'sources': [
-            'installer/util/chrome_app_host_operations.cc',
-            'installer/util/chrome_app_host_operations.h',
-            'installer/util/chrome_binaries_operations.cc',
-            'installer/util/chrome_binaries_operations.h',
             'installer/util/chrome_browser_operations.cc',
             'installer/util/chrome_browser_operations.h',
             'installer/util/chrome_browser_sxs_operations.cc',

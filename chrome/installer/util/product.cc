@@ -10,8 +10,6 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/chrome_app_host_operations.h"
-#include "chrome/installer/util/chrome_binaries_operations.h"
 #include "chrome/installer/util/chrome_browser_operations.h"
 #include "chrome/installer/util/chrome_browser_sxs_operations.h"
 #include "chrome/installer/util/chrome_frame_operations.h"
@@ -37,12 +35,6 @@ Product::Product(BrowserDistribution* distribution)
       break;
     case BrowserDistribution::CHROME_FRAME:
       operations_.reset(new ChromeFrameOperations());
-      break;
-    case BrowserDistribution::CHROME_APP_HOST:
-      operations_.reset(new ChromeAppHostOperations());
-      break;
-    case BrowserDistribution::CHROME_BINARIES:
-      operations_.reset(new ChromeBinariesOperations());
       break;
     default:
       NOTREACHED() << "Unsupported BrowserDistribution::Type: "

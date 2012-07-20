@@ -146,12 +146,6 @@ Chrome supports. -->
         <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">
           Google Chrome Frame
         </message>
-        <message name="IDS_PRODUCT_APP_HOST_NAME" desc="The Chrome App Host application name">
-          Google Chrome App Host
-        </message>
-        <message name="IDS_PRODUCT_BINARIES_NAME" desc="The Chrome Binaries application name">
-          Google Chrome Binaries
-        </message>
         <message name="IDS_VERSIONMISMATCH_HEADER">
           Chrome Frame Update.
         </message>
@@ -374,9 +368,6 @@ Google Chrome is unable to recover your settings.
       </message>
       <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
         This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.
-      </message>
-      <message name="IDS_INSTALL_HIGHER_VERSION_APP_HOST" desc="Error displayed when higher version of the Chrome App Host already exists.">
-        This computer already has a more recent version of the Google Chrome components. Please use a more recent installer.
       </message>
       <message name="IDS_INSTALL_HIGHER_VERSION_CF" desc="Error displayed when higher version of Chrome Frame already exists">
         This computer already has a more recent version of Google Chrome Frame. If the software is not working, please uninstall Google Chrome Frame and try again.

@@ -82,7 +82,6 @@ namespace installer {
 MasterPreferences::MasterPreferences() : distribution_(NULL),
                                          preferences_read_from_file_(false),
                                          chrome_(true),
-                                         chrome_app_host_(false),
                                          chrome_frame_(false),
                                          multi_install_(false) {
   InitializeFromCommandLine(*CommandLine::ForCurrentProcess());
@@ -92,7 +91,6 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
     : distribution_(NULL),
       preferences_read_from_file_(false),
       chrome_(true),
-      chrome_app_host_(false),
       chrome_frame_(false),
       multi_install_(false) {
   InitializeFromCommandLine(cmd_line);
@@ -100,8 +98,7 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
 
 MasterPreferences::MasterPreferences(const FilePath& prefs_path)
     : distribution_(NULL), preferences_read_from_file_(false),
-      chrome_(true), chrome_app_host_(false), chrome_frame_(false),
-      multi_install_(false) {
+      chrome_(true), chrome_frame_(false), multi_install_(false) {
   master_dictionary_.reset(ParseDistributionPreferences(prefs_path));
 
   if (!master_dictionary_.get()) {
@@ -139,8 +136,6 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
   } translate_switches[] = {
     { installer::switches::kAutoLaunchChrome,
       installer::master_preferences::kAutoLaunchChrome },
-    { installer::switches::kChromeAppHost,
-      installer::master_preferences::kChromeAppHost },
     { installer::switches::kChrome,
       installer::master_preferences::kChrome },
     { installer::switches::kChromeFrame,
@@ -212,12 +207,10 @@ void MasterPreferences::InitializeProductFlags() {
   // Make sure we start out with the correct defaults.
   multi_install_ = false;
   chrome_frame_ = false;
-  chrome_app_host_ = false;
   chrome_ = true;
 
   GetBool(installer::master_preferences::kMultiInstall, &multi_install_);
   GetBool(installer::master_preferences::kChromeFrame, &chrome_frame_);
-  GetBool(installer::master_preferences::kChromeAppHost, &chrome_app_host_);
 
   // When multi-install is specified, the checks are pretty simple (in theory):
   // In order to be installed/uninstalled, each product must have its switch

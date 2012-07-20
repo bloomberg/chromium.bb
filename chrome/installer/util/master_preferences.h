@@ -164,10 +164,6 @@ class MasterPreferences {
     return chrome_;
   }
 
-  bool install_chrome_app_host() const {
-    return chrome_app_host_;
-  }
-
   bool install_chrome_frame() const {
     return chrome_frame_;
   }
@@ -192,7 +188,6 @@ class MasterPreferences {
   base::DictionaryValue* distribution_;
   bool preferences_read_from_file_;
   bool chrome_;
-  bool chrome_app_host_;
   bool chrome_frame_;
   bool multi_install_;
 

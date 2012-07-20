@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,13 +56,6 @@ class ChannelInfo {
   // Adds or removes the -chromeframe modifier, returning true if the value is
   // modified.
   bool SetChromeFrame(bool value);
-
-  // Returns true if the -apphost modifier is present in the value.
-  bool IsAppHost() const;
-
-  // Adds or removes the -apphost modifier, returning true if the value is
-  // modified.
-  bool SetAppHost(bool value);
 
   // Returns true if the -multi modifier is present in the value.
   bool IsMultiInstall() const;

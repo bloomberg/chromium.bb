@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,12 +37,6 @@ typedef std::vector<Product*> Products;
 
 // Encapsulates the state of the current installation operation.  Only valid
 // for installs and upgrades (not for uninstalls or non-install commands).
-// This class interprets the command-line arguments and master preferences and
-// determines the operations to be performed. For example, the Chrome Binaries
-// are automatically added if required in multi-install mode.
-// TODO(erikwright): This is now used a fair bit during uninstall, and
-// InstallerState::Initialize() contains a lot of code for uninstall. The class
-// comment should probably be updated.
 // TODO(grt): Rename to InstallerEngine/Conductor or somesuch?
 class InstallerState {
  public:

@@ -124,7 +124,6 @@ COMPILE_ASSERT(CREATING_VISUAL_MANIFEST == 17,
 namespace switches {
 extern const char kAutoLaunchChrome[];
 extern const char kChrome[];
-extern const char kChromeAppHost[];
 extern const char kChromeFrame[];
 extern const char kChromeFrameQuickEnable[];
 extern const char kChromeFrameReadyMode[];
@@ -167,7 +166,6 @@ extern const char kExperimentGroup[];
 extern const char kToastResultsKey[];
 }  // namespace switches
 
-extern const wchar_t kChromeAppHostExe[];
 extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeFrameDll[];
@@ -177,8 +175,6 @@ extern const wchar_t kChromeFrameReadyModeField[];
 extern const wchar_t kChromeLauncherExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kChromeNewExe[];
-extern const wchar_t kCmdInstallApp[];
-extern const wchar_t kCmdQuickEnableApplicationHost[];
 extern const wchar_t kCmdQuickEnableCf[];
 extern const wchar_t kDelegateExecuteExe[];
 extern const wchar_t kGoogleChromeInstallSubDir1[];

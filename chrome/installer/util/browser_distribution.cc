@@ -17,11 +17,10 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/installer/util/chrome_app_host_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/chromium_binaries_distribution.h"
-#include "chrome/installer/util/google_chrome_binaries_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
+#include "chrome/installer/util/google_chrome_binaries_distribution.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
@@ -45,7 +44,6 @@ const wchar_t kICommandExecuteImplUuid[] =
 BrowserDistribution* g_browser_distribution = NULL;
 BrowserDistribution* g_chrome_frame_distribution = NULL;
 BrowserDistribution* g_binaries_distribution = NULL;
-BrowserDistribution* g_chrome_app_host_distribution = NULL;
 
 // Returns true if currently running in npchrome_frame.dll
 bool IsChromeFrameModule() {
@@ -56,8 +54,6 @@ bool IsChromeFrameModule() {
 }
 
 BrowserDistribution::Type GetCurrentDistributionType() {
-  // TODO(erikwright): If the app host is installed, but not Chrome, perhaps
-  // this should return CHROME_APP_HOST.
   static BrowserDistribution::Type type =
       (MasterPreferences::ForCurrentProcess().install_chrome_frame() ||
        IsChromeFrameModule()) ?
@@ -67,6 +63,16 @@ BrowserDistribution::Type GetCurrentDistributionType() {
 }
 
 }  // end namespace
+
+// CHROME_BINARIES represents the binaries shared by multi-install products and
+// is not a product in and of itself, so it is not present in this collection.
+const BrowserDistribution::Type BrowserDistribution::kProductTypes[] = {
+  BrowserDistribution::CHROME_BROWSER,
+  BrowserDistribution::CHROME_FRAME,
+};
+
+const size_t BrowserDistribution::kNumProductTypes =
+    arraysize(BrowserDistribution::kProductTypes);
 
 BrowserDistribution::BrowserDistribution()
     : type_(CHROME_BROWSER) {
@@ -118,11 +124,6 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
     case CHROME_FRAME:
       dist = GetOrCreateBrowserDistribution<ChromeFrameDistribution>(
           &g_chrome_frame_distribution);
-      break;
-
-    case CHROME_APP_HOST:
-      dist = GetOrCreateBrowserDistribution<ChromeAppHostDistribution>(
-          &g_chrome_app_host_distribution);
       break;
 
     default:

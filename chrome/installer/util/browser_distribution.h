@@ -29,7 +29,6 @@ class BrowserDistribution {
     CHROME_BROWSER,
     CHROME_FRAME,
     CHROME_BINARIES,
-    CHROME_APP_HOST,
     NUM_TYPES
   };
 
@@ -46,6 +45,12 @@ class BrowserDistribution {
                           // group is the group that qualifies for the
                           // experiment but does not participate.
   };
+
+  // An array of the Types representing products;
+  static const Type kProductTypes[];
+
+  // The number of elements in the array |kProductTypes|.
+  static const size_t kNumProductTypes;
 
   virtual ~BrowserDistribution() {}
 

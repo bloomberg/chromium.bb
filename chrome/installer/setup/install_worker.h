@@ -63,6 +63,7 @@ void AddUsageStatsWorkItems(const InstallationState& original_state,
 // false.
 bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const FilePath& setup_path,
+                            const FilePath& new_chrome_exe,
                             const Version* current_version,
                             const Version& new_version,
                             const FilePath& temp_path,
@@ -181,25 +182,11 @@ void RefreshElevationPolicy();
 // run) and |new_version| (the version of the product(s) currently being
 // installed) are required when processing product installation; they are unused
 // (and may therefore be NULL) when uninstalling.
-void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
-                                        const InstallationState& machine_state,
-                                        const FilePath* setup_path,
-                                        const Version* new_version,
-                                        WorkItemList* work_item_list);
-
-// Add work items to add or remove the "quick-enable-application-host" command
-// to the multi-installer binaries' version key on the basis of the current
-// operation (represented in |installer_state|) and the pre-existing machine
-// configuration (represented in |machine_state|).  |setup_path| (the path to
-// the executable currently being run) and |new_version| (the version of the
-// product(s) currently being installed) are required when processing product
-// installation; they are unused (and may therefore be NULL) when uninstalling.
-void AddQuickEnableApplicationHostWorkItems(
-    const InstallerState& installer_state,
-    const InstallationState& machine_state,
-    const FilePath* setup_path,
-    const Version* new_version,
-    WorkItemList* work_item_list);
+void AddQuickEnableWorkItems(const InstallerState& installer_state,
+                             const InstallationState& machine_state,
+                             const FilePath* setup_path,
+                             const Version* new_version,
+                             WorkItemList* work_item_list);
 
 }  // namespace installer
 

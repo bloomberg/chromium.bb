@@ -90,6 +90,7 @@ string16 ChromiumBinariesDistribution::GetVersionKey() {
 }
 
 bool ChromiumBinariesDistribution::CanSetAsDefault() {
+  NOTREACHED();
   return false;
 }
 

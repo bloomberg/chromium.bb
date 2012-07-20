@@ -126,117 +126,6 @@ void InstallerState::Initialize(const CommandLine& command_line,
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
             << " distribution: " << p->distribution()->GetAppShortCutName();
   }
-  if (prefs.install_chrome_app_host()) {
-    Product* p =
-        AddProductFromPreferences(BrowserDistribution::CHROME_APP_HOST, prefs,
-                                  machine_state);
-    VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-            << " distribution: " << p->distribution()->GetAppShortCutName();
-  }
-
-  if (!is_uninstall && is_multi_install()) {
-    bool need_binaries = false;
-    if (FindProduct(BrowserDistribution::CHROME_APP_HOST)) {
-      // App Host will happily use Chrome at system level, or binaries at system
-      // level, even if app host is user level.
-      const ProductState* chrome_state = machine_state.GetProductState(
-          true,  // system level
-          BrowserDistribution::CHROME_BROWSER);
-      // If Chrome is at system-level, multi- or otherwise. We'll use it.
-      if (!chrome_state) {
-        const ProductState* binaries_state = machine_state.GetProductState(
-            true,  // system level
-            BrowserDistribution::CHROME_BINARIES);
-        if (!binaries_state)
-          need_binaries = true;
-      }
-    }
-
-    // Chrome/Chrome Frame multi need Binaries at their own level.
-    if (FindProduct(BrowserDistribution::CHROME_BROWSER))
-      need_binaries = true;
-
-    if (FindProduct(BrowserDistribution::CHROME_FRAME))
-      need_binaries = true;
-
-    if (need_binaries && !FindProduct(BrowserDistribution::CHROME_BINARIES)) {
-      // Force binaries to be installed/updated.
-      Product* p =
-          AddProductFromPreferences(BrowserDistribution::CHROME_BINARIES,
-                                    prefs,
-                                    machine_state);
-      VLOG(1) << "Install distribution: "
-              << p->distribution()->GetAppShortCutName();
-    }
-  }
-
-  if (is_uninstall && prefs.is_multi_install()) {
-    if (FindProduct(BrowserDistribution::CHROME_BROWSER)) {
-      const ProductState* chrome_frame_state = machine_state.GetProductState(
-          system_install(), BrowserDistribution::CHROME_FRAME);
-
-      if (chrome_frame_state != NULL &&
-          chrome_frame_state->uninstall_command().HasSwitch(
-              switches::kChromeFrameReadyMode) &&
-          !FindProduct(BrowserDistribution::CHROME_FRAME)) {
-        // Chrome Frame is installed in Ready Mode. Remove it along with Chrome.
-        Product* p = AddProductFromPreferences(
-            BrowserDistribution::CHROME_FRAME, prefs, machine_state);
-
-        VLOG(1) << "Uninstall distribution: "
-                << p->distribution()->GetAppShortCutName();
-      }
-    }
-
-    bool keep_binaries = false;
-    // Look for a product that is not the binaries and that is not being
-    // uninstalled. If not found, binaries are uninstalled too.
-    for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
-      BrowserDistribution::Type type =
-          static_cast<BrowserDistribution::Type>(i);
-
-      if (type == BrowserDistribution::CHROME_BINARIES)
-        continue;
-
-      if (machine_state.GetProductState(system_install(), type) == NULL) {
-        // The product is not installed.
-        continue;
-      }
-
-      // The product is installed.
-
-      if (!FindProduct(type)) {
-        // The product is not being uninstalled.
-        if (type != BrowserDistribution::CHROME_APP_HOST) {
-          keep_binaries = true;
-          break;
-        } else {
-          // If binaries/chrome are at system-level, we can discard them at
-          // user-level...
-          if (!machine_state.GetProductState(
-                  true,  // system-level
-                  BrowserDistribution::CHROME_BROWSER) &&
-              !machine_state.GetProductState(
-                  true,  // system-level
-                  BrowserDistribution::CHROME_BINARIES)) {
-            // ... otherwise keep them.
-            keep_binaries = true;
-            break;
-          }
-
-        }
-      }
-
-      // The product is being uninstalled.
-    }
-    if (!keep_binaries) {
-      Product* p =
-          AddProductFromPreferences(BrowserDistribution::CHROME_BINARIES, prefs,
-                                    machine_state);
-      VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-              << " distribution: " << p->distribution()->GetAppShortCutName();
-    }
-  }
 
   BrowserDistribution* operand = NULL;
 
@@ -252,26 +141,17 @@ void InstallerState::Initialize(const CommandLine& command_line,
     operand = multi_package_distribution_;
     operation_ = MULTI_UPDATE;
   } else {
+    // Initial and over installs will always take place under one of the
+    // product app guids.  Chrome Frame's will be used if only Chrome Frame
+    // is being installed.  In all other cases, Chrome's is used.
     operation_ = MULTI_INSTALL;
   }
 
-  // Initial, over, and un-installs will always take place under one of the
-  // product app guids (Chrome, Chrome Frame, or App Host, in order of
-  // preference).
   if (operand == NULL) {
-    BrowserDistribution::Type operand_distribution_type =
-        BrowserDistribution::CHROME_BINARIES;
-    if (prefs.install_chrome())
-      operand_distribution_type = BrowserDistribution::CHROME_BROWSER;
-    else if (prefs.install_chrome_frame())
-      operand_distribution_type = BrowserDistribution::CHROME_FRAME;
-    else if (prefs.install_chrome_app_host())
-      operand_distribution_type = BrowserDistribution::CHROME_APP_HOST;
-    else
-      NOTREACHED();
-
     operand = BrowserDistribution::GetSpecificDistribution(
-        operand_distribution_type);
+        prefs.install_chrome() ?
+            BrowserDistribution::CHROME_BROWSER :
+            BrowserDistribution::CHROME_FRAME);
   }
 
   state_key_ = operand->GetStateKey();

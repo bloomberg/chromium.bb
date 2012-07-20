@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,6 @@ void Configuration::Clear() {
   argument_count_ = 0;
   has_chrome_ = false;
   has_chrome_frame_ = false;
-  has_app_host_ = false;
   is_multi_install_ = false;
   is_system_level_ = false;
 }
@@ -60,8 +59,6 @@ bool Configuration::InitializeFromCommandLine(const wchar_t* command_line) {
         has_chrome_ = true;
       else if (0 == ::lstrcmpi(args_[i], L"--chrome-frame"))
         has_chrome_frame_ = true;
-      else if (0 == ::lstrcmpi(args_[i], L"--app-host"))
-        has_app_host_ = true;
       else if (0 == ::lstrcmpi(args_[i], L"--multi-install"))
         is_multi_install_ = true;
       else if (0 == ::lstrcmpi(args_[i], L"--system-level"))
@@ -70,9 +67,9 @@ bool Configuration::InitializeFromCommandLine(const wchar_t* command_line) {
         operation_ = CLEANUP;
     }
 
-    // Single-install defaults to Chrome.
+    // Single-install is either Chrome or Chrome Frame.
     if (!is_multi_install_)
-      has_chrome_ = !(has_chrome_frame_ || has_app_host_);
+      has_chrome_ = !has_chrome_frame_;
   }
   return args_ != NULL;
 }
