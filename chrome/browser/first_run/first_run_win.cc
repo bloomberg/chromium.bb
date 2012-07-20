@@ -399,6 +399,10 @@ bool ImportSettingsWin(Profile* profile,
                        int items_to_import,
                        const FilePath& import_bookmarks_path,
                        bool skip_first_run_ui) {
+  if (!items_to_import && import_bookmarks_path.empty()) {
+    return true;
+  }
+
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());
 
