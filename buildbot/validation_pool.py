@@ -456,6 +456,9 @@ class RawPatchSeries(object):
       except cros_patch.PatchException, e:
         logging.info("Failed creating transaction for %s: %s", change, e)
         failed.append(e)
+      else:
+        logging.info("Transaction for %s is %s.",
+            change, ', '.join(map(str, resolved[-1][-1])))
 
     if not resolved:
       # No work to do; either no changes were given to us, or all failed
