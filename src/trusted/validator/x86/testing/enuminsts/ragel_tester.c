@@ -29,7 +29,45 @@ struct {
   NaClEnumeratorDecoder _base;
 } ragel_decoder;
 
-
+/* Emulate features of old validator to simplify testing */
+NaClCPUFeaturesX86 old_validator_features = { { 1, 1 }, {
+  1, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
+  0, /* NaClCPUFeature_AES */
+  0, /* NaClCPUFeature_AVX */
+  0, /* NaClCPUFeature_BMI1 */
+  1, /* NaClCPUFeature_CLFLUSH */
+  0, /* NaClCPUFeature_CLMUL */
+  1, /* NaClCPUFeature_CMOV */
+  1, /* NaClCPUFeature_CX16 */
+  1, /* NaClCPUFeature_CX8 */
+  1, /* NaClCPUFeature_E3DNOW */ /* AMD-specific */
+  1, /* NaClCPUFeature_EMMX */   /* AMD-specific */
+  0, /* NaClCPUFeature_F16C */
+  0, /* NaClCPUFeature_FMA */
+  0, /* NaClCPUFeature_FMA4 */ /* AMD-specific */
+  1, /* NaClCPUFeature_FXSR */
+  0, /* NaClCPUFeature_LAHF */
+  0, /* NaClCPUFeature_LM */
+  0, /* NaClCPUFeature_LWP */ /* AMD-specific */
+  1, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
+  1, /* NaClCPUFeature_MMX */
+  1, /* NaClCPUFeature_MON */
+  1, /* NaClCPUFeature_MOVBE */
+  1, /* NaClCPUFeature_OSXSAVE */
+  1, /* NaClCPUFeature_POPCNT */
+  0, /* NaClCPUFeature_PRE */ /* AMD-specific */
+  1, /* NaClCPUFeature_SSE */
+  1, /* NaClCPUFeature_SSE2 */
+  1, /* NaClCPUFeature_SSE3 */
+  1, /* NaClCPUFeature_SSE41 */
+  1, /* NaClCPUFeature_SSE42 */
+  1, /* NaClCPUFeature_SSE4A */  /* AMD-specific */
+  1, /* NaClCPUFeature_SSSE3 */
+  0, /* NaClCPUFeature_TBM */ /* AMD-specific */
+  1, /* NaClCPUFeature_TSC */
+  1, /* NaClCPUFeature_x87 */
+  0  /* NaClCPUFeature_XOP */ /* AMD-specific */
+} };
 
 /* Initialize ragel state before we try to decode anything. */
 static void RagelSetup() {
@@ -61,12 +99,13 @@ void RagelDecodeError (const uint8_t *ptr, void *userdata) {
   RagelPrintInst();
 }
 
-void RagelValidateError (const uint8_t *ptr, void *userdata) {
+void RagelValidateError (const uint8_t *ptr, int error, void *userdata) {
   UNREFERENCED_PARAMETER(ptr);
-  UNREFERENCED_PARAMETER(userdata);
+  if ((error & UNRECOGNIZED_INSTRUCTION) ||
+      (error & CPUID_UNSUPPORTED_INSTRUCTION)) {
+    ((struct RagelDecodeState*)userdata)->inst_is_legal = 0;
+  }
   return;
-  printf("DFA error in validator\n");
-  RagelPrintInst();
 }
 
 void RagelInstruction(const uint8_t *begin, const uint8_t *end,
@@ -105,8 +144,10 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 64
 #define DecodeChunkArch DecodeChunkAMD64
+#define ValidateChunkArch ValidateChunkAMD64
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 32
 #define DecodeChunkArch DecodeChunkIA32
+#define ValidateChunkArch ValidateChunkIA32
 #else
 #error("Unsupported architecture")
 #endif
@@ -118,18 +159,23 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
   /* Decode again, this time specifying length of first instruction. */
   res = DecodeChunkArch(enumerator->_itext, tempstate.inst_num_bytes,
                         RagelInstruction, RagelDecodeError, &RState);
-#undef DecodeChunkArch
-#define RAGEL_LEGAL_READY 0
-#if RAGEL_LEGAL_READY
-  if (res) {
-    res = ValidateChunkAMD64(enumerator->_itext, enumerator->_num_bytes,
-                             RagelValidateError, &RState);
-  }
+
   RState.inst_is_legal = res;
-#else
-  (void) res;  /* work around: for -Werror=unused-but-set-variable in gcc 4.6 */
-  RState.inst_is_legal = (RState.inst_num_bytes != 0);
-#endif
+  if (res) {
+    uint8_t chunk[(NACL_ENUM_MAX_INSTRUCTION_BYTES + kBundleMask) &
+                  ~kBundleMask];
+
+    /* Copy the command.  */
+    memcpy(chunk, enumerator->_itext, enumerator->_num_bytes);
+    /* Fill the rest with HLTs.  */
+    memset(chunk + enumerator->_num_bytes, 0xf4,
+           sizeof(chunk) - enumerator->_num_bytes);
+    ValidateChunkArch(chunk, sizeof(chunk), &old_validator_features,
+                      RagelValidateError, &RState);
+  }
+
+#undef DecodeChunkArch
+#undef ValidateChunkArch
 }
 
 /* Returns true if the instruction parsed a legal instruction. */

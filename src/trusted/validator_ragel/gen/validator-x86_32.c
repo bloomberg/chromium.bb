@@ -41,9 +41,6 @@ static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
   bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
 }
 
-static const size_t kBundleSize = 32;
-static const size_t kBundleMask = 31;
-
 /* Mark the destination of a jump instruction and make an early validity check:
  * to jump outside given code region, the target address must be aligned.
  *

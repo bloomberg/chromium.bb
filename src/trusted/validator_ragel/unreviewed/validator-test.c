@@ -71,7 +71,7 @@ NaClCPUFeaturesX86 old_validator_features = { { 1, 1 }, {
   0  /* NaClCPUFeature_XOP */ /* AMD-specific */
 } };
 
-/* Emulate features of old validator to simplify testing */
+/* All supported features are enabled */
 NaClCPUFeaturesX86 full_validator_features = { { 1, 1 }, {
   1, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
   1, /* NaClCPUFeature_AES */

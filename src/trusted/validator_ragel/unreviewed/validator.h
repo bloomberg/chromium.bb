@@ -40,6 +40,9 @@ enum validation_errors {
   BAD_JUMP_TARGET               = 0x10000000
 };
 
+#define kBundleSize 32
+#define kBundleMask 31
+
 typedef void (*process_validation_error_func) (const uint8_t *ptr,
                                                int validation_error,
                                                void *userdata);
