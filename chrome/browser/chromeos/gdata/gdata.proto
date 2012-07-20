@@ -50,8 +50,6 @@ message GDataFileProto {
 // Represents GDataDirectory.
 message GDataDirectoryProto {
   optional GDataEntryProto gdata_entry = 1;
-  optional string start_feed_url = 3;
-  optional string next_feed_url = 4;
   repeated GDataDirectoryProto child_directories = 7;
   repeated GDataFileProto child_files = 8;
 }

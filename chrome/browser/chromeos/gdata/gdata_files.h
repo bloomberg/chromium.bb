@@ -292,12 +292,6 @@ class GDataDirectory : public GDataEntry {
   void RemoveChildFiles();
   void RemoveChildDirectories();
 
-  // Url for this feed.
-  const GURL& start_feed_url() const { return start_feed_url_; }
-  void set_start_feed_url(const GURL& url) { start_feed_url_ = url; }
-  // Continuing feed's url.
-  const GURL& next_feed_url() const { return next_feed_url_; }
-  void set_next_feed_url(const GURL& url) { next_feed_url_ = url; }
   // Collection of children files/directories.
   const GDataFileCollection& child_files() const { return child_files_; }
   const GDataDirectoryCollection& child_directories() const {
@@ -311,11 +305,6 @@ class GDataDirectory : public GDataEntry {
   // Removes the entry from its children without destroying the
   // entry instance.
   bool RemoveChild(GDataEntry* entry);
-
-  // Url for this feed.
-  GURL start_feed_url_;
-  // Continuing feed's url.
-  GURL next_feed_url_;
 
   // Collection of children GDataEntry items.
   GDataFileCollection child_files_;

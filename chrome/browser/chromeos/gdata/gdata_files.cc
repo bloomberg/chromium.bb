@@ -262,8 +262,6 @@ GDataEntry* GDataDirectory::FromDocumentEntry(
   dir->file_info_.last_modified = doc->updated_time();
   dir->file_info_.last_accessed = doc->updated_time();
   dir->file_info_.creation_time = doc->published_time();
-  // Extract feed link.
-  dir->start_feed_url_ = doc->content_url();
   dir->resource_id_ = doc->resource_id();
   dir->content_url_ = doc->content_url();
   dir->deleted_ = doc->deleted();
@@ -658,17 +656,12 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   if (!GDataEntry::FromProto(proto.gdata_entry()))
     return false;
 
-  start_feed_url_ = GURL(proto.start_feed_url());
-  next_feed_url_ = GURL(proto.next_feed_url());
-
   return true;
 }
 
 void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   GDataEntry::ToProto(proto->mutable_gdata_entry());
   DCHECK(proto->gdata_entry().file_info().is_directory());
-  proto->set_start_feed_url(start_feed_url_.spec());
-  proto->set_next_feed_url(next_feed_url_.spec());
   for (GDataFileCollection::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
     GDataFile* file = iter->second;
