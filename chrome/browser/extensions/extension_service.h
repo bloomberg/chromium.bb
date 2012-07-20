@@ -22,7 +22,6 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/tuple.h"
-#include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/apps_promo.h"
@@ -615,9 +614,6 @@ class ExtensionService
     return &extension_warnings_;
   }
 
-  // Call only from IO thread.
-  extensions::APIResourceController* api_resource_controller();
-
   AppShortcutManager* app_shortcut_manager() { return &app_shortcut_manager_; }
 
   // Specialization of syncer::SyncableService::AsWeakPtr.
@@ -845,8 +841,6 @@ class ExtensionService
 
   // Contains an entry for each warning that shall be currently shown.
   ExtensionWarningSet extension_warnings_;
-
-  scoped_ptr<extensions::APIResourceController> api_resource_controller_;
 
   extensions::ProcessMap process_map_;
 

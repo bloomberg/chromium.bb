@@ -9,10 +9,10 @@
 #include "base/file_path.h"
 #include "base/string_tokenizer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -278,8 +278,13 @@ void ExtensionSystemImpl::Init(bool extensions_enabled) {
   shared_->InitInfoMap();
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
-  alarm_manager_.reset(new AlarmManager(profile_,
-                                        &base::Time::Now));
+  alarm_manager_.reset(new AlarmManager(profile_, &base::Time::Now));
+
+  serial_connection_manager_.reset(new ApiResourceManager<SerialConnection>(
+      BrowserThread::FILE));
+  socket_manager_.reset(new ApiResourceManager<Socket>(BrowserThread::IO));
+  usb_device_resource_manager_.reset(
+      new ApiResourceManager<UsbDeviceResource>(BrowserThread::IO));
 
   shared_->Init(extensions_enabled);
 }
@@ -332,6 +337,20 @@ ExtensionEventRouter* ExtensionSystemImpl::event_router() {
 
 RulesRegistryService* ExtensionSystemImpl::rules_registry_service() {
   return shared_->rules_registry_service();
+}
+
+ApiResourceManager<SerialConnection>*
+ExtensionSystemImpl::serial_connection_manager() {
+  return serial_connection_manager_.get();
+}
+
+ApiResourceManager<Socket>*ExtensionSystemImpl::socket_manager() {
+  return socket_manager_.get();
+}
+
+ApiResourceManager<UsbDeviceResource>*
+ExtensionSystemImpl::usb_device_resource_manager() {
+  return usb_device_resource_manager_.get();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

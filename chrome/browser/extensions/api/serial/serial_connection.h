@@ -11,21 +11,25 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/api/api_resource.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
+
+using content::BrowserThread;
 
 namespace extensions {
 
 extern const char kSerialConnectionNotFoundError[];
 
-class APIResourceEventNotifier;
+class ApiResourceEventNotifier;
 
 // Encapsulates an open serial port. Platform-specific implementations are in
 // _win and _posix versions of the the .cc file.
-class SerialConnection : public APIResource {
+class SerialConnection : public ApiResource {
  public:
   SerialConnection(const std::string& port,
                    int bitrate,
-                   APIResourceEventNotifier* event_notifier);
+                   ApiResourceEventNotifier* event_notifier);
   virtual ~SerialConnection();
 
   virtual bool Open();

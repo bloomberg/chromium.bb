@@ -22,7 +22,7 @@ class ListValue;
 
 namespace extensions {
 
-enum APIResourceEventType {
+enum ApiResourceEventType {
   API_RESOURCE_EVENT_CONNECT_COMPLETE,
   API_RESOURCE_EVENT_DATA_READ,
   API_RESOURCE_EVENT_WRITE_COMPLETE,
@@ -31,21 +31,12 @@ enum APIResourceEventType {
 
 extern const char kSrcIdKey[];
 
-// TODO(miket): It's possible that we'll further refactor these new classes in
-// light of some changes that mihaip has suggested. The names might change,
-// too:
-//
-// IOResource
-// IOResourceExtensionFunction
-// IOResourceEventNotifier
-// IOResourceController
-
-// APIResourceEventNotifier knows how to send an event to a specific app's
-// onEvent handler. It handles all platform-API events.
-class APIResourceEventNotifier
-    : public base::RefCountedThreadSafe<APIResourceEventNotifier> {
+// ApiResourceEventNotifier knows how to send an event to a specific app's
+// onEvent handler.
+class ApiResourceEventNotifier
+    : public base::RefCountedThreadSafe<ApiResourceEventNotifier> {
  public:
-  APIResourceEventNotifier(ExtensionEventRouter* router,
+  ApiResourceEventNotifier(ExtensionEventRouter* router,
                            Profile* profile,
                            const std::string& src_extension_id, int src_id,
                            const GURL& src_url);
@@ -64,22 +55,22 @@ class APIResourceEventNotifier
                                   const std::string& error,
                                   base::BinaryValue* data);
 
-  static std::string APIResourceEventTypeToString(
-      APIResourceEventType event_type);
+  static std::string ApiResourceEventTypeToString(
+      ApiResourceEventType event_type);
 
  private:
-  friend class base::RefCountedThreadSafe<APIResourceEventNotifier>;
-  friend class MockAPIResourceEventNotifier;
+  friend class base::RefCountedThreadSafe<ApiResourceEventNotifier>;
+  friend class MockApiResourceEventNotifier;
 
-  virtual ~APIResourceEventNotifier();
+  virtual ~ApiResourceEventNotifier();
 
   void DispatchEvent(const std::string &extension, DictionaryValue* event);
   void DispatchEventOnUIThread(const std::string& extension,
                                DictionaryValue* event);
-  DictionaryValue* CreateAPIResourceEvent(APIResourceEventType event_type);
+  DictionaryValue* CreateApiResourceEvent(ApiResourceEventType event_type);
 
   void SendEventWithResultCode(const std::string& extension,
-                               APIResourceEventType event_type,
+                               ApiResourceEventType event_type,
                                int result_code);
 
   ExtensionEventRouter* router_;
@@ -88,7 +79,7 @@ class APIResourceEventNotifier
   int src_id_;
   GURL src_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(APIResourceEventNotifier);
+  DISALLOW_COPY_AND_ASSIGN(ApiResourceEventNotifier);
 };
 
 }  // namespace extensions

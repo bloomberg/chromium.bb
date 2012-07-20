@@ -10,33 +10,24 @@
 
 namespace extensions {
 
-class APIResourceController;
-class APIResourceEventNotifier;
+class ApiResourceEventNotifier;
 
-// An APIResource represents something that an extension API manages, such as a
-// socket or a serial-port connection.
-class APIResource {
+// An ApiResource represents something that an extension API manages, such as a
+// socket or a serial-port connection. Typically, an ApiResourceManager will
+// control the lifetime of all ApiResources of a specific derived type.
+class ApiResource {
  public:
-  virtual ~APIResource();
+  virtual ~ApiResource();
 
  protected:
-  enum APIResourceType {
-    SocketResource,
-    SerialConnectionResource,
-    UsbDeviceResource,
-  };
-  APIResource(APIResourceType api_resource_type,
-              APIResourceEventNotifier* event_notifier);
+  ApiResource(ApiResourceEventNotifier* event_notifier);
 
-  APIResourceType api_resource_type() const;
-  APIResourceEventNotifier* event_notifier() const;
+  ApiResourceEventNotifier* event_notifier() const;
 
  private:
-  APIResourceType api_resource_type_;
-  scoped_refptr<APIResourceEventNotifier> event_notifier_;
+  scoped_refptr<ApiResourceEventNotifier> event_notifier_;
 
-  friend class APIResourceController;
-  DISALLOW_COPY_AND_ASSIGN(APIResource);
+  DISALLOW_COPY_AND_ASSIGN(ApiResource);
 };
 
 }  // namespace extensions

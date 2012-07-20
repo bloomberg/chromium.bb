@@ -5,67 +5,68 @@
 #include "chrome/browser/extensions/api/api_function.h"
 
 #include "base/bind.h"
-#include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
-AsyncAPIFunction::AsyncAPIFunction()
+AsyncApiFunction::AsyncApiFunction()
     : work_thread_id_(BrowserThread::IO) {
 }
 
-bool AsyncAPIFunction::RunImpl() {
+bool AsyncApiFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  extension_service_ = profile()->GetExtensionService();
 
-  if (!Prepare()) {
+  if (!PrePrepare() || !Prepare()) {
     return false;
   }
   bool rv = BrowserThread::PostTask(
       work_thread_id_, FROM_HERE,
-      base::Bind(&AsyncAPIFunction::WorkOnWorkThread, this));
+      base::Bind(&AsyncApiFunction::WorkOnWorkThread, this));
   DCHECK(rv);
   return true;
 }
 
-void AsyncAPIFunction::Work() {
+bool AsyncApiFunction::PrePrepare() {
+  return true;
 }
 
-void AsyncAPIFunction::AsyncWorkStart() {
+void AsyncApiFunction::Work() {
+}
+
+void AsyncApiFunction::AsyncWorkStart() {
   Work();
   AsyncWorkCompleted();
 }
 
-void AsyncAPIFunction::AsyncWorkCompleted() {
+void AsyncApiFunction::AsyncWorkCompleted() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     bool rv = BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&AsyncAPIFunction::RespondOnUIThread, this));
+        base::Bind(&AsyncApiFunction::RespondOnUIThread, this));
     DCHECK(rv);
   } else {
     SendResponse(Respond());
   }
 }
 
-void AsyncAPIFunction::WorkOnWorkThread() {
+void AsyncApiFunction::WorkOnWorkThread() {
   DCHECK(BrowserThread::CurrentlyOn(work_thread_id_));
   DCHECK(work_thread_id_ != BrowserThread::UI) <<
-      "You have specified that AsyncAPIFunction::Work() should happen on "
+      "You have specified that AsyncApiFunction::Work() should happen on "
       "the UI thread. This nullifies the point of this class. Either "
       "specify a different thread or derive from a different class.";
   AsyncWorkStart();
 }
 
-void AsyncAPIFunction::RespondOnUIThread() {
+void AsyncApiFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendResponse(Respond());
 }
 
-int AsyncAPIFunction::DeprecatedExtractSrcId(size_t argument_position) {
+int AsyncApiFunction::DeprecatedExtractSrcId(size_t argument_position) {
   scoped_ptr<DictionaryValue> options(new DictionaryValue());
   if (args_->GetSize() > argument_position) {
     DictionaryValue* temp_options = NULL;
@@ -83,7 +84,7 @@ int AsyncAPIFunction::DeprecatedExtractSrcId(size_t argument_position) {
   return src_id;
 }
 
-int AsyncAPIFunction::ExtractSrcId(const DictionaryValue* options) {
+int AsyncApiFunction::ExtractSrcId(const DictionaryValue* options) {
   int src_id = -1;
   if (options) {
     if (options->HasKey(kSrcIdKey))
@@ -92,17 +93,11 @@ int AsyncAPIFunction::ExtractSrcId(const DictionaryValue* options) {
   return src_id;
 }
 
-APIResourceEventNotifier* AsyncAPIFunction::CreateEventNotifier(int src_id) {
+ApiResourceEventNotifier* AsyncApiFunction::CreateEventNotifier(int src_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return new APIResourceEventNotifier(
+  return new ApiResourceEventNotifier(
       profile()->GetExtensionEventRouter(), profile(), extension_id(),
       src_id, source_url());
-}
-
-APIResourceController* AsyncAPIFunction::controller() {
-  // ExtensionService's APIResourceController is set exactly once, long before
-  // this code is reached, so it's safe to access it on any thread.
-  return extension_service_->api_resource_controller();
 }
 
 }  // namespace extensions

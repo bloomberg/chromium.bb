@@ -9,17 +9,31 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/experimental_serial.h"
 #include "net/base/io_buffer.h"
 
 namespace extensions {
 
-class APIResourceEventNotifier;
+class ApiResourceEventNotifier;
 class SerialConnection;
 
 extern const char kConnectionIdKey[];
 
-class SerialGetPortsFunction : public AsyncAPIFunction {
+class SerialAsyncApiFunction : public AsyncApiFunction {
+ public:
+  SerialAsyncApiFunction();
+
+ protected:
+  virtual ~SerialAsyncApiFunction();
+
+  // AsyncApiFunction:
+  virtual bool PrePrepare() OVERRIDE;
+
+  ApiResourceManager<SerialConnection>* manager_;
+};
+
+class SerialGetPortsFunction : public SerialAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.getPorts")
 
@@ -28,13 +42,13 @@ class SerialGetPortsFunction : public AsyncAPIFunction {
  protected:
   virtual ~SerialGetPortsFunction() {}
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 };
 
-class SerialOpenFunction : public AsyncAPIFunction {
+class SerialOpenFunction : public SerialAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.open")
 
@@ -43,7 +57,7 @@ class SerialOpenFunction : public AsyncAPIFunction {
  protected:
   virtual ~SerialOpenFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -53,7 +67,7 @@ class SerialOpenFunction : public AsyncAPIFunction {
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
       int bitrate,
-      APIResourceEventNotifier* event_notifier);
+      ApiResourceEventNotifier* event_notifier);
   virtual bool DoesPortExist(const std::string& port);
 
  private:
@@ -62,10 +76,10 @@ class SerialOpenFunction : public AsyncAPIFunction {
   int bitrate_;
 
   // SerialConnection will take ownership.
-  APIResourceEventNotifier* event_notifier_;
+  ApiResourceEventNotifier* event_notifier_;
 };
 
-class SerialCloseFunction : public AsyncAPIFunction {
+class SerialCloseFunction : public SerialAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.close")
 
@@ -74,7 +88,7 @@ class SerialCloseFunction : public AsyncAPIFunction {
  protected:
   virtual ~SerialCloseFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -83,7 +97,7 @@ class SerialCloseFunction : public AsyncAPIFunction {
   scoped_ptr<api::experimental_serial::Close::Params> params_;
 };
 
-class SerialReadFunction : public AsyncAPIFunction {
+class SerialReadFunction : public SerialAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.read")
 
@@ -92,7 +106,7 @@ class SerialReadFunction : public AsyncAPIFunction {
  protected:
   virtual ~SerialReadFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -101,7 +115,7 @@ class SerialReadFunction : public AsyncAPIFunction {
   scoped_ptr<api::experimental_serial::Read::Params> params_;
 };
 
-class SerialWriteFunction : public AsyncAPIFunction {
+class SerialWriteFunction : public SerialAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.write")
 
@@ -110,7 +124,7 @@ class SerialWriteFunction : public AsyncAPIFunction {
  protected:
   virtual ~SerialWriteFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -121,7 +135,7 @@ class SerialWriteFunction : public AsyncAPIFunction {
   size_t io_buffer_size_;
 };
 
-class SerialFlushFunction : public AsyncAPIFunction {
+class SerialFlushFunction : public SerialAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.flush")
 
@@ -130,7 +144,7 @@ class SerialFlushFunction : public AsyncAPIFunction {
  protected:
   virtual ~SerialFlushFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -139,7 +153,7 @@ class SerialFlushFunction : public AsyncAPIFunction {
   scoped_ptr<api::experimental_serial::Flush::Params> params_;
 };
 
-class SerialGetControlSignalsFunction : public AsyncAPIFunction {
+class SerialGetControlSignalsFunction : public SerialAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.getControlSignals")
 
@@ -148,7 +162,7 @@ class SerialGetControlSignalsFunction : public AsyncAPIFunction {
  protected:
   virtual ~SerialGetControlSignalsFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -158,7 +172,7 @@ class SerialGetControlSignalsFunction : public AsyncAPIFunction {
   bool api_response_;
 };
 
-class SerialSetControlSignalsFunction : public AsyncAPIFunction {
+class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.setControlSignals")
 
@@ -167,7 +181,7 @@ class SerialSetControlSignalsFunction : public AsyncAPIFunction {
  protected:
   virtual ~SerialSetControlSignalsFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;

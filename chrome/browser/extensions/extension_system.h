@@ -9,6 +9,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
+#include "chrome/browser/extensions/api/serial/serial_connection.h"
+#include "chrome/browser/extensions/api/socket/socket.h"
+#include "chrome/browser/extensions/api/usb/usb_device_resource.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension_constants.h"
 
@@ -22,6 +26,8 @@ class ExtensionService;
 class Profile;
 
 namespace extensions {
+// Unfortunately, for the ApiResourceManager<> template classes, we don't seem
+// to be able to forward-declare because of compilation errors on Windows.
 class AlarmManager;
 class Extension;
 class ExtensionPrefs;
@@ -92,6 +98,18 @@ class ExtensionSystem : public ProfileKeyedService {
   // The RulesRegistryService is created at startup.
   virtual RulesRegistryService* rules_registry_service() = 0;
 
+  // The SerialConnection ResourceManager is created at startup.
+  virtual ApiResourceManager<SerialConnection>*
+  serial_connection_manager() = 0;
+
+  // The Socket ResourceManager is created at startup.
+  virtual ApiResourceManager<Socket>*
+  socket_manager() = 0;
+
+  // The UsbDeviceResource ResourceManager is created at startup.
+  virtual ApiResourceManager<UsbDeviceResource>*
+  usb_device_resource_manager() = 0;
+
   // Called by the ExtensionService that lives in this system. Gives the
   // info map a chance to react to the load event before the EXTENSION_LOADED
   // notification has fired. The purpose for handling this event first is to
@@ -135,9 +153,13 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
   virtual ExtensionMessageService* message_service() OVERRIDE;  // shared
   virtual ExtensionEventRouter* event_router() OVERRIDE;  // shared
-  // The RulesRegistryService is created at startup.
   virtual RulesRegistryService* rules_registry_service()
       OVERRIDE;  // shared
+  virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
+      OVERRIDE;
+  virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;
+  virtual ApiResourceManager<UsbDeviceResource>* usb_device_resource_manager()
+      OVERRIDE;
 
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension) OVERRIDE;
@@ -206,6 +228,10 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // access to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<AlarmManager> alarm_manager_;
+  scoped_ptr<ApiResourceManager<SerialConnection> > serial_connection_manager_;
+  scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
+  scoped_ptr<ApiResourceManager<
+               UsbDeviceResource> > usb_device_resource_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };

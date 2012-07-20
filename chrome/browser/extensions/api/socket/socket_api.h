@@ -7,33 +7,39 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/experimental_socket.h"
 #include "net/base/address_list.h"
 #include "net/base/host_resolver.h"
 
 #include <string>
 
+class IOThread;
+
 namespace net {
 class IOBuffer;
 }
 
-class IOThread;
-
 namespace extensions {
 
-class APIResourceController;
-class APIResourceEventNotifier;
+class ApiResourceEventNotifier;
+class Socket;
 
-class SocketExtensionFunction : public AsyncAPIFunction {
+class SocketAsyncApiFunction : public AsyncApiFunction {
+ public:
+  SocketAsyncApiFunction();
+
  protected:
-  virtual ~SocketExtensionFunction() {}
+  virtual ~SocketAsyncApiFunction();
 
-  // AsyncAPIFunction:
-  virtual void Work() OVERRIDE;
+  // AsyncApiFunction:
+  virtual bool PrePrepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
+
+  ApiResourceManager<Socket>* manager_;
 };
 
-class SocketExtensionWithDnsLookupFunction : public SocketExtensionFunction {
+class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
  protected:
   SocketExtensionWithDnsLookupFunction();
   virtual ~SocketExtensionWithDnsLookupFunction();
@@ -55,7 +61,7 @@ class SocketExtensionWithDnsLookupFunction : public SocketExtensionFunction {
   scoped_ptr<net::AddressList> addresses_;
 };
 
-class SocketCreateFunction : public SocketExtensionFunction {
+class SocketCreateFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
 
@@ -64,7 +70,7 @@ class SocketCreateFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketCreateFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -78,17 +84,17 @@ class SocketCreateFunction : public SocketExtensionFunction {
   scoped_ptr<api::experimental_socket::Create::Params> params_;
   SocketType socket_type_;
   int src_id_;
-  APIResourceEventNotifier* event_notifier_;
+  ApiResourceEventNotifier* event_notifier_;
 };
 
-class SocketDestroyFunction : public SocketExtensionFunction {
+class SocketDestroyFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.destroy")
 
  protected:
   virtual ~SocketDestroyFunction() {}
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -105,7 +111,7 @@ class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
  protected:
   virtual ~SocketConnectFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 
@@ -121,14 +127,14 @@ class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
   int port_;
 };
 
-class SocketDisconnectFunction : public SocketExtensionFunction {
+class SocketDisconnectFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.disconnect")
 
  protected:
   virtual ~SocketDisconnectFunction() {}
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -136,14 +142,14 @@ class SocketDisconnectFunction : public SocketExtensionFunction {
   int socket_id_;
 };
 
-class SocketBindFunction : public SocketExtensionFunction {
+class SocketBindFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.bind")
 
  protected:
   virtual ~SocketBindFunction() {}
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -153,7 +159,7 @@ class SocketBindFunction : public SocketExtensionFunction {
   int port_;
 };
 
-class SocketReadFunction : public SocketExtensionFunction {
+class SocketReadFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.read")
 
@@ -162,7 +168,7 @@ class SocketReadFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketReadFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
   void OnCompleted(int result, scoped_refptr<net::IOBuffer> io_buffer);
@@ -171,7 +177,7 @@ class SocketReadFunction : public SocketExtensionFunction {
   scoped_ptr<api::experimental_socket::Read::Params> params_;
 };
 
-class SocketWriteFunction : public SocketExtensionFunction {
+class SocketWriteFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.write")
 
@@ -180,7 +186,7 @@ class SocketWriteFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketWriteFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
   void OnCompleted(int result);
@@ -191,7 +197,7 @@ class SocketWriteFunction : public SocketExtensionFunction {
   size_t io_buffer_size_;
 };
 
-class SocketRecvFromFunction : public SocketExtensionFunction {
+class SocketRecvFromFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.recvFrom")
 
@@ -200,7 +206,7 @@ class SocketRecvFromFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketRecvFromFunction();
 
-  // AsyncAPIFunction
+  // AsyncApiFunction
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
   void OnCompleted(int result,
@@ -221,7 +227,7 @@ class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
  protected:
   virtual ~SocketSendToFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
   void OnCompleted(int result);
@@ -239,7 +245,7 @@ class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
   int port_;
 };
 
-class SocketSetKeepAliveFunction : public SocketExtensionFunction {
+class SocketSetKeepAliveFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.setKeepAlive")
 
@@ -248,7 +254,7 @@ class SocketSetKeepAliveFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketSetKeepAliveFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -256,7 +262,7 @@ class SocketSetKeepAliveFunction : public SocketExtensionFunction {
   scoped_ptr<api::experimental_socket::SetKeepAlive::Params> params_;
 };
 
-class SocketSetNoDelayFunction : public SocketExtensionFunction {
+class SocketSetNoDelayFunction : public SocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.setNoDelay")
 
@@ -265,7 +271,7 @@ class SocketSetNoDelayFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketSetNoDelayFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 

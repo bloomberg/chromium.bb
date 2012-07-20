@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/api/usb/usb_device_resource.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/usb/usb_service_factory.h"
 #include "chrome/browser/usb/usb_service.h"
+#include "chrome/browser/usb/usb_service_factory.h"
 #include "chrome/common/extensions/api/experimental_usb.h"
 
 namespace BulkTransfer = extensions::api::experimental_usb::BulkTransfer;
@@ -26,6 +26,18 @@ using extensions::api::experimental_usb::Device;
 using std::vector;
 
 namespace extensions {
+
+UsbAsyncApiFunction::UsbAsyncApiFunction()
+    : manager_(NULL) {
+}
+
+UsbAsyncApiFunction::~UsbAsyncApiFunction() {
+}
+
+bool UsbAsyncApiFunction::PrePrepare() {
+  manager_ = ExtensionSystem::Get(profile())->usb_device_resource_manager();
+  return manager_ != NULL;
+}
 
 UsbFindDeviceFunction::UsbFindDeviceFunction() : event_notifier_(NULL) {}
 
@@ -54,7 +66,7 @@ void UsbFindDeviceFunction::Work() {
                                                             device);
 
   Device result;
-  result.handle = controller()->AddAPIResource(resource);
+  result.handle = manager_->Add(resource);
   result.vendor_id = parameters_->vendor_id;
   result.product_id = parameters_->product_id;
   results_ = FindDevice::Results::Create(result);
@@ -75,7 +87,7 @@ bool UsbCloseDeviceFunction::Prepare() {
 }
 
 void UsbCloseDeviceFunction::Work() {
-  controller()->RemoveUsbDeviceResource(parameters_->device.handle);
+  manager_->Remove(parameters_->device.handle);
 }
 
 bool UsbCloseDeviceFunction::Respond() {
@@ -93,8 +105,7 @@ bool UsbControlTransferFunction::Prepare() {
 }
 
 void UsbControlTransferFunction::Work() {
-  UsbDeviceResource* const device = controller()->GetUsbDeviceResource(
-      parameters_->device.handle);
+  UsbDeviceResource* const device = manager_->Get(parameters_->device.handle);
   if (device) {
     device->ControlTransfer(parameters_->transfer_info);
   }
@@ -115,8 +126,7 @@ UsbBulkTransferFunction::UsbBulkTransferFunction() {}
 UsbBulkTransferFunction::~UsbBulkTransferFunction() {}
 
 void UsbBulkTransferFunction::Work() {
-  UsbDeviceResource* const device = controller()->GetUsbDeviceResource(
-      parameters_->device.handle);
+  UsbDeviceResource* const device = manager_->Get(parameters_->device.handle);
   if (device) {
     device->BulkTransfer(parameters_->transfer_info);
   }
@@ -137,8 +147,7 @@ bool UsbInterruptTransferFunction::Prepare() {
 }
 
 void UsbInterruptTransferFunction::Work() {
-  UsbDeviceResource* const device = controller()->GetUsbDeviceResource(
-      parameters_->device.handle);
+  UsbDeviceResource* const device = manager_->Get(parameters_->device.handle);
   if (device) {
     device->InterruptTransfer(parameters_->transfer_info);
   }
@@ -159,8 +168,7 @@ bool UsbIsochronousTransferFunction::Prepare() {
 }
 
 void UsbIsochronousTransferFunction::Work() {
-  UsbDeviceResource* const device = controller()->GetUsbDeviceResource(
-      parameters_->device.handle);
+  UsbDeviceResource* const device = manager_->Get(parameters_->device.handle);
   if (device) {
     device->IsochronousTransfer(parameters_->transfer_info);
   }

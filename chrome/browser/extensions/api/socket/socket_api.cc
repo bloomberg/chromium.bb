@@ -6,12 +6,11 @@
 
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -34,10 +33,19 @@ const char kSocketNotFoundError[] = "Socket not found";
 const char kSocketTypeInvalidError[] = "Socket type is not supported";
 const char kDnsLookupFailedError[] = "DNS resolution failed";
 
-void SocketExtensionFunction::Work() {
+SocketAsyncApiFunction::SocketAsyncApiFunction()
+    : manager_(NULL) {
 }
 
-bool SocketExtensionFunction::Respond() {
+SocketAsyncApiFunction::~SocketAsyncApiFunction() {
+}
+
+bool SocketAsyncApiFunction::PrePrepare() {
+  manager_ = ExtensionSystem::Get(profile())->socket_manager();
+  return manager_ != NULL;
+}
+
+bool SocketAsyncApiFunction::Respond() {
   return error_.empty();
 }
 
@@ -122,7 +130,7 @@ void SocketCreateFunction::Work() {
   DCHECK(socket);
 
   DictionaryValue* result = new DictionaryValue();
-  result->SetInteger(kSocketIdKey, controller()->AddAPIResource(socket));
+  result->SetInteger(kSocketIdKey, manager_->Add(socket));
   SetResult(result);
 }
 
@@ -132,8 +140,7 @@ bool SocketDestroyFunction::Prepare() {
 }
 
 void SocketDestroyFunction::Work() {
-  if (!controller()->RemoveSocket(socket_id_))
-    error_ = kSocketNotFoundError;
+  manager_->Remove(socket_id_);
 }
 
 SocketConnectFunction::SocketConnectFunction() {
@@ -163,7 +170,7 @@ void SocketConnectFunction::AfterDnsLookup(int lookup_result) {
 }
 
 void SocketConnectFunction::StartConnect() {
-  Socket* socket = controller()->GetSocket(socket_id_);
+  Socket* socket = manager_->Get(socket_id_);
   if (!socket) {
     error_ = kSocketNotFoundError;
     OnConnect(-1);
@@ -185,7 +192,7 @@ bool SocketDisconnectFunction::Prepare() {
 }
 
 void SocketDisconnectFunction::Work() {
-  Socket* socket = controller()->GetSocket(socket_id_);
+  Socket* socket = manager_->Get(socket_id_);
   if (socket)
     socket->Disconnect();
   else
@@ -202,7 +209,7 @@ bool SocketBindFunction::Prepare() {
 
 void SocketBindFunction::Work() {
   int result = -1;
-  Socket* socket = controller()->GetSocket(socket_id_);
+  Socket* socket = manager_->Get(socket_id_);
   if (socket)
     result = socket->Bind(address_, port_);
   else
@@ -224,7 +231,7 @@ bool SocketReadFunction::Prepare() {
 }
 
 void SocketReadFunction::AsyncWorkStart() {
-  Socket* socket = controller()->GetSocket(params_->socket_id);
+  Socket* socket = manager_->Get(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
     OnCompleted(-1, NULL);
@@ -272,7 +279,7 @@ bool SocketWriteFunction::Prepare() {
 }
 
 void SocketWriteFunction::AsyncWorkStart() {
-  Socket* socket = controller()->GetSocket(socket_id_);
+  Socket* socket = manager_->Get(socket_id_);
 
   if (!socket) {
     error_ = kSocketNotFoundError;
@@ -305,7 +312,7 @@ bool SocketRecvFromFunction::Prepare() {
 }
 
 void SocketRecvFromFunction::AsyncWorkStart() {
-  Socket* socket = controller()->GetSocket(params_->socket_id);
+  Socket* socket = manager_->Get(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
     OnCompleted(-1, NULL, std::string(), 0);
@@ -372,7 +379,7 @@ void SocketSendToFunction::AfterDnsLookup(int lookup_result) {
 }
 
 void SocketSendToFunction::StartSendTo() {
-  Socket* socket = controller()->GetSocket(socket_id_);
+  Socket* socket = manager_->Get(socket_id_);
   if (!socket) {
     error_ = kSocketNotFoundError;
     OnCompleted(-1);
@@ -405,7 +412,7 @@ bool SocketSetKeepAliveFunction::Prepare() {
 
 void SocketSetKeepAliveFunction::Work() {
   bool result = false;
-  Socket* socket = controller()->GetSocket(params_->socket_id);
+  Socket* socket = manager_->Get(params_->socket_id);
   if (socket) {
     int delay = 0;
     if (params_->delay.get())
@@ -431,7 +438,7 @@ bool SocketSetNoDelayFunction::Prepare() {
 
 void SocketSetNoDelayFunction::Work() {
   bool result = false;
-  Socket* socket = controller()->GetSocket(params_->socket_id);
+  Socket* socket = manager_->Get(params_->socket_id);
   if (socket)
     result = socket->SetNoDelay(params_->no_delay);
   else

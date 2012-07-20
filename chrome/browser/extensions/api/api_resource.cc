@@ -7,22 +7,17 @@
 
 namespace extensions {
 
-APIResource::APIResource(APIResource::APIResourceType api_resource_type,
-                         APIResourceEventNotifier* event_notifier)
-    : api_resource_type_(api_resource_type), event_notifier_(event_notifier) {
+ApiResource::ApiResource(ApiResourceEventNotifier* event_notifier)
+    : event_notifier_(event_notifier) {
   // scoped_refptr<> constructor does the initial AddRef() for us on
   // event_notifier_.
 }
 
-APIResource::~APIResource() {
+ApiResource::~ApiResource() {
   // scoped_refptr<> constructor calls Release() for us on event_notifier_.
 }
 
-APIResource::APIResourceType APIResource::api_resource_type() const {
-  return api_resource_type_;
-}
-
-APIResourceEventNotifier* APIResource::event_notifier() const {
+ApiResourceEventNotifier* ApiResource::event_notifier() const {
   return event_notifier_.get();
 }
 

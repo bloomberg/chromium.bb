@@ -14,13 +14,13 @@
 
 namespace extensions {
 
-TCPSocket::TCPSocket(APIResourceEventNotifier* event_notifier)
+TCPSocket::TCPSocket(ApiResourceEventNotifier* event_notifier)
     : Socket(event_notifier) {
 }
 
 // For testing.
 TCPSocket::TCPSocket(net::TCPClientSocket* tcp_client_socket,
-                     APIResourceEventNotifier* event_notifier)
+                     ApiResourceEventNotifier* event_notifier)
     : Socket(event_notifier),
       socket_(tcp_client_socket) {
 }
@@ -28,7 +28,7 @@ TCPSocket::TCPSocket(net::TCPClientSocket* tcp_client_socket,
 // static
 TCPSocket* TCPSocket::CreateSocketForTesting(
     net::TCPClientSocket* tcp_client_socket,
-    APIResourceEventNotifier* event_notifier) {
+    ApiResourceEventNotifier* event_notifier) {
   return new TCPSocket(tcp_client_socket, event_notifier);
 }
 

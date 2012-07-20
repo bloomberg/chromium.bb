@@ -12,11 +12,11 @@
 
 namespace extensions {
 
-class APIResourceEventNotifier;
+class ApiResourceEventNotifier;
 
 class UDPSocket : public Socket {
  public:
-  explicit UDPSocket(APIResourceEventNotifier* event_notifier);
+  explicit UDPSocket(ApiResourceEventNotifier* event_notifier);
   virtual ~UDPSocket();
 
   virtual void Connect(const std::string& address,

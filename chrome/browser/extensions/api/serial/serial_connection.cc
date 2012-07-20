@@ -15,8 +15,8 @@ const char kSerialConnectionNotFoundError[] = "Serial connection not found";
 
 SerialConnection::SerialConnection(const std::string& port,
                                    int bitrate,
-                                   APIResourceEventNotifier* event_notifier)
-    : APIResource(APIResource::SerialConnectionResource, event_notifier),
+                                   ApiResourceEventNotifier* event_notifier)
+    : ApiResource(event_notifier),
       port_(port),
       bitrate_(bitrate),
       file_(base::kInvalidPlatformFileValue) {

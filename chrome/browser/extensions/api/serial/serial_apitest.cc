@@ -52,7 +52,7 @@ class FakeEchoSerialConnection : public SerialConnection {
   explicit FakeEchoSerialConnection(
       const std::string& port,
       int bitrate,
-      APIResourceEventNotifier* event_notifier)
+      ApiResourceEventNotifier* event_notifier)
       : SerialConnection(port, bitrate, event_notifier),
         opened_(true) {
     Flush();
@@ -121,7 +121,7 @@ class FakeSerialOpenFunction : public SerialOpenFunction {
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
       int bitrate,
-      APIResourceEventNotifier* event_notifier) OVERRIDE {
+      ApiResourceEventNotifier* event_notifier) OVERRIDE {
     FakeEchoSerialConnection* serial_connection =
         new FakeEchoSerialConnection(port, bitrate, event_notifier);
     EXPECT_CALL(*serial_connection, GetControlSignals(_)).

@@ -32,7 +32,7 @@ typedef base::Callback<
 
 // A Socket wraps a low-level socket and includes housekeeping information that
 // we need to manage it in the context of an extension.
-class Socket : public APIResource {
+class Socket : public ApiResource {
  public:
   virtual ~Socket();
   virtual void Connect(const std::string& address,
@@ -74,7 +74,7 @@ class Socket : public APIResource {
                                         int* port);
 
  protected:
-  explicit Socket(APIResourceEventNotifier* event_notifier);
+  explicit Socket(ApiResourceEventNotifier* event_notifier);
 
   void WriteData();
   virtual int WriteImpl(net::IOBuffer* io_buffer,

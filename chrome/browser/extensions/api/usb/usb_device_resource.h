@@ -22,14 +22,14 @@ class IOBuffer;
 
 namespace extensions {
 
-class APIResourceEventNotifier;
+class ApiResourceEventNotifier;
 
-// A UsbDeviceResource is an APIResource wrapper for a UsbDevice. When invoking
-// transfers on the underlying device it will use the APIResourceEventNotifier
-// associated with the underlying APIResource to deliver completion messages.
-class UsbDeviceResource : public APIResource {
+// A UsbDeviceResource is an ApiResource wrapper for a UsbDevice. When invoking
+// transfers on the underlying device it will use the ApiResourceEventNotifier
+// associated with the underlying ApiResource to deliver completion messages.
+class UsbDeviceResource : public ApiResource {
  public:
-  UsbDeviceResource(APIResourceEventNotifier* notifier, UsbDevice* device);
+  UsbDeviceResource(ApiResourceEventNotifier* notifier, UsbDevice* device);
   virtual ~UsbDeviceResource();
 
   // All of the *Transfer variants that are exposed here adapt their arguments
@@ -46,7 +46,7 @@ class UsbDeviceResource : public APIResource {
 
  private:
   // Invoked by the underlying device's transfer callbacks. Indicates transfer
-  // completion to the APIResource's event notifier.
+  // completion to the ApiResource's event notifier.
   void TransferComplete(net::IOBuffer* buffer, const size_t length,
                         UsbTransferStatus status);
 

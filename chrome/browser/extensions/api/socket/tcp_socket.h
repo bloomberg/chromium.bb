@@ -19,11 +19,11 @@ class Socket;
 
 namespace extensions {
 
-class APIResourceEventNotifier;
+class ApiResourceEventNotifier;
 
 class TCPSocket : public Socket {
  public:
-  explicit TCPSocket(APIResourceEventNotifier* event_notifier);
+  explicit TCPSocket(ApiResourceEventNotifier* event_notifier);
   virtual ~TCPSocket();
 
   virtual void Connect(const std::string& address,
@@ -45,7 +45,7 @@ class TCPSocket : public Socket {
 
   static TCPSocket* CreateSocketForTesting(
       net::TCPClientSocket* tcp_client_socket,
-      APIResourceEventNotifier* event_notifier);
+      ApiResourceEventNotifier* event_notifier);
 
  protected:
   virtual int WriteImpl(net::IOBuffer* io_buffer,
@@ -58,7 +58,7 @@ class TCPSocket : public Socket {
                       int result);
 
   TCPSocket(net::TCPClientSocket* tcp_client_socket,
-            APIResourceEventNotifier* event_notifier);
+            ApiResourceEventNotifier* event_notifier);
 
   scoped_ptr<net::TCPClientSocket> socket_;
 

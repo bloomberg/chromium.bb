@@ -13,7 +13,7 @@
 
 namespace extensions {
 
-UDPSocket::UDPSocket(APIResourceEventNotifier* event_notifier)
+UDPSocket::UDPSocket(ApiResourceEventNotifier* event_notifier)
     : Socket(event_notifier),
       socket_(net::DatagramSocket::DEFAULT_BIND,
               net::RandIntCallback(),

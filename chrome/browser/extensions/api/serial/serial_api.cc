@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/serial/serial_api.h"
 
 #include "base/values.h"
-#include "chrome/browser/extensions/api/api_resource_controller.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,6 +29,18 @@ const char kCtsKey[] = "cts";
 
 const char kErrorGetControlSignalsFailed[] = "Failed to get control signals.";
 const char kErrorSetControlSignalsFailed[] = "Failed to set control signals.";
+
+SerialAsyncApiFunction::SerialAsyncApiFunction()
+    : manager_(NULL) {
+}
+
+SerialAsyncApiFunction::~SerialAsyncApiFunction() {
+}
+
+bool SerialAsyncApiFunction::PrePrepare() {
+  manager_ = ExtensionSystem::Get(profile())->serial_connection_manager();
+  return manager_ != NULL;
+}
 
 SerialGetPortsFunction::SerialGetPortsFunction() {}
 
@@ -103,13 +115,13 @@ void SerialOpenFunction::Work() {
       bitrate_,
       event_notifier_);
     CHECK(serial_connection);
-    int id = controller()->AddAPIResource(serial_connection);
+    int id = manager_->Add(serial_connection);
     CHECK(id);
 
     bool open_result = serial_connection->Open();
     if (!open_result) {
       serial_connection->Close();
-      controller()->RemoveSerialConnection(id);
+      manager_->Remove(id);
       id = -1;
     }
 
@@ -128,7 +140,7 @@ void SerialOpenFunction::Work() {
 SerialConnection* SerialOpenFunction::CreateSerialConnection(
     const std::string& port,
     int bitrate,
-    APIResourceEventNotifier* event_notifier) {
+    ApiResourceEventNotifier* event_notifier) {
   return new SerialConnection(port, bitrate, event_notifier);
 }
 
@@ -153,16 +165,16 @@ bool SerialCloseFunction::Prepare() {
 
   params_ = api::experimental_serial::Close::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
+
   return true;
 }
 
 void SerialCloseFunction::Work() {
   bool close_result = false;
-  SerialConnection* serial_connection =
-      controller()->GetSerialConnection(params_->connection_id);
+  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
   if (serial_connection) {
     serial_connection->Close();
-    controller()->RemoveSerialConnection(params_->connection_id);
+    manager_->Remove(params_->connection_id);
     close_result = true;
   }
 
@@ -184,14 +196,14 @@ bool SerialReadFunction::Prepare() {
 
   params_ = api::experimental_serial::Read::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
+
   return true;
 }
 
 void SerialReadFunction::Work() {
   uint8 byte = '\0';
   int bytes_read = -1;
-  SerialConnection* serial_connection =
-      controller()->GetSerialConnection(params_->connection_id);
+  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
   if (serial_connection)
     bytes_read = serial_connection->Read(&byte);
 
@@ -232,8 +244,7 @@ bool SerialWriteFunction::Prepare() {
 
 void SerialWriteFunction::Work() {
   int bytes_written = -1;
-  SerialConnection* serial_connection =
-      controller()->GetSerialConnection(params_->connection_id);
+  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
   if (serial_connection)
     bytes_written = serial_connection->Write(io_buffer_, io_buffer_size_);
   else
@@ -264,8 +275,7 @@ bool SerialFlushFunction::Prepare() {
 
 void SerialFlushFunction::Work() {
   bool flush_result = false;
-  SerialConnection* serial_connection =
-      controller()->GetSerialConnection(params_->connection_id);
+  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
   if (serial_connection) {
     serial_connection->Flush();
     flush_result = true;
@@ -291,13 +301,13 @@ bool SerialGetControlSignalsFunction::Prepare() {
   params_ = api::experimental_serial::GetControlSignals::Params::Create(
       *args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
+
   return true;
 }
 
 void SerialGetControlSignalsFunction::Work() {
   DictionaryValue *result = new DictionaryValue();
-  SerialConnection* serial_connection =
-      controller()->GetSerialConnection(params_->connection_id);
+  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
   if (serial_connection) {
     SerialConnection::ControlSignals control_signals = { 0 };
     if (serial_connection->GetControlSignals(control_signals)) {
@@ -331,12 +341,12 @@ bool SerialSetControlSignalsFunction::Prepare() {
   params_ = api::experimental_serial::SetControlSignals::Params::Create(
       *args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
+
   return true;
 }
 
 void SerialSetControlSignalsFunction::Work() {
-  SerialConnection* serial_connection =
-      controller()->GetSerialConnection(params_->connection_id);
+  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
   if (serial_connection) {
     SerialConnection::ControlSignals control_signals = { 0 };
     control_signals.should_set_dtr = params_->options.dtr.get() != NULL;

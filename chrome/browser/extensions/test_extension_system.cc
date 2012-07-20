@@ -132,6 +132,20 @@ RulesRegistryService* TestExtensionSystem::rules_registry_service() {
   return NULL;
 }
 
+ApiResourceManager<SerialConnection>*
+TestExtensionSystem::serial_connection_manager() {
+  return NULL;
+}
+
+ApiResourceManager<Socket>*TestExtensionSystem::socket_manager() {
+  return NULL;
+}
+
+ApiResourceManager<UsbDeviceResource>*
+TestExtensionSystem::usb_device_resource_manager() {
+  return NULL;
+}
+
 // static
 ProfileKeyedService* TestExtensionSystem::Build(Profile* profile) {
   return new TestExtensionSystem(profile);

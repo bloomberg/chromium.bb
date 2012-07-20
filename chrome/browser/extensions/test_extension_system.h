@@ -42,20 +42,23 @@ class TestExtensionSystem : public ExtensionSystem {
   void CreateAlarmManager(base::Time (*now)());
 
   virtual void Init(bool extensions_enabled) OVERRIDE {}
+  void SetExtensionService(ExtensionService* service);
   virtual ExtensionService* extension_service() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;
-  void SetExtensionService(ExtensionService* service);
   virtual UserScriptMaster* user_script_master() OVERRIDE;
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual AlarmManager* alarm_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
   virtual ExtensionInfoMap* info_map() OVERRIDE;
-  virtual LazyBackgroundTaskQueue*
-      lazy_background_task_queue() OVERRIDE;
+  virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   virtual ExtensionMessageService* message_service() OVERRIDE;
   virtual ExtensionEventRouter* event_router() OVERRIDE;
-  virtual RulesRegistryService* rules_registry_service()
+  virtual RulesRegistryService* rules_registry_service() OVERRIDE;
+  virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
+      OVERRIDE;
+  virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;
+  virtual ApiResourceManager<UsbDeviceResource>* usb_device_resource_manager()
       OVERRIDE;
 
   // Factory method for tests to use with SetTestingProfile.

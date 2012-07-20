@@ -14,8 +14,8 @@
 
 namespace extensions {
 
-Socket::Socket(APIResourceEventNotifier* event_notifier)
-    : APIResource(APIResource::SocketResource, event_notifier),
+Socket::Socket(ApiResourceEventNotifier* event_notifier)
+    : ApiResource(event_notifier),
       port_(0),
       is_connected_(false) {
 }

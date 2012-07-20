@@ -41,9 +41,9 @@ class MockTCPSocket : public net::TCPClientSocket {
   DISALLOW_COPY_AND_ASSIGN(MockTCPSocket);
 };
 
-class MockAPIResourceEventNotifier : public APIResourceEventNotifier {
+class MockApiResourceEventNotifier : public ApiResourceEventNotifier {
  public:
-  MockAPIResourceEventNotifier() : APIResourceEventNotifier(NULL, NULL,
+  MockApiResourceEventNotifier() : ApiResourceEventNotifier(NULL, NULL,
                                                             std::string(),
                                                             0, GURL()) {}
 
@@ -52,7 +52,7 @@ class MockAPIResourceEventNotifier : public APIResourceEventNotifier {
   MOCK_METHOD1(OnWriteComplete, void(int result_code));
 
  protected:
-  virtual ~MockAPIResourceEventNotifier() {}
+  virtual ~MockApiResourceEventNotifier() {}
 };
 
 class CompleteHandler {
@@ -69,7 +69,7 @@ class CompleteHandler {
 TEST(SocketTest, TestTCPSocketRead) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  APIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+  ApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
@@ -88,7 +88,7 @@ TEST(SocketTest, TestTCPSocketRead) {
 TEST(SocketTest, TestTCPSocketWrite) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  APIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+  ApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
@@ -111,7 +111,7 @@ TEST(SocketTest, TestTCPSocketWrite) {
 TEST(SocketTest, TestTCPSocketBlockedWrite) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  MockAPIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
@@ -137,7 +137,7 @@ TEST(SocketTest, TestTCPSocketBlockedWrite) {
 TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  MockAPIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
   CompleteHandler handlers[5];
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
@@ -170,7 +170,7 @@ TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
 TEST(SocketTest, TestTCPSocketSetNoDelay) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  MockAPIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
       tcp_client_socket, notifier));
@@ -193,7 +193,7 @@ TEST(SocketTest, TestTCPSocketSetNoDelay) {
 TEST(SocketTest, TestTCPSocketSetKeepAlive) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  MockAPIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
       tcp_client_socket, notifier));

@@ -131,7 +131,7 @@ class BluetoothDisconnectFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothReadFunction : public AsyncAPIFunction {
+class BluetoothReadFunction : public AsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.read")
   BluetoothReadFunction();
@@ -139,7 +139,7 @@ class BluetoothReadFunction : public AsyncAPIFunction {
  protected:
   virtual ~BluetoothReadFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -151,7 +151,7 @@ class BluetoothReadFunction : public AsyncAPIFunction {
 #endif
 };
 
-class BluetoothWriteFunction : public AsyncAPIFunction {
+class BluetoothWriteFunction : public AsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.write")
   BluetoothWriteFunction();
@@ -159,7 +159,7 @@ class BluetoothWriteFunction : public AsyncAPIFunction {
  protected:
   virtual ~BluetoothWriteFunction();
 
-  // AsyncAPIFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
   virtual void Work() OVERRIDE;

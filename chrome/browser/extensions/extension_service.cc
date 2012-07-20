@@ -29,7 +29,6 @@
 #include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
-#include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
@@ -340,7 +339,6 @@ ExtensionService::ExtensionService(Profile* profile,
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_warnings_(profile),
-      api_resource_controller_(NULL),
       app_shortcut_manager_(profile) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2544,19 +2542,4 @@ ExtensionService::NaClModuleInfoList::iterator
       return iter;
   }
   return nacl_module_list_.end();
-}
-
-extensions::APIResourceController*
-ExtensionService::api_resource_controller() {
-  // TODO(miket): Find a better place for this thing to live. Like every other
-  // piece of baggage on ExtensionService, it's scoped along with a Profile.
-
-  // To coexist with certain unit tests that don't have a work-thread message
-  // loop available at ExtensionService shutdown, we lazy-initialize this
-  // object so that those cases neither create nor destroy an
-  // APIResourceController.
-  if (!api_resource_controller_.get()) {
-    api_resource_controller_.reset(new extensions::APIResourceController());
-  }
-  return api_resource_controller_.get();
 }
