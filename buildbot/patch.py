@@ -864,7 +864,7 @@ class GitRepoPatch(object):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.project, self.ref)
     if self.sha1 is not None:
-      s = '%s:%s' % (s, self.sha1[:8])
+      s = '%s:%s%s' % (s, '*' if self.internal else '', self.sha1[:8])
     # TODO(ferringb,build): This gets a bit long in output; should likely
     # do some form of truncation to it.
     if self._subject_line:
@@ -1090,9 +1090,10 @@ class GerritPatch(GitRepoPatch):
 
   def __str__(self):
     """Returns custom string to identify this patch."""
-    s = '%s:%s' % (self.owner, self.gerrit_number)
+    s = '%s:%s%s' % (self.owner, '*' if self.internal else '',
+                     self.gerrit_number)
     if self.sha1 is not None:
-      s = '%s:%s' % (s, self.sha1[:8])
+      s = '%s:%s%s' % (s, '*' if self.internal else '', self.sha1[:8])
     if self._subject_line:
       s += ':"%s"' % (self._subject_line,)
     return s
