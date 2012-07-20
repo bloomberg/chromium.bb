@@ -12,6 +12,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 
 namespace {
@@ -68,7 +69,7 @@ class SearchProviderTest : public InProcessBrowserTest {
       const IsSearchProviderTestData& data) {
     string16 title = data.tab->GetTitle();
     if (title.empty()) {
-      ui_test_utils::TitleWatcher title_watcher(data.tab, ASCIIToUTF16("OK"));
+      content::TitleWatcher title_watcher(data.tab, ASCIIToUTF16("OK"));
       title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
       title = title_watcher.WaitAndGetTitle();
     }

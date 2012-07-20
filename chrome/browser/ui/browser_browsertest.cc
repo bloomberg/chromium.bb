@@ -62,6 +62,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -1436,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
       FilePath(), FilePath().AppendASCII("window.close.html"));
 
   string16 title = ASCIIToUTF16("Title Of Awesomeness");
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), title);
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
@@ -1458,7 +1459,7 @@ IN_PROC_BROWSER_TEST_F(ShowModalDialogTest, BasicTest) {
       FilePath(), FilePath().AppendASCII("showmodaldialog.html"));
 
   string16 expected_title(ASCIIToUTF16("SUCCESS"));
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -1471,7 +1472,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisallowFileUrlUniversalAccessTest) {
       FilePath(), FilePath().AppendASCII("fileurl_universalaccess.html"));
 
   string16 expected_title(ASCIIToUTF16("Disallowed"));
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("Allowed"));
   ui_test_utils::NavigateToURL(browser(), url);

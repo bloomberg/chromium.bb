@@ -18,6 +18,7 @@
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/layout_browsertest.h"
 #include "googleurl/src/gurl.h"
 
@@ -287,7 +288,7 @@ class WorkerTest : public InProcessBrowserTest {
                const std::string& query) {
     GURL url = GetTestURL(test_case, query);
     const string16 expected_title = ASCIIToUTF16("OK");
-    ui_test_utils::TitleWatcher title_watcher(
+    content::TitleWatcher title_watcher(
         chrome::GetActiveWebContents(browser), expected_title);
     ui_test_utils::NavigateToURL(browser, url);
     string16 final_title = title_watcher.WaitAndGetTitle();

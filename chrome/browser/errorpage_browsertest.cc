@@ -12,6 +12,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
@@ -39,7 +40,7 @@ class ErrorPageTest : public InProcessBrowserTest {
   void NavigateToURLAndWaitForTitle(const GURL& url,
                                     const std::string& expected_title,
                                     int num_navigations) {
-    ui_test_utils::TitleWatcher title_watcher(
+    content::TitleWatcher title_watcher(
         chrome::GetActiveWebContents(browser()),
         ASCIIToUTF16(expected_title));
 
@@ -85,7 +86,7 @@ class ErrorPageTest : public InProcessBrowserTest {
   void NavigateHistoryAndWaitForTitle(const std::string& expected_title,
                                       int num_navigations,
                                       HistoryNavigationDirection direction) {
-    ui_test_utils::TitleWatcher title_watcher(
+    content::TitleWatcher title_watcher(
         chrome::GetActiveWebContents(browser()),
         ASCIIToUTF16(expected_title));
 

@@ -425,44 +425,6 @@ class WindowedNotificationObserverWithDetails
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserverWithDetails);
 };
 
-// Watches title changes on a tab, blocking until an expected title is set.
-class TitleWatcher : public content::NotificationObserver {
- public:
-  // |web_contents| must be non-NULL and needs to stay alive for the
-  // entire lifetime of |this|. |expected_title| is the title that |this|
-  // will wait for.
-  TitleWatcher(content::WebContents* web_contents,
-               const string16& expected_title);
-  virtual ~TitleWatcher();
-
-  // Adds another title to watch for.
-  void AlsoWaitForTitle(const string16& expected_title);
-
-  // Waits until the title matches either expected_title or one of the titles
-  // added with  AlsoWaitForTitle.  Returns the value of the most recently
-  // observed matching title.
-  const string16& WaitAndGetTitle() WARN_UNUSED_RESULT;
-
- private:
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  content::WebContents* web_contents_;
-  std::vector<string16> expected_titles_;
-  content::NotificationRegistrar notification_registrar_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  // The most recently observed expected title, if any.
-  string16 observed_title_;
-
-  bool expected_title_observed_;
-  bool quit_loop_on_observation_;
-
-  DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
-};
-
 // Convenience class for waiting for a new browser to be created.
 // Like WindowedNotificationObserver, this class provides a safe, non-racey
 // way to wait for a new browser to be created.

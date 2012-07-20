@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
@@ -86,7 +87,7 @@ class ResourceDispatcherHostBrowserTest : public InProcessBrowserTest,
                       const std::string& expected_title,
                       int expected_navigations) {
     string16 expected_title16(ASCIIToUTF16(expected_title));
-    ui_test_utils::TitleWatcher title_watcher(
+    content::TitleWatcher title_watcher(
         chrome::GetActiveWebContents(browser()), expected_title16);
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
         browser(), url, expected_navigations);
@@ -400,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   // pages of which the error page is one.  Instead, use automation to kick
   // off the navigation, and wait to see that the tab loads.
   string16 expected_title16(ASCIIToUTF16("Title Of Awesomeness"));
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title16);
 
   bool success;

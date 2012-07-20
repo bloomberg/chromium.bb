@@ -10,6 +10,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/ui_controls/ui_controls.h"
 
 namespace {
@@ -51,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Navigate to the test html page.
   string16 load_expected_title(ASCIIToUTF16("onload"));
-  ui_test_utils::TitleWatcher load_title_watcher(tab, load_expected_title);
+  content::TitleWatcher load_title_watcher(tab, load_expected_title);
   ui_test_utils::NavigateToURL(browser(), test_url);
   // Wait for the onload() handler to complete so we can do the
   // next part of the test.
@@ -63,8 +64,7 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Wait on the correct intermediate title.
   string16 entered_expected_title(ASCIIToUTF16("entered"));
-  ui_test_utils::TitleWatcher entered_title_watcher(
-      tab, entered_expected_title);
+  content::TitleWatcher entered_title_watcher(tab, entered_expected_title);
   EXPECT_EQ(entered_expected_title, entered_title_watcher.WaitAndGetTitle());
 
   // Move the cursor above the content again, which should trigger
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Wait on the correct final value of the cookie.
   string16 left_expected_title(ASCIIToUTF16("left"));
-  ui_test_utils::TitleWatcher left_title_watcher(tab, left_expected_title);
+  content::TitleWatcher left_title_watcher(tab, left_expected_title);
   EXPECT_EQ(left_expected_title, left_title_watcher.WaitAndGetTitle());
 }
 

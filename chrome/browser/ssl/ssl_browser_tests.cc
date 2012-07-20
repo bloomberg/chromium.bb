@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/cert_status_flags.h"
 #include "net/test/test_server.h"
@@ -528,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndClose) {
 
   // Setup page title observer.
   WebContents* tab = chrome::GetActiveWebContents(browser());
-  ui_test_utils::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
+  content::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
   // Create GURLs to test pages.
@@ -578,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
 
   // Setup page title observer.
   WebContents* tab = chrome::GetActiveWebContents(browser());
-  ui_test_utils::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
+  content::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
   // Visit bad HTTPS page.

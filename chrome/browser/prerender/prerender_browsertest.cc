@@ -48,6 +48,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
@@ -250,7 +251,7 @@ class TestPrerenderContents : public PrerenderContents {
         session_storage_namespace);
     string16 ready_title = ASCIIToUTF16(kReadyTitle);
     if (prerender_should_wait_for_ready_title_)
-      ready_title_watcher_.reset(new ui_test_utils::TitleWatcher(
+      ready_title_watcher_.reset(new content::TitleWatcher(
           web_contents, ready_title));
     return web_contents;
   }
@@ -364,7 +365,7 @@ class TestPrerenderContents : public PrerenderContents {
   // If true, before calling DidPrerenderPass, will wait for the title of the
   // prerendered page to turn to "READY".
   bool prerender_should_wait_for_ready_title_;
-  scoped_ptr<ui_test_utils::TitleWatcher> ready_title_watcher_;
+  scoped_ptr<content::TitleWatcher> ready_title_watcher_;
 };
 
 // PrerenderManager that uses TestPrerenderContents.
@@ -689,7 +690,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   void NavigateToDestUrlAndWaitForPassTitle() {
     string16 expected_title = ASCIIToUTF16(kPassTitle);
-    ui_test_utils::TitleWatcher title_watcher(
+    content::TitleWatcher title_watcher(
         GetPrerenderContents()->prerender_contents()->web_contents(),
         expected_title);
     NavigateToDestURL();
@@ -2114,7 +2115,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderUnload) {
   set_loader_path("files/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   string16 expected_title = ASCIIToUTF16("Unloaded");
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(current_browser()), expected_title);
   NavigateToDestURL();
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());

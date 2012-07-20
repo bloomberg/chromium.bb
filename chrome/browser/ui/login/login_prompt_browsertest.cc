@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/auth.h"
 #include "net/base/mock_host_resolver.h"
@@ -314,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuth) {
 
   string16 expected_title =
       ExpectedTitleFromAuth(ASCIIToUTF16("basicuser"), ASCIIToUTF16("secret"));
-  ui_test_utils::TitleWatcher title_watcher(contents, expected_title);
+  content::TitleWatcher title_watcher(contents, expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
@@ -363,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestDigestAuth) {
   auth_supplied_waiter.Wait();
 
   string16 expected_title = ExpectedTitleFromAuth(username, password);
-  ui_test_utils::TitleWatcher title_watcher(contents, expected_title);
+  content::TitleWatcher title_watcher(contents, expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
@@ -413,8 +414,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
       UTF8ToUTF16(username_basic_), UTF8ToUTF16(password_));
   string16 expected_title2 = ExpectedTitleFromAuth(
       UTF8ToUTF16(username_digest_), UTF8ToUTF16(password_));
-  ui_test_utils::TitleWatcher title_watcher1(contents1, expected_title1);
-  ui_test_utils::TitleWatcher title_watcher2(contents2, expected_title2);
+  content::TitleWatcher title_watcher1(contents1, expected_title1);
+  content::TitleWatcher title_watcher2(contents2, expected_title2);
 
   handler1->SetAuth(UTF8ToUTF16(username_basic_), UTF8ToUTF16(password_));
   handler2->SetAuth(UTF8ToUTF16(username_digest_), UTF8ToUTF16(password_));

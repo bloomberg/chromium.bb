@@ -20,6 +20,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 
@@ -138,7 +139,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
 
   void LoadAndWaitForURL(const GURL& url) {
     string16 expected_title(ASCIIToUTF16("OK"));
-    ui_test_utils::TitleWatcher title_watcher(
+    content::TitleWatcher title_watcher(
         chrome::GetActiveWebContents(browser()), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     ui_test_utils::NavigateToURL(browser(), url);

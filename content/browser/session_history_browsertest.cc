@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,7 +69,7 @@ class SessionHistoryTest : public InProcessBrowserTest {
   void NavigateAndCheckTitle(const char* filename,
                              const std::string& expected_title) {
     string16 expected_title16(ASCIIToUTF16(expected_title));
-    ui_test_utils::TitleWatcher title_watcher(
+    content::TitleWatcher title_watcher(
         chrome::GetActiveWebContents(browser()), expected_title16);
     ui_test_utils::NavigateToURL(browser(), GetURL(filename));
     ASSERT_EQ(expected_title16, title_watcher.WaitAndGetTitle());

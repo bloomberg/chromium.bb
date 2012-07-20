@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -88,7 +89,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   // Adds all possible titles to the TitleWatcher, so we don't time out
   // waiting for the title if the test fails.
   void AddAllPossibleTitles(const GURL& url,
-                            ui_test_utils::TitleWatcher* title_watcher) {
+                            content::TitleWatcher* title_watcher) {
     title_watcher->AlsoWaitForTitle(
         GetExpectedTitle(url, EXPECT_EMPTY_REFERRER));
     title_watcher->AlsoWaitForTitle(
@@ -140,7 +141,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
 
     string16 expected_title = GetExpectedTitle(start_url, expected_referrer);
     content::WebContents* tab = chrome::GetActiveWebContents(browser());
-    ui_test_utils::TitleWatcher title_watcher(tab, expected_title);
+    content::TitleWatcher title_watcher(tab, expected_title);
 
     // Watch for all possible outcomes to avoid timeouts if something breaks.
     AddAllPossibleTitles(start_url, &title_watcher);
@@ -380,8 +381,8 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
   string16 expected_title =
       GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER);
   content::WebContents* tab = chrome::GetActiveWebContents(browser());
-  scoped_ptr<ui_test_utils::TitleWatcher> title_watcher(
-      new ui_test_utils::TitleWatcher(tab, expected_title));
+  scoped_ptr<content::TitleWatcher> title_watcher(
+      new content::TitleWatcher(tab, expected_title));
 
   // Watch for all possible outcomes to avoid timeouts if something breaks.
   AddAllPossibleTitles(start_url, title_watcher.get());
@@ -390,14 +391,14 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
   chrome::GoBack(browser(), CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
-  title_watcher.reset(new ui_test_utils::TitleWatcher(tab, expected_title));
+  title_watcher.reset(new content::TitleWatcher(tab, expected_title));
   AddAllPossibleTitles(start_url, title_watcher.get());
 
   // Reload to B.
   chrome::Reload(browser(), CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
-  title_watcher.reset(new ui_test_utils::TitleWatcher(tab, expected_title));
+  title_watcher.reset(new content::TitleWatcher(tab, expected_title));
   AddAllPossibleTitles(start_url, title_watcher.get());
 
   // Shift-reload to B.

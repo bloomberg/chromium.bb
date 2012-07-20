@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1380,8 +1381,8 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, OnBeforeUnloadOnClose) {
 
   // Close panel and respond to the onbeforeunload dialog with cancel. This is
   // equivalent to clicking "Stay on this page"
-  scoped_ptr<ui_test_utils::TitleWatcher> title_watcher(
-      new ui_test_utils::TitleWatcher(web_contents, title_first_close));
+  scoped_ptr<content::TitleWatcher> title_watcher(
+      new content::TitleWatcher(web_contents, title_first_close));
   panel->Close();
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->native_dialog()->CancelAppModalDialog();
@@ -1391,7 +1392,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, OnBeforeUnloadOnClose) {
   // Close panel and respond to the onbeforeunload dialog with close. This is
   // equivalent to clicking the OS close button on the dialog.
   title_watcher.reset(
-      new ui_test_utils::TitleWatcher(web_contents, title_second_close));
+      new content::TitleWatcher(web_contents, title_second_close));
   panel->Close();
   alert = ui_test_utils::WaitForAppModalDialog();
   alert->native_dialog()->CloseAppModalDialog();

@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 
 #if defined(OS_WIN)
@@ -185,7 +186,7 @@ void InProcessBrowserLayoutTest::RunLayoutTestInternal(
     const std::string& test_case_file_name, const GURL& url) {
   LOG(INFO) << "Navigating to URL " << url << " and blocking.";
   const string16 expected_title = ASCIIToUTF16("done");
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
   LOG(INFO) << "Navigation completed, now waiting for title.";

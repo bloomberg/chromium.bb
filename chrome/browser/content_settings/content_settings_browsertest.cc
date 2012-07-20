@@ -19,6 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 
 // Regression test for http://crbug.com/63649.
@@ -107,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   string16 expected_title(ASCIIToUTF16("OK"));
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
 
   content::RenderViewHost* host =
@@ -128,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, LoadAllBlockedPlugins) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   string16 expected_title1(ASCIIToUTF16("1"));
-  ui_test_utils::TitleWatcher title_watcher1(
+  content::TitleWatcher title_watcher1(
       chrome::GetActiveWebContents(browser()), expected_title1);
 
   content::RenderViewHost* host =
@@ -138,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, LoadAllBlockedPlugins) {
   EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
 
   string16 expected_title2(ASCIIToUTF16("2"));
-  ui_test_utils::TitleWatcher title_watcher2(
+  content::TitleWatcher title_watcher2(
       chrome::GetActiveWebContents(browser()), expected_title2);
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
@@ -162,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, NoCallbackAtLoad) {
       L"", L"CallOnStartup = function() { document.title = \"OK\"; }"));
 
   string16 expected_title(ASCIIToUTF16("OK"));
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
 
   content::RenderViewHost* host =

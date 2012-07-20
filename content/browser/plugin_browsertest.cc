@@ -11,6 +11,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -84,7 +85,7 @@ class PluginTest : public InProcessBrowserTest {
 
   void LoadAndWait(const GURL& url) {
     string16 expected_title(ASCIIToUTF16("OK"));
-    ui_test_utils::TitleWatcher title_watcher(
+    content::TitleWatcher title_watcher(
         chrome::GetActiveWebContents(browser()), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("plugin_not_found"));
@@ -175,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
       browser(), GetURL("execute_script_delete_in_mouse_up.html"));
 
   string16 expected_title(ASCIIToUTF16("OK"));
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
   ui_test_utils::SimulateMouseClick(chrome::GetActiveWebContents(browser()));
@@ -202,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeAlert) {
       0);
 
   string16 expected_title(ASCIIToUTF16("OK"));
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
@@ -400,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_PluginConvertPointTest) {
   ui_test_utils::NavigateToURL(browser(), GetURL("convert_point.html"));
 
   string16 expected_title(ASCIIToUTF16("OK"));
-  ui_test_utils::TitleWatcher title_watcher(
+  content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
   // TODO(stuartmorgan): When the automation system supports sending clicks,
