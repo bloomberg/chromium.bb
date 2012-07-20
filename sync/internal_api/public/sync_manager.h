@@ -479,7 +479,7 @@ class SyncManager {
   virtual void ShutdownOnSyncThread() = 0;
 
   // May be called from any thread.
-  virtual UserShare* GetUserShare() const = 0;
+  virtual UserShare* GetUserShare() = 0;
 
   // Inform the cryptographer of the most recent passphrase and set of
   // encrypted types (from nigori node), then ensure all data that
@@ -508,11 +508,11 @@ class SyncManager {
   // Reads the nigori node to determine if any experimental features should
   // be enabled.
   // Note: opens a transaction.  May be called on any thread.
-  virtual bool ReceivedExperiment(syncer::Experiments* experiments) const = 0;
+  virtual bool ReceivedExperiment(syncer::Experiments* experiments) = 0;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.  May be called on any thread.
-  virtual bool HasUnsyncedItems() const = 0;
+  virtual bool HasUnsyncedItems() = 0;
 };
 
 }  // namespace syncer

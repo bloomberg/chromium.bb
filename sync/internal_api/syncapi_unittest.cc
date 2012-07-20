@@ -995,7 +995,7 @@ TEST_F(SyncManagerTest, ProcessJsMessageGetRootNodeDetails) {
   }
 }
 
-void CheckGetNodesByIdReturnArgs(const SyncManager& sync_manager,
+void CheckGetNodesByIdReturnArgs(SyncManager* sync_manager,
                                  const JsArgList& return_args,
                                  int64 id,
                                  bool is_detailed) {
@@ -1007,7 +1007,7 @@ void CheckGetNodesByIdReturnArgs(const SyncManager& sync_manager,
   DictionaryValue* node_info = NULL;
   EXPECT_TRUE(nodes->GetDictionary(0, &node_info));
   ASSERT_TRUE(node_info);
-  ReadTransaction trans(FROM_HERE, sync_manager.GetUserShare());
+  ReadTransaction trans(FROM_HERE, sync_manager->GetUserShare());
   ReadNode node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
   CheckNodeValue(node, *node_info, is_detailed);
@@ -1047,7 +1047,7 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
       SendJsMessage(message_name,
                     JsArgList(&args), reply_handler.AsWeakHandle());
 
-      CheckGetNodesByIdReturnArgs(sync_manager_, return_args,
+      CheckGetNodesByIdReturnArgs(&sync_manager_, return_args,
                                   ids[i], is_detailed);
     }
   }

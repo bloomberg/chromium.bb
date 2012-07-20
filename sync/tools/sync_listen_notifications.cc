@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
                 "[--%s=host:port] [--%s] [--%s]\n"
                 "[--%s=(server|p2p)]\n\n"
                 "Run chrome and set a breakpoint on\n"
-                "syncer::SyncManager::SyncInternal::UpdateCredentials() "
+                "syncer::SyncManagerImpl::UpdateCredentials() "
                 "after logging into\n"
                 "sync to get the token to pass into this utility.\n",
                 argv[0],

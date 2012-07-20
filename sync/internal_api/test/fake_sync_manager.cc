@@ -184,7 +184,7 @@ void FakeSyncManager::ShutdownOnSyncThread() {
   // Do nothing.
 }
 
-UserShare* FakeSyncManager::GetUserShare() const {
+UserShare* FakeSyncManager::GetUserShare() {
   NOTIMPLEMENTED();
   return NULL;
 }
@@ -198,12 +198,11 @@ void FakeSyncManager::EnableEncryptEverything() {
   NOTIMPLEMENTED();
 }
 
-bool FakeSyncManager::ReceivedExperiment(
-    syncer::Experiments* experiments) const {
+bool FakeSyncManager::ReceivedExperiment(syncer::Experiments* experiments) {
   return false;
 }
 
-bool FakeSyncManager::HasUnsyncedItems() const {
+bool FakeSyncManager::HasUnsyncedItems() {
   NOTIMPLEMENTED();
   return false;
 }

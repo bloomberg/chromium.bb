@@ -94,13 +94,12 @@ class FakeSyncManager : public SyncManager {
   virtual void SaveChanges() OVERRIDE;
   virtual void StopSyncingForShutdown(const base::Closure& callback) OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
-  virtual UserShare* GetUserShare() const OVERRIDE;
+  virtual UserShare* GetUserShare() OVERRIDE;
   virtual void RefreshNigori(const std::string& chrome_version,
                              const base::Closure& done_callback) OVERRIDE;
   virtual void EnableEncryptEverything() OVERRIDE;
-  virtual bool ReceivedExperiment(
-      syncer::Experiments* experiments) const OVERRIDE;
-  virtual bool HasUnsyncedItems() const OVERRIDE;
+  virtual bool ReceivedExperiment(syncer::Experiments* experiments) OVERRIDE;
+  virtual bool HasUnsyncedItems() OVERRIDE;
 
  private:
   ObserverList<SyncManager::Observer> observers_;
