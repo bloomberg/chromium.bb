@@ -221,7 +221,7 @@ pnacl-arm-hw() {
   ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_DOWNLOAD}" regular
   download-test-binaries regular
   build-tests SetupPnaclTranslatorArmOptHW all 1 1
-  run-tests SetupPnaclTranslatorArmOptHW all 1 1
+  run-tests SetupPnaclTranslatorArmOptHW all 1 2
 }
 
 pnacl-x8664() {
