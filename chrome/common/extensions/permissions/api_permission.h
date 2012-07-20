@@ -51,6 +51,7 @@ class APIPermission {
     kFileBrowserPrivate,
     kFileSystem,
     kFileSystemWrite,
+    kFontSettings,
     kGeolocation,
     kHistory,
     kIdle,

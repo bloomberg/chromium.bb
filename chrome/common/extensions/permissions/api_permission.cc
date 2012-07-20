@@ -87,6 +87,7 @@ void APIPermission::RegisterAllPermissions(
     { kContextMenus, "contextMenus" },
     { kCookie, "cookies" },
     { kFileBrowserHandler, "fileBrowserHandler", kFlagCannotBeOptional },
+    { kFontSettings, "fontSettings", kFlagCannotBeOptional },
     { kHistory, "history", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
       PermissionMessage::kBrowsingHistory },

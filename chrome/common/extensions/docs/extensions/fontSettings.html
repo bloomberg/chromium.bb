@@ -17,7 +17,7 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.fontSettings module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.fontSettings - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.fontSettings module, which is part of the Google Chrome  extension APIs."><title>chrome.fontSettings - Google Chrome Extensions - Google Code</title></head>
   <body doc-family="extensions">  <link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
   <link href="../css/shared.css" rel="stylesheet" type="text/css">
   <div id="devModeWarning" class="displayModeWarning">
@@ -186,7 +186,7 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.fontSettings</h1>
+        <h1 class="page_title">chrome.fontSettings</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -206,7 +206,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.fontSettings</a>
+                <a href="#apiReference">API reference: chrome.fontSettings</a>
                 <ol>
                   <li>
             <a href="#global-methods">Methods</a>
@@ -258,19 +258,19 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-experimental.fontSettings.FontName">FontName</a>
+                <a href="#type-fontSettings.FontName">FontName</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.fontSettings.ScriptCode">ScriptCode</a>
+                <a href="#type-fontSettings.ScriptCode">ScriptCode</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.fontSettings.GenericFamily">GenericFamily</a>
+                <a href="#type-fontSettings.GenericFamily">GenericFamily</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.fontSettings.LevelOfControl">LevelOfControl</a>
+                <a href="#type-fontSettings.LevelOfControl">LevelOfControl</a>
                 <ol>
                 </ol>
               </li>
@@ -282,20 +282,18 @@
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><!-- BEGIN AUTHORED CONTENT -->
 <p>The Font Settings API allows you to manage Chrome's font settings.</p>
 <h2 id="manifest">Manifest</h2>
-<p>The Font Settings API is currently experimental, so you must declare the
-"experimental" permission to use it. For example:</p>
+<p>To use the Font Settings API, you must declare the "fontSettings" permission
+in the <a href="manifest.html">extension manifest</a>.
+For example:</p>
 <pre>{
   "name": "My Font Settings Extension",
   "description": "Customize your fonts",
   "version": "0.2",
-  "permissions": ["experimental"]
+  "permissions": ["fontSettings"]
 }</pre>
 <h2 id="scripts">Generic Font Families and Scripts</h2>
 <p>Chrome allows for some font settings to depend on certain generic font
@@ -318,13 +316,13 @@ language, and uses this font not just for Cyrillic script but for everything the
 font covers, such as Latin.</p>
 <h2 id="examples">Examples</h2>
 <p>The following code gets the standard font for Arabic.</p>
-<pre>chrome.experimental.fontSettings.getFont(
+<pre>chrome.fontSettings.getFont(
   { genericFamily: 'standard', script: 'Arab' },
   function(details) { console.log(details.fontId); }
 );
 </pre>
 <p>The next snippet sets the sans-serif font for Japanese.</p>
-<pre>chrome.experimental.fontSettings.setFont(
+<pre>chrome.fontSettings.setFont(
   { genericFamily: 'sansserif', script: 'Jpan', fontId: 'MS PGothic' }
 );
 </pre>
@@ -337,7 +335,7 @@ directory. For other examples and for help in viewing the source code, see
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.fontSettings</h2>
+        <h2>API reference: chrome.fontSettings</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
@@ -350,7 +348,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>clearDefaultFixedFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.clearDefaultFixedFontSize</span>(<span class="optional"><span>object</span>
+                  <span>chrome.fontSettings.clearDefaultFixedFontSize</span>(<span class="optional"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -438,7 +436,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>clearDefaultFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.clearDefaultFontSize</span>(<span class="optional"><span>object</span>
+                  <span>chrome.fontSettings.clearDefaultFontSize</span>(<span class="optional"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -526,7 +524,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>clearFont</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.clearFont</span>(<span class="null"><span>object</span>
+                  <span>chrome.fontSettings.clearFont</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -568,7 +566,7 @@ directory. For other examples and for help in viewing the source code, see
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.ScriptCode">experimental.fontSettings.ScriptCode</a>
+                        <a href="fontSettings.html#type-fontSettings.ScriptCode">fontSettings.ScriptCode</a>
                       </span>
                     </span>
                   )
@@ -591,7 +589,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.GenericFamily">experimental.fontSettings.GenericFamily</a>
+                        <a href="fontSettings.html#type-fontSettings.GenericFamily">fontSettings.GenericFamily</a>
                       </span>
                     </span>
                   )
@@ -663,7 +661,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>clearMinimumFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.clearMinimumFontSize</span>(<span class="optional"><span>object</span>
+                  <span>chrome.fontSettings.clearMinimumFontSize</span>(<span class="optional"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -751,7 +749,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>getDefaultFixedFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.getDefaultFixedFontSize</span>(<span class="optional"><span>object</span>
+                  <span>chrome.fontSettings.getDefaultFixedFontSize</span>(<span class="optional"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -885,7 +883,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.LevelOfControl">experimental.fontSettings.LevelOfControl</a>
+                        <a href="fontSettings.html#type-fontSettings.LevelOfControl">fontSettings.LevelOfControl</a>
                       </span>
                     </span>
                   )
@@ -916,7 +914,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>getDefaultFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.getDefaultFontSize</span>(<span class="optional"><span>object</span>
+                  <span>chrome.fontSettings.getDefaultFontSize</span>(<span class="optional"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -1050,7 +1048,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.LevelOfControl">experimental.fontSettings.LevelOfControl</a>
+                        <a href="fontSettings.html#type-fontSettings.LevelOfControl">fontSettings.LevelOfControl</a>
                       </span>
                     </span>
                   )
@@ -1081,7 +1079,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>getFont</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.getFont</span>(<span class="null"><span>object</span>
+                  <span>chrome.fontSettings.getFont</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -1123,7 +1121,7 @@ directory. For other examples and for help in viewing the source code, see
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.ScriptCode">experimental.fontSettings.ScriptCode</a>
+                        <a href="fontSettings.html#type-fontSettings.ScriptCode">fontSettings.ScriptCode</a>
                       </span>
                     </span>
                   )
@@ -1146,7 +1144,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.GenericFamily">experimental.fontSettings.GenericFamily</a>
+                        <a href="fontSettings.html#type-fontSettings.GenericFamily">fontSettings.GenericFamily</a>
                       </span>
                     </span>
                   )
@@ -1264,7 +1262,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.LevelOfControl">experimental.fontSettings.LevelOfControl</a>
+                        <a href="fontSettings.html#type-fontSettings.LevelOfControl">fontSettings.LevelOfControl</a>
                       </span>
                     </span>
                   )
@@ -1295,7 +1293,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>getFontList</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.getFontList</span>(<span class="null"><span>function</span>
+                  <span>chrome.fontSettings.getFontList</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Gets a list of fonts on the system.</p>
@@ -1341,7 +1339,7 @@ directory. For other examples and for help in viewing the source code, see
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of experimental.fontSettings.FontName results</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>array of fontSettings.FontName results</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -1356,7 +1354,7 @@ directory. For other examples and for help in viewing the source code, see
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.FontName">experimental.fontSettings.FontName</a>
+                        <a href="fontSettings.html#type-fontSettings.FontName">fontSettings.FontName</a>
                       </span>
                     </span></span>
                         </span>
@@ -1385,7 +1383,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>getMinimumFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.getMinimumFontSize</span>(<span class="optional"><span>object</span>
+                  <span>chrome.fontSettings.getMinimumFontSize</span>(<span class="optional"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -1519,7 +1517,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.LevelOfControl">experimental.fontSettings.LevelOfControl</a>
+                        <a href="fontSettings.html#type-fontSettings.LevelOfControl">fontSettings.LevelOfControl</a>
                       </span>
                     </span>
                   )
@@ -1550,7 +1548,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>setDefaultFixedFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.setDefaultFixedFontSize</span>(<span class="null"><span>object</span>
+                  <span>chrome.fontSettings.setDefaultFixedFontSize</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -1663,7 +1661,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>setDefaultFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.setDefaultFontSize</span>(<span class="null"><span>object</span>
+                  <span>chrome.fontSettings.setDefaultFontSize</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -1776,7 +1774,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>setFont</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.setFont</span>(<span class="null"><span>object</span>
+                  <span>chrome.fontSettings.setFont</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -1818,7 +1816,7 @@ directory. For other examples and for help in viewing the source code, see
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.ScriptCode">experimental.fontSettings.ScriptCode</a>
+                        <a href="fontSettings.html#type-fontSettings.ScriptCode">fontSettings.ScriptCode</a>
                       </span>
                     </span>
                   )
@@ -1841,7 +1839,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.GenericFamily">experimental.fontSettings.GenericFamily</a>
+                        <a href="fontSettings.html#type-fontSettings.GenericFamily">fontSettings.GenericFamily</a>
                       </span>
                     </span>
                   )
@@ -1936,7 +1934,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>setMinimumFontSize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.setMinimumFontSize</span>(<span class="null"><span>object</span>
+                  <span>chrome.fontSettings.setMinimumFontSize</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -2056,7 +2054,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>onDefaultFixedFontSizeChanged</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.fontSettings.</span><span>onDefaultFixedFontSizeChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.fontSettings.</span><span>onDefaultFixedFontSizeChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when the default fixed font size setting changes.</p>
@@ -2120,7 +2118,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.LevelOfControl">experimental.fontSettings.LevelOfControl</a>
+                        <a href="fontSettings.html#type-fontSettings.LevelOfControl">fontSettings.LevelOfControl</a>
                       </span>
                     </span>
                   )
@@ -2154,7 +2152,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>onDefaultFontSizeChanged</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.fontSettings.</span><span>onDefaultFontSizeChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.fontSettings.</span><span>onDefaultFontSizeChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when the default font size setting changes.</p>
@@ -2218,7 +2216,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.LevelOfControl">experimental.fontSettings.LevelOfControl</a>
+                        <a href="fontSettings.html#type-fontSettings.LevelOfControl">fontSettings.LevelOfControl</a>
                       </span>
                     </span>
                   )
@@ -2252,7 +2250,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>onFontChanged</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.fontSettings.</span><span>onFontChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.fontSettings.</span><span>onFontChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when a font setting changes.</p>
@@ -2317,7 +2315,7 @@ directory. For other examples and for help in viewing the source code, see
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.ScriptCode">experimental.fontSettings.ScriptCode</a>
+                        <a href="fontSettings.html#type-fontSettings.ScriptCode">fontSettings.ScriptCode</a>
                       </span>
                     </span>
                   )
@@ -2340,7 +2338,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.GenericFamily">experimental.fontSettings.GenericFamily</a>
+                        <a href="fontSettings.html#type-fontSettings.GenericFamily">fontSettings.GenericFamily</a>
                       </span>
                     </span>
                   )
@@ -2363,7 +2361,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.LevelOfControl">experimental.fontSettings.LevelOfControl</a>
+                        <a href="fontSettings.html#type-fontSettings.LevelOfControl">fontSettings.LevelOfControl</a>
                       </span>
                     </span>
                   )
@@ -2397,7 +2395,7 @@ directory. For other examples and for help in viewing the source code, see
               <h4>onMinimumFontSizeChanged</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.fontSettings.</span><span>onMinimumFontSizeChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.fontSettings.</span><span>onMinimumFontSizeChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when the minimum font size setting changes.</p>
@@ -2461,7 +2459,7 @@ directory. For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.fontSettings.html#type-experimental.fontSettings.LevelOfControl">experimental.fontSettings.LevelOfControl</a>
+                        <a href="fontSettings.html#type-fontSettings.LevelOfControl">fontSettings.LevelOfControl</a>
                       </span>
                     </span>
                   )
@@ -2498,8 +2496,8 @@ directory. For other examples and for help in viewing the source code, see
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-experimental.fontSettings.FontName"></a>
-              <h4>experimental.fontSettings.FontName</h4>
+              <a name="type-fontSettings.FontName"></a>
+              <h4>fontSettings.FontName</h4>
               <div>
           <dt>
               <em>
@@ -2573,8 +2571,8 @@ directory. For other examples and for help in viewing the source code, see
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-experimental.fontSettings.ScriptCode"></a>
-              <h4>experimental.fontSettings.ScriptCode</h4>
+              <a name="type-fontSettings.ScriptCode"></a>
+              <h4>fontSettings.ScriptCode</h4>
               <div>
           <dt>
               <em>
@@ -2599,8 +2597,8 @@ directory. For other examples and for help in viewing the source code, see
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-experimental.fontSettings.GenericFamily"></a>
-              <h4>experimental.fontSettings.GenericFamily</h4>
+              <a name="type-fontSettings.GenericFamily"></a>
+              <h4>fontSettings.GenericFamily</h4>
               <div>
           <dt>
               <em>
@@ -2625,8 +2623,8 @@ directory. For other examples and for help in viewing the source code, see
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-experimental.fontSettings.LevelOfControl"></a>
-              <h4>experimental.fontSettings.LevelOfControl</h4>
+              <a name="type-fontSettings.LevelOfControl"></a>
+              <h4>fontSettings.LevelOfControl</h4>
               <div>
           <dt>
               <em>

@@ -18,7 +18,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/api/experimental_font_settings.h"
+#include "chrome/common/extensions/api/font_settings.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/font_list_async.h"
@@ -32,7 +32,7 @@
 
 using extensions::APIPermission;
 
-namespace fonts = extensions::api::experimental_font_settings;
+namespace fonts = extensions::api::font_settings;
 
 namespace {
 
@@ -47,12 +47,12 @@ const char kSetFromIncognitoError[] =
     "Can't modify regular settings from an incognito context.";
 
 const char kOnDefaultFixedFontSizeChanged[] =
-    "experimental.fontSettings.onDefaultFixedFontSizeChanged";
+    "fontSettings.onDefaultFixedFontSizeChanged";
 const char kOnDefaultFontSizeChanged[] =
-    "experimental.fontSettings.onDefaultFontSizeChanged";
-const char kOnFontChanged[] = "experimental.fontSettings.onFontChanged";
+    "fontSettings.onDefaultFontSizeChanged";
+const char kOnFontChanged[] = "fontSettings.onFontChanged";
 const char kOnMinimumFontSizeChanged[] =
-    "experimental.fontSettings.onMinimumFontSizeChanged";
+    "fontSettings.onMinimumFontSizeChanged";
 
 // Format for font name preference paths.
 const char kWebKitFontPrefFormat[] = "webkit.webprefs.fonts.%s.%s";
@@ -212,7 +212,7 @@ void ExtensionFontSettingsEventRouter::OnFontNamePrefChanged(
       profile_,
       kOnFontChanged,
       &args,
-      APIPermission::kExperimental,
+      APIPermission::kFontSettings,
       incognito,
       pref_name);
 }
@@ -236,7 +236,7 @@ void ExtensionFontSettingsEventRouter::OnFontPrefChanged(
       profile_,
       event_name,
       &args,
-      APIPermission::kExperimental,
+      APIPermission::kFontSettings,
       incognito,
       pref_name);
 }

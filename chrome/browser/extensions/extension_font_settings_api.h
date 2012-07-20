@@ -88,7 +88,7 @@ class ExtensionFontSettingsEventRouter : public content::NotificationObserver {
 // fontSettings.clearFont API function.
 class ClearFontFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.clearFont")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.clearFont")
 
  protected:
   // RefCounted types have non-public destructors, as with all extension
@@ -102,7 +102,7 @@ class ClearFontFunction : public SyncExtensionFunction {
 // fontSettings.getFont API function.
 class GetFontFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.getFont")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.getFont")
 
  protected:
   virtual ~GetFontFunction() {}
@@ -114,7 +114,7 @@ class GetFontFunction : public SyncExtensionFunction {
 // fontSettings.setFont API function.
 class SetFontFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.setFont")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.setFont")
 
  protected:
   virtual ~SetFontFunction() {}
@@ -126,7 +126,7 @@ class SetFontFunction : public SyncExtensionFunction {
 // fontSettings.getFontList API function.
 class GetFontListFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.getFontList")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.getFontList")
 
  protected:
   virtual ~GetFontListFunction() {}
@@ -191,8 +191,7 @@ class SetFontPrefExtensionFunction : public SyncExtensionFunction {
 
 class ClearDefaultFontSizeFunction : public ClearFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.clearDefaultFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.clearDefaultFontSize")
 
  protected:
   virtual ~ClearDefaultFontSizeFunction() {}
@@ -203,8 +202,7 @@ class ClearDefaultFontSizeFunction : public ClearFontPrefExtensionFunction {
 
 class GetDefaultFontSizeFunction : public GetFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.getDefaultFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.getDefaultFontSize")
 
  protected:
   virtual ~GetDefaultFontSizeFunction() {}
@@ -216,8 +214,7 @@ class GetDefaultFontSizeFunction : public GetFontPrefExtensionFunction {
 
 class SetDefaultFontSizeFunction : public SetFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.setDefaultFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.setDefaultFontSize")
 
  protected:
   virtual ~SetDefaultFontSizeFunction() {}
@@ -230,8 +227,7 @@ class SetDefaultFontSizeFunction : public SetFontPrefExtensionFunction {
 class ClearDefaultFixedFontSizeFunction
     : public ClearFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.clearDefaultFixedFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.clearDefaultFixedFontSize")
 
  protected:
   virtual ~ClearDefaultFixedFontSizeFunction() {}
@@ -242,8 +238,7 @@ class ClearDefaultFixedFontSizeFunction
 
 class GetDefaultFixedFontSizeFunction : public GetFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.getDefaultFixedFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.getDefaultFixedFontSize")
 
  protected:
   virtual ~GetDefaultFixedFontSizeFunction() {}
@@ -255,8 +250,7 @@ class GetDefaultFixedFontSizeFunction : public GetFontPrefExtensionFunction {
 
 class SetDefaultFixedFontSizeFunction : public SetFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.setDefaultFixedFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.setDefaultFixedFontSize")
 
  protected:
   virtual ~SetDefaultFixedFontSizeFunction() {}
@@ -268,8 +262,7 @@ class SetDefaultFixedFontSizeFunction : public SetFontPrefExtensionFunction {
 
 class ClearMinimumFontSizeFunction : public ClearFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.clearMinimumFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.clearMinimumFontSize")
 
  protected:
   virtual ~ClearMinimumFontSizeFunction() {}
@@ -280,8 +273,7 @@ class ClearMinimumFontSizeFunction : public ClearFontPrefExtensionFunction {
 
 class GetMinimumFontSizeFunction : public GetFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.getMinimumFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.getMinimumFontSize")
 
  protected:
   virtual ~GetMinimumFontSizeFunction() {}
@@ -293,8 +285,7 @@ class GetMinimumFontSizeFunction : public GetFontPrefExtensionFunction {
 
 class SetMinimumFontSizeFunction : public SetFontPrefExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.setMinimumFontSize")
+  DECLARE_EXTENSION_FUNCTION_NAME("fontSettings.setMinimumFontSize")
 
  protected:
   virtual ~SetMinimumFontSizeFunction() {}

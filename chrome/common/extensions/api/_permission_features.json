@@ -132,6 +132,10 @@
     "channel": "dev",
     "extension_types": ["platform_app"]
   },
+  "fontSettings": {
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
   "geolocation": {
     "channel": "stable",
     "extension_types": [

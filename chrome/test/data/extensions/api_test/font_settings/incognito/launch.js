@@ -5,7 +5,7 @@
 // Font settings API test for split mode (in incognito context)
 // Run with browser_tests --gtest_filter=ExtensionApiTest.FontSettingsIncognito
 
-var fs = chrome.experimental.fontSettings;
+var fs = chrome.fontSettings;
 
 var CONTROLLABLE_BY_THIS_EXTENSION = 'controllable_by_this_extension';
 var SET_FROM_INCOGNITO_ERROR =

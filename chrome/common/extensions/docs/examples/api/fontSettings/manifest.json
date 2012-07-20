@@ -10,5 +10,5 @@
     "16": "fonts16.png",
     "128": "fonts128.png"
   },
-  "permissions": ["experimental"]
+  "permissions": ["fontSettings"]
 }

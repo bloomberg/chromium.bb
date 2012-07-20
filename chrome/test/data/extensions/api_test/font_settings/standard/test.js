@@ -5,7 +5,7 @@
 // Font settings API test
 // Run with browser_tests --gtest_filter=ExtensionApiTest.FontSettings
 
-var fs = chrome.experimental.fontSettings;
+var fs = chrome.fontSettings;
 var CONTROLLED_BY_THIS_EXTENSION = 'controlled_by_this_extension';
 var CONTROLLABLE_BY_THIS_EXTENSION = 'controllable_by_this_extension';
 

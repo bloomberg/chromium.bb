@@ -13,9 +13,6 @@
 
 // Test of extension API on a standard profile.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettings) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetString(prefs::kWebKitStandardFontFamilyKorean, "Tahoma");
   prefs->SetString(prefs::kWebKitSansSerifFontFamily, "Arial");
@@ -28,9 +25,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettings) {
 
 // Test of extension API in incognito split mode.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettingsIncognito) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetString(prefs::kWebKitStandardFontFamilyKorean, "Tahoma");
   prefs->SetString(prefs::kWebKitSansSerifFontFamily, "Arial");

@@ -222,7 +222,7 @@
   "26115f23aef245d6757587e3e517bbe4b3bc55fe": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE ALARMS BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.DECLARATIVEWEBREQUEST.ONREQUEST CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.RUNTIME.ONINSTALLED CHROME.RUNTIME.ONSUSPEND CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
   "763a08e9b06595d785568a8d392b95a2f3700258": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BROWSER_ACTION",
   "4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE TABS CHROME.DEVTOOLS.NETWORK.GETHAR CHROME.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.TABS.EXECUTESCRIPT",
-  "31d10fd5e61ca51eb59073b358d4ab5267cbf318": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.CLEARDEFAULTFIXEDFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.CLEARDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.CLEARFONT CHROME.EXPERIMENTAL.FONTSETTINGS.CLEARMINIMUMFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFIXEDFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONT CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.GETMINIMUMFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.ONDEFAULTFIXEDFONTSIZECHANGED CHROME.EXPERIMENTAL.FONTSETTINGS.ONDEFAULTFONTSIZECHANGED CHROME.EXPERIMENTAL.FONTSETTINGS.ONFONTCHANGED CHROME.EXPERIMENTAL.FONTSETTINGS.ONMINIMUMFONTSIZECHANGED CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFIXEDFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONT CHROME.EXPERIMENTAL.FONTSETTINGS.SETMINIMUMFONTSIZE",
+  "31d10fd5e61ca51eb59073b358d4ab5267cbf318": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION FONTSETTINGS POPUP CHROME.FONTSETTINGS.CLEARDEFAULTFIXEDFONTSIZE CHROME.FONTSETTINGS.CLEARDEFAULTFONTSIZE CHROME.FONTSETTINGS.CLEARFONT CHROME.FONTSETTINGS.CLEARMINIMUMFONTSIZE CHROME.FONTSETTINGS.GETDEFAULTFIXEDFONTSIZE CHROME.FONTSETTINGS.GETDEFAULTFONTSIZE CHROME.FONTSETTINGS.GETFONT CHROME.FONTSETTINGS.GETFONTLIST CHROME.FONTSETTINGS.GETMINIMUMFONTSIZE CHROME.FONTSETTINGS.ONDEFAULTFIXEDFONTSIZECHANGED CHROME.FONTSETTINGS.ONDEFAULTFONTSIZECHANGED CHROME.FONTSETTINGS.ONFONTCHANGED CHROME.FONTSETTINGS.ONMINIMUMFONTSIZECHANGED CHROME.FONTSETTINGS.SETDEFAULTFIXEDFONTSIZE CHROME.FONTSETTINGS.SETDEFAULTFONTSIZE CHROME.FONTSETTINGS.SETFONT CHROME.FONTSETTINGS.SETMINIMUMFONTSIZE",
   "8b0dd31216235941bdd8eb33fda915ef5cf79a82": "GOOGLE CALENDAR CHECKER (BY GOOGLE) QUICKLY SEE THE TIME UNTIL YOUR NEXT MEETING FROM ANY OF YOUR CALENDARS. CLICK ON THE BUTTON TO BE TAKEN TO YOUR CALENDAR. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
   "4e35caa9742fb82dbd628892d23a781614f6eff6": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
   "bb57f7a0132cbeb36ad7e7bb0ab75c21704234ca": "GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. ALARMS BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
@@ -309,6 +309,8 @@
         <a href="javascript:void(0);" onclick="setFilter('chrome.fileBrowserHandler', this)">chrome.fileBrowserHandler</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.fileSystem', this)">chrome.fileSystem</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.fontSettings', this)">chrome.fontSettings</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.history', this)">chrome.history</a><span>, </span>
       </span><span>
@@ -1562,7 +1564,7 @@
     <span>
       <strong>browser_action</strong><span>, </span>
     </span><span>
-      <strong>experimental</strong>
+      <strong>fontSettings</strong>
       <span> and</span>
     </span><span>
       <strong>popup</strong>
@@ -1572,39 +1574,39 @@
   <div class="apicalls"><strong>Calls:</strong>
     <ul>
       <li>
-        <code><a href="experimental.fontSettings.html#method-clearDefaultFixedFontSize">chrome.experimental.fontSettings.clearDefaultFixedFontSize</a></code>
+        <code><a href="fontSettings.html#method-clearDefaultFixedFontSize">chrome.fontSettings.clearDefaultFixedFontSize</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-clearDefaultFontSize">chrome.experimental.fontSettings.clearDefaultFontSize</a></code>
+        <code><a href="fontSettings.html#method-clearDefaultFontSize">chrome.fontSettings.clearDefaultFontSize</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-clearFont">chrome.experimental.fontSettings.clearFont</a></code>
+        <code><a href="fontSettings.html#method-clearFont">chrome.fontSettings.clearFont</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-clearMinimumFontSize">chrome.experimental.fontSettings.clearMinimumFontSize</a></code>
+        <code><a href="fontSettings.html#method-clearMinimumFontSize">chrome.fontSettings.clearMinimumFontSize</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-getDefaultFixedFontSize">chrome.experimental.fontSettings.getDefaultFixedFontSize</a></code>
+        <code><a href="fontSettings.html#method-getDefaultFixedFontSize">chrome.fontSettings.getDefaultFixedFontSize</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-getDefaultFontSize">chrome.experimental.fontSettings.getDefaultFontSize</a></code>
+        <code><a href="fontSettings.html#method-getDefaultFontSize">chrome.fontSettings.getDefaultFontSize</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-getFont">chrome.experimental.fontSettings.getFont</a></code>
+        <code><a href="fontSettings.html#method-getFont">chrome.fontSettings.getFont</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-getFontList">chrome.experimental.fontSettings.getFontList</a></code>
+        <code><a href="fontSettings.html#method-getFontList">chrome.fontSettings.getFontList</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-getMinimumFontSize">chrome.experimental.fontSettings.getMinimumFontSize</a></code>
+        <code><a href="fontSettings.html#method-getMinimumFontSize">chrome.fontSettings.getMinimumFontSize</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#event-onDefaultFixedFontSizeChanged">chrome.experimental.fontSettings.onDefaultFixedFontSizeChanged</a></code>
+        <code><a href="fontSettings.html#event-onDefaultFixedFontSizeChanged">chrome.fontSettings.onDefaultFixedFontSizeChanged</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#event-onDefaultFontSizeChanged">chrome.experimental.fontSettings.onDefaultFontSizeChanged</a></code>
+        <code><a href="fontSettings.html#event-onDefaultFontSizeChanged">chrome.fontSettings.onDefaultFontSizeChanged</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#event-onFontChanged">chrome.experimental.fontSettings.onFontChanged</a></code>
+        <code><a href="fontSettings.html#event-onFontChanged">chrome.fontSettings.onFontChanged</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#event-onMinimumFontSizeChanged">chrome.experimental.fontSettings.onMinimumFontSizeChanged</a></code>
+        <code><a href="fontSettings.html#event-onMinimumFontSizeChanged">chrome.fontSettings.onMinimumFontSizeChanged</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-setDefaultFixedFontSize">chrome.experimental.fontSettings.setDefaultFixedFontSize</a></code>
+        <code><a href="fontSettings.html#method-setDefaultFixedFontSize">chrome.fontSettings.setDefaultFixedFontSize</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-setDefaultFontSize">chrome.experimental.fontSettings.setDefaultFontSize</a></code>
+        <code><a href="fontSettings.html#method-setDefaultFontSize">chrome.fontSettings.setDefaultFontSize</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-setFont">chrome.experimental.fontSettings.setFont</a></code>
+        <code><a href="fontSettings.html#method-setFont">chrome.fontSettings.setFont</a></code>
       </li><li>
-        <code><a href="experimental.fontSettings.html#method-setMinimumFontSize">chrome.experimental.fontSettings.setMinimumFontSize</a></code>
+        <code><a href="fontSettings.html#method-setMinimumFontSize">chrome.fontSettings.setMinimumFontSize</a></code>
       </li>
     </ul>
   </div>
