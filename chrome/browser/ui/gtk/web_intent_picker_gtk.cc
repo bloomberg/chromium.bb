@@ -621,20 +621,12 @@ void WebIntentPickerGtk::UpdateInstalledServices() {
 }
 
 void WebIntentPickerGtk::UpdateCWSLabel() {
-  if (model_->GetInstalledServiceCount() == 0) {
-    gtk_widget_hide(gtk_widget_get_parent(button_vbox_));
-    gtk_label_set_text(GTK_LABEL(cws_label_), l10n_util::GetStringUTF8(
-        IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED).c_str());
-  } else {
-    gtk_label_set_text(GTK_LABEL(cws_label_), l10n_util::GetStringUTF8(
-        IDS_INTENT_PICKER_GET_MORE_SERVICES).c_str());
-    gtk_widget_show(gtk_widget_get_parent(button_vbox_));
-  }
+  gtk_widget_set_visible(gtk_widget_get_parent(button_vbox_),
+                         model_->GetInstalledServiceCount() != 0);
 
-  if (model_->GetSuggestedExtensionCount() == 0)
-    gtk_widget_hide(cws_label_);
-  else
-    gtk_widget_show(cws_label_);
+  std::string label_text = UTF16ToUTF8(model_->GetSuggestionsLinkText());
+  gtk_label_set_text(GTK_LABEL(cws_label_), label_text.c_str());
+  gtk_widget_set_visible(cws_label_, !label_text.empty());
 }
 
 void WebIntentPickerGtk::UpdateSuggestedExtensions() {

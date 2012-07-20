@@ -126,8 +126,12 @@ class WebIntentPickerModel {
   // Return the suggested extension at |index|.
   const SuggestedExtension& GetSuggestedExtensionAt(size_t index) const;
 
-  // Return the number of suggested extensions.
+  // Return the number of suggested extensions to be displayed.
   size_t GetSuggestedExtensionCount() const;
+
+  // Return the text to use in the "Get more suggestions" link. Returns UTF8.
+  // Will return an empty string if the link should not be shown.
+  string16 GetSuggestionsLinkText() const;
 
   // Set the icon image for the suggested extension with |id|.
   void SetSuggestedExtensionIconWithId(const string16& id,

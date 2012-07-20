@@ -15,12 +15,18 @@ namespace {
 const string16 kTitle1(ASCIIToUTF16("Foo"));
 const string16 kTitle2(ASCIIToUTF16("Bar"));
 const string16 kTitle3(ASCIIToUTF16("Baz"));
+const string16 kTitle4(ASCIIToUTF16("Biff"));
+const string16 kTitle5(ASCIIToUTF16("Max"));
+const string16 kTitle6(ASCIIToUTF16("Lulz"));
 const GURL kUrl1("http://www.example.com/foo");
 const GURL kUrl2("http://www.example.com/bar");
 const GURL kUrl3("http://www.example.com/baz");
 const string16 kId1(ASCIIToUTF16("nhkckhebbbncbkefhcpcgepcgfaclehe"));
 const string16 kId2(ASCIIToUTF16("hcpcgepcgfaclehenhkckhebbbncbkef"));
 const string16 kId3(ASCIIToUTF16("aclehenhkckhebbbncbkefhcpcgepcgf"));
+const string16 kId4(ASCIIToUTF16("bclehenhkckhebbbncbkefhcpcgepcgf"));
+const string16 kId5(ASCIIToUTF16("cclehenhkckhebbbncbkefhcpcgepcgf"));
+const string16 kId6(ASCIIToUTF16("dclehenhkckhebbbncbkefhcpcgepcgf"));
 const WebIntentPickerModel::Disposition kWindowDisposition(
     WebIntentPickerModel::DISPOSITION_WINDOW);
 const WebIntentPickerModel::Disposition kInlineDisposition(
@@ -152,6 +158,23 @@ TEST_F(WebIntentPickerModelTest, AddSuggestedExtension) {
   EXPECT_EQ(2U, model_.GetSuggestedExtensionCount());
   EXPECT_EQ(kId1, model_.GetSuggestedExtensionAt(0).id);
   EXPECT_EQ(kId2, model_.GetSuggestedExtensionAt(1).id);
+
+  EXPECT_EQ(string16(), model_.GetSuggestionsLinkText());
+}
+
+TEST_F(WebIntentPickerModelTest, MaxSuggestedExtensions) {
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(6);
+
+  model_.AddSuggestedExtension(kTitle1, kId1, 3.0);
+  model_.AddSuggestedExtension(kTitle2, kId2, 4.3);
+  model_.AddSuggestedExtension(kTitle3, kId3, 4.4);
+  model_.AddSuggestedExtension(kTitle4, kId4, 4.5);
+  model_.AddSuggestedExtension(kTitle5, kId5, 4.6);
+  model_.AddSuggestedExtension(kTitle6, kId6, 4.7);
+
+  // Max to show currently set to 5.
+  EXPECT_EQ(5U, model_.GetSuggestedExtensionCount());
+  EXPECT_NE(string16(), model_.GetSuggestionsLinkText());
 }
 
 TEST_F(WebIntentPickerModelTest, RemoveSuggestedExtensionAt) {

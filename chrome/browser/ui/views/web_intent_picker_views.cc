@@ -996,12 +996,10 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
 }
 
 void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
-  suggestions_label_->SetText(l10n_util::GetStringUTF16(
-      model->GetInstalledServiceCount() ?
-          IDS_INTENT_PICKER_GET_MORE_SERVICES :
-          IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED));
+  string16 label_text = model->GetSuggestionsLinkText();
+  suggestions_label_->SetText(label_text);
 
-  suggestions_label_->SetVisible(model->GetSuggestedExtensionCount() > 0);
+  suggestions_label_->SetVisible(!label_text.empty());
 
   service_buttons_->Update();
   extensions_->Update();

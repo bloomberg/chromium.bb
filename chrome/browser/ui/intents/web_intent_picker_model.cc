@@ -9,7 +9,9 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
+#include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
@@ -114,6 +116,15 @@ const WebIntentPickerModel::SuggestedExtension&
 
 size_t WebIntentPickerModel::GetSuggestedExtensionCount() const {
   return std::min(suggested_extensions_.size(), kMaxSuggestionCount);
+}
+
+string16 WebIntentPickerModel::GetSuggestionsLinkText() const {
+  if (suggested_extensions_.size() <= kMaxSuggestionCount)
+    return string16();
+
+  return l10n_util::GetStringUTF16(GetInstalledServiceCount() == 0 ?
+      IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED :
+      IDS_INTENT_PICKER_GET_MORE_SERVICES);
 }
 
 void WebIntentPickerModel::SetSuggestedExtensionIconWithId(
