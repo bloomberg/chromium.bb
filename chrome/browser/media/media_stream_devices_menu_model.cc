@@ -34,7 +34,9 @@ MediaStreamDevicesMenuModel::MediaStreamDevicesMenuModel(
     AddDevices(delegate->GetAudioDevices());
   }
 
-  AddAlwaysAllowOption(audio, video);
+  // Show "always allow" option only for the secure connection.
+  if (delegate->GetSecurityOrigin().SchemeIsSecure())
+    AddAlwaysAllowOption(audio, video);
 }
 
 MediaStreamDevicesMenuModel::~MediaStreamDevicesMenuModel() {

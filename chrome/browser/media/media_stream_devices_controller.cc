@@ -242,6 +242,10 @@ void MediaStreamDevicesController::GetAlwaysAllowedDevices(
     return;
   }
 
+  // "Always allowed" option is only available for secure connection.
+  if (!request_.security_origin.SchemeIsSecure())
+    return;
+
   // Checks the media exceptions to get the "always allowed" devices.
   scoped_ptr<Value> value(
       profile_->GetHostContentSettingsMap()->GetWebsiteSetting(
