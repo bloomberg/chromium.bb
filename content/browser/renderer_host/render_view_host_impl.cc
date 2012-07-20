@@ -534,8 +534,12 @@ void RenderViewHostImpl::DragTargetDragEnter(
     FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
 
     // Make sure we have the same display_name as the one we register.
-    std::string name = files.AddPath(path);
-    iter->display_name = UTF8ToUTF16(name);
+    if (iter->display_name.empty()) {
+      std::string name = files.AddPath(path);
+      iter->display_name = UTF8ToUTF16(name);
+    } else {
+      files.AddPathWithName(path, UTF16ToUTF8(iter->display_name));
+    }
 
     policy->GrantRequestSpecificFileURL(renderer_id,
                                         net::FilePathToFileURL(path));
