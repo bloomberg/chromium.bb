@@ -88,7 +88,7 @@ int   NaCl_page_alloc_at_addr(void    **p,
             NACL_PAGESIZE);
   }
   if (NACL_MAP_PAGESIZE != sys_info.dwAllocationGranularity) {
-    NaClLog(0, "allocation granularity is 0x%x; expected 0x%x\n",
+    NaClLog(LOG_ERROR, "allocation granularity is 0x%x; expected 0x%x\n",
             sys_info.dwAllocationGranularity,
             NACL_MAP_PAGESIZE);
   }
@@ -105,7 +105,7 @@ int   NaCl_page_alloc_at_addr(void    **p,
 
     addr = VirtualAlloc(hint, num_bytes, MEM_RESERVE, PAGE_NOACCESS);
     if (addr == NULL) {
-      NaClLog(0,
+      NaClLog(LOG_ERROR,
               "NaCl_page_alloc: VirtualAlloc(*,0x%"NACL_PRIxS") failed\n",
               num_bytes);
       return -ENOMEM;
@@ -129,9 +129,10 @@ int   NaCl_page_alloc_at_addr(void    **p,
                                NACL_MAP_PAGESIZE,
                                MEM_RESERVE,
                                PAGE_NOACCESS)) {
-        NaClLog(0, ("NaCl_page_alloc: re-allocation failed at "
-                    "0x%016"NACL_PRIxPTR","
-                    " error %d\n"),
+        NaClLog(LOG_ERROR,
+                ("NaCl_page_alloc: re-allocation failed at "
+                 "0x%016"NACL_PRIxPTR","
+                 " error %d\n"),
                 (uintptr_t) chunk, GetLastError());
         for (unroll = addr;
              unroll < chunk;

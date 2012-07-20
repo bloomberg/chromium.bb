@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -236,12 +236,13 @@ void ManifestLookupRpc(NaClSrpcRpc* rpc,
       rpc->channel->server_instance_data);
   NaClSrpcClosureRunner on_return(done);
 
-  NaClLog(0, "ManifestLookupRpc: %s, %d\n", fname, flags);
+  NaClLog(4, "ManifestLookupRpc: %s, %d\n", fname, flags);
 
   out_args[2]->u.count = 0;
   // by default we return a failure, so no proxy handle
   if (NULL == service->reverse_interface()) {
-    NaClLog(0, "ManifestLookupRpc: no reverse service, returning error\n");
+    NaClLog(LOG_ERROR,
+            "ManifestLookupRpc: no reverse service, returning error\n");
     // no reverse interface, all file open requests get -1.
     out_args[0]->u.ival = 0;  // ok, but failed.
     out_args[1]->u.hval = (struct NaClDesc*) NaClDescInvalidMake();
@@ -249,17 +250,17 @@ void ManifestLookupRpc(NaClSrpcRpc* rpc,
     return;
   }
 
-  NaClLog(0, "ManifestLookupRpc: invoking OpenManifestEntry\n");
+  NaClLog(4, "ManifestLookupRpc: invoking OpenManifestEntry\n");
   if (!service->reverse_interface()->OpenManifestEntry(fname,
                                                        &posix_desc)
       || -1 == posix_desc) {
-    NaClLog(0, "ManifestLookupRpc: OpenManifestEntry failed.\n");
+    NaClLog(1, "ManifestLookupRpc: OpenManifestEntry failed.\n");
     out_args[0]->u.ival = 0;  // ok, but failed.
     out_args[1]->u.hval = (struct NaClDesc*) NaClDescInvalidMake();
     rpc->result = NACL_SRPC_RESULT_OK;
     return;
   }
-  NaClLog(0,
+  NaClLog(4,
           "ManifestLookupRpc: OpenManifestEntry returned desc %d.\n",
           posix_desc);
   struct NaClHostDesc *hd = reinterpret_cast<struct NaClHostDesc*>(
@@ -284,7 +285,7 @@ void ManifestUnrefRpc(NaClSrpcRpc* rpc,
   char* proxy_handle = in_args[0]->arrays.carr;
   NaClSrpcClosureRunner on_return(done);
 
-  NaClLog(0, "ManifestUnrefRpc: %.*s\n", 10, proxy_handle);
+  NaClLog(4, "ManifestUnrefRpc: %.*s\n", 10, proxy_handle);
   // Placeholder.  This RPC will be replaced by real code that
   // looks up the object proxy handle to close the Pepper file object.
   //

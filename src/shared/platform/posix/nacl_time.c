@@ -86,7 +86,7 @@ int NaClNanosleep(struct nacl_abi_timespec const  *req,
   NaClLog(4, "nanosleep(time = %"NACL_PRId64".%09"NACL_PRId64" S)\n",
           (int64_t) host_req.tv_sec, (int64_t) host_req.tv_nsec);
   if (host_req.tv_nsec > NANOS_PER_UNIT) {
-    NaClLog(0, "tv_nsec too large %"NACL_PRId64"\n",
+    NaClLog(4, "tv_nsec too large %"NACL_PRId64"\n",
             (int64_t) host_req.tv_nsec);
   }
   retval = nanosleep(&host_req, host_remptr);
