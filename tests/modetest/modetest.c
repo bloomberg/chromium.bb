@@ -625,10 +625,17 @@ struct format_info {
 	.yuv = { (order), (xsub), (ysub), (chroma_stride) }
 
 static const struct format_info format_info[] = {
+	/* YUV packed */
+	{ DRM_FORMAT_UYVY, "UYVY", MAKE_YUV_INFO(YUV_YCbCr | YUV_CY, 2, 2, 2) },
+	{ DRM_FORMAT_VYUY, "VYUY", MAKE_YUV_INFO(YUV_YCrCb | YUV_CY, 2, 2, 2) },
 	{ DRM_FORMAT_YUYV, "YUYV", MAKE_YUV_INFO(YUV_YCbCr | YUV_YC, 2, 2, 2) },
+	{ DRM_FORMAT_YVYU, "YVYU", MAKE_YUV_INFO(YUV_YCrCb | YUV_YC, 2, 2, 2) },
+	/* YUV semi-planar */
 	{ DRM_FORMAT_NV12, "NV12", MAKE_YUV_INFO(YUV_YCbCr, 2, 2, 2) },
 	{ DRM_FORMAT_NV21, "NV21", MAKE_YUV_INFO(YUV_YCrCb, 2, 2, 2) },
+	/* YUV planar */
 	{ DRM_FORMAT_YVU420, "YV12", MAKE_YUV_INFO(YUV_YCrCb, 2, 2, 1) },
+	/* RGB */
 	{ DRM_FORMAT_XRGB1555, "XR15", MAKE_RGB_INFO(5, 10, 5, 5, 5, 0, 0, 0) },
 	{ DRM_FORMAT_XRGB8888, "XR24", MAKE_RGB_INFO(8, 16, 8, 8, 8, 0, 0, 0) },
 	{ DRM_FORMAT_ARGB1555, "AR15", MAKE_RGB_INFO(5, 10, 5, 5, 5, 0, 1, 15) },
@@ -1016,7 +1023,10 @@ fill_smpte(const struct format_info *info, void *planes[3], unsigned int width,
 	unsigned char *u, *v;
 
 	switch (info->format) {
+	case DRM_FORMAT_UYVY:
+	case DRM_FORMAT_VYUY:
 	case DRM_FORMAT_YUYV:
+	case DRM_FORMAT_YVYU:
 		return fill_smpte_yuv_packed(&info->yuv, planes[0], width,
 					     height, stride);
 
@@ -1026,6 +1036,7 @@ fill_smpte(const struct format_info *info, void *planes[3], unsigned int width,
 		v = info->yuv.order & YUV_YCrCb ? planes[1] : planes[1] + 1;
 		return fill_smpte_yuv_planar(&info->yuv, planes[0], u, v,
 					     width, height, stride);
+
 	case DRM_FORMAT_YVU420:
 		return fill_smpte_yuv_planar(&info->yuv, planes[0], planes[1],
 					     planes[2], width, height, stride);
@@ -1128,21 +1139,30 @@ fill_tiles_yuv_packed(const struct yuv_info *yuv, unsigned char *mem,
 		      unsigned int width, unsigned int height,
 		      unsigned int stride)
 {
-	unsigned int i, j;
+	unsigned char *y_mem = (yuv->order & YUV_YC) ? mem : mem + 1;
+	unsigned char *c_mem = (yuv->order & YUV_CY) ? mem : mem + 1;
+	unsigned int u = (yuv->order & YUV_YCrCb) ? 2 : 0;
+	unsigned int v = (yuv->order & YUV_YCbCr) ? 2 : 0;
+	unsigned int x;
+	unsigned int y;
 
-	for (j = 0; j < height; j++) {
-		uint8_t *ptr = (uint8_t*)((char*)mem + j * stride);
-		for (i = 0; i < width; i++) {
-			div_t d = div(i+j, width);
-			uint32_t rgb = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
-			unsigned char *rgbp = (unsigned char *)&rgb;
-			unsigned char y = (0.299 * rgbp[RED]) + (0.587 * rgbp[GREEN]) + (0.114 * rgbp[BLUE]);
+	for (y = 0; y < height; ++y) {
+		for (x = 0; x < width; x += 2) {
+			div_t d = div(x+y, width);
+			uint32_t rgb32 = 0x00130502 * (d.quot >> 6)
+				       + 0x000a1120 * (d.rem >> 6);
+			struct color_yuv color =
+				MAKE_YUV_601((rgb32 >> 16) & 0xff,
+					     (rgb32 >> 8) & 0xff, rgb32 & 0xff);
 
-			*(ptr++) = y;
-			*(ptr++) = (rgbp[BLUE] - y) * 0.565 + 128;
-			*(ptr++) = y;
-			*(ptr++) = (rgbp[RED] - y) * 0.713 + 128;
+			y_mem[2*x] = color.y;
+			c_mem[2*x+u] = color.u;
+			y_mem[2*x+2] = color.y;
+			c_mem[2*x+v] = color.v;
 		}
+
+		y_mem += stride;
+		c_mem += stride;
 	}
 }
 
@@ -1193,7 +1213,10 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 	unsigned char *u, *v;
 
 	switch (info->format) {
+	case DRM_FORMAT_UYVY:
+	case DRM_FORMAT_VYUY:
 	case DRM_FORMAT_YUYV:
+	case DRM_FORMAT_YVYU:
 		return fill_tiles_yuv_packed(&info->yuv, planes[0],
 					     width, height, stride);
 
@@ -1203,6 +1226,7 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 		v = info->yuv.order & YUV_YCrCb ? planes[1] : planes[1] + 1;
 		return fill_tiles_yuv_planar(&info->yuv, planes[0], u, v,
 					     width, height, stride);
+
 	case DRM_FORMAT_YVU420:
 		return fill_tiles_yuv_planar(&info->yuv, planes[0], planes[1],
 					     planes[2], width, height, stride);
@@ -1334,7 +1358,10 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 	 * and multi-planar path.. would be nice to add more..
 	 */
 	switch (format) {
+	case DRM_FORMAT_UYVY:
+	case DRM_FORMAT_VYUY:
 	case DRM_FORMAT_YUYV:
+	case DRM_FORMAT_YVYU:
 		pitches[0] = width * 2;
 		offsets[0] = 0;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
