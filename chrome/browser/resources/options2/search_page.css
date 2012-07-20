@@ -18,7 +18,7 @@
   position: absolute;
   top: -1000px;  /* Minor hack: position off-screen by default. */
   /* Create a z-context for search-bubble-innards, its after and before. */
-  z-index: 0;
+  z-index: 1;
 }
 
 /* Contains the text content of the bubble.  */
