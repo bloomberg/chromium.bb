@@ -13,6 +13,7 @@
         'content_app',
         'content_browser',
         'content_common',
+        '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
