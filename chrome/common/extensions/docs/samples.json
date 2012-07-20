@@ -243,6 +243,7 @@
     "chrome.fileSystem.chooseFile": "fileSystem.html#method-chooseFile",
     "chrome.fileSystem.getDisplayPath": "fileSystem.html#method-getDisplayPath",
     "chrome.fileSystem.getWritableFileEntry": "fileSystem.html#method-getWritableFileEntry",
+    "chrome.fileSystem.isWritableFileEntry": "fileSystem.html#method-isWritableFileEntry",
     "chrome.history.addUrl": "history.html#method-addUrl",
     "chrome.history.deleteAll": "history.html#method-deleteAll",
     "chrome.history.deleteRange": "history.html#method-deleteRange",

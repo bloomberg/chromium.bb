@@ -204,6 +204,8 @@
                 <a href="#method-getDisplayPath">getDisplayPath</a>
               </li><li>
                 <a href="#method-getWritableFileEntry">getWritableFileEntry</a>
+              </li><li>
+                <a href="#method-isWritableFileEntry">isWritableFileEntry</a>
               </li>
             </ol>
           </li>
@@ -324,7 +326,7 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>fileEntry</span>
+                        <span>FileEntry</span>
                       </span>
                     </span>
                   )
@@ -358,7 +360,7 @@
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>fileEntry fileEntry</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>FileEntry fileEntry</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -370,7 +372,7 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>fileEntry</span>
+                        <span>FileEntry</span>
                       </span>
                     </span>
                   )
@@ -610,7 +612,7 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>fileEntry</span>
+                        <span>FileEntry</span>
                       </span>
                     </span>
                   )
@@ -644,7 +646,7 @@
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>fileEntry fileEntry</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>FileEntry fileEntry</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -656,7 +658,150 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>fileEntry</span>
+                        <span>FileEntry</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-isWritableFileEntry"></a> <!-- method-anchor -->
+              <h4>isWritableFileEntry</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.fileSystem.isWritableFileEntry</span>(<span class="null"><span>FileEntry</span>
+                      <var><span>fileEntry</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>IsWritableCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Gets whether this FileEntry is writable or not.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>fileEntry</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>FileEntry</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>IsWritableCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>isWritable</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The <em>callback</em> parameter should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>boolean isWritable</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>isWritable</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
                       </span>
                     </span>
                   )

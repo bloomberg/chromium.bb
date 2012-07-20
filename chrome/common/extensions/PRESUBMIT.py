@@ -24,7 +24,8 @@ REBUILD_WARNING = (
     'not been updated properly. See %s for more info.' % README)
 BUILD_SCRIPT = os.path.join(BUILD_DIR, 'build.py')
 REBUILD_INSTRUCTIONS = (
-    'First build DumpRenderTree, then update the docs by running:\n  %s' %
+    'First build DumpRenderTree, then update the docs by running:\n  %s'
+    ' --page-name=<apiName>' %
     BUILD_SCRIPT)
 
 

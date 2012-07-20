@@ -65,7 +65,8 @@ class TestPresubmit(unittest.TestCase):
         ' - Changes to %s not reflected in generated doc.\n'
         ' - Changes to sample %s have not been re-zipped.\n'
         ' - Docs out of sync with %s changes.\n'
-        'First build DumpRenderTree, then update the docs by running:\n  %s' %
+        'First build DumpRenderTree, then update the docs by running:\n  %s'
+        ' --page-name=<apiName>' %
         (os.path.normpath('chrome/common/extensions/docs/README.txt'),
          os.path.normpath('chrome/common/extensions/docs/static/foo.html'),
          os.path.normpath('chrome/common/extensions/docs/examples/foo/b/bz.js'),
@@ -83,7 +84,8 @@ class TestPresubmit(unittest.TestCase):
         'have not been updated properly. See %s for more info.\n'
         ' - Changes to generated doc %s not reflected in non-generated files.\n'
         ' - Changes to generated doc %s not reflected in non-generated files.\n'
-        'First build DumpRenderTree, then update the docs by running:\n  %s' %
+        'First build DumpRenderTree, then update the docs by running:\n  %s'
+        ' --page-name=<apiName>' %
         (os.path.normpath('chrome/common/extensions/docs/README.txt'),
          os.path.normpath('chrome/common/extensions/docs/bar.html'),
          os.path.normpath('chrome/common/extensions/docs/foo.html'),
