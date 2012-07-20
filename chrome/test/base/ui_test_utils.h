@@ -25,7 +25,6 @@
 #include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ui_controls/ui_controls.h"
@@ -213,24 +212,6 @@ int FindInPage(TabContents* tab,
 // Closes all infobars |tab| has open, if any.  Tests that depend on there being
 // no InfoBar open when the test starts may need to use this.
 void CloseAllInfoBars(TabContents* tab);
-
-// Simulates clicking at the center of the given tab asynchronously. Unlike
-// ClickOnView, this works even if the browser isn't in the foreground.
-void SimulateMouseClick(content::WebContents* tab);
-
-// Simulates asynchronously a mouse enter/move/leave event.
-void SimulateMouseEvent(content::WebContents* tab,
-                        WebKit::WebInputEvent::Type type,
-                        const gfx::Point& point);
-
-// Sends a key press asynchronously. Unlike the SendKeyPress functions, this
-// works even if the browser isn't in the foreground.
-void SimulateKeyPress(content::WebContents* tab,
-                      ui::KeyboardCode key,
-                      bool control,
-                      bool shift,
-                      bool alt,
-                      bool command);
 
 #if defined OS_MACOSX
 void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);

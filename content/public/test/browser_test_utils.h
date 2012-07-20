@@ -14,9 +14,15 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace base {
 class RunLoop;
+}
+
+namespace gfx {
+class Point;
 }
 
 // A collections of functions designed for use with content_browsertests and
@@ -30,6 +36,22 @@ namespace content {
 
 class MessageLoopRunner;
 class WebContents;
+
+// Simulates clicking at the center of the given tab asynchronously.
+void SimulateMouseClick(WebContents* web_contents);
+
+// Simulates asynchronously a mouse enter/move/leave event.
+void SimulateMouseEvent(WebContents* web_contents,
+                        WebKit::WebInputEvent::Type type,
+                        const gfx::Point& point);
+
+// Sends a key press asynchronously.
+void SimulateKeyPress(WebContents* web_contents,
+                      ui::KeyboardCode key,
+                      bool control,
+                      bool shift,
+                      bool alt,
+                      bool command);
 
 // Watches title changes on a tab, blocking until an expected title is set.
 class TitleWatcher : public NotificationObserver {

@@ -26,6 +26,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
@@ -164,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
   // otherwise, a non user-initiated in-page location change will be treated
   // as client redirect and the redirect will be recoreded, which can cause
   // this test failed.
-  ui_test_utils::SimulateMouseClick(web_contents);
+  content::SimulateMouseClick(web_contents);
   navigation_observer.Wait();
 
   std::vector<GURL> redirects = GetRedirects(first_url);

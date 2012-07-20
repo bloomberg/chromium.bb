@@ -168,8 +168,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectSetException) {
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous mouseup works correctly.
 // This was never ported to Mac. The only thing remaining is to make
-// ui_test_utils::SimulateMouseClick get to Mac plugins, currently it doesn't
-// work.
+// SimulateMouseClick get to Mac plugins, currently it doesn't work.
 IN_PROC_BROWSER_TEST_F(PluginTest,
                        SelfDeletePluginInvokeInSynchronousMouseUp) {
   ui_test_utils::NavigateToURL(
@@ -179,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
   content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
-  ui_test_utils::SimulateMouseClick(chrome::GetActiveWebContents(browser()));
+  SimulateMouseClick(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 #endif

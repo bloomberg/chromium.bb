@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -183,7 +184,7 @@ class AutofillTest : public InProcessBrowserTest {
 
   void FocusFirstNameField() {
     LOG(WARNING) << "Clicking on the tab.";
-    ui_test_utils::SimulateMouseClick(chrome::GetActiveWebContents(browser()));
+    content::SimulateMouseClick(chrome::GetActiveWebContents(browser()));
 
     LOG(WARNING) << "Focusing the first name field.";
     bool result = false;
@@ -212,7 +213,7 @@ class AutofillTest : public InProcessBrowserTest {
   void SendKeyAndWait(ui::KeyboardCode key, int notification_type) {
     content::WindowedNotificationObserver observer(
         notification_type, content::Source<RenderViewHost>(render_view_host()));
-    ui_test_utils::SimulateKeyPress(chrome::GetActiveWebContents(
+    content::SimulateKeyPress(chrome::GetActiveWebContents(
         browser()), key, false, false, false, false);
     observer.Wait();
   }

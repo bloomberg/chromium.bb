@@ -5,11 +5,102 @@
 #include "content/public/test/browser_test_utils.h"
 
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+void SimulateMouseClick(WebContents* web_contents) {
+  int x = web_contents->GetView()->GetContainerSize().width() / 2;
+  int y = web_contents->GetView()->GetContainerSize().height() / 2;
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.x = x;
+  mouse_event.y = y;
+  // Mac needs globalX/globalY for events to plugins.
+  gfx::Rect offset;
+  web_contents->GetView()->GetContainerBounds(&offset);
+  mouse_event.globalX = x + offset.x();
+  mouse_event.globalY = y + offset.y();
+  mouse_event.clickCount = 1;
+  web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+}
+
+void SimulateMouseEvent(WebContents* web_contents,
+                        WebKit::WebInputEvent::Type type,
+                        const gfx::Point& point) {
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = type;
+  mouse_event.x = point.x();
+  mouse_event.y = point.y();
+  web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+}
+
+void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
+                            ui::KeyboardCode key,
+                            bool control,
+                            bool shift,
+                            bool alt,
+                            bool command,
+                            NativeWebKeyboardEvent* event) {
+  event->nativeKeyCode = 0;
+  event->windowsKeyCode = key;
+  event->setKeyIdentifierFromWindowsKeyCode();
+  event->type = type;
+  event->modifiers = 0;
+  event->isSystemKey = false;
+  event->timeStampSeconds = base::Time::Now().ToDoubleT();
+  event->skip_in_browser = true;
+
+  if (type == WebKit::WebInputEvent::Char ||
+      type == WebKit::WebInputEvent::RawKeyDown) {
+    event->text[0] = key;
+    event->unmodifiedText[0] = key;
+  }
+
+  if (control)
+    event->modifiers |= WebKit::WebInputEvent::ControlKey;
+
+  if (shift)
+    event->modifiers |= WebKit::WebInputEvent::ShiftKey;
+
+  if (alt)
+    event->modifiers |= WebKit::WebInputEvent::AltKey;
+
+  if (command)
+    event->modifiers |= WebKit::WebInputEvent::MetaKey;
+}
+
+void SimulateKeyPress(WebContents* web_contents,
+                      ui::KeyboardCode key,
+                      bool control,
+                      bool shift,
+                      bool alt,
+                      bool command) {
+  NativeWebKeyboardEvent event_down;
+  BuildSimpleWebKeyEvent(
+      WebKit::WebInputEvent::RawKeyDown, key, control, shift, alt, command,
+      &event_down);
+  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_down);
+
+  NativeWebKeyboardEvent char_event;
+  BuildSimpleWebKeyEvent(
+      WebKit::WebInputEvent::Char, key, control, shift, alt, command,
+      &char_event);
+  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(char_event);
+
+  NativeWebKeyboardEvent event_up;
+  BuildSimpleWebKeyEvent(
+      WebKit::WebInputEvent::KeyUp, key, control, shift, alt, command,
+      &event_up);
+  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
+}
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,
                            const string16& expected_title)
