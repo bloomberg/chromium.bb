@@ -1,6 +1,15 @@
-Wayland Demos
+Weston
 
-This repository contains a few demos application for the Wayland
-project.  There's a sample compositor that can run on KMS, under X11
-or under another Wayland compositor and there's a handful of simple
-clients that demonstrate various aspects of Wayland:
+Weston is the reference implementation of a Wayland compositor, and a
+useful compositor in its own right.  Weston has various backends that
+lets it run on Linux kernel modesetting and evdev input as well as
+under X11.  Weston ships with a few example clients, from simple
+clients that demonstrate certain aspects of the protocol to more
+complete clients and a simplistic toolkit.  There is also a quite
+capable terminal emulator (weston-terminal) and an toy/example desktop
+shell.  Finally, weston also provides integration with the Xorg server
+and can pull X clients into the Wayland desktop and act as a X window
+manager.
+
+Refer to http://wayland.freedesktop.org/building.html for buiding
+weston and its dependencies.
