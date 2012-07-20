@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
@@ -142,7 +143,9 @@ void VariationsService::StartFetchingVariationsSeed() {
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromHours(kSeedFetchPeriodHours));
 
-  if (net::NetworkChangeNotifier::IsOffline()) {
+  const bool is_offline = net::NetworkChangeNotifier::IsOffline();
+  UMA_HISTOGRAM_BOOLEAN("Variations.NetworkAvailability", !is_offline);
+  if (is_offline) {
     DVLOG(1) << "Network was offline.";
     return;
   }
