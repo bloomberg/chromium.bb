@@ -1,5 +1,6 @@
 {
   "tables": [
+    "unicode.dis", 
     "hu-hu-g1.ctb", 
     "hyph_hu_HU.dic"
   ], 
@@ -3096,6 +3097,7 @@
         }
       ], 
       "flags": {
+        "outputUniBrl": true, 
         "testmode": "hyphenate"
       }
     }

@@ -7,15 +7,24 @@
     {
       "data": [
         {
+          "comment": [
+            "an example of testing simple backtranslation."
+          ], 
           "input": "⠮ ⠉⠁⠞ ⠎⠁⠞ ⠕⠝ ⠮ ⠍⠁⠞", 
           "output": "the cat sat on the mat"
         }, 
         {
+          "comment": [
+            "same as above example."
+          ], 
           "input": "⠖⠮ ⠍⠕⠕⠝", 
           "output": "to the moon"
         }, 
         {
           "brlCursorPos": 2, 
+          "comment": [
+            "an example where the text to be backtranslated is grade 2, but the word at the cursor is grade 1."
+          ], 
           "cursorPos": 4, 
           "input": "⠽ ⠺⠑⠝⠞ ⠞⠕", 
           "mode": "compbrlAtCursor", 
@@ -30,15 +39,25 @@
     {
       "data": [
         {
+          "comment": [
+            "an example of a simple message being forward translated, and contractions expected."
+          ], 
           "input": "the cat sat on the mat", 
           "output": "⠮ ⠉⠁⠞ ⠎⠁⠞ ⠕⠝ ⠮ ⠍⠁⠞"
         }, 
         {
+          "comment": [
+            "same as above example."
+          ], 
           "input": "to the moon", 
           "output": "⠖⠮ ⠍⠕⠕⠝"
         }, 
         {
           "brlCursorPos": 2, 
+          "comment": [
+            "an example of where text should generally be contracted, accept at the point of the cursor.", 
+            "also specify where the computer cursor is at, and where we expect the braille cursor to be."
+          ], 
           "cursorPos": 4, 
           "input": "you went to", 
           "mode": "compbrlAtCursor", 
