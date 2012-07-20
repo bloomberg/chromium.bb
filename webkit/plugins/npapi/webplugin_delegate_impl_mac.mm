@@ -1063,7 +1063,7 @@ void WebPluginDelegateImpl::FireIdleEvent() {
   np_event.what = nullEvent;
   np_event.when = TickCount();
   np_event.modifiers = GetCurrentKeyModifiers();
-  if (!Button())
+  if (!GetCurrentButtonState())
     np_event.modifiers |= btnState;
   HIPoint mouse_location;
   HIGetMousePosition(kHICoordSpaceScreenPixel, NULL, &mouse_location);
