@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
+#ifndef UI_WEB_DIALOGS_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
+#define UI_WEB_DIALOGS_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/web_dialogs/web_dialogs_export.h"
+
+namespace ui {
 
 // This class implements (and mostly ignores) most of
 // content::WebContentsDelegate for use in a Web dialog. Subclasses need only
 // override a few methods instead of the everything from
 // content::WebContentsDelegate; this way, implementations on all platforms
 // behave consistently.
-class WebDialogWebContentsDelegate : public content::WebContentsDelegate {
+class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
+    : public content::WebContentsDelegate {
  public:
   // Handles OpenURLFromTab and AddNewContents for WebDialogWebContentsDelegate.
   class WebContentsHandler {
@@ -73,4 +77,6 @@ class WebDialogWebContentsDelegate : public content::WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(WebDialogWebContentsDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
+}  // namespace ui
+
+#endif  // UI_WEB_DIALOGS_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_

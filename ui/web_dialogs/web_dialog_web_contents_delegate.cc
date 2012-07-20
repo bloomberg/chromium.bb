@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
+#include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
 #include "base/logging.h"
 #include "content/public/browser/web_contents.h"
@@ -10,6 +10,8 @@
 using content::BrowserContext;
 using content::OpenURLParams;
 using content::WebContents;
+
+namespace ui {
 
 // Incognito profiles are not long-lived, so we always want to store a
 // non-incognito profile.
@@ -57,3 +59,5 @@ bool WebDialogWebContentsDelegate::ShouldAddNavigationToHistory(
     content::NavigationType navigation_type) {
   return false;
 }
+
+}  // namespace ui

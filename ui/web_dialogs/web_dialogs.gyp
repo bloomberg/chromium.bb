@@ -28,6 +28,8 @@
         'web_dialog_observer.h',
         'web_dialog_ui.cc',
         'web_dialog_ui.h',
+        'web_dialog_web_contents_delegate.cc',
+        'web_dialog_web_contents_delegate.h',
         'web_dialogs_export.h',
       ],
     },

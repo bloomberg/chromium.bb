@@ -10,11 +10,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
 namespace content {
 class BrowserContext;
@@ -38,7 +38,7 @@ class WebView;
 // instead of inheriting from it to avoid violating the "no multiple
 // inheritance" rule.
 class WebDialogView : public views::ClientView,
-                      public WebDialogWebContentsDelegate,
+                      public ui::WebDialogWebContentsDelegate,
                       public ui::WebDialogDelegate,
                       public views::WidgetDelegate {
  public:

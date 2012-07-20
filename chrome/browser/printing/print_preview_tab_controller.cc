@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/web_dialogs/constrained_web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::NativeWebKeyboardEvent;
@@ -49,6 +49,7 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 using ui::ConstrainedWebDialogDelegate;
 using ui::WebDialogDelegate;
+using ui::WebDialogWebContentsDelegate;
 
 namespace {
 

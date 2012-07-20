@@ -12,7 +12,6 @@
 class ConstrainedWindow;
 class Profile;
 class TabContents;
-class WebDialogWebContentsDelegate;
 
 namespace base {
 template<class T> class PropertyAccessor;
@@ -24,6 +23,7 @@ class RenderViewHost;
 
 namespace ui {
 class WebDialogDelegate;
+class WebDialogWebContentsDelegate;
 
 class WEB_DIALOGS_EXPORT ConstrainedWebDialogDelegate {
  public:

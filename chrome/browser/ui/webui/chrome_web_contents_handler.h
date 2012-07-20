@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROME_WEB_CONTENTS_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
+#include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
 class ChromeWebContentsHandler
-    : public WebDialogWebContentsDelegate::WebContentsHandler {
+    : public ui::WebDialogWebContentsDelegate::WebContentsHandler {
  public:
   ChromeWebContentsHandler();
   virtual ~ChromeWebContentsHandler();

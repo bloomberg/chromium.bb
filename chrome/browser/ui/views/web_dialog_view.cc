@@ -33,6 +33,7 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 using ui::WebDialogUI;
+using ui::WebDialogWebContentsDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, public:

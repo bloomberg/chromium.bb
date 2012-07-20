@@ -22,6 +22,7 @@ using content::WebContents;
 using ui::ConstrainedWebDialogDelegate;
 using ui::ConstrainedWebDialogUI;
 using ui::WebDialogDelegate;
+using ui::WebDialogWebContentsDelegate;
 
 namespace {
 
