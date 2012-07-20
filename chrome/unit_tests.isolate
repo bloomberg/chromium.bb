@@ -102,6 +102,7 @@
       '../third_party/tlslite/tlslite/utils/keyfactory.py',
       '../third_party/tlslite/tlslite/utils/rijndael.py',
       '../third_party/tlslite/tlslite/utils/xmltools.py',
+      '../tools/isolate/run_test_cases.py',
       '<(PRODUCT_DIR)/resources.pak',
       '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/print_preview_utils.js',
       '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
@@ -527,6 +528,7 @@
         'command': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
+          '../tools/isolate/run_test_cases.py',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [
@@ -572,6 +574,7 @@
       'variables': {
         'command': [
           '../testing/test_env.py',
+          '../tools/isolate/run_test_cases.py',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [
