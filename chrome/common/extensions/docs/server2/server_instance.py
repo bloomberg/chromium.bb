@@ -13,39 +13,42 @@ class ServerInstance(object):
   """This class is used to hold a data source and fetcher for an instance of a
   server. Each new branch will get its own ServerInstance.
   """
-  def __init__(self, template_data_source, example_zipper, cache_builder):
-    self._template_data_source = template_data_source
+  def __init__(self,
+               template_data_source_factory,
+               example_zipper,
+               cache_builder):
+    self._template_data_source_factory = template_data_source_factory
     self._example_zipper = example_zipper
     self._cache = cache_builder.build(lambda x: x)
     mimetypes.init()
 
-  def _FetchStaticResource(self, path, request_handler):
+  def _FetchStaticResource(self, path, response):
     """Fetch a resource in the 'static' directory.
     """
     try:
       result = self._cache.GetFromFile(STATIC_DIR_PREFIX + '/' + path)
       base, ext = os.path.splitext(path)
-      request_handler.response.headers['content-type'] = (
-          mimetypes.types_map[ext])
+      response.headers['content-type'] = mimetypes.types_map[ext]
       return result
     except Exception:
       return ''
 
-  def Get(self, path, request_handler):
+  def Get(self, path, request, response):
+    templates = self._template_data_source_factory.Create(request)
+
     if fnmatch(path, 'examples/*.zip'):
-      content = self._example_zipper.Create(path[:-4])
-      request_handler.response.headers['content-type'] = (
-          mimetypes.types_map['.zip'])
+      content = self._example_zipper.Create(path[:-len('.zip')])
+      response.headers['content-type'] = mimetypes.types_map['.zip']
     elif path.startswith('examples/'):
       content = self._cache.GetFromFile(DOCS_PREFIX + '/' + path)
-      request_handler.response.headers['content-type'] = 'text/plain'
+      response.headers['content-type'] = 'text/plain'
     elif path.startswith('static/'):
-      content = self._FetchStaticResource(path, request_handler)
+      content = self._FetchStaticResource(path, response)
     else:
-      content = self._template_data_source.Render(path)
+      content = templates.Render(path)
+
     if content:
-      request_handler.response.out.write(content)
+      response.out.write(content)
     else:
-      request_handler.response.set_status(404);
-      request_handler.response.out.write(
-          self._template_data_source.Render('404'))
+      response.set_status(404);
+      response.out.write(templates.Render('404'))

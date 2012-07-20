@@ -12,6 +12,10 @@ from local_file_system import LocalFileSystem
 from template_data_source import TemplateDataSource
 from third_party.handlebar import Handlebar
 
+class _FakeRequest(object):
+  def __init__(self):
+    pass
+
 class TemplateDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join('test_data', 'template_data_source')
@@ -31,12 +35,13 @@ class TemplateDataSourceTest(unittest.TestCase):
         data_source.Render(template_name))
 
   def _CreateTemplateDataSource(self, input_dict, cache_builder):
-    return TemplateDataSource('fake_branch',
-                              input_dict,
-                              self._fake_intro_data_source,
-                              self._fake_samples_data_source,
-                              cache_builder,
-                              ['./', './'])
+    return (TemplateDataSource.Factory('fake_branch',
+                                       input_dict,
+                                       self._fake_intro_data_source,
+                                       self._fake_samples_data_source,
+                                       cache_builder,
+                                       ['./', './'])
+            .Create(_FakeRequest()))
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')

@@ -50,7 +50,7 @@ FULL_EXAMPLES_PATH = DOCS_PATH + '/' + EXAMPLES_PATH
 # handler.
 DEFAULT_BRANCH = 'local'
 
-# Global cache of instances because the Server is recreated for every request.
+# Global cache of instances because Handler is recreated for every request.
 SERVER_INSTANCES = {}
 
 OMAHA_PROXY_URL = 'http://omahaproxy.appspot.com/json'
@@ -64,7 +64,7 @@ def _GetURLFromBranch(branch):
       return TRUNK_URL + '/src'
     return BRANCH_URL + '/' + branch + '/src'
 
-class Server(webapp.RequestHandler):
+class Handler(webapp.RequestHandler):
   def _GetInstanceForBranch(self, branch):
     if branch in SERVER_INSTANCES:
       return SERVER_INSTANCES[branch]
@@ -83,7 +83,7 @@ class Server(webapp.RequestHandler):
     samples_data_source = SamplesDataSource(file_system,
                                             cache_builder,
                                             EXAMPLES_PATH)
-    template_data_source = TemplateDataSource(
+    template_data_source_factory = TemplateDataSource.Factory(
         branch,
         api_data_source,
         intro_data_source,
@@ -95,18 +95,10 @@ class Server(webapp.RequestHandler):
                                    DOCS_PATH,
                                    EXAMPLES_PATH)
     SERVER_INSTANCES[branch] = ServerInstance(
-        template_data_source,
+        template_data_source_factory,
         example_zipper,
         cache_builder)
     return SERVER_INSTANCES[branch]
-
-  def _HandleRequest(self, path):
-    channel_name, real_path = BRANCH_UTILITY.SplitChannelNameFromPath(path)
-    branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel_name)
-    if real_path == '':
-      real_path = 'index.html'
-    # TODO: This leaks Server instances when branch bumps.
-    self._GetInstanceForBranch(branch).Get(real_path, self)
 
   def get(self):
     path = self.request.path
@@ -117,17 +109,26 @@ class Server(webapp.RequestHandler):
       self.get('/chrome/extensions/beta/samples.html')
       self.get('/chrome/extensions/stable/samples.html')
       return
+
     # Redirect paths like "directory" to "directory/". This is so relative file
     # paths will know to treat this as a directory.
     if os.path.splitext(path)[1] == '' and path[-1] != '/':
       self.redirect(path + '/')
     path = path.replace('/chrome/extensions/', '')
     path = path.strip('/')
-    self._HandleRequest(path)
+
+    channel_name, real_path = BRANCH_UTILITY.SplitChannelNameFromPath(path)
+    branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel_name)
+    if real_path == '':
+      real_path = 'index.html'
+    # TODO: This leaks Server instances when branch bumps.
+    self._GetInstanceForBranch(branch).Get(real_path,
+                                           self.request,
+                                           self.response)
 
 def main():
   handlers = [
-    ('/.*', Server),
+    ('/.*', Handler),
   ]
   run_wsgi_app(webapp.WSGIApplication(handlers, debug=False))
 
