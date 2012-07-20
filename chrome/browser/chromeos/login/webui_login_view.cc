@@ -33,6 +33,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/aura/env.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/webview/webview.h"
@@ -348,6 +349,10 @@ void WebUILoginView::OnLoginPromptVisible() {
   // Notify OOBE that the login frame has been rendered. Currently
   // this is used to start camera presence check.
   oobe_ui->OnLoginPromptVisible();
+
+  // Let RenderWidgetHostViewAura::OnPaint() show white background when
+  // loading page and when backing store is not present.
+  aura::Env::GetInstance()->set_render_white_bg(true);
 }
 
 void WebUILoginView::ReturnFocus(bool reverse) {

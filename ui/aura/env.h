@@ -50,6 +50,13 @@ class AURA_EXPORT Env {
   bool is_touch_down() const { return is_touch_down_; }
   void set_touch_down(bool value) { is_touch_down_ = value; }
 
+  // Whether RenderWidgetHostViewAura::OnPaint() should paint white background
+  // when backing store is not present. Default is true.
+  // In some cases when page is using transparent background painting white
+  // background before backing store is initialized causes a white splash.
+  bool render_white_bg() const { return render_white_bg_; }
+  void set_render_white_bg(bool value) { render_white_bg_ = value; }
+
   client::StackingClient* stacking_client() { return stacking_client_; }
   void set_stacking_client(client::StackingClient* stacking_client) {
     stacking_client_ = stacking_client;
@@ -89,6 +96,7 @@ class AURA_EXPORT Env {
   static Env* instance_;
   int mouse_button_flags_;
   bool is_touch_down_;
+  bool render_white_bg_;
   client::StackingClient* stacking_client_;
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<EventFilter> event_filter_;

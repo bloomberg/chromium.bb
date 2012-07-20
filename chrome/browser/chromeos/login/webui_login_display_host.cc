@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
@@ -65,6 +66,8 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
   if (waiting_for_wallpaper_load_) {
     registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                    content::NotificationService::AllSources());
+    // Prevents white flashing on OOBE (http://crbug.com/131569).
+    aura::Env::GetInstance()->set_render_white_bg(false);
   }
 }
 
