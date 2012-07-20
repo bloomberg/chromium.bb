@@ -597,7 +597,9 @@ class RawPatchSeries(object):
         raise
       applied.append(change)
       if hasattr(change, 'url'):
-        cros_build_lib.PrintBuildbotLink(str(change), change.url)
+        s = '%s %s' % (change.owner, cros_patch.FormatGerritNumber(
+            change.gerrit_number, force_internal=change.internal))
+        cros_build_lib.PrintBuildbotLink(s, change.url)
 
     logging.debug('Done investigating changes.  Applied %s',
                   ' '.join([c.id for c in applied]))

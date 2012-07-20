@@ -34,6 +34,8 @@ _GetNumber = iter(itertools.count()).next
 
 class MockPatch(mox.MockObject):
 
+  owner = 'elmer.fudd@google.com'
+
   def __eq__(self, other):
     return self.id == getattr(other, 'id')
 
