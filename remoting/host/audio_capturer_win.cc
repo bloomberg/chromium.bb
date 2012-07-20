@@ -37,7 +37,7 @@ class AudioCapturerWin : public AudioCapturer {
   virtual ~AudioCapturerWin();
 
   // AudioCapturer interface.
-  virtual void Start(const PacketCapturedCallback& callback) OVERRIDE;
+  virtual bool Start(const PacketCapturedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual bool IsRunning() OVERRIDE;
 
@@ -69,7 +69,7 @@ AudioCapturerWin::AudioCapturerWin() {
 AudioCapturerWin::~AudioCapturerWin() {
 }
 
-void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
+bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   DCHECK(!audio_capture_client_.get());
   DCHECK(!audio_client_.get());
   DCHECK(!mm_device_.get());
@@ -88,7 +88,7 @@ void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   hr = mm_device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator));
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create IMMDeviceEnumerator. Error " << hr;
-    return;
+    return false;
   }
 
   // Get the audio endpoint.
@@ -97,7 +97,7 @@ void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
                                                      mm_device_.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get IMMDevice. Error " << hr;
-    return;
+    return false;
   }
 
   // Get an audio client.
@@ -107,14 +107,14 @@ void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
                             audio_client_.ReceiveVoid());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get an IAudioClient. Error " << hr;
-    return;
+    return false;
   }
 
   REFERENCE_TIME device_period;
   hr = audio_client_->GetDevicePeriod(&device_period, NULL);
   if (FAILED(hr)) {
     LOG(ERROR) << "IAudioClient::GetDevicePeriod failed. Error " << hr;
-    return;
+    return false;
   }
   audio_device_period_ = base::TimeDelta::FromMilliseconds(
       device_period / kChannels / kHnsToMs);
@@ -123,7 +123,7 @@ void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   hr = audio_client_->GetMixFormat(&wave_format_ex_);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get WAVEFORMATEX. Error " << hr;
-    return;
+    return false;
   }
 
   // Set the wave format
@@ -157,13 +157,13 @@ void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
             kSamplesPerSecond * kChannels * kBitsPerSample / kBitsPerByte;
       } else {
         LOG(ERROR) << "Failed to force 16-bit samples";
-        return;
+        return false;
       }
       break;
     }
     default:
       LOG(ERROR) << "Failed to force 16-bit samples";
-      return;
+      return false;
   }
 
   // Initialize the IAudioClient.
@@ -175,7 +175,7 @@ void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
                                  NULL);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to initialize IAudioClient. Error " << hr;
-    return;
+    return false;
   }
 
   // Get an IAudioCaptureClient.
@@ -183,14 +183,14 @@ void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
                                  audio_capture_client_.ReceiveVoid());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get an IAudioCaptureClient. Error " << hr;
-    return;
+    return false;
   }
 
   // Start the IAudioClient.
   hr = audio_client_->Start();
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to start IAudioClient. Error " << hr;
-    return;
+    return false;
   }
 
   // Start capturing.
@@ -198,6 +198,7 @@ void AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
                         audio_device_period_,
                         this,
                         &AudioCapturerWin::DoCapture);
+  return true;
 }
 
 void AudioCapturerWin::Stop() {

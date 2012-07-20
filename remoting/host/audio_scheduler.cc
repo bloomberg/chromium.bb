@@ -66,6 +66,7 @@ void AudioScheduler::NotifyAudioPacketCaptured(scoped_ptr<AudioPacket> packet) {
 void AudioScheduler::DoStart() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
+  // TODO(kxing): Do something with the return value.
   audio_capturer_->Start(
       base::Bind(&AudioScheduler::NotifyAudioPacketCaptured, this));
 }

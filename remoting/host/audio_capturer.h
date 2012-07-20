@@ -22,8 +22,12 @@ class AudioCapturer {
 
   // Capturers should sample at a 44.1 kHz sampling rate, in uncompressed PCM
   // stereo format. Capturers may choose the number of frames per packet.
-  virtual void Start(const PacketCapturedCallback& callback) = 0;
+  // Returns true on success.
+  virtual bool Start(const PacketCapturedCallback& callback) = 0;
+  // Stops the audio capturer, and frees the OS-specific audio capture
+  // resources.
   virtual void Stop() = 0;
+  // Returns true if the audio capturer is running.
   virtual bool IsRunning() = 0;
 };
 
