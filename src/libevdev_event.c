@@ -371,9 +371,11 @@ Event_Sync_State(EvdevPtr device)
 
     Event_Get_Time(&device->after_sync_time, device->info.is_monotonic);
 
-    LOG_DEBUG(device, "Event_Sync_State: before %ld.%ld after %ld.%ld\n",
-              device->before_sync_time.tv_sec, device->before_sync_time.tv_usec,
-              device->after_sync_time.tv_sec, device->after_sync_time.tv_usec);
+    LOG_WARNING(device, "Event_Sync_State: before %ld.%ld after %ld.%ld\n",
+                device->before_sync_time.tv_sec,
+                device->before_sync_time.tv_usec,
+                device->after_sync_time.tv_sec,
+                device->after_sync_time.tv_usec);
 }
 
 static void
