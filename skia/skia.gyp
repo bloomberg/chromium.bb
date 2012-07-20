@@ -430,6 +430,8 @@
         '../third_party/skia/src/gpu/SkGrPixelRef.cpp',
         '../third_party/skia/src/gpu/SkGrTexturePixelRef.cpp',
         '../third_party/skia/src/gpu/effects/Gr1DKernelEffect.h',
+        '../third_party/skia/src/gpu/effects/GrColorTableEffect.cpp',
+        '../third_party/skia/src/gpu/effects/GrColorTableEffect.h',
         '../third_party/skia/src/gpu/effects/GrConvolutionEffect.cpp',
         '../third_party/skia/src/gpu/effects/GrConvolutionEffect.h',
         '../third_party/skia/src/gpu/effects/GrMorphologyEffect.cpp',

@@ -32,3 +32,7 @@
 //
 // EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
 
+// Requires rebaselining after skia roll
+BUGCR138159 : platform/chromium/virtual/gpu/fast/canvas/canvas-text-alignment.html = IMAGE
+BUGCR138159 : platform/chromium/virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html = IMAGE
+
