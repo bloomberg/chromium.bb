@@ -45,7 +45,7 @@
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/mime_util.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"

@@ -65,7 +65,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/request_priority.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/base/upload_data.h"

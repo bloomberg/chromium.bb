@@ -30,12 +30,12 @@
 
 #line 1 "effective_tld_names_unittest1.gperf"
 
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that
-// can be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 // Test file used by registry_controlled_domain_unittest.
 // We edit this file manually, then run
-// gperf -a -L "C++" -C -G -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -Hhash_test1 -Wword_list1 -D effective_tld_names_unittest1.gperf >  effective_tld_names_unittest1.cc
+// gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test1 -D effective_tld_names_unittest1.gperf >  effective_tld_names_unittest1.cc
 // to generate the perfect hashmap.
 #line 10 "effective_tld_names_unittest1.gperf"
 struct DomainRule {

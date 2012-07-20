@@ -14,7 +14,7 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,8 +110,8 @@
   GURL to normalize rules, and validating the rules.
 */
 
-#ifndef NET_BASE_REGISTRY_CONTROLLED_DOMAIN_H_
-#define NET_BASE_REGISTRY_CONTROLLED_DOMAIN_H_
+#ifndef NET_BASE_REGISTRY_CONTROLLED_DOMAINS_REGISTRY_CONTROLLED_DOMAIN_H_
+#define NET_BASE_REGISTRY_CONTROLLED_DOMAINS_REGISTRY_CONTROLLED_DOMAIN_H_
 
 #include <string>
 
@@ -214,4 +214,4 @@ class NET_EXPORT RegistryControlledDomainService {
 
 }  // namespace net
 
-#endif  // NET_BASE_REGISTRY_CONTROLLED_DOMAIN_H_
+#endif  // NET_BASE_REGISTRY_CONTROLLED_DOMAINS_REGISTRY_CONTROLLED_DOMAIN_H_

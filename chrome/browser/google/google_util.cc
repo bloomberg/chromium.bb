@@ -20,7 +20,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/mac/keystone_glue.h"

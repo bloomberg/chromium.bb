@@ -19,7 +19,7 @@
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 const char* URLFixerUpper::home_directory_override = NULL;
 

@@ -24,7 +24,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/font.h"
 #include "unicode/rbbi.h"
 #include "unicode/uloc.h"

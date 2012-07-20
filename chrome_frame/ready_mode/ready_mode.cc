@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "chrome_frame/infobars/infobar_manager.h"
 #include "chrome_frame/ready_mode/internal/ready_mode_web_browser_adapter.h"
 #include "chrome_frame/ready_mode/internal/ready_prompt_content.h"

@@ -34,7 +34,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/ssl_connection_status_flags.h"
 #include "net/base/x509_certificate.h"

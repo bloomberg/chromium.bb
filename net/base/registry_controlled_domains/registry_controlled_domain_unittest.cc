@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "googleurl/src/gurl.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "effective_tld_names_unittest1.cc"

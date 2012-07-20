@@ -35,7 +35,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/history/android/android_provider_backend.h"

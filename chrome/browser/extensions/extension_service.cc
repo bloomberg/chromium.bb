@@ -101,7 +101,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "ui/base/l10n/l10n_util.h"

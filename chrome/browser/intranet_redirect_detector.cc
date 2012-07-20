@@ -15,7 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"

@@ -1,7 +1,7 @@
 %{
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that
-// can be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 // Test file used by registry_controlled_domain_unittest.
 // We edit this file manually, then run
 // gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test1 -D effective_tld_names_unittest1.gperf >  effective_tld_names_unittest1.cc

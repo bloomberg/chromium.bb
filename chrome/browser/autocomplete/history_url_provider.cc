@@ -31,7 +31,7 @@
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/net_util.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
 

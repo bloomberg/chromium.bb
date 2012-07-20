@@ -12,7 +12,7 @@
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/url_canon_ip.h"
 #include "net/base/net_util.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 AutocompleteInput::AutocompleteInput()
   : type_(INVALID),

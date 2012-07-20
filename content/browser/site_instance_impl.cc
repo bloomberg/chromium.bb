@@ -15,7 +15,7 @@
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using content::RenderProcessHost;
 using content::RenderProcessHostImpl;

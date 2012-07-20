@@ -43,7 +43,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
