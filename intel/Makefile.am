@@ -77,6 +77,6 @@ EXTRA_DIST = \
 	$(BATCHES:.batch=.batch-ref.txt) \
 	tests/test-batch.sh
 
-test_decode_LDADD = libdrm_intel.la
+test_decode_LDADD = libdrm_intel.la ../libdrm.la
 
 pkgconfig_DATA = libdrm_intel.pc
