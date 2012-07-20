@@ -513,6 +513,8 @@ void PrinterJobHandler::JobFailed(PrintJobError error) {
       " error: " << error;
   if (!shutting_down_) {
     UpdateJobStatus(cloud_print::PRINT_JOB_STATUS_ERROR, error);
+    // This job failed, but others may be pending.  Schedule a check.
+    job_check_pending_ = true;
   }
 }
 
