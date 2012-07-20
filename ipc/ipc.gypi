@@ -28,6 +28,8 @@
           'ipc_channel_win.h',
           'ipc_descriptors.h',
           'ipc_export.h',
+          'ipc_forwarding_message_filter.cc',
+          'ipc_forwarding_message_filter.h',
           'ipc_listener.h',
           'ipc_logging.cc',
           'ipc_logging.h',
