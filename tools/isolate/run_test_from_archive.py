@@ -320,7 +320,7 @@ class Cache(object):
 
   def save(self):
     """Saves the LRU ordering."""
-    json.dump(self.state, open(self.state_file, 'wb'))
+    json.dump(self.state, open(self.state_file, 'wb'), separators=(',',':'))
 
 
 class Profiler(object):
