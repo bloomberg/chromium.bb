@@ -18,7 +18,11 @@ function PhotoImport(dom, filesystem, params) {
   this.dom_ = dom;
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = params.metadataCache;
+  this.volumeManager_ = new VolumeManager();
+  this.copyManager_ = new FileCopyManager(this.filesystem_.root);
   this.mediaFilesList_ = null;
+  this.albums_ = null;
+  this.albumsDir_ = null;
 
   this.initDom_();
   this.initAlbums_();
@@ -32,6 +36,12 @@ PhotoImport.prototype = { __proto__: cr.EventTarget.prototype };
  * Keep in sync with .grid-item rule in photo_import.css.
  */
 PhotoImport.ITEM_WIDTH = 164 + 8;
+
+/**
+ * Directory name on the GData containing the imported photos.
+ * TODO(dgozman): localize
+ */
+PhotoImport.GDATA_PHOTOS_DIR = 'My Photos';
 
 /**
  * Loads app in the document body.
@@ -110,7 +120,34 @@ PhotoImport.prototype.initDom_ = function() {
  * @private
  */
 PhotoImport.prototype.initAlbums_ = function() {
-  // TODO
+  var onError = this.onError_.bind(
+      this, loadTimeData.getString('PHOTO_IMPORT_GDATA_ERROR'));
+
+  var albums = [];
+
+  var onEntry = function(entry) {
+    if (entry != null) {
+      albums.push(entry);
+    } else {
+      this.albums_ = albums;
+    }
+  }.bind(this);
+
+  var onGData = function(gdata) {
+    this.albumsDir_ = gdata;
+    util.forEachDirEntry(gdata, onEntry);
+  }.bind(this);
+
+  var onMounted = function() {
+    var dir = PathUtil.join(RootDirectory.GDATA, PhotoImport.GDATA_PHOTOS_DIR);
+    util.resolvePath(this.filesystem_.root, dir, onGData, onError);
+  }.bind(this);
+
+  if (this.volumeManager_.isMounted(RootDirectory.GDATA)) {
+    onMounted();
+  } else {
+    this.volumeManager_.mountGData(onMounted, onError);
+  }
 };
 
 /**
@@ -305,7 +342,8 @@ PhotoImport.prototype.getSelectedItems_ = function() {
  * @private
  */
 PhotoImport.prototype.onSelectionChanged_ = function(event) {
-  this.importButton_.disabled = this.getSelectedItems_().length == 0;
+  this.importButton_.disabled = this.getSelectedItems_().length == 0 ||
+      this.albums_ == null;
 };
 
 /**
@@ -316,29 +354,86 @@ PhotoImport.prototype.onSelectionChanged_ = function(event) {
 PhotoImport.prototype.onImportClick_ = function(event) {
   var items = this.getSelectedItems_();
 
-  // TODO: use albums instead.
-  var albums = [
-    {name: 'Album 1', url:
-        chrome.extension.getURL('../../images/filetype_large_audio.png')},
-    {name: 'Album 2', url:
-        chrome.extension.getURL('../../images/filetype_large_video.png')},
-    {name: 'Album 3', url:
-        chrome.extension.getURL('../../images/filetype_large_image.png')}
-  ];
+  var defaultTitle = loadTimeData.getString('PHOTO_IMPORT_NEW_ALBUM_NAME');
+  var group = items[0].group;
+  if (items.filter(function(i) { return i.group !== group }).length == 0)
+    defaultTitle = group.title;
 
-  var onAlbumSelected = function(album) {
-  }.bind(this);
+  // TODO: use albums instead.
+  var dialogAlbums = [];
+  for (var index = 0; index < this.albums_.length; index++) {
+    dialogAlbums.push({
+      name: this.albums_[index].name,
+      entry: this.albums_[index],
+      url: chrome.extension.getURL('../../images/filetype_large_audio.png')
+    });
+  }
 
   this.selectAlbumDialog_.show(
       items.length == 1 ?
           loadTimeData.getString('PHOTO_IMPORT_SELECT_ALBUM_CAPTION') :
           loadTimeData.getStringF('PHOTO_IMPORT_SELECT_ALBUM_CAPTION_PLURAL',
                                   items.length),
-      albums,
-      this.title_.textContent,
+      dialogAlbums,
+      defaultTitle,
       loadTimeData.getString('PHOTO_IMPORT_IMPORT_BUTTON'),
-      onAlbumSelected
+      this.onAlbumSelected_.bind(this, items)
   );
+};
+
+/**
+ * Called when album is selected.
+ * @param {Array.<Object>} items List of items to import.
+ * @param {Object} album Album description.
+ * @private
+ */
+PhotoImport.prototype.onAlbumSelected_ = function(items, album) {
+  var entries = items.map(function(i) { return i.entry });
+
+  if (album.create) {
+    var onError = this.onError_.bind(this,
+        loadTimeData.getString('PHOTO_IMPORT_IMPORTING_ERROR'));
+    this.createAlbum_(album.name,
+        this.startImport_.bind(this, entries),
+        onError);
+  } else {
+    this.startImport_(entries, album.entry);
+  }
+};
+
+/**
+ * Starts importing process.
+ * @param {Array.<FileEntry>} entries List of entries to import.
+ * @param {DirectoryEntry} dir Where to import.
+ * @private
+ */
+PhotoImport.prototype.startImport_ = function(entries, dir) {
+  var files = entries.map(function(e) { return e.fullPath }).join('\n');
+  var operationInfo = {
+    isCut: false,
+    isOnGData: PathUtil.getRootType(entries[0].fullPath) == RootType.GDATA,
+    sourceDir: null,
+    directories: '',
+    files: files
+  };
+  this.copyManager_.paste(operationInfo, dir.fullPath, true);
+};
+
+/**
+ * Creates a directory for an album.
+ * @param {string} name Album name.
+ * @param {function(DirectoryEntry)} onSuccess Success callback.
+ * @param {function} onError Failure callback.
+ * @private
+ */
+PhotoImport.prototype.createAlbum_ = function(name, onSuccess, onError) {
+  var callback = function(entry) {
+    this.initAlbums_();
+    onSuccess(entry);
+  }.bind(this);
+
+  this.albumsDir_.getDirectory(name, { create: true, exclusive: true},
+      callback, onError);
 };
 
 /**

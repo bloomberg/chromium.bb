@@ -1099,11 +1099,14 @@ FileManager.prototype = {
                (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ||
                 this.dialogType_ == FileManager.DialogType.FULL_PAGE);
 
+      // TODO(dgozman): current root may be not yet updated here due
+      // to async issues.
       case 'unmount':
-        return true;
-
       case 'format':
         return this.directoryModel_.getCurrentRootType() == RootType.REMOVABLE;
+
+      case 'import-photos':
+        return this.directoryModel_.getCurrentRootType() != RootType.GDATA;
 
       case 'gdata-help':
       case 'gdata-buy-more-space':
@@ -1413,6 +1416,11 @@ FileManager.prototype = {
         this.confirm.show(
             str('FORMATTING_WARNING'),
             chrome.fileBrowserPrivate.formatDevice.bind(null, url));
+        return;
+
+      case 'import-photos':
+        chrome.tabs.create({url: chrome.extension.getURL('photo_import.html') +
+            '#' + this.directoryModel_.getCurrentRootPath()});
         return;
 
       case 'gdata-buy-more-space':
@@ -1862,7 +1870,9 @@ FileManager.prototype = {
       eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
       eject.addEventListener('mousedown', function(e) { e.stopPropagation() });
       li.appendChild(eject);
+    }
 
+    if (rootType != RootType.GDATA) {
       cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
     }
 
