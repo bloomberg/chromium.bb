@@ -292,18 +292,18 @@ wl_shm_buffer_get_format(struct wl_buffer *buffer_base)
 	return buffer->format;
 }
 
-WL_EXPORT uint32_t
+WL_EXPORT int32_t
 wl_shm_buffer_get_width(struct wl_buffer *buffer_base)
 {
 	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
 
-	return buffer->base.width;
+	return buffer->buffer.width;
 }
 
-WL_EXPORT uint32_t
+WL_EXPORT int32_t
 wl_shm_buffer_get_height(struct wl_buffer *buffer_base)
 {
 	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
 
-	return buffer->base.height;
+	return buffer->buffer.height;
 }
