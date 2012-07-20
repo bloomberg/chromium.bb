@@ -29,11 +29,6 @@ void SetRestoreBoundsInParent(aura::Window* window, const gfx::Rect& bounds) {
       new gfx::Rect(ScreenAsh::ConvertRectToScreen(window->parent(), bounds)));
 }
 
-void SetRestoreBoundsIfNotSet(aura::Window* window) {
-  if (!GetRestoreBoundsInScreen(window))
-    SetRestoreBoundsInParent(window, window->bounds());
-}
-
 const gfx::Rect* GetRestoreBoundsInScreen(aura::Window* window) {
   return window->GetProperty(aura::client::kRestoreBoundsKey);
 }
@@ -47,12 +42,6 @@ gfx::Rect GetRestoreBoundsInParent(aura::Window* window) {
 
 void ClearRestoreBounds(aura::Window* window) {
   window->ClearProperty(aura::client::kRestoreBoundsKey);
-}
-
-void ToggleMaximizedState(aura::Window* window) {
-  window->SetProperty(aura::client::kShowStateKey,
-                      wm::IsWindowMaximized(window) ? ui::SHOW_STATE_NORMAL
-                                                    : ui::SHOW_STATE_MAXIMIZED);
 }
 
 void SetTrackedByWorkspace(aura::Window* window, bool value) {

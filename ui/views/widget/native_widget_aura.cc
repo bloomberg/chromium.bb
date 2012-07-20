@@ -519,8 +519,8 @@ void NativeWidgetAura::Hide() {
 
 void NativeWidgetAura::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  SetRestoreBounds(window_, restored_bounds);
   ShowWithWindowState(ui::SHOW_STATE_MAXIMIZED);
+  SetRestoreBounds(window_, restored_bounds);
 }
 
 void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {

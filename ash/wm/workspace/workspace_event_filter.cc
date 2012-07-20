@@ -50,6 +50,19 @@ void SingleAxisUnmaximize(aura::Window* window,
   window->ClearProperty(aura::client::kRestoreBoundsKey);
 }
 
+void ToggleMaximizedState(aura::Window* window) {
+  if (GetRestoreBoundsInScreen(window)) {
+    if (window->GetProperty(aura::client::kShowStateKey) ==
+        ui::SHOW_STATE_NORMAL) {
+      window->SetBounds(GetRestoreBoundsInParent(window));
+    } else {
+      window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    }
+  } else {
+    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  }
+}
+
 }  // namespace
 
 namespace internal {
@@ -83,6 +96,10 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
       UpdateHoveredWindow(NULL);
       break;
     case ui::ET_MOUSE_PRESSED:
+      if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
+          target->delegate()->GetNonClientComponent(event->location()) ==
+          HTCAPTION)
+        ToggleMaximizedState(target);
       multi_window_resize_controller_.Hide();
       HandleVerticalResizeDoubleClick(target, event);
       break;

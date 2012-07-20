@@ -30,10 +30,6 @@ ASH_EXPORT void SetRestoreBoundsInScreen(aura::Window* window,
 ASH_EXPORT void SetRestoreBoundsInParent(aura::Window* window,
                                          const gfx::Rect& parent_bounds);
 
-// Same as SetRestoreBounds(), but does nothing if the restore bounds have
-// already been set. The bounds used are the bounds of the window.
-ASH_EXPORT void SetRestoreBoundsIfNotSet(aura::Window* window);
-
 // Returns the restore bounds property on |window| in the virtual screen
 // coordinates. The bounds can be NULL if the bounds property does not
 // exist for |window|. |window| owns the bounds object.
@@ -44,9 +40,6 @@ ASH_EXPORT gfx::Rect GetRestoreBoundsInParent(aura::Window* window);
 
 // Deletes and clears the restore bounds property on |window|.
 ASH_EXPORT void ClearRestoreBounds(aura::Window* window);
-
-// Toggles the maximized state of the specified window.
-ASH_EXPORT void ToggleMaximizedState(aura::Window* window);
 
 enum WindowPersistsAcrossAllWorkspacesType {
   WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT,

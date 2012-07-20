@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/property_util.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
@@ -173,6 +174,22 @@ TEST_F(BaseLayoutManagerTest, BoundsWithScreenEdgeVisible) {
       ash::ScreenAsh::GetMaximizedWindowBoundsInParent(window.get());
   max_bounds.Inset(grid_size, grid_size);
   EXPECT_EQ(max_bounds.ToString(), window->bounds().ToString());
+}
+
+// Verifies maximizing always resets the restore bounds, and similarly restoring
+// resets the restore bounds.
+TEST_F(BaseLayoutManagerTest, MaximizeResetsRestoreBounds) {
+  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
+  SetRestoreBoundsInParent(window.get(), gfx::Rect(10, 11, 12, 13));
+
+  // Maximize it, which should reset restore bounds.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_EQ("1,2 3x4", GetRestoreBoundsInParent(window.get()).ToString());
+
+  // Restore it, which should restore bounds and reset restore bounds.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_EQ("1,2 3x4", window->bounds().ToString());
+  EXPECT_TRUE(GetRestoreBoundsInScreen(window.get()) == NULL);
 }
 
 }  // namespace

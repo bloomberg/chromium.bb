@@ -133,6 +133,15 @@ void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                 intptr_t old) {
   if (key == aura::client::kShowStateKey) {
     ui::WindowShowState old_state = static_cast<ui::WindowShowState>(old);
+    ui::WindowShowState new_state =
+        window->GetProperty(aura::client::kShowStateKey);
+    if (old_state != new_state &&
+        ((new_state == ui::SHOW_STATE_MAXIMIZED &&
+          old_state != ui::SHOW_STATE_FULLSCREEN) ||
+         (new_state == ui::SHOW_STATE_FULLSCREEN &&
+          old_state != ui::SHOW_STATE_MAXIMIZED))) {
+      SetRestoreBoundsInParent(window, window->bounds());
+    }
     // Minimized state handles its own animations.
     bool animate = (old_state != ui::SHOW_STATE_MINIMIZED);
     UpdateBoundsFromShowState(window, animate);
@@ -191,14 +200,12 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window,
     }
 
     case ui::SHOW_STATE_MAXIMIZED:
-      SetRestoreBoundsIfNotSet(window);
       MaybeAnimateToBounds(window,
                            animate,
                            ScreenAsh::GetMaximizedWindowBoundsInParent(window));
       break;
 
     case ui::SHOW_STATE_FULLSCREEN:
-      SetRestoreBoundsIfNotSet(window);
       // Don't animate the full-screen window transition.
       // TODO(jamescook): Use animation here.  Be sure the lock screen works.
       SetChildBoundsDirect(

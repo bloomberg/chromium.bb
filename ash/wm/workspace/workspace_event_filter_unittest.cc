@@ -79,15 +79,12 @@ TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
   EXPECT_EQ(restored_bounds.height(), window->bounds().height());
 
   // Double-click the top resize edge again to maximize vertically, then double
-  // click the caption to maximize in all directions.
+  // click again to restore.
   generator.DoubleClickLeftButton();
   wd.set_window_component(HTCAPTION);
   generator.DoubleClickLeftButton();
-  EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
-
-  // Double clicking the caption again should completely restore the window.
-  generator.DoubleClickLeftButton();
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+
   EXPECT_EQ(restored_bounds.y(), window->bounds().y());
   EXPECT_EQ(restored_bounds.height(), window->bounds().height());
 
@@ -99,6 +96,24 @@ TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
   // Single-axis maximization is not considered real maximization.
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
 }
+
+TEST_F(WorkspaceEventFilterTest, DoubleClickCaptionTogglesMaximize) {
+  aura::test::TestWindowDelegate wd;
+  scoped_ptr<aura::Window> window(CreateTestWindow(&wd, gfx::Rect(1, 2, 3, 4)));
+  wd.set_window_component(HTCAPTION);
+  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window.get());
+  generator.DoubleClickLeftButton();
+  EXPECT_NE("1,2 3x4", window->bounds().ToString());
+
+  EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
+  generator.DoubleClickLeftButton();
+
+  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_EQ("1,2 3x4", window->bounds().ToString());
+}
+
 
 }  // namespace internal
 }  // namespace ash
