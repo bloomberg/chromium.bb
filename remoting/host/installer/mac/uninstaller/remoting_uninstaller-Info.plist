@@ -23,7 +23,7 @@
 	<key>CFBundleVersion</key>
 	<string>VERSION_FULL</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>${MACOSX_DEPLOYMENT_TARGET}</string>
+	<string>${MACOSX_DEPLOYMENT_TARGET}.0</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2012 COPYRIGHT_BY All rights reserved.</string>
 	<key>NSMainNibFile</key>
