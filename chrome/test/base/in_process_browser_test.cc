@@ -274,9 +274,9 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(
 }
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-       content::NotificationService::AllSources());
+      content::NotificationService::AllSources());
   chrome::AddSelectedTabWithURL(browser, GURL(chrome::kAboutBlankURL),
                                 content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();

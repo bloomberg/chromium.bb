@@ -26,9 +26,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -84,8 +84,8 @@ class BackgroundObserver {
   }
 
  private:
-  ui_test_utils::WindowedNotificationObserver page_created_;
-  ui_test_utils::WindowedNotificationObserver page_closed_;
+  content::WindowedNotificationObserver page_created_;
+  content::WindowedNotificationObserver page_closed_;
 };
 
 // TODO(tbarzic): We should probably share GetTestFilePath and LoadJSONFile

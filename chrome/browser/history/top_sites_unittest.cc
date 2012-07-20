@@ -27,9 +27,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1238,7 +1238,7 @@ TEST_F(TopSitesUnloadTest, UnloadWithMigration) {
   profile()->BlockUntilHistoryProcessesPendingRequests();
 
   // Create top sites and unload history.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TOP_SITES_LOADED,
       content::Source<Profile>(profile()));
   profile()->CreateTopSites();

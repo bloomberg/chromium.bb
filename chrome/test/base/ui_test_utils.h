@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/process.h"
-#include "base/run_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -23,6 +22,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -58,6 +58,7 @@ struct NavigateParams;
 }
 
 namespace content {
+class MessageLoopRunner;
 class RenderViewHost;
 class RenderWidgetHost;
 class WebContents;
@@ -298,36 +299,6 @@ bool SendMouseMoveSync(const gfx::Point& location) WARN_UNUSED_RESULT;
 bool SendMouseEventsSync(ui_controls::MouseButton type,
                          int state) WARN_UNUSED_RESULT;
 
-// Helper class to Run and Quit the message loop. Run and Quit can only happen
-// once per instance. Make a new instance for each use. Calling Quit after Run
-// has returned is safe and has no effect.
-class MessageLoopRunner
-    : public base::RefCounted<MessageLoopRunner> {
- public:
-  MessageLoopRunner();
-
-  // Run the current MessageLoop.
-  void Run();
-
-  // Quit the matching call to Run (nested MessageLoops are unaffected).
-  void Quit();
-
-  // Hand this closure off to code that uses callbacks to notify completion.
-  // Example:
-  //   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
-  //   kick_off_some_api(runner.QuitNowClosure());
-  //   runner.Run();
-  base::Closure QuitClosure();
-
- private:
-  friend class base::RefCounted<MessageLoopRunner>;
-  ~MessageLoopRunner();
-
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageLoopRunner);
-};
-
 // This is a utility class for running a python websocket server
 // during tests. The server is started during the construction of the
 // object, and is stopped when the destructor is called. Note that
@@ -392,63 +363,10 @@ class TestWebSocketServer {
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
 };
 
-// A WindowedNotificationObserver allows code to watch for a notification
-// over a window of time. Typically testing code will need to do something
-// like this:
-//   PerformAction()
-//   WaitForCompletionNotification()
-// This leads to flakiness as there's a window between PerformAction returning
-// and the observers getting registered, where a notification will be missed.
-//
-// Rather, one can do this:
-//   WindowedNotificationObserver signal(...)
-//   PerformAction()
-//   signal.Wait()
-class WindowedNotificationObserver : public content::NotificationObserver {
- public:
-  // Register to listen for notifications of the given type from either a
-  // specific source, or from all sources if |source| is
-  // NotificationService::AllSources().
-  WindowedNotificationObserver(int notification_type,
-                               const content::NotificationSource& source);
-  virtual ~WindowedNotificationObserver();
-
-  // Wait until the specified notification occurs.  If the notification was
-  // emitted between the construction of this object and this call then it
-  // returns immediately.
-  void Wait();
-
-  // Returns NotificationService::AllSources() if we haven't observed a
-  // notification yet.
-  const content::NotificationSource& source() const {
-    return source_;
-  }
-
-  const content::NotificationDetails& details() const {
-    return details_;
-  }
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  bool seen_;
-  bool running_;
-  content::NotificationRegistrar registrar_;
-
-  content::NotificationSource source_;
-  content::NotificationDetails details_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);
-};
-
 // A WindowedNotificationObserver hard-wired to observe
 // chrome::NOTIFICATION_TAB_ADDED.
 class WindowedTabAddedNotificationObserver
-    : public WindowedNotificationObserver {
+    : public content::WindowedNotificationObserver {
  public:
   // Register to listen for notifications of NOTIFICATION_TAB_ADDED from either
   // a specific source, or from all sources if |source| is
@@ -475,12 +393,12 @@ class WindowedTabAddedNotificationObserver
 // which is the case with most notifications.
 template <class U>
 class WindowedNotificationObserverWithDetails
-    : public WindowedNotificationObserver {
+    : public content::WindowedNotificationObserver {
  public:
   WindowedNotificationObserverWithDetails(
       int notification_type,
       const content::NotificationSource& source)
-      : WindowedNotificationObserver(notification_type, source) {}
+      : content::WindowedNotificationObserver(notification_type, source) {}
 
   // Fills |details| with the details of the notification received for |source|.
   bool GetDetailsFor(uintptr_t source, U* details) {
@@ -498,7 +416,7 @@ class WindowedNotificationObserverWithDetails
     const U* details_ptr = content::Details<U>(details).ptr();
     if (details_ptr)
       details_[source.map_key()] = *details_ptr;
-    WindowedNotificationObserver::Observe(type, source, details);
+    content::WindowedNotificationObserver::Observe(type, source, details);
   }
 
  private:
@@ -534,7 +452,7 @@ class TitleWatcher : public content::NotificationObserver {
   content::WebContents* web_contents_;
   std::vector<string16> expected_titles_;
   content::NotificationRegistrar notification_registrar_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   // The most recently observed expected title, if any.
   string16 observed_title_;
@@ -557,7 +475,7 @@ class BrowserAddedObserver {
   Browser* WaitForSingleNewBrowser();
 
  private:
-  WindowedNotificationObserver notification_observer_;
+  content::WindowedNotificationObserver notification_observer_;
   std::set<Browser*> original_browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
@@ -634,7 +552,7 @@ class DOMMessageQueue : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   std::queue<std::string> message_queue_;
   bool waiting_for_message_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
 };

@@ -65,9 +65,9 @@ class TabRestoreTest : public InProcessBrowserTest {
 
   void CloseTab(int index) {
     content::WebContents* new_tab = chrome::GetWebContentsAt(browser(), index);
-    ui_test_utils::WindowedNotificationObserver tab_close_observer(
-          content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-          content::NotificationService::AllSources());
+    content::WindowedNotificationObserver tab_close_observer(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::NotificationService::AllSources());
     chrome::CloseWebContents(browser(), new_tab);
     tab_close_observer.Wait();
   }
@@ -95,12 +95,12 @@ class TabRestoreTest : public InProcessBrowserTest {
     ASSERT_GT(tab_count, 0);
 
     // Restore the tab.
-    ui_test_utils::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::NotificationService::AllSources());
-    ui_test_utils::WindowedNotificationObserver tab_loaded_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
+    content::WindowedNotificationObserver tab_added_observer(
+        chrome::NOTIFICATION_TAB_PARENTED,
+        content::NotificationService::AllSources());
+    content::WindowedNotificationObserver tab_loaded_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     chrome::RestoreTab(browser);
     tab_added_observer.Wait();
     tab_loaded_observer.Wait();
@@ -121,7 +121,7 @@ class TabRestoreTest : public InProcessBrowserTest {
   }
 
   void GoBack(Browser* browser) {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     chrome::GoBack(browser, CURRENT_TAB);
@@ -134,7 +134,7 @@ class TabRestoreTest : public InProcessBrowserTest {
         !controller->GetWebContents()->IsLoading())
       return;
 
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<content::NavigationController>(controller));
     observer.Wait();
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, FLAKY_BasicRestoreFromClosedWindow) {
   EXPECT_EQ(2u, BrowserList::size());
 
   // Close the final tab in the first browser.
-  ui_test_utils::WindowedNotificationObserver window_observer(
+  content::WindowedNotificationObserver window_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());
   CloseTab(0);
@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowAndTab) {
   EXPECT_EQ(2u, BrowserList::size());
 
   // Close the first browser.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());
   chrome::CloseWindow(browser());
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
     CloseTab(0);
 
   // Close the last tab, closing the browser.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());
   CloseTab(0);
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
   // Navigate to another same-site URL.
   content::WebContents* tab =
       chrome::GetWebContentsAt(browser(), tab_count - 1);
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   static_cast<content::WebContentsDelegate*>(browser())->OpenURLFromTab(
@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Close the window.
-  ui_test_utils::WindowedNotificationObserver close_window_observer(
+  content::WindowedNotificationObserver close_window_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());
   chrome::CloseWindow(browser());
@@ -467,10 +467,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   EXPECT_EQ(window_count - 1, BrowserList::size());
 
   // Restore the window.
-  ui_test_utils::WindowedNotificationObserver open_window_observer(
+  content::WindowedNotificationObserver open_window_observer(
       chrome::NOTIFICATION_BROWSER_OPENED,
       content::NotificationService::AllSources());
-  ui_test_utils::WindowedNotificationObserver load_stop_observer(
+  content::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::RestoreTab(*BrowserList::begin());

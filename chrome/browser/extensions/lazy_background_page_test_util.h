@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_PAGE_TEST_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_PAGE_TEST_UTIL_H_
 
-#include "content/public/browser/notification_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 
 // Helper class to wait for a lazy background page to load and close again.
 class LazyBackgroundObserver {
@@ -37,8 +37,8 @@ class LazyBackgroundObserver {
   }
 
  private:
-  ui_test_utils::WindowedNotificationObserver page_created_;
-  ui_test_utils::WindowedNotificationObserver page_closed_;
+  content::WindowedNotificationObserver page_created_;
+  content::WindowedNotificationObserver page_closed_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_PAGE_TEST_UTIL_H_

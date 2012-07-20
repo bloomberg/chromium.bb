@@ -707,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
 #endif
   };
 
-  ui_test_utils::WindowedNotificationObserver wait_for_new_tab(
+  content::WindowedNotificationObserver wait_for_new_tab(
       chrome::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
 
@@ -734,7 +734,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   // Reserved accelerators can't be suppressed.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(1, true));
 
-  ui_test_utils::WindowedNotificationObserver wait_for_tab_closed(
+  content::WindowedNotificationObserver wait_for_tab_closed(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<content::WebContents>(chrome::GetWebContentsAt(browser(), 1)));
 

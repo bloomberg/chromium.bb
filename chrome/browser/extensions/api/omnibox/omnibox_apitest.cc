@@ -59,7 +59,7 @@ class OmniboxApiTest : public ExtensionApiTest {
   // TODO(phajdan.jr): Get rid of this wait-in-a-loop pattern.
   void WaitForAutocompleteDone(AutocompleteController* controller) {
     while (!controller->done()) {
-      ui_test_utils::WindowedNotificationObserver ready_observer(
+      content::WindowedNotificationObserver ready_observer(
           chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
           content::Source<AutocompleteController>(controller));
       ready_observer.Wait();

@@ -108,7 +108,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
 
   GURL WaitForSavePackageToFinish() const {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
     observer.Wait();
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   SavePackageFilePicker::SetShouldPromptUser(false);
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
   chrome::SavePage(browser());
@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
 #else
   SavePackageFilePicker::SetShouldPromptUser(false);
 #endif
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
   chrome::SavePage(browser());

@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
   {
     // Wait not just for the navigation to finish, but for the NTP process to
     // exit as well.
-    ui_test_utils::WindowedNotificationObserver process_exited_observer(
+    content::WindowedNotificationObserver process_exited_observer(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::NotificationService::AllSources());
     browser()->OpenURL(OpenURLParams(

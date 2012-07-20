@@ -163,10 +163,10 @@ void LoginPromptBrowserTestObserver::Register(
 
 template <int T>
 class WindowedNavigationObserver
-    : public ui_test_utils::WindowedNotificationObserver {
+    : public content::WindowedNotificationObserver {
  public:
   explicit WindowedNavigationObserver(NavigationController* controller)
-      : ui_test_utils::WindowedNotificationObserver(
+      : content::WindowedNotificationObserver(
           T, content::Source<NavigationController>(controller)) {}
 };
 

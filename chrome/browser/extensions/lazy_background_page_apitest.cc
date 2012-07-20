@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
 
   // Open a tab to a URL that will trigger the page action to show.
   LazyBackgroundObserver page_complete;
-  ui_test_utils::WindowedNotificationObserver page_action_changed(
+  content::WindowedNotificationObserver page_action_changed(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(

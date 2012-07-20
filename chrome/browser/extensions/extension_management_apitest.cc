@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/test_utils.h"
 
 using extensions::Extension;
 
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ASSERT_TRUE(app_browser->is_app());
 
   // Close the app panel.
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(app_browser));
 

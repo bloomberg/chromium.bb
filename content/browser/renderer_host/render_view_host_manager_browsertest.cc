@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Clicking the original link in the first tab should cause us to swap back.
   chrome::ActivateTabAt(browser(), 0, true);
-  ui_test_utils::WindowedNotificationObserver navigation_observer(
+  content::WindowedNotificationObserver navigation_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &new_contents->GetController()));
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(new_site_instance,
             chrome::GetActiveWebContents(browser())->GetSiteInstance());
   chrome::ActivateTabAt(browser(), 0, true);
-  ui_test_utils::WindowedNotificationObserver close_observer(
+  content::WindowedNotificationObserver close_observer(
         content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<content::WebContents>(new_contents));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -539,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // 3) Post a message from the foo window to the opener.  The opener will
   // reply, causing the foo window to update its own title.
-  ui_test_utils::WindowedNotificationObserver title_observer(
+  content::WindowedNotificationObserver title_observer(
         content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
         content::Source<content::WebContents>(foo_contents));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -567,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // 4) Now post a message from the _blank window to the foo window.  The
   // foo window will update its title and will not reply.
-  ui_test_utils::WindowedNotificationObserver title_observer2(
+  content::WindowedNotificationObserver title_observer2(
         content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
         content::Source<content::WebContents>(foo_contents));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -646,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // The opened tab should be able to navigate the opener back to its process.
   chrome::ActivateTabAt(browser(), 1, true);
-  ui_test_utils::WindowedNotificationObserver navigation_observer(
+  content::WindowedNotificationObserver navigation_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &orig_contents->GetController()));
@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Navigate the first tab to a different site as well.  The original process
   // should exit, since all of its views are now swapped out.
   chrome::ActivateTabAt(browser(), 0, true);
-  ui_test_utils::WindowedNotificationObserver exit_observer(
+  content::WindowedNotificationObserver exit_observer(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::Source<content::RenderProcessHost>(orig_process));
   ui_test_utils::NavigateToURL(browser(),
@@ -865,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
 
   // Go back three times to first site.
   {
-    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+    content::WindowedNotificationObserver back_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
@@ -873,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
     back_nav_load_observer.Wait();
   }
   {
-    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+    content::WindowedNotificationObserver back_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
@@ -881,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
     back_nav_load_observer.Wait();
   }
   {
-    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+    content::WindowedNotificationObserver back_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
@@ -891,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
 
   // Now go forward twice to B2.  Shouldn't be left spinning.
   {
-    ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
+    content::WindowedNotificationObserver forward_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
@@ -899,7 +899,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
     forward_nav_load_observer.Wait();
   }
   {
-    ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
+    content::WindowedNotificationObserver forward_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
@@ -909,7 +909,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
 
   // Go back twice to first site.
   {
-    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+    content::WindowedNotificationObserver back_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
@@ -917,7 +917,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
     back_nav_load_observer.Wait();
   }
   {
-    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+    content::WindowedNotificationObserver back_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
@@ -927,7 +927,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
 
   // Now go forward directly to B3.  Shouldn't be left spinning.
   {
-    ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
+    content::WindowedNotificationObserver forward_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
@@ -1003,7 +1003,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Going back should make the previously swapped-out view to become visible
   // again.
   {
-    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+    content::WindowedNotificationObserver back_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &chrome::GetActiveWebContents(browser())->GetController()));

@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginLoadUnload) {
   ASSERT_TRUE(LoadExtension(extension_dir));
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &chrome::GetActiveWebContents(browser())->GetController()));

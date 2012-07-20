@@ -12,10 +12,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -369,7 +369,7 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
       GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0);
   gfx::Image gaia_image(gfx::test::CreateImage());
 
-  ui_test_utils::WindowedNotificationObserver save_observer(
+  content::WindowedNotificationObserver save_observer(
       chrome::NOTIFICATION_PROFILE_CACHE_PICTURE_SAVED,
       content::NotificationService::AllSources());
   GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_image);
@@ -382,7 +382,7 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
 
   // Try to get the GAIA picture. This should return NULL until the read from
   // disk is done.
-  ui_test_utils::WindowedNotificationObserver read_observer(
+  content::WindowedNotificationObserver read_observer(
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       content::NotificationService::AllSources());
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));

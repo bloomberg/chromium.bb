@@ -21,13 +21,6 @@ class RunLoop;
 
 namespace content {
 
-// Variant of RunMessageLoop that takes RunLoop.
-void RunThisRunLoop(base::RunLoop* run_loop);
-
-// Get task to quit the given RunLoop. It allows a few generations of pending
-// tasks to run as opposed to run_loop->QuitClosure().
-base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop);
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_

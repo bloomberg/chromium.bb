@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/js_injection_ready_observer.h"
+#include "content/public/test/test_utils.h"
 
 using content::NavigationController;
 
@@ -73,7 +74,7 @@ content::WebUI* TestWebDialogObserver::GetWebUI() {
   if (!done_) {
     EXPECT_FALSE(running_);
     running_ = true;
-    message_loop_runner_ = new ui_test_utils::MessageLoopRunner;
+    message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
   }
   return web_ui_;

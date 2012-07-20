@@ -9,12 +9,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 
 #if defined(OS_WIN)
 #include <atlbase.h>
@@ -38,7 +38,7 @@ class CrossPlatformAccessibilityBrowserTest : public InProcessBrowserTest {
   // notification that it's been received.
   const AccessibilityNodeData& GetAccessibilityNodeDataTree(
       AccessibilityMode accessibility_mode = AccessibilityModeComplete) {
-    ui_test_utils::WindowedNotificationObserver tree_updated_observer(
+    content::WindowedNotificationObserver tree_updated_observer(
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         content::NotificationService::AllSources());
     content::RenderWidgetHostView* host_view =

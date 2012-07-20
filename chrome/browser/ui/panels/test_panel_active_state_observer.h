@@ -5,9 +5,15 @@
 #ifndef CHROME_BROWSER_UI_PANELS_TEST_PANEL_ACTIVE_STATE_OBSERVER_H_
 #define CHROME_BROWSER_UI_PANELS_TEST_PANEL_ACTIVE_STATE_OBSERVER_H_
 
-#include "chrome/test/base/ui_test_utils.h"
+#include "base/memory/ref_counted.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Panel;
+
+namespace content {
+class MessageLoopRunner;
+}
 
 // Custom notification observer for waiting on panel active state.
 // Modeled after ui_test_utils notification observers.
@@ -34,7 +40,7 @@ class PanelActiveStateObserver : public content::NotificationObserver {
   bool seen_;  // true after transition to expected state has been seen
   bool running_;  // indicates whether message loop is running
   content::NotificationRegistrar registrar_;
-  scoped_refptr<ui_test_utils::MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelActiveStateObserver);
 };

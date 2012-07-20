@@ -1172,7 +1172,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   // On Mac OS X, the UI window close is delayed until the outermost
   // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
   // notification inside of a test.
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(incognito));
 #endif
@@ -1415,7 +1415,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   // On Mac OS X, the UI window close is delayed until the outermost
   // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
   // notification inside of a test.
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(download_browser));
 #endif
@@ -1637,7 +1637,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
 
   DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);
 
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
   chrome::CloseWindow(browser());
@@ -2118,7 +2118,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   ASSERT_TRUE(jpeg_url.is_valid());
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(web_contents != NULL);
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           &web_contents->GetController()));

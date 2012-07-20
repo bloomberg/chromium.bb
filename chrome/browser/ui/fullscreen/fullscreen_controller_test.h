@@ -8,12 +8,12 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 
 // Observer for NOTIFICATION_FULLSCREEN_CHANGED notifications.
 class FullscreenNotificationObserver
-    : public ui_test_utils::WindowedNotificationObserver {
+    : public content::WindowedNotificationObserver {
  public:
   FullscreenNotificationObserver() : WindowedNotificationObserver(
       chrome::NOTIFICATION_FULLSCREEN_CHANGED,
@@ -24,7 +24,7 @@ class FullscreenNotificationObserver
 
 // Observer for NOTIFICATION_MOUSE_LOCK_CHANGED notifications.
 class MouseLockNotificationObserver
-    : public ui_test_utils::WindowedNotificationObserver {
+    : public content::WindowedNotificationObserver {
  public:
   MouseLockNotificationObserver() : WindowedNotificationObserver(
       chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,

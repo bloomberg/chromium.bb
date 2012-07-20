@@ -7,9 +7,9 @@
 #include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/trace_controller.h"
 #include "content/public/browser/trace_subscriber.h"
+#include "content/public/test/test_utils.h"
 
 namespace {
 
@@ -38,7 +38,7 @@ class InProcessTraceController : public content::TraceSubscriber {
       return false;
     // Wait for OnEndTracingComplete() to quit the message loop.
     // OnTraceDataCollected may be called multiple times while blocking here.
-    message_loop_runner_ = new ui_test_utils::MessageLoopRunner;
+    message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
     trace_buffer_.Finish();
     trace_buffer_.SetOutputCallback(TraceResultBuffer::OutputCallback());
@@ -64,7 +64,7 @@ class InProcessTraceController : public content::TraceSubscriber {
   // For collecting trace data asynchronously.
   base::debug::TraceResultBuffer trace_buffer_;
 
-  scoped_refptr<ui_test_utils::MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessTraceController);
 };

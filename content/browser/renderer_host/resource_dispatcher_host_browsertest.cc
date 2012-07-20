@@ -335,9 +335,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // strip the app on the build bots, this is bad times.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CrossSiteAfterCrash) {
   // Cause the renderer to crash.
-  ui_test_utils::WindowedNotificationObserver crash_observer(
-        content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-        content::NotificationService::AllSources());
+  content::WindowedNotificationObserver crash_observer(
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));
   // Wait for browser to notice the renderer crash.
   crash_observer.Wait();

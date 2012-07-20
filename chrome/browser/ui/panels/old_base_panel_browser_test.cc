@@ -255,7 +255,7 @@ void OldBasePanelBrowserTest::WaitForPanelActiveState(
 void OldBasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
       content::Source<Panel>(panel));
   if (panel_testing->IsWindowSizeKnown())
@@ -267,7 +267,7 @@ void OldBasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
 void OldBasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   if (!panel_testing->IsAnimatingBounds())
@@ -278,7 +278,7 @@ void OldBasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
 
 void OldBasePanelBrowserTest::WaitForExpansionStateChanged(
     Panel* panel, Panel::ExpansionState expansion_state) {
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
       content::Source<Panel>(panel));
   if (panel->expansion_state() == expansion_state)
@@ -306,7 +306,7 @@ Panel* OldBasePanelBrowserTest::CreatePanelWithParams(
   EXPECT_TRUE(panel_browser->is_type_panel());
 
   if (!params.url.is_empty()) {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     chrome::AddSelectedTabWithURL(panel_browser, params.url,
@@ -447,7 +447,7 @@ void OldBasePanelBrowserTest::CloseWindowAndWait(Panel* panel) {
   // message pump and wait for the notification.
   PanelManager* manager = PanelManager::GetInstance();
   int panel_count = manager->num_panels();
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel));
   panel->Close();
@@ -470,7 +470,7 @@ void OldBasePanelBrowserTest::CloseWindowAndWait(Panel* panel) {
 void OldBasePanelBrowserTest::MoveMouseAndWaitForExpansionStateChange(
     Panel* panel,
     const gfx::Point& position) {
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
       content::Source<Panel>(panel));
   MoveMouse(position);

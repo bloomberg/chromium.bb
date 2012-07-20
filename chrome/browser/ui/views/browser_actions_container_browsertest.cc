@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/test_utils.h"
 
 using extensions::Extension;
 
@@ -37,7 +37,7 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
       ExtensionAction* browser_action =
           browser_actions_bar_->GetExtensionAction(extension_index);
 
-      ui_test_utils::WindowedNotificationObserver observer(
+      content::WindowedNotificationObserver observer(
           chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           content::Source<ExtensionAction>(browser_action));
       observer.Wait();

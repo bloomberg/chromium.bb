@@ -136,7 +136,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     GURL url = test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
 
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     inspected_rvh_ = GetInspectedTab()->GetRenderViewHost();
@@ -393,7 +393,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     WebContents* client_contents = WebContents::FromRenderViewHost(client_rvh);
     if (client_contents->IsLoading()) {
-      ui_test_utils::WindowedNotificationObserver observer(
+      content::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
           content::Source<NavigationController>(
               &client_contents->GetController()));
@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
   OpenDevToolsWindow(kDebuggerTestPage);
 
   ui_test_utils::CrashTab(GetInspectedTab());
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));

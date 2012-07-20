@@ -871,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 
   // Open the new tab, reload.
   {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     chrome::NewTab(browser());
@@ -880,7 +880,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ui_test_utils::RunAllPendingInMessageLoop();
 
   {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &chrome::GetActiveWebContents(browser())->GetController()));
@@ -895,7 +895,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   chrome::FocusLocationBar(browser());
   ASSERT_TRUE(IsViewFocused(location_bar_focus_view_id_));
   {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &chrome::GetActiveWebContents(browser())->GetController()));
@@ -917,7 +917,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
   ui_test_utils::CrashTab(chrome::GetActiveWebContents(browser()));
   {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &chrome::GetActiveWebContents(browser())->GetController()));

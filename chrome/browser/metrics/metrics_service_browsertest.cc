@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, MAYBE_CrashRenderers) {
   OpenTabs();
 
   // Kill the process for one of the tabs.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));

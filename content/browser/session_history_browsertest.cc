@@ -75,17 +75,17 @@ class SessionHistoryTest : public InProcessBrowserTest {
   }
 
   void GoBack() {
-    ui_test_utils::WindowedNotificationObserver load_stop_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
+    content::WindowedNotificationObserver load_stop_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     chrome::GoBack(browser(), CURRENT_TAB);
     load_stop_observer.Wait();
   }
 
   void GoForward() {
-    ui_test_utils::WindowedNotificationObserver load_stop_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
+    content::WindowedNotificationObserver load_stop_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     chrome::GoForward(browser(), CURRENT_TAB);
     load_stop_observer.Wait();
   }

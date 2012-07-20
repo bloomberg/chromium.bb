@@ -53,8 +53,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/public/test/test_utils.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -396,7 +396,7 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
 
 // TODO(phajdan.jr): Doesn't this hang if Top Sites are already loaded?
 void TestingProfile::BlockUntilTopSitesLoaded() {
-  ui_test_utils::WindowedNotificationObserver top_sites_loaded_observer(
+  content::WindowedNotificationObserver top_sites_loaded_observer(
       chrome::NOTIFICATION_TOP_SITES_LOADED,
       content::NotificationService::AllSources());
   if (!GetHistoryService(Profile::EXPLICIT_ACCESS))

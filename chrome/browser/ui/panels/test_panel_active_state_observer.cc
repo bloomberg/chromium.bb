@@ -6,6 +6,9 @@
 
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/test/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 PanelActiveStateObserver::PanelActiveStateObserver(
     Panel* panel,
@@ -25,7 +28,7 @@ void PanelActiveStateObserver::Wait() {
     return;
 
   running_ = true;
-  message_loop_runner_ = new ui_test_utils::MessageLoopRunner;
+  message_loop_runner_ = new content::MessageLoopRunner;
   message_loop_runner_->Run();
   EXPECT_TRUE(seen_);
 }

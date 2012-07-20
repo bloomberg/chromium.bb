@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileAsynchronous) {
   ASSERT_TRUE(profile.get());
 
   // Wait for the profile to be created.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(profile.get()));
   observer.Wait();
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
   ASSERT_TRUE(profile.get());
 
   // Wait for the profile to be created.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(profile.get()));
   observer.Wait();
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileReadmeCreated) {
   ASSERT_TRUE(profile.get());
 
   // Wait for the profile to be created.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(profile.get()));
   observer.Wait();

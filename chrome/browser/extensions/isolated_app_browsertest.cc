@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   // Check that isolation persists even if the tab crashes and is reloaded.
   chrome::SelectNumberedTab(browser(), 0);
   ui_test_utils::CrashTab(tab1);
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));

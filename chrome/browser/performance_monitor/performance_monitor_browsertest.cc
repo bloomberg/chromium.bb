@@ -131,7 +131,7 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     // If we begin the tests prior to full initialization, we cannot predict
     // the behavior or mock synchronicity as we must. Wait for initialization
     // to complete fully before proceeding with the test.
-    ui_test_utils::WindowedNotificationObserver windowed_observer(
+    content::WindowedNotificationObserver windowed_observer(
         chrome::NOTIFICATION_PERFORMANCE_MONITOR_INITIALIZED,
         content::NotificationService::AllSources());
 
@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   CrxInstaller* crx_installer = NULL;
 
   // Create an observer to wait for the update to finish.
-  ui_test_utils::WindowedNotificationObserver windowed_observer(
+  content::WindowedNotificationObserver windowed_observer(
       chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<CrxInstaller>(crx_installer));
   ASSERT_TRUE(extension_service->

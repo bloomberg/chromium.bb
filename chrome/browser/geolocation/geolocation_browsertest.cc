@@ -298,7 +298,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(infobar_);
     LOG(WARNING) << "will set infobar response";
     {
-      ui_test_utils::WindowedNotificationObserver observer(
+      content::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
           content::Source<NavigationController>(
               &tab_contents->web_contents()->GetController()));
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckStringValueFromJavascript("1", "geoSetMaxNavigateCount(1)");
   double fresh_position_latitude = 3.17;
   double fresh_position_longitude = 4.23;
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(current_browser_)->GetController()));
@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // so that it'll fetch from cache.
   double cached_position_latitude = 5.67;
   double cached_position_lognitude = 8.09;
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(current_browser_)->GetController()));
@@ -632,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
 
   // The second watch will now have cancelled. Ensure an update still makes
   // its way through to the first watcher.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(current_browser_)->GetController()));

@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_OnLoadAndReload) {
   GURL url = pdf_test_server()->GetURL("files/onload_reload.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));

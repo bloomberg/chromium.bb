@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
   ASSERT_TRUE(TestController::GetInstance()->result());
 
   // Close the dialog before finishing the test.
-  ui_test_utils::WindowedNotificationObserver tab_closed_observer(
+  content::WindowedNotificationObserver tab_closed_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
 

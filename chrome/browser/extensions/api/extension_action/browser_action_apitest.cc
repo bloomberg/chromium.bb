@@ -42,7 +42,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
 
   bool OpenPopup(int index) {
     ResultCatcher catcher;
-    ui_test_utils::WindowedNotificationObserver popup_observer(
+    content::WindowedNotificationObserver popup_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
     GetBrowserActionsBar().Press(index);
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
   ExtensionAction* action = extension->browser_action();
   ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));
 
-  ui_test_utils::WindowedNotificationObserver host_destroyed_observer(
+  content::WindowedNotificationObserver host_destroyed_observer(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::NotificationService::AllSources());
 

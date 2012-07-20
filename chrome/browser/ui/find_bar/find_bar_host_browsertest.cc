@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   EXPECT_TRUE(fully_visible);
 
   // Reload the tab and make sure Find window doesn't go away.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveTabContents(browser())->web_contents()->
@@ -1127,7 +1127,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   // Open a new incognito window and navigate to the same page.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser = Browser::Create(incognito_profile);
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::AddSelectedTabWithURL(incognito_browser, url,
@@ -1173,7 +1173,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   EXPECT_EQ(ordinal, 1);
 
   // End the find session, click on the link.
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &tab->web_contents()->GetController()));
@@ -1193,7 +1193,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FitWindow) {
   Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile());
   params.initial_bounds = gfx::Rect(0, 0, 250, 500);
   Browser* popup = Browser::CreateWithParams(params);
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::AddSelectedTabWithURL(popup, GURL(chrome::kAboutBlankURL),

@@ -875,7 +875,7 @@ class SafeBrowsingServiceCookieTest : public InProcessBrowserTest {
 // Test that a Safe Browsing database update request both sends cookies and can
 // save cookies.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceCookieTest, TestSBUpdateCookies) {
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
       content::Source<SafeBrowsingService>(sb_service_.get()));
   BrowserThread::PostTask(

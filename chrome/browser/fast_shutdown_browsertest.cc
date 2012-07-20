@@ -87,9 +87,9 @@ IN_PROC_BROWSER_TEST_F(FastShutdown, SlowTermination) {
   GURL url = test_server()->GetURL("files/fast_shutdown/on_unloader.html");
   EXPECT_EQ("", GetCookies(url));
 
-  ui_test_utils::WindowedNotificationObserver window_observer(
-        chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-        content::NotificationService::AllSources());
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      content::NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_NONE);
   window_observer.Wait();
@@ -102,9 +102,9 @@ IN_PROC_BROWSER_TEST_F(FastShutdown, SlowTermination) {
 
   // Need to wait for the renderer process to shutdown to ensure that we got the
   // set cookies IPC.
-  ui_test_utils::WindowedNotificationObserver renderer_shutdown_observer(
-        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::NotificationService::AllSources());
+  content::WindowedNotificationObserver renderer_shutdown_observer(
+      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      content::NotificationService::AllSources());
   // Close the tab. This should launch the unload handler, which sets a cookie
   // that's stored to disk.
   chrome::CloseTab(browser());

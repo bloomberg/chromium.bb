@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   TabDestroyedObserver tab_destroyed_observer(preview_tab->web_contents());
 
   // Reload the initiator tab.
-  ui_test_utils::WindowedNotificationObserver notification_observer(
+  content::WindowedNotificationObserver notification_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::Reload(browser(), CURRENT_TAB);

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/dump_accessibility_tree_helper.h"
@@ -23,6 +22,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::OpenURLParams;
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     printf("Testing %s\n", html_file.BaseName().MaybeAsASCII().c_str());
 
     // Load the page.
-    ui_test_utils::WindowedNotificationObserver tree_updated_observer(
+    content::WindowedNotificationObserver tree_updated_observer(
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         content::NotificationService::AllSources());
     string16 html_contents16;

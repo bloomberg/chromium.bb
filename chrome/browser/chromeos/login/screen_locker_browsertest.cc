@@ -93,7 +93,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   void LockScreen(test::ScreenLockerTester* tester) {
     ScreenLocker::Show();
     tester->EmulateWindowManagerReady();
-    ui_test_utils::WindowedNotificationObserver lock_state_observer(
+    content::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
         content::NotificationService::AllSources());
     if (!tester->IsLocked())
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   ScreenLocker::Show();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   tester->EmulateWindowManagerReady();
-  ui_test_utils::WindowedNotificationObserver lock_state_observer(
+  content::WindowedNotificationObserver lock_state_observer(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());
   if (!chromeos::ScreenLocker::GetTester()->IsLocked())

@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 
 using content::WebContents;
 using extensions::Extension;
@@ -29,7 +29,7 @@ void PlatformAppBrowserTest::SetUpCommandLine(
 
 const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
     const char* name) {
-  ui_test_utils::WindowedNotificationObserver app_loaded_observer(
+  content::WindowedNotificationObserver app_loaded_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
 
@@ -111,7 +111,7 @@ ShellWindow* PlatformAppBrowserTest::CreateShellWindow(
 }
 
 void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {
-  ui_test_utils::WindowedNotificationObserver destroyed_observer(
+  content::WindowedNotificationObserver destroyed_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
   window->Close();

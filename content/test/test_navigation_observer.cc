@@ -10,8 +10,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host_observer.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/js_injection_ready_observer.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

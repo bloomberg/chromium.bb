@@ -17,8 +17,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -668,7 +668,7 @@ static bool IsFrontWindow(NSWindow *window) {
 }
 
 void WaitForFullScreenTransition() {
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_FULLSCREEN_CHANGED,
       content::NotificationService::AllSources());
   observer.Wait();

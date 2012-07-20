@@ -9,10 +9,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 
 namespace {
 
@@ -27,7 +27,7 @@ class PrintPreviewTest : public InProcessBrowserTest {
 #endif
 
   void Print() {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
         content::NotificationService::AllSources());
     chrome::ExecuteCommand(browser(), IDC_PRINT);

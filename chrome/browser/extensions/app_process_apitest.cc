@@ -85,7 +85,7 @@ class AppApiTest : public ExtensionApiTest {
       chrome::GetWebContentsAt(browser(), 1)->GetRenderProcessHost()->GetID()));
     EXPECT_FALSE(chrome::GetWebContentsAt(browser(), 1)->GetWebUI());
 
-    ui_test_utils::WindowedNotificationObserver tab_added_observer(
+    content::WindowedNotificationObserver tab_added_observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
     chrome::NewTab(browser());
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   EXPECT_FALSE(chrome::GetWebContentsAt(browser(), 2)->GetWebUI());
   LOG(INFO) << "Nav 2.";
 
-  ui_test_utils::WindowedNotificationObserver tab_added_observer(
+  content::WindowedNotificationObserver tab_added_observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   chrome::NewTab(browser());
@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
       chrome::GetWebContentsAt(browser(), 1)->GetRenderProcessHost()->GetID()));
   EXPECT_FALSE(chrome::GetWebContentsAt(browser(), 1)->GetWebUI());
 
-  ui_test_utils::WindowedNotificationObserver tab_added_observer(
+  content::WindowedNotificationObserver tab_added_observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   chrome::NewTab(browser());
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
 
   // Enable app and reload the page.
   EnableExtension(app->id());
-  ui_test_utils::WindowedNotificationObserver reload_observer(
+  content::WindowedNotificationObserver reload_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
 
   // Disable app and reload the page.
   DisableExtension(app->id());
-  ui_test_utils::WindowedNotificationObserver reload_observer2(
+  content::WindowedNotificationObserver reload_observer2(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
 
   // Enable app and reload via JavaScript.
   EnableExtension(app->id());
-  ui_test_utils::WindowedNotificationObserver js_reload_observer(
+  content::WindowedNotificationObserver js_reload_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
 
   // Disable app and reload via JavaScript.
   DisableExtension(app->id());
-  ui_test_utils::WindowedNotificationObserver js_reload_observer2(
+  content::WindowedNotificationObserver js_reload_observer2(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
@@ -450,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
       LoadExtension(test_data_dir_.AppendASCII("app_process"));
   ASSERT_TRUE(app);
 
-  ui_test_utils::WindowedNotificationObserver popup_observer(
+  content::WindowedNotificationObserver popup_observer(
         content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
         content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(browser(),
@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
       LoadExtension(test_data_dir_.AppendASCII("app_process"));
   ASSERT_TRUE(app);
 
-  ui_test_utils::WindowedNotificationObserver popup_observer(
+  content::WindowedNotificationObserver popup_observer(
         content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
         content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(browser(),
@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
 
   // Crash the tab and reload it, chrome.app.isInstalled should still be true.
   ui_test_utils::CrashTab(chrome::GetActiveWebContents(browser()));
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));

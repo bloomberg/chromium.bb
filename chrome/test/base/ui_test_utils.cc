@@ -65,6 +65,7 @@
 #include "content/public/common/geoposition.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/test/python_utils.h"
@@ -104,7 +105,7 @@ class DOMOperationObserver : public content::NotificationObserver,
         did_respond_(false) {
     registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));
-    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_ = new content::MessageLoopRunner;
   }
 
   virtual void Observe(int type,
@@ -132,7 +133,7 @@ class DOMOperationObserver : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   std::string response_;
   bool did_respond_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMOperationObserver);
 };
@@ -147,7 +148,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
         parent_tab->find_tab_helper()->current_find_request_id();
     registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
                    content::Source<WebContents>(parent_tab_->web_contents()));
-    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
   }
 
@@ -186,7 +187,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
   // The id of the current find request, obtained from WebContents. Allows us
   // to monitor when the search completes.
   int current_find_request_id_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
 };
@@ -327,14 +328,14 @@ void WaitForNavigations(NavigationController* controller,
 }
 
 void WaitForNewTab(Browser* browser) {
-  WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::Source<content::WebContentsDelegate>(browser));
   observer.Wait();
 }
 
 void WaitForLoadStop(WebContents* tab) {
-  WindowedNotificationObserver load_stop_observer(
+  content::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(&tab->GetController()));
   // In many cases, the load may have finished before we get here.  Only wait if
@@ -406,11 +407,11 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     initial_browsers.insert(*iter);
   }
 
-  WindowedNotificationObserver tab_added_observer(
+  content::WindowedNotificationObserver tab_added_observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
 
-  WindowedNotificationObserver auth_observer(
+  content::WindowedNotificationObserver auth_observer(
       chrome::NOTIFICATION_AUTH_NEEDED,
       content::NotificationService::AllSources());
 
@@ -558,7 +559,7 @@ GURL GetFileUrlWithQuery(const FilePath& path,
 }
 
 AppModalDialog* WaitForAppModalDialog() {
-  WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
       content::NotificationService::AllSources());
   observer.Wait();
@@ -572,7 +573,7 @@ void WaitForAppModalDialogAndCloseIt() {
 
 void CrashTab(WebContents* tab) {
   content::RenderProcessHost* rph = tab->GetRenderProcessHost();
-  WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::Source<content::RenderProcessHost>(rph));
   base::KillProcess(rph->GetHandle(), 0, false);
@@ -712,7 +713,7 @@ void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
 }
 
 void WaitForHistoryToLoad(HistoryService* history_service) {
-  WindowedNotificationObserver history_loaded_observer(
+  content::WindowedNotificationObserver history_loaded_observer(
       chrome::NOTIFICATION_HISTORY_LOADED,
       content::NotificationService::AllSources());
   if (!history_service->BackendLoaded())
@@ -756,7 +757,8 @@ bool SendKeyPressSync(const Browser* browser,
   gfx::NativeWindow window = NULL;
   if (!GetNativeWindow(browser, &window))
     return false;
-  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
   bool result;
   result = ui_controls::SendKeyPressNotifyWhenDone(
       window, key, control, shift, alt, command, runner->QuitClosure());
@@ -786,7 +788,7 @@ bool SendKeyPressAndWait(const Browser* browser,
                          bool command,
                          int type,
                          const content::NotificationSource& source) {
-  WindowedNotificationObserver observer(type, source);
+  content::WindowedNotificationObserver observer(type, source);
 
   if (!SendKeyPressSync(browser, key, control, shift, alt, command))
     return false;
@@ -796,7 +798,8 @@ bool SendKeyPressAndWait(const Browser* browser,
 }
 
 bool SendMouseMoveSync(const gfx::Point& location) {
-  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
   if (!ui_controls::SendMouseMoveNotifyWhenDone(
           location.x(), location.y(), runner->QuitClosure())) {
     return false;
@@ -806,31 +809,14 @@ bool SendMouseMoveSync(const gfx::Point& location) {
 }
 
 bool SendMouseEventsSync(ui_controls::MouseButton type, int state) {
-  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
   if (!ui_controls::SendMouseEventsNotifyWhenDone(
           type, state, runner->QuitClosure())) {
     return false;
   }
   runner->Run();
   return !testing::Test::HasFatalFailure();
-}
-
-MessageLoopRunner::MessageLoopRunner() {
-}
-
-MessageLoopRunner::~MessageLoopRunner() {
-}
-
-void MessageLoopRunner::Run() {
-  content::RunThisRunLoop(&run_loop_);
-}
-
-base::Closure MessageLoopRunner::QuitClosure() {
-  return base::Bind(&MessageLoopRunner::Quit, this);
-}
-
-void MessageLoopRunner::Quit() {
-  content::GetQuitTaskForRunLoop(&run_loop_).Run();
 }
 
 TestWebSocketServer::TestWebSocketServer()
@@ -979,41 +965,6 @@ TestWebSocketServer::~TestWebSocketServer() {
 #endif
 }
 
-WindowedNotificationObserver::WindowedNotificationObserver(
-    int notification_type,
-    const content::NotificationSource& source)
-    : seen_(false),
-      running_(false),
-      source_(content::NotificationService::AllSources()) {
-  registrar_.Add(this, notification_type, source);
-}
-
-WindowedNotificationObserver::~WindowedNotificationObserver() {}
-
-void WindowedNotificationObserver::Wait() {
-  if (seen_)
-    return;
-
-  running_ = true;
-  message_loop_runner_ = new MessageLoopRunner;
-  message_loop_runner_->Run();
-  EXPECT_TRUE(seen_);
-}
-
-void WindowedNotificationObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  source_ = source;
-  details_ = details;
-  seen_ = true;
-  if (!running_)
-    return;
-
-  message_loop_runner_->Quit();
-  running_ = false;
-}
-
 WindowedTabAddedNotificationObserver::WindowedTabAddedNotificationObserver(
     const content::NotificationSource& source)
     : WindowedNotificationObserver(chrome::NOTIFICATION_TAB_ADDED, source),
@@ -1024,8 +975,8 @@ void WindowedTabAddedNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  added_tab_ = content::Details<content::WebContents>(details).ptr();
-  WindowedNotificationObserver::Observe(type, source, details);
+  added_tab_ = content::Details<WebContents>(details).ptr();
+  content::WindowedNotificationObserver::Observe(type, source, details);
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,
@@ -1061,7 +1012,7 @@ const string16& TitleWatcher::WaitAndGetTitle() {
   if (expected_title_observed_)
     return observed_title_;
   quit_loop_on_observation_ = true;
-  message_loop_runner_ = new MessageLoopRunner;
+  message_loop_runner_ = new content::MessageLoopRunner;
   message_loop_runner_->Run();
   return observed_title_;
 }
@@ -1139,7 +1090,7 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
   if (message_queue_.empty()) {
     waiting_for_message_ = true;
     // This will be quit when a new message comes in.
-    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
   }
   // The queue should not be empty, unless we were quit because of a timeout.
@@ -1168,7 +1119,7 @@ class SnapshotTaker {
         base::Bind(&SnapshotTaker::OnSnapshotTaken, base::Unretained(this)),
         page_size,
         desired_size);
-    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
     return snapshot_taken_;
   }
@@ -1211,7 +1162,7 @@ class SnapshotTaker {
   // Whether the snapshot was actually taken and received by this SnapshotTaker.
   // This will be false if the test times out.
   bool snapshot_taken_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotTaker);
 };
@@ -1237,7 +1188,8 @@ void OverrideGeolocation(double latitude, double longitude) {
   position.altitude = 0.;
   position.accuracy = 0.;
   position.timestamp = base::Time::Now();
-  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
   content::OverrideLocationForTesting(position, runner->QuitClosure());
   runner->Run();
 }

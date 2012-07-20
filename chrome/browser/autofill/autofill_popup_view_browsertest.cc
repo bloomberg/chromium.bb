@@ -10,13 +10,13 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
                        SwitchTabAndHideAutofillPopup) {
   EXPECT_CALL(*autofill_popup_view_, Hide()).Times(AtLeast(1));
 
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<content::WebContents>(web_contents_));
   chrome::AddSelectedTabWithURL(browser(), GURL(chrome::kAboutBlankURL),
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
                        TestPageNavigationHidingAutofillPopup) {
   EXPECT_CALL(*autofill_popup_view_, Hide()).Times(AtLeast(1));
 
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           &(web_contents_->GetController())));

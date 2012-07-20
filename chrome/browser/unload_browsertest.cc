@@ -162,7 +162,7 @@ class UnloadTest : public InProcessBrowserTest {
   void LoadUrlAndQuitBrowser(const std::string& html_content,
                              const char* expected_title) {
     NavigateToDataURL(html_content, expected_title);
-    ui_test_utils::WindowedNotificationObserver window_observer(
+    content::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
     chrome::CloseWindow(browser());
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_BrowserCloseUnload) {
 IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
 
-  ui_test_utils::WindowedNotificationObserver window_observer(
+  content::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
   chrome::CloseWindow(browser());
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   ClickModalDialogButton(false);
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
-  ui_test_utils::WindowedNotificationObserver window_observer(
+  content::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
   chrome::CloseWindow(browser());
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserTerminateBeforeUnload) {
 IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
   NavigateToDataURL(INNER_FRAME_WITH_FOCUS_HTML, "innerframewithfocus");
 
-  ui_test_utils::WindowedNotificationObserver window_observer(
+  content::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
   chrome::CloseWindow(browser());
@@ -385,10 +385,10 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   // Simulate a click to force user_gesture to true; if we don't, the resulting
   // popup will be constrained, which isn't what we want to test.
 
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
-  ui_test_utils::WindowedNotificationObserver load_stop_observer(
+  content::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   ui_test_utils::SimulateMouseClick(chrome::GetActiveWebContents(browser()));
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   load_stop_observer.Wait();
   CheckTitle("popup");
 
-  ui_test_utils::WindowedNotificationObserver tab_close_observer(
+  content::WindowedNotificationObserver tab_close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
   chrome::CloseTab(browser());

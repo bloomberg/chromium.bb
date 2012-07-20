@@ -35,7 +35,7 @@ class InfoBarsTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
     ExtensionService* service = profile->GetExtensionService();
 
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::NotificationService::AllSources());
 
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL("files/simple.html"));
 
-  ui_test_utils::WindowedNotificationObserver infobar_added_1(
+  content::WindowedNotificationObserver infobar_added_1(
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
         content::NotificationService::AllSources());
   InstallExtension("theme.crx");
@@ -65,10 +65,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), test_server()->GetURL("files/simple.html"),
       NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ui_test_utils::WindowedNotificationObserver infobar_added_2(
+  content::WindowedNotificationObserver infobar_added_2(
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
         content::NotificationService::AllSources());
-  ui_test_utils::WindowedNotificationObserver infobar_removed_1(
+  content::WindowedNotificationObserver infobar_removed_1(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         content::NotificationService::AllSources());
   InstallExtension("theme2.crx");
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
             chrome::GetTabContentsAt(browser(), 0)->infobar_tab_helper()->
                 infobar_count());
 
-  ui_test_utils::WindowedNotificationObserver infobar_removed_2(
+  content::WindowedNotificationObserver infobar_removed_2(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         content::NotificationService::AllSources());
   ThemeServiceFactory::GetForProfile(browser()->profile())->UseDefaultTheme();

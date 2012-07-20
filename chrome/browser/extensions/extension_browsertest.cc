@@ -115,7 +115,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
   // incognito disabled and file access enabled, so we don't wait in those
   // cases.
   {
-    ui_test_utils::WindowedNotificationObserver load_signal(
+    content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(browser()->profile()));
     CHECK(!service->IsIncognitoEnabled(extension_id));
@@ -129,7 +129,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
   }
 
   {
-    ui_test_utils::WindowedNotificationObserver load_signal(
+    content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(browser()->profile()));
     CHECK(service->AllowFileAccess(extension));
@@ -490,7 +490,7 @@ void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,
                                       const GURL& url,
                                       bool newtab_process_should_equal_opener,
                                       content::WebContents** newtab_result) {
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
@@ -518,7 +518,7 @@ void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,
 void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
                                               const GURL& url) {
   bool result = false;
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(

@@ -48,8 +48,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_context.h"
@@ -670,7 +670,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void ClickToNextPageAfterPrerender() {
-    ui_test_utils::WindowedNotificationObserver new_page_observer(
+    content::WindowedNotificationObserver new_page_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
     RenderViewHost* render_view_host =
@@ -699,7 +699,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   // Called after the prerendered page has been navigated to and then away from.
   // Navigates back through the history to the prerendered page.
   void GoBackToPrerender() {
-    ui_test_utils::WindowedNotificationObserver back_nav_observer(
+    content::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
     chrome::GoBack(current_browser(), CURRENT_TAB);
@@ -719,7 +719,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     WebContents* tab = chrome::GetActiveWebContents(current_browser());
     ASSERT_TRUE(tab);
     EXPECT_FALSE(tab->IsLoading());
-    ui_test_utils::WindowedNotificationObserver back_nav_observer(
+    content::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
     chrome::GoBack(current_browser(), CURRENT_TAB);
@@ -896,7 +896,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     // page has finished loading before continuing. This prevents ambiguous
     // NOTIFICATION_LOAD_STOP events from making tests flaky.
     WebContents* web_contents = chrome::GetActiveWebContents(current_browser());
-    ui_test_utils::WindowedNotificationObserver loader_nav_observer(
+    content::WindowedNotificationObserver loader_nav_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &web_contents->GetController()));
@@ -954,7 +954,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     if (disposition == NEW_BACKGROUND_TAB)
       GetPrerenderContents()->set_should_be_shown(false);
 
-    scoped_ptr<ui_test_utils::WindowedNotificationObserver> page_load_observer;
+    scoped_ptr<content::WindowedNotificationObserver> page_load_observer;
     WebContents* web_contents = NULL;
 
     if (GetPrerenderContents()->prerender_contents()) {
@@ -964,7 +964,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
           GetPrerenderContents()->prerender_contents()->web_contents();
       if (GetPrerenderContents()->number_of_loads() == 0) {
         page_load_observer.reset(
-            new ui_test_utils::WindowedNotificationObserver(
+            new content::WindowedNotificationObserver(
                 content::NOTIFICATION_LOAD_STOP,
                 content::Source<NavigationController>(
                     &web_contents->GetController())));
@@ -2095,7 +2095,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
                    1);
   TestPrerenderContents* prerender_contents = GetPrerenderContents();
   ASSERT_TRUE(prerender_contents != NULL);
-  ui_test_utils::WindowedNotificationObserver favicon_update_watcher(
+  content::WindowedNotificationObserver favicon_update_watcher(
       chrome::NOTIFICATION_FAVICON_UPDATED,
       content::Source<WebContents>(prerender_contents->prerender_contents()->
                           web_contents()));

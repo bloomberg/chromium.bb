@@ -210,7 +210,7 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
   void SendKeyAndWait(ui::KeyboardCode key, int notification_type) {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         notification_type, content::Source<RenderViewHost>(render_view_host()));
     ui_test_utils::SimulateKeyPress(chrome::GetActiveWebContents(
         browser()), key, false, false, false, false);
@@ -691,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
   // Pass fake google.translate lib as the translate script.
   SimulateURLFetch(true);
 
-  ui_test_utils::WindowedNotificationObserver translation_observer(
+  content::WindowedNotificationObserver translation_observer(
       chrome::NOTIFICATION_PAGE_TRANSLATED,
       content::NotificationService::AllSources());
 

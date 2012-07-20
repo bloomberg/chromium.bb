@@ -63,7 +63,7 @@ class InstantTest : public InProcessBrowserTest {
     TemplateURLService* model =
         TemplateURLServiceFactory::GetForProfile(profile);
 
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
         content::NotificationService::AllSources());
     if (!model->loaded()) {
@@ -86,7 +86,7 @@ class InstantTest : public InProcessBrowserTest {
 
   // Type a character to get instant to trigger and determine instant support.
   void DetermineInstantSupport() {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
         content::NotificationService::AllSources());
     // "a" triggers the "about:" provider. "b" begins the "bing.com" keyword.
@@ -97,7 +97,7 @@ class InstantTest : public InProcessBrowserTest {
 
   // Types "def" into the omnibox and waits for the preview to be shown.
   void SearchAndWaitForPreviewToShow() {
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
         content::NotificationService::AllSources());
     omnibox()->SetUserText(ASCIIToUTF16("def"));
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(SearchToNonSearch)) {
   EnableInstant();
   SetupInstantProvider("instant.html");
 
-  ui_test_utils::WindowedNotificationObserver instant_support_observer(
+  content::WindowedNotificationObserver instant_support_observer(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
 
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(SearchServerDoesntSupportInstant)) {
   EnableInstant();
   SetupInstantProvider("empty.html");
 
-  ui_test_utils::WindowedNotificationObserver tab_closed_observer(
+  content::WindowedNotificationObserver tab_closed_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
 
@@ -655,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   omnibox()->SetUserText(UTF8ToUTF16(url.spec()));
   EXPECT_FALSE(preview());
 
-  ui_test_utils::WindowedNotificationObserver tab_closed_observer(
+  content::WindowedNotificationObserver tab_closed_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
 
@@ -757,7 +757,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PreloadsInstant)) {
   EXPECT_FALSE(preview());
 
   // Focusing the omnibox should cause instant to be preloaded.
-  ui_test_utils::WindowedNotificationObserver instant_support_observer(
+  content::WindowedNotificationObserver instant_support_observer(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
   browser()->window()->GetLocationBar()->FocusLocation(false);

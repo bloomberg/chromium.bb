@@ -209,7 +209,7 @@ class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
     mouse_event.clickCount = 1;
     WebContents* web_contents = chrome::GetActiveWebContents(browser());
 
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&web_contents->GetController()));
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);

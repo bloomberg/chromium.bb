@@ -253,7 +253,7 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
 void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
       content::Source<Panel>(panel));
   if (panel_testing->IsWindowSizeKnown())
@@ -265,7 +265,7 @@ void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
 void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   if (!panel_testing->IsAnimatingBounds())
@@ -276,7 +276,7 @@ void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
 
 void BasePanelBrowserTest::WaitForExpansionStateChanged(
     Panel* panel, Panel::ExpansionState expansion_state) {
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
       content::Source<Panel>(panel));
   if (panel->expansion_state() == expansion_state)
@@ -297,7 +297,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
 
@@ -436,7 +436,7 @@ void BasePanelBrowserTest::CloseWindowAndWait(Panel* panel) {
   // message pump and wait for the notification.
   PanelManager* manager = PanelManager::GetInstance();
   int panel_count = manager->num_panels();
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel));
   panel->Close();
@@ -459,7 +459,7 @@ void BasePanelBrowserTest::CloseWindowAndWait(Panel* panel) {
 void BasePanelBrowserTest::MoveMouseAndWaitForExpansionStateChange(
     Panel* panel,
     const gfx::Point& position) {
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
       content::Source<Panel>(panel));
   MoveMouse(position);

@@ -41,7 +41,7 @@ class BrowserEncodingTest : public InProcessBrowserTest {
     // We save the page as way of complete HTML file, which requires a directory
     // name to save sub resources in it. Although this test file does not have
     // sub resources, but the directory name is still required.
-    ui_test_utils::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver observer(
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
     chrome::GetActiveWebContents(browser())->SavePage(

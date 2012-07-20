@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
       FilePath(), FilePath().AppendASCII("empty.html"));
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
   Relaunch(new_command_line);
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
 
   // Close the first window.
   Profile* profile = browser()->profile();
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
   chrome::CloseWindow(browser());
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
       FilePath(), FilePath().AppendASCII("empty.html"));
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
-  ui_test_utils::WindowedNotificationObserver tab_observer(
+  content::WindowedNotificationObserver tab_observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
   Relaunch(new_command_line);

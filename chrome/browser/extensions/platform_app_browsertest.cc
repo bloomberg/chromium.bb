@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, GetDisplayPath) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   ASSERT_TRUE(StartTestServer());
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::Source<content::WebContentsDelegate>(browser()));
   LoadAndLaunchPlatformApp("open_link");
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_BrowserTagIsolation) {
   LoadAndLaunchPlatformApp("browser_tag_isolation");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
-  ui_test_utils::WindowedNotificationObserver load_stop_observer(
+  content::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   load_stop_observer.Wait();

@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   browser()->OpenURL(OpenURLParams(
       url2, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
 
-  ui_test_utils::WindowedNotificationObserver host_destroyed_observer(
+  content::WindowedNotificationObserver host_destroyed_observer(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       content::NotificationService::AllSources());
 
@@ -464,12 +464,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   redirect_popup += https_url.spec();
   redirect_popup += "\";";
 
-  ui_test_utils::WindowedNotificationObserver popup_observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
-  ui_test_utils::WindowedNotificationObserver nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
   oldtab->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(redirect_popup));
 
@@ -498,12 +498,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   refresh_popup += https_url.spec();
   refresh_popup += "\">');w.document.close();";
 
-  ui_test_utils::WindowedNotificationObserver popup_observer2(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
-  ui_test_utils::WindowedNotificationObserver nav_observer2(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
+  content::WindowedNotificationObserver popup_observer2(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::WindowedNotificationObserver nav_observer2(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
   oldtab->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(refresh_popup));
 
@@ -552,12 +552,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   dont_fork_popup += https_url.spec();
   dont_fork_popup += "\";";
 
-  ui_test_utils::WindowedNotificationObserver popup_observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
-  ui_test_utils::WindowedNotificationObserver nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
   oldtab->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(dont_fork_popup));
 
@@ -582,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   navigate_str += https_url.spec();
   navigate_str += "\";";
 
-  ui_test_utils::WindowedNotificationObserver nav_observer2(
+  content::WindowedNotificationObserver nav_observer2(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
   oldtab->GetRenderViewHost()->
@@ -1078,7 +1078,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                 FilePath(kTitle1File)));
 
-  ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+  content::WindowedNotificationObserver back_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
@@ -1088,7 +1088,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
       browser()->command_controller()->command_updater();
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_FORWARD));
 
-  ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
+  content::WindowedNotificationObserver forward_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
@@ -1229,7 +1229,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   WebContents* contents = chrome::GetActiveWebContents(browser());
   bool enable_plus, enable_minus;
 
-  ui_test_utils::WindowedNotificationObserver zoom_in_observer(
+  content::WindowedNotificationObserver zoom_in_observer(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::NotificationService::AllSources());
   chrome::Zoom(browser(), content::PAGE_ZOOM_IN);
@@ -1238,7 +1238,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   EXPECT_TRUE(enable_plus);
   EXPECT_TRUE(enable_minus);
 
-  ui_test_utils::WindowedNotificationObserver zoom_reset_observer(
+  content::WindowedNotificationObserver zoom_reset_observer(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::NotificationService::AllSources());
   chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
@@ -1247,7 +1247,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   EXPECT_TRUE(enable_plus);
   EXPECT_TRUE(enable_minus);
 
-  ui_test_utils::WindowedNotificationObserver zoom_out_observer(
+  content::WindowedNotificationObserver zoom_out_observer(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::NotificationService::AllSources());
   chrome::Zoom(browser(), content::PAGE_ZOOM_OUT);
@@ -1276,7 +1276,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   TestInterstitialPage* interstitial = new TestInterstitialPage(
       contents, false, GURL());
 
-  ui_test_utils::WindowedNotificationObserver interstitial_observer(
+  content::WindowedNotificationObserver interstitial_observer(
       content::NOTIFICATION_INTERSTITIAL_ATTACHED,
       content::Source<WebContents>(contents));
   interstitial_observer.Wait();
@@ -1288,7 +1288,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
 
-  ui_test_utils::WindowedNotificationObserver interstitial_detach_observer(
+  content::WindowedNotificationObserver interstitial_detach_observer(
       content::NOTIFICATION_INTERSTITIAL_DETACHED,
       content::Source<WebContents>(contents));
   interstitial->Proceed();
@@ -1535,7 +1535,7 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   // running.
   Profile* profile = browser()->profile();
   EXPECT_EQ(1u, BrowserList::size());
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
   chrome::CloseWindow(browser());

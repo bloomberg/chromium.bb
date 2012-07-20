@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/accelerators/accelerator_cocoa.h"
@@ -88,7 +88,7 @@ TEST_F(FullscreenExitBubbleControllerTest, DenyExitsFullscreen) {
   WebContents* fullscreen_tab = chrome::GetActiveWebContents(browser());
   {
     base::mac::ScopedNSAutoreleasePool pool;
-    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+    content::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
         content::NotificationService::AllSources());
     browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
@@ -99,7 +99,7 @@ TEST_F(FullscreenExitBubbleControllerTest, DenyExitsFullscreen) {
   FullscreenExitBubbleController* bubble = [bwc fullscreenExitBubbleController];
   EXPECT_TRUE(bubble);
   {
-    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+    content::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
         content::NotificationService::AllSources());
     [bubble deny:nil];

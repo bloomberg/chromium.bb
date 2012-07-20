@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(
     DISABLED_ContentScriptStylesInjectedIntoExistingRenderers) {
   ASSERT_TRUE(StartTestServer());
 
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(browser()->profile()));
 

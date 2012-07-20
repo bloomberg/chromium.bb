@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   OmniboxView* location_entry = location_bar->GetLocationEntry();
   EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
   location_entry->SetUserText(string16());
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::AddSelectedTabWithURL(browser(), GURL(chrome::kAboutBlankURL),

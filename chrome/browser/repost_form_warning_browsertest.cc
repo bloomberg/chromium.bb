@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
   // Navigate to a page that requires authentication, bringing up another
   // tab-modal sheet.
   content::NavigationController& controller = web_contents->GetController();
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_AUTH_NEEDED,
       content::Source<content::NavigationController>(&controller));
   browser()->OpenURL(content::OpenURLParams(

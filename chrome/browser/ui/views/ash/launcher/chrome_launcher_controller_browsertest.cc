@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchPinned) {
   EXPECT_EQ(++tab_count, tab_strip->count());
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
   TabContents* tab = tab_strip->GetActiveTabContents();
-  ui_test_utils::WindowedNotificationObserver close_observer(
+  content::WindowedNotificationObserver close_observer(
       chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       content::Source<TabContents>(tab));
   browser()->tab_strip_model()->CloseSelectedTabs();
@@ -453,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchUnpinned) {
   ash::LauncherID shortcut_id = CreateShortcut("app1");
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
   TabContents* tab = tab_strip->GetActiveTabContents();
-  ui_test_utils::WindowedNotificationObserver close_observer(
+  content::WindowedNotificationObserver close_observer(
       chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       content::Source<TabContents>(tab));
   browser()->tab_strip_model()->CloseSelectedTabs();
@@ -478,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchInBackground) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchMaximized) {
   aura::Window* window1 = browser()->window()->GetNativeWindow();
   ash::wm::MaximizeWindow(window1);
-  ui_test_utils::WindowedNotificationObserver open_observer(
+  content::WindowedNotificationObserver open_observer(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
   chrome::NewEmptyWindow(browser()->profile());

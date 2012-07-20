@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ClickClose) {
 
   // Click close button.
   eg.MoveMouseTo(root_window->bounds().width() - 1, 0);
-  ui_test_utils::WindowedNotificationObserver signal(
+  content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(app_browser()));
   eg.ClickLeftButton();

@@ -20,10 +20,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/test/test_utils.h"
 #include "ui/base/dialogs/selected_file_info.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -173,7 +173,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
                    const gfx::NativeWindow& owning_window) {
     // Inject JavaScript to click the cancel button and wait for notification
     // that the window has closed.
-    ui_test_utils::WindowedNotificationObserver host_destroyed(
+    content::WindowedNotificationObserver host_destroyed(
         content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
         content::NotificationService::AllSources());
     content::RenderViewHost* host = dialog_->GetRenderViewHost();

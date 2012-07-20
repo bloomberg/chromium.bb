@@ -15,9 +15,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_notification_tracker.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
 using extensions::Extension;
@@ -68,7 +68,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
 
     // We are not currently in the expected state - wait for the state to
     // change.
-    ui_test_utils::WindowedNotificationObserver watcher(
+    content::WindowedNotificationObserver watcher(
         chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
         content::NotificationService::AllSources());
     watcher.Wait();

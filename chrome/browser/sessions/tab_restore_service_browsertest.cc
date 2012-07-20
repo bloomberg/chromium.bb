@@ -16,7 +16,6 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -24,6 +23,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreServiceBrowserTest, RestoreApp) {
 
   Browser* app_browser = CreateBrowserForApp(app_name, profile);
   app_browser->window()->Close();
-  ui_test_utils::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(app_browser));
   observer.Wait();
