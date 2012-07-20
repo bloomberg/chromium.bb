@@ -133,7 +133,11 @@ void test_single_step() {
 }
 
 void test_interrupt() {
-  int x = 0;
+  /*
+   * 'volatile' is needed for clang optimizer to get this right.
+   * TODO(robertm): http://code.google.com/p/nativeclient/issues/detail?id=2912
+   */
+  volatile int x = 0;
   for (;;) {
     x = (x + 1) % 2;
   }

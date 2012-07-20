@@ -335,6 +335,8 @@ class DebugStubTest(unittest.TestCase):
   def test_single_step(self):
     if ARCH == 'arm':
       # Skip this test because single-stepping is not supported on ARM.
+      # TODO(eaeltsin):
+      #   http://code.google.com/p/nativeclient/issues/detail?id=2911
       return
     proc = PopenDebugStub('test_single_step')
     try:
@@ -354,6 +356,8 @@ class DebugStubTest(unittest.TestCase):
     # Basically repeat test_single_step, but using vCont commands.
     if ARCH == 'arm':
       # Skip this test because single-stepping is not supported on ARM.
+      # TODO(eaeltsin):
+      #   http://code.google.com/p/nativeclient/issues/detail?id=2911
       return
     proc = PopenDebugStub('test_single_step')
     try:
@@ -394,6 +398,11 @@ class DebugStubTest(unittest.TestCase):
       proc.wait()
 
   def test_interrupt(self):
+    if ARCH == 'arm':
+      # Skip this test because single-stepping is not supported on ARM.
+      # TODO(eaeltsin):
+      #   http://code.google.com/p/nativeclient/issues/detail?id=2911
+      return
     proc = PopenDebugStub('test_interrupt')
     try:
       connection = gdb_rsp.GdbRspConnection()
