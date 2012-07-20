@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -21,7 +22,6 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
@@ -30,6 +30,8 @@ class ChromeLauncherControllerTest : public testing::Test {
  protected:
   ChromeLauncherControllerTest()
       : ui_thread_(content::BrowserThread::UI, &loop_),
+        file_thread_(content::BrowserThread::FILE, &loop_),
+        profile_(new TestingProfile()),
         extension_service_(NULL) {
     DictionaryValue manifest;
     manifest.SetString("name", "launcher controller test extension");
@@ -38,7 +40,7 @@ class ChromeLauncherControllerTest : public testing::Test {
 
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(&profile_)));
+            extensions::ExtensionSystem::Get(profile_.get())));
     extension_service_ = extension_system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), FilePath(), false);
 
@@ -61,6 +63,12 @@ class ChromeLauncherControllerTest : public testing::Test {
                                     Extension::NO_FLAGS,
                                     "coobgpohoikkiipiblmjeljniedjpjpf",
                                     &error);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    profile_.reset();
+    // Execute any pending deletion tasks.
+    loop_.RunAllPending();
   }
 
   void InsertPrefValue(base::ListValue* pref_value,
@@ -89,12 +97,13 @@ class ChromeLauncherControllerTest : public testing::Test {
   // Needed for extension service & friends to work.
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   scoped_refptr<Extension> extension1_;
   scoped_refptr<Extension> extension2_;
   scoped_refptr<Extension> extension3_;
   scoped_refptr<Extension> extension4_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
   ash::LauncherModel model_;
 
   ExtensionService* extension_service_;
@@ -103,7 +112,7 @@ class ChromeLauncherControllerTest : public testing::Test {
 };
 
 TEST_F(ChromeLauncherControllerTest, DefaultApps) {
-  ChromeLauncherController launcher_controller(&profile_, &model_);
+  ChromeLauncherController launcher_controller(profile_.get(), &model_);
   launcher_controller.Init();
 
   // Model should only contain the browser shortcut and app list items.
@@ -128,13 +137,13 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
   base::ListValue policy_value;
   InsertPrefValue(&policy_value, 0, extension1_->id());
   InsertPrefValue(&policy_value, 1, extension2_->id());
-  profile_.GetTestingPrefService()->SetManagedPref(prefs::kPinnedLauncherApps,
-                                                   policy_value.DeepCopy());
+  profile_->GetTestingPrefService()->SetManagedPref(prefs::kPinnedLauncherApps,
+                                                    policy_value.DeepCopy());
 
   // Only |extension1_| should get pinned. |extension2_| is specified but not
   // installed, and |extension3_| is part of the default set, but that shouldn't
   // take effect when the policy override is in place.
-  ChromeLauncherController launcher_controller(&profile_, &model_);
+  ChromeLauncherController launcher_controller(profile_.get(), &model_);
   launcher_controller.Init();
   EXPECT_EQ(3, model_.item_count());
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[1].type);
@@ -153,8 +162,8 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
 
   // Removing |extension1_| from the policy should be reflected in the launcher.
   policy_value.Remove(0, NULL);
-  profile_.GetTestingPrefService()->SetManagedPref(prefs::kPinnedLauncherApps,
-                                                   policy_value.DeepCopy());
+  profile_->GetTestingPrefService()->SetManagedPref(prefs::kPinnedLauncherApps,
+                                                    policy_value.DeepCopy());
   EXPECT_EQ(3, model_.item_count());
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[1].type);
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
@@ -166,7 +175,7 @@ TEST_F(ChromeLauncherControllerTest, UnloadAndLoad) {
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
 
-  ChromeLauncherController launcher_controller(&profile_, &model_);
+  ChromeLauncherController launcher_controller(profile_.get(), &model_);
   launcher_controller.Init();
 
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
@@ -188,7 +197,7 @@ TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
 
-  ChromeLauncherController launcher_controller(&profile_, &model_);
+  ChromeLauncherController launcher_controller(profile_.get(), &model_);
   launcher_controller.Init();
 
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
@@ -205,13 +214,13 @@ TEST_F(ChromeLauncherControllerTest, PrefUpdates) {
   extension_service_->AddExtension(extension2_.get());
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
-  ChromeLauncherController controller(&profile_, &model_);
+  ChromeLauncherController controller(profile_.get(), &model_);
 
   std::vector<std::string> expected_launchers;
   std::vector<std::string> actual_launchers;
   base::ListValue pref_value;
-  profile_.GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
-                                                pref_value.DeepCopy());
+  profile_->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                 pref_value.DeepCopy());
   GetAppLaunchers(&controller, &actual_launchers);
   EXPECT_EQ(expected_launchers, actual_launchers);
 
@@ -219,8 +228,8 @@ TEST_F(ChromeLauncherControllerTest, PrefUpdates) {
   InsertPrefValue(&pref_value, 0, extension1_->id());
   InsertPrefValue(&pref_value, 1, extension2_->id());
   InsertPrefValue(&pref_value, 2, extension4_->id());
-  profile_.GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
-                                                pref_value.DeepCopy());
+  profile_->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                 pref_value.DeepCopy());
   expected_launchers.push_back(extension2_->id());
   expected_launchers.push_back(extension4_->id());
   GetAppLaunchers(&controller, &actual_launchers);
@@ -230,8 +239,8 @@ TEST_F(ChromeLauncherControllerTest, PrefUpdates) {
   InsertPrefValue(&pref_value, 2, extension3_->id());
   InsertPrefValue(&pref_value, 2, extension3_->id());
   InsertPrefValue(&pref_value, 5, extension3_->id());
-  profile_.GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
-                                                pref_value.DeepCopy());
+  profile_->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                 pref_value.DeepCopy());
   expected_launchers.insert(expected_launchers.begin() + 1, extension3_->id());
   GetAppLaunchers(&controller, &actual_launchers);
   EXPECT_EQ(expected_launchers, actual_launchers);
@@ -241,16 +250,16 @@ TEST_F(ChromeLauncherControllerTest, PrefUpdates) {
   InsertPrefValue(&pref_value, 0, extension4_->id());
   InsertPrefValue(&pref_value, 1, extension3_->id());
   InsertPrefValue(&pref_value, 2, extension2_->id());
-  profile_.GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
-                                                pref_value.DeepCopy());
+  profile_->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                 pref_value.DeepCopy());
   std::reverse(expected_launchers.begin(), expected_launchers.end());
   GetAppLaunchers(&controller, &actual_launchers);
   EXPECT_EQ(expected_launchers, actual_launchers);
 
   // Clearing works.
   pref_value.Clear();
-  profile_.GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
-                                                pref_value.DeepCopy());
+  profile_->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                 pref_value.DeepCopy());
   expected_launchers.clear();
   GetAppLaunchers(&controller, &actual_launchers);
   EXPECT_EQ(expected_launchers, actual_launchers);
@@ -259,14 +268,14 @@ TEST_F(ChromeLauncherControllerTest, PrefUpdates) {
 TEST_F(ChromeLauncherControllerTest, PendingInsertionOrder) {
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension3_.get());
-  ChromeLauncherController controller(&profile_, &model_);
+  ChromeLauncherController controller(profile_.get(), &model_);
 
   base::ListValue pref_value;
   InsertPrefValue(&pref_value, 0, extension1_->id());
   InsertPrefValue(&pref_value, 1, extension2_->id());
   InsertPrefValue(&pref_value, 2, extension3_->id());
-  profile_.GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
-                                                pref_value.DeepCopy());
+  profile_->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                 pref_value.DeepCopy());
 
   std::vector<std::string> expected_launchers;
   expected_launchers.push_back(extension1_->id());
