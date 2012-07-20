@@ -300,7 +300,7 @@ class WebDriverAnonymousProxyLauncher : public AnonymousProxyLauncher {
   virtual ~WebDriverAnonymousProxyLauncher() {}
 
   virtual AutomationProxy* CreateAutomationProxy(
-      int execution_timeout) OVERRIDE {
+      base::TimeDelta execution_timeout) OVERRIDE {
     AutomationProxy* proxy =
         AnonymousProxyLauncher::CreateAutomationProxy(execution_timeout);
     AddBackwardsCompatFilter(proxy);
@@ -316,7 +316,7 @@ class WebDriverNamedProxyLauncher : public NamedProxyLauncher {
   virtual ~WebDriverNamedProxyLauncher() {}
 
   virtual AutomationProxy* CreateAutomationProxy(
-      int execution_timeout) OVERRIDE {
+      base::TimeDelta execution_timeout) OVERRIDE {
     AutomationProxy* proxy =
         NamedProxyLauncher::CreateAutomationProxy(execution_timeout);
     // We can only add the filter here if the browser has not already been
@@ -450,7 +450,8 @@ void Automation::Init(
     return;
   }
 
-  launcher_->automation()->set_action_timeout_ms(base::kNoTimeout);
+  launcher_->automation()->set_action_timeout(
+      base::TimeDelta::FromMilliseconds(base::kNoTimeout));
   logger_.Log(kInfoLogLevel, "Connected to Chrome successfully. Version: " +
               automation()->server_version());
 
@@ -493,7 +494,8 @@ void Automation::Terminate() {
     automation()->Disconnect();
 #endif
     int exit_code = -1;
-    if (!launcher_->WaitForBrowserProcessToQuit(10000, &exit_code)) {
+    if (!launcher_->WaitForBrowserProcessToQuit(
+            base::TimeDelta::FromSeconds(10), &exit_code)) {
       logger_.Log(kWarningLogLevel, "Chrome still running, terminating...");
       TerminateAllChromeProcesses(launcher_->process_id());
     }

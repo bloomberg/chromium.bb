@@ -200,10 +200,9 @@ bool BrowserProxy::WaitForTabCountToBecome(int count) {
 }
 
 bool BrowserProxy::WaitForTabToBecomeActive(int tab,
-                                            int wait_timeout) {
+                                            base::TimeDelta wait_timeout) {
   const TimeTicks start = TimeTicks::Now();
-  const TimeDelta timeout = TimeDelta::FromMilliseconds(wait_timeout);
-  while (TimeTicks::Now() - start < timeout) {
+  while (TimeTicks::Now() - start < wait_timeout) {
     base::PlatformThread::Sleep(
         base::TimeDelta::FromMilliseconds(automation::kSleepTime));
     int active_tab;
@@ -438,7 +437,7 @@ bool BrowserProxy::SendJSONRequest(const std::string& request,
   return result;
 }
 
-bool BrowserProxy::GetInitialLoadTimes(int timeout_ms,
+bool BrowserProxy::GetInitialLoadTimes(base::TimeDelta timeout,
                                        float* min_start_time,
                                        float* max_stop_time,
                                        std::vector<float>* stop_times) {
@@ -447,7 +446,8 @@ bool BrowserProxy::GetInitialLoadTimes(int timeout_ms,
 
   *max_stop_time = 0;
   *min_start_time = -1;
-  if (!SendJSONRequest(kJSONCommand, timeout_ms, &json_response)) {
+  if (!SendJSONRequest(
+          kJSONCommand, timeout.InMilliseconds(), &json_response)) {
     // Older browser versions do not support GetInitialLoadTimes.
     // Fail gracefully and do not record them in this case.
     return false;

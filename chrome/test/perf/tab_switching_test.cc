@@ -97,7 +97,8 @@ class TabSwitchingUITest : public UIPerfTest {
       ASSERT_TRUE(browser_proxy_->GetTabCount(&final_tab_count));
       for (int j = initial_tab_count; j < final_tab_count; ++j) {
         ASSERT_TRUE(browser_proxy_->ActivateTab(j));
-        ASSERT_TRUE(browser_proxy_->WaitForTabToBecomeActive(j, 10000));
+        ASSERT_TRUE(browser_proxy_->WaitForTabToBecomeActive(
+            j, base::TimeDelta::FromSeconds(10)));
       }
 
       // Close the browser to force a dump of log.

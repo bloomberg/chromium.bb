@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/automation/javascript_message_utils.h"
 
@@ -71,7 +72,9 @@ class JavaScriptExecutionController
 
   // Sets a timeout to be used for all JavaScript methods in which a response
   // is returned asynchronously.
-  static void set_timeout(int timeout_ms) { timeout_ms_ = timeout_ms; }
+  static void set_timeout(base::TimeDelta timeout) {
+    timeout_ms_ = timeout.InMilliseconds();
+  }
 
  protected:
   virtual ~JavaScriptExecutionController();

@@ -67,7 +67,9 @@ class UITestBase {
   void ConnectToRunningBrowser();
 
   // Only for pyauto.
+  base::TimeDelta action_timeout();
   int action_timeout_ms();
+  void set_action_timeout(base::TimeDelta timeout);
   void set_action_timeout_ms(int timeout);
 
   // Overridable so that derived classes can provide their own ProxyLauncher.
@@ -377,7 +379,7 @@ class UITest : public UITestBase, public PlatformTest {
                      const std::string &id, const GURL &url,
                      const std::string& test_complete_cookie,
                      const std::string& expected_cookie_value,
-                     const int wait_time);
+                     const base::TimeDelta wait_time);
 
   // Wrapper around EvictFileFromSystemCache to retry 10 times in case of
   // error.
@@ -397,7 +399,7 @@ class UITest : public UITestBase, public PlatformTest {
   bool WaitUntilJavaScriptCondition(TabProxy* tab,
                                     const std::wstring& frame_xpath,
                                     const std::wstring& jscript,
-                                    int timeout_ms);
+                                    base::TimeDelta timeout);
 
   // Polls the tab for the cookie_name cookie and returns once one of the
   // following conditions hold true:
@@ -406,7 +408,7 @@ class UITest : public UITestBase, public PlatformTest {
   // - The timeout value has been exceeded.
   bool WaitUntilCookieValue(TabProxy* tab, const GURL& url,
                             const char* cookie_name,
-                            int timeout_ms,
+                            base::TimeDelta timeout,
                             const char* expected_value);
 
   // Polls the tab for the cookie_name cookie and returns once one of the
@@ -417,7 +419,7 @@ class UITest : public UITestBase, public PlatformTest {
   std::string WaitUntilCookieNonEmpty(TabProxy* tab,
                                       const GURL& url,
                                       const char* cookie_name,
-                                      int timeout_ms);
+                                      base::TimeDelta timeout);
 
   // Waits until the Find window has become fully visible (if |wait_for_open| is
   // true) or fully hidden (if |wait_for_open| is false). This function can time

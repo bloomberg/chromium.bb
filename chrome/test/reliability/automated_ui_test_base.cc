@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,7 +219,7 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
   }
 
   if (!browser->WaitForTabToBecomeActive(new_tab_index,
-                                         TestTimeouts::action_timeout_ms())) {
+                                         TestTimeouts::action_timeout())) {
     LogWarningMessage("failed_to_reindex_tab");
     return false;
   }

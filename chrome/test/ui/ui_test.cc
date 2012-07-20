@@ -120,7 +120,7 @@ void UITestBase::SetUp() {
                                  "of the app before testing.");
 
   JavaScriptExecutionController::set_timeout(
-      TestTimeouts::action_max_timeout_ms());
+      TestTimeouts::action_max_timeout());
   test_start_time_ = Time::NowFromSystemTime();
 
   SetLaunchSwitches();
@@ -139,13 +139,22 @@ AutomationProxy* UITestBase::automation() const {
   return launcher_->automation();
 }
 
+base::TimeDelta UITestBase::action_timeout() {
+  return automation()->action_timeout();
+}
+
 int UITestBase::action_timeout_ms() {
-  return automation()->action_timeout_ms();
+  return action_timeout().InMilliseconds();
+}
+
+void UITestBase::set_action_timeout(base::TimeDelta timeout) {
+  automation()->set_action_timeout(timeout);
+  VLOG(1) << "Automation action timeout set to "
+          << timeout.InMilliseconds() << " ms";
 }
 
 void UITestBase::set_action_timeout_ms(int timeout) {
-  automation()->set_action_timeout_ms(timeout);
-  VLOG(1) << "Automation action timeout set to " << timeout << " ms";
+  set_action_timeout(base::TimeDelta::FromMilliseconds(timeout));
 }
 
 ProxyLauncher* UITestBase::CreateProxyLauncher() {
@@ -415,7 +424,7 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
   if (*application_closed) {
     int exit_code = -1;
     EXPECT_TRUE(launcher_->WaitForBrowserProcessToQuit(
-        TestTimeouts::action_max_timeout_ms(), &exit_code));
+        TestTimeouts::action_max_timeout(), &exit_code));
     EXPECT_EQ(0, exit_code);  // Expect a clean shutown.
   }
 
@@ -594,7 +603,7 @@ void UITest::WaitForFinish(const std::string &name,
                            const GURL &url,
                            const std::string& test_complete_cookie,
                            const std::string& expected_cookie_value,
-                           const int wait_time) {
+                           const base::TimeDelta wait_time) {
   // The webpage being tested has javascript which sets a cookie
   // which signals completion of the test.  The cookie name is
   // a concatenation of the test name and the test id.  This allows
@@ -628,9 +637,9 @@ bool UITest::EvictFileFromSystemCacheWrapper(const FilePath& path) {
 bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
                                           const std::wstring& frame_xpath,
                                           const std::wstring& jscript,
-                                          int timeout_ms) {
+                                          base::TimeDelta timeout) {
   const TimeDelta kDelay = TimeDelta::FromMilliseconds(250);
-  const int kMaxDelays = timeout_ms / kDelay.InMilliseconds();
+  const int kMaxDelays = timeout / kDelay;
 
   // Wait until the test signals it has completed.
   for (int i = 0; i < kMaxDelays; ++i) {
@@ -653,10 +662,10 @@ bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
 bool UITest::WaitUntilCookieValue(TabProxy* tab,
                                   const GURL& url,
                                   const char* cookie_name,
-                                  int timeout_ms,
+                                  base::TimeDelta timeout,
                                   const char* expected_value) {
   const TimeDelta kDelay = TimeDelta::FromMilliseconds(250);
-  const int kMaxDelays = timeout_ms / kDelay.InMilliseconds();
+  const int kMaxDelays = timeout / kDelay;
 
   std::string cookie_value;
   for (int i = 0; i < kMaxDelays; ++i) {
@@ -674,9 +683,9 @@ bool UITest::WaitUntilCookieValue(TabProxy* tab,
 std::string UITest::WaitUntilCookieNonEmpty(TabProxy* tab,
                                             const GURL& url,
                                             const char* cookie_name,
-                                            int timeout_ms) {
+                                            base::TimeDelta timeout) {
   const TimeDelta kDelay = TimeDelta::FromMilliseconds(250);
-  const int kMaxDelays = timeout_ms / kDelay.InMilliseconds();
+  const int kMaxDelays = timeout / kDelay;
 
   for (int i = 0; i < kMaxDelays; ++i) {
     std::string cookie_value;
