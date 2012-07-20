@@ -18,7 +18,6 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/resource_context.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/url_request/url_request_job_factory.h"
 
 class CookieSettings;
 class DesktopNotificationService;
@@ -166,13 +165,7 @@ class ProfileIOData {
     DesktopNotificationService* notification_service;
 #endif
 
-    // This pointer exists only as a means of conveying a url interceptor
-    // pointer from the protocol handler registry on the UI thread to the
-    // the URLRequestJobFactory on the IO thread. The consumer MUST take
-    // ownership of the object by calling release() on this pointer.
-    scoped_ptr<net::URLRequestJobFactory::Interceptor>
-        protocol_handler_url_interceptor;
-
+    scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.

@@ -102,6 +102,7 @@ class ProfileImpl : public Profile,
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual void MarkAsCleanShutdown() OVERRIDE;
   virtual void InitPromoResources() OVERRIDE;
+  virtual void InitRegisteredProtocolHandlers() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
@@ -144,6 +145,9 @@ class ProfileImpl : public Profile,
   void DoFinalInit(bool is_new_profile);
 
   void InitHostZoomMap();
+
+  // The installation of any pre-defined protocol handlers.
+  void InstallDefaultProtocolHandlers();
 
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);
@@ -202,8 +206,13 @@ class ProfileImpl : public Profile,
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
+
   scoped_refptr<PromoResourceService> promo_resource_service_;
+
+  scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
+
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
+
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;

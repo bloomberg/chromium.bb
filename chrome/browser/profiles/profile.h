@@ -283,7 +283,6 @@ class Profile : public content::BrowserContext {
   virtual BookmarkModel* GetBookmarkModel() = 0;
 
   // Returns the ProtocolHandlerRegistry, creating if not yet created.
-  // TODO(smckay): replace this with access via ProtocolHandlerRegistryFactory.
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() = 0;
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
@@ -306,6 +305,10 @@ class Profile : public content::BrowserContext {
 
   // Start up service that gathers data from a promo resource feed.
   virtual void InitPromoResources() = 0;
+
+  // Register URLRequestFactories for protocols registered with
+  // registerProtocolHandler.
+  virtual void InitRegisteredProtocolHandlers() = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual FilePath last_selected_directory() = 0;

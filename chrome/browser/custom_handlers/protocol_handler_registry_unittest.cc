@@ -8,7 +8,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -22,55 +21,10 @@
 #include "content/public/test/test_renderer_host.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
 namespace {
-
-void AssertInterceptedIO(
-    const GURL& url,
-    net::URLRequestJobFactory::Interceptor* interceptor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::URLRequestContext context;
-  net::URLRequest request(url, NULL, &context);
-  scoped_refptr<net::URLRequestJob> job = interceptor->MaybeIntercept(&request);
-  ASSERT_TRUE(job.get() != NULL);
-}
-
-void AssertIntercepted(
-    const GURL& url,
-    net::URLRequestJobFactory::Interceptor* interceptor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(AssertInterceptedIO,
-                                     url,
-                                     base::Unretained(interceptor)));
-  MessageLoop::current()->RunAllPending();
-}
-
-void AssertWillHandleIO(
-    const std::string& scheme,
-    bool expected,
-    net::URLRequestJobFactory::Interceptor* interceptor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ASSERT_EQ(expected, interceptor->WillHandleProtocol(scheme));
-}
-
-void AssertWillHandle(
-    const std::string& scheme,
-    bool expected,
-    net::URLRequestJobFactory::Interceptor* interceptor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(AssertWillHandleIO,
-                                     scheme,
-                                     expected,
-                                     base::Unretained(interceptor)));
-  MessageLoop::current()->RunAllPending();
-}
 
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
  public:
@@ -220,7 +174,7 @@ class QueryProtocolHandlerOnChange
  public:
   QueryProtocolHandlerOnChange(Profile* profile,
                                ProtocolHandlerRegistry* registry)
-    : local_registry_(registry),
+    : registry_(registry),
       called_(false),
       notification_registrar_() {
     notification_registrar_.Add(this,
@@ -232,37 +186,13 @@ class QueryProtocolHandlerOnChange
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
     std::vector<std::string> output;
-    local_registry_->GetRegisteredProtocols(&output);
+    registry_->GetRegisteredProtocols(&output);
     called_ = true;
   }
 
-  ProtocolHandlerRegistry* local_registry_;
+  ProtocolHandlerRegistry* registry_;
   bool called_;
   content::NotificationRegistrar notification_registrar_;
-};
-
-// URLRequest DCHECKS that the current MessageLoop is IO. It does this because
-// it can't check the thread id (since net can't depend on content.) We want
-// to harness our tests so all threads use the same loop allowing us to
-// guarantee all messages are processed.) By overriding the IsType method
-// we basically ignore the supplied message loop type, and instead infer
-// our type based on the current thread. GO DEPENDENCY INJECTION!
-class TestMessageLoop : public MessageLoop {
- public:
-  TestMessageLoop() : MessageLoop(MessageLoop::TYPE_DEFAULT) {}
-  ~TestMessageLoop() {}
-  virtual bool IsType(MessageLoop::Type type) const OVERRIDE {
-    switch (type) {
-       case MessageLoop::TYPE_UI:
-         return BrowserThread::CurrentlyOn(BrowserThread::UI);
-       case MessageLoop::TYPE_IO:
-         return BrowserThread::CurrentlyOn(BrowserThread::IO);
-       case MessageLoop::TYPE_DEFAULT:
-         return !BrowserThread::CurrentlyOn(BrowserThread::UI) &&
-             !BrowserThread::CurrentlyOn(BrowserThread::IO);
-    }
-    return false;
-  }
 };
 
 }  // namespace
@@ -270,15 +200,12 @@ class TestMessageLoop : public MessageLoop {
 class ProtocolHandlerRegistryTest : public testing::Test {
  protected:
   ProtocolHandlerRegistryTest()
-  : ui_thread_(BrowserThread::UI, &loop_),
-    file_thread_(BrowserThread::FILE, &loop_),
-    io_thread_(BrowserThread::IO, &loop_),
-    test_protocol_handler_(CreateProtocolHandler("test", "test")) {}
+      : test_protocol_handler_(CreateProtocolHandler("test", "test")) {}
 
   FakeDelegate* delegate() const { return delegate_; }
-  ProtocolHandlerRegistry* registry() { return registry_.get(); }
   TestingProfile* profile() const { return profile_.get(); }
   PrefService* pref_service() const { return profile_->GetPrefs(); }
+  ProtocolHandlerRegistry* registry() const { return registry_.get(); }
   const ProtocolHandler& test_protocol_handler() const {
     return test_protocol_handler_;
   }
@@ -296,48 +223,68 @@ class ProtocolHandlerRegistryTest : public testing::Test {
         name);
   }
 
-  void RecreateRegistry(bool initialize) {
-    TeadDownRegistry();
-    SetUpRegistry(initialize);
-  }
-
-  // Returns a new registry, initializing it if |initialize| is true.
-  // Caller assumes ownership for the object
-  void SetUpRegistry(bool initialize) {
+  void ReloadProtocolHandlerRegistry() {
     delegate_ = new FakeDelegate();
-    registry_.reset(new ProtocolHandlerRegistry(profile(), delegate()));
-    if (initialize) registry_->InitProtocolSettings();
+    registry_->Finalize();
+    registry_ = NULL;
+    registry_ = new ProtocolHandlerRegistry(profile(), delegate());
+    registry_->Load();
   }
 
-  void TeadDownRegistry() {
-    registry_->Shutdown();
-    registry_.reset();
-    // Registry owns the delegate_ it handles deletion of that object.
+  void ReloadProtocolHandlerRegistryAndInstallDefaultHandler() {
+    delegate_ = new FakeDelegate();
+    registry_->Finalize();
+    registry_ = NULL;
+    registry_ = new ProtocolHandlerRegistry(profile(), delegate());
+    registry_->AddPredefinedHandler(CreateProtocolHandler(
+        "test", GURL("http://test.com/%s"), "Test"));
+    registry_->Load();
   }
 
   virtual void SetUp() {
+    ui_message_loop_.reset(new MessageLoopForUI());
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
+                                                    MessageLoop::current()));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
+    io_thread_->StartIOThread();
+
+    file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE));
+    file_thread_->Start();
+
     profile_.reset(new TestingProfile());
     profile_->SetPrefService(new TestingPrefService());
-    SetUpRegistry(true);
+    delegate_ = new FakeDelegate();
+    registry_ = new ProtocolHandlerRegistry(profile(), delegate());
+    registry_->Load();
     test_protocol_handler_ =
         CreateProtocolHandler("test", GURL("http://test.com/%s"), "Test");
+
     ProtocolHandlerRegistry::RegisterPrefs(pref_service());
   }
 
   virtual void TearDown() {
-    TeadDownRegistry();
+    registry_->Finalize();
+    registry_ = NULL;
+    io_thread_->Stop();
+    io_thread_.reset(NULL);
+    file_thread_->Stop();
+    file_thread_.reset(NULL);
+    ui_thread_.reset(NULL);
+    ui_message_loop_.reset(NULL);
   }
 
-  TestMessageLoop loop_;
+  bool enabled_io() {
+    return registry()->enabled_io_;
+  }
 
- private:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  scoped_ptr<MessageLoopForUI> ui_message_loop_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThread> file_thread_;
 
+  FakeDelegate* delegate_;
   scoped_ptr<TestingProfile> profile_;
-  FakeDelegate* delegate_;  // Registry assumes ownership of delegate_.
-  scoped_ptr<ProtocolHandlerRegistry> registry_;
+  scoped_refptr<ProtocolHandlerRegistry> registry_;
   ProtocolHandler test_protocol_handler_;
 };
 
@@ -436,7 +383,7 @@ TEST_F(ProtocolHandlerRegistryTest, SaveAndLoad) {
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
   ASSERT_TRUE(registry()->IsIgnored(stuff_protocol_handler));
   delegate()->Reset();
-  RecreateRegistry(true);
+  ReloadProtocolHandlerRegistry();
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
   ASSERT_TRUE(registry()->IsIgnored(stuff_protocol_handler));
 }
@@ -522,14 +469,14 @@ TEST_F(ProtocolHandlerRegistryTest, TestDefaultSaveLoad) {
   registry()->OnAcceptRegisterProtocolHandler(ph2);
   registry()->Disable();
 
-  RecreateRegistry(true);
+  ReloadProtocolHandlerRegistry();
 
   ASSERT_FALSE(registry()->enabled());
   registry()->Enable();
   ASSERT_FALSE(registry()->IsDefault(ph1));
   ASSERT_TRUE(registry()->IsDefault(ph2));
 
-  RecreateRegistry(true);
+  ReloadProtocolHandlerRegistry();
   ASSERT_TRUE(registry()->enabled());
 }
 
@@ -689,10 +636,6 @@ TEST_F(ProtocolHandlerRegistryTest, TestDisablePreventsHandling) {
   ASSERT_FALSE(registry()->IsHandledProtocol("test"));
 }
 
-// TODO(smckay): This is much more appropriately an integration
-// test. Make that so, then update the
-// ShellIntegretion{Delegate,Observer,Worker} test classes we use to fully
-// isolate this test from the FILE thread.
 TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
   ProtocolHandler ph_do1 = CreateProtocolHandler("do", "test1");
   ProtocolHandler ph_do2 = CreateProtocolHandler("do", "test2");
@@ -703,7 +646,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
 
   registry()->OnAcceptRegisterProtocolHandler(ph_do1);
   registry()->OnDenyRegisterProtocolHandler(ph_dont);
-  MessageLoop::current()->Run();  // FILE thread needs to run.
+  MessageLoop::current()->Run();
   ASSERT_TRUE(delegate()->IsFakeRegisteredWithOS("do"));
   ASSERT_FALSE(delegate()->IsFakeRegisteredWithOS("dont"));
 
@@ -721,10 +664,6 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
 #define MAYBE_TestOSRegistrationFailure TestOSRegistrationFailure
 #endif
 
-// TODO(smckay): This is much more appropriately an integration
-// test. Make that so, then update the
-// ShellIntegretion{Delegate,Observer,Worker} test classes we use to fully
-// isolate this test from the FILE thread.
 TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestOSRegistrationFailure) {
   ProtocolHandler ph_do = CreateProtocolHandler("do", "test1");
   ProtocolHandler ph_dont = CreateProtocolHandler("dont", "test");
@@ -733,24 +672,40 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestOSRegistrationFailure) {
   ASSERT_FALSE(registry()->IsHandledProtocol("dont"));
 
   registry()->OnAcceptRegisterProtocolHandler(ph_do);
-  MessageLoop::current()->Run();  // FILE thread needs to run.
+  MessageLoop::current()->Run();
   delegate()->set_force_os_failure(true);
   registry()->OnAcceptRegisterProtocolHandler(ph_dont);
-  MessageLoop::current()->Run();  // FILE thread needs to run.
+  MessageLoop::current()->Run();
   ASSERT_TRUE(registry()->IsHandledProtocol("do"));
   ASSERT_EQ(static_cast<size_t>(1), registry()->GetHandlersFor("do").size());
   ASSERT_FALSE(registry()->IsHandledProtocol("dont"));
   ASSERT_EQ(static_cast<size_t>(1), registry()->GetHandlersFor("dont").size());
 }
 
+static void MakeRequest(const GURL& url, ProtocolHandlerRegistry* registry) {
+  net::URLRequestContext context;
+  net::URLRequest request(url, NULL, &context);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          MessageLoop::QuitClosure());
+  scoped_refptr<net::URLRequestJob> job(registry->MaybeCreateJob(&request));
+  ASSERT_TRUE(job.get() != NULL);
+}
+
 TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
   ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   GURL url("mailto:someone@something.com");
-  net::URLRequestJobFactory::Interceptor* interceptor =
-      registry()->CreateURLInterceptor();
+  scoped_refptr<ProtocolHandlerRegistry> r(registry());
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(MakeRequest, url, r));
+  MessageLoop::current()->Run();
+}
 
-  AssertIntercepted(url, interceptor);
+static void CheckIsHandled(const std::string& scheme, bool expected,
+    ProtocolHandlerRegistry* registry) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          MessageLoop::QuitClosure());
+  ASSERT_EQ(expected, registry->IsHandledProtocolIO(scheme));
 }
 
 TEST_F(ProtocolHandlerRegistryTest,
@@ -758,10 +713,11 @@ TEST_F(ProtocolHandlerRegistryTest,
   std::string scheme("mailto");
   ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
-  net::URLRequestJobFactory::Interceptor* interceptor =
-      registry()->CreateURLInterceptor();
-
-  AssertWillHandle(scheme, true, interceptor);
+  scoped_refptr<ProtocolHandlerRegistry> r(registry());
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(CheckIsHandled, scheme, true, r));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultFallsBackToOldDefault) {
@@ -805,20 +761,26 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestClearDefaultGetsPropagatedToIO) {
   ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->ClearDefault(scheme);
-  net::URLRequestJobFactory::Interceptor* interceptor =
-      registry()->CreateURLInterceptor();
+  scoped_refptr<ProtocolHandlerRegistry> r(registry());
 
-  AssertWillHandle(scheme, false, interceptor);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(CheckIsHandled, scheme, false, r));
+}
+
+static void QuitUILoop() {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          MessageLoop::QuitClosure());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
-  std::string mailto("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(mailto, "MailtoHandler");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-
-  AssertWillHandle(mailto, true, registry()->CreateURLInterceptor());
   registry()->Disable();
-  AssertWillHandle(mailto, false, registry()->CreateURLInterceptor());
+  ReloadProtocolHandlerRegistry();
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(QuitUILoop));
+  MessageLoop::current()->Run();
+  ASSERT_FALSE(enabled_io());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestReplaceHandler) {
@@ -882,10 +844,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsSameOrigin) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestInstallDefaultHandler) {
-  RecreateRegistry(false);
-  registry()->AddPredefinedHandler(CreateProtocolHandler(
-      "test", GURL("http://test.com/%s"), "Test"));
-  registry()->InitProtocolSettings();
+  ReloadProtocolHandlerRegistryAndInstallDefaultHandler();
   std::vector<std::string> protocols;
   registry()->GetRegisteredProtocols(&protocols);
   ASSERT_EQ(static_cast<size_t>(1), protocols.size());

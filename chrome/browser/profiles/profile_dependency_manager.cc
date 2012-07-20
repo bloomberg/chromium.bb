@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
@@ -236,7 +235,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   prerender::PrerenderManagerFactory::GetInstance();
   prerender::PrerenderLinkManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
-  ProtocolHandlerRegistryFactory::GetInstance();
 #if defined(ENABLE_PROTECTOR_SERVICE)
   protector::ProtectorServiceFactory::GetInstance();
 #endif

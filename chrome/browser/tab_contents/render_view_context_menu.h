@@ -285,7 +285,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   ui::SimpleMenuModel bidi_submenu_model_;
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   ScopedVector<ui::SimpleMenuModel> extension_menu_models_;
-  ProtocolHandlerRegistry* protocol_handler_registry_;
+  scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
   // An observer that handles spelling-menu items.
   scoped_ptr<SpellingMenuObserver> spelling_menu_observer_;

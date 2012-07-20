@@ -251,12 +251,12 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
       ProtocolHandler::CreateProtocolHandler("mailto",
           GURL("http://www.toplevel.example/"), ASCIIToUTF16("Handler")));
 
-  ContentSettingRPHBubbleModel content_setting_bubble_model(
-          NULL, tab_contents(), profile(), NULL,
-          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS);
-
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          NULL, tab_contents(), profile(),
+          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
-      content_setting_bubble_model.bubble_content();
+      content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
   EXPECT_FALSE(bubble_content.radio_group.radio_items.empty());
   EXPECT_TRUE(bubble_content.popup_items.empty());
@@ -295,9 +295,7 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
 
 TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   StartIOThread();
-
-  ProtocolHandlerRegistry registry(profile(), new FakeDelegate());
-  registry.InitProtocolSettings();
+  profile()->CreateProtocolHandlerRegistry(new FakeDelegate);
 
   const GURL page_url("http://toplevel.example/");
   NavigateAndCommit(page_url);
@@ -308,21 +306,24 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
       ASCIIToUTF16("Handler"));
   content_settings->set_pending_protocol_handler(test_handler);
 
-  ContentSettingRPHBubbleModel content_setting_bubble_model(
-          NULL, tab_contents(), profile(), &registry,
-          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS);
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          NULL, tab_contents(), profile(),
+          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS));
 
   {
-    ProtocolHandler handler = registry.GetHandlerFor("mailto");
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
     EXPECT_TRUE(handler.IsEmpty());
     EXPECT_EQ(CONTENT_SETTING_DEFAULT,
               content_settings->pending_protocol_handler_setting());
   }
 
   // "0" is the "Allow" radio button.
-  content_setting_bubble_model.OnRadioClicked(0);
+  content_setting_bubble_model->OnRadioClicked(0);
   {
-    ProtocolHandler handler = registry.GetHandlerFor("mailto");
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
     ASSERT_FALSE(handler.IsEmpty());
     EXPECT_EQ(ASCIIToUTF16("Handler"), handler.title());
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -330,34 +331,40 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   }
 
   // "1" is the "Deny" radio button.
-  content_setting_bubble_model.OnRadioClicked(1);
+  content_setting_bubble_model->OnRadioClicked(1);
   {
-    ProtocolHandler handler = registry.GetHandlerFor("mailto");
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
     EXPECT_TRUE(handler.IsEmpty());
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
               content_settings->pending_protocol_handler_setting());
   }
 
   // "2" is the "Ignore button.
-  content_setting_bubble_model.OnRadioClicked(2);
+  content_setting_bubble_model->OnRadioClicked(2);
   {
-    ProtocolHandler handler = registry.GetHandlerFor("mailto");
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
     EXPECT_TRUE(handler.IsEmpty());
     EXPECT_EQ(CONTENT_SETTING_DEFAULT,
               content_settings->pending_protocol_handler_setting());
-    EXPECT_TRUE(registry.IsIgnored(test_handler));
+    EXPECT_TRUE(profile()->GetProtocolHandlerRegistry()->IsIgnored(
+        test_handler));
   }
 
   // "0" is the "Allow" radio button.
-  content_setting_bubble_model.OnRadioClicked(0);
+  content_setting_bubble_model->OnRadioClicked(0);
   {
-    ProtocolHandler handler = registry.GetHandlerFor("mailto");
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
     ASSERT_FALSE(handler.IsEmpty());
     EXPECT_EQ(ASCIIToUTF16("Handler"), handler.title());
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               content_settings->pending_protocol_handler_setting());
-    EXPECT_FALSE(registry.IsIgnored(test_handler));
+    EXPECT_FALSE(profile()->GetProtocolHandlerRegistry()->IsIgnored(
+        test_handler));
   }
 
-  registry.Shutdown();
+  // This must be done on the UI thread.
+  profile()->GetProtocolHandlerRegistry()->Finalize();
 }
