@@ -226,9 +226,12 @@ int InstallationState::IndexFromDistType(BrowserDistribution::Type type) {
                  unexpected_chrome_frame_distribution_value_);
   COMPILE_ASSERT(BrowserDistribution::CHROME_BINARIES == CHROME_BINARIES_INDEX,
                  unexpected_chrome_frame_distribution_value_);
+  COMPILE_ASSERT(BrowserDistribution::CHROME_APP_HOST == CHROME_APP_HOST_INDEX,
+                 unexpected_chrome_frame_distribution_value_);
   DCHECK(type == BrowserDistribution::CHROME_BROWSER ||
          type == BrowserDistribution::CHROME_FRAME ||
-         type == BrowserDistribution::CHROME_BINARIES);
+         type == BrowserDistribution::CHROME_BINARIES ||
+         type == BrowserDistribution::CHROME_APP_HOST);
   return type;
 }
 
@@ -249,6 +252,11 @@ void InstallationState::Initialize() {
       BrowserDistribution::CHROME_BINARIES);
   user_products_[CHROME_BINARIES_INDEX].Initialize(false, distribution);
   system_products_[CHROME_BINARIES_INDEX].Initialize(true, distribution);
+
+  distribution = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_APP_HOST);
+  user_products_[CHROME_APP_HOST_INDEX].Initialize(false, distribution);
+  system_products_[CHROME_APP_HOST_INDEX].Initialize(true, distribution);
 }
 
 const ProductState* InstallationState::GetNonVersionedProductState(

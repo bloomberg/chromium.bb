@@ -91,6 +91,10 @@ const char kAppsGalleryURL[]                = "apps-gallery-url";
 // The update url used by gallery/webstore extensions.
 const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
 
+// Specifies the URL of an application manifest to retrieve. The user will be
+// prompted for consent and the application retrieved/installed if consented.
+const char kAppsInstallFromManifestURL[]    = "apps-install-from-manifest-url";
+
 // Whether to always use the new app install bubble when installing an app.
 const char kAppsNewInstallBubble[]          = "apps-new-install-bubble";
 

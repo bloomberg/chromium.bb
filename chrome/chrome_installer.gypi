@@ -88,7 +88,6 @@
           'sources': [
             'installer/setup/compat_checks_unittest.cc',
             'installer/setup/setup_constants.cc',
-            'installer/util/browser_distribution_unittest.cc',
             'installer/util/channel_info_unittest.cc',
             'installer/util/copy_reg_key_work_item_unittest.cc',
             'installer/util/copy_tree_work_item_unittest.cc',
@@ -262,6 +261,7 @@
             'installer_util_strings',
             '../base/base.gyp:base',
             '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../chrome/chrome.gyp:common_constants',
             '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../breakpad/breakpad.gyp:breakpad_handler',
@@ -980,12 +980,12 @@
             ['branding=="Chrome" and buildtype=="Official"', {
               'actions': [
                 {
-		  # copy_keychain_reauthorize.sh explains why this isn't in a
-		  # 'copies' block, but briefly: this is a prebuilt signed
-		  # binary component that relies on a correct signature to
-		  # function properly, and a normal 'copies' block sadly makes
-		  # a trivial modification to the file such that its signature
-		  # is no longer valid.
+                  # copy_keychain_reauthorize.sh explains why this isn't in a
+                  # 'copies' block, but briefly: this is a prebuilt signed
+                  # binary component that relies on a correct signature to
+                  # function properly, and a normal 'copies' block sadly makes
+                  # a trivial modification to the file such that its signature
+                  # is no longer valid.
                   'action_name': 'Copy keychain_reauthorize',
                   'variables': {
                     'keychain_reauthorize_path': 'tools/build/mac/copy_keychain_reauthorize.sh',

@@ -15,6 +15,9 @@ const char kAutoLaunchChrome[] = "auto-launch-chrome";
 // Currently this is only required when used in combination with kMultiInstall.
 const char kChrome[] = "chrome";
 
+// Install Chrome App Host.
+const char kChromeAppHost[] = "app-host";
+
 // Install Chrome Frame.
 const char kChromeFrame[] = "chrome-frame";
 
@@ -167,6 +170,7 @@ const char kToastResultsKey[] = "toast-results-key";
 
 }  // namespace switches
 
+const wchar_t kChromeAppHostExe[] = L"app_host.exe";
 const wchar_t kChromeDll[] = L"chrome.dll";
 const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";
@@ -176,6 +180,9 @@ const wchar_t kChromeFrameReadyModeField[] = L"ChromeFrameReadyMode";
 const wchar_t kChromeLauncherExe[] = L"chrome_launcher.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
+const wchar_t kCmdInstallApp[] = L"install-application";
+const wchar_t kCmdQuickEnableApplicationHost[] =
+    L"quick-enable-application-host";
 const wchar_t kCmdQuickEnableCf[] = L"quick-enable-cf";
 const wchar_t kDelegateExecuteExe[] = L"delegate_execute.exe";
 const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";

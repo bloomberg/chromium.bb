@@ -223,6 +223,12 @@ be available for now. -->
         <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">
           Chromium Frame
         </message>
+        <message name="IDS_PRODUCT_APP_HOST_NAME" desc="The Chrome App Host application name">
+          Chromium App Host
+        </message>
+        <message name="IDS_PRODUCT_BINARIES_NAME" desc="The Chrome Binaries application name">
+          Chromium Binaries
+        </message>
         <message name="IDS_VERSIONMISMATCH_HEADER">
           Chromium Frame Update.
         </message>
@@ -445,6 +451,9 @@ Chromium is unable to recover your settings.
       </message>
       <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
         This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.
+      </message>
+      <message name="IDS_INSTALL_HIGHER_VERSION_APP_HOST" desc="Error displayed when higher version of the Chromium App Host already exists.">
+        This computer already has a more recent version of the Chromium components. Please use a more recent installer.
       </message>
       <message name="IDS_INSTALL_HIGHER_VERSION_CF" desc="Error displayed when higher version already exists.">
         This computer already has a more recent version of Chromium Frame. If the software is not working, please uninstall Chromium Frame and try again.
