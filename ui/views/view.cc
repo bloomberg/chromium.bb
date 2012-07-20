@@ -1960,7 +1960,9 @@ ui::TouchStatus View::ProcessTouchEvent(const TouchEvent& event) {
 }
 
 ui::GestureStatus View::ProcessGestureEvent(const GestureEvent& event) {
-  if (context_menu_controller_ && event.type() == ui::ET_GESTURE_LONG_PRESS) {
+  if (context_menu_controller_ &&
+      (event.type() == ui::ET_GESTURE_LONG_PRESS ||
+       event.type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
     gfx::Point location(event.location());
     ConvertPointToScreen(this, &location);
     ShowContextMenu(location, true);
