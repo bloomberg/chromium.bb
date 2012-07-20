@@ -25,7 +25,6 @@ class CompositeFilter::FilterHostImpl : public FilterHost {
   virtual base::TimeDelta GetDuration() const OVERRIDE;
   virtual void SetNaturalVideoSize(const gfx::Size& size) OVERRIDE;
   virtual void NotifyEnded() OVERRIDE;
-  virtual void DisableAudioRenderer() OVERRIDE;
 
  private:
   CompositeFilter* parent_;
@@ -467,10 +466,6 @@ void CompositeFilter::FilterHostImpl::SetNaturalVideoSize(
 
 void CompositeFilter::FilterHostImpl::NotifyEnded() {
   host_->NotifyEnded();
-}
-
-void CompositeFilter::FilterHostImpl::DisableAudioRenderer() {
-  host_->DisableAudioRenderer();
 }
 
 }  // namespace media

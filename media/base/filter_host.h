@@ -43,10 +43,6 @@ class MEDIA_EXPORT FilterHost {
   // endpoints such as renderers.
   virtual void NotifyEnded() = 0;
 
-  // Disable audio renderer by calling OnAudioRendererDisabled() on all
-  // filters.
-  virtual void DisableAudioRenderer() = 0;
-
  protected:
   virtual ~FilterHost() {}
 };
