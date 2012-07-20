@@ -61,7 +61,7 @@
         [[CrTrackingArea alloc] initWithRect:[self bounds]
                                      options:NSTrackingMouseEnteredAndExited |
                                              NSTrackingActiveAlways
-                                proxiedOwner:self
+                                       owner:self
                                     userInfo:nil]);
     [self addTrackingArea:trackingArea_.get()];
 

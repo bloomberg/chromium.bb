@@ -438,7 +438,7 @@ const CGFloat kLabelInset = 49.0;
       [[CrTrackingArea alloc] initWithRect:[self bounds]
                                    options:NSTrackingMouseEnteredAndExited |
                                            NSTrackingActiveInKeyWindow
-                              proxiedOwner:self
+                                     owner:self
                                   userInfo:nil]);
   [self addTrackingArea:trackingArea_.get()];
 

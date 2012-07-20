@@ -1059,7 +1059,7 @@ struct LayoutMetrics {
                                             NSTrackingActiveAlways |
                                             NSTrackingEnabledDuringMouseDrag
                                             )
-                              proxiedOwner:self
+                                     owner:self
                                   userInfo:nil]);
   [view addTrackingArea:scrollTrackingArea_.get()];
 }

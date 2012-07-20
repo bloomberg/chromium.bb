@@ -410,7 +410,7 @@ bool Sandbox::PostProcessSandboxProfile(
         std::string *final_sandbox_profile_str) {
   NSString* sandbox_data = [[sandbox_template copy] autorelease];
 
-  // Remove comments, e.g. ;10.6_ONLY .
+  // Remove comments, e.g. ;10.7_OR_ABOVE .
   for (NSString* to_remove in comments_to_remove) {
     sandbox_data = [sandbox_data stringByReplacingOccurrencesOfString:to_remove
                                                            withString:@""];
@@ -515,13 +515,11 @@ bool Sandbox::EnableSandbox(int sandbox_type,
     [tokens_to_remove addObject:@";ENABLE_LOGGING"];
   }
 
-  bool snow_leopard_or_later = base::mac::IsOSSnowLeopardOrLater();
   bool lion_or_later = base::mac::IsOSLionOrLater();
 
   // Without this, the sandbox will print a message to the system log every
-  // time it denies a request.  This floods the console with useless spew. The
-  // (with no-log) syntax is only supported on 10.6+
-  if (snow_leopard_or_later && !enable_logging) {
+  // time it denies a request.  This floods the console with useless spew.
+  if (!enable_logging) {
     substitutions["DISABLE_SANDBOX_DENIAL_LOGGING"] =
         SandboxSubstring("(with no-log)");
   } else {
@@ -541,14 +539,6 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   if (lion_or_later) {
     // >=10.7 Sandbox rules.
     [tokens_to_remove addObject:@";10.7_OR_ABOVE"];
-  }
-
-  if (snow_leopard_or_later) {
-    // >=10.6 Sandbox rules.
-    [tokens_to_remove addObject:@";10.6_OR_ABOVE"];
-  } else {
-    // Sandbox rules only for versions before 10.6.
-    [tokens_to_remove addObject:@";BEFORE_10.6"];
   }
 
   substitutions["COMPONENT_BUILD_WORKAROUND"] = SandboxSubstring("");

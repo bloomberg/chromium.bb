@@ -305,7 +305,7 @@ class NotificationBridge : public content::NotificationObserver {
                                            NSTrackingInVisibleRect |
                                            NSTrackingMouseEnteredAndExited |
                                            NSTrackingActiveAlways
-                              proxiedOwner:self
+                                     owner:self
                                   userInfo:nil]);
   NSView* toolbarView = [self view];
   [toolbarView addTrackingArea:trackingArea_.get()];

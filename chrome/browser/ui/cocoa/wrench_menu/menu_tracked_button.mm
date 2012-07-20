@@ -10,7 +10,6 @@
 - (void)doHighlight:(BOOL)highlight;
 - (void)checkMouseInRect;
 - (NSRect)insetBounds;
-- (BOOL)shouldHighlightOnHover;
 @end
 
 @implementation MenuTrackedButton
@@ -58,7 +57,7 @@
   // smallest that still produces the effect while minimizing jank. Smaller
   // values make the selector fire too close to immediately/now for the mouse to
   // have moved off the receiver, and larger values produce lag.
-  if (tracking_ && [self shouldHighlightOnHover]) {
+  if (tracking_) {
     [self performSelector:@selector(checkMouseInRect)
                withObject:nil
                afterDelay:0.05
@@ -77,9 +76,6 @@
 }
 
 - (void)doHighlight:(BOOL)highlight {
-  if (![self shouldHighlightOnHover]) {
-    return;
-  }
   [[self cell] setHighlighted:highlight];
   [self setNeedsDisplay];
 }
@@ -101,12 +97,6 @@
 // buttons in a pair that overlap.
 - (NSRect)insetBounds {
   return NSInsetRect([self bounds], 2, 1);
-}
-
-- (BOOL)shouldHighlightOnHover {
-  // There's a cell drawing bug in 10.5 that was fixed on 10.6.  Hover states
-  // look terrible due to this, so disable highlighting on 10.5.
-  return base::mac::IsOSSnowLeopardOrLater();
 }
 
 @end

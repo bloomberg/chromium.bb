@@ -459,10 +459,7 @@ const double kDragThreshold = 3.0;
 
   [self updateWindowLevel];
 
-  if (base::mac::IsOSSnowLeopardOrLater()) {
-    [window setCollectionBehavior:
-        NSWindowCollectionBehaviorParticipatesInCycle];
-  }
+  [window setCollectionBehavior:NSWindowCollectionBehaviorParticipatesInCycle];
 
   [titlebar_view_ attach];
 

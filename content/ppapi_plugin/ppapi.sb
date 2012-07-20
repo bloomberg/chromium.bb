@@ -14,10 +14,10 @@
 ; on 10.5 this is needed for the PDF plugin.
 (allow file-read* (regex #"^/Library/Fonts($|/)"))
 (allow mach-lookup (global-name "com.apple.FontObjectsServer"))  ; 10.5.6
-;10.6_OR_ABOVE (allow mach-lookup (global-name "com.apple.FontServer"))  ; 10.6
+(allow mach-lookup (global-name "com.apple.FontServer"))  ; 10.6
 
 ; http://crbug.com/11269
-;10.6_OR_ABOVE (allow file-read* (subpath "@USER_HOMEDIR_AS_LITERAL@/Library/Fonts"))  ; 10.6
+(allow file-read* (subpath "@USER_HOMEDIR_AS_LITERAL@/Library/Fonts"))  ; 10.6
 
 ; Bits of Adobe Flash wish to open /dev/urandom directly rather than
 ; using our cached file descriptor.

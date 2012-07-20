@@ -395,7 +395,7 @@ private:
         [[CrTrackingArea alloc] initWithRect:[newTabButton_ bounds]
                                      options:(NSTrackingMouseEnteredAndExited |
                                               NSTrackingActiveAlways)
-                                proxiedOwner:self
+                                       owner:self
                                     userInfo:nil]);
     if (browserWindow)  // Nil for Browsers without a tab strip (e.g. popups).
       [newTabTrackingArea_ clearOwnerWhenWindowWillClose:browserWindow];
@@ -429,7 +429,7 @@ private:
                      NSTrackingMouseMoved |
                      NSTrackingActiveAlways |
                      NSTrackingInVisibleRect
-        proxiedOwner:self
+               owner:self
             userInfo:nil]);
     if (browserWindow)  // Nil for Browsers without a tab strip (e.g. popups).
       [trackingArea_ clearOwnerWhenWindowWillClose:browserWindow];

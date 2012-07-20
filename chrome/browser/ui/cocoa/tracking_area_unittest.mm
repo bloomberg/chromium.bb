@@ -29,7 +29,7 @@ class CrTrackingAreaTest : public CocoaTest {
         trackingArea_([[CrTrackingArea alloc]
             initWithRect:NSMakeRect(0, 0, 100, 100)
                  options:NSTrackingMouseMoved | NSTrackingActiveInKeyWindow
-            proxiedOwner:owner_.get()
+                   owner:owner_.get()
                 userInfo:nil]) {
   }
 

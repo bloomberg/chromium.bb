@@ -40,8 +40,6 @@ const NSTimeInterval kTearDuration = 0.333;
 - (void)setWindowBackgroundVisibility:(BOOL)shouldBeVisible;
 - (void)endDrag:(NSEvent*)event;
 - (void)continueDrag:(NSEvent*)event;
-// TODO(davidben): When we stop supporting 10.5, this can be removed.
-- (int)getWorkspaceID:(NSWindow*)window useCache:(BOOL)useCache;
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,7 +440,6 @@ const NSTimeInterval kTearDuration = 0.333;
   sourceController_ = nil;
   sourceWindow_ = nil;
   targetController_ = nil;
-  workspaceIDCache_.clear();
 }
 
 // Returns an array of controllers that could be a drop target, ordered front to
@@ -455,19 +452,8 @@ const NSTimeInterval kTearDuration = 0.333;
     if (window == dragWindow) continue;
     if (![window isVisible]) continue;
     // Skip windows on the wrong space.
-    if ([window respondsToSelector:@selector(isOnActiveSpace)]) {
-      if (![window performSelector:@selector(isOnActiveSpace)])
-        continue;
-    } else {
-      // TODO(davidben): When we stop supporting 10.5, this can be
-      // removed.
-      //
-      // We don't cache the workspace of |dragWindow| because it may
-      // move around spaces.
-      if ([self getWorkspaceID:dragWindow useCache:NO] !=
-          [self getWorkspaceID:window useCache:YES])
-        continue;
-    }
+    if (![window isOnActiveSpace])
+      continue;
     NSWindowController* controller = [window windowController];
     if ([controller isKindOfClass:[TabWindowController class]]) {
       TabWindowController* realController =
@@ -503,55 +489,6 @@ const NSTimeInterval kTearDuration = 0.333;
     [[draggedController_ window] makeMainWindow];
   }
   chromeIsVisible_ = shouldBeVisible;
-}
-
-// Returns the workspace id of |window|. If |useCache|, then lookup
-// and remember the value in |workspaceIDCache_| until the end of the
-// current drag.
-- (int)getWorkspaceID:(NSWindow*)window useCache:(BOOL)useCache {
-  CGWindowID windowID = [window windowNumber];
-  if (useCache) {
-    std::map<CGWindowID, int>::iterator iter =
-        workspaceIDCache_.find(windowID);
-    if (iter != workspaceIDCache_.end())
-      return iter->second;
-  }
-
-  int workspace = -1;
-  // It's possible to query in bulk, but probably not necessary.
-  base::mac::ScopedCFTypeRef<CFArrayRef> windowIDs(CFArrayCreate(
-      NULL, reinterpret_cast<const void **>(&windowID), 1, NULL));
-  base::mac::ScopedCFTypeRef<CFArrayRef> descriptions(
-      CGWindowListCreateDescriptionFromArray(windowIDs));
-  DCHECK(CFArrayGetCount(descriptions.get()) <= 1);
-  if (CFArrayGetCount(descriptions.get()) > 0) {
-    CFDictionaryRef dict = static_cast<CFDictionaryRef>(
-        CFArrayGetValueAtIndex(descriptions.get(), 0));
-    DCHECK(CFGetTypeID(dict) == CFDictionaryGetTypeID());
-
-    // Sanity check the ID.
-    CFNumberRef otherIDRef =
-        base::mac::GetValueFromDictionary<CFNumberRef>(dict, kCGWindowNumber);
-    CGWindowID otherID;
-    if (otherIDRef &&
-        CFNumberGetValue(otherIDRef, kCGWindowIDCFNumberType, &otherID) &&
-        otherID == windowID) {
-      // And then get the workspace.
-      CFNumberRef workspaceRef =
-          base::mac::GetValueFromDictionary<CFNumberRef>(dict,
-                                                         kCGWindowWorkspace);
-      if (!workspaceRef ||
-          !CFNumberGetValue(workspaceRef, kCFNumberIntType, &workspace)) {
-        workspace = -1;
-      }
-    } else {
-      NOTREACHED();
-    }
-  }
-  if (useCache) {
-    workspaceIDCache_[windowID] = workspace;
-  }
-  return workspace;
 }
 
 @end

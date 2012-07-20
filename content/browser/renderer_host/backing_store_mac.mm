@@ -180,24 +180,7 @@ void BackingStoreMac::ScrollBackingStore(int dx, int dy,
 
   if ((dx || dy) && abs(dx) < size().width() && abs(dy) < size().height()) {
     if (cg_layer()) {
-      // Whether this version of OS X has broken CGLayers. See
-      // http://crbug.com/45553 , comments 5 and 6.
-      bool needs_layer_workaround = base::mac::IsOSLeopardOrEarlier();
-
-      base::mac::ScopedCFTypeRef<CGLayerRef> new_layer;
-      CGContextRef layer;
-
-      if (needs_layer_workaround) {
-        new_layer.reset(CreateCGLayer());
-        // If the current view is in a window, the replacement must be too.
-        DCHECK(new_layer);
-
-        layer = CGLayerGetContext(new_layer);
-        CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer());
-      } else {
-        layer = CGLayerGetContext(cg_layer());
-      }
-
+      CGContextRef layer = CGLayerGetContext(cg_layer());
       CGContextSaveGState(layer);
       CGContextClipToRect(layer,
                           CGRectMake(clip_rect.x(),
@@ -206,9 +189,6 @@ void BackingStoreMac::ScrollBackingStore(int dx, int dy,
                                      clip_rect.height()));
       CGContextDrawLayerAtPoint(layer, CGPointMake(dx, -dy), cg_layer());
       CGContextRestoreGState(layer);
-
-      if (needs_layer_workaround)
-        cg_layer_.swap(new_layer);
     } else {
       // We don't have a layer, so scroll the contents of the CGBitmapContext.
       base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(

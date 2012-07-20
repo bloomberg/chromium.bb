@@ -55,12 +55,6 @@
   TabWindowController* draggedController_;  // Weak. Controller being dragged.
   NSWindow* dragWindow_;  // Weak. The window being dragged
   NSWindow* dragOverlay_;  // Weak. The overlay being dragged
-  // Cache workspace IDs per-drag because computing them on 10.5 with
-  // CGWindowListCreateDescriptionFromArray is expensive.
-  // resetDragControllers clears this cache.
-  //
-  // TODO(davidben): When 10.5 becomes unsupported, remove this.
-  std::map<CGWindowID, int> workspaceIDCache_;
 
   TabWindowController* targetController_;  // weak. Controller being targeted
 }
