@@ -178,8 +178,8 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.5.1')
     # It'll to a checkout instead.
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
@@ -219,8 +219,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.makedirs(parent)
     gclient_scm.os.path.exists(parent).AndReturn(True)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.6')
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.6')
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
@@ -344,8 +344,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.makedirs(parent)
     gclient_scm.os.path.exists(parent).AndReturn(True)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.5.1')
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
@@ -382,8 +382,8 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn(file_info)
 
     # _AddAdditionalUpdateFlags()
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.5.1')
 
     additional_args = []
     if options.manually_grab_svn_rev:
@@ -483,8 +483,8 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.5.1')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, 'DEPS')).AndReturn(False)
 
@@ -523,8 +523,8 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.4.4 (r25188)')
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.4.4')
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
 
     # When checking out a single file with svn 1.4, we use svn export
@@ -547,8 +547,8 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.5.1')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(False)
     # If DEPS already exists, assume we're upgrading from svn1.4, so delete
     # the old DEPS file.
@@ -595,8 +595,8 @@ class SVNWrapperTestCase(BaseTestCase):
     }
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.5.1')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(True)
 
     # Verify no locked files.

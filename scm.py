@@ -1004,7 +1004,7 @@ class SVN(object):
   def AssertVersion(cls, min_version):
     """Asserts svn's version is at least min_version."""
     if cls.current_version is None:
-      cls.current_version = cls.Capture(['--version'], None).split()[2]
+      cls.current_version = cls.Capture(['--version', '--quiet'], None)
     current_version_list = map(only_int, cls.current_version.split('.'))
     for min_ver in map(int, min_version.split('.')):
       ver = current_version_list.pop(0)
