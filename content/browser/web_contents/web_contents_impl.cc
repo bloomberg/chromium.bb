@@ -667,7 +667,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
 void WebContentsImpl::RunFileChooser(
     RenderViewHost* render_view_host,
     const content::FileChooserParams& params) {
-  delegate_->RunFileChooser(this, params);
+  if (delegate_)
+    delegate_->RunFileChooser(this, params);
 }
 
 NavigationController& WebContentsImpl::GetController() {
@@ -1776,12 +1777,16 @@ void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
 void WebContentsImpl::OnRegisterIntentService(
     const webkit_glue::WebIntentServiceData& data,
     bool user_gesture) {
-  delegate_->RegisterIntentHandler(this, data, user_gesture);
+  if (delegate_)
+    delegate_->RegisterIntentHandler(this, data, user_gesture);
 }
 
 void WebContentsImpl::OnWebIntentDispatch(
     const webkit_glue::WebIntentData& intent,
     int intent_id) {
+  if (!delegate_)
+    return;
+
   WebIntentsDispatcherImpl* intents_dispatcher =
       new WebIntentsDispatcherImpl(this, intent, intent_id);
   delegate_->WebIntentDispatch(this, intents_dispatcher);
@@ -1999,7 +2004,8 @@ void WebContentsImpl::OnDidFailLoadWithError(
 
 void WebContentsImpl::OnUpdateContentRestrictions(int restrictions) {
   content_restrictions_ = restrictions;
-  delegate_->ContentRestrictionsChanged(this);
+  if (delegate_)
+    delegate_->ContentRestrictionsChanged(this);
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
@@ -2051,6 +2057,9 @@ void WebContentsImpl::OnSaveURL(const GURL& url,
 
 void WebContentsImpl::OnEnumerateDirectory(int request_id,
                                            const FilePath& path) {
+  if (!delegate_)
+    return;
+
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->CanReadDirectory(GetRenderProcessHost()->GetID(), path))
@@ -2058,13 +2067,17 @@ void WebContentsImpl::OnEnumerateDirectory(int request_id,
 }
 
 void WebContentsImpl::OnJSOutOfMemory() {
-  delegate_->JSOutOfMemory(this);
+  if (delegate_)
+    delegate_->JSOutOfMemory(this);
 }
 
 void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
                                                 const GURL& url,
                                                 const string16& title,
                                                 bool user_gesture) {
+  if (!delegate_)
+    return;
+
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
@@ -2077,8 +2090,11 @@ void WebContentsImpl::OnFindReply(int request_id,
                                   const gfx::Rect& selection_rect,
                                   int active_match_ordinal,
                                   bool final_update) {
-  delegate_->FindReply(this, request_id, number_of_matches, selection_rect,
-                       active_match_ordinal, final_update);
+  if (delegate_) {
+    delegate_->FindReply(this, request_id, number_of_matches, selection_rect,
+                         active_match_ordinal, final_update);
+  }
+
   // Send a notification to the renderer that we are ready to receive more
   // results from the scoping effort of the Find operation. The FindInPage
   // scoping is asynchronous and periodically sends results back up to the
@@ -2103,7 +2119,8 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
 
 void WebContentsImpl::OnOpenColorChooser(int color_chooser_id,
                                          SkColor color) {
-  color_chooser_ = delegate_->OpenColorChooser(this, color_chooser_id, color);
+  color_chooser_ = delegate_ ?
+      delegate_->OpenColorChooser(this, color_chooser_id, color) : NULL;
 }
 
 void WebContentsImpl::OnEndColorChooser(int color_chooser_id) {
