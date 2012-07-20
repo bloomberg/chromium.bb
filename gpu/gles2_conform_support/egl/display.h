@@ -38,6 +38,12 @@ class Display {
   explicit Display(EGLNativeDisplayType display_id);
   virtual ~Display();
 
+  void SetCreateOffscreen(int width, int height) {
+    create_offscreen_ = true;
+    create_offscreen_width_ = width;
+    create_offscreen_height_ = height;
+  }
+
   bool is_initialized() const { return is_initialized_; }
   bool Initialize();
 
@@ -67,6 +73,10 @@ class Display {
   EGLNativeDisplayType display_id_;
 
   bool is_initialized_;
+  bool create_offscreen_;
+  int create_offscreen_width_;
+  int create_offscreen_height_;
+
   scoped_ptr<gpu::TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> gpu_scheduler_;

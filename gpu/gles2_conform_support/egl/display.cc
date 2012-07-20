@@ -23,7 +23,10 @@ namespace egl {
 
 Display::Display(EGLNativeDisplayType display_id)
     : display_id_(display_id),
-      is_initialized_(false) {
+      is_initialized_(false),
+      create_offscreen_(false),
+      create_offscreen_width_(0),
+      create_offscreen_height_(0) {
 }
 
 Display::~Display() {
@@ -104,8 +107,15 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
                                              NULL));
 
   decoder_->set_engine(gpu_scheduler_.get());
-
-  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, win);
+  gfx::Size size(create_offscreen_width_, create_offscreen_height_);
+  if (create_offscreen_) {
+    gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, size);
+    create_offscreen_ = false;
+    create_offscreen_width_ = 0;
+    create_offscreen_height_ = 0;
+  } else {
+    gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, win);
+  }
   if (!gl_surface_.get())
     return EGL_NO_SURFACE;
 
@@ -121,7 +131,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!decoder_->Initialize(gl_surface_.get(),
                             gl_context_.get(),
                             gl_surface_->IsOffscreen(),
-                            gfx::Size(),
+                            size,
                             gpu::gles2::DisallowedFeatures(),
                             NULL,
                             attribs)) {

@@ -81,6 +81,34 @@
       ],
     },
     {
+      'target_name': 'egl_main_windowless',
+      'type': 'static_library',
+      'dependencies': [
+        'egl_native',
+      ],
+      'conditions': [
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': ['../../build/linux/system.gyp:gtk'],
+        }],
+      ],
+      'include_dirs': ['<(DEPTH)/third_party/khronos'],
+      'sources': [
+        'native/main.cc',
+        'native/egl_native.cc',
+        'native/egl_native_windowless.cc',
+        '<@(bootstrap_sources_native)',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': ['<(DEPTH)/third_party/khronos'],
+      },
+      'defines': [
+        'GLES2_CONFORM_SUPPORT_ONLY',
+        'GTF_GLES20',
+        'EGLAPI=',
+        'EGLAPIENTRY=',
+      ],
+    },
+    {
       'target_name': 'gles2_conform_support',
       'type': 'executable',
       'dependencies': [
