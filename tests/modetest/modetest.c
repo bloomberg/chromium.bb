@@ -503,6 +503,7 @@ struct plane {
 	uint32_t w, h;
 	unsigned int fb_id;
 	char format_str[5]; /* need to leave room for terminating \0 */
+	unsigned int fourcc;
 };
 
 static void
@@ -1602,15 +1603,9 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
 	uint32_t plane_id = 0;
 	struct kms_bo *plane_bo;
-	uint32_t plane_flags = 0, format;
+	uint32_t plane_flags = 0;
 	int ret, crtc_x, crtc_y, crtc_w, crtc_h;
 	unsigned int i;
-
-	format = format_fourcc(p->format_str);
-	if (format == 0) {
-		fprintf(stderr, "Unknown format: %s\n", p->format_str);
-		return -1;
-	}
 
 	/* find an unused plane which can be connected to our crtc */
 	plane_resources = drmModeGetPlaneResources(fd);
@@ -1642,13 +1637,13 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 		return -1;
 	}
 
-	plane_bo = create_test_buffer(kms, format, p->w, p->h, handles,
+	plane_bo = create_test_buffer(kms, p->fourcc, p->w, p->h, handles,
 				      pitches, offsets, PATTERN_TILES);
 	if (plane_bo == NULL)
 		return -1;
 
 	/* just use single plane format for now.. */
-	if (drmModeAddFB2(fd, p->w, p->h, format,
+	if (drmModeAddFB2(fd, p->w, p->h, p->fourcc,
 			handles, pitches, offsets, &p->fb_id, plane_flags)) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
 		return -1;
@@ -1825,6 +1820,36 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 static char optstr[] = "ecpmfs:P:v";
 
+static int parse_connector(struct connector *c, const char *arg)
+{
+	c->crtc = -1;
+
+	if (sscanf(arg, "%d:%64s", &c->id, &c->mode_str) == 2)
+		return 0;
+
+	if (sscanf(arg, "%d@%d:%64s", &c->id, &c->crtc, &c->mode_str) == 3)
+		return 0;
+
+	return -1;
+}
+
+static int parse_plane(struct plane *p, const char *arg)
+{
+	strcpy(p->format_str, "XR24");
+
+	if (sscanf(arg, "%d:%dx%d@%4s", &p->con_id, &p->w, &p->h, &p->format_str) != 4 &&
+	    sscanf(arg, "%d:%dx%d", &p->con_id, &p->w, &p->h) != 3)
+		return -1;
+
+	p->fourcc = format_fourcc(p->format_str);
+	if (p->fourcc == 0) {
+		fprintf(stderr, "unknown format %s\n", p->format_str);
+		return -1;
+	}
+
+	return 0;
+}
+
 void usage(char *name)
 {
 	fprintf(stderr, "usage: %s [-ecpmf]\n", name);
@@ -1899,28 +1924,12 @@ int main(int argc, char **argv)
 			test_vsync = 1;
 			break;
 		case 's':
-			con_args[count].crtc = -1;
-			if (sscanf(optarg, "%d:%64s",
-				   &con_args[count].id,
-				   con_args[count].mode_str) != 2 &&
-			    sscanf(optarg, "%d@%d:%64s",
-				   &con_args[count].id,
-				   &con_args[count].crtc,
-				   con_args[count].mode_str) != 3)
+			if (parse_connector(&con_args[count], optarg) < 0)
 				usage(argv[0]);
 			count++;				      
 			break;
 		case 'P':
-			strcpy(plane_args[plane_count].format_str, "XR24");
-			if (sscanf(optarg, "%d:%dx%d@%4s",
-					&plane_args[plane_count].con_id,
-					&plane_args[plane_count].w,
-					&plane_args[plane_count].h,
-					plane_args[plane_count].format_str) != 4 &&
-				sscanf(optarg, "%d:%dx%d",
-					&plane_args[plane_count].con_id,
-					&plane_args[plane_count].w,
-					&plane_args[plane_count].h) != 3)
+			if (parse_plane(&plane_args[plane_count], optarg) < 0)
 				usage(argv[0]);
 			plane_count++;
 			break;
