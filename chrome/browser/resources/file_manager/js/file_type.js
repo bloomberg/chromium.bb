@@ -96,17 +96,6 @@ FileType.types = [
 ];
 
 /**
- * Map from file type to preview art.
- */
-FileType.previewArt = {
-  'audio': 'images/filetype_large_audio.png',
-  'folder': 'images/filetype_large_folder.png',
-  'unknown': 'images/filetype_large_generic.png',
-  'image': 'images/filetype_large_image.png',
-  'video': 'images/filetype_large_video.png'
-};
-
-/**
  * A special type for directory.
  */
 FileType.DIRECTORY = {name: 'FOLDER', type: '.folder', icon: 'folder'};
@@ -221,14 +210,4 @@ FileType.isHosted = function(file) {
 FileType.getIcon = function(file) {
   var fileType = FileType.getType(file);
   return fileType.icon || fileType.type || 'unknown';
-};
-
-/**
- * Get the preview url for a given type.
- *
- * @param {string} type File type from FileType.types.
- * @return {string} Path to preview art.
- */
-FileType.getPreviewArt = function(type) {
-  return FileType.previewArt[type] || FileType.previewArt['unknown'];
 };

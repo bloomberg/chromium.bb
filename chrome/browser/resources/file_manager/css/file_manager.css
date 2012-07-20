@@ -121,7 +121,9 @@ input[type='submit'][disabled]:hover {
 
 .butter-bar .actions a {
   background: center center no-repeat;
-  background-image: url('../images/close_bar.png');
+  background-image: -webkit-image-set(
+    url('../images/files/ui/close_bar.png') 1x,
+    url('../images/files/ui/2x/close_bar.png') 2x);
   display: inline-block;
   height: 12px;
   padding: 4px;
@@ -278,39 +280,11 @@ li.root-item > .root-label {
   background-repeat: no-repeat;
 }
 
-.root-label[type=downloads] {
-  background-image: url('../images/downloads_28x28.png');
-}
-
-.root-label[type=gdata] {
-  background-image: url('../images/gdrive_28x28.png');
-}
-
-.root-label[type=archive] {
-  background-image: url('../images/archive_28x28.png');
-}
-
-.root-label[type=removable] {
-  background-image: url('../images/device_usb_28x28.png');
-}
-
-.root-label[type=removable][subType=sd] {
-  background-image: url('../images/device_sd_28x28.png');
-}
-
-.root-label[type=removable][subType=optical] {
-  background-image: url('../images/device_optical_28x28.png');
-}
-
-/* TODO(kaznacheev): consider a better icon for subType=unknown.
-   Also find out if we need an icon for subType=mobile */
-.root-label[type=removable][subType=unknown] {
-  background-image: url('../images/device_hd_28x28.png');
-}
-
 div.root-eject {
   -webkit-transition: opacity 70ms linear;
-  background-image: url('../images/eject.png');
+  background-image: -webkit-image-set(
+    url('../images/files/ui/eject.png') 1x,
+    url('../images/files/ui/2x/eject.png') 2x);
   background-position: center center;
   background-repeat: no-repeat;
   cursor: pointer;
@@ -436,7 +410,9 @@ div.root-eject:hover {
 /* The > arrow between breadcrumbs. */
 
 .breadcrumbs .separator {
-  background-image: url('../images/breadcrumb-separator.png');
+  background-image: -webkit-image-set(
+    url('../images/files/ui/breadcrumb-separator.png') 1x,
+    url('../images/files/ui/2x/breadcrumb-separator.png') 2x);
   background-position: center center;
   background-repeat: no-repeat;
   height: 10px;
@@ -472,7 +448,11 @@ div.root-eject:hover {
 }
 
 #search-box {
-  background: url('../images/icon_search.png') no-repeat scroll 4px 3.5px;
+  background: -webkit-image-set(
+    url('../images/files/ui/icon_search.png') 1x,
+    url('../images/files/ui/2x/icon_search.png') 2x);
+  background-position: 4px 3.5px;
+  background-repeat: no-repeat;
   display: -webkit-box;
   height: 25px;
   margin-right: 10px;
@@ -483,6 +463,23 @@ div.root-eject:hover {
 #filename-input-box input {
   border: 1px solid #BBB;
   border-radius: 2px;
+}
+
+button#detail-view {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/view_list_black.png') 1x,
+    url('../images/files/ui/2x/view_list_black.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+button#thumbnail-view {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/view_thumbs_black.png') 1x,
+    url('../images/files/ui/2x/view_thumbs_black.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* When detail-view is not disabled (thus thumbnail view is disabled), push
@@ -504,7 +501,7 @@ button#detail-view:not([disabled]) {
 }
 
 .spinner {
-  background-image: url(../images/spinner.svg);
+  background-image: url(../images/common/spinner.svg);
   background-size: 100%;
   height: 22px;
   left: 50%;
@@ -521,25 +518,21 @@ button#detail-view:not([disabled]) {
   -webkit-box-orient: horizontal;
   -webkit-transition: height 70ms linear;
   background-color: #f0f0f0;
+  background-image: -webkit-image-set(
+    url('../images/files/ui/warning_icon_square.png') 1x,
+    url('../images/files/ui/2x/warning_icon_square.png') 2x);
+  background-position: 15px center;
+  background-repeat: no-repeat;
   color: #666;
   display: -webkit-box;
   font-size: 13px;
   height: 57px;
   overflow: hidden;
+  padding-left: 57px;  /* Make space for the icon. */
 }
 
 .downloads-warning[hidden] {
   height: 0;
-}
-
-.downloads-warning img {
-  display: -webkit-box;
-  padding: 15px;
-}
-
-.downloads-warning div {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
 }
 
 /* The cr.ui.Grid representing the detailed file list. */
@@ -602,7 +595,9 @@ button#detail-view:not([disabled]) {
 }
 
 .thumbnail-grid .thumbnail-frame {
-  background-image: url(../images/hashed_bg.gif);
+  background-image: -webkit-image-set(
+    url(../images/files/ui/hashed_bg.gif) 1x,
+    url(../images/files/ui/2x/hashed_bg.gif) 2x);
   border: 1px solid rgb(217, 217, 217);
 }
 
@@ -809,6 +804,7 @@ input.rename {
 }
 
 .preview-thumbnails > .thumbnail > .img-container {
+  background-size: 45px 45px;
   height: 45px;
   overflow: hidden;
   width: 45px;
@@ -869,7 +865,9 @@ input.rename {
 
 .table-header-sort-image-desc::after {
   -webkit-padding-start: 13px;
-  background-image: url(../images/sort_desc.png);
+  background-image: -webkit-image-set(
+    url(../images/files/ui/sort_desc.png) 1x,
+    url(../images/files/ui/2x/sort_desc.png) 2x);
   background-position: center center;
   background-repeat: no-repeat;
   color: #888;
@@ -880,7 +878,9 @@ input.rename {
 
 .table-header-sort-image-asc::after {
   -webkit-padding-start: 13px;
-  background-image: url(../images/sort_asc.png);
+  background-image: -webkit-image-set(
+    url(../images/files/ui/sort_asc.png) 1x,
+    url(../images/files/ui/2x/sort_asc.png) 2x);
   background-position: center center;
   background-repeat: no-repeat;
   color: #888;
@@ -957,78 +957,10 @@ input.rename {
   padding-top: 1px;
 }
 
-/* The icon in the name column. */
+/* The icon in the name column. See file_types.css for specific icons. */
 .detail-icon {
-  background-image: url(../images/filetype_generic.png);
-  background-position: center;
-  background-repeat: no-repeat;
   height: 24px;
   width: 24px;
-}
-
-/* Icon for files in the detail list. */
-.detail-icon[iconType='archive'] {
-  background-image: url(../images/filetype_archive.png);
-}
-
-.detail-icon[iconType='audio'] {
-  background-image: url(../images/filetype_audio.png);
-}
-
-.detail-icon[iconType='device'] {
-  background-image: url(../images/filetype_device.png);
-}
-
-.detail-icon[iconType='excel'] {
-  background-image: url(../images/filetype_excel.png);
-}
-
-.detail-icon[iconType='folder'] {
-  background-image: url(../images/filetype_folder.png);
-}
-
-.detail-icon[iconType='html'] {
-  background-image: url(../images/filetype_html.png);
-}
-
-.detail-icon[iconType='image'] {
-  background-image: url(../images/filetype_image.png);
-}
-
-.detail-icon[iconType='pdf'] {
-  background-image: url(../images/filetype_pdf.png);
-}
-
-.detail-icon[iconType='ppt'] {
-  background-image: url(../images/filetype_ppt.png);
-}
-
-.detail-icon[iconType='video'] {
-  background-image: url(../images/filetype_video.png);
-}
-
-.detail-icon[iconType='word'] {
-  background-image: url(../images/filetype_word.png);
-}
-
-.detail-icon[iconType='gdoc'] {
-  background-image: url(../images/filetype_gdoc.png);
-}
-
-.detail-icon[iconType='gsheet'] {
-  background-image: url(../images/filetype_gsheet.png);
-}
-
-.detail-icon[iconType='gslides'] {
-  background-image: url(../images/filetype_gslides.png);
-}
-
-.detail-icon[iconType='gdraw'] {
-  background-image: url(../images/filetype_gdraw.png);
-}
-
-.detail-icon[iconType='gtable'] {
-  background-image: url(../images/filetype_gtable.png);
 }
 
 .metadata-item {
@@ -1212,7 +1144,9 @@ menu.file-context-menu {
 }
 
 input.common.pin[type='checkbox']:checked::after {
-  background-image: url('../images/pin.png');
+  background-image: -webkit-image-set(
+    url('../images/files/ui/pin.png') 1x,
+    url('../images/files/ui/2x/pin.png') 2x);
   background-position: 4px 0;
 }
 
@@ -1319,18 +1253,17 @@ body:not([type='saveas-file']):not([type='full-page'])
 }
 
 #gdata-settings {
+  background-image: url('../images/files/ui/settings.svg');
+  background-position: 20px center;
+  background-repeat: no-repeat;
   overflow: hidden;
   text-align: left;
   width: 54px;
 }
 
-#gdata-settings img {
-  margin-left: 12px;
-}
-
 #gdata-settings span.disclosureindicator {
   float: none;
-  margin-left: 1px;
+  margin-left: 42px;
 }
 
 /* To animate the #gdata-settings element to invisibility we set every property

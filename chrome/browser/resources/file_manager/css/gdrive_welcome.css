@@ -4,12 +4,15 @@
 
 /* Google Drive welcome banners.*/
 .gdrive-welcome-wrapper {
-  background-image: url('../images/clouds.png');
+  /* This image looks good in high DPI as is. */
+  background-image: url('../images/files/ui/clouds.png');
   background-repeat: repeat-x;
 }
 
 .gdrive-welcome-icon {
-  background-image: url('../images/gdrive_logo.png');
+  background-image: -webkit-image-set(
+    url('../images/files/ui/gdrive_logo.png') 1x,
+    url('../images/files/ui/2x/gdrive_logo.png') 2x);
   background-repeat: no-repeat;
 }
 

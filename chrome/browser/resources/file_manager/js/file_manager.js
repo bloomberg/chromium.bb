@@ -1822,7 +1822,7 @@ FileManager.prototype = {
   FileManager.prototype.renderIconType_ = function(entry, columnId, table) {
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
-    icon.setAttribute('iconType', FileType.getIcon(entry));
+    icon.setAttribute('file-type-icon', FileType.getIcon(entry));
     return icon;
   };
 
@@ -1843,9 +1843,10 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'root-label';
 
-    div.setAttribute('type', rootType);
+    div.setAttribute('volume-type-icon', rootType);
     if (rootType === RootType.REMOVABLE)
-      div.setAttribute('subType', this.volumeManager_.getDeviceType(path));
+      div.setAttribute('volume-subtype',
+          this.volumeManager_.getDeviceType(path));
 
     div.textContent = PathUtil.getRootLabel(path);
     li.appendChild(div);
@@ -1867,12 +1868,6 @@ FileManager.prototype = {
 
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
     cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
-
-    var icon = rootType;
-    if (this.volumeManager_.isUnreadable(path)) {
-      icon = 'unreadable';
-    }
-    div.setAttribute('icon', icon);
 
     return li;
   };
@@ -3012,12 +3007,12 @@ FileManager.prototype = {
 
     if (show) {
       var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
-      box.lastElementChild.innerHTML = html;
+      box.innerHTML = html;
       var link = box.querySelector('a');
       link.addEventListener('click',
           this.onExternalLinkClick_.bind(this, DOWNLOADS_FAQ_URL));
     } else {
-      box.lastElementChild.innerHTML = '';
+      box.innerHTML = '';
     }
 
     box.hidden = !show;

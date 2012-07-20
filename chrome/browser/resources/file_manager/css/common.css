@@ -24,7 +24,9 @@ input.common[type='checkbox'] {
 }
 
 input.common[type='checkbox']:checked::after {
-  background-image: url('../images/common/check_no_box.png');
+  background-image: -webkit-image-set(
+    url('../images/common/check_no_box.png') 1x,
+    url('../images/common/2x/check_no_box.png') 2x);
   background-position: -3px -4px;
   background-repeat: no-repeat;
 }
@@ -34,12 +36,16 @@ input.common[type='checkbox'].white {
 }
 
 input.common[type='checkbox'].white:not(:checked):after {
-  background-image: url('../images/common/checkbox_white_unchecked.png');
+  background-image: -webkit-image-set(
+    url('../images/common/checkbox_white_unchecked.png') 1x,
+    url('../images/common/2x/checkbox_white_unchecked.png') 2x);
   background-position: -1px 0;
 }
 
 input.common[type='checkbox'].white:checked::after {
-  background-image: url('../images/common/checkbox_white_checked.png');
+  background-image: -webkit-image-set(
+    url('../images/common/checkbox_white_checked.png') 1x,
+    url('../images/common/2x/checkbox_white_checked.png') 2x);
   background-position: -1px 0;
 }
 
@@ -62,7 +68,9 @@ input.common[type='checkbox']::after {
 }
 
 .bubble .pointer {
-  background: url('../images/common/bubble_point_white.png');
+  background: -webkit-image-set(
+    url('../images/common/bubble_point_white.png') 1x,
+    url('../images/common/2x/bubble_point_white.png') 2x);
   display: block;
   height: 11px;
   left: 24px;
@@ -82,7 +90,9 @@ input.common[type='checkbox']::after {
 }
 
 .bubble .close-x {
-  background: url('../images/common/close_x_gray.png');
+  background: -webkit-image-set(
+    url('../images/common/close_x_gray.png') 1x,
+    url('../images/common/2x/close_x_gray.png') 2x);
   height: 21px;
   opacity: 0.3;
   position: absolute;
@@ -187,7 +197,11 @@ input.common[type='checkbox']::after {
 }
 
 span.disclosureindicator {
-  background: url('../images/disclosure_arrow_dk_grey.png') center no-repeat;
+  background-image: -webkit-image-set(
+    url('../images/common/disclosure_arrow_dk_grey.png') 1x,
+    url('../images/common/2x/disclosure_arrow_dk_grey.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
   display: inline-block;
   height: 7px;
   width: 5px;
@@ -231,7 +245,9 @@ menu.chrome-menu > hr {
 }
 
 menu.chrome-menu > :not(hr)[checked] {
-  background-image: url('../images/common/check_no_box.png');
+  background-image: -webkit-image-set(
+    url('../images/common/check_no_box.png') 1x,
+    url('../images/common/2x/check_no_box.png') 2x);
   background-position: 2px center;
 }
 

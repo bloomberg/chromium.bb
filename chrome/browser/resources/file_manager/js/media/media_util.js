@@ -3,33 +3,38 @@
 // found in the LICENSE file.
 
 /**
- * @param {string} imageUrl Image URL
- * @param {Object} opt_metadata Metadata object
+ * @param {string} url File URL.
+ * @param {Object} opt_metadata Metadata object.
+ * @param {string} opt_mediaType Media type.
  * @constructor
  */
-function ThumbnailLoader(imageUrl, opt_metadata) {
-  var genericIconUrl = FileType.getPreviewArt(FileType.getMediaType(imageUrl));
-  if (opt_metadata && opt_metadata.gdata) {
+function ThumbnailLoader(url, opt_metadata, opt_mediaType) {
+  this.mediaType_ = opt_mediaType || FileType.getMediaType(url);
+
+  if (!opt_metadata) {
+    this.thumbnailUrl_ = url;  // Use the URL directly.
+    return;
+  }
+
+  if (opt_metadata.gdata) {
     var apps = opt_metadata.gdata.driveApps;
     if (apps.length > 0 && apps[0].docIcon) {
-      genericIconUrl = apps[0].docIcon;
+      this.fallbackUrl_ = apps[0].docIcon;
     }
   }
 
-  if (!opt_metadata) {
-    this.thumbnailUrl_ = imageUrl;
-  } else if (opt_metadata.thumbnail && opt_metadata.thumbnail.url) {
+  if (opt_metadata.thumbnail && opt_metadata.thumbnail.url) {
     this.thumbnailUrl_ = opt_metadata.thumbnail.url;
-    this.fallbackUrl_ = genericIconUrl;
     this.transform_ = opt_metadata.thumbnail.transform;
-  } else if (FileType.isImage(imageUrl) &&
+  } else if (FileType.isImage(url) &&
       ThumbnailLoader.canUseImageUrl_(opt_metadata)) {
-    this.thumbnailUrl_ = imageUrl;
-    this.fallbackUrl_ = genericIconUrl;
+    this.thumbnailUrl_ = url;
     this.transform_ = opt_metadata.media && opt_metadata.media.imageTransform;
-  } else {
-    this.thumbnailUrl_ = genericIconUrl;
-  }
+  } else if (this.fallbackUrl_) {
+    // Use fallback as the primary thumbnail.
+    this.thumbnailUrl_ = this.fallbackUrl_;
+    this.fallbackUrl_ = null;
+  } // else the generic thumbnail based on the media type will be used.
 }
 
 /**
@@ -69,6 +74,12 @@ ThumbnailLoader.canUseImageUrl_ = function(metadata) {
  */
 ThumbnailLoader.prototype.load = function(
     box, fill, opt_onSuccess, opt_onError) {
+  if (!this.thumbnailUrl_) {
+    // Relevant CSS rules are in file_types.css.
+    box.setAttribute('generic-thumbnail', this.mediaType_);
+    return;
+  }
+
   var img = box.ownerDocument.createElement('img');
   img.onload = function() {
     util.applyTransform(box, this.transform_);
@@ -83,7 +94,8 @@ ThumbnailLoader.prototype.load = function(
     if (opt_onError)
       opt_onError();
     if (this.fallbackUrl_)
-      new ThumbnailLoader(this.fallbackUrl_).load(box, fill, opt_onSuccess);
+      new ThumbnailLoader(this.fallbackUrl_, null, this.mediaType_).
+          load(box, fill, opt_onSuccess);
   }.bind(this);
 
   if (img.src == this.thumbnailUrl_) {

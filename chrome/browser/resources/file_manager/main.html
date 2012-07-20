@@ -18,6 +18,7 @@
     
     <link rel="stylesheet" href="css/combobutton.css"></link>
     <link rel="stylesheet" href="css/file_manager.css"></link>
+    <link rel="stylesheet" href="css/file_types.css"></link>
     <link rel="stylesheet" href="css/common.css"></link>
 
     <script src="js/main_scripts.js"></script>
@@ -165,23 +166,20 @@
           <div class="right buttonbar">
             <div>
               <button class="left small" id="detail-view" tabindex="5"
-                  i18n-values="aria-label:DETAIL_VIEW_TOOLTIP">
-                <img src="images/view_list_black_12x12.png">
+                      i18n-values="aria-label:DETAIL_VIEW_TOOLTIP">
               </button>
               <div class="tooltip" i18n-content=DETAIL_VIEW_TOOLTIP
                    >[DETAIL VIEW]</div>
             </div>
-              <div>
-               <button class="right small" id="thumbnail-view" tabindex="6"
-                   i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
-                <img src="images/view_thumbs_black_12x12.png">
+            <div>
+              <button class="right small" id="thumbnail-view" tabindex="6"
+                      i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
               </button>
               <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP
                    >[THUMBNAIL VIEW]</div>
             </div>
             <button class="menubutton" id="gdata-settings" tabindex="7"
                     menu="#docs-settings" visibleif="full-page">
-              <img src="images/settings.svg">
               <span class="disclosureindicator"></span>
             </button>
           </div>
@@ -197,10 +195,7 @@
               <div class="gdrive-welcome page"></div>
               <div id="no-search-results"></div>
             </div>
-            <div class=downloads-warning hidden>
-              <img src=images/warning_icon_square_26x26.png>
-              <div></div>
-            </div>
+            <div class=downloads-warning hidden></div>
           </div>
           <div class="preview-panel" visibility="hidden">
             <div>
