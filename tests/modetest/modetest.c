@@ -633,6 +633,8 @@ static const struct format_info format_info[] = {
 	/* YUV semi-planar */
 	{ DRM_FORMAT_NV12, "NV12", MAKE_YUV_INFO(YUV_YCbCr, 2, 2, 2) },
 	{ DRM_FORMAT_NV21, "NV21", MAKE_YUV_INFO(YUV_YCrCb, 2, 2, 2) },
+	{ DRM_FORMAT_NV16, "NV16", MAKE_YUV_INFO(YUV_YCbCr, 2, 1, 2) },
+	{ DRM_FORMAT_NV61, "NV61", MAKE_YUV_INFO(YUV_YCrCb, 2, 1, 2) },
 	/* YUV planar */
 	{ DRM_FORMAT_YVU420, "YV12", MAKE_YUV_INFO(YUV_YCrCb, 2, 2, 1) },
 	/* RGB */
@@ -1032,6 +1034,8 @@ fill_smpte(const struct format_info *info, void *planes[3], unsigned int width,
 
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_NV21:
+	case DRM_FORMAT_NV16:
+	case DRM_FORMAT_NV61:
 		u = info->yuv.order & YUV_YCbCr ? planes[1] : planes[1] + 1;
 		v = info->yuv.order & YUV_YCrCb ? planes[1] : planes[1] + 1;
 		return fill_smpte_yuv_planar(&info->yuv, planes[0], u, v,
@@ -1109,27 +1113,29 @@ fill_tiles_yuv_planar(const struct yuv_info *yuv,
 		      unsigned int height, unsigned int stride)
 {
 	unsigned int cs = yuv->chroma_stride;
-	unsigned int i, j;
+	unsigned int xsub = yuv->xsub;
+	unsigned int ysub = yuv->ysub;
+	unsigned int x;
+	unsigned int y;
 
-	for (j = 0; j < height; j+=2) {
-		unsigned char *y1p = y_mem + j * stride;
-		unsigned char *y2p = y1p + stride;
-		unsigned char *up = u_mem + (j/2) * stride * cs / 2;
-		unsigned char *vp = v_mem + (j/2) * stride * cs / 2;
+	for (y = 0; y < height; ++y) {
+		for (x = 0; x < width; ++x) {
+			div_t d = div(x+y, width);
+			uint32_t rgb32 = 0x00130502 * (d.quot >> 6)
+				       + 0x000a1120 * (d.rem >> 6);
+			struct color_yuv color =
+				MAKE_YUV_601((rgb32 >> 16) & 0xff,
+					     (rgb32 >> 8) & 0xff, rgb32 & 0xff);
 
-		for (i = 0; i < width; i+=2) {
-			div_t d = div(i+j, width);
-			uint32_t rgb = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
-			unsigned char *rgbp = (unsigned char *)&rgb;
-			unsigned char y = (0.299 * rgbp[RED]) + (0.587 * rgbp[GREEN]) + (0.114 * rgbp[BLUE]);
+			y_mem[x] = color.y;
+			u_mem[x/xsub*cs] = color.u;
+			v_mem[x/xsub*cs] = color.v;
+		}
 
-			*(y2p++) = *(y1p++) = y;
-			*(y2p++) = *(y1p++) = y;
-
-			*up = (rgbp[BLUE] - y) * 0.565 + 128;
-			*vp = (rgbp[RED] - y) * 0.713 + 128;
-			up += cs;
-			vp += cs;
+		y_mem += stride;
+		if ((y + 1) % ysub == 0) {
+			u_mem += stride * cs / xsub;
+			v_mem += stride * cs / xsub;
 		}
 	}
 }
@@ -1222,6 +1228,8 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_NV21:
+	case DRM_FORMAT_NV16:
+	case DRM_FORMAT_NV61:
 		u = info->yuv.order & YUV_YCbCr ? planes[1] : planes[1] + 1;
 		v = info->yuv.order & YUV_YCrCb ? planes[1] : planes[1] + 1;
 		return fill_tiles_yuv_planar(&info->yuv, planes[0], u, v,
@@ -1371,6 +1379,8 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_NV21:
+	case DRM_FORMAT_NV16:
+	case DRM_FORMAT_NV61:
 		pitches[0] = width;
 		offsets[0] = 0;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
