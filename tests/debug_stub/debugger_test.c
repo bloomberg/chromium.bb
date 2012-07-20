@@ -132,6 +132,13 @@ void test_single_step() {
 #endif
 }
 
+void test_interrupt() {
+  int x = 0;
+  for (;;) {
+    x = (x + 1) % 2;
+  }
+}
+
 int main(int argc, char **argv) {
   /*
    * This will crash if the entry-point breakpoint has been mishandled such
@@ -158,6 +165,10 @@ int main(int argc, char **argv) {
   }
   if (strcmp(argv[1], "test_single_step") == 0) {
     test_single_step();
+    return 0;
+  }
+  if (strcmp(argv[1], "test_interrupt") == 0) {
+    test_interrupt();
     return 0;
   }
   return 1;

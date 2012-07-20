@@ -175,6 +175,21 @@ void IThread::ResumeAllThreadsExceptSignaled(uint32_t signaled_tid) {
 
   CHECK(!map.empty());
 
+  for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
+    Thread *thread = it->second;
+    if (thread->id_ != signaled_tid) {
+      if ((thread->natp_->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
+        *thread->natp_->suspended_registers = thread->context_;
+      } else {
+        // TODO(eaeltsin): can we alter NaClAppThread.user?
+        NaClLog(LOG_WARNING,
+                "IThread::ResumeAllThreadsExceptSignaled: thread 0x%x "
+                "registers not restored\n",
+                thread->id_);
+      }
+    }
+  }
+
   NaClUntrustedThreadsResumeAllButOne(
       map.begin()->second->natp_->nap,
       signaled_tid == 0 ? NULL : map[signaled_tid]->natp_);

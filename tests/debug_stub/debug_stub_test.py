@@ -393,6 +393,23 @@ class DebugStubTest(unittest.TestCase):
       proc.kill()
       proc.wait()
 
+  def test_interrupt(self):
+    proc = PopenDebugStub('test_interrupt')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+
+      # Continue (program will spin forever), then interrupt.
+      connection.RspSendOnly('c')
+      reply = connection.RspInterrupt()
+      self.assertEqual(reply, 'T00')
+
+      # Single-step.
+      reply = connection.RspRequest('s')
+      self.assertTrue(reply.startswith('T05thread:'))
+    finally:
+      proc.kill()
+      proc.wait()
+
 
 def Main():
   # TODO(mseaborn): Clean up to remove the global variables.  They are

@@ -56,14 +56,7 @@ class GdbRspConnection(object):
     raise Exception('Could not connect to sel_ldr\'s debug stub in %i seconds'
                     % timeout_in_seconds)
 
-  # Send an rsp message, but don't wait for or expect a reply.
-  def RspSendOnly(self, data):
-    msg = '$%s#%02x' % (data, RspChecksum(data))
-    return self._socket.send(msg)
-
-  def RspRequest(self, data):
-    msg = '$%s#%02x' % (data, RspChecksum(data))
-    self._socket.send(msg)
+  def _GetReply(self):
     reply = ''
     while True:
       reply += self._socket.recv(1024)
@@ -81,3 +74,16 @@ class GdbRspConnection(object):
     # Send acknowledgement.
     self._socket.send('+')
     return reply_body
+
+  # Send an rsp message, but don't wait for or expect a reply.
+  def RspSendOnly(self, data):
+    msg = '$%s#%02x' % (data, RspChecksum(data))
+    return self._socket.send(msg)
+
+  def RspRequest(self, data):
+    self.RspSendOnly(data)
+    return self._GetReply()
+
+  def RspInterrupt(self):
+    self._socket.send('\x03')
+    return self._GetReply()
