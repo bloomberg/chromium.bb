@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 //
 
-#include <nacl/nacl_log.h>
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +14,6 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl/nacl_inttypes.h"
-#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/test_interface.h"
