@@ -35,7 +35,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "client/linux/minidump_writer/minidump_extension_linux.h"
 #include "google_breakpad/processor/minidump.h"
 #include "processor/logging.h"
 #include "processor/scoped_ptr.h"

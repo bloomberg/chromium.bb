@@ -46,7 +46,6 @@
 #include <string>
 #include <vector>
 
-#include "client/linux/minidump_writer/minidump_extension_linux.h"
 #include "common/linux/memory_mapped_file.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "processor/scoped_ptr.h"

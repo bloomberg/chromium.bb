@@ -76,7 +76,6 @@
 #include "client/linux/minidump_writer/line_reader.h"
 #include "client/linux/minidump_writer/linux_dumper.h"
 #include "client/linux/minidump_writer/linux_ptrace_dumper.h"
-#include "client/linux/minidump_writer/minidump_extension_linux.h"
 #include "client/minidump_file_writer.h"
 #include "common/linux/linux_libc_support.h"
 #include "google_breakpad/common/minidump_format.h"
