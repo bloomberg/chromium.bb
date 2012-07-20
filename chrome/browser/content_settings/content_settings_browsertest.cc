@@ -103,8 +103,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
 
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath().AppendASCII("npapi"),
-      FilePath().AppendASCII("clicktoplay.html"));
+      FilePath(), FilePath().AppendASCII("clicktoplay.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   string16 expected_title(ASCIIToUTF16("OK"));
@@ -124,8 +123,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, LoadAllBlockedPlugins) {
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
 
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath().AppendASCII("npapi"),
-      FilePath().AppendASCII("load_all_blocked_plugins.html"));
+      FilePath(), FilePath().AppendASCII("load_all_blocked_plugins.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   string16 expected_title1(ASCIIToUTF16("1"));
