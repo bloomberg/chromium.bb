@@ -5053,11 +5053,7 @@
    fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
    fun:_ZN7WebCoreL12parseUASheetEPKcj
    fun:_ZN7WebCoreL19loadViewSourceStyleEv
-   fun:_ZN7WebCore16CSSStyleSelector12matchUARulesERNS0_11MatchResultE
-   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleENS_20StyleSharingBehaviorENS_20RuleMatchingBehaviorEPNS_12RenderRegionE
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentEb
-   fun:_ZN7WebCore8Document19createStyleSelectorEv
-   fun:_ZN7WebCore8Document13styleSelectorEv
+   ...
    fun:_ZN7WebCore7Element16styleForRendererEv
 }
 {
@@ -5254,7 +5250,7 @@
    fun:_ZN7WebCore12MHTMLArchive6createERKNS_4KURLEPNS_12SharedBufferE
    fun:_ZN7WebCoreL20archiveFactoryCreateINS_12MHTMLArchiveEEEN3WTF10PassRefPtrINS_7ArchiveEEERKNS_4KURLEPNS_12SharedBufferE
    fun:_ZN7WebCore14ArchiveFactory6createERKNS_4KURLEPNS_12SharedBufferERKN3WTF6StringE
-   fun:_ZN7WebCore11FrameLoader23finishedLoadingDocumentEPNS_14DocumentLoaderE
+   ...
    fun:_ZN7WebCore14DocumentLoader15finishedLoadingEv
    fun:_ZN7WebCore18MainResourceLoader16didFinishLoadingEd
 }
@@ -5636,6 +5632,53 @@
    fun:_ZN25MockWebKitPlatformSupport6createEv
    fun:_ZN28WebKitSupportTestEnvironmentC1Ev
 }
+{
+   bug_138231
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6WebKit19WebFilterOperations10initializeEv
+   fun:_ZN6WebKit19WebFilterOperationsC1ERKS0_
+   fun:_ZN7WebCore20CCRenderPassDrawQuadC1EPKN6WebKit28WebCompositorSharedQuadStateERKNS_7IntRectEibRKNS1_23WebTransformationMatrixERKNS1_19WebFilterOperationsESD_jS7_
+   fun:_ZN7WebCore20CCRenderPassDrawQuad6createEPKN6WebKit28WebCompositorSharedQuadStateERKNS_7IntRectEibRKNS1_23WebTransformationMatrixERKNS1_19WebFilterOperationsESD_jS7_
+   fun:_ZN7WebCore15CCRenderSurface11appendQuadsERNS_12CCQuadCullerEPN6WebKit28WebCompositorSharedQuadStateEbi
+   fun:_ZN7WebCore12CCRenderPass32appendQuadsForRenderSurfaceLayerEPNS_11CCLayerImplEPKS0_PNS_22CCOcclusionTrackerBaseIS1_NS_15CCRenderSurfaceEEE
+   fun:_ZN7WebCore19CCLayerTreeHostImpl21calculateRenderPassesERNS0_9FrameDataE
+   fun:_ZN7WebCore19CCLayerTreeHostImpl13prepareToDrawERNS0_9FrameDataE
+   fun:_ZN7WebCore19CCSingleThreadProxy11doCompositeEv
+   fun:_ZN7WebCore19CCSingleThreadProxy18commitAndCompositeEv
+   fun:_ZN7WebCore19CCSingleThreadProxy20compositeAndReadbackEPvRKNS_7IntRectE
+   fun:_ZN7WebCore15CCLayerTreeHost20compositeAndReadbackEPvRKNS_7IntRectE
+   fun:_ZN6WebKit16WebLayerTreeView20compositeAndReadbackEPvRKNS_7WebRectE
+   fun:_ZN6WebKit11WebViewImpl23doPixelReadbackToCanvasEP8SkCanvasRKN7WebCore7IntRectE
+   fun:_ZN6WebKit11WebViewImpl5paintEP8SkCanvasRKNS_7WebRectE
+   fun:_ZN11WebViewHost9paintRectERKN6WebKit7WebRectE
+   fun:_ZN11WebViewHost22paintInvalidatedRegionEv
+}
+{
+   bug_138233_a
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore17ScriptProfileNodeEEnwEm
+   fun:_ZN7WebCore17ScriptProfileNode6createEPKN2v814CpuProfileNodeE
+   fun:_ZNK7WebCore13ScriptProfile4headEv
+   fun:_ZN7WebCore23ScriptProfileV8InternalL14headAttrGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
+   fun:_ZN2v88internal8JSObject23GetPropertyWithCallbackEPNS0_6ObjectES3_PNS0_6StringE
+   fun:_ZN2v88internal6Object11GetPropertyEPS1_PNS0_12LookupResultEPNS0_6StringEP18PropertyAttributes
+   fun:_ZN2v88internal6LoadIC4LoadENS0_16InlineCacheStateENS0_6HandleINS0_6ObjectEEENS3_INS0_6StringEEE
+   fun:_ZN2v88internal11LoadIC_MissENS0_9ArgumentsEPNS0_7IsolateE
+}
+{
+   bug_138233_b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore17ScriptProfileNodeEEnwEm
+   fun:_ZN7WebCore17ScriptProfileNode6createEPKN2v814CpuProfileNodeE
+   fun:_ZNK7WebCore17ScriptProfileNode8childrenEv
+   fun:_ZN7WebCore27ScriptProfileNodeV8InternalL16childrenCallbackERKN2v89ArgumentsE
+}
+
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
