@@ -59,8 +59,9 @@ void SearchTabHelper::OmniboxEditModelChanged(OmniboxEditModel* edit_model) {
 
   Mode::Type mode = Mode::MODE_DEFAULT;
   GURL url(web_contents()->GetURL());
+  // TODO(kuan): revisit this condition when zero suggest becomes available.
   if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()) ||
-      edit_model->has_focus()) {
+      (edit_model->has_focus() && edit_model->user_input_in_progress())) {
     mode = Mode::MODE_SEARCH;
   }
   model_->SetMode(Mode(mode, true));
