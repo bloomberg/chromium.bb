@@ -104,6 +104,7 @@ PermissionSet::PermissionSet(
   DCHECK(extension);
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
   InitImplicitExtensionPermissions(extension);
+  InitImplicitPermissions();
   InitEffectiveHosts();
 }
 
@@ -114,6 +115,7 @@ PermissionSet::PermissionSet(
     : apis_(apis),
       scriptable_hosts_(scriptable_hosts) {
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
+  InitImplicitPermissions();
   InitEffectiveHosts();
 }
 
@@ -488,6 +490,16 @@ std::set<std::string> PermissionSet::GetDistinctHosts(
   return distinct_hosts;
 }
 
+void PermissionSet::InitImplicitPermissions() {
+  // The webRequest permission implies the internal version as well.
+  if (apis_.find(APIPermission::kWebRequest) != apis_.end())
+    apis_.insert(APIPermission::kWebRequestInternal);
+
+  // The fileBrowserHandler permission implies the internal version as well.
+  if (apis_.find(APIPermission::kFileBrowserHandler) != apis_.end())
+    apis_.insert(APIPermission::kFileBrowserHandlerInternal);
+}
+
 void PermissionSet::InitImplicitExtensionPermissions(
     const extensions::Extension* extension) {
   // Add the implied permissions.
@@ -496,14 +508,6 @@ void PermissionSet::InitImplicitExtensionPermissions(
 
   if (!extension->devtools_url().is_empty())
     apis_.insert(APIPermission::kDevtools);
-
-  // The webRequest permission implies the internal version as well.
-  if (apis_.find(APIPermission::kWebRequest) != apis_.end())
-    apis_.insert(APIPermission::kWebRequestInternal);
-
-  // The fileBrowserHandler permission implies the internal version as well.
-  if (apis_.find(APIPermission::kFileBrowserHandler) != apis_.end())
-    apis_.insert(APIPermission::kFileBrowserHandlerInternal);
 
   // Add the scriptable hosts.
   for (extensions::UserScriptList::const_iterator content_script =

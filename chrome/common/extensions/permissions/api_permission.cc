@@ -137,7 +137,7 @@ void APIPermission::RegisterAllPermissions(
     { kInputMethodPrivate, "inputMethodPrivate", kFlagCannotBeOptional },
     { kEchoPrivate, "echoPrivate", kFlagCannotBeOptional },
     { kTerminalPrivate, "terminalPrivate", kFlagCannotBeOptional },
-    { kWebRequestInternal, "webRequestInternal", kFlagCannotBeOptional },
+    { kWebRequestInternal, "webRequestInternal" },
     { kWebSocketProxyPrivate, "webSocketProxyPrivate", kFlagCannotBeOptional },
     { kWebstorePrivate, "webstorePrivate", kFlagCannotBeOptional },
 
