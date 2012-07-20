@@ -29,14 +29,14 @@ using syncer::HasModelTypes;
 
 class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
  public:
-  MockChromeSyncNotificationBridge()
-      : ChromeSyncNotificationBridge(&mock_profile_) {}
+  MockChromeSyncNotificationBridge(
+      const Profile* profile,
+      const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner)
+      : ChromeSyncNotificationBridge(profile, sync_task_runner) {}
   virtual ~MockChromeSyncNotificationBridge() {}
 
   MOCK_METHOD1(AddObserver, void(syncer::SyncNotifierObserver*));
   MOCK_METHOD1(RemoveObserver, void(syncer::SyncNotifierObserver*));
- private:
-  NiceMock<ProfileMock> mock_profile_;
 };
 
 class MockSyncNotifier : public syncer::SyncNotifier {
@@ -60,6 +60,7 @@ class BridgedSyncNotifierTest : public testing::Test {
  public:
   BridgedSyncNotifierTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
+        mock_bridge_(&mock_profile_, ui_loop_.message_loop_proxy()),
         mock_delegate_(new MockSyncNotifier),  // Owned by bridged_notifier_.
         bridged_notifier_(&mock_bridge_, mock_delegate_) {}
   virtual ~BridgedSyncNotifierTest() {}
@@ -67,6 +68,7 @@ class BridgedSyncNotifierTest : public testing::Test {
  protected:
   MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
+  NiceMock<ProfileMock> mock_profile_;
   StrictMock<MockChromeSyncNotificationBridge> mock_bridge_;
   MockSyncNotifier* mock_delegate_;
   BridgedSyncNotifier bridged_notifier_;

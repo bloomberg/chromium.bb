@@ -26,6 +26,7 @@
 #include "chrome/browser/sync/glue/bridged_sync_notifier.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
+#include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -292,7 +293,6 @@ SyncBackendHost::SyncBackendHost(
                      weak_ptr_factory_.GetWeakPtr())),
       initialization_state_(NOT_ATTEMPTED),
       sync_prefs_(sync_prefs),
-      chrome_sync_notification_bridge_(profile_),
       sync_notifier_factory_(
           ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
                                profile_->GetRequestContext()),
@@ -308,7 +308,6 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
       profile_(profile),
       name_("Unknown"),
       initialization_state_(NOT_ATTEMPTED),
-      chrome_sync_notification_bridge_(profile_),
       sync_notifier_factory_(
           ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
                                profile_->GetRequestContext()),
@@ -378,6 +377,10 @@ void SyncBackendHost::Initialize(
   if (!sync_thread_.Start())
     return;
 
+  chrome_sync_notification_bridge_.reset(
+      new ChromeSyncNotificationBridge(
+          profile_, sync_thread_.message_loop_proxy()));
+
   frontend_ = frontend;
   DCHECK(frontend);
 
@@ -408,7 +411,7 @@ void SyncBackendHost::Initialize(
       base::Bind(&MakeHttpBridgeFactory,
                  make_scoped_refptr(profile_->GetRequestContext())),
       credentials,
-      &chrome_sync_notification_bridge_,
+      chrome_sync_notification_bridge_.get(),
       &sync_notifier_factory_,
       sync_manager_factory,
       delete_sync_data_folder,
@@ -585,6 +588,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 
   registrar_.reset();
   frontend_ = NULL;
+  chrome_sync_notification_bridge_.reset();
   core_ = NULL;  // Releases reference to core_.
 }
 
@@ -756,7 +760,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop(
 
   // Update |chrome_sync_notification_bridge_|'s enabled types here as it has
   // to happen on the UI thread.
-  chrome_sync_notification_bridge_.UpdateEnabledTypes(configured_types);
+  chrome_sync_notification_bridge_->UpdateEnabledTypes(configured_types);
 
   // Notify SyncManager (especially the notification listener) about new types.
   sync_thread_.message_loop()->PostTask(FROM_HERE,

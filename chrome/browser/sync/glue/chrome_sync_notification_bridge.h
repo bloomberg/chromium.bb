@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/sequenced_task_runner.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -20,21 +20,25 @@ class SyncNotifierObserver;
 
 namespace browser_sync {
 
-// A thread-safe bridge for chrome events that can trigger sync notifications.
+// A bridge that converts Chrome events on the UI thread to sync
+// notifications on the sync task runner.
+//
 // Listens to NOTIFICATION_SYNC_REFRESH_LOCAL and
-// NOTIFICATION_SYNC_REFRESH_REMOTE and triggers each observer's
-// OnIncomingNotification method on these notifications.
-// Note: Notifications are expected to arrive on the UI thread, but observers
-// may live on any thread.
+// NOTIFICATION_SYNC_REFRESH_REMOTE (on the UI thread) and triggers
+// each observer's OnIncomingNotification method on these
+// notifications (on the sync task runner).
 class ChromeSyncNotificationBridge : public content::NotificationObserver {
  public:
-  explicit ChromeSyncNotificationBridge(const Profile* profile);
+  // Must be created and destroyed on the UI thread.
+  ChromeSyncNotificationBridge(
+      const Profile* profile,
+      const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner);
   virtual ~ChromeSyncNotificationBridge();
 
-  // Must be called on UI thread.
+  // Must be called on the UI thread.
   void UpdateEnabledTypes(const syncer::ModelTypeSet enabled_types);
 
-  // These can be called on any thread.
+  // Must be called on the sync task runner.
   virtual void AddObserver(syncer::SyncNotifierObserver* observer);
   virtual void RemoveObserver(syncer::SyncNotifierObserver* observer);
 
@@ -44,13 +48,17 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // Inner class to hold all the bits used on |sync_task_runner_|.
+  class Core;
+
+  const scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
+
+  // Created on the UI thread, used only on |sync_task_runner_|.
+  const scoped_refptr<Core> core_;
+
+  // Used only on the UI thread.
   content::NotificationRegistrar registrar_;
   syncer::ModelTypeSet enabled_types_;
-
-  // Because [Add/Remove]Observer can be called from any thread, we need a
-  // thread-safe observerlist.
-  scoped_refptr<ObserverListThreadSafe<syncer::SyncNotifierObserver> >
-      observers_;
 };
 
 }  // namespace browser_sync
