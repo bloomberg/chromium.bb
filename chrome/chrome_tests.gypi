@@ -3161,6 +3161,11 @@
             '../build/linux/system.gyp:dbus',
           ],
         }],
+        ['disable_nacl==0 and chromeos==1', {
+          'dependencies': [
+            '../chrome/test/chromeos/utilities/file_helper/file_helper.gyp:file_helper_nexe',
+          ],
+        }],
         ['file_manager_extension==0', {
           'sources!': [
             'browser/ui/views/select_file_dialog_extension_browsertest.cc',

@@ -1,0 +1,30 @@
+{
+  "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDOuXEIuoK1kAkBe0SKiJn/N9oNn3oUxGa4dwj40MnJqPn+w0aR2vuyocm0R4Drp67aYwtLjOVPF4CICRq6ICP6eU07gGwQxGdZ7HJASXV8hm0tab5I70oJmRLfFJyVAMCeWlFaOGq05v2i6EbifZM0qO5xALKNGQt+yjXi5INM5wIBIw==",
+  "name": "nacl fileio tests",
+  "version": "0.1",
+  "manifest_version": 2,
+  "incognito" : "split",
+  "description": "Tests that embeded nacl plugin has same permissions to file system as the extension.",
+  "app": {
+    "launch": {
+      "local_path": "test.html"
+    }
+  },
+  "background": {
+    "scripts": ["event.js"],
+    "persistent": false
+  },
+  "file_browser_handlers": [
+    {
+      "id": "view",
+      "default_title": "NaCl File Helper.",
+      "file_filters": [
+        "filesystem:*.txt"
+      ]
+    }
+  ],
+  "permissions": [
+    "unlimitedStorage",
+    "fileBrowserHandler"
+   ]
+}

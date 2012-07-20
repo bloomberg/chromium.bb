@@ -1,0 +1,23 @@
+<html>
+<script src="test.js"></script>
+<body>
+<p>
+This is sample fileHandler extension that uses NaCl plugin to read .txt files on ChromiumOS.
+To run the extension, please open File Manager (ctrl + M), select some .txt file and click button "Run file-io test extension".
+As a result, extension will output the selected file's content or error message (if extension fails during reading the file, error message will be the same as the error code).
+One instance of the extension will be able to open a file only once.
+</p>
+<div id="listener">
+    <embed name="nacl_module"
+           id="file_reader"
+           width=0 height=0
+           src="file_helper_newlib.nmf"
+           type="application/x-nacl" />
+</div>
+<h3>File:</h3>
+<div id="filename"></div>
+<h3>Content:</h3>
+<textarea id="content" rows="15" cols="60"></textarea>
+<button id="read_btn">Read</button><button id="write_btn">Write</button><button id="truncate_btn">Truncate</button>
+</body>
+</html>

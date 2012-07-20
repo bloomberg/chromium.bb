@@ -1,0 +1,6 @@
+{
+  "program": {
+    "x86-64": {"url": "file_helper_newlib_x64.nexe"},
+    "x86-32": {"url": "file_helper_newlib_x32.nexe"}
+  }
+}
