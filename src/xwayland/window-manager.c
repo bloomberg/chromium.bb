@@ -324,7 +324,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 					     props[i].atom,
 					     XCB_ATOM_ANY, 0, 2048);
 
-	window->decorate = 1;
+	window->decorate = !window->override_redirect;
 	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
 		reply = xcb_get_property_reply(wm->conn, cookie[i], NULL);
 		if (!reply)
