@@ -961,11 +961,11 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
            browser_dist, chrome_exe, suffix))) {
     DeleteChromeRegistrationKeys(browser_dist, HKEY_LOCAL_MACHINE, suffix,
                                  installer_state.target_path(), &ret);
-
-    UninstallActiveSetupEntries(installer_state, product);
   }
 
   ProcessDelegateExecuteWorkItems(installer_state, product);
+
+  UninstallActiveSetupEntries(installer_state, product);
 
   if (!is_chrome) {
     ProcessChromeFrameWorkItems(original_state, installer_state, setup_path,
