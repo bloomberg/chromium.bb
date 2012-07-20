@@ -65,8 +65,15 @@ PhotoImport.load = function(opt_filesystem, opt_params) {
   api.getStrings(function(strings) {
     loadTimeData.data = strings;
 
-    // TODO: add strings.
-    loadTimeData.getString = function(s) { return s; };
+    // TODO(dgozman): remove when all strings finalized.
+    var original = loadTimeData.getString;
+    loadTimeData.getString = function(s) {
+      return original.call(loadTimeData, s) || s;
+    };
+    var originalF = loadTimeData.getStringF;
+    loadTimeData.getStringF = function() {
+      return originalF.apply(loadTimeData, arguments) || arguments[0];
+    };
 
     if (opt_filesystem) {
       onFilesystem(opt_filesystem);

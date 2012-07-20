@@ -10920,6 +10920,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL" desc="Title of the action for unmounting removable device.">
         Eject device
       </message>
+      <message name="IDS_FILE_BROWSER_IMPORT_PHOTOS_BUTTON_LABEL" desc="Title of the action for importing photos.">
+        Import photos
+      </message>
 
       <message name="IDS_FILE_BROWSER_ACTION_VIEW" desc="Title of the action to view (no edit) a file.">
         View
@@ -11011,6 +11014,34 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_AUDIO_OFFLINE" desc="In the Audio Player, message informing that the audio file could not be played in the offline mode.">
         This file is not available offline.
+      </message>
+
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORT_BUTTON" desc="In the Photo import, label of import button.">
+        Import
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_CANCEL_BUTTON" desc="In the Photo import, label of cancel button.">
+        Cancel
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_GDATA_ERROR" desc="In the Photo import, error message when drive is unaccessible.">
+        Error accessing "My Photos".
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SOURCE_ERROR" desc="In the Photo import, error message inidcating that photos cannot be read.">
+        Cannot read the photos.
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_UNKNOWN_DATE" desc="In the Photo import, label of group for photos with unknown date.">
+        Unknown date
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_NEW_ALBUM_NAME" desc="In the Photo import, default name for new album.">
+        New Album
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_ALBUM_CAPTION" desc="In the Photo import, caption of select album dialog.">
+        Where to import this photo?
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_ALBUM_CAPTION_PLURAL" desc="In the Photo import, caption of select album dialog (plural).">
+        Where to import these $1 photos?
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING_ERROR" desc="In the Photo import, importing error message.">
+        Cannot import. An error occured.
       </message>
 
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
