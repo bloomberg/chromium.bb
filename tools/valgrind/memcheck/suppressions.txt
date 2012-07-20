@@ -5569,25 +5569,16 @@
    fun:_ZN9TCompiler7compileEPKPKcii
    fun:ShCompile
    fun:_ZN3gpu5gles216ShaderTranslator9TranslateEPKc
-   fun:_ZN3gpu5gles214ProgramManager18ForceCompileShaderEPKSsPNS0_13ShaderManager10ShaderInfoEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
-   fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_13ShaderManager10ShaderInfoEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
-   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
 }
 {
    bug_138058
    Memcheck:Uninitialized
-   fun:_ZN7WebCore12WebVTTParser13collectDigitsERKN3WTF6StringEPj
-   fun:_ZN7WebCore12WebVTTParser16collectTimeStampERKN3WTF6StringEPj
+   ...
    fun:_ZN7WebCore12WebVTTParser22constructTreeFromTokenEPNS_8DocumentE
    fun:_ZN7WebCore12WebVTTParser33createDocumentFragmentFromCueTextERKN3WTF6StringE
    fun:_ZN7WebCore12TextTrackCue12getCueAsHTMLEv
    fun:_ZN7WebCore12TextTrackCue17updateDisplayTreeEf
    fun:_ZN7WebCore16HTMLMediaElement25updateActiveTextTrackCuesEf
-   fun:_ZN7WebCore16HTMLMediaElement22mediaPlayerTimeChangedEPNS_11MediaPlayerE
-   fun:_ZN7WebCore11MediaPlayer11timeChangedEv
-   fun:_ZN6WebKit24WebMediaPlayerClientImpl11timeChangedEv
-   fun:_ZN12webkit_media18WebMediaPlayerImpl14OnPipelineSeekEN5media14PipelineStatusE
-   fun:_ZN12webkit_media19WebMediaPlayerProxy16PipelineSeekTaskEN5media14PipelineStatusE
 }
 {
    bug_138060
@@ -5637,6 +5628,13 @@
    fun:_ZN7WebCore11RenderTheme5paintEPNS_12RenderObjectERKNS_9PaintInfoERKNS_7IntRectE
    fun:_ZN7WebCore9RenderBox19paintBoxDecorationsERNS_9PaintInfoERKNS_21FractionalLayoutPointE
    fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_21FractionalLayoutPointE
+}
+{
+   bug_138228
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN25MockWebKitPlatformSupport6createEv
+   fun:_ZN28WebKitSupportTestEnvironmentC1Ev
 }
 
 #-----------------------------------------------------------------------
