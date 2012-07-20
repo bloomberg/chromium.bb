@@ -216,10 +216,7 @@ class PathContext(object):
     handle.close()
     build_numbers = re.findall(r'<a href="([0-9][0-9].*)/">', dirindex)
     final_list = []
-    start_index = 0
-    end_index = 0
     i = 0
-
     parsed_build_numbers = [LooseVersion(x) for x in build_numbers]
     for build_number in sorted(parsed_build_numbers):
       path = OFFICIAL_BASE_URL + '/' + str(build_number) + '/' + \
@@ -228,14 +225,13 @@ class PathContext(object):
       try:
         connection = urllib.urlopen(path)
         connection.close()
-        final_list.append(str(build_number))
-        if str(build_number) == minrev:
-          start_index = i
-        if str(build_number) == maxrev:
-          end_index = i
+        if build_number > maxrev:
+          break
+        if build_number >= minrev:
+          final_list.append(str(build_number))
       except urllib.HTTPError, e:
         pass
-    return final_list[start_index:end_index]
+    return final_list
 
 def UnzipFilenameToDir(filename, dir):
   """Unzip |filename| to directory |dir|."""
@@ -444,6 +440,8 @@ def Bisect(platform,
     msg = 'We don\'t have enough builds to bisect. revlist: %s' % revlist
     raise RuntimeError(msg)
 
+  print 'Bisecting range [%s, %s].' % (revlist[0], revlist[-1])
+
   # Figure out our bookends and first pivot point; fetch the pivot revision.
   good = 0
   bad = len(revlist) - 1
@@ -568,6 +566,16 @@ def GetWebKitRevisionForChromiumRevision(rev):
     raise Exception('Could not get webkit revision for cr rev %d' % rev)
 
 
+def GetChromiumRevision(url):
+  """Returns the chromium revision read from given URL."""
+  try:
+    # Location of the latest build revision number
+    return int(urllib.urlopen(url).read())
+  except Exception, e:
+    print('Could not determine latest revision. This could be bad...')
+    return 999999999
+
+
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
            'Perform binary search on the snapshot builds.\n'
@@ -586,9 +594,10 @@ def main():
                     'Chrome builds (internal only) instead of ' +
                     'Chromium archives.')
   parser.add_option('-b', '--bad', type = 'str',
-                    help = 'The bad revision to bisect to.')
+                    help = 'The bad revision to bisect to. Default is HEAD.')
   parser.add_option('-g', '--good', type = 'str',
-                    help = 'The last known good revision to bisect from.')
+                    help = 'The last known good revision to bisect from. ' +
+                    'Default is 0.')
   parser.add_option('-p', '--profile', '--user-data-dir', type = 'str',
                     help = 'Profile to use; this will not reset every run. ' +
                     'Defaults to a clean profile.', default = 'profile')
@@ -604,47 +613,34 @@ def main():
     parser.print_help()
     return 1
 
-  if opts.bad and opts.good and (opts.good > opts.bad):
-    print ('The good revision (%d) must precede the bad revision (%d).\n' %
-           (opts.good, opts.bad))
-    parser.print_help()
-    return 1
-
   # Create the context. Initialize 0 for the revisions as they are set below.
   context = PathContext(opts.archive, 0, 0, opts.official_builds)
-
-  if opts.official_builds and opts.bad is None:
-    print >>sys.stderr, 'Bisecting official builds requires a bad build number.'
-    parser.print_help()
-    return 1
-
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
     bad_rev = opts.bad
   else:
-    bad_rev = 0
-    try:
-      # Location of the latest build revision number
-      nh = urllib.urlopen(context.GetLastChangeURL())
-      latest = int(nh.read())
-      nh.close()
-      bad_rev = raw_input('Bad revision [HEAD:%d]: ' % latest)
-      if (bad_rev == ''):
-        bad_rev = latest
-      bad_rev = int(bad_rev)
-    except Exception, e:
-      print('Could not determine latest revision. This could be bad...')
-      bad_rev = int(raw_input('Bad revision: '))
+    bad_rev = '999.0.0.0'
+    if not opts.official_builds:
+      bad_rev = GetChromiumRevision(context.GetLastChangeURL())
 
   # Find out when we were good.
   if opts.good:
     good_rev = opts.good
   else:
-    good_rev = 0
-    try:
-      good_rev = int(raw_input('Last known good [0]: '))
-    except Exception, e:
-      pass
+    good_rev = '0.0.0.0' if opts.official_builds else 0
+
+  if opts.official_builds:
+    good_rev = LooseVersion(good_rev)
+    bad_rev = LooseVersion(bad_rev)
+  else:
+    good_rev = int(good_rev)
+    bad_rev = int(bad_rev)
+
+  if good_rev > bad_rev:
+    print ('The good revision (%s) must precede the bad revision (%s).\n' %
+           (good_rev, bad_rev))
+    parser.print_help()
+    return 1
 
   if opts.times < 1:
     print('Number of times to run (%d) must be greater than or equal to 1.' %
