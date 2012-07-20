@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
@@ -39,8 +40,8 @@ class PerformanceMonitorDatabaseEventTest : public ::testing::Test {
  protected:
   PerformanceMonitorDatabaseEventTest() {
     clock_ = new TestingClock();
-    file_util::CreateNewTempDirectory(FilePath::StringType(), &temp_path_);
-    db_ = Database::Create(temp_path_);
+    CHECK(temp_dir_.CreateUniqueTempDir());
+    db_ = Database::Create(temp_dir_.path());
     CHECK(db_.get());
     db_->set_clock(scoped_ptr<Database::Clock>(clock_));
   }
@@ -60,7 +61,7 @@ class PerformanceMonitorDatabaseEventTest : public ::testing::Test {
 
   scoped_ptr<Database> db_;
   Database::Clock* clock_;
-  FilePath temp_path_;
+  ScopedTempDir temp_dir_;
   scoped_ptr<Event> install_event_1_;
   scoped_ptr<Event> install_event_2_;
   scoped_ptr<Event> uninstall_event_1_;
@@ -87,8 +88,8 @@ class PerformanceMonitorDatabaseMetricTest : public ::testing::Test {
  protected:
   PerformanceMonitorDatabaseMetricTest() {
     clock_ = new TestingClock();
-    file_util::CreateNewTempDirectory(FilePath::StringType(), &temp_path_);
-    db_ = Database::Create(temp_path_);
+    CHECK(temp_dir_.CreateUniqueTempDir());
+    db_ = Database::Create(temp_dir_.path());
     CHECK(db_.get());
     db_->set_clock(scoped_ptr<Database::Clock>(clock_));
     activity_ = std::string("A");
@@ -119,7 +120,7 @@ class PerformanceMonitorDatabaseMetricTest : public ::testing::Test {
 
   scoped_ptr<Database> db_;
   Database::Clock* clock_;
-  FilePath temp_path_;
+  ScopedTempDir temp_dir_;
   std::string activity_;
   std::string cpu_metric_;
   std::string mem_metric_;
@@ -131,21 +132,21 @@ class PerformanceMonitorDatabaseMetricTest : public ::testing::Test {
 
 ////// PerformanceMonitorDatabaseSetupTests ////////////////////////////////////
 TEST(PerformanceMonitorDatabaseSetupTest, OpenClose) {
-  FilePath alternate_path;
-  file_util::CreateNewTempDirectory(FilePath::StringType(), &alternate_path);
-  scoped_ptr<Database> db = Database::Create(alternate_path);
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  scoped_ptr<Database> db = Database::Create(temp_dir.path());
   ASSERT_TRUE(db.get());
   ASSERT_TRUE(db->Close());
 }
 
 TEST(PerformanceMonitorDatabaseSetupTest, ActiveInterval) {
-  FilePath alternate_path;
-  file_util::CreateNewTempDirectory(FilePath::StringType(), &alternate_path);
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestingClock* clock_1 = new TestingClock();
   base::Time start_time = clock_1->GetTime();
 
-  scoped_ptr<Database> db_1 = Database::Create(alternate_path);
+  scoped_ptr<Database> db_1 = Database::Create(temp_dir.path());
   db_1->set_clock(scoped_ptr<Database::Clock>(clock_1));
   db_1->AddStateValue("test", "test");
   ASSERT_TRUE(db_1.get());
@@ -153,7 +154,7 @@ TEST(PerformanceMonitorDatabaseSetupTest, ActiveInterval) {
 
   TestingClock* clock_2 = new TestingClock(*clock_1);
   base::Time mid_time = clock_2->GetTime();
-  scoped_ptr<Database> db_2 = Database::Create(alternate_path);
+  scoped_ptr<Database> db_2 = Database::Create(temp_dir.path());
   db_2->set_clock(scoped_ptr<Database::Clock>(clock_2));
   db_2->AddStateValue("test", "test");
   ASSERT_TRUE(db_2.get());
@@ -161,7 +162,7 @@ TEST(PerformanceMonitorDatabaseSetupTest, ActiveInterval) {
 
   TestingClock* clock_3 = new TestingClock(*clock_2);
   base::Time end_time = clock_3->GetTime();
-  scoped_ptr<Database> db_3 = Database::Create(alternate_path);
+  scoped_ptr<Database> db_3 = Database::Create(temp_dir.path());
   db_3->set_clock(scoped_ptr<Database::Clock>(clock_3));
   db_3->AddStateValue("test", "test");
   ASSERT_TRUE(db_3.get());
@@ -177,11 +178,11 @@ TEST(PerformanceMonitorDatabaseSetupTest, ActiveInterval) {
 
 TEST(PerformanceMonitorDatabaseSetupTest,
      ActiveIntervalRetrievalDuringActiveInterval) {
-  FilePath alternate_path;
-  file_util::CreateNewTempDirectory(FilePath::StringType(), &alternate_path);
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestingClock* clock = new TestingClock();
-  scoped_ptr<Database> db = Database::Create(alternate_path);
+  scoped_ptr<Database> db = Database::Create(temp_dir.path());
   db->set_clock(scoped_ptr<Database::Clock>(clock));
   db->AddStateValue("test", "test");
   base::Time start_time = clock->GetTime();
@@ -198,11 +199,11 @@ TEST(PerformanceMonitorDatabaseSetupTest,
 
 TEST(PerformanceMonitorDatabaseSetupTest,
      ActiveIntervalRetrievalAfterActiveInterval) {
-  FilePath alternate_path;
-  file_util::CreateNewTempDirectory(FilePath::StringType(), &alternate_path);
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestingClock* clock = new TestingClock();
-  scoped_ptr<Database> db = Database::Create(alternate_path);
+  scoped_ptr<Database> db = Database::Create(temp_dir.path());
   db->set_clock(scoped_ptr<Database::Clock>(clock));
   db->AddStateValue("test", "test");
 
