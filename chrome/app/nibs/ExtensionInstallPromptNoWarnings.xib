@@ -82,13 +82,13 @@
 						</object>
 						<object class="NSTextField" id="592145570">
 							<reference key="NSNextResponder" ref="955129256"/>
-							<int key="NSvFlags">264</int>
-							<string key="NSFrame">{{17, 86}, {186, 17}}</string>
+							<int key="NSvFlags">268</int>
+							<string key="NSFrame">{{17, 112}, {186, 17}}</string>
 							<reference key="NSSuperview" ref="955129256"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="530390105">
-								<int key="NSCellFlags">68288064</int>
-								<int key="NSCellFlags2">272630784</int>
+								<int key="NSCellFlags">67239424</int>
+								<int key="NSCellFlags2">272629760</int>
 								<string key="NSContents">Title</string>
 								<object class="NSFont" key="NSSupport">
 									<string key="NSName">LucidaGrande-Bold</string>
