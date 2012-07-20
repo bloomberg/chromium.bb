@@ -203,19 +203,13 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnAcceleratedSurfaceSuspend)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
+                        OnAcceleratedSurfaceNew)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
+                        OnAcceleratedSurfaceRelease)
 
 #if defined(TOOLKIT_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
-#endif
-
-#if defined(USE_AURA)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
-                        OnAcceleratedSurfaceNew)
-#endif
-
-#if defined(USE_AURA)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
-                        OnAcceleratedSurfaceRelease)
 #endif
 
     IPC_MESSAGE_UNHANDLED_ERROR()
@@ -289,8 +283,6 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
 
 #endif
 
-#if defined(USE_AURA)
-
 void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
     const GpuHostMsg_AcceleratedSurfaceNew_Params& params) {
   RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
@@ -300,8 +292,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
   view->AcceleratedSurfaceNew(
       params.width, params.height, params.surface_handle);
 }
-
-#endif
 
 static base::TimeDelta GetSwapDelay() {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
@@ -369,8 +359,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceSuspend(int32 surface_id) {
   view->AcceleratedSurfaceSuspend();
 }
 
-#if defined(USE_AURA)
-
 void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {
   RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
@@ -379,5 +367,3 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     return;
   view->AcceleratedSurfaceRelease(params.identifier);
 }
-
-#endif

@@ -96,16 +96,10 @@ class GpuProcessHostUIShim
   void OnAcceleratedSurfacePostSubBuffer(
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params);
   void OnAcceleratedSurfaceSuspend(int32 surface_id);
-
-#if defined(OS_MACOSX) || defined(USE_AURA)
   void OnAcceleratedSurfaceNew(
       const GpuHostMsg_AcceleratedSurfaceNew_Params& params);
-#endif
-
-#if defined(USE_AURA)
   void OnAcceleratedSurfaceRelease(
       const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
-#endif
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
