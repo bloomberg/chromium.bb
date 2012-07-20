@@ -689,6 +689,7 @@
             '../base/base.gyp:base_java',
             'content_java',
             'content_unittests',
+            '../net/net.gyp:net_java',
           ],
           'variables': {
             'test_suite_name': 'content_unittests',
@@ -696,6 +697,7 @@
             'input_jars_paths': [
               '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
               '<(PRODUCT_DIR)/lib.java/chromium_content.jar',
+              '<(PRODUCT_DIR)/lib.java/chromium_net.jar',
             ],
           },
           'includes': [ '../build/apk_test.gypi' ],
