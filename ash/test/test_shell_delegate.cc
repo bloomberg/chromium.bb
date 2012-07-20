@@ -122,5 +122,8 @@ aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
 void TestShellDelegate::OpenFeedbackPage() {
 }
 
+void TestShellDelegate::RecordUserMetricsAction(UserMetricsAction action) {
+}
+
 }  // namespace test
 }  // namespace ash

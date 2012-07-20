@@ -46,12 +46,6 @@ void ExternalMetrics::Start() {
   // these are explicitly added in that script.
   // TODO(derat): We shouldn't need to verify actions before reporting them;
   // remove all of this once http://crosbug.com/11125 is fixed.
-  valid_user_actions_.insert("Accel_NextWindow_Tab");
-  valid_user_actions_.insert("Accel_PrevWindow_Tab");
-  valid_user_actions_.insert("Accel_NextWindow_F5");
-  valid_user_actions_.insert("Accel_PrevWindow_F5");
-  valid_user_actions_.insert("Accel_BrightnessDown_F6");
-  valid_user_actions_.insert("Accel_BrightnessUp_F7");
   valid_user_actions_.insert("Cryptohome.PKCS11InitFail");
   valid_user_actions_.insert("Updater.ServerCertificateChanged");
   valid_user_actions_.insert("Updater.ServerCertificateFailed");

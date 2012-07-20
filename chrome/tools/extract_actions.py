@@ -206,16 +206,6 @@ def AddChromeOSActions(actions):
   Arguments:
     actions: set of actions to add to.
   """
-  # Actions sent by the Chrome OS window manager.
-  actions.add('Accel_NextWindow_Tab')
-  actions.add('Accel_PrevWindow_Tab')
-  actions.add('Accel_NextWindow_F5')
-  actions.add('Accel_PrevWindow_F5')
-
-  # Actions sent by the Chrome OS power manager.
-  actions.add('Accel_BrightnessDown_F6')
-  actions.add('Accel_BrightnessUp_F7')
-
   # Actions sent by Chrome OS update engine.
   actions.add('Updater.ServerCertificateChanged')
   actions.add('Updater.ServerCertificateFailed')

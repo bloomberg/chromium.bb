@@ -342,6 +342,30 @@ void ChromeShellDelegate::OpenFeedbackPage() {
   chrome::OpenFeedbackDialog(GetTargetBrowser());
 }
 
+void ChromeShellDelegate::RecordUserMetricsAction(
+    ash::UserMetricsAction action) {
+  switch (action) {
+    case ash::UMA_ACCEL_PREVWINDOW_TAB:
+      content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_Tab"));
+      break;
+    case ash::UMA_ACCEL_NEXTWINDOW_TAB:
+      content::RecordAction(content::UserMetricsAction("Accel_NextWindow_Tab"));
+      break;
+    case ash::UMA_ACCEL_PREVWINDOW_F5:
+      content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_F5"));
+      break;
+    case ash::UMA_ACCEL_NEXTWINDOW_F5:
+      content::RecordAction(content::UserMetricsAction("Accel_NextWindow_F5"));
+      break;
+    case ash::UMA_ACCEL_NEWTAB_T:
+      content::RecordAction(content::UserMetricsAction("Accel_NewTab_T"));
+      break;
+    case ash::UMA_ACCEL_SEARCH_LWIN:
+      content::RecordAction(content::UserMetricsAction("Accel_Search_LWin"));
+      break;
+  }
+}
+
 void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {

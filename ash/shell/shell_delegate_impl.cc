@@ -136,5 +136,8 @@ aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {
 void ShellDelegateImpl::OpenFeedbackPage() {
 }
 
+void ShellDelegateImpl::RecordUserMetricsAction(UserMetricsAction action) {
+}
+
 }  // namespace shell
 }  // namespace ash

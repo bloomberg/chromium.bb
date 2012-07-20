@@ -2428,14 +2428,6 @@ void BrowserView::UpdateAcceleratorMetrics(
       if (key_code == ui::VKEY_F4)
         content::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
       break;
-    case IDC_NEW_TAB:
-      if (key_code == ui::VKEY_T)
-        content::RecordAction(UserMetricsAction("Accel_NewTab_T"));
-      break;
-    case IDC_SEARCH:
-      if (key_code == ui::VKEY_LWIN)
-        content::RecordAction(UserMetricsAction("Accel_Search_LWin"));
-      break;
     case IDC_FOCUS_LOCATION:
       if (key_code == ui::VKEY_D)
         content::RecordAction(UserMetricsAction("Accel_FocusLocation_D"));

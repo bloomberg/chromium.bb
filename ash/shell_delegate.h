@@ -37,6 +37,15 @@ class SystemTray;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
 
+enum UserMetricsAction {
+  UMA_ACCEL_PREVWINDOW_TAB,
+  UMA_ACCEL_NEXTWINDOW_TAB,
+  UMA_ACCEL_PREVWINDOW_F5,
+  UMA_ACCEL_NEXTWINDOW_F5,
+  UMA_ACCEL_NEWTAB_T,
+  UMA_ACCEL_SEARCH_LWIN
+};
+
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
  public:
@@ -126,6 +135,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Opens the feedback page for "Report Issue".
   virtual void OpenFeedbackPage() = 0;
+
+  // Records that the user performed an action.
+  virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;
 };
 
 }  // namespace ash

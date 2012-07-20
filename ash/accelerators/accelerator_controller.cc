@@ -385,21 +385,30 @@ bool AcceleratorController::PerformAction(int action,
       actions_allowed_at_lock_screen_.end()) {
     return false;
   }
+  const ui::KeyboardCode key_code = accelerator.key_code();
 
   // You *MUST* return true when some action is performed. Otherwise, this
   // function might be called *twice*, via BrowserView::PreHandleKeyboardEvent
   // and BrowserView::HandleKeyboardEvent, for a single accelerator press.
   switch (action) {
     case CYCLE_BACKWARD_MRU:
+      if (key_code == ui::VKEY_TAB && shell->delegate())
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
                                   accelerator.IsAltDown());
     case CYCLE_FORWARD_MRU:
+      if (key_code == ui::VKEY_TAB && shell->delegate())
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
     case CYCLE_BACKWARD_LINEAR:
+      if (key_code == ui::VKEY_F5 && shell->delegate())
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_BACKWARD);
       return true;
     case CYCLE_FORWARD_LINEAR:
+      if (key_code == ui::VKEY_F5 && shell->delegate())
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_FORWARD);
       return true;
 #if defined(OS_CHROMEOS)
@@ -425,6 +434,8 @@ bool AcceleratorController::PerformAction(int action,
     case NEW_INCOGNITO_WINDOW:
       return HandleNewWindow(true /* is_incognito */);
     case NEW_TAB:
+      if (key_code == ui::VKEY_T && shell->delegate())
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEWTAB_T);
       return HandleNewTab();
     case NEW_WINDOW:
       return HandleNewWindow(false /* is_incognito */);
@@ -447,6 +458,8 @@ bool AcceleratorController::PerformAction(int action,
       // this key combination is reserved for partial screenshot.
       return true;
     case TOGGLE_APP_LIST:
+      if (key_code == ui::VKEY_LWIN && shell->delegate())
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_SEARCH_LWIN);
       // When spoken feedback is enabled, we should neither toggle the list nor
       // consume the key since Search+Shift is one of the shortcuts the a11y
       // feature uses. crbug.com/132296

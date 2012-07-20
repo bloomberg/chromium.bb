@@ -59,6 +59,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
   virtual void OpenFeedbackPage() OVERRIDE;
+  virtual void RecordUserMetricsAction(ash::UserMetricsAction action) OVERRIDE;
 
   // content::NotificationObserver override:
   virtual void Observe(int type,
