@@ -1001,6 +1001,13 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     steps.append(self._BuildImages)
     background.RunParallelSteps(steps)
 
+    # TODO(yjhong): Remove this and instruct archive_hwqual to copy the tarball
+    # directly.
+    if self._tarball_dir and self._build_config['chromeos_official']:
+      shutil.copyfile(os.path.join(self._tarball_dir, 'autotest.tar.bz2'),
+                      os.path.join(self.GetImageDirSymlink(),
+                                   'autotest.tar.bz2'))
+
   def _HandleStageException(self, exception):
     # In case of an exception, this prevents any consumer from starving.
     self._archive_stage.AutotestTarballsReady(None)

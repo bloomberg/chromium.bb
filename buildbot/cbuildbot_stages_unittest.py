@@ -941,6 +941,10 @@ class BuildTargetStageTest(AbstractStageTest):
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
     self.archive_stage_mock.SetVersion(self.version)
 
+    shutil.copyfile(full_autotest_tarball_path,
+                    os.path.join(self.images_root, 'latest-cbuildbot',
+                                 full_autotest_tarball_name))
+
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
