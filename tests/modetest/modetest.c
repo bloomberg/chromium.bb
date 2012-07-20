@@ -657,111 +657,38 @@ make_pwetty(void *data, int width, int height, int stride)
 #endif
 }
 
-static int
-create_test_buffer(struct kms_driver *kms,
-		   int width, int height, int *stride_out,
-		   struct kms_bo **bo_out)
-{
-	struct kms_bo *bo;
-	int ret, i, j, stride;
-	void *virtual;
-
-	bo = allocate_buffer(kms, width, height, &stride);
-	if (!bo)
-		return -1;
-
-	ret = kms_bo_map(bo, &virtual);
-	if (ret) {
-		fprintf(stderr, "failed to map buffer: %s\n",
-			strerror(-ret));
-		kms_bo_destroy(&bo);
-		return -1;
-	}
-
-	/* paint the buffer with colored tiles */
-	for (j = 0; j < height; j++) {
-		uint32_t *fb_ptr = (uint32_t*)((char*)virtual + j * stride);
-		for (i = 0; i < width; i++) {
-			div_t d = div(i, width);
-			fb_ptr[i] =
-				0x00130502 * (d.quot >> 6) +
-				0x000a1120 * (d.rem >> 6);
-		}
-	}
-
-	make_pwetty(virtual, width, height, stride);
-
-	kms_bo_unmap(bo);
-
-	*bo_out = bo;
-	*stride_out = stride;
-	return 0;
-}
-
-static int
-create_grey_buffer(struct kms_driver *kms,
-		   int width, int height, int *stride_out,
-		   struct kms_bo **bo_out)
-{
-	struct kms_bo *bo;
-	int size, ret, stride;
-	void *virtual;
-
-	bo = allocate_buffer(kms, width, height, &stride);
-	if (!bo)
-		return -1;
-
-	ret = kms_bo_map(bo, &virtual);
-	if (ret) {
-		fprintf(stderr, "failed to map buffer: %s\n",
-			strerror(-ret));
-		kms_bo_destroy(&bo);
-		return -1;
-	}
-
-	size = stride * height;
-	memset(virtual, 0x77, size);
-	kms_bo_unmap(bo);
-
-	*bo_out = bo;
-	*stride_out = stride;
-
-	return 0;
-}
-
-void
-page_flip_handler(int fd, unsigned int frame,
-		  unsigned int sec, unsigned int usec, void *data)
-{
-	struct connector *c;
-	unsigned int new_fb_id;
-	struct timeval end;
-	double t;
-
-	c = data;
-	if (c->current_fb_id == c->fb_id[0])
-		new_fb_id = c->fb_id[1];
-	else
-		new_fb_id = c->fb_id[0];
-			
-	drmModePageFlip(fd, c->crtc, new_fb_id,
-			DRM_MODE_PAGE_FLIP_EVENT, c);
-	c->current_fb_id = new_fb_id;
-	c->swap_count++;
-	if (c->swap_count == 60) {
-		gettimeofday(&end, NULL);
-		t = end.tv_sec + end.tv_usec * 1e-6 -
-			(c->start.tv_sec + c->start.tv_usec * 1e-6);
-		fprintf(stderr, "freq: %.02fHz\n", c->swap_count / t);
-		c->swap_count = 0;
-		c->start = end;
-	}
-}
+/* -----------------------------------------------------------------------------
+ * Buffers management
+ */
 
 /* swap these for big endian.. */
 #define RED   2
 #define GREEN 1
 #define BLUE  0
+
+struct format_name {
+	unsigned int format;
+	const char *name;
+};
+
+static const struct format_name format_names[] = {
+	{ DRM_FORMAT_YUYV, "YUYV" },
+	{ DRM_FORMAT_NV12, "NV12" },
+	{ DRM_FORMAT_YVU420, "YV12" },
+	{ DRM_FORMAT_XRGB1555, "XR15" },
+	{ DRM_FORMAT_XRGB8888, "XR24" },
+	{ DRM_FORMAT_ARGB1555, "AR15" },
+};
+
+unsigned int format_fourcc(const char *name)
+{
+	unsigned int i;
+	for (i = 0; i < ARRAY_SIZE(format_names); i++) {
+		if (!strcmp(format_names[i].name, name))
+			return format_names[i].format;
+	}
+	return 0;
+}
 
 static void
 fill420(unsigned char *y, unsigned char *u, unsigned char *v,
@@ -835,6 +762,154 @@ fill1555(unsigned char *virtual, int n, int width, int height, int stride)
 	}
 }
 
+static void
+fill8888(unsigned char *virtual, int width, int height, int stride)
+{
+	int i, j;
+	/* paint the buffer with colored tiles */
+	for (j = 0; j < height; j++) {
+		uint32_t *ptr = (uint32_t*)((char*)virtual + j * stride);
+		for (i = 0; i < width; i++) {
+			div_t d = div(i, width);
+			ptr[i] =
+				0x00130502 * (d.quot >> 6) +
+				0x000a1120 * (d.rem >> 6);
+		}
+	}
+
+	make_pwetty(virtual, width, height, stride);
+}
+
+static void
+fill_grey(unsigned char *virtual, int width, int height, int stride)
+{
+	memset(virtual, 0x77, stride * height);
+}
+
+static struct kms_bo *
+create_test_buffer(struct kms_driver *kms, unsigned int format,
+		   int width, int height, int handles[4],
+		   int pitches[4], int offsets[4], int grey)
+{
+	struct kms_bo *bo;
+	int ret, stride;
+	void *virtual;
+
+	bo = allocate_buffer(kms, width, height, &pitches[0]);
+	if (!bo)
+		return NULL;
+
+	ret = kms_bo_map(bo, &virtual);
+	if (ret) {
+		fprintf(stderr, "failed to map buffer: %s\n",
+			strerror(-ret));
+		kms_bo_destroy(&bo);
+		return NULL;
+	}
+
+	/* just testing a limited # of formats to test single
+	 * and multi-planar path.. would be nice to add more..
+	 */
+	switch (format) {
+	case DRM_FORMAT_YUYV:
+		pitches[0] = width * 2;
+		offsets[0] = 0;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
+
+		fill422(virtual, 0, width, height, pitches[0]);
+		break;
+
+	case DRM_FORMAT_NV12:
+		pitches[0] = width;
+		offsets[0] = 0;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
+		pitches[1] = width;
+		offsets[1] = width * height;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[1]);
+
+		fill420(virtual, virtual+offsets[1], virtual+offsets[1]+1,
+				2, 0, width, height, pitches[0]);
+		break;
+
+	case DRM_FORMAT_YVU420:
+		pitches[0] = width;
+		offsets[0] = 0;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
+		pitches[1] = width / 2;
+		offsets[1] = width * height;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[1]);
+		pitches[2] = width / 2;
+		offsets[2] = offsets[1] + (width * height) / 4;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[2]);
+
+		fill420(virtual, virtual+offsets[1], virtual+offsets[2],
+				1, 0, width, height, pitches[0]);
+		break;
+
+	case DRM_FORMAT_XRGB1555:
+		pitches[0] = width * 2;
+		offsets[0] = 0;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
+
+		fill1555(virtual, 0, width, height, pitches[0]);
+		break;
+
+	case DRM_FORMAT_XRGB8888:
+		pitches[0] = width * 4;
+		offsets[0] = 0;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
+
+		if (grey)
+			fill_grey(virtual, width, height, pitches[0]);
+		else
+			fill8888(virtual, width, height, pitches[0]);
+		break;
+
+	case DRM_FORMAT_ARGB1555:
+		pitches[0] = width * 2;
+		offsets[0] = 0;
+		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
+
+		fill1555(virtual, 0, width, height, pitches[0]);
+		break;
+	}
+
+	kms_bo_unmap(bo);
+
+	return bo;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void
+page_flip_handler(int fd, unsigned int frame,
+		  unsigned int sec, unsigned int usec, void *data)
+{
+	struct connector *c;
+	unsigned int new_fb_id;
+	struct timeval end;
+	double t;
+
+	c = data;
+	if (c->current_fb_id == c->fb_id[0])
+		new_fb_id = c->fb_id[1];
+	else
+		new_fb_id = c->fb_id[0];
+
+	drmModePageFlip(fd, c->crtc, new_fb_id,
+			DRM_MODE_PAGE_FLIP_EVENT, c);
+	c->current_fb_id = new_fb_id;
+	c->swap_count++;
+	if (c->swap_count == 60) {
+		gettimeofday(&end, NULL);
+		t = end.tv_sec + end.tv_usec * 1e-6 -
+			(c->start.tv_sec + c->start.tv_usec * 1e-6);
+		fprintf(stderr, "freq: %.02fHz\n", c->swap_count / t);
+		c->swap_count = 0;
+		c->start = end;
+	}
+}
+
 static int
 set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 {
@@ -846,6 +921,12 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 	uint32_t plane_flags = 0, format;
 	int ret, crtc_x, crtc_y, crtc_w, crtc_h;
 	unsigned int i;
+
+	format = format_fourcc(p->format_str);
+	if (format == 0) {
+		fprintf(stderr, "Unknown format: %s\n", p->format_str);
+		return -1;
+	}
 
 	/* find an unused plane which can be connected to our crtc */
 	plane_resources = drmModeGetPlaneResources(fd);
@@ -877,92 +958,10 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 		return -1;
 	}
 
-	if (!strcmp(p->format_str, "XR24")) {
-		if (create_test_buffer(kms, p->w, p->h, &pitches[0], &plane_bo))
-			return -1;
-		kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
-		format = DRM_FORMAT_XRGB8888;
-	} else {
-		void *virtual;
-
-		/* TODO: this always allocates a buffer for 32bpp RGB.. but for
-		 * YUV formats, we don't use all of it..  since 4bytes/pixel is
-		 * worst case, so live with it for now and just don't use all
-		 * the buffer:
-		 */
-		plane_bo = allocate_buffer(kms, p->w, p->h, &pitches[0]);
-		if (!plane_bo)
-			return -1;
-
-		ret = kms_bo_map(plane_bo, &virtual);
-		if (ret) {
-			fprintf(stderr, "failed to map buffer: %s\n",
-				strerror(-ret));
-			kms_bo_destroy(&plane_bo);
-			return -1;
-		}
-
-		/* just testing a limited # of formats to test single
-		 * and multi-planar path.. would be nice to add more..
-		 */
-		if (!strcmp(p->format_str, "YUYV")) {
-			pitches[0] = p->w * 2;
-			offsets[0] = 0;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
-
-			fill422(virtual, 0, p->w, p->h, pitches[0]);
-
-			format = DRM_FORMAT_YUYV;
-		} else if (!strcmp(p->format_str, "NV12")) {
-			pitches[0] = p->w;
-			offsets[0] = 0;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
-			pitches[1] = p->w;
-			offsets[1] = p->w * p->h;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[1]);
-
-			fill420(virtual, virtual+offsets[1], virtual+offsets[1]+1,
-					2, 0, p->w, p->h, pitches[0]);
-
-			format = DRM_FORMAT_NV12;
-		} else if (!strcmp(p->format_str, "YV12")) {
-			pitches[0] = p->w;
-			offsets[0] = 0;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
-			pitches[1] = p->w / 2;
-			offsets[1] = p->w * p->h;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[1]);
-			pitches[2] = p->w / 2;
-			offsets[2] = offsets[1] + (p->w * p->h) / 4;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[2]);
-
-			fill420(virtual, virtual+offsets[1], virtual+offsets[2],
-					1, 0, p->w, p->h, pitches[0]);
-
-			format = DRM_FORMAT_YVU420;
-		} else if (!strcmp(p->format_str, "XR15")) {
-			pitches[0] = p->w * 2;
-			offsets[0] = 0;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
-
-			fill1555(virtual, 0, p->w, p->h, pitches[0]);
-
-			format = DRM_FORMAT_XRGB1555;
-		} else if (!strcmp(p->format_str, "AR15")) {
-			pitches[0] = p->w * 2;
-			offsets[0] = 0;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
-
-			fill1555(virtual, 0, p->w, p->h, pitches[0]);
-
-			format = DRM_FORMAT_ARGB1555;
-		} else {
-			fprintf(stderr, "Unknown format: %s\n", p->format_str);
-			return -1;
-		}
-
-		kms_bo_unmap(plane_bo);
-	}
+	plane_bo = create_test_buffer(kms, format, p->w, p->h, handles,
+				      pitches, offsets, 0);
+	if (plane_bo == NULL)
+		return -1;
 
 	/* just use single plane format for now.. */
 	if (drmModeAddFB2(fd, p->w, p->h, format,
@@ -996,8 +995,8 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 	struct kms_driver *kms;
 	struct kms_bo *bo, *other_bo;
 	unsigned int fb_id, other_fb_id;
-	int i, j, ret, width, height, x, stride;
-	unsigned handle;
+	int i, j, ret, width, height, x;
+	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
 	drmEventContext evctx;
 
 	width = 0;
@@ -1018,11 +1017,12 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 		return;
 	}
 
-	if (create_test_buffer(kms, width, height, &stride, &bo))
+	bo = create_test_buffer(kms, DRM_FORMAT_XRGB8888, width, height, handles,
+				pitches, offsets, 0);
+	if (bo == NULL)
 		return;
 
-	kms_bo_get_prop(bo, KMS_HANDLE, &handle);
-	ret = drmModeAddFB(fd, width, height, 24, 32, stride, handle, &fb_id);
+	ret = drmModeAddFB(fd, width, height, 24, 32, pitches[0], handles[0], &fb_id);
 	if (ret) {
 		fprintf(stderr, "failed to add fb (%ux%u): %s\n",
 			width, height, strerror(errno));
@@ -1060,11 +1060,12 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 	if (!page_flip)
 		return;
 	
-	if (create_grey_buffer(kms, width, height, &stride, &other_bo))
+	other_bo = create_test_buffer(kms, DRM_FORMAT_XRGB8888, width, height, handles,
+				      pitches, offsets, 1);
+	if (other_bo == NULL)
 		return;
 
-	kms_bo_get_prop(other_bo, KMS_HANDLE, &handle);
-	ret = drmModeAddFB(fd, width, height, 32, 32, stride, handle,
+	ret = drmModeAddFB(fd, width, height, 32, 32, pitches[0], handles[0],
 			   &other_fb_id);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
