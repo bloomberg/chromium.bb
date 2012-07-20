@@ -1264,7 +1264,6 @@ set_surface_type(struct shell_surface *shsurf)
 		shsurf->saved_x = surface->geometry.x;
 		shsurf->saved_y = surface->geometry.y;
 		shsurf->saved_position_valid = true;
-		center_on_output(surface, shsurf->fullscreen_output);
 
 		if (!wl_list_empty(&shsurf->rotation.transform.link)) {
 			wl_list_remove(&shsurf->rotation.transform.link);
@@ -1422,6 +1421,8 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 
 	switch (shsurf->fullscreen.type) {
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT:
+		if (surface->buffer)
+			center_on_output(surface, shsurf->fullscreen_output);
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE:
 		matrix = &shsurf->fullscreen.transform.matrix;
