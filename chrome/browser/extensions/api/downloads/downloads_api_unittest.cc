@@ -912,8 +912,16 @@ IN_PROC_BROWSER_TEST_F(
 
 // Test downloads.getFileIcon() on in-progress, finished, cancelled and deleted
 // download items.
+// The test fails under ASan, see http://crbug.com/138211
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DownloadExtensionTest_FileIcon_Active \
+    DISABLED_DownloadExtensionTest_FileIcon_Active
+#else
+#define MAYBE_DownloadExtensionTest_FileIcon_Active \
+    DownloadExtensionTest_FileIcon_Active
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadExtensionTest_FileIcon_Active) {
+    MAYBE_DownloadExtensionTest_FileIcon_Active) {
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
 
@@ -1009,8 +1017,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // whether they exist or not.  If the file doesn't exist we should receive a
 // generic icon from the OS/toolkit that may or may not be specific to the file
 // type.
+// The test fails under ASan, see http://crbug.com/138211
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DownloadExtensionTest_FileIcon_History \
+    DISABLED_DownloadExtensionTest_FileIcon_History
+#else
+#define MAYBE_DownloadExtensionTest_FileIcon_History \
+    DownloadExtensionTest_FileIcon_History
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadExtensionTest_FileIcon_History) {
+    MAYBE_DownloadExtensionTest_FileIcon_History) {
   const HistoryDownloadInfo kHistoryInfo[] = {
     { FILE_PATH_LITERAL("real.txt"),
       DownloadItem::COMPLETE,
@@ -1318,6 +1334,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // test that on-record downloads are visible in both incognito and on-record
 // contexts, for DownloadsSearchFunction, DownloadsPauseFunction,
 // DownloadsResumeFunction, and DownloadsCancelFunction.
+// The test fails under ASan, see http://crbug.com/138211
+#if defined(ADDRESS_SANITIZER)
+#define \
+    MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito \
+    DISABLED_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
+#else
+#define \
+    MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito \
+    DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
   scoped_ptr<base::Value> result_value;
