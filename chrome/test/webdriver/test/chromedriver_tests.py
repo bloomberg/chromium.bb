@@ -536,7 +536,8 @@ class MouseTest(ChromeDriverTest):
 
 
 # crbug.com/109698: when running in xvfb, 2 extra mouse moves are received.
-@SkipIf(util.IsLinux())
+# crbug.com/138125: fails if the mouse cursor is left over the page.
+@SkipIf(True)
 class MouseEventTest(ChromeDriverTest):
   """Tests for checking the correctness of mouse events."""
 
