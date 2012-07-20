@@ -637,10 +637,18 @@ static const struct format_info format_info[] = {
 	{ DRM_FORMAT_NV61, "NV61", MAKE_YUV_INFO(YUV_YCrCb, 2, 1, 2) },
 	/* YUV planar */
 	{ DRM_FORMAT_YVU420, "YV12", MAKE_YUV_INFO(YUV_YCrCb, 2, 2, 1) },
-	/* RGB */
-	{ DRM_FORMAT_XRGB1555, "XR15", MAKE_RGB_INFO(5, 10, 5, 5, 5, 0, 0, 0) },
-	{ DRM_FORMAT_XRGB8888, "XR24", MAKE_RGB_INFO(8, 16, 8, 8, 8, 0, 0, 0) },
+	/* RGB16 */
 	{ DRM_FORMAT_ARGB1555, "AR15", MAKE_RGB_INFO(5, 10, 5, 5, 5, 0, 1, 15) },
+	{ DRM_FORMAT_XRGB1555, "XR15", MAKE_RGB_INFO(5, 10, 5, 5, 5, 0, 0, 0) },
+	{ DRM_FORMAT_RGB565, "RG16", MAKE_RGB_INFO(5, 11, 6, 5, 5, 0, 0, 0) },
+	/* RGB24 */
+	{ DRM_FORMAT_BGR888, "BG24", MAKE_RGB_INFO(8, 0, 8, 8, 8, 16, 0, 0) },
+	{ DRM_FORMAT_RGB888, "RG24", MAKE_RGB_INFO(8, 16, 8, 8, 8, 0, 0, 0) },
+	/* RGB32 */
+	{ DRM_FORMAT_ARGB8888, "AR24", MAKE_RGB_INFO(8, 16, 8, 8, 8, 0, 8, 24) },
+	{ DRM_FORMAT_BGRA8888, "BA24", MAKE_RGB_INFO(8, 8, 8, 16, 8, 24, 8, 0) },
+	{ DRM_FORMAT_XRGB8888, "XR24", MAKE_RGB_INFO(8, 16, 8, 8, 8, 0, 0, 0) },
+	{ DRM_FORMAT_BGRX8888, "BX24", MAKE_RGB_INFO(8, 8, 8, 16, 8, 24, 0, 0) },
 };
 
 unsigned int format_fourcc(const char *name)
@@ -690,6 +698,9 @@ struct color_yuv {
 	 (((g) >> (8 - (rgb)->green.length)) << (rgb)->green.offset) | \
 	 (((b) >> (8 - (rgb)->blue.length)) << (rgb)->blue.offset) | \
 	 (((a) >> (8 - (rgb)->alpha.length)) << (rgb)->alpha.offset))
+
+#define MAKE_RGB24(rgb, r, g, b) \
+	{ .value = MAKE_RGBA(rgb, r, g, b, 0) }
 
 static void
 fill_smpte_yuv_planar(const struct yuv_info *yuv,
@@ -958,6 +969,69 @@ fill_smpte_rgb16(const struct rgb_info *rgb, unsigned char *mem,
 }
 
 static void
+fill_smpte_rgb24(const struct rgb_info *rgb, void *mem,
+		 unsigned int width, unsigned int height, unsigned int stride)
+{
+	const struct color_rgb24 colors_top[] = {
+		MAKE_RGB24(rgb, 192, 192, 192),	/* grey */
+		MAKE_RGB24(rgb, 192, 192, 0),	/* yellow */
+		MAKE_RGB24(rgb, 0, 192, 192),	/* cyan */
+		MAKE_RGB24(rgb, 0, 192, 0),	/* green */
+		MAKE_RGB24(rgb, 192, 0, 192),	/* magenta */
+		MAKE_RGB24(rgb, 192, 0, 0),	/* red */
+		MAKE_RGB24(rgb, 0, 0, 192),	/* blue */
+	};
+	const struct color_rgb24 colors_middle[] = {
+		MAKE_RGB24(rgb, 0, 0, 192),	/* blue */
+		MAKE_RGB24(rgb, 19, 19, 19),	/* black */
+		MAKE_RGB24(rgb, 192, 0, 192),	/* magenta */
+		MAKE_RGB24(rgb, 19, 19, 19),	/* black */
+		MAKE_RGB24(rgb, 0, 192, 192),	/* cyan */
+		MAKE_RGB24(rgb, 19, 19, 19),	/* black */
+		MAKE_RGB24(rgb, 192, 192, 192),	/* grey */
+	};
+	const struct color_rgb24 colors_bottom[] = {
+		MAKE_RGB24(rgb, 0, 33, 76),	/* in-phase */
+		MAKE_RGB24(rgb, 255, 255, 255),	/* super white */
+		MAKE_RGB24(rgb, 50, 0, 106),	/* quadrature */
+		MAKE_RGB24(rgb, 19, 19, 19),	/* black */
+		MAKE_RGB24(rgb, 9, 9, 9),	/* 3.5% */
+		MAKE_RGB24(rgb, 19, 19, 19),	/* 7.5% */
+		MAKE_RGB24(rgb, 29, 29, 29),	/* 11.5% */
+		MAKE_RGB24(rgb, 19, 19, 19),	/* black */
+	};
+	unsigned int x;
+	unsigned int y;
+
+	for (y = 0; y < height * 6 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((struct color_rgb24 *)mem)[x] =
+				colors_top[x * 7 / width];
+		mem += stride;
+	}
+
+	for (; y < height * 7 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((struct color_rgb24 *)mem)[x] =
+				colors_middle[x * 7 / width];
+		mem += stride;
+	}
+
+	for (; y < height; ++y) {
+		for (x = 0; x < width * 5 / 7; ++x)
+			((struct color_rgb24 *)mem)[x] =
+				colors_bottom[x * 4 / (width * 5 / 7)];
+		for (; x < width * 6 / 7; ++x)
+			((struct color_rgb24 *)mem)[x] =
+				colors_bottom[(x - width * 5 / 7) * 3
+					      / (width / 7) + 4];
+		for (; x < width; ++x)
+			((struct color_rgb24 *)mem)[x] = colors_bottom[7];
+		mem += stride;
+	}
+}
+
+static void
 fill_smpte_rgb32(const struct rgb_info *rgb, unsigned char *mem,
 		 unsigned int width, unsigned int height, unsigned int stride)
 {
@@ -1045,11 +1119,19 @@ fill_smpte(const struct format_info *info, void *planes[3], unsigned int width,
 		return fill_smpte_yuv_planar(&info->yuv, planes[0], planes[1],
 					     planes[2], width, height, stride);
 
+	case DRM_FORMAT_RGB565:
 	case DRM_FORMAT_ARGB1555:
 	case DRM_FORMAT_XRGB1555:
 		return fill_smpte_rgb16(&info->rgb, planes[0],
 					width, height, stride);
+	case DRM_FORMAT_BGR888:
+	case DRM_FORMAT_RGB888:
+		return fill_smpte_rgb24(&info->rgb, planes[0],
+					width, height, stride);
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_BGRA8888:
 	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_BGRX8888:
 		return fill_smpte_rgb32(&info->rgb, planes[0],
 					width, height, stride);
 	}
@@ -1176,20 +1258,42 @@ static void
 fill_tiles_rgb16(const struct rgb_info *rgb, unsigned char *mem,
 		 unsigned int width, unsigned int height, unsigned int stride)
 {
-	unsigned int i, j;
+	unsigned int x, y;
 
-	for (j = 0; j < height; j++) {
-		uint16_t *ptr = (uint16_t*)((char*)mem + j * stride);
-		for (i = 0; i < width; i++) {
-			div_t d = div(i+j, width);
-			uint32_t rgb = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
-			unsigned char *rgbp = (unsigned char *)&rgb;
+	for (y = 0; y < height; ++y) {
+		for (x = 0; x < width; ++x) {
+			div_t d = div(x+y, width);
+			uint32_t rgb32 = 0x00130502 * (d.quot >> 6)
+				       + 0x000a1120 * (d.rem >> 6);
+			uint16_t color =
+				MAKE_RGBA(rgb, (rgb32 >> 16) & 0xff,
+					  (rgb32 >> 8) & 0xff, rgb32 & 0xff,
+					  255);
 
-			*(ptr++) = 0x8000 |
-					(rgbp[RED] >> 3) << 10 |
-					(rgbp[GREEN] >> 3) << 5 |
-					(rgbp[BLUE] >> 3);
+			((uint16_t *)mem)[x] = color;
 		}
+		mem += stride;
+	}
+}
+
+static void
+fill_tiles_rgb24(const struct rgb_info *rgb, unsigned char *mem,
+		 unsigned int width, unsigned int height, unsigned int stride)
+{
+	unsigned int x, y;
+
+	for (y = 0; y < height; ++y) {
+		for (x = 0; x < width; ++x) {
+			div_t d = div(x+y, width);
+			uint32_t rgb32 = 0x00130502 * (d.quot >> 6)
+				       + 0x000a1120 * (d.rem >> 6);
+			struct color_rgb24 color =
+				MAKE_RGB24(rgb, (rgb32 >> 16) & 0xff,
+					   (rgb32 >> 8) & 0xff, rgb32 & 0xff);
+
+			((struct color_rgb24 *)mem)[x] = color;
+		}
+		mem += stride;
 	}
 }
 
@@ -1197,19 +1301,25 @@ static void
 fill_tiles_rgb32(const struct rgb_info *rgb, unsigned char *mem,
 		 unsigned int width, unsigned int height, unsigned int stride)
 {
-	unsigned int i, j;
+	unsigned char *mem_base = mem;
+	unsigned int x, y;
 
-	for (j = 0; j < height; j++) {
-		uint32_t *ptr = (uint32_t*)((char*)mem + j * stride);
-		for (i = 0; i < width; i++) {
-			div_t d = div(i, width);
-			ptr[i] =
-				0x00130502 * (d.quot >> 6) +
-				0x000a1120 * (d.rem >> 6);
+	for (y = 0; y < height; ++y) {
+		for (x = 0; x < width; ++x) {
+			div_t d = div(x+y, width);
+			uint32_t rgb32 = 0x00130502 * (d.quot >> 6)
+				       + 0x000a1120 * (d.rem >> 6);
+			uint32_t color =
+				MAKE_RGBA(rgb, (rgb32 >> 16) & 0xff,
+					  (rgb32 >> 8) & 0xff, rgb32 & 0xff,
+					  255);
+
+			((uint32_t *)mem)[x] = color;
 		}
+		mem += stride;
 	}
 
-	make_pwetty(mem, width, height, stride);
+	make_pwetty(mem_base, width, height, stride);
 }
 
 static void
@@ -1239,11 +1349,19 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 		return fill_tiles_yuv_planar(&info->yuv, planes[0], planes[1],
 					     planes[2], width, height, stride);
 
+	case DRM_FORMAT_RGB565:
 	case DRM_FORMAT_ARGB1555:
 	case DRM_FORMAT_XRGB1555:
 		return fill_tiles_rgb16(&info->rgb, planes[0],
 					width, height, stride);
+	case DRM_FORMAT_BGR888:
+	case DRM_FORMAT_RGB888:
+		return fill_tiles_rgb24(&info->rgb, planes[0],
+					width, height, stride);
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_BGRA8888:
 	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_BGRX8888:
 		return fill_tiles_rgb32(&info->rgb, planes[0],
 					width, height, stride);
 	}
@@ -1418,6 +1536,7 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 		planes[0] = virtual;
 		break;
 
+	case DRM_FORMAT_BGR888:
 	case DRM_FORMAT_RGB888:
 		pitches[0] = width * 3;
 		offsets[0] = 0;
@@ -1426,7 +1545,10 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 		planes[0] = virtual;
 		break;
 
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_BGRA8888:
 	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_BGRX8888:
 		pitches[0] = width * 4;
 		offsets[0] = 0;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
