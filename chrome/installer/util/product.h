@@ -56,6 +56,14 @@ class Product {
     return distribution_->GetType() == BrowserDistribution::CHROME_FRAME;
   }
 
+  bool is_chrome_app_host() const {
+    return distribution_->GetType() == BrowserDistribution::CHROME_APP_HOST;
+  }
+
+  bool is_chrome_binaries() const {
+    return distribution_->GetType() == BrowserDistribution::CHROME_BINARIES;
+  }
+
   bool HasOption(const std::wstring& option) const {
     return options_.find(option) != options_.end();
   }

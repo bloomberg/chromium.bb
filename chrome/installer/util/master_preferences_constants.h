@@ -22,6 +22,8 @@ extern const char kAltShortcutText[];
 extern const char kAutoLaunchChrome[];
 // Boolean. This is to be a Chrome install. (When using MultiInstall)
 extern const char kChrome[];
+// Boolean. This is to be a Chrome App Host install.
+extern const char kChromeAppHost[];
 // Boolean. This is to be a Chrome Frame install.
 extern const char kChromeFrame[];
 // Boolean. Chrome Frame is to be installed in ready-mode.

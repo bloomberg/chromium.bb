@@ -86,7 +86,6 @@ void ChromeFrameOperations::AddComDllList(
     const std::set<std::wstring>& options,
     std::vector<FilePath>* com_dll_list) const {
   DCHECK(com_dll_list);
-  std::vector<FilePath> dll_list;
   com_dll_list->push_back(FilePath(installer::kChromeFrameDll));
 }
 

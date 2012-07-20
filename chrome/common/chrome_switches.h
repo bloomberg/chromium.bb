@@ -41,6 +41,7 @@ extern const char kAppsGalleryInstallAutoConfirmForTests[];
 extern const char kAppsGalleryReturnTokens[];
 extern const char kAppsGalleryURL[];
 extern const char kAppsGalleryUpdateURL[];
+extern const char kAppsInstallFromManifestURL[];
 extern const char kAppsNewInstallBubble[];
 extern const char kAppsNoThrob[];
 extern const char kAuthNegotiateDelegateWhitelist[];

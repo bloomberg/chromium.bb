@@ -15,6 +15,7 @@ namespace {
 
 const wchar_t kModChrome[] = L"-chrome";
 const wchar_t kModChromeFrame[] = L"-chromeframe";
+const wchar_t kModAppHost[] = L"-apphost";
 const wchar_t kModMultiInstall[] = L"-multi";
 const wchar_t kModReadyMode[] = L"-readymode";
 const wchar_t kModStage[] = L"-stage:";
@@ -31,6 +32,7 @@ const wchar_t* const kModifiers[] = {
   kModMultiInstall,
   kModChrome,
   kModChromeFrame,
+  kModAppHost,
   kModReadyMode,
   kSfxMultiFail,
   kSfxFull
@@ -41,6 +43,7 @@ enum ModifierIndex {
   MOD_MULTI_INSTALL,
   MOD_CHROME,
   MOD_CHROME_FRAME,
+  MOD_APP_HOST,
   MOD_READY_MODE,
   SFX_MULTI_FAIL,
   SFX_FULL,
@@ -191,6 +194,14 @@ bool ChannelInfo::IsChromeFrame() const {
 
 bool ChannelInfo::SetChromeFrame(bool value) {
   return SetModifier(MOD_CHROME_FRAME, value, &value_);
+}
+
+bool ChannelInfo::IsAppHost() const {
+  return HasModifier(MOD_APP_HOST, value_);
+}
+
+bool ChannelInfo::SetAppHost(bool value) {
+  return SetModifier(MOD_APP_HOST, value, &value_);
 }
 
 bool ChannelInfo::IsMultiInstall() const {

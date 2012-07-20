@@ -4,6 +4,7 @@
 {
   'dependencies': [
     '<(chrome_dll_project)',
+    '../chrome.gyp:app_host',
     '../chrome.gyp:chrome',
     '../chrome.gyp:chrome_nacl_win64',
     '../chrome.gyp:default_extensions',
@@ -179,6 +180,7 @@
       ],
       'inputs': [
         '<(create_installer_archive_py_path)',
+        '<(PRODUCT_DIR)/app_host.exe',
         '<(PRODUCT_DIR)/chrome.exe',
         '<(chrome_dll_path)',
         '<(PRODUCT_DIR)/nacl64.exe',

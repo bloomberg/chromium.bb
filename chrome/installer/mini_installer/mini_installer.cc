@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,6 +159,7 @@ void SetInstallerFlags(const Configuration& configuration) {
   const REGSAM key_access = KEY_QUERY_VALUE | KEY_SET_VALUE;
   const HKEY root_key =
       configuration.is_system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  // This is ignored if multi-install is true.
   const wchar_t* app_guid =
       configuration.has_chrome_frame() ?
           google_update::kChromeFrameAppGuid :
@@ -222,40 +223,48 @@ void SetInstallerFlags(const Configuration& configuration) {
 
 // Gets the setup.exe path from Registry by looking the value of Uninstall
 // string.  |size| is measured in wchar_t units.
+bool GetSetupExePathForGuidFromRegistry(bool system_level,
+                                        const wchar_t* app_guid,
+                                        wchar_t* path,
+                                        size_t size) {
+  const HKEY root_key = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  RegKey key;
+  return OpenClientStateKey(root_key, app_guid, KEY_QUERY_VALUE, &key) &&
+      (key.ReadValue(kUninstallRegistryValueName, path, size) == ERROR_SUCCESS);
+}
+
+// Gets the setup.exe path from Registry by looking the value of Uninstall
+// string.  |size| is measured in wchar_t units.
 bool GetSetupExePathFromRegistry(const Configuration& configuration,
                                  wchar_t* path,
                                  size_t size) {
-  const HKEY root_key =
-      configuration.is_system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  RegKey key;
-  bool succeeded = false;
+  bool system_level = configuration.is_system_level();
 
   // If this is a multi install, first try looking in the binaries for the path.
-  if (configuration.is_multi_install() &&
-      OpenClientStateKey(root_key, google_update::kMultiInstallAppGuid,
-                         KEY_QUERY_VALUE, &key)) {
-    succeeded = (key.ReadValue(kUninstallRegistryValueName, path,
-                               size) == ERROR_SUCCESS);
+  if (configuration.is_multi_install() && GetSetupExePathForGuidFromRegistry(
+          system_level, google_update::kMultiInstallAppGuid, path, size)) {
+    return true;
   }
 
-  // Failing that, look in Chrome Frame's client state key --chrome-frame was
+  // Failing that, look in Chrome Frame's client state key if --chrome-frame was
   // specified.
-  if (!succeeded && configuration.has_chrome_frame() &&
-      OpenClientStateKey(root_key, google_update::kChromeFrameAppGuid,
-                         KEY_QUERY_VALUE, &key)) {
-    succeeded = (key.ReadValue(kUninstallRegistryValueName, path,
-                               size) == ERROR_SUCCESS);
+  if (configuration.has_chrome_frame() && GetSetupExePathForGuidFromRegistry(
+          system_level, google_update::kChromeFrameAppGuid, path, size)) {
+    return true;
   }
 
-  // Make a last-ditch effort to look in Chrome's client state key.
-  if (!succeeded &&
-      OpenClientStateKey(root_key, configuration.chrome_app_guid(),
-                         KEY_QUERY_VALUE, &key)) {
-    succeeded = (key.ReadValue(kUninstallRegistryValueName, path,
-                               size) == ERROR_SUCCESS);
+  // Make a last-ditch effort to look in the Chrome and App Host client state
+  // keys.
+  if (GetSetupExePathForGuidFromRegistry(
+          system_level, configuration.chrome_app_guid(), path, size)) {
+    return true;
+  }
+  if (configuration.has_app_host() && GetSetupExePathForGuidFromRegistry(
+          system_level, google_update::kChromeAppHostAppGuid, path, size)) {
+    return true;
   }
 
-  return succeeded;
+  return false;
 }
 
 // Calls CreateProcess with good default parameters and waits for the process

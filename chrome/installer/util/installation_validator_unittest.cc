@@ -78,11 +78,14 @@ class FakeProductState : public ProductState {
                            const char* version,
                            int channel_modifiers,
                            Vehicle vehicle);
+  void AddQuickEnableApplicationHostCommand(BrowserDistribution::Type dist_type,
+                                            Level install_level,
+                                            const char* version,
+                                            int channel_modifiers);
   void AddQuickEnableCfCommand(BrowserDistribution::Type dist_type,
                                Level install_level,
                                const char* version,
                                int channel_modifiers);
-  void RemoveQuickEnableCfCommand(BrowserDistribution::Type dist_type);
   void set_multi_install(bool is_multi_install) {
     multi_install_ = is_multi_install;
   }
@@ -194,6 +197,23 @@ void FakeProductState::SetUninstallCommand(BrowserDistribution::Type dist_type,
     uninstall_command_.AppendSwitch(installer::switches::kMsi);
 }
 
+// Adds the "quick-enable-application-host" Google Update product command.
+void FakeProductState::AddQuickEnableApplicationHostCommand(
+    BrowserDistribution::Type dist_type,
+    Level install_level,
+    const char* version,
+    int channel_modifiers) {
+  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
+  DCHECK_NE(channel_modifiers & CM_MULTI, 0);
+
+  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
+                                       channel_modifiers));
+  cmd_line.AppendSwitch(installer::switches::kMultiInstall);
+  cmd_line.AppendSwitch(installer::switches::kChromeAppHost);
+  commands_.Set(installer::kCmdQuickEnableApplicationHost,
+                AppCommand(cmd_line.GetCommandLineString(), true, true));
+}
+
 // Adds the "quick-enable-cf" Google Update product command.
 void FakeProductState::AddQuickEnableCfCommand(
     BrowserDistribution::Type dist_type,
@@ -211,14 +231,6 @@ void FakeProductState::AddQuickEnableCfCommand(
   cmd_line.AppendSwitch(installer::switches::kChromeFrameQuickEnable);
   commands_.Set(installer::kCmdQuickEnableCf,
                 AppCommand(cmd_line.GetCommandLineString(), true, true));
-}
-
-// Removes the "quick-enable-cf" Google Update product command.
-void FakeProductState::RemoveQuickEnableCfCommand(
-    BrowserDistribution::Type dist_type) {
-  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
-
-  commands_.Remove(installer::kCmdQuickEnableCf);
 }
 
 }  // namespace
@@ -411,6 +423,12 @@ void InstallationValidatorTest::MakeProductState(
            InstallationValidator::CHROME_FRAME_READY_MODE_CHROME_MULTI)) {
     state->AddQuickEnableCfCommand(prod_type, install_level,
                                    chrome::kChromeVersion, channel_modifiers);
+  }
+  if (prod_type == BrowserDistribution::CHROME_BINARIES) {
+    state->AddQuickEnableApplicationHostCommand(prod_type,
+                                                install_level,
+                                                chrome::kChromeVersion,
+                                                channel_modifiers);
   }
 }
 

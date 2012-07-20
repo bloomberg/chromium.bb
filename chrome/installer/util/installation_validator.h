@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,7 @@ class InstallationValidator {
       CHROME_FRAME_SINGLE     = 0x04,
       CHROME_FRAME_MULTI      = 0x08,
       CHROME_FRAME_READY_MODE = 0x10,
+      CHROME_APP_HOST         = 0x20,
     };
   };  // class ProductBits
 
@@ -58,6 +59,23 @@ class InstallationValidator {
         ProductBits::CHROME_FRAME_MULTI | ProductBits::CHROME_MULTI,
     CHROME_FRAME_READY_MODE_CHROME_MULTI =
         ProductBits::CHROME_FRAME_READY_MODE | ProductBits::CHROME_MULTI,
+    CHROME_APP_HOST =
+        ProductBits::CHROME_APP_HOST,
+    CHROME_APP_HOST_CHROME_FRAME_SINGLE =
+        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_FRAME_SINGLE,
+    CHROME_APP_HOST_CHROME_FRAME_SINGLE_CHROME_MULTI =
+        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_FRAME_SINGLE |
+        ProductBits::CHROME_MULTI,
+    CHROME_APP_HOST_CHROME_FRAME_MULTI =
+        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_FRAME_MULTI,
+    CHROME_APP_HOST_CHROME_FRAME_MULTI_CHROME_MULTI =
+        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_FRAME_MULTI |
+        ProductBits::CHROME_MULTI,
+    CHROME_APP_HOST_CHROME_MULTI =
+        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_MULTI,
+    CHROME_APP_HOST_CHROME_MULTI_CHROME_FRAME_READY_MODE =
+        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_MULTI |
+        ProductBits::CHROME_FRAME_READY_MODE,
   };
 
   // Validates |machine_state| at user or system level, returning true if valid.
@@ -136,6 +154,24 @@ class InstallationValidator {
         const ProductState& product_state) const OVERRIDE;
   };
 
+  // Validation rules for Chrome App Host.
+  class ChromeAppHostRules : public ProductRules {
+   public:
+    virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
+    virtual void AddUninstallSwitchExpectations(
+        const InstallationState& machine_state,
+        bool system_install,
+        const ProductState& product_state,
+        SwitchExpectations* expectations) const OVERRIDE;
+    virtual void AddRenameSwitchExpectations(
+        const InstallationState& machine_state,
+        bool system_install,
+        const ProductState& product_state,
+        SwitchExpectations* expectations) const OVERRIDE;
+    virtual bool UsageStatsAllowed(
+        const ProductState& product_state) const OVERRIDE;
+  };
+
   // Validation rules for the multi-install Chrome binaries.
   class ChromeBinariesRules : public ProductRules {
    public:
@@ -162,9 +198,17 @@ class InstallationValidator {
     const ProductRules& rules;
   };
 
+  static void ValidateInstallAppCommand(const ProductContext& ctx,
+                                           const AppCommand& command,
+                                           bool* is_valid);
   static void ValidateQuickEnableCfCommand(const ProductContext& ctx,
                                            const AppCommand& command,
                                            bool* is_valid);
+  static void ValidateQuickEnableApplicationHostCommand(
+    const ProductContext& ctx,
+    const AppCommand& command,
+    bool* is_valid);
+
   static void ValidateAppCommandExpectations(
       const ProductContext& ctx,
       const CommandExpectations& expectations,
