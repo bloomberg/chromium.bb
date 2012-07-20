@@ -428,6 +428,12 @@ wl_shm_buffer_get_stride(struct wl_buffer *buffer);
 uint32_t
 wl_shm_buffer_get_format(struct wl_buffer *buffer);
 
+int32_t
+wl_shm_buffer_get_width(struct wl_buffer *buffer);
+
+int32_t
+wl_shm_buffer_get_height(struct wl_buffer *buffer);
+
 int
 wl_buffer_is_shm(struct wl_buffer *buffer);
 
