@@ -275,7 +275,7 @@ for example, a chat panel.
 <p>Here's a sample <code>background.js</code>
   with a 'shell' window:</p>
 <pre>chrome.experimental.app.onLaunched.addListener(function() {
-  chrome.appWindow.create('main.html', {
+  chrome.app.window.create('main.html', {
     width: 800,
     height: 600,
     minWidth: 800,
@@ -290,7 +290,7 @@ for example, a chat panel.
   with a 'panel' window:
 </p>
 <pre>chrome.experimental.app.onLaunched.addListener(function() {
-  chrome.appWindow.create('index.html', {
+  chrome.app.window.create('index.html', {
     width: 400,
     height: 200,
     type: 'panel'

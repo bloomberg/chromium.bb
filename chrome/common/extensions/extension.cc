@@ -3113,7 +3113,7 @@ bool Extension::InitFromValue(int flags, string16* error) {
   }
 
   // TODO(jeremya/kalman) do this via the features system by exposing the
-  // appWindow API to platform apps, with no dependency on any permissions.
+  // app.window API to platform apps, with no dependency on any permissions.
   // See http://crbug.com/120069.
   if (is_platform_app())
     api_permissions.insert(APIPermission::kAppWindow);

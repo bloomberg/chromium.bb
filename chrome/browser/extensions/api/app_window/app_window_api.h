@@ -24,7 +24,7 @@ class AppWindowExtensionFunction : public SyncExtensionFunction {
 
 class AppWindowCreateFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("appWindow.create");
+  DECLARE_EXTENSION_FUNCTION_NAME("app.window.create");
 
  protected:
   virtual ~AppWindowCreateFunction() {}
@@ -33,7 +33,7 @@ class AppWindowCreateFunction : public SyncExtensionFunction {
 
 class AppWindowFocusFunction : public AppWindowExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("appWindow.focus");
+  DECLARE_EXTENSION_FUNCTION_NAME("app.window.focus");
 
  protected:
   virtual ~AppWindowFocusFunction() {}
@@ -42,7 +42,7 @@ class AppWindowFocusFunction : public AppWindowExtensionFunction {
 
 class AppWindowMaximizeFunction : public AppWindowExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("appWindow.maximize");
+  DECLARE_EXTENSION_FUNCTION_NAME("app.window.maximize");
 
  protected:
   virtual ~AppWindowMaximizeFunction() {}
@@ -51,7 +51,7 @@ class AppWindowMaximizeFunction : public AppWindowExtensionFunction {
 
 class AppWindowMinimizeFunction : public AppWindowExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("appWindow.minimize");
+  DECLARE_EXTENSION_FUNCTION_NAME("app.window.minimize");
 
  protected:
   virtual ~AppWindowMinimizeFunction() {}
@@ -60,7 +60,7 @@ class AppWindowMinimizeFunction : public AppWindowExtensionFunction {
 
 class AppWindowRestoreFunction : public AppWindowExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("appWindow.restore");
+  DECLARE_EXTENSION_FUNCTION_NAME("app.window.restore");
 
  protected:
   virtual ~AppWindowRestoreFunction() {}

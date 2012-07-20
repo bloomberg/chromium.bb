@@ -4,6 +4,8 @@
 
 import code
 import cpp_util
+from schema_util import CapitalizeFirstLetter
+from schema_util import JsFunctionNameToClassName
 
 import json
 import os
@@ -68,23 +70,20 @@ class SchemaBundleGenerator(object):
     c.Append()
     return self.GenerateHeader('generated_api', c)
 
-  def CapitalizeFirstLetter(self, value):
-    return value[0].capitalize() + value[1:]
-
   def GenerateFunctionRegistry(self):
     c = code.Code()
     c.Sblock("class GeneratedFunctionRegistry {")
     c.Append("public:")
     c.Sblock("static void RegisterAll(ExtensionFunctionRegistry* registry) {")
     for namespace in self._model.namespaces.values():
-      namespace_name = self.CapitalizeFirstLetter(namespace.name.replace(
+      namespace_name = CapitalizeFirstLetter(namespace.name.replace(
           "experimental.", ""))
       for function in namespace.functions.values():
         if function.nocompile:
           continue
-        function_name = namespace_name + self.CapitalizeFirstLetter(
-            function.name)
-        c.Append("registry->RegisterFunction<%sFunction>();" % function_name)
+        function_name = JsFunctionNameToClassName(namespace.name, function.name)
+        c.Append("registry->RegisterFunction<%sFunction>();" % (
+            function_name))
     c.Eblock("}")
     c.Eblock("};")
     c.Append()

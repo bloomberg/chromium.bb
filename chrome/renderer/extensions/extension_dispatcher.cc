@@ -610,7 +610,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
 
   // Custom bindings.
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("appWindow", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contentSettings",

@@ -11,7 +11,7 @@ class ExtensionDispatcher;
 
 namespace extensions {
 
-// Implements custom bindings for the appWindow API.
+// Implements custom bindings for the app.window API.
 class AppWindowCustomBindings : public ChromeV8Extension {
  public:
   explicit AppWindowCustomBindings(ExtensionDispatcher* extension_dispatcher);

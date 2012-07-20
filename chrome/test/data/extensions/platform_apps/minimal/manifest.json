@@ -3,8 +3,7 @@
   "version": "1",
   "manifest_version": 2,
   "permissions": [
-    "experimental",
-    "appWindow"
+    "experimental"
   ],
   "app": {
     "background": {

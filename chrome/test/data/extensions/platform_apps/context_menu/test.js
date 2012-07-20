@@ -8,6 +8,6 @@ chrome.experimental.app.onLaunched.addListener(function() {
         title: 'Extension Item 1',
       },
       function() {
-        chrome.appWindow.create('main.html', {}, function() {});
+        chrome.app.window.create('main.html', {}, function() {});
       });
 });

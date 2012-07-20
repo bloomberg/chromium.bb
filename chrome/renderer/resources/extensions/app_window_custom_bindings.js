@@ -9,7 +9,7 @@ var sendRequest = require('sendRequest').sendRequest;
 var appWindowNatives = requireNative('app_window');
 var GetView = appWindowNatives.GetView;
 
-chromeHidden.registerCustomHook('appWindow', function(bindingsAPI) {
+chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   apiFunctions.setCustomCallback('create', function(name, request, viewId) {
     var view = null;

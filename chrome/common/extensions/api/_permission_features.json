@@ -13,7 +13,7 @@
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
-  "appWindow": {
+  "app.window": {
     "channel": "dev",
     "extension_types": ["platform_app"]
   },

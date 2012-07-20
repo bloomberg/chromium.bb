@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function onLaunched() {
-  chrome.appWindow.create('test.html');
+  chrome.app.window.create('test.html');
 }
 
 chrome.experimental.app.onLaunched.addListener(onLaunched);

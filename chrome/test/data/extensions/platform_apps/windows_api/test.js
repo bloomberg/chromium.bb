@@ -7,7 +7,7 @@ var callbackPass = chrome.test.callbackPass;
 chrome.experimental.app.onLaunched.addListener(function() {
   chrome.test.runTests([
    function testCreateWindow() {
-     chrome.appWindow.create('test.html', {}, callbackPass(function (win) {
+     chrome.app.window.create('test.html', {}, callbackPass(function (win) {
        chrome.test.assertTrue(typeof win.window === 'object');
        chrome.test.assertEq('about:blank', win.location.href);
        chrome.test.assertEq('<html><head></head><body></body></html>',
@@ -16,7 +16,7 @@ chrome.experimental.app.onLaunched.addListener(function() {
    },
 
    function testUpdateWindowWidth() {
-     chrome.appWindow.create('test.html',
+     chrome.app.window.create('test.html',
          {width:512, height:384, frame:'custom'},
          callbackPass(function(win) {
            chrome.test.assertEq(512, win.innerWidth);
@@ -29,7 +29,7 @@ chrome.experimental.app.onLaunched.addListener(function() {
    },
 
    /*function testMaximize() {
-     chrome.appWindow.create('test.html', {width: 200, height: 200},
+     chrome.app.window.create('test.html', {width: 200, height: 200},
          callbackPass(function(win) {
            win.onresize = callbackPass(function(e) {
              // Crude test to check we're somewhat maximized.
@@ -38,12 +38,12 @@ chrome.experimental.app.onLaunched.addListener(function() {
              chrome.test.assertTrue(
                  win.outerWidth > screen.availWidth * 0.8);
            });
-           win.chrome.appWindow.maximize();
+           win.chrome.app.window.maximize();
          }));
    },*/
 
    /*function testRestore() {
-     chrome.appWindow.create('test.html', {width: 200, height: 200},
+     chrome.app.window.create('test.html', {width: 200, height: 200},
          callbackPass(function(win) {
            var oldWidth = win.innerWidth;
            var oldHeight = win.innerHeight;
@@ -60,9 +60,9 @@ chrome.experimental.app.onLaunched.addListener(function() {
                  chrome.test.assertEq(oldHeight, win.innerHeight);
                });
              })
-             win.chrome.appWindow.restore();
+             win.chrome.app.window.restore();
            });
-           win.chrome.appWindow.maximize();
+           win.chrome.app.window.maximize();
          }));
    },*/
   ]);

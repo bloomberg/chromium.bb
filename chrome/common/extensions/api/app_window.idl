@@ -4,7 +4,7 @@
 
 // File-level comment to appease parser. Eventually this will not be necessary.
 
-namespace appWindow {
+namespace app.window {
   dictionary CreateWindowOptions {
     // Width of the window.
     long? width;
@@ -37,7 +37,8 @@ namespace appWindow {
     DOMString? frame;
   };
 
-  callback CreateWindowCallback = void (long view_id);
+  callback CreateWindowCallback =
+      void ([instanceOf=global] object created_window);
 
   interface Functions {
     static void create(DOMString url,

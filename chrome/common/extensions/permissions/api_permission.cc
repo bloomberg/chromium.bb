@@ -156,7 +156,7 @@ void APIPermission::RegisterAllPermissions(
 
     // Platform-app permissions.
     { kSocket, "socket", kFlagCannotBeOptional },
-    { kAppWindow, "appWindow" },
+    { kAppWindow, "app.window" },
     { kAudioCapture, "audioCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
       PermissionMessage::kAudioCapture },

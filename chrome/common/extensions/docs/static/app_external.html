@@ -181,14 +181,14 @@ and one for the sandboxed page:
 
 <pre>
 chrome.experimental.app.onLaunched.addListener(function() {
-  chrome.appWindow.create('window.html', {
+  chrome.app.window.create('window.html', {
     'width': 400,
     'height': 400,
     'left': 0,
     'top': 0
   });
 
-  chrome.appWindow.create('sandboxed.html', {
+  chrome.app.window.create('sandboxed.html', {
     'width': 400,
     'height': 400,
     'left': 400,
@@ -238,7 +238,7 @@ opens:
 var myWin = null;
 
 chrome.experimental.app.onLaunched.addListener(function() {
-  chrome.appWindow.create('sandboxed.html', {
+  chrome.app.window.create('sandboxed.html', {
     'width': 400,
     'height': 400
   }, function(win) {

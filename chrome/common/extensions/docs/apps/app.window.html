@@ -17,7 +17,7 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.appWindow module, which is part of the Google Chrome  extension APIs."><title>chrome.appWindow - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.app.window module, which is part of the Google Chrome  extension APIs."><title>chrome.app.window - Google Chrome Extensions - Google Code</title></head>
   <body doc-family="apps">  <link href="../css/ApiRefStyles_apps.css" rel="stylesheet" type="text/css">
   <link href="../css/prettify.css" rel="stylesheet" type="text/css">
   <link href="../css/shared.css" rel="stylesheet" type="text/css">
@@ -157,14 +157,14 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.appWindow</h1>
+        <h1 class="page_title">chrome.app.window</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
               <li>
-                <a href="#apiReference">API reference: chrome.appWindow</a>
+                <a href="#apiReference">API reference: chrome.app.window</a>
                 <ol>
                   <li>
             <a href="#global-methods">Methods</a>
@@ -190,7 +190,7 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-appWindow.CreateWindowOptions">appWindow.CreateWindowOptions</a>
+                <a href="#type-app.window.CreateWindowOptions">app.window.CreateWindowOptions</a>
                 <ol>
                 </ol>
               </li>
@@ -218,7 +218,7 @@
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.appWindow</h2>
+        <h2>API reference: chrome.app.window</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
@@ -231,8 +231,8 @@
               <h4>create</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.create</span>(<span class="null"><span>string</span>
-                      <var><span>url</span></var></span><span class="optional"><span>, </span><span>appWindow.CreateWindowOptions</span>
+                  <span>chrome.app.window.create</span>(<span class="null"><span>string</span>
+                      <var><span>url</span></var></span><span class="optional"><span>, </span><span>app.window.CreateWindowOptions</span>
                       <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>CreateWindowCallback</span></var></span>)</div>
               <div class="description">
@@ -275,7 +275,7 @@
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="appWindow.html#type-appWindow.CreateWindowOptions">appWindow.CreateWindowOptions</a>
+                        <a href="app.window.html#type-app.window.CreateWindowOptions">app.window.CreateWindowOptions</a>
                       </span>
                     </span>
                   )
@@ -322,14 +322,14 @@
             <div>
               <div>
           <dt>
-            <var>view_id</var>
+            <var>created_window</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>global</span>
                       </span>
                     </span>
                   )
@@ -362,7 +362,7 @@
               <h4>focus</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.focus</span>()</div>
+                  <span>chrome.app.window.focus</span>()</div>
               <div class="description">
                 <!-- PARAMETERS -->
                 <dl>
@@ -378,7 +378,7 @@
               <h4>maximize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.maximize</span>()</div>
+                  <span>chrome.app.window.maximize</span>()</div>
               <div class="description">
                 <!-- PARAMETERS -->
                 <dl>
@@ -394,7 +394,7 @@
               <h4>minimize</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.minimize</span>()</div>
+                  <span>chrome.app.window.minimize</span>()</div>
               <div class="description">
                 <!-- PARAMETERS -->
                 <dl>
@@ -410,7 +410,7 @@
               <h4>moveTo</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.moveTo</span>(<span class="null"><span>integer</span>
+                  <span>chrome.app.window.moveTo</span>(<span class="null"><span>integer</span>
                       <var><span>x</span></var></span><span class="null"><span>, </span><span>integer</span>
                       <var><span>y</span></var></span>)</div>
               <div class="description">
@@ -480,7 +480,7 @@
               <h4>resizeTo</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.resizeTo</span>(<span class="null"><span>integer</span>
+                  <span>chrome.app.window.resizeTo</span>(<span class="null"><span>integer</span>
                       <var><span>width</span></var></span><span class="null"><span>, </span><span>integer</span>
                       <var><span>height</span></var></span>)</div>
               <div class="description">
@@ -550,7 +550,7 @@
               <h4>restore</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.restore</span>()</div>
+                  <span>chrome.app.window.restore</span>()</div>
               <div class="description">
                 <!-- PARAMETERS -->
                 <dl>
@@ -571,8 +571,8 @@
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-appWindow.CreateWindowOptions"></a>
-              <h4>appWindow.CreateWindowOptions</h4>
+              <a name="type-app.window.CreateWindowOptions"></a>
+              <h4>app.window.CreateWindowOptions</h4>
               <div>
           <dt>
               <em>
