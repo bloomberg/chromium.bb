@@ -1308,7 +1308,9 @@ class ValidationPool(object):
 
     # Create a list of changes other than this one that might be guilty.
     other_suspects = suspects - set([change])
-    other_suspects_str = ', '.join(sorted(map(str, other_suspects)))
+    other_suspects_str = ', '.join(sorted(
+        cros_patch.FormatChangeId(x.change_id, force_internal=x.internal)
+                                  for x in other_suspects))
 
     if change in suspects:
       if other_suspects_str:

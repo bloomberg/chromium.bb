@@ -992,8 +992,26 @@ class TestFindSuspects(base_mixin, mox.MoxTestBase):
     self._AssertSuspects(changes, suspects)
 
 
+class SimplePatch(object):
+
+  internal = False
+
+  def __init__(self):
+    self.id = _GetNumber()
+    self.change_id = "I%s" % str(self.id).rjust(40, "0")
+
+  def __str__(self):
+    return str(self.id)
+
+
 class TestCreateValidationFailureMessage(unittest.TestCase):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
+
+  def GetPatches(self, how_many=1):
+    patches = [SimplePatch() for _ in xrange(how_many)]
+    if how_many == 1:
+      return patches[0]
+    return patches
 
   def _AssertMessage(self, change, suspects, messages):
     """Call the _CreateValidationFailureMessage method.
@@ -1011,27 +1029,34 @@ class TestCreateValidationFailureMessage(unittest.TestCase):
 
   def testSuspectChange(self):
     """Test case where 1 is the only change and is suspect."""
-    self._AssertMessage('1', ['1'], ['1 failed'])
+    patch = self.GetPatches(1)
+    self._AssertMessage(patch, [patch], ['%s failed' % patch])
 
   def testInnocentChange(self):
     """Test case where 1 is innocent."""
-    self._AssertMessage('1', ['2'], ['2 failed'])
+    patch1, patch2 = self.GetPatches(2)
+    self._AssertMessage(patch1, [patch2], ['%s failed' % patch2])
 
   def testSuspectChanges(self):
     """Test case where 1 is suspected, but so is 2."""
-    self._AssertMessage('1', ['1', '2'], ['1 and 2 failed'])
+    patches = self.GetPatches(2)
+    self._AssertMessage(patches[0], patches,
+                        ['%s and %s failed' % tuple(patches)])
 
   def testInnocentChangeWithMultipleSuspects(self):
     """Test case where 2 and 3 are suspected."""
-    self._AssertMessage('1', ['2', '3'], ['2 and 3 failed'])
+    patches = self.GetPatches(3)
+    self._AssertMessage(patches[0], patches[1:],
+                        ['%s and %s failed' % tuple(patches[1:])])
 
   def testNoSuspects(self):
     """Test case where there are no suspects."""
-    self._AssertMessage('1', [], ['Internal error'])
+    self._AssertMessage(self.GetPatches(1), [], ['Internal error'])
 
   def testNoMessages(self):
     """Test case where there are no messages."""
-    self._AssertMessage('1', ['1'], [])
+    patch1 = self.GetPatches(1)
+    self._AssertMessage(patch1, [patch1], [])
 
 
 if __name__ == '__main__':
