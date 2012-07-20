@@ -6,6 +6,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
@@ -34,6 +35,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -41,6 +43,12 @@
 #include "ui/views/view.h"
 
 namespace {
+
+// Padding values for sections on the connection tab.
+const int kConnectionSectionPaddingBottom = 10;
+const int kConnectionSectionPaddingLeft = 10;
+const int kConnectionSectionPaddingTop = 10;
+const int kConnectionSectionPaddingRight = 10;
 
 // In order to make the arrow of the bubble point directly at the location icon
 // in the Omnibox rather then the bottom border of the Omnibox, the position of
@@ -86,6 +94,18 @@ const int kSectionHeadlineMarginBottom = 12;
 // section, is structured in individual rows. |kSectionRowSpaceing| is the
 // space between these rows.
 const int kSectionRowSpacing = 6;
+
+// Padding values for sections on the permissions tab.
+const int kPermissionsSectionPaddingBottom = 6;
+const int kPermissionsSectionPaddingLeft = 10;
+const int kPermissionsSectionPaddingTop = 14;
+// Space between the headline and the content of a section on the permissions
+// tab.
+const int kPermissionsSectionHeadlineMarginBottom = 10;
+// The content of the "Permissions" section and the "Cookies and Site Data"
+// section is structured in individual rows. |kPermissionsSectionRowSpacing|
+// is the space between these rows.
+const int kPermissionsSectionRowSpacing = 6;
 
 // The max width of the popup.
 const int kPopupWidth = 310;
@@ -225,6 +245,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       cookie_dialog_link_(NULL),
       permissions_content_(NULL),
       identity_info_content_(NULL),
+      certificate_dialog_link_(NULL),
+      cert_id_(0),
       connection_info_content_(NULL),
       page_info_content_(NULL) {
   if (InternalChromePage(url)) {
@@ -284,7 +306,6 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     layout->AddView(header_);
 
     layout->AddPaddingRow(1, kHeaderMarginBottom);
-
     tabbed_pane_ = new views::TabbedPane();
     layout->StartRow(1, content_column);
     layout->AddView(tabbed_pane_);
@@ -298,7 +319,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
         CreatePermissionsTab());
     tabbed_pane_->AddTab(
         l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
-        CreateIdentityTab());
+        CreateConnectionTab());
     tabbed_pane_->SelectTabAt(0);
     tabbed_pane_->set_listener(this);
 
@@ -340,9 +361,15 @@ void WebsiteSettingsPopupView::ButtonPressed(
 
 void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
                                            int event_flags) {
-  DCHECK_EQ(cookie_dialog_link_, source);
-  new CollectedCookiesViews(tab_contents_);
-  // The popup closes automatically when the collected cookies dialog opens.
+  if (source == cookie_dialog_link_) {
+    new CollectedCookiesViews(tab_contents_);
+  } else if (source == certificate_dialog_link_) {
+    gfx::NativeWindow parent =
+        anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
+ShowCertificateViewerByID(tab_contents_->web_contents(), parent, cert_id_);
+  }
+  // The popup closes automatically when the collected cookies dialog or the
+  // certificate viewer opens.
 }
 
 void WebsiteSettingsPopupView::TabSelectedAt(int index) {
@@ -406,7 +433,7 @@ void WebsiteSettingsPopupView::SetCookieInfo(
                     views::GridLayout::LEADING,
                     views::GridLayout::CENTER);
 
-    layout->AddPaddingRow(1, kSectionRowSpacing);
+    layout->AddPaddingRow(1, kPermissionsSectionRowSpacing);
   }
 
   layout->Layout(site_data_content_);
@@ -439,14 +466,12 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
         permission->default_setting,
         permission->setting);
     selector->AddObserver(this);
-
     layout->AddView(selector,
                     1,
                     1,
                     views::GridLayout::LEADING,
                     views::GridLayout::CENTER);
-
-    layout->AddPaddingRow(1, kSectionRowSpacing);
+    layout->AddPaddingRow(1, kPermissionsSectionRowSpacing);
   }
 
   SizeToContents();
@@ -472,29 +497,45 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   header_->SetIdentityName(UTF8ToUTF16(identity_info.site_identity));
   header_->SetIdentityStatus(identity_status_text, text_color);
 
-  ResetContentContainer(
+  // The headline and the certificate dialog link of the site's identity
+  // section is only displayed if the site's identity was verified. If the
+  // site's identity was verified, then the headline contains the organization
+  // name from the provided certificate. If the organization name is not
+  // available than the hostname of the site is used instead.
+  string16 headline;
+  if (identity_info.cert_id) {
+    cert_id_ = identity_info.cert_id;
+    certificate_dialog_link_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
+    certificate_dialog_link_->set_listener(this);
+    headline = UTF8ToUTF16(identity_info.site_identity);
+  }
+  ResetConnectionSection(
       identity_info_content_,
       WebsiteSettingsUI::GetIdentityIcon(identity_info.identity_status),
-      UTF8ToUTF16(identity_info.identity_status_description));
-  ResetContentContainer(
+      headline,
+      UTF8ToUTF16(identity_info.identity_status_description),
+      certificate_dialog_link_);
+
+  ResetConnectionSection(
       connection_info_content_,
       WebsiteSettingsUI::GetConnectionIcon(identity_info.connection_status),
-      UTF8ToUTF16(identity_info.connection_status_description));
+      string16(),  // The connection section has no headline.
+      UTF8ToUTF16(identity_info.connection_status_description),
+      NULL);
 
-  // Layout.
-  GetLayoutManager()->Layout(this);
+  Layout();
   SizeToContents();
 }
 
 void WebsiteSettingsPopupView::SetFirstVisit(const string16& first_visit) {
-  // TODO(markusheintz): Display a minor warning icon if the page is visited
-  // the first time.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  ResetContentContainer(page_info_content_, rb.GetImageNamed(IDR_PAGEINFO_INFO),
-                        first_visit);
-
-  // Layout.
-  GetLayoutManager()->Layout(this);
+  ResetConnectionSection(
+      page_info_content_,
+      WebsiteSettingsUI::GetFirstVisitIcon(first_visit),
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
+      first_visit,
+      NULL);
+  Layout();
   SizeToContents();
 }
 
@@ -502,7 +543,7 @@ views::View* WebsiteSettingsPopupView::CreatePermissionsTab() {
   views::View* pane = new views::View();
   pane->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-
+  // Add cookies and site data section.
   cookie_dialog_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_SHOW_SITE_DATA));
   cookie_dialog_link_->set_listener(this);
@@ -513,7 +554,7 @@ views::View* WebsiteSettingsPopupView::CreatePermissionsTab() {
                     site_data_content_,
                     cookie_dialog_link_);
   pane->AddChildView(site_data_section);
-
+  // Add permissions section.
   permissions_content_ = new views::View();
   views::View* permissions_section =
       CreateSection(l10n_util::GetStringUTF16(
@@ -524,62 +565,23 @@ views::View* WebsiteSettingsPopupView::CreatePermissionsTab() {
   return pane;
 }
 
-views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
+views::View* WebsiteSettingsPopupView::CreateConnectionTab() {
   views::View* pane = new views::View();
   pane->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-
-  // Add Identity section.
-  views::View* section_content = new views::View();
-  views::GridLayout* layout = new views::GridLayout(section_content);
-  section_content->SetLayoutManager(layout);
-  const int content_column = 0;
-  views::ColumnSet* column_set =
-      layout->AddColumnSet(content_column);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
+  // Add site identity section.
   identity_info_content_ = new views::View();
-  layout->StartRow(1, content_column);
-  layout->AddView(identity_info_content_, 1, 1, views::GridLayout::LEADING,
-                  views::GridLayout::CENTER);
-  views::View* section = CreateSection(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_IDENTITY),
-      section_content,
-      NULL);
-  pane->AddChildView(section);
+  pane->AddChildView(identity_info_content_);
 
   // Add connection section.
+  pane->AddChildView(new views::Separator());
   connection_info_content_ = new views::View();
-  section = CreateSection(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_CONNECTION),
-      connection_info_content_,
-      NULL);
-  pane->AddChildView(section);
+  pane->AddChildView(connection_info_content_);
 
   // Add page info section.
-  section_content = new views::View();
-  layout = new views::GridLayout(section_content);
-  section_content->SetLayoutManager(layout);
-  column_set = layout->AddColumnSet(content_column);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
+  pane->AddChildView(new views::Separator());
   page_info_content_ = new views::View();
-  layout->StartRow(1, content_column);
-  layout->AddView(page_info_content_, 1, 1, views::GridLayout::LEADING,
-                  views::GridLayout::CENTER);
-  section = CreateSection(
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
-      section_content,
-      NULL);
-  pane->AddChildView(section);
+  pane->AddChildView(page_info_content_);
 
   return pane;
 }
@@ -593,7 +595,7 @@ views::View* WebsiteSettingsPopupView::CreateSection(
   container->SetLayoutManager(layout);
   const int content_column = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(content_column);
-  column_set->AddPaddingColumn(0, kSectionPaddingLeft);
+  column_set->AddPaddingColumn(0, kPermissionsSectionPaddingLeft);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
@@ -601,14 +603,14 @@ views::View* WebsiteSettingsPopupView::CreateSection(
                         0,
                         0);
 
-  layout->AddPaddingRow(1, kSectionPaddingTop);
+  layout->AddPaddingRow(1, kPermissionsSectionPaddingTop);
   layout->StartRow(1, content_column);
   views::Label* headline = new views::Label(headline_text);
   headline->SetFont(headline->font().DeriveFont(0, gfx::Font::BOLD));
   layout->AddView(headline, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
 
-  layout->AddPaddingRow(1, kSectionHeadlineMarginBottom);
+  layout->AddPaddingRow(1, kPermissionsSectionHeadlineMarginBottom);
   layout->StartRow(1, content_column);
   layout->AddView(content, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
@@ -620,27 +622,24 @@ views::View* WebsiteSettingsPopupView::CreateSection(
                     views::GridLayout::CENTER);
   }
 
-  layout->AddPaddingRow(1, kSectionPaddingBottom);
+  layout->AddPaddingRow(1, kPermissionsSectionPaddingBottom);
   return container;
 }
 
-void WebsiteSettingsPopupView::ResetContentContainer(
-    views::View* content_container,
+void WebsiteSettingsPopupView::ResetConnectionSection(
+    views::View* section_container,
     const gfx::Image& icon,
-    const string16& text) {
-  views::ImageView* icon_view = new views::ImageView();
-  icon_view->SetImage(icon.ToImageSkia());
-  views::Label* label = new views::Label(text);
-  label->SetMultiLine(true);
-  label->SetAllowCharacterBreak(true);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    const string16& headline,
+    const string16& text,
+    views::Link* link) {
+  section_container->RemoveAllChildViews(true);
 
-  content_container->RemoveAllChildViews(true);
-  views::GridLayout* layout = new views::GridLayout(content_container);
-  content_container->SetLayoutManager(layout);
+  views::GridLayout* layout = new views::GridLayout(section_container);
+  section_container->SetLayoutManager(layout);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
+  column_set->AddPaddingColumn(0, kConnectionSectionPaddingLeft);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
                         0,
                         views::GridLayout::USE_PREF,
                         0,
@@ -652,10 +651,55 @@ void WebsiteSettingsPopupView::ResetContentContainer(
                         views::GridLayout::USE_PREF,
                         0,
                         0);
+  column_set->AddPaddingColumn(0, kConnectionSectionPaddingRight);
 
+
+  layout->AddPaddingRow(0, kConnectionSectionPaddingTop);
   layout->StartRow(1, 0);
+
+  // Add status icon.
+  views::ImageView* icon_view = new views::ImageView();
+  icon_view->SetImage(*icon.ToImageSkia());
   layout->AddView(icon_view, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
-  layout->AddView(label, 1, 1, views::GridLayout::LEADING,
+
+  // Add section content.
+  views::View* content_pane = new views::View();
+  views::GridLayout* content_layout = new views::GridLayout(content_pane);
+  content_pane->SetLayoutManager(content_layout);
+  views::ColumnSet* content_column_set = content_layout->AddColumnSet(0);
+  content_column_set->AddColumn(views::GridLayout::LEADING,
+                                views::GridLayout::LEADING,
+                                1,
+                                views::GridLayout::USE_PREF,
+                                0,
+                                0);
+  if (!headline.empty()) {
+    views::Label* headline_label = new views::Label(headline);
+    headline_label->SetFont(
+        headline_label->font().DeriveFont(0, gfx::Font::BOLD));
+    headline_label->SetMultiLine(true);
+    headline_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    // Allow linebreaking in the middle of words if necessary, so that extremely
+    // long hostnames (longer than one line) will still be completely shown.
+    headline_label->SetAllowCharacterBreak(true);
+    content_layout->StartRow(1, 0);
+    content_layout->AddView(headline_label);
+  }
+
+  views::Label* description_label = new views::Label(text);
+  description_label->SetMultiLine(true);
+  description_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  description_label->SetAllowCharacterBreak(true);
+  content_layout->StartRow(1, 0);
+  content_layout->AddView(description_label);
+
+  if (link) {
+    content_layout->StartRow(1, 0);
+    content_layout->AddView(link);
+  }
+
+  layout->AddView(content_pane, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
+  layout->AddPaddingRow(0, kConnectionSectionPaddingBottom);
 }

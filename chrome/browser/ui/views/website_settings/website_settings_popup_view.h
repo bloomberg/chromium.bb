@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -85,9 +86,9 @@ class WebsiteSettingsPopupView
   // returned view is transferred to the caller.
   views::View* CreatePermissionsTab() WARN_UNUSED_RESULT;
 
-  // Creates the contents of the "Identity" tab. The ownership of the returned
+  // Creates the contents of the "connection" tab. The ownership of the returned
   // view is transferred to the caller.
-  views::View* CreateIdentityTab() WARN_UNUSED_RESULT;
+  views::View* CreateConnectionTab() WARN_UNUSED_RESULT;
 
   // Each tab contains several sections with a |headline| followed by the
   // section |contents| and an optional |link|. This method creates a section
@@ -97,14 +98,17 @@ class WebsiteSettingsPopupView
                              views::View* contents,
                              views::Link* link) WARN_UNUSED_RESULT;
 
-  // Resets the |content_container| and adds the passed |icon| and |text| to
-  // it. All existing child views of the |content_container| are cleared and
-  // destroyed. The |icon| and |text| are added to the |content_container|
-  // using a two column layout that is common to all sections on the identity
-  // tab.
-  void ResetContentContainer(views::View* content_container,
-                             const gfx::Image& icon,
-                             const string16& text);
+  // Resets the content of a section. All children of the |section_container|
+  // are cleared and destroyed first. Then the |icon|, |headline|, |text| and
+  // |link| are layout out properly. If the |headline| is an empty string then
+  // no headline will be displayed. The ownership of the passed |link| is
+  // transfered to the ResetConnectionSection method and the |link| is added to
+  // the views hierarchy. If the |link| is NULL then no link is be displayed.
+  void ResetConnectionSection(views::View* section_container,
+                              const gfx::Image& icon,
+                              const string16& headline,
+                              const string16& text,
+                              views::Link* link);
 
   // The tab contents of the current tab. The popup can't live longer than a
   // tab.
@@ -127,7 +131,17 @@ class WebsiteSettingsPopupView
   // "Permissions" tab.
   views::View* permissions_content_;
 
+  // The view that contains the ui elements for displaying information about
+  // the site's identity.
   views::View* identity_info_content_;
+  // The link to open the certificate viewer for displaying the certificate
+  // provided by the website. If the site does not provide a certificate then
+  // |certificate_dialog_link_| is NULL.
+  views::Link* certificate_dialog_link_;
+  // The id of the certificate provided by the site. If the site does not
+  // provide a certificate then |cert_id_| is 0.
+  int cert_id_;
+
   views::View* connection_info_content_;
   views::View* page_info_content_;
 
