@@ -14,7 +14,7 @@
 #include "content/common/android/surface_texture_peer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "jni/content_video_view_jni.h"
+#include "jni/ContentVideoView_jni.h"
 #include "webkit/media/android/media_metadata_android.h"
 
 using base::android::AttachCurrentThread;
