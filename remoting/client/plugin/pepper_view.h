@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/point.h"
+#include "remoting/client/chromoting_view.h"
 #include "remoting/client/frame_consumer.h"
 
 namespace remoting {
@@ -21,7 +22,8 @@ class ChromotingInstance;
 class ClientContext;
 class FrameProducer;
 
-class PepperView : public FrameConsumer,
+class PepperView : public ChromotingView,
+                   public FrameConsumer,
                    public base::SupportsWeakPtr<PepperView> {
  public:
   // Constructs a PepperView for the |instance|. The |instance|, |context|
@@ -30,6 +32,15 @@ class PepperView : public FrameConsumer,
              ClientContext* context,
              FrameProducer* producer);
   virtual ~PepperView();
+
+  // ChromotingView implementation.
+  virtual bool Initialize() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+  virtual void SetConnectionState(
+      protocol::ConnectionToHost::State state,
+      protocol::ErrorCode error) OVERRIDE;
+  virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
+  virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void ApplyBuffer(const SkISize& view_size,

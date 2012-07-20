@@ -51,7 +51,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
                          public base::NonThreadSafe {
  public:
   enum State {
-    INITIALIZING,
     CONNECTING,
     CONNECTED,
     FAILED,
