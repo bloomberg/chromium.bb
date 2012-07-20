@@ -11,7 +11,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/'
                      'ppb_audio')
 
-nexe = 'ppapi_ppb_audio_${TARGET_FULLARCH}'
+nexe = env.ProgramNameForNmf('ppapi_ppb_audio')
 env.Alias('ppapi_ppb_audio${PROGSUFFIX}',
           ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
