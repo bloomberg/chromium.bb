@@ -173,6 +173,9 @@ def _PatchWrapException(functor):
     try:
       return functor(self, parent, *args, **kwds)
     except gerrit_helper.GerritException, e:
+      if isinstance(e, gerrit_helper.QueryNotSpecific):
+        e = ("%s\nSuggest you use gerrit numbers instead (prefixed with a * "
+             "if it's an internal change)." % e)
       new_exc = cros_patch.PatchException(parent, e)
       raise new_exc.__class__, new_exc, sys.exc_info()[2]
     except cros_patch.PatchException, e:
