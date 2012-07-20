@@ -12,7 +12,6 @@ parallel.
 import fnmatch
 import json
 import logging
-import multiprocessing
 import optparse
 import os
 import Queue
@@ -20,6 +19,20 @@ import subprocess
 import sys
 import threading
 import time
+
+
+def num_processors():
+  """Returns the number of processors.
+
+  Python on OSX 10.6 raises a NotImplementedError exception.
+  """
+  try:
+    # Multiprocessing
+    import multiprocessing
+    return multiprocessing.cpu_count()
+  except:  # pylint: disable=W0702
+    # Mac OS 10.6
+    return int(os.sysconf('SC_NPROCESSORS_ONLN'))
 
 
 if subprocess.mswindows:
@@ -477,7 +490,7 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
 def run_test_cases(executable, test_cases, jobs, timeout, no_dump):
   """Traces test cases one by one."""
   progress = Progress(len(test_cases))
-  with ThreadPool(jobs or multiprocessing.cpu_count()) as pool:
+  with ThreadPool(jobs) as pool:
     function = Runner(executable, os.getcwd(), timeout, progress).map
     for test_case in test_cases:
       pool.add_task(function, test_case)
@@ -535,7 +548,8 @@ def main():
   parser.add_option(
       '-j', '--jobs',
       type='int',
-      help='number of parallel jobs')
+      default=num_processors(),
+      help='number of parallel jobs; default=%default')
   parser.add_option(
       '-t', '--timeout',
       type='int',
