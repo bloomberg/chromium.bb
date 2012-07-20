@@ -20,7 +20,7 @@ function onLoad() {
         function(token) {
           remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
         },
-        remoting.defaultOAuthErrorHandler);
+        remoting.showErrorMessage);
   };
   var goFinishedIt2Me = function() {
     if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {

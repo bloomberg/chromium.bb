@@ -71,7 +71,7 @@ remoting.currentConnectionType = null;
 remoting.connectIt2Me = function() {
   remoting.currentConnectionType = remoting.ConnectionType.It2Me;
   remoting.WcsLoader.load(connectIt2MeWithAccessToken_,
-                          remoting.defaultOAuthErrorHandler);
+                          remoting.showErrorMessage);
 };
 
 /**
@@ -336,7 +336,7 @@ function startSession_() {
     }
   };
   remoting.oauth2.callWithToken(createPluginAndConnect,
-                                remoting.defaultOAuthErrorHandler);
+                                remoting.showErrorMessage);
 }
 
 /**
@@ -510,7 +510,7 @@ remoting.connectMe2MeWithPin = function() {
       host.hostName;
 
   remoting.WcsLoader.load(connectMe2MeWithAccessToken_,
-                          remoting.defaultOAuthErrorHandler);
+                          remoting.showErrorMessage);
 };
 
 /**

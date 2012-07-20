@@ -47,6 +47,7 @@ remoting.OAuth2.prototype.OAUTH2_TOKEN_ENDPOINT_ =
 /** @private */
 remoting.OAuth2.prototype.OAUTH2_REVOKE_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/revoke';
+
 /** @return {boolean} True if the app is already authenticated. */
 remoting.OAuth2.prototype.isAuthenticated = function() {
   if (this.getRefreshToken_()) {
@@ -381,24 +382,38 @@ remoting.OAuth2.prototype.onRefreshToken_ = function(onOk, onError, xhr,
 /**
  * Get the user's email address.
  *
- * @param {function(?string):void} setEmail Callback invoked when the email
- *     address is available, or on error.
+ * @param {function(string):void} onOk Callback invoked when the email
+ *     address is available.
+ * @param {function(remoting.Error):void} onError Callback invoked if an
+ *     error occurs.
  * @return {void} Nothing.
  */
-remoting.OAuth2.prototype.getEmail = function(setEmail) {
+remoting.OAuth2.prototype.getEmail = function(onOk, onError) {
+  var cached = window.localStorage.getItem(this.KEY_EMAIL_);
+  if (typeof cached == 'string') {
+    onOk(cached);
+    return;
+  }
   /** @type {remoting.OAuth2} */
   var that = this;
   /** @param {XMLHttpRequest} xhr The XHR response. */
   var onResponse = function(xhr) {
-    that.email = null;
+    var email = null;
     if (xhr.status == 200) {
       // TODO(ajwong): See if we can't find a JSON endpoint.
-      that.email = xhr.responseText.split('&')[0].split('=')[1];
-      window.localStorage.setItem(that.KEY_EMAIL_, that.email);
-    } else {
-      console.error('Unable to get email address:', xhr.status, xhr);
+      email = xhr.responseText.split('&')[0].split('=')[1];
+      window.localStorage.setItem(that.KEY_EMAIL_, email);
+      onOk(email);
+      return;
     }
-    setEmail(that.email);
+    console.error('Unable to get email address:', xhr.status, xhr);
+    var error = remoting.Error.UNEXPECTED;
+    if (xhr.status == 401) {
+      error = remoting.Error.AUTHENTICATION_FAILED;
+    } else if (xhr.status == 503) {
+      error = remoting.Error.SERVICE_UNAVAILABLE;
+    }
+    onError(error);
   };
 
   /** @param {string} token The access token. */
@@ -407,11 +422,6 @@ remoting.OAuth2.prototype.getEmail = function(setEmail) {
     // TODO(ajwong): Update to new v2 API.
     remoting.xhr.get('https://www.googleapis.com/userinfo/email',
                      onResponse, '', headers);
-  };
-  /** @param {remoting.Error} error */
-  var onError = function(error) {
-    console.error('Unable to get email address: ' + error);
-    setEmail(null);
   };
 
   this.callWithToken(getEmailFromToken, onError);

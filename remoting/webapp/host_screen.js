@@ -27,7 +27,7 @@ var lastShareWasCancelled_ = false;
 remoting.tryShare = function() {
   console.log('Attempting to share...');
   remoting.oauth2.callWithToken(remoting.tryShareWithToken_,
-                                remoting.defaultOAuthErrorHandler);
+                                remoting.showErrorMessage);
 };
 
 /**

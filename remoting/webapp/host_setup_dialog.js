@@ -154,7 +154,7 @@ remoting.HostSetupDialog.prototype.showForStart = function() {
   // using callWithToken here ensures consistent error handling in the
   // case where the refresh token is invalid.
   remoting.oauth2.callWithToken(this.showForStartWithToken_.bind(this),
-                                remoting.defaultOAuthErrorHandler);
+                                remoting.showErrorMessage);
 };
 
 /**

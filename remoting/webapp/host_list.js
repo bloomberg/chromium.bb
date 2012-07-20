@@ -255,7 +255,7 @@ remoting.HostList.unregisterHostById = function(hostId) {
         'https://www.googleapis.com/chromoting/v1/@me/hosts/' + hostId,
         function() {}, '', headers);
   }
-  remoting.oauth2.callWithToken(deleteHost, remoting.defaultOAuthErrorHandler);
+  remoting.oauth2.callWithToken(deleteHost, remoting.showErrorMessage);
 };
 
 /**
@@ -295,7 +295,7 @@ remoting.HostList.prototype.renameHost = function(hostTableEntry) {
       console.error('Could not rename host. Authentication failure.');
     }
   }
-  remoting.oauth2.callWithToken(renameHost, remoting.defaultOAuthErrorHandler);
+  remoting.oauth2.callWithToken(renameHost, remoting.showErrorMessage);
 };
 
 /**
