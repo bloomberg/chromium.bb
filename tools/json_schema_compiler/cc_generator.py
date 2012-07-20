@@ -355,7 +355,12 @@ class CCGenerator(object):
     elif prop.type_ == PropertyType.ENUM:
       return 'CreateEnumValue(%s).release()' % var
     elif prop.type_ == PropertyType.BINARY:
-      return '%s->DeepCopy()' % var
+      if prop.optional:
+        vardot = var + '->'
+      else:
+        vardot = var + '.'
+      return ('base::BinaryValue::CreateWithCopiedBuffer(%sdata(), %ssize())' %
+              (vardot, vardot))
     elif self._IsArrayOrArrayRef(prop):
       return '%s.release()' % self._util_cc_helper.CreateValueFromArray(
           self._cpp_type_generator.GetReferencedProperty(prop), var,
@@ -542,15 +547,20 @@ class CCGenerator(object):
       c.Append('%(dst)s->%(name)s = enum_temp;')
       c.Eblock('}')
     elif prop.type_ == PropertyType.BINARY:
-      # This is the same if the property is optional or not. We need a pointer
-      # to the base::BinaryValue to be able to populate it, so a scoped_ptr is
-      # used whether it is optional or required.
       (c.Append('if (!%(value_var)s->IsType(%(value_type)s))')
         .Append('  return %(failure_value)s;')
-        .Append('%(dst)s->%(name)s.reset(')
-        .Append('    static_cast<base::BinaryValue*>(%(value_var)s)'
-                '->DeepCopy());')
-      )
+        .Append('base::BinaryValue* binary_value =')
+        .Append('    static_cast<base::BinaryValue*>(%(value_var)s);')
+       )
+      if prop.optional:
+        (c.Append('%(dst)s->%(name)s.reset(')
+          .Append('    new std::string(binary_value->GetBuffer(),')
+          .Append('                    binary_value->GetSize()));')
+         )
+      else:
+        (c.Append('%(dst)s->%(name)s.assign(binary_value->GetBuffer(),')
+          .Append('                         binary_value->GetSize());')
+         )
     else:
       raise NotImplementedError(prop.type_)
     c.Eblock('}')

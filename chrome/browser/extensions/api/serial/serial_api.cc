@@ -236,8 +236,8 @@ bool SerialWriteFunction::Prepare() {
   params_ = api::experimental_serial::Write::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  io_buffer_size_ = params_->data->GetSize();
-  io_buffer_ = new net::WrappedIOBuffer(params_->data->GetBuffer());
+  io_buffer_size_ = params_->data.size();
+  io_buffer_ = new net::WrappedIOBuffer(params_->data.data());
 
   return true;
 }

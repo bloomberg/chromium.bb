@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 //
 
+#include <nacl/nacl_log.h>
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +14,6 @@
 #include <limits>
 #include <string>
 #include "native_client/src/include/nacl/nacl_inttypes.h"
-#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"

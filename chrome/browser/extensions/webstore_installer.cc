@@ -206,7 +206,7 @@ void WebstoreInstaller::Start() {
   }
 
   FilePath download_path = DownloadPrefs::FromDownloadManager(
-      BrowserContext::GetDownloadManager(profile_))->download_path();
+      BrowserContext::GetDownloadManager(profile_))->DownloadPath();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&GetDownloadFilePath, download_path, id_,
