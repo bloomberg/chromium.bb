@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "remoting/client/audio_player.h"
-#include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
+#include "remoting/client/client_user_interface.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/video.pb.h"
@@ -33,13 +33,13 @@ ChromotingClient::ChromotingClient(
     const ClientConfig& config,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     protocol::ConnectionToHost* connection,
-    ChromotingView* view,
+    ClientUserInterface* user_interface,
     RectangleUpdateDecoder* rectangle_decoder,
     AudioPlayer* audio_player)
     : config_(config),
       task_runner_(task_runner),
       connection_(connection),
-      view_(view),
+      user_interface_(user_interface),
       rectangle_decoder_(rectangle_decoder),
       audio_player_(audio_player),
       packet_being_processed_(false),
@@ -66,8 +66,6 @@ void ChromotingClient::Start(
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
                        config_.host_public_key, transport_factory.Pass(),
                        authenticator.Pass(), this, this, this, this, this);
-
-  view_->Initialize();
 }
 
 void ChromotingClient::Stop(const base::Closure& shutdown_task) {
@@ -85,8 +83,6 @@ void ChromotingClient::Stop(const base::Closure& shutdown_task) {
 }
 
 void ChromotingClient::OnDisconnected(const base::Closure& shutdown_task) {
-  view_->TearDown();
-
   shutdown_task.Run();
 }
 
@@ -98,12 +94,12 @@ ChromotingStats* ChromotingClient::GetStats() {
 void ChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  view_->GetClipboardStub()->InjectClipboardEvent(event);
+  user_interface_->GetClipboardStub()->InjectClipboardEvent(event);
 }
 
 void ChromotingClient::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
-  view_->GetCursorShapeStub()->SetCursorShape(cursor_shape);
+  user_interface_->GetCursorShapeStub()->SetCursorShape(cursor_shape);
 }
 
 void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
@@ -185,7 +181,7 @@ void ChromotingClient::OnConnectionState(
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
   if (state == protocol::ConnectionToHost::CONNECTED)
     Initialize();
-  view_->SetConnectionState(state, error);
+  user_interface_->OnConnectionState(state, error);
 }
 
 void ChromotingClient::OnPacketDone(bool last_packet,

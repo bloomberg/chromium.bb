@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_CHROMOTING_VIEW_H_
-#define REMOTING_CLIENT_CHROMOTING_VIEW_H_
+#ifndef REMOTING_CLIENT_CLIENT_USER_INTERFACE_H_
+#define REMOTING_CLIENT_CLIENT_USER_INTERFACE_H_
 
 #include "base/basictypes.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -15,22 +15,18 @@ class ClipboardStub;
 class CursorShapeStub;
 }  // namespace protocol
 
-// ChromotingView defines the behavior of an object that draws a view of the
-// remote desktop. Its main function is to render the update stream onto the
-// screen.
-class ChromotingView {
+// ClientUserInterface is an interface that must be implemented by
+// applications embedding the Chromoting client, to provide client's user
+// interface.
+//
+// TODO(sergeyu): Cleanup this interface, see crbug.com/138108 .
+class ClientUserInterface {
  public:
-  virtual ~ChromotingView() {}
-
-  // Initialize the common structures for the view.
-  virtual bool Initialize() = 0;
-
-  // Free up resources allocated by this view.
-  virtual void TearDown() = 0;
+  virtual ~ClientUserInterface() {}
 
   // Record the update the state of the connection, updating the UI as needed.
-  virtual void SetConnectionState(protocol::ConnectionToHost::State state,
-                                  protocol::ErrorCode error) = 0;
+  virtual void OnConnectionState(protocol::ConnectionToHost::State state,
+                                 protocol::ErrorCode error) = 0;
 
   // Get the view's ClipboardStub implementation.
   virtual protocol::ClipboardStub* GetClipboardStub() = 0;
@@ -41,4 +37,4 @@ class ChromotingView {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_CHROMOTING_VIEW_H_
+#endif  // REMOTING_CLIENT_CLIENT_USER_INTERFACE_H_
