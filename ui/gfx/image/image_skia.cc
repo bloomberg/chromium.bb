@@ -53,6 +53,8 @@ class ImageSkiaStorage : public base::RefCounted<ImageSkiaStorage> {
         size_(size) {
   }
 
+  bool has_source() const { return source_.get() != NULL; }
+
   std::vector<gfx::ImageSkiaRep>& image_reps() { return image_reps_; }
 
   const gfx::Size& size() const { return size_; }
@@ -212,6 +214,39 @@ const ImageSkiaRep& ImageSkia::GetRepresentation(
 
   return *it;
 }
+
+#if defined(OS_MACOSX)
+
+std::vector<ImageSkiaRep> ImageSkia::GetRepresentations() const {
+  if (isNull())
+    return std::vector<ImageSkiaRep>();
+
+  if (!storage_->has_source())
+    return image_reps();
+
+  // Attempt to generate image reps for as many scale factors supported by
+  // this platform as possible.
+  // Do not build return array here because the mapping from scale factor to
+  // image rep is one to many in some cases.
+  std::vector<ui::ScaleFactor> supported_scale_factors =
+      ui::GetSupportedScaleFactors();
+  for (size_t i = 0; i < supported_scale_factors.size(); ++i)
+    storage_->FindRepresentation(supported_scale_factors[i], true);
+
+  ImageSkiaReps internal_image_reps = storage_->image_reps();
+  // Create list of image reps to return, skipping null image reps which were
+  // added for caching purposes only.
+  ImageSkiaReps image_reps;
+  for (ImageSkiaReps::iterator it = internal_image_reps.begin();
+       it != internal_image_reps.end(); ++it) {
+    if (!it->is_null())
+      image_reps.push_back(*it);
+  }
+
+  return image_reps;
+}
+
+#endif  // OS_MACOSX
 
 bool ImageSkia::empty() const {
   return isNull() || storage_->size().IsEmpty();

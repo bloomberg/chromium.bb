@@ -83,6 +83,14 @@ class UI_EXPORT ImageSkia {
   const gfx::ImageSkiaRep& GetRepresentation(
       ui::ScaleFactor scale_factor) const;
 
+#if defined(OS_MACOSX)
+  // Returns the image reps contained by this object.
+  // If the image has a source, this method will attempt to generate
+  // representations from the source for all supported scale factors.
+  // Mac only for now.
+  std::vector<ImageSkiaRep> GetRepresentations() const;
+#endif  // OS_MACOSX
+
   // Returns true if object is null or its size is empty.
   bool empty() const;
 

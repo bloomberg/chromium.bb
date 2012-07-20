@@ -91,7 +91,7 @@ NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
 
   scoped_nsobject<NSImage> image([[NSImage alloc] init]);
 
-  std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
+  std::vector<gfx::ImageSkiaRep> image_reps = image_skia.GetRepresentations();
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
        it != image_reps.end(); ++it) {
     [image addRepresentation:

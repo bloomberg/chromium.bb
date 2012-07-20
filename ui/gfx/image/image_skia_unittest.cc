@@ -19,6 +19,9 @@ class FixedSource : public ImageSkiaSource {
  public:
   FixedSource(const ImageSkiaRep& image) : image_(image) {}
 
+  virtual ~FixedSource() {
+  }
+
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     return image_;
   }
@@ -33,6 +36,9 @@ class DynamicSource : public ImageSkiaSource {
  public:
   DynamicSource(const gfx::Size& size) : size_(size) {}
 
+  virtual ~DynamicSource() {
+  }
+
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     return gfx::ImageSkiaRep(size_, scale_factor);
   }
@@ -41,6 +47,22 @@ class DynamicSource : public ImageSkiaSource {
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicSource);
+};
+
+class NullSource: public ImageSkiaSource {
+ public:
+  NullSource() {
+  }
+
+  virtual ~NullSource() {
+  }
+
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    return gfx::ImageSkiaRep();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NullSource);
 };
 
 }  // namespace;
@@ -103,6 +125,49 @@ TEST(ImageSkiaTest, DynamicSource) {
   image_skia.GetRepresentation(ui::SCALE_FACTOR_200P);
   EXPECT_EQ(2U, image_skia.image_reps().size());
 }
+
+#if defined(OS_MACOSX)
+
+// Tests that GetRepresentations returns all of the representations in the
+// image when there are multiple representations for a scale factor.
+// This currently is the case with ImageLoadingTracker::LoadImages, to
+// load the application shortcut icon on Mac in particular.
+TEST(ImageSkiaTest, GetRepresentationsManyRepsPerScaleFactor) {
+  const int kSmallIcon1x = 16;
+  const int kSmallIcon2x = 32;
+  const int kLargeIcon1x = 32;
+
+  ImageSkia image(new NullSource(), gfx::Size(kSmallIcon1x, kSmallIcon1x));
+  // Simulate a source which loads images on a delay. Upon
+  // GetImageForScaleFactor, it immediately returns null and starts loading
+  // image reps slowly.
+  image.GetRepresentation(ui::SCALE_FACTOR_100P);
+  image.GetRepresentation(ui::SCALE_FACTOR_200P);
+
+  // After a lengthy amount of simulated time, finally loaded image reps.
+  image.AddRepresentation(ImageSkiaRep(
+      gfx::Size(kSmallIcon1x, kSmallIcon1x), ui::SCALE_FACTOR_100P));
+  image.AddRepresentation(ImageSkiaRep(
+      gfx::Size(kSmallIcon2x, kSmallIcon2x), ui::SCALE_FACTOR_200P));
+  image.AddRepresentation(ImageSkiaRep(
+      gfx::Size(kLargeIcon1x, kLargeIcon1x), ui::SCALE_FACTOR_100P));
+
+  std::vector<ImageSkiaRep> image_reps = image.GetRepresentations();
+  EXPECT_EQ(3u, image_reps.size());
+
+  int num_1x = 0;
+  int num_2x = 0;
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    if (image_reps[i].scale_factor() == ui::SCALE_FACTOR_100P)
+      num_1x++;
+    else if (image_reps[i].scale_factor() == ui::SCALE_FACTOR_200P)
+      num_2x++;
+  }
+  EXPECT_EQ(2, num_1x);
+  EXPECT_EQ(1, num_2x);
+}
+
+#endif  // OS_MACOSX
 
 TEST(ImageSkiaTest, GetBitmap) {
   ImageSkia image_skia(new DynamicSource(Size(100, 200)), Size(100, 200));
