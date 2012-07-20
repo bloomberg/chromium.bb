@@ -604,6 +604,12 @@ TEST_F(GpuMemoryManagerTest, GpuMemoryAllocationCompareTests) {
 // Creats various surface/non-surface stubs and switches stub visibility and
 // tests to see that stats data structure values are correct.
 TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
+#if !defined(OS_ANDROID)
+  const bool compositors_get_bonus_allocation = true;
+#else
+  const bool compositors_get_bonus_allocation = false;
+#endif
+
   GpuMemoryManager::StubMemoryStatMap stats;
 
   Manage();
@@ -633,7 +639,8 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_TRUE(stats[&stub2].visible);
   EXPECT_GT(stub1allocation2, 0ul);
   EXPECT_GT(stub2allocation2, 0ul);
-  EXPECT_LT(stub1allocation2, stub1allocation1);
+  if (compositors_get_bonus_allocation)
+    EXPECT_LT(stub1allocation2, stub1allocation1);
 
   FakeCommandBufferStub stub3(GenerateUniqueSurfaceId(), true, older_);
   client_.stubs_.push_back(&stub3);
@@ -650,7 +657,8 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_GT(stub1allocation3, 0ul);
   EXPECT_GT(stub2allocation3, 0ul);
   EXPECT_GT(stub3allocation3, 0ul);
-  EXPECT_LT(stub1allocation3, stub1allocation2);
+  if (compositors_get_bonus_allocation)
+    EXPECT_LT(stub1allocation3, stub1allocation2);
 
   stub1.surface_state_.visible = false;
   Manage();
@@ -666,5 +674,6 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_EQ(stub1allocation4, 0ul);
   EXPECT_GE(stub2allocation4, 0ul);
   EXPECT_GT(stub3allocation4, 0ul);
-  EXPECT_GT(stub3allocation4, stub3allocation3);
+  if (compositors_get_bonus_allocation)
+    EXPECT_GT(stub3allocation4, stub3allocation3);
 }
