@@ -336,6 +336,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBDatabaseMetadata)
   IPC_STRUCT_MEMBER(string16, name)
   IPC_STRUCT_MEMBER(string16, version)
+  IPC_STRUCT_MEMBER(int64_t, intVersion)
   IPC_STRUCT_MEMBER(std::vector<IndexedDBObjectStoreMetadata>, object_stores)
 IPC_STRUCT_END()
 
