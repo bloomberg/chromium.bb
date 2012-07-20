@@ -242,11 +242,11 @@ SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
 # NOTE: this can be overwritten by merge-tool.sh
-readonly UPSTREAM_REV=${UPSTREAM_REV:-7a08c61bc87b}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-97b587406ddd}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=95a4e0cd6450
-readonly GOLD_REV=c136b51e9dcb
+readonly GOLD_REV=4d56431485a3
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly CLANG_REV=158408
 
@@ -2114,7 +2114,10 @@ llvm-sb-setup() {
   fi
 
   case ${SB_SRPCMODE} in
-    srpc)    flags+=" -DNACL_SRPC" ;;
+    # The SRPC headers are included directly from the nacl tree, as they are
+    # not in the SDK. libsrpc should have already been built by the
+    # build.sh sdk step
+    srpc)    flags+=" -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) " ;;
     nonsrpc) ;;
   esac
 
@@ -2144,7 +2147,7 @@ llvm-sb-setup-jit() {
 
   local flags=""
   case ${SB_SRPCMODE} in
-    srpc)    flags+=" -DNACL_SRPC" ;;
+    srpc)    flags+=" -DNACL_SRPC -I${NACL_ROOT} " ;;
     nonsrpc) ;;
   esac
 
@@ -2525,7 +2528,11 @@ binutils-gold-sb-setup() {
   BINUTILS_GOLD_SB_LOG_PREFIX="binutils-gold.sb.${SB_LOG_PREFIX}"
   BINUTILS_GOLD_SB_OBJDIR="${SB_OBJDIR}/binutils-gold-sb"
 
-  local flags="-static -DNACL_SRPC -fno-exceptions -O3"
+  # The SRPC headers are included directly from the nacl tree, as they are
+  # not in the SDK. libsrpc should have already been built by the
+  # build.sh sdk step
+  local flags="-static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) \
+    -fno-exceptions -O3"
 
   BINUTILS_GOLD_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
