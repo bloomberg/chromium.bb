@@ -181,7 +181,8 @@ class Cache(object):
   """
   STATE_FILE = 'state.json'
 
-  def __init__(self, cache_dir, remote, max_cache_size, min_free_space):
+  def __init__(
+      self, cache_dir, remote, max_cache_size, min_free_space, max_items):
     """
     Arguments:
     - cache_dir: Directory where to place the cache.
@@ -191,11 +192,13 @@ class Cache(object):
                       cache is effectively a leak.
     - min_free_space: Trim if disk free space becomes lower than this value. If
                       0, it unconditionally fill the disk.
+    - max_items: Maximum number of items to keep in the cache.
     """
     self.cache_dir = cache_dir
     self.remote = remote
     self.max_cache_size = max_cache_size
     self.min_free_space = min_free_space
+    self.max_items = max_items
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
     # The files are kept as an array in a LRU style. E.g. self.state[0] is the
     # oldest item.
@@ -213,9 +216,10 @@ class Cache(object):
     if os.path.isfile(self.state_file):
       try:
         self.state = json.load(open(self.state_file, 'r'))
-      except ValueError:
+      except (IOError, ValueError), e:
         # Too bad. The file will be overwritten and the cache cleared.
-        pass
+        logging.error(
+            'Broken state file %s, ignoring.\n%s' % (self.STATE_FILE, e))
     with Profiler('SetupTrimming'):
       self.trim()
 
@@ -289,6 +293,11 @@ class Cache(object):
         self.remove_lru_file()
         sizes.pop(0)
 
+    # Ensure maximum number of items in the cache.
+    if self.max_items and self.state:
+      while len(self.state) > self.max_items:
+        self.remove_lru_file()
+
     self.save()
 
   def retrieve(self, item):
@@ -338,11 +347,13 @@ class Profiler(object):
                  self.name, time_taken)
 
 
-def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
+def run_tha_test(
+    manifest, cache_dir, remote, max_cache_size, min_free_space, max_items):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
   """
-  with Cache(cache_dir, remote, max_cache_size, min_free_space) as cache:
+  with Cache(
+      cache_dir, remote, max_cache_size, min_free_space, max_items) as cache:
     base_temp_dir = None
     if not is_same_filesystem(cache_dir, tempfile.gettempdir()):
       # Do not use tempdir since it's a separate filesystem than cache_dir. It
@@ -437,6 +448,13 @@ def main():
       default=1*1024*1024*1024,
       help='Trim if disk free space becomes lower than this value, '
            'default=%default')
+  group.add_option(
+      '--max-items',
+      type='int',
+      metavar='NNN',
+      default=100000,
+      help='Trim if more than this number of items are in the cache '
+           'default=%default')
   parser.add_option_group(group)
 
   options, args = parser.parse_args()
@@ -464,7 +482,7 @@ def main():
 
   return run_tha_test(
       manifest, os.path.abspath(options.cache), options.remote,
-      options.max_cache_size, options.min_free_space)
+      options.max_cache_size, options.min_free_space, options.max_items)
 
 
 if __name__ == '__main__':
