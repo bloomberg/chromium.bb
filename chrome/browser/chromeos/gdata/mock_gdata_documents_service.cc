@@ -72,10 +72,14 @@ MockDocumentsService::MockDocumentsService() {
   account_metadata_.reset(LoadJSONFile("account_metadata.json"));
   feed_data_.reset(LoadJSONFile("basic_feed.json"));
   directory_data_.reset(LoadJSONFile("new_folder_entry.json"));
-  search_result_.reset(LoadJSONFile("search_result_feed.json"));
 }
 
 MockDocumentsService::~MockDocumentsService() {}
+
+void MockDocumentsService::set_search_result(
+    const std::string& search_result_feed) {
+  search_result_.reset(LoadJSONFile(search_result_feed));
+}
 
 void MockDocumentsService::AuthenticateStub(
     const AuthStatusCallback& callback) {
