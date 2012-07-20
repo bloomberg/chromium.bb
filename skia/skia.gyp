@@ -726,6 +726,8 @@
         '../third_party/skia/include/pdf/SkPDFDevice.h',
         '../third_party/skia/include/pdf/SkPDFDocument.h',
 
+        '../third_party/skia/include/pipe/SkGPipe.h',
+
         '../third_party/skia/include/ports/SkStream_Win.h',
         '../third_party/skia/include/ports/SkTypeface_win.h',
 
@@ -797,6 +799,7 @@
         '../third_party/skia/include/gpu/gl',
         '../third_party/skia/include/images',
         '../third_party/skia/include/pdf',
+        '../third_party/skia/include/pipe',
         '../third_party/skia/include/ports',
         '../third_party/skia/include/utils',
         '../third_party/skia/src/core',
@@ -812,6 +815,7 @@
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
         'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
+        'SK_DEFERRED_CANVAS_USES_GPIPE=1',
 
         # temporary for landing Skia rev 3077 with minimal layout test breakage
         'SK_SIMPLE_TWOCOLOR_VERTICAL_GRADIENTS',
