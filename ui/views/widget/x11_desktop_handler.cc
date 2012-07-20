@@ -4,13 +4,14 @@
 
 #include "ui/views/widget/x11_desktop_handler.h"
 
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
+#include "base/message_loop.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/views/widget/desktop_native_widget_helper_aura.h"
 
 namespace {
 

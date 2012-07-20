@@ -1,12 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef UI_VIEWS_FOCUS_VIEW_STORAGE_H_
 #define UI_VIEWS_FOCUS_VIEW_STORAGE_H_
 
-#include "base/memory/singleton.h"
-#include "ui/views/view.h"
+#include <map>
+#include <vector>
+
+#include "base/basictypes.h"
+#include "ui/views/views_export.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 // This class is a simple storage place for storing/retrieving views.  It is
 // used for example in the FocusManager to store/restore focused views when the
@@ -18,6 +23,7 @@
 // to store/retrieve views.
 
 namespace views {
+class View;
 
 class VIEWS_EXPORT ViewStorage {
  public:

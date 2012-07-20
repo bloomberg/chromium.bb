@@ -5,9 +5,9 @@
 #ifndef UI_BASE_X_VALUATORS_H_
 #define UI_BASE_X_VALUATORS_H_
 
-#include <map>
+#include "base/basictypes.h"
 
-#include "base/memory/singleton.h"
+template <typename T> struct DefaultSingletonTraits;
 
 typedef union _XEvent XEvent;
 

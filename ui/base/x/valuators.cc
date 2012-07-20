@@ -6,8 +6,9 @@
 
 #include <X11/extensions/XInput2.h>
 
-#include "ui/base/x/x11_util.h"
+#include "base/memory/singleton.h"
 #include "ui/base/touch/touch_factory.h"
+#include "ui/base/x/x11_util.h"
 
 namespace {
 

@@ -5,7 +5,9 @@
 #include "ui/base/gtk/g_object_destructor_filo.h"
 
 #include <glib-object.h>
+
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 
 namespace ui {
 

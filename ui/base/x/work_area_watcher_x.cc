@@ -4,6 +4,7 @@
 
 #include "ui/base/x/work_area_watcher_x.h"
 
+#include "base/memory/singleton.h"
 #include "ui/base/work_area_watcher_observer.h"
 #include "ui/base/x/root_window_property_watcher_x.h"
 #include "ui/base/x/x11_util.h"

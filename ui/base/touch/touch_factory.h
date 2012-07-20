@@ -9,10 +9,11 @@
 #include <map>
 #include <vector>
 
-#include "base/memory/singleton.h"
 #include "base/hash_tables.h"
 #include "base/timer.h"
 #include "ui/base/ui_export.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 typedef unsigned long Cursor;
 typedef unsigned long Window;

@@ -4,13 +4,14 @@
 
 #include "ui/gfx/gtk_native_view_id_manager.h"
 
-#include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/rand_util.h"
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gdk_x_compat.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/gtk_preserve_window.h"
 
 // -----------------------------------------------------------------------------

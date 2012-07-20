@@ -14,6 +14,8 @@
 #include "ui/aura/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 
+template <typename T> struct DefaultSingletonTraits;
+
 namespace aura {
 class FocusManager;
 class DesktopActivationClient;

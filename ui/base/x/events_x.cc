@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/message_pump_aurax11.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"

@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
