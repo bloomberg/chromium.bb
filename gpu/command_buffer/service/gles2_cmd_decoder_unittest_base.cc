@@ -1325,10 +1325,6 @@ void GLES2DecoderTestBase::AddExpectationsForSimulatedAttrib0WithError(
     EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, buffer_id))
         .Times(1)
         .RetiresOnSaturation();
-
-    EXPECT_CALL(*gl_, DisableVertexAttribArray(0))
-        .Times(1)
-        .RetiresOnSaturation();
   }
 }
 

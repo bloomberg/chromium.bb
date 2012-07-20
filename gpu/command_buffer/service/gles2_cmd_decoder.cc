@@ -5383,10 +5383,16 @@ void GLES2DecoderImpl::RestoreStateForAttrib(GLuint attrib) {
   glBindBuffer(GL_ARRAY_BUFFER,
                bound_array_buffer_ ? bound_array_buffer_->service_id() : 0);
 
-  if (info->enabled()) {
-    glEnableVertexAttribArray(attrib);
-  } else {
-    glDisableVertexAttribArray(attrib);
+  // Never touch vertex attribute 0's state (in particular, never
+  // disable it) when running on desktop GL because it will never be
+  // re-enabled.
+  if (attrib != 0 ||
+      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+    if (info->enabled()) {
+      glEnableVertexAttribArray(attrib);
+    } else {
+      glDisableVertexAttribArray(attrib);
+    }
   }
 }
 
