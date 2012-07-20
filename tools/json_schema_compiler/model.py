@@ -92,6 +92,7 @@ class Type(object):
     self.from_json = True
     self.from_client = True
     self.parent = parent
+    self.instance_of = json.get('isInstanceOf', None)
     _AddFunctions(self, json)
     _AddProperties(self, json, from_json=True, from_client=True)
 
@@ -133,6 +134,9 @@ class Function(object):
       else:
         self.params.append(Property(self, param['name'], param,
             from_json=from_json, from_client=from_client))
+    self.returns = None
+    if 'returns' in json:
+      self.returns = Property(self, 'return', json['returns'])
 
 class Property(object):
   """A property of a type OR a parameter to a function.
@@ -168,6 +172,7 @@ class Property(object):
     self.parent = parent
     self.from_json = from_json
     self.from_client = from_client
+    self.instance_of = json.get('isInstanceOf', None)
     _AddProperties(self, json)
     if is_additional_properties:
       self.type_ = PropertyType.ADDITIONAL_PROPERTIES

@@ -31,7 +31,7 @@
 /* This style is used because types with functions prefix the function with the
  * type name, using a lowercase first letter.
  */
-.api_reference div.summary:first-letter {
+.api_reference div.lower:first-letter {
   text-transform: lowercase;
 }
 

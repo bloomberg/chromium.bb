@@ -82,8 +82,11 @@ class HandlebarDictGenerator(object):
       'name': function.name,
       'description': function.description,
       'callback': self._GenerateCallback(function.callback),
-      'parameters': []
+      'parameters': [],
+      'returns': None
     }
+    if function.returns:
+      function_dict['returns'] = self._GenerateProperty(function.returns)
     for param in function.params:
       function_dict['parameters'].append(self._GenerateProperty(param))
     if function_dict['callback']:
@@ -157,5 +160,7 @@ class HandlebarDictGenerator(object):
         dst_dict['enum_values'].append({'name': enum_value})
       if len(dst_dict['enum_values']) > 0:
         dst_dict['enum_values'][-1]['last'] = True
+    elif property_.instance_of:
+      dst_dict['simple_type'] = property_.instance_of.lower()
     else:
-      dst_dict['simple_type'] = {'simple_type': property_.type_.name.lower()}
+      dst_dict['simple_type'] = property_.type_.name.lower()

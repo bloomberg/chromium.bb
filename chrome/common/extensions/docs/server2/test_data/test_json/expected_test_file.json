@@ -4,165 +4,158 @@
       "callback": {
         "simple_type": {
           "simple_type": "function"
-        },
-        "last": true,
-        "name": "callback",
+        }, 
+        "last": true, 
+        "name": "callback", 
         "parameters": [
           {
-            "functions": [],
-            "last": true,
-            "name": "results",
+            "functions": [], 
+            "last": true, 
+            "name": "results", 
             "array": {
-              "functions": [],
-              "name": "resultsElement",
+              "functions": [], 
+              "name": "resultsElement", 
               "link": {
-                "text": "TypeA",
+                "text": "TypeA", 
                 "href": "tester.html#type-TypeA"
-              },
-              "optional": false,
-              "properties": [],
+              }, 
+              "optional": false, 
+              "properties": [], 
               "description": null
-            },
-            "optional": false,
-            "properties": [],
+            }, 
+            "optional": false, 
+            "properties": [], 
             "description": null
           }
-        ],
-        "optional": false,
+        ], 
+        "optional": false, 
         "description": null
-      },
-      "name": "get",
+      }, 
+      "returns": null, 
+      "name": "get", 
       "parameters": [
         {
-          "functions": [],
-          "name": "a",
+          "functions": [], 
+          "name": "a", 
           "choices": [
             {
-              "functions": [],
-              "name": "a",
-              "simple_type": {
-                "simple_type": "string"
-              },
-              "optional": true,
-              "properties": [],
+              "functions": [], 
+              "name": "a", 
+              "simple_type": "string", 
+              "optional": true, 
+              "properties": [], 
               "description": null
-            },
+            }, 
             {
-              "functions": [],
-              "last": true,
-              "name": "a",
+              "functions": [], 
+              "last": true, 
+              "name": "a", 
               "array": {
-                "functions": [],
-                "name": "aElement",
-                "simple_type": {
-                  "simple_type": "string"
-                },
-                "optional": false,
-                "properties": [],
+                "functions": [], 
+                "name": "aElement", 
+                "simple_type": "string", 
+                "optional": false, 
+                "properties": [], 
                 "description": null
-              },
-              "optional": true,
-              "properties": [],
+              }, 
+              "optional": true, 
+              "properties": [], 
               "description": null
             }
-          ],
-          "optional": false,
-          "properties": [],
+          ], 
+          "optional": false, 
+          "properties": [], 
           "description": "a param"
-        },
+        }, 
         {
           "simple_type": {
             "simple_type": "function"
-          },
-          "last": true,
-          "name": "callback",
+          }, 
+          "last": true, 
+          "name": "callback", 
           "parameters": [
             {
-              "functions": [],
-              "last": true,
-              "name": "results",
+              "functions": [], 
+              "last": true, 
+              "name": "results", 
               "array": {
-                "functions": [],
-                "name": "resultsElement",
+                "functions": [], 
+                "name": "resultsElement", 
                 "link": {
-                  "text": "TypeA",
+                  "text": "TypeA", 
                   "href": "tester.html#type-TypeA"
-                },
-                "optional": false,
-                "properties": [],
+                }, 
+                "optional": false, 
+                "properties": [], 
                 "description": null
-              },
-              "optional": false,
-              "properties": [],
+              }, 
+              "optional": false, 
+              "properties": [], 
               "description": null
             }
-          ],
-          "optional": false,
+          ], 
+          "optional": false, 
           "description": null
         }
-      ],
+      ], 
       "description": "Gets stuff."
     }
-  ],
-  "properties": [],
-  "name": "tester",
+  ], 
+  "properties": [], 
+  "name": "tester", 
   "types": [
     {
       "properties": [
         {
-          "functions": [],
-          "name": "b",
+          "functions": [], 
+          "name": "b", 
           "array": {
-            "functions": [],
-            "name": "bElement",
+            "functions": [], 
+            "name": "bElement", 
             "link": {
-              "text": "TypeA",
+              "text": "TypeA", 
               "href": "tester.html#type-TypeA"
-            },
-            "optional": false,
-            "properties": [],
+            }, 
+            "optional": false, 
+            "properties": [], 
             "description": null
-          },
-          "optional": true,
-          "properties": [],
+          }, 
+          "optional": true, 
+          "properties": [], 
           "description": "List of TypeA."
         }
-      ],
-      "functions": [],
-      "name": "TypeA",
-      "simple_type": {
-        "simple_type": "object"
-      },
+      ], 
+      "functions": [], 
+      "name": "TypeA", 
+      "simple_type": "object", 
       "description": "A cool thing."
     }
-  ],
+  ], 
   "events": [
     {
-      "name": "EventA",
+      "name": "EventA", 
       "parameters": [
         {
-          "functions": [],
-          "name": "id",
-          "simple_type": {
-            "simple_type": "string"
-          },
-          "optional": false,
-          "properties": [],
+          "functions": [], 
+          "name": "id", 
+          "simple_type": "string", 
+          "optional": false, 
+          "properties": [], 
           "description": null
-        },
+        }, 
         {
-          "functions": [],
-          "last": true,
-          "name": "bookmark",
+          "functions": [], 
+          "last": true, 
+          "name": "bookmark", 
           "link": {
-            "text": "TypeA",
+            "text": "TypeA", 
             "href": "tester.html#type-TypeA"
-          },
-          "optional": false,
-          "properties": [],
+          }, 
+          "optional": false, 
+          "properties": [], 
           "description": null
         }
-      ],
+      ], 
       "description": "A cool event."
     }
   ]

@@ -1,8 +1,8 @@
 <div>
   <a name="method-{{?prefix}}{{prefix}}-{{/}}{{name}}"></a>
   <h4>{{name}}</h4>
-  <div class="summary">
-    <span>{{?prefix}}{{prefix}}{{:}}chrome.{{api.name}}{{/}}.{{name}}</span>({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
+  <div class="summary{{^returns}} lower{{/}}">
+    <span>{{?returns}}{{+partials.variable_type}} {{/}}{{?prefix}}{{prefix}}{{:}}chrome.{{api.name}}{{/}}.{{name}}</span>({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
   </div>
   <div class="description">
     <p>{{{description}}}</p>
