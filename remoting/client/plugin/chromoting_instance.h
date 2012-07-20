@@ -17,6 +17,8 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/cpp/var.h"
+#include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 // Windows defines 'PostMessage', so we have to undef it before we
 // include instance_private.h
@@ -132,7 +134,7 @@ class ChromotingInstance :
       OVERRIDE;
 
   // Called by PepperView.
-  void SetDesktopSize(int width, int height);
+  void SetDesktopSize(const SkISize& size, const SkIPoint& dpi);
   void SetConnectionState(ConnectionState state, ConnectionError error);
   void OnFirstFrameReceived();
 

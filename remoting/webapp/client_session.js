@@ -555,7 +555,9 @@ remoting.ClientSession.prototype.pauseVideo = function(pause) {
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
   console.log('desktop size changed: ' +
               this.plugin.desktopWidth + 'x' +
-              this.plugin.desktopHeight);
+              this.plugin.desktopHeight +' @ ' +
+              this.plugin.desktopXDpi + 'x' +
+              this.plugin.desktopYDpi + ' DPI');
   this.updateDimensions();
 };
 

@@ -77,6 +77,7 @@ PepperView::PepperView(ChromotingInstance* instance,
     view_size_(SkISize::Make(0, 0)),
     clip_area_(SkIRect::MakeEmpty()),
     source_size_(SkISize::Make(0, 0)),
+    source_dpi_(SkIPoint::Make(0, 0)),
     flush_pending_(false),
     is_initialized_(false),
     frame_received_(false) {
@@ -227,16 +228,18 @@ void PepperView::ReturnBuffer(pp::ImageData* buffer) {
   }
 }
 
-void PepperView::SetSourceSize(const SkISize& source_size) {
+void PepperView::SetSourceSize(const SkISize& source_size,
+                               const SkIPoint& source_dpi) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
 
-  if (source_size_ == source_size)
+  if (source_size_ == source_size && source_dpi_ == source_dpi)
     return;
 
   source_size_ = source_size;
+  source_dpi_ = source_dpi;
 
   // Notify JavaScript of the change in source size.
-  instance_->SetDesktopSize(source_size.width(), source_size.height());
+  instance_->SetDesktopSize(source_size, source_dpi);
 }
 
 pp::ImageData* PepperView::AllocateBuffer() {

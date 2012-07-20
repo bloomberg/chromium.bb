@@ -34,7 +34,8 @@ class FrameConsumerProxy
                            pp::ImageData* buffer,
                            const SkRegion& region) OVERRIDE;
   virtual void ReturnBuffer(pp::ImageData* buffer) OVERRIDE;
-  virtual void SetSourceSize(const SkISize& source_size) OVERRIDE;
+  virtual void SetSourceSize(const SkISize& source_size,
+                             const SkIPoint& dpi) OVERRIDE;
 
   // Attaches to |frame_consumer_|.
   // This must only be called from |frame_consumer_message_loop_|.

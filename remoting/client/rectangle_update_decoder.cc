@@ -30,6 +30,7 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(
     : task_runner_(task_runner),
       consumer_(consumer),
       source_size_(SkISize::Make(0, 0)),
+      source_dpi_(SkIPoint::Make(0, 0)),
       view_size_(SkISize::Make(0, 0)),
       clip_area_(SkIRect::MakeEmpty()),
       paint_scheduled_(false) {
@@ -63,8 +64,9 @@ void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
 
   base::ScopedClosureRunner done_runner(done);
   bool decoder_needs_reset = false;
+  bool notify_size_or_dpi_change = false;
 
-  // If the packet includes a screen size, store it.
+  // If the packet includes screen size or DPI information, store them.
   if (packet->format().has_screen_width() &&
       packet->format().has_screen_height()) {
     SkISize source_size = SkISize::Make(packet->format().screen_width(),
@@ -72,18 +74,26 @@ void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
     if (source_size_ != source_size) {
       source_size_ = source_size;
       decoder_needs_reset = true;
+      notify_size_or_dpi_change = true;
+    }
+  }
+  if (packet->format().has_x_dpi() && packet->format().has_y_dpi()) {
+    SkIPoint source_dpi(SkIPoint::Make(packet->format().x_dpi(),
+                                       packet->format().y_dpi()));
+    if (source_dpi != source_dpi_) {
+      source_dpi_ = source_dpi;
+      notify_size_or_dpi_change = true;
     }
   }
 
   // If we've never seen a screen size, ignore the packet.
-  if (source_size_.isZero()) {
+  if (source_size_.isZero())
     return;
-  }
 
-  if (decoder_needs_reset) {
+  if (decoder_needs_reset)
     decoder_->Initialize(source_size_);
-    consumer_->SetSourceSize(source_size_);
-  }
+  if (notify_size_or_dpi_change)
+    consumer_->SetSourceSize(source_size_, source_dpi_);
 
   if (!decoder_->IsReadyForData()) {
     // TODO(ajwong): This whole thing should move into an invalid state.

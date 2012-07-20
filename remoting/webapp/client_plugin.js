@@ -16,6 +16,10 @@ remoting.ClientPlugin = function() {
 remoting.ClientPlugin.prototype.desktopWidth;
 /** @type {number} Desktop height */
 remoting.ClientPlugin.prototype.desktopHeight;
+/** @type {number} Desktop x DPI */
+remoting.ClientPlugin.prototype.desktopXDpi;
+/** @type {number} Desktop y DPI */
+remoting.ClientPlugin.prototype.desktopYDpi;
 
 /** @type {function(string): void} Outgoing signaling message callback. */
 remoting.ClientPlugin.prototype.onOutgoingIqHandler;

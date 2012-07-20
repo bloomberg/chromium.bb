@@ -26,6 +26,8 @@ remoting.ClientPluginAsync = function(plugin) {
 
   this.desktopWidth = 0;
   this.desktopHeight = 0;
+  this.desktopXDpi = 96;
+  this.desktopYDpi = 96;
 
   /** @param {string} iq The Iq stanza received from the host. */
   this.onOutgoingIqHandler = function (iq) {};
@@ -162,6 +164,10 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     }
     this.desktopWidth = /** @type {number} */ message.data['width'];
     this.desktopHeight = /** @type {number} */ message.data['height'];
+    this.desktopXDpi = (typeof message.data['x_dpi'] == 'number') ?
+        /** @type {number} */ (message.data['x_dpi']) : 96;
+    this.desktopYDpi = (typeof message.data['y_dpi'] == 'number') ?
+        /** @type {number} */ (message.data['y_dpi']) : 96;
     this.onDesktopSizeUpdateHandler();
   } else if (message.method == 'onPerfStats') {
     if (typeof message.data['videoBandwidth'] != 'number' ||

@@ -36,7 +36,8 @@ class FrameConsumer {
   virtual void ReturnBuffer(pp::ImageData* buffer) = 0;
 
   // Set the dimension of the entire host screen.
-  virtual void SetSourceSize(const SkISize& source_size) = 0;
+  virtual void SetSourceSize(const SkISize& source_size,
+                             const SkIPoint& dpi) = 0;
 
  protected:
   FrameConsumer() {}

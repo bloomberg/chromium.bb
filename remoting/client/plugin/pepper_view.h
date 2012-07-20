@@ -48,7 +48,8 @@ class PepperView : public ChromotingView,
                            pp::ImageData* buffer,
                            const SkRegion& region) OVERRIDE;
   virtual void ReturnBuffer(pp::ImageData* buffer) OVERRIDE;
-  virtual void SetSourceSize(const SkISize& source_size) OVERRIDE;
+  virtual void SetSourceSize(const SkISize& source_size,
+                             const SkIPoint& dpi) OVERRIDE;
 
   // Sets the display size and clipping area of this view.
   void SetView(const SkISize& view_size, const SkIRect& clip_area);
@@ -109,6 +110,9 @@ class PepperView : public ChromotingView,
 
   // The size of the host screen.
   SkISize source_size_;
+
+  // The DPI of the host screen.
+  SkIPoint source_dpi_;
 
   // True if there is already a Flush() pending on the Graphics2D context.
   bool flush_pending_;

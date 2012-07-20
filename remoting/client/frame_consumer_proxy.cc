@@ -42,15 +42,16 @@ void FrameConsumerProxy::ReturnBuffer(pp::ImageData* buffer) {
     frame_consumer_->ReturnBuffer(buffer);
 }
 
-void FrameConsumerProxy::SetSourceSize(const SkISize& source_size) {
+void FrameConsumerProxy::SetSourceSize(const SkISize& source_size,
+                                       const SkIPoint& source_dpi) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(
-        &FrameConsumerProxy::SetSourceSize, this, source_size));
+        &FrameConsumerProxy::SetSourceSize, this, source_size, source_dpi));
     return;
   }
 
   if (frame_consumer_)
-    frame_consumer_->SetSourceSize(source_size);
+    frame_consumer_->SetSourceSize(source_size, source_dpi);
 }
 
 void FrameConsumerProxy::Attach(

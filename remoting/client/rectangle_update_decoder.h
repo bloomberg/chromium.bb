@@ -75,6 +75,9 @@ class RectangleUpdateDecoder
   // Remote screen size in pixels.
   SkISize source_size_;
 
+  // Vertical and horizontal DPI of the remote screen.
+  SkIPoint source_dpi_;
+
   // The current dimentions of the frame consumer view.
   SkISize view_size_;
   SkIRect clip_area_;
