@@ -69,12 +69,10 @@ void CheckboxNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
   insets->Set(insets->top(), 0, insets->bottom(), insets->right());
 }
 
-// Downcast the View to an ImageView and set the image with the resource id.
+// Downcast the View to an ImageView and set the image with the resource |id|.
 void SetImageViewToId(views::View* image_view, int id) {
-  views::ImageView* image = static_cast<views::ImageView*>(image_view);
-  if (image)
-    image->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id));
+  static_cast<views::ImageView*>(image_view)->
+      SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id));
 }
 
 }  // namespace
@@ -131,7 +129,7 @@ views::View* ChromeToMobileBubbleView::GetInitiallyFocusedView() {
 }
 
 gfx::Rect ChromeToMobileBubbleView::GetAnchorRect() {
-  // Compensate for some built-in padding in the arrow image.
+  // Compensate for some built-in padding in the page action icon image.
   gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
   rect.Inset(0, anchor_view() ? 5 : 0);
   return rect;
@@ -249,8 +247,9 @@ void ChromeToMobileBubbleView::Init() {
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
 
-  std::vector<DictionaryValue*> mobiles = service_->mobiles();
-  DCHECK_GT(mobiles.size(), 0U);
+  // Get the list of mobile devices.
+  const ListValue& mobiles = service_->mobiles();
+  DCHECK(!mobiles.empty());
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::Label* title_label = new views::Label();
@@ -259,32 +258,37 @@ void ChromeToMobileBubbleView::Init() {
   layout->StartRow(0, single_column_set_id);
   layout->AddView(title_label);
 
-  if (mobiles.size() == 1) {
-    selected_mobile_ = mobiles[0];
-    string16 mobile_name;
-    mobiles[0]->GetString("name", &mobile_name);
-    title_label->SetText(l10n_util::GetStringFUTF16(
-        IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE, mobile_name));
+  if (mobiles.GetSize() == 1) {
+    string16 name;
+    DictionaryValue* mobile = NULL;
+    if (mobiles.GetDictionary(0, &mobile) && mobile->GetString("name", &name)) {
+      title_label->SetText(l10n_util::GetStringFUTF16(
+          IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE, name));
+    } else {
+      NOTREACHED();
+    }
   } else {
     title_label->SetText(l10n_util::GetStringUTF16(
         IDS_CHROME_TO_MOBILE_BUBBLE_MULTI_TITLE));
 
+    string16 name;
+    DictionaryValue* mobile = NULL;
     views::RadioButton* radio = NULL;
     layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-    for (std::vector<DictionaryValue*>::const_iterator i(mobiles.begin());
-         i != mobiles.end(); ++i) {
-      string16 name;
-      (*i)->GetString("name", &name);
-      radio = new views::RadioButton(name, 0);
-      radio->set_listener(this);
-      radio->SetEnabledColor(SK_ColorBLACK);
-      radio->SetHoverColor(SK_ColorBLACK);
-      mobile_map_[radio] = *i;
-      layout->StartRow(0, single_column_set_id);
-      layout->AddView(radio);
+    for (size_t index = 0; index < mobiles.GetSize(); ++index) {
+      if (mobiles.GetDictionary(index, &mobile) &&
+          mobile->GetString("name", &name)) {
+        radio = new views::RadioButton(name, 0);
+        radio->SetEnabledColor(SK_ColorBLACK);
+        radio->SetHoverColor(SK_ColorBLACK);
+        radio_buttons_.push_back(radio);
+        layout->StartRow(0, single_column_set_id);
+        layout->AddView(radio);
+      } else {
+        NOTREACHED();
+      }
     }
-    mobile_map_.begin()->first->SetChecked(true);
-    selected_mobile_ = mobile_map_.begin()->second;
+    radio_buttons_[0]->SetChecked(true);
   }
 
   send_copy_ = new views::Checkbox(
@@ -323,7 +327,6 @@ ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       browser_(browser),
       service_(ChromeToMobileServiceFactory::GetForProfile(browser->profile())),
-      selected_mobile_(NULL),
       send_copy_(NULL),
       send_(NULL),
       cancel_(NULL) {
@@ -343,22 +346,34 @@ void ChromeToMobileBubbleView::LinkClicked(views::Link* source,
 }
 
 void ChromeToMobileBubbleView::HandleButtonPressed(views::Button* sender) {
-  if (sender == send_) {
+  if (sender == send_)
     Send();
-  } else if (sender == cancel_) {
+  else if (sender == cancel_)
     GetWidget()->Close();
-  } else {
-    // The sender is a mobile radio button
-    views::RadioButton* radio = static_cast<views::RadioButton*>(sender);
-    DCHECK(mobile_map_.find(radio) != mobile_map_.end());
-    selected_mobile_ = mobile_map_.find(radio)->second;
-  }
 }
 
 void ChromeToMobileBubbleView::Send() {
-  FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
-  service_->SendToMobile(*selected_mobile_, snapshot, browser_,
-                         weak_ptr_factory_.GetWeakPtr());
+  // TODO(msw): Handle updates to the mobile list while the bubble is open.
+  const ListValue& mobiles = service_->mobiles();
+  size_t selected_index = 0;
+  if (mobiles.GetSize() > 1) {
+    DCHECK_EQ(mobiles.GetSize(), radio_buttons_.size());
+    for (; selected_index < radio_buttons_.size(); ++selected_index) {
+      if (radio_buttons_[selected_index]->checked())
+        break;
+    }
+  } else {
+    DCHECK(radio_buttons_.empty());
+  }
+
+  DictionaryValue* mobile = NULL;
+  if (mobiles.GetDictionary(selected_index, &mobile)) {
+    FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
+    service_->SendToMobile(*mobile, snapshot, browser_,
+                           weak_ptr_factory_.GetWeakPtr());
+  } else {
+    NOTREACHED();
+  }
 
   // Update the view's contents to show the "Sending..." progress animation.
   cancel_->SetEnabled(false);

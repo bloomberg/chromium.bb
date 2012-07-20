@@ -31,7 +31,7 @@ void MockChromeToMobileService::AddDevices(size_t count) {
   for(size_t i = 0; i < count; i++) {
     base::DictionaryValue* device = new base::DictionaryValue();
     device->SetString("name", "Device Name");
-    mobiles_.push_back(device);
+    mobiles_.Append(device);
   }
 }
 

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
@@ -28,10 +29,6 @@ class Browser;
 class CloudPrintURL;
 class MockChromeToMobileService;
 class Profile;
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace net {
 class URLFetcher;
@@ -106,8 +103,8 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Returns true if the service has found any registered mobile devices.
   bool HasDevices();
 
-  // Get the list of mobile devices.
-  const std::vector<base::DictionaryValue*>& mobiles();
+  // Get the list of mobile devices, a ListValue of DictionaryValues.
+  const base::ListValue& mobiles() const { return mobiles_; }
 
   // Request an updated mobile device list, request auth first if needed.
   // Virtual for unit test mocking.
@@ -194,7 +191,8 @@ class ChromeToMobileService : public ProfileKeyedService,
   std::string access_token_;
 
   // The list of mobile devices retrieved from the cloud print service.
-  ScopedVector<base::DictionaryValue> mobiles_;
+  // Each mobile DictionaryValue contains strings "type", "name", and "id".
+  base::ListValue mobiles_;
 
   // The set of snapshots currently available.
   std::set<FilePath> snapshots_;

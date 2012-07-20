@@ -86,12 +86,8 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   // The Chrome To Mobile service associated with this bubble.
   ChromeToMobileService* service_;
 
-  // A map of radio buttons for each mobile device to the device's information.
-  typedef std::map<views::RadioButton*, base::DictionaryValue*> DeviceMap;
-  DeviceMap mobile_map_;
-
-  // The currently selected (or solitary) mobile device's info.
-  base::DictionaryValue* selected_mobile_;
+  // The list of radio buttons corresponding to the list of mobile devices.
+  std::vector<views::RadioButton*> radio_buttons_;
 
   // The file path for the MHTML page snapshot.
   FilePath snapshot_path_;

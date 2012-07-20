@@ -13,7 +13,6 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
@@ -60,8 +59,8 @@ const int kSearchRequestDelayHours = 24;
 
 // The cloud print OAuth2 scope and 'printer' type of compatible mobile devices.
 const char kCloudPrintAuth[] = "https://www.googleapis.com/auth/cloudprint";
-const char kTypeAndroidChromeSnapshot[] = "ANDROID_CHROME_SNAPSHOT";
-const char kTypeIOSChromeSnapshot[] = "IOS_CHROME_SNAPSHOT";
+const char kTypeAndroid[] = "ANDROID_CHROME_SNAPSHOT";
+const char kTypeIOS[] = "IOS_CHROME_SNAPSHOT";
 
 // The account info URL pattern and strings to check for cloud print access.
 // The 'key=' query parameter is used for caching; supply a random number.
@@ -98,6 +97,7 @@ std::string GetJSON(const ChromeToMobileService::JobData& data) {
       // TODO(chenyu|msw): Currently only sends an alert; include the url here?
       json.SetString("aps.alert.body", "A print job is available");
       json.SetString("aps.alert.loc-key", "IDS_CHROME_TO_DEVICE_SNAPSHOTS_IOS");
+      break;
     default:
       NOTREACHED() << "Unknown mobile_os " << data.mobile_os;
       break;
@@ -197,10 +197,6 @@ bool ChromeToMobileService::HasDevices() {
   return !mobiles().empty();
 }
 
-const std::vector<base::DictionaryValue*>& ChromeToMobileService::mobiles() {
-  return mobiles_.get();
-}
-
 void ChromeToMobileService::RequestMobileListUpdate() {
   if (access_token_.empty())
     RefreshAccessToken();
@@ -229,10 +225,12 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue& mobile,
   DCHECK(!access_token_.empty());
   JobData data;
   std::string mobile_os;
-  mobile.GetString("type", &mobile_os);
-  data.mobile_os = (mobile_os.compare(kTypeAndroidChromeSnapshot) == 0) ?
+  if (!mobile.GetString("type", &mobile_os))
+    NOTREACHED();
+  data.mobile_os = (mobile_os.compare(kTypeAndroid) == 0) ?
       ChromeToMobileService::ANDROID : ChromeToMobileService::IOS;
-  mobile.GetString("id", &data.mobile_id);
+  if (!mobile.GetString("id", &data.mobile_id))
+    NOTREACHED();
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
   data.url = web_contents->GetURL();
   data.title = web_contents->GetTitle();
@@ -500,29 +498,38 @@ void ChromeToMobileService::HandleSearchResponse() {
   scoped_ptr<Value> json(base::JSONReader::Read(data));
   if (json.get() && json->GetAsDictionary(&dictionary) && dictionary &&
       dictionary->GetList(cloud_print::kPrinterListValue, &list)) {
-    ScopedVector<base::DictionaryValue> mobiles;
-    for (size_t index = 0; index < list->GetSize(); index++) {
-      DictionaryValue* mobile_data = NULL;
-      if (list->GetDictionary(index, &mobile_data)) {
-        std::string mobile_os;
-        mobile_data->GetString("type", &mobile_os);
-        if (mobile_os.compare(kTypeAndroidChromeSnapshot) == 0 ||
-            mobile_os.compare(kTypeIOSChromeSnapshot) == 0) {
-          mobiles.push_back(mobile_data->DeepCopy());
+    mobiles_.Clear();
+
+    std::string type, name, id;
+    DictionaryValue* printer = NULL;
+    DictionaryValue* mobile = NULL;
+    for (size_t index = 0; index < list->GetSize(); ++index) {
+      if (list->GetDictionary(index, &printer) &&
+          printer->GetString("type", &type) &&
+          (type.compare(kTypeAndroid) == 0 || type.compare(kTypeIOS) == 0)) {
+        // Copy just the requisite values from the full |printer| definition.
+        if (printer->GetString("name", &name) &&
+            printer->GetString("id", &id)) {
+          mobile = new DictionaryValue();
+          mobile->SetString("type", type);
+          mobile->SetString("name", name);
+          mobile->SetString("id", id);
+          mobiles_.Append(mobile);
+        } else {
+          NOTREACHED();
         }
       }
     }
-    mobiles_ = mobiles.Pass();
 
-    bool found = !mobiles_.empty();
-    if (found)
+    const bool has_devices = HasDevices();
+    if (has_devices)
       LogMetric(DEVICES_AVAILABLE);
 
     for (BrowserList::const_iterator i = BrowserList::begin();
          i != BrowserList::end(); ++i) {
       Browser* browser = *i;
       if (browser->profile() == profile_)
-        browser->command_controller()->SendToMobileStateChanged(found);
+        browser->command_controller()->SendToMobileStateChanged(has_devices);
     }
   }
 }

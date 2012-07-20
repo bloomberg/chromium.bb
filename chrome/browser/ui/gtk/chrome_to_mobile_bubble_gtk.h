@@ -68,7 +68,6 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
 
   // Notified when |content_| is destroyed so we can delete our instance.
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnDestroy);
-  CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnRadioToggled);
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnLearnClicked);
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnCancelClicked);
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnSendClicked);
@@ -88,12 +87,8 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
   // The file path for the MHTML page snapshot.
   FilePath snapshot_path_;
 
-  // A map of radio buttons for each mobile device to the device's information.
-  typedef std::map<GtkWidget*, base::DictionaryValue*> MobileMap;
-  MobileMap mobile_map_;
-
-  // The currently selected (or solitary) mobile device's info.
-  base::DictionaryValue* selected_mobile_;
+  // The list of radio buttons corresponding to the list of mobile devices.
+  std::vector<GtkWidget*> radio_buttons_;
 
   // The anchor image, updated to show the lit icon during the bubble lifetime.
   GtkImage* anchor_image_;

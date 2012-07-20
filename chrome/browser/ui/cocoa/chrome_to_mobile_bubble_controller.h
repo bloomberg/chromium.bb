@@ -96,9 +96,6 @@ class ChromeToMobileBubbleNotificationBridge
   // The file path for the MHTML page snapshot.
   FilePath snapshotPath_;
 
-  // The list of mobile devices, in the same order as the radio buttons.
-  std::vector<base::DictionaryValue*> mobiles_;
-
   // An animation used to cycle through the "Sending..." status messages.
   scoped_nsobject<NSAnimation> progressAnimation_;
 }
