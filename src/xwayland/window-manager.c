@@ -459,6 +459,7 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	xcb_configure_notify_event_t *configure_notify = 
 		(xcb_configure_notify_event_t *) event;
 	struct weston_wm_window *window;
+	int x, y;
 
 	window = hash_table_lookup(wm->window_hash, configure_notify->window);
 
@@ -467,6 +468,14 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 		configure_notify->window,
 		configure_notify->x, configure_notify->y,
 		configure_notify->width, configure_notify->height);
+
+	/* resize falls here */
+	if (configure_notify->window != window->id)
+		return;
+
+	weston_wm_window_get_child_position(window, &x, &y);
+	window->x = configure_notify->x - x;
+	window->y = configure_notify->y - y;
 }
 
 static void
@@ -1553,6 +1562,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 		&wm->server->compositor->shell_interface;
 	struct weston_wm_window *parent;
 	struct theme *t = window->wm->theme;
+	int x = 0, y = 0;
 
 	if (!shell_interface->create_shell_surface)
 		return;
@@ -1569,9 +1579,16 @@ xserver_map_shell_surface(struct weston_wm *wm,
 	}
 
 	parent = hash_table_lookup(wm->window_hash, window->transient_for->id);
+
+	/* non-decorated and non-toplevel windows, e.g. sub-menus */
+	if (!parent->decorate && parent->override_redirect) {
+		x = parent->x + t->margin;
+		y = parent->y + t->margin;
+	}
+
 	shell_interface->set_transient(window->shsurf, parent->surface,
-				       window->x - parent->x + t->margin + t->width,
-				       window->y - parent->y + t->margin + t->titlebar_height,
+				       window->x + t->margin - x,
+				       window->y + t->margin - y,
 				       WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
 }
 
