@@ -695,10 +695,6 @@ terminal_resize_cells(struct terminal *terminal, int width, int height)
 	struct rectangle allocation;
 	struct winsize ws;
 
-	if (width < 1)
-		width = 1;
-	if (height < 1)
-		height = 1;
 	if (terminal->width == width && terminal->height == height)
 		return;
 
@@ -763,12 +759,6 @@ resize_handler(struct widget *widget,
 {
 	struct terminal *terminal = data;
 	int32_t columns, rows, m;
-
-    if (width < 200)
-        width = 200;
-
-    if (height < 50)
-        height = 50;
 
 	m = 2 * terminal->margin;
 	columns = (width - m) / (int32_t) terminal->extents.max_x_advance;
@@ -2492,6 +2482,7 @@ terminal_create(struct display *display, int fullscreen)
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 
+	terminal_resize(terminal, 20, 5); /* Set minimum size first */
 	terminal_resize(terminal, 80, 25);
 
 	wl_list_insert(terminal_list.prev, &terminal->link);

@@ -135,6 +135,7 @@ struct window {
 	struct wl_region *opaque_region;
 	char *title;
 	struct rectangle allocation, saved_allocation, server_allocation;
+	struct rectangle min_allocation;
 	struct rectangle pending_allocation;
 	int x, y;
 	int resize_edges;
@@ -2613,6 +2614,13 @@ window_schedule_resize(struct window *window, int width, int height)
 	window->pending_allocation.y = 0;
 	window->pending_allocation.width = width;
 	window->pending_allocation.height = height;
+
+	if (window->min_allocation.width == 0)
+		window->min_allocation = window->pending_allocation;
+	if (window->pending_allocation.width < window->min_allocation.width)
+		window->pending_allocation.width = window->min_allocation.width;
+	if (window->pending_allocation.height < window->min_allocation.height)
+		window->pending_allocation.height = window->min_allocation.height;
 
 	window->resize_needed = 1;
 	window_schedule_redraw(window);
