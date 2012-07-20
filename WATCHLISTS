@@ -71,6 +71,9 @@
     'browser_resources': {
       'filepath': 'chrome/browser/resources/',
     },
+    'browsing_data': {
+      'filepath': 'chrome/browser/browsing_data/',
+    },
     'bubble': {
       'filepath': 'ui/views/bubble/|'\
                   'chrome/browser/ui/views/bubble/',
@@ -425,6 +428,7 @@
                            'piman+watch@chromium.org'],
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
+    'browsing_data': ['markusheintz@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
     'chrome_frame': ['amit@chromium.org', 'grt+watch@chromium.org',
                      'robertshield@chromium.org'],
