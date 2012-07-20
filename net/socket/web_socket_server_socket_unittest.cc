@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -226,8 +226,6 @@ class ReadWriteTracker {
         write_buf_(new net::IOBuffer(buf_size_)),
         bytes_remaining_to_read_(bytes_to_read),
         bytes_remaining_to_write_(bytes_to_write),
-        read_initiated_(false),
-        write_initiated_(false),
         got_final_zero_(false) {
     int rv = ws_->Accept(
         base::Bind(&ReadWriteTracker::OnAccept, base::Unretained(this)));
@@ -310,8 +308,6 @@ class ReadWriteTracker {
   scoped_refptr<net::IOBuffer> write_buf_;
   int bytes_remaining_to_read_;
   int bytes_remaining_to_write_;
-  bool read_initiated_;
-  bool write_initiated_;
   bool got_final_zero_;
 };
 

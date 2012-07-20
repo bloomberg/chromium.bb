@@ -428,7 +428,7 @@ void SetCookieFunction::RespondOnUIThread() {
   SendResponse(success_);
 }
 
-RemoveCookieFunction::RemoveCookieFunction() : success_(false) {
+RemoveCookieFunction::RemoveCookieFunction() {
 }
 
 RemoveCookieFunction::~RemoveCookieFunction() {

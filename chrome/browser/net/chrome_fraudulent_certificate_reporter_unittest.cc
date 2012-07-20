@@ -122,12 +122,10 @@ class NotSendingTestReporter : public TestReporter {
 class MockURLRequest : public net::URLRequest {
  public:
   MockURLRequest(net::URLRequestContext* context)
-      : net::URLRequest(GURL(""), NULL, context),
-        passed_(false) {
+      : net::URLRequest(GURL(""), NULL, context) {
   }
 
  private:
-  bool passed_;
 };
 
 // A ChromeFraudulentCertificateReporter that uses a MockURLRequest, but is

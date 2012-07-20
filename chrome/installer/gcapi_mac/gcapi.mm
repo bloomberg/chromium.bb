@@ -159,7 +159,7 @@ NSString* WriteData(NSData* data, NSString* system_path, NSString* user_path) {
   // setuid root, and in that case the kSystemBrandPath path above should have
   // worked anyway. So only try user if geteuid() isn't root.
   if (geteuid() != 0) {
-    NSString* user_path = [user_path stringByExpandingTildeInPath];
+    user_path = [user_path stringByExpandingTildeInPath];
     if (CreatePathToFile(user_path) &&
         [data writeToFile:user_path atomically:YES]) {
       chmod([user_path fileSystemRepresentation], Permissions() & ~0111);

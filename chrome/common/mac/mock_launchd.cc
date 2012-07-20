@@ -101,7 +101,6 @@ MockLaunchd::MockLaunchd(const FilePath& file, MessageLoop* loop,
       as_service_(as_service),
       restart_called_(false),
       remove_called_(false),
-      job_called_(false),
       checkin_called_(false),
       write_called_(false),
       delete_called_(false) {

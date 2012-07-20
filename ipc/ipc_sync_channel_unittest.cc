@@ -1430,8 +1430,7 @@ class RestrictedDispatchDeadlockServer : public Worker {
         server_num_(server_num),
         server_ready_event_(server_ready_event),
         events_(events),
-        peer_(peer),
-        client_kicked_(false) { }
+        peer_(peer) { }
 
   void OnDoServerTask() {
     events_[3]->Signal();
@@ -1474,7 +1473,6 @@ class RestrictedDispatchDeadlockServer : public Worker {
   WaitableEvent* server_ready_event_;
   WaitableEvent** events_;
   RestrictedDispatchDeadlockServer* peer_;
-  bool client_kicked_;
 };
 
 class RestrictedDispatchDeadlockClient2 : public Worker {

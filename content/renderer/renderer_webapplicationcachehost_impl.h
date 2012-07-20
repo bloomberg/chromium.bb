@@ -26,7 +26,6 @@ class RendererWebApplicationCacheHostImpl
  private:
   RenderViewImpl* GetRenderView();
 
-  bool content_blocked_;
   int routing_id_;
 };
 

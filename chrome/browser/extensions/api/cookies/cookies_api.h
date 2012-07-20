@@ -193,7 +193,6 @@ class RemoveCookieFunction : public CookiesFunction {
 
   GURL url_;
   std::string name_;
-  bool success_;
   std::string store_id_;
   scoped_refptr<net::URLRequestContextGetter> store_context_;
 };
