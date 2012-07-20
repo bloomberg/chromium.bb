@@ -185,31 +185,45 @@
 }
 
 .media-button.play > .state0.normal {
-  background-image: url(../images/media/media_play.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_play.png) 1x,
+    url(../images/media/2x/media_play.png) 2x);
 }
 
 .media-button.play > .state0.hover {
-  background-image: url(../images/media/media_play_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_play_hover.png) 1x,
+    url(../images/media/2x/media_play_hover.png) 2x);
 }
 
 .media-button.play > .state0.active {
-  background-image: url(../images/media/media_play_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_play_down.png) 1x,
+    url(../images/media/2x/media_play_down.png) 2x);
 }
 
 .media-button.play > .state1.normal {
-  background-image: url(../images/media/media_pause.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_pause.png) 1x,
+    url(../images/media/2x/media_pause.png) 2x);
 }
 
 .media-button.play > .state1.hover {
-  background-image: url(../images/media/media_pause_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_pause_hover.png) 1x,
+    url(../images/media/2x/media_pause_hover.png) 2x);
 }
 
 .media-button.play > .state1.active {
-  background-image: url(../images/media/media_pause_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_pause_down.png) 1x,
+    url(../images/media/2x/media_pause_down.png) 2x);
 }
 
 .media-button.play > .disabled {
-  background-image: url(../images/media/media_play_disabled.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_play_disabled.png) 1x,
+    url(../images/media/2x/media_play_disabled.png) 2x);
 }
 
 /* Time controls: a slider and a text time display. */
@@ -233,16 +247,22 @@
 }
 
 .custom-slider.progress > input[type='range']::-webkit-slider-thumb {
-  background-image: url(../images/media/media_slider_thumb.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_slider_thumb.png) 1x,
+    url(../images/media/2x/media_slider_thumb.png) 2x);
   width: 28px;
 }
 
 .custom-slider.progress > input[type='range']::-webkit-slider-thumb:hover {
-  background-image: url(../images/media/media_slider_thumb_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_slider_thumb_hover.png) 1x,
+    url(../images/media/2x/media_slider_thumb_hover.png) 2x);
 }
 
 .custom-slider.progress > input[type='range']::-webkit-slider-thumb:active {
-  background-image: url(../images/media/media_slider_thumb_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_slider_thumb_down.png) 1x,
+    url(../images/media/2x/media_slider_thumb_down.png) 2x);
 }
 
 .custom-slider.progress.disabled > input[type='range']::-webkit-slider-thumb {
@@ -302,59 +322,85 @@
 }
 
 .media-button.sound[level='0'] > .normal {
-  background-image: url(../images/media/media_sound_disabled.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_disabled.png) 1x,
+    url(../images/media/2x/media_sound_disabled.png) 2x);
 }
 
 .media-button.sound[level='0'] > .hover {
-  background-image: url(../images/media/media_sound_disabled_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_disabled_hover.png) 1x,
+    url(../images/media/2x/media_sound_disabled_hover.png) 2x);
 }
 
 .media-button.sound[level='0'] > .active {
-  background-image: url(../images/media/media_sound_disabled_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_disabled_down.png) 1x,
+    url(../images/media/2x/media_sound_disabled_down.png) 2x);
 }
 
 
 .media-button.sound[level='1'] > .normal {
-  background-image: url(../images/media/media_sound_level1.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_level1.png) 1x,
+    url(../images/media/2x/media_sound_level1.png) 2x);
 }
 
 .media-button.sound[level='1'] > .hover {
-  background-image: url(../images/media/media_sound_level1_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_level1_hover.png) 1x,
+    url(../images/media/2x/media_sound_level1_hover.png) 2x);
 }
 
 .media-button.sound[level='1'] > .active {
-  background-image: url(../images/media/media_sound_level1_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_level1_down.png) 1x,
+    url(../images/media/2x/media_sound_level1_down.png) 2x);
 }
 
 
 .media-button.sound[level='2'] > .normal {
-  background-image: url(../images/media/media_sound_level2.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_level2.png) 1x,
+    url(../images/media/2x/media_sound_level2.png) 2x);
 }
 
 .media-button.sound[level='2'] > .hover {
-  background-image: url(../images/media/media_sound_level2_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_level2_hover.png) 1x,
+    url(../images/media/2x/media_sound_level2_hover.png) 2x);
 }
 
 .media-button.sound[level='2'] > .active {
-  background-image: url(../images/media/media_sound_level2_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_level2_down.png) 1x,
+    url(../images/media/2x/media_sound_level2_down.png) 2x);
 }
 
 
 .media-button.sound[level='3'] > .normal {
-  background-image: url(../images/media/media_sound_full.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_full.png) 1x,
+    url(../images/media/2x/media_sound_full.png) 2x);
 }
 
 .media-button.sound[level='3'] > .hover {
-  background-image: url(../images/media/media_sound_full_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_full_hover.png) 1x,
+    url(../images/media/2x/media_sound_full_hover.png) 2x);
 }
 
 .media-button.sound[level='3'] > .active {
-  background-image: url(../images/media/media_sound_full_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_full_down.png) 1x,
+    url(../images/media/2x/media_sound_full_down.png) 2x);
 }
 
 
 .media-button.sound > .disabled {
-  background-image: url(../images/media/media_sound_full_disabled.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_sound_full_disabled.png) 1x,
+    url(../images/media/2x/media_sound_full_disabled.png) 2x);
 }
 
 /* Volume slider. */
@@ -368,16 +414,22 @@
 }
 
 .custom-slider.volume > input[type='range']::-webkit-slider-thumb {
-  background-image: url(../images/media/media_volume_slider_thumb.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_volume_slider_thumb.png) 1x,
+    url(../images/media/2x/media_volume_slider_thumb.png) 2x);
   width: 20px;
 }
 
 .custom-slider.volume > input[type='range']::-webkit-slider-thumb:hover {
-  background-image: url(../images/media/media_volume_slider_thumb_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_volume_slider_thumb_hover.png) 1x,
+    url(../images/media/2x/media_volume_slider_thumb_hover.png) 2x);
 }
 
 .custom-slider.volume > input[type='range']::-webkit-slider-thumb:active {
-  background-image: url(../images/media/media_volume_slider_thumb_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_volume_slider_thumb_down.png) 1x,
+    url(../images/media/2x/media_volume_slider_thumb_down.png) 2x);
 }
 
 .custom-slider.volume.disabled > input[type='range']::-webkit-slider-thumb {
@@ -420,19 +472,27 @@
 }
 
 .media-button.fullscreen > .normal {
-  background-image: url(../images/media/media_fullscreen.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_fullscreen.png) 1x,
+    url(../images/media/2x/media_fullscreen.png) 2x);
 }
 
 .media-button.fullscreen > .hover {
-  background-image: url(../images/media/media_fullscreen_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_fullscreen_hover.png) 1x,
+    url(../images/media/2x/media_fullscreen_hover.png) 2x);
 }
 
 .media-button.fullscreen > .active {
-  background-image: url(../images/media/media_fullscreen_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_fullscreen_down.png) 1x,
+    url(../images/media/2x/media_fullscreen_down.png) 2x);
 }
 
 .media-button.fullscreen > .disabled {
-  background-image: url(../images/media/media_fullscreen_disabled.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_fullscreen_disabled.png) 1x,
+    url(../images/media/2x/media_fullscreen_disabled.png) 2x);
 }
 
 .playback-state-icon {
@@ -467,9 +527,13 @@
 }
 
 .playback-state-icon[state='play'] {
-  background-image: url(../images/media/media_play.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_play.png) 1x,
+    url(../images/media/2x/media_play.png) 2x);
 }
 
 .playback-state-icon[state='pause'] {
-  background-image: url(../images/media/media_pause.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_pause.png) 1x,
+    url(../images/media/2x/media_pause.png) 2x);
 }

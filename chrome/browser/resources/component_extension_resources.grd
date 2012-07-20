@@ -205,23 +205,81 @@
         <include name="IDR_FILE_MANAGER_IMG_MEDIA_VOLUME_SLIDER_THUMB_DOWN" file="file_manager/images/media/media_volume_slider_thumb_down.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_MEDIA_VOLUME_SLIDER_THUMB_HOVER" file="file_manager/images/media/media_volume_slider_thumb_hover.png" type="BINDATA" />
 
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_CLOSE" file="file_manager/images/media/media_close.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_COLLAPSE" file="file_manager/images/media/media_collapse.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_EXPAND" file="file_manager/images/media/media_expand.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_NEXT" file="file_manager/images/media/media_next.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_NEXT_HOVER" file="file_manager/images/media/media_next_down.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_NEXT_DOWN" file="file_manager/images/media/media_next_hover.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PAUSE" file="file_manager/images/media/media_pause_audio.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PAUSE_HOVER" file="file_manager/images/media/media_pause_audio_hover.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PAUSE_DOWN" file="file_manager/images/media/media_pause_audio_down.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PLAY" file="file_manager/images/media/media_play_audio.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PLAY_HOVER" file="file_manager/images/media/media_play_audio_hover.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PLAY_DOWN" file="file_manager/images/media/media_play_audio_down.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PREVIOUS" file="file_manager/images/media/media_previous.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PREVIOUS_HOVER" file="file_manager/images/media/media_previous_hover.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PREVIOUS_DOWN" file="file_manager/images/media/media_previous_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_ERROR" file="file_manager/images/media/error.png" type="BINDATA" />
 
-        <include name="IDR_FILE_MANAGER_MEDIA_ERROR" file="file_manager/images/media/error.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_CLOSE" file="file_manager/images/media/media_close.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_COLLAPSE" file="file_manager/images/media/media_collapse.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_EXPAND" file="file_manager/images/media/media_expand.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_NEXT" file="file_manager/images/media/media_next.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_NEXT_HOVER" file="file_manager/images/media/media_next_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_NEXT_DOWN" file="file_manager/images/media/media_next_hover.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PAUSE" file="file_manager/images/media/media_pause_audio.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PAUSE_HOVER" file="file_manager/images/media/media_pause_audio_hover.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PAUSE_DOWN" file="file_manager/images/media/media_pause_audio_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PLAY" file="file_manager/images/media/media_play_audio.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PLAY_HOVER" file="file_manager/images/media/media_play_audio_hover.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PLAY_DOWN" file="file_manager/images/media/media_play_audio_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PREVIOUS" file="file_manager/images/media/media_previous.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PREVIOUS_HOVER" file="file_manager/images/media/media_previous_hover.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_PREVIOUS_DOWN" file="file_manager/images/media/media_previous_down.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_FULLSCREEN" file="file_manager/images/media/2x/media_fullscreen.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_FULLSCREEN_DISABLED" file="file_manager/images/media/2x/media_fullscreen_disabled.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_FULLSCREEN_DOWN" file="file_manager/images/media/2x/media_fullscreen_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_FULLSCREEN_HOVER" file="file_manager/images/media/2x/media_fullscreen_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_PAUSE" file="file_manager/images/media/2x/media_pause.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_PAUSE_DOWN" file="file_manager/images/media/2x/media_pause_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_PAUSE_HOVER" file="file_manager/images/media/2x/media_pause_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_PLAY" file="file_manager/images/media/2x/media_play.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_PLAY_DISABLED" file="file_manager/images/media/2x/media_play_disabled.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_PLAY_DOWN" file="file_manager/images/media/2x/media_play_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_PLAY_HOVER" file="file_manager/images/media/2x/media_play_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SLIDER_THUMB" file="file_manager/images/media/2x/media_slider_thumb.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SLIDER_THUMB_DOWN" file="file_manager/images/media/2x/media_slider_thumb_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SLIDER_THUMB_HOVER" file="file_manager/images/media/2x/media_slider_thumb_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_DISABLED" file="file_manager/images/media/2x/media_sound_disabled.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_DISABLED_DOWN" file="file_manager/images/media/2x/media_sound_disabled_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_DISABLED_HOVER" file="file_manager/images/media/2x/media_sound_disabled_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_FULL" file="file_manager/images/media/2x/media_sound_full.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_FULL_DISABLED" file="file_manager/images/media/2x/media_sound_full_disabled.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_FULL_DOWN" file="file_manager/images/media/2x/media_sound_full_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_FULL_HOVER" file="file_manager/images/media/2x/media_sound_full_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_LEVEL1" file="file_manager/images/media/2x/media_sound_level1.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_LEVEL1_DOWN" file="file_manager/images/media/2x/media_sound_level1_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_LEVEL1_HOVER" file="file_manager/images/media/2x/media_sound_level1_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_LEVEL2" file="file_manager/images/media/2x/media_sound_level2.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_LEVEL2_DOWN" file="file_manager/images/media/2x/media_sound_level2_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_SOUND_LEVEL2_HOVER" file="file_manager/images/media/2x/media_sound_level2_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_VOLUME_SLIDER_THUMB" file="file_manager/images/media/2x/media_volume_slider_thumb.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_VOLUME_SLIDER_THUMB_DOWN" file="file_manager/images/media/2x/media_volume_slider_thumb_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_VOLUME_SLIDER_THUMB_HOVER" file="file_manager/images/media/2x/media_volume_slider_thumb_hover.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_2X_ERROR" file="file_manager/images/media/2x/error.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_CLOSE" file="file_manager/images/media/2x/media_close.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_COLLAPSE" file="file_manager/images/media/2x/media_collapse.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_EXPAND" file="file_manager/images/media/2x/media_expand.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_NEXT" file="file_manager/images/media/2x/media_next.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_NEXT_HOVER" file="file_manager/images/media/2x/media_next_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_NEXT_DOWN" file="file_manager/images/media/2x/media_next_hover.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PAUSE" file="file_manager/images/media/2x/media_pause_audio.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PAUSE_HOVER" file="file_manager/images/media/2x/media_pause_audio_hover.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PAUSE_DOWN" file="file_manager/images/media/2x/media_pause_audio_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PLAY" file="file_manager/images/media/2x/media_play_audio.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PLAY_HOVER" file="file_manager/images/media/2x/media_play_audio_hover.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PLAY_DOWN" file="file_manager/images/media/2x/media_play_audio_down.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PREVIOUS" file="file_manager/images/media/2x/media_previous.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PREVIOUS_HOVER" file="file_manager/images/media/2x/media_previous_hover.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_AUDIO_2X_PREVIOUS_DOWN" file="file_manager/images/media/2x/media_previous_down.png" type="BINDATA" />
+
       </if>
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

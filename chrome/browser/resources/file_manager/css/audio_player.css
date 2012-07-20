@@ -47,19 +47,25 @@ body {
 
 /* TODO(kaznacheev): Remove display: none when the audio player is title-less */
 .title-button.close {
-  background-image: url(../images/media/media_close.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_close.png) 1x,
+    url(../images/media/2x/media_close.png) 2x);
   display: none;
   right: 0;
 }
 
 /* TODO(kaznacheev): Set right: 29px when the audio player is title-less */
 .title-button.collapse {
-  background-image: url(../images/media/media_collapse.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_collapse.png) 1x,
+    url(../images/media/2x/media_collapse.png) 2x);
   right: 0;
 }
 
 .collapsed .title-button.collapse {
-  background-image: url(../images/media/media_expand.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_expand.png) 1x,
+    url(../images/media/2x/media_expand.png) 2x);
 }
 
 .single-track .title-button.collapse {
@@ -170,7 +176,9 @@ body {
 }
 
 .track .art.error {
-  background-image: url(../images/media/error.png);
+  background-image: -webkit-image-set(
+    url(../images/media/error.png) 1x,
+    url(../images/media/2x/error.png) 2x);
   background-position: center center;
   background-repeat: no-repeat;
 }
@@ -238,27 +246,39 @@ body {
 }
 
 .audio-controls .media-button.play > .state0.normal {
-  background-image: url(../images/media/media_play_audio.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_play_audio.png) 1x,
+    url(../images/media/2x/media_play_audio.png) 2x);
 }
 
 .audio-controls .media-button.play > .state0.hover {
-  background-image: url(../images/media/media_play_audio_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_play_audio_hover.png) 1x,
+    url(../images/media/2x/media_play_audio_hover.png) 2x);
 }
 
 .audio-controls .media-button.play > .state0.active {
-  background-image: url(../images/media/media_play_audio_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_play_audio_down.png) 1x,
+    url(../images/media/2x/media_play_audio_down.png) 2x);
 }
 
 .audio-controls .media-button.play > .state1.normal {
-  background-image: url(../images/media/media_pause_audio.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_pause_audio.png) 1x,
+    url(../images/media/2x/media_pause_audio.png) 2x);
 }
 
 .audio-controls .media-button.play > .state1.hover {
-  background-image: url(../images/media/media_pause_audio_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_pause_audio_hover.png) 1x,
+    url(../images/media/2x/media_pause_audio_hover.png) 2x);
 }
 
 .audio-controls .media-button.play > .state1.active {
-  background-image: url(../images/media/media_pause_audio_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_pause_audio_down.png) 1x,
+    url(../images/media/2x/media_pause_audio_down.png) 2x);
 }
 
 .audio-controls .time-controls {
@@ -275,15 +295,21 @@ body {
 }
 
 .media-button.previous > .normal {
-  background-image: url(../images/media/media_previous.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_previous.png) 1x,
+    url(../images/media/2x/media_previous.png) 2x);
 }
 
 .media-button.previous > .hover {
-  background-image: url(../images/media/media_previous_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_previous_hover.png) 1x,
+    url(../images/media/2x/media_previous_hover.png) 2x);
 }
 
 .media-button.previous > .active {
-  background-image: url(../images/media/media_previous_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_previous_down.png) 1x,
+    url(../images/media/2x/media_previous_down.png) 2x);
 }
 
 .media-button.next {
@@ -291,15 +317,21 @@ body {
 }
 
 .media-button.next > .normal {
-  background-image: url(../images/media/media_next.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_next.png) 1x,
+    url(../images/media/2x/media_next.png) 2x);
 }
 
 .media-button.next > .hover {
-  background-image: url(../images/media/media_next_hover.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_next_hover.png) 1x,
+    url(../images/media/2x/media_next_hover.png) 2x);
 }
 
 .media-button.next > .active {
-  background-image: url(../images/media/media_next_down.png);
+  background-image: -webkit-image-set(
+    url(../images/media/media_next_down.png) 1x,
+    url(../images/media/2x/media_next_down.png) 2x);
 }
 
 .single-track .media-button.next,
