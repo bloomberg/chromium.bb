@@ -412,6 +412,7 @@ void PluginReverseInterface::CloseManifestEntry_MainThreadContinuation(
 
 void PluginReverseInterface::ReportCrash() {
   NaClLog(4, "PluginReverseInterface::ReportCrash\n");
+
   if (crash_cb_.pp_completion_callback().func != NULL) {
     NaClLog(4, "PluginReverseInterface::ReportCrash: invoking CB\n");
     pp::Module::Get()->core()->CallOnMainThread(0, crash_cb_, PP_OK);
@@ -739,6 +740,14 @@ int ServiceRuntime::exit_status() {
 void ServiceRuntime::set_exit_status(int exit_status) {
   nacl::MutexLocker take(&mu_);
   exit_status_ = exit_status & 0xff;
+}
+
+nacl::string ServiceRuntime::GetCrashLogOutput() {
+  if (NULL != subprocess_.get()) {
+    return subprocess_->GetCrashLogOutput();
+  } else {
+    return "";
+  }
 }
 
 }  // namespace plugin

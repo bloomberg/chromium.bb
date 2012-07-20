@@ -1146,6 +1146,28 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
   NaClLog(4, "Leaving NexeFileDidOpenContinuation\n");
 }
 
+static void LogLineToConsole(Plugin* plugin, nacl::string one_line) {
+  PLUGIN_PRINTF(("LogLineToConsole: %s\n",
+                 one_line.c_str()));
+  plugin->AddToConsole(one_line);
+}
+
+void Plugin::CopyCrashLogToJsConsole() {
+  nacl::string fatal_msg(main_service_runtime()->GetCrashLogOutput());
+  size_t ix_start = 0;
+  size_t ix_end;
+
+  PLUGIN_PRINTF(("Plugin::CopyCrashLogToJsConsole: got %d bytes\n",
+                 fatal_msg.size()));
+  while (nacl::string::npos != (ix_end = fatal_msg.find('\n', ix_start))) {
+    LogLineToConsole(this, fatal_msg.substr(ix_start, ix_end - ix_start));
+    ix_start = ix_end + 1;
+  }
+  if (ix_start != fatal_msg.size()) {
+    LogLineToConsole(this, fatal_msg.substr(ix_start));
+  }
+}
+
 void Plugin::NexeDidCrash(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NexeDidCrash (pp_error=%"NACL_PRId32")\n",
                  pp_error));
@@ -1172,6 +1194,7 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
                    " suppressing\n"));
     return;
   }
+
   if (nacl_ready_state() == DONE) {
     ReportDeadNexe();
   } else {
@@ -1180,6 +1203,8 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
                          "Nexe crashed during startup");
     ReportLoadError(error_info);
   }
+
+  CopyCrashLogToJsConsole();
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
