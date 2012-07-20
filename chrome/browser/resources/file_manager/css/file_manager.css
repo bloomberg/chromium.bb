@@ -386,12 +386,20 @@ div.root-eject:hover {
   -webkit-box-align: center;
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
-  -webkit-margin-end: 5px;
-  -webkit-margin-start: 10px;
   display: -webkit-box;
   line-height: 20px;
   overflow: hidden;
   padding-top: 1px;
+}
+
+#dir-breadcrumbs {
+  -webkit-margin-end: 5px;
+  -webkit-margin-start: 10px;
+}
+
+#search-breadcrumbs {
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 .breadcrumbs > [collapsed]:before {
@@ -409,6 +417,14 @@ div.root-eject:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#search-breadcrumbs .breadcrumb-path {
+  color: #888;
+}
+
+#search-breadcrumbs .breadcrumb-path:hover {
+  color: #666;
 }
 
 /* The final breadcrumb, representing the current directory. */
@@ -1061,12 +1077,17 @@ input.rename {
   -webkit-margin-end: 5px;
 }
 
+#preview-lines {
+  -webkit-box-flex: 1;
+  vertical-align: middle;
+}
+
 /* The selection summary text at the bottom of the preview pane. */
 .preview-summary {
-  -webkit-box-flex: 1;
   color: #666;
   overflow: hidden;
-  padding: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;

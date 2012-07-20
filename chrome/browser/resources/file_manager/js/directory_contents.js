@@ -127,6 +127,54 @@ PathUtil.isRootPath = function(path) {
   return PathUtil.getRootPath(path) === path;
 };
 
+/**
+ * @param {string} parent_path The parent path.
+ * @param {string} child_path The child path.
+ * @return {boolean} True if |parent_path| is parent file path of |child_path|.
+ */
+PathUtil.isParentPath = function(parent_path, child_path) {
+  if (!parent_path || parent_path.length == 0 ||
+      !child_path || child_path.length == 0)
+    return false;
+
+  if (parent_path[parent_path.length - 1] != '/')
+    parent_path += '/';
+
+  if (child_path[child_path.length - 1] != '/')
+    child_path += '/';
+
+  return child_path.indexOf(parent_path) == 0;
+};
+
+/**
+ * Return the localized name for the root.
+ * @param {string} path The full path of the root (starting with slash).
+ * @return {string} The localized name.
+ */
+PathUtil.getRootLabel = function(path) {
+  function str(id) {
+    return loadTimeData.getString(id);
+  }
+
+  if (path === RootDirectory.DOWNLOADS)
+    return str('DOWNLOADS_DIRECTORY_LABEL');
+
+  if (path === RootDirectory.ARCHIVE)
+    return str('ARCHIVE_DIRECTORY_LABEL');
+  if (PathUtil.isParentPath(RootDirectory.ARCHIVE, path))
+    return path.substring(RootDirectory.ARCHIVE.length + 1);
+
+  if (path === RootDirectory.REMOVABLE)
+    return str('REMOVABLE_DIRECTORY_LABEL');
+  if (PathUtil.isParentPath(RootDirectory.REMOVABLE, path))
+    return path.substring(RootDirectory.REMOVABLE.length + 1);
+
+  if (path === RootDirectory.GDATA)
+    return str('GDATA_DIRECTORY_LABEL');
+
+  return path;
+};
+
 
 /**
  * @constructor
@@ -654,4 +702,11 @@ DirectoryContentsLocalSearch.prototype.scanDirectory_ = function(entry) {
   };
 
   getNextChunk();
+};
+
+/**
+ * Empty.
+ */
+DirectoryContentsLocalSearch.prototype.readNextChunk = function() {
+  this.onCompleted();
 };

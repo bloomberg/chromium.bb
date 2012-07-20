@@ -49,6 +49,7 @@
 //<include src="combobutton.js"/>
 //
 //<include src="util.js"/>
+//<include src="breadcrumbs_controller.js"/>
 //<include src="directory_contents.js">
 //<include src="volume_manager.js"/>
 //<include src="directory_model.js"/>
