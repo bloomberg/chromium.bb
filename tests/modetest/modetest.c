@@ -488,6 +488,8 @@ static void dump_planes(void)
 struct connector {
 	uint32_t id;
 	char mode_str[64];
+	char format_str[5];
+	unsigned int fourcc;
 	drmModeModeInfo *mode;
 	drmModeEncoder *encoder;
 	int crtc;
@@ -1696,12 +1698,13 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 		return;
 	}
 
-	bo = create_test_buffer(kms, DRM_FORMAT_XRGB8888, width, height, handles,
+	bo = create_test_buffer(kms, c->fourcc, width, height, handles,
 				pitches, offsets, PATTERN_SMPTE);
 	if (bo == NULL)
 		return;
 
-	ret = drmModeAddFB(fd, width, height, 24, 32, pitches[0], handles[0], &fb_id);
+	ret = drmModeAddFB2(fd, width, height, c->fourcc,
+			    handles, pitches, offsets, &fb_id, 0);
 	if (ret) {
 		fprintf(stderr, "failed to add fb (%ux%u): %s\n",
 			width, height, strerror(errno));
@@ -1713,8 +1716,8 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 		if (c[i].mode == NULL)
 			continue;
 
-		printf("setting mode %s on connector %d, crtc %d\n",
-		       c[i].mode_str, c[i].id, c[i].crtc);
+		printf("setting mode %s@%s on connector %d, crtc %d\n",
+		       c[i].mode_str, c[i].format_str, c[i].id, c[i].crtc);
 
 		ret = drmModeSetCrtc(fd, c[i].crtc, fb_id, x, 0,
 				     &c[i].id, 1, c[i].mode);
@@ -1739,13 +1742,13 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 	if (!page_flip)
 		return;
 	
-	other_bo = create_test_buffer(kms, DRM_FORMAT_XRGB8888, width, height, handles,
+	other_bo = create_test_buffer(kms, c->fourcc, width, height, handles,
 				      pitches, offsets, PATTERN_PLAIN);
 	if (other_bo == NULL)
 		return;
 
-	ret = drmModeAddFB(fd, width, height, 32, 32, pitches[0], handles[0],
-			   &other_fb_id);
+	ret = drmModeAddFB2(fd, width, height, c->fourcc, handles, pitches, offsets,
+			    &other_fb_id, 0);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
 		return;
@@ -1820,17 +1823,44 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 static char optstr[] = "ecpmfs:P:v";
 
+#define min(a, b)	((a) < (b) ? (a) : (b))
+
 static int parse_connector(struct connector *c, const char *arg)
 {
+	unsigned int len;
+	const char *p;
+	char *endp;
+
 	c->crtc = -1;
+	strcpy(c->format_str, "XR24");
 
-	if (sscanf(arg, "%d:%64s", &c->id, &c->mode_str) == 2)
-		return 0;
+	c->id = strtoul(arg, &endp, 10);
+	if (*endp == '@') {
+		arg = endp + 1;
+		c->crtc = strtoul(arg, &endp, 10);
+	}
+	if (*endp != ':')
+		return -1;
 
-	if (sscanf(arg, "%d@%d:%64s", &c->id, &c->crtc, &c->mode_str) == 3)
-		return 0;
+	arg = endp + 1;
 
-	return -1;
+	p = strchrnul(arg, '@');
+	len = min(sizeof c->mode_str - 1, p - arg);
+	strncpy(c->mode_str, arg, len);
+	c->mode_str[len] = '\0';
+
+	if (*p == '@') {
+		strncpy(c->format_str, p + 1, 4);
+		c->format_str[4] = '\0';
+
+		c->fourcc = format_fourcc(p + 1);
+		if (c->fourcc == 0)  {
+			fprintf(stderr, "unknown format %s\n", c->format_str);
+			return -1;
+		}
+	}
+
+	return 0;
 }
 
 static int parse_plane(struct plane *p, const char *arg)
@@ -1859,10 +1889,8 @@ void usage(char *name)
 	fprintf(stderr, "\t-m\tlist modes\n");
 	fprintf(stderr, "\t-f\tlist framebuffers\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
-	fprintf(stderr, "\t-s <connector_id>:<mode>\tset a mode\n");
-	fprintf(stderr, "\t-s <connector_id>@<crtc_id>:<mode>\tset a mode\n");
-	fprintf(stderr, "\t-P <connector_id>:<w>x<h>\tset a plane\n");
-	fprintf(stderr, "\t-P <connector_id>:<w>x<h>@<format>\tset a plane\n");
+	fprintf(stderr, "\t-s <connector_id>[@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
+	fprintf(stderr, "\t-P <connector_id>:<w>x<h>[@<format>]\tset a plane\n");
 	fprintf(stderr, "\n\tDefault is to dump all info.\n");
 	exit(0);
 }
