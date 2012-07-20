@@ -353,7 +353,7 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   FilePath GetDownloadDirectory(Browser* browser) {
-    return GetDownloadPrefs(browser)->DownloadPath();
+    return GetDownloadPrefs(browser)->download_path();
   }
 
   // Create a DownloadTestObserverTerminal that will wait for the

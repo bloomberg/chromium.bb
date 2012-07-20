@@ -78,9 +78,6 @@
     'chrome_frame': {
       'filepath': 'chrome_frame/',
     },
-    'chrome_views': {
-      'filepath': 'chrome/browser/ui/views',
-    },
     'chromedriver': {
       'filepath': 'chrome/test/webdriver|third_party/webdriver'
     },
@@ -428,7 +425,6 @@
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
     'chrome_frame': ['amit@chromium.org', 'grt+watch@chromium.org',
                      'robertshield@chromium.org'],
-    'chrome_views': ['tfarina@chromium.org'],
     'chromedriver': ['kkania@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
                   'stevenjb+watch@chromium.org'],

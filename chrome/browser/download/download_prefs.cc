@@ -22,14 +22,12 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/save_page_type.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #endif
 
@@ -37,8 +35,7 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
 
-DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
-  PrefService* prefs = profile->GetPrefs();
+DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs, NULL);
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
   save_file_type_.Init(prefs::kSaveFileType, prefs, NULL);
@@ -125,18 +122,6 @@ DownloadPrefs* DownloadPrefs::FromBrowserContext(
   return FromDownloadManager(BrowserContext::GetDownloadManager(context));
 }
 
-FilePath DownloadPrefs::DownloadPath() const {
-#if defined(OS_CHROMEOS)
-  // If the download path is under /drive, and GDataSystemService isn't
-  // available (which it isn't for incognito mode, for instance), use the
-  // default download directory (/Downloads).
-  if (gdata::util::IsUnderGDataMountPoint(*download_path_) &&
-      !gdata::GDataSystemServiceFactory::GetForProfile(profile_))
-    return download_util::GetDefaultDownloadDirectory();
-#endif
-  return *download_path_;
-}
-
 bool DownloadPrefs::PromptForDownload() const {
   // If the DownloadDirectory policy is set, then |prompt_for_download_| should
   // always be false.
@@ -199,7 +184,7 @@ void DownloadPrefs::SaveAutoOpenState() {
   if (!extensions.empty())
     extensions.erase(extensions.size() - 1);
 
-  profile_->GetPrefs()->SetString(prefs::kDownloadExtensionsToOpen, extensions);
+  prefs_->SetString(prefs::kDownloadExtensionsToOpen, extensions);
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(

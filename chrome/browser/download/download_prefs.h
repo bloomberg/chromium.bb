@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/prefs/pref_member.h"
 
-class Profile;
+class PrefService;
 
 namespace content {
 class BrowserContext;
@@ -20,7 +20,7 @@ class DownloadManager;
 // Stores all download-related preferences.
 class DownloadPrefs {
  public:
-  explicit DownloadPrefs(Profile* profile);
+  explicit DownloadPrefs(PrefService* prefs);
   ~DownloadPrefs();
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -32,7 +32,7 @@ class DownloadPrefs {
   static DownloadPrefs* FromBrowserContext(
       content::BrowserContext* browser_context);
 
-  FilePath DownloadPath() const;
+  FilePath download_path() const { return *download_path_; }
   int save_file_type() const { return *save_file_type_; }
 
   // Returns true if the prompt_for_download preference has been set and the
@@ -62,7 +62,7 @@ class DownloadPrefs {
  private:
   void SaveAutoOpenState();
 
-  Profile* profile_;
+  PrefService* prefs_;
 
   BooleanPrefMember prompt_for_download_;
   FilePathPrefMember download_path_;

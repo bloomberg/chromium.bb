@@ -101,7 +101,7 @@ static bool GetTransferSize(const T& input, size_t* output) {
     }
   } else if (input.direction == kDirectionOut) {
     if (input.data.get()) {
-      *output = input.data->size();
+      *output = input.data->GetSize();
       return true;
     }
   }
@@ -120,7 +120,7 @@ static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(const T& input) {
     return buffer;
   }
 
-  memcpy(buffer->data(), input.data->data(), size);
+  memcpy(buffer->data(), input.data->GetBuffer(), size);
 
   return buffer;
 }

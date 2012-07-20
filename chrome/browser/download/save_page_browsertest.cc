@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   const FilePath file_name(FILE_PATH_LITERAL("c.htm"));
   FilePath download_dir =
       DownloadPrefs::FromDownloadManager(GetDownloadManager())->
-          DownloadPath();
+          download_path();
   FilePath full_file_name =
       download_dir.AppendASCII(std::string("test.exe") + kAppendedExtension);
   FilePath dir = download_dir.AppendASCII("test.exe_files");
@@ -395,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   static const int64 kFileSizeMin = 2758;
   GURL url = NavigateToMockURL("b");
   FilePath download_dir = DownloadPrefs::FromDownloadManager(
-      GetDownloadManager())->DownloadPath();
+      GetDownloadManager())->download_path();
   FilePath full_file_name = download_dir.AppendASCII(std::string(
       "Test page for saving page feature.mhtml"));
 #if defined(OS_CHROMEOS)
