@@ -93,7 +93,8 @@ void ScriptBadgeController::OnExecuteScriptFinished(
     const std::string& extension_id,
     bool success,
     int32 page_id,
-    const std::string& error) {
+    const std::string& error,
+    const base::ListValue& script_results) {
   if (success && page_id == GetPageID()) {
     if (MarkExtensionExecuting(extension_id))
       NotifyChange();

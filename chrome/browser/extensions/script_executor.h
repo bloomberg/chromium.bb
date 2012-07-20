@@ -11,6 +11,10 @@
 #include "base/observer_list.h"
 #include "chrome/common/extensions/user_script.h"
 
+namespace base {
+class ListValue;
+}  // namespace base
+
 namespace content {
 class WebContents;
 }
@@ -44,9 +48,10 @@ class ScriptExecutor {
     ISOLATED_WORLD,
   };
 
-  // Callback from ExecuteScript. The arguments are (success, page_id, error).
-  // page_id is only valid on success, error is only valid on !success.
-  typedef base::Callback<void(bool, int32, const std::string&)>
+  // Callback from ExecuteScript. The arguments are (success, page_id, error,
+  // result). page_id is only valid on success, error is only valid on !success.
+  typedef base::Callback<void(bool, int32, const std::string&,
+                              const base::ListValue&)>
       ExecuteScriptCallback;
 
   class Observer {
@@ -59,7 +64,8 @@ class ScriptExecutor {
     virtual void OnExecuteScriptFinished(const std::string& extension_id,
                                          bool success,
                                          int32 page_id,
-                                         const std::string& error) = 0;
+                                         const std::string& error,
+                                         const base::ListValue&) = 0;
    private:
     ScriptExecutor& script_executor_;
   };

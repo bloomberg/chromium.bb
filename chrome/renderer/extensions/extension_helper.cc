@@ -32,6 +32,10 @@
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/resource_fetcher.h"
 
+namespace base {
+class ListValue;
+}  // namespace base
+
 using content::ConsoleMessageLevel;
 using extensions::MiscellaneousBindings;
 using WebKit::WebConsoleMessage;
@@ -112,7 +116,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
   std::vector<content::RenderView*> views_;
 };
 
-}
+}  // namespace
 
 // static
 std::vector<content::RenderView*> ExtensionHelper::GetExtensionViews(
@@ -339,8 +343,9 @@ void ExtensionHelper::OnExecuteCode(
   WebView* webview = render_view()->GetWebView();
   WebFrame* main_frame = webview->mainFrame();
   if (!main_frame) {
+    ListValue val;
     Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        routing_id(), params.request_id, false, -1, ""));
+        routing_id(), params.request_id, false, -1, "", val));
     return;
   }
 

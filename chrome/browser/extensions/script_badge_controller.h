@@ -22,6 +22,10 @@ class ExtensionAction;
 class ExtensionService;
 class TabContents;
 
+namespace base {
+class ListValue;
+}  // namespace base
+
 namespace IPC {
 class Message;
 }
@@ -60,10 +64,9 @@ class ScriptBadgeController
   virtual void NotifyChange() OVERRIDE;
 
   // ScriptExecutor::Observer implementation.
-  virtual void OnExecuteScriptFinished(const std::string& extension_id,
-                                       bool success,
-                                       int32 page_id,
-                                       const std::string& error) OVERRIDE;
+  virtual void OnExecuteScriptFinished(
+      const std::string& extension_id, bool success, int32 page_id,
+      const std::string& error, const base::ListValue& script_result) OVERRIDE;
 
  private:
   // Gets the ExtensionService for |tab_contents_|.

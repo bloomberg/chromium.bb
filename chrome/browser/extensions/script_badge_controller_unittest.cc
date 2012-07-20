@@ -118,11 +118,13 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
               testing::ElementsAre());
 
+  ListValue val;
   script_badge_controller_->OnExecuteScriptFinished(
       extension->id(), true,
       tab_contents()->web_contents()->GetController().GetActiveEntry()->
       GetPageID(),
-      "");
+      "",
+      val);
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
               testing::ElementsAre(extension->script_badge()));
   EXPECT_THAT(location_bar_updated.events, testing::Gt(0));
@@ -143,11 +145,13 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
         chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
         content::Source<Profile>(tab_contents()->profile()));
 
+    ListValue val;
     script_badge_controller_->OnExecuteScriptFinished(
         extension->id(), true,
         tab_contents()->web_contents()->GetController().GetActiveEntry()->
             GetPageID(),
-        "");
+        "",
+        val);
 
     EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
                 testing::ElementsAre(extension->script_badge()));
