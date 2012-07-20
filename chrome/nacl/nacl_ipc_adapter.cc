@@ -11,8 +11,13 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/shared_memory.h"
 #include "build/build_config.h"
+#include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 namespace {
 
@@ -63,21 +68,12 @@ void NaClDescCustomDestroy(void* handle) {
 
 ssize_t NaClDescCustomSendMsg(void* handle, const NaClImcTypedMsgHdr* msg,
                               int /* flags */) {
-  if (msg->iov_length != 1)
-    return -1;
-  return static_cast<ssize_t>(
-      ToAdapter(handle)->Send(static_cast<char*>(msg->iov[0].base),
-                              msg->iov[0].length));
+  return static_cast<ssize_t>(ToAdapter(handle)->Send(msg));
 }
 
 ssize_t NaClDescCustomRecvMsg(void* handle, NaClImcTypedMsgHdr* msg,
                               int /* flags */) {
-  if (msg->iov_length != 1)
-    return -1;
-  msg->ndesc_length = 0;  // Messages with descriptors aren't supported yet.
-  return static_cast<ssize_t>(
-      ToAdapter(handle)->BlockingReceive(static_cast<char*>(msg->iov[0].base),
-                                         msg->iov[0].length));
+  return static_cast<ssize_t>(ToAdapter(handle)->BlockingReceive(msg));
 }
 
 NaClDesc* MakeNaClDescCustom(NaClIPCAdapter* adapter) {
@@ -91,6 +87,46 @@ NaClDesc* MakeNaClDescCustom(NaClIPCAdapter* adapter) {
 
 void DeleteChannel(IPC::Channel* channel) {
   delete channel;
+}
+
+bool ReadHostResource(PickleIterator* it, int* instance_id, int* resource_id) {
+  return it->ReadInt(instance_id) &&
+         it->ReadInt(resource_id);
+}
+
+bool ReadFileDescriptor(const IPC::Message& message,
+                        PickleIterator* it,
+                        NaClHandle* handle) {
+#if defined(OS_POSIX)
+  bool valid;
+  base::FileDescriptor desc;
+  if (!it->ReadBool(&valid) ||
+      !valid ||
+      !message.ReadFileDescriptor(it, &desc))
+    return false;
+
+  *handle = desc.fd;
+  return true;
+#else
+  uint32 value;
+  if (!it->ReadUInt32(&value))
+    return false;
+
+  *handle = reinterpret_cast<NaClHandle>(value);
+  return true;
+#endif  // defined(OS_POSIX)
+}
+
+void WriteHostResource(IPC::Message* message,
+                       int instance_id,
+                       int resource_id) {
+  message->WriteInt(instance_id);
+  message->WriteInt(resource_id);
+}
+
+void WriteFileDescriptor(IPC::Message* message, int index) {
+  message->WriteBool(true);  // valid == true
+  message->WriteInt(index);
 }
 
 }  // namespace
@@ -150,7 +186,8 @@ int NaClIPCAdapter::RewrittenMessage::Read(char* dest_buffer,
   return static_cast<int>(bytes_to_write);
 }
 
-NaClIPCAdapter::LockedData::LockedData() : channel_closed_(false) {
+NaClIPCAdapter::LockedData::LockedData()
+    : channel_closed_(false) {
 }
 
 NaClIPCAdapter::LockedData::~LockedData() {
@@ -185,9 +222,14 @@ NaClIPCAdapter::NaClIPCAdapter(scoped_ptr<IPC::Channel> channel,
 
 // Note that this message is controlled by the untrusted code. So we should be
 // skeptical of anything it contains and quick to give up if anything is fishy.
-int NaClIPCAdapter::Send(const char* input_data, size_t input_data_len) {
+int NaClIPCAdapter::Send(const NaClImcTypedMsgHdr* msg) {
+  if (msg->iov_length != 1)
+    return -1;
+
   base::AutoLock lock(lock_);
 
+  const char* input_data = static_cast<char*>(msg->iov[0].base);
+  size_t input_data_len = msg->iov[0].length;
   if (input_data_len > IPC::Channel::kMaximumMessageSize) {
     ClearToBeSent();
     return -1;
@@ -248,8 +290,12 @@ int NaClIPCAdapter::Send(const char* input_data, size_t input_data_len) {
   }
 }
 
-int NaClIPCAdapter::BlockingReceive(char* output_buffer,
-                                    size_t output_buffer_size) {
+int NaClIPCAdapter::BlockingReceive(NaClImcTypedMsgHdr* msg) {
+  if (msg->iov_length != 1)
+    return -1;
+
+  char* output_buffer = static_cast<char*>(msg->iov[0].base);
+  size_t output_buffer_size = msg->iov[0].length;
   int retval = 0;
   {
     base::AutoLock lock(lock_);
@@ -262,6 +308,11 @@ int NaClIPCAdapter::BlockingReceive(char* output_buffer,
       retval = LockedReceive(output_buffer, output_buffer_size);
       DCHECK(retval > 0);
     }
+    int desc_count = static_cast<int>(locked_data_.nacl_descs_.size());
+    CHECK(desc_count <= NACL_ABI_IMC_DESC_MAX);
+    msg->ndesc_length = desc_count;
+    for (int i = 0; i < desc_count; i++)
+      msg->ndescv[i] = locked_data_.nacl_descs_[i]->desc();
   }
   cond_var_.Signal();
   return retval;
@@ -292,21 +343,57 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& message) {
   {
     base::AutoLock lock(lock_);
 
-    // There is some padding in this structure (the "padding" member is 16
-    // bits but this then gets padded to 32 bits). We want to be sure not to
-    // leak data to the untrusted plugin, so zero everything out first.
-    NaClMessageHeader header;
-    memset(&header, 0, sizeof(NaClMessageHeader));
+    // Clear any descriptors left from the prior message.
+    locked_data_.nacl_descs_.clear();
 
-    header.payload_size = static_cast<uint32>(message.payload_size());
-    header.routing = message.routing_id();
-    header.type = message.type();
-    header.flags = message.flags();
-    header.num_fds = 0;  // TODO(brettw) hook this up.
-
-    scoped_refptr<RewrittenMessage> dest(new RewrittenMessage);
-    dest->SetData(header, message.payload(), message.payload_size());
-    locked_data_.to_be_received_.push(dest);
+    PickleIterator it(message);
+    switch (message.type()) {
+      case PpapiMsg_PPBAudio_NotifyAudioStreamCreated::ID: {
+        int instance_id;
+        int resource_id;
+        int result_code;
+        NaClHandle sock_handle;
+        NaClHandle shm_handle;
+        uint32_t shm_length;
+        if (ReadHostResource(&it, &instance_id, &resource_id) &&
+            it.ReadInt(&result_code) &&
+            ReadFileDescriptor(message, &it, &sock_handle) &&
+            ReadFileDescriptor(message, &it, &shm_handle) &&
+            it.ReadUInt32(&shm_length)) {
+          // Our caller, OnMessageReceived, holds the lock for locked_data_.
+          // Import the sync socket. Use DescWrappers to simplify clean up.
+          nacl::DescWrapperFactory factory;
+          scoped_ptr<nacl::DescWrapper> socket_wrapper(
+              factory.ImportSyncSocketHandle(sock_handle));
+          // Import the shared memory handle and increase its size by 4 bytes to
+          // accommodate the length data we write to signal the host.
+          scoped_ptr<nacl::DescWrapper> shm_wrapper(
+              factory.ImportShmHandle(shm_handle, shm_length + sizeof(uint32)));
+          if (shm_wrapper.get() && socket_wrapper.get()) {
+            locked_data_.nacl_descs_.push_back(socket_wrapper.release());
+            locked_data_.nacl_descs_.push_back(shm_wrapper.release());
+          }
+#if defined(OS_POSIX)
+          SaveMessage(message);
+#else  // defined(OS_POSIX)
+          // On Windows we must rewrite the message to the POSIX representation.
+          IPC::Message new_msg(message.routing_id(),
+                               PpapiMsg_PPBAudio_NotifyAudioStreamCreated::ID,
+                               message.priority());
+          WriteHostResource(&new_msg, instance_id, resource_id);
+          new_msg.WriteInt(result_code);
+          WriteFileDescriptor(&new_msg, 0);  // socket handle, index = 0
+          WriteFileDescriptor(&new_msg, 1);  // shm handle, index = 1
+          new_msg.WriteUInt32(shm_length);
+          SaveMessage(new_msg);
+#endif
+        }
+        break;
+      }
+      default: {
+        SaveMessage(message);
+      }
+    }
   }
   cond_var_.Signal();
   return true;
@@ -407,3 +494,22 @@ void NaClIPCAdapter::CloseChannelOnIOThread() {
 void NaClIPCAdapter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
   io_thread_data_.channel_->Send(message.release());
 }
+
+void NaClIPCAdapter::SaveMessage(const IPC::Message& message) {
+  // There is some padding in this structure (the "padding" member is 16
+  // bits but this then gets padded to 32 bits). We want to be sure not to
+  // leak data to the untrusted plugin, so zero everything out first.
+  NaClMessageHeader header;
+  memset(&header, 0, sizeof(NaClMessageHeader));
+
+  header.payload_size = static_cast<uint32>(message.payload_size());
+  header.routing = message.routing_id();
+  header.type = message.type();
+  header.flags = message.flags();
+  header.num_fds = static_cast<int>(locked_data_.nacl_descs_.size());
+
+  scoped_refptr<RewrittenMessage> dest(new RewrittenMessage);
+  dest->SetData(header, message.payload(), message.payload_size());
+  locked_data_.to_be_received_.push(dest);
+}
+
