@@ -115,6 +115,7 @@ class AppNotificationBridge : public content::NotificationObserver {
 
 @synthesize delayOnClose = delayOnClose_;
 @synthesize canBecomeKeyWindow = canBecomeKeyWindow_;
+@synthesize hasBlurredBackground = hasBlurredBackground_;
 
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
@@ -130,6 +131,7 @@ class AppNotificationBridge : public content::NotificationObserver {
     [self setHasShadow:YES];
     delayOnClose_ = YES;
     canBecomeKeyWindow_ = YES;
+    hasBlurredBackground_ = YES;
     notificationBridge_.reset(new AppNotificationBridge(self));
 
     // Start invisible. Will be made visible when ordered front.
@@ -223,20 +225,22 @@ class AppNotificationBridge : public content::NotificationObserver {
     [self setFrameOrigin:newOrigin];
 
     // Add a gaussian blur to the window.
-    CGSConnection cgsConnection = _CGSDefaultConnection();
-    CGSWindowFilterRef filter;
-    if (CGSNewCIFilterByName(cgsConnection, CFSTR("CIGaussianBlur"),
-                             &filter) == kCGErrorSuccess) {
-      NSDictionary* blurOptions =
-          [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.5]
-                                      forKey:@"inputRadius"];
+    if (hasBlurredBackground_) {
+      CGSConnection cgsConnection = _CGSDefaultConnection();
+      CGSWindowFilterRef filter;
+      if (CGSNewCIFilterByName(cgsConnection, CFSTR("CIGaussianBlur"),
+                               &filter) == kCGErrorSuccess) {
+        NSDictionary* blurOptions =
+            [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.5]
+                                        forKey:@"inputRadius"];
 
-      if (CGSSetCIFilterValuesFromDictionary(cgsConnection, filter,
-              base::mac::NSToCFCast(blurOptions)) == kCGErrorSuccess) {
-        CGSAddWindowFilter(cgsConnection, [self windowNumber], filter, 1);
+        if (CGSSetCIFilterValuesFromDictionary(cgsConnection, filter,
+                base::mac::NSToCFCast(blurOptions)) == kCGErrorSuccess) {
+          CGSAddWindowFilter(cgsConnection, [self windowNumber], filter, 1);
+        }
+
+        CGSReleaseCIFilter(cgsConnection, filter);
       }
-
-      CGSReleaseCIFilter(cgsConnection, filter);
     }
 
     // Apply animations to show and move self.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,12 +21,17 @@ class AppNotificationBridge;
   // If NO the window will never become key.
   // Default YES.
   BOOL canBecomeKeyWindow_;
+  // If YES then things under the window will look blurred.
+  // Default YES.
+  BOOL hasBlurredBackground_;
   // Bridge to proxy Chrome notifications to the window.
   scoped_ptr<AppNotificationBridge> notificationBridge_;
 }
 
 @property(nonatomic) BOOL delayOnClose;
 @property(nonatomic) BOOL canBecomeKeyWindow;
+// Only has an effect if called before the bubble is shown.
+@property(nonatomic) BOOL hasBlurredBackground;
 
 // Returns YES if the window is in the process of closing.
 // Can't use "windowWillClose" notification because that will be sent

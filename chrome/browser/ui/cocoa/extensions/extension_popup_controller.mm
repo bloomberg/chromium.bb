@@ -136,6 +136,11 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                         defer:YES]);
   if (!window.get())
     return nil;
+
+  // Don't blur the extension window background. This can interfer with OpenGL
+  // drawing on the window. See http://openradar.appspot.com/11920246
+  [window setHasBlurredBackground:NO];
+
   anchoredAt = [parentWindow convertBaseToScreen:anchoredAt];
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
