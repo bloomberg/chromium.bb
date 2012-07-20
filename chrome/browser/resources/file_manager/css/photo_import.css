@@ -90,18 +90,18 @@ button:disabled {
 
 button.import {
   /* TODO */
-  background-image: url(../images/gallery/icon_crop.png);
+  background-image: url('../images/gallery/icon_crop.png');
 }
 
 button.import[pressed] {
   /* TODO */
-  background-image: url(../images/gallery/icon_crop_selected.png);
+  background-image: url('../images/gallery/icon_crop_selected.png');
 }
 
 
 
 .spinner {
-  background-image: url(../images/common/spinner_white.svg);
+  background-image: url('../images/common/spinner_white.svg');
   background-size: 100%;
   height: 22px;
   left: 50%;

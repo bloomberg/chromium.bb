@@ -24,6 +24,7 @@
 //<include src="../../../shared/js/cr/ui/list_single_selection_model.js"/>
 //<include src="../../../shared/js/cr/ui/list_selection_controller.js"/>
 //<include src="../../../shared/js/cr/ui/list.js"/>
+//<include src="../../../shared/js/cr/ui/grid.js"/>
 
 //<include src="../util.js"/>
 //<include src="../file_type.js"/>

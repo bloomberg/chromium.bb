@@ -79,8 +79,8 @@ video {
   -webkit-box-pack: center;
   background-color: rgba(24, 24, 24, 1);
   background-image: -webkit-image-set(
-    url(../images/media/error.png) 1x,
-    url(../images/media/2x/error.png) 2x);
+    url('../images/media/error.png') 1x,
+    url('../images/media/2x/error.png') 2x);
   background-position: 25px center;
   background-repeat: no-repeat;
   color: white;

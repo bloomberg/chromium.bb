@@ -33,8 +33,8 @@ body {
    overlaps it) */
 .gallery > .close div {
   background-image: -webkit-image-set(
-    url(../images/gallery/close_x.png) 1x,
-    url(../images/gallery/2x/close_x.png) 2x);
+    url('../images/gallery/close_x.png') 1x,
+    url('../images/gallery/2x/close_x.png') 2x);
   background-position: center center;
   background-repeat: no-repeat;
   height: 20px;
@@ -71,31 +71,31 @@ body {
 }
 
 .gallery[tools] .image-container[cursor='move'] {
-  cursor: url(../images/gallery/cursor_move.png) 18 18;
+  cursor: url('../images/gallery/cursor_move.png') 18 18;
 }
 
 .gallery[tools] .image-container[cursor='crop'] {
-  cursor: url(../images/gallery/cursor_crop.png) 18 18;
+  cursor: url('../images/gallery/cursor_crop.png') 18 18;
 }
 
 .gallery[tools] .image-container[cursor='n-resize'],
 .gallery[tools] .image-container[cursor='s-resize'] {
-  cursor: url(../images/gallery/cursor_updown.png) 18 18;
+  cursor: url('../images/gallery/cursor_updown.png') 18 18;
 }
 
 .gallery[tools] .image-container[cursor='e-resize'],
 .gallery[tools] .image-container[cursor='w-resize'] {
-  cursor: url(../images/gallery/cursor_leftright.png) 18 18;
+  cursor: url('../images/gallery/cursor_leftright.png') 18 18;
 }
 
 .gallery[tools] .image-container[cursor='nw-resize'],
 .gallery[tools] .image-container[cursor='se-resize'] {
-  cursor: url(../images/gallery/cursor_nwse.png) 18 18;
+  cursor: url('../images/gallery/cursor_nwse.png') 18 18;
 }
 
 .gallery[tools] .image-container[cursor='ne-resize'],
 .gallery[tools] .image-container[cursor='sw-resize'] {
-  cursor: url(../images/gallery/cursor_swne.png) 18 18;
+  cursor: url('../images/gallery/cursor_swne.png') 18 18;
 }
 
 .gallery > .image-container > .image {
@@ -189,14 +189,14 @@ body {
 
 .gallery .arrow.left div {
   background-image: -webkit-image-set(
-    url(../images/gallery/arrow_left.png) 1x,
-    url(../images/gallery/2x/arrow_left.png) 2x);
+    url('../images/gallery/arrow_left.png') 1x,
+    url('../images/gallery/2x/arrow_left.png') 2x);
 }
 
 .gallery .arrow.right div {
   background-image: -webkit-image-set(
-    url(../images/gallery/arrow_right.png) 1x,
-    url(../images/gallery/2x/arrow_right.png) 2x);
+    url('../images/gallery/arrow_right.png') 1x,
+    url('../images/gallery/2x/arrow_right.png') 2x);
 }
 
 /* Special behavior on mouse drag.
@@ -516,74 +516,74 @@ body {
 
 .gallery > .toolbar .button.autofix {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_autofix.png) 1x,
-    url(../images/gallery/2x/icon_autofix.png) 2x);
+    url('../images/gallery/icon_autofix.png') 1x,
+    url('../images/gallery/2x/icon_autofix.png') 2x);
 }
 
 .gallery > .toolbar .button.autofix[pressed] {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_autofix_selected.png) 1x,
-    url(../images/gallery/2x/icon_autofix_selected.png) 2x);
+    url('../images/gallery/icon_autofix_selected.png') 1x,
+    url('../images/gallery/2x/icon_autofix_selected.png') 2x);
 }
 
 .gallery > .toolbar .button.crop {
   background-image:  -webkit-image-set(
-    url(../images/gallery/icon_crop.png) 1x,
-    url(../images/gallery/2x/icon_crop.png) 2x);
+    url('../images/gallery/icon_crop.png') 1x,
+    url('../images/gallery/2x/icon_crop.png') 2x);
 }
 
 .gallery > .toolbar .button.crop[pressed] {
   background-image:  -webkit-image-set(
-    url(../images/gallery/icon_crop_selected.png) 1x,
-    url(../images/gallery/2x/icon_crop_selected.png) 2x);
+    url('../images/gallery/icon_crop_selected.png') 1x,
+    url('../images/gallery/2x/icon_crop_selected.png') 2x);
 }
 
 .gallery > .toolbar .button.exposure {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_brightness.png) 1x,
-    url(../images/gallery/2x/icon_brightness.png) 2x);
+    url('../images/gallery/icon_brightness.png') 1x,
+    url('../images/gallery/2x/icon_brightness.png') 2x);
 }
 
 .gallery > .toolbar .button.exposure[pressed] {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_brightness_selected.png) 1x,
-    url(../images/gallery/2x/icon_brightness_selected.png) 2x);
+    url('../images/gallery/icon_brightness_selected.png') 1x,
+    url('../images/gallery/2x/icon_brightness_selected.png') 2x);
 }
 
 .gallery > .toolbar .button.rotate_right {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_rotate.png) 1x,
-    url(../images/gallery/2x/icon_rotate.png) 2x);
+    url('../images/gallery/icon_rotate.png') 1x,
+    url('../images/gallery/2x/icon_rotate.png') 2x);
 }
 
 .gallery > .toolbar .button.rotate_right[pressed] {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_rotate_selected.png) 1x,
-    url(../images/gallery/2x/icon_rotate_selected.png) 2x);
+    url('../images/gallery/icon_rotate_selected.png') 1x,
+    url('../images/gallery/2x/icon_rotate_selected.png') 2x);
 }
 
 .gallery > .toolbar .button.rotate_left {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_rotate_left.png) 1x,
-    url(../images/gallery/2x/icon_rotate_left.png) 2x);
+    url('../images/gallery/icon_rotate_left.png') 1x,
+    url('../images/gallery/2x/icon_rotate_left.png') 2x);
 }
 
 .gallery > .toolbar .button.rotate_left[pressed] {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_rotate_left_selected.png) 1x,
-    url(../images/gallery/2x/icon_rotate_left_selected.png) 2x);
+    url('../images/gallery/icon_rotate_left_selected.png') 1x,
+    url('../images/gallery/2x/icon_rotate_left_selected.png') 2x);
 }
 
 .gallery > .toolbar .button.undo {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_undo.png) 1x,
-    url(../images/gallery/2x/icon_undo.png) 2x);
+    url('../images/gallery/icon_undo.png') 1x,
+    url('../images/gallery/2x/icon_undo.png') 2x);
 }
 
 .gallery > .toolbar .button.redo {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_redo.png) 1x,
-    url(../images/gallery/2x/icon_redo.png) 2x);
+    url('../images/gallery/icon_redo.png') 1x,
+    url('../images/gallery/2x/icon_redo.png') 2x);
   position: absolute;  /* Exclude from center-packing*/
 }
 
@@ -598,30 +598,30 @@ body {
 
 .gallery > .toolbar > .button.edit {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_edit.png) 1x,
-    url(../images/gallery/2x/icon_edit.png) 2x);
+    url('../images/gallery/icon_edit.png') 1x,
+    url('../images/gallery/2x/icon_edit.png') 2x);
   position: relative;
   z-index: 10;
 }
 
 .gallery > .toolbar > .button.edit[pressed] {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_edit_selected.png) 1x,
-    url(../images/gallery/2x/icon_edit_selected.png) 2x);
+    url('../images/gallery/icon_edit_selected.png') 1x,
+    url('../images/gallery/2x/icon_edit_selected.png') 2x);
 }
 
 .gallery > .toolbar > .button.share {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_share.png) 1x,
-    url(../images/gallery/2x/icon_share.png) 2x);
+    url('../images/gallery/icon_share.png') 1x,
+    url('../images/gallery/2x/icon_share.png') 2x);
   position: relative;
   z-index: 10;
 }
 
 .gallery > .toolbar > .button.share[pressed] {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_share_selected.png) 1x,
-    url(../images/gallery/2x/icon_share_selected.png) 2x);
+    url('../images/gallery/icon_share_selected.png') 1x,
+    url('../images/gallery/2x/icon_share_selected.png') 2x);
 }
 
 .gallery[error] > .toolbar .button.edit,
@@ -675,14 +675,14 @@ body {
 
 .gallery .edit-modal .label.brightness {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_brightness.png) 1x,
-    url(../images/gallery/2x/icon_brightness.png) 2x);
+    url('../images/gallery/icon_brightness.png') 1x,
+    url('../images/gallery/2x/icon_brightness.png') 2x);
 }
 
 .gallery .edit-modal .label.contrast {
   background-image: -webkit-image-set(
-    url(../images/gallery/icon_contrast.png) 1x,
-    url(../images/gallery/2x/icon_contrast.png) 2x);
+    url('../images/gallery/icon_contrast.png') 1x,
+    url('../images/gallery/2x/icon_contrast.png') 2x);
   height: 24px;
   margin-left: 15px;
 }
@@ -697,8 +697,8 @@ body {
 .gallery .edit-modal .range::-webkit-slider-thumb {
   -webkit-appearance: none;
   background-image: -webkit-image-set(
-    url(../images/gallery/slider_thumb.png) 1x,
-    url(../images/gallery/2x/slider_thumb.png) 2x);
+    url('../images/gallery/slider_thumb.png') 1x,
+    url('../images/gallery/2x/slider_thumb.png') 2x);
   height: 29px;
   width: 16px;
 }
@@ -844,8 +844,8 @@ body {
 
 .gallery .prompt .close {
   background-image: -webkit-image-set(
-    url(../images/gallery/butterbar_close_x.png) 1x,
-    url(../images/gallery/2x/butterbar_close_x.png) 2x);
+    url('../images/gallery/butterbar_close_x.png') 1x,
+    url('../images/gallery/2x/butterbar_close_x.png') 2x);
   background-position: center center;
   background-repeat: no-repeat;
   height: 16px;
@@ -878,8 +878,8 @@ body {
 
 .gallery .share-menu .bubble-point {
   background-image: -webkit-image-set(
-    url(../images/gallery/bubble_point.png) 1x,
-    url(../images/gallery/2x/bubble_point.png) 2x);
+    url('../images/gallery/bubble_point.png') 1x,
+    url('../images/gallery/2x/bubble_point.png') 2x);
   background-position: center top;
   background-repeat: no-repeat;
   bottom: -8px;
@@ -917,7 +917,7 @@ body {
 /* Load spinner and error banner */
 
 .gallery .spinner {
-  background-image: url(../images/common/spinner_white.svg);
+  background-image: url('../images/common/spinner_white.svg);
   background-size: 100%;
   height: 32px;
   left: 50%;
@@ -939,8 +939,8 @@ body {
   -webkit-box-pack: center;
   background-color: rgba(24, 24, 24, 1);
   background-image: -webkit-image-set(
-    url(../images/media/error.png) 1x,
-    url(../images/media/2x/error.png) 2x);
+    url('../images/media/error.png') 1x,
+    url('../images/media/2x/error.png') 2x);
   background-position: 25px center;
   background-repeat: no-repeat;
   color: white;

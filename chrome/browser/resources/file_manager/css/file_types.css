@@ -5,94 +5,94 @@
 /* Small icons for file types, used in lists and menus. */
 div[file-type-icon] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/generic.png) 1x,
-    url(../images/files/file_types/2x/generic.png) 2x);
+    url('../images/files/file_types/generic.png') 1x,
+    url('../images/files/file_types/2x/generic.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
 }
 
 div[file-type-icon='archive'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/archive.png) 1x,
-    url(../images/files/file_types/2x/archive.png) 2x);
+    url('../images/files/file_types/archive.png') 1x,
+    url('../images/files/file_types/2x/archive.png') 2x);
 }
 
 div[file-type-icon='audio'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/audio.png) 1x,
-    url(../images/files/file_types/2x/audio.png) 2x);
+    url('../images/files/file_types/audio.png') 1x,
+    url('../images/files/file_types/2x/audio.png') 2x);
 }
 
 div[file-type-icon='excel'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/excel.png) 1x,
-    url(../images/files/file_types/2x/excel.png) 2x);
+    url('../images/files/file_types/excel.png') 1x,
+    url('../images/files/file_types/2x/excel.png') 2x);
 }
 
 div[file-type-icon='folder'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/folder.png) 1x,
-    url(../images/files/file_types/2x/folder.png) 2x);
+    url('../images/files/file_types/folder.png') 1x,
+    url('../images/files/file_types/2x/folder.png') 2x);
 }
 
 div[file-type-icon='gdoc'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/gdoc.png) 1x,
-    url(../images/files/file_types/2x/gdoc.png) 2x);
+    url('../images/files/file_types/gdoc.png') 1x,
+    url('../images/files/file_types/2x/gdoc.png') 2x);
 }
 
 div[file-type-icon='gdraw'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/gdraw.png) 1x,
-    url(../images/files/file_types/2x/gdraw.png) 2x);
+    url('../images/files/file_types/gdraw.png') 1x,
+    url('../images/files/file_types/2x/gdraw.png') 2x);
 }
 
 div[file-type-icon='gsheet'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/gsheet.png) 1x,
-    url(../images/files/file_types/2x/gsheet.png) 2x);
+    url('../images/files/file_types/gsheet.png') 1x,
+    url('../images/files/file_types/2x/gsheet.png') 2x);
 }
 
 div[file-type-icon='gslides'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/gslides.png) 1x,
-    url(../images/files/file_types/2x/gslides.png) 2x);
+    url('../images/files/file_types/gslides.png') 1x,
+    url('../images/files/file_types/2x/gslides.png') 2x);
 }
 
 div[file-type-icon='gtable'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/gtable.png) 1x,
-    url(../images/files/file_types/2x/gtable.png) 2x);
+    url('../images/files/file_types/gtable.png') 1x,
+    url('../images/files/file_types/2x/gtable.png') 2x);
 }
 
 div[file-type-icon='image'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/image.png) 1x,
-    url(../images/files/file_types/2x/image.png) 2x);
+    url('../images/files/file_types/image.png') 1x,
+    url('../images/files/file_types/2x/image.png') 2x);
 }
 
 div[file-type-icon='pdf'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/pdf.png) 1x,
-    url(../images/files/file_types/2x/pdf.png) 2x);
+    url('../images/files/file_types/pdf.png') 1x,
+    url('../images/files/file_types/2x/pdf.png') 2x);
 }
 
 div[file-type-icon='ppt'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/ppt.png) 1x,
-    url(../images/files/file_types/2x/ppt.png) 2x);
+    url('../images/files/file_types/ppt.png') 1x,
+    url('../images/files/file_types/2x/ppt.png') 2x);
 }
 
 div[file-type-icon='video'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/video.png) 1x,
-    url(../images/files/file_types/2x/video.png) 2x);
+    url('../images/files/file_types/video.png') 1x,
+    url('../images/files/file_types/2x/video.png') 2x);
 }
 
 div[file-type-icon='word'] {
   background-image: -webkit-image-set(
-    url(../images/files/file_types/word.png) 1x,
-    url(../images/files/file_types/2x/word.png) 2x);
+    url('../images/files/file_types/word.png') 1x,
+    url('../images/files/file_types/2x/word.png') 2x);
 }
 
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
