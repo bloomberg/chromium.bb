@@ -281,9 +281,14 @@ class Desktop:
     max_width = max([width for width, height in self.sizes])
     max_height = max([height for width, height in self.sizes])
 
-    logging.info("Starting Xvfb on display :%d" % display);
+    try:
+      xvfb = locate_executable("Xvfb-randr")
+    except Exception:
+      xvfb = "Xvfb"
+
+    logging.info("Starting %s on display :%d" % (xvfb, display));
     screen_option = "%dx%dx24" % (max_width, max_height)
-    self.x_proc = subprocess.Popen(["Xvfb", ":%d" % display,
+    self.x_proc = subprocess.Popen([xvfb, ":%d" % display,
                                     "-noreset",
                                     "-auth", X_AUTH_FILE,
                                     "-nolisten", "tcp",
