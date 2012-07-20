@@ -217,7 +217,7 @@ AC_ARG_ENABLE(wcap-tools, [  --disable-wcap-tools],, enable_wcap_tools=yes)
 AM_CONDITIONAL(BUILD_WCAP_TOOLS, test x$enable_wcap_tools = xyes)
 if test x$enable_wcap_tools = xyes; then
   AC_DEFINE([BUILD_WCAP_TOOLS], [1], [Build the wcap tools])
-  PKG_CHECK_MODULES(WCAP, [cairo vpx])
+  PKG_CHECK_MODULES(WCAP, [cairo])
   WCAP_LIBS="$WCAP_LIBS -lm"
 fi
 
