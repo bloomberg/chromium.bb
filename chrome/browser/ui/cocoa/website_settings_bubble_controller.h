@@ -55,6 +55,8 @@ class WebsiteSettingsUIBridge;
 - (id)initWithParentWindow:(NSWindow*)parentWindow
    websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge;
 
+- (void)permissionValueChanged:(id)sender;
+
 @end
 
 // Provides a bridge between the WebSettingsUI C++ interface and the Cocoa

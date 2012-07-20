@@ -45,6 +45,13 @@
 
 namespace {
 
+// Indices of the menu items in the permission menu.
+enum PermissionMenuIndices {
+  kMenuIndexContentSettingAllow = 0,
+  kMenuIndexContentSettingBlock,
+  kMenuIndexContentSettingDefault
+};
+
 class WebsiteSettingsBubbleControllerTest : public CocoaTest {
  public:
   WebsiteSettingsBubbleControllerTest() {
@@ -186,7 +193,7 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
   };
 
-  // Create a list of 6 different permissions.
+  // Create a list of 6 different permissions, all set to "Allow".
   PermissionInfoList list;
   WebsiteSettingsUI::PermissionInfo info;
   info.setting = CONTENT_SETTING_ALLOW;
@@ -208,6 +215,31 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
       [labels addObject:[static_cast<NSTextField*>(view) stringValue]];
   }
   EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
+
+  // Find the first permission pop-up button
+  NSPopUpButton* button = nil;
+  for (NSView* view in subviews) {
+    if ([view isKindOfClass:[NSPopUpButton class]]) {
+      button = static_cast<NSPopUpButton*>(view);
+      break;
+    }
+  }
+  ASSERT_NSNE(nil, button);
+
+  // Check that the button title is updated when the setting is changed.
+
+  NSString* original_title = [[[button cell] menuItem] title];
+  [button selectItemAtIndex:kMenuIndexContentSettingBlock];
+  [controller_ permissionValueChanged:button];
+  EXPECT_NSNE(original_title, [[[button cell] menuItem] title]);
+
+  [button selectItemAtIndex:kMenuIndexContentSettingDefault];
+  [controller_ permissionValueChanged:button];
+  EXPECT_NSNE(original_title, [[[button cell] menuItem] title]);
+
+  [button selectItemAtIndex:kMenuIndexContentSettingAllow];
+  [controller_ permissionValueChanged:button];
+  EXPECT_NSEQ(original_title, [[[button cell] menuItem] title]);
 }
 
 }  // namespace

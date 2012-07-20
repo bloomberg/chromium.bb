@@ -53,6 +53,14 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
 // The spacing between individual items in the Permissions tab.
 const CGFloat kPermissionsTabSpacing = 8;
 
+// In the permission changing menu, the order of the menu items (which
+// correspond to different content settings).
+const ContentSetting kPermissionsMenuSettings[] = {
+  CONTENT_SETTING_ALLOW,
+  CONTENT_SETTING_BLOCK,
+  CONTENT_SETTING_DEFAULT
+};
+
 }  // namespace
 
 // A simple container to hold all the contents of the website settings bubble.
@@ -384,6 +392,35 @@ const CGFloat kPermissionsTabSpacing = 8;
   return spacer;
 }
 
+// Sets the button title appropriately based on the current setting and the
+// default setting.
+- (void)setTitleOfButton:(NSPopUpButton*)button {
+  ContentSetting setting = [self contentSettingForButton:button];
+
+  // All menu items are tagged with the default setting.
+  ContentSetting defaultSetting = static_cast<ContentSetting>(
+      [[button selectedItem] tag]);
+
+  // Update the title to match the current permission setting.
+  scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
+  [titleItem setTitle:base::SysUTF16ToNSString(
+      WebsiteSettingsUI::PermissionActionToUIString(setting,
+                                                    defaultSetting))];
+  [[button cell] setUsesItemFromMenu:NO];
+  [[button cell] setMenuItem:titleItem.get()];
+  [button sizeToFit];
+}
+
+- (ContentSetting)contentSettingForButton:(NSPopUpButton*)button {
+  // Determine the setting based on the index of the selected menu item.
+  NSUInteger buttonIndex = [button indexOfSelectedItem];
+  if (buttonIndex >= arraysize(kPermissionsMenuSettings)) {
+    NOTREACHED();
+    return CONTENT_SETTING_DEFAULT;
+  }
+  return kPermissionsMenuSettings[buttonIndex];
+}
+
 // Add a pop-up button for |permissionInfo| to the given view.
 - (NSPopUpButton*)addPopUpButtonForPermission:
     (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
@@ -400,29 +437,48 @@ const CGFloat kPermissionsTabSpacing = 8;
   [button setShowsBorderOnlyWhileMouseInside:YES];
   [[button cell] setHighlightsBy:NSCellLightsByGray];
 
-  // Set the button title.
-  [[button cell] setUsesItemFromMenu:NO];
-  scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
-  [titleItem setTitle:base::SysUTF16ToNSString(
-      WebsiteSettingsUI::PermissionActionToUIString(
-          permissionInfo.setting, permissionInfo.default_setting))];
-  [[button cell] setMenuItem:titleItem.get()];
-  [button sizeToFit];
-
   // Create the popup menu.
-  [button addItemWithTitle:l10n_util::GetNSStringF(
-      IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-      WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_ALLOW))];
-  [button addItemWithTitle:l10n_util::GetNSStringF(
-      IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-      WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_BLOCK))];
-  [button addItemWithTitle:l10n_util::GetNSStringF(
-      IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
-      WebsiteSettingsUI::PermissionValueToUIString(
-          permissionInfo.default_setting))];
+  for (unsigned int i = 0; i < arraysize(kPermissionsMenuSettings); ++i) {
+    ContentSetting setting = kPermissionsMenuSettings[i];
+    if (setting == CONTENT_SETTING_DEFAULT) {
+      [button addItemWithTitle:l10n_util::GetNSStringF(
+          IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
+          WebsiteSettingsUI::PermissionValueToUIString(
+              permissionInfo.default_setting))];
+    } else {
+      [button addItemWithTitle:l10n_util::GetNSStringF(
+          IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
+          WebsiteSettingsUI::PermissionValueToUIString(setting))];
+    }
+    // Tag all of the menu items with the default setting. It's required to
+    // generate the button title (e.g. "Allowed by default").
+    [[button lastItem] setTag:permissionInfo.default_setting];
+
+    // Select the item corresponding to the current setting.
+    if (setting == permissionInfo.setting)
+      [button selectItem:[button lastItem]];
+  }
+  [button setTag:permissionInfo.type];
+
+  [button setAction:@selector(permissionValueChanged:)];
+  [button setTarget:self];
+
+  [self setTitleOfButton:button];
 
   [view addSubview:button.get()];
   return button.get();
+}
+
+// Handler for the permission-changing menus.
+- (void)permissionValueChanged:(id)sender {
+  DCHECK([sender isKindOfClass:[NSPopUpButton class]]);
+  NSPopUpButton* button = static_cast<NSPopUpButton*>(sender);
+  ContentSettingsType type = static_cast<ContentSettingsType>([button tag]);
+  ContentSetting newSetting = [self contentSettingForButton:button];
+
+  [self setTitleOfButton:button];
+  if (presenter_.get())
+    presenter_->OnSitePermissionChanged(type, newSetting);
 }
 
 // Adds a new row to the UI listing the permissions. Returns the amount of
