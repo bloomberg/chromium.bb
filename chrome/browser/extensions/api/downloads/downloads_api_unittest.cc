@@ -1345,7 +1345,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
 #endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
+    MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
   scoped_ptr<base::Value> result_value;
   base::ListValue* result_list = NULL;
   base::DictionaryValue* result_dict = NULL;
