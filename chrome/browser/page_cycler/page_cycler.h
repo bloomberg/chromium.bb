@@ -35,9 +35,11 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
   void Run();
 
   // content::WebContentsObserver
-  virtual void DidFinishLoad(int64 frame_id,
-                             const GURL& validated_url,
-                             bool is_main_frame) OVERRIDE;
+  virtual void DidFinishLoad(
+      int64 frame_id,
+      const GURL& validated_url,
+      bool is_main_frame,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
       bool is_main_frame,

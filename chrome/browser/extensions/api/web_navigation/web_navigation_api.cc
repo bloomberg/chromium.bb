@@ -236,7 +236,9 @@ void WebNavigationEventRouter::TabDestroyed(content::WebContents* tab) {
 
 WebNavigationTabObserver::WebNavigationTabObserver(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
+    : WebContentsObserver(web_contents),
+      render_view_host_(NULL),
+      pending_render_view_host_(NULL) {
   g_tab_observer.Get().insert(TabObserverMap::value_type(web_contents, this));
   registrar_.Add(this,
                  content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
@@ -277,12 +279,31 @@ void WebNavigationTabObserver::Observe(
   }
 }
 
+void WebNavigationTabObserver::AboutToNavigateRenderView(
+    content::RenderViewHost* render_view_host) {
+  if (!render_view_host_) {
+    render_view_host_ = render_view_host;
+  } else if (render_view_host != render_view_host_) {
+    // TODO(jochen): If pending_render_view_host_ is non-NULL, send error events
+    // for all ongoing navigations in that RVH.
+    pending_render_view_host_ = render_view_host;
+  }
+}
+
 void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
     const GURL& validated_url,
     bool is_error_page,
     content::RenderViewHost* render_view_host) {
+  if (!render_view_host_)
+    render_view_host_ = render_view_host;
+  if (render_view_host != render_view_host_ &&
+      render_view_host != pending_render_view_host_)
+    return;
+
+  // TODO(jochen): Remove this hack once we properly include the process ID in
+  // the events.
   // Ignore navigations of sub frames, if the main frame isn't committed yet.
   // This might happen if a sub frame triggers a navigation for both the main
   // frame and itself. Since the sub frame is about to be deleted, and there's
@@ -300,6 +321,7 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
                                is_error_page);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
+
   helpers::DispatchOnBeforeNavigate(
       web_contents(), frame_id, is_main_frame, validated_url);
 }
@@ -310,6 +332,14 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
+  if (render_view_host != render_view_host_ &&
+      render_view_host != pending_render_view_host_)
+    return;
+  // TODO(jochen): If we switched the RVH, send error events for all ongoing
+  // navigations in the old RVH.
+  render_view_host_ = render_view_host;
+  pending_render_view_host_ = NULL;
+
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
 
@@ -365,15 +395,25 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
     int error_code,
     const string16& error_description,
     content::RenderViewHost* render_view_host) {
+  if (render_view_host != render_view_host_ &&
+      render_view_host != pending_render_view_host_)
+    return;
+  if (render_view_host == pending_render_view_host_)
+    pending_render_view_host_ = NULL;
+
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
+
   navigation_state_.SetErrorOccurredInFrame(frame_id);
   helpers::DispatchOnErrorOccurred(
       web_contents(), validated_url, frame_id, is_main_frame, error_code);
 }
 
 void WebNavigationTabObserver::DocumentLoadedInFrame(
-    int64 frame_id) {
+    int64 frame_id,
+    content::RenderViewHost* render_view_host) {
+  if (render_view_host != render_view_host_)
+    return;
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   helpers::DispatchOnDOMContentLoaded(web_contents(),
@@ -385,7 +425,10 @@ void WebNavigationTabObserver::DocumentLoadedInFrame(
 void WebNavigationTabObserver::DidFinishLoad(
     int64 frame_id,
     const GURL& validated_url,
-    bool is_main_frame) {
+    bool is_main_frame,
+    content::RenderViewHost* render_view_host) {
+  if (render_view_host != render_view_host_)
+    return;
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   navigation_state_.SetNavigationCompleted(frame_id);
@@ -402,7 +445,10 @@ void WebNavigationTabObserver::DidFailLoad(
     const GURL& validated_url,
     bool is_main_frame,
     int error_code,
-    const string16& error_description) {
+    const string16& error_description,
+    content::RenderViewHost* render_view_host) {
+  if (render_view_host != render_view_host_)
+    return;
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   navigation_state_.SetErrorOccurredInFrame(frame_id);

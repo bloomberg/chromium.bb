@@ -61,7 +61,8 @@ bool PageCycler::IsLoadCallbackValid(const GURL& validated_url,
 
 void PageCycler::DidFinishLoad(int64 frame_id,
                                const GURL& validated_url,
-                               bool is_main_frame) {
+                               bool is_main_frame,
+                               content::RenderViewHost* render_view_host) {
   if (IsLoadCallbackValid(validated_url, is_main_frame))
     LoadSucceeded();
 }

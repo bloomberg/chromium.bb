@@ -53,9 +53,10 @@ class MockPageCycler : public PageCycler {
     set_errors_file(errors_file);
   }
 
-  MOCK_METHOD3(DidFinishLoad, void(int64 frame_id,
+  MOCK_METHOD4(DidFinishLoad, void(int64 frame_id,
                                    const GURL& validated_url,
-                                   bool is_main_frame));
+                                   bool is_main_frame,
+                                   RenderViewHost* render_view_host));
   MOCK_METHOD6(DidFailProvisionalLoad, void(int64 frame_id,
                                             bool is_main_frame,
                                             const GURL& validated_url,
@@ -79,8 +80,10 @@ class MockPageCycler : public PageCycler {
 
   void PageCyclerDidFinishLoad(int64 frame_id,
                                const GURL& validated_url,
-                               bool is_main_frame) {
-    PageCycler::DidFinishLoad(frame_id, validated_url, is_main_frame);
+                               bool is_main_frame,
+                               RenderViewHost* render_view_host) {
+    PageCycler::DidFinishLoad(
+        frame_id, validated_url, is_main_frame, render_view_host);
   }
 
  private:
@@ -134,7 +137,7 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
     FOR_EACH_OBSERVER(
         WebContentsObserver,
         observers_,
-        DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame));
+        DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame, NULL));
     PumpLoop();
   }
 
@@ -208,7 +211,8 @@ TEST_F(PageCyclerTest, FailProvisionalLoads) {
   RunPageCycler();
 
   // Page cycler expects browser to automatically start loading the first page.
-  EXPECT_CALL(*page_cycler(), DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame))
+  EXPECT_CALL(*page_cycler(),
+              DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame, _))
       .WillOnce(Invoke(page_cycler(),
                        &MockPageCycler::PageCyclerDidFinishLoad));
   FinishLoad();
@@ -273,7 +277,7 @@ TEST_F(PageCyclerTest, StatsFile) {
 
   for (int i = 0; i < kNumLoads; ++i) {
     EXPECT_CALL(*page_cycler(), DidFinishLoad(
-        kFrameID, kAboutURL, kIsMainFrame))
+        kFrameID, kAboutURL, kIsMainFrame, _))
         .WillOnce(Invoke(page_cycler(),
                          &MockPageCycler::PageCyclerDidFinishLoad));
     FinishLoad();
@@ -300,7 +304,8 @@ TEST_F(PageCyclerTest, KillBrowserAndAbort) {
                                      errors_file()));
   RunPageCycler();
 
-  EXPECT_CALL(*page_cycler(), DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame))
+  EXPECT_CALL(*page_cycler(),
+      DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame, _))
       .WillOnce(Invoke(page_cycler(),
                        &MockPageCycler::PageCyclerDidFinishLoad));
   message_loop()->RunAllPending();
@@ -334,7 +339,8 @@ TEST_F(PageCyclerTest, MultipleIterations) {
   page_cycler()->set_stats_file(stats_file());
   RunPageCycler();
 
-  EXPECT_CALL(*page_cycler(), DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame))
+  EXPECT_CALL(*page_cycler(),
+              DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame, _))
       .WillRepeatedly(Invoke(page_cycler(),
                              &MockPageCycler::PageCyclerDidFinishLoad));
 

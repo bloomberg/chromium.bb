@@ -171,9 +171,11 @@ class PrerenderContents : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_error_page,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidFinishLoad(int64 frame_id,
-                             const GURL& validated_url,
-                             bool is_main_frame) OVERRIDE;
+  virtual void DidFinishLoad(
+      int64 frame_id,
+      const GURL& validated_url,
+      bool is_main_frame,
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 

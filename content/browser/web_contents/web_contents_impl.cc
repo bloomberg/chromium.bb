@@ -600,7 +600,8 @@ RenderViewHostManager* WebContentsImpl::GetRenderManagerForTesting() {
   return &render_manager_;
 }
 
-bool WebContentsImpl::OnMessageReceived(const IPC::Message& message) {
+bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
+                                        const IPC::Message& message) {
   if (GetWebUI() &&
       static_cast<WebUIImpl*>(GetWebUI())->OnMessageReceived(message)) {
     return true;
@@ -612,6 +613,9 @@ bool WebContentsImpl::OnMessageReceived(const IPC::Message& message) {
     if (observer->OnMessageReceived(message))
       return true;
 
+  // Message handlers should be aware of which RenderViewHost sent the
+  // message, which is temporarily stored in message_source_.
+  message_source_ = render_view_host;
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebContentsImpl, message, message_is_ok)
@@ -650,6 +654,7 @@ bool WebContentsImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
+  message_source_ = NULL;
 
   if (!message_is_ok) {
     content::RecordAction(UserMetricsAction("BadMessageTerminate_RVD"));
@@ -1406,6 +1411,11 @@ bool WebContentsImpl::NavigateToEntry(
       dest_render_view_host,
       entry.GetURL());
 
+  // Notify observers that we will navigate in this RV.
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    AboutToNavigateRenderView(dest_render_view_host));
+
   // Used for page load time metrics.
   current_load_start_ = base::TimeTicks::Now();
 
@@ -1963,7 +1973,7 @@ void WebContentsImpl::OnDidRunInsecureContent(
 void WebContentsImpl::OnDocumentLoadedInFrame(int64 frame_id) {
   controller_.DocumentLoadedInFrame();
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DocumentLoadedInFrame(frame_id));
+                    DocumentLoadedInFrame(frame_id, message_source_));
 }
 
 void WebContentsImpl::OnDidFinishLoad(
@@ -1971,7 +1981,8 @@ void WebContentsImpl::OnDidFinishLoad(
     const GURL& validated_url,
     bool is_main_frame) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFinishLoad(frame_id, validated_url, is_main_frame));
+                    DidFinishLoad(frame_id, validated_url, is_main_frame,
+                                  message_source_));
 }
 
 void WebContentsImpl::OnDidFailLoadWithError(
@@ -1982,7 +1993,8 @@ void WebContentsImpl::OnDidFailLoadWithError(
     const string16& error_description) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFailLoad(frame_id, validated_url, is_main_frame,
-                                error_code, error_description));
+                                error_code, error_description,
+                                message_source_));
 }
 
 void WebContentsImpl::OnUpdateContentRestrictions(int restrictions) {

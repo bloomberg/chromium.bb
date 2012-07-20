@@ -15,7 +15,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
-#include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -36,6 +35,10 @@ struct WebPreferences;
 namespace base {
 class ListValue;
 class TimeTicks;
+}
+
+namespace IPC {
+class Message;
 }
 
 namespace gfx {
@@ -71,7 +74,7 @@ typedef base::Callback< void(const MediaStreamDevices&) > MediaResponseCallback;
 //  may not be relevant to all users of RenderViewHost and we should consider
 //  exposing a more generic Send function on RenderViewHost and a response
 //  listener here to serve that need.
-class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Listener {
+class CONTENT_EXPORT RenderViewHostDelegate {
  public:
   // RendererManagerment -------------------------------------------------------
   // Functions for managing switching of Renderers. For WebContents, this is
@@ -107,9 +110,9 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Listener {
   virtual RenderViewHostDelegateView* GetDelegateView();
   virtual RendererManagement* GetRendererManagementDelegate();
 
-  // IPC::Listener implementation.
   // This is used to give the delegate a chance to filter IPC messages.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(RenderViewHost* render_view_host,
+                                 const IPC::Message& message);
 
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const;

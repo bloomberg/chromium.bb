@@ -47,6 +47,8 @@ class WebNavigationTabObserver : public content::NotificationObserver,
 
 
   // content::WebContentsObserver implementation.
+  virtual void AboutToNavigateRenderView(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,
@@ -66,15 +68,21 @@ class WebNavigationTabObserver : public content::NotificationObserver,
       int error_code,
       const string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DocumentLoadedInFrame(int64 frame_id) OVERRIDE;
-  virtual void DidFinishLoad(int64 frame_id,
-                             const GURL& validated_url,
-                             bool is_main_frame) OVERRIDE;
-  virtual void DidFailLoad(int64 frame_id,
-                           const GURL& validated_url,
-                           bool is_main_frame,
-                           int error_code,
-                           const string16& error_description) OVERRIDE;
+  virtual void DocumentLoadedInFrame(
+      int64 frame_id,
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFinishLoad(
+      int64 frame_id,
+      const GURL& validated_url,
+      bool is_main_frame,
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFailLoad(
+      int64 frame_id,
+      const GURL& validated_url,
+      bool is_main_frame,
+      int error_code,
+      const string16& error_description,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidOpenRequestedURL(content::WebContents* new_contents,
                                    const GURL& url,
                                    const content::Referrer& referrer,
@@ -93,6 +101,9 @@ class WebNavigationTabObserver : public content::NotificationObserver,
 
   // Used for tracking registrations to redirect notifications.
   content::NotificationRegistrar registrar_;
+
+  content::RenderViewHost* render_view_host_;
+  content::RenderViewHost* pending_render_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNavigationTabObserver);
 };
