@@ -56,6 +56,7 @@ Layer::Layer()
       background_blur_radius_(0),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
+      layer_grayscale_(0.0f),
       layer_inverted_(false),
       layer_mask_(NULL),
       layer_mask_back_link_(NULL),
@@ -184,8 +185,9 @@ void Layer::SetTransform(const ui::Transform& transform) {
 
 Transform Layer::GetTargetTransform() const {
   if (animator_.get() && animator_->IsAnimatingProperty(
-      LayerAnimationElement::TRANSFORM))
+      LayerAnimationElement::TRANSFORM)) {
     return animator_->GetTargetTransform();
+  }
   return transform_;
 }
 
@@ -195,8 +197,9 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
 
 gfx::Rect Layer::GetTargetBounds() const {
   if (animator_.get() && animator_->IsAnimatingProperty(
-      LayerAnimationElement::BOUNDS))
+      LayerAnimationElement::BOUNDS)) {
     return animator_->GetTargetBounds();
+  }
   return bounds_;
 }
 
@@ -229,8 +232,27 @@ void Layer::SetLayerSaturation(float saturation) {
 }
 
 void Layer::SetLayerBrightness(float brightness) {
-  layer_brightness_ = brightness;
-  SetLayerFilters();
+  GetAnimator()->SetBrightness(brightness);
+}
+
+float Layer::GetTargetBrightness() const {
+  if (animator_.get() && animator_->IsAnimatingProperty(
+      LayerAnimationElement::BRIGHTNESS)) {
+    return animator_->GetTargetBrightness();
+  }
+  return layer_brightness();
+}
+
+void Layer::SetLayerGrayscale(float grayscale) {
+  GetAnimator()->SetGrayscale(grayscale);
+}
+
+float Layer::GetTargetGrayscale() const {
+  if (animator_.get() && animator_->IsAnimatingProperty(
+      LayerAnimationElement::GRAYSCALE)) {
+    return animator_->GetTargetGrayscale();
+  }
+  return layer_grayscale();
 }
 
 void Layer::SetLayerInverted(bool inverted) {
@@ -269,6 +291,10 @@ void Layer::SetLayerFilters() {
   if (layer_brightness_) {
     filters.append(WebKit::WebFilterOperation::createBrightnessFilter(
         layer_brightness_));
+  }
+  if (layer_grayscale_) {
+    filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(
+        layer_grayscale_));
   }
   if (layer_inverted_)
     filters.append(WebKit::WebFilterOperation::createInvertFilter(1.0));
@@ -604,6 +630,16 @@ void Layer::SetVisibilityImmediately(bool visible) {
   web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
 }
 
+void Layer::SetBrightnessImmediately(float brightness) {
+  layer_brightness_ = brightness;
+  SetLayerFilters();
+}
+
+void Layer::SetGrayscaleImmediately(float grayscale) {
+  layer_grayscale_ = grayscale;
+  SetLayerFilters();
+}
+
 void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
   SetBoundsImmediately(bounds);
 }
@@ -618,6 +654,13 @@ void Layer::SetOpacityFromAnimation(float opacity) {
 
 void Layer::SetVisibilityFromAnimation(bool visibility) {
   SetVisibilityImmediately(visibility);
+}
+
+void Layer::SetBrightnessFromAnimation(float brightness) {
+  SetBrightnessImmediately(brightness);
+}
+void Layer::SetGrayscaleFromAnimation(float grayscale) {
+  SetGrayscaleImmediately(grayscale);
 }
 
 void Layer::ScheduleDrawForAnimation() {
@@ -638,6 +681,14 @@ float Layer::GetOpacityForAnimation() const {
 
 bool Layer::GetVisibilityForAnimation() const {
   return visible();
+}
+
+float Layer::GetBrightnessForAnimation() const {
+  return layer_brightness();
+}
+
+float Layer::GetGrayscaleForAnimation() const {
+  return layer_grayscale();
 }
 
 void Layer::CreateWebLayer() {

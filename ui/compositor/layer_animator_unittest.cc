@@ -1118,4 +1118,46 @@ TEST(LayerAnimatorTest, GetTargetOpacity) {
   }
 }
 
+// Verifies GetTargetBrightness() works when multiple sequences are scheduled.
+TEST(LayerAnimatorTest, GetTargetBrightness) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  delegate.SetBrightnessFromAnimation(0.0);
+
+  {
+    ScopedLayerAnimationSettings settings(animator.get());
+    animator->SetBrightness(0.5);
+    EXPECT_EQ(0.5, animator->GetTargetBrightness());
+
+    // Because the strategy is ENQUEUE_NEW_ANIMATION the target should now be 1.
+    animator->SetBrightness(1.0);
+    EXPECT_EQ(1.0, animator->GetTargetBrightness());
+  }
+}
+
+// Verifies GetTargetGrayscale() works when multiple sequences are scheduled.
+TEST(LayerAnimatorTest, GetTargetGrayscale) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  delegate.SetGrayscaleFromAnimation(0.0);
+
+  {
+    ScopedLayerAnimationSettings settings(animator.get());
+    animator->SetGrayscale(0.5);
+    EXPECT_EQ(0.5, animator->GetTargetGrayscale());
+
+    // Because the strategy is ENQUEUE_NEW_ANIMATION the target should now be 1.
+    animator->SetGrayscale(1.0);
+    EXPECT_EQ(1.0, animator->GetTargetGrayscale());
+  }
+}
+
 }  // namespace ui

@@ -18,11 +18,15 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual void SetTransformFromAnimation(const Transform& transform) = 0;
   virtual void SetOpacityFromAnimation(float opacity) = 0;
   virtual void SetVisibilityFromAnimation(bool visibility) = 0;
+  virtual void SetBrightnessFromAnimation(float brightness) = 0;
+  virtual void SetGrayscaleFromAnimation(float grayscale) = 0;
   virtual void ScheduleDrawForAnimation() = 0;
   virtual const gfx::Rect& GetBoundsForAnimation() const = 0;
   virtual const Transform& GetTransformForAnimation() const = 0;
   virtual float GetOpacityForAnimation() const = 0;
   virtual bool GetVisibilityForAnimation() const = 0;
+  virtual float GetBrightnessForAnimation() const = 0;
+  virtual float GetGrayscaleForAnimation() const = 0;
 
  protected:
   virtual ~LayerAnimationDelegate() {}

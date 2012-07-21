@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/desktop_background/desktop_background_resources.h"
+#include "ash/wm/window_animations.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +24,9 @@ namespace ash {
 class UserWallpaperDelegate {
  public:
   virtual ~UserWallpaperDelegate() {}
+
+  // Returns type of window animation that should be used when showin wallpaper.
+  virtual ash::WindowVisibilityAnimationType GetAnimationType() = 0;
 
   // Initialize wallpaper.
   virtual void InitializeWallpaper() = 0;

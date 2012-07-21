@@ -69,6 +69,14 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   virtual void SetVisibility(bool visibility);
   bool GetTargetVisibility() const;
 
+  // Sets the brightness on the delegate. May cause an implicit animation.
+  virtual void SetBrightness(float brightness);
+  float GetTargetBrightness() const;
+
+  // Sets the grayscale on the delegate. May cause an implicit animation.
+  virtual void SetGrayscale(float grayscale);
+  float GetTargetGrayscale() const;
+
   // Sets the layer animation delegate the animator is associated with. The
   // animator does not own the delegate.
   void SetDelegate(LayerAnimationDelegate* delegate);

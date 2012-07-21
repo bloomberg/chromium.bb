@@ -136,6 +136,62 @@ TEST(LayerAnimationElementTest, VisibilityElement) {
   EXPECT_EQ(delta, element->duration());
 }
 
+// Check that the Brightness element progresses the delegate as expected and
+// that the element can be reused after it completes.
+TEST(LayerAnimationElementTest, BrightnessElement) {
+  TestLayerAnimationDelegate delegate;
+  float start = 0.0;
+  float middle = 0.5;
+  float target = 1.0;
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateBrightnessElement(target, delta));
+
+  for (int i = 0; i < 2; ++i) {
+    delegate.SetBrightnessFromAnimation(start);
+    element->Progress(0.0, &delegate);
+    EXPECT_FLOAT_EQ(start, delegate.GetBrightnessForAnimation());
+    element->Progress(0.5, &delegate);
+    EXPECT_FLOAT_EQ(middle, delegate.GetBrightnessForAnimation());
+    element->Progress(1.0, &delegate);
+    EXPECT_FLOAT_EQ(target, delegate.GetBrightnessForAnimation());
+  }
+
+  LayerAnimationElement::TargetValue target_value(&delegate);
+  element->GetTargetValue(&target_value);
+  EXPECT_FLOAT_EQ(target, target_value.brightness);
+
+  EXPECT_EQ(delta, element->duration());
+}
+
+// Check that the Grayscale element progresses the delegate as expected and
+// that the element can be reused after it completes.
+TEST(LayerAnimationElementTest, GrayscaleElement) {
+  TestLayerAnimationDelegate delegate;
+  float start = 0.0;
+  float middle = 0.5;
+  float target = 1.0;
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateGrayscaleElement(target, delta));
+
+  for (int i = 0; i < 2; ++i) {
+    delegate.SetGrayscaleFromAnimation(start);
+    element->Progress(0.0, &delegate);
+    EXPECT_FLOAT_EQ(start, delegate.GetGrayscaleForAnimation());
+    element->Progress(0.5, &delegate);
+    EXPECT_FLOAT_EQ(middle, delegate.GetGrayscaleForAnimation());
+    element->Progress(1.0, &delegate);
+    EXPECT_FLOAT_EQ(target, delegate.GetGrayscaleForAnimation());
+  }
+
+  LayerAnimationElement::TargetValue target_value(&delegate);
+  element->GetTargetValue(&target_value);
+  EXPECT_FLOAT_EQ(target, target_value.grayscale);
+
+  EXPECT_EQ(delta, element->duration());
+}
+
 // Check that the pause element progresses the delegate as expected and
 // that the element can be reused after it completes.
 TEST(LayerAnimationElementTest, PauseElement) {
@@ -143,6 +199,8 @@ TEST(LayerAnimationElementTest, PauseElement) {
   properties.insert(LayerAnimationElement::TRANSFORM);
   properties.insert(LayerAnimationElement::BOUNDS);
   properties.insert(LayerAnimationElement::OPACITY);
+  properties.insert(LayerAnimationElement::BRIGHTNESS);
+  properties.insert(LayerAnimationElement::GRAYSCALE);
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
   scoped_ptr<LayerAnimationElement> element(
@@ -160,6 +218,10 @@ TEST(LayerAnimationElementTest, PauseElement) {
                           copy.GetTransformForAnimation());
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(),
                   copy.GetOpacityForAnimation());
+  EXPECT_FLOAT_EQ(delegate.GetBrightnessForAnimation(),
+                  copy.GetBrightnessForAnimation());
+  EXPECT_FLOAT_EQ(delegate.GetGrayscaleForAnimation(),
+                  copy.GetGrayscaleForAnimation());
 
   // Pause should last for |delta|.
   EXPECT_EQ(delta, element->duration());

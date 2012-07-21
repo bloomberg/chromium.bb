@@ -7,14 +7,18 @@
 #include "ash/shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_resources.h"
+#include "ash/wm/window_animations.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_api.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -27,6 +31,18 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
   }
 
   virtual ~UserWallpaperDelegate() {
+  }
+
+  virtual ash::WindowVisibilityAnimationType GetAnimationType() OVERRIDE {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe))
+      return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+
+    bool is_registered = WizardController::IsDeviceRegistered();
+    // TODO(nkostylev): Figure out whether this would affect autotests as well.
+    if (is_registered)
+      return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+    else
+      return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE;
   }
 
   virtual void InitializeWallpaper() OVERRIDE {

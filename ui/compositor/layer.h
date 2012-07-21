@@ -136,14 +136,30 @@ class COMPOSITOR_EXPORT Layer
   void SetBackgroundBlur(int blur_radius);
 
   // Saturate all pixels of this layer by this amount.
-  // This effect will get "combined" with the inverted and brightness setting.
+  // This effect will get "combined" with the inverted,
+  // brightness and grayscale setting.
   float layer_saturation() const { return layer_saturation_; }
   void SetLayerSaturation(float saturation);
 
   // Change the brightness of all pixels from this layer by this amount.
-  // This effect will get "combined" with the inverted and saturate setting.
+  // This effect will get "combined" with the inverted, saturate
+  // and grayscale setting.
   float layer_brightness() const { return layer_brightness_; }
   void SetLayerBrightness(float brightness);
+
+  // Return the target brightness if animator is running, or the current
+  // brightness otherwise.
+  float GetTargetBrightness() const;
+
+  // Change the grayscale of all pixels from this layer by this amount.
+  // This effect will get "combined" with the inverted, saturate
+  // and brightness setting.
+  float layer_grayscale() const { return layer_grayscale_; }
+  void SetLayerGrayscale(float grayscale);
+
+  // Return the target grayscale if animator is running, or the current
+  // grayscale otherwise.
+  float GetTargetGrayscale() const;
 
   // Invert the layer.
   bool layer_inverted() const { return layer_inverted_; }
@@ -286,17 +302,23 @@ class COMPOSITOR_EXPORT Layer
   void SetTransformImmediately(const ui::Transform& transform);
   void SetOpacityImmediately(float opacity);
   void SetVisibilityImmediately(bool visibility);
+  void SetBrightnessImmediately(float brightness);
+  void SetGrayscaleImmediately(float grayscale);
 
   // Implementation of LayerAnimatorDelegate
   virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE;
   virtual void SetTransformFromAnimation(const Transform& transform) OVERRIDE;
   virtual void SetOpacityFromAnimation(float opacity) OVERRIDE;
   virtual void SetVisibilityFromAnimation(bool visibility) OVERRIDE;
+  virtual void SetBrightnessFromAnimation(float brightness) OVERRIDE;
+  virtual void SetGrayscaleFromAnimation(float grayscale) OVERRIDE;
   virtual void ScheduleDrawForAnimation() OVERRIDE;
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
   virtual const Transform& GetTransformForAnimation() const OVERRIDE;
   virtual float GetOpacityForAnimation() const OVERRIDE;
   virtual bool GetVisibilityForAnimation() const OVERRIDE;
+  virtual float GetBrightnessForAnimation() const OVERRIDE;
+  virtual float GetGrayscaleForAnimation() const OVERRIDE;
 
   void CreateWebLayer();
   void RecomputeTransform();
@@ -342,6 +364,7 @@ class COMPOSITOR_EXPORT Layer
   // the layer.
   float layer_saturation_;
   float layer_brightness_;
+  float layer_grayscale_;
   bool layer_inverted_;
 
   // The associated mask layer with this layer.

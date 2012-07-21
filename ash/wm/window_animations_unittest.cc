@@ -97,6 +97,47 @@ TEST_F(WindowAnimationsTest, ShowHide) {
   EXPECT_FALSE(window->layer()->visible());
 }
 
+TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
+  aura::Window* default_container =
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, default_container));
+  window->Show();
+  EXPECT_TRUE(window->layer()->visible());
+
+  // Hiding.
+  SetWindowVisibilityAnimationType(
+      window.get(),
+      WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
+  ash::internal::AnimateOnChildWindowVisibilityChanged(
+      window.get(), false);
+  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
+  EXPECT_FALSE(window->layer()->visible());
+
+  // Showing.
+  SetWindowVisibilityAnimationType(
+      window.get(),
+      WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
+  ash::internal::AnimateOnChildWindowVisibilityChanged(
+      window.get(), true);
+  EXPECT_EQ(0.0f, window->layer()->GetTargetBrightness());
+  EXPECT_EQ(0.0f, window->layer()->GetTargetGrayscale());
+  EXPECT_TRUE(window->layer()->visible());
+
+  // Stays shown.
+  ui::AnimationContainerElement* element =
+      static_cast<ui::AnimationContainerElement*>(
+      window->layer()->GetAnimator());
+  element->Step(base::TimeTicks::Now() +
+                base::TimeDelta::FromSeconds(5));
+  EXPECT_EQ(0.0f, window->layer()->GetTargetBrightness());
+  EXPECT_EQ(0.0f, window->layer()->GetTargetGrayscale());
+  EXPECT_TRUE(window->layer()->visible());
+}
+
 TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
   aura::Window* default_container =
       ash::Shell::GetContainer(

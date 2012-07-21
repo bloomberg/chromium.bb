@@ -35,6 +35,8 @@ enum WindowVisibilityAnimationType {
   WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_HIDE,  // Inverse of SHOW.
   WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE,        // Window scale/rotates down
                                                     // to its launcher icon.
+  // Fade in/out using brightness and grayscale web filters.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE,
 };
 
 // Type of visibility change transition that a window should animate.

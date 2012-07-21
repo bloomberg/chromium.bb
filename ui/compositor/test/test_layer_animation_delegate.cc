@@ -40,6 +40,14 @@ void TestLayerAnimationDelegate::SetVisibilityFromAnimation(bool visibility) {
   visibility_ = visibility;
 }
 
+void TestLayerAnimationDelegate::SetBrightnessFromAnimation(float brightness) {
+  brightness_ = brightness;
+}
+
+void TestLayerAnimationDelegate::SetGrayscaleFromAnimation(float grayscale) {
+  grayscale_ = grayscale;
+}
+
 void TestLayerAnimationDelegate::ScheduleDrawForAnimation() {
 }
 
@@ -57,6 +65,14 @@ float TestLayerAnimationDelegate::GetOpacityForAnimation() const {
 
 bool TestLayerAnimationDelegate::GetVisibilityForAnimation() const {
   return visibility_;
+}
+
+float TestLayerAnimationDelegate::GetBrightnessForAnimation() const {
+  return brightness_;
+}
+
+float TestLayerAnimationDelegate::GetGrayscaleForAnimation() const {
+  return grayscale_;
 }
 
 }  // namespace ui

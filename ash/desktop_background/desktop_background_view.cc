@@ -152,15 +152,15 @@ void CreateDesktopBackground(aura::RootWindow* root_window) {
       ash::internal::kShellWindowId_DesktopBackgroundContainer);
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
-  ash::SetWindowVisibilityAnimationType(
-      desktop_widget->GetNativeView(),
-      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  ash::SetWindowVisibilityAnimationTransition(
-      desktop_widget->GetNativeView(),
-      ash::ANIMATE_SHOW);
+  ash::WindowVisibilityAnimationType animation_type =
+      ash::Shell::GetInstance()->user_wallpaper_delegate()->GetAnimationType();
+  ash::SetWindowVisibilityAnimationType(desktop_widget->GetNativeView(),
+                                        animation_type);
+  ash::SetWindowVisibilityAnimationTransition(desktop_widget->GetNativeView(),
+                                              ash::ANIMATE_SHOW);
   desktop_widget->SetBounds(params.parent->bounds());
-  ui::ScopedLayerAnimationSettings settings(desktop_widget->GetNativeView()->
-                                            layer()->GetAnimator());
+  ui::ScopedLayerAnimationSettings settings(
+      desktop_widget->GetNativeView()->layer()->GetAnimator());
   settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
   settings.AddObserver(new ShowWallpaperAnimationObserver(root_window,
                                                           desktop_widget));

@@ -232,13 +232,97 @@ class VisibilityTransition : public LayerAnimationElement {
   DISALLOW_COPY_AND_ASSIGN(VisibilityTransition);
 };
 
+// BrightnessTransition --------------------------------------------------------
+
+class BrightnessTransition : public LayerAnimationElement {
+ public:
+  BrightnessTransition(float target, base::TimeDelta duration)
+      : LayerAnimationElement(GetProperties(), duration),
+        start_(0.0f),
+        target_(target) {
+  }
+  virtual ~BrightnessTransition() {}
+
+ protected:
+  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+    start_ = delegate->GetBrightnessForAnimation();
+  }
+
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+    delegate->SetBrightnessFromAnimation(
+        Tween::ValueBetween(t, start_, target_));
+    return true;
+  }
+
+  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+    target->brightness = target_;
+  }
+
+  virtual void OnAbort() OVERRIDE {}
+
+ private:
+  static AnimatableProperties GetProperties() {
+    AnimatableProperties properties;
+    properties.insert(LayerAnimationElement::BRIGHTNESS);
+    return properties;
+  }
+
+  float start_;
+  const float target_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrightnessTransition);
+};
+
+// GrayscaleTransition ---------------------------------------------------------
+
+class GrayscaleTransition : public LayerAnimationElement {
+ public:
+  GrayscaleTransition(float target, base::TimeDelta duration)
+      : LayerAnimationElement(GetProperties(), duration),
+        start_(0.0f),
+        target_(target) {
+  }
+  virtual ~GrayscaleTransition() {}
+
+ protected:
+  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+    start_ = delegate->GetGrayscaleForAnimation();
+  }
+
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+    delegate->SetGrayscaleFromAnimation(
+        Tween::ValueBetween(t, start_, target_));
+    return true;
+  }
+
+  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+    target->grayscale = target_;
+  }
+
+  virtual void OnAbort() OVERRIDE {}
+
+ private:
+  static AnimatableProperties GetProperties() {
+    AnimatableProperties properties;
+    properties.insert(LayerAnimationElement::GRAYSCALE);
+    return properties;
+  }
+
+  float start_;
+  const float target_;
+
+  DISALLOW_COPY_AND_ASSIGN(GrayscaleTransition);
+};
+
 }  // namespace
 
 // LayerAnimationElement::TargetValue ------------------------------------------
 
 LayerAnimationElement::TargetValue::TargetValue()
     : opacity(0.0f),
-      visibility(false) {
+      visibility(false),
+      brightness(0.0f),
+      grayscale(0.0f) {
 }
 
 LayerAnimationElement::TargetValue::TargetValue(
@@ -246,7 +330,9 @@ LayerAnimationElement::TargetValue::TargetValue(
     : bounds(delegate ? delegate->GetBoundsForAnimation() : gfx::Rect()),
       transform(delegate ? delegate->GetTransformForAnimation() : Transform()),
       opacity(delegate ? delegate->GetOpacityForAnimation() : 0.0f),
-      visibility(delegate ? delegate->GetVisibilityForAnimation() : false) {
+      visibility(delegate ? delegate->GetVisibilityForAnimation() : false),
+      brightness(delegate ? delegate->GetBrightnessForAnimation() : 0.0f),
+      grayscale(delegate ? delegate->GetGrayscaleForAnimation() : 0.0f) {
 }
 
 // LayerAnimationElement -------------------------------------------------------
@@ -322,6 +408,18 @@ LayerAnimationElement* LayerAnimationElement::CreateOpacityElement(
 LayerAnimationElement* LayerAnimationElement::CreateVisibilityElement(
     bool visibility, base::TimeDelta duration) {
   return new VisibilityTransition(visibility, duration);
+}
+
+// static
+LayerAnimationElement* LayerAnimationElement::CreateBrightnessElement(
+    float brightness, base::TimeDelta duration) {
+  return new BrightnessTransition(brightness, duration);
+}
+
+// static
+LayerAnimationElement* LayerAnimationElement::CreateGrayscaleElement(
+    float grayscale, base::TimeDelta duration) {
+  return new GrayscaleTransition(grayscale, duration);
 }
 
 // static

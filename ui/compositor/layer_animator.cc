@@ -119,6 +119,34 @@ bool LayerAnimator::GetTargetVisibility() const {
   return target.visibility;
 }
 
+void LayerAnimator::SetBrightness(float brightness) {
+  base::TimeDelta duration = GetTransitionDuration();
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateBrightnessElement(brightness, duration));
+  element->set_tween_type(tween_type_);
+  StartAnimation(new LayerAnimationSequence(element.release()));
+}
+
+float LayerAnimator::GetTargetBrightness() const {
+  LayerAnimationElement::TargetValue target(delegate());
+  GetTargetValue(&target);
+  return target.brightness;
+}
+
+void LayerAnimator::SetGrayscale(float grayscale) {
+  base::TimeDelta duration = GetTransitionDuration();
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateGrayscaleElement(grayscale, duration));
+  element->set_tween_type(tween_type_);
+  StartAnimation(new LayerAnimationSequence(element.release()));
+}
+
+float LayerAnimator::GetTargetGrayscale() const {
+  LayerAnimationElement::TargetValue target(delegate());
+  GetTargetValue(&target);
+  return target.grayscale;
+}
+
 void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
