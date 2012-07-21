@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -606,12 +607,15 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
     Delegate* delegate,
     TabContents* tab_contents,
     Profile* profile,
+    ProtocolHandlerRegistry* registry,
     ContentSettingsType content_type)
     : ContentSettingTitleAndLinkModel(
           delegate, tab_contents, profile, content_type),
       selected_item_(0),
+      registry_(registry),
       pending_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_handler_(ProtocolHandler::EmptyProtocolHandler()) {
+
   DCHECK_EQ(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, content_type);
 
   TabSpecificContentSettings* content_settings =
@@ -690,26 +694,22 @@ void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
 void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
   // A no-op if the handler hasn't been ignored, but needed in case the user
   // selects sequences like register/ignore/register.
-  profile()->GetProtocolHandlerRegistry()->RemoveIgnoredHandler(
-      pending_handler_);
+  registry_->RemoveIgnoredHandler(pending_handler_);
 
-  profile()->GetProtocolHandlerRegistry()->OnAcceptRegisterProtocolHandler(
-      pending_handler_);
+  registry_->OnAcceptRegisterProtocolHandler(pending_handler_);
   tab_contents()->content_settings()->set_pending_protocol_handler_setting(
       CONTENT_SETTING_ALLOW);
 }
 
 void ContentSettingRPHBubbleModel::UnregisterProtocolHandler() {
-  profile()->GetProtocolHandlerRegistry()->OnDenyRegisterProtocolHandler(
-      pending_handler_);
+  registry_->OnDenyRegisterProtocolHandler(pending_handler_);
   tab_contents()->content_settings()->set_pending_protocol_handler_setting(
       CONTENT_SETTING_BLOCK);
   ClearOrSetPreviousHandler();
 }
 
 void ContentSettingRPHBubbleModel::IgnoreProtocolHandler() {
-  profile()->GetProtocolHandlerRegistry()->OnIgnoreRegisterProtocolHandler(
-      pending_handler_);
+  registry_->OnIgnoreRegisterProtocolHandler(pending_handler_);
   tab_contents()->content_settings()->set_pending_protocol_handler_setting(
       CONTENT_SETTING_DEFAULT);
   ClearOrSetPreviousHandler();
@@ -717,11 +717,9 @@ void ContentSettingRPHBubbleModel::IgnoreProtocolHandler() {
 
 void ContentSettingRPHBubbleModel::ClearOrSetPreviousHandler() {
   if (previous_handler_.IsEmpty()) {
-    profile()->GetProtocolHandlerRegistry()->ClearDefault(
-        pending_handler_.protocol());
+    registry_->ClearDefault(pending_handler_.protocol());
   } else {
-    profile()->GetProtocolHandlerRegistry()->OnAcceptRegisterProtocolHandler(
-        previous_handler_);
+    registry_->OnAcceptRegisterProtocolHandler(previous_handler_);
   }
 }
 
@@ -753,8 +751,10 @@ ContentSettingBubbleModel*
                                                     profile, content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+    ProtocolHandlerRegistry* registry =
+        ProtocolHandlerRegistryFactory::GetForProfile(profile);
     return new ContentSettingRPHBubbleModel(delegate, tab_contents, profile,
-                                            content_type);
+                                            registry, content_type);
   }
   return new ContentSettingSingleRadioGroup(delegate, tab_contents, profile,
                                             content_type);

@@ -369,16 +369,6 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 }
 
-void TestingProfile::CreateProtocolHandlerRegistry() {
-  CreateProtocolHandlerRegistry(
-      new ProtocolHandlerRegistry::Delegate());
-}
-
-void TestingProfile::CreateProtocolHandlerRegistry(
-    ProtocolHandlerRegistry::Delegate* delegate) {
-  protocol_handler_registry_ = new ProtocolHandlerRegistry(this, delegate);
-}
-
 static scoped_refptr<RefcountedProfileKeyedService> BuildWebDataService(
     Profile* profile) {
   WebDataService* web_data_service = new WebDataService();
@@ -688,7 +678,7 @@ base::Time TestingProfile::GetStartTime() const {
 }
 
 ProtocolHandlerRegistry* TestingProfile::GetProtocolHandlerRegistry() {
-  return protocol_handler_registry_.get();
+  return NULL;
 }
 
 FilePath TestingProfile::last_selected_directory() {
