@@ -49,7 +49,6 @@
 #include "ash/wm/screen_dimmer.h"
 #include "ash/wm/shadow_controller.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "ash/wm/slow_animation_event_filter.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_gesture_event_filter.h"
@@ -211,7 +210,6 @@ Shell::~Shell() {
   if (mouse_cursor_filter_.get())
     RemoveEnvEventFilter(mouse_cursor_filter_.get());
   RemoveEnvEventFilter(system_gesture_filter_.get());
-  RemoveEnvEventFilter(slow_animation_filter_.get());
 #if !defined(OS_MACOSX)
   RemoveEnvEventFilter(accelerator_filter_.get());
 #endif
@@ -413,9 +411,6 @@ void Shell::Init() {
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
   AddEnvEventFilter(system_gesture_filter_.get());
-
-  slow_animation_filter_.reset(new internal::SlowAnimationEventFilter);
-  AddEnvEventFilter(slow_animation_filter_.get());
 
   capture_controller_.reset(new internal::CaptureController);
 

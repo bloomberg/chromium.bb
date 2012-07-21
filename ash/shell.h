@@ -462,10 +462,6 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   // a heads-up display. This is enabled only if --ash-touch-hud flag is used.
   scoped_ptr<internal::TouchObserverHUD> touch_observer_hud_;
 
-  // An event filter that looks for modifier keypresses and triggers a slowdown
-  // of layer animations for visual debugging.
-  scoped_ptr<internal::SlowAnimationEventFilter> slow_animation_filter_;
-
 #if defined(OS_CHROMEOS)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
