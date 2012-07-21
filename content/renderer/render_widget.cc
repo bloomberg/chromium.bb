@@ -1692,7 +1692,7 @@ ui::TextInputType RenderWidget::GetTextInputType() {
   if (webwidget_) {
     int type = webwidget_->textInputType();
     // Check the type is in the range representable by ui::TextInputType.
-    DCHECK_LE(type, ui::TEXT_INPUT_TYPE_WEEK) <<
+    DCHECK_LE(type, ui::TEXT_INPUT_TYPE_MAX) <<
       "WebKit::WebTextInputType and ui::TextInputType not synchronized";
     return static_cast<ui::TextInputType>(type);
   }

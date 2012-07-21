@@ -31,6 +31,12 @@ enum TextInputType {
   TEXT_INPUT_TYPE_MONTH,
   TEXT_INPUT_TYPE_TIME,
   TEXT_INPUT_TYPE_WEEK,
+  TEXT_INPUT_TYPE_TEXT_AREA,
+
+  // Input caret is in a contenteditable node (not an INPUT field).
+  TEXT_INPUT_TYPE_CONTENT_EDITABLE,
+
+  TEXT_INPUT_TYPE_MAX = TEXT_INPUT_TYPE_CONTENT_EDITABLE,
 };
 
 }  // namespace ui
