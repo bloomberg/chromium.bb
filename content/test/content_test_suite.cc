@@ -4,9 +4,15 @@
 
 #include "content/test/content_test_suite.h"
 
+#if defined(OS_CHROMEOS)
+#include <stdio.h>
+#include <unistd.h>
+#endif
+
 #include "base/logging.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/test/test_content_client.h"
+#include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_AURA)
@@ -53,12 +59,31 @@ ContentTestSuite::ContentTestSuite(int argc, char** argv)
 ContentTestSuite::~ContentTestSuite() {
 }
 
+static bool IsCrosPythonProcess() {
+#if defined(OS_CHROMEOS)
+  char buf[80];
+  int num_read = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+  if (num_read == -1)
+    return false;
+  buf[num_read] = 0;
+  const char kPythonPrefix[] = "/python";
+  return !strncmp(strrchr(buf, '/'), kPythonPrefix, sizeof(kPythonPrefix) - 1);
+#endif  // defined(OS_CHROMEOS)
+  return false;
+}
+
 void ContentTestSuite::Initialize() {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
   ContentTestSuiteBase::Initialize();
+
+  // Initialize media library for unit tests. If we are auto test
+  // (python process under chrome os), media library will be loaded to
+  // chrome directly so don't load it here.
+  if (!IsCrosPythonProcess())
+    media::InitializeMediaLibraryForTesting();
 
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
