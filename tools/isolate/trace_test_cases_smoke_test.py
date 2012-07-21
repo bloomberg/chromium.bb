@@ -40,6 +40,9 @@ class TraceTestCases(unittest.TestCase):
         self.executable += suffix
 
     self.real_executable = trace_inputs.get_native_path_case(self.executable)
+    # Make sure there's no environment variable that could do side effects.
+    os.environ.pop('GTEST_SHARD_INDEX', '')
+    os.environ.pop('GTEST_TOTAL_SHARDS', '')
 
   def tearDown(self):
     if self.temp_file:
@@ -116,13 +119,13 @@ class TraceTestCases(unittest.TestCase):
       r'\[4/4\]   \d\.\d\ds .+',
       r'\d+\.\ds Done post-processing logs\. Parsing logs\.',
       r'\d+\.\ds Done parsing logs\.',
-      r'\d+.\ds Done stripping root\.',
-      r'\d+.\ds Done flattening\.',
+      r'\d+\.\ds Done stripping root\.',
+      r'\d+\.\ds Done flattening\.',
     ]
     for index in range(len(expected_out_re)):
       self.assertTrue(
           re.match('^%s$' % expected_out_re[index], lines[index]),
-          (index, repr(lines[index])))
+          (index, expected_out_re[index], repr(lines[index])))
     # Junk is printed on win32.
     if sys.platform != 'win32':
       self.assertEquals('', err)

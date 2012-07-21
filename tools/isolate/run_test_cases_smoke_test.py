@@ -17,6 +17,11 @@ import gtest_fake
 
 
 class TraceTestCases(unittest.TestCase):
+  def setUp(self):
+    # Make sure there's no environment variable that could do side effects.
+    os.environ.pop('GTEST_SHARD_INDEX', '')
+    os.environ.pop('GTEST_TOTAL_SHARDS', '')
+
   def test_simple(self):
     target = os.path.join(ROOT_DIR, 'data', 'gtest_fake', 'gtest_fake.py')
     cmd = [
