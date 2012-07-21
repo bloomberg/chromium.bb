@@ -43,6 +43,7 @@ char (&ArraySizeHelper(T (&array)[N]))[N];
 
 namespace {
   const char* short_program_name;
+  const char* current_dir_name;
 
   const struct option kProgramOptions[] = {
     {"mode",       required_argument,      NULL,   'm'},
@@ -2561,6 +2562,8 @@ int main(int argc, char *argv[]) {
      once per program invocation it's contained.  */
   short_program_name = basename(strdup(argv[0]));
 
+  current_dir_name = get_current_dir_name();
+
   for (;;) {
     int option_index;
 
@@ -2638,6 +2641,7 @@ int main(int argc, char *argv[]) {
              (enabled(Actions::kInstructionName) ||
               enabled(Actions::kParseOperands))) {
     size_t const_name_len = 0;
+    size_t current_dir_name_len = strlen(current_dir_name);
     if (out_file_name && !const_file_name) {
       const_name_len = strlen(out_file_name) + 10;
       const_file_name = static_cast<char *>(malloc(const_name_len));
@@ -2653,6 +2657,20 @@ int main(int argc, char *argv[]) {
               short_program_name, const_file_name, strerror(errno));
        return 1;
     }
+    fprintf(out_file, "/* native_client/%s\n"
+" * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n"
+" * Compiled for %s mode.\n"
+" */\n\n", strncmp(current_dir_name, out_file_name, current_dir_name_len) ?
+             out_file_name :
+             out_file_name + current_dir_name_len + 1,
+           ia32_mode ? "ia32" : "x86-64");
+    fprintf(const_file, "/* native_client/%s\n"
+" * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n"
+" * Compiled for %s mode.\n"
+" */\n\n", strncmp(current_dir_name, const_file_name, current_dir_name_len) ?
+             const_file_name :
+             const_file_name + current_dir_name_len + 1,
+           ia32_mode ? "ia32" : "x86-64");
     if (const_name_len) {
       free(const_file_name);
       const_file_name = NULL;

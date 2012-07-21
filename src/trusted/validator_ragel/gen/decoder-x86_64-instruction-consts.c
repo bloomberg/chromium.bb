@@ -1,3 +1,8 @@
+/* native_client/src/trusted/validator_ragel/gen/decoder-x86_64-instruction-consts.c
+ * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
+ * Compiled for x86-64 mode.
+ */
+
 static const char instruction_names[] = {
   0x61, 0x64, 0x63, '\0',  /* adc */
   0x62, 0x65, 0x78, 0x74, 0x72, '\0',  /* bextr */

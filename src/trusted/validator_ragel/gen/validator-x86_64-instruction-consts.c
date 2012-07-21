@@ -1,3 +1,8 @@
+/* native_client/src/trusted/validator_ragel/gen/validator-x86_64-instruction-consts.c
+ * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
+ * Compiled for x86-64 mode.
+ */
+
 static const uint8_t index_registers[] = {
   REG_RAX, REG_RCX, REG_RDX, REG_RBX,
   REG_RIZ, REG_RBP, REG_RSI, REG_RDI,

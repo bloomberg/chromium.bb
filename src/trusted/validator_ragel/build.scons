@@ -104,7 +104,8 @@ if generate:
             }[automata+bits])]
       )
       automatas.append(rl_file)
-      c_file = '%s/%s-x86_%s.c' % (val_src_dir, automata, bits)
+      c_file = '%s-x86_%s.c' % (automata, bits)
+      c_full_filename = '%s/%s' % (val_src_dir, c_file)
       if automata == 'decoder':
         ragel_flags = '-T0'
       elif bits == '32':
@@ -118,6 +119,23 @@ if generate:
               ragel_binary, ragel_flags, rl_src_dir)]
       )
       automatas.append(c_file)
+      def Inject_GeneratedFile_Header(target, source, env):
+        source_filename = str(source[0])
+        target_filename = str(target[0])
+        with open(source_filename, 'r') as source_file:
+          with open(target_filename, 'w') as target_file:
+            target_file.write("""/* native_client/%s
+ * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
+ * Compiled for %s mode.
+ */""" % (target_filename,
+      {'x86_32': 'ia32', 'x86_64': 'x86-64'}[target_filename[-8:-2]]))
+            target_file.write(source_file.read().split('*/', 1)[1])
+      env.Command(
+          target=c_full_filename,
+          source=['%s/%s' % (rl_src_dir, c_file)],
+          action=Inject_GeneratedFile_Header
+      )
+      automatas.append(c_full_filename)
 
   # Generate 32 and 64 bit versions of decoders and validators
   env.AlwaysBuild(env.Alias('dfagen', automatas))

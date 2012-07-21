@@ -1,8 +1,6 @@
-
-/*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+/* native_client/src/trusted/validator_ragel/gen/decoder-x86_64.c
+ * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
+ * Compiled for x86-64 mode.
  */
 
 #include <assert.h>
