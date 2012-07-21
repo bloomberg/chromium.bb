@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/password_manager.h"
 
+#include "base/metrics/histogram.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
@@ -239,6 +240,8 @@ void PasswordManager::OnPasswordFormsRendered(
   // given consent, either through previously accepting the infobar or by having
   // the browser generate the password.
   provisional_save_manager_->SubmitPassed();
+  if (provisional_save_manager_->HasGeneratedPassword())
+    UMA_HISTOGRAM_COUNTS("PasswordGeneration.Submitted", 1);
   if (provisional_save_manager_->IsNewLogin() &&
       !provisional_save_manager_->HasGeneratedPassword()) {
     delegate_->AddSavePasswordInfoBarIfPermitted(

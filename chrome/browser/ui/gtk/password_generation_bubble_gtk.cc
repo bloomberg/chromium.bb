@@ -93,7 +93,7 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,
                             GtkThemeService::GetFrom(tab_->profile()),
-                            NULL);  // delegate
+                            this);  // delegate
 
   g_signal_connect(content, "destroy",
                    G_CALLBACK(&OnDestroyThunk), this);
@@ -101,11 +101,19 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
                    G_CALLBACK(&OnAcceptClickedThunk), this);
   g_signal_connect(text_field_, "icon-press",
                    G_CALLBACK(&OnRegenerateClickedThunk), this);
+  g_signal_connect(text_field_, "changed",
+                   G_CALLBACK(&OnPasswordEditedThunk), this);
   g_signal_connect(learn_more_link, "clicked",
                    G_CALLBACK(OnLearnMoreLinkClickedThunk), this);
 }
 
 PasswordGenerationBubbleGtk::~PasswordGenerationBubbleGtk() {}
+
+void PasswordGenerationBubbleGtk::BubbleClosing(
+    BubbleGtk* bubble,
+    bool closed_by_escape) {
+  password_generation::LogUserActions(actions_);
+}
 
 void PasswordGenerationBubbleGtk::OnDestroy(GtkWidget* widget) {
   // We are self deleting, we have a destroy signal setup to catch when we are
@@ -114,6 +122,7 @@ void PasswordGenerationBubbleGtk::OnDestroy(GtkWidget* widget) {
 }
 
 void PasswordGenerationBubbleGtk::OnAcceptClicked(GtkWidget* widget) {
+  actions_.password_accepted = true;
   RenderViewHost* render_view_host = tab_->web_contents()->GetRenderViewHost();
   render_view_host->Send(new AutofillMsg_GeneratedPasswordAccepted(
       render_view_host->GetRoutingID(),
@@ -128,9 +137,15 @@ void PasswordGenerationBubbleGtk::OnRegenerateClicked(
     GdkEvent* event) {
   gtk_entry_set_text(GTK_ENTRY(text_field_),
                      password_generator_->Generate().c_str());
+  actions_.password_regenerated = true;
+}
+
+void PasswordGenerationBubbleGtk::OnPasswordEdited(GtkWidget* widget) {
+  actions_.password_edited = true;
 }
 
 void PasswordGenerationBubbleGtk::OnLearnMoreLinkClicked(GtkButton* button) {
+  actions_.learn_more_visited = true;
   Browser* browser = browser::FindBrowserWithWebContents(tab_->web_contents());
   content::OpenURLParams params(
       GURL(chrome::kAutoPasswordGenerationLearnMoreURL), content::Referrer(),

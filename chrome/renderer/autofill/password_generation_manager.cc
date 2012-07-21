@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
+#include "chrome/common/password_generation_util.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
@@ -115,6 +116,8 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
     std::vector<WebKit::WebInputElement> passwords;
     if (GetAccountCreationPasswordFields(forms[i], &passwords)) {
       DVLOG(2) << "Account creation form detected";
+      password_generation::LogPasswordGenerationEvent(
+          password_generation::SIGN_UP_DETECTED);
       passwords_ = passwords;
       account_creation_form_origin_ = password_form->origin;
       MaybeShowIcon();
@@ -122,6 +125,8 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
       return;
     }
   }
+  password_generation::LogPasswordGenerationEvent(
+      password_generation::NO_SIGN_UP_DETECTED);
 }
 
 bool PasswordGenerationManager::ShouldAnalyzeDocument(
@@ -168,6 +173,8 @@ void PasswordGenerationManager::handleClick(WebKit::WebInputElement& element) {
                                                          rect,
                                                          element.maxLength(),
                                                          *password_form));
+    password_generation::LogPasswordGenerationEvent(
+        password_generation::BUBBLE_SHOWN);
   }
 }
 
@@ -227,6 +234,8 @@ void PasswordGenerationManager::MaybeShowIcon() {
     if (*it == account_creation_form_origin_) {
       passwords_[0].decorationElementFor(this).setAttribute("style",
                                                             "display:block");
+      password_generation::LogPasswordGenerationEvent(
+          password_generation::ICON_SHOWN);
       return;
     }
   }

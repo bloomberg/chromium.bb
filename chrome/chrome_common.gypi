@@ -239,6 +239,8 @@
         'common/nacl_messages.h',
         'common/nacl_types.cc',
         'common/nacl_types.h',
+        'common/password_generation_util.cc',
+        'common/password_generation_util.h',
         'common/pepper_flash.cc',
         'common/pepper_flash.h',
         'common/persistent_pref_store.h',
