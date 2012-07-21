@@ -48,8 +48,8 @@ class GamepadService : public NotificationObserver {
   void Stop(const NotificationSource& source);
 
   // Run on UI thread to receive/stop notifications of renderer closes.
-  void RegisterForCloseNotification(RenderProcessHost* rph);
-  void UnregisterForCloseNotification(const NotificationSource& source);
+  void RegisterForTerminationNotification(RenderProcessHost* rph);
+  void UnregisterForTerminationNotification(const NotificationSource& source);
 
   // NotificationObserver overrides:
   virtual void Observe(int type,

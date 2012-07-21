@@ -42,7 +42,7 @@ void GamepadService::Start(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GamepadService::RegisterForCloseNotification,
+      base::Bind(&GamepadService::RegisterForTerminationNotification,
                  base::Unretained(this),
                  associated_rph));
 }
@@ -51,9 +51,10 @@ void GamepadService::Terminate() {
   provider_.reset();
 }
 
-void GamepadService::RegisterForCloseNotification(RenderProcessHost* rph) {
+void GamepadService::RegisterForTerminationNotification(
+    RenderProcessHost* rph) {
   registrar_.Add(this,
-                 NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  Source<RenderProcessHost>(rph));
 }
 
@@ -69,7 +70,7 @@ void GamepadService::Stop(const NotificationSource& source) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GamepadService::UnregisterForCloseNotification,
+      base::Bind(&GamepadService::UnregisterForTerminationNotification,
                  base::Unretained(this),
                  source));
 
@@ -77,15 +78,15 @@ void GamepadService::Stop(const NotificationSource& source) {
     provider_->Pause();
 }
 
-void GamepadService::UnregisterForCloseNotification(
+void GamepadService::UnregisterForTerminationNotification(
     const NotificationSource& source) {
-  registrar_.Remove(this, NOTIFICATION_RENDERER_PROCESS_CLOSED, source);
+  registrar_.Remove(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED, source);
 }
 
 void GamepadService::Observe(int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(type == NOTIFICATION_RENDERER_PROCESS_CLOSED);
+  DCHECK(type == NOTIFICATION_RENDERER_PROCESS_TERMINATED);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
