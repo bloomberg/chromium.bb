@@ -19,7 +19,6 @@ import re
 import stat
 import subprocess
 import sys
-import tempfile
 
 import isolate_common
 import merge_isolate
@@ -792,7 +791,8 @@ def CMDremap(args):
   complete_state = load_complete_state(options, STATS_ONLY)
 
   if not options.outdir:
-    options.outdir = tempfile.mkdtemp(prefix='isolate')
+    options.outdir = run_test_from_archive.make_temp_dir(
+        'isolate', complete_state.root_dir)
   else:
     if not os.path.isdir(options.outdir):
       os.makedirs(options.outdir)
@@ -834,7 +834,8 @@ def CMDrun(args):
   cmd = trace_inputs.fix_python_path(cmd)
   try:
     if not options.outdir:
-      options.outdir = tempfile.mkdtemp(prefix='isolate')
+      options.outdir = run_test_from_archive.make_temp_dir(
+          'isolate', complete_state.root_dir)
     else:
       if not os.path.isdir(options.outdir):
         os.makedirs(options.outdir)

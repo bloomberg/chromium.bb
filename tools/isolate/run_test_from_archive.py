@@ -347,6 +347,14 @@ class Profiler(object):
                  self.name, time_taken)
 
 
+def make_temp_dir(prefix, root_dir):
+  """Returns a temporary directory on the same file system than root_dir."""
+  base_temp_dir = None
+  if not is_same_filesystem(root_dir, tempfile.gettempdir()):
+    base_temp_dir = os.path.dirname(root_dir)
+  return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
+
+
 def run_tha_test(
     manifest, cache_dir, remote, max_cache_size, min_free_space, max_items):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
@@ -354,13 +362,7 @@ def run_tha_test(
   """
   with Cache(
       cache_dir, remote, max_cache_size, min_free_space, max_items) as cache:
-    base_temp_dir = None
-    if not is_same_filesystem(cache_dir, tempfile.gettempdir()):
-      # Do not use tempdir since it's a separate filesystem than cache_dir. It
-      # could be tmpfs for example. This would mean copying up to 100mb of data
-      # there, when a simple tree of hardlinks would do.
-      base_temp_dir = os.path.dirname(cache_dir)
-    outdir = tempfile.mkdtemp(prefix='run_tha_test', dir=base_temp_dir)
+    outdir = make_temp_dir('run_tha_test', cache_dir)
 
     if not 'files' in manifest:
       print >> sys.stderr, 'No file to map'
