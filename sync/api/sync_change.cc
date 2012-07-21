@@ -52,6 +52,10 @@ SyncData SyncChange::sync_data() const {
   return sync_data_;
 }
 
+tracked_objects::Location SyncChange::location() const {
+  return location_;
+}
+
 // static
 std::string SyncChange::ChangeTypeToString(SyncChangeType change_type) {
   switch (change_type) {

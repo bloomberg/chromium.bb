@@ -208,7 +208,8 @@ syncer::SyncError AttemptDelete(
     if (tag.empty()) {
       syncer::SyncError error(
           FROM_HERE,
-          "Failed to delete " + type_str + " node. Local data, empty tag.",
+          "Failed to delete " + type_str + " node. Local data, empty tag. " +
+              change.location().ToString(),
           type);
       error_handler->OnSingleDatatypeUnrecoverableError(error.location(),
                                                         error.message());
@@ -221,7 +222,8 @@ syncer::SyncError AttemptDelete(
     if (result != syncer::BaseNode::INIT_OK) {
       return LogLookupFailure(
           result, FROM_HERE,
-          "Failed to delete " + type_str + " node. Local data, ",
+          "Failed to delete " + type_str + " node. Local data. " +
+              change.location().ToString(),
           type, error_handler);
     }
   } else {
@@ -230,7 +232,8 @@ syncer::SyncError AttemptDelete(
     if (result != syncer::BaseNode::INIT_OK) {
       return LogLookupFailure(
           result, FROM_HERE,
-          "Failed to delete " + type_str + " node. Non-local data, ",
+          "Failed to delete " + type_str + " node. Non-local data. " +
+              change.location().ToString(),
           type, error_handler);
     }
   }
@@ -287,7 +290,8 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
                                           root_node,
                                           change.sync_data().GetTag());
       if (result != syncer::WriteNode::INIT_SUCCESS) {
-        std::string error_prefix = "Failed to create " + type_str + " node: ";
+        std::string error_prefix = "Failed to create " + type_str + " node: " +
+            change.location().ToString() + ", ";
         switch (result) {
           case syncer::WriteNode::INIT_FAILED_EMPTY_TAG: {
             syncer::SyncError error;
@@ -341,10 +345,12 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
           sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
                                           change.sync_data().GetTag());
       if (result != syncer::BaseNode::INIT_OK) {
+        std::string error_prefix = "Failed to load " + type_str + " node. " +
+            change.location().ToString() + ", ";
         if (result == syncer::BaseNode::INIT_FAILED_PRECONDITION) {
           syncer::SyncError error;
           error.Reset(FROM_HERE,
-                      "Failed to load entry w/empty tag for " + type_str + ".",
+                      error_prefix + "empty tag",
                       type);
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
@@ -353,7 +359,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
         } else if (result == syncer::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD) {
           syncer::SyncError error;
           error.Reset(FROM_HERE,
-                      "Failed to load bad entry for " + type_str + ".",
+                      error_prefix + "bad entry",
                       type);
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
@@ -362,7 +368,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
         } else if (result == syncer::BaseNode::INIT_FAILED_ENTRY_IS_DEL) {
           syncer::SyncError error;
           error.Reset(FROM_HERE,
-                      "Failed to load deleted entry for " + type_str + ".",
+                      error_prefix + "deleted entry",
                       type);
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
@@ -427,7 +433,8 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
     } else {
       syncer::SyncError error(
           FROM_HERE,
-          "Received unset syncer::SyncChange in the change processor.",
+          "Received unset SyncChange in the change processor, " +
+              change.location().ToString(),
           type);
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                           error.message());

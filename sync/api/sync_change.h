@@ -50,6 +50,7 @@ class SyncChange {
   // Getters.
   SyncChangeType change_type() const;
   SyncData sync_data() const;
+  tracked_objects::Location location() const;
 
   // Returns a string representation of |change_type|.
   static std::string ChangeTypeToString(SyncChangeType change_type);
