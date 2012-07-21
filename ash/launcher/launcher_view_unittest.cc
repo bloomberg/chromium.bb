@@ -256,7 +256,9 @@ class LauncherViewTest : public aura::test::AuraTestBase {
     }
   }
 
-  views::View* SimulateDrag(int button_index, int destination_index) {
+  views::View* SimulateDrag(internal::LauncherButtonHost::Pointer pointer,
+                            int button_index,
+                            int destination_index) {
     internal::LauncherButtonHost* button_host = launcher_view_.get();
 
     // Mouse down.
@@ -265,7 +267,7 @@ class LauncherViewTest : public aura::test::AuraTestBase {
                                  button->bounds().origin(),
                                  button->bounds().origin(), 0);
     views::MouseEvent views_click_event(&click_event);
-    button_host->MousePressedOnButton(button, views_click_event);
+    button_host->PointerPressedOnButton(button, pointer, views_click_event);
 
     // Drag.
     views::View* destination = test_api_->GetButton(destination_index);
@@ -273,8 +275,26 @@ class LauncherViewTest : public aura::test::AuraTestBase {
                                 destination->bounds().origin(),
                                 destination->bounds().origin(), 0);
     views::MouseEvent views_drag_event(&drag_event);
-    button_host->MouseDraggedOnButton(button, views_drag_event);
+    button_host->PointerDraggedOnButton(button, pointer, views_drag_event);
     return button;
+  }
+
+  void SetupForDragTest(
+      std::vector<std::pair<LauncherID, views::View*> >* id_map) {
+    // Initialize |id_map| with the automatically-created launcher buttons.
+    for (size_t i = 0; i < model_->items().size(); ++i) {
+      id_map->push_back(std::make_pair(model_->items()[i].id,
+                                       test_api_->GetButton(i)));
+    }
+    ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
+
+    // Add 5 app launcher buttons for testing.
+    for (int i = 1; i <= 5; ++i) {
+      LauncherID id = AddAppShortcut();
+      id_map->insert(id_map->begin() + i,
+                     std::make_pair(id, test_api_->GetButton(i)));
+    }
+    ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
   }
 
   views::View* GetTooltipAnchorView() {
@@ -415,46 +435,85 @@ TEST_F(LauncherViewTest, AddButtonQuickly) {
 TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
   internal::LauncherButtonHost* button_host = launcher_view_.get();
 
-  // Initialize |id_map| with the automatically-created launcher buttons.
   std::vector<std::pair<LauncherID, views::View*> > id_map;
-  for (size_t i = 0; i < model_->items().size(); ++i) {
-    id_map.push_back(std::make_pair(model_->items()[i].id,
-                                    test_api_->GetButton(i)));
-  }
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-
-  // Add 5 app launcher buttons for testing.
-  for (int i = 1; i <= 5; ++i) {
-    LauncherID id = AddAppShortcut();
-    id_map.insert(id_map.begin() + i,
-                  std::make_pair(id, test_api_->GetButton(i)));
-  }
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  SetupForDragTest(&id_map);
 
   // Dragging changes model order.
-  views::View* dragged_button = SimulateDrag(1, 3);
+  views::View* dragged_button = SimulateDrag(
+      internal::LauncherButtonHost::MOUSE, 1, 3);
   std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Cancelling the drag operation restores previous order.
-  button_host->MouseReleasedOnButton(dragged_button, true);
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       true);
   std::rotate(id_map.begin() + 1, id_map.begin() + 3, id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Deleting an item keeps the remaining intact.
-  dragged_button = SimulateDrag(1, 3);
+  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
   model_->RemoveItemAt(3);
   id_map.erase(id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->MouseReleasedOnButton(dragged_button, false);
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
 
   // Adding a launcher item cancels the drag and respects the order.
-  dragged_button = SimulateDrag(1, 3);
+  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
   LauncherID new_id = AddAppShortcut();
   id_map.insert(id_map.begin() + 5,
                 std::make_pair(new_id, test_api_->GetButton(5)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->MouseReleasedOnButton(dragged_button, false);
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
+}
+
+// Check that 2nd drag from the other pointer would be ignored.
+TEST_F(LauncherViewTest, SimultaneousDrag) {
+  internal::LauncherButtonHost* button_host = launcher_view_.get();
+
+  std::vector<std::pair<LauncherID, views::View*> > id_map;
+  SetupForDragTest(&id_map);
+
+  // Start a mouse drag.
+  views::View* dragged_button_mouse = SimulateDrag(
+      internal::LauncherButtonHost::MOUSE, 1, 3);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Attempt a touch drag before the mouse drag finishes.
+  views::View* dragged_button_touch = SimulateDrag(
+      internal::LauncherButtonHost::TOUCH, 4, 2);
+
+  // Nothing changes since 2nd drag is ignored.
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Finish the mouse drag.
+  button_host->PointerReleasedOnButton(dragged_button_mouse,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Now start a touch drag.
+  dragged_button_touch = SimulateDrag(
+      internal::LauncherButtonHost::TOUCH, 4, 2);
+  std::rotate(id_map.begin() + 3, id_map.begin() + 4, id_map.begin() + 5);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // And attempt a mouse drag before the touch drag finishes.
+  dragged_button_mouse = SimulateDrag(
+      internal::LauncherButtonHost::MOUSE, 1, 3);
+
+  // Nothing changes since 2nd drag is ignored.
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  button_host->PointerReleasedOnButton(dragged_button_touch,
+                                       internal::LauncherButtonHost::TOUCH,
+                                       false);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 }
 
 // Confirm that item status changes are reflected in the buttons.

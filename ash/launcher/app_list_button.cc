@@ -35,23 +35,23 @@ AppListButton::~AppListButton() {
 
 bool AppListButton::OnMousePressed(const views::MouseEvent& event) {
   ImageButton::OnMousePressed(event);
-  host_->MousePressedOnButton(this, event);
+  host_->PointerPressedOnButton(this, LauncherButtonHost::MOUSE, event);
   return true;
 }
 
 void AppListButton::OnMouseReleased(const views::MouseEvent& event) {
   ImageButton::OnMouseReleased(event);
-  host_->MouseReleasedOnButton(this, false);
+  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, false);
 }
 
 void AppListButton::OnMouseCaptureLost() {
-  host_->MouseReleasedOnButton(this, true);
+  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, true);
   ImageButton::OnMouseCaptureLost();
 }
 
 bool AppListButton::OnMouseDragged(const views::MouseEvent& event) {
   ImageButton::OnMouseDragged(event);
-  host_->MouseDraggedOnButton(this, event);
+  host_->PointerDraggedOnButton(this, LauncherButtonHost::MOUSE, event);
   return true;
 }
 

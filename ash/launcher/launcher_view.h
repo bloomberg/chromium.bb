@@ -118,6 +118,10 @@ class ASH_EXPORT LauncherView : public views::View,
     return first_visible_index_ > 0;
   }
 
+  bool dragging() const {
+    return drag_pointer_ != NONE;
+  }
+
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
 
@@ -138,12 +142,12 @@ class ASH_EXPORT LauncherView : public views::View,
   // Fades |view| from an opacity of 0 to 1. This is when adding a new item.
   void FadeIn(views::View* view);
 
-  // Invoked when the mouse has moved enough to trigger a drag. Sets internal
-  // state in preparation for the drag.
-  void PrepareForDrag(const views::MouseEvent& event);
+  // Invoked when the pointer has moved enough to trigger a drag. Sets
+  // internal state in preparation for the drag.
+  void PrepareForDrag(Pointer pointer, const views::LocatedEvent& event);
 
   // Invoked when the mouse is dragged. Updates the models as appropriate.
-  void ContinueDrag(const views::MouseEvent& event);
+  void ContinueDrag(const views::LocatedEvent& event);
 
   // Returns true if |typea| and |typeb| should be in the same drag range.
   bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
@@ -185,12 +189,17 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
 
   // Overridden from LauncherButtonHost:
-  virtual void MousePressedOnButton(views::View* view,
-                                    const views::MouseEvent& event) OVERRIDE;
-  virtual void MouseDraggedOnButton(views::View* view,
-                                    const views::MouseEvent& event) OVERRIDE;
-  virtual void MouseReleasedOnButton(views::View* view,
-                                     bool canceled) OVERRIDE;
+  virtual void PointerPressedOnButton(
+      views::View* view,
+      Pointer pointer,
+      const views::LocatedEvent& event) OVERRIDE;
+  virtual void PointerDraggedOnButton(
+      views::View* view,
+      Pointer pointer,
+      const views::LocatedEvent& event) OVERRIDE;
+  virtual void PointerReleasedOnButton(views::View* view,
+                                       Pointer pointer,
+                                       bool canceled) OVERRIDE;
   virtual void MouseMovedOverButton(views::View* view) OVERRIDE;
   virtual void MouseEnteredButton(views::View* view) OVERRIDE;
   virtual void MouseExitedButton(views::View* view) OVERRIDE;
@@ -237,9 +246,9 @@ class ASH_EXPORT LauncherView : public views::View,
 
   scoped_ptr<LauncherTooltipManager> tooltip_;
 
-  // Are we dragging? This is only set if the mouse is dragged far enough to
-  // trigger a drag.
-  bool dragging_;
+  // Pointer device that initiated the current drag operation. If there is no
+  // current dragging operation, this is NONE.
+  Pointer drag_pointer_;
 
   // The view being dragged. This is set immediately when the mouse is pressed.
   // |dragging_| is set only if the mouse is dragged far enough.

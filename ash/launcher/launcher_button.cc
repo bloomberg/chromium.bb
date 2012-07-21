@@ -325,24 +325,24 @@ gfx::Rect LauncherButton::GetIconBounds() const {
 
 bool LauncherButton::OnMousePressed(const views::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
-  host_->MousePressedOnButton(this, event);
+  host_->PointerPressedOnButton(this, LauncherButtonHost::MOUSE, event);
   return true;
 }
 
 void LauncherButton::OnMouseReleased(const views::MouseEvent& event) {
   CustomButton::OnMouseReleased(event);
-  host_->MouseReleasedOnButton(this, false);
+  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, false);
 }
 
 void LauncherButton::OnMouseCaptureLost() {
   ClearState(STATE_HOVERED);
-  host_->MouseReleasedOnButton(this, true);
+  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, true);
   CustomButton::OnMouseCaptureLost();
 }
 
 bool LauncherButton::OnMouseDragged(const views::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
-  host_->MouseDraggedOnButton(this, event);
+  host_->PointerDraggedOnButton(this, LauncherButtonHost::MOUSE, event);
   return true;
 }
 
@@ -361,6 +361,23 @@ void LauncherButton::OnMouseExited(const views::MouseEvent& event) {
   ClearState(STATE_HOVERED);
   CustomButton::OnMouseExited(event);
   host_->MouseExitedButton(this);
+}
+
+ui::GestureStatus LauncherButton::OnGestureEvent(
+    const views::GestureEvent& event) {
+  switch (event.type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, event);
+      return ui::GESTURE_STATUS_CONSUMED;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, event);
+      return ui::GESTURE_STATUS_CONSUMED;
+    case ui::ET_GESTURE_SCROLL_END:
+      host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
+      return ui::GESTURE_STATUS_CONSUMED;
+    default:
+      return CustomButton::OnGestureEvent(event);
+  }
 }
 
 void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
