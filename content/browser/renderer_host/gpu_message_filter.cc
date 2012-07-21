@@ -41,7 +41,7 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
       render_widget_helper_(render_widget_helper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_ANDROID)
   // We use the GPU process for UI on Aura, and we need to share renderer GL
   // contexts with the compositor context.
   share_contexts_ = true;
