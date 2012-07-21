@@ -70,11 +70,9 @@ void MoveAllWindows(aura::RootWindow* src,
          iter != children.end(); ++iter) {
       aura::Window* window = *iter;
       // Don't move modal screen.
-      if ((id == internal::kShellWindowId_SystemModalContainer ||
-           id == internal::kShellWindowId_LockSystemModalContainer) &&
-          window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE) {
+      if (internal::SystemModalContainerLayoutManager::IsModalScreen(window))
         continue;
-      }
+
       // Update the restore bounds to make it relative to the display.
       gfx::Rect restore_bounds;
       if (internal::DisplayController::IsVirtualScreenCoordinatesEnabled())

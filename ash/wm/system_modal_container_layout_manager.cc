@@ -153,6 +153,14 @@ bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
   return wm::GetActivatableWindow(window) == modal_window();
 }
 
+bool SystemModalContainerLayoutManager::IsModalScreen(
+    aura::Window* window) {
+  int id = window->parent()->id();
+  return (id == internal::kShellWindowId_SystemModalContainer ||
+          id == internal::kShellWindowId_LockSystemModalContainer) &&
+      window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, private:
 

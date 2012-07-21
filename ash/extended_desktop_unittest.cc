@@ -24,13 +24,21 @@
 namespace ash {
 namespace {
 
-views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
+views::Widget* CreateTestWidgetWithParent(views::Widget* parent,
+                                          const gfx::Rect& bounds,
+                                          bool child) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.parent_widget = parent;
   params.bounds = bounds;
+  params.child = child;
   views::Widget* widget = new views::Widget;
   widget->Init(params);
   widget->Show();
   return widget;
+}
+
+views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
+  return CreateTestWidgetWithParent(NULL, bounds, false);
 }
 
 class ModalWidgetDelegate : public views::WidgetDelegateView {
@@ -343,6 +351,99 @@ TEST_F(ExtendedDesktopTest, Capture) {
   // Make sure the mouse_moved_handler_ is properly reset.
   EXPECT_EQ("0 0 0", r1_d2.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0", r1_d2.GetMouseButtonCountsAndReset());
+}
+
+TEST_F(ExtendedDesktopTest, MoveWindow) {
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  views::Widget* d1 = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
+
+  EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
+
+  d1->SetBounds(gfx::Rect(1010, 10, 100, 100));
+  EXPECT_EQ("1010,10 100x100",
+            d1->GetWindowBoundsInScreen().ToString());
+
+  EXPECT_EQ(root_windows[1], d1->GetNativeView()->GetRootWindow());
+
+  d1->SetBounds(gfx::Rect(10, 10, 100, 100));
+  EXPECT_EQ("10,10 100x100",
+            d1->GetWindowBoundsInScreen().ToString());
+
+  EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
+
+  // Make sure the bounds which doesn't fit to the root window
+  // works correctly.
+  d1->SetBounds(gfx::Rect(1560, 30, 100, 100));
+  EXPECT_EQ(root_windows[1], d1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ("1560,30 100x100",
+            d1->GetWindowBoundsInScreen().ToString());
+
+  // Setting outside of root windows will be moved to primary root window.
+  // TODO(oshima): This one probably should pick the closest root window.
+  d1->SetBounds(gfx::Rect(200, 10, 100, 100));
+  EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
+
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
+}
+
+TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  views::Widget* w1 = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
+  views::Widget* w1_t1 = CreateTestWidgetWithParent(
+      w1, gfx::Rect(50, 50, 50, 50), false /* transient */);
+  // Transient child of the transient child.
+  views::Widget* w1_t11 = CreateTestWidgetWithParent(
+      w1_t1, gfx::Rect(1200, 70, 30, 30), false /* transient */);
+
+  views::Widget* w11 = CreateTestWidgetWithParent(
+      w1, gfx::Rect(10, 10, 40, 40), true /* child */);
+  views::Widget* w11_t1 = CreateTestWidgetWithParent(
+      w1, gfx::Rect(1300, 100, 80, 80), false /* transient */);
+
+  EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[0], w11->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[0], w1_t1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[0], w1_t11->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[0], w11_t1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ("50,50 50x50",
+            w1_t1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("1200,70 30x30",
+            w1_t11->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("20,20 40x40",
+            w11->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("1300,100 80x80",
+            w11_t1->GetWindowBoundsInScreen().ToString());
+
+  w1->SetBounds(gfx::Rect(1100,10,100,100));
+
+  EXPECT_EQ(root_windows[1], w1_t1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w1_t1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w1_t11->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w11->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w11_t1->GetNativeView()->GetRootWindow());
+
+  EXPECT_EQ("1110,20 40x40",
+            w11->GetWindowBoundsInScreen().ToString());
+  // Transient window's screen bounds stays the same.
+  EXPECT_EQ("50,50 50x50",
+            w1_t1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("1200,70 30x30",
+            w1_t11->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("1300,100 80x80",
+            w11_t1->GetWindowBoundsInScreen().ToString());
+
+  // Transient window doesn't move between root window unless
+  // its transient parent moves.
+  w1_t1->SetBounds(gfx::Rect(10, 50, 50, 50));
+  EXPECT_EQ(root_windows[1], w1_t1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ("10,50 50x50",
+            w1_t1->GetWindowBoundsInScreen().ToString());
+
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
 }
 
 namespace internal {

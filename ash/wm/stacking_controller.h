@@ -10,6 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/stacking_client.h"
 
+namespace aura{
+class RootWindow;
+}
+
 namespace ash {
 namespace internal {
 
@@ -30,13 +34,12 @@ class StackingController : public aura::client::StackingClient {
   // normal modal container.
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
-  aura::Window* GetSystemModalContainer(aura::Window* window,
-                                        const gfx::Rect& bounds) const;
+  aura::Window* GetSystemModalContainer(aura::RootWindow* root,
+                                        aura::Window* window) const;
 
-  // Returns the AlwaysOnTopController of the root window that matches
-  // |bounds|.
+  // Returns the AlwaysOnTopController of the |root_window|.
   internal::AlwaysOnTopController* GetAlwaysOnTopController(
-      const gfx::Rect& bounds);
+      aura::RootWindow* root_window);
 
   DISALLOW_COPY_AND_ASSIGN(StackingController);
 };

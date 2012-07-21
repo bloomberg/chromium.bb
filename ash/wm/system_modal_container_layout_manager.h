@@ -57,6 +57,9 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   // Overridden from SystemModalContainerEventFilterDelegate:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;
 
+  // Is the |window| modal screen?
+  static bool IsModalScreen(aura::Window* window);
+
  private:
   void AddModalWindow(aura::Window* window);
   void RemoveModalWindow(aura::Window* window);

@@ -33,6 +33,7 @@
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/activation_controller.h"
+#include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/capture_controller.h"
@@ -60,6 +61,7 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
@@ -720,6 +722,16 @@ void Shell::InitRootWindowController(
 
   root_window->SetCursor(ui::kCursorPointer);
   controller->InitLayoutManagers();
+
+  // TODO(oshima): Move the instance to RootWindowController when
+  // the extended desktop is enabled by default.
+  internal::AlwaysOnTopController* always_on_top_controller =
+      new internal::AlwaysOnTopController;
+  always_on_top_controller->SetContainers(
+      root_window->GetChildById(internal::kShellWindowId_DefaultContainer),
+      root_window->GetChildById(internal::kShellWindowId_AlwaysOnTopContainer));
+  root_window->SetProperty(internal::kAlwaysOnTopControllerKey,
+                           always_on_top_controller);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

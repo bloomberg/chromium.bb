@@ -106,13 +106,23 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
     details_.window->SetBounds(bounds);
     return;
   }
-
-  ui::ScopedLayerAnimationSettings scoped_setter(
-      details_.window->layer()->GetAnimator());
-  // Use a small duration since the grid is small.
-  scoped_setter.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kSnapDurationMS));
-  details_.window->SetBounds(bounds);
+  // TODO(oshima|yusukes): This is temporary solution until better drag & move
+  // is implemented. (crbug.com/136816).
+  gfx::Rect dst_bounds =
+      ScreenAsh::ConvertRectToScreen(details_.window->parent(), bounds);
+  gfx::Display dst_display = gfx::Screen::GetDisplayMatching(dst_bounds);
+  if (dst_display.id() !=
+      gfx::Screen::GetDisplayNearestWindow(details_.window).id()) {
+    // Don't animate when moving to another display.
+    details_.window->SetBoundsInScreen(dst_bounds);
+  } else {
+    ui::ScopedLayerAnimationSettings scoped_setter(
+        details_.window->layer()->GetAnimator());
+    // Use a small duration since the grid is small.
+    scoped_setter.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kSnapDurationMS));
+    details_.window->SetBounds(bounds);
+  }
 }
 
 void WorkspaceWindowResizer::RevertDrag() {

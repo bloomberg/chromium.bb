@@ -31,8 +31,8 @@ aura::RootWindow* FindContainerRoot(const gfx::Rect& bounds) {
   return Shell::GetRootWindowMatching(bounds);
 }
 
-aura::Window* GetContainerById(const gfx::Rect& bounds, int id) {
-  return Shell::GetContainer(FindContainerRoot(bounds), id);
+aura::Window* GetContainerById(aura::RootWindow* root, int id) {
+  return Shell::GetContainer(root, id);
 }
 
 aura::Window* GetContainerForWindow(aura::Window* window) {
@@ -68,24 +68,34 @@ StackingController::~StackingController() {
 
 aura::Window* StackingController::GetDefaultParent(aura::Window* window,
                                                    const gfx::Rect& bounds) {
+  aura::RootWindow* target_root = NULL;
+  if (window->transient_parent()) {
+    // Transient window should use the same root as its transient parent.
+    target_root = window->transient_parent()->GetRootWindow();
+  } else {
+    target_root = FindContainerRoot(bounds);
+  }
+
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_POPUP:
       if (IsSystemModal(window))
-        return GetSystemModalContainer(window, bounds);
+        return GetSystemModalContainer(target_root, window);
       else if (IsWindowModal(window))
         return GetContainerForWindow(window->transient_parent());
-      return GetAlwaysOnTopController(bounds)->GetContainer(window);
+      return GetAlwaysOnTopController(target_root)->GetContainer(window);
     case aura::client::WINDOW_TYPE_PANEL:
-      return GetContainerById(bounds, internal::kShellWindowId_PanelContainer);
+      return GetContainerById(target_root,
+                              internal::kShellWindowId_PanelContainer);
     case aura::client::WINDOW_TYPE_MENU:
-      return GetContainerById(bounds, internal::kShellWindowId_MenuContainer);
+      return GetContainerById(
+          target_root, internal::kShellWindowId_MenuContainer);
     case aura::client::WINDOW_TYPE_TOOLTIP:
       return GetContainerById(
-          bounds, internal::kShellWindowId_DragImageAndTooltipContainer);
+          target_root, internal::kShellWindowId_DragImageAndTooltipContainer);
     case aura::client::WINDOW_TYPE_CONTROL:
       return GetContainerById(
-          bounds, internal::kShellWindowId_UnparentedControlContainer);
+          target_root, internal::kShellWindowId_UnparentedControlContainer);
     default:
       NOTREACHED() << "Window " << window->id()
                    << " has unhandled type " << window->type();
@@ -98,17 +108,16 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window,
 // StackingController, private:
 
 aura::Window* StackingController::GetSystemModalContainer(
-    aura::Window* window,
-    const gfx::Rect& bounds) const {
+    aura::RootWindow* root,
+    aura::Window* window) const {
   DCHECK(IsSystemModal(window));
 
   // If screen lock is not active, all modal windows are placed into the
   // normal modal container.
-  // TODO(oshima): support multiple root windows.
   aura::Window* lock_container =
-      GetContainerById(bounds, internal::kShellWindowId_LockScreenContainer);
+      GetContainerById(root, internal::kShellWindowId_LockScreenContainer);
   if (!lock_container->children().size()) {
-    return GetContainerById(bounds,
+    return GetContainerById(root,
                             internal::kShellWindowId_SystemModalContainer);
   }
 
@@ -120,18 +129,19 @@ aura::Window* StackingController::GetSystemModalContainer(
   aura::Window* container = NULL;
   if (window_container_id < lock_container_id) {
     container = GetContainerById(
-        bounds, internal::kShellWindowId_SystemModalContainer);
+        root, internal::kShellWindowId_SystemModalContainer);
   } else {
     container = GetContainerById(
-        bounds, internal::kShellWindowId_LockSystemModalContainer);
+        root, internal::kShellWindowId_LockSystemModalContainer);
   }
 
   return container;
 }
 
+// TODO(oshima): Remove this once extended desktop is on by default.
 internal::AlwaysOnTopController*
-StackingController::GetAlwaysOnTopController(const gfx::Rect& bounds) {
-  aura::RootWindow* root_window = FindContainerRoot(bounds);
+StackingController::GetAlwaysOnTopController(
+    aura::RootWindow* root_window) {
   internal::AlwaysOnTopController* controller =
       root_window->GetProperty(internal::kAlwaysOnTopControllerKey);
   if (!controller) {
