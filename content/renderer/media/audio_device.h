@@ -144,9 +144,6 @@ class CONTENT_EXPORT AudioDevice
 
   RenderCallback* callback_;
 
-  // The current volume scaling [0.0, 1.0] of the audio stream.
-  double volume_;
-
   // Cached audio message filter (lives on the main render thread).
   scoped_refptr<AudioMessageFilter> filter_;
 

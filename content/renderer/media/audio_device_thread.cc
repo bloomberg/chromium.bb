@@ -179,6 +179,8 @@ AudioDeviceThread::Callback::Callback(
                     samples_per_ms_),
       shared_memory_(memory, false),
       memory_length_(memory_length) {
+  CHECK_NE(bytes_per_ms_, 0);  // Catch division by zero early.
+  CHECK_NE(samples_per_ms_, 0);
 }
 
 AudioDeviceThread::Callback::~Callback() {
