@@ -49,6 +49,33 @@ bool CompareDisplayY(const gfx::Display& lhs, const gfx::Display& rhs) {
   return lhs.bounds_in_pixel().y() < rhs.bounds_in_pixel().y();
 }
 
+// A list of bogus sizes in mm that X detects and should be ignored.
+// See crbug.com/136533.
+const unsigned long kInvalidDisplaySizeList[][2] = {
+  {160, 100},
+  {160, 90},
+  {50, 40},
+  {40, 30},
+};
+
+// Returns true if the size nifo in the output_info isn't valid
+// and should be ignored.
+bool ShouldIgnoreSize(XRROutputInfo *output_info) {
+  if (output_info->mm_width == 0 || output_info->mm_height == 0) {
+    LOG(WARNING) << "No display size available";
+    return true;
+  }
+  for (unsigned long i = 0 ; i < arraysize(kInvalidDisplaySizeList); ++i) {
+    const unsigned long* size = kInvalidDisplaySizeList[i];
+    if (output_info->mm_width == size[0] && output_info->mm_height == size[1]) {
+      LOG(WARNING) << "Black listed display size detected:"
+                   << size[0] << "x" << size[1];
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 DisplayChangeObserverX11::DisplayChangeObserverX11()
@@ -118,7 +145,7 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
         gfx::Rect(crtc_info->x, crtc_info->y, mode->width, mode->height)));
 
     float device_scale_factor = 1.0f;
-    if (output_info->mm_width > 0 &&
+    if (!ShouldIgnoreSize(output_info) &&
         (kInchInMm * mode->width / output_info->mm_width) >
         kHighDensityDIPThreshold) {
       device_scale_factor = 2.0f;
