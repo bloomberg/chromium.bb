@@ -515,7 +515,11 @@ enum operand_kind {
 #define CPUFeature_LAHF     cpu_features->data[NaClCPUFeature_LAHF]
 #define CPUFeature_LM       cpu_features->data[NaClCPUFeature_LM]
 #define CPUFeature_LWP      cpu_features->data[NaClCPUFeature_LWP]
-#define CPUFeature_LZCNT    cpu_features->data[NaClCPUFeature_LZCNT]
+/*
+ * We allow lzcnt unconditionally
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2869
+ */
+#define CPUFeature_LZCNT    TRUE
 #define CPUFeature_MMX      cpu_features->data[NaClCPUFeature_MMX]
 #define CPUFeature_MON      cpu_features->data[NaClCPUFeature_MON]
 #define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeature_MOVBE]
@@ -531,6 +535,11 @@ enum operand_kind {
 #define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeature_SSSE3]
 #define CPUFeature_TBM      cpu_features->data[NaClCPUFeature_TBM]
 #define CPUFeature_TSC      cpu_features->data[NaClCPUFeature_TSC]
+/*
+ * We allow tzcnt unconditionally
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2869
+ */
+#define CPUFeature_TZCNT    TRUE
 #define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
 #define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
 

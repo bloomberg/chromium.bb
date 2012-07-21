@@ -100,14 +100,14 @@ static int MarkJumpTarget(size_t jump_dest,
   include decode_x86_32 "validator-x86_32-instruction.rl";
 
   special_instruction =
-    (0x83 0xe0 0xe0 0xff (0xd0|0xe0)  | # naclcall/jmp %acx
-     0x83 0xe1 0xe0 0xff (0xd1|0xe1)  | # naclcall %ecx
-     0x83 0xe2 0xe0 0xff (0xd2|0xe2)  | # naclcall %edx
-     0x83 0xe3 0xe0 0xff (0xd3|0xe3)  | # naclcall %ebx
-     0x83 0xe4 0xe0 0xff (0xd4|0xe4)  | # naclcall %esp
-     0x83 0xe5 0xe0 0xff (0xd5|0xe5)  | # naclcall %ebp
-     0x83 0xe6 0xe0 0xff (0xd6|0xe6)  | # naclcall %esi
-     0x83 0xe7 0xe0 0xff (0xd7|0xe7))   # naclcall %edi
+    (0x83 0xe0 0xe0 0xff (0xd0|0xe0)  | # naclcall/jmp %eax
+     0x83 0xe1 0xe0 0xff (0xd1|0xe1)  | # naclcall/jmp %ecx
+     0x83 0xe2 0xe0 0xff (0xd2|0xe2)  | # naclcall/jmp %edx
+     0x83 0xe3 0xe0 0xff (0xd3|0xe3)  | # naclcall/jmp %ebx
+     0x83 0xe4 0xe0 0xff (0xd4|0xe4)  | # naclcall/jmp %esp
+     0x83 0xe5 0xe0 0xff (0xd5|0xe5)  | # naclcall/jmp %ebp
+     0x83 0xe6 0xe0 0xff (0xd6|0xe6)  | # naclcall/jmp %esi
+     0x83 0xe7 0xe0 0xff (0xd7|0xe7))   # naclcall/jmp %edi
     @{
       BitmapClearBit(valid_targets, (p - data) - 1);
     } |
@@ -178,7 +178,11 @@ static int MarkJumpTarget(size_t jump_dest,
 #define CPUFeature_LAHF     cpu_features->data[NaClCPUFeature_LAHF]
 #define CPUFeature_LM       cpu_features->data[NaClCPUFeature_LM]
 #define CPUFeature_LWP      cpu_features->data[NaClCPUFeature_LWP]
-#define CPUFeature_LZCNT    cpu_features->data[NaClCPUFeature_LZCNT]
+/*
+ * We allow lzcnt unconditionally
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2869
+ */
+#define CPUFeature_LZCNT    TRUE
 #define CPUFeature_MMX      cpu_features->data[NaClCPUFeature_MMX]
 #define CPUFeature_MON      cpu_features->data[NaClCPUFeature_MON]
 #define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeature_MOVBE]
@@ -194,6 +198,11 @@ static int MarkJumpTarget(size_t jump_dest,
 #define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeature_SSSE3]
 #define CPUFeature_TBM      cpu_features->data[NaClCPUFeature_TBM]
 #define CPUFeature_TSC      cpu_features->data[NaClCPUFeature_TSC]
+/*
+ * We allow tzcnt unconditionally
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2869
+ */
+#define CPUFeature_TZCNT    TRUE
 #define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
 #define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
 

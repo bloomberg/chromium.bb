@@ -110,7 +110,11 @@ static const int x86_64_decoder_en_main = 245;
 #define CPUFeature_LAHF     cpu_features->data[NaClCPUFeature_LAHF]
 #define CPUFeature_LM       cpu_features->data[NaClCPUFeature_LM]
 #define CPUFeature_LWP      cpu_features->data[NaClCPUFeature_LWP]
-#define CPUFeature_LZCNT    cpu_features->data[NaClCPUFeature_LZCNT]
+/*
+ * We allow lzcnt unconditionally
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2869
+ */
+#define CPUFeature_LZCNT    TRUE
 #define CPUFeature_MMX      cpu_features->data[NaClCPUFeature_MMX]
 #define CPUFeature_MON      cpu_features->data[NaClCPUFeature_MON]
 #define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeature_MOVBE]
@@ -126,6 +130,11 @@ static const int x86_64_decoder_en_main = 245;
 #define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeature_SSSE3]
 #define CPUFeature_TBM      cpu_features->data[NaClCPUFeature_TBM]
 #define CPUFeature_TSC      cpu_features->data[NaClCPUFeature_TSC]
+/*
+ * We allow tzcnt unconditionally
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2869
+ */
+#define CPUFeature_TZCNT    TRUE
 #define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
 #define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
 
@@ -862,7 +871,7 @@ tr203:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
+    SET_CPU_FEATURE(CPUFeature_TZCNT);
   }
 	goto st1;
 tr204:
@@ -6186,21 +6195,13 @@ st196:
 case 196:
 	switch( (*p) ) {
 		case 4u: goto st35;
-		case 5u: goto st36;
 		case 12u: goto st35;
-		case 13u: goto st36;
 		case 20u: goto st35;
-		case 21u: goto st36;
 		case 28u: goto st35;
-		case 29u: goto st36;
 		case 36u: goto st35;
-		case 37u: goto st36;
 		case 44u: goto st35;
-		case 45u: goto st36;
 		case 52u: goto st35;
-		case 53u: goto st36;
 		case 60u: goto st35;
-		case 61u: goto st36;
 		case 68u: goto st41;
 		case 76u: goto st41;
 		case 84u: goto st41;
@@ -6218,15 +6219,39 @@ case 196:
 		case 180u: goto st42;
 		case 188u: goto st42;
 	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 63u )
+	if ( (*p) < 38u ) {
+		if ( (*p) < 14u ) {
+			if ( (*p) > 3u ) {
+				if ( 6u <= (*p) && (*p) <= 11u )
+					goto st10;
+			} else
+				goto st10;
+		} else if ( (*p) > 19u ) {
+			if ( (*p) > 27u ) {
+				if ( 30u <= (*p) && (*p) <= 35u )
+					goto st10;
+			} else if ( (*p) >= 22u )
+				goto st10;
+		} else
 			goto st10;
-	} else if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st36;
+	} else if ( (*p) > 43u ) {
+		if ( (*p) < 62u ) {
+			if ( (*p) > 51u ) {
+				if ( 54u <= (*p) && (*p) <= 59u )
+					goto st10;
+			} else if ( (*p) >= 46u )
+				goto st10;
+		} else if ( (*p) > 63u ) {
+			if ( (*p) > 127u ) {
+				if ( 192u <= (*p) )
+					goto tr19;
+			} else if ( (*p) >= 64u )
+				goto st40;
+		} else
+			goto st10;
 	} else
-		goto st40;
-	goto tr19;
+		goto st10;
+	goto st36;
 tr332:
 	{
     SET_VEX_PREFIX3(*p);

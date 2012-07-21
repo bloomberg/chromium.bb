@@ -227,6 +227,7 @@ namespace {
     "CPUFeature_TBM",
     "CPUFeature_TSC",
     "CPUFeature_TSCP",
+    "CPUFeature_TZCNT",
     "CPUFeature_x87",
     "CPUFeature_XOP",
 

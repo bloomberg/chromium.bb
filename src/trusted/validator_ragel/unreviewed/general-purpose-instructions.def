@@ -220,6 +220,7 @@
 #       CPUFeature_TBM:       Fn8000_0001_ECX[TBM]
 #       CPUFeature_TSC:       Fn0000_0001_EDX[RDTSC] || Fn8000_0001_EDX[RDTSC]
 #       CPUFeature_TSCP:      Fn8000_0001_EDX[RDTSCP]
+#       CPUFeature_TZCNT:     Fn0000_0007_EBX_x0[BMI1]
 #       CPUFeature_x87:       Fn0000_0001_EDX[x87]
 #       CPUFeature_XOP:       Fn8000_0001_ECX[XOP]
 ######## ADC ###################################################################
@@ -729,7 +730,9 @@ test I E, 0xf6 /0
 # test I E, 0xf6 /1
 test G E, 0x84
 ######## TZCNT #################################################################
-tzcnt Ev Gv, 0xf3 0x0f 0xbc, CPUFeature_BMI1
+# We mark tzcnt specially to allow it independently from CPUID
+# See: http://code.google.com/p/nativeclient/issues/detail?id=2869
+tzcnt Ev Gv, 0xf3 0x0f 0xbc, CPUFeature_TZCNT
 ######## TZMSK #################################################################
 tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, CPUFeature_TBM
 ######## XADD ##################################################################
