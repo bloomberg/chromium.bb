@@ -1659,6 +1659,10 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::ExecuteBrowserCommandJSON;
   handler_map_["IsMenuCommandEnabled"] =
       &TestingAutomationProvider::IsMenuCommandEnabledJSON;
+  handler_map_["ActivateTab"] =
+      &TestingAutomationProvider::ActivateTabJSON;
+  handler_map_["BringBrowserToFront"] =
+      &TestingAutomationProvider::BringBrowserToFrontJSON;
   handler_map_["WaitForAllTabsToStopLoading"] =
       &TestingAutomationProvider::WaitForAllViewsToStopLoading;
   handler_map_["GetIndicesFromTab"] =
@@ -1751,6 +1755,10 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::CreateNewAutomationProvider;
   handler_map_["GetBrowserInfo"] =
       &TestingAutomationProvider::GetBrowserInfo;
+  handler_map_["GetTabInfo"] =
+      &TestingAutomationProvider::GetTabInfo;
+  handler_map_["GetTabCount"] =
+      &TestingAutomationProvider::GetTabCountJSON;
   handler_map_["OpenNewBrowserWindowWithNewProfile"] =
       &TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile;
   handler_map_["GetMultiProfileInfo"] =
@@ -2131,6 +2139,20 @@ void TestingAutomationProvider::SendJSONRequest(Browser* browser,
     }
     AutomationJSONReply(this, reply_message).SendError(error_string);
   }
+}
+
+void TestingAutomationProvider::BringBrowserToFrontJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
+  browser->window()->Activate();
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "SetWindowDimensions",
@@ -6481,6 +6503,39 @@ void TestingAutomationProvider::IsMenuCommandEnabledJSON(
   DictionaryValue dict;
   dict.SetBoolean("enabled", chrome::IsCommandEnabled(browser, command));
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::GetTabInfo(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  WebContents* tab;
+  std::string error;
+  if (GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
+    NavigationEntry* entry = tab->GetController().GetActiveEntry();
+    DictionaryValue dict;
+    dict.SetString("title", entry->GetTitleForDisplay(""));
+    dict.SetString("url", entry->GetVirtualURL().spec());
+    reply.SendSuccess(&dict);
+  } else {
+    reply.SendError(error);
+  }
+}
+
+void TestingAutomationProvider::GetTabCountJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  DictionaryValue dict;
+  dict.SetInteger("tab_count", browser->tab_count());
+  reply.SendSuccess(&dict);
 }
 
 void TestingAutomationProvider::GoBack(

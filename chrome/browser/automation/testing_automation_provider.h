@@ -875,6 +875,23 @@ class TestingAutomationProvider : public AutomationProvider,
   void IsMenuCommandEnabledJSON(DictionaryValue* args,
                                 IPC::Message* reply_message);
 
+  // Returns a dictionary of information about the given tab.
+  // Example:
+  //   input: { "tab_index": 1,
+  //            "windex": 1
+  //          }
+  //   output: { "title": "Hello World",
+  //             "url": "http://foo.bar" }
+  void GetTabInfo(DictionaryValue* args,
+                  IPC::Message* reply_message);
+
+  // Returns the tab count for the given browser window.
+  // Example:
+  //   input: { "windex": 1 }
+  //   output: { "tab_count": 5 }
+  void GetTabCountJSON(DictionaryValue* args,
+                       IPC::Message* reply_message);
+
   // Navigates to the given URL. Uses the JSON interface.
   // The pair |windex| and |tab_index| or the single |auto_id| must be given
   // to specify the tab.
@@ -1346,6 +1363,13 @@ class TestingAutomationProvider : public AutomationProvider,
   //          }
   //   output: none
   void ActivateTabJSON(base::DictionaryValue* args, IPC::Message* message);
+
+  // Brings the given brower's window to the front.
+  // Example:
+  //   input: { "windex": 1 }
+  //   output: none
+  void BringBrowserToFrontJSON(base::DictionaryValue* args,
+                               IPC::Message* message);
 
   // Gets the version of ChromeDriver automation supported by this server.
   // Example:
