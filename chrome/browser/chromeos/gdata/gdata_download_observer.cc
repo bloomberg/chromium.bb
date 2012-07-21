@@ -473,27 +473,26 @@ void GDataDownloadObserver::CreateUploadFileInfo(DownloadItem* download) {
   // Get the GDataDirectory proto for the upload directory, then extract the
   // initial upload URL in OnReadDirectoryByPath().
   const FilePath upload_dir = upload_file_info->gdata_path.DirName();
-  file_system_->ReadDirectoryByPath(
+  file_system_->GetEntryInfoByPath(
       upload_dir,
-      base::Bind(&GDataDownloadObserver::OnReadDirectoryByPath,
+      base::Bind(&GDataDownloadObserver::OnGetEntryInfoByPath,
                  weak_ptr_factory_.GetWeakPtr(),
                  download->GetId(),
                  base::Passed(&upload_file_info)));
 }
 
-void GDataDownloadObserver::OnReadDirectoryByPath(
+void GDataDownloadObserver::OnGetEntryInfoByPath(
     int32 download_id,
     scoped_ptr<UploadFileInfo> upload_file_info,
     GDataFileError error,
-    bool /* hide_hosted_documents */,
-    scoped_ptr<GDataDirectoryProto> dir_proto) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
 
   // TODO(hshi): if the upload directory is no longer valid, use the root
   // directory instead.
   upload_file_info->initial_upload_location =
-      dir_proto.get() ? GURL(dir_proto->gdata_entry().upload_url()) : GURL();
+      entry_proto.get() ? GURL(entry_proto->upload_url()) : GURL();
 
   StartUpload(download_id, upload_file_info.Pass());
 }

@@ -19,7 +19,7 @@ class Profile;
 namespace gdata {
 
 class DocumentEntry;
-class GDataDirectoryProto;
+class GDataEntryProto;
 class GDataFileSystemInterface;
 class GDataUploader;
 struct UploadFileInfo;
@@ -113,16 +113,15 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // Creates UploadFileInfo and initializes it using DownloadItem*.
   void CreateUploadFileInfo(content::DownloadItem* download);
 
-  // Callback for handling results of GDataFileSystem::ReadDirectoryByPath()
+  // Callback for handling results of GDataFileSystem::GetEntryInfoByPath()
   // initiated by CreateUploadFileInfo(). This callback reads the directory
   // entry to determine the upload path, then calls StartUpload() to actually
   // start the upload.
-  void OnReadDirectoryByPath(
+  void OnGetEntryInfoByPath(
       int32 download_id,
       scoped_ptr<UploadFileInfo> upload_file_info,
       GDataFileError error,
-      bool /* hide_hosted_documents */,
-      scoped_ptr<GDataDirectoryProto> dir_proto);
+      scoped_ptr<GDataEntryProto> entry_proto);
 
   // Starts the upload.
   void StartUpload(int32 download_id,

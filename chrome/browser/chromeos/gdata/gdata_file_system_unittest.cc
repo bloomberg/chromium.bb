@@ -156,6 +156,16 @@ base::Value* LoadJSONFile(const std::string& base_name) {
   return value;
 }
 
+// Counts the number of files (not directories) in |entries|.
+int CountFiles(const GDataEntryProtoVector& entries) {
+  int num_files = 0;
+  for (size_t i = 0; i < entries.size(); ++i) {
+    if (!entries[i].file_info().is_directory())
+      ++num_files;
+  }
+  return num_files;
+}
+
 }  // namespace
 
 class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
@@ -379,7 +389,7 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Gets directory info by path synchronously.
-  scoped_ptr<GDataDirectoryProto> ReadDirectoryByPathSync(
+  scoped_ptr<GDataEntryProtoVector> ReadDirectoryByPathSync(
       const FilePath& file_path) {
     file_system_->ReadDirectoryByPath(
         file_path,
@@ -387,7 +397,7 @@ class GDataFileSystemTest : public testing::Test {
                    callback_helper_.get()));
     message_loop_.RunAllPending();
 
-    return callback_helper_->directory_proto_.Pass();
+    return callback_helper_->directory_entries_.Pass();
   }
 
   // Returns true if an entry exists at |file_path|.
@@ -819,9 +829,9 @@ class GDataFileSystemTest : public testing::Test {
     virtual void ReadDirectoryCallback(
         GDataFileError error,
         bool /* hide_hosted_documents */,
-        scoped_ptr<GDataDirectoryProto> directory_proto) {
+        scoped_ptr<GDataEntryProtoVector> entries) {
       last_error_ = error;
-      directory_proto_ = directory_proto.Pass();
+      directory_entries_ = entries.Pass();
     }
 
     GDataFileError last_error_;
@@ -832,7 +842,7 @@ class GDataFileSystemTest : public testing::Test {
     int64 quota_bytes_total_;
     int64 quota_bytes_used_;
     scoped_ptr<GDataEntryProto> entry_proto_;
-    scoped_ptr<GDataDirectoryProto> directory_proto_;
+    scoped_ptr<GDataEntryProtoVector> directory_entries_;
 
    protected:
     virtual ~CallbackHelper() {}
@@ -2382,10 +2392,10 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
 
   // Check the number of files in the root directory. We'll compare the
   // number after updating a file.
-  scoped_ptr<GDataDirectoryProto> root_directory_proto(
+  scoped_ptr<GDataEntryProtoVector> root_directory_entries(
       ReadDirectoryByPathSync(FilePath::FromUTF8Unsafe("drive")));
-  ASSERT_TRUE(root_directory_proto.get());
-  const int num_files_in_root = root_directory_proto->child_files().size();
+  ASSERT_TRUE(root_directory_entries.get());
+  const int num_files_in_root = CountFiles(*root_directory_entries);
 
   file_system_->UpdateFileByResourceId(kResourceId, callback);
   test_util::RunBlockingPoolTask();
@@ -2394,7 +2404,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // Make sure that the number of files did not change (i.e. we updated an
   // existing file, rather than adding a new file. The number of files
   // increases if we don't handle the file update right).
-  EXPECT_EQ(num_files_in_root, root_directory_proto->child_files().size());
+  EXPECT_EQ(num_files_in_root, CountFiles(*root_directory_entries));
   // After the file is updated, the dirty bit is cleared, hence the symlink
   // should be gone.
   ASSERT_FALSE(file_util::PathExists(outgoing_symlink_path));

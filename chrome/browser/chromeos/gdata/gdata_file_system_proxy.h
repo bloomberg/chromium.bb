@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_PROXY_H_
 
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 
 class Profile;
@@ -18,7 +19,6 @@ namespace gdata {
 
 class GDataEntry;
 class GDataEntryProto;
-class GDataDirectoryProto;
 class GDataFileSystemInterface;
 
 // The interface class for remote file system proxy.
@@ -122,7 +122,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
           callback,
       GDataFileError error,
       bool hide_hosted_documents,
-      scoped_ptr<GDataDirectoryProto> directory_proto);
+      scoped_ptr<gdata::GDataEntryProtoVector> proto_entries);
 
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to
   // the calling thread.

@@ -62,10 +62,12 @@ typedef base::Callback<void(GDataFileError error,
     GetEntryInfoCallback;
 
 // Used to read a directory from the file system.
-// If |error| is not PLATFORM_FILE_OK, |directory_info| is set to NULL.
+// If |error| is not PLATFORM_FILE_OK, |entries| is set to NULL.
+// |entries| are contents, both files and directories, of the directory.
+typedef std::vector<GDataEntryProto> GDataEntryProtoVector;
 typedef base::Callback<void(GDataFileError error,
                             bool hide_hosted_documents,
-                            scoped_ptr<GDataDirectoryProto> directory_proto)>
+                            scoped_ptr<GDataEntryProtoVector> entries)>
     ReadDirectoryCallback;
 
 // Used to get drive content search results.

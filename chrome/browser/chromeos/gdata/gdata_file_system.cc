@@ -2237,7 +2237,7 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
     if (!callback.is_null())
       callback.Run(error,
                    hide_hosted_docs_,
-                   scoped_ptr<GDataDirectoryProto>());
+                   scoped_ptr<GDataEntryProtoVector>());
     return;
   }
   DCHECK(entry);
@@ -2247,17 +2247,28 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
     if (!callback.is_null())
       callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
                    hide_hosted_docs_,
-                   scoped_ptr<GDataDirectoryProto>());
+                   scoped_ptr<GDataEntryProtoVector>());
     return;
   }
 
-  scoped_ptr<GDataDirectoryProto> directory_proto(new GDataDirectoryProto);
-  directory->ToProto(directory_proto.get());
+  scoped_ptr<GDataEntryProtoVector> entries(new GDataEntryProtoVector);
+  for (GDataFileCollection::const_iterator iter =
+           directory->child_files().begin();
+       iter != directory->child_files().end(); ++iter) {
+    GDataEntryProto proto;
+    static_cast<const GDataEntry*>(iter->second)->ToProtoFull(&proto);
+    entries->push_back(proto);
+  }
+  for (GDataDirectoryCollection::const_iterator iter =
+           directory->child_directories().begin();
+       iter != directory->child_directories().end(); ++iter) {
+    GDataEntryProto proto;
+    static_cast<const GDataEntry*>(iter->second)->ToProtoFull(&proto);
+    entries->push_back(proto);
+  }
 
   if (!callback.is_null())
-    callback.Run(GDATA_FILE_OK,
-                 hide_hosted_docs_,
-                 directory_proto.Pass());
+    callback.Run(GDATA_FILE_OK, hide_hosted_docs_, entries.Pass());
 }
 
 void GDataFileSystem::RequestDirectoryRefresh(const FilePath& file_path) {
