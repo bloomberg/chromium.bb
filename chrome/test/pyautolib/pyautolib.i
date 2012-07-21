@@ -363,6 +363,23 @@ class PyUITestBase {
       GetBrowserWindowCount;
   int GetBrowserWindowCount();
 
+  %feature("docstring", "Activate the tab at the given zero-based index in "
+           "the given or first window.  Also brings the window to the front. "
+           "Returns True on success.") ActivateTab;
+  bool ActivateTab(int tab_index, int window_index=0);
+
+  %feature("docstring", "Get the title of the active tab for the given or "
+           "first window.") GetActiveTabTitle;
+  std::wstring GetActiveTabTitle(int window_index=0);
+
+  %feature("docstring", "Get the URL for the active tab. for the given or "
+           "first window. Returns an instance of GURL") GetActiveTabURL;
+  GURL GetActiveTabURL(int window_index=0);
+
+  %feature("docstring", "Count of the number of tabs in the given or "
+           "first window.") GetTabCount;
+  int GetTabCount(int window_index=0);
+
   %feature("docstring", "Set the value of the cookie at cookie_url to value "
            "for the given window index and tab index. "
            "Returns True on success.") SetCookie;
