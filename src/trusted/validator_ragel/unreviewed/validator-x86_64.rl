@@ -260,25 +260,20 @@ static int MarkJumpTarget(size_t jump_dest,
   data16condrep = (data16 | condrep data16 | data16 condrep);
   data16rep = (data16 | rep data16 | data16 rep);
 
-  special_instruction =
+  # Special %rbp modifications without required sandboxing
+  rbp_modifications =
     (0x48 0x89 0xe5)                       | # mov %rsp,%rbp
-    (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
-    (0x48 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
-    @{ if (restricted_register == REG_RSP) {
-         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
-         result = 1;
-       }
-       restricted_register = kNoRestrictedReg;
-    } |
-    (0x48 0x89 0xec)                       | # mov %rbp,%rsp
-    (0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
-    (0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rsp
+    (0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rbp
+    (0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rbp
     @{ if (restricted_register == REG_RBP) {
          errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
        }
        restricted_register = kNoRestrictedReg;
-    } |
+    };
+
+  # Special instructions used for %rbp sandboxing
+  rbp_sandboxing =
     (0x4c 0x01 0xfd            | # add %r15,%rbp
      0x49 0x8d 0x2c 0x2f       | # lea (%r15,%rbp,1),%rbp
      0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
@@ -288,7 +283,22 @@ static int MarkJumpTarget(size_t jump_dest,
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
-    } |
+    };
+
+  # Special %rbp modifications without required sandboxing
+  rsp_modifications =
+    (0x48 0x89 0xec)                       | # mov %rbp,%rsp
+    (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
+    (0x48 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
+    @{ if (restricted_register == REG_RSP) {
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
+         result = 1;
+       }
+       restricted_register = kNoRestrictedReg;
+    };
+
+  # Special instructions used for %rbp sandboxing
+  rsp_sandboxing =
     (0x4c 0x01 0xfc       | # add %r15,%rsp
      0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register != REG_RSP) {
@@ -297,22 +307,69 @@ static int MarkJumpTarget(size_t jump_dest,
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
+    };
+
+  # Old naclcall (is not used by contemporary toolchain)
+  old_naclcall_or_nacljmp =
+    (((0x83 0xe0 0xe0 0x49 0x8d any 0x07 any{2}) | # and ~$0x1f, %eax
+      (0x83 0xe0 0xe1 0x49 0x8d any 0x0f any{2}) | #   lea (%r15,%rax),%rXX
+      (0x83 0xe0 0xe2 0x49 0x8d any 0x17 any{2}) | # ...
+      (0x83 0xe0 0xe3 0x49 0x8d any 0x1f any{2}) | # ...
+      (0x83 0xe0 0xe6 0x49 0x8d any 0x37 any{2}) | # and ~$0x1f, %edi
+      (0x83 0xe0 0xe7 0x49 0x8d any 0x3f any{2}) | #   lea (%r15,%rdi),%rXX
+      (0x41 0x83 0xe0 0xe0 0x49 0x8d any 0x07 any{2}) | # and ~$0x1f, %r8d
+      (0x41 0x83 0xe0 0xe1 0x49 0x8d any 0x0f any{2}) | #   lea (%r15,%rax),%rXX
+      (0x41 0x83 0xe0 0xe2 0x49 0x8d any 0x17 any{2}) | #
+      (0x41 0x83 0xe0 0xe3 0x49 0x8d any 0x1f any{2}) | # ...
+      (0x41 0x83 0xe0 0xe4 0x49 0x8d any 0x27 any{2}) | #
+      (0x41 0x83 0xe0 0xe5 0x49 0x8d any 0x2f any{2}) | # and ~$0x1f, %r14d
+      (0x41 0x83 0xe0 0xe6 0x49 0x8d any 0x37 any{2})) & #  lea (%r15,%rdi),%rXX
+     ((any{3,4} 0x49 0x8d 0x04 any 0xff (0xd0|0xe0)) | # lea (%r15,%rXX),%rax
+      (any{3,4} 0x49 0x8d 0x0c any 0xff (0xd1|0xe1)) | #   call/jmp %rax
+      (any{3,4} 0x49 0x8d 0x14 any 0xff (0xd2|0xe2)) | # ...
+      (any{3,4} 0x49 0x8d 0x1c any 0xff (0xd3|0xe3)) | # ...
+      (any{3,4} 0x49 0x8d 0x34 any 0xff (0xd6|0xe6)) | # lea (%r15,%rXX),%rdi
+      (any{3,4} 0x49 0x8d 0x3c any 0xff (0xd7|0xe7)))) #   call/jmp %rdi
+    @{
+       BitmapClearBit(valid_targets, (p - data) - 6);
+       BitmapClearBit(valid_targets, (p - data) - 1);
+       restricted_register = kNoRestrictedReg;
     } |
+    (((0x83 0xe0 0xe0 0x4d 0x8d any 0x07 any{3})  | # and ~$0x1f, %eax
+      (0x83 0xe0 0xe1 0x4d 0x8d any 0x0f any{3})  | #   lea (%r15,%rax),%rXX
+      (0x83 0xe0 0xe2 0x4d 0x8d any 0x17 any{3})  | # ...
+      (0x83 0xe0 0xe3 0x4d 0x8d any 0x1f any{3})  | # ...
+      (0x83 0xe0 0xe6 0x4d 0x8d any 0x37 any{3})  | # and ~$0x1f, %edi
+      (0x83 0xe0 0xe7 0x4d 0x8d any 0x3f any{3})  | #   lea (%r15,%rdi),%rXX
+      (0x41 0x83 0xe0 0xe0 0x4d 0x8d any 0x07 any{3}) | # and ~$0x1f, %r8d
+      (0x41 0x83 0xe0 0xe1 0x4d 0x8d any 0x0f any{3}) | #   lea (%r15,%rax),%rXX
+      (0x41 0x83 0xe0 0xe2 0x4d 0x8d any 0x17 any{3}) | #
+      (0x41 0x83 0xe0 0xe3 0x4d 0x8d any 0x1f any{3}) | # ...
+      (0x41 0x83 0xe0 0xe4 0x4d 0x8d any 0x27 any{3}) | #
+      (0x41 0x83 0xe0 0xe5 0x4d 0x8d any 0x2f any{3}) | # and ~$0x1f, %r14d
+      (0x41 0x83 0xe0 0xe6 0x4d 0x8d any 0x37 any{3})) & #  lea (%r15,%rdi),%rXX
+     ((any{3,4} 0x4d 0x8d 0x04 any 0x41 0xff (0xd0|0xe0)) | # lea (%r15,%rXX),
+      (any{3,4} 0x4d 0x8d 0x0c any 0x41 0xff (0xd1|0xe1)) | #                %r8
+      (any{3,4} 0x4d 0x8d 0x14 any 0x41 0xff (0xd2|0xe2)) | #   call/jmp %r8
+      (any{3,4} 0x4d 0x8d 0x1c any 0x41 0xff (0xd3|0xe3)) | # ...
+      (any{3,4} 0x4d 0x8d 0x24 any 0x41 0xff (0xd4|0xe4)) | # lea (%r15,%rXX),
+      (any{3,4} 0x4d 0x8d 0x2c any 0x41 0xff (0xd5|0xe5)) | #               %r14
+      (any{3,4} 0x4d 0x8d 0x34 any 0x41 0xff (0xd6|0xe6)))) #   call/jmp %r14
+    @{
+       BitmapClearBit(valid_targets, (p - data) - 7);
+       BitmapClearBit(valid_targets, (p - data) - 2);
+       restricted_register = kNoRestrictedReg;
+    };
+
+  # naclcall or nacljmp - this the form used by contemporary toolchain
+  naclcall_or_nacljmp =
     (0x83 0xe0 0xe0 0x4c 0x01 0xf8 0xff (0xd0|0xe0) | # naclcall/jmp %eax, %r15
      0x83 0xe1 0xe0 0x4c 0x01 0xf9 0xff (0xd1|0xe1) | # naclcall/jmp %ecx, %r15
      0x83 0xe2 0xe0 0x4c 0x01 0xfa 0xff (0xd2|0xe2) | # naclcall/jmp %edx, %r15
      0x83 0xe3 0xe0 0x4c 0x01 0xfb 0xff (0xd3|0xe3) | # naclcall/jmp %ebx, %r15
-     0x83 0xe4 0xe0 0x4c 0x01 0xfc 0xff (0xd4|0xe4) | # naclcall/jmp %esp, %r15
-     0x83 0xe5 0xe0 0x4c 0x01 0xfd 0xff (0xd5|0xe5) | # naclcall/jmp %ebp, %r15
      0x83 0xe6 0xe0 0x4c 0x01 0xfe 0xff (0xd6|0xe6) | # naclcall/jmp %esi, %r15
      0x83 0xe7 0xe0 0x4c 0x01 0xff 0xff (0xd7|0xe7))  # naclcall/jmp %edi, %r15
-    @{ if (restricted_register == REG_RSP) {
-         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
-         result = 1;
-       } else if (restricted_register == REG_RBP) {
-         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
-         result = 1;
-       }
+    @{
        BitmapClearBit(valid_targets, (p - data) - 4);
        BitmapClearBit(valid_targets, (p - data) - 1);
        restricted_register = kNoRestrictedReg;
@@ -324,17 +381,14 @@ static int MarkJumpTarget(size_t jump_dest,
      0x41 0x83 0xe4 0xe0 0x4d 0x01 0xfc 0x41 0xff (0xd4|0xe4) | #
      0x41 0x83 0xe5 0xe0 0x4d 0x01 0xfd 0x41 0xff (0xd5|0xe5) | # naclcall/jmp
      0x41 0x83 0xe6 0xe0 0x4d 0x01 0xfe 0x41 0xff (0xd6|0xe6))  #   %r14d, %r15
-    @{ if (restricted_register == REG_RSP) {
-         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
-         result = 1;
-       } else if (restricted_register == REG_RBP) {
-         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
-         result = 1;
-       }
+    @{
        BitmapClearBit(valid_targets, (p - data) - 5);
        BitmapClearBit(valid_targets, (p - data) - 2);
        restricted_register = kNoRestrictedReg;
-    } |
+    };
+
+  # Special %rsi sandboxing for string instructions
+  rsi_sandboxing =
     (0x49 0x8d 0x34 0x37) # lea (%r15,%rsi,1),%rsi
     @{ if (restricted_register == REG_RSI) {
          sandboxed_rsi = begin;
@@ -342,7 +396,10 @@ static int MarkJumpTarget(size_t jump_dest,
        } else {
          restricted_register = kNoRestrictedReg;
        }
-    } |
+    };
+
+  # Special %rdi sandboxing for string instructions
+  rdi_sandboxing =
     (0x49 0x8d 0x3c 0x3f) # lea (%r15,%rdi,1),%rdi
     @{ if (restricted_register == REG_RDI) {
          sandboxed_rdi = begin;
@@ -353,7 +410,10 @@ static int MarkJumpTarget(size_t jump_dest,
        } else {
          restricted_register = kNoRestrictedReg;
        }
-    } |
+    };
+
+  # String instructions which use only %ds:(%rsi)
+  string_instructions_rsi_no_rdi =
     (rep? 0xac                 | # lods   %ds:(%rsi),%al
      data16rep 0xad            | # lods   %ds:(%rsi),%ax
      rep? REXW_NONE? 0xad)       # lods   %ds:(%rsi),%eax/%rax
@@ -365,7 +425,10 @@ static int MarkJumpTarget(size_t jump_dest,
          BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-    } |
+    };
+
+  # String instructions which use only %ds:(%rdi)
+  string_instructions_rdi_no_rsi =
     (condrep? 0xae             | # scas   %es:(%rdi),%al
      data16condrep 0xaf        | # scas   %es:(%rdi),%ax
      condrep? REXW_NONE? 0xaf  | # scas   %es:(%rdi),%eax/%rax
@@ -382,7 +445,10 @@ static int MarkJumpTarget(size_t jump_dest,
          BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-    } |
+    };
+
+  # String instructions which use both %ds:(%rsi) and %ds:(%rdi)
+  string_instructions_rsi_rdi =
     (condrep? 0xa6            | # cmpsb    %es:(%rdi),%ds:(%rsi)
      data16condrep 0xa7       | # cmpsw    %es:(%rdi),%ds:(%rsi)
      condrep? REXW_NONE? 0xa7 | # cmps[lq] %es:(%rdi),%ds:(%rsi)
@@ -404,6 +470,19 @@ static int MarkJumpTarget(size_t jump_dest,
        }
        restricted_register = kNoRestrictedReg;
     };
+
+  special_instruction =
+    rbp_modifications |
+    rsp_modifications |
+    rbp_sandboxing |
+    rsp_sandboxing |
+    old_naclcall_or_nacljmp |
+    naclcall_or_nacljmp |
+    rsi_sandboxing |
+    rdi_sandboxing |
+    string_instructions_rsi_no_rdi |
+    string_instructions_rdi_no_rsi |
+    string_instructions_rsi_rdi;
 
   main := ((normal_instruction | special_instruction) >{
         begin = p;
