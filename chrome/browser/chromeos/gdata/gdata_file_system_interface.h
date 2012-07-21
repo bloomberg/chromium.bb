@@ -224,8 +224,7 @@ class GDataFileSystemInterface {
   // needs to be present in in-memory representation of the file system that
   // in order to be removed.
   //
-  // TODO(zelidrag): Wire |is_recursive| through gdata api
-  // (find appropriate calls for it).
+  // TODO(satorux): is_recursive is not supported yet. crbug.com/138282
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void Remove(const FilePath& file_path,

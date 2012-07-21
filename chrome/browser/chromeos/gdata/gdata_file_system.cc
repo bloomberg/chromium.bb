@@ -1677,7 +1677,7 @@ void GDataFileSystem::RemoveOnUIThread(
 
 void GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
     const FilePath& file_path,
-    bool is_recursive,
+    bool /* is_recursive */,
     const FileOperationCallback& callback,
     GDataFileError error,
     scoped_ptr<GDataEntryProto> entry_proto) {
