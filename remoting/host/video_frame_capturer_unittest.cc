@@ -61,13 +61,7 @@ TEST_F(VideoFrameCapturerTest, StartCapturer) {
   capturer_->Stop();
 }
 
-#if defined(OS_MACOSX)
-#define MAYBE_Capture DISABLED_Capture
-#else
-#define MAYBE_Capture Capture
-#endif
-
-TEST_F(VideoFrameCapturerTest, MAYBE_Capture) {
+TEST_F(VideoFrameCapturerTest, Capture) {
   if (!IsOsSupported()) {
     return;
   }

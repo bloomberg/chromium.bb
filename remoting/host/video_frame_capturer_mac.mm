@@ -116,7 +116,11 @@ void scoped_pixel_buffer_object::Release() {
 // A class representing a full-frame pixel buffer.
 class VideoFrameBuffer {
  public:
-  VideoFrameBuffer() : bytes_per_row_(0), needs_update_(true) { }
+  VideoFrameBuffer() :
+      size_(SkISize::Make(0, 0)),
+      bytes_per_row_(0),
+      needs_update_(true) {
+  }
 
   // If the buffer is marked as needing to be updated (for example after the
   // screen mode changes) and is the wrong size, then release the old buffer
@@ -581,6 +585,7 @@ void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
   CGDirectDisplayID main_display = CGMainDisplayID();
   uint8* display_base_address =
       reinterpret_cast<uint8*>(CGDisplayBaseAddress(main_display));
+  CHECK(display_base_address);
   int src_bytes_per_row = CGDisplayBytesPerRow(main_display);
   int src_bytes_per_pixel = CGDisplayBitsPerPixel(main_display) / 8;
   // TODO(hclam): We can reduce the amount of copying here by subtracting
