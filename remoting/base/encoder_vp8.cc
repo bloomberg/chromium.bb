@@ -32,8 +32,7 @@ EncoderVp8::EncoderVp8()
       image_(NULL),
       active_map_width_(0),
       active_map_height_(0),
-      last_timestamp_(0),
-      size_(SkISize::Make(0, 0)) {
+      last_timestamp_(0) {
 }
 
 EncoderVp8::~EncoderVp8() {
@@ -50,7 +49,6 @@ void EncoderVp8::Destroy() {
 
 bool EncoderVp8::Init(const SkISize& size) {
   Destroy();
-  size_ = size;
   codec_.reset(new vpx_codec_ctx_t());
   image_.reset(new vpx_image_t());
   memset(image_.get(), 0, sizeof(vpx_image_t));
@@ -64,15 +62,15 @@ bool EncoderVp8::Init(const SkISize& size) {
   image_->h = size.height();
 
   // Initialize active map.
-  active_map_width_ = (size.width() + kMacroBlockSize - 1) / kMacroBlockSize;
-  active_map_height_ = (size.height() + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_width_ = (image_->w + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_height_ = (image_->h + kMacroBlockSize - 1) / kMacroBlockSize;
   active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
 
   // YUV image size is 1.5 times of a plane. Multiplication is performed first
   // to avoid rounding error.
-  const int y_plane_size = size.width() * size.height();
-  const int uv_width = (size.width() + 1) / 2;
-  const int uv_height = (size.height() + 1) / 2;
+  const int y_plane_size = image_->w * image_->h;
+  const int uv_width = (image_->w + 1) / 2;
+  const int uv_height = (image_->w + 1) / 2;
   const int uv_plane_size = uv_width * uv_height;
   const int yuv_image_size = y_plane_size + uv_plane_size * 2;
 
@@ -98,13 +96,11 @@ bool EncoderVp8::Init(const SkISize& size) {
   image_->planes[0] = image;
   image_->planes[1] = image + y_plane_size;
   image_->planes[2] = image + y_plane_size + uv_plane_size;
-
-  // In YV12 Y plane has full width, UV plane has half width because of
-  // subsampling.
   image_->stride[0] = image_->w;
-  image_->stride[1] = image_->w / 2;
-  image_->stride[2] = image_->w / 2;
+  image_->stride[1] = uv_width;
+  image_->stride[2] = uv_width;
 
+  // Configure the encoder.
   vpx_codec_enc_cfg_t config;
   const vpx_codec_iface_t* algo = vpx_codec_vp8_cx();
   CHECK(algo);
@@ -112,10 +108,10 @@ bool EncoderVp8::Init(const SkISize& size) {
   if (ret != VPX_CODEC_OK)
     return false;
 
-  config.rc_target_bitrate = size.width() * size.height() *
+  config.rc_target_bitrate = image_->w * image_->h *
       config.rc_target_bitrate / config.g_w / config.g_h;
-  config.g_w = size.width();
-  config.g_h = size.height();
+  config.g_w = image_->w;
+  config.g_h = image_->h;
   config.g_pass = VPX_RC_ONE_PASS;
 
   // Value of 2 means using the real time profile. This is basically a
@@ -160,42 +156,37 @@ void EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
     return;
   }
 
-  // Align rectangles in the region, to avoid encoding artefacts.
-  // Note that this also results in rectangles with even-aligned positions,
-  // which is a requirement for some of the conversion routines to work.
-  std::vector<SkIRect> updated_rects;
+  // Align the region to macroblocks, to avoid encoding artefacts.
+  // This also ensures that all rectangles have even-aligned top-left, which
+  // is required for ConvertRGBToYUVWithRect() to work.
+  std::vector<SkIRect> aligned_rects;
   for (SkRegion::Iterator r(region); !r.done(); r.next()) {
-    updated_rects.push_back(AlignRect(r.rect()));
+    aligned_rects.push_back(AlignRect(r.rect()));
   }
-  if (!updated_rects.empty()) {
-    updated_region->setRects(&updated_rects[0], updated_rects.size());
-  }
+  DCHECK(!aligned_rects.empty());
+  updated_region->setRects(&aligned_rects[0], aligned_rects.size());
 
-  // Clip to the screen again, in case it has non-aligned size.
-  // Note that we round the screen down to even dimensions to satisfy the
-  // limitations of some of the conversion routines.
-  int even_width = RoundToTwosMultiple(image_->w);
-  int even_height = RoundToTwosMultiple(image_->h);
-  updated_region->op(SkRegion(SkIRect::MakeWH(even_width, even_height)),
+  // Clip back to the screen dimensions, in case they're not macroblock aligned.
+  // The conversion routines don't require even width & height, so this is safe
+  // even if the source dimensions are not even.
+  updated_region->op(SkIRect::MakeWH(image_->w, image_->h),
                      SkRegion::kIntersect_Op);
 
   // Convert the updated region to YUV ready for encoding.
-  const uint8* in = capture_data->data_planes().data[0];
-  const int in_stride = capture_data->data_planes().strides[0];
-  const int plane_size =
-      capture_data->size().width() * capture_data->size().height();
-  uint8* y_out = yuv_image_.get();
-  uint8* u_out = yuv_image_.get() + plane_size;
-  uint8* v_out = yuv_image_.get() + plane_size + plane_size / 4;
+  const uint8* rgb_data = capture_data->data_planes().data[0];
+  const int rgb_stride = capture_data->data_planes().strides[0];
   const int y_stride = image_->stride[0];
+  DCHECK(image_->stride[1] == image_->stride[2]);
   const int uv_stride = image_->stride[1];
-
+  uint8* y_data = image_->planes[0];
+  uint8* u_data = image_->planes[1];
+  uint8* v_data = image_->planes[2];
   for (SkRegion::Iterator r(*updated_region); !r.done(); r.next()) {
     const SkIRect& rect = r.rect();
     ConvertRGB32ToYUVWithRect(
-        in, y_out, u_out, v_out,
+        rgb_data, y_data, u_data, v_data,
         rect.x(), rect.y(), rect.width(), rect.height(),
-        in_stride, y_stride, uv_stride);
+        rgb_stride, y_stride, uv_stride);
   }
 }
 
@@ -228,7 +219,8 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   DCHECK_LE(32, capture_data->size().width());
   DCHECK_LE(32, capture_data->size().height());
 
-  if (!initialized_ || (capture_data->size() != size_)) {
+  if (!initialized_ ||
+      (capture_data->size() != SkISize::Make(image_->w, image_->h))) {
     bool ret = Init(capture_data->size());
     // TODO(hclam): Handle error better.
     CHECK(ret) << "Initialization of encoder failed";

@@ -56,9 +56,6 @@ class EncoderVp8 : public Encoder {
   // Buffer for storing the yuv image.
   scoped_array<uint8> yuv_image_;
 
-  // The current frame size.
-  SkISize size_;
-
   DISALLOW_COPY_AND_ASSIGN(EncoderVp8);
 };
 
