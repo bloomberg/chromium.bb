@@ -399,6 +399,7 @@ class LocalGestureEvent :
     public WrappedObject<ui::GestureEvent, WebKit::WebGestureEvent> {
  public:
   LocalGestureEvent(
+      HWND hwnd,
       ui::EventType type,
       const gfx::Point& location,
       int flags,
@@ -408,8 +409,17 @@ class LocalGestureEvent :
       unsigned int touch_id_bitfield)
       : touch_ids_bitfield_(touch_id_bitfield),
         type_(type) {
-    data().x = location.x();
-    data().y = location.y();
+    // location is given in window coordinates, based on the parent window.
+    // Map to the appropriate window's coordinates. For a root window the
+    // coordinates won't change, because the parent shares our rect.
+    POINT client_point = { location.x(), location.y()};
+    MapWindowPoints(::GetParent(hwnd), hwnd, &client_point, 1);
+    POINT screen_point = { location.x(), location.y()};
+    MapWindowPoints(hwnd, HWND_DESKTOP, &screen_point, 1);
+    data().x = client_point.x;
+    data().y = client_point.y;
+    data().globalX = screen_point.x;
+    data().globalY = screen_point.y;
     data().deltaX = param_first;
     data().deltaY = param_second;
     data().type = ConvertToWebInputEvent(type);
@@ -1280,7 +1290,7 @@ ui::GestureEvent* RenderWidgetHostViewWin::CreateGestureEvent(
     float param_second,
     unsigned int touch_id_bitfield) {
 
-  return new LocalGestureEvent(type, location, flags, time,
+  return new LocalGestureEvent(m_hWnd, type, location, flags, time,
       param_first, param_second, touch_id_bitfield);
 }
 
@@ -1289,7 +1299,7 @@ ui::TouchEvent* RenderWidgetHostViewWin::CreateTouchEvent(
     const gfx::Point& location,
     int touch_id,
     base::TimeDelta time_stamp) {
-  return new LocalTouchEvent( type, location, touch_id, time_stamp);
+  return new LocalTouchEvent(type, location, touch_id, time_stamp);
 }
 
 bool RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
