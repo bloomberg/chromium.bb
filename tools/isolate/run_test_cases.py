@@ -425,6 +425,11 @@ class Runner(object):
     self.timeout = timeout
     self.progress = progress
     self.retry_count = 3
+    # It is important to remove the shard environment variables since it could
+    # conflict with --gtest_filter.
+    self.env = os.environ.copy()
+    self.env.pop('GTEST_SHARD_INDEX', None)
+    self.env.pop('GTEST_TOTAL_SHARDS', None)
 
   def map(self, test_case):
     """Traces a single test case and returns its output."""
@@ -434,15 +439,25 @@ class Runner(object):
     for retry in range(self.retry_count):
       start = time.time()
       output, returncode = call_with_timeout(
-          cmd, self.timeout, cwd=self.cwd_dir, stderr=subprocess.STDOUT)
+          cmd,
+          self.timeout,
+          cwd=self.cwd_dir,
+          stderr=subprocess.STDOUT,
+          env=self.env)
       duration = time.time() - start
-      out.append(
-          {
-            'test_case': test_case,
-            'returncode': returncode,
-            'duration': duration,
-            'output': output,
-          })
+      data = {
+        'test_case': test_case,
+        'returncode': returncode,
+        'duration': duration,
+        'output': output,
+      }
+      if output.rstrip().endswith('0 tests failed (0 ignored)'):
+        # Mark it as invalid.
+        data['invalid'] = True
+        returncode = 1
+      out.append(data)
+      if sys.platform == 'win32':
+        output = output.replace('\r\n', '\n')
       size = returncode and retry != self.retry_count - 1
       if retry:
         self.progress.update_item(
@@ -452,13 +467,15 @@ class Runner(object):
       else:
         self.progress.update_item(
             '%s (%.2fs)' % (test_case, duration), True, size)
+      if logging.getLogger().isEnabledFor(logging.INFO):
+        self.progress.update_item(output, False, False)
       if not returncode:
         break
     else:
-      # The test failed. Print its output.
-      if sys.platform == 'win32':
-        output = output.replace('\r\n', '\n')
-      self.progress.update_item(output, False, False)
+      # The test failed. Print its output. No need to print it with logging
+      # level at INFO since it was already printed above.
+      if not logging.getLogger().isEnabledFor(logging.INFO):
+        self.progress.update_item(output, False, False)
     return out
 
 
@@ -598,7 +615,7 @@ def main():
   parser.add_option_group(group)
   options, args = parser.parse_args()
 
-  levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+  levels = [logging.ERROR, logging.INFO, logging.DEBUG]
   logging.basicConfig(
       level=levels[min(len(levels)-1, options.verbose)],
       format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
