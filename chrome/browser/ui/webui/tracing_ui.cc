@@ -35,6 +35,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ipc/ipc_channel.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -99,7 +100,7 @@ class TracingMessageHandler
   void OnSaveTraceFile(const ListValue* list);
 
   // Callbacks.
-  void LoadTraceFileComplete(std::string* file_contents);
+  void LoadTraceFileComplete(string16* file_contents);
   void SaveTraceFileComplete();
 
  private:
@@ -135,7 +136,7 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
  public:
   explicit TaskProxy(const base::WeakPtr<TracingMessageHandler>& handler)
       : handler_(handler) {}
-  void LoadTraceFileCompleteProxy(std::string* file_contents) {
+  void LoadTraceFileCompleteProxy(string16* file_contents) {
     if (handler_)
       handler_->LoadTraceFileComplete(file_contents);
     delete file_contents;
@@ -281,14 +282,38 @@ void TracingMessageHandler::OnGpuInfoUpdate() {
 // A callback used for asynchronously reading a file to a string. Calls the
 // TaskProxy callback when reading is complete.
 void ReadTraceFileCallback(TaskProxy* proxy, const FilePath& path) {
-  scoped_ptr<std::string> file_contents(new std::string());
-  if (!file_util::ReadFileToString(path, file_contents.get()))
+  std::string file_contents;
+  if (!file_util::ReadFileToString(path, &file_contents))
     return;
+
+  // We need to escape the file contents, because it will go into a javascript
+  // quoted string in TracingMessageHandler::LoadTraceFileComplete. We need to
+  // escape \ and ' (the only special characters in a ''-quoted string).
+  // Do the escaping on this thread, it may take a little while for big files
+  // and we don't want to block the UI during that time. Also do the UTF-16
+  // conversion here.
+  // Note: we're using UTF-16 because we'll need to cut the string into slices
+  // to give to Javascript, and it's easier to cut than UTF-8 (since JS strings
+  // are arrays of 16-bit values, UCS-2 really, whereas we can't cut inside of a
+  // multibyte UTF-8 codepoint).
+  size_t size = file_contents.size();
+  std::string escaped_contents;
+  escaped_contents.reserve(size);
+  for (size_t i = 0; i < size; ++i) {
+    char c = file_contents[i];
+    if (c == '\\' || c == '\'')
+      escaped_contents.push_back('\\');
+    escaped_contents.push_back(c);
+  }
+  file_contents.clear();
+
+  scoped_ptr<string16> contents16(new string16);
+  UTF8ToUTF16(escaped_contents).swap(*contents16);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TaskProxy::LoadTraceFileCompleteProxy, proxy,
-                 file_contents.release()));
+                 contents16.release()));
 }
 
 // A callback used for asynchronously writing a file from a string. Calls the
@@ -348,13 +373,30 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
-void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
+void TracingMessageHandler::LoadTraceFileComplete(string16* contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string javascript = "tracingController.onLoadTraceFileComplete("
-      + *file_contents + ");";
 
-  web_ui()->GetWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(javascript));
+  // We need to pass contents to tracingController.onLoadTraceFileComplete, but
+  // that may be arbitrarily big, and IPCs messages are limited in size. So we
+  // need to cut it into pieces and rebuild the string in Javascript.
+  // |contents| has already been escaped in ReadTraceFileCallback.
+  // IPC::Channel::kMaximumMessageSize is in bytes, and we need to account for
+  // overhead.
+  const size_t kMaxSize = IPC::Channel::kMaximumMessageSize / 2 - 128;
+  string16 first_prefix = UTF8ToUTF16("window.traceData = '");
+  string16 prefix = UTF8ToUTF16("window.traceData += '");
+  string16 suffix = UTF8ToUTF16("';");
+
+  content::RenderViewHost* rvh =
+      web_ui()->GetWebContents()->GetRenderViewHost();
+  for (size_t i = 0; i < contents->size(); i += kMaxSize) {
+    string16 javascript = i == 0 ? first_prefix : prefix;
+    javascript += contents->substr(i, kMaxSize) + suffix;
+    rvh->ExecuteJavascriptInWebFrame(string16(), javascript);
+  }
+  rvh->ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(
+      "tracingController.onLoadTraceFileComplete(JSON.parse(window.traceData));"
+      "delete window.traceData;"));
 }
 
 void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
