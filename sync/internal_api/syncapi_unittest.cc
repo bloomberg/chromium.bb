@@ -919,6 +919,39 @@ class SyncManagerTest : public testing::Test,
         TestInternalComponentsFactory::IN_MEMORY);
   }
 
+  // Returns true if we are currently encrypting all sync data.  May
+  // be called on any thread.
+  bool EncryptEverythingEnabledForTest() {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    return trans.GetCryptographer()->encrypt_everything();
+  }
+
+  // Gets the set of encrypted types from the cryptographer
+  // Note: opens a transaction.  May be called from any thread.
+  syncer::ModelTypeSet GetEncryptedDataTypesForTest() {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    return GetEncryptedTypes(&trans);
+  }
+
+  void SimulateEnableNotificationsForTest() {
+    DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
+    sync_manager_.OnNotificationsEnabled();
+  }
+
+  void SimulateDisableNotificationsForTest(
+      NotificationsDisabledReason reason) {
+    DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
+    sync_manager_.OnNotificationsDisabled(reason);
+  }
+
+  void TriggerOnIncomingNotificationForTest(ModelTypeSet model_types) {
+    DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
+    ModelTypePayloadMap model_types_with_payloads =
+        ModelTypePayloadMapFromEnumSet(model_types, std::string());
+    sync_manager_.OnIncomingNotification(model_types_with_payloads,
+                                         REMOTE_NOTIFICATION);
+  }
+
  private:
   // Needed by |sync_manager_|.
   MessageLoop message_loop_;
@@ -1255,19 +1288,16 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
               HandleJsEvent("onNotificationStateChange",
                             HasDetailsAsDictionary(false_details)));
 
-  sync_manager_.SimulateEnableNotificationsForTest();
-  sync_manager_.SimulateDisableNotificationsForTest(
-      TRANSIENT_NOTIFICATION_ERROR);
+  SimulateEnableNotificationsForTest();
+  SimulateDisableNotificationsForTest(TRANSIENT_NOTIFICATION_ERROR);
 
   SetJsEventHandler(event_handler.AsWeakHandle());
-  sync_manager_.SimulateEnableNotificationsForTest();
-  sync_manager_.SimulateDisableNotificationsForTest(
-      TRANSIENT_NOTIFICATION_ERROR);
+  SimulateEnableNotificationsForTest();
+  SimulateDisableNotificationsForTest(TRANSIENT_NOTIFICATION_ERROR);
   SetJsEventHandler(WeakHandle<JsEventHandler>());
 
-  sync_manager_.SimulateEnableNotificationsForTest();
-  sync_manager_.SimulateDisableNotificationsForTest(
-      TRANSIENT_NOTIFICATION_ERROR);
+  SimulateEnableNotificationsForTest();
+  SimulateDisableNotificationsForTest(TRANSIENT_NOTIFICATION_ERROR);
 
   // Should trigger the replies.
   PumpLoop();
@@ -1298,15 +1328,15 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
               HandleJsEvent("onIncomingNotification",
                             HasDetailsAsDictionary(expected_details)));
 
-  sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
-  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+  TriggerOnIncomingNotificationForTest(empty_model_types);
+  TriggerOnIncomingNotificationForTest(model_types);
 
   SetJsEventHandler(event_handler.AsWeakHandle());
-  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+  TriggerOnIncomingNotificationForTest(model_types);
   SetJsEventHandler(WeakHandle<JsEventHandler>());
 
-  sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
-  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+  TriggerOnIncomingNotificationForTest(empty_model_types);
+  TriggerOnIncomingNotificationForTest(model_types);
 
   // Should trigger the replies.
   PumpLoop();
@@ -1319,10 +1349,10 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
 
-  const ModelTypeSet encrypted_types =
-      sync_manager_.GetEncryptedDataTypesForTest();
+  const ModelTypeSet encrypted_types = GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(PASSWORDS));
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
+
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
@@ -1344,10 +1374,9 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
   sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
 
-  const ModelTypeSet encrypted_types =
-      sync_manager_.GetEncryptedDataTypesForTest();
+  const ModelTypeSet encrypted_types = GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(PASSWORDS));  // Hardcoded.
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
 }
 
 // Attempt to refresh encryption when nigori is empty.
@@ -1359,10 +1388,10 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
   sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
 
-  const ModelTypeSet encrypted_types =
-      sync_manager_.GetEncryptedDataTypesForTest();
+  const ModelTypeSet encrypted_types = GetEncryptedDataTypesForTest();
   EXPECT_TRUE(encrypted_types.Has(PASSWORDS));  // Hardcoded.
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
+
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
@@ -1383,7 +1412,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
                   HasModelTypes(ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
-  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_TRUE(EncryptEverythingEnabledForTest());
 }
 
 TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
@@ -1440,7 +1469,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
                   HasModelTypes(ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
-  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_TRUE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(
@@ -1468,7 +1497,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetEncryptionPassphrase("new_passphrase", true);
-  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_TRUE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(ModelTypeSet::All()));
@@ -1507,7 +1536,7 @@ TEST_F(SyncManagerTest, SetInitialGaiaPass) {
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetEncryptionPassphrase("new_passphrase", false);
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
@@ -1536,7 +1565,7 @@ TEST_F(SyncManagerTest, UpdateGaiaPass) {
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetEncryptionPassphrase("new_passphrase", false);
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1578,7 +1607,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetEncryptionPassphrase("new_passphrase", true);
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1628,7 +1657,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetDecryptionPassphrase("passphrase2");
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1679,7 +1708,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
       .WillOnce(SaveArg<0>(&bootstrap_token));
   EXPECT_CALL(observer_, OnPassphraseRequired(_,_));
   sync_manager_.SetEncryptionPassphrase("new_gaia", false);
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
   testing::Mock::VerifyAndClearExpectations(&observer_);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1744,7 +1773,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetDecryptionPassphrase("explicit");
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1782,7 +1811,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetEncryptionPassphrase("passphrase", false);
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1809,7 +1838,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetEncryptionPassphrase("new_passphrase", true);
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode password_node(&trans);
@@ -1915,7 +1944,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
                   HasModelTypes(ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
-  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
+  EXPECT_TRUE(EncryptEverythingEnabledForTest());
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());

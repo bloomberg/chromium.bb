@@ -329,11 +329,6 @@ void SyncManagerImpl::EnableEncryptEverything() {
   RefreshEncryption();
 }
 
-bool SyncManagerImpl::EncryptEverythingEnabledForTest() {
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  return trans.GetCryptographer()->encrypt_everything();
-}
-
 void SyncManagerImpl::ConfigureSyncer(
     ConfigureReason reason,
     const ModelTypeSet& types_to_config,
@@ -1842,11 +1837,6 @@ UserShare* SyncManagerImpl::GetUserShare() {
   return &share_;
 }
 
-ModelTypeSet SyncManagerImpl::GetEncryptedDataTypesForTest() {
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  return GetEncryptedTypes(&trans);
-}
-
 bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode node(&trans);
@@ -1865,26 +1855,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
 bool SyncManagerImpl::HasUnsyncedItems() {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   return (trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0);
-}
-
-void SyncManagerImpl::SimulateEnableNotificationsForTest() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  OnNotificationsEnabled();
-}
-
-void SyncManagerImpl::SimulateDisableNotificationsForTest(int reason) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  OnNotificationsDisabled(static_cast<NotificationsDisabledReason>(reason));
-}
-
-void SyncManagerImpl::TriggerOnIncomingNotificationForTest(
-    ModelTypeSet model_types) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ModelTypePayloadMap model_types_with_payloads =
-      ModelTypePayloadMapFromEnumSet(model_types,
-          std::string());
-
-  OnIncomingNotification(model_types_with_payloads, REMOTE_NOTIFICATION);
 }
 
 // static.

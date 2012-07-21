@@ -124,20 +124,6 @@ class SyncManagerImpl : public SyncManager,
   // types.
   const std::string& username_for_share() const;
 
-  // Functions used for testing.
-
-  // Returns true if we are currently encrypting all sync data.  May
-  // be called on any thread.
-  bool EncryptEverythingEnabledForTest();
-
-  // Gets the set of encrypted types from the cryptographer
-  // Note: opens a transaction.  May be called from any thread.
-  ModelTypeSet GetEncryptedDataTypesForTest();
-
-  void SimulateEnableNotificationsForTest();
-  void SimulateDisableNotificationsForTest(int reason);
-  void TriggerOnIncomingNotificationForTest(ModelTypeSet model_types);
-
   static int GetDefaultNudgeDelay();
   static int GetPreferencesNudgeDelay();
 
