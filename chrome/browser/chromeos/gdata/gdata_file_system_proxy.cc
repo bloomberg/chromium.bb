@@ -694,11 +694,11 @@ void GDataFileSystemProxy::OnReadDirectory(
         GDataEntryProtoToFileUtilProxyEntry(proto.gdata_entry()));
   }
   for (int i = 0; i < directory_proto->child_files_size(); ++i) {
-    const GDataFileProto& proto = directory_proto->child_files(i);
-    if (hide_hosted_documents && proto.is_hosted_document())
+    const GDataEntryProto& proto = directory_proto->child_files(i);
+    if (hide_hosted_documents &&
+        proto.file_specific_info().is_hosted_document())
         continue;
-    entries.push_back(
-        GDataEntryProtoToFileUtilProxyEntry(proto.gdata_entry()));
+    entries.push_back(GDataEntryProtoToFileUtilProxyEntry(proto));
   }
 
   callback.Run(base::PLATFORM_FILE_OK, entries, false);

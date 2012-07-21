@@ -44,22 +44,16 @@ typedef base::Callback<void(GDataFileError error,
                             const std::string& mime_type,
                             GDataFileType file_type)> GetFileCallback;
 
-// Used to get file info from the file system.
-// If |error| is not PLATFORM_FILE_OK, |file_info| is set to NULL.
-typedef base::Callback<void(GDataFileError error,
-                            scoped_ptr<GDataFileProto> file_proto)>
-    GetFileInfoCallback;
-
-// Used to get file info from the file system, with the gdata file path.
+// Used to get entry info from the file system, with the gdata file path.
 // If |error| is not PLATFORM_FILE_OK, |file_info| is set to NULL.
 //
-// |gdata_file_path| parameter is provided as GDataFileProto does not contain
+// |gdata_file_path| parameter is provided as GDataEntryProto does not contain
 // the gdata file path (i.e. only contains the base name without parent
 // directory names).
 typedef base::Callback<void(GDataFileError error,
                             const FilePath& gdata_file_path,
-                            scoped_ptr<GDataFileProto> file_proto)>
-    GetFileInfoWithFilePathCallback;
+                            scoped_ptr<GDataEntryProto> file_proto)>
+    GetEntryInfoWithFilePathCallback;
 
 // Used to get entry info from the file system.
 // If |error| is not PLATFORM_FILE_OK, |entry_info| is set to NULL.
@@ -134,13 +128,13 @@ class GDataFileSystemInterface {
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
 
-  // Finds a file (not directory) by using |resource_id|. This call does not
-  // initiate content refreshing.
+  // Finds an entry (file or directory) by using |resource_id|. This call
+  // does not initiate content refreshing.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void GetFileInfoByResourceId(
+  virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,
-      const GetFileInfoWithFilePathCallback& callback) = 0;
+      const GetEntryInfoWithFilePathCallback& callback) = 0;
 
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
   // |remote_src_file_path| is the virtual source path on the gdata file system.
@@ -300,13 +294,6 @@ class GDataFileSystemInterface {
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void GetEntryInfoByPath(const FilePath& file_path,
                                   const GetEntryInfoCallback& callback) = 0;
-
-  // Finds a file (not a directory) by |file_path|. This call will also
-  // retrieve and refresh file system content from server and disk cache.
-  //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void GetFileInfoByPath(const FilePath& file_path,
-                                 const GetFileInfoCallback& callback) = 0;
 
   // Finds and reads a directory by |file_path|. This call will also retrieve
   // and refresh file system content from server and disk cache.

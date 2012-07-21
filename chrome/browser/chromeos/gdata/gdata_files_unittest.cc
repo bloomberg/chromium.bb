@@ -36,8 +36,46 @@ TEST(GDataEntryTest, FromProto_DetectBadUploadUrl) {
   EXPECT_EQ(kResumableEditMediaUrl, entry.upload_url().spec());
 }
 
+TEST(GDataRootDirectoryTest, VersionCheck) {
+  // Set up the root directory.
+  GDataRootDirectoryProto proto;
+  GDataEntryProto* mutable_entry =
+      proto.mutable_gdata_directory()->mutable_gdata_entry();
+  mutable_entry->mutable_file_info()->set_is_directory(true);
+  mutable_entry->set_resource_id(kGDataRootDirectoryResourceId);
+  mutable_entry->set_upload_url(kResumableCreateMediaUrl);
+  mutable_entry->set_title("drive");
+
+  GDataDirectoryService directory_service;
+
+  std::string serialized_proto;
+  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  // This should fail as the version is emtpy.
+  ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
+
+  // Set an older version, and serialize.
+  proto.set_version(kProtoVersion - 1);
+  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  // This should fail as the version is older.
+  ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
+
+  // Set the current version, and serialize.
+  proto.set_version(kProtoVersion);
+  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  // This should succeed as the version matches the current number.
+  ASSERT_TRUE(directory_service.ParseFromString(serialized_proto));
+
+  // Set a newer version, and serialize.
+  proto.set_version(kProtoVersion + 1);
+  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  // This should fail as the version is newer.
+  ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
+}
+
 TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
   GDataRootDirectoryProto proto;
+  proto.set_version(kProtoVersion);
+
   GDataEntryProto* mutable_entry =
       proto.mutable_gdata_directory()->mutable_gdata_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
@@ -74,6 +112,8 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
 
 TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
   GDataRootDirectoryProto proto;
+  proto.set_version(kProtoVersion);
+
   GDataEntryProto* mutable_entry =
       proto.mutable_gdata_directory()->mutable_gdata_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
@@ -105,6 +145,8 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
 TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   // Set up the root directory properly.
   GDataRootDirectoryProto root_directory_proto;
+  root_directory_proto.set_version(kProtoVersion);
+
   GDataEntryProto* mutable_entry =
       root_directory_proto.mutable_gdata_directory()->mutable_gdata_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
@@ -132,9 +174,10 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
       kResumableCreateMediaUrl);
 
   // Add a new file under the sub directory "dir".
-  GDataFileProto* file_proto =
+  GDataEntryProto* entry_proto =
       sub_directory_proto->add_child_files();
-  file_proto->mutable_gdata_entry()->set_title("test.txt");
+  entry_proto->set_title("test.txt");
+  entry_proto->mutable_file_specific_info()->set_file_md5("md5");
 
   GDataDirectoryService directory_service;
   GDataDirectory* root(directory_service.root());
@@ -142,7 +185,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   ASSERT_EQ(UNINITIALIZED, directory_service.origin());
   std::string serialized_proto;
   // Serialize the proto and check if it's loaded.
-  // This should fail as the upload URL is not set for |file_proto|.
+  // This should fail as the upload URL is not set for |entry_proto|.
   ASSERT_TRUE(root_directory_proto.SerializeToString(&serialized_proto));
   ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
   // Nothing should be added to the root directory if the parse failed.
@@ -152,10 +195,10 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   ASSERT_EQ(UNINITIALIZED, directory_service.origin());
 
   // Set an upload URL.
-  file_proto->mutable_gdata_entry()->set_upload_url(kResumableEditMediaUrl);
+  entry_proto->set_upload_url(kResumableEditMediaUrl);
 
   // Serialize the proto and check if it's loaded.
-  // This should succeed as the upload URL is set for |file_proto|.
+  // This should succeed as the upload URL is set for |entry_proto|.
   ASSERT_TRUE(root_directory_proto.SerializeToString(&serialized_proto));
   ASSERT_TRUE(directory_service.ParseFromString(serialized_proto));
   // No file should be added to the root directory.

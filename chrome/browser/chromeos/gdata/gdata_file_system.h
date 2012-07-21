@@ -32,7 +32,6 @@ namespace gdata {
 
 class DocumentsServiceInterface;
 class DriveWebAppsRegistryInterface;
-class GDataFileProto;
 struct UploadFileInfo;
 
 namespace {
@@ -58,9 +57,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void StartUpdates() OVERRIDE;
   virtual void StopUpdates() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
-  virtual void GetFileInfoByResourceId(
+  virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,
-      const GetFileInfoWithFilePathCallback& callback) OVERRIDE;
+      const GetEntryInfoWithFilePathCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
                       const SearchCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
@@ -105,9 +104,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void GetEntryInfoByPath(
       const FilePath& file_path,
       const GetEntryInfoCallback& callback) OVERRIDE;
-  virtual void GetFileInfoByPath(
-      const FilePath& file_path,
-      const GetFileInfoCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
       const FilePath& file_path,
       const ReadDirectoryCallback& callback) OVERRIDE;
@@ -242,22 +238,23 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FileOperationCallback& callback,
       GDataFileError result);
 
-  // Invoked upon completion of GetFileInfoByPath initiated by
+  // Invoked upon completion of GetEntryInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
-  void OnGetFileInfoCompleteForGetFileByPath(
+  void OnGetEntryInfoCompleteForGetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback,
       GDataFileError error,
-      scoped_ptr<GDataFileProto> file_info);
+      scoped_ptr<GDataEntryProto> file_info);
 
-  // Invoked upon completion of GetFileInfoByPath initiated by OpenFile.
+  // Invoked upon completion of GetEntryInfoByPath initiated by OpenFile.
   // It then continues to invoke GetResolvedFileByPath and proceeds to
   // OnGetFileCompleteForOpenFile.
-  void OnGetFileInfoCompleteForOpenFile(const FilePath& file_path,
-                                        const OpenFileCallback& callback,
-                                        GDataFileError error,
-                                        scoped_ptr<GDataFileProto> file_info);
+  void OnGetEntryInfoCompleteForOpenFile(
+      const FilePath& file_path,
+      const OpenFileCallback& callback,
+      GDataFileError error,
+      scoped_ptr<GDataEntryProto> file_info);
 
   // Invoked at the last step of OpenFile. It removes |file_path| from the
   // current set of opened files if |result| is an error, and then invokes the
@@ -275,11 +272,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // 5) Modifies GDataEntry using the new PlatformFileInfo.
   // 6) Commits the modification to the cache system.
   // 7) Invokes the user-supplied |callback|.
-  void OnGetFileInfoCompleteForCloseFile(
+  void OnGetEntryInfoCompleteForCloseFile(
       const FilePath& file_path,
       const FileOperationCallback& callback,
       GDataFileError error,
-      scoped_ptr<GDataFileProto> file_proto);
+      scoped_ptr<GDataEntryProto> entry_proto);
   void OnGetCacheFilePathCompleteForCloseFile(
       const FilePath& file_path,
       const FileOperationCallback& callback,
@@ -703,11 +700,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                       GDataFileError error,
                       GDataEntry* entry);
 
-  // Called when an entry is found for GetFileInfoByPath().
-  void OnGetFileInfo(const GetFileInfoCallback& callback,
-                     GDataFileError error,
-                     GDataEntry* entry);
-
   // Called when an entry is found for ReadDirectoryByPath().
   void OnReadDirectory(const ReadDirectoryCallback& callback,
                        GDataFileError error,
@@ -719,14 +711,15 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                       const FindEntryCallback& callback);
 
   // Gets |file_path| from the file system after the file info is already
-  // resolved with GetFileInfoByPath(). This function is called by
-  // OnGetFileInfoCompleteForGetFileByPath and OnGetFileInfoCompleteForOpenFile.
+  // resolved with GetEntryInfoByPath(). This function is called by
+  // OnGetEntryInfoCompleteForGetFileByPath and
+  // OnGetEntryInfoCompleteForOpenFile.
   void GetResolvedFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback,
       GDataFileError error,
-      const GDataFileProto* file_proto);
+      const GDataEntryProto* entry_proto);
 
   // Called when GDataCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
@@ -787,8 +780,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback,
       GDataEntry* entry);
-  void GetFileInfoByEntryOnUIThread(
-      const GetFileInfoWithFilePathCallback& callback,
+  void GetEntryInfoByEntryOnUIThread(
+      const GetEntryInfoWithFilePathCallback& callback,
       GDataEntry* entry);
   void UpdateFileByResourceIdOnUIThread(
       const std::string& resource_id,
@@ -798,12 +791,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetEntryInfoByPathAsyncOnUIThread(
       const FilePath& file_path,
       const GetEntryInfoCallback& callback);
-  void GetFileInfoByPathAsyncOnUIThread(
-      const FilePath& file_path,
-      const GetFileInfoCallback& callback);
-  void GetFileInfoByResourceIdOnUIThread(
+  void GetEntryInfoByResourceIdOnUIThread(
       const std::string& resource_id,
-      const GetFileInfoWithFilePathCallback& callback);
+      const GetEntryInfoWithFilePathCallback& callback);
   void ReadDirectoryByPathAsyncOnUIThread(
       const FilePath& file_path,
       const ReadDirectoryCallback& callback);

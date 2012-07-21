@@ -25,11 +25,9 @@ namespace gdata {
 
 class GDataFile;
 class GDataDirectory;
-class GDataRootDirectory;
 class GDataDirectoryService;
 
 class GDataEntryProto;
-class GDataFileProto;
 class GDataDirectoryProto;
 class GDataRootDirectoryProto;
 class PlatformFileInfoProto;
@@ -61,6 +59,10 @@ const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("drive");
 // The resource ID for the root directory is defined in the spec:
 // https://developers.google.com/google-apps/documents-list/
 const char kGDataRootDirectoryResourceId[] = "folder:root";
+
+// This should be incremented when incompatibility change is made in
+// gdata.proto.
+const int32 kProtoVersion = 1;
 
 // Base class for representing files and directories in gdata virtual file
 // system.
@@ -99,9 +101,16 @@ class GDataEntry {
       const base::PlatformFileInfo& file_info,
       PlatformFileInfoProto* proto);
 
-  // Converts to/from proto.
+  // Converts to/from proto. Only handles the common part (i.e. does not
+  // touch |file_specific_info| and |directory_specific_info|.
   bool FromProto(const GDataEntryProto& proto) WARN_UNUSED_RESULT;
   void ToProto(GDataEntryProto* proto) const;
+
+  // Similar to ToProto() but this fills in |file_specific_info| and
+  // |directory_specific_info| based on the actual type of the entry.
+  // Used to obtain full metadata of a file or a directory as
+  // GDataEntryProto.
+  void ToProtoFull(GDataEntryProto* proto) const;
 
   // Escapes forward slashes from file names with magic unicode character
   // \u2215 pretty much looks the same in UI.
@@ -217,8 +226,8 @@ class GDataFile : public GDataEntry {
       GDataDirectoryService* directory_service);
 
   // Converts to/from proto.
-  bool FromProto(const GDataFileProto& proto) WARN_UNUSED_RESULT;
-  void ToProto(GDataFileProto* proto) const;
+  bool FromProto(const GDataEntryProto& proto) WARN_UNUSED_RESULT;
+  void ToProto(GDataEntryProto* proto) const;
 
   DocumentEntry::EntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }

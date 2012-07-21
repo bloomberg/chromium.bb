@@ -47,9 +47,9 @@ ACTION_P(MockUpdateFileByResourceId, error) {
 
 // Action used to set mock expectations for GetFileInfoByResourceId().
 ACTION_P2(MockUpdateFileByResourceId, error, md5) {
-  scoped_ptr<GDataFileProto> file_proto(new GDataFileProto);
-  file_proto->set_file_md5(md5);
-  arg1.Run(error, FilePath(), file_proto.Pass());
+  scoped_ptr<GDataEntryProto> entry_proto(new GDataEntryProto);
+  entry_proto->mutable_file_specific_info()->set_file_md5(md5);
+  arg1.Run(error, FilePath(), entry_proto.Pass());
 }
 
 class GDataSyncClientTest : public testing::Test {
@@ -240,12 +240,12 @@ class GDataSyncClientTest : public testing::Test {
   // ID.
   //
   // This is used for testing StartCheckingExistingPinnedFiles(), hence we
-  // are only interested in the MD5 value in GDataFileProto.
+  // are only interested in the MD5 value in GDataEntryProto.
   void SetExpectationForGetFileInfoByResourceId(
       const std::string& resource_id,
       const std::string& new_md5) {
   EXPECT_CALL(*mock_file_system_,
-              GetFileInfoByResourceId(resource_id, _))
+              GetEntryInfoByResourceId(resource_id, _))
       .WillOnce(MockUpdateFileByResourceId(
           GDATA_FILE_OK,
           new_md5));

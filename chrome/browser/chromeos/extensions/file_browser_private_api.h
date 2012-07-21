@@ -446,12 +446,12 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
   // file path and update its the properties.
   virtual void DoOperation(const FilePath& file_path,
                            base::DictionaryValue* properties,
-                           scoped_ptr<gdata::GDataFileProto> file_proto);
+                           scoped_ptr<gdata::GDataEntryProto> entry_proto);
 
   void OnOperationComplete(const FilePath& file_path,
                            base::DictionaryValue* properties,
                            gdata::GDataFileError error,
-                           scoped_ptr<gdata::GDataFileProto> file_proto);
+                           scoped_ptr<gdata::GDataEntryProto> entry_proto);
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -463,7 +463,7 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
   void OnGetFileInfo(const FilePath& file_path,
                      base::DictionaryValue* property_dict,
                      gdata::GDataFileError error,
-                     scoped_ptr<gdata::GDataFileProto> file_proto);
+                     scoped_ptr<gdata::GDataEntryProto> entry_proto);
 
   void CacheStateReceived(base::DictionaryValue* property_dict,
                           bool success,
@@ -497,12 +497,12 @@ class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
   virtual void DoOperation(
       const FilePath& file_path,
       base::DictionaryValue* properties,
-      scoped_ptr<gdata::GDataFileProto> file_proto) OVERRIDE;
+      scoped_ptr<gdata::GDataEntryProto> entry_proto) OVERRIDE;
 
   // Callback for SetPinState. Updates properties with error.
   void OnPinStateSet(const FilePath& path,
                      base::DictionaryValue* properties,
-                     scoped_ptr<gdata::GDataFileProto> file_proto,
+                     scoped_ptr<gdata::GDataEntryProto> entry_proto,
                      gdata::GDataFileError error,
                      const std::string& resource_id,
                      const std::string& md5);

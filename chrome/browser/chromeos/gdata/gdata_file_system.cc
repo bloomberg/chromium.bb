@@ -851,43 +851,41 @@ void GDataFileSystem::StopUpdates() {
   update_timer_.Stop();
 }
 
-void GDataFileSystem::GetFileInfoByResourceId(
+void GDataFileSystem::GetEntryInfoByResourceId(
     const std::string& resource_id,
-    const GetFileInfoWithFilePathCallback& callback) {
+    const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
-      base::Bind(&GDataFileSystem::GetFileInfoByResourceIdOnUIThread,
+      base::Bind(&GDataFileSystem::GetEntryInfoByResourceIdOnUIThread,
                  ui_weak_ptr_,
                  resource_id,
                  CreateRelayCallback(callback)));
 }
 
-void GDataFileSystem::GetFileInfoByResourceIdOnUIThread(
+void GDataFileSystem::GetEntryInfoByResourceIdOnUIThread(
     const std::string& resource_id,
-    const GetFileInfoWithFilePathCallback& callback) {
+    const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   directory_service_->GetEntryByResourceIdAsync(resource_id,
-      base::Bind(&GDataFileSystem::GetFileInfoByEntryOnUIThread,
+      base::Bind(&GDataFileSystem::GetEntryInfoByEntryOnUIThread,
                  ui_weak_ptr_,
                  callback));
 }
 
-void GDataFileSystem::GetFileInfoByEntryOnUIThread(
-    const GetFileInfoWithFilePathCallback& callback,
+void GDataFileSystem::GetEntryInfoByEntryOnUIThread(
+    const GetEntryInfoWithFilePathCallback& callback,
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (entry && entry->AsGDataFile()) {
-    scoped_ptr<GDataFileProto> file_proto(new GDataFileProto);
-    entry->AsGDataFile()->ToProto(file_proto.get());
-    callback.Run(GDATA_FILE_OK,
-                 entry->GetFilePath(),
-                 file_proto.Pass());
+  if (entry) {
+    scoped_ptr<GDataEntryProto> entry_proto(new GDataEntryProto);
+    entry->ToProtoFull(entry_proto.get());
+    callback.Run(GDATA_FILE_OK, entry->GetFilePath(), entry_proto.Pass());
   } else {
     callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
                  FilePath(),
-                 scoped_ptr<GDataFileProto>());
+                 scoped_ptr<GDataEntryProto>());
   }
 }
 
@@ -1872,31 +1870,31 @@ void GDataFileSystem::GetFileByPathOnUIThread(
     const GetDownloadDataCallback& get_download_data_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GetFileInfoByPath(
+  GetEntryInfoByPath(
       file_path,
-      base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForGetFileByPath,
+      base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForGetFileByPath,
                  ui_weak_ptr_,
                  file_path,
                  CreateRelayCallback(get_file_callback),
                  CreateRelayCallback(get_download_data_callback)));
 }
 
-void GDataFileSystem::OnGetFileInfoCompleteForGetFileByPath(
+void GDataFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
     const GetDownloadDataCallback& get_download_data_callback,
     GDataFileError error,
-    scoped_ptr<GDataFileProto> file_info) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // If |error| == PLATFORM_FILE_OK then |file_info| must be valid.
+  // If |error| == PLATFORM_FILE_OK then |entry_proto| must be valid.
   DCHECK(error != GDATA_FILE_OK ||
-         (file_info.get() && !file_info->gdata_entry().resource_id().empty()));
+         (entry_proto.get() && !entry_proto->resource_id().empty()));
   GetResolvedFileByPath(file_path,
                         get_file_callback,
                         get_download_data_callback,
                         error,
-                        file_info.get());
+                        entry_proto.get());
 }
 
 void GDataFileSystem::GetResolvedFileByPath(
@@ -1904,10 +1902,13 @@ void GDataFileSystem::GetResolvedFileByPath(
     const GetFileCallback& get_file_callback,
     const GetDownloadDataCallback& get_download_data_callback,
     GDataFileError error,
-    const GDataFileProto* file_proto) {
+    const GDataEntryProto* entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK || !file_proto) {
+  if (!entry_proto->has_file_specific_info())
+    error = GDATA_FILE_ERROR_NOT_FOUND;
+
+  if (error != GDATA_FILE_OK) {
     if (!get_file_callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -1924,7 +1925,7 @@ void GDataFileSystem::GetResolvedFileByPath(
   // document instead of fetching the document content in one of the exported
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
-  if (file_proto->is_hosted_document()) {
+  if (entry_proto->file_specific_info().is_hosted_document()) {
     GDataFileError* error =
         new GDataFileError(GDATA_FILE_OK);
     FilePath* temp_file_path = new FilePath;
@@ -1936,8 +1937,8 @@ void GDataFileSystem::GetResolvedFileByPath(
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    cache_->GetCacheDirectoryPath(
                        GDataCache::CACHE_TYPE_TMP_DOCUMENTS),
-                   GURL(file_proto->alternate_url()),
-                   file_proto->gdata_entry().resource_id(),
+                   GURL(entry_proto->file_specific_info().alternate_url()),
+                   entry_proto->resource_id(),
                    error,
                    temp_file_path,
                    mime_type,
@@ -1953,24 +1954,25 @@ void GDataFileSystem::GetResolvedFileByPath(
 
   // Returns absolute path of the file if it were cached or to be cached.
   FilePath local_tmp_path = cache_->GetCacheFilePath(
-      file_proto->gdata_entry().resource_id(),
-      file_proto->file_md5(),
+      entry_proto->resource_id(),
+      entry_proto->file_specific_info().file_md5(),
       GDataCache::CACHE_TYPE_TMP,
       GDataCache::CACHED_FILE_FROM_SERVER);
   cache_->GetFileOnUIThread(
-      file_proto->gdata_entry().resource_id(),
-      file_proto->file_md5(),
+      entry_proto->resource_id(),
+      entry_proto->file_specific_info().file_md5(),
       base::Bind(
           &GDataFileSystem::OnGetFileFromCache,
           ui_weak_ptr_,
-          GetFileFromCacheParams(file_path,
-                                 local_tmp_path,
-                                 GURL(file_proto->gdata_entry().content_url()),
-                                 file_proto->gdata_entry().resource_id(),
-                                 file_proto->file_md5(),
-                                 file_proto->content_mime_type(),
-                                 get_file_callback,
-                                 get_download_data_callback)));
+          GetFileFromCacheParams(
+              file_path,
+              local_tmp_path,
+              GURL(entry_proto->content_url()),
+              entry_proto->resource_id(),
+              entry_proto->file_specific_info().file_md5(),
+              entry_proto->file_specific_info().content_mime_type(),
+              get_file_callback,
+              get_download_data_callback)));
 }
 
 void GDataFileSystem::GetFileByResourceId(
@@ -2196,58 +2198,10 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
   DCHECK(entry);
 
   scoped_ptr<GDataEntryProto> entry_proto(new GDataEntryProto);
-  entry->ToProto(entry_proto.get());
+  entry->ToProtoFull(entry_proto.get());
 
   if (!callback.is_null())
     callback.Run(GDATA_FILE_OK, entry_proto.Pass());
-}
-
-void GDataFileSystem::GetFileInfoByPath(const FilePath& file_path,
-                                        const GetFileInfoCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  RunTaskOnUIThread(
-      base::Bind(&GDataFileSystem::GetFileInfoByPathAsyncOnUIThread,
-                 ui_weak_ptr_,
-                 file_path,
-                 CreateRelayCallback(callback)));
-}
-
-void GDataFileSystem::GetFileInfoByPathAsyncOnUIThread(
-    const FilePath& file_path,
-    const GetFileInfoCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  FindEntryByPathAsyncOnUIThread(
-      file_path,
-      base::Bind(&GDataFileSystem::OnGetFileInfo, ui_weak_ptr_, callback));
-}
-
-void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
-                                    GDataFileError error,
-                                    GDataEntry* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error, scoped_ptr<GDataFileProto>());
-    return;
-  }
-  DCHECK(entry);
-
-  GDataFile* file = entry->AsGDataFile();
-  if (!file) {
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
-                   scoped_ptr<GDataFileProto>());
-    return;
-  }
-
-  scoped_ptr<GDataFileProto> file_proto(new GDataFileProto);
-  file->ToProto(file_proto.get());
-
-  if (!callback.is_null())
-    callback.Run(GDATA_FILE_OK, file_proto.Pass());
 }
 
 void GDataFileSystem::ReadDirectoryByPath(
@@ -3810,9 +3764,9 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
   }
   open_files_.insert(file_path);
 
-  GetFileInfoByPath(
+  GetEntryInfoByPath(
       file_path,
-      base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForOpenFile,
+      base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForOpenFile,
                  ui_weak_ptr_,
                  file_path,
                  base::Bind(&GDataFileSystem::OnOpenFileFinished,
@@ -3821,15 +3775,19 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
                             callback)));
 }
 
-void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
+void GDataFileSystem::OnGetEntryInfoCompleteForOpenFile(
     const FilePath& file_path,
     const OpenFileCallback& callback,
     GDataFileError error,
-    scoped_ptr<GDataFileProto> file_info) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (!entry_proto->has_file_specific_info())
+    error = GDATA_FILE_ERROR_NOT_FOUND;
+
   if (error == GDATA_FILE_OK) {
-    if (file_info->file_md5().empty() || file_info->is_hosted_document()) {
+    if (entry_proto->file_specific_info().file_md5().empty() ||
+        entry_proto->file_specific_info().is_hosted_document()) {
       // No support for opening a directory or hosted document.
       error = GDATA_FILE_ERROR_INVALID_OPERATION;
     }
@@ -3841,23 +3799,23 @@ void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
     return;
   }
 
-  DCHECK(!file_info->gdata_entry().resource_id().empty());
+  DCHECK(!entry_proto->resource_id().empty());
   GetResolvedFileByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetFileCompleteForOpenFile,
                  ui_weak_ptr_,
                  callback,
                  GetFileCompleteForOpenParams(
-                     file_info->gdata_entry().resource_id(),
-                     file_info->file_md5())),
+                     entry_proto->resource_id(),
+                     entry_proto->file_specific_info().file_md5())),
       GetDownloadDataCallback(),
       error,
-      file_info.get());
+      entry_proto.get());
 }
 
 void GDataFileSystem::OnGetFileCompleteForOpenFile(
     const OpenFileCallback& callback,
-    const GetFileCompleteForOpenParams& file_info,
+    const GetFileCompleteForOpenParams& entry_proto,
     GDataFileError error,
     const FilePath& file_path,
     const std::string& mime_type,
@@ -3874,8 +3832,8 @@ void GDataFileSystem::OnGetFileCompleteForOpenFile(
   DCHECK_EQ(REGULAR_FILE, file_type);
 
   cache_->MarkDirtyOnUIThread(
-      file_info.resource_id,
-      file_info.md5,
+      entry_proto.resource_id,
+      entry_proto.md5,
       base::Bind(&GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
                  ui_weak_ptr_,
                  callback));
@@ -3933,9 +3891,9 @@ void GDataFileSystem::CloseFileOnUIThread(
   }
 
   // Step 1 of CloseFile: Get resource_id and md5 for |file_path|.
-  GetFileInfoByPathAsyncOnUIThread(
+  GetEntryInfoByPathAsyncOnUIThread(
       file_path,
-      base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForCloseFile,
+      base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForCloseFile,
                  ui_weak_ptr_,
                  file_path,
                  base::Bind(&GDataFileSystem::OnCloseFileFinished,
@@ -3944,11 +3902,14 @@ void GDataFileSystem::CloseFileOnUIThread(
                             callback)));
 }
 
-void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
+void GDataFileSystem::OnGetEntryInfoCompleteForCloseFile(
     const FilePath& file_path,
     const FileOperationCallback& callback,
     GDataFileError error,
-    scoped_ptr<GDataFileProto> file_proto) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  if (!entry_proto->has_file_specific_info())
+    error = GDATA_FILE_ERROR_NOT_FOUND;
+
   if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
@@ -3958,8 +3919,8 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
   // Step 2 of CloseFile: Get the local path of the cache. Since CloseFile must
   // always be called on paths opened by OpenFile, the file must be cached,
   cache_->GetFileOnUIThread(
-      file_proto->gdata_entry().resource_id(),
-      file_proto->file_md5(),
+      entry_proto->resource_id(),
+      entry_proto->file_specific_info().file_md5(),
       base::Bind(&GDataFileSystem::OnGetCacheFilePathCompleteForCloseFile,
                  ui_weak_ptr_,
                  file_path,

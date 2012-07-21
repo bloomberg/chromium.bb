@@ -102,36 +102,39 @@ void OpenEditURLUIThread(Profile* profile, const GURL* edit_url) {
   }
 }
 
-// Invoked upon completion of GetFileInfoByResourceId initiated by
+// Invoked upon completion of GetEntryInfoByResourceId initiated by
 // ModifyGDataFileResourceUrl.
-void OnGetFileInfoByResourceId(Profile* profile,
+void OnGetEntryInfoByResourceId(Profile* profile,
                                const std::string& resource_id,
                                GDataFileError error,
                                const FilePath& /* gdata_file_path */,
-                               scoped_ptr<GDataFileProto> file_proto) {
+                               scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != GDATA_FILE_OK)
     return;
 
-  DCHECK(file_proto.get());
-  const std::string& file_name = file_proto->gdata_entry().base_name();
-  const GURL edit_url = GetFileResourceUrl(resource_id, file_name);
+  DCHECK(entry_proto.get());
+  const std::string& base_name = entry_proto->base_name();
+  const GURL edit_url = GetFileResourceUrl(resource_id, base_name);
   OpenEditURLUIThread(profile, &edit_url);
   DVLOG(1) << "OnFindEntryByResourceId " << edit_url;
 }
 
-// Invoked upon completion of GetFileInfoByPath initiated by
+// Invoked upon completion of GetEntryInfoByPath initiated by
 // InsertGDataCachePathPermissions.
-void OnGetFileInfoForInsertGDataCachePathsPermissions(
+void OnGetEntryInfoForInsertGDataCachePathsPermissions(
     Profile* profile,
     std::vector<std::pair<FilePath, int> >* cache_paths,
     const base::Closure& callback,
     GDataFileError error,
-    scoped_ptr<GDataFileProto> file_info) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(profile);
   DCHECK(cache_paths);
   DCHECK(!callback.is_null());
+
+  if (!entry_proto->has_file_specific_info())
+    error = GDATA_FILE_ERROR_NOT_FOUND;
 
   GDataCache* cache = GetGDataCache(profile);
   if (!cache || error != GDATA_FILE_OK) {
@@ -139,9 +142,9 @@ void OnGetFileInfoForInsertGDataCachePathsPermissions(
     return;
   }
 
-  DCHECK(file_info.get());
-  std::string resource_id = file_info->gdata_entry().resource_id();
-  std::string file_md5 = file_info->file_md5();
+  DCHECK(entry_proto.get());
+  const std::string& resource_id = entry_proto->resource_id();
+  const std::string& file_md5 = entry_proto->file_specific_info().file_md5();
 
   // We check permissions for raw cache file paths only for read-only
   // operations (when fileEntry.file() is called), so read only permissions
@@ -251,9 +254,9 @@ void ModifyGDataFileResourceUrl(Profile* profile,
     // Handle all other gdata files.
     const std::string resource_id =
         gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
-    file_system->GetFileInfoByResourceId(
+    file_system->GetEntryInfoByResourceId(
         resource_id,
-        base::Bind(&OnGetFileInfoByResourceId,
+        base::Bind(&OnGetEntryInfoByResourceId,
                    profile,
                    resource_id));
     *url = GURL();
@@ -301,15 +304,15 @@ void InsertGDataCachePathsPermissions(
   FilePath gdata_path = gdata_paths->back();
   gdata_paths->pop_back();
 
-  // Call GetFileInfoByPath() to get file info for |gdata_path| then insert
+  // Call GetEntryInfoByPath() to get file info for |gdata_path| then insert
   // all possible cache paths to the output vector |cache_paths|.
   // Note that we can only process one file path at a time. Upon completion
-  // of OnGetFileInfoForInsertGDataCachePathsPermissions(), we recursively call
+  // of OnGetEntryInfoForInsertGDataCachePathsPermissions(), we recursively call
   // InsertGDataCachePathsPermissions() to process the next file path from the
   // back of the input vector |gdata_paths| until it is empty.
-  file_system->GetFileInfoByPath(
+  file_system->GetEntryInfoByPath(
       gdata_path,
-      base::Bind(&OnGetFileInfoForInsertGDataCachePathsPermissions,
+      base::Bind(&OnGetEntryInfoForInsertGDataCachePathsPermissions,
                  profile,
                  cache_paths,
                  base::Bind(&InsertGDataCachePathsPermissions,

@@ -20,7 +20,32 @@ message PlatformFileInfoProto {
   optional int64 creation_time = 6;
 }
 
-// Represents GDataEntry.
+// File specific info, which is a part of GDataEntryProto.
+message GDataFileSpecificInfo {
+  // This URL points to a thumbnail image. The thumbnail URL is not permanent
+  // as it's not protected by authentication. See crbug.com/127697 for how
+  // stale thumbnail URLs are handled.
+  optional string thumbnail_url = 1;
+
+  // This URL is used for opening hosted documents with Google Docs's web
+  // interface.
+  optional string alternate_url = 2;
+
+  // Content mime type like "text/plain".
+  optional string content_mime_type = 3;
+
+  // The MD5 of contents of a regular file.
+  optional string file_md5 = 4;
+
+  // File extension, including the dot, used for hosted documents
+  // (ex. ".gsheet" for hosted spreadsheet documents).
+  optional string document_extension = 5;
+
+  // True if the file is a hosted document.
+  optional bool is_hosted_document = 6;
+}
+
+// Represents GDataEntry, GDataFile, and GDataDirectory without children.
 message GDataEntryProto {
   optional PlatformFileInfoProto file_info = 1;
   optional string base_name = 2;
@@ -34,24 +59,23 @@ message GDataEntryProto {
   // used to upload a new file to that directory. See
   // https://developers.google.com/google-apps/documents-list/
   optional string upload_url = 8;
+
+  // File specific information, such as MD5.
+  optional GDataFileSpecificInfo file_specific_info = 9;
 }
 
-// Represents GDataFile.
-message GDataFileProto {
-  optional GDataEntryProto gdata_entry = 1;
-  optional string thumbnail_url = 3;
-  optional string alternate_url = 4;
-  optional string content_mime_type = 5;
-  optional string file_md5 = 8;
-  optional string document_extension = 9;
-  optional bool is_hosted_document = 10;
-}
-
-// Represents GDataDirectory.
+// Represents GDataDirectory. This message type is defined to keep children
+// separate from GDataEntryProto. This design allows us to get the metadata
+// of a directory efficiently as GDataEntryProto, without carrying the
+// metadata of children.
+//
+// TODO(satorux): With the new metadata storage system, we plan to store
+// children as pairs of base name and resource ID. We should remove this
+// message type once we get there.
 message GDataDirectoryProto {
   optional GDataEntryProto gdata_entry = 1;
   repeated GDataDirectoryProto child_directories = 7;
-  repeated GDataFileProto child_files = 8;
+  repeated GDataEntryProto child_files = 9;
 }
 
 // Container for the root directory and the largest changestamp.
@@ -59,6 +83,10 @@ message GDataDirectoryProto {
 message GDataRootDirectoryProto {
   optional GDataDirectoryProto gdata_directory = 1;
   optional int32 largest_changestamp = 2;
+  // Monotonically increasing version number, which is changed when
+  // incompatible change is made in the proto file.
+  // kProtoVersion in gdata_files.h defines the current version.
+  optional int32 version = 3;
 }
 
 // Message to store information of an existing cache file.

@@ -1745,14 +1745,14 @@ GetGDataFilePropertiesFunction::~GetGDataFilePropertiesFunction() {
 void GetGDataFilePropertiesFunction::DoOperation(
     const FilePath& file_path,
     base::DictionaryValue* property_dict,
-    scoped_ptr<gdata::GDataFileProto> file_proto) {
+    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   DCHECK(property_dict);
 
   // Nothing to do here so simply call OnOperationComplete().
   OnOperationComplete(file_path,
                       property_dict,
                       gdata::GDATA_FILE_OK,
-                      file_proto.Pass());
+                      entry_proto.Pass());
 }
 
 bool GetGDataFilePropertiesFunction::RunImpl() {
@@ -1794,7 +1794,7 @@ void GetGDataFilePropertiesFunction::GetNextFileProperties() {
   // Start getting the file info.
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  system_service->file_system()->GetFileInfoByPath(
+  system_service->file_system()->GetEntryInfoByPath(
       file_path,
       base::Bind(&GetGDataFilePropertiesFunction::OnGetFileInfo,
                  this,
@@ -1814,37 +1814,45 @@ void GetGDataFilePropertiesFunction::OnGetFileInfo(
     const FilePath& file_path,
     base::DictionaryValue* property_dict,
     gdata::GDataFileError error,
-    scoped_ptr<gdata::GDataFileProto> file_proto) {
+    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   DCHECK(property_dict);
 
+  if (!entry_proto->has_file_specific_info())
+    error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
+
   if (error == gdata::GDATA_FILE_OK)
-    DoOperation(file_path, property_dict, file_proto.Pass());
+    DoOperation(file_path, property_dict, entry_proto.Pass());
   else
-    OnOperationComplete(file_path, property_dict, error, file_proto.Pass());
+    OnOperationComplete(file_path, property_dict, error, entry_proto.Pass());
 }
 
 void GetGDataFilePropertiesFunction::OnOperationComplete(
     const FilePath& file_path,
     base::DictionaryValue* property_dict,
     gdata::GDataFileError error,
-    scoped_ptr<gdata::GDataFileProto> file_proto) {
+    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+  if (!entry_proto->has_file_specific_info())
+    error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
+
   if (error != gdata::GDATA_FILE_OK) {
     property_dict->SetInteger("errorCode", error);
     CompleteGetFileProperties();
     return;
   }
-  DCHECK(file_proto.get());
+  DCHECK(entry_proto.get());
 
-  property_dict->SetString("thumbnailUrl", file_proto->thumbnail_url());
-  if (!file_proto->alternate_url().empty())
-    property_dict->SetString("editUrl", file_proto->alternate_url());
+  const gdata::GDataFileSpecificInfo& file_specific_info =
+      entry_proto->file_specific_info();
+  property_dict->SetString("thumbnailUrl", file_specific_info.thumbnail_url());
+  if (!file_specific_info.alternate_url().empty())
+    property_dict->SetString("editUrl", file_specific_info.alternate_url());
 
-  if (!file_proto->gdata_entry().content_url().empty()) {
-    property_dict->SetString("contentUrl",
-                             file_proto->gdata_entry().content_url());
+  if (!entry_proto->content_url().empty()) {
+    property_dict->SetString("contentUrl", entry_proto->content_url());
   }
 
-  property_dict->SetBoolean("isHosted", file_proto->is_hosted_document());
+  property_dict->SetBoolean("isHosted",
+                            file_specific_info.is_hosted_document());
 
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
@@ -1852,7 +1860,7 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
   // Get drive WebApps that can accept this file.
   ScopedVector<gdata::DriveWebAppInfo> web_apps;
   system_service->webapps_registry()->GetWebAppsForFile(
-          file_path, file_proto->content_mime_type(), &web_apps);
+          file_path, file_specific_info.content_mime_type(), &web_apps);
   if (!web_apps.empty()) {
     ListValue* apps = new ListValue();
     property_dict->Set("driveApps", apps);
@@ -1878,8 +1886,8 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
   }
 
   system_service->cache()->GetCacheEntryOnUIThread(
-      file_proto->gdata_entry().resource_id(),
-      file_proto->file_md5(),
+      entry_proto->resource_id(),
+      file_specific_info.file_md5(),
       base::Bind(
           &GetGDataFilePropertiesFunction::CacheStateReceived,
           this, property_dict));
@@ -1917,7 +1925,7 @@ bool PinGDataFileFunction::RunImpl() {
 void PinGDataFileFunction::DoOperation(
     const FilePath& file_path,
     base::DictionaryValue* properties,
-    scoped_ptr<gdata::GDataFileProto> file_proto) {
+    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   gdata::GDataSystemService* system_service =
@@ -1925,14 +1933,14 @@ void PinGDataFileFunction::DoOperation(
   // This is subtle but we should take references of resource_id and md5
   // before |file_info| is passed to |callback| by base::Passed(). Otherwise,
   // file_info->whatever() crashes.
-  const std::string& resource_id = file_proto->gdata_entry().resource_id();
-  const std::string& md5 = file_proto->file_md5();
+  const std::string& resource_id = entry_proto->resource_id();
+  const std::string& md5 = entry_proto->file_specific_info().file_md5();
   const gdata::CacheOperationCallback callback =
       base::Bind(&PinGDataFileFunction::OnPinStateSet,
                  this,
                  file_path,
                  properties,
-                 base::Passed(&file_proto));
+                 base::Passed(&entry_proto));
 
   if (set_pin_)
     system_service->cache()->PinOnUIThread(resource_id, md5, callback);
@@ -1943,13 +1951,13 @@ void PinGDataFileFunction::DoOperation(
 void PinGDataFileFunction::OnPinStateSet(
     const FilePath& path,
     base::DictionaryValue* properties,
-    scoped_ptr<gdata::GDataFileProto> file_proto,
+    scoped_ptr<gdata::GDataEntryProto> entry_proto,
     gdata::GDataFileError error,
     const std::string& /* resource_id */,
     const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  OnOperationComplete(path, properties, error, file_proto.Pass());
+  OnOperationComplete(path, properties, error, entry_proto.Pass());
 }
 
 GetFileLocationsFunction::GetFileLocationsFunction() {

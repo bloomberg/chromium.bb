@@ -311,20 +311,23 @@ void GDataSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
 
   for (size_t i = 0; i < resource_ids.size(); ++i) {
     const std::string& resource_id = resource_ids[i];
-    file_system_->GetFileInfoByResourceId(
+    file_system_->GetEntryInfoByResourceId(
         resource_id,
-        base::Bind(&GDataSyncClient::OnGetFileInfoByResourceId,
+        base::Bind(&GDataSyncClient::OnGetEntryInfoByResourceId,
                    weak_ptr_factory_.GetWeakPtr(),
                    resource_id));
   }
 }
 
-void GDataSyncClient::OnGetFileInfoByResourceId(
+void GDataSyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     GDataFileError error,
     const FilePath& /* gdata_file_path */,
-    scoped_ptr<GDataFileProto> file_proto) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!entry_proto->has_file_specific_info())
+    error = GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error != GDATA_FILE_OK) {
     LOG(WARNING) << "Entry not found: " << resource_id;
@@ -337,7 +340,7 @@ void GDataSyncClient::OnGetFileInfoByResourceId(
       base::Bind(&GDataSyncClient::OnGetCacheEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_id,
-                 file_proto->file_md5()));
+                 entry_proto->file_specific_info().file_md5()));
 }
 
 void GDataSyncClient::OnGetCacheEntry(

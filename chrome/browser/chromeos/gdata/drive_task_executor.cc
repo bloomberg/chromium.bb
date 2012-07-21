@@ -73,7 +73,7 @@ bool DriveTaskExecutor::ExecuteAndNotify(
 
   for (std::vector<FilePath>::const_iterator iter = raw_paths.begin();
       iter != raw_paths.end(); ++iter) {
-    file_system->GetFileInfoByPath(
+    file_system->GetEntryInfoByPath(
         *iter,
         base::Bind(&DriveTaskExecutor::OnFileEntryFetched, this));
   }
@@ -82,13 +82,17 @@ bool DriveTaskExecutor::ExecuteAndNotify(
 
 void DriveTaskExecutor::OnFileEntryFetched(
     GDataFileError error,
-    scoped_ptr<gdata::GDataFileProto> file_proto) {
+    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   // If we aborted, then this will be zero.
   if (!current_index_)
     return;
 
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile());
+
+  // Here, we are only insterested in files.
+  if (!entry_proto->has_file_specific_info())
+    error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
 
   if (!system_service || error != GDATA_FILE_OK) {
     Done(false);
@@ -102,11 +106,11 @@ void DriveTaskExecutor::OnFileEntryFetched(
   // current document entry for this document so we can get the
   // open-with-<app_id> urls from the document entry.
   docs_service->AuthorizeApp(
-      GURL(file_proto->gdata_entry().edit_url()),
+      GURL(entry_proto->edit_url()),
       app_id_,
       base::Bind(&DriveTaskExecutor::OnAppAuthorized,
                  this,
-                 file_proto->gdata_entry().resource_id()));
+                 entry_proto->resource_id()));
 }
 
 void DriveTaskExecutor::OnAppAuthorized(

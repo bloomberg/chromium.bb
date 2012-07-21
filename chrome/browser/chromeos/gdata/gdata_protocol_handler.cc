@@ -172,11 +172,11 @@ class GDataURLRequestJob : public net::URLRequestJob {
   // to |file_size|, and notifies result for Start().
   void OnGetFileSize(int64 *file_size);
 
-  // Helper callback for GetFileInfoByResourceId invoked by StartAsync.
-  void OnGetFileInfoByResourceId(const std::string& resource_id,
-                                 GDataFileError error,
-                                 const FilePath& gdata_file_path,
-                                 scoped_ptr<GDataFileProto> file_proto);
+  // Helper callback for GetEntryInfoByResourceId invoked by StartAsync.
+  void OnGetEntryInfoByResourceId(const std::string& resource_id,
+                                  GDataFileError error,
+                                  const FilePath& gdata_file_path,
+                                  scoped_ptr<GDataEntryProto> entry_proto);
 
   // Helper methods for ReadRawData to open file and read from its corresponding
   // stream in a streaming fashion.
@@ -499,23 +499,26 @@ void GDataURLRequestJob::StartAsync(GDataFileSystemInterface** file_system) {
     return;
   }
 
-  file_system_->GetFileInfoByResourceId(
+  file_system_->GetEntryInfoByResourceId(
       resource_id,
-      base::Bind(&GDataURLRequestJob::OnGetFileInfoByResourceId,
+      base::Bind(&GDataURLRequestJob::OnGetEntryInfoByResourceId,
                  weak_ptr_factory_->GetWeakPtr(),
                  resource_id));
 }
 
-void GDataURLRequestJob::OnGetFileInfoByResourceId(
+void GDataURLRequestJob::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     GDataFileError error,
     const FilePath& gdata_file_path,
-    scoped_ptr<GDataFileProto> file_proto) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  if (!entry_proto->has_file_specific_info())
+    error = GDATA_FILE_ERROR_NOT_FOUND;
+
   if (error == GDATA_FILE_OK) {
-    DCHECK(file_proto.get());
-    mime_type_ = file_proto->content_mime_type();
+    DCHECK(entry_proto.get());
+    mime_type_ = entry_proto->file_specific_info().content_mime_type();
     gdata_file_path_ = gdata_file_path;
-    initial_file_size_ = file_proto->gdata_entry().file_info().size();
+    initial_file_size_ = entry_proto->file_info().size();
   } else {
     mime_type_.clear();
     gdata_file_path_.clear();

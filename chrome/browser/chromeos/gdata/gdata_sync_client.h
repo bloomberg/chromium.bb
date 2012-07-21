@@ -151,10 +151,10 @@ class GDataSyncClient
     const std::vector<std::string>& resource_ids);
 
   // Called when a file entry is obtained.
-  void OnGetFileInfoByResourceId(const std::string& resource_id,
+  void OnGetEntryInfoByResourceId(const std::string& resource_id,
                                  GDataFileError error,
                                  const FilePath& file_path,
-                                 scoped_ptr<GDataFileProto> file_proto);
+                                 scoped_ptr<GDataEntryProto> entry_proto);
 
   // Called when a cache entry is obtained.
   void OnGetCacheEntry(const std::string& resource_id,

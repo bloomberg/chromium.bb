@@ -232,17 +232,20 @@ void OnGDataFileFound(Profile* profile,
                       const FilePath& file_path,
                       gdata::GDataFileType file_type,
                       gdata::GDataFileError error,
-                      scoped_ptr<gdata::GDataFileProto> file_proto) {
+                      scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!entry_proto->has_file_specific_info())
+    error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error == gdata::GDATA_FILE_OK) {
     GURL page_url;
     if (file_type == gdata::REGULAR_FILE) {
       page_url = gdata::util::GetFileResourceUrl(
-          file_proto->gdata_entry().resource_id(),
-          file_proto->gdata_entry().base_name());
+          entry_proto->resource_id(),
+          entry_proto->base_name());
     } else if (file_type == gdata::HOSTED_DOCUMENT) {
-      page_url = GURL(file_proto->alternate_url());
+      page_url = GURL(entry_proto->file_specific_info().alternate_url());
     } else {
       NOTREACHED();
     }
@@ -595,7 +598,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
         return false;
 
       // Open the file once the file is found.
-      system_service->file_system()->GetFileInfoByPath(
+      system_service->file_system()->GetEntryInfoByPath(
           gdata::util::ExtractGDataPath(path),
           base::Bind(&OnGDataFileFound, profile, path, gdata::REGULAR_FILE));
       return true;
@@ -612,7 +615,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
       if (!system_service)
         return false;
 
-      system_service->file_system()->GetFileInfoByPath(
+      system_service->file_system()->GetEntryInfoByPath(
           gdata::util::ExtractGDataPath(path),
           base::Bind(&OnGDataFileFound, profile, path,
                      gdata::HOSTED_DOCUMENT));

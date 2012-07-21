@@ -603,35 +603,50 @@ void GDataEntry::ToProto(GDataEntryProto* proto) const {
   proto->set_upload_url(upload_url_.spec());
 }
 
-bool GDataFile::FromProto(const GDataFileProto& proto) {
-  DCHECK(!proto.gdata_entry().file_info().is_directory());
+void GDataEntry::ToProtoFull(GDataEntryProto* proto) const {
+  if (AsGDataFileConst()) {
+    AsGDataFileConst()->ToProto(proto);
+  } else if (AsGDataDirectoryConst()) {
+    // Unlike files, directories don't have directory specific info, so just
+    // calling GDataEntry::ToProto().
+    ToProto(proto);
+  } else {
+    NOTREACHED();
+  }
+}
 
-  if (!GDataEntry::FromProto(proto.gdata_entry()))
+bool GDataFile::FromProto(const GDataEntryProto& proto) {
+  DCHECK(!proto.file_info().is_directory());
+
+  if (!GDataEntry::FromProto(proto))
     return false;
 
-  thumbnail_url_ = GURL(proto.thumbnail_url());
-  alternate_url_ = GURL(proto.alternate_url());
-  content_mime_type_ = proto.content_mime_type();
-  file_md5_ = proto.file_md5();
-  document_extension_ = proto.document_extension();
-  is_hosted_document_ = proto.is_hosted_document();
+  thumbnail_url_ = GURL(proto.file_specific_info().thumbnail_url());
+  alternate_url_ = GURL(proto.file_specific_info().alternate_url());
+  content_mime_type_ = proto.file_specific_info().content_mime_type();
+  file_md5_ = proto.file_specific_info().file_md5();
+  document_extension_ = proto.file_specific_info().document_extension();
+  is_hosted_document_ = proto.file_specific_info().is_hosted_document();
 
   return true;
 }
 
-void GDataFile::ToProto(GDataFileProto* proto) const {
-  GDataEntry::ToProto(proto->mutable_gdata_entry());
-  DCHECK(!proto->gdata_entry().file_info().is_directory());
-  proto->set_thumbnail_url(thumbnail_url_.spec());
-  proto->set_alternate_url(alternate_url_.spec());
-  proto->set_content_mime_type(content_mime_type_);
-  proto->set_file_md5(file_md5_);
-  proto->set_document_extension(document_extension_);
-  proto->set_is_hosted_document(is_hosted_document_);
+void GDataFile::ToProto(GDataEntryProto* proto) const {
+  GDataEntry::ToProto(proto);
+  DCHECK(!proto->file_info().is_directory());
+  GDataFileSpecificInfo* file_specific_info =
+      proto->mutable_file_specific_info();
+  file_specific_info->set_thumbnail_url(thumbnail_url_.spec());
+  file_specific_info->set_alternate_url(alternate_url_.spec());
+  file_specific_info->set_content_mime_type(content_mime_type_);
+  file_specific_info->set_file_md5(file_md5_);
+  file_specific_info->set_document_extension(document_extension_);
+  file_specific_info->set_is_hosted_document(is_hosted_document_);
 }
 
 bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   DCHECK(proto.gdata_entry().file_info().is_directory());
+  DCHECK(!proto.gdata_entry().has_file_specific_info());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
     scoped_ptr<GDataFile> file(new GDataFile(this, directory_service_));
@@ -662,6 +677,7 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
 void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   GDataEntry::ToProto(proto->mutable_gdata_entry());
   DCHECK(proto->gdata_entry().file_info().is_directory());
+
   for (GDataFileCollection::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
     GDataFile* file = iter->second;
@@ -680,9 +696,9 @@ void GDataEntry::SerializeToString(std::string* serialized_proto) const {
   const GDataDirectory* dir = AsGDataDirectoryConst();
 
   if (file) {
-    GDataFileProto file_proto;
-    file->ToProto(&file_proto);
-    const bool ok = file_proto.SerializeToString(serialized_proto);
+    GDataEntryProto entry_proto;
+    file->ToProto(&entry_proto);
+    const bool ok = entry_proto.SerializeToString(serialized_proto);
     DCHECK(ok);
   } else if (dir) {
     GDataDirectoryProto dir_proto;
@@ -696,7 +712,7 @@ void GDataEntry::SerializeToString(std::string* serialized_proto) const {
 scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
     const std::string& serialized_proto) {
   // First try to parse as GDataDirectoryProto. Note that this can succeed for
-  // a serialized_proto that's really a GDataFileProto - we have to check
+  // a serialized_proto that's really a GDataEntryProto - we have to check
   // is_directory to be sure.
   GDataDirectoryProto dir_proto;
   bool ok = dir_proto.ParseFromString(serialized_proto);
@@ -707,12 +723,12 @@ scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
     return scoped_ptr<GDataEntry>(dir.release());
   }
 
-  GDataFileProto file_proto;
-  ok = file_proto.ParseFromString(serialized_proto);
+  GDataEntryProto entry_proto;
+  ok = entry_proto.ParseFromString(serialized_proto);
   if (ok) {
-    DCHECK(!file_proto.gdata_entry().file_info().is_directory());
+    DCHECK(!entry_proto.file_info().is_directory());
     scoped_ptr<GDataFile> file(new GDataFile(NULL, NULL));
-    if (!file->FromProto(file_proto))
+    if (!file->FromProto(entry_proto))
       return scoped_ptr<GDataEntry>(NULL);
     return scoped_ptr<GDataEntry>(file.release());
   }
@@ -724,6 +740,7 @@ void GDataDirectoryService::SerializeToString(
   GDataRootDirectoryProto proto;
   root_->ToProto(proto.mutable_gdata_directory());
   proto.set_largest_changestamp(largest_changestamp_);
+  proto.set_version(kProtoVersion);
 
   const bool ok = proto.SerializeToString(serialized_proto);
   DCHECK(ok);
@@ -734,6 +751,13 @@ bool GDataDirectoryService::ParseFromString(
   GDataRootDirectoryProto proto;
   if (!proto.ParseFromString(serialized_proto))
     return false;
+
+  if (proto.version() != kProtoVersion) {
+    LOG(ERROR) << "Incompatible proto detected (incompatible version): "
+               << proto.version();
+    return false;
+  }
+
   if (!IsValidRootDirectoryProto(proto.gdata_directory()))
     return false;
 
