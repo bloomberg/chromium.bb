@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/observer_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/notifier/sync_notifier_helper.h"
 #include "sync/notifier/sync_notifier_observer.h"
 
 using content::BrowserThread;
@@ -25,11 +25,11 @@ class ChromeSyncNotificationBridge::Core
 
   // All member functions below must be called on the sync task runner.
 
-  void AddObserver(syncer::SyncNotifierObserver* observer);
-  void RemoveObserver(syncer::SyncNotifierObserver* observer);
+  void UpdateRegisteredIds(syncer::SyncNotifierObserver* handler,
+                           const syncer::ObjectIdSet& ids);
 
   void EmitNotification(
-      syncer::ModelTypePayloadMap payload_map,
+      const syncer::ObjectIdPayloadMap& payload_map,
       syncer::IncomingNotificationSource notification_source);
 
  private:
@@ -41,8 +41,7 @@ class ChromeSyncNotificationBridge::Core
   const scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
 
   // Used only on |sync_task_runner_|.
-  syncer::ModelTypeSet enabled_types_;
-  ObserverList<syncer::SyncNotifierObserver> observers_;
+  syncer::SyncNotifierHelper helper_;
 };
 
 ChromeSyncNotificationBridge::Core::Core(
@@ -57,25 +56,18 @@ ChromeSyncNotificationBridge::Core::~Core() {
          sync_task_runner_->RunsTasksOnCurrentThread());
 }
 
-void ChromeSyncNotificationBridge::Core::AddObserver(
-    syncer::SyncNotifierObserver* observer) {
+void ChromeSyncNotificationBridge::Core::UpdateRegisteredIds(
+    syncer::SyncNotifierObserver* handler,
+    const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  observers_.AddObserver(observer);
-}
-
-void ChromeSyncNotificationBridge::Core::RemoveObserver(
-    syncer::SyncNotifierObserver* observer) {
-  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  observers_.RemoveObserver(observer);
+  helper_.UpdateRegisteredIds(handler, ids);
 }
 
 void ChromeSyncNotificationBridge::Core::EmitNotification(
-    syncer::ModelTypePayloadMap payload_map,
+    const syncer::ObjectIdPayloadMap& payload_map,
     syncer::IncomingNotificationSource notification_source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(
-      syncer::SyncNotifierObserver, observers_,
-      OnIncomingNotification(payload_map, notification_source));
+  helper_.DispatchInvalidationsToHandlers(payload_map, notification_source);
 }
 
 ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
@@ -99,16 +91,11 @@ void ChromeSyncNotificationBridge::UpdateEnabledTypes(
   enabled_types_ = types;
 }
 
-void ChromeSyncNotificationBridge::AddObserver(
-    syncer::SyncNotifierObserver* observer) {
+void ChromeSyncNotificationBridge::UpdateRegisteredIds(
+    syncer::SyncNotifierObserver* handler,
+    const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  core_->AddObserver(observer);
-}
-
-void ChromeSyncNotificationBridge::RemoveObserver(
-    syncer::SyncNotifierObserver* observer) {
-  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  core_->RemoveObserver(observer);
+  core_->UpdateRegisteredIds(handler, ids);
 }
 
 void ChromeSyncNotificationBridge::Observe(
@@ -140,7 +127,9 @@ void ChromeSyncNotificationBridge::Observe(
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Core::EmitNotification,
-                 core_, payload_map, notification_source));
+                 core_,
+                 ModelTypePayloadMapToObjectIdPayloadMap(payload_map),
+                 notification_source));
 }
 
 }  // namespace browser_sync

@@ -11,6 +11,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/notifier/invalidation_util.h"
 
 class Profile;
 
@@ -39,8 +40,8 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
   void UpdateEnabledTypes(const syncer::ModelTypeSet enabled_types);
 
   // Must be called on the sync task runner.
-  virtual void AddObserver(syncer::SyncNotifierObserver* observer);
-  virtual void RemoveObserver(syncer::SyncNotifierObserver* observer);
+  virtual void UpdateRegisteredIds(syncer::SyncNotifierObserver* handler,
+                                   const syncer::ObjectIdSet& ids);
 
   // NotificationObserver implementation. Called on UI thread.
   virtual void Observe(int type,

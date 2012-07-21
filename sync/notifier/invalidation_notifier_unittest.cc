@@ -50,11 +50,10 @@ class InvalidationNotifierTest : public testing::Test {
             initial_invalidation_state,
             MakeWeakHandle(mock_tracker_.AsWeakPtr()),
             "fake_client_info"));
-    invalidation_notifier_->AddObserver(&mock_observer_);
   }
 
   void ResetNotifier() {
-    invalidation_notifier_->RemoveObserver(&mock_observer_);
+    invalidation_notifier_->UpdateRegisteredIds(&mock_observer_, ObjectIdSet());
     // Stopping the invalidation notifier stops its scheduler, which deletes any
     // pending tasks without running them.  Some tasks "run and delete" another
     // task, so they must be run in order to avoid leaking the inner task.
@@ -75,15 +74,16 @@ TEST_F(InvalidationNotifierTest, Basic) {
   CreateAndObserveNotifier("fake_state");
   InSequence dummy;
 
-  ModelTypePayloadMap type_payloads;
-  type_payloads[PREFERENCES] = "payload";
-  type_payloads[BOOKMARKS] = "payload";
-  type_payloads[AUTOFILL] = "payload";
+  ModelTypeSet models(PREFERENCES, BOOKMARKS, AUTOFILL);
+  invalidation_notifier_->UpdateRegisteredIds(
+      &mock_observer_, ModelTypeSetToObjectIdSet(models));
 
+  const ModelTypePayloadMap& type_payloads =
+      ModelTypePayloadMapFromEnumSet(models, "payload");
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
-  EXPECT_CALL(mock_observer_,
-              OnIncomingNotification(type_payloads,
-                                     REMOTE_NOTIFICATION));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(
+      ModelTypePayloadMapToObjectIdPayloadMap(type_payloads),
+      REMOTE_NOTIFICATION));
   EXPECT_CALL(mock_observer_,
               OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
   EXPECT_CALL(mock_observer_,
@@ -99,14 +99,8 @@ TEST_F(InvalidationNotifierTest, Basic) {
 
   invalidation_notifier_->OnNotificationsEnabled();
 
-  ObjectIdPayloadMap id_payloads;
-  for (ModelTypePayloadMap::const_iterator it = type_payloads.begin();
-       it != type_payloads.end(); ++it) {
-    invalidation::ObjectId id;
-    ASSERT_TRUE(RealModelTypeToObjectId(it->first, &id));
-    id_payloads[id] = "payload";
-  }
-  invalidation_notifier_->OnInvalidate(id_payloads);
+  invalidation_notifier_->OnInvalidate(
+      ModelTypePayloadMapToObjectIdPayloadMap(type_payloads));
 
   invalidation_notifier_->OnNotificationsDisabled(
       TRANSIENT_NOTIFICATION_ERROR);

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
+#include "google/cacheinvalidation/v2/types.pb.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -45,11 +46,10 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
             std::string(),  // initial_invalidation_state
             MakeWeakHandle(base::WeakPtr<InvalidationStateTracker>()),
             "fake_client_info"));
-    invalidation_notifier_->AddObserver(&mock_observer_);
   }
 
   virtual void TearDown() {
-    invalidation_notifier_->RemoveObserver(&mock_observer_);
+    invalidation_notifier_->UpdateRegisteredIds(&mock_observer_, ObjectIdSet());
     invalidation_notifier_.reset();
     request_context_getter_ = NULL;
     io_thread_.Stop();
@@ -67,15 +67,16 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
 TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
   InSequence dummy;
 
-  ModelTypePayloadMap type_payloads;
-  type_payloads[PREFERENCES] = "payload";
-  type_payloads[BOOKMARKS] = "";
-  type_payloads[AUTOFILL] = "";
+  ModelTypeSet models(PREFERENCES, BOOKMARKS, AUTOFILL);
+  invalidation_notifier_->UpdateRegisteredIds(
+      &mock_observer_, ModelTypeSetToObjectIdSet(models));
 
+  const ModelTypePayloadMap& type_payloads =
+      ModelTypePayloadMapFromEnumSet(models, "payload");
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
-  EXPECT_CALL(mock_observer_,
-              OnIncomingNotification(type_payloads,
-                                     REMOTE_NOTIFICATION));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(
+      ModelTypePayloadMapToObjectIdPayloadMap(type_payloads),
+      REMOTE_NOTIFICATION));
   EXPECT_CALL(mock_observer_,
               OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
   EXPECT_CALL(mock_observer_,
@@ -86,8 +87,9 @@ TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
 
   invalidation_notifier_->OnNotificationsEnabled();
-  invalidation_notifier_->OnIncomingNotification(type_payloads,
-                                                 REMOTE_NOTIFICATION);
+  invalidation_notifier_->OnIncomingNotification(
+      ModelTypePayloadMapToObjectIdPayloadMap(type_payloads),
+      REMOTE_NOTIFICATION);
   invalidation_notifier_->OnNotificationsDisabled(
       TRANSIENT_NOTIFICATION_ERROR);
   invalidation_notifier_->OnNotificationsDisabled(

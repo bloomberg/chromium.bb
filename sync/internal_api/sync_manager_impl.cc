@@ -39,6 +39,7 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/js/js_reply_handler.h"
+#include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/protocol/encryption.pb.h"
@@ -481,8 +482,6 @@ bool SyncManagerImpl::Init(
   if (!success)
     return false;
 
-  sync_notifier_->AddObserver(this);
-
   return success;
 }
 
@@ -725,7 +724,8 @@ void SyncManagerImpl::UpdateCredentials(
 void SyncManagerImpl::UpdateEnabledTypes(
     const ModelTypeSet& enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  sync_notifier_->UpdateEnabledTypes(enabled_types);
+  sync_notifier_->UpdateRegisteredIds(this,
+                                      ModelTypeSetToObjectIdSet(enabled_types));
 }
 
 void SyncManagerImpl::SetEncryptionPassphrase(
@@ -1195,7 +1195,7 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
   RemoveObserver(&debug_info_event_listener_);
 
   if (sync_notifier_.get()) {
-    sync_notifier_->RemoveObserver(this);
+    sync_notifier_->UpdateRegisteredIds(this, ObjectIdSet());
   }
   sync_notifier_.reset();
 
@@ -1781,9 +1781,11 @@ void SyncManagerImpl::OnNotificationsDisabled(
 }
 
 void SyncManagerImpl::OnIncomingNotification(
-    const ModelTypePayloadMap& type_payloads,
+    const ObjectIdPayloadMap& id_payloads,
     IncomingNotificationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  const ModelTypePayloadMap& type_payloads =
+      ObjectIdPayloadMapToModelTypePayloadMap(id_payloads);
   if (source == LOCAL_NOTIFICATION) {
     scheduler_->ScheduleNudgeWithPayloadsAsync(
         TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),

@@ -695,14 +695,12 @@ class SyncManagerObserverMock : public SyncManager::Observer {
 
 class SyncNotifierMock : public SyncNotifier {
  public:
-  MOCK_METHOD1(AddObserver, void(SyncNotifierObserver*));
-  MOCK_METHOD1(RemoveObserver, void(SyncNotifierObserver*));
+  MOCK_METHOD2(UpdateRegisteredIds, void(SyncNotifierObserver*,
+                                         const ObjectIdSet&));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials,
                void(const std::string&, const std::string&));
-  MOCK_METHOD1(UpdateEnabledTypes,
-               void(ModelTypeSet));
   MOCK_METHOD1(SendNotification, void(ModelTypeSet));
 };
 
@@ -724,9 +722,7 @@ class SyncManagerTest : public testing::Test,
 
   SyncManagerTest()
       : sync_notifier_mock_(NULL),
-        sync_manager_("Test sync manager"),
-        sync_notifier_observer_(NULL),
-        update_enabled_types_call_count_(0) {}
+        sync_manager_("Test sync manager") {}
 
   virtual ~SyncManagerTest() {
     EXPECT_FALSE(sync_notifier_mock_);
@@ -741,23 +737,15 @@ class SyncManagerTest : public testing::Test,
     credentials.sync_token = "sometoken";
 
     sync_notifier_mock_ = new StrictMock<SyncNotifierMock>();
-    EXPECT_CALL(*sync_notifier_mock_, AddObserver(_)).
-        WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierAddObserver));
     EXPECT_CALL(*sync_notifier_mock_, SetUniqueId(_));
     EXPECT_CALL(*sync_notifier_mock_, SetStateDeprecated(""));
     EXPECT_CALL(*sync_notifier_mock_,
                 UpdateCredentials(credentials.email, credentials.sync_token));
-    EXPECT_CALL(*sync_notifier_mock_, UpdateEnabledTypes(_)).
-            WillRepeatedly(
-                Invoke(this, &SyncManagerTest::SyncNotifierUpdateEnabledTypes));
-    EXPECT_CALL(*sync_notifier_mock_, RemoveObserver(_)).
-        WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierRemoveObserver));
 
     sync_manager_.AddObserver(&observer_);
     EXPECT_CALL(observer_, OnInitializationComplete(_, _)).
         WillOnce(SaveArg<0>(&js_backend_));
 
-    EXPECT_FALSE(sync_notifier_observer_);
     EXPECT_FALSE(js_backend_.IsInitialized());
 
     std::vector<ModelSafeWorker*> workers;
@@ -781,10 +769,7 @@ class SyncManagerTest : public testing::Test,
                        &handler_,
                        NULL);
 
-    EXPECT_TRUE(sync_notifier_observer_);
     EXPECT_TRUE(js_backend_.IsInitialized());
-
-    EXPECT_EQ(0, update_enabled_types_call_count_);
 
     for (ModelSafeRoutingInfo::iterator i = routing_info.begin();
          i != routing_info.end(); ++i) {
@@ -796,9 +781,10 @@ class SyncManagerTest : public testing::Test,
 
   void TearDown() {
     sync_manager_.RemoveObserver(&observer_);
+    EXPECT_CALL(*sync_notifier_mock_,
+                UpdateRegisteredIds(_, ObjectIdSet()));
     sync_manager_.ShutdownOnSyncThread();
     sync_notifier_mock_ = NULL;
-    EXPECT_FALSE(sync_notifier_observer_);
     PumpLoop();
   }
 
@@ -857,26 +843,6 @@ class SyncManagerTest : public testing::Test,
     if (type_roots_.count(type) == 0)
       return 0;
     return type_roots_[type];
-  }
-
-  void SyncNotifierAddObserver(
-      SyncNotifierObserver* sync_notifier_observer) {
-    EXPECT_EQ(NULL, sync_notifier_observer_);
-    sync_notifier_observer_ = sync_notifier_observer;
-  }
-
-  void SyncNotifierRemoveObserver(
-      SyncNotifierObserver* sync_notifier_observer) {
-    EXPECT_EQ(sync_notifier_observer_, sync_notifier_observer);
-    sync_notifier_observer_ = NULL;
-  }
-
-  void SyncNotifierUpdateEnabledTypes(ModelTypeSet types) {
-    ModelSafeRoutingInfo routes;
-    GetModelSafeRoutingInfo(&routes);
-    const ModelTypeSet expected_types = GetRoutingInfoTypes(routes);
-    EXPECT_TRUE(types.Equals(expected_types));
-    ++update_enabled_types_call_count_;
   }
 
   void PumpLoop() {
@@ -948,8 +914,9 @@ class SyncManagerTest : public testing::Test,
     DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
     ModelTypePayloadMap model_types_with_payloads =
         ModelTypePayloadMapFromEnumSet(model_types, std::string());
-    sync_manager_.OnIncomingNotification(model_types_with_payloads,
-                                         REMOTE_NOTIFICATION);
+    sync_manager_.OnIncomingNotification(
+        ModelTypePayloadMapToObjectIdPayloadMap(model_types_with_payloads),
+        REMOTE_NOTIFICATION);
   }
 
  private:
@@ -960,27 +927,24 @@ class SyncManagerTest : public testing::Test,
   // Sync Id's for the roots of the enabled datatypes.
   std::map<ModelType, int64> type_roots_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
-  StrictMock<SyncNotifierMock>* sync_notifier_mock_;
 
  protected:
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
+  StrictMock<SyncNotifierMock>* sync_notifier_mock_;
   SyncManagerImpl sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> observer_;
-  SyncNotifierObserver* sync_notifier_observer_;
-  int update_enabled_types_call_count_;
 };
 
 TEST_F(SyncManagerTest, UpdateEnabledTypes) {
-  EXPECT_EQ(0, update_enabled_types_call_count_);
-
   ModelSafeRoutingInfo routes;
   GetModelSafeRoutingInfo(&routes);
   const ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
 
+  EXPECT_CALL(*sync_notifier_mock_,
+              UpdateRegisteredIds(_, ModelTypeSetToObjectIdSet(enabled_types)));
   sync_manager_.UpdateEnabledTypes(enabled_types);
-  EXPECT_EQ(1, update_enabled_types_call_count_);
 }
 
 TEST_F(SyncManagerTest, ProcessJsMessage) {
