@@ -25,11 +25,6 @@ namespace aura {
 class CompositorLock;
 }
 
-namespace content {
-class RenderWidgetHostImpl;
-class RenderWidgetHostView;
-}
-
 namespace gfx {
 class Canvas;
 }
@@ -43,9 +38,13 @@ namespace WebKit {
 class WebTouchEvent;
 }
 
+namespace content {
+class RenderWidgetHostImpl;
+class RenderWidgetHostView;
+
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class RenderWidgetHostViewAura
-    : public content::RenderWidgetHostViewBase,
+    : public RenderWidgetHostViewBase,
       public ui::CompositorObserver,
       public ui::TextInputClient,
       public aura::WindowDelegate,
@@ -54,7 +53,7 @@ class RenderWidgetHostViewAura
  public:
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
-  virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -69,10 +68,10 @@ class RenderWidgetHostViewAura
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
   // Overridden from RenderWidgetHostViewPort:
-  virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
-      content::RenderWidgetHostView* reference_host_view) OVERRIDE;
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual void WasRestored() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
@@ -182,10 +181,10 @@ class RenderWidgetHostViewAura
   virtual void OnLostActive() OVERRIDE;
 
  protected:
-  friend class content::RenderWidgetHostView;
+  friend class RenderWidgetHostView;
 
   // Should construct only via RenderWidgetHostView::CreateViewForWidget.
-  explicit RenderWidgetHostViewAura(content::RenderWidgetHost* host);
+  explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
 
  private:
   class WindowObserver;
@@ -248,7 +247,7 @@ class RenderWidgetHostViewAura
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect);
 
   // The model object.
-  content::RenderWidgetHostImpl* host_;
+  RenderWidgetHostImpl* host_;
 
   aura::Window* window_;
 
@@ -345,5 +344,7 @@ class RenderWidgetHostViewAura
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_AURA_H_

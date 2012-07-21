@@ -48,15 +48,10 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 
-using content::BrowserThread;
-using content::NativeWebKeyboardEvent;
-using content::RenderViewHost;
-using content::RenderViewHostDelegate;
-using content::RenderWidgetHost;
-using content::RenderWidgetHostImpl;
-using content::RenderWidgetHostView;
+using WebKit::WebScreenInfo;
 using WebKit::WebTouchEvent;
 
+namespace content {
 namespace {
 
 // In mouse lock mode, we need to prevent the (invisible) cursor from hitting
@@ -116,8 +111,7 @@ bool CanRendererHandleEvent(const aura::MouseEvent* event) {
   return true;
 }
 
-void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
-                            aura::Window* window) {
+void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   const gfx::Display display = window ?
       gfx::Screen::GetDisplayNearestWindow(window) :
       gfx::Screen::GetPrimaryDisplay();
@@ -468,13 +462,13 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   ui::Texture* container = it->second;
   DCHECK(container);
 
-  gfx::Size size_in_pixel = content::ConvertSizeToPixel(this, size);
+  gfx::Size size_in_pixel = ConvertSizeToPixel(this, size);
   if (!output->initialize(
       size_in_pixel.width(), size_in_pixel.height(), true))
     return;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  content::GLHelper* gl_helper = factory->GetGLHelper(compositor);
+  GLHelper* gl_helper = factory->GetGLHelper(compositor);
   if (!gl_helper)
     return;
 
@@ -525,7 +519,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
       typedef std::vector<linked_ptr<ResizeLock> > ResizeLockList;
       ResizeLockList::iterator it = resize_locks_.begin();
       while (it != resize_locks_.end()) {
-        gfx::Size container_size = content::ConvertSizeToDIP(this,
+        gfx::Size container_size = ConvertSizeToDIP(this,
             container->size());
         if ((*it)->expected_size() == container_size)
           break;
@@ -572,7 +566,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   } else {
     gfx::Size surface_size_in_pixel =
         image_transport_clients_[params_in_pixel.surface_handle]->size();
-    gfx::Size surface_size = content::ConvertSizeToDIP(this,
+    gfx::Size surface_size = ConvertSizeToDIP(this,
                                                        surface_size_in_pixel);
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
 
@@ -622,7 +616,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
 
     // Co-ordinates come in OpenGL co-ordinate space.
     // We need to convert to layer space.
-    gfx::Rect rect_to_paint = content::ConvertRectToDIP(this, gfx::Rect(
+    gfx::Rect rect_to_paint = ConvertRectToDIP(this, gfx::Rect(
         params_in_pixel.x,
         surface_size_in_pixel.height() - params_in_pixel.y -
             params_in_pixel.height,
@@ -698,12 +692,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
 }
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
-  content::RenderWidgetHostViewBase::SetBackground(background);
+  RenderWidgetHostViewBase::SetBackground(background);
   host_->SetBackground(background);
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
 }
 
-void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
+void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
   GetScreenInfoForWindow(results, window_);
 }
 
@@ -1051,7 +1045,7 @@ bool RenderWidgetHostViewAura::ShouldDescendIntoChildForEventHandling(
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
   if (mouse_locked_) {
-    WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
+    WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());
 
     bool is_move_to_center_event = (event->type() == ui::ET_MOUSE_MOVED ||
@@ -1080,26 +1074,26 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
 
   if (event->type() == ui::ET_MOUSEWHEEL) {
     WebKit::WebMouseWheelEvent mouse_wheel_event =
-        content::MakeWebMouseWheelEvent(event);
+        MakeWebMouseWheelEvent(event);
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
   } else if (event->type() == ui::ET_SCROLL) {
     WebKit::WebGestureEvent gesture_event =
-        content::MakeWebGestureEventFlingCancel();
+        MakeWebGestureEventFlingCancel();
     host_->ForwardGestureEvent(gesture_event);
     WebKit::WebMouseWheelEvent mouse_wheel_event =
-        content::MakeWebMouseWheelEvent(static_cast<aura::ScrollEvent*>(event));
+        MakeWebMouseWheelEvent(static_cast<aura::ScrollEvent*>(event));
     host_->ForwardWheelEvent(mouse_wheel_event);
-    content::RecordAction(content::UserMetricsAction("TrackpadScroll"));
+    RecordAction(UserMetricsAction("TrackpadScroll"));
   } else if (event->type() == ui::ET_SCROLL_FLING_START ||
       event->type() == ui::ET_SCROLL_FLING_CANCEL) {
     WebKit::WebGestureEvent gesture_event =
-        content::MakeWebGestureEvent(static_cast<aura::ScrollEvent*>(event));
+        MakeWebGestureEvent(static_cast<aura::ScrollEvent*>(event));
     host_->ForwardGestureEvent(gesture_event);
     if (event->type() == ui::ET_SCROLL_FLING_START)
-      content::RecordAction(content::UserMetricsAction("TrackpadScrollFling"));
+      RecordAction(UserMetricsAction("TrackpadScrollFling"));
   } else if (CanRendererHandleEvent(event)) {
-    WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
+    WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);
     host_->ForwardMouseEvent(mouse_event);
   }
@@ -1131,7 +1125,7 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
     aura::TouchEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnTouchEvent");
   // Update the touch event first.
-  WebKit::WebTouchPoint* point = content::UpdateWebTouchEvent(event,
+  WebKit::WebTouchPoint* point = UpdateWebTouchEvent(event,
       &touch_event_);
 
   // Forward the touch event only if a touch point was updated, and there's a
@@ -1161,7 +1155,7 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     delegate->HandleGestureBegin();
   }
 
-  WebKit::WebGestureEvent gesture = content::MakeWebGestureEvent(event);
+  WebKit::WebGestureEvent gesture = MakeWebGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
     // event to stop any in-progress flings.
@@ -1176,10 +1170,9 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
         event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
         event->type() == ui::ET_GESTURE_SCROLL_END) {
-      content::RecordAction(content::UserMetricsAction("TouchscreenScroll"));
+      RecordAction(UserMetricsAction("TouchscreenScroll"));
     } else if (event->type() == ui::ET_SCROLL_FLING_START) {
-      content::RecordAction(
-          content::UserMetricsAction("TouchscreenScrollFling"));
+      RecordAction(UserMetricsAction("TouchscreenScrollFling"));
     }
   }
 
@@ -1501,7 +1494,8 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 }
 
 // static
-void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
-    WebKit::WebScreenInfo* results) {
+void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebScreenInfo* results) {
   GetScreenInfoForWindow(results, NULL);
 }
+
+}  // namespace content

@@ -17,7 +17,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/common/content_switches.h"
 
-using content::BrowserThread;
+namespace content {
 
 struct GpuMessageFilter::CreateViewCommandBufferRequest {
   CreateViewCommandBufferRequest(
@@ -85,7 +85,7 @@ void GpuMessageFilter::SurfaceUpdated(int32 surface_id) {
 }
 
 void GpuMessageFilter::OnEstablishGpuChannel(
-    content::CauseForGpuLaunch cause_for_gpu_launch,
+    CauseForGpuLaunch cause_for_gpu_launch,
     IPC::Message* reply) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -171,7 +171,7 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
 void GpuMessageFilter::EstablishChannelCallback(
     IPC::Message* reply,
     const IPC::ChannelHandle& channel,
-    const content::GPUInfo& gpu_info) {
+    const GPUInfo& gpu_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   GpuHostMsg_EstablishGpuChannel::WriteReplyParams(
@@ -185,3 +185,5 @@ void GpuMessageFilter::CreateCommandBufferCallback(
   GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply, route_id);
   Send(reply);
 }
+
+}  // namespace content

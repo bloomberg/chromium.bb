@@ -71,11 +71,6 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
-using content::BrowserThread;
-using content::NativeWebKeyboardEvent;
-using content::RenderWidgetHost;
-using content::RenderWidgetHostImpl;
-using content::RenderWidgetHostView;
 using ui::ViewProp;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
@@ -83,9 +78,9 @@ using WebKit::WebMouseEvent;
 using WebKit::WebTextDirection;
 using webkit::npapi::WebPluginGeometry;
 
-const wchar_t kRenderWidgetHostHWNDClass[] = L"Chrome_RenderWidgetHostHWND";
-
+namespace content {
 namespace {
+
 // Tooltips will wrap after this width. Yes, wrap. Imagine that!
 const int kTooltipMaxWidthPixels = 300;
 
@@ -213,8 +208,7 @@ void PostTaskOnIOThread(const tracked_objects::Location& from_here,
 }
 
 bool DecodeZoomGesture(HWND hwnd, const GESTUREINFO& gi,
-                       content::PageZoom* zoom,
-                       POINT* zoom_center) {
+                       PageZoom* zoom, POINT* zoom_center) {
   static long start = 0;
   static POINT zoom_first;
 
@@ -243,8 +237,7 @@ bool DecodeZoomGesture(HWND hwnd, const GESTUREINFO& gi,
   double zoom_factor =
       static_cast<double>(gi.ullArguments)/static_cast<double>(start);
 
-  *zoom = zoom_factor >= 1 ? content::PAGE_ZOOM_IN :
-              content::PAGE_ZOOM_OUT;
+  *zoom = zoom_factor >= 1 ? PAGE_ZOOM_IN : PAGE_ZOOM_OUT;
 
   start = gi.ullArguments;
   zoom_first = zoom_second;
@@ -518,6 +511,8 @@ class LocalTouchEvent :
 
 }  // namespace
 
+const wchar_t kRenderWidgetHostHWNDClass[] = L"Chrome_RenderWidgetHostHWND";
+
 // Wrapper for maintaining touchstate associated with a WebTouchEvent.
 class WebTouchState {
  public:
@@ -618,11 +613,11 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
           gesture_recognizer_(ui::GestureRecognizer::Create(this))) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+                 NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
-                 content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                 content::NotificationService::AllBrowserContextsAndSources());
+                 NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
@@ -751,9 +746,9 @@ RenderWidgetHostViewWin::GetNativeViewAccessible() {
 
   if (!GetBrowserAccessibilityManager()) {
     // Return busy document tree while renderer accessibility tree loads.
-    content::AccessibilityNodeData::State busy_state =
-        static_cast<content::AccessibilityNodeData::State>(
-            1 << content::AccessibilityNodeData::STATE_BUSY);
+    AccessibilityNodeData::State busy_state =
+        static_cast<AccessibilityNodeData::State>(
+            1 << AccessibilityNodeData::STATE_BUSY);
     SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
             m_hWnd, busy_state, this));
@@ -989,7 +984,7 @@ void RenderWidgetHostViewWin::UpdateCursorIfOverSelf() {
   static HCURSOR kCursorArrow = LoadCursor(NULL, IDC_ARROW);
   static HCURSOR kCursorAppStarting = LoadCursor(NULL, IDC_APPSTARTING);
   static HINSTANCE module_handle = GetModuleHandle(
-      content::GetContentClient()->browser()->GetResourceDllName());
+      GetContentClient()->browser()->GetResourceDllName());
 
   // If the mouse is over our HWND, then update the cursor state immediately.
   CPoint pt;
@@ -1204,7 +1199,7 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurface(
 }
 
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
-  content::RenderWidgetHostViewBase::SetBackground(background);
+  RenderWidgetHostViewBase::SetBackground(background);
   render_widget_host_->SetBackground(background);
 }
 
@@ -2382,7 +2377,7 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
   }
 
   if (gi.dwID == GID_ZOOM) {
-    content::PageZoom zoom = content::PAGE_ZOOM_RESET;
+    PageZoom zoom = PAGE_ZOOM_RESET;
     POINT zoom_center = {0};
     if (DecodeZoomGesture(m_hWnd, gi, &zoom, &zoom_center)) {
       handled = TRUE;
@@ -2410,7 +2405,7 @@ void RenderWidgetHostViewWin::OnAccessibilityNotifications(
     SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
             m_hWnd,
-            static_cast<content::AccessibilityNodeData::State>(0),
+            static_cast<AccessibilityNodeData::State>(0),
             this));
   }
   GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
@@ -2465,22 +2460,22 @@ void RenderWidgetHostViewWin::UnlockMouse() {
 
 void RenderWidgetHostViewWin::Observe(
     int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
-         type == content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE);
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(type == NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
+         type == NOTIFICATION_FOCUS_CHANGED_IN_PAGE);
 
-  if (type == content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE) {
+  if (type == NOTIFICATION_FOCUS_CHANGED_IN_PAGE) {
     if (pointer_down_context_)
       received_focus_change_after_pointer_down_ = true;
-    focus_on_editable_field_ = *content::Details<bool>(details).ptr();
+    focus_on_editable_field_ = *Details<bool>(details).ptr();
     if (virtual_keyboard_)
       DisplayOnScreenKeyboardIfNeeded();
   } else {
     // Get the RenderProcessHost that posted this notification, and exit
     // if it's not the one associated with this host view.
-    content::RenderProcessHost* render_process_host =
-        content::Source<content::RenderProcessHost>(source).ptr();
+    RenderProcessHost* render_process_host =
+        Source<RenderProcessHost>(source).ptr();
     DCHECK(render_process_host);
     if (!render_widget_host_ ||
         render_process_host != render_widget_host_->GetProcess())
@@ -3157,3 +3152,5 @@ void RenderWidgetHostViewWin::ResetPointerDownContext() {
   received_focus_change_after_pointer_down_ = false;
   pointer_down_context_ = false;
 }
+
+}  // namespace content

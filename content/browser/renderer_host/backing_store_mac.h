@@ -9,11 +9,13 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "content/browser/renderer_host/backing_store.h"
 
+namespace content {
+
 class BackingStoreMac : public BackingStore {
  public:
   // |size| is in view units, |device_scale_factor| is the backingScaleFactor.
   // The pixel size of the backing store is size.Scale(device_scale_factor).
-  BackingStoreMac(content::RenderWidgetHost* widget,
+  BackingStoreMac(RenderWidgetHost* widget,
                   const gfx::Size& size,
                   float device_scale_factor);
   virtual ~BackingStoreMac();
@@ -32,7 +34,7 @@ class BackingStoreMac : public BackingStore {
   // BackingStore implementation.
   virtual size_t MemorySize() OVERRIDE;
   virtual void PaintToBackingStore(
-      content::RenderProcessHost* process,
+      RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
@@ -68,5 +70,7 @@ class BackingStoreMac : public BackingStore {
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreMac);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_MAC_H_

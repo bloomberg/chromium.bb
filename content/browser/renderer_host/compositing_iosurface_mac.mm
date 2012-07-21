@@ -28,6 +28,7 @@
 
 #define SHADER_STRING_GLSL(shader) #shader
 
+namespace content {
 namespace {
 
 static const char* g_vertex_shader_blit_rgb = SHADER_STRING_GLSL(
@@ -465,3 +466,5 @@ void CompositingIOSurfaceMac::ClearDrawable() {
   [glContext_ clearDrawable];
   UnrefIOSurface();
 }
+
+}  // namespace content

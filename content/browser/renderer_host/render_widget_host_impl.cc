@@ -64,16 +64,17 @@ using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebTextDirection;
 
+namespace content {
 namespace {
 
 // How long to (synchronously) wait for the renderer to respond with a
 // PaintRect message, when our backing-store is invalid, before giving up and
 // returning a null or incorrectly sized backing-store from GetBackingStore.
 // This timeout impacts the "choppiness" of our window resize perf.
-static const int kPaintMsgTimeoutMS = 50;
+const int kPaintMsgTimeoutMS = 50;
 
 // How long to wait before we consider a renderer hung.
-static const int kHungRendererDelayMs = 30000;
+const int kHungRendererDelayMs = 30000;
 
 // How many milliseconds apart synthetic scroll messages should be sent.
 static const int kSyntheticScrollMessageIntervalMs = 8;
@@ -98,8 +99,6 @@ bool ShouldCoalesceGestureEvents(const WebKit::WebGestureEvent& last_event,
 }
 
 }  // namespace
-
-namespace content {
 
 // static
 void RenderWidgetHost::RemoveAllBackingStores() {
@@ -1122,10 +1121,9 @@ void RenderWidgetHostImpl::SetShouldAutoResize(bool enable) {
 void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
 #if defined(OS_POSIX) || defined(USE_AURA)
   if (GetView()) {
-    static_cast<content::RenderWidgetHostViewPort*>(
-        GetView())->GetScreenInfo(result);
+    static_cast<RenderWidgetHostViewPort*>(GetView())->GetScreenInfo(result);
   } else {
-    content::RenderWidgetHostViewPort::GetDefaultScreenInfo(result);
+    RenderWidgetHostViewPort::GetDefaultScreenInfo(result);
   }
 #else
   *result = WebKit::WebScreenInfoFactory::screenInfo(

@@ -17,11 +17,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/common/view_messages.h"
 
-using content::BrowserThread;
-using content::RenderViewHostImpl;
-using content::ResourceDispatcherHostImpl;
-using content::SessionStorageNamespace;
-
+namespace content {
 namespace {
 
 typedef std::map<int, RenderWidgetHelper*> WidgetHelperMap;
@@ -236,8 +232,7 @@ void RenderWidgetHelper::OnDispatchBackingStoreMsg(
   OnDiscardBackingStoreMsg(proxy);
 
   // It is reasonable for the host to no longer exist.
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(render_process_id_);
+  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
   if (host)
     host->OnMessageReceived(proxy->message());
 }
@@ -407,3 +402,5 @@ void RenderWidgetHelper::ClearAllocatedDIBs() {
   allocated_dibs_.clear();
 }
 #endif
+
+}  // namespace content

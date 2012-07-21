@@ -11,7 +11,9 @@
 #include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace content {
 class RenderWidgetHostViewMac;
+}
 
 // This subclass of NSView hosts the output of accelerated plugins on
 // the page.
@@ -21,7 +23,7 @@ class RenderWidgetHostViewMac;
   scoped_nsobject<NSOpenGLContext> glContext_;
   CGLContextObj cglContext_;  // weak, backed by |glContext_|.
 
-  RenderWidgetHostViewMac* renderWidgetHostView_;  // weak
+  content::RenderWidgetHostViewMac* renderWidgetHostView_;  // weak
   gfx::PluginWindowHandle pluginHandle_;  // weak
 
   // Rects that should show web content rather than plugin content.
@@ -30,7 +32,7 @@ class RenderWidgetHostViewMac;
   BOOL handlingGlobalFrameDidChange_;
 }
 
-- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
+- (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r
                          pluginHandle:(gfx::PluginWindowHandle)pluginHandle;
 
 // Sets the list of rectangles that should show the web page, rather than the

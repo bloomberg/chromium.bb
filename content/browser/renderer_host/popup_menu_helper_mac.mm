@@ -16,15 +16,13 @@
 #import "ui/base/cocoa/base_view.h"
 #include "webkit/glue/webmenurunner_mac.h"
 
-using content::RenderViewHost;
-using content::RenderViewHostImpl;
-using content::RenderWidgetHost;
+namespace content {
 
 PopupMenuHelper::PopupMenuHelper(RenderViewHost* render_view_host)
     : render_view_host_(static_cast<RenderViewHostImpl*>(render_view_host)) {
   notification_registrar_.Add(
-      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      content::Source<RenderWidgetHost>(render_view_host));
+      this, NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      Source<RenderWidgetHost>(render_view_host));
 }
 
 void PopupMenuHelper::ShowPopupMenu(
@@ -84,12 +82,12 @@ void PopupMenuHelper::ShowPopupMenu(
   }
 }
 
-void PopupMenuHelper::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
-  DCHECK(content::Source<RenderWidgetHost>(source).ptr() == render_view_host_);
+void PopupMenuHelper::Observe(int type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  DCHECK(type == NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
+  DCHECK(Source<RenderWidgetHost>(source).ptr() == render_view_host_);
   render_view_host_ = NULL;
 }
 
+}  // namespace content

@@ -29,6 +29,7 @@
 #endif
 
 using base::TimeDelta;
+using content::BackingStore;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::MockRenderProcessHost;

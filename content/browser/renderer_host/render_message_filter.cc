@@ -74,15 +74,9 @@
 #include "content/browser/renderer_host/backing_store_win.h"
 #endif
 
-using content::BrowserContext;
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-using content::ChildProcessHostImpl;
-using content::PluginServiceFilter;
-using content::ResourceDispatcherHostImpl;
-using content::UserMetricsAction;
 using net::CookieStore;
 
+namespace content {
 namespace {
 
 const int kPluginsRefreshThresholdInSeconds = 3;
@@ -124,7 +118,7 @@ class OpenChannelToPpapiPluginCallback
       public PpapiPluginProcessHost::PluginClient {
  public:
   OpenChannelToPpapiPluginCallback(RenderMessageFilter* filter,
-                                   content::ResourceContext* context,
+                                   ResourceContext* context,
                                    IPC::Message* reply_msg)
       : RenderMessageCompletionCallback(filter, reply_msg),
         context_(context) {
@@ -147,12 +141,12 @@ class OpenChannelToPpapiPluginCallback
     return filter()->OffTheRecord();
   }
 
-  virtual content::ResourceContext* GetResourceContext() {
+  virtual ResourceContext* GetResourceContext() {
     return context_;
   }
 
  private:
-  content::ResourceContext* context_;
+  ResourceContext* context_;
 };
 
 class OpenChannelToPpapiBrokerCallback
@@ -199,7 +193,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
       public PluginProcessHost::Client {
  public:
   OpenChannelToNpapiPluginCallback(RenderMessageFilter* filter,
-                                   content::ResourceContext* context,
+                                   ResourceContext* context,
                                    IPC::Message* reply_msg)
       : RenderMessageCompletionCallback(filter, reply_msg),
         context_(context),
@@ -211,14 +205,14 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
     return filter()->render_process_id();
   }
 
-  virtual content::ResourceContext* GetResourceContext() OVERRIDE {
+  virtual ResourceContext* GetResourceContext() OVERRIDE {
     return context_;
   }
 
   virtual bool OffTheRecord() OVERRIDE {
     if (filter()->OffTheRecord())
       return true;
-    if (content::GetContentClient()->browser()->AllowSaveLocalState(context_))
+    if (GetContentClient()->browser()->AllowSaveLocalState(context_))
       return false;
 
     // For now, only disallow storing data for Flash <http://crbug.com/97319>.
@@ -270,7 +264,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
     SendReplyAndDeleteThis();
   }
 
-  content::ResourceContext* context_;
+  ResourceContext* context_;
   webkit::WebPluginInfo info_;
   PluginProcessHost* host_;
   bool sent_plugin_channel_request_;
@@ -279,10 +273,10 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
 RenderMessageFilter::RenderMessageFilter(
     int render_process_id,
     PluginServiceImpl* plugin_service,
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper,
-    content::MediaObserver* media_observer)
+    MediaObserver* media_observer)
     : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
       profile_data_directory_(browser_context->GetPath()),
@@ -429,7 +423,7 @@ void RenderMessageFilter::OnMsgCreateWindow(
     int64* cloned_session_storage_namespace_id) {
   bool no_javascript_access;
   bool can_create_window =
-      content::GetContentClient()->browser()->CanCreateWindow(
+      GetContentClient()->browser()->CanCreateWindow(
           GURL(params.opener_url),
           GURL(params.opener_security_origin),
           params.window_container_type,
@@ -482,7 +476,7 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
     return;
 
   net::CookieOptions options;
-  if (content::GetContentClient()->browser()->AllowSetCookie(
+  if (GetContentClient()->browser()->AllowSetCookie(
           url, first_party_for_cookies, cookie,
           resource_context_, render_process_id_, message.routing_id(),
           &options)) {
@@ -562,7 +556,7 @@ void RenderMessageFilter::OnCookiesEnabled(
   // TODO(ananta): If this render view is associated with an automation channel,
   // aka ChromeFrame then we need to retrieve cookie settings from the external
   // host.
-  *cookies_enabled = content::GetContentClient()->browser()->AllowGetCookie(
+  *cookies_enabled = GetContentClient()->browser()->AllowGetCookie(
       url, first_party_for_cookies, net::CookieList(), resource_context_,
       render_process_id_, MSG_ROUTING_CONTROL);
 }
@@ -623,8 +617,7 @@ void RenderMessageFilter::GetPluginsCallback(
     IPC::Message* reply_msg,
     const std::vector<webkit::WebPluginInfo>& all_plugins) {
   // Filter the plugin list.
-  content::PluginServiceFilter* filter =
-      PluginServiceImpl::GetInstance()->GetFilter();
+  PluginServiceFilter* filter = PluginServiceImpl::GetInstance()->GetFilter();
   std::vector<webkit::WebPluginInfo> plugins;
 
   int child_process_id = -1;
@@ -735,9 +728,9 @@ void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
-                                        const content::Referrer& referrer,
+                                        const Referrer& referrer,
                                         const string16& suggested_name) {
-  content::DownloadSaveInfo save_info;
+  DownloadSaveInfo save_info;
   save_info.suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(new net::URLRequest(
       url,
@@ -761,7 +754,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
 void RenderMessageFilter::OnCheckNotificationPermission(
     const GURL& source_origin, int* result) {
 #if defined(ENABLE_NOTIFICATIONS)
-  *result = content::GetContentClient()->browser()->
+  *result = GetContentClient()->browser()->
       CheckDesktopNotificationPermission(source_origin, resource_context_,
                                          render_process_id_);
 #else
@@ -781,7 +774,7 @@ net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   net::URLRequestContext* context =
-      content::GetContentClient()->browser()->OverrideRequestContextForURL(
+      GetContentClient()->browser()->OverrideRequestContextForURL(
           url, resource_context_);
   if (!context)
     context = request_context_->GetURLRequestContext();
@@ -878,7 +871,7 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
 #if defined(USE_NSS)
   // Attach a password delegate so we can authenticate.
   keygen_handler.set_crypto_module_password_delegate(
-      content::GetContentClient()->browser()->GetCryptoPasswordDelegate(url));
+      GetContentClient()->browser()->GetCryptoPasswordDelegate(url));
 #endif  // defined(USE_NSS)
 
   ViewHostMsg_Keygen::WriteReplyParams(
@@ -896,7 +889,7 @@ void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
           render_process_id_, path, flags)) {
     DLOG(ERROR) << "Bad flags in ViewMsgHost_AsyncOpenFile message: " << flags;
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_AOF"));
+    RecordAction(UserMetricsAction("BadMessageTerminate_AOF"));
     BadMessageReceived();
     return;
   }
@@ -940,7 +933,7 @@ void RenderMessageFilter::CheckPolicyForCookies(
   net::URLRequestContext* context = GetRequestContextForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
   // TabSpecificContentSetting for logging purpose.
-  if (content::GetContentClient()->browser()->AllowGetCookie(
+  if (GetContentClient()->browser()->AllowGetCookie(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, reply_msg->routing_id())) {
     // Gets the cookies from cookie store if allowed.
@@ -988,3 +981,5 @@ void RenderMessageFilter::OnUpdateIsDelayed(const IPC::Message& msg) {
   // different message.
   render_widget_helper_->DidReceiveBackingStoreMsg(msg);
 }
+
+}  // namespace content

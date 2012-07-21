@@ -21,20 +21,19 @@
 #include "ui/base/cocoa/base_view.h"
 #include "webkit/glue/webcursor.h"
 
-@class AcceleratedPluginView;
-class CompositingIOSurfaceMac;
-@class FullscreenWindowManager;
-class RenderWidgetHostViewMac;
-@protocol RenderWidgetHostViewMacDelegate;
-class RenderWidgetHostViewMacEditCommandHelper;
-@class ToolTip;
-
 namespace content {
-class RenderWidgetHostImpl;
+class CompositingIOSurfaceMac;
+class RenderWidgetHostViewMac;
+class RenderWidgetHostViewMacEditCommandHelper;
 }
 
+@class AcceleratedPluginView;
+@class FullscreenWindowManager;
+@protocol RenderWidgetHostViewMacDelegate;
+@class ToolTip;
+
 @protocol RenderWidgetHostViewMacOwner
-- (RenderWidgetHostViewMac*)renderWidgetHostViewMac;
+- (content::RenderWidgetHostViewMac*)renderWidgetHostViewMac;
 @end
 
 // This is the view that lives in the Cocoa view hierarchy. In Windows-land,
@@ -47,12 +46,13 @@ class RenderWidgetHostImpl;
                 NSTextInputClient,
                 BrowserAccessibilityDelegateCocoa> {
  @private
-  scoped_ptr<RenderWidgetHostViewMac> renderWidgetHostView_;
+  scoped_ptr<content::RenderWidgetHostViewMac> renderWidgetHostView_;
   NSObject<RenderWidgetHostViewMacDelegate>* delegate_;  // weak
   BOOL canBeKeyView_;
   BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
-  scoped_ptr<RenderWidgetHostViewMacEditCommandHelper> editCommand_helper_;
+  scoped_ptr<content::RenderWidgetHostViewMacEditCommandHelper>
+      editCommand_helper_;
 
   // These are part of the magic tooltip code from WebKit's WebHTMLView:
   id trackingRectOwner_;              // (not retained)
@@ -159,6 +159,9 @@ class RenderWidgetHostImpl;
 - (void)updateCursor:(NSCursor*)cursor;
 @end
 
+namespace content {
+class RenderWidgetHostImpl;
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac
 //
@@ -175,7 +178,7 @@ class RenderWidgetHostImpl;
 //     references to it must become NULL."
 //
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
-class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
+class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
  public:
   virtual ~RenderWidgetHostViewMac();
 
@@ -185,7 +188,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
-  virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -205,10 +208,10 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
   // Implementation of RenderWidgetHostViewPort.
-  virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
-      content::RenderWidgetHostView* reference_host_view) OVERRIDE;
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual void WasRestored() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
@@ -249,7 +252,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
   virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Methods associated with GPU-accelerated plug-in instances and the
   // accelerated compositor.
@@ -335,7 +338,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   // The associated Model.  Can be NULL if Destroy() is called when
   // someone (other than superview) has retained |cocoa_view_|.
-  content::RenderWidgetHostImpl* render_widget_host_;
+  RenderWidgetHostImpl* render_widget_host_;
 
   // This is true when we are currently painting and thus should handle extra
   // paint requests by expanding the invalid rect rather than actually painting.
@@ -380,12 +383,12 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   }
 
  private:
-  friend class content::RenderWidgetHostView;
+  friend class RenderWidgetHostView;
 
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
   // deleted it will delete this out from under the caller.
-  explicit RenderWidgetHostViewMac(content::RenderWidgetHost* widget);
+  explicit RenderWidgetHostViewMac(RenderWidgetHost* widget);
 
   // Returns whether this render view is a popup (autocomplete window).
   bool IsPopup() const;
@@ -428,5 +431,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_

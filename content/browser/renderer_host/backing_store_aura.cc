@@ -13,6 +13,8 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 
+namespace content {
+
 // Assume that somewhere along the line, someone will do width * height * 4
 // with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
 // 2**29 and floor(sqrt(2**29)) = 23170.
@@ -20,10 +22,10 @@
 // Max height and width for layers
 static const int kMaxVideoLayerSize = 23170;
 
-BackingStoreAura::BackingStoreAura(content::RenderWidgetHost* widget,
+BackingStoreAura::BackingStoreAura(RenderWidgetHost* widget,
                                    const gfx::Size& size)
     : BackingStore(widget, size),
-      device_scale_factor_(content::GetDIPScaleFactor(widget->GetView())) {
+      device_scale_factor_(GetDIPScaleFactor(widget->GetView())) {
   gfx::Size pixel_size = size.Scale(device_scale_factor_);
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
@@ -74,7 +76,7 @@ size_t BackingStoreAura::MemorySize() {
 }
 
 void BackingStoreAura::PaintToBackingStore(
-    content::RenderProcessHost* process,
+    RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
@@ -155,3 +157,5 @@ bool BackingStoreAura::CopyFromBackingStore(const gfx::Rect& rect,
   output->writePixels(b, rect.x(), rect.y());
   return true;
 }
+
+}  // namespace content

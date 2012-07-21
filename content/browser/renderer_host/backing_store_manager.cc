@@ -12,8 +12,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/common/content_switches.h"
 
-using content::RenderWidgetHost;
-
+namespace content {
 namespace {
 
 // There are two separate caches, |large_cache| and |small_cache|.  large_cache
@@ -23,8 +22,8 @@ namespace {
 // items will tend to be visible more of the time.
 typedef base::OwningMRUCache<RenderWidgetHost*, BackingStore*>
     BackingStoreCache;
-static BackingStoreCache* large_cache = NULL;
-static BackingStoreCache* small_cache = NULL;
+BackingStoreCache* large_cache = NULL;
+BackingStoreCache* small_cache = NULL;
 
 // Threshold is based on a single large-monitor-width toolstrip.
 // (32bpp, 32 pixels high, 1920 pixels wide)
@@ -147,7 +146,7 @@ BackingStore* CreateBackingStore(RenderWidgetHost* host,
   } else {
     cache = small_cache;
   }
-  BackingStore* backing_store = content::RenderWidgetHostImpl::From(
+  BackingStore* backing_store = RenderWidgetHostImpl::From(
       host)->AllocBackingStore(backing_store_size);
   if (backing_store)
     cache->Put(host, backing_store);
@@ -279,3 +278,5 @@ size_t BackingStoreManager::MemorySize() {
 
   return mem;
 }
+
+}  // namespace content

@@ -20,6 +20,7 @@
 
 using content::RenderViewHost;
 using content::RenderWidgetHostView;
+using content::RenderWidgetHostViewWin;
 using content::WebContents;
 using content::WebContentsViewDelegate;
 

@@ -12,6 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
+namespace content {
+
 // This class mimics the behavior of WebKit's WebView class in a way that makes
 // sense for Chrome.
 //
@@ -65,5 +67,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMacEditCommandHelper {
   base::hash_set<std::string> edit_command_set_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacEditCommandHelper);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_EDITCOMMAND_HELPER_H_

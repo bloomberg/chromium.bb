@@ -19,11 +19,11 @@
 #include "ui/surface/transport_dib.h"
 
 class CommandLine;
-class GpuMessageFilter;
-class RenderWidgetHelper;
 
 namespace content {
+class GpuMessageFilter;
 class RendererMainThread;
+class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 

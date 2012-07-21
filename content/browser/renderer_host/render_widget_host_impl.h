@@ -24,7 +24,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
 
-class BackingStore;
 class MockRenderWidgetHost;
 class WebCursor;
 struct EditCommand;
@@ -46,7 +45,7 @@ struct WebScreenInfo;
 }
 
 namespace content {
-
+class BackingStore;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class SmoothScrollGesture;

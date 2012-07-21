@@ -53,12 +53,12 @@
 #include "ui/surface/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-using content::BrowserThread;
+using content::BackingStoreMac;
 using content::NativeWebKeyboardEvent;
 using content::RenderViewHostImpl;
-using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
-using content::RenderWidgetHostView;
+using content::RenderWidgetHostViewMac;
+using content::RenderWidgetHostViewMacEditCommandHelper;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
@@ -109,7 +109,7 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
   return modifiers;
 }
 
-float ScaleFactor(NSView* view) {
+static float ScaleFactor(NSView* view) {
   if (NSWindow* window = [view window]) {
     if ([window respondsToSelector:@selector(backingScaleFactor)])
       return [window backingScaleFactor];
@@ -162,7 +162,6 @@ static const short kIOHIDEventTypeScroll = 6;
 }
 
 @end
-
 
 namespace {
 
@@ -262,6 +261,8 @@ NSWindow* ApparentWindowForView(NSView* view) {
 
 }  // namespace
 
+namespace content {
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostView, public:
 
@@ -272,7 +273,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 }
 
 // static
-void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
+void RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   *results = WebKit::WebScreenInfoFactory::screenInfo(NULL);
 }
@@ -772,7 +773,7 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
 }
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
-  content::RenderWidgetHostViewBase::SetShowingContextMenu(showing);
+  RenderWidgetHostViewBase::SetShowingContextMenu(showing);
 
   // Create a fake mouse event to inform the render widget that the mouse
   // left or entered.
@@ -1263,7 +1264,7 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
 }
 
 void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
-  content::RenderWidgetHostViewBase::SetBackground(background);
+  RenderWidgetHostViewBase::SetBackground(background);
   if (render_widget_host_)
     render_widget_host_->Send(new ViewMsg_SetBackground(
         render_widget_host_->GetRoutingID(), background));
@@ -1275,7 +1276,7 @@ void RenderWidgetHostViewMac::OnAccessibilityNotifications(
     SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
             cocoa_view_,
-            static_cast<content::AccessibilityNodeData::State>(0),
+            static_cast<AccessibilityNodeData::State>(0),
             NULL));
   }
   GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
@@ -1292,6 +1293,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       DisablePasswordInput();
   }
 }
+
+}  // namespace content
 
 // RenderWidgetHostViewCocoa ---------------------------------------------------
 

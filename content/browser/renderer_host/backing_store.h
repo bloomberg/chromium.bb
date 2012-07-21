@@ -19,21 +19,20 @@ namespace gfx {
 class Rect;
 }
 
-namespace content {
-class RenderProcessHost;
-class RenderWidgetHost;
-}
-
 namespace skia {
 class PlatformCanvas;
 }
+
+namespace content {
+class RenderProcessHost;
+class RenderWidgetHost;
 
 // Represents a backing store for the pixels in a RenderWidgetHost.
 class CONTENT_EXPORT BackingStore {
  public:
   virtual ~BackingStore();
 
-  content::RenderWidgetHost* render_widget_host() const {
+  RenderWidgetHost* render_widget_host() const {
     return render_widget_host_;
   }
   const gfx::Size& size() { return size_; }
@@ -54,7 +53,7 @@ class CONTENT_EXPORT BackingStore {
   // the time it returns, in which case it will set |scheduled_callback| to
   // true and will call |callback| when completed.
   virtual void PaintToBackingStore(
-      content::RenderProcessHost* process,
+      RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
@@ -76,16 +75,18 @@ class CONTENT_EXPORT BackingStore {
                                   const gfx::Size& view_size) = 0;
  protected:
   // Can only be constructed via subclasses.
-  BackingStore(content::RenderWidgetHost* widget, const gfx::Size& size);
+  BackingStore(RenderWidgetHost* widget, const gfx::Size& size);
 
  private:
   // The owner of this backing store.
-  content::RenderWidgetHost* render_widget_host_;
+  RenderWidgetHost* render_widget_host_;
 
   // The size of the backing store.
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(BackingStore);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_H_

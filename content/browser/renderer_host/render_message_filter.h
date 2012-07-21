@@ -31,20 +31,11 @@
 
 class DOMStorageContextImpl;
 class PluginServiceImpl;
-class RenderWidgetHelper;
 struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
 
 namespace WebKit {
 struct WebScreenInfo;
-}
-
-namespace content {
-class BrowserContext;
-class MediaObserver;
-struct Referrer;
-class ResourceContext;
-class ResourceDispatcherHostImpl;
 }
 
 namespace base {
@@ -69,23 +60,31 @@ namespace webkit {
 struct WebPluginInfo;
 }
 
+namespace content {
+class BrowserContext;
+class MediaObserver;
+class RenderWidgetHelper;
+class ResourceContext;
+class ResourceDispatcherHostImpl;
+struct Referrer;
+
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
-class RenderMessageFilter : public content::BrowserMessageFilter {
+class RenderMessageFilter : public BrowserMessageFilter {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
                       PluginServiceImpl * plugin_service,
-                      content::BrowserContext* browser_context,
+                      BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper,
-                      content::MediaObserver* media_observer);
+                      MediaObserver* media_observer);
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
-  // content::BrowserMessageFilter methods:
+  // BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
@@ -103,7 +102,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
  private:
-  friend class content::BrowserThread;
+  friend class BrowserThread;
   friend class base::DeleteHelper<RenderMessageFilter>;
 
   class OpenChannelToNpapiPluginCallback;
@@ -173,7 +172,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
-                     const content::Referrer& referrer,
+                     const Referrer& referrer,
                      const string16& suggested_name);
   void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);
@@ -243,7 +242,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed
   // by the BrowserProcess, which has a wider scope than we do.
-  content::ResourceDispatcherHostImpl* resource_dispatcher_host_;
+  ResourceDispatcherHostImpl* resource_dispatcher_host_;
   PluginServiceImpl* plugin_service_;
   FilePath profile_data_directory_;
 
@@ -251,7 +250,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The ResourceContext which is to be used on the IO thread.
-  content::ResourceContext* resource_context_;
+  ResourceContext* resource_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 
@@ -275,9 +274,11 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   // Used for sampling CPU usage of the renderer process.
   scoped_ptr<base::ProcessMetrics> process_metrics_;
 
-  content::MediaObserver* media_observer_;
+  MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_

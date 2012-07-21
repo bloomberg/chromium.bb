@@ -17,22 +17,21 @@
 
 class GpuProcessHost;
 struct GPUCreateCommandBufferConfig;
-class RenderWidgetHelper;
 
 namespace content {
+class RenderWidgetHelper;
 struct GPUInfo;
-}  // namespace content
 
 // A message filter for messages from the renderer to the GpuProcessHost(UIShim)
 // in the browser. Such messages are typically destined for the GPU process,
 // but need to be mediated by the browser.
-class GpuMessageFilter : public content::BrowserMessageFilter,
+class GpuMessageFilter : public BrowserMessageFilter,
                          public base::SupportsWeakPtr<GpuMessageFilter> {
  public:
   GpuMessageFilter(int render_process_id,
                    RenderWidgetHelper* render_widget_helper);
 
-  // content::BrowserMessageFilter methods:
+  // BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -41,14 +40,14 @@ class GpuMessageFilter : public content::BrowserMessageFilter,
   void SurfaceUpdated(int32 surface_id);
 
  private:
-  friend class content::BrowserThread;
+  friend class BrowserThread;
   friend class base::DeleteHelper<GpuMessageFilter>;
   struct CreateViewCommandBufferRequest;
 
   virtual ~GpuMessageFilter();
 
   // Message handlers called on the browser IO thread:
-  void OnEstablishGpuChannel(content::CauseForGpuLaunch,
+  void OnEstablishGpuChannel(CauseForGpuLaunch,
                              IPC::Message* reply);
   void OnCreateViewCommandBuffer(
       int32 surface_id,
@@ -57,7 +56,7 @@ class GpuMessageFilter : public content::BrowserMessageFilter,
   // Helper callbacks for the message handlers.
   void EstablishChannelCallback(IPC::Message* reply,
                                 const IPC::ChannelHandle& channel,
-                                const content::GPUInfo& gpu_info);
+                                const GPUInfo& gpu_info);
   void CreateCommandBufferCallback(IPC::Message* reply, int32 route_id);
 
   int gpu_process_id_;
@@ -69,5 +68,7 @@ class GpuMessageFilter : public content::BrowserMessageFilter,
 
   DISALLOW_COPY_AND_ASSIGN(GpuMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_

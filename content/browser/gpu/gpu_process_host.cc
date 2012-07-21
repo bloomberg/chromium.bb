@@ -49,6 +49,7 @@
 using content::BrowserThread;
 using content::ChildProcessHost;
 using content::RenderProcessHost;
+using content::RenderWidgetHelper;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 

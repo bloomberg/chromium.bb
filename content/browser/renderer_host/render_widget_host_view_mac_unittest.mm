@@ -13,9 +13,7 @@
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-using content::BrowserThread;
-using content::BrowserThreadImpl;
-using content::RenderViewHostImplTestHarness;
+namespace content {
 
 class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
  public:
@@ -31,7 +29,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
     // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
     rwhv_mac_ = static_cast<RenderWidgetHostViewMac*>(
-        content::RenderWidgetHostView::CreateViewForWidget(rvh()));
+        RenderWidgetHostView::CreateViewForWidget(rvh()));
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
   virtual void TearDown() {
@@ -79,7 +77,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   // This class isn't derived from PlatformTest.
   base::mac::ScopedNSAutoreleasePool pool_;
 
-  content::RenderWidgetHostView* old_rwhv_;
+  RenderWidgetHostView* old_rwhv_;
 
  protected:
   RenderWidgetHostViewMac* rwhv_mac_;
@@ -206,3 +204,5 @@ TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {
   rwhv_mac_->InitAsFullscreen(NULL);
   EXPECT_TRUE(rwhv_mac_->pepper_fullscreen_window());
 }
+
+}  // namespace content

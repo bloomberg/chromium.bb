@@ -34,8 +34,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/surface/transport_dib.h"
 
-using content::RenderWidgetHost;
-
+namespace content {
 namespace {
 
 // Assume that somewhere along the line, someone will do width * height * 4
@@ -330,7 +329,7 @@ void BackingStoreGtk::PaintRectWithoutXrender(
 }
 
 void BackingStoreGtk::PaintToBackingStore(
-    content::RenderProcessHost* process,
+    RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
@@ -663,3 +662,5 @@ void BackingStoreGtk::PaintToRect(const gfx::Rect& rect, GdkDrawable* target) {
   cairo_destroy(cr);
 }
 #endif
+
+}  // namespace content

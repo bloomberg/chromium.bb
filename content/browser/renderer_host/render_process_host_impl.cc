@@ -1291,14 +1291,14 @@ bool RenderProcessHostImpl::ShouldUseProcessPerSite(
   // process-per-tab or process-per-site-instance models.
   // Note that --single-process is handled in ShouldTryToUseExistingProcessHost.
 
-  if (content::GetContentClient()->browser()->
+  if (GetContentClient()->browser()->
           ShouldUseProcessPerSite(browser_context, url)) {
     return true;
   }
 
   // DevTools pages have WebUI type but should not reuse the same host.
   WebUIControllerFactory* factory =
-      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+      GetContentClient()->browser()->GetWebUIControllerFactory();
   if (factory &&
       factory->UseWebUIForURL(browser_context, url) &&
       !url.SchemeIs(chrome::kChromeDevToolsScheme)) {

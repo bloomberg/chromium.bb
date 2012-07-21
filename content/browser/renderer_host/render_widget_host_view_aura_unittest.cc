@@ -20,7 +20,9 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 
-class MockRenderWidgetHostDelegate : public content::RenderWidgetHostDelegate {
+namespace content {
+
+class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
   virtual ~MockRenderWidgetHostDelegate() {}
@@ -65,13 +67,13 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp();
 
-    browser_context_.reset(new content::TestBrowserContext);
-    content::MockRenderProcessHost* process_host =
-        new content::MockRenderProcessHost(browser_context_.get());
-    widget_host_ = new content::RenderWidgetHostImpl(
+    browser_context_.reset(new TestBrowserContext);
+    MockRenderProcessHost* process_host =
+        new MockRenderProcessHost(browser_context_.get());
+    widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, MSG_ROUTING_NONE);
     view_ = static_cast<RenderWidgetHostViewAura*>(
-        content::RenderWidgetHostView::CreateViewForWidget(widget_host_));
+        RenderWidgetHostView::CreateViewForWidget(widget_host_));
   }
 
   virtual void TearDown() {
@@ -89,12 +91,12 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
  protected:
   MessageLoopForUI message_loop_;
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  scoped_ptr<content::BrowserContext> browser_context_;
+  scoped_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
-  content::RenderWidgetHostImpl* widget_host_;
+  RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewAura* view_;
 
  private:
@@ -140,3 +142,5 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
   widget_host_ = NULL;
   view_ = NULL;
 }
+
+}  // namespace content

@@ -15,16 +15,11 @@
 #include "ui/base/range/range.h"
 #include "ui/surface/transport_dib.h"
 
-class BackingStore;
 class WebCursor;
 
 struct AccessibilityHostMsg_NotificationParams;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
-
-namespace content {
-struct NativeWebKeyboardEvent;
-}
 
 namespace webkit {
 namespace npapi {
@@ -39,8 +34,9 @@ struct WebScreenInfo;
 #endif
 
 namespace content {
-
+class BackingStore;
 class SmoothScrollGesture;
+struct NativeWebKeyboardEvent;
 
 // This is the larger RenderWidgetHostView interface exposed only
 // within content/ and to embedders looking to port to new platforms.
@@ -54,7 +50,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
 
   // Like RenderWidgetHostView::CreateViewForWidget, with cast.
   static RenderWidgetHostViewPort* CreateViewForWidget(
-      content::RenderWidgetHost* widget);
+      RenderWidgetHost* widget);
 
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.
@@ -197,7 +193,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // not enabled, this is a no-op, so it is always safe to call.
   // Returns true if the event was handled by IME.
   virtual bool PostProcessEventForPluginIme(
-      const content::NativeWebKeyboardEvent& event) = 0;
+      const NativeWebKeyboardEvent& event) = 0;
 
   // Methods associated with GPU-accelerated plug-in instances.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(

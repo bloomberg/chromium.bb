@@ -19,14 +19,13 @@ class Canvas;
 
 namespace content {
 class RenderProcessHost;
-}
 
 // A backing store that uses skia. This is the backing store used by
 // RenderWidgetHostViewAura.
 class BackingStoreAura : public BackingStore {
  public:
   CONTENT_EXPORT BackingStoreAura(
-      content::RenderWidgetHost* widget,
+      RenderWidgetHost* widget,
       const gfx::Size& size);
 
   virtual ~BackingStoreAura();
@@ -40,7 +39,7 @@ class BackingStoreAura : public BackingStore {
   // BackingStore implementation.
   virtual size_t MemorySize() OVERRIDE;
   virtual void PaintToBackingStore(
-      content::RenderProcessHost* process,
+      RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
@@ -61,5 +60,7 @@ class BackingStoreAura : public BackingStore {
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreAura);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_AURA_H_

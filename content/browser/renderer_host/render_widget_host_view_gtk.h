@@ -27,24 +27,22 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 
-class GtkIMContextWrapper;
-
-namespace content {
-class RenderWidgetHost;
-class RenderWidgetHostImpl;
-struct NativeWebKeyboardEvent;
-}
-
 class GtkKeyBindingsHandler;
 
 typedef struct _GtkClipboard GtkClipboard;
 typedef struct _GtkSelectionData GtkSelectionData;
 
+namespace content {
+class GtkIMContextWrapper;
+class RenderWidgetHost;
+class RenderWidgetHostImpl;
+struct NativeWebKeyboardEvent;
+
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
 class CONTENT_EXPORT RenderWidgetHostViewGtk
-    : public content::RenderWidgetHostViewBase,
+    : public RenderWidgetHostViewBase,
       public BrowserAccessibilityDelegate,
       public ui::ActiveWindowWatcherXObserver {
  public:
@@ -52,7 +50,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
 
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
-  virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -69,10 +67,10 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
   // RenderWidgetHostViewPort implementation.
-  virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
-      content::RenderWidgetHostView* reference_host_view) OVERRIDE;
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual void WasRestored() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
@@ -90,7 +88,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual void WillDestroyRenderWidget(content::RenderWidgetHost* rwh) {}
+  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {}
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
@@ -150,7 +148,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   // calls GtkKeyBindingsHandler::Match() against the event and send matched
   // edit commands to renderer by calling
   // RenderWidgetHost::ForwardEditCommandsForNextKeyEvent().
-  void ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& event);
+  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   bool RetrieveSurrounding(std::string* text, size_t* cursor_index);
 
@@ -168,10 +166,10 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   AtkObject* GetAccessible();
 
  protected:
-  friend class content::RenderWidgetHostView;
+  friend class RenderWidgetHostView;
 
   // Should construct only via RenderWidgetHostView::CreateViewForWidget.
-  explicit RenderWidgetHostViewGtk(content::RenderWidgetHost* widget);
+  explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
 
  private:
   friend class RenderWidgetHostViewGtkWidget;
@@ -206,7 +204,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   gfx::Point GetWidgetCenter();
 
   // The model object.
-  content::RenderWidgetHostImpl* host_;
+  RenderWidgetHostImpl* host_;
 
   // The native UI widget.
   ui::OwnedWidgetGtk view_;
@@ -316,5 +314,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
 
   ui::GtkSignalRegistrar signals_;
 };
+
+}  // namespace content
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_

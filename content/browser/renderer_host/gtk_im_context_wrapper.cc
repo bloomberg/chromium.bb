@@ -21,10 +21,9 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
 
-using content::NativeWebKeyboardEvent;
-using content::RenderWidgetHostImpl;
-
+namespace content {
 namespace {
+
 // Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp
 //
 // Match key code of composition keydown event on windows.
@@ -38,6 +37,7 @@ namespace {
 // - ImmGetVirtualKey Function
 //   http://msdn.microsoft.com/en-us/library/dd318570(VS.85).aspx
 const int kCompositionEventKeyCode = 229;
+
 }  // namespace
 
 // ui::CompositionUnderline should be identical to
@@ -660,3 +660,5 @@ void GtkIMContextWrapper::HandleHostViewUnrealizeThunk(
     GtkWidget* widget, GtkIMContextWrapper* self) {
   self->HandleHostViewUnrealize();
 }
+
+}  // namespace content

@@ -14,11 +14,9 @@
 #include "ui/gfx/size.h"
 #include "ui/surface/transport_dib.h"
 
-class BackingStore;
-
 namespace content {
+class BackingStore;
 class RenderWidgetHost;
-}
 
 // This class manages backing stores in the browsr. Every RenderWidgetHost is
 // associated with a backing store which it requests from this class.  The
@@ -31,7 +29,7 @@ class BackingStoreManager {
   // backing_store_rect
   //   The desired backing store dimensions.
   // Returns a pointer to the backing store on success, NULL on failure.
-  static BackingStore* GetBackingStore(content::RenderWidgetHost* host,
+  static BackingStore* GetBackingStore(RenderWidgetHost* host,
                                        const gfx::Size& desired_size);
 
   // Makes a backing store which is fully ready for consumption, i.e. the
@@ -53,7 +51,7 @@ class BackingStoreManager {
   //   Set if we need to send out a request to paint the view
   //   to the renderer.
   static void PrepareBackingStore(
-      content::RenderWidgetHost* host,
+      RenderWidgetHost* host,
       const gfx::Size& backing_store_size,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
@@ -65,10 +63,10 @@ class BackingStoreManager {
 
   // Returns a matching backing store for the host.
   // Returns NULL if we fail to find one.
-  static BackingStore* Lookup(content::RenderWidgetHost* host);
+  static BackingStore* Lookup(RenderWidgetHost* host);
 
   // Removes the backing store for the host.
-  static void RemoveBackingStore(content::RenderWidgetHost* host);
+  static void RemoveBackingStore(RenderWidgetHost* host);
 
   // Removes all backing stores.
   static void RemoveAllBackingStores();
@@ -82,5 +80,7 @@ class BackingStoreManager {
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreManager);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_MANAGER_H_

@@ -30,7 +30,9 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::PopupMenuHelper;
 using content::RenderWidgetHostView;
+using content::RenderWidgetHostViewMac;
 using content::WebContents;
 
 // Ensure that the WebKit::WebDragOperation enum values stay in sync with

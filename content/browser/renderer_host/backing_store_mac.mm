@@ -19,6 +19,8 @@
 #include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
 #include "ui/surface/transport_dib.h"
 
+namespace content {
+
 // Mac Backing Stores:
 //
 // Since backing stores are only ever written to or drawn into windows, we keep
@@ -26,7 +28,7 @@
 // allows acclerated drawing into the layer and lets scrolling and such happen
 // all or mostly on the GPU, which is good for performance.
 
-BackingStoreMac::BackingStoreMac(content::RenderWidgetHost* widget,
+BackingStoreMac::BackingStoreMac(RenderWidgetHost* widget,
                                  const gfx::Size& size,
                                  float device_scale_factor)
     : BackingStore(widget, size), device_scale_factor_(device_scale_factor) {
@@ -68,7 +70,7 @@ size_t BackingStoreMac::MemorySize() {
 }
 
 void BackingStoreMac::PaintToBackingStore(
-    content::RenderProcessHost* process,
+    RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
@@ -263,3 +265,5 @@ CGContextRef BackingStoreMac::CreateCGBitmapContext() {
 
   return context;
 }
+
+}  // namespace content

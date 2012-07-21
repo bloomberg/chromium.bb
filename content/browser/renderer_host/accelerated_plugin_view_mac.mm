@@ -16,6 +16,7 @@
 #include "ui/gl/gl_switches.h"
 
 using content::BrowserThread;
+using content::RenderWidgetHostViewMac;
 
 @interface AcceleratedPluginView(Private)
 

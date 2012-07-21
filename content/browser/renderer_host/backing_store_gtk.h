@@ -17,24 +17,25 @@
 namespace gfx {
 class Point;
 class Rect;
-}  // namespace gfx
-
+}
 
 typedef struct _GdkDrawable GdkDrawable;
+
+namespace content {
 
 class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
  public:
   // Create a backing store on the X server. The visual is an Xlib Visual
   // describing the format of the target window and the depth is the color
   // depth of the X window which will be drawn into.
-  BackingStoreGtk(content::RenderWidgetHost* widget,
+  BackingStoreGtk(RenderWidgetHost* widget,
                   const gfx::Size& size,
                   void* visual,
                   int depth);
 
   // This is for unittesting only. An object constructed using this constructor
   // will silently ignore all paints
-  BackingStoreGtk(content::RenderWidgetHost* widget, const gfx::Size& size);
+  BackingStoreGtk(RenderWidgetHost* widget, const gfx::Size& size);
 
   virtual ~BackingStoreGtk();
 
@@ -59,7 +60,7 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
   // BackingStore implementation.
   virtual size_t MemorySize() OVERRIDE;
   virtual void PaintToBackingStore(
-      content::RenderProcessHost* process,
+      RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
@@ -103,5 +104,7 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreGtk);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_GTK_H_

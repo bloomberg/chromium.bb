@@ -15,6 +15,8 @@
 
 class IOSurfaceSupport;
 
+namespace content {
+
 // This class manages an OpenGL context and IOSurface for the accelerated
 // compositing code path. The GL context is attached to
 // RenderWidgetHostViewCocoa for blitting the IOSurface.
@@ -149,5 +151,7 @@ class CompositingIOSurfaceMac {
 
   bool is_vsync_disabled_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_COMPOSITING_VIEW_MAC_H

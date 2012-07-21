@@ -9,9 +9,9 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac.h"
 
-using content::RenderWidgetHostImpl;
-
+namespace content {
 namespace {
+
 // The names of all the objc selectors w/o ':'s added to an object by
 // AddEditingSelectorsToClass().
 //
@@ -236,3 +236,5 @@ NSArray* RenderWidgetHostViewMacEditCommandHelper::GetEditSelectorNames() {
 
   return ret;
 }
+
+}  // namespace content

@@ -31,7 +31,6 @@
 using base::TimeTicks;
 
 namespace content {
-
 namespace {
 
 // When reading, we don't know if we are going to get EOF (0 bytes read), so
@@ -165,7 +164,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
 
-  content::ResourceContext* resource_context = filter_->resource_context();
+  ResourceContext* resource_context = filter_->resource_context();
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(request_, resource_context, response,
                                         filter_);

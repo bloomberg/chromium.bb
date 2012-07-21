@@ -8,6 +8,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
 
+namespace content {
 namespace {
 
 // Returns the "visible window rect" for |window|, defined roughly as "what the
@@ -34,7 +35,7 @@ gfx::Rect GetVisibleWindowRect(HWND window) {
   return rect;
 }
 
-}
+}  // namespace
 
 // TODO(shess): Provide a mapping from reply_msg->routing_id() to HWND
 // so that we can eliminate the NativeViewId parameter.
@@ -49,3 +50,5 @@ void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId window_id,
   *rect = GetVisibleWindowRect(GetAncestor(gfx::NativeViewFromId(window_id),
                                GA_ROOT));
 }
+
+}  // namespace content

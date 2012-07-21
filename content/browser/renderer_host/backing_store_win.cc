@@ -12,6 +12,7 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/surface/transport_dib.h"
 
+namespace content {
 namespace {
 
 // Creates a dib conforming to the height/width/section parameters passed in.
@@ -69,7 +70,7 @@ void CallStretchDIBits(HDC hdc, int dest_x, int dest_y, int dest_w, int dest_h,
 
 }  // namespace
 
-BackingStoreWin::BackingStoreWin(content::RenderWidgetHost* widget,
+BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget,
                                  const gfx::Size& size)
     : BackingStore(widget, size),
       backing_store_dib_(NULL),
@@ -114,7 +115,7 @@ size_t BackingStoreWin::MemorySize() {
 }
 
 void BackingStoreWin::PaintToBackingStore(
-    content::RenderProcessHost* process,
+    RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
@@ -178,3 +179,5 @@ void BackingStoreWin::ScrollBackingStore(int dx, int dy,
   // TODO(darin): this doesn't work if dx and dy are both non-zero!
   DCHECK(dx == 0 || dy == 0);
 }
+
+}  // namespace content

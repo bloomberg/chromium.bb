@@ -17,13 +17,12 @@ struct WebMenuItem;
 namespace content {
 class RenderViewHost;
 class RenderViewHostImpl;
-}
 
-class PopupMenuHelper : public content::NotificationObserver {
+class PopupMenuHelper : public NotificationObserver {
  public:
   // Creates a PopupMenuHelper that will notify |render_view_host| when a user
   // selects or cancels the popup.
-  explicit PopupMenuHelper(content::RenderViewHost* render_view_host);
+  explicit PopupMenuHelper(RenderViewHost* render_view_host);
 
   // Shows the popup menu and notifies the RenderViewHost of the selection/
   // cancel.
@@ -37,16 +36,18 @@ class PopupMenuHelper : public content::NotificationObserver {
                      bool allow_multiple_selection);
 
  private:
-  // content::NotificationObserver implementation:
+  // NotificationObserver implementation:
   virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
-  content::NotificationRegistrar notification_registrar_;
+  NotificationRegistrar notification_registrar_;
 
-  content::RenderViewHostImpl* render_view_host_;
+  RenderViewHostImpl* render_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupMenuHelper);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_POPUP_MENU_HELPER_MAC_H_
