@@ -42,7 +42,7 @@ class MediaDeviceNotifications
   friend class base::RefCountedThreadSafe<MediaDeviceNotifications>;
 
   // Mapping of mount points to mount device IDs.
-  typedef std::map<std::string, base::SystemMonitor::DeviceIdType> MountMap;
+  typedef std::map<std::string, std::string> MountMap;
 
   // Private to avoid code deleting the object.
   virtual ~MediaDeviceNotifications();
@@ -59,7 +59,8 @@ class MediaDeviceNotifications
 
   // The lowest available device id number.
   // Only accessed on the UI thread.
-  base::SystemMonitor::DeviceIdType current_device_id_;
+  // TODO(thestig) Remove this and use a device UUID instead.
+  int current_device_id_;
 
   // Mapping of relevant mount points and their corresponding mount devices.
   // Only accessed on the UI thread.

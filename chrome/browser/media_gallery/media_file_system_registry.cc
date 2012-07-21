@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
@@ -60,11 +61,12 @@ MediaFileSystemRegistry::GetMediaFileSystems(
   const std::vector<SystemMonitor::MediaDeviceInfo> media_devices =
       monitor->GetAttachedMediaDevices();
   for (size_t i = 0; i < media_devices.size(); ++i) {
-    const SystemMonitor::DeviceIdType& id = media_devices[i].a;
-    const FilePath& path = media_devices[i].c;
-    device_id_map_.insert(std::make_pair(id, path));
-    std::string fsid = RegisterPathAsFileSystem(path);
-    child_it->second.insert(std::make_pair(path, fsid));
+    if (media_devices[i].type == SystemMonitor::TYPE_PATH) {
+      FilePath path(media_devices[i].location);
+      device_id_map_.insert(std::make_pair(media_devices[i].unique_id, path));
+      const std::string fsid = RegisterPathAsFileSystem(path);
+      child_it->second.insert(std::make_pair(path, fsid));
+    }
   }
 
   MediaPathToFSIDMap& child_map = child_it->second;
@@ -78,8 +80,7 @@ MediaFileSystemRegistry::GetMediaFileSystems(
   return results;
 }
 
-void MediaFileSystemRegistry::OnMediaDeviceDetached(
-    const base::SystemMonitor::DeviceIdType& id) {
+void MediaFileSystemRegistry::OnMediaDeviceDetached(const std::string& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DeviceIdToMediaPathMap::iterator it = device_id_map_.find(id);

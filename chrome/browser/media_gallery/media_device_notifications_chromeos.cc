@@ -9,6 +9,8 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -17,7 +19,7 @@ namespace chromeos {
 using content::BrowserThread;
 
 MediaDeviceNotifications::MediaDeviceNotifications()
-    : current_device_id_(0U) {
+    : current_device_id_(0) {
   DCHECK(disks::DiskMountManager::GetInstance());
   disks::DiskMountManager::GetInstance()->AddObserver(this);
 }
@@ -99,11 +101,13 @@ void MediaDeviceNotifications::AddMountedPathOnUIThread(
     NOTREACHED();
     return;
   }
-  mount_map_.insert(std::make_pair(mount_info.mount_path, current_device_id_));
+  const std::string device_id_str = base::IntToString(current_device_id_++);
+  mount_map_.insert(std::make_pair(mount_info.mount_path, device_id_str));
   base::SystemMonitor::Get()->ProcessMediaDeviceAttached(
-      current_device_id_++,
-      FilePath(mount_info.source_path).BaseName().value(),
-      FilePath(mount_info.mount_path));
+      device_id_str,
+      UTF8ToUTF16(FilePath(mount_info.source_path).BaseName().value()),
+      base::SystemMonitor::TYPE_PATH,
+      mount_info.mount_path);
 }
 
 }  // namespace chrome

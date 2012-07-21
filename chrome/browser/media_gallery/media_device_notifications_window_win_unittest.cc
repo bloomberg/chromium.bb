@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "base/sys_string_conversions.h"
+#include "base/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
 #include "content/public/test/test_browser_thread.h"
@@ -98,10 +98,13 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
       volume_broadcast.dbcv_unitmask |= 0x1 << *it;
       std::wstring drive(L"_:\\");
       drive[0] = 'A' + *it;
-      std::string name("V");
-      name.append(base::SysWideToUTF8(drive));
-      EXPECT_CALL(observer_, OnMediaDeviceAttached(*it, name, FilePath(drive))).
-          Times(0);
+      FilePath::StringType name = L"V" + drive;
+      EXPECT_CALL(observer_,
+                  OnMediaDeviceAttached(base::IntToString(*it),
+                                        name,
+                                        base::SystemMonitor::TYPE_PATH,
+                                        drive))
+          .Times(0);
     }
   }
   window_->OnDeviceChange(DBT_DEVICEARRIVAL,
@@ -122,7 +125,7 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
          it != device_indices.end();
          ++it) {
       volume_broadcast.dbcv_unitmask |= 0x1 << *it;
-      EXPECT_CALL(observer_, OnMediaDeviceDetached(*it));
+      EXPECT_CALL(observer_, OnMediaDeviceDetached(base::IntToString(*it)));
     }
   }
   window_->OnDeviceChange(DBT_DEVICEREMOVECOMPLETE,

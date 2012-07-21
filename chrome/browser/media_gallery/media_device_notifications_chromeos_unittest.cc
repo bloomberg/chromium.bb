@@ -13,6 +13,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -145,11 +146,17 @@ TEST_F(MediaDeviceNotificationsTest, BasicAttachDetach) {
                                               mount_path1.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(0, kDevice1Name, mount_path1))
+  const std::string kDeviceId0 = "0";
+  EXPECT_CALL(observer(),
+              OnMediaDeviceAttached(kDeviceId0,
+                                    ASCIIToUTF16(kDevice1Name),
+                                    base::SystemMonitor::TYPE_PATH,
+                                    mount_path1.value()))
       .InSequence(mock_sequence);
   MountDevice(MOUNT_ERROR_NONE, mount_info);
 
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(0)).InSequence(mock_sequence);
+  EXPECT_CALL(observer(), OnMediaDeviceDetached(kDeviceId0))
+      .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
 
   FilePath mount_path2 = CreateMountPoint(kMountPointB, true);
@@ -158,11 +165,18 @@ TEST_F(MediaDeviceNotificationsTest, BasicAttachDetach) {
                                                mount_path2.value(),
                                                MOUNT_TYPE_DEVICE,
                                                disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(1, kDevice2Name, mount_path2))
+  const std::string kDeviceId1 = "1";
+
+  EXPECT_CALL(observer(),
+              OnMediaDeviceAttached(kDeviceId1,
+                                    ASCIIToUTF16(kDevice2Name),
+                                    base::SystemMonitor::TYPE_PATH,
+                                    mount_path2.value()))
       .InSequence(mock_sequence);
   MountDevice(MOUNT_ERROR_NONE, mount_info2);
 
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(1)).InSequence(mock_sequence);
+  EXPECT_CALL(observer(), OnMediaDeviceDetached(kDeviceId1))
+      .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
 }
 
@@ -175,7 +189,7 @@ TEST_F(MediaDeviceNotificationsTest, DCIM) {
                                               mount_path.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _, _)).Times(0);
   MountDevice(MOUNT_ERROR_NONE, mount_info);
 }
 
@@ -190,18 +204,18 @@ TEST_F(MediaDeviceNotificationsTest, Ignore) {
                                               mount_path.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _, _)).Times(0);
   MountDevice(MOUNT_ERROR_UNKNOWN, mount_info);
 
   // Not a device
   mount_info.mount_type = MOUNT_TYPE_ARCHIVE;
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _, _)).Times(0);
   MountDevice(MOUNT_ERROR_NONE, mount_info);
 
   // Unsupported file system.
   mount_info.mount_type = MOUNT_TYPE_DEVICE;
   mount_info.mount_condition = disks::MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM;
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _, _)).Times(0);
   MountDevice(MOUNT_ERROR_NONE, mount_info);
 }
 

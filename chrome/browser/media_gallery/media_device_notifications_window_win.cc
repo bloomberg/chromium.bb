@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/sys_string_conversions.h"
+#include "base/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
@@ -102,7 +102,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
             BrowserThread::PostTask(
                 BrowserThread::FILE, FROM_HERE,
                 base::Bind(&MediaDeviceNotificationsWindowWin::
-                    CheckDeviceTypeOnFileThread, this, i,
+                    CheckDeviceTypeOnFileThread, this, base::IntToString(i),
                     FilePath::StringType(volume_name), FilePath(drive)));
           }
         }
@@ -114,7 +114,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
       for (int i = 0; unitmask; ++i, unitmask >>= 1) {
         if (unitmask & 0x01) {
           base::SystemMonitor* monitor = base::SystemMonitor::Get();
-          monitor->ProcessMediaDeviceDetached(i);
+          monitor->ProcessMediaDeviceDetached(base::IntToString(i));
         }
       }
       break;
@@ -124,7 +124,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
 }
 
 void MediaDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
-    unsigned int id,
+    const std::string& id,
     const FilePath::StringType& device_name,
     const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -140,14 +140,16 @@ void MediaDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
 }
 
 void MediaDeviceNotificationsWindowWin::ProcessMediaDeviceAttachedOnUIThread(
-    unsigned int id,
+    const std::string& id,
     const FilePath::StringType& device_name,
     const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const std::string device_name_utf8(base::SysWideToUTF8(device_name));
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  monitor->ProcessMediaDeviceAttached(id, device_name_utf8, path);
+  monitor->ProcessMediaDeviceAttached(id,
+                                      device_name,
+                                      base::SystemMonitor::TYPE_PATH,
+                                      path.value());
 }
 
 LRESULT CALLBACK MediaDeviceNotificationsWindowWin::WndProc(

@@ -7,6 +7,8 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -42,11 +44,12 @@ class MediaDeviceNotificationsWindowWin
                                        WPARAM wparam,
                                        LPARAM lparam);
 
-  void CheckDeviceTypeOnFileThread(unsigned int id,
+  void CheckDeviceTypeOnFileThread(const std::string& id,
                                    const FilePath::StringType& device_name,
                                    const FilePath& path);
+
   void ProcessMediaDeviceAttachedOnUIThread(
-      unsigned int id,
+      const std::string& id,
       const FilePath::StringType& device_name,
       const FilePath& path);
 

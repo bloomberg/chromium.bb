@@ -7,7 +7,6 @@
 
 #include "base/system_monitor/system_monitor.h"
 
-class FilePath;
 class Browser;
 
 namespace content {
@@ -24,20 +23,23 @@ class WebContentsDelegate;
 class DeviceAttachedIntentSource
     : public base::SystemMonitor::DevicesChangedObserver {
  public:
-  explicit DeviceAttachedIntentSource(Browser* browser,
-                                      content::WebContentsDelegate* delegate);
+  DeviceAttachedIntentSource(Browser* browser,
+                             content::WebContentsDelegate* delegate);
   virtual ~DeviceAttachedIntentSource();
 
-  // DevicesChangedObserver
+  // base::SystemMonitor::DevicesChangedObserver implementation.
   virtual void OnMediaDeviceAttached(
-      const base::SystemMonitor::DeviceIdType& id,
-      const std::string& name,
-      const FilePath& path) OVERRIDE;
+      const std::string& id,
+      const string16& name,
+      base::SystemMonitor::MediaDeviceType type,
+      const FilePath::StringType& location) OVERRIDE;
 
  private:
   // Weak pointer to browser to which intents will be dispatched.
   Browser* browser_;
   content::WebContentsDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceAttachedIntentSource);
 };
 
 #endif  // CHROME_BROWSER_INTENTS_DEVICE_ATTACHED_INTENT_SOURCE_H_

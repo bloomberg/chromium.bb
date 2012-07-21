@@ -21,7 +21,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
-#include "base/system_monitor/system_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
 class FilePath;
@@ -53,8 +52,7 @@ class MediaDeviceNotificationsLinux
       content::BrowserThread::FILE>;
 
   // (mount device, device id)
-  typedef std::pair<std::string,
-                    base::SystemMonitor::DeviceIdType> MountDeviceAndId;
+  typedef std::pair<std::string, std::string> MountDeviceAndId;
   // Mapping of mount points to MountDeviceAndId.
   typedef std::map<std::string, MountDeviceAndId> MountMap;
 
@@ -70,10 +68,10 @@ class MediaDeviceNotificationsLinux
   // id as well.
   void AddNewDevice(const std::string& mount_device,
                     const std::string& mount_point,
-                    base::SystemMonitor::DeviceIdType* device_id);
+                    std::string* device_id);
 
   // Remove a media device with a given device id.
-  void RemoveOldDevice(const base::SystemMonitor::DeviceIdType& device_id);
+  void RemoveOldDevice(const std::string& device_id);
 
   // Whether Init() has been called or not.
   bool initialized_;
@@ -90,7 +88,8 @@ class MediaDeviceNotificationsLinux
   MountMap mtab_;
 
   // The lowest available device id number.
-  base::SystemMonitor::DeviceIdType current_device_id_;
+  // TODO(thestig) Remove this and use a real per-device unique id instead.
+  int current_device_id_;
 
   // Set of known file systems that we care about.
   std::set<std::string> known_file_systems_;

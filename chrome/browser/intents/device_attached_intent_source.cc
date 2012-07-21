@@ -31,16 +31,21 @@ DeviceAttachedIntentSource::~DeviceAttachedIntentSource() {
 }
 
 void DeviceAttachedIntentSource::OnMediaDeviceAttached(
-    const base::SystemMonitor::DeviceIdType& id,
-    const std::string& name,
-    const FilePath& device_path) {
+    const std::string& id,
+    const string16& name,
+    base::SystemMonitor::MediaDeviceType type,
+    const FilePath::StringType& location) {
   if (!browser_->window()->IsActive())
     return;
 
-  // Sanity checks for |device_path|.
-  if (!device_path.IsAbsolute() || device_path.ReferencesParent()) {
+  // Only handle FilePaths for now.
+  if (type != SystemMonitor::TYPE_PATH)
     return;
-  }
+
+  // Sanity checks for |device_path|.
+  const FilePath device_path(location);
+  if (!device_path.IsAbsolute() || device_path.ReferencesParent())
+    return;
 
   std::string device_name;
 
@@ -56,7 +61,6 @@ void DeviceAttachedIntentSource::OnMediaDeviceAttached(
       device_name,
       filesystem_id);
 
-  content::WebIntentsDispatcher* dispatcher =
-      content::WebIntentsDispatcher::Create(intent);
-  delegate_->WebIntentDispatch(NULL, dispatcher);
+  delegate_->WebIntentDispatch(NULL  /* no WebContents */,
+                               content::WebIntentsDispatcher::Create(intent));
 }

@@ -13,7 +13,10 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/stl_util.h"
+#include "base/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
 
 namespace {
@@ -110,8 +113,8 @@ void MediaDeviceNotificationsLinux::UpdateMtab() {
   for (MountMap::const_iterator it = mtab_.begin(); it != mtab_.end(); ++it) {
     const std::string& mount_point = it->first;
     // |mount_point| not in |new_mtab|.
-    if (new_mtab.find(mount_point) == new_mtab.end()) {
-      const SystemMonitor::DeviceIdType& device_id = it->second.second;
+    if (!ContainsKey(new_mtab, mount_point)) {
+      const std::string& device_id = it->second.second;
       RemoveOldDevice(device_id);
       mount_points_to_erase.push_back(mount_point);
     }
@@ -129,7 +132,7 @@ void MediaDeviceNotificationsLinux::UpdateMtab() {
     const std::string& mount_point = newiter->first;
     const MountDeviceAndId& mount_device_and_id = newiter->second;
     const std::string& mount_device = mount_device_and_id.first;
-    SystemMonitor::DeviceIdType& id = newiter->second.second;
+    std::string& id = newiter->second.second;
     MountMap::iterator olditer = mtab_.find(mount_point);
     // Check to see if it is a new mount point.
     if (olditer == mtab_.end()) {
@@ -162,23 +165,22 @@ void MediaDeviceNotificationsLinux::ReadMtab(MountMap* mtab) {
   MountMap& new_mtab = *mtab;
   mntent entry;
   char buf[512];
-  SystemMonitor::DeviceIdType mount_position = 0;
-  typedef std::pair<std::string, SystemMonitor::DeviceIdType> MountPointAndId;
+  int mount_position = 0;
+  typedef std::pair<std::string, std::string> MountPointAndId;
   typedef std::map<std::string, MountPointAndId> DeviceMap;
   DeviceMap device_map;
   while (getmntent_r(fp, &entry, buf, sizeof(buf))) {
     // We only care about real file systems.
-    if (known_file_systems_.find(entry.mnt_type) == known_file_systems_.end())
+    if (!ContainsKey(known_file_systems_, entry.mnt_type))
       continue;
     // Add entries, but overwrite entries for the same mount device. Keep track
     // of the entry positions in the device id field and use that below to
     // resolve multiple devices mounted at the same mount point.
     MountPointAndId mount_point_and_id =
-        std::make_pair(entry.mnt_dir, mount_position++);
+        std::make_pair(entry.mnt_dir, base::IntToString(mount_position++));
     DeviceMap::iterator it = device_map.find(entry.mnt_fsname);
     if (it == device_map.end()) {
-      device_map.insert(it,
-                        std::make_pair(entry.mnt_fsname, mount_point_and_id));
+      device_map.insert(std::make_pair(entry.mnt_fsname, mount_point_and_id));
     } else {
       it->second = mount_point_and_id;
     }
@@ -190,7 +192,7 @@ void MediaDeviceNotificationsLinux::ReadMtab(MountMap* mtab) {
        ++device_it) {
     const std::string& device = device_it->first;
     const std::string& mount_point = device_it->second.first;
-    const SystemMonitor::DeviceIdType& position = device_it->second.second;
+    const std::string& position = device_it->second.second;
 
     // No device at |mount_point|, save |device| to it.
     MountMap::iterator mount_it = new_mtab.find(mount_point);
@@ -203,7 +205,7 @@ void MediaDeviceNotificationsLinux::ReadMtab(MountMap* mtab) {
     // There is already a device mounted at |mount_point|. Check to see if
     // the existing mount entry is newer than the current one.
     std::string& existing_device = mount_it->second.first;
-    SystemMonitor::DeviceIdType& existing_position = mount_it->second.second;
+    std::string& existing_position = mount_it->second.second;
     if (existing_position > position)
       continue;
 
@@ -216,16 +218,17 @@ void MediaDeviceNotificationsLinux::ReadMtab(MountMap* mtab) {
 void MediaDeviceNotificationsLinux::AddNewDevice(
     const std::string& mount_device,
     const std::string& mount_point,
-    base::SystemMonitor::DeviceIdType* device_id) {
-  *device_id = current_device_id_++;
+    std::string* device_id) {
+  *device_id = base::IntToString(current_device_id_++);
   base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
   system_monitor->ProcessMediaDeviceAttached(*device_id,
-                                             mount_device,
-                                             FilePath(mount_point));
+                                             UTF8ToUTF16(mount_device),
+                                             SystemMonitor::TYPE_PATH,
+                                             mount_point);
 }
 
 void MediaDeviceNotificationsLinux::RemoveOldDevice(
-    const base::SystemMonitor::DeviceIdType& device_id) {
+    const std::string& device_id) {
   base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
   system_monitor->ProcessMediaDeviceDetached(device_id);
 }

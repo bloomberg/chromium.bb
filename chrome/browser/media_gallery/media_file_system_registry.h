@@ -47,8 +47,7 @@ class MediaFileSystemRegistry
       const content::RenderProcessHost* rph);
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
-  virtual void OnMediaDeviceDetached(
-      const base::SystemMonitor::DeviceIdType& id) OVERRIDE;
+  virtual void OnMediaDeviceDetached(const std::string& id) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -66,8 +65,7 @@ class MediaFileSystemRegistry
                    MediaPathToFSIDMap> ChildIdToMediaFSMap;
 
   // Mapping of device id to mount path.
-  typedef std::map<base::SystemMonitor::DeviceIdType, FilePath>
-      DeviceIdToMediaPathMap;
+  typedef std::map<std::string, FilePath> DeviceIdToMediaPathMap;
 
   // Obtain an instance of this class via GetInstance().
   MediaFileSystemRegistry();
