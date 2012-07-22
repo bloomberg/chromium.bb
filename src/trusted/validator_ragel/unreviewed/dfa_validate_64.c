@@ -20,7 +20,7 @@
 # endif
 #endif
 
-static void ProcessError(const uint8_t *ptr, int error, void *userdata) {
+static void ProcessError(const uint8_t *ptr, uint32_t error, void *userdata) {
   UNREFERENCED_PARAMETER(ptr);
   UNREFERENCED_PARAMETER(error);
   UNREFERENCED_PARAMETER(userdata);

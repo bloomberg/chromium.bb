@@ -9,53 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/validator_internal.h"
 
-#if defined(_MSC_VER)
-#define inline __inline
-#endif
-
-static const int kBitsPerByte = 8;
-
-static inline uint8_t *BitmapAllocate(size_t indexes) {
-  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
-  uint8_t *bitmap = malloc(byte_count);
-  if (bitmap != NULL) {
-    memset(bitmap, 0, byte_count);
-  }
-  return bitmap;
-}
-
-static inline int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
-  return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
-}
-
-static inline void BitmapSetBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
-}
-
-static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
-}
-
-/* Mark the destination of a jump instruction and make an early validity check:
- * to jump outside given code region, the target address must be aligned.
- *
- * Returns TRUE iff the jump passes the early validity check.
- */
-static int MarkJumpTarget(size_t jump_dest,
-                          uint8_t *jump_dests,
-                          size_t size) {
-  if ((jump_dest & kBundleMask) == 0) {
-    return TRUE;
-  }
-  if (jump_dest >= size) {
-    return FALSE;
-  }
-  BitmapSetBit(jump_dests, jump_dest);
-  return TRUE;
-}
+/* Ignore this information: it's not used by security model in IA32 mode.  */
+#undef GET_VEX_PREFIX3
+#define GET_VEX_PREFIX3 0
+#undef SET_VEX_PREFIX3
+#define SET_VEX_PREFIX3(P)
 
 
 
@@ -69,72 +29,6 @@ static const int x86_64_decoder_en_main = 246;
 
 
 
-/* Ignore this information for now.  */
-#define GET_VEX_PREFIX3 0
-#define SET_VEX_PREFIX3(P)
-#define SET_DATA16_PREFIX(S)
-#define SET_LOCK_PREFIX(S)
-#define SET_REPZ_PREFIX(S)
-#define SET_REPNZ_PREFIX(S)
-#define SET_BRANCH_TAKEN(S)
-#define SET_BRANCH_NOT_TAKEN(S)
-#define SET_DISP_TYPE(T)
-#define SET_DISP_PTR(P)
-#define SET_CPU_FEATURE(F) \
-  if (!(F)) { \
-    errors_detected |= CPUID_UNSUPPORTED_INSTRUCTION; \
-    result = 1; \
-  }
-#define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
-#define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
-#define CPUFeature_AES      cpu_features->data[NaClCPUFeature_AES]
-#define CPUFeature_AESAVX   CPUFeature_AES && CPUFeature_AVX
-#define CPUFeature_AVX      cpu_features->data[NaClCPUFeature_AVX]
-#define CPUFeature_BMI1     cpu_features->data[NaClCPUFeature_BMI1]
-#define CPUFeature_CLFLUSH  cpu_features->data[NaClCPUFeature_CLFLUSH]
-#define CPUFeature_CLMUL    cpu_features->data[NaClCPUFeature_CLMUL]
-#define CPUFeature_CLMULAVX CPUFeature_CLMUL && CPUFeature_AVX
-#define CPUFeature_CMOV     cpu_features->data[NaClCPUFeature_CMOV]
-#define CPUFeature_CMOVx87  CPUFeature_CMOV && CPUFeature_x87
-#define CPUFeature_CX16     cpu_features->data[NaClCPUFeature_CX16]
-#define CPUFeature_CX8      cpu_features->data[NaClCPUFeature_CX8]
-#define CPUFeature_E3DNOW   cpu_features->data[NaClCPUFeature_E3DNOW]
-#define CPUFeature_EMMX     cpu_features->data[NaClCPUFeature_EMMX]
-#define CPUFeature_EMMXSSE  CPUFeature_EMMX || CPUFeature_SSE
-#define CPUFeature_F16C     cpu_features->data[NaClCPUFeature_F16C]
-#define CPUFeature_FMA      cpu_features->data[NaClCPUFeature_FMA]
-#define CPUFeature_FMA4     cpu_features->data[NaClCPUFeature_FMA4]
-#define CPUFeature_FXSR     cpu_features->data[NaClCPUFeature_FXSR]
-#define CPUFeature_LAHF     cpu_features->data[NaClCPUFeature_LAHF]
-#define CPUFeature_LM       cpu_features->data[NaClCPUFeature_LM]
-#define CPUFeature_LWP      cpu_features->data[NaClCPUFeature_LWP]
-/*
- * We allow lzcnt unconditionally
- * See http://code.google.com/p/nativeclient/issues/detail?id=2869
- */
-#define CPUFeature_LZCNT    TRUE
-#define CPUFeature_MMX      cpu_features->data[NaClCPUFeature_MMX]
-#define CPUFeature_MON      cpu_features->data[NaClCPUFeature_MON]
-#define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeature_MOVBE]
-#define CPUFeature_OSXSAVE  cpu_features->data[NaClCPUFeature_OSXSAVE]
-#define CPUFeature_POPCNT   cpu_features->data[NaClCPUFeature_POPCNT]
-#define CPUFeature_PRE      cpu_features->data[NaClCPUFeature_PRE]
-#define CPUFeature_SSE      cpu_features->data[NaClCPUFeature_SSE]
-#define CPUFeature_SSE2     cpu_features->data[NaClCPUFeature_SSE2]
-#define CPUFeature_SSE3     cpu_features->data[NaClCPUFeature_SSE3]
-#define CPUFeature_SSE41    cpu_features->data[NaClCPUFeature_SSE41]
-#define CPUFeature_SSE42    cpu_features->data[NaClCPUFeature_SSE42]
-#define CPUFeature_SSE4A    cpu_features->data[NaClCPUFeature_SSE4A]
-#define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeature_SSSE3]
-#define CPUFeature_TBM      cpu_features->data[NaClCPUFeature_TBM]
-#define CPUFeature_TSC      cpu_features->data[NaClCPUFeature_TSC]
-/*
- * We allow tzcnt unconditionally
- * See http://code.google.com/p/nativeclient/issues/detail?id=2869
- */
-#define CPUFeature_TZCNT    TRUE
-#define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
-#define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
 
 int ValidateChunkIA32(const uint8_t *data, size_t size,
                       const NaClCPUFeaturesX86 *cpu_features,
@@ -150,7 +44,7 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
 
   size_t i;
 
-  int errors_detected;
+  uint32_t errors_detected;
 
   assert(size % kBundleSize == 0);
 
@@ -172,12 +66,13 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
 	{
 tr0:
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -187,12 +82,13 @@ tr9:
     SET_DISP_PTR(p - 3);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -202,36 +98,39 @@ tr10:
     SET_DISP_PTR(p);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
 tr11:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
 tr15:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -240,12 +139,13 @@ tr21:
     SET_CPU_FEATURE(CPUFeature_3DNOW);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -254,12 +154,13 @@ tr29:
     SET_CPU_FEATURE(CPUFeature_TSC);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -268,12 +169,13 @@ tr36:
     SET_CPU_FEATURE(CPUFeature_MMX);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -282,12 +184,13 @@ tr48:
     SET_CPU_FEATURE(CPUFeature_MON);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -296,12 +199,13 @@ tr49:
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -310,12 +214,13 @@ tr50:
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -324,12 +229,13 @@ tr62:
     SET_CPU_FEATURE(CPUFeature_E3DNOW);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -338,33 +244,28 @@ tr68:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
 tr89:
 	{
-    int32_t offset =
-        (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * ((uint32_t) p[0]))));
-    size_t jump_dest = offset + (p - data) + 1;
-
-    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
-      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
-      result = 1;
-    }
+    rel32_operand(p + 1, data, jump_dests, size, &errors_detected);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -373,12 +274,13 @@ tr92:
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -387,12 +289,13 @@ tr101:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -401,12 +304,13 @@ tr102:
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -415,44 +319,41 @@ tr103:
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
 tr111:
 	{
-    int8_t offset = (uint8_t) (p[0]);
-    size_t jump_dest = offset + (p - data) + 1;
-
-    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
-      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
-      result = 1;
-    }
+    rel8_operand(p + 1, data, jump_dests, size, &errors_detected);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
 tr132:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -461,12 +362,13 @@ tr179:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -475,12 +377,13 @@ tr253:
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -489,12 +392,13 @@ tr260:
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -503,12 +407,13 @@ tr294:
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -517,24 +422,26 @@ tr321:
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
 tr347:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -543,12 +450,13 @@ tr373:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -557,12 +465,13 @@ tr379:
     SET_CPU_FEATURE(CPUFeature_CMOVx87);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -571,12 +480,13 @@ tr399:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -585,12 +495,13 @@ tr407:
       BitmapClearBit(valid_targets, (p - data) - 1);
     }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -601,12 +512,13 @@ tr421:
         BitmapSetBit(valid_targets, p - data);
      }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -620,12 +532,13 @@ tr430:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st246;
@@ -1961,21 +1874,13 @@ st30:
 case 30:
 	switch( (*p) ) {
 		case 4u: goto st2;
-		case 5u: goto st3;
 		case 12u: goto st2;
-		case 13u: goto st3;
 		case 20u: goto st2;
-		case 21u: goto st3;
 		case 28u: goto st2;
-		case 29u: goto st3;
 		case 36u: goto st2;
-		case 37u: goto st3;
 		case 44u: goto st2;
-		case 45u: goto st3;
 		case 52u: goto st2;
-		case 53u: goto st3;
 		case 60u: goto st2;
-		case 61u: goto st3;
 		case 68u: goto st8;
 		case 76u: goto st8;
 		case 84u: goto st8;
@@ -1993,15 +1898,39 @@ case 30:
 		case 180u: goto st9;
 		case 188u: goto st9;
 	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 63u )
+	if ( (*p) < 38u ) {
+		if ( (*p) < 14u ) {
+			if ( (*p) > 3u ) {
+				if ( 6u <= (*p) && (*p) <= 11u )
+					goto tr0;
+			} else
+				goto tr0;
+		} else if ( (*p) > 19u ) {
+			if ( (*p) > 27u ) {
+				if ( 30u <= (*p) && (*p) <= 35u )
+					goto tr0;
+			} else if ( (*p) >= 22u )
+				goto tr0;
+		} else
 			goto tr0;
-	} else if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st3;
+	} else if ( (*p) > 43u ) {
+		if ( (*p) < 62u ) {
+			if ( (*p) > 51u ) {
+				if ( 54u <= (*p) && (*p) <= 59u )
+					goto tr0;
+			} else if ( (*p) >= 46u )
+				goto tr0;
+		} else if ( (*p) > 63u ) {
+			if ( (*p) > 127u ) {
+				if ( 192u <= (*p) )
+					goto tr19;
+			} else if ( (*p) >= 64u )
+				goto st7;
+		} else
+			goto tr0;
 	} else
-		goto st7;
-	goto tr19;
+		goto tr0;
+	goto st3;
 st31:
 	if ( ++p == pe )
 		goto _test_eof31;
@@ -4049,12 +3978,13 @@ case 122:
 tr225:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st247;
@@ -7608,12 +7538,13 @@ case 232:
 tr408:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st248;
@@ -7824,12 +7755,13 @@ case 234:
 tr409:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st249;
@@ -8040,12 +7972,13 @@ case 236:
 tr410:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st250;
@@ -8256,12 +8189,13 @@ case 238:
 tr411:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st251;
@@ -8472,12 +8406,13 @@ case 240:
 tr412:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st252;
@@ -8688,12 +8623,13 @@ case 242:
 tr413:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st253;
@@ -8904,12 +8840,13 @@ case 244:
 tr414:
 	{ }
 	{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      }
 	goto st254;

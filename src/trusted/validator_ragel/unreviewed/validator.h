@@ -44,7 +44,7 @@ enum validation_errors {
 #define kBundleMask 31
 
 typedef void (*process_validation_error_func) (const uint8_t *ptr,
-                                               int validation_error,
+                                               uint32_t validation_error,
                                                void *userdata);
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,

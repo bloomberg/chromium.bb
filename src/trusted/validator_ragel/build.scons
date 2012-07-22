@@ -96,11 +96,12 @@ if generate:
                'instruction_name,mark_data_fields,nacl-forbidden,'
                'imm_operand_action,rel_operand_action'),
              'validator64':
-              ('opcode,instruction_name,mark_data_fields,rel_operand_action,'
-               'nacl-forbidden,parse_nonwrite_registers,parse_x87_operands,'
-               'parse_mmx_operands,parse_xmm_operands,parse_ymm_operands,'
-               'parse_relative_operands,parse_immediate_operands,'
-               'parse_operands_states,parse_operand_positions')
+              ('opcode,instruction_name,mark_data_fields,imm_operand_action,'
+               'rel_operand_action,nacl-forbidden,parse_nonwrite_registers,'
+               'parse_x87_operands,parse_mmx_operands,parse_xmm_operands,'
+               'parse_ymm_operands,parse_relative_operands,'
+               'parse_immediate_operands,parse_operands_states,'
+               'parse_operand_positions')
             }[automata+bits])]
       )
       automatas.append(rl_file)

@@ -84,11 +84,12 @@ $(OBJD)/validator-x86_64.c: $(OBJD)/validator-x86_64-instruction.rl
 $(OBJD)/validator-x86_64-instruction-consts.c \
   $(OBJD)/validator-x86_64-instruction.rl: $(GEN_DFA) $(INST_DEFS)
 	$(GEN_DFA) -o $(OBJD)/validator-x86_64-instruction.rl $(INST_DEFS) \
-	  -d opcode,instruction_name,mark_data_fields,rel_operand_action \
-	  -d nacl-forbidden,parse_nonwrite_registers,parse_x87_operands \
-	  -d parse_mmx_operands,parse_xmm_operands,parse_ymm_operands \
-	  -d parse_relative_operands,parse_immediate_operands \
-	  -d parse_operands_states,parse_operand_positions -m amd64
+	  -d opcode,instruction_name,mark_data_fields,imm_operand_action \
+	  -d rel_operand_action,nacl-forbidden,parse_nonwrite_registers \
+	  -d parse_x87_operands,parse_mmx_operands,parse_xmm_operands \
+	  -d parse_ymm_operands,parse_relative_operands \
+	  -d parse_immediate_operands,parse_operands_states \
+	  -d parse_operand_positions -m amd64
 
 # Facilities for testing:
 #   one-instruction.dot: the description of the DFA that accepts all instruction

@@ -10,232 +10,51 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
-
-#if defined(_MSC_VER)
-#define inline __inline
-#endif
+#include "native_client/src/trusted/validator_ragel/unreviewed/validator_internal.h"
 
 #include "native_client/src/trusted/validator_ragel/gen/validator-x86_64-instruction-consts.c"
-
-static const int kBitsPerByte = 8;
-
-static inline uint8_t *BitmapAllocate(size_t indexes) {
-  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
-  uint8_t *bitmap = malloc(byte_count);
-  if (bitmap != NULL) {
-    memset(bitmap, 0, byte_count);
-  }
-  return bitmap;
-}
-
-static inline int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
-  return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
-}
-
-static inline void BitmapSetBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
-}
-
-static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
-}
-
-/* Mark the destination of a jump instruction and make an early validity check:
- * to jump outside given code region, the target address must be aligned.
- *
- * Returns TRUE iff the jump passes the early validity check.
- */
-static int MarkJumpTarget(size_t jump_dest,
-                          uint8_t *jump_dests,
-                          size_t size) {
-  if ((jump_dest & kBundleMask) == 0) {
-    return TRUE;
-  }
-  if (jump_dest >= size) {
-    return FALSE;
-  }
-  BitmapSetBit(jump_dests, jump_dest);
-  return TRUE;
-}
-
 
 %%{
   machine x86_64_decoder;
   alphtype unsigned char;
 
   action check_access {
-    if ((base == REG_RIP) || (base == REG_R15) ||
-        ((base == REG_RSP) && (restricted_register != REG_RSP)) ||
-        ((base == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((index == restricted_register) ||
-          ((index == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
-        result = 1;
-      }
-    } else {
-      errors_detected |= FORBIDDEN_BASE_REGISTER;
-      result = 1;
-    }
+    check_access(begin - data, base, index, restricted_register, valid_targets,
+                 &errors_detected);
   }
 
   action rel8_operand {
-    int8_t offset = (uint8_t) (p[0]);
-    size_t jump_dest = offset + (p - data) + 1;
-
-    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
-      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
-      result = 1;
-    }
-    SET_OPERAND_NAME(0, JMP_TO);
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    rel8_operand(p + 1, data, jump_dests, size, &errors_detected);
   }
   action rel16_operand {
-    assert(FALSE);
+    #error rel16_operand should never be used in nacl
   }
   action rel32_operand {
-    int32_t offset =
-        (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * ((uint32_t) p[0]))));
-    size_t jump_dest = offset + (p - data) + 1;
-
-    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
-      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
-      result = 1;
-    }
-    SET_OPERAND_NAME(0, JMP_TO);
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    rel32_operand(p + 1, data, jump_dests, size, &errors_detected);
   }
+
+  # Do nothing when IMM operand is detected for now.  Will be used later for
+  # dynamic code modification support.
+  action imm2_operand { }
+  action imm8_operand { }
+  action imm16_operand { }
+  action imm32_operand { }
+  action imm64_operand { }
+  action imm8_second_operand { }
+  action imm16_second_operand { }
+  action imm32_second_operand { }
+  action imm64_second_operand { }
 
   action process_0_operands {
-    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
-     * instruction, not with regular instruction.  */
-    if (restricted_register == REG_RSP) {
-      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
-      result = 1;
-    } else if (restricted_register == REG_RBP) {
-      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
-      result = 1;
-    }
-    restricted_register = kNoRestrictedReg;
+    process_0_operands(&restricted_register, &errors_detected);
   }
-
   action process_1_operands {
-    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
-     * instruction, not with regular instruction.  */
-    if (restricted_register == REG_RSP) {
-      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
-      result = 1;
-    } else if (restricted_register == REG_RBP) {
-      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
-      result = 1;
-    }
-    /* If Sandboxed Rsi is destroyed then we must detect that.  */
-    if (restricted_register == kSandboxedRsi) {
-      if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
-          CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted)) {
-        restricted_register = kNoRestrictedReg;
-      }
-    }
-    if (restricted_register == kSandboxedRsi) {
-      if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted)) {
-        sandboxed_rsi_restricted_rdi = begin;
-        restricted_register = kSandboxedRsiRestrictedRdi;
-      }
-    }
-    if (restricted_register != kSandboxedRsiRestrictedRdi) {
-      restricted_register = kNoRestrictedReg;
-      if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
-          CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
-          CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        errors_detected |= R15_MODIFIED;
-        result = 1;
-      } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
-                  GET_REX_PREFIX()) ||
-                 CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        errors_detected |= BPL_MODIFIED;
-        result = 1;
-      } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
-                  GET_REX_PREFIX()) ||
-                 CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        errors_detected |= SPL_MODIFIED;
-        result = 1;
-      /* Take 2 bits of operand type from operand_states as restricted_register,
-       * make sure operand_states denotes a register (4th bit == 0). */
-      } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
-        restricted_register = operand_states & 0x0f;
-      }
-    }
+    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+                       operand_states, begin, &sandboxed_rsi_restricted_rdi);
   }
-
   action process_2_operands {
-    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
-     * instruction, not with regular instruction.  */
-    if (restricted_register == REG_RSP) {
-      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
-      result = 1;
-    } else if (restricted_register == REG_RBP) {
-      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
-      result = 1;
-    }
-    /* If Sandboxed Rsi is destroyed then we must detect that.  */
-    if (restricted_register == kSandboxedRsi) {
-      if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
-          CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted) ||
-          CHECK_OPERAND(1, REG_RSI, OperandSandboxRestricted) ||
-          CHECK_OPERAND(1, REG_RSI, OperandSandboxUnrestricted)) {
-        restricted_register = kNoRestrictedReg;
-      }
-    }
-    if (restricted_register == kSandboxedRsi) {
-      if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted) ||
-          CHECK_OPERAND(1, REG_RDI, OperandSandboxRestricted)) {
-        sandboxed_rsi_restricted_rdi = begin;
-        restricted_register = kSandboxedRsiRestrictedRdi;
-      }
-    }
-    if (restricted_register != kSandboxedRsiRestrictedRdi) {
-      restricted_register = kNoRestrictedReg;
-      if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
-          CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
-          CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted) ||
-          CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
-          CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
-          CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
-        errors_detected |= R15_MODIFIED;
-        result = 1;
-      } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
-                  GET_REX_PREFIX()) ||
-                 CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
-                 (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) &&
-                  GET_REX_PREFIX()) ||
-                 CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
-        errors_detected |= BPL_MODIFIED;
-        result = 1;
-      } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
-                  GET_REX_PREFIX()) ||
-                 CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
-                 (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) &&
-                  GET_REX_PREFIX()) ||
-                 CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
-        errors_detected |= SPL_MODIFIED;
-        result = 1;
-      /* Take 2 bits of operand type from operand_states as restricted_register,
-       * make sure operand_states denotes a register (4th bit == 0).  */
-      } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
-        restricted_register = operand_states & 0x0f;
-      /* Take 2 bits of operand type from operand_states as restricted_register,
-       * make sure operand_states denotes a register (12th bit == 0).  */
-      } else if ((operand_states & 0x7000) ==
-          (OperandSandboxRestricted << (5 + 8))) {
-        restricted_register = (operand_states & 0x0f00) >> 8;
-      }
-    }
+    process_2_operands(&restricted_register, &errors_detected, rex_prefix,
+                       operand_states, begin, &sandboxed_rsi_restricted_rdi);
   }
 
   include decode_x86_64 "validator-x86_64-instruction.rl";
@@ -265,12 +84,7 @@ static int MarkJumpTarget(size_t jump_dest,
     (0x48 0x89 0xe5)                       | # mov %rsp,%rbp
     (0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rbp
     (0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rbp
-    @{ if (restricted_register == REG_RBP) {
-         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
-         result = 1;
-       }
-       restricted_register = kNoRestrictedReg;
-    };
+    @process_0_operands;
 
   # Special instructions used for %rbp sandboxing
   rbp_sandboxing =
@@ -279,7 +93,6 @@ static int MarkJumpTarget(size_t jump_dest,
      0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
     @{ if (restricted_register != REG_RBP) {
          errors_detected |= RESTRICTED_RBP_UNPROCESSED;
-         result = 1;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -290,12 +103,7 @@ static int MarkJumpTarget(size_t jump_dest,
     (0x48 0x89 0xec)                       | # mov %rbp,%rsp
     (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
     (0x48 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
-    @{ if (restricted_register == REG_RSP) {
-         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
-         result = 1;
-       }
-       restricted_register = kNoRestrictedReg;
-    };
+    @process_0_operands;
 
   # Special instructions used for %rbp sandboxing
   rsp_sandboxing =
@@ -303,13 +111,14 @@ static int MarkJumpTarget(size_t jump_dest,
      0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register != REG_RSP) {
          errors_detected |= RESTRICTED_RSP_UNPROCESSED;
-         result = 1;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
     };
 
-  # Old naclcall (is not used by contemporary toolchain)
+  # naclcall - old version (is not used by contemporary toolchain)
+  # Note: first "and ~$0x1f, %eXX" is normal instruction and as such will detect
+  # case where %rbp/%rsp is illegally modified.
   old_naclcall_or_nacljmp =
     (((0x83 0xe0 0xe0 0x49 0x8d any 0x07 any{2}) | # and ~$0x1f, %eax
       (0x83 0xe0 0xe1 0x49 0x8d any 0x0f any{2}) | #   lea (%r15,%rax),%rXX
@@ -362,6 +171,8 @@ static int MarkJumpTarget(size_t jump_dest,
     };
 
   # naclcall or nacljmp - this the form used by contemporary toolchain
+  # Note: first "and ~$0x1f, %eXX" is normal instruction and as such will detect
+  # case where %rbp/%rsp is illegally modified.
   naclcall_or_nacljmp =
     (0x83 0xe0 0xe0 0x4c 0x01 0xf8 0xff (0xd0|0xe0) | # naclcall/jmp %eax, %r15
      0x83 0xe1 0xe0 0x4c 0x01 0xf9 0xff (0xd1|0xe1) | # naclcall/jmp %ecx, %r15
@@ -419,7 +230,6 @@ static int MarkJumpTarget(size_t jump_dest,
      rep? REXW_NONE? 0xad)       # lods   %ds:(%rsi),%eax/%rax
     @{ if (restricted_register != kSandboxedRsi) {
          errors_detected |= RSI_UNSANDBOXDED;
-         result = 1;
        } else {
          BitmapClearBit(valid_targets, (begin - data));
          BitmapClearBit(valid_targets, (sandboxed_rdi - data));
@@ -439,7 +249,6 @@ static int MarkJumpTarget(size_t jump_dest,
     @{ if (restricted_register != kSandboxedRdi &&
            restricted_register != kSandboxedRsiSandboxedRdi) {
          errors_detected |= RDI_UNSANDBOXDED;
-         result = 1;
        } else {
          BitmapClearBit(valid_targets, (begin - data));
          BitmapClearBit(valid_targets, (sandboxed_rdi - data));
@@ -461,7 +270,6 @@ static int MarkJumpTarget(size_t jump_dest,
          if (restricted_register != kSandboxedRsi) {
            errors_detected |= RSI_UNSANDBOXDED;
          }
-         result = 1;
        } else {
          BitmapClearBit(valid_targets, (begin - data));
          BitmapClearBit(valid_targets, (sandboxed_rsi - data));
@@ -494,12 +302,13 @@ static int MarkJumpTarget(size_t jump_dest,
         operand_states = 0;
      }
      @{
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+         result = 1;
+       }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
-       }
        begin = p + 1;
      })*
     $err{
@@ -511,123 +320,6 @@ static int MarkJumpTarget(size_t jump_dest,
 }%%
 
 %% write data;
-
-#define GET_REX_PREFIX() rex_prefix
-#define SET_REX_PREFIX(P) rex_prefix = (P)
-#define GET_VEX_PREFIX2() vex_prefix2
-#define SET_VEX_PREFIX2(P) vex_prefix2 = (P)
-#define GET_VEX_PREFIX3() vex_prefix3
-#define SET_VEX_PREFIX3(P) vex_prefix3 = (P)
-
-/* Ignore this information for now.  */
-#define SET_DATA16_PREFIX(S)
-#define SET_LOCK_PREFIX(S)
-#define SET_REPZ_PREFIX(S)
-#define SET_REPNZ_PREFIX(S)
-#define SET_BRANCH_TAKEN(S)
-#define SET_BRANCH_NOT_TAKEN(S)
-
-enum operand_kind {
-  OperandSandboxIrrelevant = 0,
-  /*
-   * Currently we do not distinguish 8bit and 16bit modifications from
-   * OperandSandboxUnrestricted to match the behavior of the old validator.
-   *
-   * 8bit operands must be distinguished from other types because the REX prefix
-   * regulates the choice between %ah and %spl, as well as %ch and %bpl.
-   */
-  OperandSandbox8bit,
-  OperandSandboxRestricted,
-  OperandSandboxUnrestricted
-};
-
-#define SET_OPERAND_NAME(N, S) operand_states |= ((S) << ((N) << 3))
-#define SET_OPERAND_TYPE(N, T) SET_OPERAND_TYPE_ ## T(N)
-#define SET_OPERAND_TYPE_OperandSize8bit(N) \
-  operand_states |= OperandSandbox8bit << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OperandSize16bit(N) \
-  operand_states |= OperandSandboxUnrestricted << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OperandSize32bit(N) \
-  operand_states |= OperandSandboxRestricted << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OperandSize64bit(N) \
-  operand_states |= OperandSandboxUnrestricted << (5 + ((N) << 3))
-#define CHECK_OPERAND(N, S, T) \
-  ((operand_states & (0xff << ((N) << 3))) == ((S | (T << 5)) << ((N) << 3)))
-#define SET_OPERANDS_COUNT(N)
-#define SET_MODRM_BASE(N) base = (N)
-#define SET_MODRM_INDEX(N) index = (N)
-
-/* Ignore this information for now.  */
-#define SET_MODRM_SCALE(S)
-#define SET_DISP_TYPE(T)
-#define SET_DISP_PTR(P)
-#define SET_IMM_TYPE(T)
-#define SET_IMM_PTR(P)
-#define SET_IMM2_TYPE(T)
-#define SET_IMM2_PTR(P)
-
-#define SET_CPU_FEATURE(F) \
-  if (!(F)) { \
-    errors_detected |= CPUID_UNSUPPORTED_INSTRUCTION; \
-    result = 1; \
-  }
-#define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
-#define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
-#define CPUFeature_AES      cpu_features->data[NaClCPUFeature_AES]
-#define CPUFeature_AESAVX   CPUFeature_AES && CPUFeature_AVX
-#define CPUFeature_AVX      cpu_features->data[NaClCPUFeature_AVX]
-#define CPUFeature_BMI1     cpu_features->data[NaClCPUFeature_BMI1]
-#define CPUFeature_CLFLUSH  cpu_features->data[NaClCPUFeature_CLFLUSH]
-#define CPUFeature_CLMUL    cpu_features->data[NaClCPUFeature_CLMUL]
-#define CPUFeature_CLMULAVX CPUFeature_CLMUL && CPUFeature_AVX
-#define CPUFeature_CMOV     cpu_features->data[NaClCPUFeature_CMOV]
-#define CPUFeature_CMOVx87  CPUFeature_CMOV && CPUFeature_x87
-#define CPUFeature_CX16     cpu_features->data[NaClCPUFeature_CX16]
-#define CPUFeature_CX8      cpu_features->data[NaClCPUFeature_CX8]
-#define CPUFeature_E3DNOW   cpu_features->data[NaClCPUFeature_E3DNOW]
-#define CPUFeature_EMMX     cpu_features->data[NaClCPUFeature_EMMX]
-#define CPUFeature_EMMXSSE  CPUFeature_EMMX || CPUFeature_SSE
-#define CPUFeature_F16C     cpu_features->data[NaClCPUFeature_F16C]
-#define CPUFeature_FMA      cpu_features->data[NaClCPUFeature_FMA]
-#define CPUFeature_FMA4     cpu_features->data[NaClCPUFeature_FMA4]
-#define CPUFeature_FXSR     cpu_features->data[NaClCPUFeature_FXSR]
-#define CPUFeature_LAHF     cpu_features->data[NaClCPUFeature_LAHF]
-#define CPUFeature_LM       cpu_features->data[NaClCPUFeature_LM]
-#define CPUFeature_LWP      cpu_features->data[NaClCPUFeature_LWP]
-/*
- * We allow lzcnt unconditionally
- * See http://code.google.com/p/nativeclient/issues/detail?id=2869
- */
-#define CPUFeature_LZCNT    TRUE
-#define CPUFeature_MMX      cpu_features->data[NaClCPUFeature_MMX]
-#define CPUFeature_MON      cpu_features->data[NaClCPUFeature_MON]
-#define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeature_MOVBE]
-#define CPUFeature_OSXSAVE  cpu_features->data[NaClCPUFeature_OSXSAVE]
-#define CPUFeature_POPCNT   cpu_features->data[NaClCPUFeature_POPCNT]
-#define CPUFeature_PRE      cpu_features->data[NaClCPUFeature_PRE]
-#define CPUFeature_SSE      cpu_features->data[NaClCPUFeature_SSE]
-#define CPUFeature_SSE2     cpu_features->data[NaClCPUFeature_SSE2]
-#define CPUFeature_SSE3     cpu_features->data[NaClCPUFeature_SSE3]
-#define CPUFeature_SSE41    cpu_features->data[NaClCPUFeature_SSE41]
-#define CPUFeature_SSE42    cpu_features->data[NaClCPUFeature_SSE42]
-#define CPUFeature_SSE4A    cpu_features->data[NaClCPUFeature_SSE4A]
-#define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeature_SSSE3]
-#define CPUFeature_TBM      cpu_features->data[NaClCPUFeature_TBM]
-#define CPUFeature_TSC      cpu_features->data[NaClCPUFeature_TSC]
-/*
- * We allow tzcnt unconditionally
- * See http://code.google.com/p/nativeclient/issues/detail?id=2869
- */
-#define CPUFeature_TZCNT    TRUE
-#define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
-#define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
-
-enum {
-  REX_B = 1,
-  REX_X = 2,
-  REX_R = 4,
-  REX_W = 8
-};
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
                        const NaClCPUFeaturesX86 *cpu_features,
@@ -645,7 +337,7 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   /* Keeps one byte of information per operand in the current instruction:
    *  2 bits for register kinds,
    *  5 bits for register numbers (16 regs plus RIZ). */
-  int operand_states = 0;
+  uint32_t operand_states = 0;
   enum register_name base = NO_REG;
   enum register_name index = NO_REG;
   int result = 0;
@@ -658,7 +350,7 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
 
   size_t i;
 
-  int errors_detected = 0;
+  uint32_t errors_detected = 0;
 
   assert(size % kBundleSize == 0);
 

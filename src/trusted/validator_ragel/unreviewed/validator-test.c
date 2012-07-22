@@ -155,7 +155,8 @@ struct ValidateState {
   const uint8_t *offset;
 };
 
-void ProcessError (const uint8_t *ptr, int validation_error, void *userdata) {
+void ProcessError(const uint8_t *ptr, uint32_t validation_error,
+                  void *userdata) {
   if (validation_error & UNRECOGNIZED_INSTRUCTION) {
     printf("offset 0x%"NACL_PRIxS": DFA error in validator\n",
                   (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));

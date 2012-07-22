@@ -99,7 +99,7 @@ void RagelDecodeError (const uint8_t *ptr, void *userdata) {
   RagelPrintInst();
 }
 
-void RagelValidateError (const uint8_t *ptr, int error, void *userdata) {
+void RagelValidateError (const uint8_t *ptr, uint32_t error, void *userdata) {
   UNREFERENCED_PARAMETER(ptr);
   if ((error & UNRECOGNIZED_INSTRUCTION) ||
       (error & CPUID_UNSUPPORTED_INSTRUCTION)) {
