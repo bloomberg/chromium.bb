@@ -62,7 +62,8 @@ display_handle_geometry(void *data,
 			int physical_height,
 			int subpixel,
 			const char *make,
-			const char *model)
+			const char *model,
+			int transform)
 {
 	struct screenshooter_output *output;
 

@@ -3194,7 +3194,8 @@ display_handle_geometry(void *data,
 			int physical_height,
 			int subpixel,
 			const char *make,
-			const char *model)
+			const char *model,
+			int transform)
 {
 	struct output *output = data;
 

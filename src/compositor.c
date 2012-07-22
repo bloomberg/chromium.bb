@@ -2781,7 +2781,8 @@ bind_output(struct wl_client *client,
 				output->mm_width,
 				output->mm_height,
 				output->subpixel,
-				output->make, output->model);
+				output->make, output->model,
+				WL_OUTPUT_TRANSFORM_NORMAL);
 
 	wl_list_for_each (mode, &output->mode_list, link) {
 		wl_output_send_mode(resource,
