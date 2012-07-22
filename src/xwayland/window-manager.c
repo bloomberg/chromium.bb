@@ -742,7 +742,17 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
 
-	if (window->frame_id == XCB_WINDOW_NONE || window->repaint_source)
+	if (window->frame_id == XCB_WINDOW_NONE) {
+		if (window->surface != NULL) {
+			window->surface->opaque_rect[0] = 0.0;
+			window->surface->opaque_rect[1] = 1.0;
+			window->surface->opaque_rect[2] = 0.0;
+			window->surface->opaque_rect[3] = 1.0;
+		}
+		return;
+	}
+
+	if (window->repaint_source)
 		return;
 
 	window->repaint_source =
