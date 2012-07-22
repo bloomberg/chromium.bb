@@ -139,6 +139,13 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
 
   TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  if (!infobar_helper) {
+    // The tab has no infobar helper.
+    LOG(WARNING) << "Attempt to request quota from a background page: "
+                 << render_process_id << "," << render_view_id;
+    DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
+    return;
+  }
   infobar_helper->AddInfoBar(new RequestQuotaInfoBarDelegate(
       infobar_helper, this, origin_url, requested_quota,
       tab_contents->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
