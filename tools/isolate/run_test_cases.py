@@ -492,7 +492,7 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
 
   if shards:
     # This is necessary for Swarm log parsing.
-    print 'Note: This is test shard %d of %d.' % (index, shards)
+    print 'Note: This is test shard %d of %d.' % (index+1, shards)
 
   # Filters the test cases with the two lists.
   if blacklist:
