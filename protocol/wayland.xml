@@ -1001,6 +1001,31 @@
       <entry name="vertical_bgr" value="5"/>
     </enum>
 
+    <enum name="transform">
+      <description summary="transform from framebuffer to output">
+	This describes the transform that a compositor will apply to a
+	surface to compensate for the rotation or mirroring of an
+	output device.
+
+	The flipped values correspond to an initial flip around a
+	vertical axis followed by rotaion.
+
+	The purpose is mainly to allow clients render accordingly and
+	tell the compositor, so that for fullscreen surfaces, the
+	compositor will still be able to scan out directly from client
+	surfaces.
+      </description>
+
+      <entry name="normal" value="0"/>
+      <entry name="90" value="1"/>
+      <entry name="180" value="2"/>
+      <entry name="270" value="3"/>
+      <entry name="flipped" value="4"/>
+      <entry name="flipped_90" value="5"/>
+      <entry name="flipped_180" value="6"/>
+      <entry name="flipped_270" value="7"/>
+    </enum>
+
     <event name="geometry">
       <description summary="properties of the output"/>
       <arg name="x" type="int"
@@ -1017,6 +1042,8 @@
 	   summary="textual description of the manufacturer"/>
       <arg name="model" type="string"
 	   summary="textual description of the model"/>
+      <arg name="transform" type="int"
+	   summary="transform that maps framebuffer to output"/>
     </event>
 
     <enum name="mode">

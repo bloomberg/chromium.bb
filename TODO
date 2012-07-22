@@ -1,12 +1,5 @@
 Core wayland protocol
 
- - We need rotation information in the output (multiples of 90
-   degrees) and we'll need a way for a client to communicate that it
-   has rendered its buffer according to the output rotation.  The
-   goal is to be able to pageflip directly to the client buffer, and
-   for that we need the client to render accordingly and the
-   compositor needs to know that it did.
-
  - Atomicity.  Currently a lot of the atomicity in Wayland relies on
    how we batch up all requests in a protocol buffer and only flushes
    in the "blockhandler" in the client.  Consensus was that we need
