@@ -33,32 +33,6 @@ bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
   return NotificationTypeToRealModelType(object_id.name(), model_type);
 }
 
-ObjectIdSet ModelTypeSetToObjectIdSet(const ModelTypeSet& model_types) {
-  ObjectIdSet ids;
-  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
-    invalidation::ObjectId model_type_as_id;
-    if (!RealModelTypeToObjectId(it.Get(), &model_type_as_id)) {
-      DLOG(WARNING) << "Invalid model type " << it.Get();
-      continue;
-    }
-    ids.insert(model_type_as_id);
-  }
-  return ids;
-}
-
-ModelTypeSet ObjectIdSetToModelTypeSet(const ObjectIdSet& ids) {
-  ModelTypeSet model_types;
-  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    ModelType model_type;
-    if (!ObjectIdToRealModelType(*it, &model_type)) {
-      DLOG(WARNING) << "Invalid object ID " << ObjectIdToString(*it);
-      continue;
-    }
-    model_types.Put(model_type);
-  }
-  return model_types;
-}
-
 std::string ObjectIdToString(
     const invalidation::ObjectId& object_id) {
   std::stringstream ss;

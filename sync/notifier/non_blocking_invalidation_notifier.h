@@ -14,11 +14,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
-#include "sync/notifier/sync_notifier_helper.h"
 #include "sync/notifier/sync_notifier_observer.h"
 
 namespace base {
@@ -44,12 +44,13 @@ class NonBlockingInvalidationNotifier
   virtual ~NonBlockingInvalidationNotifier();
 
   // SyncNotifier implementation.
-  virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
-                                   const ObjectIdSet& ids) OVERRIDE;
+  virtual void AddObserver(SyncNotifierObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(SyncNotifierObserver* observer) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
+  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) OVERRIDE;
   virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
 
   // SyncNotifierObserver implementation.
@@ -57,7 +58,7 @@ class NonBlockingInvalidationNotifier
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const ObjectIdPayloadMap& id_payloads,
+      const ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) OVERRIDE;
 
  private:
@@ -65,7 +66,8 @@ class NonBlockingInvalidationNotifier
 
   base::WeakPtrFactory<NonBlockingInvalidationNotifier> weak_ptr_factory_;
 
-  SyncNotifierHelper helper_;
+  // Our observers (which must live on the parent thread).
+  ObserverList<SyncNotifierObserver> observers_;
 
   // The real guts of NonBlockingInvalidationNotifier, which allows
   // this class to live completely on the parent thread.

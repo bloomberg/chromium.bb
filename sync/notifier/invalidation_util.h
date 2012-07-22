@@ -34,9 +34,6 @@ bool RealModelTypeToObjectId(ModelType model_type,
 bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
                              ModelType* model_type);
 
-ObjectIdSet ModelTypeSetToObjectIdSet(const ModelTypeSet& models);
-ModelTypeSet ObjectIdSetToModelTypeSet(const ObjectIdSet& ids);
-
 std::string ObjectIdToString(const invalidation::ObjectId& object_id);
 
 std::string InvalidationToString(

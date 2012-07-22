@@ -33,10 +33,10 @@ class NonBlockingInvalidationNotifier::Core
       const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
       const std::string& client_info);
   void Teardown();
-  void UpdateRegisteredIds(const ObjectIdSet& ids);
   void SetUniqueId(const std::string& unique_id);
   void SetStateDeprecated(const std::string& state);
   void UpdateCredentials(const std::string& email, const std::string& token);
+  void UpdateEnabledTypes(ModelTypeSet enabled_types);
 
   // SyncNotifierObserver implementation (all called on I/O thread by
   // InvalidationNotifier).
@@ -44,7 +44,7 @@ class NonBlockingInvalidationNotifier::Core
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const ObjectIdPayloadMap& id_payloads,
+      const ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) OVERRIDE;
 
  private:
@@ -89,20 +89,15 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
           initial_invalidation_state,
           invalidation_state_tracker,
           client_info));
+  invalidation_notifier_->AddObserver(this);
 }
 
 
 void NonBlockingInvalidationNotifier::Core::Teardown() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  invalidation_notifier_->UpdateRegisteredIds(this, ObjectIdSet());
+  invalidation_notifier_->RemoveObserver(this);
   invalidation_notifier_.reset();
   network_task_runner_ = NULL;
-}
-
-void NonBlockingInvalidationNotifier::Core::UpdateRegisteredIds(
-    const ObjectIdSet& ids) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  invalidation_notifier_->UpdateRegisteredIds(this, ids);
 }
 
 void NonBlockingInvalidationNotifier::Core::SetUniqueId(
@@ -123,6 +118,12 @@ void NonBlockingInvalidationNotifier::Core::UpdateCredentials(
   invalidation_notifier_->UpdateCredentials(email, token);
 }
 
+void NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes(
+    ModelTypeSet enabled_types) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  invalidation_notifier_->UpdateEnabledTypes(enabled_types);
+}
+
 void NonBlockingInvalidationNotifier::Core::OnNotificationsEnabled() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
@@ -137,11 +138,12 @@ void NonBlockingInvalidationNotifier::Core::OnNotificationsDisabled(
 }
 
 void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
-    const ObjectIdPayloadMap& id_payloads, IncomingNotificationSource source) {
+    const ModelTypePayloadMap& type_payloads,
+    IncomingNotificationSource source) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
                           &SyncNotifierObserver::OnIncomingNotification,
-                          id_payloads,
+                          type_payloads,
                           source);
 }
 
@@ -183,19 +185,16 @@ NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
   }
 }
 
-void NonBlockingInvalidationNotifier::UpdateRegisteredIds(
-    SyncNotifierObserver* handler, const ObjectIdSet& ids) {
+void NonBlockingInvalidationNotifier::AddObserver(
+    SyncNotifierObserver* observer) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  const ObjectIdSet& all_registered_ids =
-      helper_.UpdateRegisteredIds(handler, ids);
-  if (!network_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &NonBlockingInvalidationNotifier::Core::UpdateRegisteredIds,
-              core_.get(),
-              all_registered_ids))) {
-    NOTREACHED();
-  }
+  observers_.AddObserver(observer);
+}
+
+void NonBlockingInvalidationNotifier::RemoveObserver(
+    SyncNotifierObserver* observer) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  observers_.RemoveObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::SetUniqueId(
@@ -232,6 +231,17 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
   }
 }
 
+void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
+    ModelTypeSet enabled_types) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  if (!network_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
+                     core_.get(), enabled_types))) {
+    NOTREACHED();
+  }
+}
+
 void NonBlockingInvalidationNotifier::SendNotification(
     ModelTypeSet changed_types) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
@@ -241,20 +251,23 @@ void NonBlockingInvalidationNotifier::SendNotification(
 
 void NonBlockingInvalidationNotifier::OnNotificationsEnabled() {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  helper_.EmitOnNotificationsEnabled();
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
+                    OnNotificationsEnabled());
 }
 
 void NonBlockingInvalidationNotifier::OnNotificationsDisabled(
     NotificationsDisabledReason reason) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  helper_.EmitOnNotificationsDisabled(reason);
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
+                    OnNotificationsDisabled(reason));
 }
 
 void NonBlockingInvalidationNotifier::OnIncomingNotification(
-        const ObjectIdPayloadMap& id_payloads,
+        const ModelTypePayloadMap& type_payloads,
         IncomingNotificationSource source) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  helper_.DispatchInvalidationsToHandlers(id_payloads, source);
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
+                    OnIncomingNotification(type_payloads, source));
 }
 
 }  // namespace syncer

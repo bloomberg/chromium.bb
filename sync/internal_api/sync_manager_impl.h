@@ -167,7 +167,7 @@ class SyncManagerImpl : public SyncManager,
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const ObjectIdPayloadMap& id_payloads,
+      const ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) OVERRIDE;
 
   // Called only by our NetworkChangeNotifier.

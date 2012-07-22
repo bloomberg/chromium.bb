@@ -12,7 +12,6 @@
 #include <string>
 
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
 class SyncNotifierObserver;
@@ -22,11 +21,8 @@ class SyncNotifier {
   SyncNotifier() {}
   virtual ~SyncNotifier() {}
 
-  // Updates the set of ObjectIds associated with a given |handler|. Passing an
-  // empty ObjectIdSet will unregister |handler|. If two different handlers
-  // attempt to register for the same object ID, the first registration wins.
-  virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
-                                   const ObjectIdSet& ids) = 0;
+  virtual void AddObserver(SyncNotifierObserver* observer) = 0;
+  virtual void RemoveObserver(SyncNotifierObserver* observer) = 0;
 
   // SetUniqueId must be called once, before any call to
   // UpdateCredentials.  |unique_id| should be a non-empty globally
@@ -43,6 +39,8 @@ class SyncNotifier {
   // once.
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) = 0;
+
+  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) = 0;
 
   // This is here only to support the old p2p notification implementation,
   // which is still used by sync integration tests.
