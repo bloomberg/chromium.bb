@@ -48,18 +48,19 @@ struct input_method {
 static void
 deactivate_text_model(struct text_model *text_model)
 {
+	struct weston_compositor *ec = text_model->input_method->ec;
 
 	if (text_model->input_method->active_model == text_model) {
 		text_model->input_method->active_model = NULL;
-		wl_signal_emit(&text_model->input_method->ec->hide_input_panel_signal, text_model->input_method->ec);
+		wl_signal_emit(&ec->hide_input_panel_signal, ec);
 	}
 }
 
 static void
 destroy_text_model(struct wl_resource *resource)
 {
-	struct text_model *text_model = container_of(resource,
-						     struct text_model, resource);
+	struct text_model *text_model =
+		container_of(resource, struct text_model, resource);
 
 	deactivate_text_model(text_model);
 
@@ -86,10 +87,11 @@ text_model_activate(struct wl_client *client,
 	            struct wl_resource *resource)
 {
 	struct text_model *text_model = resource->data;
+	struct weston_compositor *ec = text_model->input_method->ec;
 
 	text_model->input_method->active_model = text_model;
 
-	wl_signal_emit(&text_model->input_method->ec->show_input_panel_signal, text_model->input_method->ec);
+	wl_signal_emit(&ec->show_input_panel_signal, ec);
 }
 
 static void
@@ -198,9 +200,11 @@ bind_input_method(struct wl_client *client,
 static void
 input_method_notifier_destroy(struct wl_listener *listener, void *data)
 {
-	struct input_method *input_method = container_of(listener, struct input_method, destroy_listener);
+	struct input_method *input_method =
+		container_of(listener, struct input_method, destroy_listener);
 
-	wl_display_remove_global(input_method->ec->wl_display, input_method->global);
+	wl_display_remove_global(input_method->ec->wl_display,
+				 input_method->global);
 	free(input_method);
 }
 
@@ -212,7 +216,8 @@ input_method_create(struct weston_compositor *ec)
 	input_method = calloc(1, sizeof *input_method);
 
 	input_method->base.interface = &input_method_interface;
-	input_method->base.implementation = (void(**)(void)) &input_method_implementation;
+	input_method->base.implementation =
+		(void(**)(void)) &input_method_implementation;
 	input_method->ec = ec;
 	input_method->active_model = NULL;
 
@@ -220,7 +225,8 @@ input_method_create(struct weston_compositor *ec)
 
 	input_method->global = wl_display_add_global(ec->wl_display,
 						     &input_method_interface,
-						     input_method, bind_input_method);
+						     input_method,
+						     bind_input_method);
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;
 	wl_signal_add(&ec->destroy_signal, &input_method->destroy_listener);
