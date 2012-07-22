@@ -1,4 +1,4 @@
-/* native_client/src/trusted/validator_ragel/gen/decoder-x86_32-instruction-consts.c
+/* native_client/src/trusted/validator_ragel/gen/decoder_x86_32_instruction_consts.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for ia32 mode.
  */

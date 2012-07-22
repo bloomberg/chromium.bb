@@ -1,4 +1,4 @@
-/* native_client/src/trusted/validator_ragel/gen/decoder-x86_32.c
+/* native_client/src/trusted/validator_ragel/gen/decoder_x86_32.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for ia32 mode.
  */
@@ -12,7 +12,7 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
 
-#include "native_client/src/trusted/validator_ragel/gen/decoder-x86_32-instruction-consts.c"
+#include "native_client/src/trusted/validator_ragel/gen/decoder_x86_32_instruction_consts.c"
 
 
 

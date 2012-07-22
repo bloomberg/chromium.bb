@@ -1,4 +1,4 @@
-/* native_client/src/trusted/validator_ragel/gen/validator-x86_64-instruction-consts.c
+/* native_client/src/trusted/validator_ragel/gen/validator_x86_64_instruction_consts.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for x86-64 mode.
  */

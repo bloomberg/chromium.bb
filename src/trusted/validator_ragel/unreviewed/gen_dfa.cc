@@ -2652,7 +2652,7 @@ int main(int argc, char *argv[]) {
       if (!dot_position) {
         dot_position = strrchr(const_file_name, '\0');
       }
-      strcpy(dot_position, "-consts.c");
+      strcpy(dot_position, "_consts.c");
     }
     if (!(const_file = fopen(const_file_name, "w"))) {
       fprintf(stderr, "%s: can not open '%s' file (%s)\n",

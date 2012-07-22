@@ -21,17 +21,17 @@ RAGEL = ragel
 CFLAGS = -g
 CXXFLAGS = -g
 LDFLAGS = -g
-INST_DEFS = general-purpose-instructions.def \
-            system-instructions.def \
-            x87-instructions.def \
-            mmx-instructions.def \
-            xmm-instructions.def \
+INST_DEFS = general_purpose_instructions.def \
+            system_instructions.def \
+            x87_instructions.def \
+            mmx_instructions.def \
+            xmm_instructions.def \
             nops.def
 
 FAST_TMP_FOR_TEST=/dev/shm
 
 # Default rule.
-all: outdirs $(OBJD)/decoder-test $(OBJD)/validator-test
+all: outdirs $(OBJD)/decoder_test $(OBJD)/validator_test
 
 # Create all prerequisite directories.
 .PHONY: outdirs
@@ -47,43 +47,43 @@ $(OBJD)/%.c: %.rl
 	$(RAGEL) -G2 -I$(OBJD) $< -o $@
 
 # Decoder, validator, etc.
-$(OBJD)/decoder-test: \
-    $(OBJD)/decoder-x86_32.o $(OBJD)/decoder-x86_64.o $(OBJD)/decoder-test.o
-$(OBJD)/validator-test: \
-    $(OBJD)/validator-x86_32.o $(OBJD)/validator-x86_64.o $(OBJD)/validator-test.o
+$(OBJD)/decoder_test: \
+    $(OBJD)/decoder_x86_32.o $(OBJD)/decoder_x86_64.o $(OBJD)/decoder_test.o
+$(OBJD)/validator_test: \
+    $(OBJD)/validator_x86_32.o $(OBJD)/validator_x86_64.o $(OBJD)/validator_test.o
 
-GEN_DFA=$(OBJD)/gen-dfa
-$(GEN_DFA): gen-dfa.cc | $(OUT_DIRS)
+GEN_DFA=$(OBJD)/gen_dfa
+$(GEN_DFA): gen_dfa.cc | $(OUT_DIRS)
 	$(CXX) $(CXXFLAGS) $< -o $(GEN_DFA)
 
-$(OBJD)/decoder-x86_32.c: $(OBJD)/decoder-x86_32-instruction-consts.c
-$(OBJD)/decoder-x86_32.c: $(OBJD)/decoder-x86_32-instruction.rl
-$(OBJD)/decoder-x86_32-instruction-consts.c \
-  $(OBJD)/decoder-x86_32-instruction.rl: $(GEN_DFA) $(INST_DEFS)
-	$(GEN_DFA) -o $(OBJD)/decoder-x86_32-instruction.rl $(INST_DEFS) \
+$(OBJD)/decoder_x86_32.c: $(OBJD)/decoder_x86_32_instruction_consts.c
+$(OBJD)/decoder_x86_32.c: $(OBJD)/decoder_x86_32_instruction.rl
+$(OBJD)/decoder_x86_32_instruction_consts.c \
+  $(OBJD)/decoder_x86_32_instruction.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/decoder_x86_32_instruction.rl $(INST_DEFS) \
 	    -d check_access,opcode,parse_operands_states,mark_data_fields
 
-$(OBJD)/decoder-x86_64.c: $(OBJD)/decoder-x86_64-instruction-consts.c
-$(OBJD)/decoder-x86_64.c: $(OBJD)/decoder-x86_64-instruction.rl
-$(OBJD)/decoder-x86_64-instruction-consts.c \
-  $(OBJD)/decoder-x86_64-instruction.rl: $(GEN_DFA) $(INST_DEFS)
-	$(GEN_DFA) -o $(OBJD)/decoder-x86_64-instruction.rl $(INST_DEFS) \
+$(OBJD)/decoder_x86_64.c: $(OBJD)/decoder_x86_64_instruction_consts.c
+$(OBJD)/decoder_x86_64.c: $(OBJD)/decoder_x86_64_instruction.rl
+$(OBJD)/decoder_x86_64_instruction_consts.c \
+  $(OBJD)/decoder_x86_64_instruction.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/decoder_x86_64_instruction.rl $(INST_DEFS) \
 	    -d check_access,opcode,parse_operands_states,mark_data_fields \
 	    -m amd64
 
-$(OBJD)/validator-x86_32.c: $(OBJD)/validator-x86_32-instruction.rl
-$(OBJD)/validator-x86_32-instruction-consts.c \
-  $(OBJD)/validator-x86_32-instruction.rl: $(GEN_DFA) $(INST_DEFS)
-	$(GEN_DFA) -o $(OBJD)/validator-x86_32-instruction.rl $(INST_DEFS) \
+$(OBJD)/validator_x86_32.c: $(OBJD)/validator_x86_32_instruction.rl
+$(OBJD)/validator_x86_32_instruction_consts.c \
+  $(OBJD)/validator_x86_32_instruction.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/validator_x86_32_instruction.rl $(INST_DEFS) \
 	  -d check_access,opcode,parse_operands,parse_operands_states \
 	  -d instruction_name,mark_data_fields,nacl-forbidden \
 	  -d imm_operand_action,rel_operand_action
 
-$(OBJD)/validator-x86_64.c: $(OBJD)/validator-x86_64-instruction-consts.c
-$(OBJD)/validator-x86_64.c: $(OBJD)/validator-x86_64-instruction.rl
-$(OBJD)/validator-x86_64-instruction-consts.c \
-  $(OBJD)/validator-x86_64-instruction.rl: $(GEN_DFA) $(INST_DEFS)
-	$(GEN_DFA) -o $(OBJD)/validator-x86_64-instruction.rl $(INST_DEFS) \
+$(OBJD)/validator_x86_64.c: $(OBJD)/validator_x86_64_instruction_consts.c
+$(OBJD)/validator_x86_64.c: $(OBJD)/validator_x86_64_instruction.rl
+$(OBJD)/validator_x86_64_instruction_consts.c \
+  $(OBJD)/validator_x86_64_instruction.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/validator_x86_64_instruction.rl $(INST_DEFS) \
 	  -d opcode,instruction_name,mark_data_fields,imm_operand_action \
 	  -d rel_operand_action,nacl-forbidden,parse_nonwrite_registers \
 	  -d parse_x87_operands,parse_mmx_operands,parse_xmm_operands \
@@ -92,51 +92,51 @@ $(OBJD)/validator-x86_64-instruction-consts.c \
 	  -d parse_operand_positions -m amd64
 
 # Facilities for testing:
-#   one-instruction.dot: the description of the DFA that accepts all instruction
+#   one_instruction.dot: the description of the DFA that accepts all instruction
 #     the decoder is able to decode.
-#   decoder-test: the decoder that follows the objdump format
-$(OBJD)/one-instruction-x86_32.dot: one-instruction-x86_32.rl \
-  $(OBJD)/one-valid-instruction-x86_32-consts.c \
-  $(OBJD)/one-valid-instruction-x86_32.rl
+#   decoder_test: the decoder that follows the objdump format
+$(OBJD)/one_instruction_x86_32.dot: one_instruction_x86_32.rl \
+  $(OBJD)/one_valid_instruction_x86_32_consts.c \
+  $(OBJD)/one_valid_instruction_x86_32.rl
 	$(RAGEL) -V -I$(OBJD) $< -o $@
 
-$(OBJD)/one-instruction-x86_64.dot: one-instruction-x86_64.rl \
-  $(OBJD)/one-valid-instruction-x86_64-consts.c \
-  $(OBJD)/one-valid-instruction-x86_64.rl
+$(OBJD)/one_instruction_x86_64.dot: one_instruction_x86_64.rl \
+  $(OBJD)/one_valid_instruction_x86_64_consts.c \
+  $(OBJD)/one_valid_instruction_x86_64.rl
 	$(RAGEL) -V -I$(OBJD) $< -o $@
 
-$(OBJD)/one-valid-instruction-x86_32-consts.c \
-    $(OBJD)/one-valid-instruction-x86_32.rl: $(GEN_DFA) $(INST_DEFS)
-	$(GEN_DFA) -o $(OBJD)/one-valid-instruction-x86_32.rl $(INST_DEFS) \
+$(OBJD)/one_valid_instruction_x86_32_consts.c \
+    $(OBJD)/one_valid_instruction_x86_32.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/one_valid_instruction_x86_32.rl $(INST_DEFS) \
 	  -d check_access,rex_prefix,vex_prefix,opcode,parse_operands \
 	  -d parse_operands_states
 
-$(OBJD)/one-valid-instruction-x86_64-consts.c \
-    $(OBJD)/one-valid-instruction-x86_64.rl: $(GEN_DFA) $(INST_DEFS)
-	$(GEN_DFA) -o $(OBJD)/one-valid-instruction-x86_64.rl $(INST_DEFS) \
+$(OBJD)/one_valid_instruction_x86_64_consts.c \
+    $(OBJD)/one_valid_instruction_x86_64.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/one_valid_instruction_x86_64.rl $(INST_DEFS) \
 	  -d check_access,rex_prefix,vex_prefix,opcode,parse_operands \
 	  -d parse_operands_states -m amd64
 
-$(OBJD)/decoder-test.o: decoder-test.c
+$(OBJD)/decoder_test.o: decoder_test.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJD)/validator-test.o: validator-test.c
+$(OBJD)/validator_test.o: validator_test.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJD)/validator-x86_64.o: $(OBJD)/validator-x86_64.c
+$(OBJD)/validator_x86_64.o: $(OBJD)/validator_x86_64.c
 	if [ -e nacl_irt_x86_32.nexe ] && [ -e nacl_irt_x86_64.nexe ]; then \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -fprofile-generate -c $< -o $@-pf && \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -fprofile-generate -c \
-	    $(OBJD)/validator-x86_32.c -o $(OBJD)/validator-x86_32.o-pf && \
+	    $(OBJD)/validator_x86_32.c -o $(OBJD)/validator_x86_32.o-pf && \
 	  $(CC) $(CFLAGS) -fprofile-generate $@-pf \
-	    $(OBJD)/validator-x86_32.o-pf validator-test.c \
+	    $(OBJD)/validator_x86_32.o-pf validator_test.c \
 	    -o $(OBJD)/ncval_train && \
 	  $(OBJD)/ncval_train nacl_irt_x86_32.nexe && \
 	  $(OBJD)/ncval_train nacl_irt_x86_64.nexe && \
-	  rm validator-test.gcda && \
+	  rm validator_test.gcda && \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -fprofile-use -c $< -o $@ && \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -fprofile-use -c \
-	    $(OBJD)/validator-x86_32.c -o $(OBJD)/validator-x86_32.o ; \
+	    $(OBJD)/validator_x86_32.c -o $(OBJD)/validator_x86_32.o ; \
 	else \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -c $< -o $@ ; \
 	fi
@@ -199,49 +199,49 @@ check: check-irt check-as-alt-validator check-ncval
 
 # Checks that the IRT is not rejected by the validator.
 .PHONY: check-irt
-check-irt: outdirs $(OBJD)/validator-test
-	$(OBJD)/validator-test nacl_irt_x86_64.nexe
+check-irt: outdirs $(OBJD)/validator_test
+	$(OBJD)/validator_test nacl_irt_x86_64.nexe
 
 .PHONY: check-as-alt-validator
-check-as-alt-validator: $(OBJD)/validator-test
-	ln -sfn $(OBJD)/validator-test dfa_ncval
+check-as-alt-validator: $(OBJD)/validator_test
+	ln -sfn $(OBJD)/validator_test dfa_ncval
 	$(PYTHON2X) validator_test.py
 	rm -f dfa_ncval
 
 # Checks that all byte sequences accepted by the DFA are decoded identically to
 # the objdump. A long-running test.
 .PHONY: check-decoder
-check-decoder: outdirs $(BINUTILS_STAMP) $(OBJD)/one-instruction-x86_32.dot \
-    $(OBJD)/one-instruction-x86_64.dot $(OBJD)/decoder-test
-	$(PYTHON2X) parse_dfa.py <"$(OBJD)/one-instruction-x86_32.dot" \
-	    > "$(OUT)/test/test_dfa_transitions-x86_32.c"
+check-decoder: outdirs $(BINUTILS_STAMP) $(OBJD)/one_instruction_x86_32.dot \
+    $(OBJD)/one_instruction_x86_64.dot $(OBJD)/decoder_test
+	$(PYTHON2X) parse_dfa.py <"$(OBJD)/one_instruction_x86_32.dot" \
+	    > "$(OUT)/test/test_dfa_transitions_x86_32.c"
 	$(CC) $(CFLAGS) -c test_dfa.c -o "$(OUT)/test/test_dfa.o"
-	$(CC) $(CFLAGS) -O0 -I. -c "$(OUT)/test/test_dfa_transitions-x86_32.c" \
-	    -o "$(OUT)/test/test_dfa_transitions-x86_32.o"
+	$(CC) $(CFLAGS) -O0 -I. -c "$(OUT)/test/test_dfa_transitions_x86_32.c" \
+	    -o "$(OUT)/test/test_dfa_transitions_x86_32.o"
 	$(CC) $(LDFLAGS) "$(OUT)/test/test_dfa.o" \
-	    "$(OUT)/test/test_dfa_transitions-x86_32.o" \
-	    -o $(OUT)/test/test_dfa-x86_32
+	    "$(OUT)/test/test_dfa_transitions_x86_32.o" \
+	    -o $(OUT)/test/test_dfa_x86_32
 	$(PYTHON2X) run_objdump_test.py \
 	  --gas="$(GAS) --32" \
 	  --objdump="$(OBJDUMP)" \
-	  --decoder="$(OBJD)/decoder-test" \
+	  --decoder="$(OBJD)/decoder_test" \
 	  --tester=./decoder_test_one_file.sh \
 	  --nthreads=`cat /proc/cpuinfo | grep processor | wc -l` -- \
-	  "$(OUT)/test/test_dfa-x86_32" "$(FAST_TMP_FOR_TEST)"
-	$(PYTHON2X) parse_dfa.py <"$(OBJD)/one-instruction-x86_64.dot" \
-	    > "$(OUT)/test/test_dfa_transitions-x86_64.c"
-	$(CC) $(CFLAGS) -O0 -I. -c "$(OUT)/test/test_dfa_transitions-x86_64.c" \
-	    -o "$(OUT)/test/test_dfa_transitions-x86_64.o"
+	  "$(OUT)/test/test_dfa_x86_32" "$(FAST_TMP_FOR_TEST)"
+	$(PYTHON2X) parse_dfa.py <"$(OBJD)/one_instruction_x86_64.dot" \
+	    > "$(OUT)/test/test_dfa_transitions_x86_64.c"
+	$(CC) $(CFLAGS) -O0 -I. -c "$(OUT)/test/test_dfa_transitions_x86_64.c" \
+	    -o "$(OUT)/test/test_dfa_transitions_x86_64.o"
 	$(CC) $(LDFLAGS) "$(OUT)/test/test_dfa.o" \
-	    "$(OUT)/test/test_dfa_transitions-x86_64.o" \
-	    -o $(OUT)/test/test_dfa-x86_64
+	    "$(OUT)/test/test_dfa_transitions_x86_64.o" \
+	    -o $(OUT)/test/test_dfa_x86_64
 	$(PYTHON2X) run_objdump_test.py \
 	  --gas="$(GAS) --64" \
 	  --objdump="$(OBJDUMP)" \
-	  --decoder="$(OBJD)/decoder-test" \
+	  --decoder="$(OBJD)/decoder_test" \
 	  --tester=./decoder_test_one_file.sh \
 	  --nthreads=`cat /proc/cpuinfo | grep processor | wc -l` -- \
-	  "$(OUT)/test/test_dfa-x86_64" "$(FAST_TMP_FOR_TEST)"
+	  "$(OUT)/test/test_dfa_x86_64" "$(FAST_TMP_FOR_TEST)"
 
 include ncval_tests.txt
 
@@ -259,8 +259,8 @@ convert-testdata:
 	mv testdata/64/*.val.ref golden/
 	mv testdata/32/*.val.ref golden/32
 
-CHECK_NCVAL_DEPS=outdirs $(BINUTILS_STAMP) $(OBJD)/validator-test \
-    $(OBJD)/decoder-test
+CHECK_NCVAL_DEPS=outdirs $(BINUTILS_STAMP) $(OBJD)/validator_test \
+    $(OBJD)/decoder_test
 
 .PHONY: check-ncval
 check-ncval: check-ncval32 check-ncval64
@@ -277,8 +277,8 @@ check-ncval64: $(CHECK_NCVAL_DEPS)
 check-ncval-impl:
 	ln -sfn ../../validator_x86/testdata
 	$(PYTHON2X) run_ncval_tests.py \
-	  --decoder="$(OBJD)/decoder-test" \
-	  --validator="$(OBJD)/validator-test" \
+	  --decoder="$(OBJD)/decoder_test" \
+	  --validator="$(OBJD)/validator_test" \
 	  --gas="$(GAS)" \
 	  --tmp="$(OUT)/test/" \
 	  --arch="$(TEST_ARCH)"

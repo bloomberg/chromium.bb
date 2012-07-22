@@ -1,4 +1,4 @@
-/* native_client/src/trusted/validator_ragel/gen/validator-x86_32.c
+/* native_client/src/trusted/validator_ragel/gen/validator_x86_32.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for ia32 mode.
  */
@@ -1540,6 +1540,7 @@ case 17:
 		case 164u: goto st9;
 		case 180u: goto st9;
 		case 188u: goto st9;
+		case 208u: goto tr49;
 	}
 	if ( (*p) < 160u ) {
 		if ( (*p) < 48u ) {
@@ -1554,20 +1555,17 @@ case 17:
 		} else
 			goto tr0;
 	} else if ( (*p) > 167u ) {
-		if ( (*p) < 208u ) {
-			if ( (*p) > 191u ) {
-				if ( 200u <= (*p) && (*p) <= 201u )
-					goto tr48;
-			} else if ( (*p) >= 176u )
+		if ( (*p) < 200u ) {
+			if ( 176u <= (*p) && (*p) <= 191u )
 				goto st3;
-		} else if ( (*p) > 209u ) {
+		} else if ( (*p) > 201u ) {
 			if ( (*p) > 231u ) {
 				if ( 240u <= (*p) && (*p) <= 247u )
 					goto tr0;
 			} else if ( (*p) >= 224u )
 				goto tr0;
 		} else
-			goto tr49;
+			goto tr48;
 	} else
 		goto st3;
 	goto tr19;

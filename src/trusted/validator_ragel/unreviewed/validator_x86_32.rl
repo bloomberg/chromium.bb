@@ -44,7 +44,7 @@
   action imm32_second_operand { }
   action imm64_second_operand { }
 
-  include decode_x86_32 "validator-x86_32-instruction.rl";
+  include decode_x86_32 "validator_x86_32_instruction.rl";
 
   special_instruction =
     (0x83 0xe0 0xe0 0xff (0xd0|0xe0)  | # naclcall/jmp %eax

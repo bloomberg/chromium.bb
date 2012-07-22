@@ -234,9 +234,9 @@ def BuildScript(status, context):
       Command(context, cmd=['make'], cwd='dfa_validator64')
 
     with Step('build ragel_validator-32', status):
-      SCons(context, platform='x86-32', parallel=True, args=['validator-test'])
+      SCons(context, platform='x86-32', parallel=True, args=['validator_test'])
     with Step('build ragel_validator-64', status):
-      SCons(context, platform='x86-64', parallel=True, args=['validator-test'])
+      SCons(context, platform='x86-64', parallel=True, args=['validator_test'])
 
     with Step('predownload validator corpus', status):
       Command(context,
@@ -266,12 +266,12 @@ def BuildScript(status, context):
         halt_on_fail=False):
       ValidatorTest(
           context, 'x86-32',
-          'scons-out/opt-linux-x86-32/staging/validator-test')
+          'scons-out/opt-linux-x86-32/staging/validator_test')
     with Step('validator_regression_test ragel x86-64', status,
         halt_on_fail=False):
       ValidatorTest(
           context, 'x86-64',
-          'scons-out/opt-linux-x86-64/staging/validator-test')
+          'scons-out/opt-linux-x86-64/staging/validator_test')
     return
 
   # Run checkdeps script to vet #includes.

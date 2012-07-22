@@ -5,7 +5,7 @@
  */
 
 %%{
-  machine one_instruction_x86_32;
+  machine one_instruction_x86_64;
   alphtype unsigned char;
 
   # We need to know where DISP, IMM, and REL fields can be found
@@ -32,7 +32,7 @@
   action rel32_operand_begin { }
   action rel32_operand_end { }
 
-  include decode_x86_32 "one-valid-instruction-x86_32.rl";
+  include decode_x86_64 "one_valid_instruction_x86_64.rl";
 
   main := one_instruction;
 

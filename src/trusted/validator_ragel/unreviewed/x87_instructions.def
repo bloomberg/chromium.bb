@@ -6,7 +6,7 @@
 #                     Volume 5: 64-Bit Media and x87 Floating-Point Instructions
 #                            Chapter 2: x87 Floating-Point Instruction Reference
 ################################################################################
-# File format: see general-purpose-instructions.def
+# File format: see general_purpose_instructions.def
 ######## F2XM1 #################################################################
 nop, 0x90
 f2xm1, 0xd9 0xf0, CPUFeature_x87

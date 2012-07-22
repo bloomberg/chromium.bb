@@ -10,16 +10,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/elf32.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
 
-#include "native_client/src/trusted/validator_ragel/gen/decoder-x86_32-instruction-consts.c"
+#include "native_client/src/trusted/validator_ragel/gen/decoder_x86_64_instruction_consts.c"
 
 %%{
-  machine x86_32_decoder;
+  machine x86_64_decoder;
   alphtype unsigned char;
 
-  include decode_x86_32 "decoder-x86_32-instruction.rl";
+  include decode_x86_64 "decoder_x86_64_instruction.rl";
 
   main := (one_instruction
     >{
@@ -27,12 +28,14 @@
         SET_DISP_TYPE(DISPNONE);
         SET_IMM_TYPE(IMMNONE);
         SET_IMM2_TYPE(IMMNONE);
+        SET_REX_PREFIX(FALSE);
         SET_DATA16_PREFIX(FALSE);
         SET_LOCK_PREFIX(FALSE);
         SET_REPNZ_PREFIX(FALSE);
         SET_REPZ_PREFIX(FALSE);
         SET_BRANCH_NOT_TAKEN(FALSE);
         SET_BRANCH_TAKEN(FALSE);
+        SET_VEX_PREFIX2(0xe0);
         SET_VEX_PREFIX3(0x00);
     }
     @{
@@ -45,6 +48,11 @@
           case DISP32: instruction.rm.offset = (uint64_t)
             (disp[0] + 256U * (disp[1] + 256U * (disp[2] + 256U * (disp[3]))));
             break;
+          case DISP64: instruction.rm.offset = (uint64_t)
+            (*disp + 256ULL * (disp[1] + 256ULL * (disp[2] + 256ULL * (disp[3] +
+            256ULL * (disp[4] + 256ULL * (disp[5] + 256ULL * (disp[6] + 256ULL *
+                                                                 disp[7])))))));
+            break;
         }
         switch (imm_operand) {
           case IMMNONE: instruction.imm[0] = 0; break;
@@ -54,6 +62,11 @@
             break;
           case IMM32: instruction.imm[0] = (uint64_t)
             (imm[0] + 256U * (imm[1] + 256U * (imm[2] + 256U * (imm[3]))));
+            break;
+          case IMM64: instruction.imm[0] = (uint64_t)
+            (imm[0] + 256LL * (imm[1] + 256ULL * (imm[2] + 256ULL * (imm[3] +
+            256ULL * (imm[4] + 256ULL * (imm[5] + 256ULL * (imm[6] + 256ULL *
+                                                                  imm[7])))))));
             break;
         }
         switch (imm2_operand) {
@@ -65,6 +78,11 @@
             break;
           case IMM32: instruction.imm[1] = (uint64_t)
             (imm2[0] + 256U * (imm2[1] + 256U * (imm2[2] + 256U * (imm2[3]))));
+            break;
+          case IMM64: instruction.imm[1] = (uint64_t)
+            (*imm2 + 256ULL * (imm2[1] + 256ULL * (imm2[2] + 256ULL * (imm2[3] +
+            256ULL * (imm2[4] + 256ULL * (imm2[5] + 256ULL * (imm2[6] + 256ULL *
+                                                                 imm2[7])))))));
             break;
         }
         process_instruction(begin, p+1, &instruction, userdata);
@@ -78,6 +96,10 @@
 
 %% write data;
 
+#define GET_REX_PREFIX() instruction.prefix.rex
+#define SET_REX_PREFIX(P) instruction.prefix.rex = (P)
+#define GET_VEX_PREFIX2() vex_prefix2
+#define SET_VEX_PREFIX2(P) vex_prefix2 = (P)
 #define GET_VEX_PREFIX3() vex_prefix3
 #define SET_VEX_PREFIX3(P) vex_prefix3 = (P)
 #define SET_DATA16_PREFIX(S) instruction.prefix.data16 = (S)
@@ -113,7 +135,8 @@ enum disp_mode {
   DISPNONE,
   DISP8,
   DISP16,
-  DISP32
+  DISP32,
+  DISP64,
 };
 
 enum imm_mode {
@@ -121,12 +144,14 @@ enum imm_mode {
   IMM2,
   IMM8,
   IMM16,
-  IMM32
+  IMM32,
+  IMM64
 };
 
-int DecodeChunkIA32(const uint8_t *data, size_t size,
-                    process_instruction_func process_instruction,
-                    process_decoding_error_func process_error, void *userdata) {
+int DecodeChunkAMD64(const uint8_t *data, size_t size,
+                     process_instruction_func process_instruction,
+                     process_decoding_error_func process_error,
+                     void *userdata) {
   const uint8_t *p = data;
   const uint8_t *pe = data + size;
   const uint8_t *eof = pe;
@@ -134,6 +159,7 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   const uint8_t *imm = NULL;
   const uint8_t *imm2 = NULL;
   const uint8_t *begin = p;
+  uint8_t vex_prefix2 = 0xe0;
   uint8_t vex_prefix3 = 0x00;
   enum disp_mode disp_type = DISPNONE;
   enum imm_mode imm_operand = IMMNONE;
@@ -142,9 +168,6 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   int result = 0;
 
   int cs;
-
-  /* Not used in ia32_mode.  */
-  instruction.prefix.rex = 0;
 
   %% write init;
   %% write exec;

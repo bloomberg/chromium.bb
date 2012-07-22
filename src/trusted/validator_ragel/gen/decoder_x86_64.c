@@ -1,4 +1,4 @@
-/* native_client/src/trusted/validator_ragel/gen/decoder-x86_64.c
+/* native_client/src/trusted/validator_ragel/gen/decoder_x86_64.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for x86-64 mode.
  */
@@ -13,7 +13,7 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
 
-#include "native_client/src/trusted/validator_ragel/gen/decoder-x86_64-instruction-consts.c"
+#include "native_client/src/trusted/validator_ragel/gen/decoder_x86_64_instruction_consts.c"
 
 
 

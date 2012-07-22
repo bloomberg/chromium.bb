@@ -12,7 +12,7 @@
 
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator_internal.h"
 
-#include "native_client/src/trusted/validator_ragel/gen/validator-x86_64-instruction-consts.c"
+#include "native_client/src/trusted/validator_ragel/gen/validator_x86_64_instruction_consts.c"
 
 %%{
   machine x86_64_decoder;
@@ -57,7 +57,7 @@
                        operand_states, begin, &sandboxed_rsi_restricted_rdi);
   }
 
-  include decode_x86_64 "validator-x86_64-instruction.rl";
+  include decode_x86_64 "validator_x86_64_instruction.rl";
 
   # Remove special instructions which are only allowed in special cases.
   normal_instruction = one_instruction - (

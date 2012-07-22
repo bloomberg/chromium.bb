@@ -6,7 +6,7 @@
 #                               Volume 3: General-Purpose and System Instruction
 #                                        Chapter 4: System Instruction Reference
 ################################################################################
-# File format: see general-purpose-instructions.def
+# File format: see general_purpose_instructions.def
 ######## CLGI ##################################################################
 clgi, 0x0f 0x01 0xdd, nacl-forbidden CPUFeature_SVM
 ######## CLI ###################################################################

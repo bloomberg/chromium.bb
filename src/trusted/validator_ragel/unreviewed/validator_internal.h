@@ -25,7 +25,6 @@
 #define SET_CPU_FEATURE(F) \
   if (!(F)) { \
     errors_detected |= CPUID_UNSUPPORTED_INSTRUCTION; \
-    result = 1; \
   }
 #define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
 #define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
