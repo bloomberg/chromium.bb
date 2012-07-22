@@ -40,7 +40,7 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
     return metrics::OmniboxEventProto::HISTORY_URL;
   if (name_ == "HistoryContents")
     return metrics::OmniboxEventProto::HISTORY_CONTENTS;
-  if (name_ == "HistoryQuickProvider")
+  if (name_ == "HistoryQuick")
     return metrics::OmniboxEventProto::HISTORY_QUICK;
   if (name_ == "Search")
     return metrics::OmniboxEventProto::SEARCH;
@@ -48,7 +48,7 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
     return metrics::OmniboxEventProto::KEYWORD;
   if (name_ == "Builtin")
     return metrics::OmniboxEventProto::BUILTIN;
-  if (name_ == "ShortcutsProvider")
+  if (name_ == "Shortcuts")
     return metrics::OmniboxEventProto::SHORTCUTS;
   if (name_ == "ExtensionApps")
     return metrics::OmniboxEventProto::EXTENSION_APPS;
