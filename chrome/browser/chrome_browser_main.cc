@@ -1910,10 +1910,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if !defined(OS_CHROMEOS)
     // If we're running tests (ui_task is non-null), then we don't want to
     // call FetchLanguageListFromTranslateServer or
-    // StartFetchingVariationsSeed.
+    // StartRepeatedVariationsSeedFetch.
     if (parameters().ui_task == NULL) {
       // Request new variations seed information from server.
-      browser_process_->variations_service()->StartFetchingVariationsSeed();
+      browser_process_->variations_service()->
+          StartRepeatedVariationsSeedFetch();
 
       if (translate_manager_ != NULL) {
         translate_manager_->FetchLanguageListFromTranslateServer(

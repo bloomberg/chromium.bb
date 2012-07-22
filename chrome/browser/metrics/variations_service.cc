@@ -98,8 +98,7 @@ GURL GetVariationsServerURL() {
 }  // namespace
 
 VariationsService::VariationsService()
-    : variations_server_url_(GetVariationsServerURL()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+    : variations_server_url_(GetVariationsServerURL()) {
 }
 
 VariationsService::~VariationsService() {}
@@ -130,18 +129,19 @@ bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
   return true;
 }
 
-void VariationsService::StartFetchingVariationsSeed() {
+void VariationsService::StartRepeatedVariationsSeedFetch() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // Repeat this periodically. Note that we schedule this here before the next
-  // check so that if the network is down, we still attempt to ping the server
-  // in the future.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&VariationsService::StartFetchingVariationsSeed,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromHours(kSeedFetchPeriodHours));
+  // Perform the first fetch.
+  FetchVariationsSeed();
+
+  // Repeat this periodically.
+  timer_.Start(FROM_HERE, base::TimeDelta::FromHours(kSeedFetchPeriodHours),
+               this, &VariationsService::FetchVariationsSeed);
+}
+
+void VariationsService::FetchVariationsSeed() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   const bool is_offline = net::NetworkChangeNotifier::IsOffline();
   UMA_HISTOGRAM_BOOLEAN("Variations.NetworkAvailability", !is_offline);

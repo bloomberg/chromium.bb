@@ -10,9 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/common/chrome_version_info.h"
@@ -39,9 +39,13 @@ class VariationsService : public net::URLFetcherDelegate {
   // may not be created.
   bool CreateTrialsFromSeed(PrefService* local_prefs);
 
-  // Starts the fetching process, where |OnURLFetchComplete| is called with the
-  // response. This process is periodically repeated (see implementation).
-  void StartFetchingVariationsSeed();
+  // Calls FetchVariationsSeed once and repeats this periodically. See
+  // implementation for details on the period.
+  void StartRepeatedVariationsSeedFetch();
+
+  // Starts the fetching process once, where |OnURLFetchComplete| is called with
+  // the response.
+  void FetchVariationsSeed();
 
   // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -123,8 +127,10 @@ class VariationsService : public net::URLFetcherDelegate {
   // The URL to use for querying the variations server.
   GURL variations_server_url_;
 
-  // Keep a weak pointer generator so we can bind delayed calls to the server.
-  base::WeakPtrFactory<VariationsService> weak_factory_;
+  // The timer used to repeatedly ping the server. Keep this as an instance
+  // member so if VariationsService goes out of scope, the timer is
+  // automatically cancelled.
+  base::RepeatingTimer<VariationsService> timer_;
 };
 
 }  // namespace chrome_variations
