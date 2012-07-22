@@ -457,6 +457,8 @@ lahf, 0x9f, amd64 CPUFeature_LAHF nacl-forbidden
 ######## LDS/LES/LFS/LGS/LSS (AMD version) #####################################
 # AMD manual says “executing LFS, LGS, or LSS with a 64-bit operand size only
 # loads a 32-bit general purpose register and the specified segment register”.
+# lds Mp Gz, 0xc5, ia32
+# les Mp Gz, 0xc4, ia32
 # lfs Mp Gz, 0x0f 0xb4
 # lgs Mp Gz, 0x0f 0xb5
 # lss Mp Gz, 0x0f 0xb2
@@ -464,9 +466,11 @@ lahf, 0x9f, amd64 CPUFeature_LAHF nacl-forbidden
 # Intel manual says: “Using a REX prefix in the form of REX.W promotes operation
 # to specify a source operand referencing an 80-bit pointer (16-bit selector,
 # 64-bit offset) in memory”.
-lfs Mp Gv, 0x0f 0xb4
-lgs Mp Gv, 0x0f 0xb5
-lss Mp Gv, 0x0f 0xb2
+lds Mp Gv, 0xc5 /m, ia32 nacl-forbidden
+les Mp Gv, 0xc4 /m, ia32 nacl-forbidden
+lfs Mp Gv, 0x0f 0xb4, nacl-forbidden
+lgs Mp Gv, 0x0f 0xb5, nacl-forbidden
+lss Mp Gv, 0x0f 0xb2, nacl-forbidden
 ######## LEA ###################################################################
 lea 'Mv !Gv, 0x8d, no_memory_access
 ######## LEAVE #################################################################

@@ -906,8 +906,8 @@ namespace {
 "  # Used for segment operations: there only 6 segment registers.\n"
 "  opcode_s = %s;\n"
 "  # This is used to move operand name detection after first byte of ModRM.\n"
-"  opcode_m = any;\n"
-"  opcode_r = any;\n"
+"  opcode_m = %s;\n"
+"  opcode_r = %s;\n"
 "", chartest((c & 0x38) == 0x00),
        chartest((c & 0x38) == 0x08),
        chartest((c & 0x38) == 0x10),
@@ -916,7 +916,9 @@ namespace {
        chartest((c & 0x38) == 0x28),
        chartest((c & 0x38) == 0x30),
        chartest((c & 0x38) == 0x38),
-       chartest((c & 0x38) < 0x30));
+       chartest((c & 0x38) < 0x30),
+       chartest((c & 0xc0) != 0xc0),
+       chartest((c & 0xc0) == 0xc0));
     fprintf(out_file, "\n"
 "  # Prefixes.\n"
 "  data16 = 0x66 @data16_prefix;\n"
