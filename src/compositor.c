@@ -657,6 +657,11 @@ weston_surface_unmap(struct weston_surface *surface)
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
+struct weston_frame_callback {
+	struct wl_resource resource;
+	struct wl_list link;
+};
+
 static void
 destroy_surface(struct wl_resource *resource)
 {
@@ -666,6 +671,7 @@ destroy_surface(struct wl_resource *resource)
 		container_of(resource,
 			     struct weston_surface, surface.resource);
 	struct weston_compositor *compositor = surface->compositor;
+	struct weston_frame_callback *cb, *next;
 
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
@@ -685,6 +691,9 @@ destroy_surface(struct wl_resource *resource)
 	pixman_region32_fini(&surface->clip);
 	if (!region_is_undefined(&surface->input))
 		pixman_region32_fini(&surface->input);
+
+	wl_list_for_each_safe(cb, next, &surface->frame_callback_list, link)
+		wl_resource_destroy(&cb->resource);
 
 	free(surface);
 }
@@ -1091,11 +1100,6 @@ surface_accumulate_damage(struct weston_surface *surface,
 	pixman_region32_copy(&surface->clip, opaque);
 	pixman_region32_union(opaque, opaque, &surface->transform.opaque);
 }
-
-struct weston_frame_callback {
-	struct wl_resource resource;
-	struct wl_list link;
-};
 
 static void
 weston_output_repaint(struct weston_output *output, int msecs)
