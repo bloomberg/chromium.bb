@@ -110,15 +110,10 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
   gfx::Rect rect(kBubbleAnchorWidth, kBubbleAnchorHeight);
   BubbleGtk::ArrowLocationGtk arrow_location =
       BubbleGtk::ARROW_LOCATION_TOP_MIDDLE;
-  int attributeFlags = BubbleGtk::MATCH_SYSTEM_THEME | BubbleGtk::POPUP_WINDOW;
-  bubble_ = BubbleGtk::Show(anchor,
-                            &rect,
-                            container,
-                            arrow_location,
-                            auto_close ? attributeFlags :
-                                attributeFlags | BubbleGtk::GRAB_INPUT,
-                            theme_service,
-                            NULL);
+  int bubble_options = BubbleGtk::MATCH_SYSTEM_THEME | BubbleGtk::POPUP_WINDOW;
+  bubble_ = BubbleGtk::Show(anchor, &rect, container, arrow_location,
+      auto_close ? bubble_options : bubble_options | BubbleGtk::GRAB_INPUT,
+      theme_service, NULL);
 
   if (!bubble_) {
     NOTREACHED();
