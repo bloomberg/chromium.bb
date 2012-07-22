@@ -451,10 +451,9 @@ class Runner(object):
         'duration': duration,
         'output': output,
       }
-      if output.rstrip().endswith('0 tests failed (0 ignored)'):
-        # Mark it as invalid.
-        data['invalid'] = True
-        returncode = 1
+      if '[ RUN      ]' not in output:
+        # Can't find gtest marker, mark it as invalid.
+        returncode = returncode or 1
       out.append(data)
       if sys.platform == 'win32':
         output = output.replace('\r\n', '\n')
