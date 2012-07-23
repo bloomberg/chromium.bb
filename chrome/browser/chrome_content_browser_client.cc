@@ -1478,7 +1478,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         extension, view_type, web_prefs);
   }
 
-  if (gpu_util::InForceCompositingModeTrial())
+  if (gpu_util::InForceCompositingModeOrThreadTrial())
     web_prefs->force_compositing_mode = true;
 
   if (view_type == chrome::VIEW_TYPE_NOTIFICATION) {

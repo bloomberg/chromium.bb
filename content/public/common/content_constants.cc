@@ -32,4 +32,8 @@ const int kStatsMaxCounters = 3000;
 
 const int kHistogramSynchronizerReservedSequenceNumber = 0;
 
+const char kGpuCompositingFieldTrialName[] = "ForceCompositingMode";
+const char kGpuCompositingFieldTrialEnabledName[] = "enabled";
+const char kGpuCompositingFieldTrialThreadEnabledName[] = "thread";
+
 }  // namespace content

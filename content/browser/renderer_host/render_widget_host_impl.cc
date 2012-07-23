@@ -12,6 +12,7 @@
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "skia/ext/image_operations.h"
@@ -1899,11 +1901,17 @@ void RenderWidgetHostImpl::AcknowledgeBufferPresent(
 }
 
 void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {
+  base::FieldTrial* trial =
+      base::FieldTrialList::Find(content::kGpuCompositingFieldTrialName);
+  bool is_thread_trial = trial && trial->group_name() ==
+      content::kGpuCompositingFieldTrialThreadEnabledName;
+  bool has_enable = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableThreadedCompositing);
+  bool has_disable = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableThreadedCompositing);
+  DCHECK(!is_thread_trial || !has_disable);
   bool enable_threaded_compositing =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableThreadedCompositing) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableThreadedCompositing);
+      is_thread_trial || (has_enable && !has_disable);
   if (!enable_threaded_compositing)
     Send(new ViewMsg_SwapBuffers_ACK(routing_id_));
 }

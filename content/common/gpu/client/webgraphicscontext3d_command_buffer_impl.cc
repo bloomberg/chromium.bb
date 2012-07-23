@@ -20,11 +20,13 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -522,11 +524,15 @@ void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   bool use_echo_for_swap_ack = true;
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
-  use_echo_for_swap_ack =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableThreadedCompositing) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableThreadedCompositing);
+  base::FieldTrial* trial =
+      base::FieldTrialList::Find(content::kGpuCompositingFieldTrialName);
+  bool thread_trial = trial && trial->group_name() ==
+      content::kGpuCompositingFieldTrialThreadEnabledName;
+  use_echo_for_swap_ack = thread_trial ||
+      (CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableThreadedCompositing) &&
+       !CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableThreadedCompositing));
 #endif
   if (use_echo_for_swap_ack) {
     command_buffer_->Echo(base::Bind(
