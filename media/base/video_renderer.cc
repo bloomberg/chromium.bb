@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/filters.h"
+#include "media/base/video_renderer.h"
 
 namespace media {
 
-Filter::Filter() {}
-
-Filter::~Filter() {}
+VideoRenderer::VideoRenderer() {}
+VideoRenderer::~VideoRenderer() {}
 
 }  // namespace media

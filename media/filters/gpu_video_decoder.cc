@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/filter_host.h"
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"

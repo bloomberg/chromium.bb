@@ -9,8 +9,6 @@
 #include "base/stl_util.h"
 #include "base/threading/simple_thread.h"
 #include "media/base/clock.h"
-#include "media/base/filter_host.h"
-#include "media/base/filters.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline.h"
 #include "media/base/mock_callback.h"
@@ -180,9 +178,9 @@ class PipelineTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void InitializeVideoRenderer() {
-    EXPECT_CALL(*mocks_->video_renderer(), SetHost(NotNull()));
     EXPECT_CALL(*mocks_->video_renderer(), Initialize(
-        scoped_refptr<VideoDecoder>(mocks_->video_decoder()), _, _, _))
+        scoped_refptr<VideoDecoder>(mocks_->video_decoder()),
+        _, _, _, _, _, _, _, _))
         .WillOnce(RunPipelineStatusCB1());
     EXPECT_CALL(*mocks_->video_renderer(), SetPlaybackRate(0.0f));
 
@@ -285,9 +283,9 @@ class PipelineTest : public ::testing::Test {
                                base::Unretained(&callbacks_)));
 
     // We expect the time to be updated only after the seek has completed.
-    EXPECT_NE(seek_time, pipeline_->GetCurrentTime());
+    EXPECT_NE(seek_time, pipeline_->GetMediaTime());
     message_loop_.RunAllPending();
-    EXPECT_EQ(seek_time, pipeline_->GetCurrentTime());
+    EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
   }
 
   // Fixture members.
@@ -327,7 +325,7 @@ TEST_F(PipelineTest, NotStarted) {
   pipeline_->SetVolume(0.0f);
   EXPECT_EQ(0.0f, pipeline_->GetVolume());
 
-  EXPECT_TRUE(kZero == pipeline_->GetCurrentTime());
+  EXPECT_TRUE(kZero == pipeline_->GetMediaTime());
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_TRUE(kZero == pipeline_->GetMediaDuration());
 
@@ -585,8 +583,7 @@ TEST_F(PipelineTest, DisableAudioRenderer) {
   EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
       .WillOnce(Return(true));
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
-  FilterHost* host = pipeline_;
-  host->NotifyEnded();
+  pipeline_->OnRendererEnded();
 }
 
 TEST_F(PipelineTest, DisableAudioRendererDuringInit) {
@@ -614,8 +611,7 @@ TEST_F(PipelineTest, DisableAudioRendererDuringInit) {
   EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
       .WillOnce(Return(true));
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
-  FilterHost* host = pipeline_;
-  host->NotifyEnded();
+  pipeline_->OnRendererEnded();
 }
 
 TEST_F(PipelineTest, EndedCallback) {
@@ -632,27 +628,24 @@ TEST_F(PipelineTest, EndedCallback) {
   InitializeVideoRenderer();
   InitializePipeline(PIPELINE_OK);
 
-  // For convenience to simulate filters calling the methods.
-  FilterHost* host = pipeline_;
-
   // Due to short circuit evaluation we only need to test a subset of cases.
   InSequence s;
   EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
       .WillOnce(Return(false));
-  host->NotifyEnded();
+  pipeline_->OnRendererEnded();
 
   EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
       .WillOnce(Return(true));
   EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
       .WillOnce(Return(false));
-  host->NotifyEnded();
+  pipeline_->OnRendererEnded();
 
   EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
       .WillOnce(Return(true));
   EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
       .WillOnce(Return(true));
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
-  host->NotifyEnded();
+  pipeline_->OnRendererEnded();
 }
 
 // Static function & time variable used to simulate changes in wallclock time.
@@ -681,10 +674,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   InitializeVideoRenderer();
   InitializePipeline(PIPELINE_OK);
 
-  // For convenience to simulate filters calling the methods.
-  FilterHost* host = pipeline_;
-
-  EXPECT_EQ(0, host->GetTime().ToInternalValue());
+  EXPECT_EQ(0, pipeline_->GetMediaTime().ToInternalValue());
 
   float playback_rate = 1.0f;
   EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(playback_rate));
@@ -697,24 +687,24 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
 
   // Verify that the clock doesn't advance since it hasn't been started by
   // a time update from the audio stream.
-  int64 start_time = host->GetTime().ToInternalValue();
+  int64 start_time = pipeline_->GetMediaTime().ToInternalValue();
   g_static_clock_time +=
       base::TimeDelta::FromMilliseconds(100).ToInternalValue();
-  EXPECT_EQ(host->GetTime().ToInternalValue(), start_time);
+  EXPECT_EQ(pipeline_->GetMediaTime().ToInternalValue(), start_time);
 
   // Signal end of audio stream.
   EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
       .WillOnce(Return(true));
   EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
       .WillOnce(Return(false));
-  host->NotifyEnded();
+  pipeline_->OnRendererEnded();
   message_loop_.RunAllPending();
 
   // Verify that the clock advances.
-  start_time = host->GetTime().ToInternalValue();
+  start_time = pipeline_->GetMediaTime().ToInternalValue();
   g_static_clock_time +=
       base::TimeDelta::FromMilliseconds(100).ToInternalValue();
-  EXPECT_GT(host->GetTime().ToInternalValue(), start_time);
+  EXPECT_GT(pipeline_->GetMediaTime().ToInternalValue(), start_time);
 
   // Signal end of video stream and make sure OnEnded() callback occurs.
   EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
@@ -722,7 +712,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
       .WillOnce(Return(true));
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
-  host->NotifyEnded();
+  pipeline_->OnRendererEnded();
 }
 
 TEST_F(PipelineTest, ErrorDuringSeek) {
@@ -833,7 +823,7 @@ TEST_F(PipelineTest, StartTimeIsZero) {
   EXPECT_FALSE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 
-  EXPECT_EQ(base::TimeDelta(), pipeline_->GetCurrentTime());
+  EXPECT_EQ(base::TimeDelta(), pipeline_->GetMediaTime());
 }
 
 TEST_F(PipelineTest, StartTimeIsNonZero) {
@@ -856,7 +846,7 @@ TEST_F(PipelineTest, StartTimeIsNonZero) {
   EXPECT_FALSE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 
-  EXPECT_EQ(kStartTime, pipeline_->GetCurrentTime());
+  EXPECT_EQ(kStartTime, pipeline_->GetMediaTime());
 }
 
 static void RunTimeCB(const AudioRenderer::TimeCB& time_cb,
@@ -909,14 +899,14 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
   DoSeek(seek_time);
 
-  EXPECT_EQ(pipeline_->GetCurrentTime(), seek_time);
+  EXPECT_EQ(pipeline_->GetMediaTime(), seek_time);
 
   // Now that the seek is complete, verify that time updates advance the current
   // time.
   base::TimeDelta new_time = seek_time + base::TimeDelta::FromMilliseconds(100);
   audio_time_cb_.Run(new_time, new_time);
 
-  EXPECT_EQ(pipeline_->GetCurrentTime(), new_time);
+  EXPECT_EQ(pipeline_->GetMediaTime(), new_time);
 }
 
 class FlexibleCallbackRunner : public base::DelegateSimpleThread::Delegate {

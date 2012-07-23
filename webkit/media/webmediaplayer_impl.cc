@@ -293,7 +293,7 @@ void WebMediaPlayerImpl::pause() {
 
   paused_ = true;
   pipeline_->SetPlaybackRate(0.0f);
-  paused_time_ = pipeline_->GetCurrentTime();
+  paused_time_ = pipeline_->GetMediaTime();
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
 
@@ -458,7 +458,7 @@ float WebMediaPlayerImpl::currentTime() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   if (paused_)
     return static_cast<float>(paused_time_.InSecondsF());
-  return static_cast<float>(pipeline_->GetCurrentTime().InSecondsF());
+  return static_cast<float>(pipeline_->GetMediaTime().InSecondsF());
 }
 
 int WebMediaPlayerImpl::dataRate() const {
@@ -818,7 +818,7 @@ void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
 
   // Update our paused time.
   if (paused_)
-    paused_time_ = pipeline_->GetCurrentTime();
+    paused_time_ = pipeline_->GetMediaTime();
 
   GetClient()->timeChanged();
 }

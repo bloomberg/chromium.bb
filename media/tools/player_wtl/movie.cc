@@ -128,7 +128,7 @@ float Movie::GetDuration() {
 float Movie::GetPosition() {
   float position = 0.f;
   if (pipeline_)
-    position = (pipeline_->GetCurrentTime()).InMicroseconds() / 1000000.0f;
+    position = (pipeline_->GetMediaTime()).InMicroseconds() / 1000000.0f;
   return position;
 }
 

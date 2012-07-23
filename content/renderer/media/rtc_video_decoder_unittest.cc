@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "media/base/data_buffer.h"
-#include "media/base/filters.h"
 #include "media/base/limits.h"
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filters.h"
@@ -305,4 +304,3 @@ TEST_F(RTCVideoDecoderTest, ReadAndShutdown) {
 
   message_loop_.RunAllPending();
 }
-

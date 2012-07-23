@@ -19,7 +19,6 @@
 #include "media/base/audio_renderer.h"
 #include "media/base/callback_util.h"
 #include "media/base/clock.h"
-#include "media/base/composite_filter.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
 #include "media/base/video_decoder.h"
@@ -65,8 +64,6 @@ media::PipelineStatus PipelineStatusNotification::status() {
 struct Pipeline::PipelineInitState {
   scoped_refptr<AudioDecoder> audio_decoder;
   scoped_refptr<VideoDecoder> video_decoder;
-  scoped_refptr<VideoRenderer> video_renderer;
-  scoped_refptr<CompositeFilter> composite;
 };
 
 Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
@@ -189,13 +186,8 @@ void Pipeline::SetVolume(float volume) {
   }
 }
 
-TimeDelta Pipeline::GetCurrentTime() const {
+TimeDelta Pipeline::GetMediaTime() const {
   base::AutoLock auto_lock(lock_);
-  return GetCurrentTime_Locked();
-}
-
-TimeDelta Pipeline::GetCurrentTime_Locked() const {
-  lock_.AssertAcquired();
   return clock_->Elapsed();
 }
 
@@ -381,16 +373,6 @@ void Pipeline::SetError(PipelineStatus error) {
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(error));
 }
 
-TimeDelta Pipeline::GetTime() const {
-  DCHECK(IsRunning());
-  return GetCurrentTime();
-}
-
-TimeDelta Pipeline::GetDuration() const {
-  DCHECK(IsRunning());
-  return GetMediaDuration();
-}
-
 void Pipeline::OnAudioDisabled() {
   DCHECK(IsRunning());
   message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -476,8 +458,8 @@ void Pipeline::DoPause(const base::Closure& done_cb) {
   if (audio_renderer_)
     closures->push(base::Bind(&AudioRenderer::Pause, audio_renderer_));
 
-  if (pipeline_filter_)
-    closures->push(base::Bind(&Filter::Pause, pipeline_filter_));
+  if (video_renderer_)
+    closures->push(base::Bind(&VideoRenderer::Pause, video_renderer_));
 
   RunInSeries(closures.Pass(), done_cb);
 }
@@ -489,8 +471,8 @@ void Pipeline::DoFlush(const base::Closure& done_cb) {
   if (audio_renderer_)
     closures->push(base::Bind(&AudioRenderer::Flush, audio_renderer_));
 
-  if (pipeline_filter_)
-    closures->push(base::Bind(&Filter::Flush, pipeline_filter_));
+  if (video_renderer_)
+    closures->push(base::Bind(&VideoRenderer::Flush, video_renderer_));
 
   RunInParallel(closures.Pass(), done_cb);
 }
@@ -502,8 +484,8 @@ void Pipeline::DoPlay(const base::Closure& done_cb) {
   if (audio_renderer_)
     closures->push(base::Bind(&AudioRenderer::Play, audio_renderer_));
 
-  if (pipeline_filter_)
-    closures->push(base::Bind(&Filter::Play, pipeline_filter_));
+  if (video_renderer_)
+    closures->push(base::Bind(&VideoRenderer::Play, video_renderer_));
 
   RunInSeries(closures.Pass(), done_cb);
 }
@@ -518,8 +500,8 @@ void Pipeline::DoStop(const base::Closure& done_cb) {
   if (audio_renderer_)
     closures->push(base::Bind(&AudioRenderer::Stop, audio_renderer_));
 
-  if (pipeline_filter_)
-    closures->push(base::Bind(&Filter::Stop, pipeline_filter_));
+  if (video_renderer_)
+    closures->push(base::Bind(&VideoRenderer::Stop, video_renderer_));
 
   RunInSeries(closures.Pass(), done_cb);
 }
@@ -539,7 +521,7 @@ void Pipeline::AddBufferedTimeRange(base::TimeDelta start,
   did_loading_progress_ = true;
 }
 
-void Pipeline::SetNaturalVideoSize(const gfx::Size& size) {
+void Pipeline::OnNaturalVideoSizeChanged(const gfx::Size& size) {
   DCHECK(IsRunning());
   media_log_->AddEvent(media_log_->CreateVideoSizeSetEvent(
       size.width(), size.height()));
@@ -548,10 +530,10 @@ void Pipeline::SetNaturalVideoSize(const gfx::Size& size) {
   natural_size_ = size;
 }
 
-void Pipeline::NotifyEnded() {
+void Pipeline::OnRendererEnded() {
   DCHECK(IsRunning());
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &Pipeline::NotifyEndedTask, this));
+      &Pipeline::OnRendererEndedTask, this));
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::ENDED));
 }
 
@@ -608,8 +590,6 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
 
   // Kick off initialization.
   pipeline_init_state_.reset(new PipelineInitState());
-  pipeline_init_state_->composite = new CompositeFilter(message_loop_);
-  pipeline_init_state_->composite->SetHost(this);
 
   SetState(kInitDemuxer);
   InitializeDemuxer();
@@ -699,12 +679,8 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
       return;
     }
 
-    // Clear the collection of filters.
-    filter_collection_->Clear();
-
-    pipeline_filter_ = pipeline_init_state_->composite;
-
-    // Clear init state since we're done initializing.
+    // Clear initialization state now that we're done.
+    filter_collection_.reset();
     pipeline_init_state_.reset();
 
     // Initialization was successful, we are now considered paused, so it's safe
@@ -803,16 +779,14 @@ void Pipeline::PlaybackRateChangedTask(float playback_rate) {
     clock_->SetPlaybackRate(playback_rate);
   }
 
-  // Notify |pipeline_filter_| if it has been initialized. If initialization
-  // hasn't completed yet, the playback rate will be set when initialization
-  // completes.
-  if (pipeline_filter_) {
+  // These will get set after initialization completes in case playback rate is
+  // set prior to initialization.
+  if (demuxer_)
     demuxer_->SetPlaybackRate(playback_rate);
-    pipeline_filter_->SetPlaybackRate(playback_rate);
-
-    if (audio_renderer_)
-      audio_renderer_->SetPlaybackRate(playback_rate_);
-  }
+  if (audio_renderer_)
+    audio_renderer_->SetPlaybackRate(playback_rate_);
+  if (video_renderer_)
+    video_renderer_->SetPlaybackRate(playback_rate_);
 }
 
 void Pipeline::VolumeChangedTask(float volume) {
@@ -860,7 +834,7 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   DoPause(base::Bind(&Pipeline::OnFilterStateTransition, this));
 }
 
-void Pipeline::NotifyEndedTask() {
+void Pipeline::OnRendererEndedTask() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   // We can only end if we were actually playing.
@@ -1027,12 +1001,9 @@ void Pipeline::FinishDestroyingFiltersTask() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(IsPipelineStopped());
 
-  // Clear filter references.
   audio_renderer_ = NULL;
   video_renderer_ = NULL;
   demuxer_ = NULL;
-
-  pipeline_filter_ = NULL;
 
   if (error_caused_teardown_ && !IsPipelineOk() && !error_cb_.is_null())
     error_cb_.Run(status_);
@@ -1156,7 +1127,7 @@ bool Pipeline::InitializeAudioRenderer(
       base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnAudioUnderflow, this),
       base::Bind(&Pipeline::OnAudioTimeUpdate, this),
-      base::Bind(&Pipeline::NotifyEnded, this),
+      base::Bind(&Pipeline::OnRendererEnded, this),
       base::Bind(&Pipeline::OnAudioDisabled, this),
       base::Bind(&Pipeline::SetError, this));
   return true;
@@ -1170,23 +1141,22 @@ bool Pipeline::InitializeVideoRenderer(
   if (!decoder)
     return false;
 
-  filter_collection_->SelectVideoRenderer(
-      &pipeline_init_state_->video_renderer);
-  if (!pipeline_init_state_->video_renderer) {
+  filter_collection_->SelectVideoRenderer(&video_renderer_);
+  if (!video_renderer_) {
     SetError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING);
     return false;
   }
 
-  pipeline_init_state_->composite->AddFilter(
-      pipeline_init_state_->video_renderer);
-
-  pipeline_init_state_->video_renderer->Initialize(
+  video_renderer_->Initialize(
       decoder,
       base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnUpdateStatistics, this),
-      base::Bind(&Pipeline::OnVideoTimeUpdate, this));
-
-  video_renderer_ = pipeline_init_state_->video_renderer;
+      base::Bind(&Pipeline::OnVideoTimeUpdate, this),
+      base::Bind(&Pipeline::OnNaturalVideoSizeChanged, this),
+      base::Bind(&Pipeline::OnRendererEnded, this),
+      base::Bind(&Pipeline::SetError, this),
+      base::Bind(&Pipeline::GetMediaTime, this),
+      base::Bind(&Pipeline::GetMediaDuration, this));
   return true;
 }
 
@@ -1217,9 +1187,8 @@ void Pipeline::TearDownPipeline() {
     case kInitVideoDecoder:
     case kInitVideoRenderer:
       // Make it look like initialization was successful.
-      pipeline_filter_ = pipeline_init_state_->composite;
-      pipeline_init_state_.reset();
       filter_collection_.reset();
+      pipeline_init_state_.reset();
 
       SetState(kStopping);
       DoStop(base::Bind(&Pipeline::OnTeardownStateTransition, this));
@@ -1270,9 +1239,9 @@ void Pipeline::DoSeek(base::TimeDelta seek_timestamp,
     status_cbs->push(base::Bind(
         &AudioRenderer::Seek, audio_renderer_, seek_timestamp));
 
-  if (pipeline_filter_)
+  if (video_renderer_)
     status_cbs->push(base::Bind(
-        &Filter::Seek, pipeline_filter_, seek_timestamp));
+        &VideoRenderer::Seek, video_renderer_, seek_timestamp));
 
   RunInSeriesWithStatus(status_cbs.Pass(), base::Bind(
       &Pipeline::ReportStatus, this, done_cb));
