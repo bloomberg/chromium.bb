@@ -87,6 +87,9 @@ const char* kMachineInfoSerialNumberKeys[] = {
 };
 #endif
 
+// Used in BrowserPolicyConnector::SetPolicyProviderForTesting.
+ConfigurationPolicyProvider* g_testing_provider = NULL;
+
 }  // namespace
 
 BrowserPolicyConnector::BrowserPolicyConnector()
@@ -159,6 +162,8 @@ PolicyService* BrowserPolicyConnector::CreatePolicyService(
     Profile* profile) {
   // |providers| in decreasing order of priority.
   PolicyServiceImpl::Providers providers;
+  if (g_testing_provider)
+    providers.push_back(g_testing_provider);
   if (platform_provider_.get())
     providers.push_back(platform_provider_.get());
   if (managed_cloud_provider_.get())
@@ -460,6 +465,13 @@ AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
 #else
   return NULL;
 #endif
+}
+
+// static
+void BrowserPolicyConnector::SetPolicyProviderForTesting(
+    ConfigurationPolicyProvider* provider) {
+  DCHECK(!g_testing_provider);
+  g_testing_provider = provider;
 }
 
 void BrowserPolicyConnector::Observe(

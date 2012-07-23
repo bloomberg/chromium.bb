@@ -140,6 +140,14 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
   AppPackUpdater* GetAppPackUpdater();
 
+  // Sets a |provider| that will be included in PolicyServices returned by
+  // CreatePolicyService. This is a static method because local state is
+  // created immediately after the connector, and tests don't have a chance to
+  // inject the provider otherwise. |provider| must outlive the connector, and
+  // its ownership is not taken.
+  static void SetPolicyProviderForTesting(
+      ConfigurationPolicyProvider* provider);
+
  private:
   // content::NotificationObserver method overrides:
   virtual void Observe(int type,
