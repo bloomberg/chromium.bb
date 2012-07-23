@@ -333,6 +333,29 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   // no effect if there are no pending requests.
   void AckPendingSwapBuffers();
 
+  // Returns true and stores first rectangle for character range if the
+  // requested |range| is already cached, otherwise returns false.
+  bool GetCachedFirstRectForCharacterRange(NSRange range, NSRect* rect,
+                                           NSRange* actual_range);
+
+  // Returns true if there is line break in |range| and stores line breaking
+  // point to |line_breaking_point|. The |line_break_point| is valid only if
+  // this function returns true.
+  bool GetLineBreakIndex(const std::vector<gfx::Rect>& bounds,
+                         const ui::Range& range,
+                         size_t* line_break_point);
+
+  // Returns composition character boundary rectangle. The |range| is
+  // composition based range. Also stores |actual_range| which is corresponding
+  // to actually used range for returned rectangle.
+  gfx::Rect GetFirstRectForCompositionRange(const ui::Range& range,
+                                            ui::Range* actual_range);
+
+  // Converts from given whole character range to composition oriented range. If
+  // the conversion failed, return ui::Range::InvalidRange.
+  ui::Range ConvertCharacterRangeToCompositionRange(
+      const ui::Range& request_range);
+
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
 
@@ -428,6 +451,13 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   // List of pending swaps for deferred acking:
   //   pairs of (route_id, gpu_host_id).
   std::list<std::pair<int32, int32> > pending_swap_buffers_acks_;
+
+  // The current composition character range and its bounds.
+  ui::Range composition_range_;
+  std::vector<gfx::Rect> composition_bounds_;
+
+  // The current caret bounds.
+  gfx::Rect caret_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };

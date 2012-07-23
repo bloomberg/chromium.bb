@@ -615,6 +615,8 @@ void RenderWidgetHostViewMac::TextInputStateChanged(
 void RenderWidgetHostViewMac::SelectionBoundsChanged(
     const gfx::Rect& start_rect,
     const gfx::Rect& end_rect) {
+  if (start_rect == end_rect)
+    caret_rect_ = start_rect;
 }
 
 void RenderWidgetHostViewMac::ImeCancelComposition() {
@@ -627,6 +629,8 @@ void RenderWidgetHostViewMac::ImeCompositionRangeChanged(
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
   [cocoa_view_ setMarkedRange:range.ToNSRange()];
+  composition_range_ = range;
+  composition_bounds_ = character_bounds;
 }
 
 void RenderWidgetHostViewMac::DidUpdateBackingStore(
@@ -770,6 +774,8 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
   if (![cocoa_view_ hasMarkedText]) {
     [cocoa_view_ setMarkedRange:range.ToNSRange()];
   }
+
+  RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
 }
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
@@ -1017,6 +1023,123 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
     }
     pending_swap_buffers_acks_.erase(pending_swap_buffers_acks_.begin());
   }
+}
+
+bool RenderWidgetHostViewMac::GetLineBreakIndex(
+    const std::vector<gfx::Rect>& bounds,
+    const ui::Range& range,
+    size_t* line_break_point) {
+  DCHECK(line_break_point);
+  if (range.start() >= bounds.size() || range.is_reversed() || range.is_empty())
+    return false;
+
+  // We can't check line breaking completely from only rectangle array. Thus we
+  // assume the line breaking as the next character's y offset is larger than
+  // a threshold. Currently the threshold is determined as minimum y offset plus
+  // 75% of maximum height.
+  // TODO(nona): Check the threshold is reliable or not.
+  // TODO(nona): Bidi support.
+  const size_t loop_end_idx = std::min(bounds.size(), range.end());
+  int max_height = 0;
+  int min_y_offset = kint32max;
+  for (size_t idx = range.start(); idx < loop_end_idx; ++idx) {
+    max_height = std::max(max_height, bounds[idx].height());
+    min_y_offset = std::min(min_y_offset, bounds[idx].y());
+  }
+  int line_break_threshold = min_y_offset + (max_height * 3 / 4);
+  for (size_t idx = range.start(); idx < loop_end_idx; ++idx) {
+    if (bounds[idx].y() > line_break_threshold) {
+      *line_break_point = idx;
+      return true;
+    }
+  }
+  return false;
+}
+
+gfx::Rect RenderWidgetHostViewMac::GetFirstRectForCompositionRange(
+    const ui::Range& range,
+    ui::Range* actual_range) {
+  DCHECK(actual_range);
+  DCHECK(!composition_bounds_.empty());
+  DCHECK(range.start() <= composition_bounds_.size());
+  DCHECK(range.end() <= composition_bounds_.size());
+
+  if (range.is_empty()) {
+    *actual_range = range;
+    if (range.start() == composition_bounds_.size()) {
+      return gfx::Rect(composition_bounds_[range.start() - 1].right(),
+                       composition_bounds_[range.start() - 1].y(),
+                       0,
+                       composition_bounds_[range.start() - 1].height());
+    } else {
+      return gfx::Rect(composition_bounds_[range.start()].x(),
+                       composition_bounds_[range.start()].y(),
+                       0,
+                       composition_bounds_[range.start()].height());
+    }
+  }
+
+  size_t end_idx;
+  if (!GetLineBreakIndex(composition_bounds_, range, &end_idx)) {
+    end_idx = range.end();
+  }
+  *actual_range = ui::Range(range.start(), end_idx);
+  gfx::Rect rect = composition_bounds_[range.start()];
+  for (size_t i = range.start() + 1; i < end_idx; ++i) {
+    rect = rect.Union(composition_bounds_[i]);
+  }
+  return rect;
+}
+
+ui::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
+    const ui::Range& request_range) {
+  if (composition_range_.is_empty())
+    return ui::Range::InvalidRange();
+
+  if (request_range.is_reversed())
+    return ui::Range::InvalidRange();
+
+  if (request_range.start() < composition_range_.start() ||
+      request_range.start() > composition_range_.end() ||
+      request_range.end() > composition_range_.end()) {
+    return ui::Range::InvalidRange();
+  }
+
+  return ui::Range(
+      request_range.start() - composition_range_.start(),
+      request_range.end() - composition_range_.start());
+}
+
+bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
+    NSRange range,
+    NSRect* rect,
+    NSRange* actual_range) {
+  // This exists to make IMEs more responsive, see http://crbug.com/115920
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewMac::GetFirstRectForCharacterRange");
+
+  // If requested range is same as caret location, we can just return it.
+  if (selection_range_.is_empty() && ui::Range(range) == selection_range_) {
+    *actual_range = range;
+    *rect = NSRectFromCGRect(caret_rect_.ToCGRect());
+    return true;
+  }
+
+  const ui::Range request_range_in_composition =
+      ConvertCharacterRangeToCompositionRange(ui::Range(range));
+  if (request_range_in_composition == ui::Range::InvalidRange())
+    return false;
+
+  ui::Range ui_actual_range;
+  *rect = NSRectFromCGRect(GetFirstRectForCompositionRange(
+                               request_range_in_composition,
+                               &ui_actual_range).ToCGRect());
+  if (actual_range) {
+    *actual_range = ui::Range(
+        composition_range_.start() + ui_actual_range.start(),
+        composition_range_.start() + ui_actual_range.end()).ToNSRange();
+  }
+  return true;
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
@@ -2662,11 +2785,18 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (NSRect)firstRectForCharacterRange:(NSRange)theRange
                          actualRange:(NSRangePointer)actualRange {
-  // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
-  if (actualRange)
-    *actualRange = theRange;
-  NSRect rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
-      renderWidgetHostView_->render_widget_host_, theRange);
+  NSRect rect;
+  if (!renderWidgetHostView_->GetCachedFirstRectForCharacterRange(
+          theRange,
+          &rect,
+          actualRange)) {
+    rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
+        renderWidgetHostView_->render_widget_host_, theRange);
+
+    // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
+    if (actualRange)
+      *actualRange = theRange;
+  }
 
   // The returned rectangle is in WebKit coordinates (upper left origin), so
   // flip the coordinate system and then convert it into screen coordinates for
