@@ -37,6 +37,7 @@
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
+#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 #include "unicode/timezone.h"
 
@@ -51,11 +52,6 @@
 namespace content {
 
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
-
-// The SUID sandbox sets this environment variable to a file descriptor
-// over which we can signal that we have completed our startup and can be
-// chrooted.
-static const char kSUIDSandboxVar[] = "SBX_D";
 
 // With SELinux we can carve out a precise sandbox, so we don't have to play
 // with intercepting libc calls.
@@ -364,71 +360,31 @@ static bool CreateInitProcessReaper() {
 
 // This will set the *using_suid_sandbox variable to true if the SUID sandbox
 // is enabled. This does not necessarily exclude other types of sandboxing.
-static bool EnterSandbox(bool* using_suid_sandbox, bool* has_started_new_init) {
+static bool EnterSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
+                         bool* using_suid_sandbox, bool* has_started_new_init) {
   *using_suid_sandbox = false;
   *has_started_new_init = false;
+  if (!setuid_sandbox)
+    return false;
 
   PreSandboxInit();
   SkiaFontConfigSetImplementation(
       new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor));
 
-  const char* const sandbox_fd_string = getenv(kSUIDSandboxVar);
-  if (sandbox_fd_string) {
-    char* endptr;
+  if (setuid_sandbox->IsSuidSandboxChild()) {
     // Use the SUID sandbox.  This still allows the seccomp sandbox to
     // be enabled by the process later.
     *using_suid_sandbox = true;
 
-    // Check if the SUID sandbox provides the correct API version.
-    const char* const sandbox_api_string =
-                        getenv(base::kSandboxEnvironmentApiProvides);
-    // Assume API version 0 if no environment was found
-    long sandbox_api_num = 0;
-    if (sandbox_api_string) {
-      errno = 0;
-      sandbox_api_num = strtol(sandbox_api_string, &endptr, 10);
-      if (errno || *endptr) {
-        return false;
-      }
-    }
-
-    if (sandbox_api_num != base::kSUIDSandboxApiNumber) {
+    if (!setuid_sandbox->IsSuidSandboxUpToDate()) {
       LOG(WARNING) << "You are using a wrong version of the setuid binary!\n"
        "Please read "
        "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment."
        "\n\n";
     }
 
-    // Get the file descriptor to signal the chroot helper.
-    errno = 0;
-    const long fd_long = strtol(sandbox_fd_string, &endptr, 10);
-    if (errno || !*sandbox_fd_string || *endptr || fd_long < 0 ||
-        fd_long > INT_MAX) {
+    if (!setuid_sandbox->ChrootMe())
       return false;
-    }
-    const int fd = fd_long;
-
-    static const char kMsgChrootMe = 'C';
-    static const char kMsgChrootSuccessful = 'O';
-
-    if (HANDLE_EINTR(write(fd, &kMsgChrootMe, 1)) != 1) {
-      LOG(ERROR) << "Failed to write to chroot pipe: " << errno;
-      return false;
-    }
-
-    // We need to reap the chroot helper process in any event:
-    wait(NULL);
-
-    char reply;
-    if (HANDLE_EINTR(read(fd, &reply, 1)) != 1) {
-      LOG(ERROR) << "Failed to read from chroot pipe: " << errno;
-      return false;
-    }
-
-    if (reply != kMsgChrootSuccessful) {
-      LOG(ERROR) << "Error code reply from chroot helper";
-      return false;
-    }
 
     if (getpid() == 1) {
       // The setuid sandbox has created a new PID namespace and we need
@@ -473,9 +429,13 @@ static bool EnterSandbox(bool* using_suid_sandbox, bool* has_started_new_init) {
 }
 #else  // CHROMIUM_SELINUX
 
-static bool EnterSandbox(bool* using_suid_sandbox, bool* has_started_new_init) {
+static bool EnterSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
+                         bool* using_suid_sandbox, bool* has_started_new_init) {
   *using_suid_sandbox = false;
   *has_started_new_init = false;
+
+  if (!setuid_sandbox)
+    return false;
 
   PreSandboxInit();
   SkiaFontConfigSetImplementation(
@@ -506,9 +466,17 @@ bool ZygoteMain(const MainFunctionParams& params,
   }
 #endif  // SECCOMP_SANDBOX
 
+  scoped_ptr<sandbox::SetuidSandboxClient>
+      setuid_sandbox(sandbox::SetuidSandboxClient::Create());
+
+  if (setuid_sandbox == NULL) {
+    LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
+    return false;
+  }
+
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";
-    forkdelegate->Init(getenv(kSUIDSandboxVar) != NULL,
+    forkdelegate->Init(setuid_sandbox->IsSuidSandboxChild(),
                        Zygote::kBrowserDescriptor,
                        Zygote::kMagicSandboxIPCDescriptor);
   } else {
@@ -518,7 +486,9 @@ bool ZygoteMain(const MainFunctionParams& params,
   // Turn on the SELinux or SUID sandbox.
   bool using_suid_sandbox = false;
   bool has_started_new_init = false;
-  if (!EnterSandbox(&using_suid_sandbox, &has_started_new_init)) {
+  if (!EnterSandbox(setuid_sandbox.get(),
+                    &using_suid_sandbox,
+                    &has_started_new_init)) {
     LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
                << errno << ")";
     return false;
@@ -527,9 +497,9 @@ bool ZygoteMain(const MainFunctionParams& params,
   int sandbox_flags = 0;
   if (using_suid_sandbox) {
     sandbox_flags |= kSandboxLinuxSUID;
-    if (getenv("SBX_PID_NS"))
+    if (setuid_sandbox->IsInNewPIDNamespace())
       sandbox_flags |= kSandboxLinuxPIDNS;
-    if (getenv("SBX_NET_NS"))
+    if (setuid_sandbox->IsInNewNETNamespace())
       sandbox_flags |= kSandboxLinuxNetNS;
   }
 

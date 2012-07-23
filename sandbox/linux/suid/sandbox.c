@@ -4,7 +4,7 @@
 
 // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
 
-#include "sandbox.h"
+#include "common/sandbox.h"
 
 #define _GNU_SOURCE
 #include <asm/unistd.h>
@@ -31,7 +31,7 @@
 
 #include "linux_util.h"
 #include "process_util.h"
-#include "suid_unsafe_environment_variables.h"
+#include "common/suid_unsafe_environment_variables.h"
 
 #if !defined(CLONE_NEWPID)
 #define CLONE_NEWPID 0x20000000
@@ -39,22 +39,6 @@
 #if !defined(CLONE_NEWNET)
 #define CLONE_NEWNET 0x40000000
 #endif
-
-static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
-static const char kSandboxHelperPidEnvironmentVarName[] = "SBX_HELPER_PID";
-
-// Should be kept in sync with base/linux_util.h
-static const long kSUIDSandboxApiNumber = 1;
-static const char kSandboxEnvironmentApiRequest[] = "SBX_CHROME_API_RQ";
-static const char kSandboxEnvironmentApiProvides[] = "SBX_CHROME_API_PRV";
-
-// This number must be kept in sync with common/zygote_commands_linux.h
-static const int kZygoteIdFd = 7;
-
-// These are the magic byte values which the sandboxed process uses to request
-// that it be chrooted.
-static const char kMsgChrootMe = 'C';
-static const char kMsgChrootSuccessful = 'O';
 
 static bool DropRoot();
 
@@ -280,15 +264,15 @@ static bool MoveToNewNamespaces() {
         FatalError("close");
 
       if (kCloneExtraFlags[i] & CLONE_NEWPID) {
-        setenv("SBX_PID_NS", "", 1 /* overwrite */);
+        setenv(kSandboxPIDNSEnvironmentVarName, "", 1 /* overwrite */);
       } else {
-        unsetenv("SBX_PID_NS");
+        unsetenv(kSandboxPIDNSEnvironmentVarName);
       }
 
       if (kCloneExtraFlags[i] & CLONE_NEWNET) {
-        setenv("SBX_NET_NS", "", 1 /* overwrite */);
+        setenv(kSandboxNETNSEnvironmentVarName, "", 1 /* overwrite */);
       } else {
-        unsetenv("SBX_NET_NS");
+        unsetenv(kSandboxNETNSEnvironmentVarName);
       }
 
       break;

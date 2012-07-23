@@ -31,42 +31,12 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "sandbox/linux/suid/sandbox.h"
-#include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
+#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "sandbox/linux/suid/common/sandbox.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
-
-// Set an environment variable that reflects the API version we expect from the
-// setuid sandbox. Old versions of the sandbox will ignore this.
-static void SetSandboxAPIEnvironmentVariable() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar(base::kSandboxEnvironmentApiRequest,
-              base::IntToString(base::kSUIDSandboxApiNumber));
-}
-
-static void SaveSUIDUnsafeEnvironmentVariables() {
-  // The ELF loader will clear many environment variables so we save them to
-  // different names here so that the SUID sandbox can resolve them for the
-  // renderer.
-
-  for (unsigned i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
-    const char* const envvar = kSUIDUnsafeEnvironmentVariables[i];
-    char* const saved_envvar = SandboxSavedEnvironmentVariable(envvar);
-    if (!saved_envvar)
-      continue;
-
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    std::string value;
-    if (env->GetVar(envvar, &value))
-      env->SetVar(saved_envvar, value);
-    else
-      env->UnSetVar(saved_envvar);
-
-    free(saved_envvar);
-  }
-}
 
 // static
 content::ZygoteHost* content::ZygoteHost::GetInstance() {
@@ -153,8 +123,9 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
       using_suid_sandbox_ = true;
       cmd_line.PrependWrapper(sandbox_binary_);
 
-      SaveSUIDUnsafeEnvironmentVariables();
-      SetSandboxAPIEnvironmentVariable();
+      scoped_ptr<sandbox::SetuidSandboxClient>
+          sandbox_client(sandbox::SetuidSandboxClient::Create());
+      sandbox_client->SetupLaunchEnvironment();
     } else {
       LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
                     "configured correctly. Rather than run without sandboxing "

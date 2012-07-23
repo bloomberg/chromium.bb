@@ -11,6 +11,9 @@
     {
       'target_name': 'sandbox',
       'type': 'none',
+      'dependencies': [
+        'suid_sandbox_client',
+      ],
       'conditions': [
         # Only compile in the seccomp mode 1 code for the flag combination
         # where we support it.
@@ -38,6 +41,7 @@
       ],
       'sources': [
         'tests/unit_tests.cc',
+        'suid/client/setuid_sandbox_client_unittest.cc',
       ],
       'include_dirs': [
         '../..',
@@ -71,11 +75,12 @@
       'target_name': 'chrome_sandbox',
       'type': 'executable',
       'sources': [
+        'suid/common/sandbox.h',
+        'suid/common/suid_unsafe_environment_variables.h',
         'suid/linux_util.c',
         'suid/linux_util.h',
         'suid/process_util.h',
         'suid/process_util_linux.c',
-        'suid/sandbox.h',
         'suid/sandbox.c',
       ],
       'cflags': [
@@ -100,5 +105,22 @@
         '..',
       ],
     },
+    {
+      'target_name': 'suid_sandbox_client',
+      'type': 'static_library',
+      'sources': [
+        'suid/common/sandbox.h',
+        'suid/common/suid_unsafe_environment_variables.h',
+        'suid/client/setuid_sandbox_client.cc',
+        'suid/client/setuid_sandbox_client.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+    },
+
   ],
 }
