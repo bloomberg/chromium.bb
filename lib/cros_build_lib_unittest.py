@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -472,6 +472,44 @@ class TestRunCommandWithRetries(unittest.TestCase):
     self.assertRaises(cros_build_lib.RunCommandError,
                       func, 2, command, sleep=3, **kwds)
     self.mox.VerifyAll()
+
+
+class TestTimedCommand(unittest.TestCase):
+  """Tests for TimedCommand()"""
+
+  def setUp(self):
+    self.mox = mox.Mox()
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+
+  def tearDown(self):
+    self.mox.UnsetStubs()
+    self.mox.VerifyAll()
+
+  def testBasic(self):
+    """Make sure simple stuff works."""
+    cros_build_lib.RunCommand(['true', 'foo'])
+    self.mox.ReplayAll()
+
+    cros_build_lib.TimedCommand(cros_build_lib.RunCommand, ['true', 'foo'])
+
+  def testArgs(self):
+    """Verify passing of optional args to the destination function."""
+    cros_build_lib.RunCommand(':', shell=True, print_cmd=False, error_ok=False)
+    self.mox.ReplayAll()
+
+    cros_build_lib.TimedCommand(cros_build_lib.RunCommand, ':', shell=True,
+                                print_cmd=False, error_ok=False)
+
+  def testLog(self):
+    """Verify logging does the right thing."""
+    self.mox.StubOutWithMock(cros_build_lib.logger, 'log')
+
+    cros_build_lib.RunCommand('fun', shell=True)
+    cros_build_lib.logger.log(mox.IgnoreArg(), 'msg! %s', mox.IgnoreArg())
+    self.mox.ReplayAll()
+
+    cros_build_lib.TimedCommand(cros_build_lib.RunCommand, 'fun',
+                                timed_log_msg='msg! %s', shell=True)
 
 
 class TestListFiles(unittest.TestCase):

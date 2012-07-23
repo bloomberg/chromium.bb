@@ -4,6 +4,7 @@
 
 """Common python commands used by various build scripts."""
 
+from datetime import datetime
 import errno
 import hashlib
 import logging
@@ -1418,6 +1419,7 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
   #pylint: disable=E0702
   raise exc_info[0], exc_info[1], exc_info[2]
 
+
 def RunCommandCaptureOutput(cmd, **kwds):
   """Wrapper for RunCommand that captures output.
 
@@ -1429,6 +1431,31 @@ def RunCommandCaptureOutput(cmd, **kwds):
     kwds: Optional args passed to RunCommand; see RunCommand for specifics.
   """
   return RunCommand(cmd, redirect_stdout=True, redirect_stderr=True, **kwds)
+
+
+def TimedCommand(functor, *args, **kwargs):
+  """Wrapper for simple log timing of other python functions.
+
+  If you want to log info about how long it took to run an arbitrary command,
+  you would do something like:
+    TimedCommand(RunCommand, ['wget', 'http://foo'])
+
+  Arguments:
+    functor: The function to run.
+    args: The args to pass to the function.
+    kwds: Optional args to pass to the function.
+    timed_log_level: The log level to use (defaults to info).
+    timed_log_msg: The message to log with timing info appended (defaults to
+                   details about the call made).  It must include a %s to hold
+                   the time delta details.
+  """
+  log_msg = kwargs.pop('timed_log_msg', '%s(*%r, **%r) took: %%s'
+                         % (functor.__name__, args, kwargs))
+  log_level = kwargs.pop('timed_log_level', logging.INFO)
+  start = datetime.now()
+  ret = functor(*args, **kwargs)
+  logger.log(log_level, log_msg, datetime.now() - start)
+  return ret
 
 
 def GetInput(prompt):
