@@ -150,11 +150,11 @@ output_yuv_frame(struct wcap_decoder *decoder)
 static void
 usage(int exit_code)
 {
-	fprintf(stderr, "usage: wcap-snapshot "
+	fprintf(stderr, "usage: wcap-decode "
 		"[--help] [--yuv4mpeg2] [--frame=<frame>] [--all] \n"
 		"\t[--rate=<num:denom>] <wcap file>\n\n"
 		"\t--help\t\t\tthis help text\n"
-		"\t--yuv2mpeg4\t\tdump wcap file in yuv4mpeg format\n"
+		"\t--yuv2mpeg4\t\tdump wcap file to stdout in yuv4mpeg format\n"
 		"\t--frame=<frame>\t\twrite out the given frame number as png\n"
 		"\t--all\t\t\twrite all frames as pngs\n"
 		"\t--rate=<num:denom>\treplay frame rate for yuv4mpeg2,\n"
@@ -204,6 +204,15 @@ int main(int argc, char *argv[])
 	}
 
 	decoder = wcap_decoder_create(argv[1]);
+
+	if (yuv4mpeg2 && isatty(1)) {
+		fprintf(stderr, "Not dumping yuv4mpeg2 data to terminal.  Pipe output to a file or a process.\n");
+		fprintf(stderr, "For example, to encode to webm, use something like\n\n");
+		fprintf(stderr, "\t$ wcap-decode  --yuv4mpeg2 ../capture.wcap |\n"
+			"\t\tvpxenc --target-bitrate=1024 --best -t 4 -o foo.webm -\n\n");
+
+		exit(EXIT_FAILURE);
+	}
 
 	if (yuv4mpeg2) {
 		printf("YUV4MPEG2 C420jpeg W%d H%d F%d:%d Ip A0:0\n",
