@@ -76,30 +76,36 @@ LANGUAGE_CODES = (
 )
 
 # Input method IDs used in Chrome OS. The list should be updated when a
-# new input method is added to platform/assets/input_methods/whitelist.txt
-# in the Chrome OS tree, as follows:
+# new input method is added to
+# chrome/browser/chromeos/input_method/input_methods.txt in the Chrome tree, as
+# follows:
 #
-# % sort chromeos/src/platform/assets/input_methods/whitelist.txt | \
+# % sort chrome/browser/chromeos/input_method/input_methods.txt | \
 #   perl -ne "print \"'\$1', \" if /^([^#]+?)\s/" | \
 #   fold -w75 -s | perl -pe 's/^/  /;s/ $//'; echo
 #
-# The script extracts input method IDs from whitelist.txt.
+# The script extracts input method IDs from input_methods.txt.
 INPUT_METHOD_IDS = (
-  'chewing', 'hangul', 'm17n:ar:kbd', 'm17n:fa:isiri', 'm17n:hi:itrans',
-  'm17n:th:kesmanee', 'm17n:th:pattachote', 'm17n:th:tis820',
-  'm17n:vi:tcvn', 'm17n:vi:telex', 'm17n:vi:viqr', 'm17n:vi:vni',
-  'm17n:zh:cangjie', 'm17n:zh:quick', 'mozc', 'mozc-dv', 'mozc-jp',
-  'pinyin', 'xkb:be::fra', 'xkb:be::ger', 'xkb:be::nld', 'xkb:bg::bul',
-  'xkb:bg:phonetic:bul', 'xkb:br::por', 'xkb:ca::fra', 'xkb:ca:eng:eng',
-  'xkb:ch::ger', 'xkb:ch:fr:fra', 'xkb:cz::cze', 'xkb:de::ger',
+  'english-m', 'm17n:am:sera', 'm17n:ar:kbd', 'm17n:bn:itrans',
+  'm17n:fa:isiri', 'm17n:gu:itrans', 'm17n:hi:itrans', 'm17n:kn:itrans',
+  'm17n:ml:itrans', 'm17n:mr:itrans', 'm17n:ta:inscript', 'm17n:ta:itrans',
+  'm17n:ta:phonetic', 'm17n:ta:tamil99', 'm17n:ta:typewriter',
+  'm17n:te:itrans', 'm17n:th:kesmanee', 'm17n:th:pattachote',
+  'm17n:th:tis820', 'm17n:vi:tcvn', 'm17n:vi:telex', 'm17n:vi:viqr',
+  'm17n:vi:vni', 'm17n:zh:cangjie', 'm17n:zh:quick', 'mozc', 'mozc-chewing',
+  'mozc-dv', 'mozc-hangul', 'mozc-jp', 'pinyin', 'pinyin-dv', 'xkb:be::fra',
+  'xkb:be::ger', 'xkb:be::nld', 'xkb:bg::bul', 'xkb:bg:phonetic:bul',
+  'xkb:br::por', 'xkb:ca::fra', 'xkb:ca:eng:eng', 'xkb:ch::ger',
+  'xkb:ch:fr:fra', 'xkb:cz::cze', 'xkb:de::ger', 'xkb:de:neo:ger',
   'xkb:dk::dan', 'xkb:ee::est', 'xkb:es::spa', 'xkb:es:cat:cat',
-  'xkb:fi::fin', 'xkb:fr::fra', 'xkb:gb:extd:eng', 'xkb:gr::gre',
-  'xkb:hr::scr', 'xkb:hu::hun', 'xkb:il::heb', 'xkb:it::ita', 'xkb:jp::jpn',
-  'xkb:kr:kr104:kor', 'xkb:lt::lit', 'xkb:lv::lav', 'xkb:nl::nld',
-  'xkb:no::nor', 'xkb:pl::pol', 'xkb:pt::por', 'xkb:ro::rum', 'xkb:rs::srp',
-  'xkb:ru::rus', 'xkb:ru:phonetic:rus', 'xkb:se::swe', 'xkb:si::slv',
-  'xkb:sk::slo', 'xkb:tr::tur', 'xkb:ua::ukr', 'xkb:us::eng',
-  'xkb:us:altgr-intl:eng', 'xkb:us:dvorak:eng',
+  'xkb:fi::fin', 'xkb:fr::fra', 'xkb:gb:dvorak:eng', 'xkb:gb:extd:eng',
+  'xkb:gr::gre', 'xkb:hr::scr', 'xkb:hu::hun', 'xkb:il::heb', 'xkb:it::ita',
+  'xkb:jp::jpn', 'xkb:kr:kr104:kor', 'xkb:latam::spa', 'xkb:lt::lit',
+  'xkb:lv:apostrophe:lav', 'xkb:no::nob', 'xkb:pl::pol', 'xkb:pt::por',
+  'xkb:ro::rum', 'xkb:rs::srp', 'xkb:ru::rus', 'xkb:ru:phonetic:rus',
+  'xkb:se::swe', 'xkb:si::slv', 'xkb:sk::slo', 'xkb:tr::tur', 'xkb:ua::ukr',
+  'xkb:us::eng', 'xkb:us:altgr-intl:eng', 'xkb:us:colemak:eng',
+  'xkb:us:dvorak:eng', 'xkb:us:intl:eng',
 )
 
 number_of_files_total = 0
