@@ -5106,7 +5106,6 @@
    Memcheck:Unaddressable
    fun:_ZN3WTF17ChromiumThreading16callOnMainThreadEPFvPvES1_
    fun:_ZN3WTF16callOnMainThreadEPFvPvES0_
-   fun:_ZN7WebCore8Document8postTaskEN3WTF10PassOwnPtrINS_22ScriptExecutionContext4TaskEEE
 }
 {
    bug_122245a
@@ -5678,7 +5677,19 @@
    fun:_ZNK7WebCore17ScriptProfileNode8childrenEv
    fun:_ZN7WebCore27ScriptProfileNodeV8InternalL16childrenCallbackERKN2v89ArgumentsE
 }
-
+{
+   bug_138510
+   Memcheck:Unaddressable
+   fun:_ZN3WTF5DequeI10SavedEventLm0EE6appendIS1_EEvRKT_
+   fun:_ZN11EventSender11leapForwardERKN3WTF6VectorI10CppVariantLm0EEEPS2_
+   fun:_ZN13CppBoundClass14MemberCallbackI11EventSenderE3runERKN3WTF6VectorI10CppVariantLm0EEEPS5_
+   fun:_ZN13CppBoundClass6invokeEPvPK10_NPVariantmPS1_
+   fun:_ZN11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS3_
+   fun:_ZN7WebCoreL18npObjectInvokeImplERKN2v89ArgumentsENS_18InvokeFunctionTypeE
+   fun:_ZN7WebCore21npObjectMethodHandlerERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

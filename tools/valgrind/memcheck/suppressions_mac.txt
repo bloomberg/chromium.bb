@@ -2326,9 +2326,9 @@
    fun:-[NSView _invalidateGStatesForTree]
    fun:-[NSView(NSInternal) _setHidden:setNeedsDisplay:]
    fun:-[NSView _setHidden:]
-   fun:_ZN23RenderWidgetHostViewMac17MovePluginWindowsERKSt6vectorIN6webkit5npapi17WebPluginGeometryESaIS3_EE
-   fun:_ZN27RenderWidgetHostViewMacTest24AddAcceleratedPluginViewEii
-   fun:_ZN53RenderWidgetHostViewMacTest_FocusAcceleratedView_Test8TestBodyEv
+   fun:_ZN*23RenderWidgetHostViewMac17MovePluginWindowsERKSt6vectorIN6webkit5npapi17WebPluginGeometry*
+   fun:_ZN*27RenderWidgetHostViewMacTest24AddAcceleratedPluginViewEii
+   fun:_ZN*53RenderWidgetHostViewMacTest_FocusAcceleratedView_Test8TestBodyEv
 }
 {
    bug_112086
@@ -2457,4 +2457,14 @@
    fun:_ZN7WebCore13ChildNodeListD0Ev
    fun:_ZN3WTF10RefCountedIN7WebCore8NodeListEE5derefEv
    fun:_ZN6WebKit11WebNodeList6assignEPN7WebCore8NodeListE
+}
+{
+   bug_138515
+   Memcheck:Uninitialized
+   fun:_ZN5mediaL20InterleaveFloatToIntIsiEEvRKSt6vectorIPfSaIS2_EEPvm
+   fun:_ZN5media20InterleaveFloatToIntERKSt6vectorIPfSaIS1_EEPvmi
+   fun:_ZN11AudioDevice19AudioThreadCallback7ProcessEi
+   fun:_ZN17AudioDeviceThread6Thread3RunEv
+   fun:_ZN17AudioDeviceThread6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
