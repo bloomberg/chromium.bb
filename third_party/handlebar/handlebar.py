@@ -43,6 +43,9 @@ class CustomContext(object):
 print(Handlebar('hello {{world}}').render(CustomContext()).text)
 """
 
+def _SafeStr(obj):
+  return obj if (type(obj) in [str, unicode]) else str(obj)
+
 class ParseException(Exception):
   """ Exception thrown while parsing the template.
   """
@@ -68,12 +71,15 @@ class StringBuilder(object):
     return self._length
 
   def append(self, obj):
-    string = str(obj)
+    string = _SafeStr(obj)
     self._buf.append(string)
     self._length += len(string)
 
   def toString(self):
-    return ''.join(self._buf)
+    return u''.join(self._buf)
+
+  def __str__(self):
+    return self.toString()
 
 class RenderState(object):
   """ The state of a render call.
@@ -349,7 +355,7 @@ class EscapedVariableNode(LeafNode):
   def render(self, renderState):
     value = self._id.resolve(renderState)
     if value != None:
-      self._appendEscapedHtml(renderState.text, str(value))
+      self._appendEscapedHtml(renderState.text, _SafeStr(value))
 
   def _appendEscapedHtml(self, escaped, unescaped):
     for c in unescaped:
@@ -420,9 +426,9 @@ def _VertedSectionNodeShouldRender(value):
   type_ = type(value)
   if type_ == bool:
     return value
-  if type_ == int or type_ == float:
+  if type_ in [int, float]:
     return True
-  if type_ == str or type_ == unicode:
+  if type_ in [str, unicode]:
     return True
   if type_ == list:
     return len(value) > 0
