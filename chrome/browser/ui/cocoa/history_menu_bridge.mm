@@ -12,6 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_HISTORY_MENU
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -81,7 +82,8 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
     // Check to see if the history service is ready. Because it loads async, it
     // may not be ready when the Bridge is created. If this happens, register
     // for a notification that tells us the HistoryService is ready.
-    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
     if (hs != NULL && hs->BackendLoaded()) {
       history_service_ = hs;
       Init();
@@ -145,8 +147,8 @@ void HistoryMenuBridge::Observe(int type,
   // A history service is now ready. Check to see if it's the one for the main
   // profile. If so, perform final initialization.
   if (type == chrome::NOTIFICATION_HISTORY_LOADED) {
-    HistoryService* hs =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
     if (hs != NULL && hs->BackendLoaded()) {
       history_service_ = hs;
       Init();
