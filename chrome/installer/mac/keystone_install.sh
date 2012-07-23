@@ -1075,7 +1075,7 @@ main() {
   note "cs_fwk = ${cs_fwk}"
   note "ls_fwk = ${ls_fwk}"
   note "lsregister = ${lsregister}"
-  "${lsregister}" "${installed_app}" > /dev/null || true
+  "${lsregister}" -f "${installed_app}" > /dev/null || true
 
   # The brand information is stored differently depending on whether this is
   # running for a system or user ticket.
