@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_simple_job.h"
@@ -334,9 +335,10 @@ class MainPageJob : public BaseInternalsJob {
   }
 
   // Produces a page containing the listing
-  virtual bool GetData(std::string* mime_type,
-                       std::string* charset,
-                       std::string* out) const {
+  virtual int GetData(std::string* mime_type,
+                      std::string* charset,
+                      std::string* out,
+                      const net::CompletionCallback& callback) const OVERRIDE {
     mime_type->assign("text/html");
     charset->assign("UTF-8");
 
@@ -361,7 +363,7 @@ class MainPageJob : public BaseInternalsJob {
       EmitAppCacheInfoVector(base_url, appcache_service_, appcaches, out);
     }
     EmitPageEnd(out);
-    return true;
+    return net::OK;
   }
 
  private:
@@ -384,10 +386,11 @@ class RedirectToMainPageJob : public BaseInternalsJob {
   RedirectToMainPageJob(net::URLRequest* request, AppCacheService* service)
       : BaseInternalsJob(request, service) {}
 
-  virtual bool GetData(std::string* mime_type,
-                       std::string* charset,
-                       std::string* data) const {
-    return true;  // IsRedirectResponse induces a redirect.
+  virtual int GetData(std::string* mime_type,
+                      std::string* charset,
+                      std::string* data,
+                      const net::CompletionCallback& callback) const OVERRIDE {
+    return net::OK;  // IsRedirectResponse induces a redirect.
   }
 
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code) {
@@ -447,9 +450,10 @@ class ViewAppCacheJob : public BaseInternalsJob,
   }
 
   // Produces a page containing the entries listing.
-  virtual bool GetData(std::string* mime_type,
-                       std::string* charset,
-                       std::string* out) const {
+  virtual int GetData(std::string* mime_type,
+                      std::string* charset,
+                      std::string* out,
+                      const net::CompletionCallback& callback) const OVERRIDE {
     mime_type->assign("text/html");
     charset->assign("UTF-8");
     out->clear();
@@ -466,7 +470,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
                                      out);
     }
     EmitPageEnd(out);
-    return true;
+    return net::OK;
   }
 
  private:
@@ -519,9 +523,10 @@ class ViewEntryJob : public BaseInternalsJob,
   }
 
   // Produces a page containing the response headers and data.
-  virtual bool GetData(std::string* mime_type,
-                       std::string* charset,
-                       std::string* out) const {
+  virtual int GetData(std::string* mime_type,
+                      std::string* charset,
+                      std::string* out,
+                      const net::CompletionCallback& callback) const OVERRIDE {
     mime_type->assign("text/html");
     charset->assign("UTF-8");
     out->clear();
@@ -544,7 +549,7 @@ class ViewEntryJob : public BaseInternalsJob,
       out->append("Failed to read response headers and data.<br>");
     }
     EmitPageEnd(out);
-    return true;
+    return net::OK;
   }
 
  private:

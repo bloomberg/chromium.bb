@@ -9,6 +9,7 @@
 #include "content/browser/histogram_synchronizer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -59,15 +60,17 @@ void AboutHistogram(std::string* data, const std::string& path) {
   base::StatisticsRecorder::WriteHTMLGraph(unescaped_query, data);
 }
 
-bool HistogramInternalsRequestJob::GetData(std::string* mime_type,
-                                           std::string* charset,
-                                           std::string* data) const {
+int HistogramInternalsRequestJob::GetData(
+    std::string* mime_type,
+    std::string* charset,
+    std::string* data,
+    const net::CompletionCallback& callback) const {
   mime_type->assign("text/html");
   charset->assign("UTF8");
 
   data->clear();
   AboutHistogram(data, path_);
-  return true;
+  return net::OK;
 }
 
 }  // namespace content

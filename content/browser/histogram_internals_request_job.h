@@ -16,9 +16,10 @@ class HistogramInternalsRequestJob : public net::URLRequestSimpleJob {
  public:
   explicit HistogramInternalsRequestJob(net::URLRequest* request);
 
-  virtual bool GetData(std::string* mime_type,
-                       std::string* charset,
-                       std::string* data) const OVERRIDE;
+  virtual int GetData(std::string* mime_type,
+                      std::string* charset,
+                      std::string* data,
+                      const net::CompletionCallback& callback) const OVERRIDE;
 
  private:
   virtual ~HistogramInternalsRequestJob() {}

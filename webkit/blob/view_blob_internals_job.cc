@@ -15,6 +15,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
@@ -142,9 +143,11 @@ void ViewBlobInternalsJob::DoWorkAsync() {
   StartAsync();
 }
 
-bool ViewBlobInternalsJob::GetData(std::string* mime_type,
-                                   std::string* charset,
-                                   std::string* data) const {
+int ViewBlobInternalsJob::GetData(
+    std::string* mime_type,
+    std::string* charset,
+    std::string* data,
+    const net::CompletionCallback& callback) const {
   mime_type->assign("text/html");
   charset->assign("UTF-8");
 
@@ -155,7 +158,7 @@ bool ViewBlobInternalsJob::GetData(std::string* mime_type,
   else
     GenerateHTML(data);
   EndHTML(data);
-  return true;
+  return net::OK;
 }
 
 void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {

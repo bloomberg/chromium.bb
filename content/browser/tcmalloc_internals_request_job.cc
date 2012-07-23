@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
+#include "net/base/net_errors.h"
 
 namespace content {
 
@@ -101,9 +102,11 @@ void AboutTcmalloc(std::string* data) {
 }
 #endif
 
-bool TcmallocInternalsRequestJob::GetData(std::string* mime_type,
-                                          std::string* charset,
-                                          std::string* data) const {
+int TcmallocInternalsRequestJob::GetData(
+    std::string* mime_type,
+    std::string* charset,
+    std::string* data,
+    const net::CompletionCallback& callback) const {
   mime_type->assign("text/html");
   charset->assign("UTF8");
 
@@ -111,7 +114,7 @@ bool TcmallocInternalsRequestJob::GetData(std::string* mime_type,
 #if defined(USE_TCMALLOC)
   AboutTcmalloc(data);
 #endif
-  return true;
+  return net::OK;
 }
 
 } // namespace content

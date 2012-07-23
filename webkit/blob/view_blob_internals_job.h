@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,10 @@ class BLOB_EXPORT ViewBlobInternalsJob : public net::URLRequestSimpleJob {
                        BlobStorageController* blob_storage_controller);
 
   virtual void Start() OVERRIDE;
-  virtual bool GetData(std::string* mime_type,
-                       std::string* charset,
-                       std::string* data) const OVERRIDE;
+  virtual int GetData(std::string* mime_type,
+                      std::string* charset,
+                      std::string* data,
+                      const net::CompletionCallback& callback) const OVERRIDE;
   virtual bool IsRedirectResponse(GURL* location,
                                   int* http_status_code) OVERRIDE;
   virtual void Kill() OVERRIDE;

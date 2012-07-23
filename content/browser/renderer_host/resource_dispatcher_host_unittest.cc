@@ -311,22 +311,23 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
       : net::URLRequestSimpleJob(request) {
   }
 
-  virtual bool GetData(std::string* mime_type,
-                       std::string* charset,
-                       std::string* data) const {
+  virtual int GetData(std::string* mime_type,
+                      std::string* charset,
+                      std::string* data,
+                      const net::CompletionCallback& callback) const OVERRIDE {
     *mime_type = "text/plain";
     *charset = "UTF-8";
 
     std::string text;
     int count;
     if (!ParseURL(request_->url(), &text, &count))
-      return false;
+      return net::ERR_INVALID_URL;
 
     data->reserve(text.size() * count);
     for (int i = 0; i < count; ++i)
       data->append(text);
 
-    return true;
+    return net::OK;
   }
 
  private:
