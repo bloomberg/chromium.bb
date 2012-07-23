@@ -38,6 +38,8 @@ remoting.ClientPluginAsync = function(plugin) {
    * @param {number} error The error code, if any.
    */
   this.onConnectionStatusUpdateHandler = function(state, error) {};
+  /** @param {boolean} ready Connection ready state. */
+  this.onConnectionReadyHandler = function(ready) {};
   this.onDesktopSizeUpdateHandler = function () {};
 
   /** @type {number} */
@@ -196,6 +198,12 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     if (remoting.clientSession) {
       remoting.clientSession.onFirstFrameReceived();
     }
+  } else if (message.method == 'onConnectionReady') {
+    if (typeof message.data['ready'] != 'boolean') {
+      console.error('Received incorrect onConnectionReady message.');
+      return;
+    }
+    this.onConnectionReadyHandler(message.data['ready']);
   }
 }
 

@@ -66,6 +66,12 @@ class Session : public base::NonThreadSafe {
     // handler of this event.
     virtual void OnSessionRouteChange(const std::string& channel_name,
                                       const TransportRoute& route) = 0;
+
+    // Called when ready state on one of the channels changes. See
+    // comments in transport.h for explanation on what this state
+    // means and how it can used.
+    virtual void OnSessionChannelReady(const std::string& channel_name,
+                                       bool ready) {}
   };
 
   // TODO(sergeyu): Specify connection error code when channel

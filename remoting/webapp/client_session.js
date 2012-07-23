@@ -303,7 +303,9 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
   };
 
   this.plugin.onConnectionStatusUpdateHandler =
-      this.connectionStatusUpdateCallback.bind(this);
+      this.onConnectionStatusUpdate_.bind(this);
+  this.plugin.onConnectionReadyHandler =
+      this.onConnectionReady_.bind(this);
   this.plugin.onDesktopSizeUpdateHandler =
       this.onDesktopSizeChanged_.bind(this);
 
@@ -479,10 +481,11 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
  * Callback that the plugin invokes to indicate that the connection
  * status has changed.
  *
+ * @private
  * @param {number} status The plugin's status.
  * @param {number} error The plugin's error state, if any.
  */
-remoting.ClientSession.prototype.connectionStatusUpdateCallback =
+remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     function(status, error) {
   if (status == remoting.ClientSession.State.CONNECTED) {
     this.onDesktopSizeChanged_();
@@ -491,6 +494,21 @@ remoting.ClientSession.prototype.connectionStatusUpdateCallback =
   }
   this.setState_(/** @type {remoting.ClientSession.State} */ (status));
 };
+
+/**
+ * Callback that the plugin invokes to indicate when the connection is
+ * ready.
+ *
+ * @private
+ * @param {boolean} ready True if the connection is ready.
+ */
+remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
+  if (!ready) {
+    this.plugin.element().classList.add("session-client-inactive");
+  } else {
+    this.plugin.element().classList.remove("session-client-inactive");
+  }
+}
 
 /**
  * @private
@@ -707,6 +725,7 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
 
 /**
  * Enable or disable bump-scrolling.
+ * @private
  * @param {boolean} enable True to enable bump-scrolling, false to disable it.
  */
 remoting.ClientSession.prototype.enableBumpScroll_ = function(enable) {

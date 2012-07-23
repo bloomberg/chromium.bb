@@ -209,6 +209,17 @@ void ConnectionToHost::OnSessionRouteChange(const std::string& channel_name,
                                             const TransportRoute& route) {
 }
 
+void ConnectionToHost::OnSessionChannelReady(const std::string& channel_name,
+                                             bool ready) {
+  if (ready) {
+    not_ready_channels_.erase(channel_name);
+  } else if (!ready) {
+    not_ready_channels_.insert(channel_name);
+  }
+
+  event_callback_->OnConnectionReady(ready);
+}
+
 ConnectionToHost::State ConnectionToHost::state() const {
   return state_;
 }

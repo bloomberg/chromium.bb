@@ -184,6 +184,11 @@ void ChromotingClient::OnConnectionState(
   user_interface_->OnConnectionState(state, error);
 }
 
+void ChromotingClient::OnConnectionReady(bool ready) {
+  VLOG(1) << "ChromotingClient::OnConnectionReady(" << ready << ")";
+  user_interface_->OnConnectionReady(ready);
+}
+
 void ChromotingClient::OnPacketDone(bool last_packet,
                                     base::Time decode_start) {
   if (!task_runner_->BelongsToCurrentThread()) {

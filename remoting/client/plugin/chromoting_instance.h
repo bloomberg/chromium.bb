@@ -108,6 +108,7 @@ class ChromotingInstance :
   // ClientUserInterface interface.
   virtual void OnConnectionState(protocol::ConnectionToHost::State state,
                                  protocol::ErrorCode error) OVERRIDE;
+  virtual void OnConnectionReady(bool ready) OVERRIDE;
   virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
   virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
 

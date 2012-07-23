@@ -27,6 +27,8 @@ remoting.ClientPlugin.prototype.onOutgoingIqHandler;
 remoting.ClientPlugin.prototype.onDebugMessageHandler;
 /** @type {function(number, number): void} State change callback. */
 remoting.ClientPlugin.prototype.onConnectionStatusUpdateHandler;
+/** @type {function(boolean): void} Connection ready state callback. */
+remoting.ClientPlugin.prototype.onConnectionReadyHandler;
 /** @type {function(): void} Desktop size change callback. */
 remoting.ClientPlugin.prototype.onDesktopSizeUpdateHandler;
 

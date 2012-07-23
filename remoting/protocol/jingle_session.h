@@ -60,6 +60,8 @@ class JingleSession : public Session,
       const cricket::Candidate& candidate) OVERRIDE;
   virtual void OnTransportRouteChange(Transport* transport,
                                       const TransportRoute& route) OVERRIDE;
+  virtual void OnTransportReady(Transport* transport,
+                                bool ready) OVERRIDE;
   virtual void OnTransportDeleted(Transport* transport) OVERRIDE;
 
  private:

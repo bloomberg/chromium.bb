@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_
 #define REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_
 
+#include <set>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -64,6 +65,12 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
     // Called when state of the connection changes.
     virtual void OnConnectionState(State state, ErrorCode error) = 0;
+
+    // Called when ready state of the connection changes. When |ready|
+    // is set to false some data sent by the peers may be
+    // delayed. This is used to indicate in the UI when connection is
+    // temporarily broken.
+    virtual void OnConnectionReady(bool ready) = 0;
   };
 
   ConnectionToHost(bool allow_nat_traversal);
@@ -104,6 +111,8 @@ class ConnectionToHost : public SignalStrategy::Listener,
   virtual void OnSessionStateChange(Session::State state) OVERRIDE;
   virtual void OnSessionRouteChange(const std::string& channel_name,
                                     const TransportRoute& route) OVERRIDE;
+  virtual void OnSessionChannelReady(const std::string& channel_name,
+                                     bool ready) OVERRIDE;
 
   // Return the current state of ConnectionToHost.
   State state() const;
@@ -149,6 +158,9 @@ class ConnectionToHost : public SignalStrategy::Listener,
   // Internal state of the connection.
   State state_;
   ErrorCode error_;
+
+  // List of channels that are not currently ready.
+  std::set<std::string> not_ready_channels_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionToHost);

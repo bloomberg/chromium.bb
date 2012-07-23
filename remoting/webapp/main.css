@@ -562,6 +562,11 @@ button {
   display: block;
 }
 
+.session-client-inactive {
+  -webkit-filter: grayscale(70%);
+  -webkit-transition: -webkit-filter 0.218s;
+}
+
 #set-pin-table td {
   border-bottom: 6px solid transparent;
   text-align: right;

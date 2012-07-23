@@ -393,6 +393,12 @@ void ChromotingInstance::OnConnectionState(
   PostChromotingMessage("onConnectionStatus", data.Pass());
 }
 
+void ChromotingInstance::OnConnectionReady(bool ready) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetBoolean("ready", ready);
+  PostChromotingMessage("onConnectionReady", data.Pass());
+}
+
 protocol::ClipboardStub* ChromotingInstance::GetClipboardStub() {
   // TODO(sergeyu): Move clipboard handling to a separate class.
   // crbug.com/138108

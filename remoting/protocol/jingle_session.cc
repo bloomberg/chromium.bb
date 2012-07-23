@@ -254,6 +254,11 @@ void JingleSession::OnTransportRouteChange(Transport* transport,
     event_handler_->OnSessionRouteChange(transport->name(), route);
 }
 
+void JingleSession::OnTransportReady(Transport* transport, bool ready) {
+  if (event_handler_)
+    event_handler_->OnSessionChannelReady(transport->name(), ready);
+}
+
 void JingleSession::OnTransportDeleted(Transport* transport) {
   ChannelsMap::iterator it = channels_.find(transport->name());
   DCHECK_EQ(it->second, transport);

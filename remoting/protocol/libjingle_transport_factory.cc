@@ -58,6 +58,7 @@ class LibjingleStreamTransport : public StreamTransport,
                         const cricket::Candidate& candidate);
   void OnRouteChange(cricket::TransportChannel* channel,
                      const cricket::Candidate& candidate);
+  void OnWritableState(cricket::TransportChannel* channel);
 
   void OnTcpConnected(int result);
   void OnAuthenticationDone(net::Error error,
@@ -146,6 +147,8 @@ void LibjingleStreamTransport::Connect(
       this, &LibjingleStreamTransport::OnCandidateReady);
   channel_->SignalRouteChange.connect(
       this, &LibjingleStreamTransport::OnRouteChange);
+  channel_->SignalWritableState.connect(
+      this, &LibjingleStreamTransport::OnWritableState);
   channel_->set_incoming_only(incoming_only_);
 
   channel_->Connect();
@@ -236,6 +239,11 @@ void LibjingleStreamTransport::OnRouteChange(
   }
 
   event_handler_->OnTransportRouteChange(this, route);
+}
+
+void LibjingleStreamTransport::OnWritableState(
+    cricket::TransportChannel* channel) {
+  event_handler_->OnTransportReady(this, !channel->writable());
 }
 
 void LibjingleStreamTransport::OnTcpConnected(int result) {

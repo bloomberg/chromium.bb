@@ -81,6 +81,14 @@ class Transport : public base::NonThreadSafe {
     virtual void OnTransportRouteChange(Transport* transport,
                                         const TransportRoute& route) = 0;
 
+    // Called when the transport inactivity state changes. When
+    // |ready| is set to false incoming and outgoing data may be
+    // delayed until connection goes back to the active state, at
+    // which point that method is called again with |ready| set to
+    // true. This is useful for UI indication of temporarily broken
+    // connections.
+    virtual void OnTransportReady(Transport* transport, bool ready) = 0;
+
     // Called when the transport is about to be deleted.
     virtual void OnTransportDeleted(Transport* transport) = 0;
   };

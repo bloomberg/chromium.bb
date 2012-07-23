@@ -27,6 +27,7 @@ class ClientUserInterface {
   // Record the update the state of the connection, updating the UI as needed.
   virtual void OnConnectionState(protocol::ConnectionToHost::State state,
                                  protocol::ErrorCode error) = 0;
+  virtual void OnConnectionReady(bool ready) = 0;
 
   // Get the view's ClipboardStub implementation.
   virtual protocol::ClipboardStub* GetClipboardStub() = 0;
