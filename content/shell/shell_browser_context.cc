@@ -75,7 +75,7 @@ FilePath ShellBrowserContext::GetPath() {
 }
 
 bool ShellBrowserContext::IsOffTheRecord() const {
-  return false;
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kOffTheRecord);
 }
 
 DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {

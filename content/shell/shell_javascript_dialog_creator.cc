@@ -44,6 +44,13 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
     return;
   }
 
+  if (!dialog_request_callback_.is_null()) {
+    dialog_request_callback_.Run();
+    callback.Run(true, string16());
+    dialog_request_callback_.Reset();
+    return;
+  }
+
 #if defined(OS_MACOSX) || defined(OS_WIN)
   *did_suppress_message = false;
 
@@ -82,6 +89,13 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     callback.Run(
         !controller->should_stay_on_page_after_handling_before_unload(),
         string16());
+    return;
+  }
+
+  if (!dialog_request_callback_.is_null()) {
+    dialog_request_callback_.Run();
+    callback.Run(true, string16());
+    dialog_request_callback_.Reset();
     return;
   }
 

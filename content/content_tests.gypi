@@ -547,10 +547,12 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        'browser/plugin_browsertest.cc',
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
         'test/content_browser_test_utils.cc',
         'test/content_browser_test_utils.h',
+        'test/content_browser_test_utils_mac.mm',
         'test/content_browser_test_test.cc',
         'test/content_test_launcher.cc',
       ],
@@ -595,6 +597,18 @@
         ['OS=="mac"', {
           'dependencies': [
             'content_shell',  # Needed for Content Shell.app's Helper.
+          ],
+        }],
+        ['use_aura==1', {
+          'sources!': [
+            'browser/plugin_browsertest.cc',
+          ],
+        }],
+        ['target_arch!="arm"', {
+          'dependencies': [
+            # Runtime dependencies
+            '../webkit/webkit.gyp:copy_npapi_test_plugin',
+            '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
           ],
         }],
       ],

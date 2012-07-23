@@ -566,11 +566,6 @@ AppModalDialog* WaitForAppModalDialog() {
   return content::Source<AppModalDialog>(observer.source()).ptr();
 }
 
-void WaitForAppModalDialogAndCloseIt() {
-  AppModalDialog* dialog = WaitForAppModalDialog();
-  dialog->CloseModalDialog();
-}
-
 void CrashTab(WebContents* tab) {
   content::RenderProcessHost* rph = tab->GetRenderProcessHost();
   content::WindowedNotificationObserver observer(

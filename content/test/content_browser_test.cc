@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_main_delegate.h"
@@ -38,11 +39,13 @@ ContentBrowserTest::~ContentBrowserTest() {
 }
 
 void ContentBrowserTest::SetUp() {
-  shell_main_delegate_.reset(new content::ShellMainDelegate);
+  shell_main_delegate_.reset(new ShellMainDelegate);
   shell_main_delegate_->PreSandboxStartup();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kContentBrowserTest);
+
+  SetUpCommandLine(command_line);
 
 #if defined(OS_MACOSX)
   // See InProcessBrowserTest::PrepareTestCommandLine().
@@ -101,10 +104,17 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   pool.Recycle();
 #endif
 
+  SetUpOnMainThread();
+
   RunTestOnMainThread();
 #if defined(OS_MACOSX)
   pool.Recycle();
 #endif
+
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->FastShutdownIfPossible();
+  }
 }
 
 }  // namespace content

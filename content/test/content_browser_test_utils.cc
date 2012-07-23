@@ -15,6 +15,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
+#include "content/shell/shell_javascript_dialog_creator.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -43,6 +44,16 @@ void NavigateToURL(Shell* window, const GURL& url) {
   same_tab_observer.WaitForObservation(
       base::Bind(&RunThisRunLoop, base::Unretained(&run_loop)),
       GetQuitTaskForRunLoop(&run_loop));
+}
+
+void WaitForAppModalDialog(Shell* window) {
+  ShellJavaScriptDialogCreator* dialog_creator =
+      static_cast<ShellJavaScriptDialogCreator*>(
+          window->GetJavaScriptDialogCreator());
+
+  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
+  dialog_creator->set_dialog_request_callback(runner->QuitClosure());
+  runner->Run();
 }
 
 }  // namespace content

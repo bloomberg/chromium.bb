@@ -195,7 +195,6 @@ GURL GetFileUrlWithQuery(const FilePath& path, const std::string& query_string);
 
 // Blocks until an application modal dialog is showns and returns it.
 AppModalDialog* WaitForAppModalDialog();
-void WaitForAppModalDialogAndCloseIt();
 
 // Causes the specified tab to crash. Blocks until it is crashed.
 void CrashTab(content::WebContents* tab);
@@ -212,10 +211,6 @@ int FindInPage(TabContents* tab,
 // Closes all infobars |tab| has open, if any.  Tests that depend on there being
 // no InfoBar open when the test starts may need to use this.
 void CloseAllInfoBars(TabContents* tab);
-
-#if defined OS_MACOSX
-void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);
-#endif
 
 // Returns true if the View is focused.
 bool IsViewFocused(const Browser* browser, ViewID vid);
@@ -237,10 +232,6 @@ void WaitForTemplateURLServiceToLoad(TemplateURLService* service);
 
 // Blocks until the |history_service|'s history finishes loading.
 void WaitForHistoryToLoad(HistoryService* history_service);
-
-// Puts the native window for |browser| in |native_window|. Returns true on
-// success.
-bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window);
 
 // Brings the native window for |browser| to the foreground. Returns true on
 // success.

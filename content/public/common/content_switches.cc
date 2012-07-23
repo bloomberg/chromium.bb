@@ -163,9 +163,6 @@ const char kDisablePlugins[]                = "disable-plugins";
 // Disable the JavaScript Pointer Lock API.
 const char kDisablePointerLock[]            = "disable-pointer-lock";
 
-// Disable pop-up blocking.
-const char kDisablePopupBlocking[]          = "disable-popup-blocking";
-
 // Disables remote web font support. SVG font should always work whether this
 // option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";

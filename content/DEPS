@@ -3,7 +3,6 @@
 include_rules = [
   "+crypto",
 
-  "-chrome",
   # Until we move most of our testing infrastructure in a way that content can
   # make use of it.
   "+chrome/test",
@@ -14,6 +13,7 @@ include_rules = [
   "+content/common",
   "+content/public/common",
   "+content/public/test",
+  "+content/shell",  # for content_browsertests
   "+content/test",
 
   "+grit/content_resources.h",

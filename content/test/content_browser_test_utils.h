@@ -6,8 +6,13 @@
 #define CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_H_
 
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/native_widget_types.h"
 
 class FilePath;
+
+namespace gfx {
+class Rect;
+}
 
 // A collections of functions designed for use with content_browsertests.
 // Note: if a function here also works with browser_tests, it should be in
@@ -32,6 +37,13 @@ GURL GetTestUrl(const char* dir, const char* file);
 // Navigates the selected tab of |window| to |url|, blocking until the
 // navigation finishes.
 void NavigateToURL(Shell* window, const GURL& url);
+
+// Wait until an application modal dialog is requested.
+void WaitForAppModalDialog(Shell* window);
+
+#if defined OS_MACOSX
+void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);
+#endif
 
 }  // namespace content
 

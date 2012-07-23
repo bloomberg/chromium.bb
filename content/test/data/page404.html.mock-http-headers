@@ -1,2 +1,2 @@
-HTTP/1.0 200 OK
+HTTP/1.0 404 Not Found
 Content-type: text/html

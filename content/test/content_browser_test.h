@@ -9,7 +9,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/test/browser_test_base.h"
 
-
 namespace content {
 class Shell;
 class ShellMainDelegate;
@@ -26,6 +25,7 @@ class ContentBrowserTest : public BrowserTestBase {
   // BrowserTestBase:
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
+ protected:
   // Returns the window for the test.
   Shell* shell() const { return shell_; }
 

@@ -17,17 +17,6 @@
 
 namespace ui_test_utils {
 
-void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds) {
-  NSRect new_bounds = NSRectFromCGRect(bounds.ToCGRect());
-  if ([[NSScreen screens] count] > 0) {
-    new_bounds.origin.y =
-        [[[NSScreen screens] objectAtIndex:0] frame].size.height -
-        new_bounds.origin.y - new_bounds.size.height;
-  }
-
-  [window setFrame:new_bounds display:NO];
-}
-
 bool IsViewFocused(const Browser* browser, ViewID vid) {
   NSWindow* window = browser->window()->GetNativeWindow();
   DCHECK(window);

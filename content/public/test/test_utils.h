@@ -41,8 +41,8 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
   // Hand this closure off to code that uses callbacks to notify completion.
   // Example:
   //   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
-  //   kick_off_some_api(runner.QuitNowClosure());
-  //   runner.Run();
+  //   kick_off_some_api(runner->QuitClosure());
+  //   runner->Run();
   base::Closure QuitClosure();
 
  private:

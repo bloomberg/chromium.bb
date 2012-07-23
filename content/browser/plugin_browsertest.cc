@@ -3,23 +3,23 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/shell/shell.h"
+#include "content/shell/shell_switches.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "ui/gfx/rect.h"
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
 #endif
-
-using content::BrowserThread;
 
 namespace {
 
@@ -29,19 +29,23 @@ void SetUrlRequestMock(const FilePath& path) {
 
 }
 
-class PluginTest : public InProcessBrowserTest {
+namespace content {
+
+class PluginTest : public ContentBrowserTest {
  protected:
   PluginTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // Some NPAPI tests schedule garbage collection to force object tear-down.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose_gc");
-    // For OpenPopupWindowWithPlugin.
-    command_line->AppendSwitch(switches::kDisablePopupBlocking);
-#if defined(OS_WIN)
+
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
-    if (strcmp(test_info->name(), "MediaPlayerNew") == 0) {
+    if (strcmp(test_info->name(), "PrivateEnabled") == 0) {
+      command_line->AppendSwitch(switches::kOffTheRecord);
+    }
+#if defined(OS_WIN)
+    else if (strcmp(test_info->name(), "MediaPlayerNew") == 0) {
       // The installer adds our process names to the registry key below.  Since
       // the installer might not have run on this machine, add it manually.
       base::win::RegKey regkey;
@@ -66,30 +70,20 @@ class PluginTest : public InProcessBrowserTest {
     // explicitly registered.
     command_line->AppendSwitchPath(switches::kExtraPluginDir, plugin_dir);
 #endif
-
-    // TODO(jam): since these plugin tests are running under Chrome, we need to
-    // tell it to disable its security features for old plugins. Once this is
-    // running under content_browsertests, these flags won't be needed.
-    // http://crbug.com/90448
-    // switches::kAllowOutdatedPlugins
-    command_line->AppendSwitch("allow-outdated-plugins");
-    // switches::kAlwaysAuthorizePlugins
-    command_line->AppendSwitch("always-authorize-plugins");
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    FilePath path = ui_test_utils::GetTestFilePath(FilePath(), FilePath());
+    FilePath path = GetTestFilePath("", "");
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, base::Bind(&SetUrlRequestMock, path));
   }
 
   void LoadAndWait(const GURL& url) {
     string16 expected_title(ASCIIToUTF16("OK"));
-    content::TitleWatcher title_watcher(
-        chrome::GetActiveWebContents(browser()), expected_title);
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("plugin_not_found"));
-    ui_test_utils::NavigateToURL(browser(), url);
+    NavigateToURL(shell(), url);
     string16 title = title_watcher.WaitAndGetTitle();
     if (title == ASCIIToUTF16("plugin_not_found")) {
       const testing::TestInfo* const test_info =
@@ -102,19 +96,16 @@ class PluginTest : public InProcessBrowserTest {
   }
 
   GURL GetURL(const char* filename) {
-    return ui_test_utils::GetTestUrl(
-        FilePath().AppendASCII("npapi"), FilePath().AppendASCII(filename));
+    return GetTestUrl("npapi", filename);
   }
 
   void NavigateAway() {
-    GURL url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("simple.html"));
+    GURL url = GetTestUrl(".", "simple_page.html");
     LoadAndWait(url);
   }
 
   void TestPlugin(const char* filename) {
-    FilePath path = ui_test_utils::GetTestFilePath(
-        FilePath().AppendASCII("plugin"), FilePath().AppendASCII(filename));
+    FilePath path = GetTestFilePath("plugin", filename);
     if (!file_util::PathExists(path)) {
       const testing::TestInfo* const test_info =
           testing::UnitTest::GetInstance()->current_test_info();
@@ -123,8 +114,7 @@ class PluginTest : public InProcessBrowserTest {
       return;
     }
 
-    GURL url = ui_test_utils::GetTestUrl(
-        FilePath().AppendASCII("plugin"), FilePath().AppendASCII(filename));
+    GURL url = GetTestUrl("plugin", filename);
     LoadAndWait(url);
   }
 };
@@ -151,8 +141,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvoke) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectReleasedOnDestruction) {
-  ui_test_utils::NavigateToURL(
-      browser(), GetURL("npobject_released_on_destruction.html"));
+  NavigateToURL(shell(), GetURL("npobject_released_on_destruction.html"));
   NavigateAway();
 }
 
@@ -171,14 +160,12 @@ IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectSetException) {
 // SimulateMouseClick get to Mac plugins, currently it doesn't work.
 IN_PROC_BROWSER_TEST_F(PluginTest,
                        SelfDeletePluginInvokeInSynchronousMouseUp) {
-  ui_test_utils::NavigateToURL(
-      browser(), GetURL("execute_script_delete_in_mouse_up.html"));
+  NavigateToURL(shell(), GetURL("execute_script_delete_in_mouse_up.html"));
 
   string16 expected_title(ASCIIToUTF16("OK"));
-  content::TitleWatcher title_watcher(
-      chrome::GetActiveWebContents(browser()), expected_title);
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
-  SimulateMouseClick(chrome::GetActiveWebContents(browser()));
+  SimulateMouseClick(shell()->web_contents());
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 #endif
@@ -197,16 +184,13 @@ IN_PROC_BROWSER_TEST_F(PluginTest, GetURLRequest404Response) {
 IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeAlert) {
   // Navigate asynchronously because if we waitd until it completes, there's a
   // race condition where the alert can come up before we start watching for it.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GetURL("self_delete_plugin_invoke_alert.html"), CURRENT_TAB,
-      0);
+  shell()->LoadURL(GetURL("self_delete_plugin_invoke_alert.html"));
 
   string16 expected_title(ASCIIToUTF16("OK"));
-  content::TitleWatcher title_watcher(
-      chrome::GetActiveWebContents(browser()), expected_title);
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
-  ui_test_utils::WaitForAppModalDialogAndCloseIt();
+  WaitForAppModalDialog(shell());
 
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -296,11 +280,10 @@ IN_PROC_BROWSER_TEST_F(PluginTest, CreateInstanceInPaint) {
 #define MAYBE_AlertInWindowMessage AlertInWindowMessage
 #endif
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_AlertInWindowMessage) {
-  ui_test_utils::NavigateToURL(
-      browser(), GetURL("alert_in_window_message.html"));
+  NavigateToURL(shell(), GetURL("alert_in_window_message.html"));
 
-  ui_test_utils::WaitForAppModalDialogAndCloseIt();
-  ui_test_utils::WaitForAppModalDialogAndCloseIt();
+  WaitForAppModalDialog(shell());
+  WaitForAppModalDialog(shell());
 }
 
 IN_PROC_BROWSER_TEST_F(PluginTest, VerifyNPObjectLifetimeTest) {
@@ -348,7 +331,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest, PluginThreadAsyncCall) {
 // Test checking the privacy mode is on.
 // If this flakes on Linux, use http://crbug.com/104380
 IN_PROC_BROWSER_TEST_F(PluginTest, PrivateEnabled) {
-  LoadAndWait(GetURL("private.html"));
+  GURL url = GetURL("private.html");
+  url = GURL(url.spec() + "?private");
+  LoadAndWait(url);
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -392,21 +377,21 @@ IN_PROC_BROWSER_TEST_F(PluginTest, PluginReferrerTest) {
 #if defined(OS_MACOSX)
 // Test is flaky, see http://crbug.com/134515.
 IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_PluginConvertPointTest) {
-  gfx::NativeWindow window = NULL;
   gfx::Rect bounds(50, 50, 400, 400);
-  ui_test_utils::GetNativeWindow(browser(), &window);
-  ui_test_utils::SetWindowBounds(window, bounds);
+  SetWindowBounds(shell()->window(), bounds);
 
-  ui_test_utils::NavigateToURL(browser(), GetURL("convert_point.html"));
+  NavigateToURL(shell(), GetURL("convert_point.html"));
 
   string16 expected_title(ASCIIToUTF16("OK"));
-  content::TitleWatcher title_watcher(
-      chrome::GetActiveWebContents(browser()), expected_title);
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
   // TODO(stuartmorgan): When the automation system supports sending clicks,
   // change the test to trigger on mouse-down rather than window focus.
-  static_cast<content::WebContentsDelegate*>(browser())->
-      ActivateContents(chrome::GetActiveWebContents(browser()));
+
+  // TODO: is this code still needed? It was here when it used to run in
+  // browser_tests.
+  //static_cast<WebContentsDelegate*>(shell())->
+  //    ActivateContents(shell()->web_contents());
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 #endif
@@ -467,3 +452,5 @@ IN_PROC_BROWSER_TEST_F(PluginTest, Silverlight) {
   TestPlugin("silverlight.html");
 }
 #endif  // defined(OS_WIN)
+
+}  // namespace content

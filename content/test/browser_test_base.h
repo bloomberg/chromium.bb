@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class CommandLine;
+
 class BrowserTestBase : public testing::Test {
  public:
   BrowserTestBase();
@@ -24,6 +26,14 @@ class BrowserTestBase : public testing::Test {
 
   // Restores state configured in SetUp.
   virtual void TearDown() OVERRIDE;
+
+  // Override this to add any custom setup code that needs to be done on the
+  // main thread after the browser is created and just before calling
+  // RunTestOnMainThread().
+  virtual void SetUpOnMainThread() {}
+
+  // Override this to add command line flags specific to your test.
+  virtual void SetUpCommandLine(CommandLine* command_line) {}
 
  protected:
   // We need these special methods because SetUp is the bottom of the stack

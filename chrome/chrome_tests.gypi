@@ -2638,7 +2638,6 @@
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../third_party/mesa/mesa.gyp:osmesa',
-        '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
         '..',
@@ -3067,7 +3066,6 @@
         '../content/browser/in_process_webkit/indexed_db_layout_browsertest.cc',
         '../content/browser/indexed_db/idbbindingutilities_browsertest.cc',
         '../content/browser/media_browsertest.cc',
-        '../content/browser/plugin_browsertest.cc',
         '../content/browser/plugin_data_remover_impl_browsertest.cc',
         '../content/browser/plugin_service_impl_browsertest.cc',
         '../content/browser/renderer_host/render_process_host_browsertest.cc',
@@ -3351,8 +3349,6 @@
           'dependencies': [
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
-            # run time dependency
-            '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
         }],
         ['component=="shared_library" and incremental_chrome_dll!=1', {
@@ -3366,7 +3362,6 @@
         ],
         ['use_aura==1', {
           'sources!': [
-            '../content/browser/plugin_browsertest.cc',
             '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
             '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
             '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
@@ -3440,7 +3435,6 @@
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
         '../third_party/mesa/mesa.gyp:osmesa',
-        '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
         '..',

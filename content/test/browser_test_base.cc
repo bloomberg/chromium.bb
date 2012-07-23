@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "sandbox/win/src/dep.h"
 
@@ -27,7 +28,12 @@ BrowserTestBase::~BrowserTestBase() {
 }
 
 void BrowserTestBase::SetUp() {
-  content::MainFunctionParams params(*CommandLine::ForCurrentProcess());
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  // The tests assume that file:// URIs can freely access other file:// URIs.
+  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
+
+  content::MainFunctionParams params(*command_line);
   params.ui_task =
       new base::Closure(
           base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this));

@@ -110,20 +110,12 @@ class InProcessBrowserTest : public BrowserTestBase {
   void AddTabAtIndex(int index, const GURL& url,
                      content::PageTransition transition);
 
-  // Override this to add any custom setup code that needs to be done on the
-  // main thread after the browser is created and just before calling
-  // RunTestOnMainThread().
-  virtual void SetUpOnMainThread() {}
-
   // Initializes the contents of the user data directory. Called by SetUp()
   // after creating the user data directory, but before any browser is launched.
   // If a test wishes to set up some initial non-empty state in the user data
   // directory before the browser starts up, it can do so here. Returns true if
   // successful.
   virtual bool SetUpUserDataDirectory() WARN_UNUSED_RESULT;
-
-  // Override this to add command line flags specific to your test.
-  virtual void SetUpCommandLine(CommandLine* command_line) {}
 
   // Override this to add any custom cleanup code that needs to be done on the
   // main thread before the browser is torn down.

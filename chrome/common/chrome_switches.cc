@@ -358,6 +358,9 @@ const char kDisableLoginAnimations[]        = "disable-login-animations";
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
+// Disable pop-up blocking.
+const char kDisablePopupBlocking[]          = "disable-popup-blocking";
+
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 

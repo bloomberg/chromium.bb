@@ -49,9 +49,6 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // auto-update.
   command_line->AppendSwitch(switches::kSkipGpuDataLoading);
 
-  // The tests assume that file:// URIs can freely access other file:// URIs.
-  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
-
 #if defined(USE_ASH)
   // Disable window animations under Ash as the animations effect the
   // coordinates returned and result in flake.
