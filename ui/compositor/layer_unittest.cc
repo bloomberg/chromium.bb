@@ -238,8 +238,8 @@ class TestLayerDelegate : public LayerDelegate {
 
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
-    SkBitmap contents = canvas->ExtractBitmap();
-    paint_size_ = gfx::Size(contents.width(), contents.height());
+    gfx::ImageSkiaRep contents = canvas->ExtractImageRep();
+    paint_size_ = gfx::Size(contents.GetWidth(), contents.GetHeight());
     canvas->FillRect(gfx::Rect(paint_size_), colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
     const SkMatrix& matrix = canvas->sk_canvas()->getTotalMatrix();

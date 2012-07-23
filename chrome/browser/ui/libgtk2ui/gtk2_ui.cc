@@ -740,7 +740,8 @@ SkBitmap Gtk2UI::GenerateFrameImage(
   DCHECK(it != colors_.end());
   SkColor base = it->second;
 
-  gfx::Canvas canvas(gfx::Size(kToolbarImageWidth, kToolbarImageHeight), true);
+  gfx::Canvas canvas(gfx::Size(kToolbarImageWidth, kToolbarImageHeight),
+      ui::SCALE_FACTOR_100P, true);
 
   int gradient_size;
   GdkColor* gradient_top_color = NULL;
@@ -767,7 +768,7 @@ SkBitmap Gtk2UI::GenerateFrameImage(
 
   canvas.FillRect(gfx::Rect(0, gradient_size, kToolbarImageWidth,
                             kToolbarImageHeight - gradient_size), base);
-  return canvas.ExtractBitmap();
+  return canvas.ExtractImageRep().sk_bitmap();
 }
 
 SkBitmap Gtk2UI::GenerateTabImage(int base_id) const {

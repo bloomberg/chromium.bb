@@ -809,10 +809,11 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
     // We create 2 phony images because we are going to switch images at every
     // refresh in order to force a refresh of the icon area (somehow the clip
     // rect does not include the icon).
-    gfx::Canvas canvas(gfx::Size(kImageSize, kImageSize), false);
+    gfx::Canvas canvas(gfx::Size(kImageSize, kImageSize), ui::SCALE_FACTOR_100P,
+        false);
     {
-      base::win::ScopedHICON empty_icon(
-          IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap()));
+      base::win::ScopedHICON empty_icon(IconUtil::CreateHICONFromSkBitmap(
+          canvas.ExtractImageRep().sk_bitmap()));
       ImageList_AddIcon(image_list, empty_icon);
       ImageList_AddIcon(image_list, empty_icon);
     }
@@ -1154,7 +1155,7 @@ void TableView::PaintAltText() {
   HDC dc = GetDC(GetNativeControlHWND());
   gfx::Font font = GetAltTextFont();
   gfx::Rect bounds = GetAltTextBounds();
-  gfx::Canvas canvas(bounds.size(), false);
+  gfx::Canvas canvas(bounds.size(), ui::SCALE_FACTOR_100P, false);
   // Pad by 1 for halo.
   canvas.DrawStringWithHalo(alt_text_, font, SK_ColorDKGRAY, SK_ColorWHITE, 1,
                             1, bounds.width() - 2, bounds.height() - 2,
@@ -1240,6 +1241,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
             if (IntersectRect(&intersection, &icon_rect, &client_rect)) {
               gfx::Canvas canvas(gfx::Size(icon_rect.right - icon_rect.left,
                                            icon_rect.bottom - icon_rect.top),
+                                 ui::SCALE_FACTOR_100P,
                                  false);
 
               // It seems the state in nmcd.uItemState is not correct.

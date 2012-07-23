@@ -565,7 +565,7 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   gfx::Canvas background_canvas(size(), canvas->scale_factor(), false);
   PaintInactiveTabBackground(&background_canvas);
 
-  gfx::ImageSkia background_image(background_canvas.ExtractImageSkiaRep());
+  gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
 
   // Draw a radial gradient to hover_canvas.
   gfx::Canvas hover_canvas(size(), canvas->scale_factor(), false);
@@ -595,7 +595,7 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
 
   // Draw the radial gradient clipped to the background into hover_image.
   gfx::ImageSkia hover_image = gfx::ImageSkiaOperations::CreateMaskedImage(
-      gfx::ImageSkia(hover_canvas.ExtractImageSkiaRep()), background_image);
+      gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
 
   // Draw the tab background to the canvas.
   canvas->DrawImageInt(background_image, 0, 0);
@@ -677,11 +677,11 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
      height() - drop_shadow_height() - kToolbarOverlap - tab_image->y_offset);
 
   canvas->DrawImageInt(
-      gfx::ImageSkia(background_canvas.ExtractImageSkiaRep()), 0, 0);
+      gfx::ImageSkia(background_canvas.ExtractImageRep()), 0, 0);
 
   if (!GetThemeProvider()->HasCustomImage(tab_id) &&
       hover_controller().ShouldDraw()) {
-    hover_controller().Draw(canvas, background_canvas.ExtractImageSkiaRep());
+    hover_controller().Draw(canvas, background_canvas.ExtractImageRep());
   }
 
   // Now draw the highlights/shadows around the tab edge.

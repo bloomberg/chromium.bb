@@ -488,11 +488,19 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           WebKit::WebRect& opaque) {
 #endif
   TRACE_EVENT0("ui", "Layer::paintContents");
-  gfx::Canvas canvas(web_canvas,
-      ui::GetScaleFactorFromScale(device_scale_factor_), scale_content_);
+  scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
+      web_canvas, ui::GetScaleFactorFromScale(device_scale_factor_)));
+
+  if (scale_content_) {
+    canvas->Save();
+    canvas->sk_canvas()->scale(SkFloatToScalar(device_scale_factor_),
+                               SkFloatToScalar(device_scale_factor_));
+  }
 
   if (delegate_)
-    delegate_->OnPaintLayer(&canvas);
+    delegate_->OnPaintLayer(canvas.get());
+  if (scale_content_)
+    canvas->Restore();
 }
 
 unsigned Layer::prepareTexture(WebKit::WebTextureUpdater& /* updater */) {

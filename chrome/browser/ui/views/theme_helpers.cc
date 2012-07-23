@@ -23,7 +23,7 @@ void GetRebarGradientColors(int width, int x1, int x2,
   // those so calling code can use them to create gradient brushes for use in
   // rendering in other directions.
 
-  gfx::Canvas canvas(gfx::Size(width, 1), true);
+  gfx::Canvas canvas(gfx::Size(width, 1), ui::SCALE_FACTOR_100P, true);
 
   // Render the Rebar gradient into the DIB
   CTheme theme;

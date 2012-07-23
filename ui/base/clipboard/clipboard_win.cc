@@ -564,7 +564,9 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
       + bitmap->bmiHeader.biSize + color_table_length * sizeof(RGBQUAD);
 
   gfx::Canvas canvas(gfx::Size(bitmap->bmiHeader.biWidth,
-                               bitmap->bmiHeader.biHeight), false);
+                               bitmap->bmiHeader.biHeight),
+                     ui::SCALE_FACTOR_100P,
+                     false);
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     HDC dc = scoped_platform_paint.GetPlatformSurface();
@@ -592,7 +594,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
     }
   }
 
-  return canvas.ExtractBitmap();
+  return canvas.ExtractImageRep().sk_bitmap();
 }
 
 void Clipboard::ReadCustomData(Buffer buffer,
