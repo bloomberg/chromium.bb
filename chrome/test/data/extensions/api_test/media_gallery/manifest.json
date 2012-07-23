@@ -1,0 +1,10 @@
+{
+  "name": "chrome.experimental.mediaGalleries",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "end-to-end browser test for chrome.experimental.mediaGalleries API",
+  "background": {
+    "scripts": ["test.js"]
+  },
+  "permissions": ["experimental"]
+}
