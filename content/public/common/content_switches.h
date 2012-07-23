@@ -118,7 +118,7 @@ CONTENT_EXPORT extern const char kEnableAcceleratedVideoDecode[];
 CONTENT_EXPORT extern const char kEnableVideoTrack[];
 extern const char kEnableViewport[];
 CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
-extern const char kExtraPluginDir[];
+CONTENT_EXPORT extern const char kExtraPluginDir[];
 CONTENT_EXPORT extern const char kForceCompositingMode[];
 extern const char kForceFieldTrials[];
 CONTENT_EXPORT extern const char kForceRendererAccessibility[];
