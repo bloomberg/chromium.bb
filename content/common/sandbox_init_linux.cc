@@ -27,10 +27,8 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -403,18 +401,6 @@ bool ShouldDisableSandbox(const CommandLine& command_line,
   if (command_line.HasSwitch(switches::kNoSandbox) ||
       command_line.HasSwitch(switches::kDisableSeccompFilterSandbox)) {
     return true;
-  }
-
-  if (!IsChromeOS()) {
-    // On non ChromeOS we never enable the sandbox AT ALL unless
-    // CHROME_ENABLE_SECCOMP is in the environment.
-    // TODO(jorgelo): remove this when seccomp BPF is included
-    // in an upstream release Linux kernel.
-    static const char kEnableSeccomp[] = "CHROME_ENABLE_SECCOMP";
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-
-    if (!env->HasVar(kEnableSeccomp))
-      return true;
   }
 
   if (process_type == switches::kGpuProcess) {
