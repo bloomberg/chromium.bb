@@ -33,6 +33,13 @@ class GPU_EXPORT ShaderManager {
     typedef scoped_refptr<ShaderInfo> Ref;
     typedef ShaderTranslator::VariableInfo VariableInfo;
 
+    enum CompilationStatus {
+      NOT_COMPILED,
+      // We're pending compilation for a cache hit with the program cache.
+      PENDING_DEFERRED_COMPILE,
+      COMPILED
+    };
+
     void UpdateSource(const char* source) {
       // If the source is flagged as compiled, then store our previous source
       // for deferred compile and caching.
@@ -40,7 +47,6 @@ class GPU_EXPORT ShaderManager {
         deferred_compilation_source_.reset(source_.release());
       }
       source_.reset(source ? new std::string(source) : NULL);
-      translated_source_.reset(NULL);
     }
 
     void UpdateTranslatedSource(const char* translated_source) {
@@ -68,9 +74,8 @@ class GPU_EXPORT ShaderManager {
         bool valid, const char* log,
         ShaderTranslatorInterface* translator);
 
-    // If the source was actually compiled (compilation wasn't deferred)
-    bool source_compiled() const {
-      return source_compiled_;
+    CompilationStatus compilation_status() const {
+      return compilation_status_;
     }
 
     // The source that was used when the user called CompileShader.
@@ -84,7 +89,9 @@ class GPU_EXPORT ShaderManager {
     // Resets our deferred compilation source and stores if the source was
     // actually compiled, or if we're expecting a cache hit
     void FlagSourceAsCompiled(bool actually_compiled) {
-      source_compiled_ = actually_compiled;
+      compilation_status_ = actually_compiled ?
+          COMPILED :
+          PENDING_DEFERRED_COMPILE;
       deferred_compilation_source_.reset();
     }
 
@@ -170,9 +177,8 @@ class GPU_EXPORT ShaderManager {
     VariableMap attrib_map_;
     VariableMap uniform_map_;
 
-    // If the source was actually compiled (otherwise we're deferring
-    // compilation because of a possible cache hit)
-    bool source_compiled_;
+    // The current compilation status of the shader
+    CompilationStatus compilation_status_;
 
     // Holds on to the source for a deferred compile.
     scoped_ptr<std::string> deferred_compilation_source_;

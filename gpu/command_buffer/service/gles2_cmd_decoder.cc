@@ -1361,6 +1361,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
            surface_->DeferDraws();
   }
 
+  void ForceCompileShaderIfPending(ShaderManager::ShaderInfo* info);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define GLES2_CMD_OP(name) \
@@ -5125,6 +5127,25 @@ void GLES2DecoderImpl::PerformanceWarning(const std::string& msg) {
   LogMessage(std::string("PERFORMANCE WARNING: ") + msg);
 }
 
+void GLES2DecoderImpl::ForceCompileShaderIfPending(
+    ShaderManager::ShaderInfo* info) {
+  if (info->compilation_status() ==
+      ShaderManager::ShaderInfo::PENDING_DEFERRED_COMPILE) {
+
+    ShaderTranslator* translator = NULL;
+    if (use_shader_translator_) {
+      translator = info->shader_type() == GL_VERTEX_SHADER ?
+          vertex_translator_.get() : fragment_translator_.get();
+    }
+    // We know there will be no errors, because we only defer compilation on
+    // shaders that were previously compiled successfully.
+    program_manager()->ForceCompileShader(info->deferred_compilation_source(),
+                                          info,
+                                          translator,
+                                          feature_info_);
+  }
+}
+
 void GLES2DecoderImpl::CopyRealGLErrorsToWrapper() {
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {
@@ -5848,6 +5869,7 @@ void GLES2DecoderImpl::DoGetShaderiv(
       *params = info->log_info() ? info->log_info()->size() + 1 : 0;
       return;
     case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
+      ForceCompileShaderIfPending(info);
       *params = info->translated_source() ?
           info->translated_source()->size() + 1 : 0;
       return;
@@ -5885,6 +5907,7 @@ error::Error GLES2DecoderImpl::HandleGetTranslatedShaderSourceANGLE(
     bucket->SetSize(0);
     return error::kNoError;
   }
+  ForceCompileShaderIfPending(info);
 
   bucket->SetFromString(info->translated_source() ?
       info->translated_source()->c_str() : NULL);

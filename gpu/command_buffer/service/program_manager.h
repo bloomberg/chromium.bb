@@ -352,13 +352,13 @@ class GPU_EXPORT ProgramManager {
                        ShaderTranslator* translator,
                        FeatureInfo* feature_info);
 
- private:
   // Actually compiles the shader
   void ForceCompileShader(const std::string* source,
                           ShaderManager::ShaderInfo* info,
                           ShaderTranslator* translator,
                           FeatureInfo* feature_info);
 
+ private:
   void StartTracking(ProgramInfo* info);
   void StopTracking(ProgramInfo* info);
 

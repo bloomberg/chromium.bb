@@ -489,7 +489,8 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
       const int kShaders = ProgramManager::ProgramInfo::kMaxAttachedShaders;
       for (int i = 0; i < kShaders; ++i) {
         ShaderManager::ShaderInfo* info = attached_shaders_[i].get();
-        if (!info->source_compiled()) {
+        if (info->compilation_status() ==
+            ShaderManager::ShaderInfo::PENDING_DEFERRED_COMPILE) {
           ShaderTranslator* translator = ShaderIndexToTranslator(
               i,
               vertex_translator,

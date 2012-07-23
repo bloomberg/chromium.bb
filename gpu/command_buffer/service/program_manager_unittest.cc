@@ -1383,13 +1383,17 @@ TEST_F(ProgramManagerWithCacheTest, CorrectCompileOnSourceChangeNoCompile) {
   SetExpectationsForNoCompile(new_vertex_shader);
 
   manager_.DoCompileShader(new_vertex_shader, NULL, NULL);
+  EXPECT_EQ(ShaderManager::ShaderInfo::PENDING_DEFERRED_COMPILE,
+            new_vertex_shader->compilation_status());
 
   new_vertex_shader->UpdateSource("different!");
   EXPECT_EQ(original_source,
             *new_vertex_shader->deferred_compilation_source());
 
-  EXPECT_FALSE(new_vertex_shader->source_compiled());
-  EXPECT_FALSE(fragment_shader_->source_compiled());
+  EXPECT_EQ(ShaderManager::ShaderInfo::PENDING_DEFERRED_COMPILE,
+            new_vertex_shader->compilation_status());
+  EXPECT_EQ(ShaderManager::ShaderInfo::PENDING_DEFERRED_COMPILE,
+            fragment_shader_->compilation_status());
 
   SetExpectationsForNoCompile(fragment_shader_);
   SetExpectationsForNotCachingProgram(program_info,
@@ -1441,8 +1445,10 @@ TEST_F(ProgramManagerWithCacheTest, CorrectCompileOnSourceChangeWithCompile) {
   EXPECT_EQ(differentSource,
             *new_vertex_shader->deferred_compilation_source());
 
-  EXPECT_TRUE(new_vertex_shader->source_compiled());
-  EXPECT_FALSE(fragment_shader_->source_compiled());
+  EXPECT_EQ(ShaderManager::ShaderInfo::COMPILED,
+            new_vertex_shader->compilation_status());
+  EXPECT_EQ(ShaderManager::ShaderInfo::PENDING_DEFERRED_COMPILE,
+            fragment_shader_->compilation_status());
 
   // so we don't recompile because we were pending originally
   SetExpectationsForNoCompile(new_vertex_shader);

@@ -253,11 +253,17 @@ TEST_F(ShaderManagerTest, ShaderInfoStoreCompilationStatus) {
       kClientId, kServiceId, kShaderType);
   ASSERT_TRUE(info != NULL);
 
+  EXPECT_EQ(ShaderManager::ShaderInfo::NOT_COMPILED,
+            info->compilation_status());
   info->UpdateSource("original source");
+  EXPECT_EQ(ShaderManager::ShaderInfo::NOT_COMPILED,
+            info->compilation_status());
   info->FlagSourceAsCompiled(false);
-  EXPECT_FALSE(info->source_compiled());
+  EXPECT_EQ(ShaderManager::ShaderInfo::PENDING_DEFERRED_COMPILE,
+            info->compilation_status());
   info->FlagSourceAsCompiled(true);
-  EXPECT_TRUE(info->source_compiled());
+  EXPECT_EQ(ShaderManager::ShaderInfo::COMPILED,
+            info->compilation_status());
 }
 
 TEST_F(ShaderManagerTest, ShaderInfoStoreDeferredSource) {

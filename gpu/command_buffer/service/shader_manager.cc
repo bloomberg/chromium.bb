@@ -17,7 +17,7 @@ ShaderManager::ShaderInfo::ShaderInfo(GLuint service_id, GLenum shader_type)
         service_id_(service_id),
         shader_type_(shader_type),
         valid_(false),
-        source_compiled_(false) {
+        compilation_status_(NOT_COMPILED) {
 }
 
 ShaderManager::ShaderInfo::~ShaderInfo() {
