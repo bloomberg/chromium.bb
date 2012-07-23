@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -157,7 +157,10 @@ def RegenerateAppendFlag(flag, values, predicate, env_name, options):
   flags = []
   if options.use_environment and env_name:
     for flag_value in ShlexEnv(env_name):
-      flags.append(FormatOpt(flag, predicate(flag_value)))
+      value = FormatOpt(flag, predicate(flag_value))
+      if value in flags:
+        flags.remove(value)
+      flags.append(value)
   if values:
     for flag_value in values:
       flags.append(FormatOpt(flag, predicate(flag_value)))
