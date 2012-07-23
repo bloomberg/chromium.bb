@@ -54,6 +54,7 @@ class BrowserActionButton : public views::MenuButton,
 
   // Overridden from views::View:
   virtual bool CanHandleAccelerators() const OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

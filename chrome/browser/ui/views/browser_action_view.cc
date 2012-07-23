@@ -115,6 +115,11 @@ bool BrowserActionButton::CanHandleAccelerators() const {
   return true;
 }
 
+void BrowserActionButton::GetAccessibleState(ui::AccessibleViewState* state) {
+  views::MenuButton::GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+}
+
 void BrowserActionButton::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   panel_->OnBrowserActionExecuted(this);
