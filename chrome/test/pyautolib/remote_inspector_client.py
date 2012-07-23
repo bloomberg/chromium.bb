@@ -361,7 +361,7 @@ class _RemoteInspectorThread(threading.Thread):
           self._client.SendMessage(str(request))
 
           request.is_fulfilled_condition.acquire()
-          self._condition_to_wait = request.is_fulfilled
+          self._condition_to_wait = request.is_fulfilled_condition
           request.is_fulfilled_condition.wait()
           request.is_fulfilled_condition.release()
 
@@ -982,6 +982,7 @@ class RemoteInspectorClient(object):
 
     self._event_callback = event_callback
 
+    done_condition = threading.Condition()
     def HandleReply(reply_dict):
       """Processes a reply message received from the remote Chrome instance.
 
@@ -989,14 +990,22 @@ class RemoteInspectorClient(object):
         reply_dict: A dictionary object representing the reply message received
                     from the remote Chrome instance.
       """
+      if 'result' in reply_dict:
+        done_condition.acquire()
+        done_condition.notify()
+        done_condition.release()
       if reply_dict.get('method') == 'Timeline.eventRecorded':
         self._event_callback(reply_dict['params']['record'])
 
-    # Tell the remote inspector to start the timeline.  We can return
-    # immediately, since there is no result for which to wait.
+    # Tell the remote inspector to start the timeline.
     self._timeline_callback = HandleReply
     self._remote_inspector_thread.AddMessageCallback(self._timeline_callback)
     self._remote_inspector_thread.PerformAction(TIMELINE_MESSAGES, None)
+
+    done_condition.acquire()
+    done_condition.wait()
+    done_condition.release()
+
     self._timeline_started = True
 
   def StopTimelineEventMonitoring(self):
@@ -1008,10 +1017,27 @@ class RemoteInspectorClient(object):
       ('Timeline.stop', {})
     ]
 
-    # Tell the remote inspector to stop the timeline.  We can return
-    # immediately, since there is no result for which to wait.
+    done_condition = threading.Condition()
+    def HandleReply(reply_dict):
+      """Processes a reply message received from the remote Chrome instance.
+
+      Args:
+        reply_dict: A dictionary object representing the reply message received
+                    from the remote Chrome instance.
+      """
+      if 'result' in reply_dict:
+        done_condition.acquire()
+        done_condition.notify()
+        done_condition.release()
+
+    # Tell the remote inspector to stop the timeline.
     self._remote_inspector_thread.RemoveMessageCallback(self._timeline_callback)
-    self._remote_inspector_thread.PerformAction(TIMELINE_MESSAGES, None)
+    self._remote_inspector_thread.PerformAction(TIMELINE_MESSAGES, HandleReply)
+
+    done_condition.acquire()
+    done_condition.wait()
+    done_condition.release()
+
     self._timeline_started = False
 
   def _ConvertByteCountToHumanReadableString(self, num_bytes):
