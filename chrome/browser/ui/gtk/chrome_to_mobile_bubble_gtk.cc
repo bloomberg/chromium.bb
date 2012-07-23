@@ -154,6 +154,7 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
       send_(NULL),
       error_(NULL),
       bubble_(NULL) {
+  DCHECK(service_->HasMobiles());
   service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
 
   // Generate the MHTML snapshot now to report its size in the bubble.
@@ -162,19 +163,18 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
   // Request a mobile device list update.
   service_->RequestMobileListUpdate();
 
-  // Get the list of mobile devices.
-  const ListValue& mobiles = service_->mobiles();
-  DCHECK(!mobiles.empty());
+  const ListValue* mobiles = service_->GetMobiles();
 
   GtkWidget* content = gtk_vbox_new(FALSE, 5);
   gtk_container_set_border_width(GTK_CONTAINER(content), kContentBorder);
 
   // Create and pack the title label; init the selected mobile device.
   GtkWidget* title = NULL;
-  if (mobiles.GetSize() == 1) {
+  if (mobiles->GetSize() == 1) {
     string16 name;
     DictionaryValue* mobile = NULL;
-    if (mobiles.GetDictionary(0, &mobile) && mobile->GetString("name", &name)) {
+    if (mobiles->GetDictionary(0, &mobile) &&
+        mobile->GetString("name", &name)) {
       title = gtk_label_new(l10n_util::GetStringFUTF8(
           IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE, name).c_str());
     } else {
@@ -189,13 +189,13 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
   labels_.push_back(title);
 
   // Create and pack the device radio group; init the selected mobile device.
-  if (mobiles.GetSize() > 1) {
+  if (mobiles->GetSize() > 1) {
     std::string name;
     DictionaryValue* mobile = NULL;
     GtkWidget* radio = NULL;
     GtkWidget* row = NULL;
-    for (size_t index = 0; index < mobiles.GetSize(); ++index) {
-      if (mobiles.GetDictionary(index, &mobile) &&
+    for (size_t index = 0; index < mobiles->GetSize(); ++index) {
+      if (mobiles->GetDictionary(index, &mobile) &&
           mobile->GetStringASCII("name", &name)) {
         radio = gtk_radio_button_new_with_label_from_widget(
                     GTK_RADIO_BUTTON(radio), name.c_str());
@@ -307,10 +307,10 @@ void ChromeToMobileBubbleGtk::OnCancelClicked(GtkWidget* widget) {
 
 void ChromeToMobileBubbleGtk::OnSendClicked(GtkWidget* widget) {
   // TODO(msw): Handle updates to the mobile list while the bubble is open.
-  const ListValue& mobiles = service_->mobiles();
+  const ListValue* mobiles = service_->GetMobiles();
   size_t selected_index = 0;
-  if (mobiles.GetSize() > 1) {
-    DCHECK_EQ(mobiles.GetSize(), radio_buttons_.size());
+  if (mobiles->GetSize() > 1) {
+    DCHECK_EQ(mobiles->GetSize(), radio_buttons_.size());
     GtkToggleButton* button = NULL;
     for (; selected_index < radio_buttons_.size(); ++selected_index) {
       button = GTK_TOGGLE_BUTTON(radio_buttons_[selected_index]);
@@ -322,7 +322,7 @@ void ChromeToMobileBubbleGtk::OnSendClicked(GtkWidget* widget) {
   }
 
   DictionaryValue* mobile = NULL;
-  if (mobiles.GetDictionary(selected_index, &mobile)) {
+  if (mobiles->GetDictionary(selected_index, &mobile)) {
     bool snapshot = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(send_copy_));
     service_->SendToMobile(*mobile, snapshot ? snapshot_path_ : FilePath(),
                            browser_, weak_ptr_factory_.GetWeakPtr());

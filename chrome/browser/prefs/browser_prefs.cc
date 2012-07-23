@@ -107,6 +107,10 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/chrome_to_mobile_service.h"
+#endif
+
 namespace {
 
 enum MigratedPreferences {
@@ -209,6 +213,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PrefProxyConfigTrackerImpl::RegisterPrefs(user_prefs);
   PrefsTabHelper::RegisterUserPrefs(user_prefs);
   ProfileImpl::RegisterUserPrefs(user_prefs);
+  PromoResourceService::RegisterUserPrefs(user_prefs);
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
@@ -233,9 +238,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ash::RegisterChromeLauncherUserPrefs(user_prefs);
 #endif
 
-  PromoResourceService::RegisterUserPrefs(user_prefs);
 #if !defined(OS_ANDROID)
   AppsPromo::RegisterUserPrefs(user_prefs);
+  ChromeToMobileService::RegisterUserPrefs(user_prefs);
   extensions::CommandService::RegisterUserPrefs(user_prefs);
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
   extensions::ExtensionPrefs::RegisterUserPrefs(user_prefs);
@@ -249,7 +254,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PluginsUI::RegisterUserPrefs(user_prefs);
   SyncPromoUI::RegisterUserPrefs(user_prefs);
   printing::StickySettings::RegisterUserPrefs(user_prefs);
-
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

@@ -731,7 +731,7 @@ void LocationBarViewMac::UpdateChromeToMobileEnabled() {
 
   DCHECK(ChromeToMobileService::IsChromeToMobileEnabled());
   bool enabled = [field_ isEditable] && !toolbar_model_->input_in_progress() &&
-      ChromeToMobileServiceFactory::GetForProfile(profile_)->HasDevices();
+      ChromeToMobileServiceFactory::GetForProfile(profile_)->HasMobiles();
   chrome_to_mobile_decoration_->SetVisible(enabled);
   command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
 }

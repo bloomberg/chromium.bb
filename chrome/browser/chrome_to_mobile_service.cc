@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
@@ -31,6 +32,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -172,6 +174,14 @@ bool ChromeToMobileService::IsChromeToMobileEnabled() {
   return kChromeToMobileEnabled;
 }
 
+// static
+void ChromeToMobileService::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterListPref(prefs::kChromeToMobileDeviceList,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kChromeToMobileTimestamp, 0,
+                           PrefService::UNSYNCABLE_PREF);
+}
+
 ChromeToMobileService::ChromeToMobileService(Profile* profile)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       profile_(profile),
@@ -193,8 +203,12 @@ ChromeToMobileService::~ChromeToMobileService() {
     DeleteSnapshot(*snapshots_.begin());
 }
 
-bool ChromeToMobileService::HasDevices() {
-  return !mobiles().empty();
+bool ChromeToMobileService::HasMobiles() {
+  return !GetMobiles()->empty();
+}
+
+const base::ListValue* ChromeToMobileService::GetMobiles() const {
+  return profile_->GetPrefs()->GetList(prefs::kChromeToMobileDeviceList);
 }
 
 void ChromeToMobileService::RequestMobileListUpdate() {
@@ -451,9 +465,13 @@ void ChromeToMobileService::RequestSearch() {
   if (!cloud_print_accessible_ || search_request_.get())
     return;
 
+  PrefService* prefs = profile_->GetPrefs();
+  base::TimeTicks previous_search_time = base::TimeTicks::FromInternalValue(
+      prefs->GetInt64(prefs::kChromeToMobileTimestamp));
+
   // Deny requests before the delay period has passed since the last request.
-  base::TimeDelta elapsed_time = base::TimeTicks::Now() - previous_search_time_;
-  if (!previous_search_time_.is_null() &&
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - previous_search_time;
+  if (!previous_search_time.is_null() &&
       elapsed_time.InHours() < kSearchRequestDelayHours)
     return;
 
@@ -464,7 +482,6 @@ void ChromeToMobileService::RequestSearch() {
                                                 net::URLFetcher::GET, this));
   InitRequest(search_request_.get());
   search_request_->Start();
-  previous_search_time_ = base::TimeTicks::Now();
 }
 
 void ChromeToMobileService::HandleAccountInfoResponse() {
@@ -498,8 +515,7 @@ void ChromeToMobileService::HandleSearchResponse() {
   scoped_ptr<Value> json(base::JSONReader::Read(data));
   if (json.get() && json->GetAsDictionary(&dictionary) && dictionary &&
       dictionary->GetList(cloud_print::kPrinterListValue, &list)) {
-    mobiles_.Clear();
-
+    ListValue mobiles;
     std::string type, name, id;
     DictionaryValue* printer = NULL;
     DictionaryValue* mobile = NULL;
@@ -514,22 +530,28 @@ void ChromeToMobileService::HandleSearchResponse() {
           mobile->SetString("type", type);
           mobile->SetString("name", name);
           mobile->SetString("id", id);
-          mobiles_.Append(mobile);
+          mobiles.Append(mobile);
         } else {
           NOTREACHED();
         }
       }
     }
 
-    const bool has_devices = HasDevices();
-    if (has_devices)
+    // Update the mobile list and timestamp in prefs.
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->Set(prefs::kChromeToMobileDeviceList, mobiles);
+    prefs->SetInt64(prefs::kChromeToMobileTimestamp,
+                    base::TimeTicks::Now().ToInternalValue());
+
+    const bool has_mobiles = HasMobiles();
+    if (has_mobiles)
       LogMetric(DEVICES_AVAILABLE);
 
     for (BrowserList::const_iterator i = BrowserList::begin();
          i != BrowserList::end(); ++i) {
       Browser* browser = *i;
       if (browser->profile() == profile_)
-        browser->command_controller()->SendToMobileStateChanged(has_devices);
+        browser->command_controller()->SendToMobileStateChanged(has_mobiles);
     }
   }
 }

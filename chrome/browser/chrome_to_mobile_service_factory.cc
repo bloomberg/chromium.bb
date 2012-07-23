@@ -35,6 +35,8 @@ ChromeToMobileServiceFactory::ChromeToMobileServiceFactory()
                                  ProfileDependencyManager::GetInstance()) {
   DependsOn(TokenServiceFactory::GetInstance());
   DependsOn(CookieSettings::Factory::GetInstance());
+  // TODO(msw): Uncomment this once it exists.
+  // DependsOn(PrefServiceFactory::GetInstance());
 }
 
 ChromeToMobileServiceFactory::~ChromeToMobileServiceFactory() {}

@@ -634,6 +634,11 @@ extern const char kCloudPrintRobotEmail[];
 extern const char kVirtualPrinterDriverEnabled[];
 extern const char kCloudPrintSubmitEnabled[];
 
+#if !defined(OS_ANDROID)
+extern const char kChromeToMobileDeviceList[];
+extern const char kChromeToMobileTimestamp[];
+#endif
+
 extern const char kProxy[];
 extern const char kMaxConnectionsPerProxy[];
 

@@ -97,20 +97,20 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 
 // Override -[BaseBubbleController showWindow:] to set up UI elements.
 - (void)showWindow:(id)sender {
+  DCHECK(service_->HasMobiles());
   service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
 
   // Force load the NIB.
   NSWindow* window = [self window];
 
-  // Get the list of mobile devices.
-  const ListValue& mobiles = service_->mobiles();
-  DCHECK(!mobiles.empty());
+  const ListValue* mobiles = service_->GetMobiles();
   DictionaryValue* mobile = NULL;
   string16 name;
 
-  if (mobiles.GetSize() == 1) {
+  if (mobiles->GetSize() == 1) {
     // Set the single device title; it's for multiple devices by default.
-    if (mobiles.GetDictionary(0, &mobile) && mobile->GetString("name", &name)) {
+    if (mobiles->GetDictionary(0, &mobile) &&
+        mobile->GetString("name", &name)) {
       NSString* title = l10n_util::GetNSStringF(
           IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE, name);
       [title_ setStringValue:title];
@@ -119,13 +119,15 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
     }
   } else {
     // Initialize the mobile device radio buttons.
-    [mobileRadioGroup_ renewRows:mobiles.GetSize() columns:1];
+    [mobileRadioGroup_ renewRows:mobiles->GetSize() columns:1];
     NSArray* cellArray = [mobileRadioGroup_ cells];
-    for (size_t i = 0; i < mobiles.GetSize(); ++i) {
-      if (mobiles.GetDictionary(i, &mobile) && mobile->GetString("name", &name))
+    for (size_t i = 0; i < mobiles->GetSize(); ++i) {
+      if (mobiles->GetDictionary(i, &mobile) &&
+          mobile->GetString("name", &name)) {
         [[cellArray objectAtIndex:i] setTitle:SysUTF16ToNSString(name)];
-      else
+      } else {
         NOTREACHED();
+      }
     }
     [mobileRadioGroup_ setEnabled:YES];
     [mobileRadioGroup_ setHidden:NO];
@@ -176,15 +178,15 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 
 - (IBAction)send:(id)sender {
   // TODO(msw): Handle updates to the mobile list while the bubble is open.
-  const ListValue& mobiles = service_->mobiles();
+  const ListValue* mobiles = service_->GetMobiles();
   // |mobileRadioGroup_| has a single row by defualt, so these always match.
-  DCHECK_EQ(static_cast<NSInteger>(mobiles.GetSize()),
+  DCHECK_EQ(static_cast<NSInteger>(mobiles->GetSize()),
             [mobileRadioGroup_ numberOfRows]);
   // NSMatrix selectedRow is -1 by default (in the single mobile device case).
   const int selected_index = std::max<int>([mobileRadioGroup_ selectedRow], 0);
 
   DictionaryValue* mobile = NULL;
-  if (mobiles.GetDictionary(selected_index, &mobile)) {
+  if (mobiles->GetDictionary(selected_index, &mobile)) {
     service_->SendToMobile(*mobile,
         ([sendCopy_ state] == NSOnState) ? snapshotPath_ : FilePath(),
         browser_, bridge_->AsWeakPtr());

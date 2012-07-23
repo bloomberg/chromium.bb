@@ -225,6 +225,9 @@ void ChromeToMobileBubbleView::OnSendComplete(bool success) {
 }
 
 void ChromeToMobileBubbleView::Init() {
+  DCHECK(service_->HasMobiles());
+  service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
+
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
 
@@ -247,10 +250,6 @@ void ChromeToMobileBubbleView::Init() {
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
 
-  // Get the list of mobile devices.
-  const ListValue& mobiles = service_->mobiles();
-  DCHECK(!mobiles.empty());
-
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::Label* title_label = new views::Label();
   title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
@@ -258,10 +257,12 @@ void ChromeToMobileBubbleView::Init() {
   layout->StartRow(0, single_column_set_id);
   layout->AddView(title_label);
 
-  if (mobiles.GetSize() == 1) {
+  const ListValue* mobiles = service_->GetMobiles();
+  if (mobiles->GetSize() == 1) {
     string16 name;
     DictionaryValue* mobile = NULL;
-    if (mobiles.GetDictionary(0, &mobile) && mobile->GetString("name", &name)) {
+    if (mobiles->GetDictionary(0, &mobile) &&
+        mobile->GetString("name", &name)) {
       title_label->SetText(l10n_util::GetStringFUTF16(
           IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE, name));
     } else {
@@ -275,8 +276,8 @@ void ChromeToMobileBubbleView::Init() {
     DictionaryValue* mobile = NULL;
     views::RadioButton* radio = NULL;
     layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-    for (size_t index = 0; index < mobiles.GetSize(); ++index) {
-      if (mobiles.GetDictionary(index, &mobile) &&
+    for (size_t index = 0; index < mobiles->GetSize(); ++index) {
+      if (mobiles->GetDictionary(index, &mobile) &&
           mobile->GetString("name", &name)) {
         radio = new views::RadioButton(name, 0);
         radio->SetEnabledColor(SK_ColorBLACK);
@@ -330,8 +331,6 @@ ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
       send_copy_(NULL),
       send_(NULL),
       cancel_(NULL) {
-  service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
-
   // Generate the MHTML snapshot now to report its size in the bubble.
   service_->GenerateSnapshot(browser_, weak_ptr_factory_.GetWeakPtr());
 
@@ -354,10 +353,10 @@ void ChromeToMobileBubbleView::HandleButtonPressed(views::Button* sender) {
 
 void ChromeToMobileBubbleView::Send() {
   // TODO(msw): Handle updates to the mobile list while the bubble is open.
-  const ListValue& mobiles = service_->mobiles();
+  const ListValue* mobiles = service_->GetMobiles();
   size_t selected_index = 0;
-  if (mobiles.GetSize() > 1) {
-    DCHECK_EQ(mobiles.GetSize(), radio_buttons_.size());
+  if (mobiles->GetSize() > 1) {
+    DCHECK_EQ(mobiles->GetSize(), radio_buttons_.size());
     for (; selected_index < radio_buttons_.size(); ++selected_index) {
       if (radio_buttons_[selected_index]->checked())
         break;
@@ -367,7 +366,7 @@ void ChromeToMobileBubbleView::Send() {
   }
 
   DictionaryValue* mobile = NULL;
-  if (mobiles.GetDictionary(selected_index, &mobile)) {
+  if (mobiles->GetDictionary(selected_index, &mobile)) {
     FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
     service_->SendToMobile(*mobile, snapshot, browser_,
                            weak_ptr_factory_.GetWeakPtr());

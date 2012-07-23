@@ -293,7 +293,7 @@ void LocationBarView::Init(views::View* popup_parent_view) {
       ChromeToMobileService* service =
           ChromeToMobileServiceFactory::GetForProfile(profile_);
       service->RequestMobileListUpdate();
-      chrome_to_mobile_view_->SetVisible(service->HasDevices());
+      chrome_to_mobile_view_->SetVisible(service->HasMobiles());
     }
   }
 
@@ -407,7 +407,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
     star_view_->SetVisible(star_enabled);
 
   bool enabled = chrome_to_mobile_view_ && !model_->input_in_progress() &&
-      ChromeToMobileServiceFactory::GetForProfile(profile_)->HasDevices();
+      ChromeToMobileServiceFactory::GetForProfile(profile_)->HasMobiles();
   command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
 
   // Don't Update in app launcher mode so that the location entry does not show

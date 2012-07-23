@@ -1703,6 +1703,12 @@ const char kCloudPrintSigninDialogWidth[] =
 const char kCloudPrintSigninDialogHeight[] =
     "cloud_print.signin_dialog_size.height";
 
+#if !defined(OS_ANDROID)
+// The Chrome To Mobile service prefs; the device list and last update time.
+const char kChromeToMobileDeviceList[] = "chrome_to_mobile.device_list";
+const char kChromeToMobileTimestamp[] = "chrome_to_mobile.timestamp";
+#endif
+
 // The list of BackgroundContents that should be loaded when the browser
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
