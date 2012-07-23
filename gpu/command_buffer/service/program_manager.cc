@@ -4,7 +4,9 @@
 
 #include "gpu/command_buffer/service/program_manager.h"
 
+#include <algorithm>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -14,8 +16,10 @@
 #include "base/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/program_cache.h"
 
 namespace gpu {
 namespace gles2 {
@@ -31,6 +35,21 @@ int ShaderTypeToIndex(GLenum shader_type) {
     default:
       NOTREACHED();
       return 0;
+  }
+}
+
+ShaderTranslator* ShaderIndexToTranslator(
+    int index,
+    ShaderTranslator* vertex_translator,
+    ShaderTranslator* fragment_translator) {
+  switch (index) {
+    case 0:
+      return vertex_translator;
+    case 1:
+      return fragment_translator;
+    default:
+      NOTREACHED();
+      return NULL;
   }
 }
 
@@ -360,7 +379,83 @@ void ProgramManager::ProgramInfo::ExecuteBindAttribLocationCalls() {
   }
 }
 
-bool ProgramManager::ProgramInfo::Link() {
+void ProgramManager::DoCompileShader(ShaderManager::ShaderInfo* info,
+                                     ShaderTranslator* translator,
+                                     FeatureInfo* feature_info) {
+  if (program_cache_ &&
+      program_cache_->GetShaderCompilationStatus(*info->source()) ==
+          ProgramCache::COMPILATION_SUCCEEDED) {
+    info->SetStatus(true, "", translator);
+    info->FlagSourceAsCompiled(false);
+    return;
+  }
+  ForceCompileShader(info->source(), info, translator, feature_info);
+}
+
+void ProgramManager::ForceCompileShader(const std::string* source,
+                                        ShaderManager::ShaderInfo* info,
+                                        ShaderTranslator* translator,
+                                        FeatureInfo* feature_info) {
+  info->FlagSourceAsCompiled(true);
+
+  // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
+  // glShaderSource and then glCompileShader.
+  const char* shader_src = source ? source->c_str() : "";
+  if (translator) {
+    if (!translator->Translate(shader_src)) {
+      info->SetStatus(false, translator->info_log(), NULL);
+      return;
+    }
+    shader_src = translator->translated_shader();
+    if (!feature_info->feature_flags().angle_translated_shader_source)
+      info->UpdateTranslatedSource(shader_src);
+  }
+
+  glShaderSource(info->service_id(), 1, &shader_src, NULL);
+  glCompileShader(info->service_id());
+  if (feature_info->feature_flags().angle_translated_shader_source) {
+    GLint max_len = 0;
+    glGetShaderiv(info->service_id(),
+                  GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
+                  &max_len);
+    scoped_array<char> temp(new char[max_len]);
+    GLint len = 0;
+    glGetTranslatedShaderSourceANGLE(
+        info->service_id(), max_len, &len, temp.get());
+    DCHECK(max_len == 0 || len < max_len);
+    DCHECK(len == 0 || temp[len] == '\0');
+    info->UpdateTranslatedSource(temp.get());
+  }
+
+  GLint status = GL_FALSE;
+  glGetShaderiv(info->service_id(), GL_COMPILE_STATUS, &status);
+  if (status) {
+    info->SetStatus(true, "", translator);
+    if (program_cache_) {
+      const char* untranslated_source = source ? source->c_str() : "";
+      program_cache_->ShaderCompilationSucceeded(untranslated_source);
+    }
+  } else {
+    // We cannot reach here if we are using the shader translator.
+    // All invalid shaders must be rejected by the translator.
+    // All translated shaders must compile.
+    LOG_IF(ERROR, translator)
+        << "Shader translator allowed/produced an invalid shader.";
+    GLint max_len = 0;
+    glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &max_len);
+    scoped_array<char> temp(new char[max_len]);
+    GLint len = 0;
+    glGetShaderInfoLog(info->service_id(), max_len, &len, temp.get());
+    DCHECK(max_len == 0 || len < max_len);
+    DCHECK(len == 0 || temp[len] == '\0');
+    info->SetStatus(false, std::string(temp.get(), len).c_str(), NULL);
+  }
+}
+
+bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
+                                       ShaderTranslator* vertex_translator,
+                                       ShaderTranslator* fragment_translator,
+                                       FeatureInfo* feature_info) {
   ClearLinkStatus();
   if (!CanLink()) {
     set_log_info("missing shaders");
@@ -371,11 +466,63 @@ bool ProgramManager::ProgramInfo::Link() {
     return false;
   }
   ExecuteBindAttribLocationCalls();
-  glLinkProgram(service_id());
+
+  bool link = true;
+  ProgramCache* cache = manager_->program_cache_;
+  if (cache) {
+    ProgramCache::LinkedProgramStatus status = cache->GetLinkedProgramStatus(
+        *attached_shaders_[0]->deferred_compilation_source(),
+        *attached_shaders_[1]->deferred_compilation_source(),
+        &bind_attrib_location_map_);
+
+    if (status == ProgramCache::LINK_SUCCEEDED) {
+      ProgramCache::ProgramLoadResult success = cache->LoadLinkedProgram(
+                  service_id(),
+                  attached_shaders_[0],
+                  attached_shaders_[1],
+                  &bind_attrib_location_map_);
+      link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
+    }
+
+    if (link) {
+      // compile our shaders if they're pending
+      const int kShaders = ProgramManager::ProgramInfo::kMaxAttachedShaders;
+      for (int i = 0; i < kShaders; ++i) {
+        ShaderManager::ShaderInfo* info = attached_shaders_[i].get();
+        if (!info->source_compiled()) {
+          ShaderTranslator* translator = ShaderIndexToTranslator(
+              i,
+              vertex_translator,
+              fragment_translator);
+          manager_->ForceCompileShader(info->deferred_compilation_source(),
+                                       attached_shaders_[i],
+                                       translator,
+                                       feature_info);
+          CHECK(info->IsValid());
+        }
+      }
+    }
+  }
+
+  if (link) {
+    if (cache && gfx::g_GL_ARB_get_program_binary) {
+      glProgramParameteri(service_id(),
+                          PROGRAM_BINARY_RETRIEVABLE_HINT,
+                          GL_TRUE);
+    }
+    glLinkProgram(service_id());
+  }
+
   GLint success = 0;
   glGetProgramiv(service_id(), GL_LINK_STATUS, &success);
   if (success == GL_TRUE) {
     Update();
+    if (cache && link) {
+      cache->SaveLinkedProgram(service_id(),
+                               attached_shaders_[0],
+                               attached_shaders_[1],
+                               &bind_attrib_location_map_);
+    }
   } else {
     UpdateLogInfo();
   }
@@ -848,13 +995,14 @@ ProgramManager::ProgramInfo::~ProgramInfo() {
   }
 }
 
-ProgramManager::ProgramManager()
+
+ProgramManager::ProgramManager(ProgramCache* program_cache)
     : program_info_count_(0),
       have_context_(true),
       disable_workarounds_(
           CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableGpuDriverBugWorkarounds)) {
-}
+              switches::kDisableGpuDriverBugWorkarounds)),
+      program_cache_(program_cache) { }
 
 ProgramManager::~ProgramManager() {
   DCHECK(program_infos_.empty());
@@ -898,6 +1046,10 @@ bool ProgramManager::GetClientId(GLuint service_id, GLuint* client_id) const {
     }
   }
   return false;
+}
+
+ProgramCache* ProgramManager::program_cache() const {
+  return program_cache_;
 }
 
 bool ProgramManager::IsOwned(ProgramManager::ProgramInfo* info) {

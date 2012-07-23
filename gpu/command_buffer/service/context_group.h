@@ -23,6 +23,7 @@ class TransferBufferManagerInterface;
 
 namespace gles2 {
 
+class ProgramCache;
 class BufferManager;
 class GLES2Decoder;
 class FramebufferManager;
@@ -112,6 +113,14 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return program_manager_.get();
   }
 
+  bool has_program_cache() const {
+    return program_cache_ != NULL;
+  }
+
+  void set_program_cache(ProgramCache* program_cache) {
+    program_cache_ = program_cache;
+  }
+
   ShaderManager* shader_manager() const {
     return shader_manager_.get();
   }
@@ -148,6 +157,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   uint32 max_fragment_uniform_vectors_;
   uint32 max_varying_vectors_;
   uint32 max_vertex_uniform_vectors_;
+
+  ProgramCache* program_cache_;
 
   scoped_ptr<BufferManager> buffer_manager_;
 

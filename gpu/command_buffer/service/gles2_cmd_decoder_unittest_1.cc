@@ -238,7 +238,7 @@ void GLES2DecoderTestBase::SpecializedSetup<GetProgramInfoLog, 0>(
   attach_cmd.Init(client_program_id_, kClientFragmentShaderId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
 
-  info->Link();
+  info->Link(NULL, NULL, NULL, NULL);
 };
 
 template <>

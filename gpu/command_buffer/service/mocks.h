@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
+#include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -87,6 +88,26 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
   MOCK_CONST_METHOD0(info_log, const char*());
   MOCK_CONST_METHOD0(attrib_map, const VariableMap&());
   MOCK_CONST_METHOD0(uniform_map, const VariableMap&());
+};
+
+class MockProgramCache : public ProgramCache {
+ public:
+  MockProgramCache();
+  virtual ~MockProgramCache();
+
+  MOCK_CONST_METHOD4(LoadLinkedProgram, ProgramLoadResult(
+      GLuint program,
+      ShaderManager::ShaderInfo* shader_a,
+      ShaderManager::ShaderInfo* shader_b,
+      const LocationMap* bind_attrib_location_map));
+
+  MOCK_METHOD4(SaveLinkedProgram, void(
+      GLuint program,
+      const ShaderManager::ShaderInfo* shader_a,
+      const ShaderManager::ShaderInfo* shader_b,
+      const LocationMap* bind_attrib_location_map));
+ private:
+  MOCK_METHOD0(ClearBackend, void());
 };
 
 }  // namespace gles2

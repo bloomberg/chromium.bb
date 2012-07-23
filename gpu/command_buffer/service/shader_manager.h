@@ -34,6 +34,11 @@ class GPU_EXPORT ShaderManager {
     typedef ShaderTranslator::VariableInfo VariableInfo;
 
     void UpdateSource(const char* source) {
+      // If the source is flagged as compiled, then store our previous source
+      // for deferred compile and caching.
+      if (!deferred_compilation_source_.get()) {
+        deferred_compilation_source_.reset(source_.release());
+      }
       source_.reset(source ? new std::string(source) : NULL);
       translated_source_.reset(NULL);
     }
@@ -63,6 +68,26 @@ class GPU_EXPORT ShaderManager {
         bool valid, const char* log,
         ShaderTranslatorInterface* translator);
 
+    // If the source was actually compiled (compilation wasn't deferred)
+    bool source_compiled() const {
+      return source_compiled_;
+    }
+
+    // The source that was used when the user called CompileShader.
+    // This is used for a deferred compile and in the program cache
+    const std::string* deferred_compilation_source() const {
+      return deferred_compilation_source_.get() != NULL ?
+          deferred_compilation_source_.get() :
+          source_.get();
+    }
+
+    // Resets our deferred compilation source and stores if the source was
+    // actually compiled, or if we're expecting a cache hit
+    void FlagSourceAsCompiled(bool actually_compiled) {
+      source_compiled_ = actually_compiled;
+      deferred_compilation_source_.reset();
+    }
+
     const VariableInfo* GetAttribInfo(const std::string& name) const;
     const VariableInfo* GetUniformInfo(const std::string& name) const;
 
@@ -85,6 +110,28 @@ class GPU_EXPORT ShaderManager {
     bool InUse() const {
       DCHECK_GE(use_count_, 0);
       return use_count_ != 0;
+    }
+
+    // Used by program cache.
+    const ShaderTranslator::VariableMap& attrib_map() const {
+      return attrib_map_;
+    }
+
+    // Used by program cache.
+    const ShaderTranslator::VariableMap& uniform_map() const {
+      return uniform_map_;
+    }
+
+    // Used by program cache.
+    void set_attrib_map(const ShaderTranslator::VariableMap& attrib_map) {
+      // copied because cache might be cleared
+      attrib_map_ = ShaderTranslator::VariableMap(attrib_map);
+    }
+
+    // Used by program cache.
+    void set_uniform_map(const ShaderTranslator::VariableMap& uniform_map) {
+      // copied because cache might be cleared
+      uniform_map_ = ShaderTranslator::VariableMap(uniform_map);
     }
 
    private:
@@ -122,6 +169,13 @@ class GPU_EXPORT ShaderManager {
     // The type info when the shader was last compiled.
     VariableMap attrib_map_;
     VariableMap uniform_map_;
+
+    // If the source was actually compiled (otherwise we're deferring
+    // compilation because of a possible cache hit)
+    bool source_compiled_;
+
+    // Holds on to the source for a deferred compile.
+    scoped_ptr<std::string> deferred_compilation_source_;
   };
 
   ShaderManager();

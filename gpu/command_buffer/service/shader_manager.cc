@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/shader_manager.h"
+
+#include <utility>
+
 #include "base/logging.h"
 #include "base/string_util.h"
 
@@ -13,7 +16,8 @@ ShaderManager::ShaderInfo::ShaderInfo(GLuint service_id, GLenum shader_type)
       : use_count_(0),
         service_id_(service_id),
         shader_type_(shader_type),
-        valid_(false) {
+        valid_(false),
+        source_compiled_(false) {
 }
 
 ShaderManager::ShaderInfo::~ShaderInfo() {

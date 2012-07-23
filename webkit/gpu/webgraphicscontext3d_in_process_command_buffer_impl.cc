@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

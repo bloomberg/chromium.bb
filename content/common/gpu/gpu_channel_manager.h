@@ -5,8 +5,11 @@
 #ifndef CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 
+#include <vector>
+
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "build/build_config.h"
@@ -26,6 +29,7 @@ class GLShareGroup;
 namespace gpu {
 namespace gles2 {
 class MailboxManager;
+class ProgramCache;
 }
 }
 
@@ -80,6 +84,8 @@ class GpuChannelManager : public IPC::Listener,
   void AddRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
+  gpu::gles2::ProgramCache* program_cache();
+
   GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
 
   GpuChannel* LookupChannel(int32 client_id);
@@ -116,6 +122,7 @@ class GpuChannelManager : public IPC::Listener,
   GpuMemoryManager gpu_memory_manager_;
   GpuWatchdog* watchdog_;
   scoped_refptr<SyncPointManager> sync_point_manager_;
+  scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };

@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_manager.h"
@@ -19,6 +18,8 @@
 
 namespace gpu {
 namespace gles2 {
+class ProgramCache;
+class FeatureInfo;
 
 // Tracks the Programs.
 //
@@ -26,6 +27,8 @@ namespace gles2 {
 // need to be shared by multiple GLES2Decoders.
 class GPU_EXPORT ProgramManager {
  public:
+  typedef std::map<std::string, GLint> LocationMap;
+
   // This is used to track which attributes a particular program needs
   // so we can verify at glDrawXXX time that every attribute is either disabled
   // or if enabled that it points to a valid source.
@@ -150,7 +153,10 @@ class GPU_EXPORT ProgramManager {
     bool CanLink() const;
 
     // Performs glLinkProgram and related activities.
-    bool Link();
+    bool Link(ShaderManager* manager,
+              ShaderTranslator* vertex_translator,
+              ShaderTranslator* fragment_shader,
+              FeatureInfo* feature_info);
 
     // Performs glValidateProgram and related activities.
     void Validate();
@@ -178,11 +184,14 @@ class GPU_EXPORT ProgramManager {
     // We only consider the declared attributes in the program.
     bool DetectAttribLocationBindingConflicts() const;
 
+    // Visible for testing
+    const LocationMap& bind_attrib_location_map() const {
+      return bind_attrib_location_map_;
+    }
+
    private:
     friend class base::RefCounted<ProgramInfo>;
     friend class ProgramManager;
-
-    typedef std::map<std::string, GLint> LocationMap;
 
     ~ProgramInfo();
 
@@ -299,7 +308,7 @@ class GPU_EXPORT ProgramManager {
     LocationMap bind_uniform_location_map_;
   };
 
-  ProgramManager();
+  explicit ProgramManager(ProgramCache* program_cache);
   ~ProgramManager();
 
   // Must call before destruction.
@@ -313,6 +322,9 @@ class GPU_EXPORT ProgramManager {
 
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
+
+  // Gets the shader cache
+  ProgramCache* program_cache() const;
 
   // Marks a program as deleted. If it is not used the info will be deleted.
   void MarkAsDeleted(ShaderManager* shader_manager, ProgramInfo* info);
@@ -334,7 +346,19 @@ class GPU_EXPORT ProgramManager {
 
   static int32 MakeFakeLocation(int32 index, int32 element);
 
+  // Cache-aware shader compiling.  If no cache or if the shader wasn't
+  // previously compiled, ForceCompileShader is called
+  void DoCompileShader(ShaderManager::ShaderInfo* info,
+                       ShaderTranslator* translator,
+                       FeatureInfo* feature_info);
+
  private:
+  // Actually compiles the shader
+  void ForceCompileShader(const std::string* source,
+                          ShaderManager::ShaderInfo* info,
+                          ShaderTranslator* translator,
+                          FeatureInfo* feature_info);
+
   void StartTracking(ProgramInfo* info);
   void StopTracking(ProgramInfo* info);
 
@@ -353,6 +377,8 @@ class GPU_EXPORT ProgramManager {
 
   // Used to clear uniforms.
   std::vector<uint8> zero_;
+
+  ProgramCache* program_cache_;
 
   void RemoveProgramInfoIfUnused(
       ShaderManager* shader_manager, ProgramInfo* info);

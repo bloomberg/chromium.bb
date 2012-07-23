@@ -4,6 +4,8 @@
 
 #include "gpu/demos/framework/window.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"

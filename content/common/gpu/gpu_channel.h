@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <string>
+#include <vector>
 
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"

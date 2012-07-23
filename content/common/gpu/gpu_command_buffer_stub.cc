@@ -376,6 +376,11 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
+  if (!context_group_->has_program_cache()) {
+    context_group_->set_program_cache(
+        channel_->gpu_channel_manager()->program_cache());
+  }
+
   // Initialize the decoder with either the view or pbuffer GLContext.
   if (!decoder_->Initialize(surface_,
                             context_,

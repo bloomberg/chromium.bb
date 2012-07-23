@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
