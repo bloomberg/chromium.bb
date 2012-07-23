@@ -202,7 +202,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
       })
 
   def _RunEndureTest(self, webapp_name, tab_title_substring, test_description,
-                     do_scenario):
+                     do_scenario, frame_xpath=''):
     """The main test harness function to run a general Chrome Endure test.
 
     After a test has performed any setup work and has navigated to the proper
@@ -219,6 +219,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
       do_scenario: A callable to be invoked that implements the scenario to be
           performed by this test.  The callable is invoked iteratively for the
           duration of the test.
+      frame_xpath: The string xpath of the frame in which to inject javascript
+          to clear chromedriver's cache (a temporary workaround until the
+          WebDriver team changes how they handle their DOM node cache).
     """
     self._num_errors = 0
     self._test_start_time = time.time()
@@ -254,6 +257,21 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
                      (self._iteration_num, remaining_time))
 
       do_scenario()
+      # Clear ChromeDriver's DOM node cache so its growth doesn't affect the
+      # results of Chrome Endure.
+      # TODO(dennisjeffrey): Once the WebDriver team implements changes to
+      # handle their DOM node cache differently, we need to revisit this.  It
+      # may no longer be necessary at that point to forcefully delete the cache.
+      # Additionally, the Javascript below relies on an internal property of
+      # WebDriver that may change at any time.  This is only a temporary
+      # workaround to stabilize the Chrome Endure test results.
+      js = """
+        (function() {
+          delete document.$wdc_;
+          window.domAutomationController.send('done');
+        })();
+      """
+      self.ExecuteJavascript(js, frame_xpath=frame_xpath)
 
     self._remote_inspector_client.StopTimelineEventMonitoring()
     # TODO(dmikurube): Call HeapProfilerDump when PyAuto supports dumping for
@@ -723,7 +741,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
                            self._driver.find_element_by_name, 'to'))
 
     self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
-                        test_description, scenario)
+                        test_description, scenario,
+                        frame_xpath=self._FRAME_XPATH)
 
   # TODO(dennisjeffrey): Remove this test once the Gmail team is done analyzing
   # the results after the test runs for a period of time.
@@ -778,7 +797,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
         time.sleep(120)
 
     self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
-                        test_description, scenario)
+                        test_description, scenario,
+                        frame_xpath=self._FRAME_XPATH)
 
   def testGmailAlternateThreadlistConversation(self):
     """Alternates between threadlist view and conversation view.
@@ -821,7 +841,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       time.sleep(1)
 
     self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
-                        test_description, scenario)
+                        test_description, scenario,
+                        frame_xpath=self._FRAME_XPATH)
 
   def testGmailAlternateTwoLabels(self):
     """Continuously alternates between two labels.
@@ -860,7 +881,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       time.sleep(1)
 
     self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
-                        test_description, scenario)
+                        test_description, scenario,
+                        frame_xpath=self._FRAME_XPATH)
 
   def testGmailExpandCollapseConversation(self):
     """Continuously expands/collapses all messages in a conversation.
@@ -911,7 +933,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       time.sleep(1)
 
     self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
-                        test_description, scenario)
+                        test_description, scenario,
+                        frame_xpath=self._FRAME_XPATH)
 
 
 class ChromeEndureDocsTest(ChromeEndureBaseTest):
