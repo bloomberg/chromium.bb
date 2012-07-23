@@ -361,7 +361,7 @@ deps_os = {
       "/trunk/deps/third_party/gperf@147304",
 
     "src/third_party/perl":
-      "/trunk/deps/third_party/perl@147306",
+      "/trunk/deps/third_party/perl@147900",
 
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@33727",
