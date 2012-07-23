@@ -272,7 +272,7 @@ void LatencyTest::RunTest(LatencyTestMode mode,
   // Construct queries for searching trace events via TraceAnalyzer.
   if (mode_ == kWebGL) {
     query_begin_swaps_ = query_instant_ &&
-        Query::EventName() == Query::String("SwapBuffers") &&
+        Query::EventName() == Query::String("SwapBuffersLantency") &&
         Query::EventArg("width") != Query::Int(kWebGLCanvasWidth);
     query_end_swaps_ = query_instant_ &&
         Query::EventName() == Query::String("CompositorSwapBuffersComplete");
@@ -626,7 +626,7 @@ void LatencyTest::PrintEvents(const TraceEventVector& events) {
     } else if (events[i]->name == "DoBlit") {
       // WebGL context swap buffers.
       printf("BLT ");
-    } else if (events[i]->name == "SwapBuffers") {
+    } else if (events[i]->name == "SwapBuffersLatency") {
       // Compositor context swap buffers.
       ++swap_count;
       printf("|\nframe %03d: ", swap_count + 1);
