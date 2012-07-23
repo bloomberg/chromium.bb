@@ -68,14 +68,12 @@ class RootWindowControllerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     internal::DisplayController::SetExtendedDesktopEnabled(true);
-    internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
     AshTestBase::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     AshTestBase::TearDown();
     internal::DisplayController::SetExtendedDesktopEnabled(false);
-    internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
   }
 
  private:
@@ -83,7 +81,7 @@ class RootWindowControllerTest : public test::AshTestBase {
 };
 
 TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
-  UpdateDisplay("0+0-600x600,600+0-500x500");
+  UpdateDisplay("600x600,500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   views::Widget* normal = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
@@ -119,7 +117,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 #endif
 
-  UpdateDisplay("0+0-600x600");
+  UpdateDisplay("600x600");
 
   EXPECT_EQ(root_windows[0], normal->GetNativeView()->GetRootWindow());
   EXPECT_EQ("50,10 100x100", normal->GetWindowBoundsInScreen().ToString());
@@ -159,7 +157,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
 }
 
 TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
-  UpdateDisplay("0+0-500x500,500+0-500x500");
+  UpdateDisplay("500x500,500x500");
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   // Emulate virtual screen coordinate system.
@@ -180,7 +178,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
   generator_1st.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(modal->GetNativeView()));
 
-  UpdateDisplay("0+0-500x500");
+  UpdateDisplay("500x500");
   EXPECT_EQ(root_windows[0], modal->GetNativeView()->GetRootWindow());
   EXPECT_TRUE(wm::IsActiveWindow(modal->GetNativeView()));
   generator_1st.ClickLeftButton();

@@ -363,8 +363,6 @@ std::vector<aura::Window*> Shell::GetAllContainers(int container_id) {
 }
 
 void Shell::Init() {
-  if (internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
-    VLOG(1) << "Using virtual screen coordinates";
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);

@@ -395,7 +395,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 
   ScreenAsh* screen_;
 
-  // Active root window. Never become NULL.
+  // Active root window. Never becomes NULL during the session.
   aura::RootWindow* active_root_window_;
 
   // The CompoundEventFilter owned by aura::Env object.

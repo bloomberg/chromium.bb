@@ -23,14 +23,12 @@ class ScreenAshTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     internal::DisplayController::SetExtendedDesktopEnabled(true);
-    internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
     AshTestBase::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     AshTestBase::TearDown();
     internal::DisplayController::SetExtendedDesktopEnabled(false);
-    internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
   }
 
  private:
@@ -39,7 +37,7 @@ class ScreenAshTest : public test::AshTestBase {
 
 #if !defined(OS_WIN)
 TEST_F(ScreenAshTest, Bounds) {
-  UpdateDisplay("0+0-600x600,600+0-500x500");
+  UpdateDisplay("600x600,500x500");
 
   views::Widget* primary =
       views::Widget::CreateWindowWithBounds(NULL, gfx::Rect(10, 10, 100, 100));
@@ -83,7 +81,7 @@ TEST_F(ScreenAshTest, Bounds) {
 #endif
 
 TEST_F(ScreenAshTest, ConvertRect) {
-  UpdateDisplay("0+0-600x600,600+0-500x500");
+  UpdateDisplay("600x600,500x500");
 
   views::Widget* primary =
       views::Widget::CreateWindowWithBounds(NULL, gfx::Rect(10, 10, 100, 100));

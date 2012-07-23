@@ -22,10 +22,7 @@ namespace internal {
 namespace {
 // True if the extended desktop mode is enabled.
 bool extended_desktop_enabled = false;
-
-// True if the virtual screen coordinates is enabled.
-bool virtual_screen_coordinates_enabled = false;
-}
+}  // namespace
 
 DisplayController::DisplayController()
     : secondary_display_layout_(RIGHT) {
@@ -245,19 +242,6 @@ void DisplayController::SetExtendedDesktopEnabled(bool enabled) {
   extended_desktop_enabled = enabled;
 }
 
-// static
-bool DisplayController::IsVirtualScreenCoordinatesEnabled() {
-  return IsExtendedDesktopEnabled() &&
-      (virtual_screen_coordinates_enabled ||
-       CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kAshVirtualScreenCoordinates));
-}
-
-// static
-void DisplayController::SetVirtualScreenCoordinatesEnabled(bool enabled) {
-  virtual_screen_coordinates_enabled = enabled;
-}
-
 aura::RootWindow* DisplayController::AddRootWindowForDisplay(
     const gfx::Display& display) {
   aura::RootWindow* root = aura::Env::GetInstance()->display_manager()->
@@ -276,8 +260,7 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
 }
 
 void DisplayController::UpdateDisplayBoundsForLayout() {
-  if (!IsVirtualScreenCoordinatesEnabled() ||
-      gfx::Screen::GetNumDisplays() <= 1) {
+  if (!IsExtendedDesktopEnabled() || gfx::Screen::GetNumDisplays() <= 1) {
     return;
   }
   DCHECK_EQ(2, gfx::Screen::GetNumDisplays());

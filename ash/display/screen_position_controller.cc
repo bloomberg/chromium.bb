@@ -56,7 +56,7 @@ void ScreenPositionController::ConvertPointToScreen(
     gfx::Point* point) {
   const aura::RootWindow* root = window->GetRootWindow();
   aura::Window::ConvertPointToWindow(window, root, point);
-  if (DisplayController::IsVirtualScreenCoordinatesEnabled()) {
+  if (DisplayController::IsExtendedDesktopEnabled()) {
     const gfx::Point display_origin =
         gfx::Screen::GetDisplayNearestWindow(
             const_cast<aura::RootWindow*>(root)).bounds().origin();
@@ -68,7 +68,7 @@ void ScreenPositionController::ConvertPointFromScreen(
     const aura::Window* window,
     gfx::Point* point) {
   const aura::RootWindow* root = window->GetRootWindow();
-  if (DisplayController::IsVirtualScreenCoordinatesEnabled()) {
+  if (DisplayController::IsExtendedDesktopEnabled()) {
     const gfx::Point display_origin =
         gfx::Screen::GetDisplayNearestWindow(
             const_cast<aura::RootWindow*>(root)).bounds().origin();
@@ -80,7 +80,7 @@ void ScreenPositionController::ConvertPointFromScreen(
 void ScreenPositionController::SetBounds(
     aura::Window* window,
     const gfx::Rect& bounds) {
-  if (!DisplayController::IsVirtualScreenCoordinatesEnabled() ||
+  if (!DisplayController::IsExtendedDesktopEnabled() ||
       !window->parent()->GetProperty(internal::kUsesScreenCoordinatesKey)) {
     window->SetBounds(bounds);
     return;

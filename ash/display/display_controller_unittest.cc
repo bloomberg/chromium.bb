@@ -36,14 +36,12 @@ class DisplayControllerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     internal::DisplayController::SetExtendedDesktopEnabled(true);
-    internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
     AshTestBase::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     AshTestBase::TearDown();
     internal::DisplayController::SetExtendedDesktopEnabled(false);
-    internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
   }
 
  private:
@@ -61,7 +59,7 @@ class DisplayControllerTest : public test::AshTestBase {
 #endif
 
 TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
-  UpdateDisplay("0+0-500x500,0+0-400x400");
+  UpdateDisplay("500x500,400x400");
   gfx::Display* secondary_display =
       aura::Env::GetInstance()->display_manager()->GetDisplayAt(1);
   gfx::Insets insets(5, 5, 5, 5);
@@ -97,7 +95,7 @@ TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
 TEST_F(DisplayControllerTest, MAYBE_BoundsUpdated) {
   Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
       internal::DisplayController::BOTTOM);
-  UpdateDisplay("0+0-500x500,0+0-400x400");
+  UpdateDisplay("500x500,400x400");
   gfx::Display* secondary_display =
       aura::Env::GetInstance()->display_manager()->GetDisplayAt(1);
   gfx::Insets insets(5, 5, 5, 5);
@@ -107,21 +105,21 @@ TEST_F(DisplayControllerTest, MAYBE_BoundsUpdated) {
   EXPECT_EQ("0,500 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("5,505 390x390", GetSecondaryDisplay().work_area().ToString());
 
-  UpdateDisplay("0+0-600x600,0+0-400x400");
+  UpdateDisplay("600x600,400x400");
   EXPECT_EQ("0,0 600x600", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,600 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("5,605 390x390", GetSecondaryDisplay().work_area().ToString());
 
-  UpdateDisplay("0+0-600x600,0+0-500x500");
+  UpdateDisplay("600x600,500x500");
   EXPECT_EQ("0,0 600x600", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,600 500x500", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("5,605 490x490", GetSecondaryDisplay().work_area().ToString());
 
-  UpdateDisplay("0+0-600x600");
+  UpdateDisplay("600x600");
   EXPECT_EQ("0,0 600x600", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ(1, gfx::Screen::GetNumDisplays());
 
-  UpdateDisplay("0+0-700x700,0+0-1000x1000");
+  UpdateDisplay("700x700,1000x1000");
   ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
   EXPECT_EQ("0,0 700x700", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,700 1000x1000", GetSecondaryDisplay().bounds().ToString());

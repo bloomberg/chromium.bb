@@ -74,9 +74,7 @@ void MoveAllWindows(aura::RootWindow* src,
         continue;
 
       // Update the restore bounds to make it relative to the display.
-      gfx::Rect restore_bounds;
-      if (internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
-        restore_bounds = GetRestoreBoundsInParent(window);
+      gfx::Rect restore_bounds(GetRestoreBoundsInParent(window));
       dst_container->AddChild(window);
       if (!restore_bounds.IsEmpty())
         SetRestoreBoundsInParent(window, restore_bounds);
@@ -240,6 +238,11 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
 }
 
 RootWindowController::~RootWindowController() {
+  if (Shell::GetActiveRootWindow() == root_window_.get()) {
+    Shell::GetInstance()->set_active_root_window(
+        Shell::GetPrimaryRootWindow() == root_window_.get() ?
+        NULL : Shell::GetPrimaryRootWindow());
+  }
   SetRootWindowController(root_window_.get(), NULL);
   event_client_.reset();
   screen_dimmer_.reset();

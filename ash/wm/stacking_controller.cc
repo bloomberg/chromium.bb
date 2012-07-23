@@ -23,9 +23,9 @@ namespace {
 // that matches the window's bound will be used. Otherwise, it'll
 // return the active root window.
 aura::RootWindow* FindContainerRoot(const gfx::Rect& bounds) {
-  if (!DisplayController::IsVirtualScreenCoordinatesEnabled() ||
-      (bounds.origin().x() == 0 && bounds.origin().y() == 0
-       && bounds.IsEmpty())) {
+  if (!DisplayController::IsExtendedDesktopEnabled() ||
+      (bounds.origin().x() == 0 && bounds.origin().y() == 0 &&
+       bounds.IsEmpty())) {
     return Shell::GetActiveRootWindow();
   }
   return Shell::GetRootWindowMatching(bounds);

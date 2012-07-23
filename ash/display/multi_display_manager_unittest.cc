@@ -4,6 +4,7 @@
 
 #include "ash/display/multi_display_manager.h"
 
+#include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/format_macros.h"
@@ -31,6 +32,7 @@ class MultiDisplayManagerTest : public test::AshTestBase,
   virtual ~MultiDisplayManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
+    internal::DisplayController::SetExtendedDesktopEnabled(true);
     AshTestBase::SetUp();
     display_manager()->AddObserver(this);
     Shell::GetPrimaryRootWindow()->AddObserver(this);
@@ -39,6 +41,7 @@ class MultiDisplayManagerTest : public test::AshTestBase,
     Shell::GetPrimaryRootWindow()->RemoveObserver(this);
     display_manager()->RemoveObserver(this);
     AshTestBase::TearDown();
+    internal::DisplayController::SetExtendedDesktopEnabled(false);
   }
 
   aura::DisplayManager* display_manager() {
@@ -112,7 +115,8 @@ TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
   EXPECT_EQ(display_manager()->GetDisplayAt(0)->id(), changed()[0].id());
   EXPECT_EQ(display_manager()->GetDisplayAt(1)->id(), added()[0].id());
   EXPECT_EQ("0,0 500x500", changed()[0].bounds().ToString());
-  EXPECT_EQ("0,0 400x400", added()[0].bounds().ToString());
+  // Secondary display is on right.
+  EXPECT_EQ("500,0 400x400", added()[0].bounds().ToString());
   EXPECT_EQ("0,501 400x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
@@ -134,7 +138,8 @@ TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
   EXPECT_EQ(display_manager()->GetDisplayAt(1)->id(), added()[0].id());
-  EXPECT_EQ("0,0 600x400", added()[0].bounds().ToString());
+  // Secondary display is on right.
+  EXPECT_EQ("1000,0 600x400", added()[0].bounds().ToString());
   EXPECT_EQ("1001,0 600x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
@@ -173,13 +178,14 @@ TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
   reset();
 
   // Add secondary.
-  UpdateDisplay("0+0-1000x600,1000+0-600x400");
+  UpdateDisplay("0+0-1000x600,1000+1000-600x400");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 1000x600",
             display_manager()->GetDisplayAt(0)->bounds().ToString());
-  EXPECT_EQ("0,0 600x400",
-            display_manager()->GetDisplayAt(1)->bounds().ToString());
+  // Secondary display is on right.
   EXPECT_EQ("1000,0 600x400",
+            display_manager()->GetDisplayAt(1)->bounds().ToString());
+  EXPECT_EQ("1000,1000 600x400",
             display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
   reset();
 
@@ -230,12 +236,12 @@ TEST_F(MultiDisplayManagerTest, MAYBE_EmulatorTest) {
 
 TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
   aura::DisplayManager::set_use_fullscreen_host_window(true);
-  UpdateDisplay("0+0-1000x600");
+  UpdateDisplay("1000x600");
   EXPECT_EQ(1,
             Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
   EXPECT_EQ("1000x600",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  UpdateDisplay("0+0-1000x600*2");
+  UpdateDisplay("1000x600*2");
   EXPECT_EQ(2,
             Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
   EXPECT_EQ("500x300",
