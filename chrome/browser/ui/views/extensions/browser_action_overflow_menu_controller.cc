@@ -44,7 +44,7 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
     menu_->AppendMenuItemWithIcon(
         command_id,
         UTF8ToUTF16(view->button()->extension()->name()),
-        canvas->ExtractImageRep());
+        canvas->ExtractBitmap());
 
     // Set the tooltip for this item.
     string16 tooltip = UTF8ToUTF16(

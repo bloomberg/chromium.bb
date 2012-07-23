@@ -489,7 +489,7 @@ TEST_F(RenderWidgetHostTest, Background) {
   host_->SetView(view.get());
 
   // Create a checkerboard background to test with.
-  gfx::Canvas canvas(gfx::Size(4, 4), ui::SCALE_FACTOR_100P, true);
+  gfx::Canvas canvas(gfx::Size(4, 4), true);
   canvas.FillRect(gfx::Rect(0, 0, 2, 2), SK_ColorBLACK);
   canvas.FillRect(gfx::Rect(2, 0, 2, 2), SK_ColorWHITE);
   canvas.FillRect(gfx::Rect(0, 2, 2, 2), SK_ColorWHITE);

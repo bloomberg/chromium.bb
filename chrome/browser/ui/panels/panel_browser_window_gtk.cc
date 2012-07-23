@@ -48,9 +48,9 @@ const SkColor kDividerColor = SkColorSetRGB(0x2a, 0x2c, 0x2c);
 const int kMinWindowWidth = 26;
 
 gfx::Image* CreateImageForColor(SkColor color) {
-  gfx::Canvas canvas(gfx::Size(1, 1), ui::SCALE_FACTOR_100P, true);
+  gfx::Canvas canvas(gfx::Size(1, 1), true);
   canvas.DrawColor(color);
-  return new gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
+  return new gfx::Image(canvas.ExtractBitmap());
 }
 
 const gfx::Image* GetActiveBackgroundDefaultImage() {

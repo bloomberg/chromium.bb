@@ -85,13 +85,13 @@ void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image,
   static const int kDropArrowLeftMargin = 3;
   scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
       gfx::Size(image_size + kDropArrowLeftMargin + drop_image->width(),
-                image_size), ui::SCALE_FACTOR_100P, false));
+                image_size), false));
   canvas->DrawImageInt(*icon, 0, 0, icon->width(), icon->height(), 0, 0,
                        image_size, image_size, false);
   canvas->DrawImageInt(*drop_image, image_size + kDropArrowLeftMargin,
                        image_size / 2);
 
-  SkBitmap bitmap = canvas->ExtractImageRep().sk_bitmap();
+  SkBitmap bitmap = canvas->ExtractBitmap();
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
   gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
   g_object_unref(pixbuf);

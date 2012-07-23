@@ -60,15 +60,14 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
   SkBitmap bmp = skia::ImageOperations::Resize(*image.ToSkBitmap(),
       skia::ImageOperations::RESIZE_BEST, kLength, kLength);
 
-  gfx::Canvas canvas(gfx::Size(kLength, kLength), ui::SCALE_FACTOR_100P,
-      false);
+  gfx::Canvas canvas(gfx::Size(kLength, kLength), false);
   canvas.DrawImageInt(bmp, 0, 0);
 
   // Draw a gray border on the inside of the icon.
   SkColor color = SkColorSetARGB(83, 0, 0, 0);
   canvas.DrawRect(gfx::Rect(0, 0, kLength - 1, kLength - 1), color);
 
-  return canvas.ExtractImageRep().sk_bitmap();
+  return canvas.ExtractBitmap();
 }
 
 // Puts the |content| into a span with the given CSS class.

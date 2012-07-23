@@ -133,8 +133,7 @@ gfx::Size DraggedTabView::GetPreferredSize() {
 
 void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   gfx::Size ps = GetPreferredSize();
-  // TODO(pkotwicz): DIP enable this class.
-  gfx::Canvas scale_canvas(ps, ui::SCALE_FACTOR_100P, false);
+  gfx::Canvas scale_canvas(ps, false);
   SkBitmap& bitmap_device = const_cast<SkBitmap&>(
       skia::GetTopDevice(*scale_canvas.sk_canvas())->accessBitmap(true));
   bitmap_device.eraseARGB(0, 0, 0, 0);
@@ -154,7 +153,7 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
 
   SkIRect subset;
   subset.set(0, 0, ps.width(), ps.height());
-  SkBitmap mipmap = scale_canvas.ExtractImageRep().sk_bitmap();
+  SkBitmap mipmap = scale_canvas.ExtractBitmap();
   mipmap.buildMipMap(true);
 
   SkShader* bitmap_shader =

@@ -2511,8 +2511,7 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
               std::max(0, static_cast<int>(r.bottom - r.top)));
   delegate_->OnNativeWidgetSizeChanged(s);
   if (use_layered_buffer_)
-    layered_window_contents_.reset(
-        new gfx::Canvas(s, ui::SCALE_FACTOR_100P, false));
+    layered_window_contents_.reset(new gfx::Canvas(s, false));
 }
 
 void NativeWidgetWin::UpdateDWMFrame() {

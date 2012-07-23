@@ -112,7 +112,7 @@ void DrawStringContext::Draw(SkColor text_color) {
 void DrawStringContext::DrawWithHalo(SkColor text_color,
                                      SkColor halo_color) {
   gfx::Size size(bounds_.width() + 2, bounds_.height() + 2);
-  gfx::Canvas text_canvas(size, scale_factor(), false);
+  gfx::Canvas text_canvas(size, false);
   text_canvas.FillRect(gfx::Rect(size), static_cast<SkColor>(0));
 
   {
@@ -157,9 +157,7 @@ void DrawStringContext::DrawWithHalo(SkColor text_color,
 
   const SkBitmap& text_bitmap = const_cast<SkBitmap&>(
       skia::GetTopDevice(*text_canvas.sk_canvas())->accessBitmap(false));
-  const gfx::ImageSkia text_image = gfx::ImageSkia(gfx::ImageSkiaRep(
-      text_bitmap, text_canvas.scale_factor()));
-  canvas_->DrawImageInt(text_image, text_rect_.x() - 1, text_rect_.y() - 1);
+  canvas_->DrawImageInt(text_bitmap, text_rect_.x() - 1, text_rect_.y() - 1);
 }
 
 void DrawStringContext::DrawUnderline(cairo_t* cr, double extra_edge_width) {

@@ -564,16 +564,14 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
     return SkBitmap();
 
   gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf.get()),
-                               gdk_pixbuf_get_height(pixbuf.get())),
-                     ui::SCALE_FACTOR_100P,
-                     false);
+                               gdk_pixbuf_get_height(pixbuf.get())), false);
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     cairo_t* context = scoped_platform_paint.GetPlatformSurface();
     gdk_cairo_set_source_pixbuf(context, pixbuf.get(), 0.0, 0.0);
     cairo_paint(context);
   }
-  return canvas.ExtractImageRep().sk_bitmap();
+  return canvas.ExtractBitmap();
 }
 
 void Clipboard::ReadCustomData(Buffer buffer,

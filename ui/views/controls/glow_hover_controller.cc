@@ -98,7 +98,7 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
                                     radius * 2, radius * 2), paint);
   }
   gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
-      gfx::ImageSkia(hover_canvas.ExtractImageRep()), mask_image);
+      gfx::ImageSkia(hover_canvas.ExtractImageSkiaRep()), mask_image);
   canvas->DrawImageInt(result, (view_->width() - mask_image.width()) / 2,
                        (view_->height() - mask_image.height()) / 2);
 }

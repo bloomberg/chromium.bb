@@ -128,11 +128,11 @@ SkBitmap* TaskbarWindowThumbnailerWin::CaptureWindowImage() const {
   int width = bounds.right - bounds.left;
   int height = bounds.bottom - bounds.top;
 
-  gfx::Canvas canvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P, false);
+  gfx::Canvas canvas(gfx::Size(width, height), false);
   HDC target_dc = canvas.BeginPlatformPaint();
   HDC source_dc = ::GetDC(hwnd_);
   ::BitBlt(target_dc, 0, 0, width, height, source_dc, 0, 0, SRCCOPY);
   ::ReleaseDC(hwnd_, source_dc);
   canvas.EndPlatformPaint();
-  return new SkBitmap(canvas.ExtractImageRep().sk_bitmap());
+  return new SkBitmap(canvas.ExtractBitmap());
 }

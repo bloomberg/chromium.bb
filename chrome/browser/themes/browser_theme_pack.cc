@@ -1009,8 +1009,11 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
         int vertical_offset = bitmaps->count(prs_id)
                               ? kRestoredTabVerticalOffset : 0;
         gfx::Canvas canvas(gfx::Size(bg_tint.width(), bg_tint.height()),
-                           image_rep_to_tint.scale_factor(),
                            false);
+        SkScalar image_rep_to_tint_scale =
+            SkFloatToScalar(image_rep_to_tint.GetScale());
+        canvas.sk_canvas()->scale(image_rep_to_tint_scale,
+                                  image_rep_to_tint_scale);
         canvas.TileImageInt(bg_tint, 0, vertical_offset, 0, 0,
             bg_tint_dip_size.width(), bg_tint_dip_size.height());
 
@@ -1021,7 +1024,9 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
           canvas.TileImageInt(*overlay, 0, 0, bg_tint_dip_size.width(),
                               overlay->height());
         }
-        tinted_image.AddRepresentation(canvas.ExtractImageRep());
+        SkBitmap bg_tab = canvas.ExtractBitmap();
+        tinted_image.AddRepresentation(gfx::ImageSkiaRep(bg_tab,
+            image_rep_to_tint.scale_factor()));
       }
 
       temp_output[prs_id] = new gfx::Image(tinted_image);
