@@ -64,9 +64,7 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
  protected:
   // Returns the image to paint. This is invoked from paint and returns a value
   // from images.
-  // |scale_factor| is the scale factor at which the view is painted and the
-  // scale factor which should be used when mutating ImageSkias.
-  virtual gfx::ImageSkia GetImageToPaint(ui::ScaleFactor scale_factor);
+  virtual gfx::ImageSkia GetImageToPaint();
 
   // Updates button background for |scale_factor|.
   void UpdateButtonBackground(ui::ScaleFactor scale_factor);
@@ -74,17 +72,7 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   // The images used to render the different states of this button.
   gfx::ImageSkia images_[BS_COUNT];
 
-  // Information necessary to generate background image.
-  struct BackgroundImageGenerationInfo {
-    BackgroundImageGenerationInfo();
-    ~BackgroundImageGenerationInfo();
-
-    SkColor src_color_;
-    gfx::ImageSkia src_image_;
-    gfx::ImageSkia src_mask_;
-    gfx::ImageSkia result_;
-  };
-  BackgroundImageGenerationInfo background_image_;
+  gfx::ImageSkia background_image_;
 
   // Image to draw on top of normal / hot / pushed image.  Usually empty.
   gfx::ImageSkia overlay_image_;

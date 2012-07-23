@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_
-#define UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_
+#ifndef UI_GFX_IMAGE_SKIA_OPERATIONS_H_
+#define UI_GFX_IMAGE_SKIA_OPERATIONS_H_
 
 #include "base/gtest_prod_util.h"
 #include "ui/base/ui_export.h"
@@ -11,6 +11,7 @@
 
 namespace gfx {
 class ImageSkia;
+class Rect;
 class Size;
 
 class UI_EXPORT ImageSkiaOperations {
@@ -35,6 +36,20 @@ class UI_EXPORT ImageSkiaOperations {
                                     int src_x, int src_y,
                                     int dst_w, int dst_h);
 
+  // Creates a button background image by compositing the color and image
+  // together, then applying the mask. This is a highly specialized composite
+  // operation that is the equivalent of drawing a background in |color|,
+  // tiling |image| over the top, and then masking the result out with |mask|.
+  // The images must use kARGB_8888_Config config.
+  static ImageSkia CreateButtonBackground(SkColor color,
+                                          const gfx::ImageSkia& image,
+                                          const gfx::ImageSkia& mask);
+
+  // Returns an image which is a subset of |image| with bounds |subset_bounds|.
+  // The |image| cannot use kA1_Config config.
+  static ImageSkia ExtractSubset(const gfx::ImageSkia& image,
+                                 const gfx::Rect& subset_bounds);
+
   // Creates an image by resizing |source| to given |target_dip_size|.
   static ImageSkia CreateResizedImage(const ImageSkia& source,
                                       const Size& target_dip_size);
@@ -47,6 +62,6 @@ class UI_EXPORT ImageSkiaOperations {
   ImageSkiaOperations();  // Class for scoping only.
 };
 
-}
+}  // namespace gfx
 
 #endif  // UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_

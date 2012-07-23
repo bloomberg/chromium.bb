@@ -10,7 +10,9 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 
@@ -265,30 +267,9 @@ int ImageSkia::height() const {
 }
 
 bool ImageSkia::extractSubset(ImageSkia* dst, const SkIRect& subset) const {
-  if (isNull())
-    return false;
-  ImageSkia image;
-  ImageSkiaReps& image_reps = storage_->image_reps();
-  for (ImageSkiaReps::iterator it = image_reps.begin();
-       it != image_reps.end(); ++it) {
-    const ImageSkiaRep& image_rep = *it;
-    float dip_scale = image_rep.GetScale();
-    // Rounding boundary in case of a non-integer scale factor.
-    int x = static_cast<int>(subset.left() * dip_scale + 0.5);
-    int y = static_cast<int>(subset.top() * dip_scale + 0.5);
-    int w = static_cast<int>(subset.width() * dip_scale + 0.5);
-    int h = static_cast<int>(subset.height() * dip_scale + 0.5);
-    SkBitmap dst_bitmap;
-    SkIRect scaled_subset = SkIRect::MakeXYWH(x, y, w, h);
-    if (image_rep.sk_bitmap().extractSubset(&dst_bitmap, scaled_subset))
-      image.AddRepresentation(ImageSkiaRep(dst_bitmap,
-                                           image_rep.scale_factor()));
-  }
-  if (image.empty())
-    return false;
-
-  *dst = image;
-  return true;
+  gfx::Rect rect(subset.x(), subset.y(), subset.width(), subset.height());
+  *dst = ImageSkiaOperations::ExtractSubset(*this, rect);
+  return (!dst->isNull());
 }
 
 std::vector<ImageSkiaRep> ImageSkia::image_reps() const {

@@ -7,8 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/screen.h"
-#include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -41,10 +40,13 @@ void ImageButton::SetImage(ButtonState state, const gfx::ImageSkia* image) {
 void ImageButton::SetBackground(SkColor color,
                                 const gfx::ImageSkia* image,
                                 const gfx::ImageSkia* mask) {
-  background_image_.src_color_ = color;
-  background_image_.src_image_ = image ? *image : gfx::ImageSkia();
-  background_image_.src_mask_ = mask ? *mask : gfx::ImageSkia();
-  background_image_.result_ = gfx::ImageSkia();
+  if (image == NULL || mask == NULL) {
+    background_image_ = gfx::ImageSkia();
+    return;
+  }
+
+  background_image_ = gfx::ImageSkiaOperations::CreateButtonBackground(color,
+     *image, *mask);
 }
 
 void ImageButton::SetOverlayImage(const gfx::ImageSkia* image) {
@@ -75,8 +77,7 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
 
-  ui::ScaleFactor current_device_scale_factor = canvas->scale_factor();
-  gfx::ImageSkia img = GetImageToPaint(current_device_scale_factor);
+  gfx::ImageSkia img = GetImageToPaint();
 
   if (!img.isNull()) {
     int x = 0, y = 0;
@@ -91,12 +92,8 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
     else if (v_alignment_ == ALIGN_BOTTOM)
       y = height() - img.height();
 
-    if (!background_image_.result_.HasRepresentation(
-        current_device_scale_factor)) {
-      UpdateButtonBackground(current_device_scale_factor);
-    }
-    if (!background_image_.result_.empty())
-      canvas->DrawImageInt(background_image_.result_, x, y);
+    if (!background_image_.isNull())
+      canvas->DrawImageInt(background_image_, x, y);
 
     canvas->DrawImageInt(img, x, y);
 
@@ -109,44 +106,17 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, protected:
 
-gfx::ImageSkia ImageButton::GetImageToPaint(ui::ScaleFactor scale_factor) {
+gfx::ImageSkia ImageButton::GetImageToPaint() {
   gfx::ImageSkia img;
 
   if (!images_[BS_HOT].isNull() && hover_animation_->is_animating()) {
-    gfx::ImageSkiaRep normal_image_rep = images_[BS_NORMAL].GetRepresentation(
-        scale_factor);
-    gfx::ImageSkiaRep hot_image_rep = images_[BS_HOT].GetRepresentation(
-        scale_factor);
-    DCHECK_EQ(normal_image_rep.scale_factor(), hot_image_rep.scale_factor());
-    SkBitmap blended_bitmap = SkBitmapOperations::CreateBlendedBitmap(
-        normal_image_rep.sk_bitmap(),
-        hot_image_rep.sk_bitmap(),
-        hover_animation_->GetCurrentValue());
-    img = gfx::ImageSkia(gfx::ImageSkiaRep(blended_bitmap,
-                                           normal_image_rep.scale_factor()));
+    img = gfx::ImageSkiaOperations::CreateBlendedImage(images_[BS_NORMAL],
+        images_[BS_HOT], hover_animation_->GetCurrentValue());
   } else {
     img = images_[state_];
   }
 
   return !img.isNull() ? img : images_[BS_NORMAL];
-}
-
-void ImageButton::UpdateButtonBackground(ui::ScaleFactor scale_factor) {
-  gfx::ImageSkiaRep image_rep =
-      background_image_.src_image_.GetRepresentation(scale_factor);
-  gfx::ImageSkiaRep mask_image_rep =
-      background_image_.src_mask_.GetRepresentation(scale_factor);
-  if (image_rep.is_null() || mask_image_rep.is_null() ||
-      background_image_.result_.HasRepresentation(image_rep.scale_factor())) {
-    return;
-  }
-  DCHECK_EQ(image_rep.scale_factor(), mask_image_rep.scale_factor());
-  SkBitmap result = SkBitmapOperations::CreateButtonBackground(
-      background_image_.src_color_,
-      image_rep.sk_bitmap(),
-      mask_image_rep.sk_bitmap());
-  background_image_.result_.AddRepresentation(gfx::ImageSkiaRep(
-      result, image_rep.scale_factor()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -213,15 +183,6 @@ bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
 
   *tooltip = toggled_tooltip_text_;
   return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// struct BackgroundImageGenerationInfo
-ImageButton::BackgroundImageGenerationInfo::BackgroundImageGenerationInfo()
-    : src_color_(0) {
-}
-
-ImageButton::BackgroundImageGenerationInfo::~BackgroundImageGenerationInfo() {
 }
 
 }  // namespace views

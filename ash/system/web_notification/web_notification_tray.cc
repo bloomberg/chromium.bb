@@ -16,6 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -60,21 +61,19 @@ const int kToggleExtensionCommand = 1;
 const int kShowSettingsCommand = 2;
 
 // The image has three icons: 1 notifiaction, 2 notifications, and 3+.
-SkBitmap GetNotificationImage(int notification_count) {
-  SkBitmap image;
-  gfx::Image all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_AURA_UBER_TRAY_WEB_NOTIFICATON);
+gfx::ImageSkia GetNotificationImage(int notification_count) {
+  const gfx::ImageSkia* image = ui::ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(IDR_AURA_UBER_TRAY_WEB_NOTIFICATON);
   int image_index = notification_count - 1;
   image_index = std::max(0, std::min(image_index, 2));
   // The original width of the image looks too big, so we need to inset
   // it somewhat.
-  SkIRect region = SkIRect::MakeXYWH(
-      kNotificationImageIconInset, image_index * kNotificationImageIconHeight,
-      kNotificationImageIconWidth - 2 * kNotificationImageIconInset,
-      kNotificationImageIconHeight);
-
-  all.ToSkBitmap()->extractSubset(&image, region);
-  return image;
+  gfx::Rect region(
+    kNotificationImageIconInset,
+    image_index * kNotificationImageIconHeight,
+    kNotificationImageIconWidth - 2 * kNotificationImageIconInset,
+    kNotificationImageIconHeight);
+  return gfx::ImageSkiaOperations::ExtractSubset(*image, region);
 }
 
 }  // namespace
@@ -878,7 +877,7 @@ void WebNotificationTray::UpdateIcon() {
       status_area_widget_->login_status() == user::LOGGED_IN_LOCKED) {
     SetVisible(false);
   } else {
-    icon_->SetImage(gfx::ImageSkia(GetNotificationImage(count)));
+    icon_->SetImage(GetNotificationImage(count));
     SetVisible(true);
   }
   PreferredSizeChanged();

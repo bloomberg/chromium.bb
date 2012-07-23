@@ -17,8 +17,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
-#include "ui/gfx/skbitmap_operations.h"
 
 using std::max;
 using std::min;
@@ -158,12 +158,12 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
     return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-const SkBitmap GetEmptyBitmapOfSameSize(const gfx::ImageSkiaRep& reference) {
+const SkBitmap GetEmptyBitmap(const gfx::Size pixel_size) {
   typedef std::pair<int, int> SizeKey;
   typedef std::map<SizeKey, SkBitmap> SizeBitmapMap;
   static SizeBitmapMap* empty_bitmaps_ = new SizeBitmapMap;
 
-  SizeKey key(reference.pixel_width(), reference.pixel_height());
+  SizeKey key(pixel_size.width(), pixel_size.height());
 
   SizeBitmapMap::iterator iter = empty_bitmaps_->find(key);
   if (iter != empty_bitmaps_->end())
@@ -177,28 +177,22 @@ const SkBitmap GetEmptyBitmapOfSameSize(const gfx::ImageSkiaRep& reference) {
   return empty;
 }
 
-class FadedImageSource : public gfx::ImageSkiaSource {
+class EmptyImageSource: public gfx::ImageSkiaSource {
  public:
-  FadedImageSource(const gfx::ImageSkia& source, double alpha)
-      : source_(source),
-        alpha_(alpha) {
+  EmptyImageSource(const gfx::Size& size)
+      : size_(size) {
   }
-  virtual ~FadedImageSource() {}
 
   virtual gfx::ImageSkiaRep GetImageForScale(
       ui::ScaleFactor scale_factor) OVERRIDE {
-    gfx::ImageSkiaRep image_rep = source_.GetRepresentation(scale_factor);
-    const SkBitmap empty_bitmap = GetEmptyBitmapOfSameSize(image_rep);
-    SkBitmap faded_bitmap = SkBitmapOperations::CreateBlendedBitmap(
-        empty_bitmap, image_rep.sk_bitmap(), alpha_);
-    return gfx::ImageSkiaRep(faded_bitmap, image_rep.scale_factor());
+    gfx::Size pixel_size = size_.Scale(ui::GetScaleFactorScale(scale_factor));
+    SkBitmap empty_bitmap = GetEmptyBitmap(pixel_size);
+    return gfx::ImageSkiaRep(empty_bitmap, scale_factor);
   }
-
  private:
-  const gfx::ImageSkia source_;
-  const float alpha_;
+  const gfx::Size size_;
 
-  DISALLOW_COPY_AND_ASSIGN(FadedImageSource);
+  DISALLOW_COPY_AND_ASSIGN(EmptyImageSource);
 };
 
 // This defines how we assemble a network icon.
@@ -252,81 +246,16 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(NetworkIconImageSource);
 };
 
-// This defines how we assemble a network menu icon.
-class NetworkMenuIconSource : public gfx::ImageSkiaSource {
- public:
-  NetworkMenuIconSource(NetworkMenuIcon::ImageType type,
-                        int index,
-                        NetworkMenuIcon::ResourceColorTheme color)
-      : type_(type),
-        index_(index),
-        color_(color) {
-  }
-  virtual ~NetworkMenuIconSource() {}
-
-  virtual gfx::ImageSkiaRep GetImageForScale(
-      ui::ScaleFactor scale_factor) OVERRIDE {
-    int width, height;
-    gfx::ImageSkia* images;
-    if (type_ == NetworkMenuIcon::ARCS) {
-      if (index_ >= kNumArcsImages)
-        return gfx::ImageSkiaRep();
-      images = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          color_ == NetworkMenuIcon::COLOR_DARK ?
-          IDR_STATUSBAR_NETWORK_ARCS_DARK : IDR_STATUSBAR_NETWORK_ARCS_LIGHT);
-      width = images->width();
-      height = images->height() / kNumArcsImages;
-    } else {
-      if (index_ >= kNumBarsImages)
-        return gfx::ImageSkiaRep();
-
-      images = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          color_ == NetworkMenuIcon::COLOR_DARK ?
-          IDR_STATUSBAR_NETWORK_BARS_DARK : IDR_STATUSBAR_NETWORK_BARS_LIGHT);
-      width = images->width();
-      height = images->height() / kNumBarsImages;
-    }
-    gfx::ImageSkiaRep image_rep = images->GetRepresentation(scale_factor);
-
-    float scale = ui::GetScaleFactorScale(image_rep.scale_factor());
-    height *= scale;
-    width *= scale;
-
-    SkIRect subset = SkIRect::MakeXYWH(0, index_ * height, width, height);
-
-    SkBitmap dst_bitmap;
-    image_rep.sk_bitmap().extractSubset(&dst_bitmap, subset);
-    return gfx::ImageSkiaRep(dst_bitmap, image_rep.scale_factor());
-  }
-
-  gfx::Size size() const {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    // NeworkMenuIcons all have the same size in DIP for arc/bars.
-    if (type_ == NetworkMenuIcon::ARCS) {
-      gfx::Size size = rb.GetImageSkiaNamed(
-          IDR_STATUSBAR_NETWORK_ARCS_DARK)->size();
-      return gfx::Size(size.width(), size.height() / kNumArcsImages);
-    } else {
-      gfx::Size size = rb.GetImageSkiaNamed(
-          IDR_STATUSBAR_NETWORK_BARS_DARK)->size();
-      return gfx::Size(size.width(), size.height() / kNumBarsImages);
-    }
-  }
-
- private:
-  const NetworkMenuIcon::ImageType type_;
-  const int index_;
-  const NetworkMenuIcon::ResourceColorTheme color_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkMenuIconSource);
-};
-
 gfx::ImageSkia CreateVpnImage() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* ethernet_icon = rb.GetImageSkiaNamed(IDR_STATUSBAR_VPN);
   const gfx::ImageSkia* vpn_badge = rb.GetImageSkiaNamed(kVpnBadgeId);
   return NetworkMenuIcon::GenerateImageFromComponents(
       *ethernet_icon, NULL, NULL, vpn_badge, NULL);
+}
+
+gfx::ImageSkia GetEmptyImage(const gfx::Size& size) {
+  return gfx::ImageSkia(new EmptyImageSource(size), size);
 }
 
 }  // namespace
@@ -853,8 +782,8 @@ void NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
       // Even though this is the only place we use vpn_connecting_badge_,
       // it is important that this is a member variable since we set a
       // pointer to it and access that pointer in icon_->GenerateImage().
-      vpn_connecting_badge_ = gfx::ImageSkia(
-          new FadedImageSource(*vpn_badge, animation), vpn_badge->size());
+      vpn_connecting_badge_ = gfx::ImageSkiaOperations::CreateBlendedImage(
+          GetEmptyImage(vpn_badge->size()), *vpn_badge, animation);
       icon_->set_bottom_left_badge(&vpn_connecting_badge_);
     }
   }
@@ -930,8 +859,8 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
 // We blend connecting icons with a black image to generate a faded icon.
 const gfx::ImageSkia NetworkMenuIcon::GenerateConnectingImage(
     const gfx::ImageSkia& source) {
-  return gfx::ImageSkia(new FadedImageSource(source, kConnectingImageAlpha),
-                        source.size());
+  return gfx::ImageSkiaOperations::CreateBlendedImage(
+      GetEmptyImage(source.size()), source, kConnectingImageAlpha);
 }
 
 // Generates and caches an icon image for a network's current state.
@@ -975,8 +904,28 @@ const gfx::ImageSkia NetworkMenuIcon::GetVpnImage() {
 const gfx::ImageSkia NetworkMenuIcon::GetImage(ImageType type,
                                                int index,
                                                ResourceColorTheme color) {
-  NetworkMenuIconSource* source = new NetworkMenuIconSource(type, index, color);
-  return gfx::ImageSkia(source, source->size());
+  int width, height = 0;
+  gfx::ImageSkia* images = NULL;
+  if (type == NetworkMenuIcon::ARCS) {
+    if (index >= kNumArcsImages)
+      return gfx::ImageSkia();
+    images = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        color == NetworkMenuIcon::COLOR_DARK ?
+        IDR_STATUSBAR_NETWORK_ARCS_DARK : IDR_STATUSBAR_NETWORK_ARCS_LIGHT);
+    width = images->width();
+    height = images->height() / kNumArcsImages;
+  } else {
+    if (index >= kNumBarsImages)
+      return gfx::ImageSkia();
+
+    images = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        color == NetworkMenuIcon::COLOR_DARK ?
+        IDR_STATUSBAR_NETWORK_BARS_DARK : IDR_STATUSBAR_NETWORK_BARS_LIGHT);
+    width = images->width();
+    height = images->height() / kNumBarsImages;
+  }
+  return gfx::ImageSkiaOperations::ExtractSubset(*images,
+      gfx::Rect(0, index * height, width, height));
 }
 
 const gfx::ImageSkia NetworkMenuIcon::GetDisconnectedImage(

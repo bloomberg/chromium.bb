@@ -68,6 +68,9 @@ class BlendingImageSource : public gfx::ImageSkiaSource {
         alpha_(alpha) {
   }
 
+  virtual ~BlendingImageSource() {
+  }
+
   // gfx::ImageSkiaSource overrides:
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     ImageSkiaRep first_rep = first_.GetRepresentation(scale_factor);
@@ -91,6 +94,9 @@ class MaskedImageSource : public gfx::ImageSkiaSource {
   MaskedImageSource(const ImageSkia& rgb, const ImageSkia& alpha)
       : rgb_(rgb),
         alpha_(alpha) {
+  }
+
+  virtual ~MaskedImageSource() {
   }
 
   // gfx::ImageSkiaSource overrides:
@@ -122,6 +128,9 @@ class TiledImageSource : public gfx::ImageSkiaSource {
         dst_h_(dst_h) {
   }
 
+  virtual ~TiledImageSource() {
+  }
+
   // gfx::ImageSkiaSource overrides:
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     ImageSkiaRep source_rep = source_.GetRepresentation(scale_factor);
@@ -141,6 +150,72 @@ class TiledImageSource : public gfx::ImageSkiaSource {
   const int dst_h_;
 
   DISALLOW_COPY_AND_ASSIGN(TiledImageSource);
+};
+
+// ImageSkiaSource which uses SkBitmapOperations::CreateButtonBackground
+// to generate image reps for the target image.
+class ButtonImageSource: public gfx::ImageSkiaSource {
+ public:
+  ButtonImageSource(SkColor color,
+                    const ImageSkia& image,
+                    const ImageSkia& mask)
+      : color_(color),
+        image_(image),
+        mask_(mask) {
+  }
+
+  virtual ~ButtonImageSource() {
+  }
+
+  // gfx::ImageSkiaSource overrides:
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
+    ImageSkiaRep mask_rep = mask_.GetRepresentation(scale_factor);
+    MatchScale(&image_rep, &mask_rep);
+    return ImageSkiaRep(
+        SkBitmapOperations::CreateButtonBackground(color_,
+            image_rep.sk_bitmap(), mask_rep.sk_bitmap()),
+        image_rep.scale_factor());
+  }
+
+ private:
+  const SkColor color_;
+  const ImageSkia image_;
+  const ImageSkia mask_;
+
+  DISALLOW_COPY_AND_ASSIGN(ButtonImageSource);
+};
+
+// ImageSkiaSource which uses SkBitmap::extractSubset to generate image reps
+// for the target image.
+class ExtractSubsetImageSource: public gfx::ImageSkiaSource {
+ public:
+  ExtractSubsetImageSource(const gfx::ImageSkia& image,
+                           const gfx::Rect& subset_bounds)
+      : image_(image),
+        subset_bounds_(subset_bounds) {
+  }
+
+  ~ExtractSubsetImageSource() {
+  }
+
+  // gfx::ImageSkiaSource overrides:
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
+    SkIRect subset_bounds_in_pixel = RectToSkIRect(subset_bounds_.Scale(
+        ui::GetScaleFactorScale(image_rep.scale_factor())));
+    SkBitmap dst;
+    bool success = image_rep.sk_bitmap().extractSubset(&dst,
+                                                       subset_bounds_in_pixel);
+    DCHECK(success);
+    return gfx::ImageSkiaRep(dst, image_rep.scale_factor());
+  }
+
+ private:
+  const gfx::ImageSkia image_;
+  const gfx::Rect subset_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtractSubsetImageSource);
 };
 
 // ResizeSource resizes relevant image reps in |source| to |target_dip_size|
@@ -232,6 +307,25 @@ ImageSkia ImageSkiaOperations::CreateTiledImage(const ImageSkia& source,
                                                 int dst_w, int dst_h) {
   return ImageSkia(new TiledImageSource(source, src_x, src_y, dst_w, dst_h),
                    gfx::Size(dst_w, dst_h));
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateButtonBackground(SkColor color,
+                                                      const ImageSkia& image,
+                                                      const ImageSkia& mask) {
+  return ImageSkia(new ButtonImageSource(color, image, mask), mask.size());
+}
+
+// static
+ImageSkia ImageSkiaOperations::ExtractSubset(const ImageSkia& image,
+                                             const Rect& subset_bounds) {
+  gfx::Rect clipped_bounds = subset_bounds.Intersect(gfx::Rect(image.size()));
+  if (image.isNull() || clipped_bounds.IsEmpty()) {
+    return ImageSkia();
+  }
+
+  return ImageSkia(new ExtractSubsetImageSource(image, clipped_bounds),
+                   clipped_bounds.size());
 }
 
 // static
