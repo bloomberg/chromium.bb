@@ -194,6 +194,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // with that surface.
   virtual void SurfaceUpdated(int32 surface_id) = 0;
 
+  // Called to resume the requests for a view created through window.open that
+  // were initially blocked.
+  virtual void ResumeRequestsForView(int route_id) = 0;
+
   // Static management functions -----------------------------------------------
 
   // Flag to run the renderer in process.  This is primarily

@@ -71,6 +71,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
   virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
+  virtual void ResumeRequestsForView(int route_id) OVERRIDE;
 
   // IPC::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;

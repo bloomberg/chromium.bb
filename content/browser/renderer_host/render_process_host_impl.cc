@@ -1135,6 +1135,10 @@ void RenderProcessHostImpl::SurfaceUpdated(int32 surface_id) {
       surface_id));
 }
 
+void RenderProcessHostImpl::ResumeRequestsForView(int route_id) {
+  widget_helper_->ResumeRequestsForView(route_id);
+}
+
 IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
   return channel_.get();
 }

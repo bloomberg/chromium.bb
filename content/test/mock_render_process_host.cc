@@ -208,6 +208,9 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
 void MockRenderProcessHost::SurfaceUpdated(int32 surface_id) {
 }
 
+void MockRenderProcessHost::ResumeRequestsForView(int route_id) {
+}
+
 RenderProcessHost::RenderWidgetHostsIterator
     MockRenderProcessHost::GetRenderWidgetHostsIterator() {
   return RenderWidgetHostsIterator(&render_widget_hosts_);

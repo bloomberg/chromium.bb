@@ -88,6 +88,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual bool FastShutdownStarted() const OVERRIDE;
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
   virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
+  virtual void ResumeRequestsForView(int route_id) OVERRIDE;
 
   // IPC::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;

@@ -245,6 +245,8 @@ void RenderWidgetHostImpl::Init() {
 
   // Send the ack along with the information on placement.
   Send(new ViewMsg_CreatingNew_ACK(routing_id_, GetNativeViewId()));
+  GetProcess()->ResumeRequestsForView(routing_id_);
+
   WasResized();
 }
 

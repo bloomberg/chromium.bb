@@ -143,9 +143,7 @@ void RenderWidgetHelper::CrossSiteSwapOutACK(
 }
 
 bool RenderWidgetHelper::WaitForBackingStoreMsg(
-    int render_widget_id,
-                                          const base::TimeDelta& max_delay,
-                                          IPC::Message* msg) {
+    int render_widget_id, const base::TimeDelta& max_delay, IPC::Message* msg) {
   base::TimeTicks time_start = base::TimeTicks::Now();
 
   for (;;) {
@@ -187,6 +185,17 @@ bool RenderWidgetHelper::WaitForBackingStoreMsg(
   }
 
   return false;
+}
+
+void RenderWidgetHelper::ResumeRequestsForView(int route_id) {
+  // We only need to resume blocked requests if we used a valid route_id.
+  // See CreateNewWindow.
+  if (route_id != MSG_ROUTING_NONE) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&RenderWidgetHelper::OnResumeRequestsForView,
+            this, route_id));
+  }
 }
 
 void RenderWidgetHelper::DidReceiveBackingStoreMsg(const IPC::Message& msg) {
@@ -288,17 +297,9 @@ void RenderWidgetHelper::OnCreateWindowOnUI(
       RenderViewHostImpl::FromID(render_process_id_, params.opener_id);
   if (host)
     host->CreateNewWindow(route_id, params, session_storage_namespace);
-
-  // We only need to resume blocked requests if we used a valid route_id.
-  // See CreateNewWindow.
-  if (route_id != MSG_ROUTING_NONE) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&RenderWidgetHelper::OnCreateWindowOnIO, this, route_id));
-  }
 }
 
-void RenderWidgetHelper::OnCreateWindowOnIO(int route_id) {
+void RenderWidgetHelper::OnResumeRequestsForView(int route_id) {
   resource_dispatcher_host_->ResumeBlockedRequestsForRoute(
       render_process_id_, route_id);
 }

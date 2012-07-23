@@ -130,6 +130,9 @@ class RenderWidgetHelper
   bool WaitForBackingStoreMsg(int render_widget_id,
                               const base::TimeDelta& max_delay,
                               IPC::Message* msg);
+  // Called to resume the requests for a view after it's ready. The view was
+  // created by CreateNewWindow which initially blocked the requests.
+  void ResumeRequestsForView(int route_id);
 
 #if defined(OS_MACOSX)
   // Given the id of a transport DIB, return a mapping to it or NULL on error.
@@ -197,7 +200,7 @@ class RenderWidgetHelper
       SessionStorageNamespace* session_storage_namespace);
 
   // Called on the IO thread after a window was created on the UI thread.
-  void OnCreateWindowOnIO(int route_id);
+  void OnResumeRequestsForView(int route_id);
 
   // Called on the UI thread to finish creating a widget.
   void OnCreateWidgetOnUI(int opener_id,

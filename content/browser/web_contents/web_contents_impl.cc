@@ -1146,6 +1146,7 @@ void WebContentsImpl::CreateNewWindow(
   if (delegate_ && !delegate_->ShouldCreateWebContents(
           this, route_id, params.window_container_type, params.frame_name,
           params.target_url)) {
+    GetRenderViewHost()->GetProcess()->ResumeRequestsForView(route_id);
     return;
   }
 
