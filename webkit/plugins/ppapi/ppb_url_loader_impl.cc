@@ -390,6 +390,8 @@ void PPB_URLLoader_Impl::SetDefersLoading(bool defers_loading) {
 
 void PPB_URLLoader_Impl::FinishLoading(int32_t done_status) {
   done_status_ = done_status;
+  user_buffer_ = NULL;
+  user_buffer_size_ = 0;
   // If the client hasn't called any function that takes a callback since
   // the initial call to Open, or called ReadResponseBody and got a
   // synchronous return, then the callback will be NULL.
@@ -424,6 +426,10 @@ void PPB_URLLoader_Impl::RunCallback(int32_t result) {
     CHECK(main_document_loader_);
     return;
   }
+
+  // If |user_buffer_| was set as part of registering the callback, ensure
+  // it got cleared since the callback is now free to delete it.
+  DCHECK(!user_buffer_);
   TrackedCallback::ClearAndRun(&pending_callback_, result);
 }
 
