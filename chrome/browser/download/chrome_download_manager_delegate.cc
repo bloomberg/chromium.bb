@@ -44,6 +44,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/web_intent_data.h"
 
@@ -100,6 +101,22 @@ class SafeBrowsingState : public DownloadCompletionBlocker {
 };
 
 SafeBrowsingState::~SafeBrowsingState() {}
+
+// Generate a filename based on the response from the server.  Similar
+// in operation to net::GenerateFileName(), but uses a localized
+// default name.
+void GenerateFileNameFromRequest(const DownloadItem& download_item,
+                                 FilePath* generated_name) {
+  std::string default_file_name(
+      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
+
+  *generated_name = net::GenerateFileName(download_item.GetURL(),
+                                          download_item.GetContentDisposition(),
+                                          download_item.GetReferrerCharset(),
+                                          download_item.GetSuggestedFilename(),
+                                          download_item.GetMimeType(),
+                                          default_file_name);
+}
 
 }  // namespace
 
@@ -634,7 +651,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   // Allow extensions to be explicitly saved.
   if (!is_forced_path) {
     FilePath generated_name;
-    download_util::GenerateFileNameFromRequest(*download, &generated_name);
+    GenerateFileNameFromRequest(*download, &generated_name);
 
     // Freeze the user's preference for showing a Save As dialog.  We're going
     // to bounce around a bunch of threads and we don't want to worry about race

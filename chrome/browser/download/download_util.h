@@ -44,12 +44,6 @@ const FilePath& GetDefaultDownloadDirectory();
 // Return true if the |download_path| is dangerous path.
 bool DownloadPathIsDangerous(const FilePath& download_path);
 
-// Generate a filename based on the response from the server.  Similar
-// in operation to net::GenerateFileName(), but uses a localized
-// default name.
-void GenerateFileNameFromRequest(const content::DownloadItem& download_item,
-                                 FilePath* generated_name);
-
 // Download progress animations ------------------------------------------------
 
 // Arc sweep angle for use with downloads of unknown size
