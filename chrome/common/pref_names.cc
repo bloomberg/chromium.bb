@@ -974,11 +974,6 @@ const char kEnableReferrers[] = "enable_referrers";
 // Boolean to enable reporting memory info to page.
 const char kEnableMemoryInfo[] = "enable_memory_info";
 
-#if defined(OS_MACOSX)
-// Whether presentation mode is enabled for fullscreen (used on Lion only).
-const char kPresentationModeEnabled[] = "presentation_mode_enabled";
-#endif
-
 // Boolean that specifies whether to import bookmarks from the default browser
 // on first run.
 const char kImportBookmarks[] = "import_bookmarks";

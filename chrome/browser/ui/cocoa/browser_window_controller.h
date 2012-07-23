@@ -129,8 +129,12 @@ class WebContents;
   BOOL enteredPresentationModeFromFullscreen_;
 
   // True between -windowWillEnterFullScreen and -windowDidEnterFullScreen.
-  // Only used on Lion.
+  // Only used on Lion and higher.
   BOOL enteringFullscreen_;
+
+  // True between |-setPresentationMode:url:bubbleType:| and
+  // -windowDidEnterFullScreen. Only used on Lion and higher.
+  BOOL enteringPresentationMode_;
 
   // The size of the original (non-fullscreen) window.  This is saved just
   // before entering fullscreen mode and is only valid when |-isFullscreen|

@@ -76,7 +76,6 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
-#include "chrome/browser/ui/cocoa/presentation_mode_prefs.h"
 #include "chrome/browser/ui/startup/obsolete_os_prompt.h"
 #endif
 
@@ -260,10 +259,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #if defined(OS_CHROMEOS)
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(user_prefs);
-#endif
-
-#if defined(OS_MACOSX)
-  PresentationModePrefs::RegisterUserPrefs(user_prefs);
 #endif
 
 #if defined(OS_WIN)

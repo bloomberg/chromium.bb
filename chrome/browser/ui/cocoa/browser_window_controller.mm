@@ -1039,8 +1039,9 @@ enum {
           enable &= [self supportsFullscreen];
           if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]]) {
             NSString* menuTitle = l10n_util::GetNSString(
-                [self isFullscreen] ? IDS_EXIT_FULLSCREEN_MAC :
-                                      IDS_ENTER_FULLSCREEN_MAC);
+                [self isFullscreen] && ![self inPresentationMode] ?
+                    IDS_EXIT_FULLSCREEN_MAC :
+                    IDS_ENTER_FULLSCREEN_MAC);
             [static_cast<NSMenuItem*>(item) setTitle:menuTitle];
 
             if (base::mac::IsOSSnowLeopardOrEarlier())
@@ -2028,11 +2029,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   if (presentationMode) {
     BOOL fullscreen = [self isFullscreen];
-    BOOL fullscreen_for_tab =
-        browser_->fullscreen_controller()->IsFullscreenForTabOrPending();
-    if (!fullscreen_for_tab)
-      [self setShouldUsePresentationModeWhenEnteringFullscreen:YES];
     enteredPresentationModeFromFullscreen_ = fullscreen;
+    enteringPresentationMode_ = YES;
 
     if (fullscreen) {
       // If already in fullscreen mode, just toggle the presentation mode
@@ -2057,25 +2055,11 @@ willAnimateFromState:(bookmarks::VisualState)oldState
         [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
     }
   } else {
-    if (enteredPresentationModeFromFullscreen_) {
-      // The window is currently in fullscreen mode, but the user is choosing to
-      // turn presentation mode off (choosing to always show the UI).  Set the
-      // preference to ensure that presentation mode will stay off for the next
-      // window that goes fullscreen.
-      [self setShouldUsePresentationModeWhenEnteringFullscreen:NO];
-      [self setPresentationModeInternal:NO forceDropdown:NO];
-      // Since -windowWillExitFullScreen: won't be called in the
-      // presentation mode --> fullscreen case, manually hide the exit bubble.
-      [self destroyFullscreenExitBubbleIfNecessary];
-    } else {
-      // The user entered presentation mode directly from non-fullscreen mode
-      // using the "Enter Presentation Mode" menu item and is using that same
-      // menu item to exit presentation mode.  In this case, exit fullscreen
-      // mode as well (using the Lion machinery).
-      NSWindow* window = [self window];
-      if ([window isKindOfClass:[FramedBrowserWindow class]])
-        [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
-    }
+    // The user is currently in presentation mode and is now exiting it, which
+    // also exits fullscreen using the Lion machinery.
+    NSWindow* window = [self window];
+    if ([window isKindOfClass:[FramedBrowserWindow class]])
+      [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
   }
 }
 

@@ -344,10 +344,6 @@ extern const char kDisable3DAPIs[];
 extern const char kEnableHyperlinkAuditing[];
 extern const char kEnableReferrers[];
 
-#if defined(OS_MACOSX)
-extern const char kPresentationModeEnabled[];
-#endif
-
 extern const char kImportBookmarks[];
 extern const char kImportHistory[];
 extern const char kImportHomepage[];

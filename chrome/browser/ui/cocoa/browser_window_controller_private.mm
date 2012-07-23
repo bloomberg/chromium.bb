@@ -510,16 +510,6 @@ willPositionSheet:(NSWindow*)sheet
 
 // Fullscreen and presentation mode methods
 
-- (BOOL)shouldUsePresentationModeWhenEnteringFullscreen {
-  return browser_->profile()->GetPrefs()->GetBoolean(
-      prefs::kPresentationModeEnabled);
-}
-
-- (void)setShouldUsePresentationModeWhenEnteringFullscreen:(BOOL)flag {
-  browser_->profile()->GetPrefs()->SetBoolean(
-      prefs::kPresentationModeEnabled, flag);
-}
-
 - (BOOL)shouldShowPresentationModeToggle {
   return base::mac::IsOSLionOrLater() && [self isFullscreen];
 }
@@ -809,9 +799,8 @@ willPositionSheet:(NSWindow*)sheet
 
   NSWindow* window = [self window];
   savedRegularWindowFrame_ = [window frame];
-  BOOL mode = [self shouldUsePresentationModeWhenEnteringFullscreen];
-  mode = mode ||
-         browser_->fullscreen_controller()->IsFullscreenForTabOrPending();
+  BOOL mode = enteringPresentationMode_ ||
+       browser_->fullscreen_controller()->IsFullscreenForTabOrPending();
   enteringFullscreen_ = YES;
   [self setPresentationModeInternal:mode forceDropdown:NO];
 }
@@ -820,6 +809,7 @@ willPositionSheet:(NSWindow*)sheet
   if (base::mac::IsOSLionOrLater())
     [self deregisterForContentViewResizeNotifications];
   enteringFullscreen_ = NO;
+  enteringPresentationMode_ = NO;
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
 }

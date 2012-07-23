@@ -104,13 +104,6 @@
 // keep the total height of the two views constant.
 - (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression;
 
-// Gets and sets whether to default to presentation mode when entering
-// fullscreen on Lion or later.  On Leopard and Snow Leopard, this preference is
-// ignored (fullscreen mode always turns presentation mode on).  This method is
-// safe to call on all OS versions.
-- (BOOL)shouldUsePresentationModeWhenEnteringFullscreen;
-- (void)setShouldUsePresentationModeWhenEnteringFullscreen:(BOOL)flag;
-
 // Whether to show the presentation mode toggle button in the UI.  Returns YES
 // if in fullscreen mode on Lion or later.  This method is safe to call on all
 // OS versions.
