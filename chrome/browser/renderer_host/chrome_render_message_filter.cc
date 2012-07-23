@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
+#include "chrome/browser/nacl_host/pnacl_file_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -73,6 +74,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(ChromeRenderMessageFilter, message, *message_was_ok)
 #if !defined(DISABLE_NACL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_LaunchNaCl, OnLaunchNaCl)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetReadonlyPnaclFD,
+                                    OnGetReadonlyPnaclFd)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
@@ -168,6 +171,13 @@ void ChromeRenderMessageFilter::OnLaunchNaCl(const GURL& manifest_url,
                                              IPC::Message* reply_msg) {
   NaClProcessHost* host = new NaClProcessHost(manifest_url, off_the_record_);
   host->Launch(this, socket_count, reply_msg, extension_info_map_);
+}
+
+void ChromeRenderMessageFilter::OnGetReadonlyPnaclFd(
+    const std::string& filename, IPC::Message* reply_msg) {
+  // This posts a task to another thread, but the renderer will
+  // block until the reply is sent.
+  pnacl_file_host::GetReadonlyPnaclFd(this, filename, reply_msg);
 }
 #endif
 

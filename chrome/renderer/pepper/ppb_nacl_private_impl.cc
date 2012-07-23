@@ -6,6 +6,11 @@
 
 #ifndef DISABLE_NACL
 
+#if defined(OS_WIN)
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -42,6 +47,9 @@ using WebKit::WebView;
 
 namespace {
 
+// This allows us to send requests from background threads.
+// E.g., to do LaunchSelLdr for helper nexes (which is done synchronously),
+// in a background thread, to avoid jank.
 base::LazyInstance<scoped_refptr<IPC::SyncMessageFilter> >
     g_background_thread_sender = LAZY_INSTANCE_INITIALIZER;
 
@@ -257,6 +265,40 @@ int BrokerDuplicateHandle(void* source_handle,
 #endif
 }
 
+int GetReadonlyPnaclFD(const char* filename) {
+  IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
+  IPC::Sender* sender = content::RenderThread::Get();
+  if (sender == NULL)
+    sender = g_background_thread_sender.Pointer()->get();
+
+  if (!sender->Send(new ChromeViewHostMsg_GetReadonlyPnaclFD(
+          std::string(filename),
+          &out_fd))) {
+    return -1;
+  }
+
+  if (out_fd == IPC::InvalidPlatformFileForTransit()) {
+    return -1;
+  }
+
+  base::PlatformFile handle =
+      IPC::PlatformFileForTransitToPlatformFile(out_fd);
+#if defined(OS_WIN)
+  int posix_desc = _open_osfhandle(reinterpret_cast<intptr_t>(handle),
+                                   _O_RDONLY | _O_BINARY);
+  if (posix_desc == -1) {
+    // Close the Windows HANDLE if it can't be converted.
+    CloseHandle(handle);
+    return -1;
+  }
+  return posix_desc;
+#elif defined(OS_POSIX)
+  return handle;
+#else
+#error "GetReadonlyPnaclFD: Don't know how to convert FileDescriptor to native."
+#endif
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -264,6 +306,7 @@ const PPB_NaCl_Private nacl_interface = {
   &Are3DInterfacesDisabled,
   &EnableBackgroundSelLdrLaunch,
   &BrokerDuplicateHandle,
+  &GetReadonlyPnaclFD
 };
 
 }  // namespace

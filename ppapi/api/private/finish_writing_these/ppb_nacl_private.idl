@@ -6,7 +6,7 @@
 /* This file contains NaCl private interfaces. */
 
 /* PPB_NaCl_Private */
-interface PPB_NaCl_Private_0_5 {
+interface PPB_NaCl_Private_0_6 {
   /* This function launches NaCl's sel_ldr process.  On success, the function
    * returns true, otherwise it returns false.  When it returns true, it will
    * write |socket_count| nacl::Handles to imc_handles.
@@ -31,4 +31,11 @@ interface PPB_NaCl_Private_0_5 {
    * code to be processed by the graphics stack.
    */
   bool Are3DInterfacesDisabled();
+
+  /* Returns a read-only file descriptor of a file rooted in the Pnacl
+   * component directory, or -1 on error.
+   * Do we want this to take a completion callback and be async, or
+   * could we make this happen on another thread?
+   */
+  int32_t GetReadonlyPnaclFd([in] str_t filename);
 };

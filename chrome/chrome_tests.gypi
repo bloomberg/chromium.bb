@@ -1359,6 +1359,7 @@
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/variations_service_unittest.cc',
         'browser/nacl_host/nacl_validation_cache_unittest.cc',
+        'browser/nacl_host/pnacl_file_host_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
         'browser/net/chrome_net_log_unittest.cc',
         'browser/net/clear_on_exit_policy_unittest.cc',
@@ -2074,6 +2075,7 @@
         ['disable_nacl==1', {
           'sources!':[
             'browser/nacl_host/nacl_validation_cache_unittest.cc',
+            'browser/nacl_host/pnacl_file_host_unittest.cc',
             'nacl/nacl_ipc_adapter_unittest.cc',
             'nacl/nacl_validation_query_unittest.cc',
           ],

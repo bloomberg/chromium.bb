@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl(Private);0.5"
+#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl(Private);0.6"
 
 struct PPB_NaCl_Private {
   // This function launches NaCl's sel_ldr process.  On success, the function
@@ -54,6 +54,12 @@ struct PPB_NaCl_Private {
                                void** target_handle,
                                uint32_t desired_access,
                                uint32_t options);
+
+  // Returns a read-only file descriptor of a file rooted in the Pnacl
+  // component directory, or -1 on error.
+  // Do we want this to take a completion callback and be async, or
+  // or could we make this happen on another thread?
+  int (*GetReadonlyPnaclFd)(const char* filename);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_

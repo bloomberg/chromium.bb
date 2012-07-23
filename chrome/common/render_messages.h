@@ -495,6 +495,12 @@ IPC_SYNC_MESSAGE_CONTROL2_2(ChromeViewHostMsg_LaunchNaCl,
                                 /* imc channel handles */,
                             IPC::ChannelHandle /* ipc_channel_handle */)
 
+// A renderer sends this to the browser process when it wants to start
+// open a file for from the Pnacl component directory.
+IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_GetReadonlyPnaclFD,
+                            std::string /* name of requested PNaCl file */,
+                            IPC::PlatformFileForTransit /* output file */)
+
 // Notification that the page has an OpenSearch description document
 // associated with it.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageHasOSDD,
