@@ -22,6 +22,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
@@ -302,19 +303,6 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
       render_view_host != pending_render_view_host_)
     return;
 
-  // TODO(jochen): Remove this hack once we properly include the process ID in
-  // the events.
-  // Ignore navigations of sub frames, if the main frame isn't committed yet.
-  // This might happen if a sub frame triggers a navigation for both the main
-  // frame and itself. Since the sub frame is about to be deleted, and there's
-  // no way for an extension to tell that these navigations belong to an old
-  // frame, we just suppress the events here.
-  int64 main_frame_id = navigation_state_.GetMainFrameID();
-  if (!is_main_frame &&
-      !navigation_state_.GetNavigationCommitted(main_frame_id)) {
-    return;
-  }
-
   navigation_state_.TrackFrame(frame_id,
                                validated_url,
                                is_main_frame,
@@ -323,7 +311,8 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     return;
 
   helpers::DispatchOnBeforeNavigate(
-      web_contents(), frame_id, is_main_frame, validated_url);
+      web_contents(), render_view_host->GetProcess()->GetID(), frame_id,
+      is_main_frame, validated_url);
 }
 
 void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
@@ -406,7 +395,8 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
 
   navigation_state_.SetErrorOccurredInFrame(frame_id);
   helpers::DispatchOnErrorOccurred(
-      web_contents(), validated_url, frame_id, is_main_frame, error_code);
+      web_contents(), render_view_host->GetProcess()->GetID(), validated_url,
+      frame_id, is_main_frame, error_code);
 }
 
 void WebNavigationTabObserver::DocumentLoadedInFrame(
@@ -453,7 +443,8 @@ void WebNavigationTabObserver::DidFailLoad(
     return;
   navigation_state_.SetErrorOccurredInFrame(frame_id);
   helpers::DispatchOnErrorOccurred(
-      web_contents(), validated_url, frame_id, is_main_frame, error_code);
+      web_contents(), render_view_host->GetProcess()->GetID(), validated_url,
+      frame_id, is_main_frame, error_code);
 }
 
 void WebNavigationTabObserver::DidOpenRequestedURL(
@@ -493,6 +484,7 @@ void WebNavigationTabObserver::WebContentsDestroyed(content::WebContents* tab) {
         navigation_state_.CanSendEvents(*frame)) {
       helpers::DispatchOnErrorOccurred(
         tab,
+        tab->GetRenderViewHost()->GetProcess()->GetID(),
         navigation_state_.GetUrl(*frame),
         *frame,
         navigation_state_.IsMainFrame(*frame),

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,14 @@ function runTests() {
           { label: "a-onBeforeNavigate",
             event: "onBeforeNavigate",
             details: { frameId: 0,
+                       processId: 0,
                        tabId: 0,
                        timeStamp: 0,
                        url: getURL('simpleLoad/a.html') }},
           { label: "a-onCommitted",
             event: "onCommitted",
             details: { frameId: 0,
+                       processId: 0,
                        tabId: 0,
                        timeStamp: 0,
                        transitionQualifiers: [],
@@ -28,12 +30,14 @@ function runTests() {
           { label: "a-onDOMContentLoaded",
             event: "onDOMContentLoaded",
             details: { frameId: 0,
+                       processId: 0,
                        tabId: 0,
                        timeStamp: 0,
                        url: getURL('simpleLoad/a.html') }},
           { label: "a-onCompleted",
             event: "onCompleted",
             details: { frameId: 0,
+                       processId: 0,
                        tabId: 0,
                        timeStamp: 0,
                        url: getURL('simpleLoad/a.html') }}],

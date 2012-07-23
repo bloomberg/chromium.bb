@@ -10,6 +10,8 @@ var nextFrameId;
 var frameIds;
 var nextTabId;
 var tabIds;
+var nextProcessId;
+var processIds;
 var initialized = false;
 
 function deepCopy(obj) {
@@ -48,6 +50,8 @@ function expect(data, order) {
   frameIds = {};
   nextTabId = 0;
   tabIds = {};
+  nextProcessId = 0;
+  processIds = {}
   initListeners();
 }
 
@@ -130,13 +134,17 @@ function captureEvent(name, details) {
     }
     details.replacedTabId = tabIds[details.replacedTabId];
   }
-  // Don't bother testing those before we don't correctly dispatch events for
-  // cross process navigations.
   if ('processId' in details) {
-    delete details.processId;
+    if (processIds[details.processId] === undefined) {
+      processIds[details.processId] = nextProcessId++;
+    }
+    details.processId = processIds[details.processId];
   }
   if ('sourceProcessId' in details) {
-    delete details.sourceProcessId;
+    if (processIds[details.sourceProcessId] === undefined) {
+      processIds[details.sourceProcessId] = nextProcessId++;
+    }
+    details.sourceProcessId = processIds[details.sourceProcessId];
   }
 
   // find |details| in expectedEventData

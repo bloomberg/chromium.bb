@@ -26,6 +26,7 @@ int GetFrameId(bool is_main_frame, int64 frame_id);
 
 // Create and dispatch the various events of the webNavigation API.
 void DispatchOnBeforeNavigate(content::WebContents* web_contents,
+                              int render_process_id,
                               int64 frame_id,
                               bool is_main_frame,
                               const GURL& validated_url);
@@ -56,6 +57,7 @@ void DispatchOnCreatedNavigationTarget(
     const GURL& target_url);
 
 void DispatchOnErrorOccurred(content::WebContents* web_contents,
+                             int render_process_id,
                              const GURL& url,
                              int64 frame_id,
                              bool is_main_frame,
