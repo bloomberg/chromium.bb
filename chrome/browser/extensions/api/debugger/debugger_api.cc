@@ -11,6 +11,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/debugger.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
@@ -44,8 +46,14 @@ using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::WebContents;
+using extensions::api::debugger::Debuggee;
 
 namespace keys = debugger_api_constants;
+namespace Attach = extensions::api::debugger::Attach;
+namespace Detach = extensions::api::debugger::Detach;
+namespace OnDetach = extensions::api::debugger::OnDetach;
+namespace OnEvent = extensions::api::debugger::OnEvent;
+namespace SendCommand = extensions::api::debugger::SendCommand;
 
 class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -81,7 +89,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   void Close();
   void SendMessageToBackend(SendCommandDebuggerFunction* function,
                             const std::string& method,
-                            Value* params);
+                            SendCommand::Params::CommandParams* command_params);
 
   // DevToolsClientHost interface
   virtual void InspectedContentsClosing() OVERRIDE;
@@ -111,12 +119,6 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
 };
 
 namespace {
-
-static Value* CreateDebuggeeId(int tab_id) {
-  DictionaryValue* debuggeeId = new DictionaryValue();
-  debuggeeId->SetInteger(keys::kTabIdKey, tab_id);
-  return debuggeeId;
-}
 
 class AttachedClientHosts {
  public:
@@ -229,14 +231,16 @@ void ExtensionDevToolsClientHost::Close() {
 void ExtensionDevToolsClientHost::SendMessageToBackend(
     SendCommandDebuggerFunction* function,
     const std::string& method,
-    Value* params) {
+    SendCommand::Params::CommandParams* command_params) {
   DictionaryValue protocol_request;
   int request_id = ++last_request_id_;
   pending_requests_[request_id] = function;
   protocol_request.SetInteger("id", request_id);
   protocol_request.SetString("method", method);
-  if (params)
-    protocol_request.Set("params", params->DeepCopy());
+  if (command_params) {
+    protocol_request.Set("params",
+                         command_params->additional_properties.DeepCopy());
+  }
 
   std::string json_args;
   base::JSONWriter::Write(&protocol_request, &json_args);
@@ -247,11 +251,12 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   if (profile != NULL && profile->GetExtensionEventRouter()) {
-    ListValue args;
-    args.Append(CreateDebuggeeId(tab_id_));
+    Debuggee debuggee;
+    debuggee.tab_id = tab_id_;
 
+    scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee));
     std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
+    base::JSONWriter::Write(args.get(), &json_args);
 
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, keys::kOnDetach, json_args, profile, GURL());
@@ -297,15 +302,17 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     if (!dictionary->GetString("method", &method_name))
       return;
 
-    ListValue args;
-    args.Append(CreateDebuggeeId(tab_id_));
-    args.Append(Value::CreateStringValue(method_name));
-    Value* params_value;
-    if (dictionary->Get("params", &params_value))
-      args.Append(params_value->DeepCopy());
+    Debuggee debuggee;
+    debuggee.tab_id = tab_id_;
 
+    OnEvent::Params params;
+    DictionaryValue* params_value;
+    if (dictionary->GetDictionary("params", &params_value))
+      params.additional_properties.Swap(params_value);
+
+    scoped_ptr<ListValue> args(OnEvent::Create(debuggee, method_name, params));
     std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
+    base::JSONWriter::Write(args.get(), &json_args);
 
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, keys::kOnEvent, json_args, profile, GURL());
@@ -354,12 +361,6 @@ DebuggerFunction::DebuggerFunction()
 }
 
 bool DebuggerFunction::InitTabContents() {
-  Value* debuggee;
-  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &debuggee));
-
-  DictionaryValue* dict = static_cast<DictionaryValue*>(debuggee);
-  EXTENSION_FUNCTION_VALIDATE(dict->GetInteger(keys::kTabIdKey, &tab_id_));
-
   // Find the TabContents that contains this tab id.
   contents_ = NULL;
   TabContents* tab_contents = NULL;
@@ -407,16 +408,18 @@ AttachDebuggerFunction::AttachDebuggerFunction() {}
 AttachDebuggerFunction::~AttachDebuggerFunction() {}
 
 bool AttachDebuggerFunction::RunImpl() {
+  scoped_ptr<Attach::Params> params(Attach::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  tab_id_ = params->target.tab_id;
   if (!InitTabContents())
     return false;
 
-  std::string version;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &version));
-
-  if (!webkit_glue::IsInspectorProtocolVersionSupported(version)) {
+  if (!webkit_glue::IsInspectorProtocolVersionSupported(
+      params->required_version)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kProtocolVersionNotSupportedError,
-        version);
+        params->required_version);
     return false;
   }
 
@@ -445,6 +448,10 @@ DetachDebuggerFunction::DetachDebuggerFunction() {}
 DetachDebuggerFunction::~DetachDebuggerFunction() {}
 
 bool DetachDebuggerFunction::RunImpl() {
+  scoped_ptr<Detach::Params> params(Detach::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  tab_id_ = params->target.tab_id;
   if (!InitClientHost())
     return false;
 
@@ -458,34 +465,32 @@ SendCommandDebuggerFunction::SendCommandDebuggerFunction() {}
 SendCommandDebuggerFunction::~SendCommandDebuggerFunction() {}
 
 bool SendCommandDebuggerFunction::RunImpl() {
+  scoped_ptr<SendCommand::Params> params(SendCommand::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  tab_id_ = params->target.tab_id;
   if (!InitClientHost())
     return false;
 
-  std::string method;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &method));
-
-  Value *params;
-  if (!args_->Get(2, &params))
-    params = NULL;
-
-  client_host_->SendMessageToBackend(this, method, params);
+  client_host_->SendMessageToBackend(this, params->method,
+      params->command_params.get());
   return true;
 }
 
 void SendCommandDebuggerFunction::SendResponseBody(
-    DictionaryValue* dictionary) {
+    DictionaryValue* response) {
   Value* error_body;
-  if (dictionary->Get("error", &error_body)) {
+  if (response->Get("error", &error_body)) {
     base::JSONWriter::Write(error_body, &error_);
     SendResponse(false);
     return;
   }
 
-  Value* result_body;
-  if (dictionary->Get("result", &result_body))
-    SetResult(result_body->DeepCopy());
-  else
-    SetResult(new DictionaryValue());
+  DictionaryValue* result_body;
+  SendCommand::Results::Result result;
+  if (response->GetDictionary("result", &result_body))
+    result.additional_properties.Swap(result_body);
+
+  results_ = SendCommand::Results::Create(result);
   SendResponse(true);
 }

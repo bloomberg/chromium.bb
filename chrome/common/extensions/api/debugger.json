@@ -76,7 +76,7 @@
           },
           {
             "type": "object",
-            "name": "params",
+            "name": "commandParams",
             "optional": true,
             "additionalProperties": { "type": "any" },
             "description": "JSON object with request parameters. This object must conform to the remote debugging params scheme for given method."

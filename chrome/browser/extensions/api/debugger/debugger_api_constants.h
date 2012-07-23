@@ -9,12 +9,6 @@
 
 namespace debugger_api_constants {
 
-// Keys.
-extern const char kCommandKey[];
-extern const char kDataKey[];
-extern const char kTabIdKey[];
-extern const char kVersionIdKey[];
-
 // Events.
 extern const char kOnEvent[];
 extern const char kOnDetach[];

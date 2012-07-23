@@ -71,7 +71,7 @@ class SendCommandDebuggerFunction : public DebuggerFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("debugger.sendCommand")
 
   SendCommandDebuggerFunction();
-  void SendResponseBody(base::DictionaryValue* dictionary);
+  void SendResponseBody(base::DictionaryValue* result);
 
  protected:
   virtual ~SendCommandDebuggerFunction();

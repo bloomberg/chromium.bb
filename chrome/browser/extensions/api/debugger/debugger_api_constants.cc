@@ -6,11 +6,6 @@
 
 namespace debugger_api_constants {
 
-const char kCommandKey[] = "command";
-const char kDataKey[] = "data";
-const char kTabIdKey[] = "tabId";
-const char kVersionIdKey[] = "requiredVersion";
-
 const char kOnEvent[] = "debugger.onEvent";
 const char kOnDetach[] = "debugger.onDetach";
 
