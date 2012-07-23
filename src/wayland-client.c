@@ -203,13 +203,13 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 		abort();
 	}
 
+	if (wl_debug)
+		wl_closure_print(closure, &proxy->object, true);
+
 	if (wl_closure_send(closure, proxy->display->connection)) {
 		fprintf(stderr, "Error sending request: %m\n");
 		abort();
 	}
-
-	if (wl_debug)
-		wl_closure_print(closure, &proxy->object, true);
 
 	wl_closure_destroy(closure);
 }
@@ -235,7 +235,7 @@ display_handle_error(void *data,
 		     struct wl_display *display, struct wl_object *object,
 		     uint32_t code, const char *message)
 {
-	fprintf(stderr, "%s@%d: error %d: %s\n",
+	fprintf(stderr, "%s@%u: error %d: %s\n",
 		object->interface->name, object->id, code, message);
 	abort();
 }
@@ -531,13 +531,13 @@ handle_event(struct wl_display *display,
 	closure = wl_connection_demarshal(display->connection, size,
 					  &display->objects, message);
 
+	if (wl_debug)
+		wl_closure_print(closure, &proxy->object, false);
+
 	if (closure == NULL || create_proxies(display, closure) < 0) {
 		fprintf(stderr, "Error demarshalling event\n");
 		abort();
 	}
-
-	if (wl_debug)
-		wl_closure_print(closure, &proxy->object, false);
 
 	wl_closure_invoke(closure, &proxy->object,
 			  proxy->object.implementation[opcode],

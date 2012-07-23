@@ -243,7 +243,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (resource == NULL) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_OBJECT,
-					       "invalid object %d", p[0]);
+					       "invalid object %u", p[0]);
 			break;
 		}
 
@@ -251,7 +251,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (opcode >= object->interface->method_count) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
-					       "invalid method %d, object %s@%d",
+					       "invalid method %d, object %s@%u",
 					       opcode,
 					       object->interface->name,
 					       object->id);
@@ -263,10 +263,13 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 						  &client->objects, message);
 		len -= size;
 
+		if (wl_debug)
+			wl_closure_print(closure, object, false);
+
 		if (closure == NULL && errno == EINVAL) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
-					       "invalid arguments for %s@%d.%s",
+					       "invalid arguments for %s@%u.%s",
 					       object->interface->name,
 					       object->id,
 					       message->name);
@@ -277,9 +280,6 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		}
 
 		deref_new_objects(closure);
-
-		if (wl_debug)
-			wl_closure_print(closure, object, false);
 
 		wl_closure_invoke(closure, object,
 				  object->implementation[opcode], client);

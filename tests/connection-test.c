@@ -236,7 +236,7 @@ TEST(connection_marshal)
 	marshal(&data, "n", 12, &object);
 	assert(data.buffer[2] == object.id);
 
-	marshal(&data, "n", 12, NULL);
+	marshal(&data, "?n", 12, NULL);
 	assert(data.buffer[2] == 0);
 
 	array.data = (void *) text;

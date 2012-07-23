@@ -738,7 +738,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 				 * destroyed client side */
 				*object = NULL;
 			} else if (*object == NULL && *p != 0) {
-				printf("unknown object (%d), message %s(%s)\n",
+				printf("unknown object (%u), message %s(%s)\n",
 				       *p, message->name, message->signature);
 				*object = NULL;
 				errno = EINVAL;
@@ -747,7 +747,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 			if (*object != NULL && message->types[i-2] != NULL &&
 			    (*object)->interface != message->types[i-2]) {
-				printf("invalid object (%d), type (%s), "
+				printf("invalid object (%u), type (%s), "
 					"message %s(%s)\n",
 				       *p, (*object)->interface->name,
 				       message->name, message->signature);
