@@ -113,7 +113,7 @@ bool PepperPlatformAudioOutputImpl::Initialize(
   client_ = client;
 
   media::AudioParameters::Format format;
-  const int kMaxFramesForLowLatency = 2048;
+  const int kMaxFramesForLowLatency = 2400;
   // Use the low latency back end if the client request is compatible, and
   // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
   if (sample_rate == audio_hardware::GetOutputSampleRate() &&
