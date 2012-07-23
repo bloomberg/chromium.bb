@@ -441,7 +441,7 @@ evdev_configure_device(struct evdev_input_device *device)
 	/* This rule tries to catch accelerometer devices and opt out. We may
 	 * want to adjust the protocol later adding a proper event for dealing
 	 * with accelerometers and implement here accordingly */
-	if (has_abs && !has_key)
+	if (has_abs && !has_key && !device->is_mt)
 		return -1;
 
 	if ((device->caps &
