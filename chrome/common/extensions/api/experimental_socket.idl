@@ -45,11 +45,14 @@ namespace experimental.socket {
   callback WriteCallback = void (WriteInfo writeInfo);
 
   dictionary RecvFromInfo {
-    // The resultCode returned from the underlying read() call.
+    // The resultCode returned from the underlying recvfrom() call.
     long resultCode;
 
     ArrayBuffer data;
+
+    // The address of the remote machine.
     DOMString address;
+
     long port;
   };
 
@@ -102,7 +105,7 @@ namespace experimental.socket {
     // |socketId| : The socketId.
     static void disconnect(long socketId);
 
-    // Reads data from the given socket.
+    // Reads data from the given connected socket.
     // |socketId| : The socketId.
     // |bufferSize| : The read buffer size.
     // |callback| : Delivers data that was available to be read without
@@ -111,35 +114,30 @@ namespace experimental.socket {
                      optional long bufferSize,
                      ReadCallback callback);
 
-    // Writes data on the given socket.
+    // Writes data on the given connected socket.
     // |socketId| : The socketId.
     // |data| : The data to write.
-    // |callback| : Called when the first of any of the following happens: the
-    // write operation completes without blocking, the write operation blocked
-    // before completion (in which case onEvent() will eventually be called with
-    // a <code>writeComplete</code> event), or an error occurred.
+    // |callback| : Called when the write operation completes without blocking
+    // or an error occurs.
     static void write(long socketId,
                       ArrayBuffer data,
                       WriteCallback callback);
 
-    // Reads data from the given socket.
+    // Receives data from the given UDP socket.
     // |socketId| : The socketId.
     // |bufferSize| : The receive buffer size.
-    // |callback| : Delivers data that was available to be read without
-    // blocking.
+    // |callback| : Returns result of the recvFrom operation.
     static void recvFrom(long socketId,
                          optional long bufferSize,
                          RecvFromCallback callback);
 
-    // Writes data on the given socket.
+    // Sends data on the given UDP socket to the given address and port.
     // |socketId| : The socketId.
     // |data| : The data to write.
     // |address| : The address of the remote machine.
     // |port| : The port of the remote machine.
-    // |callback| : Called when the first of any of the following happens: the
-    // write operation completes without blocking, the write operation blocked
-    // before completion (in which case onEvent() will eventually be called with
-    // a <code>writeComplete</code> event), or an error occurred.
+    // |callback| : Called when the send operation completes without blocking
+    // or an error occurs.
     static void sendTo(long socketId,
                        ArrayBuffer data,
                        DOMString address,
