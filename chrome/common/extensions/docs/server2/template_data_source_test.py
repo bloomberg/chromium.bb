@@ -40,7 +40,8 @@ class TemplateDataSourceTest(unittest.TestCase):
                                        self._fake_intro_data_source,
                                        self._fake_samples_data_source,
                                        cache_builder,
-                                       ['./', './'])
+                                       './',
+                                       './')
             .Create(_FakeRequest()))
 
   def testSimple(self):
@@ -65,7 +66,8 @@ class TemplateDataSourceTest(unittest.TestCase):
     cache_builder = FileSystemCache.Builder(fetcher)
     t_data_source = self._CreateTemplateDataSource(self._fake_api_data_source,
                                                     cache_builder)
-    self.assertEqual(self._ReadLocalFile('test_expected.html'),
+    self.assertEqual(
+        self._ReadLocalFile('test_expected.html'),
         t_data_source['test_tmpl'].render(
             json.loads(self._ReadLocalFile('input.json')), t_data_source).text)
 

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 from path_utils import FormatKey
 from third_party.handlebar import Handlebar
 
@@ -20,7 +22,7 @@ def _MakeBranchDict(branch):
   }
 
 class TemplateDataSource(object):
-  """ Renders Handlebar templates, providing them with the context in which to
+  """Renders Handlebar templates, providing them with the context in which to
   render.
 
   Also acts as a data source itself, providing partial Handlebar templates to
@@ -32,7 +34,7 @@ class TemplateDataSource(object):
   """
 
   class Factory(object):
-    """ A factory to create lightweight TemplateDataSource instances bound to
+    """A factory to create lightweight TemplateDataSource instances bound to
     individual Requests.
     """
     def __init__(self,
@@ -41,7 +43,8 @@ class TemplateDataSource(object):
                  intro_data_source,
                  samples_data_source,
                  cache_builder,
-                 base_paths):
+                 public_template_path,
+                 private_template_path):
       self._branch_info = _MakeBranchDict(branch)
       self._static_resources = ((('/' + branch) if branch != 'local' else '') +
                                 '/static')
@@ -49,10 +52,11 @@ class TemplateDataSource(object):
       self._intro_data_source = intro_data_source
       self._samples_data_source = samples_data_source
       self._cache = cache_builder.build(Handlebar)
-      self._base_paths = base_paths
+      self._public_template_path = public_template_path
+      self._private_template_path = private_template_path
 
     def Create(self, request):
-      """ Returns a new TemplateDataSource bound to |request|.
+      """Returns a new TemplateDataSource bound to |request|.
       """
       return TemplateDataSource(self._branch_info,
                                 self._static_resources,
@@ -60,7 +64,8 @@ class TemplateDataSource(object):
                                 self._intro_data_source,
                                 self._samples_data_source,
                                 self._cache,
-                                self._base_paths,
+                                self._public_template_path,
+                                self._private_template_path,
                                 request)
 
   def __init__(self,
@@ -70,7 +75,8 @@ class TemplateDataSource(object):
                intro_data_source,
                samples_data_source,
                cache,
-               base_paths,
+               public_template_path,
+               private_template_path,
                request):
     self._branch_info = branch_info
     self._static_resources = static_resources
@@ -78,7 +84,8 @@ class TemplateDataSource(object):
     self._intro_data_source = intro_data_source
     self._samples_data_source = samples_data_source
     self._cache = cache
-    self._base_paths = base_paths
+    self._public_template_path = public_template_path
+    self._private_template_path = private_template_path
     self._request = request
 
   def Render(self, template_name):
@@ -86,7 +93,7 @@ class TemplateDataSource(object):
     the partial templates needed from |self._cache|. Partials are retrieved
     from the TemplateDataSource with the |get| method.
     """
-    template = self.get(template_name)
+    template = self.GetTemplate(self._public_template_path, template_name)
     if not template:
       return ''
       # TODO error handling
@@ -103,10 +110,12 @@ class TemplateDataSource(object):
     return self.get(key)
 
   def get(self, key):
-    real_path = FormatKey(key)
-    for base_path in self._base_paths:
-      try:
-        return self._cache.GetFromFile(base_path + '/' + real_path)
-      except Exception:
-        pass
-    return None
+    return self.GetTemplate(self._private_template_path, key)
+
+  def GetTemplate(self, base_path, template_name):
+    real_path = FormatKey(template_name)
+    try:
+      return self._cache.GetFromFile(base_path + '/' + real_path)
+    except Exception as e:
+      logging.warn(e)
+      return None

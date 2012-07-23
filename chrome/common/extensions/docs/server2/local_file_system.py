@@ -43,4 +43,4 @@ class LocalFileSystem(FileSystem):
     return Future(value=result)
 
   def Stat(self, path):
-    return self.StatInfo(0)
+    return self.StatInfo(os.stat(os.path.join(self._base_path, path)).st_mtime)

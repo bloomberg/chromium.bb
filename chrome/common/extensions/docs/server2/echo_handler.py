@@ -89,7 +89,8 @@ class Handler(webapp.RequestHandler):
         intro_data_source,
         samples_data_source,
         cache_builder,
-        [PUBLIC_TEMPLATE_PATH, PRIVATE_TEMPLATE_PATH])
+        PUBLIC_TEMPLATE_PATH,
+        PRIVATE_TEMPLATE_PATH)
     example_zipper = ExampleZipper(file_system,
                                    cache_builder,
                                    DOCS_PATH,

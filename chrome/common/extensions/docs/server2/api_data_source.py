@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import logging
 import os
 
 from handlebar_dict_generator import HandlebarDictGenerator
@@ -43,5 +44,6 @@ class APIDataSource(object):
     except Exception:
       try:
         return self._idl_cache.GetFromFile(self._base_path + '/' + idl_path)
-      except Exception:
+      except Exception as e:
+        logging.warn(e)
         return None
