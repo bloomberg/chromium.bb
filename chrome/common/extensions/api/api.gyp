@@ -19,6 +19,7 @@
         'chromium_code': 1,
         'json_schema_files': [
           'content_settings.json',
+          'cookies.json',
           'debugger.json',
           'events.json',
           'experimental_record.json',

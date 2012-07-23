@@ -6,7 +6,11 @@
 
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 
+#include <vector>
+
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -16,12 +20,18 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/api/cookies.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
+
+using extensions::api::cookies::Cookie;
+using extensions::api::cookies::CookieStore;
+
+namespace GetAll = extensions::api::cookies::GetAll;
 
 namespace extensions {
 
@@ -52,42 +62,45 @@ const char* GetStoreIdFromProfile(Profile* profile) {
       kOffTheRecordProfileStoreId : kOriginalProfileStoreId;
 }
 
-DictionaryValue* CreateCookieValue(const net::CanonicalCookie& cookie,
-                                   const std::string& store_id) {
-  DictionaryValue* result = new DictionaryValue();
+scoped_ptr<Cookie> CreateCookie(
+    const net::CanonicalCookie& canonical_cookie,
+    const std::string& store_id) {
+  scoped_ptr<Cookie> cookie(new Cookie());
 
-  // A cookie is a raw byte sequence. By explicitly parsing it as UTF8, we
-  // apply error correction, so the string can be safely passed to the
-  // renderer.
-  result->SetString(keys::kNameKey, UTF8ToUTF16(cookie.Name()));
-  result->SetString(keys::kValueKey, UTF8ToUTF16(cookie.Value()));
-  result->SetString(keys::kDomainKey, cookie.Domain());
-  result->SetBoolean(keys::kHostOnlyKey,
-                     net::cookie_util::DomainIsHostOnly(cookie.Domain()));
-
+  // A cookie is a raw byte sequence. By explicitly parsing it as UTF-8, we
+  // apply error correction, so the string can be safely passed to the renderer.
+  cookie->name = UTF16ToUTF8(UTF8ToUTF16(canonical_cookie.Name()));
+  cookie->value = UTF16ToUTF8(UTF8ToUTF16(canonical_cookie.Value()));
+  cookie->domain = canonical_cookie.Domain();
+  cookie->host_only = net::cookie_util::DomainIsHostOnly(
+      canonical_cookie.Domain());
   // A non-UTF8 path is invalid, so we just replace it with an empty string.
-  result->SetString(keys::kPathKey,
-                    IsStringUTF8(cookie.Path()) ? cookie.Path() : "");
-  result->SetBoolean(keys::kSecureKey, cookie.IsSecure());
-  result->SetBoolean(keys::kHttpOnlyKey, cookie.IsHttpOnly());
-  result->SetBoolean(keys::kSessionKey, !cookie.IsPersistent());
-  if (cookie.IsPersistent()) {
-    result->SetDouble(keys::kExpirationDateKey,
-                      cookie.ExpiryDate().ToDoubleT());
+  cookie->path = IsStringUTF8(canonical_cookie.Path()) ?
+      canonical_cookie.Path() : "";
+  cookie->secure = canonical_cookie.IsSecure();
+  cookie->http_only = canonical_cookie.IsHttpOnly();
+  cookie->session = !canonical_cookie.IsPersistent();
+  if (canonical_cookie.IsPersistent()) {
+    cookie->expiration_date.reset(
+        new double(canonical_cookie.ExpiryDate().ToDoubleT()));
   }
-  result->SetString(keys::kStoreIdKey, store_id);
+  cookie->store_id = store_id;
 
-  return result;
+  return cookie.Pass();
 }
 
-DictionaryValue* CreateCookieStoreValue(Profile* profile,
-                                        ListValue* tab_ids) {
+scoped_ptr<CookieStore> CreateCookieStore(Profile* profile,
+                                          ListValue* tab_ids) {
   DCHECK(profile);
   DCHECK(tab_ids);
-  DictionaryValue* result = new DictionaryValue();
-  result->SetString(keys::kIdKey, GetStoreIdFromProfile(profile));
-  result->Set(keys::kTabIdsKey, tab_ids);
-  return result;
+  DictionaryValue dict;
+  dict.SetString(keys::kIdKey, GetStoreIdFromProfile(profile));
+  dict.Set(keys::kTabIdsKey, tab_ids);
+
+  CookieStore* cookie_store = new CookieStore();
+  bool rv = CookieStore::Populate(dict, cookie_store);
+  CHECK(rv);
+  return scoped_ptr<CookieStore>(cookie_store);
 }
 
 void GetCookieListFromStore(
@@ -112,12 +125,11 @@ GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie) {
   return GURL(scheme + content::kStandardSchemeSeparator + host + "/");
 }
 
-void AppendMatchingCookiesToList(
-    const net::CookieList& all_cookies,
-    const std::string& store_id,
-    const GURL& url, const DictionaryValue* details,
-    const Extension* extension,
-    ListValue* match_list) {
+void AppendMatchingCookiesToVector(const net::CookieList& all_cookies,
+                                   const GURL& url,
+                                   const GetAll::Params::Details* details,
+                                   const Extension* extension,
+                                   LinkedCookieVec* match_vector) {
   net::CookieList::const_iterator it;
   for (it = all_cookies.begin(); it != all_cookies.end(); ++it) {
     // Ignore any cookie whose domain doesn't match the extension's
@@ -127,8 +139,10 @@ void AppendMatchingCookiesToList(
       continue;
     // Filter the cookie using the match filter.
     cookies_helpers::MatchFilter filter(details);
-    if (filter.MatchesCookie(*it))
-      match_list->Append(CreateCookieValue(*it, store_id));
+    if (filter.MatchesCookie(*it)) {
+      match_vector->push_back(make_linked_ptr(
+          CreateCookie(*it, *details->store_id).release()));
+    }
   }
 }
 
@@ -143,45 +157,38 @@ void AppendToTabIdList(Browser* browser, ListValue* tab_ids) {
   }
 }
 
-MatchFilter::MatchFilter(const DictionaryValue* details)
+MatchFilter::MatchFilter(const GetAll::Params::Details* details)
     : details_(details) {
   DCHECK(details_);
 }
 
-bool MatchFilter::MatchesCookie(const net::CanonicalCookie& cookie) {
-  return MatchesString(keys::kNameKey, cookie.Name()) &&
-         MatchesDomain(cookie.Domain()) &&
-         MatchesString(keys::kPathKey, cookie.Path()) &&
-         MatchesBoolean(keys::kSecureKey, cookie.IsSecure()) &&
-         MatchesBoolean(keys::kSessionKey, !cookie.IsPersistent());
-}
+bool MatchFilter::MatchesCookie(
+    const net::CanonicalCookie& cookie) {
+  if (details_->name.get() && *details_->name != cookie.Name())
+    return false;
 
-bool MatchFilter::MatchesString(const char* key, const std::string& value) {
-  if (!details_->HasKey(key))
-    return true;
-  std::string filter_value;
-  return (details_->GetString(key, &filter_value) &&
-          value == filter_value);
-}
+  if (!MatchesDomain(cookie.Domain()))
+    return false;
 
-bool MatchFilter::MatchesBoolean(const char* key, bool value) {
-  if (!details_->HasKey(key))
-    return true;
-  bool filter_value = false;
-  return (details_->GetBoolean(key, &filter_value) &&
-          value == filter_value);
+  if (details_->path.get() && *details_->path != cookie.Path())
+    return false;
+
+  if (details_->secure.get() && *details_->secure != cookie.IsSecure())
+    return false;
+
+  if (details_->session.get() && *details_->session != !cookie.IsPersistent())
+    return false;
+
+  return true;
 }
 
 bool MatchFilter::MatchesDomain(const std::string& domain) {
-  if (!details_->HasKey(keys::kDomainKey))
+  if (!details_->domain.get())
     return true;
 
-  std::string filter_value;
-  if (!details_->GetString(keys::kDomainKey, &filter_value))
-    return false;
   // Add a leading '.' character to the filter domain if it doesn't exist.
-  if (net::cookie_util::DomainIsHostOnly(filter_value))
-    filter_value.insert(0, ".");
+  if (net::cookie_util::DomainIsHostOnly(*details_->domain))
+    details_->domain->insert(0, ".");
 
   std::string sub_domain(domain);
   // Strip any leading '.' character from the input cookie domain.
@@ -190,8 +197,8 @@ bool MatchFilter::MatchesDomain(const std::string& domain) {
 
   // Now check whether the domain argument is a subdomain of the filter domain.
   for (sub_domain.insert(0, ".");
-       sub_domain.length() >= filter_value.length();) {
-    if (sub_domain == filter_value)
+       sub_domain.length() >= details_->domain->length();) {
+    if (sub_domain == *details_->domain)
       return true;
     const size_t next_dot = sub_domain.find('.', 1);  // Skip over leading dot.
     sub_domain.erase(0, next_dot);

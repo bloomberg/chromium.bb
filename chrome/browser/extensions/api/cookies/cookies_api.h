@@ -11,10 +11,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/common/extensions/api/cookies.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -75,24 +77,19 @@ class CookiesFunction : public AsyncExtensionFunction {
  protected:
   virtual ~CookiesFunction() {}
 
-  // Looks for a 'url' value in the given details dictionary and constructs a
-  // GURL from it. Returns false and assigns the internal error_ value if the
-  // URL is invalid or isn't found in the dictionary. If check_host_permissions
-  // is true, the URL is also checked against the extension's host permissions,
-  // and if there is no permission for the URL, this function returns false.
-  bool ParseUrl(const base::DictionaryValue* details, GURL* url,
+  // Constructs a GURL from the given url string. Returns false and assigns the
+  // internal error_ value if the URL is invalid. If |check_host_permissions| is
+  // true, the URL is also checked against the extension's host permissions, and
+  // if there is no permission for the URL, this function returns false.
+  bool ParseUrl(const std::string& url_string, GURL* url,
                 bool check_host_permissions);
 
-  // Checks the given details dictionary for a 'storeId' value, and retrieves
-  // the cookie store context and the store ID associated with it.  If the
-  // 'storeId' value isn't found in the dictionary, the current execution
-  // context's cookie store context is retrieved. Returns false on error and
-  // assigns the internal error_ value if that occurs.
-  // At least one of the output parameters store and store_id should be
-  // non-NULL.
-  bool ParseStoreContext(const base::DictionaryValue* details,
-                         net::URLRequestContextGetter** context,
-                         std::string* store_id);
+  // Gets the store identified by |store_id| and returns it in |context|.
+  // If |store_id| contains an empty string, retrieves the current execution
+  // context's store. In this case, |store_id| is populated with the found
+  // store, and |context| can be NULL if the caller only wants |store_id|.
+  bool ParseStoreContext(std::string* store_id,
+                         net::URLRequestContextGetter** context);
 };
 
 // Implements the cookies.get() extension function.
@@ -113,10 +110,9 @@ class GetCookieFunction : public CookiesFunction {
   void RespondOnUIThread();
   void GetCookieCallback(const net::CookieList& cookie_list);
 
-  std::string name_;
   GURL url_;
-  std::string store_id_;
   scoped_refptr<net::URLRequestContextGetter> store_context_;
+  scoped_ptr<extensions::api::cookies::Get::Params> parsed_args_;
 };
 
 // Implements the cookies.getAll() extension function.
@@ -137,10 +133,9 @@ class GetAllCookiesFunction : public CookiesFunction {
   void RespondOnUIThread();
   void GetAllCookiesCallback(const net::CookieList& cookie_list);
 
-  base::DictionaryValue* details_;
   GURL url_;
-  std::string store_id_;
   scoped_refptr<net::URLRequestContextGetter> store_context_;
+  scoped_ptr<extensions::api::cookies::GetAll::Params> parsed_args_;
 };
 
 // Implements the cookies.set() extension function.
@@ -161,16 +156,9 @@ class SetCookieFunction : public CookiesFunction {
   void PullCookieCallback(const net::CookieList& cookie_list);
 
   GURL url_;
-  std::string name_;
-  std::string value_;
-  std::string domain_;
-  std::string path_;
-  bool secure_;
-  bool http_only_;
-  base::Time expiration_time_;
   bool success_;
-  std::string store_id_;
   scoped_refptr<net::URLRequestContextGetter> store_context_;
+  scoped_ptr<extensions::api::cookies::Set::Params> parsed_args_;
 };
 
 // Implements the cookies.remove() extension function.
@@ -192,9 +180,8 @@ class RemoveCookieFunction : public CookiesFunction {
   void RemoveCookieCallback();
 
   GURL url_;
-  std::string name_;
-  std::string store_id_;
   scoped_refptr<net::URLRequestContextGetter> store_context_;
+  scoped_ptr<extensions::api::cookies::Remove::Params> parsed_args_;
 };
 
 // Implements the cookies.getAllCookieStores() extension function.

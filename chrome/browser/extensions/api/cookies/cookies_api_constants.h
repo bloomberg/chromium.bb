@@ -14,19 +14,9 @@ namespace cookies_api_constants {
 extern const char kCauseKey[];
 extern const char kCookieKey[];
 extern const char kDomainKey[];
-extern const char kExpirationDateKey[];
-extern const char kHostOnlyKey[];
-extern const char kHttpOnlyKey[];
 extern const char kIdKey[];
-extern const char kNameKey[];
-extern const char kPathKey[];
 extern const char kRemovedKey[];
-extern const char kSecureKey[];
-extern const char kSessionKey[];
-extern const char kStoreIdKey[];
 extern const char kTabIdsKey[];
-extern const char kUrlKey[];
-extern const char kValueKey[];
 
 // Cause Constants
 extern const char kEvictedChangeCause[];

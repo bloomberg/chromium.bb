@@ -11,8 +11,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_HELPERS_H_
 
 #include <string>
+#include <vector>
 
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/common/extensions/api/cookies.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/cookies/canonical_cookie.h"
 
 class Browser;
 class Profile;
@@ -32,6 +37,9 @@ class Extension;
 
 namespace cookies_helpers {
 
+typedef std::vector<linked_ptr<extensions::api::cookies::Cookie> >
+    LinkedCookieVec;
+
 // Returns either the original profile or the incognito profile, based on the
 // given store ID.  Returns NULL if the profile doesn't exist or is not allowed
 // (e.g. if incognito mode is not enabled for the extension).
@@ -42,17 +50,17 @@ Profile* ChooseProfileFromStoreId(const std::string& store_id,
 // Returns the store ID for a particular user profile.
 const char* GetStoreIdFromProfile(Profile* profile);
 
-// Constructs a Cookie object as defined by the cookies API. This function
-// allocates a new DictionaryValue object; the caller is responsible for
-// freeing it.
-base::DictionaryValue* CreateCookieValue(const net::CanonicalCookie& cookie,
-                                         const std::string& store_id);
+// Allocates and construct a new Cookie object representing a cookie as defined
+// by the cookies API.
+scoped_ptr<extensions::api::cookies::Cookie> CreateCookie(
+    const net::CanonicalCookie& cookie,
+    const std::string& store_id);
 
-// Constructs a CookieStore object as defined by the cookies API. This function
-// allocates a new DictionaryValue object; the caller is responsible for
-// freeing it.
-base::DictionaryValue* CreateCookieStoreValue(Profile* profile,
-                                              base::ListValue* tab_ids);
+// Allocates and constructs a new CookieStore object as defined by the cookies
+// API.
+scoped_ptr<extensions::api::cookies::CookieStore> CreateCookieStore(
+    Profile* profile,
+    base::ListValue* tab_ids);
 
 // Retrieves all cookies from the given cookie store corresponding to the given
 // URL. If the URL is empty, all cookies in the cookie store are retrieved.
@@ -65,17 +73,16 @@ void GetCookieListFromStore(
 // a cookie against the extension's host permissions. The Secure
 // property of the cookie defines the URL scheme, and the cookie's
 // domain becomes the URL host.
-GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie);
+GURL GetURLFromCanonicalCookie(
+    const net::CanonicalCookie& cookie);
 
 // Looks through all cookies in the given cookie store, and appends to the
-// match list all the cookies that both match the given URL and cookie details
+// match vector all the cookies that both match the given URL and cookie details
 // and are allowed by extension host permissions.
-void AppendMatchingCookiesToList(
-    const net::CookieList& all_cookies,
-    const std::string& store_id,
-    const GURL& url, const base::DictionaryValue* details,
-    const Extension* extension,
-    base::ListValue* match_list);
+void AppendMatchingCookiesToVector(
+    const net::CookieList& all_cookies, const GURL& url,
+    const extensions::api::cookies::GetAll::Params::Details* details,
+    const Extension* extension, LinkedCookieVec* match_vector);
 
 // Appends the IDs of all tabs belonging to the given browser to the
 // given list.
@@ -90,25 +97,16 @@ void AppendToTabIdList(Browser* browser, base::ListValue* tab_ids);
 class MatchFilter {
  public:
   // Takes the details dictionary argument given by the user as input.
-  // This class does not take ownership of the lifetime of the DictionaryValue
+  // This class does not take ownership of the lifetime of the Details
   // object.
-  explicit MatchFilter(const base::DictionaryValue* details);
+  explicit MatchFilter(
+      const extensions::api::cookies::GetAll::Params::Details* details);
 
   // Returns true if the given cookie matches the properties in the match
   // filter.
   bool MatchesCookie(const net::CanonicalCookie& cookie);
 
  private:
-  // Returns true if the details dictionary contains a string with the given
-  // key and value. Also returns true if the dictionary doesn't contain the
-  // given key at all (trival match).
-  bool MatchesString(const char* key, const std::string& value);
-
-  // Returns true if the details dictionary contains a boolean with the given
-  // key and value. Also returns true if the dictionary doesn't contain the
-  // given key at all (trival match).
-  bool MatchesBoolean(const char* key, bool value);
-
   // Returns true if the given cookie domain string matches the filter's
   // domain. Any cookie domain which is equal to or is a subdomain of the
   // filter's domain will be matched; leading '.' characters indicating
@@ -118,7 +116,7 @@ class MatchFilter {
   // 'foo.bar.com', '.foo.bar.com', and 'baz.foo.bar.com'.
   bool MatchesDomain(const std::string& domain);
 
-  const base::DictionaryValue* details_;
+  const extensions::api::cookies::GetAll::Params::Details* details_;
 };
 
 }  // namespace cookies_helpers

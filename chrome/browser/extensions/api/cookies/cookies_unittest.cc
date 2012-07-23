@@ -10,9 +10,15 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
+#include "chrome/common/extensions/api/cookies.h"
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
+
+using extensions::api::cookies::Cookie;
+using extensions::api::cookies::CookieStore;
+
+namespace GetAll = extensions::api::cookies::GetAll;
 
 namespace extensions {
 
@@ -105,63 +111,44 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
 }
 
 TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
-  std::string string_value;
-  bool boolean_value;
-  double double_value;
-  Value* value;
-
-  net::CanonicalCookie cookie1(
+  net::CanonicalCookie canonical_cookie1(
       GURL(), "ABC", "DEF", "www.foobar.com", "/",
       std::string(), std::string(),
       base::Time(), base::Time(), base::Time(),
       false, false);
-  scoped_ptr<DictionaryValue> cookie_value1(
-      cookies_helpers::CreateCookieValue(
-          cookie1, "some cookie store"));
-  EXPECT_TRUE(cookie_value1->GetString(keys::kNameKey, &string_value));
-  EXPECT_EQ("ABC", string_value);
-  EXPECT_TRUE(cookie_value1->GetString(keys::kValueKey, &string_value));
-  EXPECT_EQ("DEF", string_value);
-  EXPECT_TRUE(cookie_value1->GetString(keys::kDomainKey, &string_value));
-  EXPECT_EQ("www.foobar.com", string_value);
-  EXPECT_TRUE(cookie_value1->GetBoolean(keys::kHostOnlyKey, &boolean_value));
-  EXPECT_TRUE(boolean_value);
-  EXPECT_TRUE(cookie_value1->GetString(keys::kPathKey, &string_value));
-  EXPECT_EQ("/", string_value);
-  EXPECT_TRUE(cookie_value1->GetBoolean(keys::kSecureKey, &boolean_value));
-  EXPECT_FALSE(boolean_value);
-  EXPECT_TRUE(cookie_value1->GetBoolean(keys::kHttpOnlyKey, &boolean_value));
-  EXPECT_FALSE(boolean_value);
-  EXPECT_TRUE(cookie_value1->GetBoolean(keys::kSessionKey, &boolean_value));
-  EXPECT_TRUE(boolean_value);
-  EXPECT_FALSE(
-      cookie_value1->GetDouble(keys::kExpirationDateKey, &double_value));
-  EXPECT_TRUE(cookie_value1->GetString(keys::kStoreIdKey, &string_value));
-  EXPECT_EQ("some cookie store", string_value);
+  scoped_ptr<Cookie> cookie1(
+      cookies_helpers::CreateCookie(
+          canonical_cookie1, "some cookie store"));
+  EXPECT_EQ("ABC", cookie1->name);
+  EXPECT_EQ("DEF", cookie1->value);
+  EXPECT_EQ("www.foobar.com", cookie1->domain);
+  EXPECT_TRUE(cookie1->host_only);
+  EXPECT_EQ("/", cookie1->path);
+  EXPECT_FALSE(cookie1->secure);
+  EXPECT_FALSE(cookie1->http_only);
+  EXPECT_TRUE(cookie1->session);
+  EXPECT_FALSE(cookie1->expiration_date.get());
+  EXPECT_EQ("some cookie store", cookie1->store_id);
 
-  net::CanonicalCookie cookie2(
+  net::CanonicalCookie canonical_cookie2(
       GURL(), "ABC", "DEF", ".foobar.com", "/", std::string(), std::string(),
       base::Time(), base::Time::FromDoubleT(10000), base::Time(),
       false, false);
-  scoped_ptr<DictionaryValue> cookie_value2(
-      cookies_helpers::CreateCookieValue(
-          cookie2, "some cookie store"));
-  EXPECT_TRUE(cookie_value2->GetBoolean(keys::kHostOnlyKey, &boolean_value));
-  EXPECT_FALSE(boolean_value);
-  EXPECT_TRUE(cookie_value2->GetBoolean(keys::kSessionKey, &boolean_value));
-  EXPECT_FALSE(boolean_value);
-  EXPECT_TRUE(
-      cookie_value2->GetDouble(keys::kExpirationDateKey, &double_value));
-  EXPECT_EQ(10000, double_value);
+  scoped_ptr<Cookie> cookie2(
+      cookies_helpers::CreateCookie(
+          canonical_cookie2, "some cookie store"));
+  EXPECT_FALSE(cookie2->host_only);
+  EXPECT_FALSE(cookie2->session);
+  ASSERT_TRUE(cookie2->expiration_date.get());
+  EXPECT_EQ(10000, *cookie2->expiration_date);
 
   TestingProfile profile;
-  ListValue* tab_ids = new ListValue();
-  scoped_ptr<DictionaryValue> cookie_store_value(
-      cookies_helpers::CreateCookieStoreValue(&profile, tab_ids));
-  EXPECT_TRUE(cookie_store_value->GetString(keys::kIdKey, &string_value));
-  EXPECT_EQ("0", string_value);
-  EXPECT_TRUE(cookie_store_value->Get(keys::kTabIdsKey, &value));
-  EXPECT_EQ(tab_ids, value);
+  ListValue* tab_ids_list = new ListValue();
+  std::vector<int> tab_ids;
+  scoped_ptr<CookieStore> cookie_store(
+      cookies_helpers::CreateCookieStore(&profile, tab_ids_list));
+  EXPECT_EQ("0", cookie_store->id);
+  EXPECT_EQ(tab_ids, cookie_store->tab_ids);
 }
 
 TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
@@ -185,11 +172,12 @@ TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
 }
 
 TEST_F(ExtensionCookiesTest, EmptyDictionary) {
-  scoped_ptr<DictionaryValue> details(new DictionaryValue());
-  cookies_helpers::MatchFilter filter(details.get());
-  std::string domain;
+  DictionaryValue dict;
+  GetAll::Params::Details details;
+  bool rv = GetAll::Params::Details::Populate(dict, &details);
+  ASSERT_TRUE(rv);
+  cookies_helpers::MatchFilter filter(&details);
   net::CanonicalCookie cookie;
-
   EXPECT_TRUE(filter.MatchesCookie(cookie));
 }
 
@@ -204,29 +192,32 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
     { "foo.bar.com", ".bar.com", false }
   };
 
-  scoped_ptr<DictionaryValue> details(new DictionaryValue());
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    details->SetString(keys::kDomainKey, std::string(tests[i].filter));
-    cookies_helpers::MatchFilter filter(details.get());
-    net::CanonicalCookie cookie(GURL(), "", "", tests[i].domain, "", "", "",
-                                base::Time(), base::Time(), base::Time(), false,
-                                false);
+    // Build up the Params struct.
+    ListValue args;
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString(keys::kDomainKey, std::string(tests[i].filter));
+    args.Set(0, dict);
+    scoped_ptr<GetAll::Params> params(GetAll::Params::Create(args));
+
+    cookies_helpers::MatchFilter filter(&params->details);
+    net::CanonicalCookie cookie(GURL(), "", "", tests[i].domain,
+                                               "", "", "", base::Time(),
+                                               base::Time(), base::Time(),
+                                               false, false);
     EXPECT_EQ(tests[i].matches, filter.MatchesCookie(cookie));
   }
 }
 
 TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
-  net::CanonicalCookie cookie(GURL(), "", "011Q255bNX_1!yd\203e+", "test.com",
-                              "/path\203", "", "", base::Time(), base::Time(),
-                              base::Time(), false, false);
-  scoped_ptr<DictionaryValue> cookie_value(
-      cookies_helpers::CreateCookieValue(
-          cookie, "some cookie store"));
-  std::string string_value;
-  EXPECT_TRUE(cookie_value->GetString(keys::kValueKey, &string_value));
-  EXPECT_EQ(std::string("011Q255bNX_1!yd\xEF\xBF\xBD" "e+"), string_value);
-  EXPECT_TRUE(cookie_value->GetString(keys::kPathKey, &string_value));
-  EXPECT_EQ(std::string(""), string_value);
+  net::CanonicalCookie canonical_cookie(
+      GURL(), "", "011Q255bNX_1!yd\203e+", "test.com", "/path\203", "", "",
+      base::Time(), base::Time(), base::Time(), false, false);
+  scoped_ptr<Cookie> cookie(
+      cookies_helpers::CreateCookie(
+          canonical_cookie, "some cookie store"));
+  EXPECT_EQ(std::string("011Q255bNX_1!yd\xEF\xBF\xBD" "e+"), cookie->value);
+  EXPECT_EQ(std::string(""), cookie->path);
 }
 
 }  // namespace extensions
