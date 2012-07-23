@@ -16,6 +16,7 @@
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_split.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -423,6 +424,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
           file_type_index(file_type_index),
           default_extension(default_extension),
           run_state(run_state),
+          ui_proxy(MessageLoopForUI::current()->message_loop_proxy()),
           owner(owner),
           params(params) {
       if (file_types) {
@@ -438,6 +440,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
     int file_type_index;
     std::wstring default_extension;
     RunState run_state;
+    scoped_refptr<base::MessageLoopProxy> ui_proxy;
     HWND owner;
     void* params;
   };
@@ -581,7 +584,7 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     std::vector<FilePath> paths;
     if (RunOpenMultiFileDialog(params.title, filter,
                                params.run_state.owner, &paths)) {
-      params.run_state.dialog_thread->message_loop()->PostTask(
+      params.ui_proxy->PostTask(
           FROM_HERE,
           base::Bind(&SelectFileDialogImpl::MultiFilesSelected, this, paths,
                      params.params, params.run_state));
@@ -590,12 +593,12 @@ void SelectFileDialogImpl::ExecuteSelectFile(
   }
 
   if (success) {
-      params.run_state.dialog_thread->message_loop()->PostTask(
+      params.ui_proxy->PostTask(
         FROM_HERE,
         base::Bind(&SelectFileDialogImpl::FileSelected, this, path,
                    filter_index, params.params, params.run_state));
   } else {
-      params.run_state.dialog_thread->message_loop()->PostTask(
+      params.ui_proxy->PostTask(
         FROM_HERE,
         base::Bind(&SelectFileDialogImpl::FileNotSelected, this, params.params,
                    params.run_state));
