@@ -13,7 +13,7 @@ import third_party.json_schema_compiler.idl_schema as idl_schema
 import third_party.json_schema_compiler.idl_parser as idl_parser
 
 class APIDataSource(object):
-  """This class fetches and loads JSON APIs with the fetcher passed in with
+  """This class fetches and loads JSON APIs from the FileSystem passed in with
   |cache_builder|, so the APIs can be plugged into templates.
   """
   def __init__(self, cache_builder, base_path):

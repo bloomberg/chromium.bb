@@ -20,6 +20,7 @@ class TemplateDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join('test_data', 'template_data_source')
     self._fake_api_data_source = {}
+    self._fake_api_list_data_source = {}
     self._fake_intro_data_source = {}
     self._fake_samples_data_source = {}
 
@@ -37,6 +38,7 @@ class TemplateDataSourceTest(unittest.TestCase):
   def _CreateTemplateDataSource(self, input_dict, cache_builder):
     return (TemplateDataSource.Factory('fake_branch',
                                        input_dict,
+                                       self._fake_api_list_data_source,
                                        self._fake_intro_data_source,
                                        self._fake_samples_data_source,
                                        cache_builder,

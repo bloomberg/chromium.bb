@@ -18,6 +18,11 @@ class FileSystem(object):
     """
     raise NotImplementedError()
 
+  def ReadSingle(self, path):
+    """Reads a single file from the FileSystem.
+    """
+    return self.Read([path]).Get()[path]
+
   def Stat(self, path):
     """Gets the version number of |path| if it is a directory, or the parent
     directory if it is a file.

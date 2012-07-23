@@ -18,6 +18,7 @@ from google.appengine.api import memcache
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from api_data_source import APIDataSource
+from api_list_data_source import APIListDataSource
 from appengine_memcache import AppEngineMemcache
 from branch_utility import BranchUtility
 from example_zipper import ExampleZipper
@@ -78,6 +79,10 @@ class Handler(webapp.RequestHandler):
 
     cache_builder = FileSystemCache.Builder(file_system)
     api_data_source = APIDataSource(cache_builder, API_PATH)
+    api_list_data_source = APIListDataSource(cache_builder,
+                                             file_system,
+                                             API_PATH,
+                                             PUBLIC_TEMPLATE_PATH)
     intro_data_source = IntroDataSource(cache_builder,
                                         [INTRO_PATH, ARTICLE_PATH])
     samples_data_source = SamplesDataSource(file_system,
@@ -86,6 +91,7 @@ class Handler(webapp.RequestHandler):
     template_data_source_factory = TemplateDataSource.Factory(
         branch,
         api_data_source,
+        api_list_data_source,
         intro_data_source,
         samples_data_source,
         cache_builder,

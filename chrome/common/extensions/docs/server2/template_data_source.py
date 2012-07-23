@@ -40,6 +40,7 @@ class TemplateDataSource(object):
     def __init__(self,
                  branch,
                  api_data_source,
+                 api_list_data_source,
                  intro_data_source,
                  samples_data_source,
                  cache_builder,
@@ -49,6 +50,7 @@ class TemplateDataSource(object):
       self._static_resources = ((('/' + branch) if branch != 'local' else '') +
                                 '/static')
       self._api_data_source = api_data_source
+      self._api_list_data_source = api_list_data_source
       self._intro_data_source = intro_data_source
       self._samples_data_source = samples_data_source
       self._cache = cache_builder.build(Handlebar)
@@ -61,6 +63,7 @@ class TemplateDataSource(object):
       return TemplateDataSource(self._branch_info,
                                 self._static_resources,
                                 self._api_data_source,
+                                self._api_list_data_source,
                                 self._intro_data_source,
                                 self._samples_data_source,
                                 self._cache,
@@ -72,6 +75,7 @@ class TemplateDataSource(object):
                branch_info,
                static_resources,
                api_data_source,
+               api_list_data_source,
                intro_data_source,
                samples_data_source,
                cache,
@@ -81,6 +85,7 @@ class TemplateDataSource(object):
     self._branch_info = branch_info
     self._static_resources = static_resources
     self._api_data_source = api_data_source
+    self._api_list_data_source = api_list_data_source
     self._intro_data_source = intro_data_source
     self._samples_data_source = samples_data_source
     self._cache = cache
@@ -98,6 +103,7 @@ class TemplateDataSource(object):
       return ''
       # TODO error handling
     return template.render({
+      'api_list': self._api_list_data_source,
       'apis': self._api_data_source,
       'branchInfo': self._branch_info,
       'intros': self._intro_data_source,
