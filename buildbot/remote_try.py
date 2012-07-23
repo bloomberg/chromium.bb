@@ -138,7 +138,7 @@ class RemoteTryJob(object):
                                 patch.tracking_branch, tag))
 
     push_branch = manifest_version.PUSH_BRANCH
-    remote_branch = ('origin', 'test') if testjob else None
+    remote_branch = ('origin', 'refs/remotes/origin/test') if testjob else None
     cros_build_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
                                     remote_push_branch=remote_branch)
 
