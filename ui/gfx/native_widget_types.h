@@ -87,6 +87,7 @@ typedef struct _GdkRegion GdkRegion;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 #elif defined(OS_ANDROID)
+struct ANativeWindow;
 namespace content {
 class ContentViewCore;
 }
@@ -280,7 +281,7 @@ const AcceleratedWidget kNullAcceleratedWidget = 0;
 typedef NSView* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(OS_ANDROID)
-typedef uint64 AcceleratedWidget;
+typedef ANativeWindow* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
 #else
 #error unknown platform

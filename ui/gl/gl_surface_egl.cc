@@ -8,16 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
-#if !defined(OS_ANDROID)
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
-#endif
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
-
-#if defined(OS_ANDROID)
-#include <EGL/egl.h>
-#endif
 
 // This header must come after the above third-party include, as
 // it brings in #defines that cause conflicts.
@@ -172,10 +166,6 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
 }
 
 bool NativeViewGLSurfaceEGL::Initialize() {
-#if defined(OS_ANDROID)
-  NOTREACHED();
-  return false;
-#else
   DCHECK(!surface_);
 
   if (!GetDisplay()) {
@@ -211,7 +201,6 @@ bool NativeViewGLSurfaceEGL::Initialize() {
   supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
 
   return true;
-#endif
 }
 
 void NativeViewGLSurfaceEGL::Destroy() {
