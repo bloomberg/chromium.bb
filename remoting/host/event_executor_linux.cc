@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/proto/internal.pb.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
 
@@ -63,6 +64,7 @@ class EventExecutorLinux : public EventExecutor {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   std::set<int> pressed_keys_;
+  SkIPoint latest_mouse_position_;
 
   // X11 graphics context.
   Display* display_;
@@ -271,6 +273,7 @@ int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
 EventExecutorLinux::EventExecutorLinux(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
+      latest_mouse_position_(SkIPoint::Make(-1, -1)),
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue) {
 }
@@ -386,11 +389,25 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
   }
 
   if (event.has_x() && event.has_y()) {
-    VLOG(3) << "Moving mouse to " << event.x()
-            << "," << event.y();
-    XTestFakeMotionEvent(display_, DefaultScreen(display_),
-                         event.x(), event.y(),
-                         CurrentTime);
+    // Injecting a motion event immediately before a button release results in
+    // a MotionNotify even if the mouse position hasn't changed, which confuses
+    // apps which assume MotionNotify implies movement. See crbug.com/138075.
+    bool inject_motion = true;
+    SkIPoint new_mouse_position(SkIPoint::Make(event.x(), event.y()));
+    if (event.has_button() && event.has_button_down() && !event.button_down()) {
+      if (new_mouse_position == latest_mouse_position_)
+        inject_motion = false;
+    }
+
+    latest_mouse_position_ = new_mouse_position;
+
+    if (inject_motion) {
+      VLOG(3) << "Moving mouse to " << event.x()
+              << "," << event.y();
+      XTestFakeMotionEvent(display_, DefaultScreen(display_),
+                           event.x(), event.y(),
+                           CurrentTime);
+    }
   }
 
   if (event.has_button() && event.has_button_down()) {
