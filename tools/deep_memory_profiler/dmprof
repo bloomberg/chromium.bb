@@ -9,9 +9,19 @@ from datetime import datetime
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
+
+FIND_RUNTIME_SYMBOLS_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    os.pardir,
+    'find_runtime_symbols')
+sys.path.append(FIND_RUNTIME_SYMBOLS_PATH)
+
+from prepare_symbol_info import prepare_symbol_info
+from find_runtime_symbols import find_runtime_symbols_list
 
 BUCKET_ID = 5
 VIRTUAL = 0
@@ -19,23 +29,6 @@ COMMITTED = 1
 ALLOC_COUNT = 2
 FREE_COUNT = 3
 NULL_REGEX = re.compile('')
-
-# If an executable pprof script is in the directory of deep_memory_profiler,
-# use it.  Otherwise, use tcmalloc's pprof.
-#
-# A pprof script in deep_memory_profiler/ is prioritized to allow packaging
-# deep_memory_profiler files with a pprof script.  The packaged
-# deep_memory_profiler is downloaded with pprof by using download.sh.
-PPROF_PATH = os.path.join(os.path.dirname(__file__), 'pprof')
-if not (os.path.isfile(PPROF_PATH) and os.access(PPROF_PATH, os.X_OK)):
-  PPROF_PATH = os.path.join(os.path.dirname(__file__),
-                            os.pardir,
-                            os.pardir,
-                            'third_party',
-                            'tcmalloc',
-                            'chromium',
-                            'src',
-                            'pprof')
 
 # Heap Profile Dump versions
 
@@ -570,7 +563,7 @@ class Log(object):
     sys.stderr.write('total: %d\n' % (total))
 
 
-def update_symbols(symbol_path, mapping_lines, chrome_path):
+def update_symbols(symbol_path, mapping_lines, maps_path):
   """Updates address/symbol mapping on memory and in a .symbol cache file.
 
   It reads cached address/symbol mapping from a .symbol file if it exists.
@@ -586,7 +579,7 @@ def update_symbols(symbol_path, mapping_lines, chrome_path):
   Args:
       symbol_path: A string representing a path for a .symbol file.
       mapping_lines: A list of strings containing /proc/.../maps.
-      chrome_path: A string representing a path for a Chrome binary.
+      maps_path: A string of the path of /proc/.../maps.
   """
   with open(symbol_path, mode='a+') as symbol_f:
     symbol_lines = symbol_f.readlines()
@@ -599,30 +592,19 @@ def update_symbols(symbol_path, mapping_lines, chrome_path):
         a for a in appeared_addresses if a not in address_symbol_dict)
 
     if unresolved_addresses:
-      with tempfile.NamedTemporaryFile(
-          suffix='maps', prefix="dmprof", mode='w+') as pprof_in:
-        with tempfile.NamedTemporaryFile(
-            suffix='symbols', prefix="dmprof", mode='w+') as pprof_out:
-          for line in mapping_lines:
-            pprof_in.write(line)
+      prepared_data_dir = tempfile.mkdtemp()
+      try:
+        prepare_symbol_info(maps_path, prepared_data_dir)
 
-          for address in unresolved_addresses:
-            pprof_in.write(address + '\n')
+        symbols = find_runtime_symbols_list(
+            prepared_data_dir, unresolved_addresses)
 
-          pprof_in.seek(0)
-
-          p = subprocess.Popen(
-              '%s --symbols %s' % (PPROF_PATH, chrome_path),
-              shell=True, stdin=pprof_in, stdout=pprof_out)
-          p.wait()
-
-          pprof_out.seek(0)
-          symbols = pprof_out.readlines()
-          symbol_f.seek(0, 2)
-          for address, symbol in zip(unresolved_addresses, symbols):
-            stripped_symbol = symbol.strip()
-            address_symbol_dict[address] = stripped_symbol
-            symbol_f.write('%s %s\n' % (address, symbol.strip()))
+        for address, symbol in zip(unresolved_addresses, symbols):
+          stripped_symbol = symbol.strip()
+          address_symbol_dict[address] = stripped_symbol
+          symbol_f.write('%s %s\n' % (address, stripped_symbol))
+      finally:
+        shutil.rmtree(prepared_data_dir)
 
 
 def parse_policy(policy_path):
@@ -769,7 +751,7 @@ Examples:
       logs.append(new_log)
 
   sys.stderr.write('getting symbols\n')
-  update_symbols(symbol_path, maps_lines, chrome_path)
+  update_symbols(symbol_path, maps_lines, maps_path)
 
   # TODO(dmikurube): Many modes now.  Split them into separete functions.
   if action == '--stacktrace':
