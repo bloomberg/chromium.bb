@@ -420,7 +420,7 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
     user_stream_array[user_streams.UserStreamCount].Type =
         MD_CUSTOM_DATA_STREAM;
     user_stream_array[user_streams.UserStreamCount].BufferSize =
-        custom_data_stream->size;
+        static_cast<ULONG>(custom_data_stream->size);
     user_stream_array[user_streams.UserStreamCount].Buffer =
         custom_data_stream->stream;
     ++user_streams.UserStreamCount;
