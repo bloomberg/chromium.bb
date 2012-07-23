@@ -331,7 +331,6 @@
         <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="menu_check.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW" file="menu_droparrow.png" />
-      <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW_SHARP" file="menu_droparrow_sharp.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="linux_minimize.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="linux_minimize_hover.png" />
