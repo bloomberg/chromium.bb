@@ -42,7 +42,7 @@ static void Event_Key(EvdevPtr, struct input_event*);
 
 static void Event_Abs(EvdevPtr, struct input_event*);
 static void Event_Abs_MT(EvdevPtr, struct input_event*);
-static void SemiMtSetAbsPressure(EvdevPtr, struct input_event*);
+static void Event_Abs_Update_Pressure(EvdevPtr, struct input_event*);
 
 static void Event_Get_Time(struct timeval*, bool);
 
@@ -335,14 +335,12 @@ Event_Sync_State(EvdevPtr device)
 
     EvdevProbeKeyState(device);
 
-    /* Get current pressure information for semi_mt device */
-    if (Event_Get_Semi_MT(device)) {
-        if (EvdevProbeAbsinfo(device, ABS_PRESSURE) == Success) {
-            struct input_event ev;
-            ev.code = ABS_PRESSURE;
-            ev.value = device->info.absinfo[ABS_PRESSURE].value;
-            SemiMtSetAbsPressure(device, &ev);
-        }
+    /* Get current pressure information for single-pressure device */
+    if (EvdevIsSinglePressureDevice(device) == Success) {
+        struct input_event ev;
+        ev.code = ABS_PRESSURE;
+        ev.value = device->info.absinfo[ABS_PRESSURE].value;
+        Event_Abs_Update_Pressure(device, &ev);
     }
 
     /* TODO(cywang): Sync all ABS_ states for completeness */
@@ -524,11 +522,11 @@ Event_Key(EvdevPtr device, struct input_event* ev)
 }
 
 static void
-SemiMtSetAbsPressure(EvdevPtr device, struct input_event* ev)
+Event_Abs_Update_Pressure(EvdevPtr device, struct input_event* ev)
 {
     /*
      * Update all active slots with the same ABS_PRESSURE value if it is a
-     * semi-mt device.
+     * single-pressure device.
      */
     EventStatePtr evstate = device->evstate;
 
@@ -545,8 +543,8 @@ Event_Abs(EvdevPtr device, struct input_event* ev)
         MT_Slot_Set(device, ev->value);
     else if (IS_ABS_MT(ev->code))
         Event_Abs_MT(device, ev);
-    else if ((ev->code == ABS_PRESSURE) && Event_Get_Semi_MT(device))
-        SemiMtSetAbsPressure(device, ev);
+    else if ((ev->code == ABS_PRESSURE) && EvdevIsSinglePressureDevice(device))
+        Event_Abs_Update_Pressure(device, ev);
 }
 
 static void

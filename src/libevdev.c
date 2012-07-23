@@ -210,6 +210,16 @@ int EvdevProbeAbsinfo(EvdevPtr device, size_t key) {
   }
 }
 
+/*
+ * Check if the device is a single-pressure one which reports ABS_PRESSURE only.
+ */
+int EvdevIsSinglePressureDevice(EvdevPtr device) {
+    EvdevInfoPtr info = &device->info;
+
+    return (!TestBit(ABS_MT_PRESSURE, info->bitmask) &&
+            TestBit(ABS_PRESSURE, info->bitmask));
+}
+
 int EvdevProbeMTSlot(EvdevPtr device, MTSlotInfoPtr req) {
   if (ioctl(device->fd, EVIOCGMTSLOTS((sizeof(*req))), req) < 0) {
       LOG_ERROR(device, "ioctl EVIOCGMTSLOTS(req.code=%d) failed: %s\n",

@@ -62,5 +62,6 @@ int EvdevProbeAbsinfo(EvdevPtr device, size_t key);
 int EvdevProbeMTSlot(EvdevPtr device, MTSlotInfoPtr req);
 int EvdevProbeKeyState(EvdevPtr device);
 int EvdevEnableMonotonic(EvdevPtr device);
+int EvdevIsSinglePressureDevice(EvdevPtr device);
 
 #endif
