@@ -1,0 +1,33 @@
+<html>
+<head>
+<script src="npapi.js"></script>
+<script>
+function GetMagicNumber() {
+  return 42;
+}
+
+function onSuccess(name, id) {
+  parent.onSuccess(name, id);
+}
+
+function onFailure(name, id, status) {
+  parent.onFailure(name, id, status);
+}
+</script>
+</head>
+
+<body>
+<div id=PluginDiv>
+<embed type="application/vnd.npapi-test"
+  src="foo"
+  name="ensure_scripting_works_in_destroy"
+  id="1"
+  mode="np_embed"
+>
+</DIV>
+<script>
+  var height = document.body.offsetHeight;
+</script>
+
+</body>
+</html>

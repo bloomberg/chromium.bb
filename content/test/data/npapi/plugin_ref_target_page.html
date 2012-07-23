@@ -1,0 +1,19 @@
+<html>
+<head><title>Target page for validating referrers in URL requests issued by <br />
+plugins
+</title>
+
+<script>
+function onLoad() {
+  if (document.referrer == "http://mock.http/dummy_plugin_referrer") {
+    window.opener.document.title = "OK";
+  } else {
+    onFailure("plugin_referrer_test", 1, "Unexpected referrer value");
+    window.opener.document.title = "FAIL";
+  }
+}
+</script>
+</head>
+
+<body onload="onLoad()">Plugin referrer test page.</body>
+</html>

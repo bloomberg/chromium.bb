@@ -1,0 +1,3 @@
+HTTP/1.1 301 Moved Permanently
+Location: http://mock.http/npapi/plugin_read_page.html
+Content-type: text/html

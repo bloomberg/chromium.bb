@@ -1,0 +1,55 @@
+<html>
+<head>
+<script src="npapi.js"></script>
+<script>
+function setTestObject(object) {
+  window.testObject = object;
+  setTimeout("deleteTestObject()", 0);
+  var statusPanel = document.getElementById("statusPanel");
+  statusPanel.innerText = "Received test object...";
+}
+
+function deleteTestObject() {
+  window.testObject = null;
+  var statusPanel = document.getElementById("statusPanel");
+  statusPanel.innerText = "Deleted test object...";
+  gc();
+}
+
+function deletePlugin() {
+  var statusPanel = document.getElementById("statusPanel");
+  statusPanel.innerText = "Deleting plugin...";
+  var plugin = document.getElementById("delete_plugin_in_deallocate_test");
+  if (plugin.parentNode && plugin.parentNode.removeChild) {
+    plugin.parentNode.removeChild(plugin);
+  }
+}
+</script>
+</head>
+
+<body>
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+NPObject Delete in Deallocate<p>
+
+Tests the case where deallocation of an NPObject belonging to the plugin
+triggers scripting which causes the whole plugin to be torn down, and verifies
+that the object being deallocated is not deallocated a second time.
+
+
+<embed	type="application/vnd.npapi-test"
+	src="foo"
+	name="delete_plugin_in_deallocate_test"
+	id="signaller"
+	mode="np_embed">
+
+<embed	type="application/vnd.npapi-test"
+	src="foo"
+	name="delete_plugin_in_deallocate_test"
+	id="delete_plugin_in_deallocate_test"
+	mode="np_embed">
+
+</body>
+</html>

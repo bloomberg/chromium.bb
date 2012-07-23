@@ -1,0 +1,26 @@
+<html>
+<head>
+<script>
+function onSuccess(name, id) {
+  parent.document.title = "OK";
+}
+</script>
+</head>
+<body>
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+GetJavscriptURL2 Test<p>
+This test fetches a javascript URL via the plugin with _self as the
+target frame, and verifies that the call succeeds.  The plugin runs
+within a subframe.
+
+<embed type="application/vnd.npapi-test"
+  src="foo"
+  name="getjavascripturl2"
+  id="1"
+  mode="np_embed"
+>
+</body>
+</html>

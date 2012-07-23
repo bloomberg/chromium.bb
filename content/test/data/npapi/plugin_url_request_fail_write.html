@@ -1,0 +1,26 @@
+<html>
+
+<head>
+<script src="npapi.js"></script>
+</head>
+
+
+<body>
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+
+GetURL Plugin Fails NPP_Write Test<p>
+This test fetches a URL and passes data off to the plugin. The plugin returns
+an error from the NPP_Write call. This test verifies that we do not crash
+as a result.
+
+<embed type="application/vnd.npapi-test"
+    fail_write_url="http://mock.http/npapi/plugin_read_page.html"
+    name="geturl_fail_write"
+    id="1"
+    mode="np_embed"
+>
+</body>
+</html>

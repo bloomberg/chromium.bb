@@ -1,0 +1,49 @@
+<html>
+
+<head>
+<script src="npapi.js"></script>
+<script>
+
+function returnedMethod() {
+}
+
+function dummyMethod() {
+  return returnedMethod;
+}
+
+var test_object;
+function Init() {
+  var plg = window.document["plg"];
+  // Create the NPObjectStub in the plugin process first.  This object's
+  // deallocate function will release the NPObject below.
+
+  // Then create an NPObjectProxy in the plugin process that holds on to the
+  // dummyMethod function above.
+  plg.remember(dummyMethod);
+}
+</script>
+</head>
+
+
+<body>
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+
+NPObject released on destruction<p>
+
+Tests that if a plugin creates an NPObject and releases it on destruction,
+there's no crash when the plugin goes away.
+
+
+<DIV ID=PluginDiv>
+<embed name="plg" type="application/x-webkit-test-netscape"></embed>
+</DIV>
+<script>
+  Init();
+</script>
+
+</body>
+</html>
+
