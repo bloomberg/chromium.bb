@@ -111,6 +111,49 @@ TEST(JsonSchemaCompilerChoicesTest, ObjectWithChoicesParamsCreateFail) {
   }
 }
 
+TEST(JsonSchemaCompilerChoicesTest, PopulateChoiceType) {
+  std::vector<std::string> strings;
+  strings.push_back("list");
+  strings.push_back("of");
+  strings.push_back("strings");
+
+  ListValue* strings_value = new ListValue();
+  for (size_t i = 0; i < strings.size(); ++i)
+    strings_value->Append(Value::CreateStringValue(strings[i]));
+
+  DictionaryValue value;
+  value.SetInteger("integers", 4);
+  value.Set("strings", strings_value);
+
+  ChoiceType out;
+  ASSERT_TRUE(ChoiceType::Populate(value, &out));
+  EXPECT_EQ(ChoiceType::INTEGERS_INTEGER, out.integers_type);
+  ASSERT_TRUE(out.integers_integer.get());
+  EXPECT_FALSE(out.integers_array.get());
+  EXPECT_EQ(4, *out.integers_integer);
+
+  EXPECT_EQ(ChoiceType::STRINGS_ARRAY, out.strings_type);
+  EXPECT_FALSE(out.strings_string.get());
+  ASSERT_TRUE(out.strings_array.get());
+  EXPECT_EQ(strings, *out.strings_array);
+}
+
+TEST(JsonSchemaCompilerChoicesTest, ChoiceTypeToValue) {
+  ListValue* strings_value = new ListValue();
+  strings_value->Append(Value::CreateStringValue("list"));
+  strings_value->Append(Value::CreateStringValue("of"));
+  strings_value->Append(Value::CreateStringValue("strings"));
+
+  DictionaryValue value;
+  value.SetInteger("integers", 5);
+  value.Set("strings", strings_value);
+
+  ChoiceType out;
+  ASSERT_TRUE(ChoiceType::Populate(value, &out));
+
+  EXPECT_TRUE(value.Equals(out.ToValue().get()));
+}
+
 TEST(JsonSchemaCompilerChoicesTest, ReturnChoices) {
   {
     std::vector<int> integers;

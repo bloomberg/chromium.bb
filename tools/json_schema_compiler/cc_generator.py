@@ -254,7 +254,11 @@ class CCGenerator(object):
           if prop.type_ == PropertyType.ENUM:
             c.Sblock('if (%s != %s)' %
                 (prop.unix_name,
-                    self._cpp_type_generator.GetEnumNoneValue(prop)))
+                 self._cpp_type_generator.GetEnumNoneValue(prop)))
+          elif prop.type_ == PropertyType.CHOICES:
+            c.Sblock('if (%s_type != %s)' %
+                (prop.unix_name,
+                 self._cpp_type_generator.GetEnumNoneValue(prop)))
           else:
             c.Sblock('if (%s.get())' % prop.unix_name)
         c.Append('value->SetWithoutPathExpansion("%s", %s);' % (
@@ -293,41 +297,6 @@ class CCGenerator(object):
 
     return c
 
-  def _GenerateCreateEnumValue(self, cpp_namespace, prop):
-    """Generates CreateEnumValue() that returns the |base::StringValue|
-    representation of an enum.
-    """
-    c = Code()
-    c.Append('// static')
-    c.Sblock('scoped_ptr<base::Value> %(cpp_namespace)s::CreateEnumValue('
-             '%(arg)s) {')
-    c.Sblock('switch (%s) {' % prop.unix_name)
-    if prop.optional:
-      (c.Append('case %s: {' % self._cpp_type_generator.GetEnumNoneValue(prop))
-        .Append('  return scoped_ptr<base::Value>();')
-        .Append('}')
-      )
-    for enum_value in prop.enum_values:
-      (c.Append('case %s: {' %
-          self._cpp_type_generator.GetEnumValue(prop, enum_value))
-        .Append('  return scoped_ptr<base::Value>('
-                'base::Value::CreateStringValue("%s"));' %
-                enum_value)
-        .Append('}')
-      )
-    (c.Append('default: {')
-      .Append('  return scoped_ptr<base::Value>();')
-      .Append('}')
-    )
-    c.Eblock('}')
-    c.Eblock('}')
-    c.Substitute({
-        'cpp_namespace': cpp_namespace,
-        'arg': cpp_util.GetParameterDeclaration(
-            prop, self._cpp_type_generator.GetType(prop))
-    })
-    return c
-
   def _CreateValueFromProperty(self, prop, var):
     """Creates a base::Value given a property. Generated code passes ownership
     to caller.
@@ -337,13 +306,8 @@ class CCGenerator(object):
     E.g for std::string, generate base::Value::CreateStringValue(var)
     """
     if prop.type_ == PropertyType.CHOICES:
-      # CHOICES conversion not implemented. If needed, write something to
-      # generate a function that returns a scoped_ptr<base::Value> and put it in
-      # _GeneratePropertyFunctions, then use it here. Look at CreateEnumValue()
-      # for reference.
-      raise NotImplementedError(
-          'Conversion of CHOICES to base::Value not implemented')
-    if self._IsObjectOrObjectRef(prop):
+      return 'Get%sChoiceValue().release()' % cpp_util.Classname(prop.name)
+    elif self._IsObjectOrObjectRef(prop):
       if prop.optional:
         return '%s->ToValue().release()' % var
       else:
@@ -639,9 +603,80 @@ class CCGenerator(object):
       elif param.type_ == PropertyType.CHOICES:
         c.Concat(self._GeneratePropertyFunctions(
             param_namespace, param.choices.values()))
+        if param.from_client:
+          c.Concat(self._GenerateGetChoiceValue(param_namespace, param))
       elif param.type_ == PropertyType.ENUM:
         c.Concat(self._GenerateCreateEnumValue(param_namespace, param))
         c.Append()
+    return c
+
+  def _GenerateGetChoiceValue(self, cpp_namespace, prop):
+    """Generates Get<Type>ChoiceValue() that returns a scoped_ptr<base::Value>
+    representing the choice value.
+    """
+    c = Code()
+    (c.Sblock('scoped_ptr<base::Value> '
+              '%(cpp_namespace)s::Get%(choice)sChoiceValue() const {')
+      .Sblock('switch (%s_type) {' % prop.unix_name)
+    )
+    if prop.optional:
+      c.Concat(self._GenerateReturnCase(
+          self._cpp_type_generator.GetEnumNoneValue(prop),
+          'scoped_ptr<base::Value>()'))
+    for choice in self._cpp_type_generator.ExpandParams([prop]):
+      c.Concat(self._GenerateReturnCase(
+          self._cpp_type_generator.GetEnumValue(prop, choice.type_.name),
+          'make_scoped_ptr<base::Value>(%s)' %
+              self._CreateValueFromProperty(choice, choice.unix_name)))
+    (c.Eblock('}')
+      .Append('NOTREACHED();')
+      .Append('return scoped_ptr<base::Value>();')
+      .Eblock('}')
+      .Append()
+      .Substitute({
+        'cpp_namespace': cpp_namespace,
+        'choice': cpp_util.Classname(prop.name)
+      })
+    )
+    return c
+
+  def _GenerateCreateEnumValue(self, cpp_namespace, prop):
+    """Generates CreateEnumValue() that returns the base::StringValue
+    representation of an enum.
+    """
+    c = Code()
+    c.Append('// static')
+    c.Sblock('scoped_ptr<base::Value> %(cpp_namespace)s::CreateEnumValue('
+             '%(arg)s) {')
+    c.Sblock('switch (%s) {' % prop.unix_name)
+    if prop.optional:
+      c.Concat(self._GenerateReturnCase(
+          self._cpp_type_generator.GetEnumNoneValue(prop),
+          'scoped_ptr<base::Value>()'))
+    for enum_value in prop.enum_values:
+      c.Concat(self._GenerateReturnCase(
+          self._cpp_type_generator.GetEnumValue(prop, enum_value),
+          'scoped_ptr<base::Value>(base::Value::CreateStringValue("%s"))' %
+          enum_value))
+    (c.Eblock('}')
+      .Append('NOTREACHED();')
+      .Append('return scoped_ptr<base::Value>();')
+      .Eblock('}')
+      .Substitute({
+        'cpp_namespace': cpp_namespace,
+        'arg': cpp_util.GetParameterDeclaration(
+            prop, self._cpp_type_generator.GetType(prop))
+      })
+    )
+    return c
+
+  def _GenerateReturnCase(self, case_value, return_value):
+    """Generates a single return case for a switch block.
+    """
+    c = Code()
+    (c.Append('case %s:' % case_value)
+      .Append('  return %s;' % return_value)
+    )
     return c
 
   def _GenerateCreateCallbackArguments(self, function_scope, callback):
