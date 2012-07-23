@@ -211,7 +211,7 @@ deps_os = {
         'src/third_party/pefile':
             Var('git_url') + '/external/pefile.git@d0ca75794f69f1d09fd6d31d40ba2f1e9b3b7fb4',
         'src/third_party/perl':
-            Var('git_url') + '/chromium/deps/perl.git@2693003f205ef0f4429a426cc8f6d19a9596e67d',
+            Var('git_url') + '/chromium/deps/perl.git@ac0d98b5cee6c024b0cffeb4f8f45b6fc5ccdb78',
         'src/third_party/psyco_win32':
             Var('git_url') + '/chromium/deps/psyco_win32.git@a9e06703f2909e3725cf01e415daaac617fb319e',
         'src/third_party/python_26':
