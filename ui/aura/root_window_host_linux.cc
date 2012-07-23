@@ -820,11 +820,6 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   bool size_changed = bounds_.size() != bounds.size() ||
       current_scale != new_scale;
 
-  if (!size_changed) {
-    root_window_->SchedulePaintInRect(root_window_->bounds());
-    return;
-  }
-
   if (bounds.size() != bounds_.size())
     XResizeWindow(xdisplay_, xwindow_, bounds.width(), bounds.height());
 
@@ -839,6 +834,8 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   if (size_changed)
     root_window_->OnHostResized(bounds.size());
+  else
+    root_window_->SchedulePaintInRect(root_window_->bounds());
 }
 
 gfx::Point RootWindowHostLinux::GetLocationOnNativeScreen() const {
