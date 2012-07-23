@@ -781,6 +781,8 @@ _PEPPER_INTERFACES = [
 # This table specifies types and other special data for the commands that
 # will be generated.
 #
+# Must match function names specified in "cmd_buffer_functions.txt".
+#
 # cmd_comment:  A comment added to the cmd format.
 # type:         defines which handler will be used to generate code.
 # decoder_func: defines which function to call in the decoder to execute the
@@ -995,6 +997,13 @@ _FUNCTION_INFO = {
   'Flush': {
     'impl_func': False,
     'decoder_func': 'DoFlush',
+  },
+  'ShallowFlushCHROMIUM': {
+    'impl_func': False,
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
   },
   'FramebufferRenderbuffer': {
     'decoder_func': 'DoFramebufferRenderbuffer',

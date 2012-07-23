@@ -1641,5 +1641,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)
 
+DELEGATE_TO_GL(shallowFlushCHROMIUM, ShallowFlushCHROMIUM)
+
 }  // namespace gpu
 }  // namespace webkit

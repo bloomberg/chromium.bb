@@ -247,6 +247,7 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void enableVertexAttribArray(WGC3Duint index);
   virtual void finish();
   virtual void flush();
+  virtual void shallowFlushCHROMIUM();
   virtual void framebufferRenderbuffer(WGC3Denum target,
                                        WGC3Denum attachment,
                                        WGC3Denum renderbuffertarget,

@@ -1055,6 +1055,14 @@ void GLES2Implementation::Flush() {
   helper_->CommandBufferHelper::Flush();
 }
 
+void GLES2Implementation::ShallowFlushCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glShallowFlushCHROMIUM()");
+  // Flush our command buffer
+  // (tell the service to execute up to the flush cmd.)
+  helper_->CommandBufferHelper::Flush();
+}
+
 void GLES2Implementation::Finish() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   FinishHelper();
@@ -2120,8 +2128,9 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
     switch (name) {
       case GL_EXTENSIONS:
         str += std::string(str.empty() ? "" : " ") +
-            "GL_CHROMIUM_map_sub "
             "GL_CHROMIUM_flipy "
+            "GL_CHROMIUM_map_sub "
+            "GL_CHROMIUM_shallow_flush "
             "GL_EXT_unpack_subimage";
         break;
       default:

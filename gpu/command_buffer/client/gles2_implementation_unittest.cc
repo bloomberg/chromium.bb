@@ -2301,8 +2301,9 @@ TEST_F(GLES2ImplementationTest, GetString) {
   // GLES2Implementation.
   const char* expected_str =
       "foobar "
-      "GL_CHROMIUM_map_sub "
       "GL_CHROMIUM_flipy "
+      "GL_CHROMIUM_map_sub "
+      "GL_CHROMIUM_shallow_flush "
       "GL_EXT_unpack_subimage";
   const char kBad = 0x12;
   struct Cmds {

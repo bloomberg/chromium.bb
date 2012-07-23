@@ -945,6 +945,10 @@ void WebGraphicsContext3DCommandBufferImpl::flush() {
     gl_->FreeEverything();
 }
 
+void WebGraphicsContext3DCommandBufferImpl::shallowFlushCHROMIUM() {
+  gl_->ShallowFlushCHROMIUM();
+}
+
 DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
                  WGC3Denum, WGC3Denum, WGC3Denum, WebGLId)
 

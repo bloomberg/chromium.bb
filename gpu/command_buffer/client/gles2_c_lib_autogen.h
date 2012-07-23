@@ -167,6 +167,9 @@ void GLES2Finish() {
 void GLES2Flush() {
   gles2::GetGLContext()->Flush();
 }
+void GLES2ShallowFlushCHROMIUM() {
+  gles2::GetGLContext()->ShallowFlushCHROMIUM();
+}
 void GLES2FramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) {

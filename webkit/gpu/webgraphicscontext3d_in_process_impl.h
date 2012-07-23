@@ -478,6 +478,10 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location,
                                            const WGC3Dchar* uniform);
 
+  // CHROMIUM_shallow_flush
+  // Only applies to contexts that use the command buffer.
+  virtual void shallowFlushCHROMIUM() { }
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

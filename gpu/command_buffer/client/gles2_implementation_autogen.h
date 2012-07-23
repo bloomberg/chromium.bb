@@ -359,6 +359,8 @@ void Finish();
 
 void Flush();
 
+void ShallowFlushCHROMIUM();
+
 void FramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) {

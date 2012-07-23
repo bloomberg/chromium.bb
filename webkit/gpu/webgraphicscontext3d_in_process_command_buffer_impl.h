@@ -481,6 +481,8 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location,
                                            const WGC3Dchar* uniform);
 
+  virtual void shallowFlushCHROMIUM();
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 
