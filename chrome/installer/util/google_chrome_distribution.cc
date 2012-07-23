@@ -649,10 +649,11 @@ bool GoogleChromeDistribution::GetExperimentDetails(
   };
 
   string16 locale;
-  string16 brand;
-
-  if (!GoogleUpdateSettings::GetLanguage(&locale))
+  GoogleUpdateSettings::GetLanguage(&locale);
+  if (locale.empty() || (locale == ASCIIToWide("en")))
     locale = ASCIIToWide("en-US");
+
+  string16 brand;
   if (!GoogleUpdateSettings::GetBrand(&brand))
     brand = ASCIIToWide("");  // Could still be viable for catch-all rules.
   if (brand == kEnterprise)
@@ -660,19 +661,21 @@ bool GoogleChromeDistribution::GetExperimentDetails(
 
   for (int i = 0; i < arraysize(kExperimentFlavors); ++i) {
     // A maximum of four flavors are supported at the moment.
-    DCHECK_LE(kExperimentFlavors[i].flavors, kMax);
-    DCHECK_GT(kExperimentFlavors[i].flavors, 0);
+    CHECK_LE(kExperimentFlavors[i].flavors, kMax);
+    CHECK_GT(kExperimentFlavors[i].flavors, 0);
     // Make sure each experiment has valid headings.
     for (int f = 0; f < kMax; ++f) {
       if (f < kExperimentFlavors[i].flavors) {
-        DCHECK_GT(kExperimentFlavors[i].headings[f], 0);
+        CHECK_GT(kExperimentFlavors[i].headings[f], 0);
       } else {
-        DCHECK_EQ(kExperimentFlavors[i].headings[f], 0);
+        CHECK_EQ(kExperimentFlavors[i].headings[f], 0);
       }
     }
-    // Make sure we don't overflow on the second letter of the experiment code.
-    DCHECK(kExperimentFlavors[i].prefix2 +
-           kExperimentFlavors[i].flavors - 1 <= 'Z');
+    // The prefix has to be a valid two letter combo.
+    CHECK(kExperimentFlavors[i].prefix1 >= 'A');
+    CHECK(kExperimentFlavors[i].prefix2 >= 'A');
+    CHECK(kExperimentFlavors[i].prefix2 +
+          kExperimentFlavors[i].flavors - 1 <= 'Z');
 
     if (kExperimentFlavors[i].locale != locale &&
         kExperimentFlavors[i].locale != ASCIIToWide("*"))
@@ -751,6 +754,15 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     // Testing only: the user automatically qualifies for the experiment.
     VLOG(1) << "Experiment qualification bypass";
   } else {
+    // Check that the user was not already drafted in this experiment.
+    string16 client;
+    GoogleUpdateSettings::GetClient(&client);
+    if (client.size() > 2) {
+      if (base_group == client.substr(0, 2)) {
+        VLOG(1) << "User already participated in this experiment";
+        return;
+      }
+    }
     // Check browser usage inactivity by the age of the last-write time of the
     // chrome user data directory.
     FilePath user_data_dir(product.GetUserDataPath());
