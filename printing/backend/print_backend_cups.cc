@@ -146,10 +146,9 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
   cups_dest_t* destinations = NULL;
   int num_dests = GetDests(&destinations);
   if ((num_dests == 0) && (cupsLastError() > IPP_OK_EVENTS_COMPLETE)) {
-    VLOG(1) << "CP_CUPS: Error getting printers from CUPS server. Server: "
-            << print_server_url_
-            << " Error: "
-            << static_cast<int>(cupsLastError());
+    VLOG(1) << "CUPS: Error getting printers from CUPS server"
+            << ", server: " << print_server_url_
+            << ", error: " << static_cast<int>(cupsLastError());
     return false;
   }
 
@@ -197,7 +196,9 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
 
   cupsFreeDests(num_dests, destinations);
 
-  VLOG(1) << "CUPS: Enumerated " << printer_list->size() << " printers.";
+  VLOG(1) << "CUPS: Enumerated printers"
+          << ", server: " << print_server_url_
+          << ", # of printers: " << printer_list->size();
   return true;
 }
 
@@ -214,12 +215,14 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
     PrinterCapsAndDefaults* printer_info) {
   DCHECK(printer_info);
 
-  VLOG(1) << "CUPS: Getting Caps and Defaults for: " << printer_name;
+  VLOG(1) << "CUPS: Getting caps and defaults"
+          << ", printer name: " << printer_name;
 
   FilePath ppd_path(GetPPD(printer_name.c_str()));
   // In some cases CUPS failed to get ppd file.
   if (ppd_path.empty()) {
-    LOG(ERROR) << "CUPS: Failed to get PPD for: " << printer_name;
+    LOG(ERROR) << "CUPS: Failed to get PPD"
+               << ", printer name: " << printer_name;
     return false;
   }
 
@@ -344,7 +347,8 @@ FilePath PrintBackendCUPS::GetPPD(const char* name) {
       ipp_status_t error_code = cupsLastError();
       int http_error = httpError(http.http());
       if (error_code > IPP_OK_EVENTS_COMPLETE || http_error != 0) {
-        LOG(ERROR) << "Error downloading PPD file for: " << name
+        LOG(ERROR) << "Error downloading PPD file"
+                   << ", name: " << name
                    << ", CUPS error: " << static_cast<int>(error_code)
                    << ", HTTP error: " << http_error;
         file_util::Delete(ppd_path, false);

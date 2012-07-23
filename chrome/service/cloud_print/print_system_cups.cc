@@ -304,17 +304,20 @@ class PrinterWatcherCUPS
   void PrinterUpdate() {
     if (delegate_ == NULL)
       return;  // Orphan call. We have been stopped already.
-    VLOG(1) << "CP_CUPS: Checking for printer updates: " << printer_name_;
+    VLOG(1) << "CP_CUPS: Checking for updates"
+            << ", printer name: " << printer_name_;
     if (print_system_->NotifyDelete() &&
         !print_system_->IsValidPrinter(printer_name_)) {
       delegate_->OnPrinterDeleted();
-      VLOG(1) << "CP_CUPS: Printer deleted: " << printer_name_;
+      VLOG(1) << "CP_CUPS: Printer deleted"
+              << ", printer name: " << printer_name_;
     } else {
       std::string new_hash = GetSettingsHash();
       if (settings_hash_ != new_hash) {
         settings_hash_ = new_hash;
         delegate_->OnPrinterChanged();
-        VLOG(1) << "CP_CUPS: Printer update detected for: " << printer_name_;
+        VLOG(1) << "CP_CUPS: Printer configuration changed"
+                << ", printer name: " << printer_name_;
       }
     }
     MessageLoop::current()->PostDelayedTask(
@@ -487,8 +490,9 @@ void PrintSystemCUPS::UpdatePrinters() {
       printer_it->printer_name = MakeFullPrinterName(it->url,
                                                      printer_it->printer_name);
     }
-    VLOG(1) << "CUPS: Updated printer list for url: " << it->url
-            << " Number of printers: " << it->printers.size();
+    VLOG(1) << "CP_CUPS: Updated printers list"
+            << ", server: " << it->url
+            << ", # of printers: " << it->printers.size();
   }
 
   // Schedule next update.
@@ -506,7 +510,7 @@ PrintSystem::PrintSystemResult PrintSystemCUPS::EnumeratePrinters(
     printer_list->insert(printer_list->end(),
         it->printers.begin(), it->printers.end());
   }
-  VLOG(1) << "CUPS: Total " << printer_list->size() << " printers enumerated.";
+  VLOG(1) << "CP_CUPS: Total printers enumerated: " << printer_list->size();
   // TODO(sanjeevr): Maybe some day we want to report the actual server names
   // for which the enumeration failed.
   return PrintSystemResult(printer_enum_succeeded_, std::string());
@@ -606,10 +610,9 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
                          short_printer_name.c_str(), 1, -1);
   bool error = (num_jobs == 0) && (cupsLastError() > IPP_OK_EVENTS_COMPLETE);
   if (error) {
-    VLOG(1) << "CP_CUPS: Error getting jobs from CUPS server. Printer:"
-            << printer_name
-            << " Error: "
-            << static_cast<int>(cupsLastError());
+    VLOG(1) << "CP_CUPS: Error getting jobs from CUPS server"
+            << ", printer name:" << printer_name
+            << ", error: " << static_cast<int>(cupsLastError());
     return false;
   }
 
@@ -618,7 +621,8 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
   // accessible through CUPS.
   if (job_id == kDryRunJobId) {
     job_details->status = PRINT_JOB_STATUS_COMPLETED;
-    VLOG(1) << "CP_CUPS: Dry run job succeeded for: " << printer_name;
+    VLOG(1) << "CP_CUPS: Dry run job succeeded"
+            << ", printer name: " << printer_name;
     return true;
   }
 
@@ -651,11 +655,14 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
   }
 
   if (found)
-    VLOG(1) << "CP_CUPS: Job details for: " << printer_name
-            << " job_id: " << job_id << " job status: " << job_details->status;
+    VLOG(1) << "CP_CUPS: Job found"
+            << ", printer name: " << printer_name
+            << ", cups job id: " << job_id
+            << ", cups job status: " << job_details->status;
   else
-    LOG(WARNING) << "CP_CUPS: Job not found for: " << printer_name
-                 << " job_id: " << job_id;
+    LOG(WARNING) << "CP_CUPS: Job not found"
+                 << ", printer name: " << printer_name
+                 << ", cups job id: " << job_id;
 
   cupsFreeJobs(num_jobs, jobs);
   return found;
@@ -665,7 +672,8 @@ bool PrintSystemCUPS::GetPrinterInfo(const std::string& printer_name,
                                      printing::PrinterBasicInfo* info) {
   DCHECK(initialized_);
   if (info)
-    VLOG(1) << "CP_CUPS: Getting printer info for: " << printer_name;
+    VLOG(1) << "CP_CUPS: Getting printer info"
+            << ", printer name: " << printer_name;
 
   std::string short_printer_name;
   PrintServerInfoCUPS* server_info =
@@ -760,7 +768,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
     const std::vector<std::string>& tags,
     bool* dry_run) {
   DCHECK(initialized_);
-  VLOG(1) << "CP_CUPS: Spooling print job for: " << printer_name;
+  VLOG(1) << "CP_CUPS: Spooling print job, printer name: " << printer_name;
 
   std::string short_printer_name;
   PrintServerInfoCUPS* server_info =
@@ -781,7 +789,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
   // Check if this is a dry run (test) job.
   *dry_run = CloudPrintHelpers::IsDryRunJob(tags);
   if (*dry_run) {
-    VLOG(1) << "CP_CUPS: Dry run job spooled.";
+    VLOG(1) << "CP_CUPS: Dry run job spooled";
     return kDryRunJobId;
   }
 
@@ -803,7 +811,10 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
                          cups_options.size(),
                          &(cups_options[0]));
 
-  VLOG(1) << "CP_CUPS: Job spooled, id: " << job_id;
+  // TODO(alexyu): Output printer id.
+  VLOG(1) << "CP_CUPS: Job spooled"
+          << ", printer name: " << printer_name
+          << ", cups job id: " << job_id;
 
   return job_id;
 }
@@ -827,7 +838,8 @@ PrintServerInfoCUPS* PrintSystemCUPS::FindServerByFullName(
   size_t front = full_printer_name.find("\\\\");
   size_t separator = full_printer_name.find("\\", 2);
   if (front == std::string::npos || separator == std::string::npos) {
-    LOG(WARNING) << "Invalid UNC printer name: " << full_printer_name;
+    LOG(WARNING) << "CP_CUPS: Invalid UNC"
+                 << ", printer name: " << full_printer_name;
     return NULL;
   }
   std::string server = full_printer_name.substr(2, separator - 2);
@@ -846,7 +858,8 @@ PrintServerInfoCUPS* PrintSystemCUPS::FindServerByFullName(
     }
   }
 
-  LOG(WARNING) << "Server not found for printer: " << full_printer_name;
+  LOG(WARNING) << "CP_CUPS: Server not found"
+               << ", printer name: " << full_printer_name;
   return NULL;
 }
 

@@ -36,7 +36,8 @@ CloudPrintConnector::CloudPrintConnector(
 
 bool CloudPrintConnector::Start() {
   DCHECK(!print_system_.get());
-  VLOG(1) << "CP_CONNECTOR: Starting connector, id: " << proxy_id_;
+  VLOG(1) << "CP_CONNECTOR: Starting connector"
+          << ", proxy id: " << proxy_id_;
 
   pending_tasks_.clear();
 
@@ -64,7 +65,8 @@ bool CloudPrintConnector::Start() {
 }
 
 void CloudPrintConnector::Stop() {
-  VLOG(1) << "CP_CONNECTOR: Stopping connector, id: " << proxy_id_;
+  VLOG(1) << "CP_CONNECTOR: Stopping connector"
+          << ", proxy id: " << proxy_id_;
   DCHECK(print_system_.get());
   if (print_system_.get()) {
     // Do uninitialization here.
@@ -236,8 +238,9 @@ CloudPrintConnector::HandlePrinterDeleteResponse(
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
-  VLOG(1) << "CP_CONNECTOR: Handler printer delete response, succeeded:"
-          << succeeded << " url: " << url;
+  VLOG(1) << "CP_CONNECTOR: Handler printer delete response"
+          << ", succeeded: " << succeeded
+          << ", url: " << url;
   ContinuePendingTaskProcessing();  // Continue processing background tasks.
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
@@ -248,8 +251,9 @@ CloudPrintConnector::HandleRegisterPrinterResponse(
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
-  VLOG(1) << "CP_CONNECTOR: Handler printer register response, succeeded:"
-          << succeeded << " url: " << url;
+  VLOG(1) << "CP_CONNECTOR: Handler printer register response"
+          << ", succeeded: " << succeeded
+          << ", url: " << url;
   if (succeeded) {
     ListValue* printer_list = NULL;
     // There should be a "printers" value in the JSON
@@ -322,8 +326,8 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
   PrinterJobHandler::PrinterInfoFromCloud printer_info_cloud;
   printer_data->GetString(kIdValue, &printer_info_cloud.printer_id);
   DCHECK(!printer_info_cloud.printer_id.empty());
-  VLOG(1) << "CP_CONNECTOR: Init job handler for printer id: "
-          << printer_info_cloud.printer_id;
+  VLOG(1) << "CP_CONNECTOR: Init job handler"
+          << ", printer id: " << printer_info_cloud.printer_id;
   JobHandlerMap::iterator index = job_handler_map_.find(
       printer_info_cloud.printer_id);
   if (index != job_handler_map_.end())
@@ -487,8 +491,8 @@ void CloudPrintConnector::OnReceivePrinterCaps(
          pending_tasks_.front().type == PENDING_PRINTER_REGISTER);
 
   if (!succeeded) {
-    LOG(ERROR) << "CP_CONNECTOR: Failed to get printer info for: " <<
-        printer_name;
+    LOG(ERROR) << "CP_CONNECTOR: Failed to get printer info"
+               << ", printer name: " << printer_name;
     // This printer failed to register, notify the server of this failure.
     string16 printer_name_utf16 = UTF8ToUTF16(printer_name);
     std::string status_message = l10n_util::GetStringFUTF8(
