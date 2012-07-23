@@ -53,7 +53,7 @@ struct desktop {
 	struct window *grab_window;
 	struct widget *grab_widget;
 
-	enum desktop_shell_cursor grab_cursor;
+	enum cursor_type grab_cursor;
 };
 
 struct surface {
