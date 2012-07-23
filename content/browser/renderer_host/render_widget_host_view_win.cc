@@ -1282,16 +1282,14 @@ void RenderWidgetHostViewWin::UpdateDesiredTouchMode(bool touch_mode) {
 }
 
 ui::GestureEvent* RenderWidgetHostViewWin::CreateGestureEvent(
-    ui::EventType type,
+    const ui::GestureEventDetails& details,
     const gfx::Point& location,
     int flags,
     base::Time time,
-    float param_first,
-    float param_second,
     unsigned int touch_id_bitfield) {
 
-  return new LocalGestureEvent(m_hWnd, type, location, flags, time,
-      param_first, param_second, touch_id_bitfield);
+  return new LocalGestureEvent(m_hWnd, details.type(), location, flags, time,
+      details.generic_x(), details.generic_y(), touch_id_bitfield);
 }
 
 ui::TouchEvent* RenderWidgetHostViewWin::CreateTouchEvent(

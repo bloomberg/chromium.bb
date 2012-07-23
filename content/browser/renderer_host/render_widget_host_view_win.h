@@ -234,12 +234,10 @@ class RenderWidgetHostViewWin
 
   // Overridden from ui::GestureEventHelper.
   virtual ui::GestureEvent* CreateGestureEvent(
-      ui::EventType type,
+      const ui::GestureEventDetails& details,
       const gfx::Point& location,
       int flags,
       base::Time time,
-      float param_first,
-      float param_second,
       unsigned int touch_id_bitfield) OVERRIDE;
   virtual ui::TouchEvent* CreateTouchEvent(
       ui::EventType type,

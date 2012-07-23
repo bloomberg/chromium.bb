@@ -448,11 +448,10 @@ GestureEvent::GestureEvent(ui::EventType type,
                            int y,
                            int flags,
                            base::Time time_stamp,
-                           float delta_x,
-                           float delta_y,
+                           const ui::GestureEventDetails& details,
                            unsigned int touch_ids_bitfield)
     : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags),
-      details_(type, delta_x, delta_y),
+      details_(details),
       touch_ids_bitfield_(touch_ids_bitfield) {
   set_time_stamp(base::TimeDelta::FromSeconds(time_stamp.ToDoubleT()));
 }

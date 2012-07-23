@@ -125,6 +125,16 @@ class SystemGestureEventFilterTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilterTest);
 };
 
+aura::GestureEvent* CreateGesture(ui::EventType type,
+                                  int x,
+                                  int y,
+                                  float delta_x,
+                                  float delta_y,
+                                  int touch_id) {
+  return new aura::GestureEvent(type, x, y, 0, base::Time::Now(),
+      ui::GestureEventDetails(type, delta_x, delta_y), 1 << touch_id);
+}
+
 // Ensure that events targeted at the root window are consumed by the
 // system event handler.
 TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
@@ -139,8 +149,8 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
       base::Time::NowFromSystemTime() - base::Time());
   root_window->DispatchTouchEvent(&press);
 
-  aura::GestureEvent* event = new aura::GestureEvent(
-      ui::ET_GESTURE_TAP, 0, 0, 0, base::Time::Now(), 0, 0, 1 << kTouchId);
+  aura::GestureEvent* event = CreateGesture(
+      ui::ET_GESTURE_TAP, 0, 0, 0, 0, kTouchId);
   bool consumed = root_window->DispatchGestureEvent(event);
 
   EXPECT_TRUE(consumed);
@@ -150,8 +160,8 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   Shell::GetInstance()->RemoveEnvEventFilter(
       shell_test.system_gesture_event_filter());
 
-  aura::GestureEvent* event2 = new aura::GestureEvent(
-      ui::ET_GESTURE_TAP, 0, 0, 0, base::Time::Now(), 0, 0, 1 << kTouchId);
+  aura::GestureEvent* event2 = CreateGesture(
+      ui::ET_GESTURE_TAP, 0, 0, 0, 0, kTouchId);
   consumed = root_window->DispatchGestureEvent(event2);
 
   // The event filter doesn't exist, so the touch won't be consumed.
@@ -197,27 +207,27 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
                             base::Time::NowFromSystemTime() - base::Time());
     root_window->DispatchTouchEvent(&press1);
 
-    aura::GestureEvent* event1 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos, 0,
-        base::Time::Now(), 0, 0, 1 << kTouchId);
+    aura::GestureEvent* event1 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos,
+        0, 0, kTouchId);
     bool consumed = root_window->DispatchGestureEvent(event1);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(0, delegate->handle_percent_count());
 
     // No move at the beginning will produce no events.
-    aura::GestureEvent* event2 = new aura::GestureEvent(
+    aura::GestureEvent* event2 = CreateGesture(
         ui::ET_GESTURE_SCROLL_UPDATE,
-        xpos, ypos, 0, base::Time::Now(), 0, 0, 1 << kTouchId);
+        xpos, ypos, 0, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event2);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(0, delegate->handle_percent_count());
 
     // A move to a new Y location will produce an event.
-    aura::GestureEvent* event3 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos + ypos_half, 0,
-        base::Time::Now(), 0, ypos_half, 1 << kTouchId);
+    aura::GestureEvent* event3 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos + ypos_half,
+        0, ypos_half, kTouchId);
     consumed = root_window->DispatchGestureEvent(event3);
 
     EXPECT_TRUE(consumed);
@@ -225,18 +235,18 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
     EXPECT_EQ(50.0, delegate->handle_percent());
 
     // A move to an illegal Y location will produce legal results.
-    aura::GestureEvent* event4 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos - 100, 0,
-        base::Time::Now(), 0, -ypos_half - 100, 1 << kTouchId);
+    aura::GestureEvent* event4 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos - 100,
+        0, -ypos_half - 100, kTouchId);
     consumed = root_window->DispatchGestureEvent(event4);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(2, delegate->handle_percent_count());
     EXPECT_EQ(100.0, delegate->handle_percent());
 
-    aura::GestureEvent* event5 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos + 2 * screen.height(), 0,
-        base::Time::Now(), 0, 2 * screen.height() + 100, 1 << kTouchId);
+    aura::GestureEvent* event5 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos + 2 * screen.height(),
+        0, 2 * screen.height() + 100, kTouchId);
     consumed = root_window->DispatchGestureEvent(event5);
 
     EXPECT_TRUE(consumed);
@@ -244,18 +254,18 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
     EXPECT_EQ(0.0, delegate->handle_percent());
 
     // Finishing the gesture should not change anything.
-    aura::GestureEvent* event7 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_END, xpos, ypos + ypos_half, 0,
-        base::Time::Now(), 0, 0, 1 << kTouchId);
+    aura::GestureEvent* event7 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_END, xpos, ypos + ypos_half,
+        0, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event7);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(3, delegate->handle_percent_count());
 
     // Another event after this one should get ignored.
-    aura::GestureEvent* event8 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos_half, 0,
-        base::Time::Now(), 0, 0, 1 << kTouchId);
+    aura::GestureEvent* event8 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos_half,
+        0, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event8);
 
     EXPECT_TRUE(consumed);
@@ -313,36 +323,36 @@ TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
                            base::Time::NowFromSystemTime() - base::Time());
     root_window->DispatchTouchEvent(&press);
 
-    aura::GestureEvent* event1 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos, 0,
-        base::Time::Now(), 0, 0, 1 << kTouchId);
+    aura::GestureEvent* event1 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos,
+        0, 0, kTouchId);
     bool consumed = root_window->DispatchGestureEvent(event1);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(ash::wm::GetActiveWindow(), active_window);
 
     // No move at the beginning will produce no events.
-    aura::GestureEvent* event2 = new aura::GestureEvent(
+    aura::GestureEvent* event2 = CreateGesture(
         ui::ET_GESTURE_SCROLL_UPDATE,
-        xpos, ypos, 0, base::Time::Now(), 0, 0, 1 << kTouchId);
+        xpos, ypos, 0, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event2);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(ash::wm::GetActiveWindow(), active_window);
 
     // A move further to the outside will not trigger an action.
-    aura::GestureEvent* event3 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos - delta_x, ypos, 0,
-        base::Time::Now(), -delta_x, 0, 1 << kTouchId);
+    aura::GestureEvent* event3 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos - delta_x, ypos,
+        -delta_x, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event3);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(ash::wm::GetActiveWindow(), active_window);
 
     // A move to the proper side will trigger an action.
-    aura::GestureEvent* event4 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos + delta_x, ypos, 0,
-        base::Time::Now(), 2 * delta_x, 0, 1 << kTouchId);
+    aura::GestureEvent* event4 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos + delta_x, ypos,
+        2 * delta_x, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event4);
 
     EXPECT_TRUE(consumed);
@@ -350,9 +360,9 @@ TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
     active_window = ash::wm::GetActiveWindow();
 
     // A second move to the proper side will not trigger an action.
-    aura::GestureEvent* event5 = new aura::GestureEvent(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos + 2 * delta_x, ypos, 0,
-        base::Time::Now(), delta_x, 0, 1 << kTouchId);
+    aura::GestureEvent* event5 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos + 2 * delta_x, ypos,
+        delta_x, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event5);
 
     EXPECT_TRUE(consumed);

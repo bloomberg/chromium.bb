@@ -34,8 +34,6 @@ class TouchUMA {
                         const aura::TouchEvent& event);
 
  private:
-  std::map<ui::EventType, int> ui_event_type_map_;
-
   DISALLOW_COPY_AND_ASSIGN(TouchUMA);
 };
 

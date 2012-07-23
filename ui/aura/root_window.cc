@@ -856,15 +856,15 @@ bool RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
   return DispatchTouchEvent(static_cast<TouchEvent*>(event));
 }
 
-ui::GestureEvent* RootWindow::CreateGestureEvent(ui::EventType type,
+ui::GestureEvent* RootWindow::CreateGestureEvent(
+    const ui::GestureEventDetails& details,
     const gfx::Point& location,
     int flags,
     base::Time time,
-    float param_first,
-    float param_second,
     unsigned int touch_id_bitfield) {
-  return new GestureEvent(type, location.x(), location.y(), flags, time,
-                          param_first, param_second, touch_id_bitfield);
+  return new GestureEvent(details.type(), location.x(), location.y(),
+                          flags, time, details,
+                          touch_id_bitfield);
 }
 
 ui::TouchEvent* RootWindow::CreateTouchEvent(ui::EventType type,

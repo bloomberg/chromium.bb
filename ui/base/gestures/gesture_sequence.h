@@ -75,6 +75,15 @@ class UI_EXPORT GestureSequence {
 
   bool IsSecondTouchDownCloseEnoughForTwoFingerTap();
 
+  // Creates a gesture event with the specified parameters. The function
+  // includes some common information (e.g. number of touch-points in the
+  // gesture etc.) in the gesture event as well.
+  GestureEvent* CreateGestureEvent(const GestureEventDetails& details,
+                                   const gfx::Point& location,
+                                   int flags,
+                                   base::Time timestamp,
+                                   unsigned int touch_id_bitmask);
+
   // Functions to be called to add GestureEvents, after successful recognition.
 
   // Tap gestures.

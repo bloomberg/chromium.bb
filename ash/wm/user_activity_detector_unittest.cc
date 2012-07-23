@@ -105,7 +105,8 @@ TEST_F(UserActivityDetectorTest, Basic) {
 
   AdvanceTime(advance_delta);
   aura::GestureEvent gesture_event(
-      ui::ET_GESTURE_TAP, 0, 0, ui::EF_NONE, base::Time(), 0, 0, 0U);
+      ui::ET_GESTURE_TAP, 0, 0, ui::EF_NONE, base::Time(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0, 0), 0U);
   EXPECT_FALSE(detector_->PreHandleGestureEvent(window.get(), &gesture_event));
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();

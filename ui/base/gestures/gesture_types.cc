@@ -9,7 +9,8 @@ namespace ui {
 GestureEventDetails::GestureEventDetails(ui::EventType type,
                                          float delta_x,
                                          float delta_y)
-    : type_(type) {
+    : type_(type),
+      touch_points_(1) {
   switch (type_) {
     case ui::ET_GESTURE_SCROLL_UPDATE:
       data.scroll.x = delta_x;
@@ -33,7 +34,7 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
 
     case ui::ET_GESTURE_BEGIN:
     case ui::ET_GESTURE_END:
-      data.touch_points = static_cast<int>(delta_x);
+      set_touch_points(static_cast<int>(delta_x));
       CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for begin/end";
       break;
 

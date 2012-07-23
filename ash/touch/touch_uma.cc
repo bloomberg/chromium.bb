@@ -28,6 +28,42 @@ enum GestureActionType {
   GESTURE_ACTION_COUNT
 };
 
+enum UMAEventType {
+  UMA_ET_UNKNOWN,
+  UMA_ET_TOUCH_RELEASED,
+  UMA_ET_TOUCH_PRESSED,
+  UMA_ET_TOUCH_MOVED,
+  UMA_ET_TOUCH_STATIONARY,
+  UMA_ET_TOUCH_CANCELLED,
+  UMA_ET_GESTURE_SCROLL_BEGIN,
+  UMA_ET_GESTURE_SCROLL_END,
+  UMA_ET_GESTURE_SCROLL_UPDATE,
+  UMA_ET_GESTURE_TAP,
+  UMA_ET_GESTURE_TAP_DOWN,
+  UMA_ET_GESTURE_BEGIN,
+  UMA_ET_GESTURE_END,
+  UMA_ET_GESTURE_DOUBLE_TAP,
+  UMA_ET_GESTURE_TWO_FINGER_TAP,
+  UMA_ET_GESTURE_PINCH_BEGIN,
+  UMA_ET_GESTURE_PINCH_END,
+  UMA_ET_GESTURE_PINCH_UPDATE,
+  UMA_ET_GESTURE_LONG_PRESS,
+  UMA_ET_GESTURE_MULTIFINGER_SWIPE,
+  UMA_ET_SCROLL,
+  UMA_ET_SCROLL_FLING_START,
+  UMA_ET_SCROLL_FLING_CANCEL,
+  UMA_ET_GESTURE_MULTIFINGER_SWIPE_3,
+  UMA_ET_GESTURE_MULTIFINGER_SWIPE_4P,  // 4+ fingers
+  UMA_ET_GESTURE_SCROLL_UPDATE_2,
+  UMA_ET_GESTURE_SCROLL_UPDATE_3,
+  UMA_ET_GESTURE_SCROLL_UPDATE_4P,
+  UMA_ET_GESTURE_PINCH_UPDATE_3,
+  UMA_ET_GESTURE_PINCH_UPDATE_4P,
+  // NOTE: Add new event types only immediately above this line. Make sure to
+  // update the enum list in tools/histogram/histograms.xml accordingly.
+  UMA_ET_COUNT
+};
+
 GestureActionType FindGestureActionType(aura::Window* window,
                                         const aura::GestureEvent& event) {
   if (!window || window->GetRootWindow() == window) {
@@ -87,37 +123,78 @@ GestureActionType FindGestureActionType(aura::Window* window,
   return GESTURE_UNKNOWN;
 }
 
-std::vector<int> GetEventCodes() {
-  // NOTE: Add new events only at the end of this list. Also, make sure the enum
-  // list in tools/histogram/histograms.xml is also updated.
-  int types[] = {
-    ui::ET_UNKNOWN,         // This is to make sure that every intersting value
-                            // has positive index.
-    ui::ET_TOUCH_RELEASED,
-    ui::ET_TOUCH_PRESSED,
-    ui::ET_TOUCH_MOVED,
-    ui::ET_TOUCH_STATIONARY,
-    ui::ET_TOUCH_CANCELLED,
-    ui::ET_GESTURE_SCROLL_BEGIN,
-    ui::ET_GESTURE_SCROLL_END,
-    ui::ET_GESTURE_SCROLL_UPDATE,
-    ui::ET_GESTURE_TAP,
-    ui::ET_GESTURE_TAP_DOWN,
-    ui::ET_GESTURE_BEGIN,
-    ui::ET_GESTURE_END,
-    ui::ET_GESTURE_DOUBLE_TAP,
-    ui::ET_GESTURE_TWO_FINGER_TAP,
-    ui::ET_GESTURE_PINCH_BEGIN,
-    ui::ET_GESTURE_PINCH_END,
-    ui::ET_GESTURE_PINCH_UPDATE,
-    ui::ET_GESTURE_LONG_PRESS,
-    ui::ET_GESTURE_MULTIFINGER_SWIPE,
-    ui::ET_SCROLL,
-    ui::ET_SCROLL_FLING_START,
-    ui::ET_SCROLL_FLING_CANCEL,
-  };
-
-  return std::vector<int>(types, types + arraysize(types));
+UMAEventType UMAEventTypeFromEvent(const aura::Event& event) {
+  switch (event.type()) {
+    case ui::ET_TOUCH_RELEASED:
+      return UMA_ET_TOUCH_RELEASED;
+    case ui::ET_TOUCH_PRESSED:
+      return UMA_ET_TOUCH_PRESSED;
+    case ui::ET_TOUCH_MOVED:
+      return UMA_ET_TOUCH_MOVED;
+    case ui::ET_TOUCH_STATIONARY:
+      return UMA_ET_TOUCH_STATIONARY;
+    case ui::ET_TOUCH_CANCELLED:
+      return UMA_ET_TOUCH_CANCELLED;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      return UMA_ET_GESTURE_SCROLL_BEGIN;
+    case ui::ET_GESTURE_SCROLL_END:
+      return UMA_ET_GESTURE_SCROLL_END;
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      const aura::GestureEvent& gesture =
+          static_cast<const aura::GestureEvent&>(event);
+      if (gesture.details().touch_points() >= 4)
+        return UMA_ET_GESTURE_SCROLL_UPDATE_4P;
+      else if (gesture.details().touch_points() == 3)
+        return UMA_ET_GESTURE_SCROLL_UPDATE_3;
+      else if (gesture.details().touch_points() == 2)
+        return UMA_ET_GESTURE_SCROLL_UPDATE_2;
+      return UMA_ET_GESTURE_SCROLL_UPDATE;
+    }
+    case ui::ET_GESTURE_TAP:
+      return UMA_ET_GESTURE_TAP;
+    case ui::ET_GESTURE_TAP_DOWN:
+      return UMA_ET_GESTURE_TAP_DOWN;
+    case ui::ET_GESTURE_BEGIN:
+      return UMA_ET_GESTURE_BEGIN;
+    case ui::ET_GESTURE_END:
+      return UMA_ET_GESTURE_END;
+    case ui::ET_GESTURE_DOUBLE_TAP:
+      return UMA_ET_GESTURE_DOUBLE_TAP;
+    case ui::ET_GESTURE_TWO_FINGER_TAP:
+      return UMA_ET_GESTURE_TWO_FINGER_TAP;
+    case ui::ET_GESTURE_PINCH_BEGIN:
+      return UMA_ET_GESTURE_PINCH_BEGIN;
+    case ui::ET_GESTURE_PINCH_END:
+      return UMA_ET_GESTURE_PINCH_END;
+    case ui::ET_GESTURE_PINCH_UPDATE: {
+      const aura::GestureEvent& gesture =
+          static_cast<const aura::GestureEvent&>(event);
+      if (gesture.details().touch_points() >= 4)
+        return UMA_ET_GESTURE_PINCH_UPDATE_4P;
+      else if (gesture.details().touch_points() == 3)
+        return UMA_ET_GESTURE_PINCH_UPDATE_3;
+      return UMA_ET_GESTURE_PINCH_UPDATE;
+    }
+    case ui::ET_GESTURE_LONG_PRESS:
+      return UMA_ET_GESTURE_LONG_PRESS;
+    case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
+      const aura::GestureEvent& gesture =
+          static_cast<const aura::GestureEvent&>(event);
+      if (gesture.details().touch_points() >= 4)
+        return UMA_ET_GESTURE_MULTIFINGER_SWIPE_4P;
+      else if (gesture.details().touch_points() == 3)
+        return UMA_ET_GESTURE_MULTIFINGER_SWIPE_3;
+      return UMA_ET_GESTURE_MULTIFINGER_SWIPE;
+    }
+    case ui::ET_SCROLL:
+      return UMA_ET_SCROLL;
+    case ui::ET_SCROLL_FLING_START:
+      return UMA_ET_SCROLL_FLING_START;
+    case ui::ET_SCROLL_FLING_CANCEL:
+      return UMA_ET_SCROLL_FLING_CANCEL;
+    default:
+      return UMA_ET_UNKNOWN;
+  }
 }
 
 }
@@ -126,13 +203,6 @@ namespace ash {
 namespace internal {
 
 TouchUMA::TouchUMA() {
-  std::vector<int> types = GetEventCodes();
-  for (std::vector<int>::iterator iter = types.begin();
-       iter != types.end();
-       ++iter) {
-    ui_event_type_map_[static_cast<ui::EventType>(*iter)] =
-        iter - types.begin();
-  }
 }
 
 TouchUMA::~TouchUMA() {
@@ -141,8 +211,8 @@ TouchUMA::~TouchUMA() {
 void TouchUMA::RecordGestureEvent(aura::Window* target,
                                   const aura::GestureEvent& event) {
   UMA_HISTOGRAM_ENUMERATION("Ash.GestureCreated",
-                            ui_event_type_map_[event.type()],
-                            ui_event_type_map_.size());
+                            UMAEventTypeFromEvent(event),
+                            UMA_ET_COUNT);
 
   GestureActionType action = FindGestureActionType(target, event);
   if (action != GESTURE_UNKNOWN) {
