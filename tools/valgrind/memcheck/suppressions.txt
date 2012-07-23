@@ -5549,6 +5549,7 @@
    ...
    fun:_ZSteqIcEN9__gnu_cxx11__enable_ifIXsrSt9__is_charIT_E7__valueEbE6__typeERKSbIS3_St11char_traitsIS3_ESaIS3_EESC_
    fun:_ZL12getDirectivePKN2pp5TokenE
+   ...
    fun:_ZN2pp15DirectiveParser14parseDirectiveEPNS_5TokenE
    fun:_ZN2pp15DirectiveParser3lexEPNS_5TokenE
    fun:_ZN2pp13MacroExpander8getTokenEPNS_5TokenE
