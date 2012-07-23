@@ -193,21 +193,41 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
 
   virtual ~RemoteFileSystemExtensionApiTest() {}
 
-  // Sets up GDataFileSystem that will be used in the test.
-  // NOTE: Remote mount point should get added to mount point provider when
-  // getLocalFileSystem is called from filebrowser_component extension.
-  virtual void SetupGDataFileSystemForTest() {
-    // |mock_documents_service_| is owned by |system_service|.
+  virtual void SetUp() OVERRIDE {
+    // Set up cache root and documents service to be used when creating gdata
+    // system service. This has to be done early on (before the browser is
+    // created) because the system service instance is initialized very early
+    // by FileBrowserEventRouter.
+    FilePath tmp_dir_path;
+    PathService::Get(base::DIR_TEMP, &tmp_dir_path);
+    ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
+    gdata::GDataSystemServiceFactory::set_cache_root_for_test(
+        test_cache_root_.path().value());
+
     mock_documents_service_ = new gdata::MockDocumentsService();
+
     operation_registry_.reset(new gdata::GDataOperationRegistry());
-    gdata::GDataSystemService* system_service =
-        gdata::GDataSystemServiceFactory::GetInstance()->
-        GetWithCustomDocumentsServiceForTesting(
-            browser()->profile(), mock_documents_service_);
-    EXPECT_TRUE(system_service);
+    // FileBrowserEventRouter will add and remove itself from operation registry
+    // observer list.
+    EXPECT_CALL(*mock_documents_service_, operation_registry()).
+        WillRepeatedly(Return(operation_registry_.get()));
+
+    // |mock_documents_service_| will eventually get owned by a system service.
+    gdata::GDataSystemServiceFactory::set_documents_service_for_test(
+        mock_documents_service_);
+
+    ExtensionApiTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Let's make sure we don't leak documents service.
+    gdata::GDataSystemServiceFactory::set_documents_service_for_test(NULL);
+    gdata::GDataSystemServiceFactory::set_cache_root_for_test(std::string());
+    ExtensionApiTest::TearDown();
   }
 
  protected:
+  ScopedTempDir test_cache_root_;
   gdata::MockDocumentsService* mock_documents_service_;
   scoped_ptr<gdata::GDataOperationRegistry> operation_registry_;
 };
@@ -258,8 +278,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
 
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
                        RemoteMountPoint) {
-  SetupGDataFileSystemForTest();
-
   EXPECT_CALL(*mock_documents_service_, GetAccountMetadata(_)).Times(1);
 
   // First, file browser will try to create new directory.
@@ -299,10 +317,6 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
 
   // On exit, all operations in progress should be cancelled.
   EXPECT_CALL(*mock_documents_service_, CancelAll());
-  // This one is called on exit, but we don't care much about it, as long as it
-  // retunrs something valid (i.e. not NULL).
-  EXPECT_CALL(*mock_documents_service_, operation_registry()).
-      WillRepeatedly(Return(operation_registry_.get()));
 
   // All is set... RUN THE TEST.
   EXPECT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
@@ -318,8 +332,6 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
 #endif
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
                        MAYBE_ContentSearch) {
-  SetupGDataFileSystemForTest();
-
   EXPECT_CALL(*mock_documents_service_, GetAccountMetadata(_)).Times(1);
 
   // First, test will get drive root directory, to init file system.
@@ -353,10 +365,6 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
 
   // On exit, all operations in progress should be cancelled.
   EXPECT_CALL(*mock_documents_service_, CancelAll());
-  // This one is called on exit, but we don't care much about it, as long as it
-  // retunrs something valid (i.e. not NULL).
-  EXPECT_CALL(*mock_documents_service_, operation_registry()).
-      WillRepeatedly(Return(operation_registry_.get()));
 
   // All is set... RUN THE TEST.
   EXPECT_TRUE(RunExtensionSubtest("filebrowser_component", "remote_search.html",

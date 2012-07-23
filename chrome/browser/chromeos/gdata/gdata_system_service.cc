@@ -29,6 +29,10 @@ using content::BrowserThread;
 
 namespace {
 
+// Used in test to setup system service.
+gdata::DocumentsServiceInterface* g_test_documents_service = NULL;
+const std::string* g_test_cache_root = NULL;
+
 scoped_refptr<base::SequencedTaskRunner> GetTaskRunner(
     const base::SequencedWorkerPool::SequenceToken& sequence_token) {
   return BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
@@ -53,12 +57,13 @@ GDataSystemService::~GDataSystemService() {
 }
 
 void GDataSystemService::Initialize(
-    DocumentsServiceInterface* documents_service) {
+    DocumentsServiceInterface* documents_service,
+    const FilePath& cache_root) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   documents_service_.reset(documents_service);
   cache_ = GDataCache::CreateGDataCacheOnUIThread(
-      GDataCache::GetCacheRootPath(profile_),
+      cache_root,
       GetTaskRunner(sequence_token_));
   uploader_.reset(new GDataUploader(docs_service()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
@@ -153,27 +158,37 @@ GDataSystemServiceFactory::~GDataSystemServiceFactory() {
 }
 
 // static
-ProfileKeyedService* GDataSystemServiceFactory::CreateInstance(
-    Profile* profile) {
-  return new GDataSystemService(profile);
+void GDataSystemServiceFactory::set_documents_service_for_test(
+    DocumentsServiceInterface* documents_service) {
+  if (g_test_documents_service)
+    delete g_test_documents_service;
+  g_test_documents_service = documents_service;
 }
 
-GDataSystemService*
-GDataSystemServiceFactory::GetWithCustomDocumentsServiceForTesting(
-    Profile* profile,
-    DocumentsServiceInterface* documents_service) {
-  GDataSystemService* service =
-      static_cast<GDataSystemService*>(GetInstance()->SetTestingFactoryAndUse(
-          profile,
-          &GDataSystemServiceFactory::CreateInstance));
-  service->Initialize(documents_service);
-  return service;
+// static
+void GDataSystemServiceFactory::set_cache_root_for_test(
+    const std::string& cache_root) {
+  if (g_test_cache_root)
+    delete g_test_cache_root;
+  g_test_cache_root = !cache_root.empty() ? new std::string(cache_root) : NULL;
 }
 
 ProfileKeyedService* GDataSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   GDataSystemService* service = new GDataSystemService(profile);
-  service->Initialize(new DocumentsService);
+
+  DocumentsServiceInterface* documents_service =
+      g_test_documents_service ? g_test_documents_service :
+                                 new DocumentsService();
+  g_test_documents_service = NULL;
+
+  FilePath cache_root =
+      g_test_cache_root ? FilePath(*g_test_cache_root) :
+                          GDataCache::GetCacheRootPath(profile);
+  delete g_test_cache_root;
+  g_test_cache_root = NULL;
+
+  service->Initialize(documents_service, cache_root);
   return service;
 }
 
