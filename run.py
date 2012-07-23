@@ -101,6 +101,9 @@ def SetupEnvironment():
   # Arch (x86-32, x86-64, arm)
   env.arch = None
 
+  # Don't trace in QEMU
+  env.trace = False
+
 def PrintBanner(output):
   if not env.quiet:
     lines = output.split('\n')
@@ -213,6 +216,8 @@ def RunSelLdr(args):
   prefix = []
   if GetBuildArch().find('arm') == -1 and env.arch == 'arm':
     prefix = [ env.qemu, '-cpu', 'cortex-a8']
+    if env.trace:
+      prefix += ['-d', 'in_asm,op,exec,cpu']
     args = ['-Q'] + args
 
   # Use the bootstrap loader on linux.
@@ -437,6 +442,8 @@ def ArgSplit(argv):
       env.quiet = True
     elif arg in '--more':
       Usage2()
+    elif arg in ('-t', '--trace'):
+      env.trace = True
     elif arg.endswith('nexe') or arg.endswith('pexe'):
       nexe = arg
       break
