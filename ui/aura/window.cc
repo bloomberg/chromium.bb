@@ -485,12 +485,11 @@ bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) {
     return false;
   gfx::Point local_point(point_in_root);
   ConvertPointToWindow(root_window, this, &local_point);
-  return GetTargetBounds().Contains(local_point);
+  return gfx::Rect(GetTargetBounds().size()).Contains(local_point);
 }
 
 bool Window::ContainsPoint(const gfx::Point& local_point) {
-  gfx::Rect local_bounds(gfx::Point(), bounds().size());
-  return local_bounds.Contains(local_point);
+  return gfx::Rect(bounds().size()).Contains(local_point);
 }
 
 bool Window::HitTest(const gfx::Point& local_point) {
