@@ -279,6 +279,104 @@ ensure_writable_symlinks_recursive() {
   fi
 }
 
+# is_version_ge accepts two version numbers, left and right, and performs a
+# piecewise comparison determining the result of left >= right, returning true
+# (0) if left >= right, and false (1) if left < right. If left or right are
+# missing components relative to the other, the missing components are assumed
+# to be 0, such that 10.6 == 10.6.0.
+is_version_ge() {
+  local left="${1}"
+  local right="${2}"
+
+  local -a left_array right_array
+  IFS=. left_array=(${left})
+  IFS=. right_array=(${right})
+
+  local left_count=${#left_array[@]}
+  local right_count=${#right_array[@]}
+  local count=${left_count}
+  if [[ ${right_count} -lt ${count} ]]; then
+    count=${right_count}
+  fi
+
+  # Compare the components piecewise, as long as there are corresponding
+  # components on each side. If left_element and right_element are unequal,
+  # a comparison can be made.
+  local index=0
+  while [[ ${index} -lt ${count} ]]; do
+    local left_element="${left_array[${index}]}"
+    local right_element="${right_array[${index}]}"
+    if [[ ${left_element} -gt ${right_element} ]]; then
+      return 0
+    elif [[ ${left_element} -lt ${right_element} ]]; then
+      return 1
+    fi
+    ((++index))
+  done
+
+  # If there are more components on the left than on the right, continue
+  # comparing, assuming 0 for each of the missing components on the right.
+  while [[ ${index} -lt ${left_count} ]]; do
+    local left_element="${left_array[${index}]}"
+    if [[ ${left_element} -gt 0 ]]; then
+      return 0
+    fi
+    ((++index))
+  done
+
+  # If there are more components on the right than on the left, continue
+  # comparing, assuming 0 for each of the missing components on the left.
+  while [[ ${index} -lt ${right_count} ]]; do
+    local right_element="${right_array[${index}]}"
+    if [[ ${right_element} -gt 0 ]]; then
+      return 1
+    fi
+    ((++index))
+  done
+
+  # Upon reaching this point, the two version numbers are semantically equal.
+  return 0
+}
+
+# Prints the OS version, as reported by sw_vers -productVersion, to stdout.
+# This function operates with "static" variables: it will only check the OS
+# version once per script run.
+g_checked_os_version=
+g_os_version=
+os_version() {
+  if [[ -z "${g_checked_os_version}" ]]; then
+    g_checked_os_version="y"
+    g_os_version="$(sw_vers -productVersion)"
+    note "g_os_version = ${g_os_version}"
+  fi
+  echo "${g_os_version}"
+  return 0
+}
+
+# Compares the running OS version against a supplied version number,
+# |check_version|, and returns 0 (true) if the running OS version is greater
+# than or equal to |check_version| according to a piece-wise comparison.
+# Returns 1 (false) if the running OS version number cannot be determined or
+# if |check_version| is greater than the running OS version. |check_version|
+# should be a string of the form "major.minor" or "major.minor.micro".
+is_os_version_ge() {
+  local check_version="${1}"
+
+  local os_version="$(os_version)"
+  is_version_ge "${os_version}" "${check_version}"
+
+  # The return value of is_version_ge is used as this function's return value.
+}
+
+# Returns 0 (true) if xattr supports -r for recursive operation.
+os_xattr_supports_r() {
+  # xattr -r is supported in Mac OS X 10.6.
+  is_os_version_ge 10.6
+
+  # The return value of is_os_version_ge is used as this function's return
+  # value.
+}
+
 # Prints the version of ksadmin, as reported by ksadmin --ksadmin-version, to
 # stdout.  This function operates with "static" variables: it will only check
 # the ksadmin version once per script run.  If ksadmin is old enough to not
@@ -290,6 +388,7 @@ ksadmin_version() {
   if [[ -z "${g_checked_ksadmin_version}" ]]; then
     g_checked_ksadmin_version="y"
     g_ksadmin_version="$(ksadmin --ksadmin-version || true)"
+    note "g_ksadmin_version = ${g_ksadmin_version}"
   fi
   echo "${g_ksadmin_version}"
   return 0
@@ -301,50 +400,14 @@ ksadmin_version() {
 # comparison.  Returns 1 (false) if the installed Keystone version number
 # cannot be determined or if |check_version| is greater than the installed
 # Keystone version.  |check_version| should be a string of the form
-# "major.minor.micro.build".  Returns 1 (false) if either |check_version| or
-# the Keystone version do not match this format.
-readonly KSADMIN_VERSION_RE="^([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)\$"
+# "major.minor.micro.build".
 is_ksadmin_version_ge() {
   local check_version="${1}"
 
-  if ! [[ "${check_version}" =~ ${KSADMIN_VERSION_RE} ]]; then
-    return 1
-  fi
+  local ksadmin_version="$(ksadmin_version)"
+  is_version_ge "${ksadmin_version}" "${check_version}"
 
-  local check_components=("${BASH_REMATCH[1]}"
-                          "${BASH_REMATCH[2]}"
-                          "${BASH_REMATCH[3]}"
-                          "${BASH_REMATCH[4]}")
-
-  local ksadmin_version
-  ksadmin_version="$(ksadmin_version)"
-
-  if ! [[ "${ksadmin_version}" =~ ${KSADMIN_VERSION_RE} ]]; then
-    return 1
-  fi
-
-  local ksadmin_components=("${BASH_REMATCH[1]}"
-                            "${BASH_REMATCH[2]}"
-                            "${BASH_REMATCH[3]}"
-                            "${BASH_REMATCH[4]}")
-
-  local i
-  for i in "${!check_components[@]}"; do
-    local check_component="${check_components[${i}]}"
-    local ksadmin_component="${ksadmin_components[${i}]}"
-
-    if [[ ${ksadmin_component} -lt ${check_component} ]]; then
-      # ksadmin_version is less than check_version.
-      return 1
-    fi
-    if [[ ${ksadmin_component} -gt ${check_component} ]]; then
-      # ksadmin_version is greater than check_version.
-      return 0
-    fi
-  done
-
-  # The version numbers are equal.
-  return 0
+  # The return value of is_version_ge is used as this function's return value.
 }
 
 # Returns 0 (true) if ksadmin supports --tag.
@@ -1263,21 +1326,6 @@ main() {
   find "${installed_app}" -type l -exec chmod -h "${chmod_mode}" {} + \
       2> /dev/null
 
-  # Host OS version check, to be able to take advantage of features on newer
-  # systems and fall back to slow ways of doing things on older systems.
-  local os_version
-  os_version="$(sw_vers -productVersion)"
-  note "os_version = ${os_version}"
-
-  local os_major=0
-  local os_minor=0
-  if [[ "${os_version}" =~ ^([0-9]+)\.([0-9]+) ]]; then
-    os_major="${BASH_REMATCH[1]}"
-    os_minor="${BASH_REMATCH[2]}"
-  fi
-  note "os_major = ${os_major}"
-  note "os_minor = ${os_minor}"
-
   # If an update is triggered from within the application itself, the update
   # process inherits the quarantine bit (LSFileQuarantineEnabled).  Any files
   # or directories created during the update will be quarantined in that case,
@@ -1293,8 +1341,7 @@ main() {
   # the application.
   note "lifting quarantine"
 
-  if [[ ${os_major} -gt 10 ]] ||
-     ([[ ${os_major} -eq 10 ]] && [[ ${os_minor} -ge 6 ]]); then
+  if os_xattr_supports_r; then
     # On 10.6, xattr supports -r for recursive operation.
     xattr -d -r "${QUARANTINE_ATTR}" "${installed_app}" 2> /dev/null
   else
