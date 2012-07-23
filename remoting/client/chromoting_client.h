@@ -15,7 +15,6 @@
 #include "base/time.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_stats.h"
-#include "remoting/client/chromoting_view.h"
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -35,6 +34,7 @@ class TransportFactory;
 }  // namespace protocol
 
 class AudioPlayer;
+class ClientUserInterface;
 class RectangleUpdateDecoder;
 
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
@@ -47,7 +47,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   ChromotingClient(const ClientConfig& config,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                    protocol::ConnectionToHost* connection,
-                   ChromotingView* view,
+                   ClientUserInterface* user_interface,
                    RectangleUpdateDecoder* rectangle_decoder,
                    AudioPlayer* audio_player);
 
@@ -110,7 +110,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   ClientConfig config_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   protocol::ConnectionToHost* connection_;
-  ChromotingView* view_;
+  ClientUserInterface* user_interface_;
   RectangleUpdateDecoder* rectangle_decoder_;
   AudioPlayer* audio_player_;
 

@@ -28,13 +28,14 @@
 
 #include "ppapi/cpp/instance.h"
 #include "remoting/client/client_context.h"
+#include "remoting/client/client_user_interface.h"
 #include "remoting/client/key_event_mapper.h"
 #include "remoting/client/plugin/mac_key_event_processor.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
-#include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/cursor_shape_stub.h"
 
 namespace base {
 class DictionaryValue;
@@ -48,7 +49,6 @@ class Module;
 namespace remoting {
 
 namespace protocol {
-class ConnectionToHost;
 class InputEventTracker;
 class MouseInputFilter;
 }  // namespace protocol
@@ -66,32 +66,12 @@ class RectangleUpdateDecoder;
 struct ClientConfig;
 
 class ChromotingInstance :
+      public ClientUserInterface,
       public protocol::ClipboardStub,
       public protocol::CursorShapeStub,
       public pp::Instance,
       public base::SupportsWeakPtr<ChromotingInstance> {
  public:
-  // These state values are duplicated in the JS code. Remember to
-  // update both copies when making changes.
-  enum ConnectionState {
-    STATE_CONNECTING = 1,
-    STATE_INITIALIZING,
-    STATE_CONNECTED,
-    STATE_CLOSED,
-    STATE_FAILED,
-  };
-
-  // These values are duplicated in the JS code. Remember to update
-  // both copies when making changes.
-  enum ConnectionError {
-    ERROR_NONE = 0,
-    ERROR_HOST_IS_OFFLINE,
-    ERROR_SESSION_REJECTED,
-    ERROR_INCOMPATIBLE_PROTOCOL,
-    ERROR_NETWORK_FAILURE,
-    ERROR_HOST_OVERLOAD,
-  };
-
   // Plugin API version. This should be incremented whenever the API
   // interface changes.
   static const int kApiVersion = 7;
@@ -125,17 +105,22 @@ class ChromotingInstance :
   virtual void HandleMessage(const pp::Var& message) OVERRIDE;
   virtual bool HandleInputEvent(const pp::InputEvent& event) OVERRIDE;
 
-  // ClipboardStub implementation.
-  virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event)
-      OVERRIDE;
+  // ClientUserInterface interface.
+  virtual void OnConnectionState(protocol::ConnectionToHost::State state,
+                                 protocol::ErrorCode error) OVERRIDE;
+  virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
+  virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
 
-  // CursorShapeStub implementation.
-  virtual void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape)
-      OVERRIDE;
+  // protocol::ClipboardStub interface.
+  virtual void InjectClipboardEvent(
+      const protocol::ClipboardEvent& event) OVERRIDE;
+
+  // protocol::CursorShapeStub interface.
+  virtual void SetCursorShape(
+      const protocol::CursorShapeInfo& cursor_shape) OVERRIDE;
 
   // Called by PepperView.
   void SetDesktopSize(const SkISize& size, const SkIPoint& dpi);
-  void SetConnectionState(ConnectionState state, ConnectionError error);
   void OnFirstFrameReceived();
 
   // Message handlers for messages that come from JavaScript. Called

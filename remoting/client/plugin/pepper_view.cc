@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/synchronization/waitable_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/graphics_2d.h"
@@ -31,39 +32,6 @@ namespace {
 // The maximum number of image buffers to be allocated at any point of time.
 const size_t kMaxPendingBuffersCount = 2;
 
-// TODO(sergeyu): Ideally we should just pass ErrorCode to the webapp
-// and let it handle it, but it would be hard to fix it now because
-// client plugin and webapp versions may not be in sync. It should be
-// easy to do after we are finished moving the client plugin to NaCl.
-ChromotingInstance::ConnectionError ConvertConnectionError(
-    protocol::ErrorCode error) {
-  switch (error) {
-    case protocol::OK:
-      return ChromotingInstance::ERROR_NONE;
-
-    case protocol::PEER_IS_OFFLINE:
-      return ChromotingInstance::ERROR_HOST_IS_OFFLINE;
-
-    case protocol::SESSION_REJECTED:
-    case protocol::AUTHENTICATION_FAILED:
-      return ChromotingInstance::ERROR_SESSION_REJECTED;
-
-    case protocol::INCOMPATIBLE_PROTOCOL:
-      return ChromotingInstance::ERROR_INCOMPATIBLE_PROTOCOL;
-
-    case protocol::HOST_OVERLOAD:
-      return ChromotingInstance::ERROR_HOST_OVERLOAD;
-
-    case protocol::CHANNEL_CONNECTION_ERROR:
-    case protocol::SIGNALING_ERROR:
-    case protocol::SIGNALING_TIMEOUT:
-    case protocol::UNKNOWN_ERROR:
-      return ChromotingInstance::ERROR_NETWORK_FAILURE;
-  }
-  DLOG(FATAL) << "Unknown error code" << error;
-  return  ChromotingInstance::ERROR_NONE;
-}
-
 }  // namespace
 
 PepperView::PepperView(ChromotingInstance* instance,
@@ -79,29 +47,11 @@ PepperView::PepperView(ChromotingInstance* instance,
     source_size_(SkISize::Make(0, 0)),
     source_dpi_(SkIPoint::Make(0, 0)),
     flush_pending_(false),
-    is_initialized_(false),
     frame_received_(false) {
+  InitiateDrawing();
 }
 
 PepperView::~PepperView() {
-  DCHECK(merge_buffer_ == NULL);
-  DCHECK(buffers_.empty());
-}
-
-bool PepperView::Initialize() {
-  DCHECK(!is_initialized_);
-
-  is_initialized_ = true;
-  InitiateDrawing();
-  return true;
-}
-
-void PepperView::TearDown() {
-  DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
-  DCHECK(is_initialized_);
-
-  is_initialized_ = false;
-
   // The producer should now return any pending buffers. At this point, however,
   // ReturnBuffer() tasks scheduled by the producer will not be delivered,
   // so we free all the buffers once the producer's queue is empty.
@@ -114,45 +64,6 @@ void PepperView::TearDown() {
   while (!buffers_.empty()) {
     FreeBuffer(buffers_.front());
   }
-}
-
-void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
-                                    protocol::ErrorCode error) {
-  DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
-
-  switch (state) {
-    case protocol::ConnectionToHost::CONNECTING:
-      instance_->SetConnectionState(
-          ChromotingInstance::STATE_CONNECTING,
-          ConvertConnectionError(error));
-      break;
-
-    case protocol::ConnectionToHost::CONNECTED:
-      instance_->SetConnectionState(
-          ChromotingInstance::STATE_CONNECTED,
-          ConvertConnectionError(error));
-      break;
-
-    case protocol::ConnectionToHost::CLOSED:
-      instance_->SetConnectionState(
-          ChromotingInstance::STATE_CLOSED,
-          ConvertConnectionError(error));
-      break;
-
-    case protocol::ConnectionToHost::FAILED:
-      instance_->SetConnectionState(
-          ChromotingInstance::STATE_FAILED,
-          ConvertConnectionError(error));
-      break;
-  }
-}
-
-protocol::ClipboardStub* PepperView::GetClipboardStub() {
-  return instance_;
-}
-
-protocol::CursorShapeStub* PepperView::GetCursorShapeStub() {
-  return instance_;
 }
 
 void PepperView::SetView(const SkISize& view_size, const SkIRect& clip_area) {
@@ -211,12 +122,6 @@ void PepperView::ApplyBuffer(const SkISize& view_size,
 void PepperView::ReturnBuffer(pp::ImageData* buffer) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
 
-  // Free the buffer if there is nothing to paint.
-  if (!is_initialized_) {
-    FreeBuffer(buffer);
-    return;
-  }
-
   // Reuse the buffer if it is large enough, otherwise drop it on the floor
   // and allocate a new one.
   if (buffer->size().width() >= clip_area_.width() &&
@@ -271,9 +176,6 @@ void PepperView::FreeBuffer(pp::ImageData* buffer) {
 }
 
 void PepperView::InitiateDrawing() {
-  if (!is_initialized_)
-    return;
-
   pp::ImageData* buffer = AllocateBuffer();
   while (buffer) {
     producer_->DrawBuffer(buffer);
