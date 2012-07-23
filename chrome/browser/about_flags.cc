@@ -983,7 +983,8 @@ void SanitizeList(PrefService* prefs) {
       enabled_experiments.begin(), enabled_experiments.end(),
       std::inserter(new_enabled_experiments, new_enabled_experiments.begin()));
 
-  SetEnabledFlags(prefs, new_enabled_experiments);
+  if (new_enabled_experiments != enabled_experiments)
+    SetEnabledFlags(prefs, new_enabled_experiments);
 }
 
 void GetSanitizedEnabledFlags(
