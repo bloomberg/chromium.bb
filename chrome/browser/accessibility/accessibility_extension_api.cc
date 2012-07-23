@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"

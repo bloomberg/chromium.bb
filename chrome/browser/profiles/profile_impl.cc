@@ -30,7 +30,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
@@ -577,7 +577,7 @@ ExtensionProcessManager* ProfileImpl::GetExtensionProcessManager() {
   return extensions::ExtensionSystem::Get(this)->process_manager();
 }
 
-ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
+extensions::EventRouter* ProfileImpl::GetExtensionEventRouter() {
   return extensions::ExtensionSystem::Get(this)->event_router();
 }
 

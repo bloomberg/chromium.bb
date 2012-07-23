@@ -17,7 +17,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 
 class ExtensionDevToolsManager;
-class ExtensionEventRouter;
 class ExtensionInfoMap;
 class ExtensionMessageService;
 class ExtensionNavigationObserver;
@@ -29,6 +28,7 @@ namespace extensions {
 // Unfortunately, for the ApiResourceManager<> template classes, we don't seem
 // to be able to forward-declare because of compilation errors on Windows.
 class AlarmManager;
+class EventRouter;
 class Extension;
 class ExtensionPrefs;
 class ExtensionSystemSharedFactory;
@@ -92,8 +92,8 @@ class ExtensionSystem : public ProfileKeyedService {
   // The ExtensionMessageService is created at startup.
   virtual ExtensionMessageService* message_service() = 0;
 
-  // The ExtensionEventRouter is created at startup.
-  virtual ExtensionEventRouter* event_router() = 0;
+  // The EventRouter is created at startup.
+  virtual EventRouter* event_router() = 0;
 
   // The RulesRegistryService is created at startup.
   virtual RulesRegistryService* rules_registry_service() = 0;
@@ -152,7 +152,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
   virtual ExtensionMessageService* message_service() OVERRIDE;  // shared
-  virtual ExtensionEventRouter* event_router() OVERRIDE;  // shared
+  virtual EventRouter* event_router() OVERRIDE;  // shared
   virtual RulesRegistryService* rules_registry_service()
       OVERRIDE;  // shared
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
@@ -192,7 +192,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     ExtensionInfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     ExtensionMessageService* message_service();
-    ExtensionEventRouter* event_router();
+    EventRouter* event_router();
     RulesRegistryService* rules_registry_service();
 
    private:
@@ -208,10 +208,10 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_refptr<UserScriptMaster> user_script_master_;
     // extension_info_map_ needs to outlive extension_process_manager_.
     scoped_refptr<ExtensionInfoMap> extension_info_map_;
-    // This is a dependency of ExtensionMessageService and ExtensionEventRouter.
+    // This is a dependency of ExtensionMessageService and EventRouter.
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
     scoped_ptr<ExtensionMessageService> extension_message_service_;
-    scoped_ptr<ExtensionEventRouter> extension_event_router_;
+    scoped_ptr<EventRouter> extension_event_router_;
     scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
     scoped_ptr<RulesRegistryService> rules_registry_service_;
   };

@@ -80,7 +80,7 @@ class ProfileImpl : public Profile,
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual extensions::UserScriptMaster* GetUserScriptMaster() OVERRIDE;
   virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;
-  virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
+  virtual extensions::EventRouter* GetExtensionEventRouter() OVERRIDE;
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;

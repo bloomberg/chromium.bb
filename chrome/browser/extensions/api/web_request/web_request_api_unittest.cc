@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
-#include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -122,7 +122,7 @@ class ExtensionWebRequestTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    event_router_ = new ExtensionEventRouterForwarder();
+    event_router_ = new extensions::EventRouterForwarder();
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
@@ -140,7 +140,7 @@ class ExtensionWebRequestTest : public testing::Test {
   TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
-  scoped_refptr<ExtensionEventRouterForwarder> event_router_;
+  scoped_refptr<extensions::EventRouterForwarder> event_router_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   scoped_ptr<TestURLRequestContext> context_;
@@ -436,7 +436,7 @@ class ExtensionWebRequestHeaderModificationTest :
 
  protected:
   virtual void SetUp() {
-    event_router_ = new ExtensionEventRouterForwarder();
+    event_router_ = new extensions::EventRouterForwarder();
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
@@ -457,7 +457,7 @@ class ExtensionWebRequestHeaderModificationTest :
   TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
-  scoped_refptr<ExtensionEventRouterForwarder> event_router_;
+  scoped_refptr<extensions::EventRouterForwarder> event_router_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   scoped_ptr<net::MockHostResolver> host_resolver_;

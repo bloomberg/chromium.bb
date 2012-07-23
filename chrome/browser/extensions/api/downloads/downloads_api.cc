@@ -30,8 +30,8 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -830,7 +830,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
     // OnChangedStat from our maps.
     downloads_.erase(download_id);
     item->RemoveObserver(this);
-    DispatchEvent(extension_event_names::kOnDownloadErased,
+    DispatchEvent(extensions::event_names::kOnDownloadErased,
                   base::Value::CreateIntegerValue(download_id));
     delete item_jsons_[download_id];
     item_jsons_.erase(download_id);
@@ -880,7 +880,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
   // changed. Replace the stored json with the new json.
   ++(on_changed_stats_[download_id]->total);
   if (changed) {
-    DispatchEvent(extension_event_names::kOnDownloadChanged, delta.release());
+    DispatchEvent(extensions::event_names::kOnDownloadChanged, delta.release());
     ++(on_changed_stats_[download_id]->fires);
   }
   item_jsons_[download_id]->Swap(new_json.get());
@@ -931,7 +931,8 @@ void ExtensionDownloadsEventRouter::ModelChanged(DownloadManager* manager) {
        iter != new_set.end(); ++iter) {
     scoped_ptr<base::DictionaryValue> item(
         DownloadItemToJSON(current_map[*iter]));
-    DispatchEvent(extension_event_names::kOnDownloadCreated, item->DeepCopy());
+    DispatchEvent(extensions::event_names::kOnDownloadCreated,
+                  item->DeepCopy());
     DCHECK(item_jsons_.find(*iter) == item_jsons_.end());
     on_changed_stats_[*iter] = new OnChangedStat();
     current_map[*iter]->AddObserver(this);

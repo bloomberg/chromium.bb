@@ -12,7 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
@@ -63,7 +63,7 @@ class MockExtensionService : public TestExtensionService {
   std::map<std::string, scoped_refptr<Extension> > extensions_;
 };
 
-// A Profile which returns ExtensionService and ExtensionEventRouters with
+// A Profile which returns ExtensionService and EventRouters with
 // enough functionality for the tests.
 class MockProfile : public TestingProfile {
  public:
@@ -75,11 +75,11 @@ class MockProfile : public TestingProfile {
   MockExtensionService* GetMockExtensionService();
 
   virtual ExtensionService* GetExtensionService() OVERRIDE;
-  virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
+  virtual EventRouter* GetExtensionEventRouter() OVERRIDE;
 
  private:
   MockExtensionService extension_service_;
-  scoped_ptr<ExtensionEventRouter> event_router_;
+  scoped_ptr<EventRouter> event_router_;
 };
 
 // SettingsStorageFactory which acts as a wrapper for other factories.

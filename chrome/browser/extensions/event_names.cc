@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_event_names.h"
+#include "chrome/browser/extensions/event_names.h"
 
-namespace extension_event_names {
+namespace extensions {
+
+namespace event_names {
 
 const char kOnTabActivated[] = "tabs.onActivated";
 const char kOnTabActiveChanged[] = "tabs.onActiveChanged";
@@ -64,4 +66,6 @@ const char kBluetoothOnPowerChanged[] =
     "experimental.bluetooth.onPowerChanged";
 #endif
 
-}  // namespace extension_event_names
+}  // namespace event_names
+
+}  // namespace extensions

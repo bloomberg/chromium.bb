@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -82,7 +82,7 @@ void DispatchEventToExtensions(
     extensions::APIPermission::ID permission,
     bool incognito,
     const std::string& browser_pref) {
-  ExtensionEventRouter* router = profile->GetExtensionEventRouter();
+  extensions::EventRouter* router = profile->GetExtensionEventRouter();
   if (!router || !router->HasEventListener(event_name))
     return;
   ExtensionService* extension_service = profile->GetExtensionService();

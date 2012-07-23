@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
-#include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"

@@ -70,7 +70,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #if defined(OS_CHROMEOS)
   virtual chromeos::OomPriorityManager* oom_priority_manager() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
-  virtual ExtensionEventRouterForwarder*
+  virtual extensions::EventRouterForwarder*
         extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
@@ -166,7 +166,7 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_icon_manager_;
   scoped_ptr<IconManager> icon_manager_;
 
-  scoped_refptr<ExtensionEventRouterForwarder>
+  scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;
 
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;

@@ -10,8 +10,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/process_proxy/process_proxy_registry.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
-#include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,7 +60,7 @@ void NotifyProcessOutput(Profile* profile,
 
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id, extension_event_names::kOnTerminalProcessOutput,
+        extension_id, extensions::event_names::kOnTerminalProcessOutput,
         args_json, NULL, GURL());
   }
 }

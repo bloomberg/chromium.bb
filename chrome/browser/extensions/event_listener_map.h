@@ -21,12 +21,12 @@ namespace content {
 class RenderProcessHost;
 }
 
-struct ExtensionEvent;
 class ListenerRemovalListener;
 
 using base::DictionaryValue;
 
 namespace extensions {
+struct Event;
 
 // A listener for an extension event. A listener is essentially an endpoint
 // that an event can be dispatched to. This is a lazy listener if |process| is
@@ -83,7 +83,7 @@ class EventListenerMap {
 
   // Add a listener for a particular event. GetEventListeners() will include a
   // weak pointer to |listener| in its results if passed a relevant
-  // ExtensionEvent.
+  // extensions::Event.
   // Returns true if the listener was added (in the case that it has never been
   // seen before).
   bool AddListener(scoped_ptr<EventListener> listener);
@@ -94,7 +94,7 @@ class EventListenerMap {
 
   // Returns the set of listeners that want to be notified of |event|.
   std::set<const EventListener*> GetEventListeners(
-      const ExtensionEvent& event);
+      const Event& event);
 
   // Removes all listeners with process equal to |process|.
   void RemoveListenersForProcess(const content::RenderProcessHost* process);
@@ -137,7 +137,7 @@ class EventListenerMap {
   typedef std::map<std::string, ListenerList> ListenerMap;
 
   void CleanupListener(EventListener* listener);
-  bool IsFilteredEvent(const ExtensionEvent& event) const;
+  bool IsFilteredEvent(const Event& event) const;
   scoped_ptr<EventMatcher> ParseEventMatcher(DictionaryValue* filter_dict);
 
   // Listens for removals from this map.

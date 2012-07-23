@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"

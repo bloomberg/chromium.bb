@@ -463,7 +463,7 @@ ExtensionProcessManager* TestingProfile::GetExtensionProcessManager() {
   return extensions::ExtensionSystem::Get(this)->process_manager();
 }
 
-ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
+extensions::EventRouter* TestingProfile::GetExtensionEventRouter() {
   return extensions::ExtensionSystem::Get(this)->event_router();
 }
 

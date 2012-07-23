@@ -7,7 +7,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"

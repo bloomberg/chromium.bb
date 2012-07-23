@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/prefs/pref_service.h"

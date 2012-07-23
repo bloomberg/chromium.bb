@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "chrome/common/extensions/event_filtering_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -930,10 +931,10 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
 
     base::JSONWriter::Write(args_filtered.get(), &json_args);
 
-    ExtensionEventRouter::DispatchEvent(
+    extensions::EventRouter::DispatchEvent(
         (*it)->ipc_sender.get(), (*it)->extension_id, (*it)->sub_event_name,
-        json_args, GURL(), ExtensionEventRouter::USER_GESTURE_UNKNOWN,
-        EventFilteringInfo());
+        json_args, GURL(), extensions::EventRouter::USER_GESTURE_UNKNOWN,
+        extensions::EventFilteringInfo());
     if ((*it)->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
       (*it)->blocked_requests.insert(request->identifier());

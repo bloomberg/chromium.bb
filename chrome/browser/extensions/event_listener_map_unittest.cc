@@ -5,9 +5,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "chrome/browser/extensions/event_listener_map.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+
+namespace extensions {
 
 namespace {
 
@@ -43,16 +45,16 @@ class EventListenerMapUnittest : public testing::Test {
     return filter.Pass();
   }
 
-  scoped_ptr<ExtensionEvent> CreateNamedEvent(const std::string& event_name) {
+  scoped_ptr<Event> CreateNamedEvent(const std::string& event_name) {
     return CreateEvent(event_name, GURL());
   }
 
-  scoped_ptr<ExtensionEvent> CreateEvent(const std::string& event_name,
-                                         const GURL& url) {
+  scoped_ptr<Event> CreateEvent(const std::string& event_name,
+                                const GURL& url) {
     EventFilteringInfo info;
     info.SetURL(url);
-    scoped_ptr<ExtensionEvent> result(new ExtensionEvent(event_name, "", GURL(),
-        NULL, "", ExtensionEventRouter::USER_GESTURE_UNKNOWN, info));
+    scoped_ptr<Event> result(new Event(event_name, "", GURL(),
+        NULL, "", EventRouter::USER_GESTURE_UNKNOWN, info));
     return result.Pass();
   }
 
@@ -67,7 +69,7 @@ TEST_F(EventListenerMapUnittest, UnfilteredEventsGoToAllListeners) {
   listeners_->AddListener(scoped_ptr<EventListener>(new EventListener(
       kEvent1Name, kExt1Id, NULL, scoped_ptr<DictionaryValue>())));
 
-  scoped_ptr<ExtensionEvent> event(CreateNamedEvent(kEvent1Name));
+  scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(1u, targets.size());
 }
@@ -79,7 +81,7 @@ TEST_F(EventListenerMapUnittest, FilteredEventsGoToAllMatchingListeners) {
       kEvent1Name, kExt1Id, NULL, scoped_ptr<DictionaryValue>(
       new DictionaryValue))));
 
-  scoped_ptr<ExtensionEvent> event(CreateNamedEvent(kEvent1Name));
+  scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   event->info.SetURL(GURL("http://www.google.com"));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(2u, targets.size());
@@ -91,7 +93,7 @@ TEST_F(EventListenerMapUnittest, FilteredEventsOnlyGoToMatchingListeners) {
   listeners_->AddListener(scoped_ptr<EventListener>(new EventListener(
       kEvent1Name, kExt1Id, NULL, CreateHostSuffixFilter("yahoo.com"))));
 
-  scoped_ptr<ExtensionEvent> event(CreateNamedEvent(kEvent1Name));
+  scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   event->info.SetURL(GURL("http://www.google.com"));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(1u, targets.size());
@@ -105,7 +107,7 @@ TEST_F(EventListenerMapUnittest, LazyAndUnlazyListenersGetReturned) {
       kEvent1Name, kExt1Id, process_.get(),
       CreateHostSuffixFilter("google.com"))));
 
-  scoped_ptr<ExtensionEvent> event(CreateNamedEvent(kEvent1Name));
+  scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   event->info.SetURL(GURL("http://www.google.com"));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(2u, targets.size());
@@ -121,7 +123,7 @@ TEST_F(EventListenerMapUnittest, TestRemovingByProcess) {
 
   listeners_->RemoveListenersForProcess(process_.get());
 
-  scoped_ptr<ExtensionEvent> event(CreateNamedEvent(kEvent1Name));
+  scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   event->info.SetURL(GURL("http://www.google.com"));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(1u, targets.size());
@@ -139,7 +141,7 @@ TEST_F(EventListenerMapUnittest, TestRemovingByListener) {
       process_.get(), CreateHostSuffixFilter("google.com")));
   listeners_->RemoveListener(listener.get());
 
-  scoped_ptr<ExtensionEvent> event(CreateNamedEvent(kEvent1Name));
+  scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   event->info.SetURL(GURL("http://www.google.com"));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(1u, targets.size());
@@ -155,7 +157,7 @@ TEST_F(EventListenerMapUnittest, TestLazyDoubleAddIsUndoneByRemove) {
         kEvent1Name, kExt1Id, NULL, CreateHostSuffixFilter("google.com")));
   listeners_->RemoveListener(listener.get());
 
-  scoped_ptr<ExtensionEvent> event(CreateNamedEvent(kEvent1Name));
+  scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   event->info.SetURL(GURL("http://www.google.com"));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(0u, targets.size());
@@ -175,7 +177,7 @@ TEST_F(EventListenerMapUnittest, RemoveLazyListenersForExtension) {
 
   listeners_->RemoveLazyListenersForExtension(kExt1Id);
 
-  scoped_ptr<ExtensionEvent> event(CreateNamedEvent(kEvent1Name));
+  scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   event->info.SetURL(GURL("http://www.google.com"));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(0u, targets.size());
@@ -272,8 +274,8 @@ TEST_F(EventListenerMapUnittest, AddLazyListenersFromPreferences) {
 
   listeners_->LoadFilteredLazyListeners(kExt1Id, filtered_listeners);
 
-  scoped_ptr<ExtensionEvent> event(CreateEvent(kEvent1Name,
-                                   GURL("http://www.google.com")));
+  scoped_ptr<Event> event(CreateEvent(kEvent1Name,
+                          GURL("http://www.google.com")));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(1u, targets.size());
   scoped_ptr<EventListener> listener(new EventListener(kEvent1Name, kExt1Id,
@@ -290,10 +292,12 @@ TEST_F(EventListenerMapUnittest, CorruptedExtensionPrefsShouldntCrash) {
 
   listeners_->LoadFilteredLazyListeners(kExt1Id, filtered_listeners);
 
-  scoped_ptr<ExtensionEvent> event(CreateEvent(kEvent1Name,
-                                   GURL("http://www.google.com")));
+  scoped_ptr<Event> event(CreateEvent(kEvent1Name,
+                          GURL("http://www.google.com")));
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(0u, targets.size());
 }
 
 }  // namespace
+
+}  // namespace extensions

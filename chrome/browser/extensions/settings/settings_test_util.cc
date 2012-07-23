@@ -109,7 +109,7 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
 
 MockProfile::MockProfile(const FilePath& file_path)
     : TestingProfile(file_path) {
-  event_router_.reset(new ExtensionEventRouter(this));
+  event_router_.reset(new EventRouter(this));
 }
 
 MockProfile::~MockProfile() {}
@@ -124,7 +124,7 @@ ExtensionService* MockProfile::GetExtensionService() {
   return static_cast<ExtensionService*>(as_interface);
 }
 
-ExtensionEventRouter* MockProfile::GetExtensionEventRouter() {
+EventRouter* MockProfile::GetExtensionEventRouter() {
   return event_router_.get();
 }
 

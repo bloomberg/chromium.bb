@@ -18,8 +18,8 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -332,7 +332,7 @@ void FileBrowserEventRouter::OnNetworkManagerChanged(
     return;
   }
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extension_event_names::kOnFileBrowserNetworkConnectionChanged,
+      extensions::event_names::kOnFileBrowserNetworkConnectionChanged,
       "[]", NULL, GURL());
 }
 
@@ -345,7 +345,7 @@ void FileBrowserEventRouter::Observe(
     return;
   }
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extension_event_names::kOnFileBrowserGDataPreferencesChanged,
+      extensions::event_names::kOnFileBrowserGDataPreferencesChanged,
       "[]", NULL, GURL());
 }
 
@@ -368,7 +368,7 @@ void FileBrowserEventRouter::OnProgressUpdate(
 
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       std::string(kFileBrowserDomain),
-      extension_event_names::kOnFileTransfersUpdated, args_json,
+      extensions::event_names::kOnFileTransfersUpdated, args_json,
       NULL, GURL());
 }
 
@@ -389,7 +389,7 @@ void FileBrowserEventRouter::OnDocumentFeedFetched(
 
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       std::string(kFileBrowserDomain),
-      extension_event_names::kOnDocumentFeedFetched, args_json,
+      extensions::event_names::kOnDocumentFeedFetched, args_json,
       NULL, GURL());
 }
 
@@ -444,7 +444,7 @@ void FileBrowserEventRouter::DispatchFolderChangeEvent(
     base::JSONWriter::Write(&args, &args_json);
 
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        iter->first, extension_event_names::kOnFileChanged, args_json,
+        iter->first, extensions::event_names::kOnFileChanged, args_json,
         NULL, GURL());
   }
 }
@@ -468,7 +468,7 @@ void FileBrowserEventRouter::DispatchDiskEvent(
   std::string args_json;
   base::JSONWriter::Write(&args, &args_json);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extension_event_names::kOnFileBrowserDiskChanged, args_json, NULL,
+      extensions::event_names::kOnFileBrowserDiskChanged, args_json, NULL,
       GURL());
 }
 
@@ -519,7 +519,7 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
   std::string args_json;
   base::JSONWriter::Write(&args, &args_json);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extension_event_names::kOnFileBrowserMountCompleted, args_json, NULL,
+      extensions::event_names::kOnFileBrowserMountCompleted, args_json, NULL,
       GURL());
 
   // Do not attempt to open File Manager while the login is in progress or

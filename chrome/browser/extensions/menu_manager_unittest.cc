@@ -11,8 +11,8 @@
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -370,10 +370,10 @@ TEST_F(MenuManagerTest, ExtensionUnloadRemovesMenuItems) {
 }
 
 // A mock message service for tests of MenuManager::ExecuteCommand.
-class MockExtensionEventRouter : public ExtensionEventRouter {
+class MockEventRouter : public EventRouter {
  public:
-  explicit MockExtensionEventRouter(Profile* profile) :
-      ExtensionEventRouter(profile) {}
+  explicit MockEventRouter(Profile* profile) :
+      EventRouter(profile) {}
 
   MOCK_METHOD6(DispatchEventToExtension,
                void(const std::string& extension_id,
@@ -381,18 +381,18 @@ class MockExtensionEventRouter : public ExtensionEventRouter {
                     const std::string& event_args,
                     Profile* source_profile,
                     const GURL& event_url,
-                    ExtensionEventRouter::UserGestureState state));
+                    EventRouter::UserGestureState state));
 
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockExtensionEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(MockEventRouter);
 };
 
 // A mock profile for tests of MenuManager::ExecuteCommand.
 class MockTestingProfile : public TestingProfile {
  public:
   MockTestingProfile() {}
-  MOCK_METHOD0(GetExtensionEventRouter, ExtensionEventRouter*());
+  MOCK_METHOD0(GetExtensionEventRouter, EventRouter*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTestingProfile);
@@ -453,8 +453,8 @@ TEST_F(MenuManagerTest, RemoveOneByOne) {
 TEST_F(MenuManagerTest, ExecuteCommand) {
   MockTestingProfile profile;
 
-  scoped_ptr<MockExtensionEventRouter> mock_event_router(
-      new MockExtensionEventRouter(&profile));
+  scoped_ptr<MockEventRouter> mock_event_router(
+      new MockEventRouter(&profile));
 
   content::ContextMenuParams params;
   params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
@@ -480,21 +480,21 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
     EXPECT_CALL(*mock_event_router.get(),
                 DispatchEventToExtension(
                     item->extension_id(),
-                  extension_event_names::kOnContextMenus,
+                  extensions::event_names::kOnContextMenus,
                   _,
                   &profile,
                   GURL(),
-                  ExtensionEventRouter::USER_GESTURE_ENABLED))
+                  EventRouter::USER_GESTURE_ENABLED))
       .Times(1)
       .WillOnce(SaveArg<2>(&event_args));
   EXPECT_CALL(*mock_event_router.get(),
               DispatchEventToExtension(
                   item->extension_id(),
-                  extension_event_names::kOnContextMenuClicked,
+                  extensions::event_names::kOnContextMenuClicked,
                   _,
                   &profile,
                   GURL(),
-                  ExtensionEventRouter::USER_GESTURE_ENABLED))
+                  EventRouter::USER_GESTURE_ENABLED))
       .Times(1);
   }
   manager_.ExecuteCommand(&profile, NULL /* tab_contents */, params, id);

@@ -20,7 +20,7 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -314,7 +314,7 @@ IOThread::Globals::~Globals() {}
 IOThread::IOThread(
     PrefService* local_state,
     ChromeNetLog* net_log,
-    ExtensionEventRouterForwarder* extension_event_router_forwarder)
+    extensions::EventRouterForwarder* extension_event_router_forwarder)
     : net_log_(net_log),
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),

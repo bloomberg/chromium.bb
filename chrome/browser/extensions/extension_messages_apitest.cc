@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_registrar.h"
@@ -23,7 +23,7 @@ class MessageSender : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-    ExtensionEventRouter* event_router =
+    extensions::EventRouter* event_router =
         content::Source<Profile>(source).ptr()->GetExtensionEventRouter();
 
     // Sends four messages to the extension. All but the third message sent
@@ -32,22 +32,22 @@ class MessageSender : public content::NotificationObserver {
         "[{\"lastMessage\":false,\"data\":\"no restriction\"}]",
         content::Source<Profile>(source).ptr(),
         GURL(),
-        EventFilteringInfo());
+        extensions::EventFilteringInfo());
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://a.com/\"}]",
         content::Source<Profile>(source).ptr(),
         GURL("http://a.com/"),
-        EventFilteringInfo());
+        extensions::EventFilteringInfo());
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://b.com/\"}]",
         content::Source<Profile>(source).ptr(),
         GURL("http://b.com/"),
-        EventFilteringInfo());
+        extensions::EventFilteringInfo());
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":true,\"data\":\"last message\"}]",
         content::Source<Profile>(source).ptr(),
         GURL(),
-        EventFilteringInfo());
+        extensions::EventFilteringInfo());
   }
 
   content::NotificationRegistrar registrar_;

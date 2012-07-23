@@ -9,7 +9,7 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_input_module_constants.h"
 #include "chrome/browser/profiles/profile.h"
 

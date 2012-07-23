@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 
 namespace extensions {
 
@@ -184,7 +184,7 @@ void EventListenerMap::LoadFilteredLazyListeners(
 }
 
 std::set<const EventListener*> EventListenerMap::GetEventListeners(
-    const ExtensionEvent& event) {
+    const Event& event) {
   std::set<const EventListener*> interested_listeners;
   if (IsFilteredEvent(event)) {
     // Look up the interested listeners via the EventFilter.
@@ -233,7 +233,7 @@ void EventListenerMap::CleanupListener(EventListener* listener) {
   CHECK_EQ(1u, listeners_by_matcher_id_.erase(listener->matcher_id));
 }
 
-bool EventListenerMap::IsFilteredEvent(const ExtensionEvent& event) const {
+bool EventListenerMap::IsFilteredEvent(const Event& event) const {
   return filtered_events_.count(event.event_name) > 0u;
 }
 

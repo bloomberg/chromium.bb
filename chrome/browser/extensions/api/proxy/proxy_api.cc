@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_helpers.h"
-#include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "net/base/net_errors.h"
@@ -34,7 +34,7 @@ ProxyEventRouter::~ProxyEventRouter() {
 }
 
 void ProxyEventRouter::OnProxyError(
-    ExtensionEventRouterForwarder* event_router,
+    EventRouterForwarder* event_router,
     void* profile,
     int error_code) {
   ListValue args;
@@ -57,7 +57,7 @@ void ProxyEventRouter::OnProxyError(
 }
 
 void ProxyEventRouter::OnPACScriptError(
-    ExtensionEventRouterForwarder* event_router,
+    EventRouterForwarder* event_router,
     void* profile,
     int line_number,
     const string16& error) {

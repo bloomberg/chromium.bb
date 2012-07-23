@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -502,7 +502,8 @@ void ExtensionHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
 }
 
 void ExtensionHost::OnEventAck() {
-  ExtensionEventRouter* router = ExtensionSystem::Get(profile_)->event_router();
+  extensions::EventRouter* router =
+      ExtensionSystem::Get(profile_)->event_router();
   if (router)
     router->OnEventAck(profile_, extension_id());
 }

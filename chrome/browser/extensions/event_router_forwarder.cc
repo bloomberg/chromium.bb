@@ -2,30 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/event_router_forwarder.h"
 
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
 
-ExtensionEventRouterForwarder::ExtensionEventRouterForwarder() {
+namespace extensions {
+
+EventRouterForwarder::EventRouterForwarder() {
 }
 
-ExtensionEventRouterForwarder::~ExtensionEventRouterForwarder() {
+EventRouterForwarder::~EventRouterForwarder() {
 }
 
-void ExtensionEventRouterForwarder::BroadcastEventToRenderers(
+void EventRouterForwarder::BroadcastEventToRenderers(
     const std::string& event_name,
     const std::string& event_args,
     const GURL& event_url) {
   HandleEvent("", event_name, event_args, 0, true, event_url);
 }
 
-void ExtensionEventRouterForwarder::DispatchEventToRenderers(
+void EventRouterForwarder::DispatchEventToRenderers(
     const std::string& event_name,
     const std::string& event_args,
     void* profile,
@@ -37,7 +39,7 @@ void ExtensionEventRouterForwarder::DispatchEventToRenderers(
               use_profile_to_restrict_events, event_url);
 }
 
-void ExtensionEventRouterForwarder::BroadcastEventToExtension(
+void EventRouterForwarder::BroadcastEventToExtension(
     const std::string& extension_id,
     const std::string& event_name,
     const std::string& event_args,
@@ -45,7 +47,7 @@ void ExtensionEventRouterForwarder::BroadcastEventToExtension(
   HandleEvent(extension_id, event_name, event_args, 0, true, event_url);
 }
 
-void ExtensionEventRouterForwarder::DispatchEventToExtension(
+void EventRouterForwarder::DispatchEventToExtension(
     const std::string& extension_id,
     const std::string& event_name,
     const std::string& event_args,
@@ -58,17 +60,16 @@ void ExtensionEventRouterForwarder::DispatchEventToExtension(
               use_profile_to_restrict_events, event_url);
 }
 
-void ExtensionEventRouterForwarder::HandleEvent(
-    const std::string& extension_id,
-    const std::string& event_name,
-    const std::string& event_args,
-    void* profile_ptr,
-    bool use_profile_to_restrict_events,
-    const GURL& event_url) {
+void EventRouterForwarder::HandleEvent(const std::string& extension_id,
+                                       const std::string& event_name,
+                                       const std::string& event_args,
+                                       void* profile_ptr,
+                                       bool use_profile_to_restrict_events,
+                                       const GURL& event_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&ExtensionEventRouterForwarder::HandleEvent, this,
+        base::Bind(&EventRouterForwarder::HandleEvent, this,
                    extension_id, event_name, event_args, profile_ptr,
                    use_profile_to_restrict_events, event_url));
     return;
@@ -85,26 +86,24 @@ void ExtensionEventRouterForwarder::HandleEvent(
       return;
   }
   if (profile) {
-    CallExtensionEventRouter(
-        profile, extension_id, event_name, event_args,
-        use_profile_to_restrict_events ? profile : NULL, event_url);
+    CallEventRouter(profile, extension_id, event_name, event_args,
+                    use_profile_to_restrict_events ? profile : NULL, event_url);
   } else {
     std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
     for (size_t i = 0; i < profiles.size(); ++i) {
-      CallExtensionEventRouter(
+      CallEventRouter(
           profiles[i], extension_id, event_name, event_args,
           use_profile_to_restrict_events ? profiles[i] : NULL, event_url);
     }
   }
 }
 
-void ExtensionEventRouterForwarder::CallExtensionEventRouter(
-    Profile* profile,
-    const std::string& extension_id,
-    const std::string& event_name,
-    const std::string& event_args,
-    Profile* restrict_to_profile,
-    const GURL& event_url) {
+void EventRouterForwarder::CallEventRouter(Profile* profile,
+                                           const std::string& extension_id,
+                                           const std::string& event_name,
+                                           const std::string& event_args,
+                                           Profile* restrict_to_profile,
+                                           const GURL& event_url) {
   // We may not have an extension in cases like chromeos login
   // (crosbug.com/12856), chrome_frame_net_tests.exe which reuses the chrome
   // browser single process framework.
@@ -115,7 +114,7 @@ void ExtensionEventRouterForwarder::CallExtensionEventRouter(
     profile->GetExtensionEventRouter()->
         DispatchEventToRenderers(
             event_name, event_args, restrict_to_profile, event_url,
-            extensions::EventFilteringInfo());
+            EventFilteringInfo());
   } else {
     profile->GetExtensionEventRouter()->
         DispatchEventToExtension(
@@ -123,3 +122,5 @@ void ExtensionEventRouterForwarder::CallExtensionEventRouter(
             event_name, event_args, restrict_to_profile, event_url);
   }
 }
+
+}  // namespace extensions

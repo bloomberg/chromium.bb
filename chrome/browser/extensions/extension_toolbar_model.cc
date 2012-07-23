@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 
-#include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"

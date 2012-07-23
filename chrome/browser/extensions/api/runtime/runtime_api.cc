@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 
-#include "chrome/common/extensions/extension.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

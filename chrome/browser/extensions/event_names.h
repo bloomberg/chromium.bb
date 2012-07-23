@@ -4,10 +4,12 @@
 
 // Constants for the event names sent to extensions.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EVENT_NAMES_H_
+#define CHROME_BROWSER_EXTENSIONS_EVENT_NAMES_H_
 
-namespace extension_event_names {
+namespace extensions {
+
+namespace event_names {
 
 // Tabs.
 extern const char kOnTabActivated[];
@@ -70,6 +72,8 @@ extern const char kBluetoothOnDeviceDiscovered[];
 extern const char kBluetoothOnPowerChanged[];
 #endif
 
-};  // namespace extension_event_names
+}  // namespace event_names
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_EVENT_NAMES_H_

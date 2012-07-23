@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_idle_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -145,7 +145,8 @@ void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
   base::JSONWriter::Write(&args, &json_args);
 
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      keys::kOnStateChanged, json_args, profile, GURL(), EventFilteringInfo());
+      keys::kOnStateChanged, json_args, profile,
+      GURL(), extensions::EventFilteringInfo());
 }
 
 bool ExtensionIdleQueryStateFunction::RunImpl() {

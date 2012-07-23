@@ -11,7 +11,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -57,7 +57,7 @@ namespace {
 // If the |request| failed due to problems with a proxy, forward the error to
 // the proxy extension API.
 void ForwardProxyErrors(net::URLRequest* request,
-                        ExtensionEventRouterForwarder* event_router,
+                        extensions::EventRouterForwarder* event_router,
                         void* profile) {
   if (request->status().status() == net::URLRequestStatus::FAILED) {
     switch (request->status().error()) {
@@ -121,7 +121,7 @@ void ForwardRequestStatus(
 }  // namespace
 
 ChromeNetworkDelegate::ChromeNetworkDelegate(
-    ExtensionEventRouterForwarder* event_router,
+    extensions::EventRouterForwarder* event_router,
     ExtensionInfoMap* extension_info_map,
     const policy::URLBlacklistManager* url_blacklist_manager,
     void* profile,

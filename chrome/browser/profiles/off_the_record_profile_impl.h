@@ -42,7 +42,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual extensions::UserScriptMaster* GetUserScriptMaster() OVERRIDE;
   virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;
-  virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
+  virtual extensions::EventRouter* GetExtensionEventRouter() OVERRIDE;
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;

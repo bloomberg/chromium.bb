@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
@@ -96,7 +96,7 @@ class ProfileManagerTest : public testing::Test {
 
   ProfileManagerTest()
       : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
-        extension_event_router_forwarder_(new ExtensionEventRouterForwarder),
+        extension_event_router_forwarder_(new extensions::EventRouterForwarder),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
@@ -137,7 +137,7 @@ class ProfileManagerTest : public testing::Test {
   // The path to temporary directory used to contain the test operations.
   ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
-  scoped_refptr<ExtensionEventRouterForwarder>
+  scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;
 
   MessageLoopForUI message_loop_;

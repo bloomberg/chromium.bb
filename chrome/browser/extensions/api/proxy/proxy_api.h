@@ -15,13 +15,12 @@
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 
-class ExtensionEventRouterForwarder;
-
 namespace base {
 class Value;
 }
 
 namespace extensions {
+class EventRouterForwarder;
 
 // Class to convert between the representation of proxy settings used
 // in the Proxy Settings API and the representation used in the PrefStores.
@@ -49,11 +48,11 @@ class ProxyEventRouter {
  public:
   static ProxyEventRouter* GetInstance();
 
-  void OnProxyError(ExtensionEventRouterForwarder* event_router,
+  void OnProxyError(EventRouterForwarder* event_router,
                     void* profile,
                     int error_code);
 
-  void OnPACScriptError(ExtensionEventRouterForwarder* event_router,
+  void OnPACScriptError(EventRouterForwarder* event_router,
                         void* profile,
                         int line_number,
                         const string16& error);

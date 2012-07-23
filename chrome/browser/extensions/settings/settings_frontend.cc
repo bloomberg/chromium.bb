@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_path.h"
-#include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/managed_value_store_cache.h"
@@ -39,7 +39,7 @@ class DefaultObserver : public SettingsObserver {
       const std::string& change_json) OVERRIDE {
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id,
-        extension_event_names::kOnSettingsChanged,
+        event_names::kOnSettingsChanged,
         // This is the list of function arguments to pass to the onChanged
         // handler of extensions, an array of [changes, settings_namespace].
         std::string("[") + change_json + ",\"" +

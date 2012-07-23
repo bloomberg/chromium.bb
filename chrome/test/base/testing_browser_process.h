@@ -71,7 +71,7 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif  // defined(OS_CHROMEOS)
 
   virtual ui::Clipboard* clipboard() OVERRIDE;
-  virtual ExtensionEventRouterForwarder*
+  virtual extensions::EventRouterForwarder*
       extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;

@@ -12,7 +12,6 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"

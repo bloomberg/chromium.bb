@@ -13,9 +13,9 @@
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_navigation_observer.h"
@@ -107,7 +107,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
-  extension_event_router_.reset(new ExtensionEventRouter(profile_));
+  extension_event_router_.reset(new EventRouter(profile_));
   extension_message_service_.reset(new ExtensionMessageService(
       lazy_background_task_queue_.get()));
   extension_navigation_observer_.reset(
@@ -233,7 +233,7 @@ ExtensionMessageService* ExtensionSystemImpl::Shared::message_service() {
   return extension_message_service_.get();
 }
 
-ExtensionEventRouter* ExtensionSystemImpl::Shared::event_router() {
+EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return extension_event_router_.get();
 }
 
@@ -331,7 +331,7 @@ ExtensionMessageService* ExtensionSystemImpl::message_service() {
   return shared_->message_service();
 }
 
-ExtensionEventRouter* ExtensionSystemImpl::event_router() {
+EventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
 }
 

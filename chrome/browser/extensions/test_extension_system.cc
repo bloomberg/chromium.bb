@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
-#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
@@ -124,7 +124,7 @@ ExtensionMessageService* TestExtensionSystem::message_service() {
   return NULL;
 }
 
-ExtensionEventRouter* TestExtensionSystem::event_router() {
+EventRouter* TestExtensionSystem::event_router() {
   return NULL;
 }
 

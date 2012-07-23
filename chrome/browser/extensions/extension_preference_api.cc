@@ -12,7 +12,6 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
-#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_preference_api_constants.h"
 #include "chrome/browser/extensions/extension_preference_helpers.h"
 #include "chrome/browser/extensions/extension_prefs.h"

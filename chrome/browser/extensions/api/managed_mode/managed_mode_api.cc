@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_preference_api_constants.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -67,7 +67,7 @@ void ExtensionManagedModeEventRouter::Observe(
       g_browser_process->local_state()->GetBoolean(prefs::kInManagedMode));
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
-  ExtensionEventRouter* event_router = profile_->GetExtensionEventRouter();
+  extensions::EventRouter* event_router = profile_->GetExtensionEventRouter();
   event_router->DispatchEventToRenderers(kChangeEventName, json_args, NULL,
                                          GURL(),
                                          extensions::EventFilteringInfo());

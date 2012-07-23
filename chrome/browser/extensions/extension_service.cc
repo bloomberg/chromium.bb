@@ -36,10 +36,10 @@
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/apps_promo.h"
+#include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
-#include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_data_deleter.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -470,7 +470,7 @@ void ExtensionService::InitEventRouters() {
 #if defined(ENABLE_EXTENSIONS)
   history_event_router_.reset(new HistoryExtensionEventRouter());
   history_event_router_->ObserveProfile(profile_);
-  browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
+  browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
   browser_event_router_->Init();
   preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(

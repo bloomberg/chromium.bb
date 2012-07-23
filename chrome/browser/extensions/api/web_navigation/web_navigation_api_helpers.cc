@@ -11,7 +11,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/event_filtering_info.h"
@@ -41,7 +41,7 @@ void DispatchEvent(content::BrowserContext* browser_context,
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
 
-  extensions::EventFilteringInfo info;
+  EventFilteringInfo info;
   info.SetURL(url);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);

@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -53,7 +53,7 @@ void DispatchEvent(const std::string& event_name, const ListValue& args) {
   Profile* profile = ProfileManager::GetDefaultProfile();
   if (!profile)
     return;
-  ExtensionEventRouter* extension_event_router =
+  extensions::EventRouter* extension_event_router =
       profile->GetExtensionEventRouter();
   if (!extension_event_router)
     return;

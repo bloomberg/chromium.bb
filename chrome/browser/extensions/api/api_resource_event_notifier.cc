@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -38,7 +38,7 @@ const char kPortKey[] = "port";
 const char kErrorKey[] = "error";
 
 ApiResourceEventNotifier::ApiResourceEventNotifier(
-    ExtensionEventRouter* router,
+    EventRouter* router,
     Profile* profile,
     const std::string& src_extension_id,
     int src_id,

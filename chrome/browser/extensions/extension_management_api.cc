@@ -13,8 +13,8 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_management_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -46,7 +46,7 @@ using content::UtilityProcessHostClient;
 using extensions::Extension;
 using extensions::PermissionMessages;
 
-namespace events = extension_event_names;
+namespace events = extensions::event_names;
 namespace keys = extension_management_api_constants;
 
 namespace {

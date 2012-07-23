@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/drive_task_executor.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -804,7 +804,7 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
     return;
   }
 
-  ExtensionEventRouter* event_router = profile()->GetExtensionEventRouter();
+  extensions::EventRouter* event_router = profile()->GetExtensionEventRouter();
   if (!event_router) {
     ExecuteDoneOnUIThread(false);
     return;

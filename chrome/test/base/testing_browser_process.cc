@@ -134,7 +134,7 @@ ui::Clipboard* TestingBrowserProcess::clipboard() {
   return clipboard_.get();
 }
 
-ExtensionEventRouterForwarder*
+extensions::EventRouterForwarder*
 TestingBrowserProcess::extension_event_router_forwarder() {
   return NULL;
 }

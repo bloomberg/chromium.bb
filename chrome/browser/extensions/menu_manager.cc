@@ -12,8 +12,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -567,7 +567,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
                                  WebContents* web_contents,
                                  const content::ContextMenuParams& params,
                                  const MenuItem::Id& menu_item_id) {
-  ExtensionEventRouter* event_router = profile->GetExtensionEventRouter();
+  EventRouter* event_router = profile->GetExtensionEventRouter();
   if (!event_router)
     return;
 
@@ -650,13 +650,13 @@ void MenuManager::ExecuteCommand(Profile* profile,
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
   event_router->DispatchEventToExtension(
-      item->extension_id(), extension_event_names::kOnContextMenus,
+      item->extension_id(), event_names::kOnContextMenus,
       json_args, profile, GURL(),
-      ExtensionEventRouter::USER_GESTURE_ENABLED);
+      EventRouter::USER_GESTURE_ENABLED);
   event_router->DispatchEventToExtension(
-      item->extension_id(), extension_event_names::kOnContextMenuClicked,
+      item->extension_id(), event_names::kOnContextMenuClicked,
       json_args, profile, GURL(),
-      ExtensionEventRouter::USER_GESTURE_ENABLED);
+      EventRouter::USER_GESTURE_ENABLED);
 }
 
 void MenuManager::SanitizeRadioList(const MenuItem::List& item_list) {

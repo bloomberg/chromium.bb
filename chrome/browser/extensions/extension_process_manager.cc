@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
-#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_info_map.h"

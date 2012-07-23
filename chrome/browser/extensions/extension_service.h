@@ -49,7 +49,6 @@
 class AppNotificationManager;
 class BookmarkExtensionEventRouter;
 class CrxInstaller;
-class ExtensionBrowserEventRouter;
 class ExtensionErrorUI;
 class ExtensionFontSettingsEventRouter;
 class ExtensionManagementEventRouter;
@@ -68,6 +67,7 @@ class ExtensionInputMethodEventRouter;
 }
 
 namespace extensions {
+class ExtensionBrowserEventRouter;
 class ExtensionManagedModeEventRouter;
 }
 
@@ -78,6 +78,7 @@ class SyncErrorFactory;
 
 namespace extensions {
 class AppSyncData;
+class BrowserEventRouter;
 class ComponentLoader;
 class ContentSettingsStore;
 class Extension;
@@ -500,7 +501,7 @@ class ExtensionService
     return app_notification_manager_.get();
   }
 
-  ExtensionBrowserEventRouter* browser_event_router() {
+  extensions::BrowserEventRouter* browser_event_router() {
     return browser_event_router_.get();
   }
 
@@ -799,7 +800,7 @@ class ExtensionService
 
   scoped_ptr<HistoryExtensionEventRouter> history_event_router_;
 
-  scoped_ptr<ExtensionBrowserEventRouter> browser_event_router_;
+  scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
 
   scoped_ptr<ExtensionPreferenceEventRouter> preference_event_router_;
 

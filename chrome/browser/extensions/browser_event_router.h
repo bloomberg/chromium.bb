@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSER_EVENT_ROUTER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSER_EVENT_ROUTER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_BROWSER_EVENT_ROUTER_H_
+#define CHROME_BROWSER_EXTENSIONS_BROWSER_EVENT_ROUTER_H_
 
 #include <map>
 #include <string>
@@ -25,12 +25,14 @@ namespace content {
 class WebContents;
 }
 
-// The ExtensionBrowserEventRouter listens to Browser window & tab events
+namespace extensions {
+
+// The BrowserEventRouter listens to Browser window & tab events
 // and routes them to listeners inside extension process renderers.
-// ExtensionBrowserEventRouter listens to *all* events, but will only route
+// BrowserEventRouter listens to *all* events, but will only route
 // events from windows/tabs within a profile to extension processes in the same
 // profile.
-class ExtensionBrowserEventRouter : public TabStripModelObserver,
+class BrowserEventRouter : public TabStripModelObserver,
 #if defined(TOOLKIT_VIEWS)
                                     public views::WidgetFocusChangeListener,
 #elif defined(TOOLKIT_GTK)
@@ -39,8 +41,8 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                                     public chrome::BrowserListObserver,
                                     public content::NotificationObserver {
  public:
-  explicit ExtensionBrowserEventRouter(Profile* profile);
-  virtual ~ExtensionBrowserEventRouter();
+  explicit BrowserEventRouter(Profile* profile);
+  virtual ~BrowserEventRouter();
 
   // Must be called once. Subsequent calls have no effect.
   void Init();
@@ -121,7 +123,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void TabUpdated(content::WebContents* contents, bool did_navigate);
 
   // The DispatchEvent methods forward events to the |profile|'s event router.
-  // The ExtensionBrowserEventRouter listens to events for all profiles,
+  // The BrowserEventRouter listens to events for all profiles,
   // so we avoid duplication by dropping events destined for other profiles.
   void DispatchEvent(Profile* profile,
                      const char* event_name,
@@ -236,7 +238,9 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // windows.onFocusChanged events with the same windowId.
   int focused_window_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBrowserEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(BrowserEventRouter);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSER_EVENT_ROUTER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_BROWSER_EVENT_ROUTER_H_

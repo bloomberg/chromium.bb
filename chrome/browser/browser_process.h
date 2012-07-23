@@ -21,7 +21,6 @@ class CRLSetFetcher;
 class ComponentUpdateService;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
-class ExtensionEventRouterForwarder;
 class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
@@ -43,6 +42,10 @@ class OomPriorityManager;
 
 namespace chrome_variations {
 class VariationsService;
+}
+
+namespace extensions {
+class EventRouterForwarder;
 }
 
 namespace net {
@@ -101,7 +104,7 @@ class BrowserProcess {
   virtual chromeos::OomPriorityManager* oom_priority_manager() = 0;
 #endif  // defined(OS_CHROMEOS)
 
-  virtual ExtensionEventRouterForwarder*
+  virtual extensions::EventRouterForwarder*
       extension_event_router_forwarder() = 0;
 
   // Returns the manager for desktop notifications.

@@ -13,8 +13,8 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
-#include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/common/extensions/api/experimental_bluetooth.h"
 
 namespace chromeos {
@@ -71,7 +71,7 @@ void ExtensionBluetoothEventRouter::AdapterPresentChanged(
     chromeos::BluetoothAdapter* adapter, bool present) {
   DCHECK(adapter == adapter_.get());
   DispatchBooleanValueEvent(
-      extension_event_names::kBluetoothOnAvailabilityChanged,
+      extensions::event_names::kBluetoothOnAvailabilityChanged,
       present);
 }
 
@@ -79,7 +79,7 @@ void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
     chromeos::BluetoothAdapter* adapter, bool has_power) {
   DCHECK(adapter == adapter_.get());
   DispatchBooleanValueEvent(
-      extension_event_names::kBluetoothOnPowerChanged,
+      extensions::event_names::kBluetoothOnPowerChanged,
       has_power);
 }
 
@@ -100,7 +100,7 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
   base::JSONWriter::Write(&args, &json_args);
 
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extension_event_names::kBluetoothOnDeviceDiscovered,
+      extensions::event_names::kBluetoothOnDeviceDiscovered,
       json_args,
       NULL,
       GURL());

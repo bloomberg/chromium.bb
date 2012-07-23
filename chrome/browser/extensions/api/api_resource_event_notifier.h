@@ -13,7 +13,6 @@
 #include "chrome/browser/usb/usb_device.h"
 #include "googleurl/src/gurl.h"
 
-class ExtensionEventRouter;
 class Profile;
 
 namespace base {
@@ -21,6 +20,7 @@ class ListValue;
 }
 
 namespace extensions {
+class EventRouter;
 
 enum ApiResourceEventType {
   API_RESOURCE_EVENT_CONNECT_COMPLETE,
@@ -36,7 +36,7 @@ extern const char kSrcIdKey[];
 class ApiResourceEventNotifier
     : public base::RefCountedThreadSafe<ApiResourceEventNotifier> {
  public:
-  ApiResourceEventNotifier(ExtensionEventRouter* router,
+  ApiResourceEventNotifier(EventRouter* router,
                            Profile* profile,
                            const std::string& src_extension_id, int src_id,
                            const GURL& src_url);
@@ -73,7 +73,7 @@ class ApiResourceEventNotifier
                                ApiResourceEventType event_type,
                                int result_code);
 
-  ExtensionEventRouter* router_;
+  EventRouter* router_;
   Profile* profile_;
   std::string src_extension_id_;
   int src_id_;

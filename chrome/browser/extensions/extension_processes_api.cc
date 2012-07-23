@@ -13,7 +13,7 @@
 #include "base/values.h"
 
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_util.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -489,7 +489,7 @@ void ExtensionProcessesEventRouter::DispatchEvent(
     const std::string& json_args) {
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, NULL, GURL(), EventFilteringInfo());
+        event_name, json_args, NULL, GURL(), extensions::EventFilteringInfo());
   }
 }
 
@@ -510,7 +510,7 @@ bool ExtensionProcessesEventRouter::HasEventListeners(std::string& event_name) {
   for (ProfileSet::iterator it = profiles_.begin();
        it != profiles_.end(); it++) {
     Profile* profile = *it;
-    ExtensionEventRouter* router = profile->GetExtensionEventRouter();
+    extensions::EventRouter* router = profile->GetExtensionEventRouter();
     if (!router)
       continue;
 

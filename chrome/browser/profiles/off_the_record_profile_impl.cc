@@ -205,7 +205,7 @@ ExtensionProcessManager*
   return extensions::ExtensionSystem::Get(this)->process_manager();
 }
 
-ExtensionEventRouter* OffTheRecordProfileImpl::GetExtensionEventRouter() {
+extensions::EventRouter* OffTheRecordProfileImpl::GetExtensionEventRouter() {
   return extensions::ExtensionSystem::Get(this)->event_router();
 }
 
