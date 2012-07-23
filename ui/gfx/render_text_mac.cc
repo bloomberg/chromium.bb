@@ -155,6 +155,7 @@ bool RenderTextMac::IsCursorablePosition(size_t position) {
 
 void RenderTextMac::ResetLayout() {
   line_.reset();
+  attributes_.reset();
   runs_.clear();
   runs_valid_ = false;
 }
@@ -172,7 +173,8 @@ void RenderTextMac::EnsureLayout() {
   const void* keys[] = { kCTFontAttributeName };
   const void* values[] = { ct_font };
   base::mac::ScopedCFTypeRef<CFDictionaryRef> attributes(
-      CFDictionaryCreate(NULL, keys, values, arraysize(keys), NULL, NULL));
+      CFDictionaryCreate(NULL, keys, values, arraysize(keys), NULL,
+                         &kCFTypeDictionaryValueCallBacks));
 
   base::mac::ScopedCFTypeRef<CFStringRef> cf_text(
       base::SysUTF16ToCFStringRef(text()));
@@ -228,6 +230,11 @@ RenderTextMac::TextRun::~TextRun() {
 
 void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
                                 CTFontRef font) {
+  // Clear attributes and reserve space to hold the maximum number of entries,
+  // which is at most three per style range per the code below.
+  attributes_.reset(CFArrayCreateMutable(NULL, 3 * style_ranges().size(),
+                                         &kCFTypeArrayCallBacks));
+
   // https://developer.apple.com/library/mac/#documentation/Carbon/Reference/CoreText_StringAttributes_Ref/Reference/reference.html
   for (size_t i = 0; i < style_ranges().size(); ++i) {
     const StyleRange& style = style_ranges()[i];
@@ -235,23 +242,24 @@ void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
                                       style.range.length());
 
     // Note: CFAttributedStringSetAttribute() does not appear to retain the
-    // values passed in, as can be verified via CFGetRetainCount().
-    //
-    // TODO(asvitkine): The attributed string appears to hold weak refs to these
-    // objects (it does not release them either), so we need to keep track of
-    // them ourselves and release them at an appropriate time.
+    // values passed in, as can be verified via CFGetRetainCount(). To ensure
+    // the attribute objects do not leak, they are saved to |attributes_|.
 
-    CGColorRef foreground = gfx::SkColorToCGColorRef(style.foreground);
+    base::mac::ScopedCFTypeRef<CGColorRef> foreground(
+        gfx::CGColorCreateFromSkColor(style.foreground));
     CFAttributedStringSetAttribute(attr_string, range,
                                    kCTForegroundColorAttributeName,
                                    foreground);
+    CFArrayAppendValue(attributes_, foreground);
 
     if (style.underline) {
       CTUnderlineStyle value = kCTUnderlineStyleSingle;
-      CFNumberRef underline = CFNumberCreate(NULL, kCFNumberSInt32Type, &value);
+      base::mac::ScopedCFTypeRef<CFNumberRef> underline(
+          CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
       CFAttributedStringSetAttribute(attr_string, range,
                                      kCTUnderlineStyleAttributeName,
                                      underline);
+      CFArrayAppendValue(attributes_, underline);
     }
 
     if (style.font_style & (Font::BOLD | Font::ITALIC)) {
@@ -260,12 +268,13 @@ void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
         traits |= kCTFontBoldTrait;
       if (style.font_style & Font::ITALIC)
         traits |= kCTFontItalicTrait;
-      CTFontRef styled_font =
-          CTFontCreateCopyWithSymbolicTraits(font, 0.0, NULL, traits, traits);
+      base::mac::ScopedCFTypeRef<CTFontRef> styled_font(
+          CTFontCreateCopyWithSymbolicTraits(font, 0.0, NULL, traits, traits));
       // TODO(asvitkine): Handle |styled_font| == NULL case better.
       if (styled_font) {
         CFAttributedStringSetAttribute(attr_string, range, kCTFontAttributeName,
                                        styled_font);
+        CFArrayAppendValue(attributes_, styled_font);
       }
     }
   }

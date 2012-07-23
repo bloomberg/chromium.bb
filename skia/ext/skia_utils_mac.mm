@@ -153,7 +153,7 @@ SkColor CGColorRefToSkColor(CGColorRef color) {
 }
 
 // Converts ARGB to CGColorRef.
-CGColorRef SkColorToCGColorRef(SkColor color) {
+CGColorRef CGColorCreateFromSkColor(SkColor color) {
   return CGColorCreateGenericRGB(SkColorGetR(color) / 255.0,
                                  SkColorGetG(color) / 255.0,
                                  SkColorGetB(color) / 255.0,

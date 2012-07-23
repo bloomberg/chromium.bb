@@ -75,6 +75,10 @@ class RenderTextMac : public RenderText {
   // The Core Text line of text. Created by |EnsureLayout()|.
   base::mac::ScopedCFTypeRef<CTLineRef> line_;
 
+  // Array to hold CFAttributedString attributes that allows Core Text to hold
+  // weak references to them without leaking.
+  base::mac::ScopedCFTypeRef<CFMutableArrayRef> attributes_;
+
   // Visual dimensions of the text. Computed by |EnsureLayout()|.
   Size string_size_;
 

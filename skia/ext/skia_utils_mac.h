@@ -62,7 +62,7 @@ CGRect SkRectToCGRect(const SkRect& rect);
 SK_API SkColor CGColorRefToSkColor(CGColorRef color);
 
 // Converts ARGB to CGColorRef.
-SK_API CGColorRef SkColorToCGColorRef(SkColor color);
+SK_API CGColorRef CGColorCreateFromSkColor(SkColor color);
 
 // Converts NSColor to ARGB. Returns raw rgb values and does no colorspace
 // conversion. Only valid for colors in calibrated and device color spaces.
