@@ -95,6 +95,91 @@ void BrowserThreadImpl::Init() {
     delegate->Init();
 }
 
+// We disable optimizations for this block of functions so the compiler doesn't
+// merge them all together.
+MSVC_DISABLE_OPTIMIZE()
+MSVC_PUSH_DISABLE_WARNING(4748)
+
+void BrowserThreadImpl::UIThreadRun(MessageLoop* message_loop) {
+  volatile int line_number = __LINE__;
+  Thread::Run(message_loop);
+  CHECK_GT(line_number, 0);
+}
+
+void BrowserThreadImpl::DBThreadRun(MessageLoop* message_loop) {
+  volatile int line_number = __LINE__;
+  Thread::Run(message_loop);
+  CHECK_GT(line_number, 0);
+}
+
+void BrowserThreadImpl::WebKitThreadRun(MessageLoop* message_loop) {
+  volatile int line_number = __LINE__;
+  Thread::Run(message_loop);
+  CHECK_GT(line_number, 0);
+}
+
+void BrowserThreadImpl::FileThreadRun(MessageLoop* message_loop) {
+  volatile int line_number = __LINE__;
+  Thread::Run(message_loop);
+  CHECK_GT(line_number, 0);
+}
+
+void BrowserThreadImpl::FileUserBlockingThreadRun(MessageLoop* message_loop) {
+  volatile int line_number = __LINE__;
+  Thread::Run(message_loop);
+  CHECK_GT(line_number, 0);
+}
+
+void BrowserThreadImpl::ProcessLauncherThreadRun(MessageLoop* message_loop) {
+  volatile int line_number = __LINE__;
+  Thread::Run(message_loop);
+  CHECK_GT(line_number, 0);
+}
+
+void BrowserThreadImpl::CacheThreadRun(MessageLoop* message_loop) {
+  volatile int line_number = __LINE__;
+  Thread::Run(message_loop);
+  CHECK_GT(line_number, 0);
+}
+
+void BrowserThreadImpl::IOThreadRun(MessageLoop* message_loop) {
+  volatile int line_number = __LINE__;
+  Thread::Run(message_loop);
+  CHECK_GT(line_number, 0);
+}
+
+MSVC_POP_WARNING()
+MSVC_ENABLE_OPTIMIZE();
+
+void BrowserThreadImpl::Run(MessageLoop* message_loop) {
+  BrowserThread::ID thread_id;
+  if (!GetCurrentThreadIdentifier(&thread_id))
+    return Thread::Run(message_loop);
+
+  switch (thread_id) {
+    case BrowserThread::UI:
+      return UIThreadRun(message_loop);
+    case BrowserThread::DB:
+      return DBThreadRun(message_loop);
+    case BrowserThread::WEBKIT_DEPRECATED:
+      return WebKitThreadRun(message_loop);
+    case BrowserThread::FILE:
+      return FileThreadRun(message_loop);
+    case BrowserThread::FILE_USER_BLOCKING:
+      return FileUserBlockingThreadRun(message_loop);
+    case BrowserThread::PROCESS_LAUNCHER:
+      return ProcessLauncherThreadRun(message_loop);
+    case BrowserThread::CACHE:
+      return CacheThreadRun(message_loop);
+    case BrowserThread::IO:
+      return IOThreadRun(message_loop);
+    case BrowserThread::ID_COUNT:
+      CHECK(false);  // This shouldn't actually be reached!
+      break;
+  }
+  Thread::Run(message_loop);
+}
+
 void BrowserThreadImpl::CleanUp() {
   BrowserThreadGlobals& globals = g_globals.Get();
 

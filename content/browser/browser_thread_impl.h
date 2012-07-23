@@ -27,6 +27,7 @@ class CONTENT_EXPORT BrowserThreadImpl
 
  protected:
   virtual void Init() OVERRIDE;
+  virtual void Run(MessageLoop* message_loop) OVERRIDE;
   virtual void CleanUp() OVERRIDE;
 
  private:
@@ -34,6 +35,17 @@ class CONTENT_EXPORT BrowserThreadImpl
   // functions, but state is stored in the BrowserThreadImpl to keep
   // the API cleaner. Therefore make BrowserThread a friend class.
   friend class BrowserThread;
+
+  // The following are unique function names that makes it possible to tell
+  // the thread id from the callstack alone in crash dumps.
+  void UIThreadRun(MessageLoop* message_loop);
+  void DBThreadRun(MessageLoop* message_loop);
+  void WebKitThreadRun(MessageLoop* message_loop);
+  void FileThreadRun(MessageLoop* message_loop);
+  void FileUserBlockingThreadRun(MessageLoop* message_loop);
+  void ProcessLauncherThreadRun(MessageLoop* message_loop);
+  void CacheThreadRun(MessageLoop* message_loop);
+  void IOThreadRun(MessageLoop* message_loop);
 
   static bool PostTaskHelper(
       BrowserThread::ID identifier,
