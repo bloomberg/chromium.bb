@@ -35,6 +35,7 @@ generator_default_variables = {
   'INTERMEDIATE_DIR': '$!INTERMEDIATE_DIR',
   'SHARED_INTERMEDIATE_DIR': '$!PRODUCT_DIR/gen',
   'PRODUCT_DIR': '$!PRODUCT_DIR',
+  'CONFIGURATION_NAME': '$!CONFIGURATION',
 
   # Special variables that may be used by gyp 'rule' targets.
   # We generate definitions for these variables on the fly when processing a
@@ -258,6 +259,11 @@ class NinjaWriter:
       # so insert product_dir in front if it is provided.
       path = path.replace(INTERMEDIATE_DIR,
                           os.path.join(product_dir or '', int_dir))
+
+    CONFIGURATION = '$!CONFIGURATION'
+    if CONFIGURATION in path:
+      path = path.replace(CONFIGURATION, self.config_name)
+
     return path
 
   def ExpandRuleVariables(self, path, root, dirname, source, ext, name):
@@ -282,7 +288,7 @@ class NinjaWriter:
         path = gyp.xcode_emulation.ExpandEnvVars(path, env)
       elif self.flavor == 'win':
         path = gyp.msvs_emulation.ExpandMacros(path, env)
-    if path.startswith('$!'):
+    if '$!' in path:
       expanded = self.ExpandSpecial(path)
       if self.flavor == 'win':
         expanded = os.path.normpath(expanded)
