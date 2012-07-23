@@ -59,23 +59,6 @@
 
   include decode_x86_64 "validator_x86_64_instruction.rl";
 
-  # Remove special instructions which are only allowed in special cases.
-  normal_instruction = one_instruction - (
-    (0x48 0x89 0xe5)             | # mov %rsp,%rbp
-    (0x48 0x89 0xec)             | # mov %rbp,%rsp
-    (0x48 0x81 0xe4 any{4})      | # and $XXX,%rsp
-    (0x48 0x83 0xe4 any)         | # and $XXX,%rsp
-    (0x4c 0x01 0xfd)             | # add %r15,%rbp
-    (0x49 0x8d 0x2c 0x2f)        | # lea (%r15,%rbp,1),%rbp
-    (0x4a 0x8d 0x6c 0x3d any)    | # lea 0x0(%rbp,%r15,1),%rbp
-    (0x48 0x81 0xe5 any{4})      | # and $XXX,%rsp
-    (0x48 0x83 0xe5 any)         | # and $XXX,%rsp
-    (0x4c 0x01 0xfc)             | # add %r15,%rsp
-    (0x4a 0x8d 0x24 0x3c)        | # lea (%rsp,%r15,1),%rsp
-    (0x49 0x8d 0x34 0x37)        | # lea (%r15,%rsi,1),%rsi
-    (0x49 0x8d 0x3c 0x3f)          # lea (%r15,%rdi,1),%rdi
-  );
-
   data16condrep = (data16 | condrep data16 | data16 condrep);
   data16rep = (data16 | rep data16 | data16 rep);
 
@@ -291,6 +274,9 @@
     string_instructions_rsi_no_rdi |
     string_instructions_rdi_no_rsi |
     string_instructions_rsi_rdi;
+
+  # Remove special instructions which are only allowed in special cases.
+  normal_instruction = one_instruction - special_instruction;
 
   main := ((normal_instruction | special_instruction) >{
         begin = p;
