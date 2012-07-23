@@ -85,9 +85,7 @@ wcap_decoder_get_frame(struct wcap_decoder *decoder)
 {
 	struct wcap_rectangle *rects;
 	struct wcap_frame_header *header;
-	uint32_t *s;
 	uint32_t i;
-	int width, height;
 
 	if (decoder->p == decoder->end)
 		return 0;
@@ -98,11 +96,8 @@ wcap_decoder_get_frame(struct wcap_decoder *decoder)
 
 	rects = (void *) (header + 1);
 	decoder->p = (uint32_t *) (rects + header->nrects);
-	for (i = 0; i < header->nrects; i++) {
-		width = rects[i].x2 - rects[i].x1;
-		height = rects[i].y2 - rects[i].y1;
+	for (i = 0; i < header->nrects; i++)
 		wcap_decoder_decode_rectangle(decoder, &rects[i]);
-	}
 
 	return 1;
 }

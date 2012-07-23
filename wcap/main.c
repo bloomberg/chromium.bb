@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #include <cairo.h>
 
@@ -65,6 +66,8 @@ rgb_to_yuv(uint32_t format, uint32_t p, int *u, int *v)
 		g = (p >> 8) & 0xff;
 		b = (p >> 16) & 0xff;
 		break;
+	default:
+		assert(0);
 	}
 
 	y = (19595 * r + 38469 * g + 7472 * b) >> 16;
