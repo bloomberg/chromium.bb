@@ -307,6 +307,9 @@ TEST_F(RenderTextTest, StyleRangesAdjust) {
   EXPECT_EQ(ui::Range(0, 1), render_text->style_ranges()[0].range);
 }
 
+// TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
+//                  does not implement this yet. http://crbug.com/131618
+#if !defined(OS_MACOSX)
 void TestVisualCursorMotionInObscuredField(RenderText* render_text,
                                            const string16& text,
                                            bool select) {
@@ -797,6 +800,7 @@ TEST_F(RenderTextTest, SelectAll) {
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(ui::Range(4), render_text->selection());
 }
+#endif  // !defined(OS_MACOSX)
 
 // TODO(xji): Make these work on Windows.
 #if defined(OS_LINUX)
@@ -968,6 +972,9 @@ TEST_F(RenderTextTest, StringSizeSanity) {
   EXPECT_GT(string_size.height(), 0);
 }
 
+// TODO(asvitkine): This test fails because PlatformFontMac uses point font
+//                  sizes instead of pixel sizes like other implementations.
+#if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, StringSizeEmptyString) {
   const Font font;
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -980,6 +987,7 @@ TEST_F(RenderTextTest, StringSizeEmptyString) {
   render_text->SetText(UTF8ToUTF16(" "));
   EXPECT_EQ(font.GetHeight(), render_text->GetStringSize().height());
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -1155,6 +1163,9 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
   }
 }
 
+// TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
+//                  does not implement this yet. http://crbug.com/131618
+#if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
@@ -1266,5 +1277,6 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   SetRTL(was_rtl);
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace gfx

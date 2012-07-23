@@ -59,10 +59,10 @@ CGRect SkIRectToCGRect(const SkIRect& rect);
 CGRect SkRectToCGRect(const SkRect& rect);
 
 // Converts CGColorRef to the ARGB layout Skia expects.
-SkColor CGColorRefToSkColor(CGColorRef color);
+SK_API SkColor CGColorRefToSkColor(CGColorRef color);
 
 // Converts ARGB to CGColorRef.
-CGColorRef SkColorToCGColorRef(SkColor color);
+SK_API CGColorRef SkColorToCGColorRef(SkColor color);
 
 // Converts NSColor to ARGB. Returns raw rgb values and does no colorspace
 // conversion. Only valid for colors in calibrated and device color spaces.

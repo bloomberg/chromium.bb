@@ -198,7 +198,7 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['toolkit_views==0 and use_canvas_skia==0', {
+        ['OS=="android" or OS=="ios"', {
           'sources!': [
             'gfx/render_text_unittest.cc',
           ],

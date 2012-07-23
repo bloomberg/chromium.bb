@@ -1,0 +1,369 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ui/gfx/render_text_mac.h"
+
+#include <ApplicationServices/ApplicationServices.h>
+
+#include <cmath>
+#include <utility>
+
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "base/sys_string_conversions.h"
+#include "skia/ext/skia_utils_mac.h"
+
+namespace {
+
+// Returns the pixel height of |ct_font|.
+CGFloat GetCTFontPixelSize(CTFontRef ct_font) {
+  return CTFontGetAscent(ct_font) + CTFontGetDescent(ct_font);
+}
+
+// Creates a CTFont with the given font name and pixel size. Ownership is
+// transferred to the caller.
+//
+// Note: This code makes use of pixel sizes (rather than view coordinate sizes)
+// because it draws to an underlying Skia canvas, which is normally pixel based.
+CTFontRef CreateCTFontWithPixelSize(const std::string& font_name,
+                                    const int target_pixel_size) {
+  // Epsilon value used for comparing font sizes.
+  const CGFloat kEpsilon = 0.001;
+  // The observed pixel to points ratio for Lucida Grande on 10.6. Other fonts
+  // have other ratios and the documentation doesn't provide a guarantee that
+  // the relation is linear. So this ratio is used as a first try before
+  // falling back to the bisection method.
+  const CGFloat kPixelsToPointsRatio = 0.849088;
+
+  base::mac::ScopedCFTypeRef<CFStringRef> font_name_cf_string(
+      base::SysUTF8ToCFStringRef(font_name));
+
+  // First, try using |kPixelsToPointsRatio|.
+  CGFloat point_size = target_pixel_size * kPixelsToPointsRatio;
+  base::mac::ScopedCFTypeRef<CTFontRef> ct_font(
+      CTFontCreateWithName(font_name_cf_string, point_size, NULL));
+  CGFloat actual_pixel_size = GetCTFontPixelSize(ct_font);
+  if (std::fabs(actual_pixel_size - target_pixel_size) < kEpsilon)
+    return ct_font.release();
+
+  // |kPixelsToPointsRatio| wasn't correct. Use the bisection method to find the
+  // right size.
+
+  // First, find the initial bisection range, so that the point size that
+  // corresponds to |target_pixel_size| is between |lo| and |hi|.
+  CGFloat lo = 0;
+  CGFloat hi = point_size;
+  while (actual_pixel_size < target_pixel_size) {
+    lo = hi;
+    hi *= 2;
+    ct_font.reset(CTFontCreateWithName(font_name_cf_string, hi, NULL));
+    actual_pixel_size = GetCTFontPixelSize(ct_font);
+  }
+
+  // Now, bisect to find the right size.
+  while (lo < hi) {
+    point_size = (hi - lo) * 0.5 + lo;
+    ct_font.reset(CTFontCreateWithName(font_name_cf_string, point_size, NULL));
+    actual_pixel_size = GetCTFontPixelSize(ct_font);
+    if (std::fabs(actual_pixel_size - target_pixel_size) < kEpsilon)
+      break;
+    if (target_pixel_size > actual_pixel_size)
+      lo = point_size;
+    else
+      hi = point_size;
+  }
+
+  return ct_font.release();
+}
+
+}  // namespace
+
+namespace gfx {
+
+RenderTextMac::RenderTextMac() : common_baseline_(0), runs_valid_(false) {
+}
+
+RenderTextMac::~RenderTextMac() {
+}
+
+base::i18n::TextDirection RenderTextMac::GetTextDirection() {
+  return base::i18n::LEFT_TO_RIGHT;
+}
+
+Size RenderTextMac::GetStringSize() {
+  EnsureLayout();
+  return string_size_;
+}
+
+int RenderTextMac::GetBaseline() {
+  EnsureLayout();
+  return common_baseline_;
+}
+
+SelectionModel RenderTextMac::FindCursorPosition(const Point& point) {
+  // TODO(asvitkine): Implement this. http://crbug.com/131618
+  return SelectionModel();
+}
+
+std::vector<RenderText::FontSpan> RenderTextMac::GetFontSpansForTesting() {
+  EnsureLayout();
+  if (!runs_valid_)
+    ComputeRuns();
+
+  std::vector<RenderText::FontSpan> spans;
+  for (size_t i = 0; i < runs_.size(); ++i) {
+    gfx::Font font(runs_[i].font_name, runs_[i].text_size);
+    const CFRange cf_range = CTRunGetStringRange(runs_[i].ct_run);
+    const ui::Range range(cf_range.location,
+                          cf_range.location + cf_range.length);
+    spans.push_back(RenderText::FontSpan(font, range));
+  }
+
+  return spans;
+}
+
+SelectionModel RenderTextMac::AdjacentCharSelectionModel(
+    const SelectionModel& selection,
+    VisualCursorDirection direction) {
+  // TODO(asvitkine): Implement this. http://crbug.com/131618
+  return SelectionModel();
+}
+
+SelectionModel RenderTextMac::AdjacentWordSelectionModel(
+    const SelectionModel& selection,
+    VisualCursorDirection direction) {
+  // TODO(asvitkine): Implement this. http://crbug.com/131618
+  return SelectionModel();
+}
+
+void RenderTextMac::GetGlyphBounds(size_t index,
+                                   ui::Range* xspan,
+                                   int* height) {
+  // TODO(asvitkine): Implement this. http://crbug.com/131618
+}
+
+std::vector<Rect> RenderTextMac::GetSubstringBounds(ui::Range range) {
+  // TODO(asvitkine): Implement this. http://crbug.com/131618
+  return std::vector<Rect>();
+}
+
+bool RenderTextMac::IsCursorablePosition(size_t position) {
+  // TODO(asvitkine): Implement this. http://crbug.com/131618
+  return false;
+}
+
+void RenderTextMac::ResetLayout() {
+  line_.reset();
+  runs_.clear();
+  runs_valid_ = false;
+}
+
+void RenderTextMac::EnsureLayout() {
+  if (line_.get())
+    return;
+  runs_.clear();
+  runs_valid_ = false;
+
+  const Font& font = GetFont();
+  CTFontRef ct_font =
+      CreateCTFontWithPixelSize(font.GetFontName(), font.GetFontSize());
+
+  const void* keys[] = { kCTFontAttributeName };
+  const void* values[] = { ct_font };
+  base::mac::ScopedCFTypeRef<CFDictionaryRef> attributes(
+      CFDictionaryCreate(NULL, keys, values, arraysize(keys), NULL, NULL));
+
+  base::mac::ScopedCFTypeRef<CFStringRef> cf_text(
+      base::SysUTF16ToCFStringRef(text()));
+  base::mac::ScopedCFTypeRef<CFAttributedStringRef> attr_text(
+      CFAttributedStringCreate(NULL, cf_text, attributes));
+  base::mac::ScopedCFTypeRef<CFMutableAttributedStringRef> attr_text_mutable(
+      CFAttributedStringCreateMutableCopy(NULL, 0, attr_text));
+
+  ApplyStyles(attr_text_mutable, ct_font);
+  line_.reset(CTLineCreateWithAttributedString(attr_text_mutable));
+
+  CGFloat ascent = 0;
+  CGFloat descent = 0;
+  CGFloat leading = 0;
+  // TODO(asvitkine): Consider using CTLineGetBoundsWithOptions() on 10.8+.
+  double width = CTLineGetTypographicBounds(line_, &ascent, &descent, &leading);
+  string_size_ = Size(width, ascent + descent + leading);
+  common_baseline_ = ascent;
+}
+
+void RenderTextMac::DrawVisualText(Canvas* canvas) {
+  DCHECK(line_);
+  if (!runs_valid_)
+    ComputeRuns();
+
+  internal::SkiaTextRenderer renderer(canvas);
+  ApplyFadeEffects(&renderer);
+  ApplyTextShadows(&renderer);
+
+  for (size_t i = 0; i < runs_.size(); ++i) {
+    const TextRun& run = runs_[i];
+    renderer.SetForegroundColor(run.foreground);
+    renderer.SetTextSize(run.text_size);
+    renderer.SetFontFamilyWithStyle(run.font_name, run.font_style);
+    renderer.DrawPosText(&run.glyph_positions[0], &run.glyphs[0],
+                         run.glyphs.size());
+    renderer.DrawDecorations(run.origin.x(), run.origin.y(), run.width,
+                             run.style);
+  }
+}
+
+RenderTextMac::TextRun::TextRun()
+    : ct_run(NULL),
+      origin(SkPoint::Make(0, 0)),
+      width(0),
+      font_style(Font::NORMAL),
+      text_size(0),
+      foreground(SK_ColorBLACK) {
+}
+
+RenderTextMac::TextRun::~TextRun() {
+}
+
+void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
+                                CTFontRef font) {
+  // https://developer.apple.com/library/mac/#documentation/Carbon/Reference/CoreText_StringAttributes_Ref/Reference/reference.html
+  for (size_t i = 0; i < style_ranges().size(); ++i) {
+    const StyleRange& style = style_ranges()[i];
+    const CFRange range = CFRangeMake(style.range.start(),
+                                      style.range.length());
+
+    // Note: CFAttributedStringSetAttribute() does not appear to retain the
+    // values passed in, as can be verified via CFGetRetainCount().
+    //
+    // TODO(asvitkine): The attributed string appears to hold weak refs to these
+    // objects (it does not release them either), so we need to keep track of
+    // them ourselves and release them at an appropriate time.
+
+    CGColorRef foreground = gfx::SkColorToCGColorRef(style.foreground);
+    CFAttributedStringSetAttribute(attr_string, range,
+                                   kCTForegroundColorAttributeName,
+                                   foreground);
+
+    if (style.underline) {
+      CTUnderlineStyle value = kCTUnderlineStyleSingle;
+      CFNumberRef underline = CFNumberCreate(NULL, kCFNumberSInt32Type, &value);
+      CFAttributedStringSetAttribute(attr_string, range,
+                                     kCTUnderlineStyleAttributeName,
+                                     underline);
+    }
+
+    if (style.font_style & (Font::BOLD | Font::ITALIC)) {
+      int traits = 0;
+      if (style.font_style & Font::BOLD)
+        traits |= kCTFontBoldTrait;
+      if (style.font_style & Font::ITALIC)
+        traits |= kCTFontItalicTrait;
+      CTFontRef styled_font =
+          CTFontCreateCopyWithSymbolicTraits(font, 0.0, NULL, traits, traits);
+      // TODO(asvitkine): Handle |styled_font| == NULL case better.
+      if (styled_font) {
+        CFAttributedStringSetAttribute(attr_string, range, kCTFontAttributeName,
+                                       styled_font);
+      }
+    }
+  }
+}
+
+void RenderTextMac::ComputeRuns() {
+  DCHECK(line_);
+
+  CFArrayRef ct_runs = CTLineGetGlyphRuns(line_);
+  const CFIndex ct_runs_count = CFArrayGetCount(ct_runs);
+
+  Point offset(GetTextOrigin());
+  // Skia will draw glyphs with respect to the baseline.
+  offset.Offset(0, common_baseline_);
+
+  const SkScalar x = SkIntToScalar(offset.x());
+  const SkScalar y = SkIntToScalar(offset.y());
+  SkPoint run_origin = SkPoint::Make(offset.x(), offset.y());
+
+  const CFRange empty_cf_range = CFRangeMake(0, 0);
+  for (CFIndex i = 0; i < ct_runs_count; ++i) {
+    CTRunRef ct_run =
+        base::mac::CFCast<CTRunRef>(CFArrayGetValueAtIndex(ct_runs, i));
+    const size_t glyph_count = CTRunGetGlyphCount(ct_run);
+    const double run_width =
+        CTRunGetTypographicBounds(ct_run, empty_cf_range, NULL, NULL, NULL);
+    if (glyph_count == 0) {
+      run_origin.offset(run_width, 0);
+      continue;
+    }
+
+    runs_.push_back(TextRun());
+    TextRun* run = &runs_.back();
+    run->ct_run = ct_run;
+    run->origin = run_origin;
+    run->width = run_width;
+    run->glyphs.resize(glyph_count);
+    CTRunGetGlyphs(ct_run, empty_cf_range, &run->glyphs[0]);
+    // CTRunGetGlyphs() sometimes returns glyphs with value 65535 and zero
+    // width (this has been observed at the beginning of a string containing
+    // Arabic content). Passing these to Skia will trigger an assertion;
+    // instead set their values to 0.
+    for (size_t glyph = 0; glyph < glyph_count; glyph++) {
+      if (run->glyphs[glyph] == 65535)
+        run->glyphs[glyph] = 0;
+    }
+
+    run->glyph_positions.resize(glyph_count);
+    const CGPoint* positions_ptr = CTRunGetPositionsPtr(ct_run);
+    std::vector<CGPoint> positions;
+    if (positions_ptr == NULL) {
+      positions.resize(glyph_count);
+      CTRunGetPositions(ct_run, empty_cf_range, &positions[0]);
+      positions_ptr = &positions[0];
+    }
+    for (size_t glyph = 0; glyph < glyph_count; glyph++) {
+      SkPoint* point = &run->glyph_positions[glyph];
+      point->set(x + SkDoubleToScalar(positions_ptr[glyph].x),
+                 y + SkDoubleToScalar(positions_ptr[glyph].y));
+    }
+
+    // TODO(asvitkine): Style boundaries are not necessarily per-run. Handle
+    //                  this better.
+    CFDictionaryRef attributes = CTRunGetAttributes(ct_run);
+    CTFontRef ct_font =
+        base::mac::GetValueFromDictionary<CTFontRef>(attributes,
+                                                     kCTFontAttributeName);
+    base::mac::ScopedCFTypeRef<CFStringRef> font_name_ref(
+        CTFontCopyFamilyName(ct_font));
+    run->font_name = base::SysCFStringRefToUTF8(font_name_ref);
+    run->text_size = GetCTFontPixelSize(ct_font);
+
+    CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ct_font);
+    if (traits & kCTFontBoldTrait)
+      run->font_style |= Font::BOLD;
+    if (traits & kCTFontItalicTrait)
+      run->font_style |= Font::ITALIC;
+
+    const CGColorRef foreground =
+        base::mac::GetValueFromDictionary<CGColorRef>(
+            attributes, kCTForegroundColorAttributeName);
+    if (foreground)
+      run->foreground = gfx::CGColorRefToSkColor(foreground);
+
+    const CFNumberRef underline =
+        base::mac::GetValueFromDictionary<CFNumberRef>(
+            attributes, kCTUnderlineStyleAttributeName);
+    CTUnderlineStyle value = kCTUnderlineStyleNone;
+    if (underline && CFNumberGetValue(underline, kCFNumberSInt32Type, &value))
+      run->style.underline = (value == kCTUnderlineStyleSingle);
+
+    run_origin.offset(run_width, 0);
+  }
+  runs_valid_ = true;
+}
+
+RenderText* RenderText::CreateInstance() {
+  return new RenderTextMac;
+}
+
+}  // namespace gfx
