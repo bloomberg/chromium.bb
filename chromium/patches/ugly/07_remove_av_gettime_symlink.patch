@@ -1,0 +1,38 @@
+From ef44a9481ebdc731bc954243b603538d2d366303 Mon Sep 17 00:00:00 2001
+From: Dale Curtis <dalecurtis@chromium.org>
+Date: Mon, 23 Jul 2012 15:32:01 -0700
+Subject: [PATCH] Remove duplicate av_gettime() definition.
+
+In order to preserve ABI compatibility after av_gettime() was moved
+inside the FFmpeg code base, they added a "symbolic link" version
+which our build chain doesn't like.
+
+Remove it until the next major version bump.
+
+BUG=none
+TEST=Build compiles.
+---
+ libavformat/utils.c | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/libavformat/utils.c b/libavformat/utils.c
+index eef77d0..33e78e7 100644
+--- a/libavformat/utils.c
++++ b/libavformat/utils.c
+@@ -3910,13 +3910,6 @@ void av_dump_format(AVFormatContext *ic,
+     av_free(printed);
+ }
+ 
+-#if FF_API_AV_GETTIME && CONFIG_SHARED && HAVE_SYMVER
+-FF_SYMVER(int64_t, av_gettime, (void), "LIBAVFORMAT_54")
+-{
+-    return av_gettime();
+-}
+-#endif
+-
+ uint64_t ff_ntp_time(void)
+ {
+   return (av_gettime() / 1000) * 1000 + NTP_OFFSET_US;
+-- 
+1.7.11.2
+
