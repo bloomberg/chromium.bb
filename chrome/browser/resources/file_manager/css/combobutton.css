@@ -7,30 +7,22 @@
   display: -webkit-box;
 }
 
-.buttonbar .combobutton > img {
-  display: block;
-  height: 16px;
-  margin-bottom: 6px;
-  margin-right: 4px;
-  margin-top: 6px;
-  width: 16px;
+.buttonbar .combobutton > .action {
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  padding-left: 21px;
 }
 
-.buttonbar .combobutton > span {
-  -webkit-box-flex: 1;
-  display: block;
-}
-
-.buttonbar .combobutton > div {
+.buttonbar .combobutton > .trigger {
   border-left: solid 1px #dcdcdc;
-  display: none;
   margin-left: 8px;
   margin-right: -8px;
   width: 22px;
 }
 
-.buttonbar .combobutton[multiple] > div {
-  display: block;
+.buttonbar .combobutton:not([multiple]) > .trigger {
+  display: none;
 }
 
 .buttonbar .combobutton > div > span.disclosureindicator {

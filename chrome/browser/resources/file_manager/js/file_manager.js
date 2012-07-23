@@ -2538,7 +2538,7 @@ FileManager.prototype = {
 
       var format = '';
 
-      if (extensions.length != 1) {
+      if (extensions.length == 1) {
         format = extensions[0];
       }
 

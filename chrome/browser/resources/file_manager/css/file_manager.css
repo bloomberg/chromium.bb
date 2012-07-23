@@ -651,20 +651,12 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
   padding: 1px 0;
 }
 
-#default-actions-list > li {
-  display: -webkit-box;
-}
-
 #default-actions-list > li > * {
-  display: block;
-  padding: 0 5px;
+  background-position: 5px center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  padding-left: 26px;
 }
-
-#default-actions-list > li > img {
-  height: 16px;
-  padding-top: 12px;
-}
-
 
 #list-container list > *,
 #list-container grid > *,

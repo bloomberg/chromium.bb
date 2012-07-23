@@ -479,6 +479,9 @@ chrome.fileBrowserPrivate = {
       ACTION_LISTEN: 'Listen',
       INSTALL_CRX: 'Open',
 
+      CHANGE_DEFAULT_MENU_ITEM: 'Change default...',
+      CHANGE_DEFAULT_CAPTION: 'Choose the default app for $1 files:',
+
       GALLERY_EDIT: 'Edit',
       GALLERY_SHARE: 'Share',
       GALLERY_AUTOFIX: 'Auto-fix',
@@ -631,6 +634,7 @@ chrome.fileBrowserPrivate = {
       IMAGE_FILE_TYPE: '$1 image',
       VIDEO_FILE_TYPE: '$1 video',
       AUDIO_FILE_TYPE: '$1 audio',
+      GENERIC_FILE_TYPE: '$1 file',
       HTML_DOCUMENT_FILE_TYPE: 'HTML document',
       ZIP_ARCHIVE_FILE_TYPE: 'Zip archive',
       RAR_ARCHIVE_FILE_TYPE: 'RAR archive',
@@ -643,6 +647,7 @@ chrome.fileBrowserPrivate = {
       POWERPOINT_PRESENTATION_FILE_TYPE: 'PowerPoint presentation',
       EXCEL_FILE_TYPE: 'Excel spreadsheet',
 
+      SEARCH_TEXT_LABEL: 'Search',
       SEARCH_NO_MATCHING_FILES: 'No files match <b>"$1"</b>',
 
       TIME_TODAY: 'Today, $1',

@@ -52,12 +52,6 @@ FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
   var id = this.fileManager_.getExtensionId();
 
-  // TODO(kaznacheev): Teach menu items to use HiDPI assets.
-  function getFileTypeIcon(type) {
-    return chrome.extension.getURL(
-        'images/files/file_types/' + type + '.png');
-  }
-
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i];
 
@@ -67,34 +61,34 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       if (task_parts[1] == 'play') {
         // TODO(serya): This hack needed until task.iconUrl is working
         //             (see GetFileTasksFileBrowserFunction::RunImpl).
-        task.iconUrl = getFileTypeIcon('audio');
+        task.iconType = 'audio';
         task.title = loadTimeData.getString('ACTION_LISTEN');
       } else if (task_parts[1] == 'mount-archive') {
-        task.iconUrl = getFileTypeIcon('archive');
+        task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
       } else if (task_parts[1] == 'gallery') {
-        task.iconUrl = getFileTypeIcon('image');
+        task.iconType = 'image';
         task.title = loadTimeData.getString('ACTION_OPEN');
       } else if (task_parts[1] == 'watch') {
-        task.iconUrl = getFileTypeIcon('video');
+        task.iconType = 'video';
         task.title = loadTimeData.getString('ACTION_WATCH');
       } else if (task_parts[1] == 'open-hosted') {
         if (this.urls_.length > 1)
-          task.iconUrl = getFileTypeIcon('generic');
+          task.iconType = 'generic';
         else // Use specific icon.
-          task.iconUrl = getFileTypeIcon(FileType.getIcon(this.urls_[0]));
+          task.iconType = FileType.getIcon(this.urls_[0]);
         task.title = loadTimeData.getString('ACTION_OPEN');
       } else if (task_parts[1] == 'view-pdf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
           continue;
-        task.iconUrl = getFileTypeIcon('pdf');
+        task.iconType = 'pdf';
         task.title = loadTimeData.getString('ACTION_VIEW');
       } else if (task_parts[1] == 'view-in-browser') {
-        task.iconUrl = getFileTypeIcon('generic');
+        task.iconType = 'generic';
         task.title = loadTimeData.getString('ACTION_VIEW');
       } else if (task_parts[1] == 'install-crx') {
-        task.iconUrl = getFileTypeIcon('generic');
+        task.iconType = 'generic';
         task.title = loadTimeData.getString('INSTALL_CRX');
       }
     }
@@ -475,7 +469,12 @@ FileTasks.prototype.getExternals_ = function(callback) {
  * @private
  */
 FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title) {
-  return { label: opt_title || task.title, iconUrl: task.iconUrl, task: task };
+  return {
+    label: opt_title || task.title,
+    iconUrl: task.iconUrl,
+    iconType: task.iconType,
+    task: task
+  };
 };
 
 

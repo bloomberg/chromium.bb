@@ -31,7 +31,12 @@ cr.define('cr.ui', function() {
 
     addDropDownItem: function(item) {
       this.multiple = true;
-      this.menu.addMenuItem(item).data = item;
+      var menuitem = this.menu.addMenuItem(item);
+      menuitem.data = item;
+      if (item.iconType) {
+        menuitem.style.backgroundImage = '';
+        menuitem.setAttribute('file-type-icon', item.iconType);
+      }
     },
 
     /**
@@ -49,16 +54,17 @@ cr.define('cr.ui', function() {
     },
     set defaultItem(defaultItem) {
       this.defaultItem_ = defaultItem;
-      if (defaultItem.label) {
-        this.labelNode_.textContent = defaultItem.label;
-      } else {
-        this.labelNode_.textContent = '';
-      }
 
-      if (defaultItem.iconUrl) {
-        this.iconNode_.src = defaultItem.iconUrl;
+      this.actionNode_.textContent = defaultItem.label || '';
+
+      if (defaultItem.iconType) {
+        this.actionNode_.style.backgroundImage = '';
+        this.actionNode_.setAttribute('file-type-icon', defaultItem.iconType);
+      } else if (defaultItem.iconUrl) {
+        this.actionNode_.style.backgroundImage =
+            'url(' + defaultItem.iconUrl + ')';
       } else {
-        this.iconNode_.src = '';
+        this.actionNode_.style.backgroundImage = '';
       }
     },
 
@@ -70,15 +76,14 @@ cr.define('cr.ui', function() {
 
       this.classList.add('combobutton');
 
-      this.iconNode_ = this.ownerDocument.createElement('img');
-      this.appendChild(this.iconNode_);
-
-      this.labelNode_ = this.ownerDocument.createElement('span');
-      this.appendChild(this.labelNode_);
+      this.actionNode_ = this.ownerDocument.createElement('div');
+      this.actionNode_.classList.add('action');
+      this.appendChild(this.actionNode_);
 
       var triggerIcon = this.ownerDocument.createElement('span');
       triggerIcon.className = 'disclosureindicator';
       this.trigger_ = this.ownerDocument.createElement('div');
+      this.trigger_.classList.add('trigger');
       this.trigger_.appendChild(triggerIcon);
 
       this.appendChild(this.trigger_);

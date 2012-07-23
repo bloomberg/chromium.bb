@@ -60,19 +60,21 @@ cr.define('cr.filebrowser', function() {
   DefaultActionDialog.prototype.renderItem = function(item) {
     var result = this.document_.createElement('li');
 
-    var iconNode = this.document_.createElement('img');
-    iconNode.src = item.iconUrl;
-    result.appendChild(iconNode);
+    var div = this.document_.createElement('div');
+    div.textContent = item.label;
 
-    var labelNode = this.document_.createElement('span');
-    labelNode.textContent = item.label;
-    result.appendChild(labelNode);
+    if (item.iconType)
+      div.setAttribute('file-type-icon', item.iconType);
+    else
+      div.style.backgroundImage = 'url(' + item.iconUrl + ')';
+
+    result.appendChild(div);
 
     cr.defineProperty(result, 'lead', cr.PropertyKind.BOOL_ATTR);
     cr.defineProperty(result, 'selected', cr.PropertyKind.BOOL_ATTR);
 
     return result;
-  }
+  };
 
   /**
    * Shows dialog.

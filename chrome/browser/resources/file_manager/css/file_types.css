@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 /* Small icons for file types, used in lists and menus. */
-div[file-type-icon] {
+*[file-type-icon] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/generic.png') 1x,
     url('../images/files/file_types/2x/generic.png') 2x);
@@ -11,92 +11,92 @@ div[file-type-icon] {
   background-repeat: no-repeat;
 }
 
-div[file-type-icon='archive'] {
+*[file-type-icon='archive'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/archive.png') 1x,
     url('../images/files/file_types/2x/archive.png') 2x);
 }
 
-div[file-type-icon='audio'] {
+*[file-type-icon='audio'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/audio.png') 1x,
     url('../images/files/file_types/2x/audio.png') 2x);
 }
 
-div[file-type-icon='excel'] {
+*[file-type-icon='excel'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/excel.png') 1x,
     url('../images/files/file_types/2x/excel.png') 2x);
 }
 
-div[file-type-icon='folder'] {
+*[file-type-icon='folder'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/folder.png') 1x,
     url('../images/files/file_types/2x/folder.png') 2x);
 }
 
-div[file-type-icon='gdoc'] {
+*[file-type-icon='gdoc'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/gdoc.png') 1x,
     url('../images/files/file_types/2x/gdoc.png') 2x);
 }
 
-div[file-type-icon='gdraw'] {
+*[file-type-icon='gdraw'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/gdraw.png') 1x,
     url('../images/files/file_types/2x/gdraw.png') 2x);
 }
 
-div[file-type-icon='gsheet'] {
+*[file-type-icon='gsheet'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/gsheet.png') 1x,
     url('../images/files/file_types/2x/gsheet.png') 2x);
 }
 
-div[file-type-icon='gslides'] {
+*[file-type-icon='gslides'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/gslides.png') 1x,
     url('../images/files/file_types/2x/gslides.png') 2x);
 }
 
-div[file-type-icon='gtable'] {
+*[file-type-icon='gtable'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/gtable.png') 1x,
     url('../images/files/file_types/2x/gtable.png') 2x);
 }
 
-div[file-type-icon='image'] {
+*[file-type-icon='image'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/image.png') 1x,
     url('../images/files/file_types/2x/image.png') 2x);
 }
 
-div[file-type-icon='pdf'] {
+*[file-type-icon='pdf'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/pdf.png') 1x,
     url('../images/files/file_types/2x/pdf.png') 2x);
 }
 
-div[file-type-icon='ppt'] {
+*[file-type-icon='ppt'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/ppt.png') 1x,
     url('../images/files/file_types/2x/ppt.png') 2x);
 }
 
-div[file-type-icon='video'] {
+*[file-type-icon='video'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/video.png') 1x,
     url('../images/files/file_types/2x/video.png') 2x);
 }
 
-div[file-type-icon='word'] {
+*[file-type-icon='word'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/word.png') 1x,
     url('../images/files/file_types/2x/word.png') 2x);
 }
 
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
-div[generic-thumbnail] {
+*[generic-thumbnail] {
   background-image: -webkit-image-set(
     url('../images/files/thumbnails/generic.png') 1x,
     url('../images/files/thumbnails/2x/generic.png') 2x);
@@ -104,62 +104,62 @@ div[generic-thumbnail] {
   background-repeat: no-repeat;
 }
 
-div[generic-thumbnail='audio'] {
+*[generic-thumbnail='audio'] {
   background-image: -webkit-image-set(
     url('../images/files/thumbnails/audio.png') 1x,
     url('../images/files/thumbnails/2x/audio.png') 2x);
 }
 
-div[generic-thumbnail='folder'] {
+*[generic-thumbnail='folder'] {
   background-image: -webkit-image-set(
     url('../images/files/thumbnails/folder.png') 1x,
     url('../images/files/thumbnails/2x/folder.png') 2x);
 }
 
-div[generic-thumbnail='image'] {
+*[generic-thumbnail='image'] {
   background-image: -webkit-image-set(
     url('../images/files/thumbnails/image.png') 1x,
     url('../images/files/thumbnails/2x/image.png') 2x);
 }
 
-div[generic-thumbnail='video'] {
+*[generic-thumbnail='video'] {
   background-image: -webkit-image-set(
     url('../images/files/thumbnails/video.png') 1x,
     url('../images/files/thumbnails/2x/video.png') 2x);
 }
 
 /* Icons for volume types. */
-div[volume-type-icon='archive'] {
+*[volume-type-icon='archive'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/archive.png') 1x,
     url('../images/files/volumes/2x/archive.png') 2x);
 }
 
-div[volume-type-icon='downloads'] {
+*[volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/downloads.png') 1x,
     url('../images/files/volumes/2x/downloads.png') 2x);
 }
 
-div[volume-type-icon='gdata'] {
+*[volume-type-icon='gdata'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/gdrive.png') 1x,
     url('../images/files/volumes/2x/gdrive.png') 2x);
 }
 
-div[volume-type-icon='removable'] {
+*[volume-type-icon='removable'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_usb.png') 1x,
     url('../images/files/volumes/2x/device_usb.png') 2x);
 }
 
-div[volume-type-icon='removable'][volume-subtype='sd'] {
+*[volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_sd.png') 1x,
     url('../images/files/volumes/2x/device_sd.png') 2x);
 }
 
-div[volume-type-icon='removable'][volume-subtype='optical'] {
+*[volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_optical.png') 1x,
     url('../images/files/volumes/2x/device_optical.png') 2x);
@@ -167,7 +167,7 @@ div[volume-type-icon='removable'][volume-subtype='optical'] {
 
 /* TODO(kaznacheev): consider a better icon for volume-subtype=unknown.
    Also find out if we need an icon for volume-subtype=mobile */
-div[volume-type-icon='removable'][volume-subtype='unknown'] {
+*[volume-type-icon='removable'][volume-subtype='unknown'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_hd.png') 1x,
     url('../images/files/volumes/2x/device_hd.png') 2x);
