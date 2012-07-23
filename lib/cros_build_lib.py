@@ -484,24 +484,26 @@ def Debug(message, *args, **kwargs):
   logger.debug(message, *args, **kwargs)
 
 
-def PrintBuildbotLink(text, url, f=None):
+def PrintBuildbotLink(text, url, handle=None):
   """Prints out a link to buildbot."""
-  (f or sys.stderr).write('\n@@@STEP_LINK@%s@%s@@@\n' % (text, url))
+  text = ' '.join(text.split())
+  (handle or sys.stderr).write('\n@@@STEP_LINK@%s@%s@@@\n' % (text, url))
 
 
-def PrintBuildbotStepText(text, f=None):
+def PrintBuildbotStepText(text, handle=None):
   """Prints out stage text to buildbot."""
-  (f or sys.stderr).write('\n@@@STEP_TEXT@%s@@@\n' % (text,))
+  text = ' '.join(text.split())
+  (handle or sys.stderr).write('\n@@@STEP_TEXT@%s@@@\n' % (text,))
 
 
-def PrintBuildbotStepWarnings(f=None):
+def PrintBuildbotStepWarnings(handle=None):
   """Marks a stage as having warnings."""
-  (f or sys.stderr).write('\n@@@STEP_WARNINGS@@@\n')
+  (handle or sys.stderr).write('\n@@@STEP_WARNINGS@@@\n')
 
 
-def PrintBuildbotStepFailure(f=None):
+def PrintBuildbotStepFailure(handle=None):
   """Marks a stage as having warnings."""
-  (f or sys.stderr).write('\n@@@STEP_FAILURE@@@\n')
+  (handle or sys.stderr).write('\n@@@STEP_FAILURE@@@\n')
 
 
 def ListFiles(base_dir):
