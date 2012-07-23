@@ -225,7 +225,8 @@ void EventExecutorWin::HandleMouse(const MouseEvent& event) {
     if ((screen_size.width() > 1) && (screen_size.height() > 1)) {
       input.mi.dx = static_cast<int>((x * 65535) / (screen_size.width() - 1));
       input.mi.dy = static_cast<int>((y * 65535) / (screen_size.height() - 1));
-      input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+      input.mi.dwFlags =
+          MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
       if (SendInput(1, &input, sizeof(INPUT)) == 0) {
         LOG_GETLASTERROR(ERROR) << "Failed to inject a mouse move event";
       }
