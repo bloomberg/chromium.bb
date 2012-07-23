@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,9 @@ std::string GetIBusKey(int keyval) {
       return "AudioVolumeUp";
     case IBUS_BackSpace:
       return "Backspace";
+    case IBUS_Delete:
+    case IBUS_KP_Delete:
+      return "Delete";
     case IBUS_Tab:
       return "Tab";
     case IBUS_KP_Enter:
