@@ -138,6 +138,19 @@ if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
   fi
 fi
 
+if ${BUILD_PLATFORM_WIN}; then
+   # TODO(robertm): switch this to svn.bat, hg.bat, git.bat,  gclient.bat
+   readonly GCLIENT="gclient"
+   readonly GIT="git"
+   readonly HG="hg"
+   readonly SVN="svn"
+else
+   readonly GCLIENT="gclient"
+   readonly GIT="git"
+   readonly HG="hg"
+   readonly SVN="svn"
+fi
+
 # On Windows, scons expects Windows-style paths (C:\foo\bar)
 # This function converts cygwin posix paths to Windows-style paths.
 # On all other platforms, this function does nothing to the path.
@@ -157,7 +170,7 @@ PosixToSysPath() {
 git-has-changes() {
   local dir=$1
   spushd "${dir}"
-  local PLUS=$(git diff --name-only | cmp -s - /dev/null)
+  local PLUS=$(${GIT} diff --name-only | cmp -s - /dev/null)
   spopd
 
   [ "${PLUS}" != "" ]
@@ -184,7 +197,7 @@ hg-pull-try() {
   local retcode=0
 
   spushd "${dir}"
-  RunWithLog "hg-pull" hg pull || retcode=$?
+  RunWithLog "hg-pull" ${HG} pull || retcode=$?
   spopd
   return ${retcode}
 }
@@ -192,7 +205,7 @@ hg-pull-try() {
 #+ hg-revert <dir>
 hg-revert() {
   local dir="$1"
-  hg revert "${dir}"
+  ${HG} revert "${dir}"
 }
 
 #+ hg-clone <url> <dir>
@@ -209,7 +222,7 @@ hg-clone-try() {
   local retcode=0
 
   rm -rf "${dir}"
-  hg clone "${url}" "${dir}" || retcode=$?
+  ${HG} clone "${url}" "${dir}" || retcode=$?
 
   if [ ${retcode} -ne 0 ] ; then
    # Clean up directory after failure
@@ -256,7 +269,7 @@ hg-update-try() {
   shift 1
   local retcode=0
   spushd "${dir}"
-  RunWithLog "hg-update" hg update "$@" || retcode=$?
+  RunWithLog "hg-update" ${HG} update "$@" || retcode=$?
   spopd
   return ${retcode}
 }
@@ -265,7 +278,7 @@ hg-update-try() {
 hg-push() {
   local dir="$1"
   spushd "${dir}"
-  hg push
+  ${HG} push
   spopd
 }
 
@@ -274,7 +287,7 @@ hg-info() {
   local rev="$2"
 
   spushd "$dir"
-  local hg_status=$(hg status -mard)
+  local hg_status=$(${HG} status -mard)
   if [ ${#hg_status} -gt 0 ]; then
     LOCAL_CHANGES="YES"
   else
@@ -283,8 +296,8 @@ hg-info() {
 
   echo ""
   echo "Directory: hg/$(basename ${dir})"
-  echo "  Branch         : $(hg branch)"
-  echo "  Revision       : $(hg identify)"
+  echo "  Branch         : $(${HG} branch)"
+  echo "  Revision       : $(${HG} identify)"
   echo "  Local changes  : ${LOCAL_CHANGES}"
   echo "  Stable Revision: ${rev}"
   echo ""
@@ -314,7 +327,7 @@ hg-assert-is-merge() {
 
   # When the working directory is a merge, hg identify -i
   # emits "changesetid1+changesetid2+"
-  if hg identify -i | egrep -q '^[0-9a-f]+\+[0-9a-f]+\+$'; then
+  if ${HG} identify -i | egrep -q '^[0-9a-f]+\+[0-9a-f]+\+$'; then
     spopd
     return
   fi
@@ -328,7 +341,7 @@ hg-on-branch() {
   local dir=$1
   local branch=$2
   spushd "${dir}"
-  if hg branch | grep -q "^${branch}\$"; then
+  if ${HG} branch | grep -q "^${branch}\$"; then
     spopd
     return 0
   else
@@ -352,7 +365,7 @@ hg-assert-branch() {
 hg-has-changes() {
   local dir=$1
   spushd "${dir}"
-  local PLUS=$(hg status . | grep -v '^?')
+  local PLUS=$(${HG} status . | grep -v '^?')
   spopd
 
   [ "${PLUS}" != "" ]
@@ -372,7 +385,7 @@ hg-assert-no-changes() {
 hg-has-untracked() {
   local dir=$1
   spushd "${dir}"
-  local STATUS=$(hg status . | grep '^?')
+  local STATUS=$(${HG} status . | grep '^?')
   spopd
 
   [ "${STATUS}" != "" ]
@@ -391,7 +404,7 @@ hg-assert-no-untracked() {
 hg-has-outgoing() {
   local dir=$1
   spushd "${dir}"
-  if hg outgoing | grep -q "^no changes found$" ; then
+  if ${HG} outgoing | grep -q "^no changes found$" ; then
     spopd
     return 1
   fi
@@ -417,7 +430,7 @@ hg-assert-no-outgoing() {
 svn-get-revision() {
   local dir="$1"
   spushd "${dir}"
-  local rev=$(svn info | grep 'Revision: ' | cut -b 11-)
+  local rev=$(${SVN} info | grep 'Revision: ' | cut -b 11-)
   if ! [[ "${rev}" =~ ^[0-9]+$ ]]; then
     echo "Invalid revision number '${rev}' or invalid repository '${dir}'" 1>&2
     exit -1
@@ -430,7 +443,7 @@ svn-get-revision() {
 hg-get-revision() {
   local dir="$1"
   spushd "${dir}"
-  local HGREV=($(hg identify | tr -d '+'))
+  local HGREV=($(${HG} identify | tr -d '+'))
   spopd
   echo "${HGREV[0]}"
 }
@@ -443,7 +456,7 @@ svn-checkout() {
 
   if [ ! -d "${dir}" ]; then
     StepBanner "SVN-CHECKOUT" "Checking out ${url}"
-    RunWithLog "svn-checkout" svn co "${url}" "${dir}" -r "${rev}"
+    RunWithLog "svn-checkout" ${SVN} co "${url}" "${dir}" -r "${rev}"
   else
     SkipBanner "SVN-CHECKOUT" "Using existing SVN repository for ${url}"
   fi
@@ -459,9 +472,9 @@ svn-update() {
 
   spushd "${dir}"
   if [[ "$rev" == "tip" ]]; then
-    RunWithLog "svn-update" svn update
+    RunWithLog "svn-update" ${SVN} update
   else
-    RunWithLog "svn-update" svn update -r ${rev}
+    RunWithLog "svn-update" ${SVN} update -r ${rev}
   fi
   spopd
 }
@@ -469,7 +482,7 @@ svn-update() {
 svn-has-changes() {
   local dir="$1"
   spushd "${dir}"
-  local STATUS=$(svn status)
+  local STATUS=$(${SVN} status)
   spopd
   [ "${STATUS}" != "" ]
   return $?

@@ -619,14 +619,14 @@ git-sync() {
 
   if ! [ -d "${gitbase}/dummydir" ]; then
     spushd "${gitbase}"
-    gclient update
+    ${GCLIENT} update --verbose
     spopd
   fi
 
   newlib-nacl-headers-clean
   cp "${PNACL_ROOT}"/DEPS "${gitbase}"/dummydir
   spushd "${gitbase}"
-  gclient update
+  ${GCLIENT} update --verbose
   spopd
 
   # Copy nacl headers into newlib tree.
@@ -672,7 +672,7 @@ download-trusted() {
 #@ download-toolchains   - Download and Install all SDKs (arm,x86-32,x86-64)
 
 download-toolchains() {
-  gclient runhooks --force
+  ${GCLIENT} runhooks --force --verbose
 }
 
 #@ libs            - install native libs and build bitcode libs
@@ -1237,8 +1237,8 @@ tarball() {
     exit 1
   fi
   local tarball="$(ArgumentToAbsolutePath "$1")"
-  RecordRevisionInfo
   StepBanner "TARBALL" "Creating tar ball ${tarball}"
+  RecordRevisionInfo
   tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
 }
 
@@ -3091,7 +3091,7 @@ newlib-nacl-headers-clean() {
 
     spushd "$(dirname "${NEWLIB_INCLUDE_DIR}")"
     RunWithLog "newlib-nacl-headers-clean" \
-      git checkout ${NEWLIB_INCLUDE_DIR}
+      ${GIT} checkout ${NEWLIB_INCLUDE_DIR}
     spopd
   fi
 }
@@ -3280,9 +3280,13 @@ driver-install-translator() {
 
 RecordRevisionInfo() {
   if [ -d .svn ]; then
-    svn info > "${INSTALL_ROOT}/REV"
+    # TODO(robertm): remove this hack
+    # http://code.google.com/p/nativeclient/issues/detail?id=2918
+    if ! ${SVN} info > "${INSTALL_ROOT}/REV" ; then
+      echo "ERROR failed to determin svn rev for tarball marker"
+    fi
   elif [ -d .git ]; then
-    git log | grep git-svn | head -1 > "${INSTALL_ROOT}/REV"
+    ${GIT} log | grep git-svn | head -1 > "${INSTALL_ROOT}/REV"
   fi
 }
 
