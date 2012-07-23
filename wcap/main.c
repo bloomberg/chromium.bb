@@ -132,7 +132,7 @@ convert_to_yv12(struct wcap_decoder *decoder, unsigned char *out)
 static void
 output_yuv_frame(struct wcap_decoder *decoder)
 {
-	static char *out;
+	static unsigned char *out;
 	int size;
 
 	size = decoder->width * decoder->height * 3 / 2;
