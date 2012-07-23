@@ -48,9 +48,14 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {
       << message_;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_POSIX)
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
-  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(base::DIR_PROFILE,
+#if defined(OS_WIN)
+  int override = base::DIR_PROFILE;
+#elif defined(OS_POSIX)
+  int override = base::DIR_HOME;
+#endif
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(override,
       test_root_folder_, false));
 
   FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
