@@ -121,7 +121,8 @@ void CaptivePortalTabHelper::DidFailProvisionalLoad(
   pending_error_code_ = error_code;
 }
 
-void CaptivePortalTabHelper::DidStopLoading() {
+void CaptivePortalTabHelper::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
   DCHECK(CalledOnValidThread());
 
   login_detector_->OnStoppedLoading();

@@ -305,8 +305,10 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Close(content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RequestMove(const gfx::Rect& new_bounds) OVERRIDE;
   virtual void SwappedOut(content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStartLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
   virtual void DocumentAvailableInMainFrame(
@@ -411,8 +413,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void BeforeUnloadFiredFromRenderManager(
       bool proceed,
       bool* proceed_to_fire_unload) OVERRIDE;
-  virtual void DidStartLoadingFromRenderManager(
-      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGoneFromRenderManager(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;

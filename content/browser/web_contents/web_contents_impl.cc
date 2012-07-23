@@ -2601,17 +2601,20 @@ void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
     delegate_->MoveContents(this, new_bounds);
 }
 
-void WebContentsImpl::DidStartLoading() {
+void WebContentsImpl::DidStartLoading(
+    content::RenderViewHost* render_view_host) {
   SetIsLoading(true, NULL);
 
   if (delegate_ && content_restrictions_)
     OnUpdateContentRestrictions(0);
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidStartLoading());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidStartLoading(render_view_host));
 }
 
-void WebContentsImpl::DidStopLoading() {
+void WebContentsImpl::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
   scoped_ptr<LoadNotificationDetails> details;
 
   NavigationEntry* entry = controller_.GetActiveEntry();
@@ -2631,7 +2634,8 @@ void WebContentsImpl::DidStopLoading() {
   SetIsLoading(false, details.get());
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidStopLoading());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidStopLoading(render_view_host));
 }
 
 void WebContentsImpl::DidCancelLoading() {
@@ -2950,11 +2954,6 @@ void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
     delegate_->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
 }
 
-void WebContentsImpl::DidStartLoadingFromRenderManager(
-      RenderViewHost* render_view_host) {
-  DidStartLoading();
-}
-
 void WebContentsImpl::RenderViewGoneFromRenderManager(
     RenderViewHost* render_view_host) {
   DCHECK(crashed_status_ != base::TERMINATION_STATUS_STILL_RUNNING);
@@ -3058,7 +3057,7 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
   if (is_showing_before_unload_dialog_ && !success) {
     // If a beforeunload dialog is canceled, we need to stop the throbber from
     // spinning, since we forced it to start spinning in Navigate.
-    DidStopLoading();
+    DidStopLoading(rvh);
     controller_.DiscardNonCommittedEntries();
 
     close_start_time_ = base::TimeTicks();

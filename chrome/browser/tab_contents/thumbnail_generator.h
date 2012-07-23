@@ -121,7 +121,8 @@ class ThumbnailGenerator : public content::NotificationObserver,
                                     const GURL& url);
 
   // content::WebContentsObserver overrides.
-  virtual void DidStartLoading() OVERRIDE;
+  virtual void DidStartLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void StopNavigation() OVERRIDE;
 
  private:

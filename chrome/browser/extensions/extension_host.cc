@@ -334,7 +334,7 @@ void ExtensionHost::InsertInfobarCSS() {
   render_view_host()->InsertCSS(string16(), css.as_string());
 }
 
-void ExtensionHost::DidStopLoading() {
+void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
   bool notify = !did_stop_loading_;
   did_stop_loading_ = true;
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||

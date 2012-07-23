@@ -326,7 +326,8 @@ void OneClickSigninHelper::DidNavigateAnyFrame(
     SavePassword(UTF16ToUTF8(params.password_form.password_value));
 }
 
-void OneClickSigninHelper::DidStopLoading() {
+void OneClickSigninHelper::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
   if (email_.empty() || password_.empty())
     return;
 

@@ -223,8 +223,8 @@ class TestPrerenderContents : public PrerenderContents {
     return true;
   }
 
-  virtual void DidStopLoading() OVERRIDE {
-    PrerenderContents::DidStopLoading();
+  virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE {
+    PrerenderContents::DidStopLoading(render_view_host);
     ++number_of_loads_;
     if (ShouldRenderPrerenderedPageCorrectly(expected_final_status_) &&
         number_of_loads_ == expected_number_of_loads_) {

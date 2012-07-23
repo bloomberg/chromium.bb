@@ -565,7 +565,8 @@ bool ThumbnailGenerator::ShouldUpdateThumbnail(Profile* profile,
   return true;
 }
 
-void ThumbnailGenerator::DidStartLoading() {
+void ThumbnailGenerator::DidStartLoading(
+    content::RenderViewHost* render_view_host) {
   load_interrupted_ = false;
 }
 

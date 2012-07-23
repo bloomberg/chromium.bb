@@ -53,7 +53,8 @@ class OneClickSigninHelper : public content::WebContentsObserver {
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Save the email address that we can display the info bar correctly.
   void SaveSessionIndexAndEmail(const std::string& session_index,

@@ -339,7 +339,7 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
   // WebKit doesn't send throb notifications for JavaScript URLs, so we
   // don't want to either.
   if (!params.url.SchemeIs(chrome::kJavaScriptScheme))
-    delegate_->DidStartLoading();
+    delegate_->DidStartLoading(this);
 
   FOR_EACH_OBSERVER(content::RenderViewHostObserver,
                     observers_, Navigate(params.url));
@@ -1198,11 +1198,11 @@ void RenderViewHostImpl::OnMsgRequestMove(const gfx::Rect& pos) {
 }
 
 void RenderViewHostImpl::OnMsgDidStartLoading() {
-  delegate_->DidStartLoading();
+  delegate_->DidStartLoading(this);
 }
 
 void RenderViewHostImpl::OnMsgDidStopLoading() {
-  delegate_->DidStopLoading();
+  delegate_->DidStopLoading(this);
 }
 
 void RenderViewHostImpl::OnMsgDidChangeLoadProgress(double load_progress) {

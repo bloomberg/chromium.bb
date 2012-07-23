@@ -105,8 +105,10 @@ class AutomationTabHelper
       const std::string& error_msg);
 
   // content::WebContentsObserver implementation.
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStartLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;

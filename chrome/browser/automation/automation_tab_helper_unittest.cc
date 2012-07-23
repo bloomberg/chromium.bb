@@ -31,11 +31,11 @@ class AutomationTabHelperTest : public TabContentsTestHarness {
   // These are here so that we don't have to add each test as a
   // |AutomationTabHelper| friend.
   void StartLoading() {
-    tab_helper()->DidStartLoading();
+    tab_helper()->DidStartLoading(NULL);
   }
 
   void StopLoading() {
-    tab_helper()->DidStopLoading();
+    tab_helper()->DidStopLoading(NULL);
   }
 
   void TabContentsDestroyed() {

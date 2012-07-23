@@ -28,7 +28,8 @@ class PrerenderTabHelper : public content::WebContentsObserver {
       const GURL& url,
       const GURL& opener_url,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,

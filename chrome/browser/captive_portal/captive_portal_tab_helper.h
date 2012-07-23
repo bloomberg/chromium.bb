@@ -72,7 +72,8 @@ class CaptivePortalTabHelper : public content::WebContentsObserver,
       const string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(

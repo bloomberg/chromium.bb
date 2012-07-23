@@ -168,7 +168,8 @@ void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
   prerender_manager->RecordNavigation(validated_url);
 }
 
-void PrerenderTabHelper::DidStopLoading() {
+void PrerenderTabHelper::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
   // Compute the PPLT metric and report it in a histogram, if needed.
   // We include pages that are still prerendering and have just finished
   // loading -- PrerenderManager will sort this out and handle it correctly

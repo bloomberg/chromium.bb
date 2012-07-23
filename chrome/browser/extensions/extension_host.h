@@ -138,7 +138,8 @@ class ExtensionHost : public content::WebContentsDelegate,
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void DocumentAvailableInMainFrame() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // content::WebContentsDelegate
   virtual content::WebContents* OpenURLFromTab(

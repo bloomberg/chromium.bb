@@ -65,7 +65,8 @@ bool AutomationTabHelper::has_pending_loads() const {
   return is_loading_ || !pending_client_redirects_.empty();
 }
 
-void AutomationTabHelper::DidStartLoading() {
+void AutomationTabHelper::DidStartLoading(
+    content::RenderViewHost* render_view_host) {
   if (is_loading_) {
     // DidStartLoading is often called twice. Once when the renderer sends a
     // load start message, and once when the browser calls it directly as a
@@ -81,7 +82,8 @@ void AutomationTabHelper::DidStartLoading() {
   }
 }
 
-void AutomationTabHelper::DidStopLoading() {
+void AutomationTabHelper::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
   if (!is_loading_) {
     LOG(WARNING) << "Received DidStopLoading while loading already stopped.";
     return;

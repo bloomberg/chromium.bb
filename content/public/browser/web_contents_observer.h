@@ -84,11 +84,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                            int error_code,
                            const string16& error_description,
                            RenderViewHost* render_view_host) {}
+  virtual void DidStartLoading(RenderViewHost* render_view_host) {}
+  virtual void DidStopLoading(RenderViewHost* render_view_host) {}
+
   virtual void DidGetUserGesture() {}
   virtual void DidGetIgnoredUIEvent() {}
-
-  virtual void DidStartLoading() {}
-  virtual void DidStopLoading() {}
   virtual void StopNavigation() {}
 
   virtual void DidOpenURL(const GURL& url,

@@ -146,12 +146,12 @@ class CaptivePortalTabHelperTest : public testing::Test {
 
 TEST_F(CaptivePortalTabHelperTest, HttpSuccess) {
   SimulateSuccess(GURL(kHttpUrl));
-  tab_helper().DidStopLoading();
+  tab_helper().DidStopLoading(NULL);
 }
 
 TEST_F(CaptivePortalTabHelperTest, HttpTimeout) {
   SimulateTimeout(GURL(kHttpUrl));
-  tab_helper().DidStopLoading();
+  tab_helper().DidStopLoading(NULL);
 }
 
 // Same as above, but simulates what happens when the Link Doctor is enabled,
@@ -168,12 +168,12 @@ TEST_F(CaptivePortalTabHelperTest, HttpTimeoutLinkDoctor) {
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
   tab_helper().DidCommitProvisionalLoadForFrame(
       1, true, GURL(kErrorPageUrl), content::PAGE_TRANSITION_LINK, NULL);
-  tab_helper().DidStopLoading();
+  tab_helper().DidStopLoading(NULL);
 }
 
 TEST_F(CaptivePortalTabHelperTest, HttpsSuccess) {
   SimulateSuccess(GURL(kHttpsUrl));
-  tab_helper().DidStopLoading();
+  tab_helper().DidStopLoading(NULL);
   EXPECT_FALSE(tab_helper().IsLoginTab());
 }
 
