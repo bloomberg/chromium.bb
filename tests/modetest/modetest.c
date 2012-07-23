@@ -867,12 +867,12 @@ static int parse_connector(struct connector *c, const char *arg)
 	if (*p == '@') {
 		strncpy(c->format_str, p + 1, 4);
 		c->format_str[4] = '\0';
+	}
 
-		c->fourcc = format_fourcc(p + 1);
-		if (c->fourcc == 0)  {
-			fprintf(stderr, "unknown format %s\n", c->format_str);
-			return -1;
-		}
+	c->fourcc = format_fourcc(c->format_str);
+	if (c->fourcc == 0)  {
+		fprintf(stderr, "unknown format %s\n", c->format_str);
+		return -1;
 	}
 
 	return 0;
