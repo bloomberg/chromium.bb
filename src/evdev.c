@@ -774,7 +774,7 @@ evdev_input_destroy(struct weston_seat *seat_base)
 	evdev_remove_devices(seat_base);
 	evdev_disable_udev_monitor(&seat->base);
 
-	wl_list_remove(&seat->base.link);
+	weston_seat_release(seat_base);
 	free(seat->seat_id);
 	free(seat);
 }
