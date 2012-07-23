@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/i18n/time_formatting.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -14,7 +15,6 @@
 
 namespace gdata {
 namespace util {
-
 namespace {
 
 std::string FormatTime(const base::Time& time) {
@@ -169,6 +169,12 @@ TEST(GDataUtilTest, GetTimeFromString) {
   EXPECT_TRUE(GetTimeFromString("2005-01-07T08:02:00.123Z", &test_time));
   EXPECT_EQ(FormatTime(base::Time::FromUTCExploded(target_time3)),
             FormatTime(test_time));
+}
+
+TEST(GDataUtilTest, FormatTimeAsString) {
+  base::Time::Exploded exploded_time = {2012, 7, 0, 19, 15, 59, 13, 123};
+  base::Time time = base::Time::FromUTCExploded(exploded_time);
+  EXPECT_EQ("2012-07-19T15:59:13.123Z", FormatTimeAsString(time));
 }
 
 }  // namespace util

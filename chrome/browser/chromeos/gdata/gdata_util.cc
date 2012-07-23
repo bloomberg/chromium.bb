@@ -570,5 +570,14 @@ bool GetTimeFromString(const base::StringPiece& raw_value,
   return true;
 }
 
+std::string FormatTimeAsString(const base::Time& time) {
+  base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+  return base::StringPrintf(
+      "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
+      exploded.year, exploded.month, exploded.day_of_month,
+      exploded.hour, exploded.minute, exploded.second, exploded.millisecond);
+}
+
 }  // namespace util
 }  // namespace gdata
