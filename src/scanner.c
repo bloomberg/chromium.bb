@@ -228,6 +228,7 @@ is_nullable_type(struct arg *arg)
 	/* Strings, objects, and arrays are possibly nullable */
 	case STRING:
 	case OBJECT:
+	case NEW_ID:
 	case ARRAY:
 		return 1;
 	default:

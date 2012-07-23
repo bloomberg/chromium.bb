@@ -532,6 +532,10 @@ wl_closure_vmarshal(struct wl_object *sender,
 			object = va_arg(ap, struct wl_object *);
 			if (end - p < 1)
 				goto err;
+
+			if (!arg.nullable && object == NULL)
+				goto err_null;
+
 			*p++ = object ? object->id : 0;
 			break;
 
@@ -719,6 +723,15 @@ wl_connection_demarshal(struct wl_connection *connection,
 			extra += sizeof *object;
 			closure->args[i] = object;
 
+			if (*p == 0 && !arg.nullable) {
+				printf("NULL new ID received on non-nullable "
+				       "type, message %s(%s)\n", message->name,
+				       message->signature);
+				*object = NULL;
+				errno = EINVAL;
+				goto err;
+			}
+
 			*object = wl_map_lookup(objects, *p);
 			if (*object == WL_ZOMBIE_OBJECT) {
 				/* references object we've already
@@ -750,6 +763,14 @@ wl_connection_demarshal(struct wl_connection *connection,
 			extra += sizeof *id;
 			closure->args[i] = id;
 			*id = p;
+
+			if (*id == 0 && !arg.nullable) {
+				printf("NULL new ID received on non-nullable "
+				       "type, message %s(%s)\n", message->name,
+				       message->signature);
+				errno = EINVAL;
+				goto err;
+			}
 
 			if (wl_map_reserve_new(objects, *p) < 0) {
 				printf("not a valid new object id (%d), "
@@ -935,7 +956,17 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 				fprintf(stderr, "nil");
 			break;
 		case 'n':
-			fprintf(stderr, "new id %u", value->uint32);
+			fprintf(stderr, "new id %s@",
+				(closure->message->types[i - 2]) ?
+				 closure->message->types[i - 2]->name :
+				  "[unknown]");
+			if (send && value->new_id != 0)
+				fprintf(stderr, "%u", value->new_id);
+			else if (!send && value->object != NULL)
+				fprintf(stderr, "%u",
+					*((uint32_t *)value->object));
+			else
+				fprintf(stderr, "nil");
 			break;
 		case 'a':
 			fprintf(stderr, "array");

@@ -479,19 +479,29 @@ create_proxies(struct wl_display *display, struct wl_closure *closure)
 {
 	struct wl_proxy *proxy;
 	const char *signature;
+	struct argument_details arg;
 	uint32_t id;
 	int i;
+	int count;
 
 	signature = closure->message->signature;
-	for (i = 0; signature[i]; i++) {
-		switch (signature[i]) {
+	count = arg_count_for_signature(signature) + 2;
+	for (i = 2; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		switch (arg.type) {
 		case 'n':
-			id = **(uint32_t **) closure->args[i + 2];
+			id = **(uint32_t **) closure->args[i];
+			if (id == 0) {
+				*(void **) closure->args[i] = NULL;
+				break;
+			}
 			proxy = wl_proxy_create_for_id(&display->proxy, id,
-						       closure->message->types[i]);		       
+						       closure->message->types[i - 2]);
 			if (proxy == NULL)
 				return -1;
-			*(void **) closure->args[i + 2] = proxy;
+			*(void **) closure->args[i] = proxy;
+			break;
+		default:
 			break;
 		}
 	}
