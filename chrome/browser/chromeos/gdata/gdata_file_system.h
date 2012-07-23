@@ -172,6 +172,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Struct used to record UMA stats with FeedToFileResourceMap().
   struct FeedToFileResourceMapUmaStats;
 
+  // Struct used for StartFileUploadOnUIThread().
+  struct StartFileUploadParams;
+
   // Finds entry object by |file_path| and returns the entry object.
   // Returns NULL if it does not find the entry.
   GDataEntry* GetGDataEntryByPath(const FilePath& file_path);
@@ -648,12 +651,19 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Kicks off file upload once it receives |file_size| and |content_type|.
   void StartFileUploadOnUIThread(
-      const FilePath& local_file,
-      const FilePath& remote_dest_file,
-      const FileOperationCallback& callback,
+      const StartFileUploadParams& params,
       GDataFileError* error,
       int64* file_size,
       std::string* content_type);
+
+  // Part of StartFileUploadOnUIThread(). Called after GetEntryInfoByPath()
+  // is complete.
+  void StartFileUploadOnUIThreadAfterGetEntryInfo(
+      const StartFileUploadParams& params,
+      int64 file_size,
+      std::string content_type,
+      GDataFileError error,
+      scoped_ptr<GDataEntryProto> entry_proto);
 
   // Cache intermediate callbacks, that run on calling thread, for above cache
   // tasks that were run on blocking pool.
