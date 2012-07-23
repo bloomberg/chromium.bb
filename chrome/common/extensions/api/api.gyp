@@ -40,7 +40,6 @@
           'experimental_dns.idl',
           'experimental_identity.idl',
           'experimental_idltest.idl',
-          'experimental_media_galleries.idl',
           'experimental_serial.idl',
           'experimental_socket.idl',
           'experimental_usb.idl',

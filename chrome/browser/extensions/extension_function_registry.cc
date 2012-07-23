@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
+#include "chrome/browser/extensions/api/media_gallery/media_gallery_api.h"
 #include "chrome/browser/extensions/api/metrics/metrics.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
@@ -489,6 +490,11 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Runtime
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
+
+  // Media Gallery
+  RegisterFunction<extensions::GetMediaFileSystemsFunction>();
+  RegisterFunction<extensions::OpenMediaGalleryManagerFunction>();
+  RegisterFunction<extensions::AssembleMediaFileFunction>();
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);
