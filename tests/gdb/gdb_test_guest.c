@@ -18,10 +18,20 @@ void set_global_var(int arg) {
   global_var = arg;
 }
 
+void leaf_call(int arg) {
+  global_var = arg;
+}
+
+void nested_calls(int arg) {
+  global_var = 1;
+  leaf_call(arg + 1);
+}
+
 int test_print_symbol() {
   int local_var = 3;
   global_var = 2 + local_var * 0; /* Use local variable to prevent warning.  */
   set_global_var(1);
+  nested_calls(1);
   return global_var;
 }
 
@@ -34,6 +44,10 @@ int main(int argc, char **argv) {
   }
   if (strcmp(argv[1], "print_symbol") == 0) {
     return test_print_symbol();
+  }
+  if (strcmp(argv[1], "stack_trace") == 0) {
+    nested_calls(1);
+    return 0;
   }
   return 1;
 }
