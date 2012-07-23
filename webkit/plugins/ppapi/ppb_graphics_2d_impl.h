@@ -15,8 +15,10 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace gfx {
+class Point;
 class Rect;
 }
 
@@ -74,6 +76,15 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
   void ViewFlushedPaint();
 
   PPB_ImageData_Impl* image_data() { return image_data_.get(); }
+
+  // Scale |op_rect| to logical pixels, taking care to include partially-
+  // covered logical pixels (aka DIPs). Also scale optional |delta| to logical
+  // pixels as well for scrolling cases. Returns false for scrolling cases where
+  // scaling either |op_rect| or |delta| would require scrolling to fall back to
+  // invalidation due to rounding errors, true otherwise.
+  WEBKIT_PLUGINS_EXPORT static bool ConvertToLogicalPixels(float scale,
+                                                           gfx::Rect* op_rect,
+                                                           gfx::Point* delta);
 
  private:
   explicit PPB_Graphics2D_Impl(PP_Instance instance);

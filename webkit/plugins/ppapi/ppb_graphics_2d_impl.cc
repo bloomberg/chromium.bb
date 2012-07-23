@@ -72,6 +72,17 @@ bool ValidateAndConvertRect(const PP_Rect* rect,
   return true;
 }
 
+// Scale the rectangle, taking care to round coordinates outward so a
+// rectangle scaled down then scaled back up by the inverse scale would
+// fully contain the entire area affected by the original rectangle.
+gfx::Rect ScaleRectBounds(const gfx::Rect& rect, float scale) {
+  int left = static_cast<int>(floorf(rect.x() * scale));
+  int top = static_cast<int>(floorf(rect.y() * scale));
+  int right = static_cast<int>(ceilf((rect.x() + rect.width()) * scale));
+  int bottom = static_cast<int>(ceilf((rect.y() + rect.height()) * scale));
+  return gfx::Rect(left, top, right - left, bottom - top);
+}
+
 // Converts BGRA <-> RGBA.
 void ConvertBetweenBGRAandRGBA(const uint32_t* input,
                                int pixel_length,
@@ -350,6 +361,14 @@ int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
     // calls, leaving our callback stranded. So we still need to check whether
     // the repainted area is visible to determine how to deal with the callback.
     if (bound_instance_ && !op_rect.IsEmpty()) {
+      gfx::Point scroll_delta(operation.scroll_dx, operation.scroll_dy);
+      if (!ConvertToLogicalPixels(scale_,
+                                  &op_rect,
+                                  operation.type == QueuedOperation::SCROLL ?
+                                      &scroll_delta : NULL)) {
+        // Conversion requires falling back to InvalidateRect.
+        operation.type = QueuedOperation::PAINT;
+      }
 
       // Set |nothing_visible| to false if the change overlaps the visible area.
       gfx::Rect visible_changed_rect =
@@ -361,7 +380,7 @@ int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
       // Notify the plugin of the entire change (op_rect), even if it is
       // partially or completely off-screen.
       if (operation.type == QueuedOperation::SCROLL) {
-        bound_instance_->ScrollRect(operation.scroll_dx, operation.scroll_dy,
+        bound_instance_->ScrollRect(scroll_delta.x(), scroll_delta.y(),
                                     op_rect);
       } else {
         bound_instance_->InvalidateRect(op_rect);
@@ -524,6 +543,10 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
 
   CGContextClipToRect(canvas, bounds);
 
+  // TODO(jhorwich) Figure out if this code is even active anymore, and if so
+  // how to properly handle scaling.
+  DCHECK_EQ(1.0f, scale_);
+
   // TODO(brettw) bug 56673: do a direct memcpy instead of going through CG
   // if the is_always_opaque_ flag is set. Must ensure bitmap is still clipped.
 
@@ -608,6 +631,28 @@ void PPB_Graphics2D_Impl::ViewFlushedPaint() {
   // header for more.
   if (!painted_flush_callback_.is_null())
     painted_flush_callback_.Execute(PP_OK);
+}
+
+// static
+bool PPB_Graphics2D_Impl::ConvertToLogicalPixels(float scale,
+                                                 gfx::Rect* op_rect,
+                                                 gfx::Point* delta) {
+  if (scale == 1.0f || scale <= 0.0f)
+    return true;
+
+  gfx::Rect original_rect = *op_rect;
+  *op_rect = ScaleRectBounds(*op_rect, scale);
+  if (delta) {
+    gfx::Point original_delta = *delta;
+    float inverse_scale = 1.0f / scale;
+    *delta = delta->Scale(scale);
+    if (original_rect != ScaleRectBounds(*op_rect, inverse_scale) ||
+        original_delta != delta->Scale(inverse_scale)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void PPB_Graphics2D_Impl::ExecutePaintImageData(PPB_ImageData_Impl* image,
