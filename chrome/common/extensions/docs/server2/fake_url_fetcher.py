@@ -24,6 +24,8 @@ class FakeUrlFetcher(object):
     files = os.listdir(os.path.join(self._base_path, directory))
     html = '<html><title>Revision: 00000</title>\n'
     for filename in files:
+      if filename.startswith('.'):
+        continue
       if os.path.isdir(os.path.join(self._base_path, directory, filename)):
         html += '<a>' + filename + '/</a>\n'
       else:

@@ -69,7 +69,8 @@ class HandlebarDictGenerator(object):
       'name': type_.name,
       'description': type_.description,
       'properties': self._GenerateProperties(type_.properties),
-      'functions': self._GenerateFunctions(type_.functions)
+      'functions': self._GenerateFunctions(type_.functions),
+      'events': map(self._GenerateEvent, type_.events.values())
     }
     self._RenderTypeInformation(type_, type_dict)
     return type_dict
@@ -107,7 +108,7 @@ class HandlebarDictGenerator(object):
 
   def _GenerateCallback(self, callback):
     if not callback:
-      return {}
+      return None
     callback_dict = {
       'name': 'callback',
       'description': callback.description,
@@ -149,6 +150,8 @@ class HandlebarDictGenerator(object):
       # choices in templates.
       if len(dst_dict['choices']) > 0:
         dst_dict['choices'][-1]['last'] = True
+    elif property_.type_ == model.PropertyType.ADDITIONAL_PROPERTIES:
+      dst_dict['additional_properties'] = True
     elif property_.type_ == model.PropertyType.REF:
       dst_dict['link'] = _GetLinkToRefType(self._namespace.name,
                                         property_.ref_type)

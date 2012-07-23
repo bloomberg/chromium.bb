@@ -64,6 +64,7 @@ class Type(object):
   - |description| the description of the type (if provided)
   - |properties| a map of property unix_names to their model.Property
   - |functions| a map of function names to their model.Function
+  - |events| a map of event names to their model.Event
   - |from_client| indicates that instances of the Type can originate from the
     users of generated code, such as top-level types and function results
   - |from_json| indicates that instances of the Type can originate from the
@@ -94,6 +95,7 @@ class Type(object):
     self.parent = parent
     self.instance_of = json.get('isInstanceOf', None)
     _AddFunctions(self, json)
+    _AddEvents(self, json)
     _AddProperties(self, json, from_json=True, from_client=True)
 
     additional_properties_key = 'additionalProperties'

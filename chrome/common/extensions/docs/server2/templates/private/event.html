@@ -1,8 +1,8 @@
 <div>
-  <a name="event-{{name}}"></a>
+  <a name="event-{{?prefix}}{{prefix}}-{{/}}{{name}}"></a>
   <h4>{{name}}</h4>
   <div class="summary">
-    <span class="subdued">chrome.{{api.name}}.</span>{{name}}<span class="subdued">.addListener</span>(function({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})<span class="subdued"> {...}</span>);
+    <span class="subdued">{{?prefix}}{{prefix}}{{:}}chrome.{{api.name}}{{/}}.</span>{{name}}<span class="subdued">.addListener</span>(function({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})<span class="subdued"> {...}</span>);
   </div>
   <div class="description">
     <p>{{{description}}}</p>

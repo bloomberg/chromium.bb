@@ -2,7 +2,9 @@
   {{+partials.property}}
   <dd>
     <dl>
-      {{#properties}}{{+partials.property}}{{/}}
+      {{#properties}}
+        {{^additional_properties}}{{+partials.property}}{{/}}
+      {{/}}
     </dl>
   </dd>
 </div>

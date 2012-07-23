@@ -10,5 +10,10 @@
     <dd><h3>Methods of {{type.name}}</h3>
       <dd><dl>{{#functions}}{{+partials.function api:api prefix:type.name}}{{/}}</dl></dd>
     {{/functions}}
+    {{?events}}
+    <a name={{type.name}}-events></a>
+    <dd><h3>Events of {{type.name}}</h3>
+      <dd><dl>{{#events}}{{+partials.event api:api prefix:type.name}}{{/}}</dl></dd>
+    {{/events}}
   </div>
 </div>

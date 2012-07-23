@@ -125,6 +125,7 @@
           "description": "List of TypeA."
         }
       ], 
+      "events": [],
       "functions": [], 
       "name": "TypeA", 
       "simple_type": "object", 

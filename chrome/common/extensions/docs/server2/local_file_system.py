@@ -25,6 +25,8 @@ class LocalFileSystem(FileSystem):
     all_files = []
     full_path = os.path.join(self._base_path, dir_name)
     for path in os.listdir(full_path):
+      if path.startswith('.'):
+        continue
       if os.path.isdir(os.path.join(full_path, path)):
         all_files.append(path + '/')
       else:
