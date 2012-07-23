@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/web_dialog_view.h"
+#include "ui/views/controls/webview/web_dialog_view.h"
 
 #include <vector>
 
@@ -34,6 +34,8 @@ using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 using ui::WebDialogUI;
 using ui::WebDialogWebContentsDelegate;
+
+namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, public:
@@ -318,3 +320,5 @@ void WebDialogView::InitDialog() {
 
   web_view_->LoadInitialURL(GetDialogContentURL());
 }
+
+}  // namespace views

@@ -9,13 +9,15 @@
 #include "base/compiler_specific.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+namespace views {
 class WebDialogView;
+}
 
 class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
  public:
   explicit KeyboardOverlayDelegate(const string16& title);
 
-  void Show(WebDialogView* view);
+  void Show(views::WebDialogView* view);
 
   // Overridden from ui::WebDialogDelegate:
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
@@ -42,7 +44,7 @@ class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
 
   // The view associated with this delegate.
   // This class does not own the pointer.
-  WebDialogView* view_;
+  views::WebDialogView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDelegate);
 };

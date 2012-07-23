@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DIALOG_VIEW_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/views/web_dialog_view.h"
+#include "ui/views/controls/webview/web_dialog_view.h"
 
 namespace content {
 class BrowserContext;
@@ -17,7 +17,7 @@ class WebDialogDelegate;
 }
 
 // A customized dialog view for the keyboard overlay.
-class KeyboardOverlayDialogView : public WebDialogView {
+class KeyboardOverlayDialogView : public views::WebDialogView {
  public:
   KeyboardOverlayDialogView(content::BrowserContext* context,
                             ui::WebDialogDelegate* delegate,

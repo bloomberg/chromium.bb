@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/ui/views/web_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -18,6 +17,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
@@ -69,7 +69,7 @@ KeyboardOverlayDelegate::KeyboardOverlayDelegate(const string16& title)
 KeyboardOverlayDelegate::~KeyboardOverlayDelegate() {
 }
 
-void KeyboardOverlayDelegate::Show(WebDialogView* view) {
+void KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   view_ = view;
 
   views::Widget* widget = new views::Widget;

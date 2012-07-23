@@ -28,7 +28,7 @@ KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     content::BrowserContext* context,
     WebDialogDelegate* delegate,
     WebContentsHandler* handler)
-    : WebDialogView(context, delegate, handler) {
+    : views::WebDialogView(context, delegate, handler) {
 }
 
 KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {

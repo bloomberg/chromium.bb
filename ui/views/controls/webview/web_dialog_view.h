@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEB_DIALOG_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_WEB_DIALOG_VIEW_H_
+#ifndef UI_VIEWS_CONTROLS_WEBVIEW_WEB_DIALOG_VIEW_H_
+#define UI_VIEWS_CONTROLS_WEBVIEW_WEB_DIALOG_VIEW_H_
 
 #include <string>
 #include <vector>
@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/size.h"
+#include "ui/views/views_export.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -22,7 +23,6 @@ class BrowserContext;
 
 namespace views {
 class WebView;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -37,10 +37,10 @@ class WebView;
 // TODO(akalin): Make WebDialogView contain an WebDialogWebContentsDelegate
 // instead of inheriting from it to avoid violating the "no multiple
 // inheritance" rule.
-class WebDialogView : public views::ClientView,
-                      public ui::WebDialogWebContentsDelegate,
-                      public ui::WebDialogDelegate,
-                      public views::WidgetDelegate {
+class VIEWS_EXPORT WebDialogView : public views::ClientView,
+                                   public ui::WebDialogWebContentsDelegate,
+                                   public ui::WebDialogDelegate,
+                                   public views::WidgetDelegate {
  public:
   // |handler| must not be NULL and this class takes the ownership.
   WebDialogView(content::BrowserContext* context,
@@ -130,4 +130,6 @@ class WebDialogView : public views::ClientView,
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEB_DIALOG_VIEW_H_
+}  // namespace views
+
+#endif  // UI_VIEWS_CONTROLS_WEBVIEW_WEB_DIALOG_VIEW_H_

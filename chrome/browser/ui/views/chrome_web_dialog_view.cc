@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/views/web_dialog_view.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
+#include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 
 namespace chrome {
@@ -14,7 +14,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate) {
   views::Widget* widget = views::Widget::CreateWindowWithParent(
-      new WebDialogView(context, delegate, new ChromeWebContentsHandler),
+      new views::WebDialogView(context, delegate, new ChromeWebContentsHandler),
       parent);
   widget->Show();
   return widget->GetNativeWindow();

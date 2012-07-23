@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/views/web_dialog_view.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
@@ -23,6 +22,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 
 using content::BrowserContext;
@@ -36,11 +36,11 @@ namespace {
 const int kInitialWidth = 40;
 const int kInitialHeight = 40;
 
-class TestWebDialogView : public WebDialogView {
+class TestWebDialogView : public views::WebDialogView {
  public:
   TestWebDialogView(content::BrowserContext* context,
                     WebDialogDelegate* delegate)
-      : WebDialogView(context, delegate, new ChromeWebContentsHandler),
+      : views::WebDialogView(context, delegate, new ChromeWebContentsHandler),
         should_quit_on_size_change_(false) {
     delegate->GetDialogSize(&last_size_);
   }
@@ -66,7 +66,7 @@ class TestWebDialogView : public WebDialogView {
 
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE {
     should_quit_on_size_change_ = false;  // No quit when we are closing.
-    WebDialogView::OnDialogClosed(json_retval);
+    views::WebDialogView::OnDialogClosed(json_retval);
   }
 
   // Whether we should quit message loop when size change is detected.
