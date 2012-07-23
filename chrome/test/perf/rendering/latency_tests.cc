@@ -272,7 +272,7 @@ void LatencyTest::RunTest(LatencyTestMode mode,
   // Construct queries for searching trace events via TraceAnalyzer.
   if (mode_ == kWebGL) {
     query_begin_swaps_ = query_instant_ &&
-        Query::EventName() == Query::String("SwapBuffersLantency") &&
+        Query::EventName() == Query::String("SwapBuffersLatency") &&
         Query::EventArg("width") != Query::Int(kWebGLCanvasWidth);
     query_end_swaps_ = query_instant_ &&
         Query::EventName() == Query::String("CompositorSwapBuffersComplete");
