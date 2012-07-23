@@ -2458,13 +2458,3 @@
    fun:_ZN3WTF10RefCountedIN7WebCore8NodeListEE5derefEv
    fun:_ZN6WebKit11WebNodeList6assignEPN7WebCore8NodeListE
 }
-{
-   bug_138515
-   Memcheck:Uninitialized
-   fun:_ZN5mediaL20InterleaveFloatToIntIsiEEvRKSt6vectorIPfSaIS2_EEPvm
-   fun:_ZN5media20InterleaveFloatToIntERKSt6vectorIPfSaIS1_EEPvmi
-   fun:_ZN11AudioDevice19AudioThreadCallback7ProcessEi
-   fun:_ZN17AudioDeviceThread6Thread3RunEv
-   fun:_ZN17AudioDeviceThread6Thread10ThreadMainEv
-   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
-}

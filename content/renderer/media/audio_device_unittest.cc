@@ -111,6 +111,19 @@ ACTION_P(QuitLoop, loop) {
   loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
+// Zeros out |number_of_frames| in all channel buffers pointed to by
+// the |audio_data| vector.
+void ZeroAudioData(int number_of_frames,
+                   const std::vector<float*>& audio_data) {
+  std::vector<float*>::const_iterator it = audio_data.begin();
+  for (; it != audio_data.end(); ++it) {
+    float* channel = *it;
+    for (int j = 0; j < number_of_frames; ++j) {
+      channel[j] = 0.0f;
+    }
+  }
+}
+
 }  // namespace.
 
 class AudioDeviceTest : public testing::Test {
@@ -197,7 +210,9 @@ TEST_F(AudioDeviceTest, CreateStream) {
   int memory_size = media::TotalSharedMemorySizeInBytes(
       default_audio_parameters_.GetBytesPerBuffer());
   SharedMemory shared_memory;
-  ASSERT_TRUE(shared_memory.CreateAnonymous(memory_size));
+  ASSERT_TRUE(shared_memory.CreateAndMapAnonymous(memory_size));
+  // Initialize the memory.
+  memset(shared_memory.memory(), 0xff, memory_size);
 
   CancelableSyncSocket browser_socket, renderer_socket;
   ASSERT_TRUE(CancelableSyncSocket::CreatePair(&browser_socket,
@@ -226,10 +241,24 @@ TEST_F(AudioDeviceTest, CreateStream) {
   // writing the interleaved audio data into the shared memory section.
   // So, for the sake of this test, we consider the call to Render a sign
   // of success and quit the loop.
+
+  // A note on the call to ZeroAudioData():
+  // Valgrind caught a bug in AudioDevice::AudioThreadCallback::Process()
+  // whereby we always interleaved all the frames in the buffer regardless
+  // of how many were actually rendered.  So to keep the benefits of that
+  // test, we explicitly pass 0 in here as the number of frames to
+  // ZeroAudioData().  Other tests might want to pass the requested number
+  // by using WithArgs<1, 0>(Invoke(&ZeroAudioData)) and set the return
+  // value accordingly.
+  const int kNumberOfFramesToProcess = 0;
+
   EXPECT_CALL(callback_, Render(_, _, _))
       .WillOnce(DoAll(
+          WithArgs<0>(Invoke(
+              testing::CreateFunctor(&ZeroAudioData,
+                  kNumberOfFramesToProcess))),
           QuitLoop(io_loop_.message_loop_proxy()),
-          Return(1)));
+          Return(kNumberOfFramesToProcess)));
 
   audio_device->OnStreamCreated(duplicated_memory_handle, audio_device_socket,
                                 memory_size);

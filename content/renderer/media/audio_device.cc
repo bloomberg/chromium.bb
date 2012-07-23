@@ -273,8 +273,7 @@ void AudioDevice::AudioThreadCallback::Process(int pending_data) {
   // TODO(crogers/vrk): Figure out a way to avoid the float -> int -> float
   // conversions that happen in the <audio> and WebRTC scenarios.
   media::InterleaveFloatToInt(audio_data_, shared_memory_.memory(),
-      audio_parameters_.frames_per_buffer(),
-      audio_parameters_.bits_per_sample() / 8);
+      num_frames, audio_parameters_.bits_per_sample() / 8);
 
   // Let the host know we are done.
   media::SetActualDataSizeInBytes(&shared_memory_, memory_length_,
