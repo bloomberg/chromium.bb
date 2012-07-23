@@ -1,9 +1,9 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mirror_base_address="http://commondatastorage.googleapis.com/nativeclient-mirror/toolchain"
+mirror_base_address="https://commondatastorage.googleapis.com/nativeclient-mirror/toolchain"
 
 if (($#<1 || $#>2)); then
   cat <<END
@@ -11,7 +11,7 @@ Usage:
   $0 <revision> [SRC-directory name]
 
 This script downloads pristine sources and applies patches found on
-http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r<revison>/
+https://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r<revison>/
 By default sources are put in SRC directory (which should be empty).
 END
   exit 1
@@ -63,7 +63,7 @@ mkdir -p "$target"
   # We have a lock. Now check: maybe someone downloaded files already?
   if (($(find "$target" -maxdepth 1 ! -name ".*" | wc -l)<=1)); then
     wget \
-      "http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r$1/" -O- |
+      "https://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r$1/" -O- |
     grep patch.$suffix |
     while IFS='"' read -r -d $'\n' prefix patchname suffix; do
       basename="$(basename "$patchname")"
@@ -111,7 +111,7 @@ mkdir -p "$target"
           exit 3
           ;;
       esac
-      wget "http://commondatastorage.googleapis.com$patchname" -O- |
+      wget "https://commondatastorage.googleapis.com$patchname" -O- |
       "$uncompress" -d |
       patch -p1
     done

@@ -107,7 +107,7 @@ else
 
   echo @@@BUILD_STEP archive_glibc@@@
   rev="$(tools/glibc_revision.sh)"
-  wget http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz -O /dev/null ||
+  wget https://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz -O /dev/null ||
   $GSUTIL cp -a public-read \
     tools/glibc.tgz \
     gs://nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz

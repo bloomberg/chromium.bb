@@ -177,7 +177,7 @@ download_package_dependences() {
   if [[ "$instname" != "" ]] ; then
     if ((verbose)) ; then ( echo ; echo -n "Package: \"$1\"..." ) >&2 ; fi
     if [ ! -e packages/"`basename \"$instname\"`" ] ; then
-      if wget http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/packages/"`basename \"$instname\"`" -O packages/"`basename \"$instname\"`" ||
+      if wget https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/packages/"`basename \"$instname\"`" -O packages/"`basename \"$instname\"`" ||
          wget "$mirror_prefix/$instname" -O packages/"`basename \"$instname\"`" ; then
         if ! [[ "${install[$1]}" = "${install[$1]/.tar.bz2*/.tar.bz2} `
                 stat -c "%s" packages/\"\`basename \\\"$instname\\\"\`\"` `
@@ -271,7 +271,7 @@ END
   fi
   if [[ "$srcname" != "" ]] ; then
     if [ ! -e packages.src/"`basename \"$srcname\"`" ] ; then
-      if wget http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/packages.src/"`basename \"$srcname\"`" -O packages.src/"`basename \"$srcname\"`" ||
+      if wget https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/packages.src/"`basename \"$srcname\"`" -O packages.src/"`basename \"$srcname\"`" ||
          wget "$mirror_prefix/$srcname" -O packages.src/"`basename \"$srcname\"`" ; then
         if ! [[ "${source[$1]}" = "${source[$1]/.tar.bz2*/.tar.bz2} `
                 stat -c "%s" packages.src/\"\`basename \\\"$srcname\\\"\`\"` `
