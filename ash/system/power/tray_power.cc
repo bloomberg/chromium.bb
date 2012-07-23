@@ -198,6 +198,10 @@ void TrayPower::DestroyNotificationView() {
 void TrayPower::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
+void TrayPower::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+  SetTrayImageItemBorder(power_tray_, alignment);
+}
+
 void TrayPower::OnPowerStatusChanged(const PowerSupplyStatus& status) {
   if (power_tray_)
     power_tray_->UpdatePowerStatus(status);

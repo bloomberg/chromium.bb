@@ -46,6 +46,8 @@ class TrayIME : public SystemTrayItem,
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
+  virtual void UpdateAfterShelfAlignmentChange(
+      ShelfAlignment alignment) OVERRIDE;
 
   // Overridden from IMEObserver.
   virtual void OnIMERefresh(bool show_message) OVERRIDE;

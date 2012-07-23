@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_VIEWS_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/shelf_types.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/image_button.h"
@@ -28,6 +29,8 @@ class BoxLayout;
 
 namespace ash {
 namespace internal {
+
+class TrayItemView;
 
 // An image view with a specified width and height (kTrayPopupDetailsIconWidth).
 // If the specified width or height is zero, then the image size is used for
@@ -254,6 +257,15 @@ class SpecialPopupRow : public views::View {
 
 // Sets up a Label properly for the tray (sets color, font etc.).
 void SetupLabelForTray(views::Label* label);
+
+// TODO(jennyz): refactor these two functions to SystemTrayItem.
+// Sets the empty border of an image tray item for adjusting the space
+// around it.
+void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment);
+// Sets the empty border around a label tray item for adjusting the space
+// around it.
+void SetTrayLabelItemBorder(TrayItemView* tray_view,
+                            ShelfAlignment alignment);
 
 }  // namespace internal
 }  // namespace ash

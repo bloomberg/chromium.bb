@@ -6,6 +6,9 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_item_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
 namespace ash {

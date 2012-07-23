@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_image_item.h"
 
 #include "ash/system/tray/tray_item_view.h"
+#include "ash/system/tray/tray_views.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
@@ -43,6 +44,10 @@ views::View* TrayImageItem::CreateDetailedView(user::LoginStatus status) {
 }
 
 void TrayImageItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
+void TrayImageItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+  SetTrayImageItemBorder(tray_view_, alignment);
 }
 
 void TrayImageItem::DestroyTrayView() {

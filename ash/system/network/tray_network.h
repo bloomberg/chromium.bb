@@ -38,6 +38,8 @@ class TrayNetwork : public SystemTrayItem,
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
+  virtual void UpdateAfterShelfAlignmentChange(
+      ShelfAlignment alignment) OVERRIDE;
 
   // Overridden from NetworkObserver.
   virtual void OnNetworkRefresh(const NetworkIconInfo& info) OVERRIDE;

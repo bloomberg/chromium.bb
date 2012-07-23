@@ -240,6 +240,9 @@ void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
       tray_label_->label()->SetText(current.short_name);
     }
     tray_label_->SetVisible(count > 1);
+    SetTrayLabelItemBorder(tray_label_,
+        ash::Shell::GetInstance()->system_tray()->shelf_alignment());
+    tray_label_->Layout();
   }
 }
 
@@ -248,8 +251,6 @@ views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
   tray_label_ = new TrayItemView;
   tray_label_->CreateLabel();
   SetupLabelForTray(tray_label_->label());
-  tray_label_->label()->set_border(
-      views::Border::CreateEmptyBorder(0, 2, 0, 2));
   return tray_label_;
 }
 
@@ -296,6 +297,10 @@ void TrayIME::DestroyNotificationView() {
 }
 
 void TrayIME::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
+void TrayIME::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+  SetTrayLabelItemBorder(tray_label_, alignment);
 }
 
 void TrayIME::OnIMERefresh(bool show_message) {

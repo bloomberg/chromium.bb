@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_views.h"
 
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_item_view.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -522,6 +523,39 @@ void SetupLabelForTray(views::Label* label) {
   label->SetShadowColors(SkColorSetARGB(64, 0, 0, 0),
                          SkColorSetARGB(64, 0, 0, 0));
   label->SetShadowOffset(0, 1);
+}
+
+void SetTrayImageItemBorder(views::View* tray_view,
+                            ShelfAlignment alignment) {
+  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+    tray_view->set_border(views::Border::CreateEmptyBorder(
+        0, kTrayImageItemHorizontalPaddingBottomAlignment,
+        0, kTrayImageItemHorizontalPaddingBottomAlignment));
+  } else {
+    tray_view->set_border(views::Border::CreateEmptyBorder(
+        kTrayImageItemVerticalPaddingVerticalAlignment,
+        kTrayImageItemHorizontalPaddingVerticalAlignment,
+        kTrayImageItemVerticalPaddingVerticalAlignment,
+        kTrayImageItemHorizontalPaddingVerticalAlignment));
+  }
+}
+
+void SetTrayLabelItemBorder(TrayItemView* tray_view,
+                            ShelfAlignment alignment) {
+  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+    tray_view->set_border(views::Border::CreateEmptyBorder(
+        0, kTrayLabelItemHorizontalPaddingBottomAlignment,
+        0, kTrayLabelItemHorizontalPaddingBottomAlignment));
+  } else {
+    // Center the label for vertical launcher alignment.
+    int horizontal_padding = (tray_view->GetPreferredSize().width() -
+        tray_view->label()->GetPreferredSize().width()) / 2;
+    tray_view->set_border(views::Border::CreateEmptyBorder(
+        kTrayLabelItemVerticalPaddingVeriticalAlignment,
+        horizontal_padding,
+        kTrayLabelItemVerticalPaddingVeriticalAlignment,
+        horizontal_padding));
+  }
 }
 
 }  // namespace internal

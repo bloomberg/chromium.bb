@@ -144,7 +144,8 @@ class NetworkTrayView : public TrayItemView {
  public:
   NetworkTrayView(ColorTheme size, bool tray_icon)
       : color_theme_(size), tray_icon_(tray_icon) {
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
     image_view_ = color_theme_ == DARK ?
         new FixedSizedImageView(0, kTrayPopupItemHeight) :
@@ -760,6 +761,10 @@ void TrayNetwork::DestroyNotificationView() {
 }
 
 void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
+void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+  SetTrayImageItemBorder(tray_, alignment);
 }
 
 void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {

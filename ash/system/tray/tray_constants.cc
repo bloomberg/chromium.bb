@@ -14,6 +14,13 @@ const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment = 8;
 const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment = 7;
 const int kPaddingFromBottomOfScreenVerticalAlignment = 10;
 
+const int kTrayImageItemHorizontalPaddingBottomAlignment = 1;
+const int kTrayImageItemHorizontalPaddingVerticalAlignment = 1;
+const int kTrayImageItemVerticalPaddingVerticalAlignment = 1;
+
+const int kTrayLabelItemHorizontalPaddingBottomAlignment = 7;
+const int kTrayLabelItemVerticalPaddingVeriticalAlignment = 4;
+
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
 const int kTrayPopupAutoCloseDelayForTextInSeconds = 5;
 const int kTrayPopupPaddingHorizontal = 18;

@@ -17,6 +17,10 @@ class View;
 
 namespace ash {
 
+namespace internal {
+class TrayItemView;
+}
+
 class ASH_EXPORT SystemTrayItem {
  public:
   SystemTrayItem();

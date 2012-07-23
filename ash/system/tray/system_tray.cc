@@ -54,7 +54,7 @@ namespace {
 const int kTrayContainerVerticalPaddingBottomAlignment  = 1;
 const int kTrayContainerHorizontalPaddingBottomAlignment  = 1;
 const int kTrayContainerVerticalPaddingVerticalAlignment  = 1;
-const int kTrayContainerHorizontalPaddingVerticalAlignment = 2;
+const int kTrayContainerHorizontalPaddingVerticalAlignment = 1;
 
 }  // namespace
 
@@ -240,6 +240,9 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
 
   SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
   views::View* tray_item = item->CreateTrayView(delegate->GetUserLoginStatus());
+  item->UpdateAfterShelfAlignmentChange(
+      ash::Shell::GetInstance()->system_tray()->shelf_alignment());
+
   if (tray_item) {
     tray_container_->AddChildViewAt(tray_item, 0);
     PreferredSizeChanged();

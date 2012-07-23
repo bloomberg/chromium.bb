@@ -34,6 +34,8 @@ class TrayImageItem : public SystemTrayItem {
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
+  virtual void UpdateAfterShelfAlignmentChange(
+      ShelfAlignment alignment) OVERRIDE;
 
  private:
   int resource_id_;

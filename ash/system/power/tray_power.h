@@ -52,6 +52,8 @@ class TrayPower : public SystemTrayItem,
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
+  virtual void UpdateAfterShelfAlignmentChange(
+      ShelfAlignment alignment) OVERRIDE;
 
   // Overridden from PowerStatusObserver.
   virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
