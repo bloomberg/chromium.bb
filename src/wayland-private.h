@@ -81,6 +81,17 @@ struct wl_closure {
 	uint32_t buffer[0];
 };
 
+struct argument_details {
+	char type;
+	int nullable;
+};
+
+const char *
+get_next_argument(const char *signature, struct argument_details *details);
+
+int
+arg_count_for_signature(const char *signature);
+
 struct wl_closure *
 wl_closure_vmarshal(struct wl_object *sender,
 		    uint32_t opcode, va_list ap,

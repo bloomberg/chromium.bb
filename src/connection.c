@@ -404,12 +404,7 @@ wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 	return 0;
 }
 
-struct argument_details {
-	char type;
-	int nullable;
-};
-
-static const char *
+const char *
 get_next_argument(const char *signature, struct argument_details *details)
 {
 	if (*signature == '?') {
@@ -422,7 +417,7 @@ get_next_argument(const char *signature, struct argument_details *details)
 	return signature + 1;
 }
 
-static int
+int
 arg_count_for_signature(const char *signature)
 {
 	int count = 0;
