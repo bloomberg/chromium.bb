@@ -104,14 +104,17 @@ class BufferedDataSourceTest : public testing::Test {
     view_->close();
   }
 
-  void Initialize(const char* url, media::PipelineStatus expected) {
+  MOCK_METHOD1(OnInitialize, void(bool));
+
+  void Initialize(const char* url, bool expected) {
     GURL gurl(url);
     response_generator_.reset(new TestResponseGenerator(gurl, kFileSize));
 
     ExpectCreateResourceLoader();
-    data_source_->Initialize(gurl,
-                             BufferedResourceLoader::kUnspecified,
-                             media::NewExpectedStatusCB(expected));
+    EXPECT_CALL(*this, OnInitialize(expected));
+    data_source_->Initialize(
+        gurl, BufferedResourceLoader::kUnspecified, base::Bind(
+            &BufferedDataSourceTest::OnInitialize, base::Unretained(this)));
     message_loop_.RunAllPending();
 
     bool is_http = gurl.SchemeIs(kHttpScheme) || gurl.SchemeIs(kHttpsScheme);
@@ -120,7 +123,7 @@ class BufferedDataSourceTest : public testing::Test {
 
   // Helper to initialize tests with a valid 206 response.
   void InitializeWith206Response() {
-    Initialize(kHttpUrl, media::PIPELINE_OK);
+    Initialize(kHttpUrl, true);
 
     EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
     Respond(response_generator_->Generate206(0));
@@ -128,7 +131,7 @@ class BufferedDataSourceTest : public testing::Test {
 
   // Helper to initialize tests with a valid file:// response.
   void InitializeWithFileResponse() {
-    Initialize(kFileUrl, media::PIPELINE_OK);
+    Initialize(kFileUrl, true);
 
     EXPECT_CALL(host_, SetTotalBytes(kFileSize));
     EXPECT_CALL(host_, AddBufferedByteRange(0, kFileSize));
@@ -218,7 +221,7 @@ class BufferedDataSourceTest : public testing::Test {
 };
 
 TEST_F(BufferedDataSourceTest, Range_Supported) {
-  Initialize(kHttpUrl, media::PIPELINE_OK);
+  Initialize(kHttpUrl, true);
 
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   Respond(response_generator_->Generate206(0));
@@ -229,7 +232,7 @@ TEST_F(BufferedDataSourceTest, Range_Supported) {
 }
 
 TEST_F(BufferedDataSourceTest, Range_InstanceSizeUnknown) {
-  Initialize(kHttpUrl, media::PIPELINE_OK);
+  Initialize(kHttpUrl, true);
 
   Respond(response_generator_->Generate206(
       0, TestResponseGenerator::kNoContentRangeInstanceSize));
@@ -240,7 +243,7 @@ TEST_F(BufferedDataSourceTest, Range_InstanceSizeUnknown) {
 }
 
 TEST_F(BufferedDataSourceTest, Range_NotFound) {
-  Initialize(kHttpUrl, media::PIPELINE_ERROR_NETWORK);
+  Initialize(kHttpUrl, false);
   Respond(response_generator_->Generate404());
 
   EXPECT_FALSE(data_source_->loading());
@@ -248,7 +251,7 @@ TEST_F(BufferedDataSourceTest, Range_NotFound) {
 }
 
 TEST_F(BufferedDataSourceTest, Range_NotSupported) {
-  Initialize(kHttpUrl, media::PIPELINE_OK);
+  Initialize(kHttpUrl, true);
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   Respond(response_generator_->Generate200());
 
@@ -260,7 +263,7 @@ TEST_F(BufferedDataSourceTest, Range_NotSupported) {
 // Special carve-out for Apache versions that choose to return a 200 for
 // Range:0- ("because it's more efficient" than a 206)
 TEST_F(BufferedDataSourceTest, Range_SupportedButReturned200) {
-  Initialize(kHttpUrl, media::PIPELINE_OK);
+  Initialize(kHttpUrl, true);
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   WebURLResponse response = response_generator_->Generate200();
   response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
@@ -273,7 +276,7 @@ TEST_F(BufferedDataSourceTest, Range_SupportedButReturned200) {
 }
 
 TEST_F(BufferedDataSourceTest, Range_MissingContentRange) {
-  Initialize(kHttpUrl, media::PIPELINE_ERROR_NETWORK);
+  Initialize(kHttpUrl, false);
   Respond(response_generator_->Generate206(
       0, TestResponseGenerator::kNoContentRange));
 
@@ -282,7 +285,7 @@ TEST_F(BufferedDataSourceTest, Range_MissingContentRange) {
 }
 
 TEST_F(BufferedDataSourceTest, Range_MissingContentLength) {
-  Initialize(kHttpUrl, media::PIPELINE_OK);
+  Initialize(kHttpUrl, true);
 
   // It'll manage without a Content-Length response.
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
@@ -295,7 +298,7 @@ TEST_F(BufferedDataSourceTest, Range_MissingContentLength) {
 }
 
 TEST_F(BufferedDataSourceTest, Range_WrongContentRange) {
-  Initialize(kHttpUrl, media::PIPELINE_ERROR_NETWORK);
+  Initialize(kHttpUrl, false);
 
   // Now it's done and will fail.
   Respond(response_generator_->Generate206(1337));
@@ -452,7 +455,7 @@ TEST_F(BufferedDataSourceTest, File_TooManyRetries) {
 }
 
 TEST_F(BufferedDataSourceTest, File_InstanceSizeUnknown) {
-  Initialize(kFileUrl, media::PIPELINE_ERROR_NETWORK);
+  Initialize(kFileUrl, false);
   EXPECT_FALSE(data_source_->downloading());
 
   Respond(response_generator_->GenerateFileResponse(-1));

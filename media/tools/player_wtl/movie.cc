@@ -66,7 +66,7 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
   // Open the file.
   std::string url_utf8 = WideToUTF8(string16(url));
   scoped_refptr<FileDataSource> data_source = new FileDataSource();
-  if (data_source->Initialize(url_utf8) != PIPELINE_OK) {
+  if (!data_source->Initialize(url_utf8)) {
     return false;
   }
 

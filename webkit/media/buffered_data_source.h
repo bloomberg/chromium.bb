@@ -12,7 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/data_source.h"
-#include "media/base/pipeline_status.h"
 #include "webkit/media/buffered_resource_loader.h"
 #include "webkit/media/preload.h"
 
@@ -40,14 +39,15 @@ class BufferedDataSource : public media::DataSource {
                      media::MediaLog* media_log,
                      const DownloadingCB& downloading_cb);
 
-  // Initialize this object using |url| and |cors_mode|, and call |status_cb|
-  // when initialization has completed.
+  // Initialize this object using |url| and |cors_mode|, executing |init_cb|
+  // with the result of initialization when it has completed.
   //
   // Method called on the render thread.
+  typedef base::Callback<void(bool)> InitializeCB;
   void Initialize(
       const GURL& url,
       BufferedResourceLoader::CORSMode cors_mode,
-      const media::PipelineStatusCB& status_cb);
+      const InitializeCB& init_cb);
 
   // Adjusts the buffering algorithm based on the given preload value.
   void SetPreload(Preload preload);
@@ -117,9 +117,6 @@ class BufferedDataSource : public media::DataSource {
   // kReadError.
   void DoneRead_Locked(int bytes_read);
 
-  // Calls |initialize_cb_| and reset it.
-  void DoneInitialization_Locked(media::PipelineStatus status);
-
   // BufferedResourceLoader::Start() callback for initial load.
   void StartCallback(BufferedResourceLoader::Status status);
 
@@ -159,7 +156,7 @@ class BufferedDataSource : public media::DataSource {
   scoped_ptr<BufferedResourceLoader> loader_;
 
   // Callback method from the pipeline for initialization.
-  media::PipelineStatusCB initialize_cb_;
+  InitializeCB init_cb_;
 
   // Read parameters received from the Read() method call.
   media::DataSource::ReadCB read_cb_;
@@ -185,7 +182,7 @@ class BufferedDataSource : public media::DataSource {
   MessageLoop* render_loop_;
 
   // Protects |stop_signal_received_|, |stopped_on_render_loop_| and
-  // |initialize_cb_|.
+  // |init_cb_|.
   base::Lock lock_;
 
   // Stop signal to suppressing activities. This variable is set on the pipeline

@@ -50,7 +50,7 @@ scoped_refptr<media::FileDataSource> CreateFileDataSource(
     const std::string& file) {
   scoped_refptr<media::FileDataSource> file_data_source(
       new media::FileDataSource());
-  CHECK_EQ(file_data_source->Initialize(file), media::PIPELINE_OK);
+  CHECK(file_data_source->Initialize(file));
   return file_data_source;
 }
 

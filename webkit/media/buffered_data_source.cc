@@ -5,6 +5,7 @@
 #include "webkit/media/buffered_data_source.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
@@ -89,14 +90,14 @@ void BufferedDataSource::set_host(media::DataSourceHost* host) {
 void BufferedDataSource::Initialize(
     const GURL& url,
     BufferedResourceLoader::CORSMode cors_mode,
-    const media::PipelineStatusCB& initialize_cb) {
+    const InitializeCB& init_cb) {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!initialize_cb.is_null());
+  DCHECK(!init_cb.is_null());
   DCHECK(!loader_.get());
   url_ = url;
   cors_mode_ = cors_mode;
 
-  initialize_cb_ = initialize_cb;
+  init_cb_ = init_cb;
 
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     // Do an unbounded range request starting at the beginning.  If the server
@@ -125,7 +126,7 @@ void BufferedDataSource::SetPreload(Preload preload) {
 
 bool BufferedDataSource::HasSingleOrigin() {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(initialize_cb_.is_null() && loader_.get())
+  DCHECK(init_cb_.is_null() && loader_.get())
       << "Initialize() must complete before calling HasSingleOrigin()";
   return loader_->HasSingleOrigin();
 }
@@ -232,7 +233,7 @@ void BufferedDataSource::CleanupTask() {
 
   {
     base::AutoLock auto_lock(lock_);
-    initialize_cb_.Reset();
+    init_cb_.Reset();
     if (stopped_on_render_loop_)
       return;
 
@@ -322,16 +323,6 @@ void BufferedDataSource::DoneRead_Locked(int bytes_read) {
   read_buffer_ = 0;
 }
 
-void BufferedDataSource::DoneInitialization_Locked(
-    media::PipelineStatus status) {
-  DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!initialize_cb_.is_null());
-  lock_.AssertAcquired();
-
-  initialize_cb_.Run(status);
-  initialize_cb_.Reset();
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // BufferedResourceLoader callback methods.
 void BufferedDataSource::StartCallback(
@@ -339,12 +330,12 @@ void BufferedDataSource::StartCallback(
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
-  bool initialize_cb_is_null = false;
+  bool init_cb_is_null = false;
   {
     base::AutoLock auto_lock(lock_);
-    initialize_cb_is_null = initialize_cb_.is_null();
+    init_cb_is_null = init_cb_.is_null();
   }
-  if (initialize_cb_is_null) {
+  if (init_cb_is_null) {
     loader_->Stop();
     return;
   }
@@ -371,13 +362,10 @@ void BufferedDataSource::StartCallback(
     if (stop_signal_received_)
       return;
 
-    if (!success) {
-      DoneInitialization_Locked(media::PIPELINE_ERROR_NETWORK);
-      return;
-    }
+    if (success)
+      UpdateHostState_Locked();
 
-    UpdateHostState_Locked();
-    DoneInitialization_Locked(media::PIPELINE_OK);
+    base::ResetAndReturn(&init_cb_).Run(success);
   }
 }
 

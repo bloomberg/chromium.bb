@@ -951,13 +951,10 @@ void WebMediaPlayerImpl::SetOpaque(bool opaque) {
   GetClient()->setOpaque(opaque);
 }
 
-void WebMediaPlayerImpl::DataSourceInitialized(
-    const GURL& gurl,
-    media::PipelineStatus status) {
+void WebMediaPlayerImpl::DataSourceInitialized(const GURL& gurl, bool success) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  if (status != media::PIPELINE_OK) {
-    DVLOG(1) << "DataSourceInitialized status: " << status;
+  if (!success) {
     SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
     Repaint();
     return;

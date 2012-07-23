@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
   CHECK(base::StringToUint64(argv[2], &seek_target_ms));
   scoped_refptr<media::FileDataSource> file_data_source(
       new media::FileDataSource());
-  CHECK_EQ(file_data_source->Initialize(argv[1]), media::PIPELINE_OK);
+  CHECK(file_data_source->Initialize(argv[1]));
 
   DemuxerHostImpl host;
   MessageLoop loop;
