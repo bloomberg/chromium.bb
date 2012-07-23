@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/'
-                     'ppb_audio')
 
 nexe = env.ProgramNameForNmf('ppapi_ppb_audio')
 env.Alias('ppapi_ppb_audio${PROGSUFFIX}',
@@ -33,7 +31,7 @@ dest_copy = env.Publish(nexe, 'run',
 
 node = env.PPAPIBrowserTester('ppapi_ppb_audio_browser_test.out',
                               url='ppapi_ppb_audio.html',
-                              nmfs=['${TEST_DIR}/ppapi_ppb_audio.nmf'],
+                              nmf_names=['ppapi_ppb_audio'],
                               files=[ ppapi_ppb_audio_nexe,
                                       env.File('ppapi_ppb_audio.html')],
                               browser_flags=['--enable-pepper-testing'])
