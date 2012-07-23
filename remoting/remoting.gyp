@@ -1480,6 +1480,8 @@
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
       'sources': [
+        'jingle_glue/chromium_socket_factory.cc',
+        'jingle_glue/chromium_socket_factory.h',
         'jingle_glue/iq_sender.cc',
         'jingle_glue/iq_sender.h',
         'jingle_glue/javascript_signal_strategy.cc',
@@ -1706,6 +1708,7 @@
         'host/video_frame_capturer_helper_unittest.cc',
         'host/video_frame_capturer_mac_unittest.cc',
         'host/video_frame_capturer_unittest.cc',
+        'jingle_glue/chromium_socket_factory_unittest.cc',
         'jingle_glue/fake_signal_strategy.cc',
         'jingle_glue/fake_signal_strategy.h',
         'jingle_glue/iq_sender_unittest.cc',
