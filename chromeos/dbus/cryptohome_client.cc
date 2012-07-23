@@ -151,20 +151,23 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmIsReady(bool* ready) OVERRIDE {
+  virtual void TpmIsReady(const BoolMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsReady);
-    return CallBoolMethodAndBlock(&method_call, ready);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(
+                           &CryptohomeClientImpl::OnBoolMethod,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           callback));
   }
 
   // CryptohomeClient override.
   virtual void TpmIsEnabled(const BoolMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsEnabled);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(
-            &CryptohomeClientImpl::OnBoolMethod,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback));
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(
+                           &CryptohomeClientImpl::OnBoolMethod,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           callback));
   }
 
   // CryptohomeClient override.
@@ -178,14 +181,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmGetPassword(std::string* password) OVERRIDE {
+  virtual void TpmGetPassword(const StringMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmGetPassword);
-    scoped_ptr<dbus::Response> response(
-        blocking_method_caller_.CallMethodAndBlock(&method_call));
-    if (!response.get())
-      return false;
-    dbus::MessageReader reader(response.get());
-    return reader.PopString(password);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&CryptohomeClientImpl::OnStringMethod,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
   }
 
   // CryptohomeClient override.
@@ -349,6 +351,22 @@ class CryptohomeClientImpl : public CryptohomeClient {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
   }
 
+  // Handles responses for methods with a string value result.
+  void OnStringMethod(const StringMethodCallback& callback,
+                      dbus::Response* response) {
+    if (!response) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string());
+      return;
+    }
+    dbus::MessageReader reader(response);
+    std::string result;
+    if (!reader.PopString(&result)) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string());
+      return;
+    }
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
+  }
+
   // Handles responses for Pkcs11GetTpmtTokenInfo.
   void OnPkcs11GetTpmTokenInfo(const Pkcs11GetTpmTokenInfoCallback& callback,
                                dbus::Response* response) {
@@ -476,9 +494,9 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmIsReady(bool* ready) OVERRIDE {
-    *ready = (tpm_is_ready_counter_++ > 20);
-    return true;
+  virtual void TpmIsReady(const BoolMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
   // CryptohomeClient override.
@@ -494,10 +512,11 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmGetPassword(std::string* password) OVERRIDE {
+  virtual void TpmGetPassword(const StringMethodCallback& callback) OVERRIDE {
     const char kStubTpmPassword[] = "Stub-TPM-password";
-    *password = kStubTpmPassword;
-    return true;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubTpmPassword));
   }
 
   // CryptohomeClient override.

@@ -35,12 +35,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return result;
   }
 
-  virtual bool TpmIsReady() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsReady(&result);
-    return result;
-  }
-
   virtual bool TpmIsEnabled() OVERRIDE {
     bool result = false;
     DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsEnabledAndBlock(
@@ -58,11 +52,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     bool result = false;
     DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsBeingOwned(&result);
     return result;
-  }
-
-  virtual bool TpmGetPassword(std::string* password) OVERRIDE {
-    return DBusThreadManager::Get()->GetCryptohomeClient()->
-        TpmGetPassword(password);
   }
 
   virtual void TpmCanAttemptOwnership() OVERRIDE {
@@ -158,12 +147,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return true;
   }
 
-  // Tpm begin ready after 20-th call.
-  virtual bool TpmIsReady() OVERRIDE {
-    static int counter = 0;
-    return ++counter > 20;
-  }
-
   virtual bool TpmIsEnabled() OVERRIDE {
     return true;
   }
@@ -173,11 +156,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   virtual bool TpmIsBeingOwned() OVERRIDE {
-    return true;
-  }
-
-  virtual bool TpmGetPassword(std::string* password) OVERRIDE {
-    *password = "Stub-TPM-password";
     return true;
   }
 

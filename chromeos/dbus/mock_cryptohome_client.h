@@ -40,10 +40,10 @@ class MockCryptohomeClient : public CryptohomeClient {
                                 const AsyncMethodCallback& callback));
   MOCK_METHOD1(AsyncMountGuest,
                void(const AsyncMethodCallback& callback));
-  MOCK_METHOD1(TpmIsReady, bool(bool* ready));
+  MOCK_METHOD1(TpmIsReady, void(const BoolMethodCallback& callback));
   MOCK_METHOD1(TpmIsEnabled, void(const BoolMethodCallback& callback));
   MOCK_METHOD1(CallTpmIsEnabledAndBlock, bool(bool* enabled));
-  MOCK_METHOD1(TpmGetPassword, bool(std::string* password));
+  MOCK_METHOD1(TpmGetPassword, void(const StringMethodCallback& callback));
   MOCK_METHOD1(TpmIsOwned, bool(bool* owned));
   MOCK_METHOD1(TpmIsBeingOwned, bool(bool* owning));
   MOCK_METHOD0(TpmCanAttemptOwnership, bool());

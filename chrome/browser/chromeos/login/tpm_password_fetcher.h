@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
 
@@ -33,6 +34,16 @@ class TpmPasswordFetcher {
   void Fetch();
 
  private:
+  // Used to implement Fetch().
+  void OnTpmIsReady(DBusMethodCallStatus call_status, bool tpm_is_ready);
+
+  // Used to implement Fetch().
+  void OnTpmGetPassword(DBusMethodCallStatus call_status,
+                        const std::string& password);
+
+  // Posts a task to call Fetch() later.
+  void RescheduleFetch();
+
   base::WeakPtrFactory<TpmPasswordFetcher> weak_factory_;
   TpmPasswordFetcherDelegate* delegate_;
 

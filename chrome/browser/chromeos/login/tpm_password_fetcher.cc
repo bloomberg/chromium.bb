@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 
@@ -32,12 +32,26 @@ void TpmPasswordFetcher::Fetch() {
   // Since this method is also called directly.
   weak_factory_.InvalidateWeakPtrs();
 
-  std::string password;
+  DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsReady(
+      base::Bind(&TpmPasswordFetcher::OnTpmIsReady,
+                 weak_factory_.GetWeakPtr()));
+}
 
-  chromeos::CryptohomeLibrary* cryptohome =
-      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+void TpmPasswordFetcher::OnTpmIsReady(DBusMethodCallStatus call_status,
+                                      bool tpm_is_ready) {
+  if (call_status == DBUS_METHOD_CALL_SUCCESS && tpm_is_ready) {
+    DBusThreadManager::Get()->GetCryptohomeClient()->TpmGetPassword(
+        base::Bind(&TpmPasswordFetcher::OnTpmGetPassword,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    // Password hasn't been acquired, reschedule fetch.
+    RescheduleFetch();
+  }
+}
 
-  if (cryptohome->TpmIsReady() && cryptohome->TpmGetPassword(&password)) {
+void TpmPasswordFetcher::OnTpmGetPassword(DBusMethodCallStatus call_status,
+                                          const std::string& password) {
+  if (call_status == DBUS_METHOD_CALL_SUCCESS) {
     if (password.empty()) {
       // For a fresh OOBE flow TPM is uninitialized,
       // ownership process is started at the EULA screen,
@@ -47,11 +61,15 @@ void TpmPasswordFetcher::Fetch() {
     delegate_->OnPasswordFetched(password);
   } else {
     // Password hasn't been acquired, reschedule fetch.
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&TpmPasswordFetcher::Fetch, weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kTpmCheckIntervalMs));
+    RescheduleFetch();
   }
+}
+
+void TpmPasswordFetcher::RescheduleFetch() {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&TpmPasswordFetcher::Fetch, weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kTpmCheckIntervalMs));
 }
 
 }  // namespace chromeos

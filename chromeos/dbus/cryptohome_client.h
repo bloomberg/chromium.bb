@@ -33,6 +33,9 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // A callback to handle responses of methods returning a bool value.
   typedef base::Callback<void(DBusMethodCallStatus call_status,
                               bool result)> BoolMethodCallback;
+  // A callback to handle responses of methods returning a string value.
+  typedef base::Callback<void(DBusMethodCallStatus call_status,
+                              const std::string& result)> StringMethodCallback;
   // A callback to handle responses of Pkcs11GetTpmTokenInfo method.
   typedef base::Callback<void(
       DBusMethodCallStatus call_status,
@@ -97,9 +100,8 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // succeeds.
   virtual void AsyncMountGuest(const AsyncMethodCallback& callback) = 0;
 
-  // Calls TpmIsReady method and returns true when the call succeeds.
-  // This method blocks until the call returns.
-  virtual bool TpmIsReady(bool* ready) = 0;
+  // Calls TpmIsReady method.
+  virtual void TpmIsReady(const BoolMethodCallback& callback) = 0;
 
   // Calls TpmIsEnabled method.
   virtual void TpmIsEnabled(const BoolMethodCallback& callback) = 0;
@@ -109,10 +111,8 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // TODO(hashimoto): Remove this method. crosbug.com/28500
   virtual bool CallTpmIsEnabledAndBlock(bool* enabled) = 0;
 
-  // Calls TpmGetPassword method and returns true when the call succeeds.
-  // This method blocks until the call returns.
-  // The original content of |password| is lost.
-  virtual bool TpmGetPassword(std::string* password) = 0;
+  // Calls TpmGetPassword method.
+  virtual void TpmGetPassword(const StringMethodCallback& callback) = 0;
 
   // Calls TpmIsOwned method and returns true when the call succeeds.
   // This method blocks until the call returns.

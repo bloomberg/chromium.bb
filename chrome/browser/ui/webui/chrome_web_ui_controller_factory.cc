@@ -63,6 +63,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
+#include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -272,6 +273,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
     return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
+  if (url.host() == chrome::kChromeUICryptohomeHost)
+    return &NewWebUI<chromeos::CryptohomeUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
     return &NewWebUI<ImageBurnUI>;
   if (url.host() == chrome::kChromeUIKeyboardOverlayHost)
@@ -341,7 +344,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       || url.host() == chrome::kChromeUISandboxHost
 #endif
 #if defined(OS_CHROMEOS)
-      || url.host() == chrome::kChromeUICryptohomeHost
       || url.host() == chrome::kChromeUIDiscardsHost
       || url.host() == chrome::kChromeUINetworkHost
       || url.host() == chrome::kChromeUIOSCreditsHost
