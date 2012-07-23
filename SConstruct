@@ -1183,11 +1183,24 @@ def GetBootstrap(env):
   if 'TRUSTED_ENV' in env:
     trusted_env = env['TRUSTED_ENV']
     if trusted_env.Bit('linux'):
+      # TODO(arbenson): the second return value should be a list of args
+      # instead of a string representing the args
       return (trusted_env.File('${STAGING_DIR}/nacl_helper_bootstrap'),
               '--r_debug=0xXXXXXXXXXXXXXXXX --reserved_at_zero=0xXXXXXXXX')
   return None, None
 
 pre_base_env.AddMethod(GetBootstrap)
+
+def AddBootstrap(env, executable, args):
+  bootstrap, bootstrap_args = env.GetBootstrap()
+  if bootstrap is None:
+    return [executable] + args
+  else:
+    # TODO(arbenson): when bootstrap_args is a list of args instead of a string,
+    # this should be: return [bootstrap, executable] + bootstrap_args + args
+    return [bootstrap, executable, bootstrap_args] + args
+
+pre_base_env.AddMethod(AddBootstrap)
 
 
 def GetIrtNexe(env, irt_name='irt'):

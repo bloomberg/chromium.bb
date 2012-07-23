@@ -184,6 +184,7 @@ elif env.Bit('mac'):
   ]
 elif env.Bit('linux'):
   ldr_inputs += [
+    'linux/nacl_bootstrap_args.c',
     'linux/nacl_oop_debugger_hooks.c',
     'linux/nacl_thread_nice.c',
     'linux/r_debug.c',

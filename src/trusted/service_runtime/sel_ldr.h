@@ -763,8 +763,14 @@ void NaClVmIoPendingCheck_mu(struct NaClApp *nap,
 void NaClGdbHook(struct NaClApp const *nap);
 
 #if NACL_LINUX
+void NaClHandleBootstrapArgs(int *argc_p, char ***argv_p);
 void NaClHandleRDebug(const char *switch_value, char *argv0);
 void NaClHandleReservedAtZero(const char *switch_value);
+#else
+static INLINE void NaClHandleBootstrapArgs(int *argc_p, char ***argv_p) {
+  UNREFERENCED_PARAMETER(argc_p);
+  UNREFERENCED_PARAMETER(argv_p);
+}
 #endif
 
 EXTERN_C_END

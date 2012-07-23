@@ -52,21 +52,8 @@ size_t FindMinUnreservedAddress() {
  */
 int main(int argc, char **argv) {
   int match;
-  static const char kRDebugSwitch[] = "--r_debug=";
-  static const char kAtZeroSwitch[] = "--reserved_at_zero=";
 
-  if (argc > 1 &&
-      0 == strncmp(argv[1], kRDebugSwitch, sizeof(kRDebugSwitch) - 1)) {
-    NaClHandleRDebug(&argv[1][sizeof(kRDebugSwitch) - 1], argv[0]);
-    --argc;
-    ++argv;
-  }
-  if (argc > 1 &&
-      0 == strncmp(argv[1], kAtZeroSwitch, sizeof(kAtZeroSwitch) - 1)) {
-    NaClHandleReservedAtZero(&argv[1][sizeof(kAtZeroSwitch) - 1]);
-    --argc;
-    ++argv;
-  }
+  NaClHandleBootstrapArgs(&argc, &argv);
 
   /* On Linux x86-64, there is no prereserved memory. */
   if (g_prereserved_sandbox_size == 0) {

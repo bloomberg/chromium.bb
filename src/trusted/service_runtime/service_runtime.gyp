@@ -169,6 +169,7 @@
             }],
             ['OS=="linux"', {
               'sources': [
+                'linux/nacl_bootstrap_args.c',
                 'linux/nacl_oop_debugger_hooks.c',
                 'linux/nacl_thread_nice.c',
                 'linux/r_debug.c',

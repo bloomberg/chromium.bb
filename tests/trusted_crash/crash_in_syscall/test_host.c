@@ -238,6 +238,8 @@ int main(int argc, char **argv) {
   struct NaClApp app;
   struct GioMemoryFileSnapshot gio_file;
 
+  NaClHandleBootstrapArgs(&argc, &argv);
+
   /* Turn off buffering to aid debugging. */
   setvbuf(stdout, NULL, _IONBF, 0);
   setvbuf(stderr, NULL, _IONBF, 0);

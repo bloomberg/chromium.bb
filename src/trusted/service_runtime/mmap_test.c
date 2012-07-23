@@ -88,23 +88,7 @@ int main(int argc, char **argv) {
   struct NaClVmmap *mem_map;
   char *nacl_verbosity = getenv("NACLVERBOSITY");
 
-#if NACL_LINUX
-  static const char kRDebugSwitch[] = "--r_debug=";
-  static const char kAtZeroSwitch[] = "--reserved_at_zero=";
-  if (argc > 2 &&
-      0 == strncmp(argv[1], kRDebugSwitch, sizeof(kRDebugSwitch) - 1)) {
-    NaClHandleRDebug(&argv[1][sizeof(kRDebugSwitch) - 1], argv[0]);
-    --argc;
-    ++argv;
-  }
-
-  if (argc > 2 &&
-      0 == strncmp(argv[1], kAtZeroSwitch, sizeof(kAtZeroSwitch) - 1)) {
-    NaClHandleReservedAtZero(&argv[1][sizeof(kAtZeroSwitch) - 1]);
-    --argc;
-    ++argv;
-  }
-#endif
+  NaClHandleBootstrapArgs(&argc, &argv);
 
   if (argc < 2) {
     printf("No nexe file!\n\nFAIL\n");

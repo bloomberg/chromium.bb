@@ -44,6 +44,9 @@ int main(int argc, char **argv) {
   struct GioMemoryFileSnapshot gio_file;
   struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS] = {{0}};
   int index;
+
+  NaClHandleBootstrapArgs(&argc, &argv);
+
   for (index = 0; index < NACL_MAX_SYSCALLS; index++) {
     syscall_table[index].handler = NotImplementedDecoder;
   }

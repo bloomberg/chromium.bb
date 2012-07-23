@@ -38,28 +38,11 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    * page allocation function.
    */
   if (!NaClFindPrereservedSandboxMemory(mem, addrsp_size)) {
-    /*
-     * On ARM, we should always have prereserved sandbox memory.  If we do
-     * not, then we log a warning and try to get the memory anyway.
-     * TODO(arbenson): Return an error instead of continuing once nacl_bootstrap
-     * is changed to pass an argument to sel_ldr to indicate that address space
-     * was reserved.
-     */
-    NaClLog(LOG_WARNING, "NaClAllocateSpace: Do not know whether sandbox"
-            " address space was prereserved: continuing anyway, but this may"
-            " be unsafe (looked for 0x%016"NACL_PRIxS" bytes).\n",
-            addrsp_size);
-    *mem = 0;
-  }
-  /*
-   * We should have prereserved memory, so our sandbox should start at 0.  If
-   * the mem pointer is not NULL, then we error and exit.
-   */
-  if (*mem != NULL) {
+    /* On ARM, we should always have prereserved sandbox memory. */
     NaClLog(LOG_ERROR, "NaClAllocateSpace:"
-            "  Can't handle sandbox at address"
-            " 0x%08"NACL_PRIxPTR"\n",
-            (uintptr_t)*mem);
+            " Could not find correct amount of prereserved memory"
+            " (looked for 0x%016"NACL_PRIxS" bytes).\n",
+            addrsp_size);
     return LOAD_NO_MEMORY;
   }
   /*
@@ -68,6 +51,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    * Instead, we allocate starting at the trampolines, and then coerce the
    * "mem" out parameter.
    */
+  CHECK(*mem == NULL);
   addrsp_size -= NACL_TRAMPOLINE_START;
   result = NaCl_page_alloc_at_addr(&tmp_mem, addrsp_size);
 

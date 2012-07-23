@@ -507,7 +507,8 @@ SetupSelLdr() {
 
   PREFIX="${prefix} ${SEL_LDR_BOOTSTRAP} \
 ${SEL_LDR} --r_debug=0xXXXXXXXXXXXXXXXX \
--B ${IRT_IMAGE} -a ${extra_flags} -f ${preload}"
+--reserved_at_zero=0xXXXXXXXX -B ${IRT_IMAGE} \
+-a ${extra_flags} -f ${preload}"
   DASHDASH="--"
 }
 

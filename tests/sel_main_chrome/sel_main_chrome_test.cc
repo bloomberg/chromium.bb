@@ -18,6 +18,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
 
 
@@ -67,6 +69,11 @@ void WINAPI DummyRendererThread(void *thread_arg) {
 int main(int argc, char **argv) {
   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
   struct ThreadArgs thread_args;
+
+  NaClHandleBootstrapArgs(&argc, &argv);
+#if NACL_LINUX
+  args->prereserved_sandbox_size = g_prereserved_sandbox_size;
+#endif
 
   NaClAllModulesInit();
 

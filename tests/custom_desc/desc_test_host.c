@@ -181,6 +181,8 @@ int main(int argc, char **argv) {
   struct NaClApp app;
   struct GioMemoryFileSnapshot gio_file;
 
+  NaClHandleBootstrapArgs(&argc, &argv);
+
   if (argc != 2) {
     NaClLog(LOG_FATAL, "Expected 1 argument: executable filename\n");
   }
