@@ -36,6 +36,8 @@
         'cache_util.h',
         'crypto/key_systems.cc',
         'crypto/key_systems.h',
+        'crypto/ppapi_decryptor.cc',
+        'crypto/ppapi_decryptor.h',
         'crypto/proxy_decryptor.cc',
         'crypto/proxy_decryptor.h',
         'filter_helpers.cc',

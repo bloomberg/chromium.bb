@@ -14,11 +14,6 @@ namespace WebKit {
 class WebString;
 }
 
-namespace media {
-class Decryptor;
-class DecryptorClient;
-}
-
 namespace webkit_media {
 
 // Returns whether |key_sytem| is supported at all.
@@ -32,10 +27,12 @@ bool IsSupportedKeySystemWithMediaMimeType(
     const std::vector<std::string>& codecs,
     const std::string& key_system);
 
-// Creates and returns a decryptor that corresponds to the |key_system|.
-// Returns NULL if the |key_system| is not supported.
-scoped_ptr<media::Decryptor> CreateDecryptor(const std::string& key_system,
-                                             media::DecryptorClient* client);
+// Returns whether AesDecryptor can be used for the given |key_system|.
+bool CanUseAesDecryptor(const std::string& key_system);
+
+// Returns the plugin type given a |key_system|.
+// Returns an empty string if no plugin type is found for |key_system|.
+std::string GetPluginType(const std::string& key_system);
 
 }  // namespace webkit_media
 

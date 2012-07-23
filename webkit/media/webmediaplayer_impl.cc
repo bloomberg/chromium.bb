@@ -37,6 +37,7 @@
 #include "webkit/media/webmediaplayer_proxy.h"
 #include "webkit/media/webmediaplayer_util.h"
 #include "webkit/media/webvideoframe_impl.h"
+#include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebMediaPlayer;
@@ -131,7 +132,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       audio_source_provider_(audio_source_provider),
       audio_renderer_sink_(audio_renderer_sink),
       is_local_source_(false),
-      decryptor_(proxy_.get()) {
+      decryptor_(proxy_.get(), client, frame) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 

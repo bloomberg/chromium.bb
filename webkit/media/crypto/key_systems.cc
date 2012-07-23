@@ -4,15 +4,14 @@
 
 #include "webkit/media/crypto/key_systems.h"
 
-#include "media/base/decryptor.h"
-#include "media/crypto/aes_decryptor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 namespace webkit_media {
 
-namespace {
-
-const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+static const char kExternalClearKeyKeySystem[] =
+    "org.chromium.externalclearkey";
 
 struct MediaFormatAndKeySystem {
   const char* mime_type;
@@ -20,12 +19,17 @@ struct MediaFormatAndKeySystem {
   const char* key_system;
 };
 
+struct KeySystemPluginTypePair {
+  const char* key_system;
+  const char* plugin_type;
+};
+
 static const MediaFormatAndKeySystem
 supported_format_key_system_combinations[] = {
   // TODO(ddorwin): Reconsider based on how usage of this class evolves.
   // For now, this class is stateless, so we do not have the opportunity to
   // build a list using ParseCodecString() like
-  // net::MimeUtil::InitializeMimeTypeMaps(). Therfore, the following line must
+  // net::MimeUtil::InitializeMimeTypeMaps(). Therefore, the following line must
   // be separate entries.
   // { "video/webm", "vorbis,vp8,vp8.0", kClearKeyKeySystem },
   { "video/webm", "vorbis", kClearKeyKeySystem },
@@ -33,12 +37,24 @@ supported_format_key_system_combinations[] = {
   { "video/webm", "vp8.0", kClearKeyKeySystem },
   { "audio/webm", "vorbis", kClearKeyKeySystem },
   { "video/webm", "", kClearKeyKeySystem },
-  { "audio/webm", "", kClearKeyKeySystem }
+  { "audio/webm", "", kClearKeyKeySystem },
+  { "video/webm", "vorbis", kExternalClearKeyKeySystem },
+  { "video/webm", "vp8", kExternalClearKeyKeySystem },
+  { "video/webm", "vp8.0", kExternalClearKeyKeySystem },
+  { "audio/webm", "vorbis", kExternalClearKeyKeySystem },
+  { "video/webm", "", kExternalClearKeyKeySystem },
+  { "audio/webm", "", kExternalClearKeyKeySystem }
 };
 
-bool IsSupportedKeySystemWithContainerAndCodec(const std::string& mime_type,
-                                               const std::string& codec,
-                                               const std::string& key_system) {
+static const KeySystemPluginTypePair key_system_to_plugin_type_mapping[] = {
+  // TODO(xhwang): Update this with the real plugin name.
+  { kExternalClearKeyKeySystem, "application/x-ppapi-example" }
+};
+
+static bool IsSupportedKeySystemWithContainerAndCodec(
+    const std::string& mime_type,
+    const std::string& codec,
+    const std::string& key_system) {
   for (size_t i = 0;
        i < arraysize(supported_format_key_system_combinations);
        ++i) {
@@ -53,12 +69,9 @@ bool IsSupportedKeySystemWithContainerAndCodec(const std::string& mime_type,
   return false;
 }
 
-}  // namespace
-
 bool IsSupportedKeySystem(const WebKit::WebString& key_system) {
-  if (key_system == kClearKeyKeySystem)
-    return true;
-  return false;
+  return CanUseAesDecryptor(key_system.utf8().data()) ||
+         !GetPluginType(key_system.utf8().data()).empty();
 }
 
 bool IsSupportedKeySystemWithMediaMimeType(
@@ -77,11 +90,17 @@ bool IsSupportedKeySystemWithMediaMimeType(
   return true;
 }
 
-scoped_ptr<media::Decryptor> CreateDecryptor(const std::string& key_system,
-                                             media::DecryptorClient* client) {
-  if (key_system == kClearKeyKeySystem)
-    return scoped_ptr<media::Decryptor>(new media::AesDecryptor(client));
-  return scoped_ptr<media::Decryptor>();
+bool CanUseAesDecryptor(const std::string& key_system) {
+  return key_system == kClearKeyKeySystem;
+}
+
+std::string GetPluginType(const std::string& key_system) {
+  for (size_t i = 0; i < arraysize(key_system_to_plugin_type_mapping); ++i) {
+    if (key_system_to_plugin_type_mapping[i].key_system == key_system)
+      return key_system_to_plugin_type_mapping[i].plugin_type;
+  }
+
+  return std::string();
 }
 
 }  // namespace webkit_media

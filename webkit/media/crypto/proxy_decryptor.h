@@ -15,6 +15,11 @@ namespace media {
 class DecryptorClient;
 }
 
+namespace WebKit {
+class WebFrame;
+class WebMediaPlayerClient;
+}
+
 namespace webkit_media {
 
 // A decryptor proxy that creates a real decryptor object on demand and
@@ -23,7 +28,9 @@ namespace webkit_media {
 // objects. Fix this when needed.
 class ProxyDecryptor : public media::Decryptor {
  public:
-  explicit ProxyDecryptor(media::DecryptorClient* client);
+  ProxyDecryptor(media::DecryptorClient* decryptor_client,
+                 WebKit::WebMediaPlayerClient* web_media_player_client,
+                 WebKit::WebFrame* web_frame);
   virtual ~ProxyDecryptor();
 
   // media::Decryptor implementation.
@@ -42,7 +49,16 @@ class ProxyDecryptor : public media::Decryptor {
                        const DecryptCB& decrypt_cb) OVERRIDE;
 
  private:
-  media::DecryptorClient* const client_;
+  scoped_ptr<media::Decryptor> CreatePpapiDecryptor(
+      const std::string& key_system);
+  scoped_ptr<media::Decryptor> CreateDecryptor(const std::string& key_system);
+
+  media::DecryptorClient* client_;
+
+  // Needed to create the PpapiDecryptor.
+  WebKit::WebMediaPlayerClient* web_media_player_client_;
+  WebKit::WebFrame* web_frame_;
+
   // Protects the |decryptor_|. The Decryptor interface specifies that the
   // Decrypt() function will be called on the decoder thread and all other
   // methods on the renderer thread. The |decryptor_| itself is thread safe
