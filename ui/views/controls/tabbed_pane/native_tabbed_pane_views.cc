@@ -20,6 +20,9 @@ const SkColor kTabTitleColor_Inactive = SkColorSetRGB(0x66, 0x66, 0x66);
 const SkColor kTabTitleColor_Active = SkColorSetRGB(0x20, 0x20, 0x20);
 const SkColor kTabTitleColor_Pressed = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kTabTitleColor_Hovered = SkColorSetRGB(0x22, 0x22, 0x22);
+// TODO(markusheintz): The tab background color should be provided by the
+// NativeTheme.
+const SkColor kTabBackgroundColor_Active = SK_ColorWHITE;
 const SkColor kTabBorderColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
 const SkScalar kTabBorderThickness = 1.0f;
 const SkScalar kTabBorderRadius = 2.0f;
@@ -63,6 +66,12 @@ class Tab : public View {
   }
 
  private:
+  void PaintTabBackground(gfx::Canvas* canvas) {
+    // Fill the background. Note that we don't constrain to the bounds as
+    // canvas is already clipped for us.
+    canvas->DrawColor(kTabBackgroundColor_Active);
+  }
+
   void PaintTabBorder(gfx::Canvas* canvas) {
     SkPath path;
     SkRect bounds = { 0, 0, SkIntToScalar(width()), SkIntToScalar(height()) };
@@ -149,7 +158,8 @@ class TabStrip : public View {
     return gfx::Size(50, Tab::GetMinimumTabHeight());
   }
   virtual void Layout() OVERRIDE {
-    int x = 0;
+    const int kTabOffset = 18;
+    int x = kTabOffset;  // Layout tabs with an offset to the tabstrip border.
     for (int i = 0; i < child_count(); ++i) {
       gfx::Size ps = child_at(i)->GetPreferredSize();
       child_at(i)->SetBounds(x, 0, ps.width(), ps.height());
@@ -178,8 +188,10 @@ void Tab::OnSelectedStateChanged(bool selected) {
 
 void Tab::OnPaint(gfx::Canvas* canvas) {
   bool selected = tab_strip_->IsTabSelected(this);
-  if (selected)
+  if (selected) {
+    PaintTabBackground(canvas);
     PaintTabBorder(canvas);
+  }
   PaintTabTitle(canvas, selected);
 }
 
