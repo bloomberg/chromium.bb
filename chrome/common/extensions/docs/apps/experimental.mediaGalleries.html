@@ -175,8 +175,20 @@
                 <a href="#method-extractEmbeddedThumbnails">extractEmbeddedThumbnails</a>
               </li><li>
                 <a href="#method-getMediaFileSystems">getMediaFileSystems</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
+            <a href="#types">Types</a>
+            <ol>
+              <li>
+                <a href="#type-experimental.mediaGalleries.GetMediaFileSystemsInteractivity">experimental.mediaGalleries.GetMediaFileSystemsInteractivity</a>
+                <ol>
+                </ol>
               </li><li>
-                <a href="#method-openMediaGalleryManager">openMediaGalleryManager</a>
+                <a href="#type-experimental.mediaGalleries.AssembleMediaFileDetails">experimental.mediaGalleries.AssembleMediaFileDetails</a>
+                <ol>
+                </ol>
               </li>
             </ol>
           </li>
@@ -207,27 +219,25 @@
               <h4>assembleMediaFile</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.mediaGalleries.assembleMediaFile</span>(<span class="optional"><span>object</span>
-                      <var><span>mediaFileContents</span></var></span><span class="optional"><span>, </span><span>object</span>
-                      <var><span>metadata</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
+                  <span>chrome.experimental.mediaGalleries.assembleMediaFile</span>(<span class="null"><span>experimental.mediaGalleries.AssembleMediaFileDetails</span>
+                      <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>AssembleMediaFileCallback</span></var></span>)</div>
               <div class="description">
-                <p>Create a new MediaFile setting the metadata in the Blob to the supplied values, overriding any existing metadata in the media file. If user agent does not recognize the&nbsp;Blob as a supported file format, it will return null in the callback.</p>
+                <p>Create a new MediaFile setting the metadata in the Blob to the supplied values, overriding any existing metadata in the media file. If user agent does not recognize the&nbsp;Blob as a supported file format, it will fail.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>mediaFileContents</var>
+            <var>details</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>object</span>
+                        <a href="experimental.mediaGalleries.html#type-experimental.mediaGalleries.AssembleMediaFileDetails">experimental.mediaGalleries.AssembleMediaFileDetails</a>
                       </span>
                     </span>
                   )
@@ -245,33 +255,7 @@
                   </div><div>
                     <div>
           <dt>
-            <var>metadata</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
+            <var>AssembleMediaFileCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -292,6 +276,40 @@
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>mediaFile</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>Blob</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
         </div>
                   </div>
                 </dl>
@@ -304,12 +322,12 @@
             </div><div class="apiItem">
               <a name="method-extractEmbeddedThumbnails"></a> <!-- method-anchor -->
               <h4>extractEmbeddedThumbnails</h4>
-              <div class="summary"><span>object</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.mediaGalleries.extractEmbeddedThumbnails</span>(<span class="optional"><span>object</span>
+                  <span>chrome.experimental.mediaGalleries.extractEmbeddedThumbnails</span>(<span class="null"><span>object</span>
                       <var><span>mediaFile</span></var></span>)</div>
               <div class="description">
-                <p>Get any thumbnails contained in the passed media file. The resulting directory reader refers to a virtual directory that can not be navigated to. If there are no thumbnails in the passed file entry, the virtual directory will have no entries.</p>
+                <p>Get any thumbnails contained in the passed media file. The resulting directory reader refers to a virtual directory that can not be navigated to. If there are no thumbnails in the passed file entry, the virtual directory will have no entries. TODO(estade): The return type should be Directory. The argument type should be [instanceOf=FileEntry].</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -321,7 +339,6 @@
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>object</span>
@@ -342,11 +359,28 @@
                   </div>
                 </dl>
                 <!-- RETURNS -->
-                <h4>Returns</h4>
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getMediaFileSystems"></a> <!-- method-anchor -->
+              <h4>getMediaFileSystems</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.mediaGalleries.getMediaFileSystems</span>(<span class="optional"><span>object</span>
+                      <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>MediaFileSystemsCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Get the media galleries configured in this user agent. If none are configured or available, the callback will receive an empty array.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
+            <var>details</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -365,31 +399,43 @@
             Undocumented.
           </dd>
           <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>interactivity</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.mediaGalleries.html#type-experimental.mediaGalleries.GetMediaFileSystemsInteractivity">experimental.mediaGalleries.GetMediaFileSystemsInteractivity</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Whether to prompt the user for additional media galleries before returning the permitted set. Default is silent.</dd>
+          <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
-                  </div>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-getMediaFileSystems"></a> <!-- method-anchor -->
-              <h4>getMediaFileSystems</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.mediaGalleries.getMediaFileSystems</span>(<span class="null"><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Get the media galleries configured in this user agent. If none are configured or available, the callback will receive an empty array.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
                     <div>
           <dt>
-            <var>callback</var>
+            <var>MediaFileSystemsCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -403,6 +449,32 @@
                 </div>
               </em>
           </dt>
+          <dd>TODO(estade): the type of the argument should be LocalFileSystem[].</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>mediaFileSystems</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
           <dd class="todo">
             Undocumented.
           </dd>
@@ -411,24 +483,12 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
                   </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-openMediaGalleryManager"></a> <!-- method-anchor -->
-              <h4>openMediaGalleryManager</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.mediaGalleries.openMediaGalleryManager</span>()</div>
-              <div class="description">
-                <p>The user can configure which directories on their computer are exposed as media galleries. Calling this function will cause the UI which configures media galleris to be visible in the current tab.</p>
-                <!-- PARAMETERS -->
-                <dl>
                 </dl>
                 <!-- RETURNS -->
                 <dl>
@@ -441,7 +501,117 @@
           <!-- EVENTS -->
            <!-- /apiGroup -->
           <!-- TYPES -->
-           <!-- /apiGroup -->
+          <div class="apiGroup">
+            <a name="types"></a>
+            <h3 id="types">Types</h3>
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-experimental.mediaGalleries.GetMediaFileSystemsInteractivity"></a>
+              <h4>experimental.mediaGalleries.GetMediaFileSystemsInteractivity</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["silent", "prompt", "prompt_if_needed"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.mediaGalleries.AssembleMediaFileDetails"></a>
+              <h4>experimental.mediaGalleries.AssembleMediaFileDetails</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>mediaFileContents</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>TODO(estade): this should be [instanceOf=Blob].</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>metadata</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>TODO(estade): this should be [instanceOf=Metafile].</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
         </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->

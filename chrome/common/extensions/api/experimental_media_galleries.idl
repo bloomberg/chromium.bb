@@ -1,0 +1,56 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+
+namespace experimental.mediaGalleries {
+
+  [inline_doc] enum GetMediaFileSystemsInteractivity {
+    // Do not act interactively.
+    no,
+    // Ask the user to manage permitted media galleries.
+    yes,
+    // Ask the user to manage permitted galleries only if the return set would
+    // otherwise be empty.
+    if_needed
+  };
+
+  [inline_doc] dictionary MediaFileSystemsDetails {
+    // Whether to prompt the user for additional media galleries before
+    // returning the permitted set. Default is silent.
+    GetMediaFileSystemsInteractivity? interactive;
+  };
+
+  callback MediaFileSystemsCallback =
+      void ([instanceOf=LocalFileSystem] optional object[] mediaFileSystems);
+  callback AssembleMediaFileCallback =
+      void ([instanceOf=Blob] optional object mediaFile);
+
+  interface Functions {
+    // Get the media galleries configured in this user agent. If none are
+    // configured or available, the callback will receive an empty array.
+    static void getMediaFileSystems(optional MediaFileSystemsDetails details,
+                                    MediaFileSystemsCallback callback);
+
+    // Create a new MediaFile setting the metadata in the Blob to the supplied
+    // values, overriding any existing metadata in the media file. If user agent
+    // does not recognize the Blob as a supported file format, it will fail.
+    // |mediaFileContents| : the media bytes.
+    // |metadata| : the metadata. TODO(estade): this should be
+    // [instanceOf=Metafile].
+    static void assembleMediaFile(
+        [instanceOf=Blob] object mediaFileContents,
+        object metadata,
+        AssembleMediaFileCallback callback);
+
+    // Get any thumbnails contained in the passed media file. The resulting
+    // directory reader refers to a virtual directory that can not be navigated
+    // to. If there are no thumbnails in the passed file entry, the virtual
+    // directory will have no entries.
+    // TODO(estade): The return type should be Directory. The argument type
+    // should be [instanceOf=FileEntry].
+    [nocompile] static object extractEmbeddedThumbnails(object mediaFile);
+  };
+
+};

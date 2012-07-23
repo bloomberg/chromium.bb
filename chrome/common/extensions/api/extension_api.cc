@@ -379,8 +379,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD));
   RegisterSchema("experimental.keybinding", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_KEYBINDING));
-  RegisterSchema("experimental.mediaGalleries", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_MEDIAGALLERIES));
   RegisterSchema("experimental.offscreenTabs", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_OFFSCREENTABS));
   RegisterSchema("experimental.processes", ReadFromResource(

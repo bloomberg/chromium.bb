@@ -2746,7 +2746,7 @@
         'browser/extensions/api/identity/identity_apitest.cc',
         'browser/extensions/api/idltest/idltest_apitest.cc',
         'browser/extensions/api/managed_mode/managed_mode_apitest.cc',
-        'browser/extensions/api/media_gallery/media_gallery_apitest.cc',
+        'browser/extensions/api/media_galleries/media_galleries_apitest.cc',
         'browser/extensions/api/metrics/metrics_apitest.cc',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_apitest.cc',
         'browser/extensions/api/omnibox/omnibox_apitest.cc',
