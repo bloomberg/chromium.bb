@@ -7,7 +7,7 @@ vars = {
   # unnecessarily.  There is no need to keep these numbers in sync
   # with each other.
   "x86_toolchain_version": "9170",
-  "pnacl_toolchain_version": "9117",
+  "pnacl_toolchain_version": "9213",
 
   # ARM trusted toolchain version cannot be changed for now.
   "arm_trusted_toolchain_version": "7004",
