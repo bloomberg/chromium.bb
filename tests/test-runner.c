@@ -36,6 +36,7 @@
 static int num_alloc;
 static void* (*sys_malloc)(size_t);
 static void (*sys_free)(void*);
+static void* (*sys_realloc)(void*, size_t);
 
 extern const struct test __start_test_section, __stop_test_section;
 
@@ -52,6 +53,14 @@ free(void* mem)
 	if (mem != NULL)
 		num_alloc--;
 	sys_free(mem);
+}
+
+__attribute__ ((visibility("default"))) void *
+realloc(void* mem, size_t size)
+{
+	if (mem == NULL)
+		num_alloc++;
+	return sys_realloc(mem, size);
 }
 
 static const struct test *
@@ -86,7 +95,8 @@ int main(int argc, char *argv[])
 	int total, pass;
 	siginfo_t info;
 
-	/* Load system malloc and free */
+	/* Load system malloc, free, and realloc */
+	sys_realloc = dlsym(RTLD_NEXT, "realloc");
 	sys_malloc = dlsym(RTLD_NEXT, "malloc");
 	sys_free = dlsym(RTLD_NEXT, "free");
 
