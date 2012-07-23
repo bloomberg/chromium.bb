@@ -885,7 +885,11 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 
     bool is_keyboard_shortcut = false;
     // Only pre-handle the key event if it's not handled by the input method.
-    if (!key_event.skip_in_browser) {
+    // A delegate_ of NULL seems impossible but crash reports show that it
+    // can happen (see http://crbug.com/134465). This doesn't seem to happen
+    // with Chrome 22 and later, so checking the delegate_ here can be removed
+    // once Chrome 22 goes to stable..
+    if (delegate_ && !key_event.skip_in_browser) {
       // We need to set |suppress_next_char_events_| to true if
       // PreHandleKeyboardEvent() returns true, but |this| may already be
       // destroyed at that time. So set |suppress_next_char_events_| true here,
