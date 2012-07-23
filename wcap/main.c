@@ -154,7 +154,7 @@ usage(int exit_code)
 		"[--help] [--yuv4mpeg2] [--frame=<frame>] [--all] \n"
 		"\t[--rate=<num:denom>] <wcap file>\n\n"
 		"\t--help\t\t\tthis help text\n"
-		"\t--yuv2mpeg4\t\tdump wcap file to stdout in yuv4mpeg format\n"
+		"\t--yuv4mpeg2\t\tdump wcap file to stdout in yuv4mpeg2 format\n"
 		"\t--frame=<frame>\t\twrite out the given frame number as png\n"
 		"\t--all\t\t\twrite all frames as pngs\n"
 		"\t--rate=<num:denom>\treplay frame rate for yuv4mpeg2,\n"
