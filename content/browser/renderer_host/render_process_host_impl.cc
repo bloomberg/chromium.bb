@@ -794,7 +794,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
-    switches::kOldCheckboxStyle,
+    switches::kNewCheckboxStyle,
     switches::kNoReferrers,
     switches::kNoSandbox,
     switches::kPpapiOutOfProcess,

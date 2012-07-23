@@ -159,8 +159,8 @@ class NativeThemeBase : public NativeTheme {
                  SkScalar max) const;
   SkColor OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const;
 
-  // Returns whether the new vector-graphics based checkbox and radio button
-  // style is enabled.
+  // Returns whether the new experimental vector-graphics based checkbox and
+  // radiobutton style is enabled.
   bool IsNewCheckboxStyleEnabled(SkCanvas* canvas) const;
 
   // Paint the common parts of the new (experimental) checkboxes and radio

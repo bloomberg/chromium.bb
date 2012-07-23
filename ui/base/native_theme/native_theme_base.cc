@@ -56,7 +56,7 @@ const SkColor kCheckboxGradientHoveredColors[] = {
     SkColorSetRGB(0xe0, 0xe0, 0xe0) };
 const SkColor kCheckboxGradientDisabledColors[] = {
     SkColorSetARGB(0xB3, 0xed, 0xed, 0xed),
-    SkColorSetARGB(0xB3, 0xed, 0xed, 0xed) };
+    SkColorSetARGB(0xB3, 0xde, 0xde, 0xde) };
 const SkColor kCheckboxBorderColor = SkColorSetARGB(0x40, 0, 0, 0);
 const SkColor kCheckboxBorderHoveredColor = SkColorSetARGB(0x4D, 0, 0, 0);
 const SkColor kCheckboxBorderDisabledColor = SkColorSetARGB(0x30, 0, 0, 0);
@@ -468,11 +468,15 @@ void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
 }
 
 bool NativeThemeBase::IsNewCheckboxStyleEnabled(SkCanvas* canvas) const {
-  // The new style is now the default.
-  // TODO(rbyers): Remove this flag once we're sure the new behavior is fine.
-  // http://crbug.com/133991
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kOldCheckboxStyle))
+  // Mostly this new style is experimental behind a flag.
+  // TODO(rbyers): Enable new style by default.  http://crbug.com/125773
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNewCheckboxStyle))
+    return true;
+
+  // Also enable explicitly when high-DPI is being used (since this is the only
+  // way we have to get nice looking widgets in high-DPI.
+  if (canvas->getTotalMatrix().getScaleX() > 1)
     return true;
 
   return false;
@@ -519,18 +523,10 @@ SkRect NativeThemeBase::PaintCheckboxRadioNewCommon(
 
   SkRect skrect = gfx::RectToSkRect(rect);
 
-  // Use the largest square rectangle that fits inside the provided rectangle.
-  // No other browser seems to support non-square widget, so accidentally
-  // having non-square sizes is common (eg. amazon and webkit dev tools).
-  if (skrect.width() != skrect.height()) {
-    SkScalar size = SkMinScalar(skrect.width(), skrect.height());
-    skrect.inset((skrect.width() - size) / 2, (skrect.height() - size) / 2);
-  }
-
   // If the rectangle is too small then paint only a rectangle.  We don't want
   // to have to worry about '- 1' and '+ 1' calculations below having overflow
   // or underflow.
-  if (skrect.width() <= 2) {
+  if (rect.width() <= 2 || rect.height() <= 2) {
     SkPaint paint;
     paint.setColor(kCheckboxTinyColor);
     paint.setStyle(SkPaint::kFill_Style);

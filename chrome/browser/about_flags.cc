@@ -818,18 +818,18 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableViewsTextfield),
   },
   {
-    "old-checkbox-style",
-    IDS_FLAGS_OLD_CHECKBOX_STYLE,
-    IDS_FLAGS_OLD_CHECKBOX_STYLE_DESCRIPTION,
-    kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kOldCheckboxStyle),
-  },
-  {
     "enable-frameless-constrained-dialogs",
     IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_NAME,
     IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_DESCRIPTION,
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableFramelessConstrainedDialogs),
+  },
+  {
+    "new-checkbox-style",
+    IDS_FLAGS_NEW_CHECKBOX_STYLE,
+    IDS_FLAGS_NEW_CHECKBOX_STYLE_DESCRIPTION,
+    kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kNewCheckboxStyle),
   },
   {
     "disable-non-fullscreen-mouse-lock",
