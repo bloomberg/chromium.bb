@@ -33,6 +33,7 @@ struct Referrer;
 namespace gfx {
 class Point;
 class Rect;
+class RectF;
 class Size;
 }  // namespace gfx
 
@@ -123,6 +124,14 @@ struct CONTENT_EXPORT ParamTraits<gfx::Size> {
 template <>
 struct CONTENT_EXPORT ParamTraits<gfx::Rect> {
   typedef gfx::Rect param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<gfx::RectF> {
+  typedef gfx::RectF param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

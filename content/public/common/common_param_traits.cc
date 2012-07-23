@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 
 namespace {
 
@@ -419,6 +420,34 @@ bool ParamTraits<gfx::Rect>::Read(const Message* m,
 
 void ParamTraits<gfx::Rect>::Log(const gfx::Rect& p, std::string* l) {
   l->append(base::StringPrintf("(%d, %d, %d, %d)", p.x(), p.y(),
+                               p.width(), p.height()));
+}
+
+void ParamTraits<gfx::RectF>::Write(Message* m, const gfx::RectF& p) {
+  ParamTraits<float>::Write(m, p.x());
+  ParamTraits<float>::Write(m, p.y());
+  ParamTraits<float>::Write(m, p.width());
+  ParamTraits<float>::Write(m, p.height());
+}
+
+bool ParamTraits<gfx::RectF>::Read(const Message* m,
+                                   PickleIterator* iter,
+                                   gfx::RectF* r) {
+  float x, y, w, h;
+  if (!ParamTraits<float>::Read(m, iter, &x) ||
+      !ParamTraits<float>::Read(m, iter, &y) ||
+      !ParamTraits<float>::Read(m, iter, &w) ||
+      !ParamTraits<float>::Read(m, iter, &h))
+    return false;
+  r->set_x(x);
+  r->set_y(y);
+  r->set_width(w);
+  r->set_height(h);
+  return true;
+}
+
+void ParamTraits<gfx::RectF>::Log(const gfx::RectF& p, std::string* l) {
+  l->append(base::StringPrintf("(%f, %f, %f, %f)", p.x(), p.y(),
                                p.width(), p.height()));
 }
 
