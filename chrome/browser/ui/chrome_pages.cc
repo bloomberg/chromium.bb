@@ -180,7 +180,7 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
   } else if (SyncPromoUI::ShouldShowSyncPromo(browser->profile()) &&
              login_service->current_login_ui() == NULL) {
     // There is no currently active login UI, so display a new promo page.
-    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), source));
+    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), source, false));
     NavigateParams params(GetSingletonTabNavigateParams(browser, GURL(url)));
     params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
     ShowSingletonTabOverwritingNTP(browser, params);

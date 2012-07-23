@@ -43,6 +43,7 @@ const char kSyncPromoJsFile[] = "sync_promo.js";
 
 const char kSyncPromoQueryKeyNextPage[] = "next_page";
 const char kSyncPromoQueryKeySource[] = "source";
+const char kSyncPromoQueryKeyAutoClose[] = "auto_close";
 
 // The maximum number of times we want to show the sync promo at startup.
 const int kSyncPromoShowAtStartupMaximum = 10;
@@ -205,12 +206,17 @@ void SyncPromoUI::SetUserSkippedSyncPromo(Profile* profile) {
 }
 
 // static
-GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page, Source source) {
+GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
+                                  Source source,
+                                  bool auto_close) {
   DCHECK_NE(SOURCE_UNKNOWN, source);
 
   std::stringstream stream;
   stream << chrome::kChromeUISyncPromoURL << "?"
          << kSyncPromoQueryKeySource << "=" << static_cast<int>(source);
+
+  if (auto_close)
+    stream << "&" << kSyncPromoQueryKeyAutoClose << "=1";
 
   if (!next_page.spec().empty()) {
     url_canon::RawCanonOutputT<char> output;
@@ -245,4 +251,16 @@ SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
     }
   }
   return SOURCE_UNKNOWN;
+}
+
+// static
+bool SyncPromoUI::GetAutoCloseForSyncPromoURL(const GURL& url) {
+  std::string value;
+  if (chrome_common_net::GetValueForKeyInQuery(
+          url, kSyncPromoQueryKeyAutoClose, &value)) {
+    int source = 0;
+    base::StringToInt(value, &source);
+    return (source == 1);
+  }
+  return false;
 }

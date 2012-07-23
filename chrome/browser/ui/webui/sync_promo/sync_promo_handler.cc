@@ -189,16 +189,22 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   if (!username.empty())
     prefs_->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
 
-  // If the browser window is being closed then don't try to navigate to another
-  // URL. This prevents the browser window from flashing during close.
+  // If the browser window is being closed then don't try to navigate to
+  // another URL. This prevents the browser window from flashing during
+  // close.
   Browser* browser =
       browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser || !browser->IsAttemptingToCloseBrowser()) {
-    GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
-        web_ui()->GetWebContents()->GetURL());
-    OpenURLParams params(
-        url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
-    web_ui()->GetWebContents()->OpenURL(params);
+    // Close the window if it was opened in auto-close mode.
+    const GURL& sync_url = web_ui()->GetWebContents()->GetURL();
+    if (SyncPromoUI::GetAutoCloseForSyncPromoURL(sync_url)) {
+      web_ui()->GetWebContents()->Close();
+    } else {
+      GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(sync_url);
+      OpenURLParams params(
+          url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+      web_ui()->GetWebContents()->OpenURL(params);
+    }
   }
 }
 
