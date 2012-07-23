@@ -3288,6 +3288,8 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	wl_array_release(&ec->indices);
 
 	wl_event_loop_destroy(ec->input_loop);
+
+	pixman_region32_fini(&ec->damage);
 }
 
 static int on_term_signal(int signal_number, void *data)
