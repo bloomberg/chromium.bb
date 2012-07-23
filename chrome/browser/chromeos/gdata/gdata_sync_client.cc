@@ -326,7 +326,7 @@ void GDataSyncClient::OnGetEntryInfoByResourceId(
     scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error != GDATA_FILE_OK) {

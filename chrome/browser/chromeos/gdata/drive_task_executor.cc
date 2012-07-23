@@ -91,7 +91,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
       gdata::GDataSystemServiceFactory::GetForProfile(profile());
 
   // Here, we are only insterested in files.
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
 
   if (!system_service || error != GDATA_FILE_OK) {

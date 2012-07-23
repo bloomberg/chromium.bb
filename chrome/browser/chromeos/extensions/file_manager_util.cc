@@ -235,7 +235,7 @@ void OnGDataFileFound(Profile* profile,
                       scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error == gdata::GDATA_FILE_OK) {

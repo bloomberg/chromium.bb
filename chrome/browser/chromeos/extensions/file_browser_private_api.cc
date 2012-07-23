@@ -1817,7 +1817,7 @@ void GetGDataFilePropertiesFunction::OnGetFileInfo(
     scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   DCHECK(property_dict);
 
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error == gdata::GDATA_FILE_OK)
@@ -1831,7 +1831,7 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
     base::DictionaryValue* property_dict,
     gdata::GDataFileError error,
     scoped_ptr<gdata::GDataEntryProto> entry_proto) {
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error != gdata::GDATA_FILE_OK) {

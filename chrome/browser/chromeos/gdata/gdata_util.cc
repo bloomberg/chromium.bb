@@ -133,7 +133,7 @@ void OnGetEntryInfoForInsertGDataCachePathsPermissions(
   DCHECK(cache_paths);
   DCHECK(!callback.is_null());
 
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = GDATA_FILE_ERROR_NOT_FOUND;
 
   GDataCache* cache = GetGDataCache(profile);

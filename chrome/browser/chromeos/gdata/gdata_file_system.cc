@@ -1905,7 +1905,7 @@ void GDataFileSystem::GetResolvedFileByPath(
     const GDataEntryProto* entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto && !entry_proto->has_file_specific_info())
     error = GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error != GDATA_FILE_OK) {
@@ -3793,7 +3793,7 @@ void GDataFileSystem::OnGetEntryInfoCompleteForOpenFile(
     scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error == GDATA_FILE_OK) {
@@ -3918,7 +3918,7 @@ void GDataFileSystem::OnGetEntryInfoCompleteForCloseFile(
     const FileOperationCallback& callback,
     GDataFileError error,
     scoped_ptr<GDataEntryProto> entry_proto) {
-  if (!entry_proto->has_file_specific_info())
+  if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error != GDATA_FILE_OK) {
