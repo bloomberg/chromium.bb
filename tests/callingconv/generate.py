@@ -1,5 +1,5 @@
 #!/usr/bin/python2.6
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -60,13 +60,17 @@ def GenerateTypeInfo(settings):
   if not settings.allow_double:
     all_exclude += [ 't_double', 't_ldouble' ]
 
-  elif not settings.allow_struct_va_arg:
+  if not settings.allow_struct_va_arg:
     va_arg_exclude += [ 't_tiny', 't_big' ]
 
   settings.all_types = [ CType(*args) for args in type_info
                          if args[0] not in all_exclude]
   settings.va_arg_types = [ t for t in settings.all_types
                             if t.id not in va_arg_exclude ]
+  # See also the generated comments in the generated .c files for the settings.
+  print 'Generating with normal arg types: %s' % str(settings.all_types)
+  print 'Generating with var arg types: %s' % str(settings.va_arg_types)
+
 
 
 class CType(object):
@@ -531,16 +535,17 @@ def make_big():
   c = make_int()
   d = make_char()
   e = make_int()
-  f = make_llong()
-  g = make_int()
+  f = make_char()
+  g = make_llong()
   h = make_char()
   i = make_int()
   j = make_char()
   k = make_short()
   l = make_char()
-  m = make_char()
-  return "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % \
-         (a,b,c,d,e,f,g,h,i,j,k,l,m)
+  m = make_double()
+  n = make_char()
+  return "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % \
+         (a,b,c,d,e,f,g,h,i,j,k,l,m,n)
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv[1:]))

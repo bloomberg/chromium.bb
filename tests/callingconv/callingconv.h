@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18,14 +18,15 @@ typedef struct {
   int c;
   char d;
   int e;
-  long long f;
-  int g;
+  char f;
+  long long g;
   char h;
   int i;
   char j;
   short k;
   char l;
-  char m;
+  double m;
+  char n;
 } t_big;
 
 /* Comparison functions */
@@ -39,13 +40,14 @@ int big_cmp(const t_big x, const t_big y);
 #define SET_TINY(obj, a, b)  \
     (set_tiny(&(obj), a, b))
 
-#define SET_BIG(obj, a, b, c, d, e, f, g, h, i, j, k, l, m) \
-    (set_big(&(obj), a, b, c, d, e, f, g, h, i, j, k, l, m))
+#define SET_BIG(obj, a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
+    (set_big(&(obj), a, b, c, d, e, f, g, h, i, j, k, l, m, n))
 
 void set_tiny(t_tiny *ptr, char a, short b);
 
-void set_big(t_big *ptr, char a, char b, int c, char d, int e, long long f,
-             int g, char h, int i, char j, short k, char l, char m);
+void set_big(t_big *ptr, char a, char b, int c, char d, int e, char f,
+             long long g, char h, int i, char j, short k, char l,
+             double m, char n);
 
 /* types used by the modules  */
 typedef char*        t_charp;

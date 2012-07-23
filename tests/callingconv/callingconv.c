@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -62,8 +62,9 @@ void set_tiny(t_tiny *ptr, char a, short b) {
 }
 
 /* Helper for setting values in big_t struct */
-void set_big(t_big *ptr, char a, char b, int c, char d, int e, long long f,
-          int g, char h, int i, char j, short k, char l, char m) {
+void set_big(t_big *ptr, char a, char b, int c, char d, int e, char f,
+             long long g, char h, int i, char j, short k, char l,
+             double m, char n) {
   ptr->a = a;
   ptr->b = b;
   ptr->c = c;
@@ -77,6 +78,7 @@ void set_big(t_big *ptr, char a, char b, int c, char d, int e, long long f,
   ptr->k = k;
   ptr->l = l;
   ptr->m = m;
+  ptr->n = n;
 }
 
 
@@ -103,5 +105,5 @@ int tiny_cmp(const t_tiny x, const t_tiny y) {
 int big_cmp(const t_big x, const t_big y) {
   return EQ(a) && EQ(b) && EQ(c) && EQ(d) &&
          EQ(e) && EQ(f) && EQ(g) && EQ(h) &&
-         EQ(i) && EQ(j) && EQ(k) && EQ(l) && EQ(m);
+         EQ(i) && EQ(j) && EQ(k) && EQ(l) && EQ(m) && EQ(n);
 }

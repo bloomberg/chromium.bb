@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -48,16 +48,12 @@ if env.Bit('bitcode'):
   settings['allow_struct_va_arg'] = 0
 
 # Structure passing in PNaCl is broken.
-# On X86-32, long long and double in structures are passed
-# with the wrong alignment.
-# On X86-64, the ABI is not implemented.
-# There's a good chance ARM has similar problems.
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2746
-# There is additional problem with gcc/pnacl incompatibilities
-# and the mixed mode compilation.
+# On X86-64, the ABI is not implemented / different.
 # BUG: http://code.google.com/p/nativeclient/issues/detail?id=1902
-
-if env.Bit('bitcode'):
+# Passing structs to a var-arg function (as a non-var-arg argument)
+# may be wrong for ARM:
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2746
+if env.Bit('bitcode') and (env.Bit('target_arm') or env.Bit('target_x86_64')):
   settings['allow_struct'] = 0
 
 # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2378
