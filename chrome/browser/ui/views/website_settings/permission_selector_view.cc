@@ -25,8 +25,6 @@ namespace {
 const int kPermissionIconMarginLeft = 6;
 // The width of the column that contains the permissions icons.
 const int kPermissionIconColumnWidth = 20;
-// Left margin of the label that displays the permission types.
-const int kPermissionsRowLabelMarginLeft = 8;
 
 // An array with |ContentSetting|s ordered by CommandID. The array is used to
 // lookup a content setting for a given command id.
@@ -216,7 +214,6 @@ PermissionSelectorView::PermissionSelectorView(ContentSettingsType type,
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  column_set->AddPaddingColumn(0, kPermissionsRowLabelMarginLeft);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,

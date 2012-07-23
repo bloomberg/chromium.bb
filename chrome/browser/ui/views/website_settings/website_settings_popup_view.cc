@@ -45,17 +45,10 @@
 namespace {
 
 // Padding values for sections on the connection tab.
-const int kConnectionSectionPaddingBottom = 10;
-const int kConnectionSectionPaddingLeft = 10;
-const int kConnectionSectionPaddingTop = 10;
-const int kConnectionSectionPaddingRight = 10;
-
-// In order to make the arrow of the bubble point directly at the location icon
-// in the Omnibox rather then the bottom border of the Omnibox, the position of
-// the bubble must be adjusted. This is the number of pixel the bubble must be
-// moved towards the top of the screen (starting from the bottom border of the
-// Omnibox).
-const int kLocationIconBottomMargin = 5;
+const int kConnectionSectionPaddingBottom = 16;
+const int kConnectionSectionPaddingLeft = 18;
+const int kConnectionSectionPaddingTop = 16;
+const int kConnectionSectionPaddingRight = 18;
 
 // Font size of the label for the site identity.
 const int kIdentityNameFontSize = 14;
@@ -64,7 +57,7 @@ const int kIdentityNameFontSize = 14;
 const int kIdentityVerifiedTextColor = 0xFF298a27;
 
 // Left icon margin.
-const int kIconMarginLeft = 4;
+const int kIconMarginLeft = 6;
 
 // Margin and padding values for the |PopupHeaderView|.
 const int kHeaderMarginBottom = 10;
@@ -77,38 +70,36 @@ const int kHeaderPaddingTop = 12;
 // the popup header.
 const int kHeaderRowSpacing = 4;
 
+// In order to make the arrow of the bubble point directly at the location icon
+// in the Omnibox rather then the bottom border of the Omnibox, the position of
+// the bubble must be adjusted. This is the number of pixel the bubble must be
+// moved towards the top of the screen (starting from the bottom border of the
+// Omnibox).
+const int kLocationIconBottomMargin = 5;
+
 // The margins between the popup border and the popup content.
 const int kPopupMarginTop = 4;
 const int kPopupMarginLeft = 0;
 const int kPopupMarginBottom = 10;
 const int kPopupMarginRight = 0;
 
-// Padding values for sections.
-const int kSectionPaddingBottom = 6;
-const int kSectionPaddingLeft = 18;
-const int kSectionPaddingTop = 16;
-
-// Space between a section headline and the section content.
-const int kSectionHeadlineMarginBottom = 12;
-// The content of the "Permissions" section and of the "Cookies and Site Data"
-// section, is structured in individual rows. |kSectionRowSpaceing| is the
-// space between these rows.
-const int kSectionRowSpacing = 6;
-
 // Padding values for sections on the permissions tab.
 const int kPermissionsSectionPaddingBottom = 6;
-const int kPermissionsSectionPaddingLeft = 10;
-const int kPermissionsSectionPaddingTop = 14;
+const int kPermissionsSectionPaddingLeft = 18;
+const int kPermissionsSectionPaddingTop = 16;
 // Space between the headline and the content of a section on the permissions
 // tab.
 const int kPermissionsSectionHeadlineMarginBottom = 10;
 // The content of the "Permissions" section and the "Cookies and Site Data"
 // section is structured in individual rows. |kPermissionsSectionRowSpacing|
 // is the space between these rows.
-const int kPermissionsSectionRowSpacing = 6;
+const int kPermissionsSectionRowSpacing = 2;
 
 // The max width of the popup.
 const int kPopupWidth = 310;
+
+const int kSiteDataIconColumnWidth = 20;
+const int kSiteDataSectionRowSpacing = 11;
 
 // Returns true if the passed |url| refers to an internal chrome page.
 bool InternalChromePage(const GURL& url) {
@@ -402,8 +393,8 @@ void WebsiteSettingsPopupView::SetCookieInfo(
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
-                        views::GridLayout::USE_PREF,
-                        0,
+                        views::GridLayout::FIXED,
+                        kSiteDataIconColumnWidth,
                         0);
   column_set->AddPaddingColumn(0, kIconMarginLeft);
   column_set->AddColumn(views::GridLayout::FILL,
@@ -413,6 +404,7 @@ void WebsiteSettingsPopupView::SetCookieInfo(
                         0,
                         0);
 
+  layout->AddPaddingRow(1, 5);
   for (CookieInfoList::const_iterator i(cookie_info_list.begin());
        i != cookie_info_list.end();
        ++i) {
@@ -421,20 +413,19 @@ void WebsiteSettingsPopupView::SetCookieInfo(
         UTF8ToUTF16(i->cookie_source),
         base::IntToString16(i->allowed),
         base::IntToString16(i->blocked));
+    if (i != cookie_info_list.begin())
+      layout->AddPaddingRow(1, kSiteDataSectionRowSpacing);
     layout->StartRow(1, site_data_content_column);
     views::ImageView* icon = new views::ImageView();
     const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(
         CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
     icon->SetImage(image.ToImageSkia());
-    layout->AddView(icon);
-    layout->AddView(new views::Label(label_text),
-                    1,
-                    1,
-                    views::GridLayout::LEADING,
+    layout->AddView(icon, 1, 1, views::GridLayout::CENTER,
                     views::GridLayout::CENTER);
-
-    layout->AddPaddingRow(1, kPermissionsSectionRowSpacing);
+    layout->AddView(new views::Label(label_text), 1, 1,
+                    views::GridLayout::LEADING, views::GridLayout::CENTER);
   }
+  layout->AddPaddingRow(1, 6);
 
   layout->Layout(site_data_content_);
   SizeToContents();
