@@ -82,6 +82,10 @@ def SetupWindowsEnvironment(context):
   # Needed for finding devenv.
   context['msvc'] = msvc
 
+  # The context on other systems has GYP_DEFINES set, set it for windows to be
+  # able to save and restore without KeyError.
+  context.SetEnv('GYP_DEFINES', '')
+
 
 def SetupGypDefines(context, extra_vars=[]):
   context.SetEnv('GYP_DEFINES', ' '.join(context['gyp_vars'] + extra_vars))
@@ -115,6 +119,52 @@ def ValidatorTest(context, architecture, validator, warn_only=False):
   Command(context, cmd=cmd)
 
 
+def CommandGypBuild(context):
+  if context.Windows():
+    Command(
+        context,
+        cmd=[os.path.join(context['msvc'], 'Common7', 'IDE', 'devenv.com'),
+             r'build\all.sln',
+             '/build', context['gyp_mode']])
+  elif context.Linux():
+    Command(context, cmd=['make', '-C', '..', '-k',
+                          '-j%d' % context['max_jobs'], 'V=1',
+                          'BUILDTYPE=' + context['gyp_mode']])
+  elif context.Mac():
+    Command(context, cmd=['xcodebuild', '-project', 'build/all.xcodeproj',
+                          '-parallelizeTargets',
+                          '-configuration', context['gyp_mode']])
+  else:
+    raise Exception('Unknown platform')
+
+
+def CommandGclientRunhooks(context):
+  if context.Windows():
+    gclient = 'gclient.bat'
+  else:
+    gclient = 'gclient'
+  Command(context, cmd=[gclient, 'runhooks', '--force'])
+
+
+def RemoveGypBuildDirectories():
+  # Remove all directories on all platforms.  Overkill, but it allows for
+  # straight-line code.
+  # Windows
+  RemoveDirectory('build/Debug')
+  RemoveDirectory('build/Release')
+  RemoveDirectory('build/Debug-Win32')
+  RemoveDirectory('build/Release-Win32')
+  RemoveDirectory('build/Debug-x64')
+  RemoveDirectory('build/Release-x64')
+
+  # Linux and Mac
+  RemoveDirectory('hg')
+  RemoveDirectory('../xcodebuild')
+  RemoveDirectory('../sconsbuild')
+  RemoveDirectory('../out')
+  RemoveDirectory('src/third_party/nacl_sdk/arm-newlib')
+
+
 def BuildScript(status, context):
   inside_toolchain = context['inside_toolchain']
   # When off the trunk, we don't have anywhere to get Chrome binaries
@@ -130,25 +180,9 @@ def BuildScript(status, context):
                     not inside_toolchain)
 
   # Clean out build directories.
-  # Remove all directories on all platforms.  Overkill, but it allows for
-  # straight-line code.
   with Step('clobber', status):
     RemoveDirectory(r'scons-out')
-
-    # Windows
-    RemoveDirectory('build/Debug')
-    RemoveDirectory('build/Release')
-    RemoveDirectory('build/Debug-Win32')
-    RemoveDirectory('build/Release-Win32')
-    RemoveDirectory('build/Debug-x64')
-    RemoveDirectory('build/Release-x64')
-
-    # Linux and Mac
-    RemoveDirectory('hg')
-    RemoveDirectory('../xcodebuild')
-    RemoveDirectory('../sconsbuild')
-    RemoveDirectory('../out')
-    RemoveDirectory('src/third_party/nacl_sdk/arm-newlib')
+    RemoveGypBuildDirectories()
 
   with Step('cleanup_temp', status):
     # Picking out drive letter on which the build is happening so we can use
@@ -196,11 +230,7 @@ def BuildScript(status, context):
           cwd='..')
   else:
     with Step('gclient_runhooks', status):
-      if context.Windows():
-        gclient = 'gclient.bat'
-      else:
-        gclient = 'gclient'
-      Command(context, cmd=[gclient, 'runhooks', '--force'])
+      CommandGclientRunhooks(context)
 
   if context['clang']:
     with Step('update_clang', status):
@@ -280,22 +310,7 @@ def BuildScript(status, context):
 
   # Make sure our Gyp build is working.
   with Step('gyp_compile', status):
-    if context.Windows():
-      Command(
-          context,
-          cmd=[os.path.join(context['msvc'], 'Common7', 'IDE', 'devenv.com'),
-               r'build\all.sln',
-               '/build', context['gyp_mode']])
-    elif context.Linux():
-      Command(context, cmd=['make', '-C', '..', '-k',
-                            '-j%d' % context['max_jobs'], 'V=1',
-                            'BUILDTYPE=' + context['gyp_mode']])
-    elif context.Mac():
-      Command(context, cmd=['xcodebuild', '-project', 'build/all.xcodeproj',
-                            '-parallelizeTargets',
-                            '-configuration', context['gyp_mode']])
-    else:
-      raise Exception('Unknown platform')
+    CommandGypBuild(context)
 
   # The main compile step.
   with Step('scons_compile', status):
@@ -348,6 +363,29 @@ def BuildScript(status, context):
             args=['run_hello_world_test'])
 
   ### END tests ###
+
+  # Build with ragel-based validator using GYP.
+  gyp_defines_save = context.GetEnv('GYP_DEFINES')
+  context.SetEnv('GYP_DEFINES',
+                 ' '.join([gyp_defines_save, 'nacl_validator_ragel=1']))
+  with Step('gyp_compile_ragel', status):
+    # Clobber GYP build to recompile necessary files with new preprocessor macro
+    # definitions.  It is done because some build systems (such as GNU Make,
+    # MSBuild etc.) do not consider compiler arguments as a dependency.
+    RemoveGypBuildDirectories()
+    CommandGclientRunhooks(context)
+    CommandGypBuild(context)
+  context.SetEnv('GYP_DEFINES', gyp_defines_save)
+
+  # Build with ragel-based validator using scons.
+  with Step('scons_compile_ragel', status):
+    SCons(context, parallel=True, args=['validator_ragel=1'])
+
+  # Smoke tests for the R-DFA validator.
+  # TODO(pasko): hook in more tests.
+  with Step('validator_ragel_tests', status):
+    SCons(context, args=['validator_ragel=1',
+                         'run_dfa_validator_hello_world_test'])
 
 
 def Main():

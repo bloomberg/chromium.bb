@@ -26,7 +26,7 @@
           'type': 'static_library',
           'sources' : [
             'unreviewed/dfa_validate_64.c',
-            'gen/validator-x86_64.c',
+            'gen/validator_x86_64.c',
           ],
         },
       ],
