@@ -31,9 +31,11 @@
   },
   'conditions': [
     ['build_ppapi_ipc_proxy_untrusted==1', {
-      'defines': [
-        '-DNACL_PPAPI_IPC_PROXY',
-      ],
+      'variables': {
+        'default_defines': [
+          '-DNACL_PPAPI_IPC_PROXY',
+        ],
+      },
     }],
     ['target_arch!="arm"', {
       'target_defaults': {
