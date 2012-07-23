@@ -362,6 +362,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
               const FilePath::StringType& new_name,
               const FilePathUpdateCallback& callback);
 
+  // Part of Rename(). Called after GetEntryInfoByPath() is complete.
+  void RenameAfterGetEntryInfo(const FilePath& file_path,
+                               const FilePath::StringType& new_name,
+                               const FilePathUpdateCallback& callback,
+                               GDataFileError error,
+                               scoped_ptr<GDataEntryProto> entry_proto);
+
   // Adds a file or directory at |file_path| to the directory at |dir_path|.
   //
   // Can be called from UI thread. |callback| is run on the calling thread.

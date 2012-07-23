@@ -1498,28 +1498,46 @@ void GDataFileSystem::Rename(const FilePath& file_path,
     return;
   }
 
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
-  if (!entry) {
-    if (!callback.is_null()) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND, file_path));
-    }
+  // Get the edit URL of an entry at |file_path|.
+  GetEntryInfoByPath(file_path,
+                     base::Bind(
+                         &GDataFileSystem::RenameAfterGetEntryInfo,
+                         ui_weak_ptr_,
+                         file_path,
+                         new_name,
+                         callback));
+}
+
+void GDataFileSystem::RenameAfterGetEntryInfo(
+    const FilePath& file_path,
+    const FilePath::StringType& new_name,
+    const FilePathUpdateCallback& callback,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != GDATA_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error, file_path);
     return;
   }
+  DCHECK(entry_proto.get());
 
   // Drop the .g<something> extension from |new_name| if the file being
   // renamed is a hosted document and |new_name| has the same .g<something>
   // extension as the file.
   FilePath::StringType file_name = new_name;
-  if (entry->AsGDataFile() && entry->AsGDataFile()->is_hosted_document()) {
+  if (entry_proto->has_file_specific_info() &&
+      entry_proto->file_specific_info().is_hosted_document()) {
     FilePath new_file(file_name);
-    if (new_file.Extension() == entry->AsGDataFile()->document_extension()) {
+    if (new_file.Extension() ==
+        entry_proto->file_specific_info().document_extension()) {
       file_name = new_file.RemoveExtension().value();
     }
   }
 
   documents_service_->RenameResource(
-      entry->edit_url(),
+      GURL(entry_proto->edit_url()),
       file_name,
       base::Bind(&GDataFileSystem::OnRenameResourceCompleted,
                  ui_weak_ptr_,
