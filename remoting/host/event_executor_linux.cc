@@ -452,8 +452,7 @@ void EventExecutorLinux::OnSessionFinished() {
 
 scoped_ptr<EventExecutor> EventExecutor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    VideoFrameCapturer* capturer) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   scoped_ptr<EventExecutorLinux> executor(
       new EventExecutorLinux(main_task_runner));
   if (!executor->Init())

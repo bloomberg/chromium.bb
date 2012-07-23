@@ -381,8 +381,7 @@ void EventExecutorMac::OnSessionFinished() {
 
 scoped_ptr<EventExecutor> EventExecutor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    VideoFrameCapturer* capturer) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return scoped_ptr<EventExecutor>(new EventExecutorMac(main_task_runner));
 }
 

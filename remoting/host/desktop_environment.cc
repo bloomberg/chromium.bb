@@ -22,8 +22,7 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::Create(
     ChromotingHostContext* context) {
   scoped_ptr<VideoFrameCapturer> capturer(VideoFrameCapturer::Create());
   scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
-      context->desktop_task_runner(), context->ui_task_runner(),
-      capturer.get());
+      context->desktop_task_runner(), context->ui_task_runner());
   scoped_ptr<AudioCapturer> audio_capturer = AudioCapturer::Create();
 
   if (capturer.get() == NULL || event_executor.get() == NULL) {
@@ -43,8 +42,7 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateForService(
     ChromotingHostContext* context) {
   scoped_ptr<VideoFrameCapturer> capturer(VideoFrameCapturer::Create());
   scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
-      context->desktop_task_runner(), context->ui_task_runner(),
-      capturer.get());
+      context->desktop_task_runner(), context->ui_task_runner());
   scoped_ptr<AudioCapturer> audio_capturer = AudioCapturer::Create();
 
   if (capturer.get() == NULL || event_executor.get() == NULL) {

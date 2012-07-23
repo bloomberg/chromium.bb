@@ -228,7 +228,7 @@ class SimpleHost : public HeartbeatSender::Listener {
       scoped_ptr<VideoFrameCapturer> capturer(new VideoFrameCapturerFake());
       scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
           context_.desktop_task_runner(),
-          context_.ui_task_runner(), capturer.get());
+          context_.ui_task_runner());
       scoped_ptr<AudioCapturer> audio_capturer(NULL);
       desktop_environment_ = DesktopEnvironment::CreateFake(
           &context_,
