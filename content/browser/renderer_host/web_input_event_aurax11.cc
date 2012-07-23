@@ -413,6 +413,16 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
   gesture_event.deltaY = event->details().generic_y();
   gesture_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
 
+  // WebKit gesture events do not have bounding-boxes yet, and expect the data
+  // in deltaX/deltaY instead (and instead of bounding box, WebKit expects the
+  // radius). This is currently used only for tap events. So special case this
+  // particular case.
+  // http://crbug.com/138572
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    gesture_event.deltaX = event->details().bounding_box().width() / 2;
+    gesture_event.deltaY = event->details().bounding_box().height() / 2;
+  }
+
   return gesture_event;
 }
 

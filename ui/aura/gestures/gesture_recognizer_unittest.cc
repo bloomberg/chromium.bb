@@ -51,9 +51,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_x_(0),
         scroll_y_(0),
         velocity_x_(0),
-        velocity_y_(0),
-        radius_x_(0),
-        radius_y_(0) {
+        velocity_y_(0) {
   }
 
   virtual ~GestureEventConsumeDelegate() {}
@@ -81,8 +79,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     scroll_y_ = 0;
     velocity_x_ = 0;
     velocity_y_ = 0;
-    radius_x_ = 0;
-    radius_y_ = 0;
   }
 
   bool tap() const { return tap_; }
@@ -113,14 +109,12 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   int touch_id() const { return touch_id_; }
   float velocity_x() const { return velocity_x_; }
   float velocity_y() const { return velocity_y_; }
-  float radius_x() const { return radius_x_; }
-  float radius_y() const { return radius_y_; }
+  const gfx::Rect& bounding_box() const { return bounding_box_; }
 
   virtual ui::GestureStatus OnGestureEvent(GestureEvent* gesture) OVERRIDE {
+    bounding_box_ = gesture->details().bounding_box();
     switch (gesture->type()) {
       case ui::ET_GESTURE_TAP:
-        radius_x_ = gesture->details().radius_x();
-        radius_y_ = gesture->details().radius_y();
         tap_location_ = gesture->location();
         tap_ = true;
         break;
@@ -200,9 +194,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scroll_y_;
   float velocity_x_;
   float velocity_y_;
-  int radius_x_;
-  int radius_y_;
   int touch_id_;
+  gfx::Rect bounding_box_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventConsumeDelegate);
 };
@@ -489,8 +482,8 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->scroll_end());
 
      gfx::Point actual_point(delegate->tap_location());
-     EXPECT_EQ(12, delegate->radius_x());
-     EXPECT_EQ(12, delegate->radius_y());
+     EXPECT_EQ(24, delegate->bounding_box().width());
+     EXPECT_EQ(24, delegate->bounding_box().height());
      EXPECT_EQ(100, actual_point.x());
      EXPECT_EQ(200, actual_point.y());
   }
@@ -530,8 +523,8 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->scroll_end());
 
      gfx::Point actual_point(delegate->tap_location());
-     EXPECT_EQ(23, delegate->radius_x());
-     EXPECT_EQ(20, delegate->radius_y());
+     EXPECT_EQ(46, delegate->bounding_box().width());
+     EXPECT_EQ(40, delegate->bounding_box().height());
      EXPECT_EQ(373, actual_point.x());
      EXPECT_EQ(290, actual_point.y());
   }
@@ -587,8 +580,8 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->scroll_end());
 
      gfx::Point actual_point(delegate->tap_location());
-     EXPECT_EQ(14, delegate->radius_x());
-     EXPECT_EQ(14, delegate->radius_y());
+     EXPECT_EQ(28, delegate->bounding_box().width());
+     EXPECT_EQ(28, delegate->bounding_box().height());
      EXPECT_EQ(49, actual_point.x());
      EXPECT_EQ(200, actual_point.y());
   }
@@ -676,8 +669,8 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->scroll_end());
 
      gfx::Point actual_point(delegate->tap_location());
-     EXPECT_EQ(17, delegate->radius_x());
-     EXPECT_EQ(18, delegate->radius_y());
+     EXPECT_EQ(35, delegate->bounding_box().width());
+     EXPECT_EQ(36, delegate->bounding_box().height());
      EXPECT_EQ(396, actual_point.x());
      EXPECT_EQ(149, actual_point.y());
   }

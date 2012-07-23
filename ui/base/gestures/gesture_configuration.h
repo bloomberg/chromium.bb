@@ -21,6 +21,7 @@ class UI_EXPORT GestureConfiguration {
   static int default_radius() {
     return default_radius_;
   }
+  static void set_default_radius(int radius) { default_radius_ = radius; }
   static double long_press_time_in_seconds() {
     return long_press_time_in_seconds_;
   }

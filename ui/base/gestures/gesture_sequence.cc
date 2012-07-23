@@ -493,14 +493,15 @@ void GestureSequence::RecreateBoundingBox() {
   for (int i = 0; i < kMaxGesturePoints; ++i) {
     if (!points_[i].in_use())
       continue;
-    if (left > points_[i].x())
-      left = points_[i].x();
-    if (right < points_[i].x())
-      right = points_[i].x();
-    if (top > points_[i].y())
-      top = points_[i].y();
-    if (bottom < points_[i].y())
-      bottom = points_[i].y();
+    gfx::Rect rect = points_[i].enclosing_rectangle();
+    if (left > rect.x())
+      left = rect.x();
+    if (right < rect.right())
+      right = rect.right();
+    if (top > rect.y())
+      top = rect.y();
+    if (bottom < rect.bottom())
+      bottom = rect.bottom();
   }
   bounding_box_last_center_ = bounding_box_.CenterPoint();
   bounding_box_.SetRect(left, top, right - left, bottom - top);
@@ -559,6 +560,7 @@ GestureEvent* GestureSequence::CreateGestureEvent(
     unsigned int touch_id_bitmask) {
   GestureEventDetails gesture_details(details);
   gesture_details.set_touch_points(point_count_);
+  gesture_details.set_bounding_box(bounding_box_);
   return helper_->CreateGestureEvent(gesture_details, location, flags,
       timestamp, touch_id_bitmask);
 }
@@ -576,7 +578,7 @@ void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
 void GestureSequence::AppendBeginGestureEvent(const GesturePoint& point,
                                               Gestures* gestures) {
   gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_BEGIN, point_count_, 0),
+      GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0),
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
@@ -586,7 +588,7 @@ void GestureSequence::AppendBeginGestureEvent(const GesturePoint& point,
 void GestureSequence::AppendEndGestureEvent(const GesturePoint& point,
                                               Gestures* gestures) {
   gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_END, point_count_, 0),
+      GestureEventDetails(ui::ET_GESTURE_END, 0, 0),
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
@@ -598,7 +600,7 @@ void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
   gfx::Rect er = point.enclosing_rectangle();
   gfx::Point center = er.CenterPoint();
   gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_TAP, er.width() / 2, er.height() / 2),
+      GestureEventDetails(ui::ET_GESTURE_TAP, 0, 0),
       center,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),

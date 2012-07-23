@@ -400,15 +400,13 @@ class LocalGestureEvent :
  public:
   LocalGestureEvent(
       HWND hwnd,
-      ui::EventType type,
+      const ui::GestureEventDetails& details,
       const gfx::Point& location,
       int flags,
       base::Time time,
-      float param_first,
-      float param_second,
       unsigned int touch_id_bitfield)
       : touch_ids_bitfield_(touch_id_bitfield),
-        type_(type) {
+        type_(details.type()) {
     // location is given in window coordinates, based on the parent window.
     // Map to the appropriate window's coordinates. For a root window the
     // coordinates won't change, because the parent shares our rect.
@@ -420,9 +418,19 @@ class LocalGestureEvent :
     data().y = client_point.y;
     data().globalX = screen_point.x;
     data().globalY = screen_point.y;
-    data().deltaX = param_first;
-    data().deltaY = param_second;
-    data().type = ConvertToWebInputEvent(type);
+    data().deltaX = details.generic_x();
+    data().deltaY = details.generic_y();
+    data().type = ConvertToWebInputEvent(type_);
+
+    // WebKit gesture events do not have bounding-boxes yet, and expect the data
+    // in deltaX/deltaY instead (and instead of bounding box, WebKit expects the
+    // radius). This is currently used only for tap events. So special case this
+    // particular case.
+    // http://crbug.com/138572
+    if (type_ == ui::ET_GESTURE_TAP) {
+      data().deltaX = details.bounding_box().width() / 2;
+      data().deltaY = details.bounding_box().height() / 2;
+    }
   }
 
   virtual int GetLowestTouchId() const OVERRIDE {
@@ -1287,9 +1295,8 @@ ui::GestureEvent* RenderWidgetHostViewWin::CreateGestureEvent(
     int flags,
     base::Time time,
     unsigned int touch_id_bitfield) {
-
-  return new LocalGestureEvent(m_hWnd, details.type(), location, flags, time,
-      details.generic_x(), details.generic_y(), touch_id_bitfield);
+  return new LocalGestureEvent(m_hWnd, details, location, flags, time,
+      touch_id_bitfield);
 }
 
 ui::TouchEvent* RenderWidgetHostViewWin::CreateTouchEvent(

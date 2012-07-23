@@ -43,6 +43,7 @@ void AuraTestBase::SetUp() {
   ui::GestureConfiguration::set_points_buffered_for_velocity(10);
   ui::GestureConfiguration::set_rail_break_proportion(15);
   ui::GestureConfiguration::set_rail_start_proportion(2);
+  ui::GestureConfiguration::set_default_radius(0);
   helper_.reset(new AuraTestHelper(&message_loop_));
   helper_->SetUp();
 }

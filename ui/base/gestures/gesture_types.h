@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "ui/base/events.h"
+#include "ui/gfx/rect.h"
 
 namespace ui {
 
@@ -19,6 +20,9 @@ struct UI_EXPORT GestureEventDetails {
 
   int touch_points() const { return touch_points_; }
   void set_touch_points(int touch_points) { touch_points_ = touch_points; }
+
+  const gfx::Rect& bounding_box() const { return bounding_box_; }
+  void set_bounding_box(const gfx::Rect& box) { bounding_box_ = box; }
 
   float scroll_x() const {
     CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
@@ -36,15 +40,6 @@ struct UI_EXPORT GestureEventDetails {
   float velocity_y() const {
     CHECK_EQ(ui::ET_SCROLL_FLING_START, type_);
     return data.velocity.y;
-  }
-
-  float radius_x() const {
-    CHECK_EQ(ui::ET_GESTURE_TAP, type_);
-    return data.radius.x;
-  }
-  float radius_y() const {
-    CHECK_EQ(ui::ET_GESTURE_TAP, type_);
-    return data.radius.y;
   }
 
   int touch_id() const {
@@ -97,11 +92,6 @@ struct UI_EXPORT GestureEventDetails {
       float y;
     } velocity;
 
-    struct {  // TAP radius.
-      float x;
-      float y;
-    } radius;
-
     int touch_id;  // LONG_PRESS touch-id.
 
     struct {  // SWIPE direction.
@@ -118,6 +108,10 @@ struct UI_EXPORT GestureEventDetails {
   } data;
 
   int touch_points_;  // Number of active touch points in the gesture.
+
+  // Bounding box is an axis-aligned rectangle that contains all the
+  // enclosing rectangles of the touch-points in the gesture.
+  gfx::Rect bounding_box_;
 };
 
 // An abstract type to represent touch-events. The gesture-recognizer uses this

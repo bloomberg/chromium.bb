@@ -22,20 +22,9 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       data.velocity.y = delta_y;
       break;
 
-    case ui::ET_GESTURE_TAP:
-      data.radius.x = delta_x;
-      data.radius.y = delta_y;
-      break;
-
     case ui::ET_GESTURE_LONG_PRESS:
       data.touch_id = static_cast<int>(delta_x);
       CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for long press.";
-      break;
-
-    case ui::ET_GESTURE_BEGIN:
-    case ui::ET_GESTURE_END:
-      set_touch_points(static_cast<int>(delta_x));
-      CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for begin/end";
       break;
 
     case ui::ET_GESTURE_PINCH_UPDATE:
