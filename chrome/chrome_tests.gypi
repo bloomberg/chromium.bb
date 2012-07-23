@@ -79,6 +79,7 @@
         'app/breakpad_mac_stubs.mm',
         'app/chrome_main_delegate.cc',
         'app/chrome_main_delegate.h',
+        'browser/android/tab_android_test_stubs.cc',
         'browser/autofill/autofill_common_test.cc',
         'browser/autofill/autofill_common_test.h',
         'browser/autofill/data_driven_test.cc',
