@@ -1131,7 +1131,8 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
     if (isinstance(exception, cros_build_lib.RunCommandError) and
-        exception.result.returncode == 2):
+        exception.result.returncode == 2 and
+        not self._build_config['hw_tests_critical']):
       return self._HandleExceptionAsWarning(exception)
     else:
       return super(HWTestStage, self)._HandleStageException(exception)
@@ -1153,7 +1154,10 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
                                 self._build_config['hw_tests_pool'], debug)
 
     except cros_build_lib.TimeoutError as exception:
-      return self._HandleExceptionAsWarning(exception)
+      if not self._build_config['hw_tests_critical']:
+        return self._HandleExceptionAsWarning(exception)
+      else:
+        return super(HWTestStage, self)._HandleStageException(exception)
 
 
 class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,

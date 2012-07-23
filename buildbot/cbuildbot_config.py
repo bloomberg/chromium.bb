@@ -209,6 +209,9 @@ _settings = dict(
 # async_hw_tests -- A list of autotest suites to kick off and forget about.
   async_hw_tests=[],
 
+# hw_tests_critical -- Usually we consider structural failures here as OK.
+  hw_tests_critical=False,
+
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,
 
