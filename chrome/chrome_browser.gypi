@@ -449,6 +449,8 @@
         'browser/chromeos/choose_mobile_network_dialog.h',
         'browser/chromeos/chrome_browser_main_chromeos.cc',
         'browser/chromeos/chrome_browser_main_chromeos.h',
+        'browser/chromeos/contacts/contact.cc',
+        'browser/chromeos/contacts/contact.h',
         'browser/chromeos/cros/burn_library.cc',
         'browser/chromeos/cros/burn_library.h',
         'browser/chromeos/cros/cellular_data_plan.cc',

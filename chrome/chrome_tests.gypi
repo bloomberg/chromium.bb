@@ -1087,6 +1087,8 @@
         'browser/chrome_page_zoom_unittest.cc',
         'browser/chromeos/bluetooth/bluetooth_service_record_unittest.cc',
         'browser/chromeos/bluetooth/bluetooth_utils_unittest.cc',
+        'browser/chromeos/contacts/contact_test_util.cc',
+        'browser/chromeos/contacts/contact_test_util.h',
         'browser/chromeos/cros/cros_network_functions_unittest.cc',
         'browser/chromeos/cros/network_constants.h',
         'browser/chromeos/cros/network_library.cc',
