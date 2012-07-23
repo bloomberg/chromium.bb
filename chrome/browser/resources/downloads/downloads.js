@@ -415,7 +415,8 @@ Download.prototype.update = function(download) {
   } else {
     downloads.scheduleIconLoad(this.nodeImg_,
                                'chrome://fileicon/' +
-                                   encodeURIComponent(this.filePath_));
+                                   encodeURIComponent(this.filePath_) +
+                                   '?scale=' + window.devicePixelRatio + 'x');
 
     if (this.state_ == Download.States.COMPLETE &&
         !this.fileExternallyRemoved_) {
