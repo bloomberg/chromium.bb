@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "gestures/include/gestures.h"
-#include "gestures/include/semi_mt_correcting_filter_interpreter.h"
+#include "gestures/include/cr48_profile_sensor_filter_interpreter.h"
 
 using std::deque;
 using std::make_pair;
@@ -18,11 +18,11 @@ using std::vector;
 
 namespace gestures {
 
-class SemiMtCorrectingFilterInterpreterTest : public ::testing::Test {};
+class Cr48ProfileSensorFilterInterpreterTest : public ::testing::Test {};
 
-class SemiMtCorrectingFilterInterpreterTestInterpreter : public Interpreter {
+class Cr48ProfileSensorFilterInterpreterTestInterpreter : public Interpreter {
  public:
-  SemiMtCorrectingFilterInterpreterTestInterpreter()
+  Cr48ProfileSensorFilterInterpreterTestInterpreter()
         : sync_interpret_cnt_(0) {
   }
 
@@ -77,10 +77,10 @@ class SemiMtCorrectingFilterInterpreterTestInterpreter : public Interpreter {
   deque<vector<short> > expected_tracking_id_;
 };
 
-TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrIDm, flags
@@ -126,10 +126,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest) {
   interpreter.SyncInterpret(&hs[4], NULL);
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -180,10 +180,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest) {
   interpreter.SyncInterpret(&hs[5], NULL);
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     { 0, 0, 0, 0, 60, 0, 4000, 3300, 5, 0 },
@@ -229,10 +229,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest) {
   interpreter.SyncInterpret(&hs[2], NULL);
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
     { 0, 0, 0, 0, 60, 0, 2969, 3088, 1481, 0},
@@ -329,10 +329,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest) {
   interpreter.SyncInterpret(&hs[hwstate_index_finger_crossed + 2], NULL);
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, ClipNonLinearAreaTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     { 0, 0, 0, 0, 60, 0, 1240, 3088, 1481, 0},
@@ -367,10 +367,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest) {
   EXPECT_EQ(interpreter.non_linear_bottom_.val_, fs[3].position_y);
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, MovingFingerTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   // Test one, second finger arrives below the first finger, then move the first
   // finger. Expect moving finger will be the first finger(Y=1942) as the
@@ -510,10 +510,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest) {
 
 const struct FingerState* kNullFingers = NULL;
 
-TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, HistoryTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -562,10 +562,10 @@ const unsigned kWarpFlags = GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
 // Cr-48 tp firmware often reports the 'lifted' finger instead of the
 // 'still present' finger for one packet following 2->1 finger transitions.
 // This test simulates this, and tests that it doesn't generate motion.
-TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, TwoToOneJumpTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -613,10 +613,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest) {
 // pointer motion during drumroll.
 // This test uses a data from a feedback report, and tests that the WARP flag
 // is set after 1->2.
-TEST(SemiMtCorrectingFilterInterpreterTest, OneToTwoJumpTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, OneToTwoJumpTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -663,10 +663,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, OneToTwoJumpTest) {
   }
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -718,10 +718,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest) {
   }
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, SensorJumpTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, SensorJumpTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -768,10 +768,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, SensorJumpTest) {
   }
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -846,10 +846,10 @@ TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest) {
   }
 }
 
-TEST(SemiMtCorrectingFilterInterpreterTest, FastMoveTest) {
-  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
-      new SemiMtCorrectingFilterInterpreterTestInterpreter;
-  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+TEST(Cr48ProfileSensorFilterInterpreterTest, FastMoveTest) {
+  Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
+      new Cr48ProfileSensorFilterInterpreterTestInterpreter;
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags

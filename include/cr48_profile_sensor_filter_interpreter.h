@@ -9,8 +9,8 @@
 #include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 
-#ifndef GESTURES_SEMI_MT_CORRECTING_FILTER_INTERPRETER_H_
-#define GESTURES_SEMI_MT_CORRECTING_FILTER_INTERPRETER_H_
+#ifndef GESTURES_CR48_PROFILE_SENSOR_FILTER_INTERPRETER_H_
+#define GESTURES_CR48_PROFILE_SENSOR_FILTER_INTERPRETER_H_
 
 namespace gestures {
 
@@ -58,24 +58,25 @@ typedef enum {
 // on Cr48 before they are processed by other interpreters. The tweaks mainly
 // include low-pressure filtering, hysteresis, finger position correction.
 
-class SemiMtCorrectingFilterInterpreter : public Interpreter {
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FastMoveTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, OneToTwoJumpTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, SensorJumpTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest);
+class Cr48ProfileSensorFilterInterpreter : public Interpreter {
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, ClipNonLinearAreaTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest,
+              CorrectFingerPositionTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, FastMoveTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, HistoryTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, MovingFingerTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, OneToTwoJumpTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, SensorJumpTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, TwoToOneJumpTest);
+  FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest);
 
  public:
-  SemiMtCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
-  virtual ~SemiMtCorrectingFilterInterpreter() {}
+  Cr48ProfileSensorFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  virtual ~Cr48ProfileSensorFilterInterpreter() {}
   virtual Gesture* SyncInterpret(HardwareState* hwstate,
                                  stime_t* timeout);
   virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
@@ -234,4 +235,4 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
 
 }  // namespace gestures
 
-#endif  // SEMI_MT_PREPROCESS_INTERPRETER_H_
+#endif  // CR48_PROFILE_SENSOR_FILTER_INTERPRETER_H_

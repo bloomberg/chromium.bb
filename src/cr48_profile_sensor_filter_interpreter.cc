@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gestures/include/semi_mt_correcting_filter_interpreter.h"
+#include "gestures/include/cr48_profile_sensor_filter_interpreter.h"
 
 #include <math.h>
 
@@ -13,7 +13,7 @@
 
 namespace gestures {
 
-SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
+Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
     : last_id_(0),
       interpreter_enabled_(prop_reg, "SemiMT Correcting Filter Enable", 0),
@@ -33,7 +33,7 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
   next_.reset(next);
 }
 
-Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
+Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpret(
     HardwareState* hwstate, stime_t* timeout) {
 
   if (is_semi_mt_device_) {
@@ -58,18 +58,18 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
   return next_->SyncInterpret(hwstate, timeout);
 }
 
-Gesture* SemiMtCorrectingFilterInterpreter::HandleTimer(
+Gesture* Cr48ProfileSensorFilterInterpreter::HandleTimer(
     stime_t now, stime_t* timeout) {
   return next_->HandleTimer(now, timeout);
 }
 
-void SemiMtCorrectingFilterInterpreter::SetHardwareProperties(
+void Cr48ProfileSensorFilterInterpreter::SetHardwareProperties(
     const HardwareProperties& hw_props) {
   is_semi_mt_device_ = hw_props.support_semi_mt;
   next_->SetHardwareProperties(hw_props);
 }
 
-void SemiMtCorrectingFilterInterpreter::UpdateHistory(HardwareState* hwstate) {
+void Cr48ProfileSensorFilterInterpreter::UpdateHistory(HardwareState* hwstate) {
   if (prev_hwstate_.fingers) {
     prev2_hwstate_ = prev_hwstate_;
     std::copy(prev_hwstate_.fingers, prev_hwstate_.fingers + kMaxSemiMtFingers,
@@ -84,12 +84,12 @@ void SemiMtCorrectingFilterInterpreter::UpdateHistory(HardwareState* hwstate) {
   }
 }
 
-void SemiMtCorrectingFilterInterpreter::ClearHistory() {
+void Cr48ProfileSensorFilterInterpreter::ClearHistory() {
   memset(&prev_hwstate_, 0, sizeof(prev_hwstate_));
   memset(&prev2_hwstate_, 0, sizeof(prev2_hwstate_));
 }
 
-void SemiMtCorrectingFilterInterpreter::AssignTrackingId(
+void Cr48ProfileSensorFilterInterpreter::AssignTrackingId(
     HardwareState* hwstate) {
   if (hwstate->finger_cnt == 0) {
     return;
@@ -116,7 +116,7 @@ void SemiMtCorrectingFilterInterpreter::AssignTrackingId(
   }
 }
 
-void SemiMtCorrectingFilterInterpreter::SwapFingerPatternX(
+void Cr48ProfileSensorFilterInterpreter::SwapFingerPatternX(
     HardwareState* hwstate) {
   // Update LR bits, i.e. swap position_x values.
   std::swap(hwstate->fingers[0].position_x,
@@ -127,7 +127,7 @@ void SemiMtCorrectingFilterInterpreter::SwapFingerPatternX(
   hwstate->fingers[1].flags |= GESTURES_FINGER_WARP_X;
 }
 
-void SemiMtCorrectingFilterInterpreter::SwapFingerPatternY(
+void Cr48ProfileSensorFilterInterpreter::SwapFingerPatternY(
     HardwareState* hwstate) {
   // Update TB bits, i.e. swap position_y values.
   std::swap(hwstate->fingers[0].position_y,
@@ -138,7 +138,7 @@ void SemiMtCorrectingFilterInterpreter::SwapFingerPatternY(
   hwstate->fingers[1].flags |= GESTURES_FINGER_WARP_Y;
 }
 
-void SemiMtCorrectingFilterInterpreter::UpdateFingerPattern(
+void Cr48ProfileSensorFilterInterpreter::UpdateFingerPattern(
     HardwareState* hwstate, const FingerPosition& center) {
   size_t stationary_finger = 1 - moving_finger_;
   FingerPosition stationary_pos = start_pos_[stationary_finger];
@@ -164,7 +164,7 @@ void SemiMtCorrectingFilterInterpreter::UpdateFingerPattern(
       moving_finger_);
 }
 
-void SemiMtCorrectingFilterInterpreter::InitCurrentPattern(
+void Cr48ProfileSensorFilterInterpreter::InitCurrentPattern(
     HardwareState* hwstate, const FingerPosition& center) {
   bool finger0_on_left;
   bool finger0_on_top;
@@ -192,7 +192,7 @@ void SemiMtCorrectingFilterInterpreter::InitCurrentPattern(
   Log("current pattern:0x%X ", current_pattern_);
 }
 
-void SemiMtCorrectingFilterInterpreter::UpdateAbsolutePosition(
+void Cr48ProfileSensorFilterInterpreter::UpdateAbsolutePosition(
     HardwareState* hwstate, const FingerPosition& center,
     float min_x, float min_y, float max_x, float max_y) {
 
@@ -223,7 +223,7 @@ void SemiMtCorrectingFilterInterpreter::UpdateAbsolutePosition(
   }
 }
 
-void SemiMtCorrectingFilterInterpreter::SetPosition(
+void Cr48ProfileSensorFilterInterpreter::SetPosition(
     FingerPosition* pos, HardwareState* hwstate) {
   for (size_t i = 0; i < hwstate->finger_cnt; i++) {
     pos[i].x = hwstate->fingers[i].position_x;
@@ -231,7 +231,7 @@ void SemiMtCorrectingFilterInterpreter::SetPosition(
   }
 }
 
-void SemiMtCorrectingFilterInterpreter::ClipNonLinearFingerPosition(
+void Cr48ProfileSensorFilterInterpreter::ClipNonLinearFingerPosition(
     HardwareState* hwstate) {
   for (size_t i = 0; i < hwstate->finger_cnt; i++) {
     struct FingerState* finger = &hwstate->fingers[i];
@@ -247,7 +247,7 @@ void SemiMtCorrectingFilterInterpreter::ClipNonLinearFingerPosition(
   }
 }
 
-void SemiMtCorrectingFilterInterpreter::SuppressTwoToOneFingerJump(
+void Cr48ProfileSensorFilterInterpreter::SuppressTwoToOneFingerJump(
     HardwareState* hwstate) {
   if (hwstate->finger_cnt != 1)
     return;
@@ -258,7 +258,7 @@ void SemiMtCorrectingFilterInterpreter::SuppressTwoToOneFingerJump(
         GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
 }
 
-void SemiMtCorrectingFilterInterpreter::SuppressOneToTwoFingerJump(
+void Cr48ProfileSensorFilterInterpreter::SuppressOneToTwoFingerJump(
     HardwareState* hwstate) {
   if (hwstate->finger_cnt != 2)
     return;
@@ -272,7 +272,7 @@ void SemiMtCorrectingFilterInterpreter::SuppressOneToTwoFingerJump(
   }
 }
 
-void SemiMtCorrectingFilterInterpreter::EnforceBoundingBoxFormat(
+void Cr48ProfileSensorFilterInterpreter::EnforceBoundingBoxFormat(
     HardwareState* hwstate) {
   if (hwstate->finger_cnt != 2)
     return;
@@ -292,7 +292,7 @@ void SemiMtCorrectingFilterInterpreter::EnforceBoundingBoxFormat(
   finger1->position_y = min_y;
 }
 
-void SemiMtCorrectingFilterInterpreter::CorrectFingerPosition(
+void Cr48ProfileSensorFilterInterpreter::CorrectFingerPosition(
     HardwareState* hwstate) {
   if (hwstate->finger_cnt != 2)
     return;
@@ -331,7 +331,7 @@ void SemiMtCorrectingFilterInterpreter::CorrectFingerPosition(
   }
 }
 
-void SemiMtCorrectingFilterInterpreter::LowPressureFilter(
+void Cr48ProfileSensorFilterInterpreter::LowPressureFilter(
     HardwareState* hwstate) {
   // The pressure value will be the same for both fingers for semi_mt device.
   // Therefore, we either keep or remove all fingers based on finger 0's
@@ -346,7 +346,7 @@ void SemiMtCorrectingFilterInterpreter::LowPressureFilter(
     hwstate->finger_cnt = hwstate->touch_cnt = 0;
 }
 
-void SemiMtCorrectingFilterInterpreter::SuppressSensorJump(
+void Cr48ProfileSensorFilterInterpreter::SuppressSensorJump(
     HardwareState* hwstate) {
   if (hwstate->finger_cnt != kMaxSemiMtFingers)
     return;
@@ -391,7 +391,7 @@ void SemiMtCorrectingFilterInterpreter::SuppressSensorJump(
 // (motion < half of the jump distance), then we assume that the jump was
 // caused by drumroll, and report it as a new finger at its new position with a
 // new tracking id.
-void SemiMtCorrectingFilterInterpreter::SuppressOneFingerJump(
+void Cr48ProfileSensorFilterInterpreter::SuppressOneFingerJump(
     HardwareState* hwstate) {
   if (hwstate->finger_cnt != 1)
     return;
