@@ -23,7 +23,12 @@ test.must_contain('action.txt', 'value3')
 # values.
 os.environ['GYP_DEFINES'] = 'key=repeated_value key=value1 key=repeated_value'
 test.run_gyp('defines.gyp')
-test.build('defines.gyp')
+if test.format == 'msvs' and not test.uses_msbuild:
+  # msvs versions before 2010 don't detect build rule changes not reflected
+  # in file system timestamps. Rebuild to see differences.
+  test.build('defines.gyp', rebuild=True)
+else:
+  test.build('defines.gyp')
 test.must_contain('action.txt', 'repeated_value')
 
 test.pass_test()

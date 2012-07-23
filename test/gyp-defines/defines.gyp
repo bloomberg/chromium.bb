@@ -18,6 +18,7 @@
             '<(key)',
             '<(_outputs)',
           ],
+          'msvs_cygwin_shell': 0,
         }
       ],
     },
