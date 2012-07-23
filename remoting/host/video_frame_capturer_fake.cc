@@ -25,7 +25,8 @@ COMPILE_ASSERT((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
 static const int kBytesPerPixel = 4;  // 32 bit RGB is 4 bytes per pixel.
 
 VideoFrameCapturerFake::VideoFrameCapturerFake()
-    : bytes_per_row_(0),
+    : size_(SkISize::Make(0, 0)),
+      bytes_per_row_(0),
       box_pos_x_(0),
       box_pos_y_(0),
       box_speed_x_(kSpeed),
