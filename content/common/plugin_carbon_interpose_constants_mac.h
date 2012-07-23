@@ -11,7 +11,6 @@
 namespace plugin_interpose_strings {
 
 extern const char kDYLDInsertLibrariesKey[];
-extern const char kInterposeLibraryPath[];
 
 }  // namespace plugin_interpose_strings
 

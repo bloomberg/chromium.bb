@@ -46,6 +46,7 @@ class ChromeContentClient : public content::ContentClient {
   virtual bool GetSandboxProfileForSandboxType(
       int sandbox_type,
       int* sandbox_profile_resource_id) const OVERRIDE;
+  virtual std::string GetCarbonInterposePath() const OVERRIDE;
 #endif
 
   // Gets information about the bundled Pepper Flash for field trial.

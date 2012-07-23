@@ -75,6 +75,9 @@ const char kGTalkPluginMimeType[] ="application/googletalk";
 const char kGTalkPluginExtension[] = ".googletalk";
 const char kGTalkPluginDescription[] = "Google Talk Plugin";
 
+const char kInterposeLibraryPath[] =
+    "@executable_path/../../../libplugin_carbon_interpose.dylib";
+
 #if defined(ENABLE_REMOTING)
 #if defined(GOOGLE_CHROME_BUILD)
 const char kRemotingViewerPluginName[] = "Chrome Remote Desktop Viewer";
@@ -531,6 +534,10 @@ bool ChromeContentClient::GetSandboxProfileForSandboxType(
     return true;
   }
   return false;
+}
+
+std::string ChromeContentClient::GetCarbonInterposePath() const {
+  return std::string(kInterposeLibraryPath);
 }
 #endif
 

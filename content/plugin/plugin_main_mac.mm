@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "content/common/plugin_carbon_interpose_constants_mac.h"
 #include "content/plugin/plugin_interpose_util_mac.h"
+#include "content/public/common/content_client.h"
 
 #if !defined(__LP64__)
 void TrimInterposeEnvironment() {
@@ -17,7 +18,7 @@ void TrimInterposeEnvironment() {
   std::string interpose_list;
   if (!env->GetVar(plugin_interpose_strings::kDYLDInsertLibrariesKey,
                    &interpose_list)) {
-    NOTREACHED() << "No interposing libraries set";
+    LOG(INFO) << "No Carbon Interpose library found.";
     return;
   }
 
@@ -26,8 +27,8 @@ void TrimInterposeEnvironment() {
   // need to handle are:
   // 1) The whole string is "<kInterposeLibraryPath>", so just clear it, or
   // 2) ":<kInterposeLibraryPath>" is the end of the string, so trim and re-set.
-  std::string interpose_library_path(
-      plugin_interpose_strings::kInterposeLibraryPath);
+  std::string interpose_library_path =
+      content::GetContentClient()->GetCarbonInterposePath();
   DCHECK_GE(interpose_list.size(), interpose_library_path.size());
   size_t suffix_offset = interpose_list.size() - interpose_library_path.size();
   if (suffix_offset == 0 &&
