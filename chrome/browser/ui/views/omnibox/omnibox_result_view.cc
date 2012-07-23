@@ -14,6 +14,7 @@
 #include <algorithm>  // NOLINT
 
 #include "base/i18n/bidi_line_iterator.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"
@@ -25,6 +26,7 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/render_text.h"
 
 namespace {
 
@@ -47,6 +49,7 @@ struct OmniboxResultView::ClassificationData {
   const gfx::Font* font;
   SkColor color;
   gfx::Size pixel_size;
+  gfx::RenderText* render_text;  // Weak.
 };
 
 // Precalculated data used to draw a complete visual run within the match.
@@ -339,6 +342,7 @@ int OmniboxResultView::DrawString(
   if (!bidi_line.Open(text, base::i18n::IsRTL(), is_url))
     return x;
   const int num_runs = bidi_line.CountRuns();
+  ScopedVector<gfx::RenderText> render_texts;
   Runs runs;
   for (int run = 0; run < num_runs; ++run) {
     int run_start_int = 0, run_length_int = 0;
@@ -389,12 +393,21 @@ int OmniboxResultView::DrawString(
         current_data->color = GetColor(state, DIMMED_TEXT);
       else
         current_data->color = GetColor(state, force_dim ? DIMMED_TEXT : TEXT);
-      int width = 0;
-      int height = 0;
-      gfx::Canvas::SizeStringInt(current_data->text, *current_data->font,
-                                 &width, &height, gfx::Canvas::NO_ELLIPSIS);
-      current_data->pixel_size = gfx::Size(width, height);
-      current_run->pixel_width += width;
+
+      render_texts.push_back(gfx::RenderText::CreateInstance());
+      current_data->render_text = render_texts.back();
+      current_data->render_text->SetFontList(
+          gfx::FontList(*current_data->font));
+      current_data->render_text->SetText(current_data->text);
+
+      gfx::StyleRange style_range;
+      style_range.foreground = current_data->color;
+      style_range.font_style = current_data->font->GetStyle();
+      current_data->render_text->set_default_style(style_range);
+      current_data->render_text->ApplyDefaultStyle();
+
+      current_data->pixel_size = current_data->render_text->GetStringSize();
+      current_run->pixel_width += current_data->pixel_size.width();
     }
     DCHECK(!current_run->classifications.empty());
   }
@@ -440,37 +453,18 @@ int OmniboxResultView::DrawString(
   // Draw the runs.
   for (Runs::iterator i(runs.begin()); i != runs.end(); ++i) {
     const bool reverse_visible_order = (i->is_rtl != base::i18n::IsRTL());
-    int flags = gfx::Canvas::NO_ELLIPSIS;  // We've already elided.
-    if (reverse_visible_order) {
+    if (reverse_visible_order)
       std::reverse(i->classifications.begin(), i->classifications.end());
-      if (i->is_rtl)
-        flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-    }
     for (Classifications::const_iterator j(i->classifications.begin());
          j != i->classifications.end(); ++j) {
       const int left =
           mirroring_context_->mirrored_left_coord(x, x + j->pixel_size.width());
-      // By passing the same y-coordinate for each run, we vertically align the
-      // tops of successive runs.  This isn't actually what we want; we want to
-      // align the baselines, but Canvas doesn't currently expose text
-      // measurement APIs sufficient to make that happen.  The problem here is
-      // font substitution: if no fonts are substituted, then all runs have the
-      // same font (in bold or normal styles), and thus the same height and same
-      // baseline.  If fonts are substituted within a run, the characters are
-      // baseline-aligned within the run, but using the same top coordinate as
-      // for other runs is only correct if the overall ascent for this run is
-      // the same as for other runs -- that is, if the tallest ascent of all
-      // fonts in the run is equal to the ascent of the normal font.  If this
-      // condition doesn't hold, the baseline for this run will be drawn too
-      // high or too low, depending on whether the run's tallest ascent is
-      // shorter or higher than the normal font's ascent, respectively.
-      //
-      // TODO(asvitkine): Fix this by replacing the SizeStringInt() calls
-      // elsewhere in this file with calls that can calculate actual baselines
-      // even in the face of font fallback. Tracked as: http://crbug.com/128027
-      canvas->DrawStringInt(j->text, *j->font, j->color, left, y,
-                            j->pixel_size.width(), j->pixel_size.height(),
-                            flags);
+      // Align the text runs to a common baseline.
+      const int top =
+          y + normal_font_.GetBaseline() - j->render_text->GetBaseline();
+      gfx::Rect rect(left, top, j->pixel_size.width(), j->pixel_size.height());
+      j->render_text->SetDisplayRect(rect);
+      j->render_text->Draw(canvas);
       x += j->pixel_size.width();
     }
   }
@@ -499,6 +493,7 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
         // an ellipsis, since there isn't enough room to draw it after this
         // classification.
         j->text += kEllipsis;
+        j->render_text->SetText(j->text);
 
         // We also add this classification's width (sans ellipsis) back to the
         // available width since we want to consider the available space we'll
@@ -533,16 +528,15 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
         // If we could only fit an ellipsis, then only make it bold if there was
         // an immediate prior classification in this run that was also bold, or
         // it will look orphaned.
-        if ((elided_text.length() == 1) &&
+        if ((j->font != &normal_font_) && (elided_text.length() == 1) &&
             (on_first_classification ||
-             (prior_classification->font == &normal_font_)))
+             (prior_classification->font == &normal_font_))) {
           j->font = &normal_font_;
+          j->render_text->SetFontList(gfx::FontList(*j->font));
+        }
 
-        int width = 0;
-        int height = 0;
-        gfx::Canvas::SizeStringInt(elided_text, *j->font, &width, &height,
-                                   gfx::Canvas::NO_ELLIPSIS);
-        j->pixel_size = gfx::Size(width, height);
+        j->render_text->SetText(elided_text);
+        j->pixel_size = j->render_text->GetStringSize();
 
         // Erase any other classifications that come after the elided one.
         i->classifications.erase(j.base(), i->classifications.end());
