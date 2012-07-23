@@ -348,7 +348,8 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
 SocketSendToFunction::SocketSendToFunction()
     : socket_id_(0),
       io_buffer_(NULL),
-      io_buffer_size_(0) {
+      io_buffer_size_(0),
+      port_(0) {
 }
 
 SocketSendToFunction::~SocketSendToFunction() {}
