@@ -31,9 +31,6 @@
 
 using extensions::Extension;
 
-NSString* const kBrowserActionButtonUpdatedNotification =
-    @"BrowserActionButtonUpdatedNotification";
-
 NSString* const kBrowserActionButtonDraggingNotification =
     @"BrowserActionButtonDraggingNotification";
 NSString* const kBrowserActionButtonDragEndNotification =
@@ -277,10 +274,6 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
   [self setEnabled:enabled ? YES : NO];
 
   [self setNeedsDisplay:YES];
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kBrowserActionButtonUpdatedNotification
-      object:self];
 }
 
 - (BOOL)isAnimating {

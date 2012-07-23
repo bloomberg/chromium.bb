@@ -121,10 +121,6 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // toolbar know that the drag has finished.
 - (void)containerDragFinished:(NSNotification*)notification;
 
-// Updates the image associated with the button should it be within the chevron
-// menu.
-- (void)actionButtonUpdated:(NSNotification*)notification;
-
 // Adjusts the position of the surrounding action buttons depending on where the
 // button is within the container.
 - (void)actionButtonDragging:(NSNotification*)notification;
@@ -166,10 +162,6 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // Handles when a menu item within the chevron overflow menu is selected.
 - (void)chevronItemSelected:(id)menuItem;
-
-// Clears and then populates the overflow menu based on the contents of
-// |hiddenButtons_|.
-- (void)updateOverflowMenu;
 
 // Updates the container's grippy cursor based on the number of hidden buttons.
 - (void)updateGrippyCursors;
@@ -423,6 +415,28 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 #pragma mark -
+#pragma mark NSMenuDelegate
+
+- (void)menuNeedsUpdate:(NSMenu*)menu {
+  [menu removeAllItems];
+
+  // See menu_button.h for documentation on why this is needed.
+  [menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
+
+  for (BrowserActionButton* button in hiddenButtons_.get()) {
+    NSString* name = base::SysUTF8ToNSString([button extension]->name());
+    NSMenuItem* item =
+        [menu addItemWithTitle:name
+                        action:@selector(chevronItemSelected:)
+                 keyEquivalent:@""];
+    [item setRepresentedObject:button];
+    [item setImage:[button compositedImage]];
+    [item setTarget:self];
+    [item setEnabled:[button isEnabled]];
+  }
+}
+
+#pragma mark -
 #pragma mark Private Methods
 
 - (void)createButtons {
@@ -437,12 +451,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 
     [self createActionButtonForExtension:*iter withIndex:i++];
   }
-
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(actionButtonUpdated:)
-             name:kBrowserActionButtonUpdatedNotification
-           object:nil];
 
   CGFloat width = [self savedWidth];
   [containerView_ resizeToWidth:width animate:NO];
@@ -511,7 +519,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   // It may or may not be hidden, but it won't matter to NSMutableArray either
   // way.
   [hiddenButtons_ removeObject:button];
-  [self updateOverflowMenu];
 
   [buttons_ removeObjectForKey:buttonKey];
   if ([self buttonCount] == 0) {
@@ -636,7 +643,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
       [hiddenButtons_ addObject:button];
     }
   }
-  [self updateOverflowMenu];
   [self updateGrippyCursors];
 
   if (!profile_->IsOffTheRecord())
@@ -645,18 +651,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDragFinishedNotification
                     object:self];
-}
-
-- (void)actionButtonUpdated:(NSNotification*)notification {
-  BrowserActionButton* button = [notification object];
-  if (![hiddenButtons_ containsObject:button])
-    return;
-
-  // +1 item because of the title placeholder. See |updateOverflowMenu|.
-  NSUInteger menuIndex = [hiddenButtons_ indexOfObject:button] + 1;
-  NSMenuItem* item = [[chevronMenuButton_ attachedMenu] itemAtIndex:menuIndex];
-  DCHECK(button == [item representedObject]);
-  [item setImage:[button compositedImage]];
 }
 
 - (void)actionButtonDragging:(NSNotification*)notification {
@@ -711,7 +705,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     [hiddenButtons_ addObject:button];
     [button removeFromSuperview];
     [button setAlphaValue:0.0];
-    [self updateOverflowMenu];
   }
 }
 
@@ -774,11 +767,13 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW_P
                            forButtonState:image_button_cell::kPressedState];
 
+    overflowMenu_.reset([[NSMenu alloc] initWithTitle:@""]);
+    [overflowMenu_ setAutoenablesItems:NO];
+    [overflowMenu_ setDelegate:self];
+    [chevronMenuButton_ setAttachedMenu:overflowMenu_];
+
     [containerView_ addSubview:chevronMenuButton_];
   }
-
-  if (!hidden)
-    [self updateOverflowMenu];
 
   [self updateChevronPositionInFrame:frame];
 
@@ -810,29 +805,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 
 - (void)chevronItemSelected:(id)menuItem {
   [self browserActionClicked:[menuItem representedObject]];
-}
-
-// TODO(yoz): This only gets called when the set of actions in the overflow
-// menu changes (not for things that would update page actions).
-// It should instead be called each time the menu is opened.
-- (void)updateOverflowMenu {
-  overflowMenu_.reset([[NSMenu alloc] initWithTitle:@""]);
-  // See menu_button.h for documentation on why this is needed.
-  [overflowMenu_ addItemWithTitle:@"" action:nil keyEquivalent:@""];
-  [overflowMenu_ setAutoenablesItems:NO];
-
-  for (BrowserActionButton* button in hiddenButtons_.get()) {
-    NSString* name = base::SysUTF8ToNSString([button extension]->name());
-    NSMenuItem* item =
-        [overflowMenu_ addItemWithTitle:name
-                                 action:@selector(chevronItemSelected:)
-                          keyEquivalent:@""];
-    [item setRepresentedObject:button];
-    [item setImage:[button compositedImage]];
-    [item setTarget:self];
-    [item setEnabled:[button isEnabled]];
-  }
-  [chevronMenuButton_ setAttachedMenu:overflowMenu_];
 }
 
 - (void)updateGrippyCursors {

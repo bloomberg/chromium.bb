@@ -29,7 +29,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
 // Handles state and provides an interface for controlling the Browser Actions
 // container within the Toolbar.
-@interface BrowserActionsController : NSObject {
+@interface BrowserActionsController : NSObject<NSMenuDelegate> {
  @private
   // Reference to the current browser. Weak.
   Browser* browser_;

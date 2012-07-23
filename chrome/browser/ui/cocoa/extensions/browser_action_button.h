@@ -19,10 +19,6 @@ namespace extensions {
 class Extension;
 }
 
-// Fired when the Browser Action's state has changed. Usually the image needs to
-// be updated.
-extern NSString* const kBrowserActionButtonUpdatedNotification;
-
 // Fired on each drag event while the user is moving the button.
 extern NSString* const kBrowserActionButtonDraggingNotification;
 // Fired when the user drops the button.
