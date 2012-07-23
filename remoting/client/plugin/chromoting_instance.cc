@@ -228,7 +228,6 @@ bool ChromotingInstance::Init(uint32_t argc,
       context_.decode_task_runner(), consumer_proxy);
   view_.reset(new PepperView(this, &context_, rectangle_decoder_.get()));
   consumer_proxy->Attach(view_->AsWeakPtr());
-  audio_player_.reset(new PepperAudioPlayer(this));
 
   return true;
 }
@@ -476,6 +475,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
 
   host_connection_.reset(new protocol::ConnectionToHost(true));
+  audio_player_.reset(new PepperAudioPlayer(this));
   client_.reset(new ChromotingClient(config, context_.main_task_runner(),
                                      host_connection_.get(), this,
                                      rectangle_decoder_.get(),
@@ -541,6 +541,7 @@ void ChromotingInstance::Disconnect() {
   input_handler_.reset();
   input_tracker_.reset();
   mouse_input_filter_.reset();
+  audio_player_.reset();
   host_connection_.reset();
 }
 
