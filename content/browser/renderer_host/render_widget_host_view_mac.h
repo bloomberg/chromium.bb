@@ -335,8 +335,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
 
   // Returns true and stores first rectangle for character range if the
   // requested |range| is already cached, otherwise returns false.
-  bool GetCachedFirstRectForCharacterRange(NSRange range, NSRect* rect,
-                                           NSRange* actual_range);
+  // Exposed for testing.
+  CONTENT_EXPORT bool GetCachedFirstRectForCharacterRange(
+      NSRange range, NSRect* rect, NSRange* actual_range);
 
   // Returns true if there is line break in |range| and stores line breaking
   // point to |line_breaking_point|. The |line_break_point| is valid only if
