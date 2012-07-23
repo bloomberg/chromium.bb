@@ -150,7 +150,8 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
   demuxer_stream_ = stream;
   statistics_cb_ = statistics_cb;
 
-  demuxer_stream_->EnableBitstreamConverter();
+  if (config.codec() == kCodecH264)
+    demuxer_stream_->EnableBitstreamConverter();
 
   natural_size_ = config.natural_size();
   config_frame_duration_ = GetFrameDuration(config);

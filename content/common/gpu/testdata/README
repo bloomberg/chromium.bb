@@ -1,7 +1,13 @@
 Files in this directory and their provenance:
 
-test-25fps.h264: used for ../media/video_decode_accelerator_unittest
+test-25fps.h264:
   Using ffmpeg SVN-r0.5.9-4:0.5.9-0ubuntu0.10.04.1 @ WebKit r122718, generated
   with:
   ffmpeg -i third_party/WebKit/LayoutTests/media/content/test-25fps.mp4 \
       -vcodec copy -vbsf h264_mp4toannexb -an test-25fps.h264
+
+test-25fps.vp8:
+  ffmpeg git-2012-07-19-a8d8e86, libvpx ToT 7/19, chromium r147247,
+  mkvextract v5.0.1
+  ffmpeg -i test-25fps.h264 -vcodec libvpx -an test-25fps.webm && \
+      mkvextract tracks test-25fps.webm 1:test-25fps.vp8 && rm test-25fps.webm

@@ -112,7 +112,8 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       output_port_(0),
       output_buffers_at_component_(0),
       client_(client),
-      profile_(OMX_VIDEO_AVCProfileMax),
+      codec_(UNKNOWN),
+      h264_profile_(OMX_VIDEO_AVCProfileMax),
       component_name_is_nvidia_h264ext_(false) {
   RETURN_ON_FAILURE(AreOMXFunctionPointersInitialized(),
                     "Failed to load openmax library", PLATFORM_FAILURE,);
@@ -146,12 +147,17 @@ static void InitParam(const OmxVideoDecodeAccelerator& dec, T* param) {
 bool OmxVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  RETURN_ON_FAILURE((profile >= media::H264PROFILE_MIN &&
-                     profile <= media::H264PROFILE_MAX),
-                    "Only h264 supported", INVALID_ARGUMENT, false);
-  profile_ = MapH264ProfileToOMXAVCProfile(profile);
-  RETURN_ON_FAILURE(profile_ != OMX_VIDEO_AVCProfileMax,
-                    "Unexpected profile", INVALID_ARGUMENT, false);
+  if (profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX) {
+    codec_ = H264;
+    h264_profile_ = MapH264ProfileToOMXAVCProfile(profile);
+    RETURN_ON_FAILURE(h264_profile_ != OMX_VIDEO_AVCProfileMax,
+                      "Unexpected profile", INVALID_ARGUMENT, false);
+  } else if (profile == media::VP8PROFILE_MAIN) {
+    codec_ = VP8;
+  } else {
+    RETURN_ON_FAILURE(false, "Unsupported profile: " << profile,
+                      INVALID_ARGUMENT, false);
+  }
 
   if (!CreateComponent())  // Does its own RETURN_ON_FAILURE dances.
     return false;
@@ -178,37 +184,35 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
   };
 
   // TODO(vhiremath@nvidia.com) Get this role_name from the configs
-  // For now hard coding to avc.
-  OMX_STRING role_name = const_cast<OMX_STRING>("video_decoder.avc");
+  // For now hard-coding.
+  OMX_STRING role_name = codec_ == H264 ?
+      const_cast<OMX_STRING>("video_decoder.avc") :
+      const_cast<OMX_STRING>("video_decoder.vpx");
   // Get the first component for this role and set the role on it.
   OMX_U32 num_components = 1;
-  scoped_array<OMX_U8> component(new OMX_U8[OMX_MAX_STRINGNAME_SIZE]);
+  std::string component(OMX_MAX_STRINGNAME_SIZE, '\0');
+  char* component_as_array = string_as_array(&component);
   OMX_ERRORTYPE result = omx_get_components_of_role(
-      role_name, &num_components, reinterpret_cast<OMX_U8**>(&component));
-  RETURN_ON_OMX_FAILURE(result, "Unsupport role: " << role_name,
+      role_name, &num_components,
+      reinterpret_cast<OMX_U8**>(&component_as_array));
+  RETURN_ON_OMX_FAILURE(result, "Unsupported role: " << role_name,
                         PLATFORM_FAILURE, false);
   RETURN_ON_FAILURE(num_components == 1, "No components for: " << role_name,
                     PLATFORM_FAILURE, false);
+  component_name_is_nvidia_h264ext_ = component == "OMX.Nvidia.h264ext.decode";
 
   // Get the handle to the component.
   result = omx_gethandle(
-      &component_handle_, reinterpret_cast<OMX_STRING>(component.get()),
+      &component_handle_,
+      reinterpret_cast<OMX_STRING>(string_as_array(&component)),
       this, &omx_accelerator_callbacks);
   RETURN_ON_OMX_FAILURE(result,
-                        "Failed to OMX_GetHandle on: " << component.get(),
+                        "Failed to OMX_GetHandle on: " << component,
                         PLATFORM_FAILURE, false);
   client_state_ = OMX_StateLoaded;
 
-  component_name_is_nvidia_h264ext_ = !strcmp(
-      reinterpret_cast<char *>(component.get()),
-      "OMX.Nvidia.h264ext.decode");
-
-  bool component_name_is_sec_h264ext = !strcmp(
-      reinterpret_cast<char *>(component.get()),
-      "OMX.SEC.AVC.Decoder");
-  Gles2TextureToEglImageTranslator* texture_to_egl_image_translator =
-      new Gles2TextureToEglImageTranslator(component_name_is_sec_h264ext);
-  texture_to_egl_image_translator_.reset(texture_to_egl_image_translator);
+  texture_to_egl_image_translator_.reset(new Gles2TextureToEglImageTranslator(
+      StartsWithASCII(component, "OMX.SEC.", true)));
 
   // Get the port information. This will obtain information about the number of
   // ports and index of the first port.
@@ -498,7 +502,8 @@ void OmxVideoDecodeAccelerator::OnReachedIdleInInitializing() {
                           PLATFORM_FAILURE,);
     OMX_VIDEO_PARAM_PROFILELEVELTYPE video_profile_level;
     InitParam(*this, &video_profile_level);
-    video_profile_level.eProfile = profile_;
+    DCHECK_EQ(codec_, H264);
+    video_profile_level.eProfile = h264_profile_;
     result = OMX_SetConfig(component_handle_, extension_index,
                            &video_profile_level);
     RETURN_ON_OMX_FAILURE(result,

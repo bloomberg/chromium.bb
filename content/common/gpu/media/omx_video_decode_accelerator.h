@@ -70,6 +70,14 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
     ERRORING,  // Trumps all other transitions; no recovery is possible.
   };
 
+  // Add codecs as we get HW that supports them (and which are supported by SW
+  // decode!).
+  enum Codec {
+    UNKNOWN,
+    H264,
+    VP8
+  };
+
   // Helper struct for keeping track of the relationship between an OMX output
   // buffer and the PictureBuffer it points to.
   struct OutputPicture {
@@ -196,8 +204,8 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   scoped_ptr<Gles2TextureToEglImageTranslator> texture_to_egl_image_translator_;
 
   // These members are only used during Initialization.
-  // OMX_AVCProfile requested during Initialization.
-  uint32 profile_;
+  Codec codec_;
+  uint32 h264_profile_;  // OMX_AVCProfile requested during Initialization.
   bool component_name_is_nvidia_h264ext_;
 
   // Method to handle events
