@@ -5,7 +5,7 @@
 #include "chrome/test/webdriver/webdriver_element_id.h"
 
 #include "base/values.h"
-#include "chrome/test/automation/javascript_message_utils.h"
+#include "base/logging.h"
 
 namespace {
 

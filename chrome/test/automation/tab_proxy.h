@@ -19,8 +19,6 @@
 #include "base/observer_list.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
-#include "chrome/test/automation/dom_element_proxy.h"
-#include "chrome/test/automation/javascript_execution_controller.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
@@ -38,8 +36,7 @@ namespace base {
 class Value;
 }
 
-class TabProxy : public AutomationResourceProxy,
-                 public JavaScriptExecutionController {
+class TabProxy : public AutomationResourceProxy {
  public:
   class TabProxyDelegate {
    public:
@@ -83,10 +80,6 @@ class TabProxy : public AutomationResourceProxy,
   bool ExecuteAndExtractInt(const std::wstring& frame_xpath,
                             const std::wstring& jscript,
                             int* value) WARN_UNUSED_RESULT;
-
-  // Returns a DOMElementProxyRef to the tab's current DOM document.
-  // This proxy is invalidated when the document changes.
-  DOMElementProxyRef GetDOMDocument();
 
   // Navigates to a url. This method accepts the same kinds of URL input that
   // can be passed to Chrome on the command line. This is a synchronous call and
@@ -273,11 +266,6 @@ class TabProxy : public AutomationResourceProxy,
   void OnChannelError();
  protected:
   virtual ~TabProxy();
-
-  // Override JavaScriptExecutionController methods.
-  // Executes |script| and gets the response JSON. Returns true on success.
-  bool ExecuteJavaScriptAndGetJSON(const std::string& script,
-                                   std::string* json) WARN_UNUSED_RESULT;
 
   // Called when tracking the first object. Used for reference counting
   // purposes.

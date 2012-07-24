@@ -48,7 +48,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/download_item.h"
@@ -190,40 +189,6 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
-};
-
-class InProcessJavaScriptExecutionController
-    : public base::RefCounted<InProcessJavaScriptExecutionController>,
-      public JavaScriptExecutionController {
- public:
-  explicit InProcessJavaScriptExecutionController(
-      RenderViewHost* render_view_host)
-      : render_view_host_(render_view_host) {}
-
- protected:
-  // Executes |script| and sets the JSON response |json|.
-  virtual bool ExecuteJavaScriptAndGetJSON(const std::string& script,
-                                           std::string* json) {
-    DOMOperationObserver dom_op_observer(render_view_host_);
-    render_view_host_->ExecuteJavascriptInWebFrame(string16(),
-                                                   UTF8ToUTF16(script));
-    return dom_op_observer.WaitAndGetResponse(json);
-  }
-
-  virtual void FirstObjectAdded() {
-    AddRef();
-  }
-
-  virtual void LastObjectRemoved() {
-    Release();
-  }
-
- private:
-  friend class base::RefCounted<InProcessJavaScriptExecutionController>;
-  virtual ~InProcessJavaScriptExecutionController() {}
-
-  // Weak pointer to the associated RenderViewHost.
-  RenderViewHost* render_view_host_;
 };
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
@@ -479,15 +444,6 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
       number_of_navigations,
       CURRENT_TAB,
       BROWSER_TEST_WAIT_FOR_NAVIGATION);
-}
-
-DOMElementProxyRef GetActiveDOMDocument(Browser* browser) {
-  JavaScriptExecutionController* executor =
-      new InProcessJavaScriptExecutionController(
-          chrome::GetActiveWebContents(browser)->GetRenderViewHost());
-  int element_handle;
-  executor->ExecuteJavaScriptAndGetReturn("document;", &element_handle);
-  return executor->GetObjectProxy<DOMElementProxy>(element_handle);
 }
 
 bool ExecuteJavaScript(RenderViewHost* render_view_host,

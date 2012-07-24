@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base_paths.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"

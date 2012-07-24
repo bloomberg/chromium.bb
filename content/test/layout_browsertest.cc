@@ -60,11 +60,11 @@ bool ReadExpectedResult(const FilePath& result_dir_path,
 }
 
 void ScrapeResultFromBrowser(Browser* browser, std::string* actual_text) {
-  DOMElementProxyRef doc = ui_test_utils::GetActiveDOMDocument(browser);
-  DOMElementProxyRef body =
-      doc->FindElement(DOMElementProxy::By::XPath("//body"));
-  ASSERT_TRUE(body.get());
-  ASSERT_TRUE(body->GetInnerText(actual_text));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+      chrome::GetActiveWebContents(browser)->GetRenderViewHost(),
+      L"",
+      L"window.domAutomationController.send(document.body.innerText);",
+      actual_text));
 }
 
 static const std::string preamble =

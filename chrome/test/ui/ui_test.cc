@@ -41,7 +41,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -119,8 +118,6 @@ void UITestBase::SetUp() {
   launcher_->AssertAppNotRunning("Please close any other instances "
                                  "of the app before testing.");
 
-  JavaScriptExecutionController::set_timeout(
-      TestTimeouts::action_max_timeout());
   test_start_time_ = Time::NowFromSystemTime();
 
   SetLaunchSwitches();

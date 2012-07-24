@@ -16,7 +16,6 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/test/automation/dom_element_proxy.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -145,10 +144,6 @@ void NavigateToURLWithDisposition(Browser* browser,
 void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
                                                 const GURL& url,
                                                 int number_of_navigations);
-
-// Gets the DOMDocument for the active tab in |browser|.
-// Returns a NULL reference on failure.
-DOMElementProxyRef GetActiveDOMDocument(Browser* browser);
 
 // Executes the passed |script| in the frame pointed to by |frame_xpath| (use
 // empty string for main frame).  The |script| should not invoke

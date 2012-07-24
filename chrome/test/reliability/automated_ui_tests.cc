@@ -18,6 +18,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/app/chrome_command_ids.h"
