@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -64,13 +63,10 @@ Window::Window(WindowDelegate* delegate)
       id_(-1),
       transparent_(false),
       user_data_(NULL),
-      ignore_events_(false),
-      in_set_visible_call_(false) {
+      ignore_events_(false) {
 }
 
 Window::~Window() {
-  CHECK(!in_set_visible_call_);
-
   // layer_ can be NULL if Init() wasn't invoked, which can happen
   // only in tests.
   if (layer_)
@@ -683,8 +679,6 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
 void Window::SetVisible(bool visible) {
   if (visible == layer_->GetTargetVisibility())
     return;  // No change.
-
-  AutoReset<bool> reseter(&in_set_visible_call_, true);
 
   RootWindow* root_window = GetRootWindow();
   if (client::GetVisibilityClient(root_window)) {
