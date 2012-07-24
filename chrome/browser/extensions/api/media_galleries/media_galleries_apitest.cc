@@ -18,6 +18,6 @@ class ExperimentalExtensionApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(ExperimentalExtensionApiTest, MediaGallery) {
-  ASSERT_TRUE(RunExtensionTest("media_gallery")) << message_;
+IN_PROC_BROWSER_TEST_F(ExperimentalExtensionApiTest, MediaGalleries) {
+  ASSERT_TRUE(RunExtensionTest("media_galleries")) << message_;
 }

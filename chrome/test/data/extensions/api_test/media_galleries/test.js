@@ -29,20 +29,15 @@ chrome.test.runTests([
         chrome.test.callbackPass(mediaFileSystemsListCallback));
   },
 
-  function openMediaGalleryManager() {
-    // Just confirm that the function exists.
-    chrome.test.assertTrue(mediaGalleries.openMediaGalleryManager !== null);
-    chrome.test.succeed()
-  },
-
   function extractEmbeddedThumbnails() {
     var result = mediaGalleries.extractEmbeddedThumbnails({});
     chrome.test.assertEq(null, result);
-    chrome.test.succeed()
+    chrome.test.succeed();
   },
 
   function assembleMediaFile() {
     mediaGalleries.assembleMediaFile(
-        {}, {}, chrome.test.callbackPass(nullCallback));
+        new Blob, {},
+        chrome.test.callbackPass(nullCallback));
   },
 ]);

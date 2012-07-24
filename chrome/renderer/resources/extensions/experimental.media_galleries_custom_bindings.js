@@ -31,7 +31,7 @@ chromeHidden.registerCustomHook('experimental.mediaGalleries',
   // synchronously return a result.  The result object's state is computable
   // from the function's input.
   apiFunctions.setHandleRequest('extractEmbeddedThumbnails',
-                                 function(fileEntry) {
+                                function(fileEntry) {
     return mediaGalleriesNatives.ExtractEmbeddedThumbnails(fileEntry);
   });
 });
