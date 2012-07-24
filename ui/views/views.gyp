@@ -549,7 +549,7 @@
         'widget/widget_unittest.cc',
         'run_all_unittests.cc',
 
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.rc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -705,7 +705,7 @@
         'examples/examples_main.cc',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.rc',
       ],
       'conditions': [
         ['OS=="win"', {

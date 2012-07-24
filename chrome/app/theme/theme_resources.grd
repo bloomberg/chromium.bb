@@ -6,11 +6,11 @@
     </output>
     <output filename="grit/theme_resources_map.cc" type="resource_map_source" context="default_100_percent" />
     <output filename="grit/theme_resources_map.h" type="resource_map_header" context="default_100_percent" />
-    <output filename="theme_resources_standard.pak" type="data_package" context="default_100_percent" />
-    <output filename="theme_resources_2x.pak" type="data_package" context="default_200_percent" />
-    <output filename="theme_resources_touch_1x.pak" type="data_package" context="touch_100_percent" />
-    <output filename="theme_resources_touch_2x.pak" type="data_package" context="touch_200_percent" />
-    <output filename="theme_resources_standard.rc" type="rc_all" context="default_100_percent" />
+    <output filename="theme_resources_100_percent.pak" type="data_package" context="default_100_percent" />
+    <output filename="theme_resources_200_percent.pak" type="data_package" context="default_200_percent" />
+    <output filename="theme_resources_touch_100_percent.pak" type="data_package" context="touch_100_percent" />
+    <output filename="theme_resources_touch_200_percent.pak" type="data_package" context="touch_200_percent" />
+    <output filename="theme_resources_100_percent.rc" type="rc_all" context="default_100_percent" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">

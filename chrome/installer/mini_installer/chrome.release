@@ -13,8 +13,8 @@ nacl_irt_x86_32.nexe: %(VersionDir)s\
 nacl_irt_x86_64.nexe: %(VersionDir)s\
 icudt.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
-theme_resources_standard.pak: %(VersionDir)s\
-ui_resources_standard.pak: %(VersionDir)s\
+theme_resources_100_percent.pak: %(VersionDir)s\
+ui_resources_100_percent.pak: %(VersionDir)s\
 locales\*.pak: %(VersionDir)s\Locales
 locales\*.dll: %(VersionDir)s\Locales
 npchrome_frame.dll: %(VersionDir)s\
@@ -33,11 +33,11 @@ default_apps\*.crx: %(VersionDir)s\default_apps\
 default_apps\external_extensions.json: %(VersionDir)s\default_apps\
 
 [HIDPI]
-theme_resources_2x.pak: %(VersionDir)s\
-ui_resources_2x.pak: %(VersionDir)s\
+theme_resources_200_percent.pak: %(VersionDir)s\
+ui_resources_200_percent.pak: %(VersionDir)s\
 
 [TOUCH]
-theme_resources_touch_1x.pak: %(VersionDir)s\
+theme_resources_touch_100_percent.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 FlashPlayerApp.exe: %(VersionDir)s\
