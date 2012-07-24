@@ -1932,7 +1932,7 @@ FileManager.prototype = {
    * @param {string} path Path to a volume to unmount.
    */
   FileManager.prototype.unmountVolume_ = function(path) {
-    listItem = this.rootsList_.getItemByIndex(
+    var listItem = this.rootsList_.getListItemByIndex(
         this.directoryModel_.findRootsListIndex(path));
     if (listItem)
       listItem.setAttribute('disabled', '');
