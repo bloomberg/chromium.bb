@@ -34,6 +34,7 @@
 #include <sys/epoll.h> 
 #include <linux/input.h>
 #include <libgen.h>
+#include <ctype.h>
 #include <time.h>
 
 #include <wayland-client.h>
@@ -90,8 +91,10 @@ struct panel_launcher {
 	struct panel *panel;
 	cairo_surface_t *icon;
 	int focused, pressed;
-	const char *path;
+	char *path;
 	struct wl_list link;
+	struct wl_array envp;
+	struct wl_array argv;
 };
 
 struct panel_clock {
@@ -173,6 +176,7 @@ show_menu(struct panel *panel, struct input *input, uint32_t time)
 static void
 panel_launcher_activate(struct panel_launcher *widget)
 {
+	char **argv;
 	pid_t pid;
 
 	pid = fork();
@@ -184,8 +188,9 @@ panel_launcher_activate(struct panel_launcher *widget)
 	if (pid)
 		return;
 
-	if (execl(widget->path, widget->path, NULL) < 0) {
-		fprintf(stderr, "execl '%s' failed: %m\n", widget->path);
+	argv = widget->argv.data;
+	if (execve(argv[0], argv, widget->envp.data) < 0) {
+		fprintf(stderr, "execl '%s' failed: %m\n", argv[0]);
 		exit(1);
 	}
 }
@@ -469,11 +474,57 @@ static void
 panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 {
 	struct panel_launcher *launcher;
+	char *start, *p, *eq, **ps;
+	int i, j, k;
 
 	launcher = malloc(sizeof *launcher);
 	memset(launcher, 0, sizeof *launcher);
 	launcher->icon = cairo_image_surface_create_from_png(icon);
 	launcher->path = strdup(path);
+
+	wl_array_init(&launcher->envp);
+	wl_array_init(&launcher->argv);
+	for (i = 0; __environ[i]; i++) {
+		ps = wl_array_add(&launcher->envp, sizeof *ps);
+		*ps = __environ[i];
+	}
+	j = 0;
+
+	start = launcher->path;
+	while (*start) {
+		for (p = start, eq = NULL; *p && !isspace(*p); p++)
+			if (*p == '=')
+				eq = p;
+
+		if (eq && j == 0) {
+			ps = launcher->envp.data;
+			for (k = 0; k < i; k++)
+				if (strncmp(ps[k], start, eq - start) == 0) {
+					ps[k] = start;
+					break;
+				}
+			if (k == i) {
+				ps = wl_array_add(&launcher->envp, sizeof *ps);
+				*ps = start;
+				i++;
+			}
+		} else {
+			ps = wl_array_add(&launcher->argv, sizeof *ps);
+			*ps = start;
+			j++;
+		}
+
+		while (*p && isspace(*p))
+			*p++ = '\0';
+
+		start = p;
+	}
+
+	ps = wl_array_add(&launcher->envp, sizeof *ps);
+	*ps = NULL;
+	ps = wl_array_add(&launcher->argv, sizeof *ps);
+	*ps = NULL;
+
 	launcher->panel = panel;
 	wl_list_insert(panel->launcher_list.prev, &launcher->link);
 
