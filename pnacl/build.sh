@@ -89,9 +89,6 @@ readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_GOLD="${TC_SRC}/gold"
 
-# LLVM sources (svn)
-readonly TC_SRC_CLANG="${TC_SRC}/clang"
-
 # Git sources
 readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
 readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
@@ -99,6 +96,7 @@ readonly TC_SRC_GLIBC="${PNACL_GIT_ROOT}/glibc"
 readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/nacl-newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/libstdc++-v3"
 readonly TC_SRC_COMPILER_RT="${PNACL_GIT_ROOT}/compiler-rt"
+readonly TC_SRC_CLANG="${PNACL_GIT_ROOT}/clang"
 
 # Unfortunately, binutils/configure generates this untracked file
 # in the binutils source directory
@@ -244,11 +242,8 @@ SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 # NOTE: this can be overwritten by merge-tool.sh
 readonly UPSTREAM_REV=${UPSTREAM_REV:-97b587406ddd}
 
-readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=95a4e0cd6450
 readonly GOLD_REV=4d56431485a3
-readonly COMPILER_RT_REV=1a3a6ffb31ea
-readonly CLANG_REV=158408
 
 # Repositories
 readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
@@ -257,9 +252,6 @@ readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 #       recent revision to pull in all the latest gold changes
 # TODO(robertm): merge the two repos -- ideally when we migrate to git
 readonly REPO_GOLD="nacl-llvm-branches.gold"
-
-# LLVM repos (svn)
-readonly REPO_CLANG="http://llvm.org/svn/llvm-project/cfe/trunk"
 
 CC=${CC:-gcc}
 CXX=${CXX:-g++}
@@ -357,7 +349,6 @@ hg-info-all() {
 
 update-all() {
   hg-update-upstream
-  svn-update-clang
   hg-update-binutils
   hg-update-gold
 }
@@ -511,6 +502,7 @@ hg-update-common() {
 }
 
 # NOTE: this is used by merge-tool.sh
+# TODO(dschuff) move to common-tools.sh or replace with git
 svn-update-common() {
   local name="$1"
   local rev="$2"
@@ -537,10 +529,6 @@ hg-update-upstream() {
     hg-update-common "upstream" ${UPSTREAM_REV} "${TC_SRC_UPSTREAM}"
   fi
   llvm-link-clang
-}
-
-svn-update-clang() {
-  svn-update-common "clang" ${CLANG_REV} "${TC_SRC_CLANG}"
 }
 
 #@ hg-update-binutils    - Update BINUTILS to the stable revision
@@ -586,7 +574,6 @@ hg-pull-gold() {
 checkout-all() {
   StepBanner "CHECKOUT-ALL"
   hg-checkout-upstream
-  svn-checkout-clang
   hg-checkout-binutils
   hg-checkout-gold
   git-sync
@@ -597,10 +584,6 @@ hg-checkout-upstream() {
     hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
   fi
   llvm-link-clang
-}
-
-svn-checkout-clang() {
-  svn-checkout "${REPO_CLANG}" "${TC_SRC_CLANG}" ${CLANG_REV}
 }
 
 hg-checkout-binutils() {
@@ -1300,8 +1283,8 @@ llvm-clean() {
 llvm-link-clang() {
   rm -f "${TC_SRC_LLVM}"/tools/clang
   # Symbolic link named : ${TC_SRC}/upstream/llvm/tools/clang
-  # Needs to point to   : ${TC_SRC}/clang
-  ln -sf "../../../clang" "${TC_SRC_LLVM}"/tools/clang
+  # Needs to point to   : ${TC_SRC_CLANG}
+  ln -sf "${TC_SRC_CLANG}" "${TC_SRC_LLVM}"/tools/clang
 }
 
 #+ llvm-unlink-clang     - Remove tools/clang symlink from llvm directory
