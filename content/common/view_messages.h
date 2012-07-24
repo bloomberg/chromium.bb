@@ -642,6 +642,14 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // The URL to load.
   IPC_STRUCT_MEMBER(GURL, url)
 
+  // Base URL for use in WebKit's SubstituteData.
+  // Is only used with data: URLs.
+  IPC_STRUCT_MEMBER(GURL, base_url_for_data_url)
+
+  // History URL for use in WebKit's SubstituteData.
+  // Is only used with data: URLs.
+  IPC_STRUCT_MEMBER(GURL, history_url_for_data_url)
+
   // The URL to send in the "Referer" header field. Can be empty if there is
   // no referrer.
   IPC_STRUCT_MEMBER(content::Referrer, referrer)

@@ -216,6 +216,10 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   params->current_history_list_offset = controller.GetLastCommittedEntryIndex();
   params->current_history_list_length = controller.GetEntryCount();
   params->url = entry.GetURL();
+  if (!entry.GetBaseURLForDataURL().is_empty()) {
+    params->base_url_for_data_url = entry.GetBaseURLForDataURL();
+    params->history_url_for_data_url = entry.GetVirtualURL();
+  }
   params->referrer = entry.GetReferrer();
   params->transition = entry.GetTransitionType();
   params->state = entry.GetContentState();

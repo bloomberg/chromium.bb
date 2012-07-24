@@ -48,6 +48,10 @@ class NavigationEntry {
   virtual void SetURL(const GURL& url) = 0;
   virtual const GURL& GetURL() const = 0;
 
+  // Used for specifying a base URL for pages loaded via data URLs.
+  virtual void SetBaseURLForDataURL(const GURL& url) = 0;
+  virtual const GURL& GetBaseURLForDataURL() const = 0;
+
   // The referring URL. Can be empty.
   virtual void SetReferrer(const content::Referrer& referrer) = 0;
   virtual const content::Referrer& GetReferrer() const = 0;

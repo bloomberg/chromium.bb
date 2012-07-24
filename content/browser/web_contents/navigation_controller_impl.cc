@@ -29,6 +29,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
@@ -619,6 +620,35 @@ void NavigationControllerImpl::LoadURLWithUserAgentOverride(
           url, referrer, transition, is_renderer_initiated, extra_headers,
           browser_context_));
   entry->SetIsOverridingUserAgent(is_overriding_user_agent);
+
+  LoadEntry(entry);
+}
+
+void NavigationControllerImpl::LoadDataWithBaseURL(
+    const GURL& data_url,
+    const content::Referrer& referrer,
+    const GURL& base_url,
+    const GURL& history_url,
+    bool is_overriding_user_agent) {
+  // Make sure we don't allow non-'data:' URLs.
+  if (!data_url.SchemeIs(chrome::kDataScheme)) {
+    NOTREACHED();
+    return;
+  }
+
+  needs_reload_ = false;
+
+  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+      CreateNavigationEntry(
+          data_url,
+          referrer,
+          content::PAGE_TRANSITION_TYPED,
+          false,
+          std::string(),
+          browser_context_));
+  entry->SetIsOverridingUserAgent(is_overriding_user_agent);
+  entry->SetBaseURLForDataURL(base_url);
+  entry->SetVirtualURL(history_url);
 
   LoadEntry(entry);
 }

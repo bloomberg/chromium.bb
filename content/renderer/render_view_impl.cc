@@ -101,6 +101,7 @@
 #include "media/base/message_loop_factory.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/gpu_video_decoder.h"
+#include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -1053,6 +1054,21 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     DCHECK_NE(params.page_id, -1);
     main_frame->loadHistoryItem(
         webkit_glue::HistoryItemFromString(params.state));
+  } else if (!params.base_url_for_data_url.is_empty()) {
+    // A loadData request with a specified base URL.
+    std::string mime_type, charset, data;
+    if (net::DataURL::Parse(params.url, &mime_type, &charset, &data)) {
+      main_frame->loadData(
+          WebData(data.c_str(), data.length()),
+          WebString::fromUTF8(mime_type),
+          WebString::fromUTF8(charset),
+          params.base_url_for_data_url,
+          params.history_url_for_data_url,
+          false);
+    } else {
+      CHECK(false) <<
+          "Invalid URL passed: " << params.url.possibly_invalid_spec();
+    }
   } else {
     // Navigate to the given URL.
     WebURLRequest request(params.url);

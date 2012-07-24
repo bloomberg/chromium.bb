@@ -35,6 +35,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual PageType GetPageType() const OVERRIDE;
   virtual void SetURL(const GURL& url) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
+  virtual void SetBaseURLForDataURL(const GURL& url) OVERRIDE;
+  virtual const GURL& GetBaseURLForDataURL() const OVERRIDE;
   virtual void SetReferrer(const Referrer& referrer) OVERRIDE;
   virtual const Referrer& GetReferrer() const OVERRIDE;
   virtual void SetVirtualURL(const GURL& url) OVERRIDE;
@@ -185,6 +187,9 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // This member is not persisted with sesssion restore.
   std::string extra_headers_;
+
+  // Used for specifying base URL for pages loaded via data URLs. Not persisted.
+  GURL base_url_for_data_url_;
 
   // Whether the entry, while loading, was created for a renderer-initiated
   // navigation.  This dictates whether the URL should be displayed before the

@@ -10,6 +10,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/public/browser/android/navigation_controller_webview.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 
@@ -24,7 +25,8 @@ class SiteInstance;
 }
 
 class CONTENT_EXPORT NavigationControllerImpl
-    : public NON_EXPORTED_BASE(content::NavigationController) {
+    : public NON_EXPORTED_BASE(content::NavigationController),
+      public NON_EXPORTED_BASE(content::NavigationControllerWebView) {
  public:
   NavigationControllerImpl(
       WebContentsImpl* web_contents,
@@ -102,6 +104,14 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void CopyStateFromAndPrune(
       content::NavigationController* source) OVERRIDE;
   virtual void PruneAllButActive() OVERRIDE;
+
+  // NavigationControllerWebView implementation.
+  virtual void LoadDataWithBaseURL(
+      const GURL& data_url,
+      const content::Referrer& referrer,
+      const GURL& base_url,
+      const GURL& history_url,
+      bool is_overriding_user_agent) OVERRIDE;
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.

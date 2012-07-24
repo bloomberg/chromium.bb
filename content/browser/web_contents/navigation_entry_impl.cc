@@ -94,6 +94,14 @@ const GURL& NavigationEntryImpl::GetURL() const {
   return url_;
 }
 
+void NavigationEntryImpl::SetBaseURLForDataURL(const GURL& url) {
+  base_url_for_data_url_ = url;
+}
+
+const GURL& NavigationEntryImpl::GetBaseURLForDataURL() const {
+  return base_url_for_data_url_;
+}
+
 void NavigationEntryImpl::SetReferrer(const Referrer& referrer) {
   referrer_ = referrer;
 }
