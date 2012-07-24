@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
@@ -238,7 +239,7 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
   for (size_t index = 0; index < scopes_list->GetSize(); ++index) {
     base::DictionaryValue* scopes_entry = NULL;
     IssueAdviceInfoEntry entry;
-    std::string detail;
+    string16 detail;
     if (!scopes_list->GetDictionary(index, &scopes_entry) ||
         !scopes_entry->GetString(kDescriptionKey, &entry.description) ||
         !scopes_entry->GetString(kDetailKey, &detail)) {
@@ -246,7 +247,11 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
       break;
     }
 
-    Tokenize(detail, kDetailSeparators, &entry.details);
+    TrimWhitespace(entry.description, TRIM_ALL, &entry.description);
+    static const string16 detail_separators = ASCIIToUTF16(kDetailSeparators);
+    Tokenize(detail, detail_separators, &entry.details);
+    for (size_t i = 0; i < entry.details.size(); i++)
+      TrimWhitespace(entry.details[i], TRIM_ALL, &entry.details[i]);
     issue_advice->push_back(entry);
   }
 

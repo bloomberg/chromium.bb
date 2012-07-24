@@ -336,14 +336,14 @@ GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
   if (issue_advice.details.empty()) {
     label = gtk_label_new(l10n_util::GetStringFUTF8(
         IDS_EXTENSION_PERMISSION_LINE,
-        UTF8ToUTF16(issue_advice.description)).c_str());
+        issue_advice.description).c_str());
   } else {
     arrow = gtk_arrow_new(GTK_ARROW_RIGHT, GTK_SHADOW_OUT);
     GtkRequisition req;
     gtk_widget_size_request(arrow, &req);
     label_pixel_width -= req.width;
 
-    label = gtk_label_new(issue_advice.description.c_str());
+    label = gtk_label_new(UTF16ToUTF8(issue_advice.description).c_str());
 
     GtkWidget* detail_box = gtk_vbox_new(FALSE, ui::kControlSpacing);
     gtk_box_pack_start(GTK_BOX(box), detail_box, FALSE, FALSE, 0);
@@ -352,7 +352,7 @@ GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
 
     for (size_t i = 0; i < issue_advice.details.size(); ++i) {
       std::string text = l10n_util::GetStringFUTF8(
-          IDS_EXTENSION_PERMISSION_LINE, UTF8ToUTF16(issue_advice.details[i]));
+          IDS_EXTENSION_PERMISSION_LINE, issue_advice.details[i]);
       GtkWidget* label = gtk_label_new(text.c_str());
       gtk_util::SetLabelWidth(label, pixel_width - kDetailIndent);
 

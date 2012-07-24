@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth2_mint_token_flow.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -109,13 +110,13 @@ std::vector<std::string> CreateTestScopes() {
 static IssueAdviceInfo CreateIssueAdvice() {
   IssueAdviceInfo ia;
   IssueAdviceInfoEntry e1;
-  e1.description = "Manage your calendars";
-  e1.details.push_back("View and manage your calendars");
+  e1.description = ASCIIToUTF16("Manage your calendars");
+  e1.details.push_back(ASCIIToUTF16("View and manage your calendars"));
   ia.push_back(e1);
   IssueAdviceInfoEntry e2;
-  e2.description = "Manage your documents";
-  e2.details.push_back("View your documents");
-  e2.details.push_back("Upload new documents");
+  e2.description = ASCIIToUTF16("Manage your documents");
+  e2.details.push_back(ASCIIToUTF16("View your documents"));
+  e2.details.push_back(ASCIIToUTF16("Upload new documents"));
   ia.push_back(e2);
   return ia;
 }

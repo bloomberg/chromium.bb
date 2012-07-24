@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/string16.h"
 #include "chrome/common/net/gaia/oauth2_api_call_flow.h"
 
 class GoogleServiceAuthError;
@@ -42,8 +43,8 @@ struct IssueAdviceInfoEntry {
   IssueAdviceInfoEntry();
   ~IssueAdviceInfoEntry();
 
-  std::string description;
-  std::vector<std::string> details;
+  string16 description;
+  std::vector<string16> details;
 
   bool operator==(const IssueAdviceInfoEntry& rhs) const;
 };
