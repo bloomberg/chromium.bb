@@ -290,8 +290,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnMsgBeginSmoothScroll)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeNumTouchEvents,
-                        OnMsgDidChangeNumTouchEvents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnMsgHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
@@ -1562,10 +1560,6 @@ void RenderWidgetHostImpl::OnMsgBlur() {
   // Only RenderViewHost can deal with that message.
   RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
   GetProcess()->ReceivedBadMessage();
-}
-
-void RenderWidgetHostImpl::OnMsgDidChangeNumTouchEvents(int count) {
-  has_touch_handler_ = count > 0;
 }
 
 void RenderWidgetHostImpl::OnMsgHasTouchEventHandlers(bool has_handlers) {

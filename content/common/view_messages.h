@@ -1772,10 +1772,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollbarsForMainFrame,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumWheelEvents,
                     int /* count */)
 
-// Notifies that the number of JavaScript touch event handlers changed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumTouchEvents,
-                    int /* count */)
-
 // Notifies whether there are JavaScript touche event handlers or not.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_HasTouchEventHandlers,
                     bool /* has_handlers */)

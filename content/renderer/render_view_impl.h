@@ -620,7 +620,6 @@ class RenderViewImpl : public RenderWidget,
                                         int world_id);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
-  virtual void numberOfTouchEventHandlersChanged(unsigned num_handlers);
   virtual void hasTouchEventHandlers(bool has_handlers);
   virtual void didChangeContentsSize(WebKit::WebFrame* frame,
                                      const WebKit::WebSize& size);
