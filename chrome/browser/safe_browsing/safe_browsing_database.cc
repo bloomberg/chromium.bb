@@ -650,6 +650,10 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
     return false;
   DCHECK(prefix_set_.get());
 
+  // |prefix_set_| is empty until the first update, only log info if
+  // not empty.
+  const bool prefix_set_empty = !prefix_set_->GetSize();
+
   // Used to double-check in case of a hit mis-match.
   std::vector<SBPrefix> restored;
 
@@ -658,9 +662,11 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
     bool found = prefix_set_->Exists(full_hashes[i].prefix);
 
     if (browse_bloom_filter_->Exists(full_hashes[i].prefix)) {
-      RecordPrefixSetInfo(PREFIX_SET_EVENT_BLOOM_HIT);
-      if (found)
-        RecordPrefixSetInfo(PREFIX_SET_EVENT_HIT);
+      if (!prefix_set_empty) {
+        RecordPrefixSetInfo(PREFIX_SET_EVENT_BLOOM_HIT);
+        if (found)
+          RecordPrefixSetInfo(PREFIX_SET_EVENT_HIT);
+      }
       prefix_hits->push_back(full_hashes[i].prefix);
       if (prefix_miss_cache_.count(full_hashes[i].prefix) > 0)
         ++miss_count;
@@ -672,7 +678,7 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
       // |GetPrefixes()| returns the same prefixes as were passed to
       // the constructor.
       DCHECK(!found);
-      if (found) {
+      if (found && !prefix_set_empty) {
         if (restored.empty())
           prefix_set_->GetPrefixes(&restored);
 
@@ -1379,11 +1385,8 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
   if (!browse_bloom_filter_.get())
     RecordFailure(FAILURE_DATABASE_FILTER_READ);
 
-  // Manually re-generate the prefix set from the main database.
-  // TODO(shess): Write/read for prefix set.
-  SBAddPrefixes add_prefixes;
-  browse_store_->GetAddPrefixes(&add_prefixes);
-  prefix_set_.reset(PrefixSetFromAddPrefixes(add_prefixes));
+  // Use an empty prefix set until the first update.
+  prefix_set_.reset(new safe_browsing::PrefixSet(std::vector<SBPrefix>()));
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
