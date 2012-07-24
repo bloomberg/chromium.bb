@@ -8,6 +8,7 @@
 #include "ui/base/ui_export.h"
 
 #ifdef __LP64__
+#include <ApplicationServices/ApplicationServices.h>
 typedef CGSize NSSize;
 #else
 typedef struct _NSSize NSSize;
