@@ -76,7 +76,6 @@
       <include name="IDR_SEARCH_MAGNIFIER" file="resources\search_magnifier.png" type="BINDATA" />
       <include name="IDR_SEARCH_MAGNIFIER_RESULTS" file="resources\search_magnifier_results.png" type="BINDATA" />
       <include name="IDR_TEXTAREA_RESIZER" file="resources\textarea_resize_corner.png" type="BINDATA" />
-      <include name="IDR_TICKMARK_DASH" file="resources\dash.png" type="BINDATA" />
       <include name="IDC_VERTICALTEXT" file="resources\vertical_text.cur" type="CURSOR" />
       <include name="IDC_ZOOMIN" file="resources\zoom_in.cur" type="CURSOR" />
       <include name="IDC_ZOOMOUT" file="resources\zoom_out.cur" type="CURSOR" />

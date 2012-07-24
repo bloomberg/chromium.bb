@@ -471,7 +471,6 @@ const DataResource kDataResources[] = {
     IDR_SEARCH_MAGNIFIER_RESULTS, ui::SCALE_FACTOR_100P },
   { "textAreaResizeCorner", IDR_TEXTAREA_RESIZER, ui::SCALE_FACTOR_100P },
   { "textAreaResizeCorner@2x", IDR_TEXTAREA_RESIZER, ui::SCALE_FACTOR_200P },
-  { "tickmarkDash", IDR_TICKMARK_DASH, ui::SCALE_FACTOR_100P },
   { "inputSpeech", IDR_INPUT_SPEECH, ui::SCALE_FACTOR_100P },
   { "inputSpeechRecording", IDR_INPUT_SPEECH_RECORDING, ui::SCALE_FACTOR_100P },
   { "inputSpeechWaiting", IDR_INPUT_SPEECH_WAITING, ui::SCALE_FACTOR_100P },
