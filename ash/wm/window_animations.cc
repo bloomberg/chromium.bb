@@ -11,6 +11,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -397,6 +398,8 @@ gfx::Rect GetMinimizeRectForWindow(aura::Window* window) {
         gfx::Screen::GetDisplayNearestWindow(window).work_area();
     target_bounds.SetRect(work_area.right(), work_area.bottom(), 0, 0);
   }
+  target_bounds =
+      ScreenAsh::ConvertRectFromScreen(window->parent(), target_bounds);
   return target_bounds;
 }
 

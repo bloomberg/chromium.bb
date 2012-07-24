@@ -108,9 +108,11 @@ TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   // Update primary and add seconary.
-  LOG(ERROR) << "A";
-  UpdateDisplay("0+0-500x500,0+501-400x400");
+  UpdateDisplay("100+0-500x500,0+501-400x400");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("0,0 500x500",
+            display_manager()->GetDisplayAt(0)->bounds().ToString());
+
   EXPECT_EQ("1 1 0", GetCountSummary());
   EXPECT_EQ(display_manager()->GetDisplayAt(0)->id(), changed()[0].id());
   EXPECT_EQ(display_manager()->GetDisplayAt(1)->id(), added()[0].id());
@@ -120,9 +122,8 @@ TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
   EXPECT_EQ("0,501 400x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
-  LOG(ERROR) << "B";
   // Delete secondary.
-  UpdateDisplay("0+0-500x500");
+  UpdateDisplay("100+0-500x500");
   EXPECT_EQ("0 0 1", GetCountSummary());
   reset();
 

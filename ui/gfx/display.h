@@ -29,11 +29,11 @@ class UI_EXPORT Display {
   ~Display();
 
   // Sets/Gets unique identifier associated with the display.
+  // -1 means invalid display and it doesn't not exit.
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
 
   // Gets/Sets the display's bounds in gfx::Screen's coordinates.
-  // -1 means invalid display and it doesn't not exit.
   const Rect& bounds() const { return bounds_; }
   void set_bounds(const Rect& bounds) { bounds_ = bounds; }
 

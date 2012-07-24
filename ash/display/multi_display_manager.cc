@@ -278,8 +278,7 @@ void MultiDisplayManager::AddDisplayFromSpec(const std::string& spec) {
   if (DisplayController::IsExtendedDesktopEnabled()) {
     const gfx::Insets insets = display.GetWorkAreaInsets();
     const gfx::Rect& native_bounds = display.bounds_in_pixel();
-    display.set_bounds(
-        gfx::Rect(native_bounds.origin(), display.bounds().size()));
+    display.SetScaleAndBounds(display.device_scale_factor(), native_bounds);
     display.UpdateWorkAreaFromInsets(insets);
   }
   displays_.push_back(display);

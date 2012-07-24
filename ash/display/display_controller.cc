@@ -63,6 +63,7 @@ void DisplayController::InitSecondaryDisplays() {
     aura::RootWindow* root = AddRootWindowForDisplay(*display);
     Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   }
+  UpdateDisplayBoundsForLayout();
 }
 
 aura::RootWindow* DisplayController::GetPrimaryRootWindow() {
