@@ -13,8 +13,8 @@
 // NOTE: This StreamSocket implementation does *not* do a real SSL
 // handshake nor does it do any encryption!
 
-#ifndef JINGLE_NOTIFIER_BASE_FAKE_SSL_CLIENT_SOCKET_H_
-#define JINGLE_NOTIFIER_BASE_FAKE_SSL_CLIENT_SOCKET_H_
+#ifndef JINGLE_GLUE_FAKE_SSL_CLIENT_SOCKET_H_
+#define JINGLE_GLUE_FAKE_SSL_CLIENT_SOCKET_H_
 
 #include <cstddef>
 
@@ -32,7 +32,7 @@ class DrainableIOBuffer;
 class SSLInfo;
 }  // namespace net
 
-namespace notifier {
+namespace jingle_glue {
 
 class FakeSSLClientSocket : public net::StreamSocket {
  public:
@@ -109,6 +109,6 @@ class FakeSSLClientSocket : public net::StreamSocket {
   scoped_refptr<net::DrainableIOBuffer> read_buf_;
 };
 
-}  // namespace notifier
+}  // namespace jingle_glue
 
-#endif  // JINGLE_NOTIFIER_BASE_FAKE_SSL_CLIENT_SOCKET_H_
+#endif  // JINGLE_GLUE_FAKE_SSL_CLIENT_SOCKET_H_

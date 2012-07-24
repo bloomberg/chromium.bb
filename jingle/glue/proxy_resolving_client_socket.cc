@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/base/proxy_resolving_client_socket.h"
+#include "jingle/glue/proxy_resolving_client_socket.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -18,7 +18,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-namespace notifier {
+namespace jingle_glue {
 
 ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     net::ClientSocketFactory* socket_factory,
@@ -389,4 +389,4 @@ void ProxyResolvingClientSocket::CloseTransportSocket() {
   transport_.reset();
 }
 
-}  // namespace notifier
+}  // namespace jingle_glue

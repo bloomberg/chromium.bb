@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/base/fake_ssl_client_socket.h"
+#include "jingle/glue/fake_ssl_client_socket.h"
 
 #include <cstdlib>
 
@@ -12,7 +12,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-namespace notifier {
+namespace jingle_glue {
 
 namespace {
 
@@ -350,4 +350,4 @@ bool FakeSSLClientSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
   return transport_socket_->GetSSLInfo(ssl_info);
 }
 
-}  // namespace notifier
+}  // namespace jingle_glue

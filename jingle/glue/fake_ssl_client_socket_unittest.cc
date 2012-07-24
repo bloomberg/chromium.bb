@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/base/fake_ssl_client_socket.h"
+#include "jingle/glue/fake_ssl_client_socket.h"
 
 #include <algorithm>
 #include <vector>
@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace notifier {
+namespace jingle_glue {
 
 namespace {
 
@@ -345,4 +345,4 @@ TEST_F(FakeSSLClientSocketTest, MalformedServerHello) {
 
 }  // namespace
 
-}  // namespace notifier
+}  // namespace jingle_glue

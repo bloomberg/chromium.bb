@@ -5,8 +5,8 @@
 // This StreamSocket implementation wraps a ClientSocketHandle that is created
 // from the client socket pool after resolving proxies.
 
-#ifndef JINGLE_NOTIFIER_BASE_PROXY_RESOLVING_CLIENT_SOCKET_H_
-#define JINGLE_NOTIFIER_BASE_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#ifndef JINGLE_GLUE_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#define JINGLE_GLUE_PROXY_RESOLVING_CLIENT_SOCKET_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -29,7 +29,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 // TODO(sanjeevr): Move this to net/
-namespace notifier {
+namespace jingle_glue {
 
 class ProxyResolvingClientSocket : public net::StreamSocket {
  public:
@@ -101,6 +101,6 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   net::CompletionCallback user_connect_callback_;
 };
 
-}  // namespace notifier
+}  // namespace jingle_glue
 
-#endif  // JINGLE_NOTIFIER_BASE_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#endif  // JINGLE_GLUE_PROXY_RESOLVING_CLIENT_SOCKET_H_

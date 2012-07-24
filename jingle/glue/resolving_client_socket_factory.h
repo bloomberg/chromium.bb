@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef JINGLE_NOTIFIER_BASE_RESOLVING_CLIENT_SOCKET_FACTORY_H_
-#define JINGLE_NOTIFIER_BASE_RESOLVING_CLIENT_SOCKET_FACTORY_H_
+#ifndef JINGLE_GLUE_RESOLVING_CLIENT_SOCKET_FACTORY_H_
+#define JINGLE_GLUE_RESOLVING_CLIENT_SOCKET_FACTORY_H_
 
 
 namespace net {
@@ -11,11 +11,11 @@ class ClientSocketHandle;
 class HostPortPair;
 class SSLClientSocket;
 class StreamSocket;
-}
+}  // namespace net
 
 // TODO(sanjeevr): Move this to net/
 
-namespace notifier {
+namespace jingle_glue {
 
 // Interface for a ClientSocketFactory that creates ClientSockets that can
 // resolve host names and tunnel through proxies.
@@ -31,6 +31,6 @@ class ResolvingClientSocketFactory {
       const net::HostPortPair& host_and_port) = 0;
 };
 
-}  // namespace notifier
+}  // namespace jingle_glue
 
-#endif  // JINGLE_NOTIFIER_BASE_RESOLVING_CLIENT_SOCKET_FACTORY_H_
+#endif  // JINGLE_GLUE_RESOLVING_CLIENT_SOCKET_FACTORY_H_

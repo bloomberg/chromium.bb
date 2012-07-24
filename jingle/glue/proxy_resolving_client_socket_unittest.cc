@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/base/proxy_resolving_client_socket.h"
+#include "jingle/glue/proxy_resolving_client_socket.h"
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -30,7 +30,7 @@ class MyTestURLRequestContext : public TestURLRequestContext {
 
 }  // namespace
 
-namespace notifier {
+namespace jingle_glue {
 
 class ProxyResolvingClientSocketTest : public testing::Test {
  protected:
@@ -114,4 +114,4 @@ TEST_F(ProxyResolvingClientSocketTest, ReportsBadProxies) {
 }
 
 // TODO(sanjeevr): Add more unit-tests.
-}  // namespace notifier
+}  // namespace jingle_glue

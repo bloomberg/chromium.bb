@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/base/chrome_async_socket.h"
+#include "jingle/glue/chrome_async_socket.h"
 
 #include <algorithm>
 #include <cstring>
@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "jingle/notifier/base/resolving_client_socket_factory.h"
+#include "jingle/glue/resolving_client_socket_factory.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -22,9 +22,9 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
-#include "talk/base/socketaddress.h"
+#include "third_party/libjingle/source/talk/base/socketaddress.h"
 
-namespace notifier {
+namespace jingle_glue {
 
 ChromeAsyncSocket::ChromeAsyncSocket(
     ResolvingClientSocketFactory* resolving_client_socket_factory,
@@ -447,4 +447,4 @@ void ChromeAsyncSocket::ProcessSSLConnectDone(int status) {
   SignalSSLConnected();
 }
 
-}  // namespace notifier
+}  // namespace jingle_glue

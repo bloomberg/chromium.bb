@@ -235,6 +235,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../jingle/jingle.gyp:jingle_glue',
         '../jingle/jingle.gyp:notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         # TODO(akalin): Remove this (http://crbug.com/133352).

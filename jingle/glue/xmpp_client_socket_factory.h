@@ -1,15 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef JINGLE_NOTIFIER_BASE_XMPP_CLIENT_SOCKET_FACTORY_H_
-#define JINGLE_NOTIFIER_BASE_XMPP_CLIENT_SOCKET_FACTORY_H_
+#ifndef JINGLE_GLUE_XMPP_CLIENT_SOCKET_FACTORY_H_
+#define JINGLE_GLUE_XMPP_CLIENT_SOCKET_FACTORY_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "jingle/notifier/base/resolving_client_socket_factory.h"
+#include "jingle/glue/resolving_client_socket_factory.h"
 #include "net/base/ssl_config_service.h"
 
 namespace net {
@@ -19,9 +19,9 @@ class HostPortPair;
 class SSLClientSocket;
 class StreamSocket;
 class URLRequestContextGetter;
-}
+}  // namespace net
 
-namespace notifier {
+namespace jingle_glue {
 
 class XmppClientSocketFactory : public ResolvingClientSocketFactory {
  public:
@@ -51,6 +51,6 @@ class XmppClientSocketFactory : public ResolvingClientSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(XmppClientSocketFactory);
 };
 
-}  // namespace notifier
+}  // namespace jingle_glue
 
-#endif  // JINGLE_NOTIFIER_BASE_XMPP_CLIENT_SOCKET_FACTORY_H_
+#endif  // JINGLE_GLUE_XMPP_CLIENT_SOCKET_FACTORY_H_

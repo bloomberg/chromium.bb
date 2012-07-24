@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/base/chrome_async_socket.h"
+#include "jingle/glue/chrome_async_socket.h"
 
 #include <deque>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "jingle/notifier/base/resolving_client_socket_factory.h"
+#include "jingle/glue/resolving_client_socket_factory.h"
 #include "net/base/address_list.h"
 #include "net/base/mock_cert_verifier.h"
 #include "net/base/net_errors.h"
@@ -20,12 +20,12 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "talk/base/sigslot.h"
-#include "talk/base/ipaddress.h"
-#include "talk/base/socketaddress.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libjingle/source/talk/base/ipaddress.h"
+#include "third_party/libjingle/source/talk/base/sigslot.h"
+#include "third_party/libjingle/source/talk/base/socketaddress.h"
 
-namespace notifier {
+namespace jingle_glue {
 
 namespace {
 
@@ -1076,4 +1076,4 @@ TEST_F(ChromeAsyncSocketTest, SSLAsyncWrite) {
 
 }  // namespace
 
-}  // namespace notifier
+}  // namespace jingle_glue

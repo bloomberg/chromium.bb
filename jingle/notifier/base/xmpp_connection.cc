@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_piece.h"
-#include "jingle/notifier/base/chrome_async_socket.h"
+#include "jingle/glue/chrome_async_socket.h"
+#include "jingle/glue/xmpp_client_socket_factory.h"
 #include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
-#include "jingle/notifier/base/xmpp_client_socket_factory.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -34,14 +34,14 @@ buzz::AsyncSocket* CreateSocket(
   // XmppSocketAdapter.
   const size_t kReadBufSize = 64U * 1024U;
   const size_t kWriteBufSize = 64U * 1024U;
-  XmppClientSocketFactory* const client_socket_factory =
-      new XmppClientSocketFactory(
+  jingle_glue::XmppClientSocketFactory* const client_socket_factory =
+      new jingle_glue::XmppClientSocketFactory(
           net::ClientSocketFactory::GetDefaultFactory(),
           ssl_config,
           request_context_getter,
           use_fake_ssl_client_socket);
-  return new ChromeAsyncSocket(client_socket_factory,
-                               kReadBufSize, kWriteBufSize);
+  return new jingle_glue::ChromeAsyncSocket(client_socket_factory,
+                                            kReadBufSize, kWriteBufSize);
 }
 
 }  // namespace

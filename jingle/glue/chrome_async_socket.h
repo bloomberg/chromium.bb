@@ -4,8 +4,8 @@
 //
 // An implementation of buzz::AsyncSocket that uses Chrome sockets.
 
-#ifndef JINGLE_NOTIFIER_BASE_CHROME_ASYNC_SOCKET_H_
-#define JINGLE_NOTIFIER_BASE_CHROME_ASYNC_SOCKET_H_
+#ifndef JINGLE_GLUE_CHROME_ASYNC_SOCKET_H_
+#define JINGLE_GLUE_CHROME_ASYNC_SOCKET_H_
 
 #if !defined(FEATURE_ENABLE_SSL)
 #error ChromeAsyncSocket expects FEATURE_ENABLE_SSL to be defined
@@ -21,14 +21,14 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "talk/xmpp/asyncsocket.h"
+#include "third_party/libjingle/source/talk/xmpp/asyncsocket.h"
 
 namespace net {
 class IOBufferWithSize;
 class StreamSocket;
 }  // namespace net
 
-namespace notifier {
+namespace jingle_glue {
 
 class ResolvingClientSocketFactory;
 
@@ -208,6 +208,6 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   DISALLOW_COPY_AND_ASSIGN(ChromeAsyncSocket);
 };
 
-}  // namespace notifier
+}  // namespace jingle_glue
 
-#endif  // JINGLE_NOTIFIER_BASE_CHROME_ASYNC_SOCKET_H_
+#endif  // JINGLE_GLUE_CHROME_ASYNC_SOCKET_H_

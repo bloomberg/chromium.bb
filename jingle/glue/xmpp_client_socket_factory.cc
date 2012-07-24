@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/base/xmpp_client_socket_factory.h"
+#include "jingle/glue/xmpp_client_socket_factory.h"
 
 #include "base/logging.h"
-#include "jingle/notifier/base/fake_ssl_client_socket.h"
-#include "jingle/notifier/base/proxy_resolving_client_socket.h"
+#include "jingle/glue/fake_ssl_client_socket.h"
+#include "jingle/glue/proxy_resolving_client_socket.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-namespace notifier {
+namespace jingle_glue {
 
 XmppClientSocketFactory::XmppClientSocketFactory(
     net::ClientSocketFactory* client_socket_factory,
@@ -53,4 +53,4 @@ net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
 }
 
 
-}  // namespace
+}  // namespace jingle_glue
