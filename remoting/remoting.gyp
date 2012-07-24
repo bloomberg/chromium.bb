@@ -7,6 +7,7 @@
     # TODO(dmaclach): can we pick this up some other way? Right now it's
     # duplicated from chrome.gyp
     'chromium_code': 1,
+    'remoting_audio': 0,
     # Use consistent strings across all platforms. Note that the plugin name
     # is brand-dependent and is defined further down.
     # Must match host/plugin/constants.h
@@ -196,6 +197,13 @@
     ],
     'include_dirs': [
       '..',  # Root of Chrome checkout
+    ],
+    'conditions': [
+      ['remoting_audio == 1', {
+        'defines': [
+          'ENABLE_REMOTING_AUDIO',
+        ],
+      }],
     ],
   },
 
