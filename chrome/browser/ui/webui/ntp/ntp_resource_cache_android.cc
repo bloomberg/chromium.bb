@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 
+#include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -76,7 +78,10 @@ void NTPResourceCache::CreateNewTabHTML() {
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
       GetRawDataResource(IDR_NEW_TAB_4_HTML,
                          ui::SCALE_FACTOR_NONE));
-
+  localized_strings.SetString(
+      "device",
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUi) ?
+          "tablet" : "phone");
   const char* new_tab_link = kLearnMoreIncognitoUrl;
   string16 learnMoreLink = ASCIIToUTF16(
       google_util::AppendGoogleLocaleParam(GURL(new_tab_link)).spec());
