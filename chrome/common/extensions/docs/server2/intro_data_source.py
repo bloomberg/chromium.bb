@@ -2,9 +2,54 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import re
+import logging
+
+from HTMLParser import HTMLParser
+
 from path_utils import FormatKey
 from third_party.handlebar import Handlebar
+
+class _IntroParser(HTMLParser):
+  """ An HTML parser which will parse table of contents and page title info out
+  of an intro.
+  """
+  def __init__(self):
+    HTMLParser.__init__(self)
+    self.toc = []
+    self.page_title = None
+    self._recent_tag = None
+    self._current_heading = {}
+
+  def handle_starttag(self, tag, attrs):
+    id_ = ''
+    if tag not in ['h1', 'h2', 'h3']:
+      return
+    if tag != 'h1' or self.page_title is None:
+      self._recent_tag = tag
+    for attr in attrs:
+      if attr[0] == 'id':
+        id_ = attr[1]
+    if tag == 'h2':
+      self._current_heading = { 'link': id_, 'subheadings': [], 'title': '' }
+      self.toc.append(self._current_heading)
+    elif tag == 'h3':
+      self._current_heading = { 'link': id_, 'title': '' }
+      self.toc[-1]['subheadings'].append(self._current_heading)
+
+  def handle_endtag(self, tag):
+    if tag in ['h1', 'h2', 'h3']:
+      self._recent_tag = None
+
+  def handle_data(self, data):
+    if self._recent_tag is None:
+      return
+    if self._recent_tag == 'h1':
+      if self.page_title is None:
+        self.page_title = data
+      else:
+        self.page_title += data
+    elif self._recent_tag in ['h2', 'h3']:
+      self._current_heading['title'] += data
 
 class IntroDataSource(object):
   """This class fetches the intros for a given API. From this intro, a table
@@ -15,20 +60,16 @@ class IntroDataSource(object):
     self._base_paths = base_paths
 
   def _MakeIntroDict(self, intro):
-    h1s = re.findall('<h1.*>(.+)</h1>', intro)
-    if len(h1s) > 0:
-      page_title = h1s[0]
-    else:
-      page_title = ''
-    headings = re.findall('<h([23]) id\="(.+)">(.+)</h[23]>', intro)
-    toc = []
-    for heading in headings:
-      level, link, title = heading
-      if level == '2':
-        toc.append({ 'link': link, 'title': title, 'subheadings': [] })
-      else:
-        toc[-1]['subheadings'].append({ 'link': link, 'title': title })
-    return { 'intro': Handlebar(intro), 'toc': toc , 'title': page_title }
+    try:
+      parser = _IntroParser()
+      parser.feed(intro)
+      return {
+        'intro': Handlebar(intro),
+        'toc': parser.toc,
+        'title': parser.page_title
+      }
+    except Exception as e:
+      logging.info(e)
 
   def __getitem__(self, key):
     return self.get(key)
