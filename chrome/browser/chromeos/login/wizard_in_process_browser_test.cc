@@ -22,6 +22,11 @@ WizardInProcessBrowserTest::WizardInProcessBrowserTest(const char* screen_name)
       host_(NULL) {
 }
 
+void WizardInProcessBrowserTest::SetUp() {
+  WizardController::SetZeroDelays();
+  InProcessBrowserTest::SetUp();
+}
+
 void WizardInProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kNoStartupWindow);
   command_line->AppendSwitch(switches::kLoginManager);
@@ -29,9 +34,6 @@ void WizardInProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 
 void WizardInProcessBrowserTest::SetUpOnMainThread() {
   SetUpWizard();
-
-  WizardController::SetZeroDelays();
-
   if (!screen_name_.empty()) {
     ShowLoginWizard(screen_name_, gfx::Size(1024, 600));
     host_ = BaseLoginDisplayHost::default_host();

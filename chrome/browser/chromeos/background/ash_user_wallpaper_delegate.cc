@@ -34,8 +34,11 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
   }
 
   virtual ash::WindowVisibilityAnimationType GetAnimationType() OVERRIDE {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe))
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableNewOobe) ||
+        WizardController::IsZeroDelayEnabled()) {
       return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+    }
 
     bool is_registered = WizardController::IsDeviceRegistered();
     // TODO(nkostylev): Figure out whether this would affect autotests as well.

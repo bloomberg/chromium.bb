@@ -180,7 +180,7 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       new options2::UserImageSource();
   ChromeURLDataManager::AddDataSource(profile, user_image_source);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe)) {
     // Set up the chrome://wallpaper/ source.
     chromeos::options2::WallpaperImageSource* wallpaper_image_source =
         new chromeos::options2::WallpaperImageSource();
@@ -238,7 +238,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     handlers_[i]->GetLocalizedStrings(localized_strings);
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe))
     localized_strings->SetString("oobeType", "new");
   else
     localized_strings->SetString("oobeType", "old");

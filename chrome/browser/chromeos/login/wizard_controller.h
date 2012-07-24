@@ -88,6 +88,9 @@ class WizardController : public ScreenObserver {
   // Returns initial locale from local settings.
   static std::string GetInitialLocale();
 
+  // If true zero delays have been enabled (for browser tests).
+  static bool IsZeroDelayEnabled();
+
   // Sets initial locale in local settings.
   static void SetInitialLocale(const std::string& locale);
 
@@ -215,6 +218,8 @@ class WizardController : public ScreenObserver {
   static void SetZeroDelays();
 
   static bool skip_user_image_selection_;
+
+  static bool zero_delay_enabled_;
 
   // Screens.
   scoped_ptr<NetworkScreen> network_screen_;

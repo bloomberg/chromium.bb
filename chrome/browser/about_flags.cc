@@ -803,11 +803,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableHtml5Camera),
   },
   {
-    "enable-new-oobe",
-    IDS_FLAGS_ENABLE_NEW_OOBE,
-    IDS_FLAGS_ENABLE_NEW_OOBE_DESCRIPTION,
+    "disable-new-oobe",
+    IDS_FLAGS_DISABLE_NEW_OOBE,
+    IDS_FLAGS_DISABLE_NEW_OOBE_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableNewOobe),
+    SINGLE_VALUE_TYPE(switches::kDisableNewOobe),
   },
 #endif
   {

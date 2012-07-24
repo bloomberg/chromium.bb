@@ -123,6 +123,9 @@ WizardController* WizardController::default_controller_ = NULL;
 // static
 bool WizardController::skip_user_image_selection_ = false;
 
+// static
+bool WizardController::zero_delay_enabled_ = false;
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, public:
 
@@ -789,8 +792,15 @@ bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
 }
 
+// static
+bool WizardController::IsZeroDelayEnabled() {
+  return zero_delay_enabled_;
+}
+
+// static
 void WizardController::SetZeroDelays() {
   kShowDelayMs = 0;
+  zero_delay_enabled_ = true;
 }
 
 }  // namespace chromeos

@@ -5908,11 +5908,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_HTML5_CAMERA_DESCRIPTION" desc="Description for the flag to enable new new camera WebUI.">
           Enables HTML5 camera support in some WebUI parts.
         </message>
-        <message name="IDS_FLAGS_ENABLE_NEW_OOBE" desc="Name for the flag to enable new design for OOBE / sign in flows.">
-          Enable OOBE/sign in redesign.
+        <message name="IDS_FLAGS_DISABLE_NEW_OOBE" desc="Name for the flag to disable new design for OOBE / sign in flows.">
+          Disable OOBE/sign in redesign.
         </message>
-        <message name="IDS_FLAGS_ENABLE_NEW_OOBE_DESCRIPTION" desc="Description for the flag to enable new design for OOBE / sign in flows.">
-          Enables new design for OOBE / sign in flows.
+        <message name="IDS_FLAGS_DISABLE_NEW_OOBE_DESCRIPTION" desc="Description for the flag to disable new design for OOBE / sign in flows.">
+          Disables new design for OOBE / sign in flows.
         </message>
       </if>
 

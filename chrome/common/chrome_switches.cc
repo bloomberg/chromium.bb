@@ -1344,8 +1344,8 @@ const char kTabletUi[]                      = "tablet-ui";
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";
 
-// Enables new OOBE/sign in design.
-extern const char kEnableNewOobe[]         = "enable-new-oobe";
+// Disables new OOBE/sign in design.
+extern const char kDisableNewOobe[]         = "disable-new-oobe";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]

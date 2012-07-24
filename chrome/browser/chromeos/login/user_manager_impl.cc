@@ -377,8 +377,10 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
 void UserManagerImpl::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!IsUserLoggedIn()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe)) {
-      if (!WizardController::IsDeviceRegistered()) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableNewOobe)) {
+      if (!WizardController::IsDeviceRegistered() &&
+          !WizardController::IsZeroDelayEnabled()) {
         // TODO(nkostylev): Add switch to disable wallpaper transition on OOBE.
         // Should be used on test images so that they are not slowed down.
         ash::Shell::GetInstance()->desktop_background_controller()->

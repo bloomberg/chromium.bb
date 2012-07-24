@@ -26,6 +26,9 @@ class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
  public:
   explicit WizardInProcessBrowserTest(const char* screen_name);
 
+  // Overriden from InProcessBrowserTest:
+  virtual void SetUp() OVERRIDE;
+
  protected:
   // Can be overriden by derived test fixtures to set up environment after
   // browser is created but wizard is not shown yet.
