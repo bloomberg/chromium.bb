@@ -64,6 +64,7 @@
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/extensions/window_event_router.h"
 #include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -471,6 +472,8 @@ void ExtensionService::InitEventRouters() {
   history_event_router_->ObserveProfile(profile_);
   browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
   browser_event_router_->Init();
+  window_event_router_.reset(new extensions::WindowEventRouter(profile_));
+  window_event_router_->Init();
   preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       profile_->GetBookmarkModel()));

@@ -12,6 +12,7 @@ class Browser;
 class BrowserExtensionWindowController : public extensions::WindowController {
  public:
   explicit BrowserExtensionWindowController(Browser* browser);
+  virtual ~BrowserExtensionWindowController();
 
   // extensions::WindowController implementation.
   virtual int GetWindowId() const OVERRIDE;

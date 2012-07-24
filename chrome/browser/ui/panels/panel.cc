@@ -9,7 +9,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/extensions/window_controller_list.h"
+#include "chrome/browser/extensions/window_event_router.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -38,6 +42,7 @@ namespace panel_internal {
 class PanelExtensionWindowController : public extensions::WindowController {
  public:
   PanelExtensionWindowController(Panel* panel, Profile* profile);
+  virtual ~PanelExtensionWindowController();
 
   // Overridden from extensions::WindowController.
   virtual int GetWindowId() const OVERRIDE;
@@ -58,6 +63,11 @@ PanelExtensionWindowController::PanelExtensionWindowController(
     Panel* panel, Profile* profile)
     : extensions::WindowController(panel, profile),
       panel_(panel) {
+  extensions::WindowControllerList::GetInstance()->AddExtensionWindow(this);
+}
+
+PanelExtensionWindowController::~PanelExtensionWindowController() {
+  extensions::WindowControllerList::GetInstance()->RemoveExtensionWindow(this);
 }
 
 int PanelExtensionWindowController::GetWindowId() const {
@@ -617,6 +627,17 @@ void Panel::OnActiveStateChanged(bool active) {
 
   if (panel_strip_)
     panel_strip_->OnPanelActiveStateChanged(this);
+
+  // Send extension event about window becoming active.
+  // TODO(jennb): remove extension_window_controller_ guard after refactor.
+  if (active && extension_window_controller_.get()) {
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile())->extension_service();
+    if (service) {
+      service->window_event_router()->OnActiveWindowChanged(
+          extension_window_controller_.get());
+    }
+  }
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,

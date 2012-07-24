@@ -18,11 +18,9 @@ namespace extensions {
 
 WindowController::WindowController(BaseWindow* window, Profile* profile)
     : window_(window), profile_(profile) {
-  WindowControllerList::GetInstance()->AddExtensionWindow(this);
 }
 
 WindowController::~WindowController() {
-  WindowControllerList::GetInstance()->RemoveExtensionWindow(this);
 }
 
 Browser* WindowController::GetBrowser() const {

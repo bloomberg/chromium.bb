@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
@@ -182,6 +183,7 @@ class PanelExtensionWindowController : public extensions::WindowController {
  public:
   PanelExtensionWindowController(PanelViewAura* panel_view,
                                  PanelHost* panel_host);
+  virtual ~PanelExtensionWindowController();
 
   // Overriden from extensions::WindowController:
   virtual int GetWindowId() const OVERRIDE;
@@ -207,6 +209,11 @@ PanelExtensionWindowController::PanelExtensionWindowController(
     : extensions::WindowController(panel_view, panel_host->profile()),
       panel_view_(panel_view),
       panel_host_(panel_host) {
+  extensions::WindowControllerList::GetInstance()->AddExtensionWindow(this);
+}
+
+PanelExtensionWindowController::~PanelExtensionWindowController() {
+  extensions::WindowControllerList::GetInstance()->RemoveExtensionWindow(this);
 }
 
 int PanelExtensionWindowController::GetWindowId() const {

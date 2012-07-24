@@ -15,11 +15,6 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/focus/widget_focus_manager.h"
-#elif defined(TOOLKIT_GTK)
-#include "ui/base/x/active_window_watcher_x_observer.h"
-#endif
 
 namespace content {
 class WebContents;
@@ -33,13 +28,8 @@ namespace extensions {
 // events from windows/tabs within a profile to extension processes in the same
 // profile.
 class BrowserEventRouter : public TabStripModelObserver,
-#if defined(TOOLKIT_VIEWS)
-                                    public views::WidgetFocusChangeListener,
-#elif defined(TOOLKIT_GTK)
-                                    public ui::ActiveWindowWatcherXObserver,
-#endif
-                                    public chrome::BrowserListObserver,
-                                    public content::NotificationObserver {
+                           public chrome::BrowserListObserver,
+                           public content::NotificationObserver {
  public:
   explicit BrowserEventRouter(Profile* profile);
   virtual ~BrowserEventRouter();
@@ -51,17 +41,6 @@ class BrowserEventRouter : public TabStripModelObserver,
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
   virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
-
-#if defined(TOOLKIT_VIEWS)
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) OVERRIDE;
-#elif defined(TOOLKIT_GTK)
-  virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
-#endif
-
-  // Called from Observe() on BROWSER_WINDOW_READY (not a part of
-  // chrome::BrowserListObserver).
-  void OnBrowserWindowReady(Browser* browser);
 
   // TabStripModelObserver
   virtual void TabInsertedAt(TabContents* contents, int index,
@@ -228,15 +207,6 @@ class BrowserEventRouter : public TabStripModelObserver,
 
   // The main profile that owns this event router.
   Profile* profile_;
-
-  // The profile the currently focused window belongs to; either the main or
-  // incognito profile or NULL (none of the above). We remember this in order
-  // to correctly handle focus changes between non-OTR and OTR windows.
-  Profile* focused_profile_;
-
-  // The currently focused window. We keep this so as to avoid sending multiple
-  // windows.onFocusChanged events with the same windowId.
-  int focused_window_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserEventRouter);
 };

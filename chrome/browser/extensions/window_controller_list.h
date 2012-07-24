@@ -9,12 +9,15 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "chrome/browser/extensions/window_controller.h"
 
 class Profile;
 class UIThreadExtensionFunction;
 
 namespace extensions {
+
+class WindowControllerListObserver;
 
 // Class to maintain a list of WindowControllers.
 class WindowControllerList {
@@ -26,6 +29,9 @@ class WindowControllerList {
 
   void AddExtensionWindow(WindowController* window);
   void RemoveExtensionWindow(WindowController* window);
+
+  void AddObserver(WindowControllerListObserver* observer);
+  void RemoveObserver(WindowControllerListObserver* observer);
 
   // Returns a window matching the context the function was invoked in.
   WindowController* FindWindowForFunctionById(
@@ -46,6 +52,8 @@ class WindowControllerList {
 
   // Entries are not owned by this class and must be removed when destroyed.
   ControllerList windows_;
+
+  ObserverList<WindowControllerListObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowControllerList);
 };

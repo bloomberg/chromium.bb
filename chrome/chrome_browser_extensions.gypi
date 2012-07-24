@@ -515,6 +515,9 @@
         'browser/extensions/window_controller.h',
         'browser/extensions/window_controller_list.cc',
         'browser/extensions/window_controller_list.h',
+        'browser/extensions/window_controller_list_observer.h',
+        'browser/extensions/window_event_router.cc',
+        'browser/extensions/window_event_router.h',
       ],
       'conditions': [
         ['chromeos==0', {

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +18,11 @@ BrowserExtensionWindowController::BrowserExtensionWindowController(
     Browser* browser)
     : extensions::WindowController(browser->window(), browser->profile()),
       browser_(browser) {
+  extensions::WindowControllerList::GetInstance()->AddExtensionWindow(this);
+}
+
+BrowserExtensionWindowController::~BrowserExtensionWindowController() {
+  extensions::WindowControllerList::GetInstance()->RemoveExtensionWindow(this);
 }
 
 int BrowserExtensionWindowController::GetWindowId() const {

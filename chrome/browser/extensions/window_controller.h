@@ -29,6 +29,8 @@ class Extension;
 
 // This API needs to be implemented by any window that might be accessed
 // through chrome.windows or chrome.tabs (e.g. browser windows and panels).
+// Subclasses must add/remove themselves from the WindowControllerList
+// upon construction/destruction.
 class WindowController {
  public:
   enum Reason {

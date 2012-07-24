@@ -4,6 +4,12 @@
 
 chrome.test.runTests([
   function openPanel() {
+    chrome.test.listenOnce(chrome.windows.onCreated, function(window) {
+      chrome.test.assertTrue(window.width > 0);
+      chrome.test.assertTrue(window.height > 0);
+      chrome.test.assertEq("panel", window.type);
+      chrome.test.assertTrue(!window.incognito);
+    });
     chrome.windows.create(
         { 'url': 'about:blank', 'type': 'panel' },
         chrome.test.callbackPass(function(win) {

@@ -11,24 +11,22 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/extensions/window_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-
-#if defined(TOOLKIT_GTK)
-#include "ui/base/x/active_window_watcher_x.h"
-#endif
 
 namespace events = extensions::event_names;
 namespace tab_keys = extensions::tabs_constants;
@@ -80,16 +78,6 @@ void BrowserEventRouter::Init() {
   if (initialized_)
     return;
   BrowserList::AddObserver(this);
-#if defined(TOOLKIT_VIEWS)
-  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-#elif defined(TOOLKIT_GTK)
-  ui::ActiveWindowWatcherX::AddObserver(this);
-#elif defined(OS_MACOSX)
-  // Needed for when no suitable window can be passed to an extension as the
-  // currently focused window.
-  registrar_.Add(this, chrome::NOTIFICATION_NO_KEY_WINDOW,
-                 content::NotificationService::AllSources());
-#endif
 
   // Init() can happen after the browser is running, so catch up with any
   // windows that already exist.
@@ -114,19 +102,12 @@ void BrowserEventRouter::Init() {
 
 BrowserEventRouter::BrowserEventRouter(Profile* profile)
     : initialized_(false),
-      profile_(profile),
-      focused_profile_(NULL),
-      focused_window_id_(extension_misc::kUnknownWindowId) {
+      profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
 }
 
 BrowserEventRouter::~BrowserEventRouter() {
   BrowserList::RemoveObserver(this);
-#if defined(TOOLKIT_VIEWS)
-  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
-#elif defined(TOOLKIT_GTK)
-  ui::ActiveWindowWatcherX::RemoveObserver(this);
-#endif
 }
 
 void BrowserEventRouter::OnBrowserAdded(Browser* browser) {
@@ -138,12 +119,6 @@ void BrowserEventRouter::RegisterForBrowserNotifications(Browser* browser) {
     return;
   // Start listening to TabStripModel events for this browser.
   browser->tab_strip_model()->AddObserver(this);
-
-  // If this is a new window, it isn't ready at this point, so we register to be
-  // notified when it is. If this is an existing window, this is a no-op that we
-  // just do to reduce code complexity.
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::Source<Browser>(browser));
 
   for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     RegisterForTabNotifications(
@@ -171,88 +146,21 @@ void BrowserEventRouter::UnregisterForTabNotifications(WebContents* contents) {
       content::Source<WebContents>(contents));
 }
 
-void BrowserEventRouter::OnBrowserWindowReady(Browser* browser) {
-  ListValue args;
-
-  DCHECK(browser->extension_window_controller());
-  DictionaryValue* window_dictionary =
-      browser->extension_window_controller()->CreateWindowValue();
-  args.Append(window_dictionary);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-
-  DispatchEvent(browser->profile(), events::kOnWindowCreated, json_args);
-}
-
 void BrowserEventRouter::OnBrowserRemoved(Browser* browser) {
   if (!profile_->IsSameProfile(browser->profile()))
     return;
 
   // Stop listening to TabStripModel events for this browser.
   browser->tab_strip_model()->RemoveObserver(this);
-
-  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::Source<Browser>(browser));
-
-  DispatchSimpleBrowserEvent(browser->profile(),
-                             ExtensionTabUtil::GetWindowId(browser),
-                             events::kOnWindowRemoved);
 }
-
-#if defined(TOOLKIT_VIEWS)
-void BrowserEventRouter::OnNativeFocusChange(gfx::NativeView focused_before,
-                                             gfx::NativeView focused_now) {
-  if (!focused_now)
-    OnBrowserSetLastActive(NULL);
-}
-#elif defined(TOOLKIT_GTK)
-void BrowserEventRouter::ActiveWindowChanged(GdkWindow* active_window) {
-  if (!active_window)
-    OnBrowserSetLastActive(NULL);
-}
-#endif
 
 void BrowserEventRouter::OnBrowserSetLastActive(Browser* browser) {
-  Profile* window_profile = NULL;
-  int window_id = extension_misc::kUnknownWindowId;
-  if (browser && profile_->IsSameProfile(browser->profile())) {
-    window_profile = browser->profile();
-    window_id = ExtensionTabUtil::GetWindowId(browser);
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (service) {
+    service->window_event_router()->OnActiveWindowChanged(
+        browser ? browser->extension_window_controller() : NULL);
   }
-
-  if (focused_window_id_ == window_id)
-    return;
-
-  // window_profile is either this profile's default profile, its
-  // incognito profile, or NULL iff this profile is losing focus.
-  Profile* previous_focused_profile = focused_profile_;
-  focused_profile_ = window_profile;
-  focused_window_id_ = window_id;
-
-  ListValue real_args;
-  real_args.Append(Value::CreateIntegerValue(window_id));
-  std::string real_json_args;
-  base::JSONWriter::Write(&real_args, &real_json_args);
-
-  // When switching between windows in the default and incognitoi profiles,
-  // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
-  // can't see the new focused window across the incognito boundary.
-  // See crbug.com/46610.
-  std::string none_json_args;
-  if (focused_profile_ != NULL && previous_focused_profile != NULL &&
-      focused_profile_ != previous_focused_profile) {
-    ListValue none_args;
-    none_args.Append(
-        Value::CreateIntegerValue(extension_misc::kUnknownWindowId));
-    base::JSONWriter::Write(&none_args, &none_json_args);
-  }
-
-  DispatchEventsAcrossIncognito((focused_profile_ ? focused_profile_ :
-                                 previous_focused_profile),
-                                events::kOnWindowFocusedChanged,
-                                real_json_args,
-                                none_json_args);
 }
 
 void BrowserEventRouter::TabCreatedAt(WebContents* contents,
@@ -556,13 +464,6 @@ void BrowserEventRouter::Observe(int type,
         content::Source<NavigationController>(&contents->GetController()));
     registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<WebContents>(contents));
-  } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
-    Browser* browser = content::Source<Browser>(source).ptr();
-    OnBrowserWindowReady(browser);
-#if defined(OS_MACOSX)
-  } else if (type == chrome::NOTIFICATION_NO_KEY_WINDOW) {
-    OnBrowserSetLastActive(NULL);
-#endif
   } else {
     NOTREACHED();
   }

@@ -67,27 +67,24 @@ class ExtensionInputMethodEventRouter;
 }
 
 namespace extensions {
-class ExtensionBrowserEventRouter;
-class ExtensionManagedModeEventRouter;
-}
-
-namespace syncer {
-class SyncData;
-class SyncErrorFactory;
-}
-
-namespace extensions {
 class AppSyncData;
 class BrowserEventRouter;
 class ComponentLoader;
 class ContentSettingsStore;
 class Extension;
 class ExtensionCookiesEventRouter;
+class ExtensionManagedModeEventRouter;
 class ExtensionSyncData;
 class ExtensionSystem;
 class ExtensionUpdater;
 class SettingsFrontend;
 class WebNavigationEventRouter;
+class WindowEventRouter;
+}
+
+namespace syncer {
+class SyncData;
+class SyncErrorFactory;
 }
 
 // This is an interface class to encapsulate the dependencies that
@@ -505,6 +502,10 @@ class ExtensionService
     return browser_event_router_.get();
   }
 
+  extensions::WindowEventRouter* window_event_router() {
+    return window_event_router_.get();
+  }
+
 #if defined(OS_CHROMEOS)
   chromeos::ExtensionBluetoothEventRouter* bluetooth_event_router() {
     return bluetooth_event_router_.get();
@@ -801,6 +802,8 @@ class ExtensionService
   scoped_ptr<HistoryExtensionEventRouter> history_event_router_;
 
   scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
+
+  scoped_ptr<extensions::WindowEventRouter> window_event_router_;
 
   scoped_ptr<ExtensionPreferenceEventRouter> preference_event_router_;
 

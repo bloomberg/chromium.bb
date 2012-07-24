@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/window_controller_list_observer.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
 
@@ -28,13 +29,27 @@ WindowControllerList::~WindowControllerList() {
 
 void WindowControllerList::AddExtensionWindow(WindowController* window) {
   windows_.push_back(window);
+  FOR_EACH_OBSERVER(WindowControllerListObserver, observers_,
+                    OnWindowControllerAdded(window));
 }
 
 void WindowControllerList::RemoveExtensionWindow(WindowController* window) {
   ControllerList::iterator iter = std::find(
       windows_.begin(), windows_.end(), window);
-  if (iter != windows_.end())
+  if (iter != windows_.end()) {
     windows_.erase(iter);
+    FOR_EACH_OBSERVER(WindowControllerListObserver, observers_,
+                      OnWindowControllerRemoved(window));
+  }
+}
+
+void WindowControllerList::AddObserver(WindowControllerListObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WindowControllerList::RemoveObserver(
+    WindowControllerListObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 WindowController* WindowControllerList::FindWindowForFunctionById(

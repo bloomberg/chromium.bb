@@ -51,6 +51,12 @@ bool PanelCocoa::isClosed() {
 void PanelCocoa::ShowPanel() {
   ShowPanelInactive();
   ActivatePanel();
+
+  // |-makeKeyAndOrderFront:| won't send |-windowDidBecomeKey:| until we
+  // return to the runloop. This causes extension tests that wait for the
+  // active status change notification to fail, so we send an active status
+  // notification here.
+  panel_->OnActiveStateChanged(true);
 }
 
 void PanelCocoa::ShowPanelInactive() {
