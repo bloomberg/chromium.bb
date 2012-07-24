@@ -33,18 +33,16 @@ struct NaClThreadContext {
   nacl_reg_t  r4, r5, r6, r7, r8, r9, r10, fp, stack_ptr, prog_ctr;
   /*           0   4   8   c  10  14   18  1c         20        24 */
   /*
-   * spring_addr, sys_ret and new_eip are not a part of the thread's
-   * register set, but are needed by NaClSwitch. By including them
-   * here, the two use the same interface.
+   * sys_ret and new_eip are not a part of the thread's register set,
+   * but are needed by NaClSwitch.  By including them here, the two
+   * use the same interface.
    */
   uint32_t  sysret;
   /*            28 */
   uint32_t  new_eip;
   /*            2c */
-  uint32_t  spring_addr;
-  /*            30 */
   uint32_t  tls_idx;
-  /*            34 */
+  /*            30 */
 };
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H___ */

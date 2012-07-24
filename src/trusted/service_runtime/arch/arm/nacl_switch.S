@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -22,9 +22,9 @@
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
 
 /*
- * Clear registers r2,r3, lr, flag and status fields in CPSR (status
- * register). This might be necessary to avoid information leaks, the rest
- * register are overwritten by the following code and the code in springboard.
+ * We clear registers r2, r3, lr, flag and status fields in CPSR
+ * (status register) to avoid information leaks.  The remaining
+ * registers are overwritten by the code that follows after.
  */
 
   mov r2, #0
@@ -34,4 +34,9 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
 
   ldmia r0!, NACL_CALLEE_SAVE_LIST
   add r0, #4  /* skip prog_ctr in struct NaClThreadContext */
-  ldmia r0, {r0, r1, pc}
+  /* Read sysret and new_eip from struct NaClThreadContext */
+  ldmia r0, {r0, r1}
+  /* Pop 4 arguments saved on the stack by the trampoline code */
+  add sp, #16
+  /* Transfer control to untrusted code */
+  bx r1

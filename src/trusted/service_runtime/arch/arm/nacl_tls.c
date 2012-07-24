@@ -37,18 +37,11 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
   return natp->user.tls_idx;
 }
 
-static void NaClThreadStartupCheck() {
-  CHECK(sizeof(struct NaClThreadContext) == 0x38);
-}
-
-
-
 
 int NaClTlsInit() {
   size_t i;
 
   NaClLog(2, "NaClTlsInit\n");
-  NaClThreadStartupCheck();
 
   for (i = 0; i < NACL_ARRAY_SIZE(gNaClThreadIdxInUse); i++) {
     gNaClThreadIdxInUse[i] = 0;

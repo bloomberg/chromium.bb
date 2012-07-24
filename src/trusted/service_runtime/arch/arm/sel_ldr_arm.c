@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,7 +7,6 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/springboard.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/tramp_arm.h"
 
@@ -74,34 +73,6 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
 }
 
 
-/*
- * patch in springboard.S code into space in place of
- * the last syscall in the trampoline region.
- * The code being patched is from springboard.S
- */
-
 void  NaClLoadSpringboard(struct NaClApp  *nap) {
-  struct NaClPatchInfo  patch_info;
-#if defined(NACL_TARGET_ARM_THUMB2_MODE)
-  /* Springboard begins 2 bytes earlier for thumb2. */
-  const uintptr_t       springboard_addr = NACL_TRAMPOLINE_END -
-                                           NACL_SYSCALL_BLOCK_SIZE -
-                                           NACL_HALT_LEN;
-#else
-  const uintptr_t       springboard_addr = NACL_TRAMPOLINE_END -
-                                           NACL_SYSCALL_BLOCK_SIZE;
-#endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
-  NaClLog(2, "Installing springboard at 0x%08"NACL_PRIxPTR"\n",
-          springboard_addr);
-
-  NaClPatchInfoCtor(&patch_info);
-
-  patch_info.dst = nap->mem_start + springboard_addr;
-  patch_info.src = (uintptr_t) &NaCl_springboard;
-  patch_info.nbytes = ((uintptr_t) &NaCl_springboard_end
-                       - (uintptr_t) &NaCl_springboard);
-
-  NaClApplyPatchToMemory(&patch_info);
-
-  nap->springboard_addr = springboard_addr + NACL_HALT_LEN; /* skip the hlt */
+  UNREFERENCED_PARAMETER(nap);
 }

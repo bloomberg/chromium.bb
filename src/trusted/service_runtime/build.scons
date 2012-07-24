@@ -138,19 +138,16 @@ elif env.Bit('build_arm'):
     'arch/arm/sel_addrspace_arm.c',
     'arch/arm/nacl_switch.S',
     'arch/arm/nacl_syscall.S',
-    'arch/arm/springboard.S',
     'arch/arm/tramp_arm.S',
   ]
   if env.Bit('target_arm_thumb2'):
     thumb2_env = env.Clone()
     thumb2_env.Append(ASFLAGS=['-mthumb'])
     ldr_inputs += [
-      thumb2_env.DualObject('arch/arm/springboard_thumb2.S'),
       thumb2_env.DualObject('arch/arm/tramp_arm_thumb2.S'),
     ]
   else:
     ldr_inputs += [
-      'arch/arm/springboard.S',
       'arch/arm/tramp_arm.S',
     ]
 
