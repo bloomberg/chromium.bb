@@ -287,12 +287,41 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
                            State state,
                            const gfx::Rect& rect,
                            const ExtraParams& extra) const {
+  bool needs_paint_indirect = false;
   if (!skia::SupportsPlatformPaint(canvas)) {
     // This block will only get hit with --enable-accelerated-drawing flag.
-    PaintToNonPlatformCanvas(canvas, part, state, rect, extra);
-    return;
+    needs_paint_indirect = true;
+  } else {
+    // Scrollbars on Windows XP and the Windows Classic theme have particularly
+    // problematic alpha values, so always draw them indirectly.
+    switch (part) {
+      case kScrollbarDownArrow:
+      case kScrollbarUpArrow:
+      case kScrollbarLeftArrow:
+      case kScrollbarRightArrow:
+      case kScrollbarHorizontalThumb:
+      case kScrollbarVerticalThumb:
+      case kScrollbarHorizontalGripper:
+      case kScrollbarVerticalGripper:
+        if (!GetThemeHandle(SCROLLBAR))
+          needs_paint_indirect = true;
+        break;
+      default:
+        break;
+    }
   }
 
+  if (needs_paint_indirect)
+    PaintIndirect(canvas, part, state, rect, extra);
+  else
+    PaintDirect(canvas, part, state, rect, extra);
+}
+
+void NativeThemeWin::PaintDirect(SkCanvas* canvas,
+                                 Part part,
+                                 State state,
+                                 const gfx::Rect& rect,
+                                 const ExtraParams& extra) const {
   skia::ScopedPlatformPaint scoped_platform_paint(canvas);
   HDC hdc = scoped_platform_paint.GetPlatformSurface();
 
@@ -440,11 +469,11 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   return kInvalidColorIdColor;
 }
 
-void NativeThemeWin::PaintToNonPlatformCanvas(SkCanvas* canvas,
-                                              Part part,
-                                              State state,
-                                              const gfx::Rect& rect,
-                                              const ExtraParams& extra) const {
+void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
+                                   Part part,
+                                   State state,
+                                   const gfx::Rect& rect,
+                                   const ExtraParams& extra) const {
   // TODO(asvitkine): This path is pretty inefficient - for each paint operation
   //                  it creates a new offscreen bitmap Skia canvas. This can
   //                  be sped up by doing it only once per part/state and
@@ -482,7 +511,11 @@ void NativeThemeWin::PaintToNonPlatformCanvas(SkCanvas* canvas,
     default: break;
   }
   // Draw the theme controls using existing HDC-drawing code.
-  Paint(offscreen_canvas.get(), part, state, adjusted_rect, adjusted_extra);
+  PaintDirect(offscreen_canvas.get(),
+              part,
+              state,
+              adjusted_rect,
+              adjusted_extra);
 
   // Copy the pixels to a bitmap that has ref-counted pixel storage, which is
   // necessary to have when drawing to a SkPicture.

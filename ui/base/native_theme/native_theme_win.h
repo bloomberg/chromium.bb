@@ -111,11 +111,21 @@ class UI_EXPORT NativeThemeWin : public NativeTheme {
                      const ExtraParams& extra) const OVERRIDE;
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
 
-  void PaintToNonPlatformCanvas(SkCanvas* canvas,
-                                Part part,
-                                State state,
-                                const gfx::Rect& rect,
-                                const ExtraParams& extra) const;
+  // Paint directly to canvas' HDC.
+  void PaintDirect(SkCanvas* canvas,
+                   Part part,
+                   State state,
+                   const gfx::Rect& rect,
+                   const ExtraParams& extra) const;
+
+  // Create a temporary HDC, paint to that, clean up the alpha values in the
+  // temporary HDC, and then blit the result to canvas.  This is to work around
+  // the fact that Windows XP and some classic themes give bogus alpha values.
+  void PaintIndirect(SkCanvas* canvas,
+                     Part part,
+                     State state,
+                     const gfx::Rect& rect,
+                     const ExtraParams& extra) const;
 
   HRESULT GetThemePartSize(ThemeName themeName,
                            HDC hdc,
