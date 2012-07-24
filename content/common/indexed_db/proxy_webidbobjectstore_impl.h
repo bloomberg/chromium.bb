@@ -40,7 +40,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
       WebKit::WebIDBCallbacks*,
       const WebKit::WebIDBTransaction&,
       const WebKit::WebVector<WebKit::WebString>&,
-      const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >&,
+      const WebKit::WebVector<WebKit::WebIDBObjectStore::WebIndexKeys>&,
       WebKit::WebExceptionCode&);
   virtual void deleteFunction(const WebKit::WebIDBKeyRange& key_range,
                               WebKit::WebIDBCallbacks* callbacks,

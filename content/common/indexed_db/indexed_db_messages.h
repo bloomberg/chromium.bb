@@ -439,7 +439,7 @@ IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreGet,
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
-// WebIDBObjectStore::put() message.
+// WebIDBObjectStore::putWithIndexKeys() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStorePut,
                             IndexedDBHostMsg_ObjectStorePut_Params,
                             WebKit::WebExceptionCode /* ec */)
