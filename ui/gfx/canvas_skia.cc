@@ -179,11 +179,6 @@ void ApplyUnderlineStyle(const ui::Range& range, gfx::RenderText* render_text) {
 // Returns updated |flags| to match platform-specific expected behavior.
 int AdjustPlatformSpecificFlags(const string16& text, int flags) {
 #if defined(OS_LINUX)
-  // TODO(asvitkine): On Linux, NO_ELLIPSIS really means MULTI_LINE.
-  //                  http://crbug.com/107357
-  if (flags & gfx::Canvas::NO_ELLIPSIS)
-    flags |= gfx::Canvas::MULTI_LINE;
-
   // TODO(asvitkine): ash/tooltips/tooltip_controller.cc adds \n's to the string
   //                  without passing MULTI_LINE.
   if (text.find('\n') != string16::npos)
