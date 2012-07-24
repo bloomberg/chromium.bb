@@ -77,6 +77,11 @@ tc-build-translator() {
   ${PNACL_BUILD} translator-all
 }
 
+tc-add-glibc-support() {
+  echo @@@BUILD_STEP add_glibc_support@@@
+  ${PNACL_BUILD} glibc-all
+}
+
 tc-archive() {
   local label=$1
   echo @@@BUILD_STEP archive_toolchain@@@
@@ -104,6 +109,7 @@ tc-build-all() {
   local label=$1
   local is_try=$2
   local build_translator=$3
+  local build_glibc=$3
 
   # Tell build.sh and test.sh that we're a bot.
   export PNACL_BUILDBOT=true
@@ -127,6 +133,11 @@ tc-build-all() {
       tc-archive-translator
     fi
   fi
+
+  if ${build_glibc} ; then
+    tc-add-glibc-support
+  fi
+
 }
 
 
@@ -601,7 +612,7 @@ mode-buildbot-tc-x8664-linux() {
   local is_try=$1
   FAIL_FAST=false
   TOOLCHAIN_LABEL=pnacl_linux_x86_64
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} true
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} true true
   tc-tests-large ${is_try}
 }
 
@@ -609,7 +620,7 @@ mode-buildbot-tc-x8632-linux() {
   local is_try=$1
   FAIL_FAST=false
   TOOLCHAIN_LABEL=pnacl_linux_x86_32
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
   tc-tests-small "x86-32"
 }
 
@@ -619,7 +630,7 @@ mode-buildbot-tc-x8632-mac() {
   TOOLCHAIN_LABEL=pnacl_mac_x86_32
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
   tc-tests-small "x86-32"
 }
 
@@ -628,7 +639,7 @@ mode-buildbot-tc-x8664-win() {
   FAIL_FAST=false
   # NOTE: this is a 64bit bot but the TC generated is 32bit
   TOOLCHAIN_LABEL=pnacl_win_x86_32
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
 
   # On windows-chrome the plugin is always 32bit even though the nexe
   # might be 64bit

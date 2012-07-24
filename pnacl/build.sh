@@ -658,15 +658,13 @@ download-toolchains() {
   ${GCLIENT} runhooks --force --verbose
 }
 
-#@ libs            - install native libs and build bitcode libs
+#@ libs                  - install native libs and build bitcode libs
 libs() {
   libs-clean
-  libs-support
+  libs-support newlib
   newlib
-  # NOTE: glibc steals libc, libstdc++ from the other toolchain
-  glibc
   compiler-rt-all
-  libgcc_eh-all
+  libgcc_eh-newlib
   libstdcpp newlib
 }
 
@@ -898,7 +896,7 @@ newlib-shared() {
 glibc-crt1() {
   StepBanner "GLIBC" "Building crt1.bc"
   local tmpdir="${TC_BUILD}/glibc-crt1"
-  local flags="-no-save-temps -DUSE_IN_LIBIO -I${TC_SRC_GLIBC}/sysdeps/gnu"
+  local flags="-DUSE_IN_LIBIO -I${TC_SRC_GLIBC}/sysdeps/gnu"
   local cc_cmd="${PNACL_CC_GLIBC} ${flags}"
   local ld_cmd="${PNACL_LD_GLIBC}"
 
@@ -907,10 +905,19 @@ glibc-crt1() {
   spushd "${tmpdir}"
   ${cc_cmd} -c "${TC_SRC_GLIBC}"/sysdeps/nacl/start.c -o start.bc
   ${cc_cmd} -c "${TC_SRC_GLIBC}"/csu/init.c -o init.bc
-  ${ld_cmd} -r -nostdlib -no-save-temps start.bc init.bc -o crt1.bc
+  ${ld_cmd} -r -nostdlib start.bc init.bc -o crt1.bc
   mkdir -p "${INSTALL_LIB_GLIBC}"
   cp crt1.bc "${INSTALL_LIB_GLIBC}"
   spopd
+}
+
+#@ glibc-all             - install supplemental glibc support.
+glibc-all() {
+  driver-install glibc
+  libs-support glibc
+  # NOTE: glibc steals libc, libstdc++ from the other toolchain
+  glibc
+  libgcc_eh-glibc
 }
 
 glibc() {
@@ -1441,8 +1448,8 @@ llvm-install-links() {
 #########################################################################
 #########################################################################
 
-libgcc_eh-all() {
-  StepBanner "LIBGCC_EH (from GCC 4.6)"
+libgcc_eh-newlib() {
+  StepBanner "LIBGCC_EH (from GCC 4.6) -- NEWLIB"
 
   # Build libgcc_eh.a using Newlib, and libgcc_s.so using GlibC.
   # This is a temporary situation. Eventually, libgcc_eh won't depend
@@ -1450,6 +1457,11 @@ libgcc_eh-all() {
   libgcc_eh arm    newlib
   libgcc_eh x86-32 newlib
   libgcc_eh x86-64 newlib
+}
+
+libgcc_eh-glibc() {
+  StepBanner "LIBGCC_EH (from GCC 4.6) -- GLIBC"
+
   # ARM GlibC can't be built because libc.so is missing.
   libgcc_eh x86-32 glibc
   libgcc_eh x86-64 glibc
@@ -2828,27 +2840,31 @@ newlib-install() {
 }
 
 libs-support() {
+  local libmode=$1
   StepBanner "LIBS-SUPPORT"
-  libs-support-newlib
-  libs-support-bitcode
+  if [ ${libmode} == "newlib" ]; then
+    libs-support-newlib-crt1
+  fi
+  libs-support-bitcode $libmode
   local arch
   for arch in arm x86-32 x86-64; do
     libs-support-native ${arch}
   done
 }
 
-libs-support-newlib() {
+libs-support-newlib-crt1() {
   mkdir -p "${INSTALL_LIB_NEWLIB}"
   spushd "${PNACL_SUPPORT}"
-  # Install crt1.x (linker script)
+  # Install crt1.x (linker script).
   StepBanner "LIBS-SUPPORT-NEWLIB" "Install crt1.x (linker script)"
   cp crt1.x "${INSTALL_LIB_NEWLIB}"/crt1.x
   spopd
 }
 
 libs-support-bitcode() {
+  local libmode=$1
   local build_dir="${TC_BUILD}/libs-support-bitcode"
-  local cc_cmd="${PNACL_CC_NEUTRAL} -no-save-temps"
+  local cc_cmd="${PNACL_CC_NEUTRAL}"
 
   mkdir -p "${build_dir}"
   spushd "${PNACL_SUPPORT}/bitcode"
@@ -2872,13 +2888,18 @@ libs-support-bitcode() {
 
   spopd
 
-  # Install to both newlib and glibc lib directories
+  # Install to actual lib directories.
   spushd "${build_dir}"
   local files="crti.bc crtdummy.bc crtbegin.bc crtbeginS.bc pnacl_abi.bc"
-  mkdir -p "${INSTALL_LIB_NEWLIB}"
-  cp -f ${files} "${INSTALL_LIB_NEWLIB}"
-  mkdir -p "${INSTALL_LIB_GLIBC}"
-  cp -f ${files} "${INSTALL_LIB_GLIBC}"
+  if [ ${libmode} == "newlib" ]; then
+    mkdir -p "${INSTALL_LIB_NEWLIB}"
+    cp -f ${files} "${INSTALL_LIB_NEWLIB}"
+  elif [ ${libmode} == "glibc" ]; then
+    mkdir -p "${INSTALL_LIB_GLIBC}"
+    cp -f ${files} "${INSTALL_LIB_GLIBC}"
+  else
+    Fatal "libs-support-bitcode unknown libmode: ${libmode}"
+  fi
   spopd
 }
 
@@ -2888,7 +2909,7 @@ libs-support-native() {
   local label="LIBS-SUPPORT (${arch})"
   mkdir -p "${destdir}"
 
-  local flags="--pnacl-allow-native --pnacl-allow-translate -no-save-temps"
+  local flags="--pnacl-allow-native --pnacl-allow-translate"
   local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags}"
 
   spushd "${PNACL_SUPPORT}"
@@ -3186,7 +3207,6 @@ ppapi-headers-one() {
 driver() {
   StepBanner "DRIVER"
   driver-install newlib
-  driver-install glibc
 }
 
 # install python scripts and redirector shell/batch scripts
