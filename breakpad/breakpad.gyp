@@ -436,6 +436,8 @@
                 'src/common/linux/dump_symbols.h',
                 'src/common/linux/elf_symbols_to_module.cc',
                 'src/common/linux/elf_symbols_to_module.h',
+                'src/common/linux/elfutils.cc',
+                'src/common/linux/elfutils.h',
                 'src/common/linux/file_id.cc',
                 'src/common/linux/file_id.h',
                 'src/common/linux/memory_mapped_file.cc',
@@ -493,6 +495,8 @@
             'src/common/convert_UTF.h',
             'src/common/linux/elf_core_dump.cc',
             'src/common/linux/elf_core_dump.h',
+            'src/common/linux/elfutils.cc',
+            'src/common/linux/elfutils.h',
             'src/common/linux/file_id.cc',
             'src/common/linux/file_id.h',
             'src/common/linux/google_crashdump_uploader.cc',
@@ -550,6 +554,7 @@
             'src/processor/minidump.cc',
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
+            'src/processor/scoped_ptr.h',
           ],
 
           'include_dirs': [
@@ -580,6 +585,8 @@
             'src/client/linux/minidump_writer/linux_core_dumper_unittest.cc',
             'src/client/linux/minidump_writer/linux_ptrace_dumper_unittest.cc',
             'src/client/linux/minidump_writer/minidump_writer_unittest.cc',
+            'src/client/linux/minidump_writer/minidump_writer_unittest_utils.cc',
+            'src/client/linux/minidump_writer/minidump_writer_unittest_utils.h',
             'src/common/linux/elf_core_dump_unittest.cc',
             'src/common/linux/file_id_unittest.cc',
             'src/common/linux/linux_libc_support_unittest.cc',
@@ -606,12 +613,14 @@
           'target_name': 'linux_dumper_unittest_helper',
           'type': 'executable',
           'dependencies': [
+            'breakpad_processor_support',
           ],
           'sources': [
             'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc',
           ],
 
           'include_dirs': [
+            'src',
             '..',
           ],
         },
