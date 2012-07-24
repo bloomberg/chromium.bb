@@ -1,6 +1,6 @@
 AC_PREREQ([2.64])
 AC_INIT([weston],
-        [0.94.90],
+        [0.95.0],
         [https://bugs.freedesktop.org/enter_bug.cgi?product=weston],
         [weston],
         [http://wayland.freedesktop.org/])
