@@ -36,11 +36,12 @@
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/mac/nsimage_cache.h"
+#include "webkit/glue/webcursor.h"
 
 using content::WebContents;
 
@@ -127,30 +128,27 @@ const double kDragThreshold = 3.0;
 }
 @end
 
+namespace {
+NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
+    return WebCursor(WebKit::WebCursorInfo(type)).GetNativeCursor();
+}
+}
+
 @implementation PanelResizeByMouseOverlay
 - (PanelResizeByMouseOverlay*)initWithFrame:(NSRect)frame panel:(Panel*)panel {
   if ((self = [super initWithFrame:frame])) {
     panel_ = panel;
-    // Initialize resize cursors, they are very likely to be needed so it's
-    // better to pre-init them then stutter the mouse later when it hovers over
-    // a resize edge. We use WebKit cursors that look similar to what OSX Lion
-    // uses. NSCursor class does not yet have support for those new cursors.
-    NSImage* image = gfx::GetCachedImageWithName(@"eastWestResizeCursor.png");
-    DCHECK(image);
+
     eastWestCursor_.reset(
-        [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(8,8)]);
-    image = gfx::GetCachedImageWithName(@"northSouthResizeCursor.png");
-    DCHECK(image);
+        [LoadWebKitCursor(WebKit::WebCursorInfo::TypeEastWestResize) retain]);
     northSouthCursor_.reset(
-        [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(8,8)]);
-    image = gfx::GetCachedImageWithName(@"northEastSouthWestResizeCursor.png");
-    DCHECK(image);
+        [LoadWebKitCursor(WebKit::WebCursorInfo::TypeNorthSouthResize) retain]);
     northEastSouthWestCursor_.reset(
-        [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(8,8)]);
-    image = gfx::GetCachedImageWithName(@"northWestSouthEastResizeCursor.png");
-    DCHECK(image);
+        [LoadWebKitCursor(WebKit::WebCursorInfo::TypeNorthEastSouthWestResize)
+        retain]);
     northWestSouthEastCursor_.reset(
-        [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(8,8)]);
+        [LoadWebKitCursor(WebKit::WebCursorInfo::TypeNorthWestSouthEastResize)
+        retain]);
   }
   return self;
 }
