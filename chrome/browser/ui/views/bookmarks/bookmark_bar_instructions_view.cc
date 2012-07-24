@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
@@ -21,7 +22,8 @@ const int kViewPadding = 6;
 
 }  // namespace
 
-BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
+BookmarkBarInstructionsView::BookmarkBarInstructionsView(
+    chrome::BookmarkBarInstructionsDelegate* delegate)
     : delegate_(delegate),
       instructions_(NULL),
       import_link_(NULL),

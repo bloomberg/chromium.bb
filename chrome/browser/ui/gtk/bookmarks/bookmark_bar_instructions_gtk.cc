@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h"
 
 #include "base/observer_list.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -14,8 +15,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
-                                                       Profile* profile)
+BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(
+    chrome::BookmarkBarInstructionsDelegate* delegate,
+    Profile* profile)
     : delegate_(delegate),
       profile_(profile),
       theme_service_(GtkThemeService::GetFrom(profile_)) {

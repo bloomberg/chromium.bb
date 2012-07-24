@@ -17,7 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
-#include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "chrome/browser/ui/gtk/menu_bar_helper.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "content/public/browser/notification_observer.h"
@@ -30,6 +30,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
+class BookmarkBarInstructionsGtk;
 class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
@@ -45,7 +46,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public content::NotificationObserver,
-                       public BookmarkBarInstructionsGtk::Delegate,
+                       public chrome::BookmarkBarInstructionsDelegate,
                        public BookmarkContextMenuControllerDelegate {
  public:
   // The NTP needs to have access to this.
@@ -292,7 +293,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // |throbbing_widget_| callback.
   CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnThrobbingWidgetDestroy);
 
-  // Overriden from BookmarkBarInstructionsGtk::Delegate.
+  // Overriden from chrome::BookmarkBarInstructionsDelegate:
   virtual void ShowImportDialog() OVERRIDE;
 
   // Updates the drag&drop state when |edit_bookmarks_enabled_| changes.

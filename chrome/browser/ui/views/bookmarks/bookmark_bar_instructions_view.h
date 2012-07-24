@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,9 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 
+namespace chrome {
+class BookmarkBarInstructionsDelegate;
+}
 namespace views {
 class Label;
 class Link;
@@ -24,17 +27,8 @@ class Link;
 class BookmarkBarInstructionsView : public views::View,
                                     public views::LinkListener {
  public:
-  // The delegate is notified once the user clicks on the link to import
-  // bookmarks.
-  class Delegate {
-   public:
-    virtual void ShowImportDialog() = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
-  explicit BookmarkBarInstructionsView(Delegate* delegate);
+  explicit BookmarkBarInstructionsView(
+      chrome::BookmarkBarInstructionsDelegate* delegate);
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -51,7 +45,7 @@ class BookmarkBarInstructionsView : public views::View,
  private:
   void UpdateColors();
 
-  Delegate* delegate_;
+  chrome::BookmarkBarInstructionsDelegate* delegate_;
 
   views::Label* instructions_;
   views::Link* import_link_;
