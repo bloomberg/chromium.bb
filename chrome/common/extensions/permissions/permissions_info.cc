@@ -4,8 +4,6 @@
 
 #include "chrome/common/extensions/permissions/permissions_info.h"
 
-#include "base/logging.h"
-
 namespace extensions {
 
 // static
