@@ -29,6 +29,9 @@ class ScreenshotDelegate {
   // window.
   virtual void HandleTakePartialScreenshot(
       aura::Window* window, const gfx::Rect& rect) = 0;
+
+  // Returns true if the system is ready to take screenshot.
+  virtual bool CanTakeScreenshot() = 0;
 };
 }  // namespace ash
 

@@ -443,7 +443,8 @@ bool AcceleratorController::PerformAction(int action,
       return HandleRestoreTab();
     case TAKE_SCREENSHOT:
     case TAKE_SCREENSHOT_BY_PRTSCN_KEY:
-      if (screenshot_delegate_.get()) {
+      if (screenshot_delegate_.get() &&
+          screenshot_delegate_->CanTakeScreenshot()) {
         Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
         for (size_t i = 0; i < root_windows.size(); ++i)
           screenshot_delegate_->HandleTakeScreenshot(root_windows[i]);

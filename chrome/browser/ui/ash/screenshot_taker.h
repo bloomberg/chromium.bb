@@ -8,6 +8,7 @@
 #include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/time.h"
 #include "ui/compositor/layer.h"
 
 namespace aura {
@@ -21,8 +22,9 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
 
   // Overridden from ash::ScreenshotDelegate:
   virtual void HandleTakeScreenshot(aura::Window* window) OVERRIDE;
-  virtual void HandleTakePartialScreenshot(
-      aura::Window* window, const gfx::Rect& rect) OVERRIDE;
+  virtual void HandleTakePartialScreenshot(aura::Window* window,
+                                           const gfx::Rect& rect) OVERRIDE;
+  virtual bool CanTakeScreenshot() OVERRIDE;
 
  private:
   // Flashes the screen to provide visual feedback that a screenshot has
@@ -32,6 +34,11 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
   // Closes the visual feedback layer.
   void CloseVisualFeedbackLayer();
 
+  // The timestamp when the screenshot task was issued last time.
+  base::Time last_screenshot_timestamp_;
+
+  // The flashing effect of the screen for the visual feedback when taking a
+  // screenshot.
   scoped_ptr<ui::Layer> visual_feedback_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTaker);

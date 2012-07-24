@@ -40,6 +40,10 @@ class DummyScreenshotDelegate : public ScreenshotDelegate {
     // Do nothing because it's not tested yet.
   }
 
+  virtual bool CanTakeScreenshot() OVERRIDE {
+    return true;
+  }
+
   int handle_take_screenshot_count() const {
     return handle_take_screenshot_count_;
   }
