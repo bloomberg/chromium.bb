@@ -15,6 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/scoped_native_library.h"
 #include "content/browser/gamepad/data_fetcher.h"
 
 namespace content {
@@ -22,10 +23,31 @@ namespace content {
 class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
  public:
   GamepadPlatformDataFetcherWin();
+  virtual ~GamepadPlatformDataFetcherWin();
   virtual void GetGamepadData(WebKit::WebGamepads* pads,
                               bool devices_changed_hint) OVERRIDE;
  private:
+  // The three function types we use from xinput1_3.dll.
+  typedef void (WINAPI *XInputEnableFunc)(BOOL enable);
+  typedef DWORD (WINAPI *XInputGetCapabilitiesFunc)(
+    DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities);
+  typedef DWORD (WINAPI *XInputGetStateFunc)(
+      DWORD dwUserIndex, XINPUT_STATE* pState);
+
+  // Get functions from dynamically loaded xinput1_3.dll. We don't use
+  // DELAYLOAD because the import library for Win8 SDK pulls xinput1_4 which
+  // isn't redistributable. Returns true if loading was successful. We include
+  // xinput1_3.dll with Chrome.
+  bool GetXinputDllFunctions();
+
+  base::ScopedNativeLibrary xinput_dll_;
   bool xinput_available_;
+
+  // Function pointers to XInput functionality, retrieved in
+  // |GetXinputDllFunctions|.
+  XInputEnableFunc xinput_enable_;
+  XInputGetCapabilitiesFunc xinput_get_capabilities_;
+  XInputGetStateFunc xinput_get_state_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherWin);
 };

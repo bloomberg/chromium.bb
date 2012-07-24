@@ -838,7 +838,6 @@
           'VCLinkerTool': {
             'DelayLoadDLLs': [
               'user32.dll',
-              'xinput1_3.dll',
             ],
           },
         },
