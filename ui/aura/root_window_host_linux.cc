@@ -632,7 +632,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       // moved/resized.
       if (pointer_barriers_.get()) {
         UnConfineCursor();
-        gfx::Point p = root_window_->last_mouse_location();
+        gfx::Point p = gfx::Screen::GetCursorScreenPoint();
         XWarpPointer(xdisplay_, None,  xwindow_, 0, 0, 0, 0, p.x(), p.y());
         ConfineCursorToRootWindow();
       }
@@ -866,7 +866,7 @@ void RootWindowHostLinux::ShowCursor(bool show) {
   SetCursorInternal(show ? current_cursor_ : ui::kCursorNone);
 }
 
-gfx::Point RootWindowHostLinux::QueryMouseLocation() {
+bool RootWindowHostLinux::QueryMouseLocation(gfx::Point* location_return) {
   ::Window root_return, child_return;
   int root_x_return, root_y_return, win_x_return, win_y_return;
   unsigned int mask_return;
@@ -877,8 +877,10 @@ gfx::Point RootWindowHostLinux::QueryMouseLocation() {
                 &root_x_return, &root_y_return,
                 &win_x_return, &win_y_return,
                 &mask_return);
-  return gfx::Point(max(0, min(bounds_.width(), win_x_return)),
-                    max(0, min(bounds_.height(), win_y_return)));
+  *location_return = gfx::Point(max(0, min(bounds_.width(), win_x_return)),
+                                max(0, min(bounds_.height(), win_y_return)));
+  return (win_x_return >= 0 && win_x_return < bounds_.width() &&
+          win_y_return >= 0 && win_y_return < bounds_.height());
 }
 
 bool RootWindowHostLinux::ConfineCursorToRootWindow() {

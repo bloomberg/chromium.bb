@@ -15,6 +15,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -64,7 +65,7 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
     filters->push_back(Env::GetInstance()->event_filter());
 }
 
-float GetDeviceScaleFactorFromDisplay(const aura::Window* window) {
+float GetDeviceScaleFactorFromDisplay(const Window* window) {
   DisplayManager* display_manager = Env::GetInstance()->display_manager();
   return display_manager->GetDisplayNearestWindow(window).device_scale_factor();
 }
@@ -72,6 +73,11 @@ float GetDeviceScaleFactorFromDisplay(const aura::Window* window) {
 Window* ConsumerToWindow(ui::GestureConsumer* consumer) {
   return consumer && !consumer->ignores_events() ?
       static_cast<Window*>(consumer) : NULL;
+}
+
+void SetLastMouseLocation(const Window* root_window,
+                          const gfx::Point& location) {
+  Env::GetInstance()->SetLastMouseLocation(*root_window, location);
 }
 
 }  // namespace
@@ -157,8 +163,11 @@ void RootWindow::Init() {
   compositor()->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(this),
                                 host_->GetBounds().size());
   Window::Init(ui::LAYER_NOT_DRAWN);
-  last_mouse_location_ =
-      ui::ConvertPointToDIP(layer(), host_->QueryMouseLocation());
+
+  gfx::Point point;
+  if (host_->QueryMouseLocation(&point))
+    SetLastMouseLocation(this, ui::ConvertPointToDIP(layer(), point));
+
   compositor()->SetRootLayer(layer());
   SetBounds(
       ui::ConvertRectToDIP(layer(), gfx::Rect(host_->GetBounds().size())));
@@ -175,9 +184,12 @@ void RootWindow::SetHostSize(const gfx::Size& size_in_pixel) {
   gfx::Rect bounds = host_->GetBounds();
   bounds.set_size(size_in_pixel);
   host_->SetBounds(bounds);
+
   // Requery the location to constrain it within the new root window size.
-  last_mouse_location_ =
-      ui::ConvertPointToDIP(layer(), host_->QueryMouseLocation());
+  gfx::Point point;
+  if (host_->QueryMouseLocation(&point))
+    SetLastMouseLocation(this, ui::ConvertPointToDIP(layer(), point));
+
   synthesize_mouse_move_ = false;
 }
 
@@ -188,9 +200,12 @@ gfx::Size RootWindow::GetHostSize() const {
 void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
   DispatchHeldMouseMove();
   host_->SetBounds(bounds_in_pixel);
+
   // Requery the location to constrain it within the new root window size.
-  last_mouse_location_ =
-      ui::ConvertPointToDIP(layer(), host_->QueryMouseLocation());
+  gfx::Point point;
+  if (host_->QueryMouseLocation(&point))
+    SetLastMouseLocation(this, ui::ConvertPointToDIP(layer(), point));
+
   synthesize_mouse_move_ = false;
 }
 
@@ -214,7 +229,7 @@ void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
   gfx::Point location = location_in_dip;
   layer()->transform().TransformPoint(location);
   host_->MoveCursorTo(ui::ConvertPointToPixel(layer(), location));
-  last_mouse_location_ = location_in_dip;
+  SetLastMouseLocation(this, location_in_dip);
 }
 
 bool RootWindow::ConfineCursorToWindow() {
@@ -285,7 +300,7 @@ bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
   transform.ConcatScale(scale, scale);
   event->UpdateForRootTransform(transform);
 
-  last_mouse_location_ = event->location();
+  SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
 
   Window* target = mouse_pressed_handler_ ?
@@ -407,7 +422,7 @@ void RootWindow::OnWindowDestroying(Window* window) {
   OnWindowHidden(window, true);
 
   if (window->IsVisible() &&
-      window->ContainsPointInRoot(last_mouse_location_)) {
+      window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
     PostMouseMoveEventAfterWindowChange();
   }
 }
@@ -416,7 +431,7 @@ void RootWindow::OnWindowBoundsChanged(Window* window,
                                        bool contained_mouse_point) {
   if (contained_mouse_point ||
       (window->IsVisible() &&
-       window->ContainsPointInRoot(last_mouse_location_))) {
+       window->ContainsPointInRoot(GetLastMouseLocationInRoot()))) {
     PostMouseMoveEventAfterWindowChange();
   }
 }
@@ -425,14 +440,14 @@ void RootWindow::OnWindowVisibilityChanged(Window* window, bool is_visible) {
   if (!is_visible)
     OnWindowHidden(window, false);
 
-  if (window->ContainsPointInRoot(last_mouse_location_))
+  if (window->ContainsPointInRoot(GetLastMouseLocationInRoot()))
     PostMouseMoveEventAfterWindowChange();
 }
 
 void RootWindow::OnWindowTransformed(Window* window, bool contained_mouse) {
   if (contained_mouse ||
       (window->IsVisible() &&
-       window->ContainsPointInRoot(last_mouse_location_))) {
+       window->ContainsPointInRoot(GetLastMouseLocationInRoot()))) {
     PostMouseMoveEventAfterWindowChange();
   }
 }
@@ -521,6 +536,14 @@ bool RootWindow::GrabSnapshot(const gfx::Rect& snapshot_bounds,
   DCHECK(bounds().Contains(snapshot_bounds));
   gfx::Rect snapshot_pixels = ui::ConvertRectToPixel(layer(), snapshot_bounds);
   return host_->GrabSnapshot(snapshot_pixels, png_representation);
+}
+
+gfx::Point RootWindow::GetLastMouseLocationInRoot() const {
+  gfx::Point location = Env::GetInstance()->last_mouse_location();
+  client::ScreenPositionClient* client = client::GetScreenPositionClient(this);
+  if (client)
+    client->ConvertPointFromScreen(this, &location);
+  return location;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -659,7 +682,9 @@ void RootWindow::ReleaseNativeCapture() {
 }
 
 gfx::Point RootWindow::QueryMouseLocationForTest() const {
-  return host_->QueryMouseLocation();
+  gfx::Point point;
+  host_->QueryMouseLocation(&point);
+  return point;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -796,7 +821,7 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached) {
   OnWindowHidden(detached, false);
 
   if (detached->IsVisible() &&
-      detached->ContainsPointInRoot(last_mouse_location_)) {
+      detached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
     PostMouseMoveEventAfterWindowChange();
   }
 }
@@ -844,7 +869,7 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
 
 void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
   if (attached->IsVisible() &&
-      attached->ContainsPointInRoot(last_mouse_location_))
+      attached->ContainsPointInRoot(GetLastMouseLocationInRoot()))
     PostMouseMoveEventAfterWindowChange();
 }
 
@@ -905,7 +930,7 @@ bool RootWindow::DispatchMouseEventToTarget(MouseEvent* event,
       ui::EF_LEFT_MOUSE_BUTTON |
       ui::EF_MIDDLE_MOUSE_BUTTON |
       ui::EF_RIGHT_MOUSE_BUTTON;
-  last_mouse_location_ = event->location();
+  SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
@@ -963,7 +988,7 @@ void RootWindow::SynthesizeMouseMoveEvent() {
   synthesize_mouse_move_ = false;
 #if !defined(OS_WIN)
   // Temporarily disabled for windows. See crbug.com/112222.
-  gfx::Point3f point(last_mouse_location_);
+  gfx::Point3f point(Env::GetInstance()->last_mouse_location());
   ui::Transform transform = layer()->transform();
   float scale = ui::GetDeviceScaleFactor(layer());
   transform.ConcatScale(scale, scale);

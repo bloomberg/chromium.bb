@@ -237,7 +237,7 @@ void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
 
 void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
-  gfx::Point screen_loc = root_window->last_mouse_location();
+  gfx::Point screen_loc = gfx::Screen::GetCursorScreenPoint();
   gfx::Point client_loc = screen_loc;
   content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   aura::Window* window = rvh->GetView()->GetNativeView();
@@ -445,11 +445,11 @@ void WebContentsViewAura::StartDragging(
   // updates while in the system DoDragDrop loop.
   int result_op = 0;
   {
-    // TODO(sad): Avoid using last_mouse_location here, since the drag may not
+    // TODO(sad): Avoid using GetCursorScreenPoint here, since the drag may not
     // always start from a mouse-event (e.g. a touch or gesture event could
     // initiate the drag). The location information should be carried over from
     // webkit. http://crbug.com/114754
-    gfx::Point location(root_window->last_mouse_location());
+    gfx::Point location(gfx::Screen::GetCursorScreenPoint());
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
         data, location, ConvertFromWeb(operations));
@@ -588,8 +588,7 @@ void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
   PrepareWebDropData(&drop_data, event.data());
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
 
-  gfx::Point screen_pt =
-      GetNativeView()->GetRootWindow()->last_mouse_location();
+  gfx::Point screen_pt = gfx::Screen::GetCursorScreenPoint();
   current_rvh_for_drag_ = web_contents_->GetRenderViewHost();
   web_contents_->GetRenderViewHost()->DragTargetDragEnter(
       drop_data, event.location(), screen_pt, op,
@@ -607,8 +606,7 @@ int WebContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
     OnDragEntered(event);
 
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
-  gfx::Point screen_pt =
-      GetNativeView()->GetRootWindow()->last_mouse_location();
+  gfx::Point screen_pt = gfx::Screen::GetCursorScreenPoint();
   web_contents_->GetRenderViewHost()->DragTargetDragOver(
       event.location(), screen_pt, op,
       ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
@@ -636,7 +634,7 @@ int WebContentsViewAura::OnPerformDrop(const aura::DropTargetEvent& event) {
 
   web_contents_->GetRenderViewHost()->DragTargetDrop(
       event.location(),
-      GetNativeView()->GetRootWindow()->last_mouse_location(),
+      gfx::Screen::GetCursorScreenPoint(),
       ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDrop();

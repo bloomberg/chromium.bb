@@ -93,7 +93,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   }
 
   ui::Compositor* compositor() { return compositor_.get(); }
-  gfx::Point last_mouse_location() const { return last_mouse_location_; }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   bool cursor_shown() const { return cursor_shown_; }
@@ -238,6 +237,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool GrabSnapshot(const gfx::Rect& snapshot_bounds,
                     std::vector<unsigned char>* png_representation);
 
+  // Gets the last location seen in a mouse event in this root window's
+  // coordinates. This may return a point outside the root window's bounds.
+  gfx::Point GetLastMouseLocationInRoot() const;
+
   // Overridden from Window:
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual const RootWindow* GetRootWindow() const OVERRIDE;
@@ -356,9 +359,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Use to post mouse move event.
   base::WeakPtrFactory<RootWindow> event_factory_;
-
-  // Last location seen in a mouse event.
-  gfx::Point last_mouse_location_;
 
   // ui::EventFlags containing the current state of the mouse buttons.
   int mouse_button_flags_;

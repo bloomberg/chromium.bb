@@ -78,8 +78,7 @@ gfx::Rect ScreenAsh::ConvertRectFromScreen(aura::Window* window,
 }
 
 gfx::Point ScreenAsh::GetCursorScreenPoint() {
-  // TODO(oshima): Support multiple root window.
-  return Shell::GetPrimaryRootWindow()->last_mouse_location();
+  return aura::Env::GetInstance()->last_mouse_location();
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {

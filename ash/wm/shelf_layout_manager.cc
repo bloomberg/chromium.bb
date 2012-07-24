@@ -558,10 +558,9 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (event_filter_.get() && event_filter_->in_mouse_drag())
     return AUTO_HIDE_HIDDEN;
 
-  aura::RootWindow* root = launcher_widget()->GetNativeView()->GetRootWindow();
   bool mouse_over_launcher =
       launcher_widget()->GetWindowBoundsInScreen().Contains(
-          root->last_mouse_location());
+          gfx::Screen::GetCursorScreenPoint());
   return mouse_over_launcher ? AUTO_HIDE_SHOWN : AUTO_HIDE_HIDDEN;
 }
 

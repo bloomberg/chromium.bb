@@ -41,6 +41,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -352,9 +353,8 @@ void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
     if (should_show_launcher_) {
       // No need to show the launcher if the mouse isn't over the status area
       // anymore.
-      aura::RootWindow* root = GetWidget()->GetNativeView()->GetRootWindow();
       should_show_launcher_ = GetWidget()->GetWindowBoundsInScreen().Contains(
-          root->last_mouse_location());
+          gfx::Screen::GetCursorScreenPoint());
       if (!should_show_launcher_)
         Shell::GetInstance()->shelf()->UpdateAutoHideState();
     }

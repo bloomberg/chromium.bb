@@ -253,13 +253,16 @@ void RootWindowHostWin::ShowCursor(bool show) {
   // NOTIMPLEMENTED();
 }
 
-gfx::Point RootWindowHostWin::QueryMouseLocation() {
+bool RootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
   POINT pt;
   GetCursorPos(&pt);
   ScreenToClient(hwnd(), &pt);
   const gfx::Size size = GetBounds().size();
-  return gfx::Point(max(0, min(size.width(), static_cast<int>(pt.x))),
-                    max(0, min(size.height(), static_cast<int>(pt.y))));
+  *location_return =
+      gfx::Point(max(0, min(size.width(), static_cast<int>(pt.x))),
+                 max(0, min(size.height(), static_cast<int>(pt.y))));
+  return (pt.x >= 0 && static_cast<int>(pt.x) < size.width() &&
+          pt.y >= 0 && static_cast<int>(pt.y) < size.height());
 }
 
 bool RootWindowHostWin::ConfineCursorToRootWindow() {

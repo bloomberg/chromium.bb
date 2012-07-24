@@ -54,7 +54,7 @@ void TooltipManagerAura::UpdateTooltip() {
   aura::Window* window = native_widget_aura_->GetNativeView();
   aura::RootWindow* root_window = window->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
-    gfx::Point view_point = root_window->last_mouse_location();
+    gfx::Point view_point = root_window->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToWindow(root_window, window, &view_point);
     View* view = GetViewUnderPoint(view_point);
     if (view) {
@@ -72,7 +72,7 @@ void TooltipManagerAura::TooltipTextChanged(View* view)  {
   aura::Window* window = native_widget_aura_->GetNativeView();
   aura::RootWindow* root_window = window->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
-    gfx::Point view_point = root_window->last_mouse_location();
+    gfx::Point view_point = root_window->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToWindow(root_window, window, &view_point);
     View* target = GetViewUnderPoint(view_point);
     if (target != view)

@@ -11,6 +11,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/cursor_manager.h"
 #include "ui/aura/client/stacking_client.h"
+#include "ui/gfx/point.h"
 
 namespace aura {
 class CursorManager;
@@ -45,6 +46,12 @@ class AURA_EXPORT Env {
   void set_mouse_button_flags(int mouse_button_flags) {
     mouse_button_flags_ = mouse_button_flags;
   }
+
+  // Gets/sets the last mouse location seen in a mouse event in the screen
+  // coordinates.
+  const gfx::Point& last_mouse_location() const { return last_mouse_location_; }
+  void SetLastMouseLocation(const Window& window,
+                            const gfx::Point& location_in_root);
 
   // Whether any touch device is currently down.
   bool is_touch_down() const { return is_touch_down_; }
@@ -95,6 +102,8 @@ class AURA_EXPORT Env {
 
   static Env* instance_;
   int mouse_button_flags_;
+  // Location of last mouse event, in screen coordinates.
+  gfx::Point last_mouse_location_;
   bool is_touch_down_;
   bool render_white_bg_;
   client::StackingClient* stacking_client_;

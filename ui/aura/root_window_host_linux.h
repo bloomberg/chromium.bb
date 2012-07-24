@@ -45,7 +45,7 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void ReleaseCapture() OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
-  virtual gfx::Point QueryMouseLocation() OVERRIDE;
+  virtual bool QueryMouseLocation(gfx::Point* location_return) OVERRIDE;
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;

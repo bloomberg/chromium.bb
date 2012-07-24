@@ -53,6 +53,10 @@ bool Window::TestApi::OwnsLayer() const {
   return !!window_->layer_owner_.get();
 }
 
+bool Window::TestApi::ContainsMouse() {
+  return window_->ContainsMouse();
+}
+
 Window::Window(WindowDelegate* delegate)
     : type_(client::WINDOW_TYPE_UNKNOWN),
       owned_by_parent_(true),
@@ -261,7 +265,7 @@ gfx::Rect Window::GetBoundsInScreen() const {
 void Window::SetTransform(const ui::Transform& transform) {
   RootWindow* root_window = GetRootWindow();
   bool contained_mouse = IsVisible() && root_window &&
-      ContainsPointInRoot(root_window->last_mouse_location());
+      ContainsPointInRoot(root_window->GetLastMouseLocationInRoot());
   layer()->SetTransform(transform);
   if (root_window)
     root_window->OnWindowTransformed(this, contained_mouse);
@@ -918,8 +922,8 @@ bool Window::ContainsMouse() {
   bool contains_mouse = false;
   if (IsVisible()) {
     RootWindow* root_window = GetRootWindow();
-    contains_mouse =
-        root_window && ContainsPointInRoot(root_window->last_mouse_location());
+    contains_mouse = root_window &&
+        ContainsPointInRoot(root_window->GetLastMouseLocationInRoot());
   }
   return contains_mouse;
 }

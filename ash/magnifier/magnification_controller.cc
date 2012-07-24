@@ -12,6 +12,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/gfx/point3.h"
+#include "ui/gfx/screen.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -343,7 +344,7 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
 
   // Try not to change the point which the mouse cursor indicates to.
   const gfx::Rect window_rect = GetWindowRectDIP(scale);
-  const gfx::Point mouse = root_window_->last_mouse_location();
+  const gfx::Point mouse = gfx::Screen::GetCursorScreenPoint();
   const gfx::Point origin = gfx::Point(mouse.x() * (1.0f - 1.0f / scale),
                                        mouse.y() * (1.0f - 1.0f / scale));
   Redraw(origin, scale, animate);

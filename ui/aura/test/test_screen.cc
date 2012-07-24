@@ -5,6 +5,7 @@
 #include "ui/aura/test/test_screen.h"
 
 #include "base/logging.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
@@ -20,7 +21,7 @@ TestScreen::~TestScreen() {
 }
 
 gfx::Point TestScreen::GetCursorScreenPoint() {
-  return root_window_->last_mouse_location();
+  return Env::GetInstance()->last_mouse_location();
 }
 
 gfx::NativeWindow TestScreen::GetWindowAtCursorScreenPoint() {

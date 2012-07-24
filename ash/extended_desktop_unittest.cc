@@ -18,6 +18,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -185,6 +186,26 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   Shell::GetInstance()->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, root_windows[0]->last_cursor().native_type());
   EXPECT_EQ(ui::kCursorCopy, root_windows[1]->last_cursor().native_type());
+}
+
+TEST_F(ExtendedDesktopTest, TestCursorLocation) {
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::TestApi root_window0_test_api(root_windows[0]);
+  aura::Window::TestApi root_window1_test_api(root_windows[1]);
+
+  root_windows[0]->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("10,10", gfx::Screen::GetCursorScreenPoint().ToString());
+  EXPECT_TRUE(root_window0_test_api.ContainsMouse());
+  EXPECT_FALSE(root_window1_test_api.ContainsMouse());
+  root_windows[1]->MoveCursorTo(gfx::Point(10, 20));
+  EXPECT_EQ("1010,20", gfx::Screen::GetCursorScreenPoint().ToString());
+  EXPECT_FALSE(root_window0_test_api.ContainsMouse());
+  EXPECT_TRUE(root_window1_test_api.ContainsMouse());
+  root_windows[0]->MoveCursorTo(gfx::Point(20, 10));
+  EXPECT_EQ("20,10", gfx::Screen::GetCursorScreenPoint().ToString());
+  EXPECT_TRUE(root_window0_test_api.ContainsMouse());
+  EXPECT_FALSE(root_window1_test_api.ContainsMouse());
 }
 
 TEST_F(ExtendedDesktopTest, CycleWindows) {

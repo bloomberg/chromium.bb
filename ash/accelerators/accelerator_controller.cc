@@ -248,7 +248,7 @@ bool HandleMagnifyScreen(int delta_index) {
 bool HandlePrintLayerHierarchy() {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   ui::PrintLayerHierarchy(root_window->layer(),
-                          root_window->last_mouse_location());
+                          root_window->GetLastMouseLocationInRoot());
   return true;
 }
 

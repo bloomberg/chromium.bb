@@ -41,7 +41,7 @@ class RootWindowHostMac : public RootWindowHost,
   virtual void ReleaseCapture() OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
-  virtual gfx::Point QueryMouseLocation() OVERRIDE;
+  virtual bool QueryMouseLocation(gfx::Point* location_return) OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
@@ -158,8 +158,9 @@ void RootWindowHostMac::SetCursor(gfx::NativeCursor cursor) {
 void RootWindowHostMac::ShowCursor(bool show) {
 }
 
-gfx::Point RootWindowHostMac::QueryMouseLocation() {
-  return gfx::Point();
+bool RootWindowHostMac::QueryMouseLocation(gfx::Point* location_return) {
+  *location_return = gfx::Point();
+  return true;
 }
 
 void RootWindowHostMac::MoveCursorTo(const gfx::Point& location) {

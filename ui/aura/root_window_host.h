@@ -73,11 +73,12 @@ class RootWindowHost {
   // Shows or hides the cursor.
   virtual void ShowCursor(bool show) = 0;
 
-  // Queries the mouse's current position relative to the host window.
-  // The position is constrained within the host window.
-  // You should probably call RootWindow::last_mouse_location() instead; this
-  // method can be expensive.
-  virtual gfx::Point QueryMouseLocation() = 0;
+  // Queries the mouse's current position relative to the host window and sets
+  // it in |location_return|. Returns true if the cursor is within the host
+  // window. The position set to |location_return| is constrained within the
+  // host window.
+  // This method is expensive, instead use gfx::Screen::GetCursorScreenPoint().
+  virtual bool QueryMouseLocation(gfx::Point* location_return) = 0;
 
   // Clips the cursor to the bounds of the root window until UnConfineCursor().
   virtual bool ConfineCursorToRootWindow() = 0;

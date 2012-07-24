@@ -61,6 +61,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     explicit TestApi(Window* window);
 
     bool OwnsLayer() const;
+    bool ContainsMouse();
 
    private:
     TestApi();
