@@ -1149,8 +1149,10 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     return ui::GESTURE_STATUS_CONSUMED;
   }
 
-  RenderViewHostDelegate* delegate = RenderViewHost::From(host_)->GetDelegate();
-  if (event->type() == ui::ET_GESTURE_BEGIN &&
+  RenderViewHostDelegate* delegate = NULL;
+  if (popup_type_ == WebKit::WebPopupTypeNone)
+    delegate = RenderViewHost::From(host_)->GetDelegate();
+  if (delegate && event->type() == ui::ET_GESTURE_BEGIN &&
       event->details().touch_points() == 1) {
     delegate->HandleGestureBegin();
   }
@@ -1176,7 +1178,7 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     }
   }
 
-  if (event->type() == ui::ET_GESTURE_END &&
+  if (delegate && event->type() == ui::ET_GESTURE_END &&
       event->details().touch_points() == 1) {
     delegate->HandleGestureEnd();
   }
