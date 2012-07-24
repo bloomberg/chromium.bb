@@ -18,6 +18,7 @@
             "description": "Information about the frame to retrieve information about.",
             "properties": {
               "tabId": { "type": "integer", "minimum": 0, "description": "The ID of the tab in which the frame is." },
+              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
               "frameId": { "type": "integer", "minimum": 0, "description": "The ID of the frame in the given tab." }
             }
           },
@@ -69,6 +70,10 @@
                     "errorOccurred": {
                       "type": "boolean",
                       "description": "True if the last navigation in this frame was interrupted by an error, i.e. the onErrorOccurred event fired."
+                    },
+                    "processId": {
+                      "type": "integer",
+                      "description": "The ID of the process runs the renderer for this tab."
                     },
                     "frameId": {
                       "type": "integer",
