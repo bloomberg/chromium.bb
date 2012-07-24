@@ -12,29 +12,28 @@ namespace {
 
 // Keep this array synced with MetricTypes in the header file.
 // TODO(mtytel): i18n.
-const char* kMetricTypeNames[] = {
-  kSampleMetricName
+const MetricDetails kMetricDetailsList[] = {
+  {
+    kMetricCPUUsageName,
+    kMetricCPUUsageDescription,
+    kMetricCPUUsageUnits,
+    kMetricCPUUsageTickSize,
+  },
+  {
+    kMetricPrivateMemoryUsageName,
+    kMetricPrivateMemoryUsageDescription,
+    kMetricPrivateMemoryUsageUnits,
+    kMetricPrivateMemoryUsageTickSize
+  },
 };
-COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kMetricTypeNames) == METRIC_NUMBER_OF_METRICS,
+COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kMetricDetailsList) == METRIC_NUMBER_OF_METRICS,
                metric_names_incorrect_size);
 
 }  // namespace
 
-const char* MetricTypeToString(MetricType metric_type) {
+const MetricDetails* GetMetricDetails(MetricType metric_type) {
   DCHECK_GT(METRIC_NUMBER_OF_METRICS, metric_type);
-  return kMetricTypeNames[metric_type];
-}
-
-MetricDetails::MetricDetails() {
-}
-
-MetricDetails::MetricDetails(const std::string& metric_name,
-                             const std::string& metric_description)
-    : name(metric_name),
-      description(metric_description) {
-}
-
-MetricDetails::~MetricDetails() {
+  return &kMetricDetailsList[metric_type];
 }
 
 }  // namespace performance_monitor

@@ -9,22 +9,21 @@
 
 namespace performance_monitor {
 
+// Keep this enum synced with kMetricDetailsList in the cc file.
 enum MetricType {
-  METRIC_SAMPLE,
+  METRIC_CPU_USAGE,
+  METRIC_PRIVATE_MEMORY_USAGE,
   METRIC_NUMBER_OF_METRICS
 };
 
-const char* MetricTypeToString(MetricType event_type);
-
 struct MetricDetails {
-  MetricDetails();
-  MetricDetails(const std::string& metric_name,
-                const std::string& metric_description);
-  ~MetricDetails();
-
-  std::string name;
-  std::string description;
+  const char* const name;
+  const char* const description;
+  const char* const units;
+  const double tick_size;
 };
+
+const MetricDetails* GetMetricDetails(MetricType event_type);
 
 }  // namespace performance_monitor
 

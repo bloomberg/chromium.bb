@@ -11,7 +11,17 @@ namespace performance_monitor {
 const char kStateChromeVersion[] = "chrome_version";
 const char kMetricNotFoundError[] = "Mertic details not found.";
 const char kProcessChromeAggregate[] = "chrome_aggregate";
-const char kSampleMetricDescription[] = "A sample metric.";
-const char kSampleMetricName[] = "SAMPLE";
+
+const char kMetricCPUUsageName[] = "CPU Usage";
+const char kMetricCPUUsageDescription[] = "The CPU usage measured in percent.";
+const char kMetricCPUUsageUnits[] = "percent";
+const double kMetricCPUUsageTickSize = 100.0;
+
+const char kMetricPrivateMemoryUsageName[] = "Private Memory Usage";
+const char kMetricPrivateMemoryUsageDescription[] =
+    "The private memory usage measured in bytes.";
+const char kMetricPrivateMemoryUsageUnits[] = "percent";
+const double kMetricPrivateMemoryUsageTickSize = 10000000.0;
+
 
 }  // namespace performance_monitor

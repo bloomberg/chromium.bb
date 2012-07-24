@@ -7,18 +7,24 @@
 
 namespace performance_monitor {
 
-// TODO(chebert): i18n
+// TODO(chebert): i18n on all constants.
 extern const char kMetricNotFoundError[];
 
 // Any metric that is not associated with a specific activity will use this as
 // its activity.
 extern const char kProcessChromeAggregate[];
 
-// When you add a metric type, make sure to edit Database::InitMetricDetails
-// and add an entry to the MericType enum.
-// TODO(mwrosen): When you make real metrics, delete the sample metric.
-extern const char kSampleMetricDescription[];
-extern const char kSampleMetricName[];
+// Metrics keys for statistics gathering.
+extern const char kMetricCPUUsageName[];
+extern const char kMetricCPUUsageDescription[];
+extern const char kMetricCPUUsageUnits[];
+extern const double kMetricCPUUsageTickSize;
+
+extern const char kMetricPrivateMemoryUsageName[];
+extern const char kMetricPrivateMemoryUsageDescription[];
+extern const char kMetricPrivateMemoryUsageUnits[];
+extern const double kMetricPrivateMemoryUsageTickSize;
+
 extern const char kStateChromeVersion[];
 
 }  // namespace performance_monitor

@@ -58,8 +58,8 @@ void DoGetMetric(ListValue* results,
                  const base::Time& start, const base::Time& end,
                  const base::TimeDelta& resolution) {
   Database* db = PerformanceMonitor::GetInstance()->database();
-  Database::MetricVectorMap metric_vector_map = db->GetStatsForMetricByActivity(
-      MetricTypeToString(metric_type), start, end);
+  Database::MetricVectorMap metric_vector_map =
+      db->GetStatsForMetricByActivity(metric_type, start, end);
 
   linked_ptr<Database::MetricInfoVector> metric_vector =
       metric_vector_map[kProcessChromeAggregate];
@@ -174,10 +174,14 @@ void WebUIHandler::HandleGetAllMetricTypes(const ListValue* args) {
   ListValue results;
   for (int i = 0; i < METRIC_NUMBER_OF_METRICS; ++i) {
     MetricType metric_type = static_cast<MetricType>(i);
+    const MetricDetails* metric_details = GetMetricDetails(metric_type);
+
     DictionaryValue* metric_type_info = new DictionaryValue();
     metric_type_info->SetInteger("metricType", metric_type);
     metric_type_info->SetString("shortDescription",
-                                MetricTypeToString(metric_type));
+                                metric_details->description);
+    metric_type_info->SetDouble("tickSize", metric_details->tick_size);
+    metric_type_info->SetString("units", metric_details->units);
     results.Append(metric_type_info);
   }
 

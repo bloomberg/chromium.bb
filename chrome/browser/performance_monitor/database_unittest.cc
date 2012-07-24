@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "chrome/browser/performance_monitor/database.h"
+#include "chrome/browser/performance_monitor/metric_details.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,12 +95,6 @@ class PerformanceMonitorDatabaseMetricTest : public ::testing::Test {
     CHECK(db_.get());
     db_->set_clock(scoped_ptr<Database::Clock>(clock_));
     activity_ = std::string("A");
-    cpu_metric_ = std::string("CPU");
-    mem_metric_ = std::string("MEM");
-    fun_metric_ = std::string("FUN");
-    cpu_metric_details_ = MetricDetails(cpu_metric_, "Testing CPU metric.");
-    mem_metric_details_ = MetricDetails(mem_metric_, "Testing MEM metric.");
-    fun_metric_details_ = MetricDetails(fun_metric_, "Testing FUN metric.");
   }
 
   void SetUp() {
@@ -107,27 +103,20 @@ class PerformanceMonitorDatabaseMetricTest : public ::testing::Test {
   }
 
   void PopulateDB() {
-    db_->AddMetricDetails(cpu_metric_details_);
-    db_->AddMetricDetails(mem_metric_details_);
-    db_->AddMetricDetails(fun_metric_details_);
-    db_->AddMetric(kProcessChromeAggregate, cpu_metric_, std::string("50.5"));
-    db_->AddMetric(activity_, cpu_metric_, std::string("13.1"));
-    db_->AddMetric(kProcessChromeAggregate, mem_metric_, std::string("100000"));
-    db_->AddMetric(activity_, mem_metric_, std::string("20000"));
-    db_->AddMetric(kProcessChromeAggregate, fun_metric_, std::string("3.14"));
-    db_->AddMetric(activity_, fun_metric_, std::string("1.68"));
+    db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE,
+                   std::string("50.5"));
+    db_->AddMetric(activity_, METRIC_CPU_USAGE, std::string("13.1"));
+
+    db_->AddMetric(kProcessChromeAggregate, METRIC_PRIVATE_MEMORY_USAGE,
+                   std::string("1000000"));
+    db_->AddMetric(activity_, METRIC_PRIVATE_MEMORY_USAGE,
+                   std::string("3000000"));
   }
 
   scoped_ptr<Database> db_;
   Database::Clock* clock_;
   ScopedTempDir temp_dir_;
   std::string activity_;
-  std::string cpu_metric_;
-  std::string mem_metric_;
-  std::string fun_metric_;
-  MetricDetails cpu_metric_details_;
-  MetricDetails mem_metric_details_;
-  MetricDetails fun_metric_details_;
 };
 
 ////// PerformanceMonitorDatabaseSetupTests ////////////////////////////////////
@@ -285,20 +274,15 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetEventsTimeRange) {
 
 ////// PerformanceMonitorDatabaseMetricTests ///////////////////////////////////
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetActiveMetrics) {
-  std::vector<MetricDetails> metrics =
+  std::vector<const MetricDetails*> active_metrics =
     db_->GetActiveMetrics(base::Time(), clock_->GetTime());
-  ASSERT_EQ(3u, metrics.size());
-  std::vector<MetricDetails>::iterator it;
-  for (it = metrics.begin(); it != metrics.end(); ++it) {
-    if (it->name == cpu_metric_details_.name)
-      EXPECT_EQ(it->description, cpu_metric_details_.description);
-    else if (it->name == mem_metric_details_.name)
-      EXPECT_EQ(it->description, mem_metric_details_.description);
-    else if (it->name == fun_metric_details_.name)
-      EXPECT_EQ(it->description, fun_metric_details_.description);
-    else
-      NOTREACHED();
-  }
+  std::sort(active_metrics.begin(), active_metrics.end());
+
+  std::vector<const MetricDetails*> expected_metrics;
+  expected_metrics.push_back(GetMetricDetails(METRIC_CPU_USAGE));
+  expected_metrics.push_back(GetMetricDetails(METRIC_PRIVATE_MEMORY_USAGE));
+  std::sort(expected_metrics.begin(), expected_metrics.end());
+  EXPECT_EQ(expected_metrics, active_metrics);
 }
 
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetState) {
@@ -319,23 +303,23 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetStateOverride) {
 
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetStatsForActivityAndMetric) {
   Database::MetricInfoVector stats = db_->GetStatsForActivityAndMetric(
-      activity_, cpu_metric_, base::Time(), clock_->GetTime());
+      activity_, METRIC_CPU_USAGE, base::Time(), clock_->GetTime());
   ASSERT_EQ(1u, stats.size());
   EXPECT_EQ(13.1, stats[0].value);
   base::Time before = clock_->GetTime();
-  db_->AddMetric(activity_, cpu_metric_, std::string("18"));
-  stats = db_->GetStatsForActivityAndMetric(activity_, cpu_metric_,
+  db_->AddMetric(activity_, METRIC_CPU_USAGE, std::string("18"));
+  stats = db_->GetStatsForActivityAndMetric(activity_, METRIC_CPU_USAGE,
                                             before, clock_->GetTime());
   ASSERT_EQ(1u, stats.size());
   EXPECT_EQ(18, stats[0].value);
-  stats = db_->GetStatsForActivityAndMetric(activity_, cpu_metric_);
+  stats = db_->GetStatsForActivityAndMetric(activity_, METRIC_CPU_USAGE);
   ASSERT_EQ(2u, stats.size());
   EXPECT_EQ(13.1, stats[0].value);
   EXPECT_EQ(18, stats[1].value);
-  stats = db_->GetStatsForActivityAndMetric(mem_metric_);
+  stats = db_->GetStatsForActivityAndMetric(METRIC_PRIVATE_MEMORY_USAGE);
   ASSERT_EQ(1u, stats.size());
-  EXPECT_EQ(100000, stats[0].value);
-  stats = db_->GetStatsForActivityAndMetric(activity_, cpu_metric_,
+  EXPECT_EQ(1000000, stats[0].value);
+  stats = db_->GetStatsForActivityAndMetric(activity_, METRIC_CPU_USAGE,
                                             clock_->GetTime(),
                                             clock_->GetTime());
   EXPECT_TRUE(stats.empty());
@@ -343,7 +327,7 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetStatsForActivityAndMetric) {
 
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetStatsForMetricByActivity) {
   Database::MetricVectorMap stats_map = db_->GetStatsForMetricByActivity(
-      cpu_metric_, base::Time(), clock_->GetTime());
+      METRIC_CPU_USAGE, base::Time(), clock_->GetTime());
   ASSERT_EQ(2u, stats_map.size());
   linked_ptr<Database::MetricInfoVector> stats = stats_map[activity_];
   ASSERT_EQ(1u, stats->size());
@@ -351,12 +335,12 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetStatsForMetricByActivity) {
   stats = stats_map[kProcessChromeAggregate];
   ASSERT_EQ(1u, stats->size());
   EXPECT_EQ(50.5, stats->at(0).value);
-  stats_map = db_->GetStatsForMetricByActivity(cpu_metric_, clock_->GetTime(),
-                                               clock_->GetTime());
+  stats_map = db_->GetStatsForMetricByActivity(
+      METRIC_CPU_USAGE, clock_->GetTime(), clock_->GetTime());
   EXPECT_EQ(0u, stats_map.size());
   base::Time before = clock_->GetTime();
-  db_->AddMetric(activity_, cpu_metric_, std::string("18"));
-  stats_map = db_->GetStatsForMetricByActivity(cpu_metric_, before,
+  db_->AddMetric(activity_, METRIC_CPU_USAGE, std::string("18"));
+  stats_map = db_->GetStatsForMetricByActivity(METRIC_CPU_USAGE, before,
                                                clock_->GetTime());
   ASSERT_EQ(1u, stats_map.size());
   stats = stats_map[activity_];
@@ -365,10 +349,10 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetStatsForMetricByActivity) {
 }
 
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetFullRange) {
-  db_->AddMetric(kProcessChromeAggregate, cpu_metric_, std::string("3.4"));
-  db_->AddMetric(kProcessChromeAggregate, cpu_metric_, std::string("21"));
+  db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("3.4"));
+  db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("21"));
   Database::MetricInfoVector stats =
-      db_->GetStatsForActivityAndMetric(cpu_metric_);
+      db_->GetStatsForActivityAndMetric(METRIC_CPU_USAGE);
   ASSERT_EQ(3u, stats.size());
   ASSERT_EQ(50.5, stats[0].value);
   ASSERT_EQ(3.4, stats[1].value);
@@ -377,12 +361,12 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetFullRange) {
 
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetRange) {
   base::Time start = clock_->GetTime();
-  db_->AddMetric(kProcessChromeAggregate, cpu_metric_, std::string("3"));
-  db_->AddMetric(kProcessChromeAggregate, cpu_metric_, std::string("9"));
+  db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("3"));
+  db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("9"));
   base::Time end = clock_->GetTime();
-  db_->AddMetric(kProcessChromeAggregate, cpu_metric_, std::string("21"));
+  db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("21"));
   Database::MetricInfoVector stats =
-      db_->GetStatsForActivityAndMetric(cpu_metric_, start, end);
+      db_->GetStatsForActivityAndMetric(METRIC_CPU_USAGE, start, end);
   ASSERT_EQ(2u, stats.size());
   ASSERT_EQ(3, stats[0].value);
   ASSERT_EQ(9, stats[1].value);
