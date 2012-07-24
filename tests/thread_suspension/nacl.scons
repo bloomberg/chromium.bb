@@ -32,12 +32,8 @@ test_host = trusted_env.ComponentProgram(
     'suspend_test_host', ['suspend_test_host.c'],
     EXTRA_LIBS=['sel', 'sel_debug_dummy'])
 
-test_command = [test_host, test_guest]
-bootstrap, _ = env.GetBootstrap()
-if bootstrap is not None:
-  test_command = [bootstrap] + test_command
-
-node = env.CommandTest('thread_suspension_test.out', test_command)
+node = env.CommandTest('thread_suspension_test.out',
+                       env.AddBootstrap(test_host, [test_guest]))
 env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                        'run_thread_suspension_test',
                        is_broken=not env.Bit('nacl_static_link'))
