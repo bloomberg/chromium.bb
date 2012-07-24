@@ -1191,7 +1191,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Blocks until the page has reloaded.
 
     Args:
-      tab_index: The index of the tab to reload. Defaults to the first tab.
+      tab_index: The index of the tab to reload. Defaults to 0.
       windex: The index of the browser window to work on. Defaults to the first
           window.
 
@@ -1240,6 +1240,45 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(cmd_dict,
                                           windex=None).get('tab_index')
 
+  def ActivateTab(self, tab_index=0, windex=0):
+    """Activates the given tab in the specified window.
+
+    Warning: Depending on the concept of an active tab is dangerous as it can
+    change during the test. Instead use functions that accept a tab_index
+    explicitly.
+
+    Args:
+      tab_index: Integer index of the tab to activate; defaults to 0.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'ActivateTab',
+        'tab_index': tab_index,
+        'windex': windex,
+    }
+    self.BringBrowserToFront(windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def BringBrowserToFront(self, windex=0):
+    """Activate the browser's window and bring it to front.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'BringBrowserToFront',
+        'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
   def AppendTab(self, url, windex=0):
     """Append a new tab.
 
@@ -1265,6 +1304,86 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'windex': windex,
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None).get('result')
+
+  def GetTabCount(self, windex=0):
+    """Gets the number of tab in the given browser window.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      The tab count.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'GetTabCount',
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['tab_count']
+
+  def GetTabInfo(self, tab_index=0, windex=0):
+    """Gets information about the specified tab.
+
+    Args:
+      tab_index: Integer index of the tab to activate; defaults to 0.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      A dictionary containing information about the tab.
+      Example:
+        { u'title': "Hello World",
+          u'url': "http://foo.bar", }
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'GetTabInfo',
+        'tab_index': tab_index,
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def GetActiveTabTitle(self, windex=0):
+    """Gets the title of the active tab.
+
+    Warning: Depending on the concept of an active tab is dangerous as it can
+    change during the test. Use GetTabInfo and supply a tab_index explicitly.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      The tab title as a string.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    return self.GetTabInfo(self.GetActiveTabIndex(windex), windex)['title']
+
+  def GetActiveTabURL(self, windex=0):
+    """Gets the URL of the active tab.
+
+    Warning: Depending on the concept of an active tab is dangerous as it can
+    change during the test. Use GetTabInfo and supply a tab_index explicitly.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      The tab URL as a GURL object.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    return GURL(str(self.GetTabInfo(self.GetActiveTabIndex(windex),
+                                    windex)['url']))
 
   def GetBookmarkModel(self, windex=0):
     """Return the bookmark model as a BookmarkModel object.

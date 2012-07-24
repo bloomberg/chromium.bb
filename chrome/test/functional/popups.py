@@ -68,7 +68,7 @@ class PopupsTest(pyauto.PyUITest):
         self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url, 1, 0)
     self.assertEquals('Popup created using window.open',
-                      self.GetActiveTabTitle(window_index=1))
+                      self.GetActiveTabTitle(1))
     # Wait until the popup is blocked
     self.assertTrue(self.WaitUntil(lambda:
         len(self.GetBlockedPopupsInfo(tab_index=0, windex=1)) is 1),
