@@ -747,10 +747,10 @@ TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
   ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   GURL url("mailto:someone@something.com");
-  net::URLRequestJobFactory::Interceptor* interceptor =
-      registry()->CreateURLInterceptor();
 
-  AssertIntercepted(url, interceptor);
+  scoped_ptr<net::URLRequestJobFactory::Interceptor> interceptor(
+      registry()->CreateURLInterceptor());
+  AssertIntercepted(url, interceptor.get());
 }
 
 TEST_F(ProtocolHandlerRegistryTest,
@@ -758,10 +758,10 @@ TEST_F(ProtocolHandlerRegistryTest,
   std::string scheme("mailto");
   ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
-  net::URLRequestJobFactory::Interceptor* interceptor =
-      registry()->CreateURLInterceptor();
 
-  AssertWillHandle(scheme, true, interceptor);
+  scoped_ptr<net::URLRequestJobFactory::Interceptor> interceptor(
+      registry()->CreateURLInterceptor());
+  AssertWillHandle(scheme, true, interceptor.get());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultFallsBackToOldDefault) {
@@ -805,10 +805,10 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestClearDefaultGetsPropagatedToIO) {
   ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->ClearDefault(scheme);
-  net::URLRequestJobFactory::Interceptor* interceptor =
-      registry()->CreateURLInterceptor();
 
-  AssertWillHandle(scheme, false, interceptor);
+  scoped_ptr<net::URLRequestJobFactory::Interceptor> interceptor(
+      registry()->CreateURLInterceptor());
+  AssertWillHandle(scheme, false, interceptor.get());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
@@ -816,12 +816,11 @@ TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
   ProtocolHandler ph1 = CreateProtocolHandler(mailto, "MailtoHandler");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
 
-  net::URLRequestJobFactory::Interceptor* interceptor =
-      registry()->CreateURLInterceptor();
-  AssertWillHandle(mailto, true, interceptor);
+  scoped_ptr<net::URLRequestJobFactory::Interceptor> interceptor(
+      registry()->CreateURLInterceptor());
+  AssertWillHandle(mailto, true, interceptor.get());
   registry()->Disable();
-  AssertWillHandle(mailto, false, interceptor);
-  delete interceptor;
+  AssertWillHandle(mailto, false, interceptor.get());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestReplaceHandler) {

@@ -5644,25 +5644,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_138518
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN23ProtocolHandlerRegistry20CreateURLInterceptorEv
-   fun:_ZN69ProtocolHandlerRegistryTest_TestMaybeCreateTaskWorksFromIOThread_Test8TestBodyEv
-}
-{
-   bug_138520
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSs15ProtocolHandlerEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSs15ProtocolHandlerESt10_Select1stIS3_ESt4lessISsESaIS3_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSs15ProtocolHandlerESt10_Select1stIS3_ESt4lessISsESaIS3_EE14_M_create_nodeERKS3_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSs15ProtocolHandlerESt10_Select1stIS3_ESt4lessISsESaIS3_EE10_M_insert_EPKSt18_Rb_tree_node_baseSC_RKS3_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSs15ProtocolHandlerESt10_Select1stIS3_ESt4lessISsESaIS3_EE16_M_insert_uniqueERKS3_
-   fun:_ZNSt3mapISs15ProtocolHandlerSt4lessISsESaISt4pairIKSsS0_EEE6insertERKS5_
-   fun:_ZN23ProtocolHandlerRegistry4Core10SetDefaultERK15ProtocolHandler
-}
-{
    bug_138522
    Memcheck:Leak
    fun:_Znw*
