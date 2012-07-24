@@ -33,6 +33,7 @@ class WebStorageAreaImpl : public WebKit::WebStorageArea {
   virtual void removeItem(
       const WebKit::WebString& key, const WebKit::WebURL& page_url);
   virtual void clear(const WebKit::WebURL& url);
+  virtual size_t memoryBytesUsedByCache() const;
 
  private:
   int connection_id_;
