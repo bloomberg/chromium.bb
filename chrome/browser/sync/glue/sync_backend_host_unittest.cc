@@ -161,10 +161,8 @@ class SyncBackendHostTest : public testing::Test {
                          &fake_sync_manager_factory_,
                          &handler_,
                          NULL);
-    ui_loop_.PostDelayedTask(
-        FROM_HERE,
-        ui_loop_.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms()));
+    ui_loop_.PostDelayedTask(FROM_HERE,
+        ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
     ui_loop_.Run();
   }
 
@@ -181,10 +179,8 @@ class SyncBackendHostTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&SyncBackendHostTest::OnDownloadRetry,
                    base::Unretained(this)));
-    ui_loop_.PostDelayedTask(
-        FROM_HERE,
-        ui_loop_.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms()));
+    ui_loop_.PostDelayedTask(FROM_HERE,
+        ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
     ui_loop_.Run();
   }
 
