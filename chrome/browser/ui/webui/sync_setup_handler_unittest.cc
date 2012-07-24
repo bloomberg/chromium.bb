@@ -357,11 +357,11 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
     // If the parameter is true, then use ClientOAuth for the tests.  Otherwise
     // use ClientLogin for the tests.
     if (GetParam()) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableClientOAuthSignin);
-    } else {
       ASSERT_FALSE(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClientOAuthSignin));
+          switches::kDisableClientOAuthSignin));
+    } else {
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kDisableClientOAuthSignin);
     }
 
     error_ = GoogleServiceAuthError::None();
