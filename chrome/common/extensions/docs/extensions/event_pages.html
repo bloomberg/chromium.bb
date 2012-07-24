@@ -200,6 +200,10 @@
               <a href="#lifetime">Lifetime</a>
               <ol>
               </ol>
+            </li><li>
+              <a href="#transition">Convert background page to event page</a>
+              <ol>
+              </ol>
             </li>
           </ol>
         </div>
@@ -257,6 +261,13 @@ event page will not unload until all visible views (for example,
 popup windows) are closed.
 </p>
 <p>
+You can observe the lifetime of your event page by clicking
+on "View Background Pages" in Chrome's Wrench menu, or by
+opening Chrome's task manager. You can see when your event
+page loads and unloads by observing when an entry for your
+extension appears in the list of processes.
+</p>
+<p>
 Once the event page has been idle a short time
 (a few seconds), the
 <code><a href="runtime.html#event-onSuspend">chrome.runtime.onSuspend</a></code>
@@ -264,6 +275,45 @@ event is dispatched. The event page has a few more seconds to handle this
 event before it is forcibly unloaded. Note that once the event is dispatched,
 new activity will not keep the event page open.
 </p>
+<h2 id="transition">Convert background page to event page</h2>
+<p>
+Follow this checklist to convert your extension's
+(persistent) background page to an event page.
+</p><ol>
+  <li>Add <code>"persistent": false</code> to your manifest as shown above.
+  </li><li>Register to receive any events your extension is interested in
+  each time the event page is loaded. The event page will be loaded once
+  for each new version of your extension. After that it will only be
+  loaded to deliver events you have registered for.
+  </li><li>If you need to do some initialization when your extension is
+  installed or upgraded, listen to the
+  <code><a href="runtime.html#event-onInstalled">chrome.runtime.onInstalled</a></code>
+  event.
+  </li><li>If you need to keep runtime state in memory throughout a browser
+  session, use the <a href="storage.html">storage API</a> or
+  IndexedDB. Since the event page does not stay loaded for long, you
+  can no longer rely on global variables for runtime state.
+  </li><li>Listen to the
+  <code><a href="runtime.html#event-onSuspend">chrome.runtime.onSuspend</a></code>
+  event if you need to do last second cleanup before your event page
+  is shut down. However, we recommend persisting periodically instead.
+  That way if your extension crashes without receiving
+  <code>onSuspend</code>, no data will typically be lost.
+  </li><li>If your extension uses <code>window.setTimeout()</code> or
+  <code>window.setInterval()</code>, switch to using the
+  <a href="alarms.html">alarms API</a> instead. DOM-based timers won't
+  be honored if the event page shuts down.
+  </li><li>If your extension uses,
+  <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage()</a></code>,
+  switch to
+  <code><a href="runtime.html#method-getBackgroundPage">chrome.runtime.getBackgroundPage()</a></code>
+  instead. The newer method is asynchronous so that it can start the event
+  page if necessary before returning it.
+  </li><li>If you're using <a href="messaging.html">message passing</a>, be sure
+  to close unused message ports. The event page will not shut down until all
+  message ports are closed.
+</li></ol>
+<p></p>
 </div>
         <!-- API PAGE -->
          <!-- /apiPage -->
