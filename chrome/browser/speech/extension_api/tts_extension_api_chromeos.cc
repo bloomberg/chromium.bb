@@ -167,7 +167,7 @@ bool ExtensionTtsPlatformImplChromeOs::StopSpeaking() {
 
 bool ExtensionTtsPlatformImplChromeOs::IsSpeaking() {
   // Defers to controller's utterance based detection of is speaking.
-  return true;
+  return false;
 }
 
 bool ExtensionTtsPlatformImplChromeOs::SendsEvent(TtsEventType event_type) {
