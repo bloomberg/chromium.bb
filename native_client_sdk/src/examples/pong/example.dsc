@@ -11,7 +11,7 @@
         'view.cc',
         'view.h',
       ],
-      'LIBS': ['ppapi_cpp']
+      'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DEST': 'examples',

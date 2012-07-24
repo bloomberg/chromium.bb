@@ -5,6 +5,7 @@
       'NAME' : 'hello_world',
       'TYPE' : 'main',
       'SOURCES' : ['hello_world.c'],
+      'LIBS': ['ppapi', 'pthread']
     }
   ],
   'DEST': 'examples',

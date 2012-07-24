@@ -11,7 +11,8 @@
         'untrusted_crash_dump.c',
         'untrusted_crash_dump.h'
       ],
-      'CCFLAGS': ['$(NACL_CCFLAGS)', '-fno-omit-frame-pointer']
+      'CCFLAGS': ['$(NACL_CCFLAGS)', '-fno-omit-frame-pointer'],
+      'LIBS' : ['ppapi', 'pthread']
     }
   ],
   'POST': 'include Makefile.inc\n',

@@ -1,11 +1,11 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'file_io',
       'TYPE' : 'main',
       'SOURCES' : ['file_io.cc'],
-      'LIBS': ['ppapi_cpp']
+      'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DEST': 'examples',

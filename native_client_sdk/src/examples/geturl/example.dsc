@@ -5,7 +5,7 @@
       'NAME' : 'geturl',
       'TYPE' : 'main',
       'SOURCES' : ['geturl.cc', 'geturl_handler.cc', 'geturl_handler.h'],
-      'LIBS': ['ppapi_cpp']
+      'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': ['geturl_success.html'],

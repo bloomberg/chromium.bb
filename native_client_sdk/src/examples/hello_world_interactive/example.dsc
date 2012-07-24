@@ -9,7 +9,7 @@
         'helper_functions.cc',
         'helper_functions.h'
       ],
-      'LIBS': ['ppapi_cpp']
+      'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DEST': 'examples',

@@ -5,7 +5,7 @@
       'NAME' : 'load_progress',
       'TYPE' : 'main',
       'SOURCES' : ['load_progress.cc'],
-      'LIBS': ['ppapi_cpp']
+      'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': ['check_browser.js'],

@@ -5,7 +5,7 @@
       'NAME' : 'input_events',
       'TYPE' : 'main',
       'SOURCES' : ['input_events.cc'],
-      'LIBS': ['ppapi_cpp']
+      'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DEST': 'examples',

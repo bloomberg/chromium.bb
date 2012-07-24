@@ -5,7 +5,7 @@
       'NAME' : 'websocket',
       'TYPE' : 'main',
       'SOURCES' : ['websocket.cc'],
-      'LIBS': ['ppapi_cpp']
+      'LIBS': ['ppapi_cpp', 'ppapi']
     }
   ],
   'DEST': 'examples',

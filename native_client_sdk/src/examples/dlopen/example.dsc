@@ -5,14 +5,14 @@
       'NAME': 'dlopen',
       'TYPE': 'main',
       'SOURCES': ['dlopen.cc'],
-      'LIBS': ['dl', 'ppapi_cpp']
+      'LIBS': ['dl', 'ppapi_cpp', 'ppapi', 'pthread']
     },
     {
       'NAME' : 'libeightball',
       'TYPE' : 'so',
       'SOURCES' : ['eightball.cc', 'eightball.h'],
       'CXXFLAGS': ['$(NACL_CXXFLAGS)', '-fPIC'],
-      'LIBS' : ['ppapi_cpp']
+      'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DEST': 'examples',

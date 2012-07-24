@@ -5,7 +5,7 @@
       'NAME' : 'mouselock',
       'TYPE' : 'main',
       'SOURCES' : ['mouselock.cc', 'mouselock.h'],
-      'LIBS': ['ppapi_cpp']
+      'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': ['check_browser.js'],

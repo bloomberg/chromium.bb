@@ -10,7 +10,7 @@
         'mt_input_events.cc',
         'shared_queue.h',
       ],
-      'LIBS': ['ppapi_cpp']
+      'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DEST': 'examples',

@@ -365,6 +365,8 @@ EXAMPLE_LIST = [
 ]
 
 LIBRARY_LIST = [
+  'pthread',
+  'ppapi',
   'ppapi_cpp',
   'ppapi_gles2',
 ]

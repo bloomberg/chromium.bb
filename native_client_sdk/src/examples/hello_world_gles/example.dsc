@@ -10,7 +10,7 @@
         '-I../../src',
         '-I../../src/ppapi/lib/gl'
       ],
-      'LIBS': ['ppapi_gles2']
+      'LIBS': ['ppapi_gles2', 'ppapi', 'pthread']
     }
   ],
   'DATA': [
