@@ -4107,41 +4107,6 @@
    fun:_ZN3gfx31JPEGCodec_EncodeDecodeRGBA_Test8TestBodyEv
 }
 {
-   bug_102255
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15DownloadService18GetDownloadManagerEv
-   fun:_ZN29ExtensionDownloadsEventRouterC*
-   fun:_ZN16ExtensionService16InitEventRoutersEv
-   fun:_ZN16ExtensionService7ObserveEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
-   ...
-   fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
-   fun:_ZN14ProfileManager16OnImportFinishedEP7Profile
-   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
-}
-{
-   bug_102255b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN15DownloadService18GetDownloadManagerEv
-   fun:_ZN11DownloadsUIC1EPN7content5WebUIE
-   fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEPN7content15WebUIControllerEPNS2_5WebUIERK4GURL
-   fun:_ZNK28ChromeWebUIControllerFactory27CreateWebUIControllerForURLEPN7content5WebUIERK4GURL
-   fun:_ZNK32TestChromeWebUIControllerFactory27CreateWebUIControllerForURLEPN7content5WebUIERK4GURL
-   fun:_ZN15WebContentsImpl11CreateWebUIERK4GURL
-   fun:_ZN15WebContentsImpl27CreateWebUIForRenderManagerERK4GURL
-   fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERKN7content19NavigationEntryImplE
-   fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
-   ...
-   fun:_ZN24NavigationControllerImpl9LoadEntryEPN7content19NavigationEntryImplE
-   fun:_ZN24NavigationControllerImpl7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
-   fun:_ZN12_GLOBAL__N_117LoadURLInContentsEPN7content11WebContentsERK4GURLPN7browser14NavigateParamsERKSs
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
-   fun:_ZN7Browser30ShowSingletonTabOverwritingNTPERKN7browser14NavigateParamsE
-   fun:_ZN7Browser16ShowDownloadsTabEv
-}
-{
    bug_102257
    Memcheck:Uninitialized
    ...
@@ -5018,18 +4983,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN13sync_notifier12_GLOBAL__N_124InvalidationNotifierTest5SetUpEv
-}
-{
-   bug_chromium_os_28149
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15DownloadService18GetDownloadManagerEv
-   fun:_ZN5gdata18GDataSystemService10InitializeEv
-   fun:_ZNK5gdata25GDataSystemServiceFactory23BuildServiceInstanceForEP7Profile
-   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
-   fun:_ZN5gdata25GDataSystemServiceFactory13GetForProfileEP7Profile
-   fun:_ZN22FileBrowserEventRouter23ObserveFileSystemEventsEv
-   fun:_ZN16ExtensionService16InitEventRoutersEv
 }
 {
    bug_120146

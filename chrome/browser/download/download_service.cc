@@ -107,5 +107,5 @@ void DownloadService::Shutdown() {
     // manually earlier. See http://crbug.com/131692
     BrowserContext::GetDownloadManager(profile_)->Shutdown();
   }
-  manager_delegate_.release();
+  manager_delegate_ = NULL;
 }
