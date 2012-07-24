@@ -35,8 +35,6 @@ FrameNavigationState::FrameID::FrameID(int64 frame_num,
       render_process_id(render_process_id) {
 }
 
-FrameNavigationState::FrameID::~FrameID() {}
-
 bool FrameNavigationState::FrameID::operator<(
     const FrameNavigationState::FrameID& other) const {
   return frame_num < other.frame_num ||
