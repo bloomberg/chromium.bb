@@ -341,18 +341,13 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   }
 }
 
-void ChromotingInstance::DidChangeView(const pp::Rect& position,
-                                       const pp::Rect& clip) {
+void ChromotingInstance::DidChangeView(const pp::View& view) {
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
-  SkISize new_size = SkISize::Make(position.width(), position.height());
-  SkIRect new_clip =
-    SkIRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height());
-
-  view_->SetView(new_size, new_clip);
+  view_->SetView(view);
 
   if (mouse_input_filter_.get()) {
-    mouse_input_filter_->set_input_size(view_->get_view_size());
+    mouse_input_filter_->set_input_size(view_->get_view_size_dips());
   }
 }
 
@@ -484,7 +479,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // Construct the input pipeline
   mouse_input_filter_.reset(
       new protocol::MouseInputFilter(host_connection_->input_stub()));
-  mouse_input_filter_->set_input_size(view_->get_view_size());
+  mouse_input_filter_->set_input_size(view_->get_view_size_dips());
   input_tracker_.reset(
       new protocol::InputEventTracker(mouse_input_filter_.get()));
 

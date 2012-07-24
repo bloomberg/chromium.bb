@@ -12,6 +12,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/graphics_2d.h"
+#include "ppapi/cpp/view.h"
 #include "ppapi/cpp/point.h"
 #include "remoting/client/frame_consumer.h"
 
@@ -44,15 +45,21 @@ class PepperView : public FrameConsumer,
   virtual void SetSourceSize(const SkISize& source_size,
                              const SkIPoint& dpi) OVERRIDE;
 
-  // Sets the display size and clipping area of this view.
-  void SetView(const SkISize& view_size, const SkIRect& clip_area);
+  // Updates the PepperView's size, clipping area and scale factor.
+  void SetView(const pp::View& view);
 
-  // Return the client view and original host dimensions.
+  // Return the dimensions of the view and source in device pixels.
   const SkISize& get_view_size() const {
     return view_size_;
   }
   const SkISize& get_screen_size() const {
     return source_size_;
+  }
+
+  // Return the dimensions of the view in Density Independent Pixels (DIPs).
+  // On high-DPI devices this will be smaller than the size in device pixels.
+  const SkISize& get_view_size_dips() const {
+    return view_size_dips_;
   }
 
  private:
@@ -91,21 +98,24 @@ class PepperView : public FrameConsumer,
   // List of allocated image buffers.
   std::list<pp::ImageData*> buffers_;
 
+  // Queued buffer to paint, with clip area and dirty region in device pixels.
   pp::ImageData* merge_buffer_;
   SkIRect merge_clip_area_;
   SkRegion merge_region_;
 
-  // The size of the plugin element.
+  // View size, clip area and host dimensions, in device pixels.
   SkISize view_size_;
-
-  // The current clip area rectangle.
   SkIRect clip_area_;
-
-  // The size of the host screen.
   SkISize source_size_;
 
   // The DPI of the host screen.
   SkIPoint source_dpi_;
+
+  // View size in Density-Independent pixels.
+  SkISize view_size_dips_;
+
+  // DIP-to-device pixel scale factor.
+  float view_scale_;
 
   // True if there is already a Flush() pending on the Graphics2D context.
   bool flush_pending_;

@@ -98,8 +98,7 @@ class ChromotingInstance :
   virtual ~ChromotingInstance();
 
   // pp::Instance interface.
-  virtual void DidChangeView(const pp::Rect& position,
-                             const pp::Rect& clip) OVERRIDE;
+  virtual void DidChangeView(const pp::View& view) OVERRIDE;
   virtual bool Init(uint32_t argc, const char* argn[],
                     const char* argv[]) OVERRIDE;
   virtual void HandleMessage(const pp::Var& message) OVERRIDE;

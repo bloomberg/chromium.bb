@@ -11,7 +11,8 @@
 #include "base/time.h"
 #include "base/synchronization/waitable_event.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/graphics_2d.h"
+#include "ppapi/cpp/dev/graphics_2d_dev.h"
+#include "ppapi/cpp/dev/view_dev.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
@@ -46,6 +47,8 @@ PepperView::PepperView(ChromotingInstance* instance,
     clip_area_(SkIRect::MakeEmpty()),
     source_size_(SkISize::Make(0, 0)),
     source_dpi_(SkIPoint::Make(0, 0)),
+    view_size_dips_(SkISize::Make(0, 0)),
+    view_scale_(1.0f),
     flush_pending_(false),
     frame_received_(false) {
   InitiateDrawing();
@@ -66,27 +69,46 @@ PepperView::~PepperView() {
   }
 }
 
-void PepperView::SetView(const SkISize& view_size, const SkIRect& clip_area) {
+void PepperView::SetView(const pp::View& view) {
   bool view_changed = false;
 
-  if (view_size_ != view_size) {
+  pp::Rect pp_size = view.GetRect();
+  SkISize new_size_dips = SkISize::Make(pp_size.width(), pp_size.height());
+  pp::ViewDev view_dev(view);
+  float new_scale = view_dev.GetDeviceScale();
+
+  if (view_size_dips_ != new_size_dips || view_scale_ != new_scale) {
     view_changed = true;
-    view_size_ = view_size;
+    view_scale_ = new_scale;
+    view_size_dips_ = new_size_dips;
+    view_size_ = SkISize::Make(ceilf(view_size_dips_.width() * view_scale_),
+                               ceilf(view_size_dips_.height() * view_scale_));
 
     pp::Size pp_size = pp::Size(view_size_.width(), view_size_.height());
     graphics2d_ = pp::Graphics2D(instance_, pp_size, true);
+
+    // Ideally we would always let Graphics2D scale us, but the output quality
+    // is lousy, so we don't.
+    pp::Graphics2DDev graphics2d_dev(graphics2d_);
+    graphics2d_dev.SetScale(1.0f / view_scale_);
+
     bool result = instance_->BindGraphics(graphics2d_);
 
     // There is no good way to handle this error currently.
     DCHECK(result) << "Couldn't bind the device context.";
   }
 
-  if (clip_area_ != clip_area) {
+  pp::Rect pp_clip = view.GetClipRect();
+  SkIRect new_clip = SkIRect::MakeLTRB(floorf(pp_clip.x() * view_scale_),
+                                       floorf(pp_clip.y() * view_scale_),
+                                       ceilf(pp_clip.right() * view_scale_),
+                                       ceilf(pp_clip.bottom() * view_scale_));
+  if (clip_area_ != new_clip) {
     view_changed = true;
 
     // YUV to RGB conversion may require even X and Y coordinates for
     // the top left corner of the clipping area.
-    clip_area_ = AlignRect(clip_area);
+    clip_area_ = AlignRect(new_clip);
     clip_area_.intersect(SkIRect::MakeSize(view_size_));
   }
 
