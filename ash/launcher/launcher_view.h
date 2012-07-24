@@ -178,8 +178,6 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
-  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
 
   // Overridden from LauncherModelObserver:
   virtual void LauncherItemAdded(int model_index) OVERRIDE;
