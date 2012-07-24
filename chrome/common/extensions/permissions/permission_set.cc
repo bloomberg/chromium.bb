@@ -498,6 +498,10 @@ void PermissionSet::InitImplicitPermissions() {
   // The fileBrowserHandler permission implies the internal version as well.
   if (apis_.find(APIPermission::kFileBrowserHandler) != apis_.end())
     apis_.insert(APIPermission::kFileBrowserHandlerInternal);
+
+  // mediaGalleriesRead implies the mediaGalleries permission.
+  if (apis_.find(APIPermission::kMediaGalleriesRead) != apis_.end())
+    apis_.insert(APIPermission::kMediaGalleries);
 }
 
 void PermissionSet::InitImplicitExtensionPermissions(

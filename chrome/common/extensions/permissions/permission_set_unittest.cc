@@ -578,6 +578,11 @@ TEST(PermissionsTest, PermissionMessages) {
   // prompt for it.
   skip.insert(APIPermission::kKeybinding);
 
+  // These permissions require explicit user action (configuration dialog)
+  // so we don't prompt for them at install time.
+  skip.insert(APIPermission::kMediaGalleries);
+  skip.insert(APIPermission::kMediaGalleriesRead);
+
   // If you've turned on the experimental command-line flag, we don't need
   // to warn you further.
   skip.insert(APIPermission::kExperimental);

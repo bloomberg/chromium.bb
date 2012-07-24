@@ -16,11 +16,13 @@ chromeHidden.registerCustomHook('experimental.mediaGalleries',
   // return an array of file system objects.
   apiFunctions.setCustomCallback('getMediaFileSystems',
                                  function(name, request, response) {
-    var result = [];
-    for (var i = 0; i < response.length; i++) {
-      result.push(
-          mediaGalleriesNatives.GetMediaFileSystemObject(response[i].fsid,
-                                                         response[i].dirname));
+    var result = null;
+    if (response) {
+      result = [];
+      for (var i = 0; i < response.length; i++) {
+        result.push(mediaGalleriesNatives.GetMediaFileSystemObject(
+            response[i].fsid, response[i].dirname));
+      }
     }
     if (request.callback)
       request.callback(result);

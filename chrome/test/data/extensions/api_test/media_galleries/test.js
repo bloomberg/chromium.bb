@@ -11,6 +11,7 @@ var mediaFileSystemsListCallback = function(results) {
     expectedFileSystems = 0;
   }
   chrome.test.assertEq(expectedFileSystems, results.length);
+  // TODO(vandebo) Test that we can read from the file system object.
 };
 var nullCallback = function(result) {
   chrome.test.assertEq(null, result);

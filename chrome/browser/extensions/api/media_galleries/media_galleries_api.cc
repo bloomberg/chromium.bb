@@ -79,11 +79,16 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
         "dirname", Value::CreateStringValue("_"));
     list->Append(dict_value);
 
-    content::ChildProcessSecurityPolicy* policy =
-        ChildProcessSecurityPolicy::GetInstance();
-    if (!policy->CanReadFile(child_id, path))
-      policy->GrantReadFile(child_id, path);
-    policy->GrantReadFileSystem(child_id, fsid);
+
+    if (GetExtension()->HasAPIPermission(
+            extensions::APIPermission::kMediaGalleriesRead)) {
+      content::ChildProcessSecurityPolicy* policy =
+          ChildProcessSecurityPolicy::GetInstance();
+      if (!policy->CanReadFile(child_id, path))
+        policy->GrantReadFile(child_id, path);
+      policy->GrantReadFileSystem(child_id, fsid);
+    }
+    // TODO(vandebo) Handle write permission.
   }
 
   SetResult(list);

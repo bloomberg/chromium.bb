@@ -179,6 +179,18 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "mediaGalleries": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleriesAllGalleries": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleriesRead": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
   "mediaPlayerPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],

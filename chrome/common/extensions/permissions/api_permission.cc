@@ -99,6 +99,8 @@ void APIPermission::RegisterAllPermissions(
     { kManagement, "management", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       PermissionMessage::kManagement },
+    { kMediaGalleries, "mediaGalleries" },
+    { kMediaGalleriesRead, "mediaGalleriesRead" },
     { kPageCapture, "pageCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT,
       PermissionMessage::kAllPageContent },
@@ -167,6 +169,10 @@ void APIPermission::RegisterAllPermissions(
     { kFileSystemWrite, "fileSystemWrite", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE,
       PermissionMessage::kFileSystemWrite },
+    { kMediaGalleriesAllGalleries, "mediaGalleriesAllGalleries",
+      kFlagCannotBeOptional,
+      IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES,
+      PermissionMessage::kMediaGalleriesAllGalleries },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(PermissionsToRegister); ++i) {
