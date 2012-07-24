@@ -819,9 +819,10 @@ cr.define('ntp', function() {
           realTileValues.interTileSpacing;
 
       this.layoutValues_ = {
-        numRowTiles: numRowTiles,
-        leftMargin: leftMargin,
         colWidth: realTileValues.offsetX,
+        gridWidth: effectiveGridWidth,
+        leftMargin: leftMargin,
+        numRowTiles: numRowTiles,
         rowHeight: rowHeight,
         tileWidth: realTileValues.tileWidth,
         wide: wide,
@@ -839,6 +840,18 @@ cr.define('ntp', function() {
      */
     firePageLayoutEvent_: function() {
       cr.dispatchSimpleEvent(this, 'pagelayout', true, true);
+    },
+
+    /**
+     * @return {number} The amount of margin that should be animated (in pixels)
+     *     for the current grid layout.
+     */
+    getAnimatedLeftMargin_: function() {
+      if (this.layoutValues_.wide)
+        return 0;
+
+      var grid = this.gridValues_;
+      return (grid.minWideWidth - MIN_WIDE_MARGIN - grid.narrowWidth) / 2;
     },
 
     /**
@@ -866,8 +879,7 @@ cr.define('ntp', function() {
       var animatedTileValues = layout.wide ?
           grid.wideTileValues : grid.narrowTileValues;
       // Animate the difference between three-wide and six-wide.
-      var animatedLeftMargin = layout.wide ?
-          0 : (grid.minWideWidth - MIN_WIDE_MARGIN - grid.narrowWidth) / 2;
+      var animatedLeftMargin = this.getAnimatedLeftMargin_();
       var animatedX = col * animatedTileValues.offsetX + animatedLeftMargin;
       var animatedY = row * (this.heightForWidth(animatedTileValues.tileWidth) +
                              animatedTileValues.interTileSpacing);
@@ -1021,11 +1033,29 @@ cr.define('ntp', function() {
      * Position the notification if there's one showing.
      */
     positionNotification_: function() {
-      if (this.notification && !this.notification.hidden) {
-        this.notification.style.margin =
-            -this.notification.offsetHeight + 'px ' +
-            this.layoutValues_.leftMargin + 'px 0';
-      }
+      var notification = this.notification;
+      if (!notification || notification.hidden)
+        return;
+
+      // Update the horizontal position.
+      var animatedLeftMargin = this.getAnimatedLeftMargin_();
+      notification.style.WebkitMarginStart = animatedLeftMargin + 'px';
+      var leftOffset = (this.layoutValues_.leftMargin - animatedLeftMargin) *
+                       (isRTL() ? -1 : 1);
+      notification.style.WebkitTransform = 'translateX(' + leftOffset + 'px)';
+
+      // Update the allowable widths of the text.
+      var buttonWidth = notification.querySelector('button').offsetWidth + 8;
+      notification.querySelector('span').style.maxWidth =
+          this.layoutValues_.gridWidth - buttonWidth + 'px';
+
+      // This makes sure the text doesn't condense smaller than the narrow size
+      // of the grid (e.g. when a user makes the window really small).
+      notification.style.minWidth =
+          this.gridValues_.narrowWidth - buttonWidth + 'px';
+
+      // Update the top position.
+      notification.style.marginTop = -notification.offsetHeight + 'px';
     },
 
     /**

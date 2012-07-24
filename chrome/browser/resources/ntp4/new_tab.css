@@ -25,7 +25,7 @@ body {
 }
 
 #notification-container {
-  -webkit-transition: opacity 200ms, margin-left 200ms;
+  -webkit-transition: opacity 200ms;
   bottom: 31px;
   display: block;
   float: left;
@@ -51,6 +51,12 @@ html[dir='rtl'] #notification-container {
 #notification {
   display: inline-block;
   font-weight: bold;
+  white-space: nowrap;
+}
+
+#notification > * {
+  display: inline-block;
+  white-space: normal;
 }
 
 #notification > div > div,
@@ -65,8 +71,8 @@ html[dir='rtl'] #notification-container {
 }
 
 #notification .close-button {
-  -webkit-margin-start: 0.5em;
-  vertical-align: middle;
+  -webkit-margin-start: 8px;  /* Matching value in TilePage#repositionTile_. */
+  vertical-align: top;
 }
 
 .close-button {
@@ -184,10 +190,9 @@ html[dir='rtl'] #attribution {
 }
 
 #logo-img {
-  margin-top: 4px;
-
-  /* TODO: Remove once http://crbug.com/135179 is fixed */
+  /* TODO(thakis): Remove once http://crbug.com/135179 is fixed */
   content: url('chrome://theme/IDR_PRODUCT_LOGO');
+  margin-top: 4px;
 }
 
 body.bare-minimum #footer {
