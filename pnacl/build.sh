@@ -123,11 +123,12 @@ readonly TIMESTAMP_FILENAME="make-timestamp"
 # PNaCl toolchain installation directories (absolute paths)
 readonly TOOLCHAIN_LABEL="pnacl_${BUILD_PLATFORM}_${HOST_ARCH}"
 readonly INSTALL_ROOT="${TOOLCHAIN_ROOT}/${TOOLCHAIN_LABEL}"
+
+# Top-level newlib- and glibc-specific directories
 readonly INSTALL_NEWLIB="${INSTALL_ROOT}/newlib"
 readonly INSTALL_GLIBC="${INSTALL_ROOT}/glibc"
 readonly INSTALL_NEWLIB_BIN="${INSTALL_NEWLIB}/bin"
 readonly INSTALL_GLIBC_BIN="${INSTALL_GLIBC}/bin"
-
 
 # Place links into glibc/lib-<arch> so that the driver can find
 # the native libraries for bitcode linking.
@@ -135,12 +136,11 @@ readonly INSTALL_GLIBC_BIN="${INSTALL_GLIBC}/bin"
 # TODO(pdox): Replace with .pso stubs in glibc/lib.
 readonly INSTALL_GLIBC_LIB_ARCH="${INSTALL_GLIBC}/lib-"
 
-# Bitcode lib directories. These will soon be split apart.
-# BUG= http://code.google.com/p/nativeclient/issues/detail?id=2452
+# Bitcode lib directories (including static bitcode libs and .pso stubs)
 readonly INSTALL_LIB_NEWLIB="${INSTALL_NEWLIB}/lib"
 readonly INSTALL_LIB_GLIBC="${INSTALL_GLIBC}/lib"
 
-# Native file library directories
+# Native nacl lib directories
 # The pattern `${INSTALL_LIB_NATIVE}${arch}' is used in many places.
 readonly INSTALL_LIB_NATIVE="${INSTALL_ROOT}/lib-"
 readonly INSTALL_LIB_ARM="${INSTALL_LIB_NATIVE}arm"
@@ -150,16 +150,22 @@ readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64"
 # PNaCl client-translators (sandboxed) binary locations
 readonly INSTALL_TRANSLATOR="${TOOLCHAIN_ROOT}/pnacl_translator"
 
+
+# The INSTALL_HOST directory has host binaries and libs which
+# are part of the toolchain (e.g. llvm and binutils).
+# There are also tools-x86 and tools-arm which have host binaries which
+# are not part of the toolchain but might be useful in the SDK, e.g.
+# arm sel_ldr and x86-hosted arm/mips validators.
+readonly INSTALL_HOST="${INSTALL_ROOT}/host"
+
 # Component installation directories
-readonly INSTALL_PKG="${INSTALL_ROOT}/pkg"
+readonly LLVM_INSTALL_DIR="${INSTALL_HOST}"
+readonly BINUTILS_INSTALL_DIR="${INSTALL_HOST}"
+readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
+readonly FAKE_INSTALL_DIR="${INSTALL_HOST}/fake"
 readonly NEWLIB_INSTALL_DIR="${INSTALL_NEWLIB}/usr"
 readonly GLIBC_INSTALL_DIR="${INSTALL_GLIBC}/usr"
-readonly LLVM_INSTALL_DIR="${INSTALL_PKG}/llvm"
-readonly GCC_INSTALL_DIR="${INSTALL_PKG}/gcc"
-readonly BINUTILS_INSTALL_DIR="${INSTALL_PKG}/binutils"
-readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
 readonly SYSROOT_DIR="${INSTALL_NEWLIB}/sysroot"
-readonly FAKE_INSTALL_DIR="${INSTALL_PKG}/fake"
 
 # TODO(pdox): Consider getting rid of pnacl-ld libmode bias,
 #             and merging these two.
@@ -1331,6 +1337,7 @@ llvm-configure() {
              CC="${CC}" \
              CXX="${CXX}" \
              ${srcdir}/configure \
+             --enable-shared \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,x86_64,arm \
@@ -1418,28 +1425,24 @@ llvm-install-links() {
   fi
   mkdir -p "${BFD_PLUGIN_DIR}"
 
-  # TODO(pdox): These may no longer be necessary.
-  if [ -f "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}/LLVMgold${SO_EXT}" ]; then
+  # TODO(dschuff): These are still necessary, but a change to gold
+  # could make them unnecessary
+  if [ -f "${BINUTILS_INSTALL_DIR}/${SO_DIR}/LLVMgold${SO_EXT}" ]; then
     # this is to make sure whatever name LLVMgold.so is, it is always
     # libLLVMgold.so as far as PNaCl is concerned
 
     StepBanner "Symlinking LLVMgold.so to libLLVMgold.so in " \
-     "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}"
+     "${BINUTILS_INSTALL_DIR}/${SO_DIR}"
 
-    (cd "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}";
+    (cd "${BINUTILS_INSTALL_DIR}/${SO_DIR}";
       ${makelink} "LLVMgold${SO_EXT}" "${SO_PREFIX}LLVMgold${SO_EXT}";
     )
   fi
 
+  # TODO(dschuff): This may not be necessary
   spushd "${BFD_PLUGIN_DIR}"
-
-  ${makelink} ../../../llvm/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT} .
-  ${makelink} ../../../llvm/${SO_DIR}/${SO_PREFIX}LTO${SO_EXT} .
-  spopd
-
-  spushd "${BINUTILS_INSTALL_DIR}/${SO_DIR}"
-  ${makelink} ../../llvm/${SO_DIR}/${SO_PREFIX}LTO${SO_EXT} .
-  ${makelink} ../../llvm/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT} .
+  ${makelink} ../${SO_PREFIX}LLVMgold${SO_EXT} .
+  ${makelink} ../${SO_DIR}/${SO_PREFIX}LTO${SO_EXT} .
   spopd
 }
 #########################################################################
@@ -3100,7 +3103,7 @@ newlib-nacl-headers-clean() {
 
     spushd "$(dirname "${NEWLIB_INCLUDE_DIR}")"
     RunWithLog "newlib-nacl-headers-clean" \
-      ${GIT} checkout ${NEWLIB_INCLUDE_DIR}
+      ${GIT} checkout "$(basename "${NEWLIB_INCLUDE_DIR}")"
     spopd
   fi
 }

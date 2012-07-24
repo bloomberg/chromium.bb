@@ -30,10 +30,9 @@ INITIAL_ENV = {
   'BUILD_ARCH'      : '${@GetBuildArch}',      # "x86_64" or "i686" or "i386"
 
   # Directories
-  'BASE_PKG'        : '${BASE}/pkg',
-  'BASE_LLVM'       : '${BASE_PKG}/llvm',
-  'BASE_BINUTILS'   : '${BASE_PKG}/binutils',
-  'BASE_GCC'        : '${BASE_PKG}/gcc',
+  'BASE_HOST'       : '${BASE}/host',
+  'BASE_LLVM'       : '${BASE_HOST}',
+  'BASE_BINUTILS'   : '${BASE_HOST}',
 
   'BASE_LIB_NATIVE' : '${BASE}/lib-',
 
