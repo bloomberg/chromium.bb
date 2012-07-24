@@ -18,12 +18,15 @@
 namespace content {
 
 ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
-    : base::TestSuite(argc, argv) {
+    : base::TestSuite(argc, argv),
+      external_libraries_enabled_(true) {
 }
 
 void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
-  media::InitializeMediaLibraryForTesting();
+
+  if (external_libraries_enabled_)
+    media::InitializeMediaLibraryForTesting();
 
   scoped_ptr<ContentClient> client_for_init(CreateClientForInitialization());
   SetContentClient(client_for_init.get());

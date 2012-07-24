@@ -25,7 +25,14 @@ class ContentTestSuiteBase : public base::TestSuite {
   // Creates a ContentClient for use during test suite initialization.
   virtual ContentClient* CreateClientForInitialization() = 0;
 
+  // If set to false, prevents Initialize() to load external libraries
+  // to the process. By default loading is enabled.
+  void set_external_libraries_enabled(bool val) {
+    external_libraries_enabled_ = val;
+  }
+
  private:
+  bool external_libraries_enabled_;
   DISALLOW_COPY_AND_ASSIGN(ContentTestSuiteBase);
 };
 

@@ -4,6 +4,11 @@
 
 #include "chrome/test/base/chrome_test_suite.h"
 
+#if defined(OS_CHROMEOS)
+#include <stdio.h>
+#include <unistd.h>
+#endif
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -46,6 +51,19 @@ void RemoveSharedMemoryFile(const std::string& filename) {
   base::SharedMemory memory;
   memory.Delete(filename);
 #endif
+}
+
+bool IsCrosPythonProcess() {
+#if defined(OS_CHROMEOS)
+  char buf[80];
+  int num_read = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+  if (num_read == -1)
+    return false;
+  buf[num_read] = 0;
+  const char kPythonPrefix[] = "/python";
+  return !strncmp(strrchr(buf, '/'), kPythonPrefix, sizeof(kPythonPrefix) - 1);
+#endif  // defined(OS_CHROMEOS)
+  return false;
 }
 
 // In many cases it may be not obvious that a test makes a real DNS lookup.
@@ -170,6 +188,12 @@ void ChromeTestSuite::Initialize() {
     PathService::Override(base::DIR_EXE, browser_dir_);
     PathService::Override(base::DIR_MODULE, browser_dir_);
   }
+
+  // Disable external libraries load if we are under python process in
+  // ChromeOS.  That means we are autotest and, if ASAN is used,
+  // external libraries load crashes.
+  content::ContentTestSuiteBase::set_external_libraries_enabled(
+      !IsCrosPythonProcess());
 
   // Initialize after overriding paths as some content paths depend on correct
   // values for DIR_EXE and DIR_MODULE.
