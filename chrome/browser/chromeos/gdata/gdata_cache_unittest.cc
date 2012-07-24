@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/mock_gdata_cache_observer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -95,15 +96,6 @@ class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
  public:
   virtual ~MockFreeDiskSpaceGetter() {}
   MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
-};
-
-class MockGDataCacheObserver : public GDataCache::Observer {
- public:
-  MOCK_METHOD2(OnCachePinned, void(const std::string& resource_id,
-                                   const std::string& md5));
-  MOCK_METHOD2(OnCacheUnpinned, void(const std::string& resource_id,
-                                     const std::string& md5));
-  MOCK_METHOD1(OnCacheCommitted, void(const std::string& resource_id));
 };
 
 }  // namespace

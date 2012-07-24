@@ -41,23 +41,10 @@ namespace gdata {
 // TODO(satorux): This client should also upload pinned but dirty (locally
 // edited) files to gdata. Will work on this once downloading is done.
 // crosbug.com/27836.
-//
-// The interface class is defined to make GDataSyncClient mockable.
-class GDataSyncClientInterface {
- public:
-  // Initializes the GDataSyncClient.
-  virtual void Initialize() = 0;
-
-  virtual ~GDataSyncClientInterface() {}
-};
-
-// The production implementation of GDataSyncClientInterface.
-class GDataSyncClient
-    : public GDataSyncClientInterface,
-      public GDataFileSystemInterface::Observer,
-      public GDataCache::Observer,
-      public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public content::NotificationObserver {
+class GDataSyncClient : public GDataFileSystemInterface::Observer,
+                        public GDataCache::Observer,
+                        public chromeos::NetworkLibrary::NetworkManagerObserver,
+                        public content::NotificationObserver {
  public:
   // Types of sync tasks.
   enum SyncType {
@@ -84,8 +71,8 @@ class GDataSyncClient
                   GDataCache* cache);
   virtual ~GDataSyncClient();
 
-  // GDataSyncClientInterface overrides.
-  virtual void Initialize() OVERRIDE;
+  // Initializes the GDataSyncClient.
+  void Initialize();
 
   // GDataFileSystemInterface overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;

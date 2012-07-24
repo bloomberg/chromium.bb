@@ -2,26 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <errno.h>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/string16.h"
-#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
@@ -29,10 +22,9 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
+#include "chrome/browser/chromeos/gdata/mock_gdata_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
-#include "chrome/browser/chromeos/gdata/mock_gdata_sync_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,21 +32,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::Eq;
-using ::testing::IsNull;
-using ::testing::Ne;
 using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::ReturnNull;
 using ::testing::StrictMock;
 using ::testing::_;
-
-using base::Value;
-using base::DictionaryValue;
-using base::ListValue;
-using content::BrowserThread;
 
 namespace gdata {
 namespace {
@@ -62,17 +45,6 @@ namespace {
 const char kSymLinkToDevNull[] = "/dev/null";
 
 const int64 kLotsOfSpace = kMinFreeSpace * 10;
-
-struct PathToVerify {
-  PathToVerify(const FilePath& in_path_to_scan,
-               const FilePath& in_expected_existing_path) :
-      path_to_scan(in_path_to_scan),
-      expected_existing_path(in_expected_existing_path) {
-  }
-
-  FilePath path_to_scan;
-  FilePath expected_existing_path;
-};
 
 struct SearchResultPair {
   const char* path;
@@ -277,8 +249,8 @@ class GDataFileSystemTest : public testing::Test {
                                        mock_webapps_registry_.get(),
                                        blocking_task_runner_);
 
-    mock_sync_client_.reset(new StrictMock<MockGDataSyncClient>);
-    cache_->AddObserver(mock_sync_client_.get());
+    mock_cache_observer_.reset(new StrictMock<MockGDataCacheObserver>);
+    cache_->AddObserver(mock_cache_observer_.get());
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
     file_system_->AddObserver(mock_directory_observer_.get());
@@ -865,7 +837,7 @@ class GDataFileSystemTest : public testing::Test {
   StrictMock<MockDocumentsService>* mock_doc_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
   StrictMock<MockFreeDiskSpaceGetter>* mock_free_disk_space_checker_;
-  scoped_ptr<StrictMock<MockGDataSyncClient> > mock_sync_client_;
+  scoped_ptr<StrictMock<MockGDataCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 
   int num_callback_invocations_;
@@ -2284,7 +2256,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   const std::string kMd5("3b4382ebefec6e743578c76bbd0575ce");
 
   // Pin the file so it'll be store in "persistent" directory.
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(kResourceId, kMd5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(kResourceId, kMd5)).Times(1);
   TestPin(kResourceId,
           kMd5,
           GDATA_FILE_OK,
@@ -2327,7 +2299,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // Commit the dirty bit. The cache file name remains the same
   // but a symlink will be created at:
   // GCache/v1/outgoing/<kResourceId>
-  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(kResourceId)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(kResourceId)).Times(1);
   TestCommitDirty(kResourceId,
                   kMd5,
                   GDATA_FILE_OK,
@@ -2515,7 +2487,8 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   const std::string& file_md5 = entry_proto->file_specific_info().file_md5();
 
   // A dirty file is created on close.
-  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(file_resource_id)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(file_resource_id))
+      .Times(1);
 
   // Pretend we have enough space.
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
