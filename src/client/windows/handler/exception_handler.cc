@@ -69,8 +69,28 @@ ExceptionHandler::ExceptionHandler(const wstring& dump_path,
              handler_types,
              dump_type,
              pipe_name,
+             NULL,
              custom_info);
 }
+
+ExceptionHandler::ExceptionHandler(const wstring& dump_path,
+                                   FilterCallback filter,
+                                   MinidumpCallback callback,
+                                   void* callback_context,
+                                   int handler_types,
+                                   MINIDUMP_TYPE dump_type,
+                                   HANDLE pipe_handle,
+                                   const CustomClientInfo* custom_info) {
+  Initialize(dump_path,
+             filter,
+             callback,
+             callback_context,
+             handler_types,
+             dump_type,
+             NULL,
+             pipe_handle,
+             custom_info);
+}  
 
 ExceptionHandler::ExceptionHandler(const wstring &dump_path,
                                    FilterCallback filter,
@@ -84,6 +104,7 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
              handler_types,
              MiniDumpNormal,
              NULL,
+             NULL,
              NULL);
 }
 
@@ -94,6 +115,7 @@ void ExceptionHandler::Initialize(const wstring& dump_path,
                                   int handler_types,
                                   MINIDUMP_TYPE dump_type,
                                   const wchar_t* pipe_name,
+                                  HANDLE pipe_handle,
                                   const CustomClientInfo* custom_info) {
   LONG instance_count = InterlockedIncrement(&instance_count_);
   filter_ = filter;
@@ -123,12 +145,22 @@ void ExceptionHandler::Initialize(const wstring& dump_path,
   handler_return_value_ = false;
   handle_debug_exceptions_ = false;
 
-  // Attempt to use out-of-process if user has specified pipe name.
-  if (pipe_name != NULL) {
-    scoped_ptr<CrashGenerationClient> client(
+  // Attempt to use out-of-process if user has specified a pipe.
+  if (pipe_name != NULL || pipe_handle != NULL) {
+    assert(!(pipe_name && pipe_handle));
+
+    scoped_ptr<CrashGenerationClient> client;
+    if (pipe_name) {
+      client.reset(
         new CrashGenerationClient(pipe_name,
                                   dump_type_,
                                   custom_info));
+    } else {
+      client.reset(
+        new CrashGenerationClient(pipe_handle,
+                                  dump_type_,
+                                  custom_info));
+    }
 
     // If successful in registering with the monitoring process,
     // there is no need to setup in-process crash generation.
