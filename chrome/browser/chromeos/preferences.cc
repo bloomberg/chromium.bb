@@ -271,6 +271,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableCrosDRM,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+
+  prefs->RegisterBooleanPref(prefs::kExternalStorageDisabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 void Preferences::InitUserPrefs(PrefService* prefs) {

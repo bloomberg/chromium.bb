@@ -1778,6 +1778,10 @@ const char kDeviceLocation[] = "device_status.location";
 // A string that is used to store first-time sync startup after once sync is
 // disabled. This will be refreshed every sign-in.
 const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
+
+// A pref holding the value of the policy used to disable mounting of external
+// storage for the user.
+const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

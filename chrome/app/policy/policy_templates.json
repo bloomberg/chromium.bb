@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 151
+#   For your editing convenience: highest ID currently used: 152
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2755,6 +2755,22 @@
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
 
       If this setting is not configured then users can choose whether the spell checking service should be used or not.''',
+    },
+    {
+      'name': 'ExternalStorageDisabled',
+      'type': 'main',
+      'supported_on': ['chrome_os:0.22-'],
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 152,
+      'caption': '''Disable mounting of external storage''',
+      'desc': '''Disable mounting of external storage.
+
+      When this policy is set to true, external storage will not be available in the file browser.
+
+      This policy affects all types of storage media. For example: USB flash drives, external hard drives, SD and other memory cards, optical storage etc. Internal storage is not affected, therefore files saved in the Download folder can still be accessed. Google Drive is also not affected by this policy.
+
+      If this setting is disabled or not configured then users can use all supported types of external storage on their device.''',
     },
   ],
   'messages': {

@@ -15257,6 +15257,9 @@ Battery full
       <message name="IDS_MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
        Sorry, at least one partition on your external storage device could not be mounted.
       </message>
+      <message name="IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device but external storage is disabled by policy">
+       Sorry, your administrator has disabled external storage on your account.
+      </message>
 
       <!-- Formatting device notifications -->
       <message name="IDS_FORMATTING_OF_DEVICE_PENDING_TITLE" desc="Text of notification message which is shown when formatting process of some device is pending">

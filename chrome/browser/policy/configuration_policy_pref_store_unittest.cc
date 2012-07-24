@@ -285,7 +285,9 @@ INSTANTIATE_TEST_CASE_P(
         PolicyAndPref(key::kGDataDisabled,
                       prefs::kDisableGData),
         PolicyAndPref(key::kGDataDisabledOverCellular,
-                      prefs::kDisableGDataOverCellular)));
+                      prefs::kDisableGDataOverCellular),
+        PolicyAndPref(key::kExternalStorageDisabled,
+                      prefs::kExternalStorageDisabled)));
 #endif  // defined(OS_CHROMEOS)
 
 // Test cases for integer-valued policy settings.

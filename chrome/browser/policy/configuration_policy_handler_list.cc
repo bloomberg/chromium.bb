@@ -305,6 +305,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kGDataDisabledOverCellular,
     prefs::kDisableGDataOverCellular,
     Value::TYPE_BOOLEAN },
+  { key::kExternalStorageDisabled,
+    prefs::kExternalStorageDisabled,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

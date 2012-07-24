@@ -261,6 +261,7 @@ class PolicyPrefsTestCases(object):
     'GDataDisabledOverCellular':
         (None, True, [], ['chromeos']),
     'PinnedLauncherApps': (None, [], [], ['chromeos']),
+    'ExternalStorageDisabled': (None, True, [], ['chromeos']),
 
     # ChromeOS Device policies:
     'DevicePolicyRefreshRate': (None, 300000, [], ['chromeos']),
