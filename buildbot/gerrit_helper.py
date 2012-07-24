@@ -38,6 +38,8 @@ class GerritHelper():
                     'AND CommitReady=+1 AND age:5m '
                     'AND NOT ( CodeReview=-2 OR Verified=-1 )')
 
+  _GERRIT_MAX_QUERY_RETURN = 500
+
   def __init__(self, internal):
     """Initializes variables for interaction with a gerrit server."""
     if internal:
@@ -194,6 +196,13 @@ class GerritHelper():
       return []
     result = cros_build_lib.RunCommand(cmd, redirect_stdout=True)
     result = self.InterpretJSONResults(query, result.output)
+
+    if len(result) == self._GERRIT_MAX_QUERY_RETURN:
+      # Gerrit cuts us off at 500; thus go recursive via the sortKey to
+      # get the rest of the results.
+      result += self.Query('resume_sortkey:%s' % (result[-1]['sortKey'],),
+                           current_patch=current_patch,
+                           options=options, dryrun=dryrun, raw=True)
 
     if sort:
       result = sorted(result, key=operator.itemgetter(sort))

@@ -21,7 +21,9 @@ class GerritHelperTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    results = (
+    self.footer_template = (
+      '{"type":"stats","rowCount":%(count)i,"runTimeMilliseconds":205}')
+    self.results = (
         '{"project":"chromiumos/platform/init","branch":"master",'
         '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025e",'
         '"number":"1111",'
@@ -60,9 +62,8 @@ class GerritHelperTest(mox.MoxTestBase):
         '"sortKey":"00166e8700001052",'
         '"open":true,"'
         'status":"NEW"}\n'
-        '{"type":"stats","rowCount":1,"runTimeMilliseconds":205}\n'
-        )
-    merged_change = (
+        ) + self.footer_template % {'count':1}
+    self.merged_record = (
         '{"project":"tacos/chromite","branch":"master",'
         '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda8000250",'
         '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
@@ -75,13 +76,27 @@ class GerritHelperTest(mox.MoxTestBase):
         '"sortKey":"00166e8700001052",'
         '"open":true,"'
         'status":"MERGED"}\n'
-        '{"type":"stats","rowCount":1,"runTimeMilliseconds":205}\n'
-        )
-    no_results = '{"type":"stats","rowCount":0,"runTimeMilliseconds":1}'
+    )
+    self.merged_change = self.merged_record + self.footer_template % {'count':1}
+    self.no_results = self.footer_template % {'count':0}
 
-    self.merged_change = merged_change
-    self.results = results
-    self.no_results = no_results
+  def testGerritQueryTruncation(self):
+    """Verify that we detect gerrit truncating our query, and handle it."""
+    query1 = self.mox.CreateMock(cros_build_lib.CommandResult)
+    query1.output = "%s%s" % (self.merged_record * 500,
+                              self.footer_template % {'count':500})
+    query2 = self.mox.CreateMock(cros_build_lib.CommandResult)
+    query2.output = '%s%s' % (self.merged_record * 313,
+                              self.footer_template % {'count':313})
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                              redirect_stdout=True).AndReturn(query1)
+    cros_build_lib.RunCommand(mox.In('resume_sortkey:00166e8700001052'),
+                              redirect_stdout=True).AndReturn(query2)
+    self.mox.ReplayAll()
+    helper = gerrit_helper.GerritHelper(False)
+    changes = helper.Query('monkeys')
+    self.assertEqual(len(changes), 813)
 
   def testParseFakeResults(self):
     """Parses our own fake gerrit query results to verify we parse correctly."""
