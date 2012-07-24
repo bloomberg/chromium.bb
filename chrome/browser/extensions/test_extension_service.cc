@@ -31,7 +31,7 @@ bool TestExtensionService::UpdateExtension(
     const std::string& id,
     const FilePath& path,
     const GURL& download_url,
-    CrxInstaller** out_crx_installer) {
+    extensions::CrxInstaller** out_crx_installer) {
   ADD_FAILURE();
   return false;
 }

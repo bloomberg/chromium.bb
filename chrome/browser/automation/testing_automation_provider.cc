@@ -4068,8 +4068,8 @@ void TestingAutomationProvider::InstallExtension(
       ExtensionInstallPrompt* client = (with_ui ?
           chrome::CreateExtensionInstallPromptWithBrowser(browser) :
           NULL);
-      scoped_refptr<CrxInstaller> installer(
-          CrxInstaller::Create(service, client));
+      scoped_refptr<extensions::CrxInstaller> installer(
+          extensions::CrxInstaller::Create(service, client));
       if (!with_ui)
         installer->set_allow_silent_install(true);
       installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);

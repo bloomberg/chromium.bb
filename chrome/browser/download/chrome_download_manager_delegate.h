@@ -18,7 +18,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class CrxInstaller;
 class DownloadHistory;
 class DownloadPrefs;
 class ExtensionDownloadsEventRouter;
@@ -28,11 +27,15 @@ namespace content {
 class DownloadManager;
 }
 
+namespace extensions {
+class CrxInstaller;
+}
+
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
 template<>
-struct hash<CrxInstaller*> {
-  std::size_t operator()(CrxInstaller* const& p) const {
+struct hash<extensions::CrxInstaller*> {
+  std::size_t operator()(extensions::CrxInstaller* const& p) const {
     return reinterpret_cast<std::size_t>(p);
   }
 };
@@ -198,7 +201,7 @@ class ChromeDownloadManagerDelegate
   scoped_ptr<DownloadHistory> download_history_;
 
   // Maps from pending extension installations to DownloadItem IDs.
-  typedef base::hash_map<CrxInstaller*, int> CrxInstallerMap;
+  typedef base::hash_map<extensions::CrxInstaller*, int> CrxInstallerMap;
   CrxInstallerMap crx_installers_;
 
   content::NotificationRegistrar registrar_;

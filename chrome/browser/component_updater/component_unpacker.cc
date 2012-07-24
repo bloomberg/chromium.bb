@@ -27,13 +27,14 @@ namespace {
 class CRXValidator {
  public:
   explicit CRXValidator(FILE* crx_file) : valid_(false) {
-    CrxFile::Header header;
+    extensions::CrxFile::Header header;
     size_t len = fread(&header, 1, sizeof(header), crx_file);
     if (len < sizeof(header))
       return;
 
-    CrxFile::Error error;
-    scoped_ptr<CrxFile> crx(CrxFile::Parse(header, &error));
+    extensions::CrxFile::Error error;
+    scoped_ptr<extensions::CrxFile> crx(
+        extensions::CrxFile::Parse(header, &error));
     if (!crx.get())
       return;
 

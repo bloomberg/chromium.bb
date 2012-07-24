@@ -330,16 +330,17 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
   if (download_crx_util::IsExtensionDownload(*item)) {
-    scoped_refptr<CrxInstaller> crx_installer =
+    scoped_refptr<extensions::CrxInstaller> crx_installer =
         download_crx_util::OpenChromeExtension(profile_, *item);
 
     // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
     // will call DelayedDownloadOpened() on this item.  If this DownloadItem
     // is not around when CRX_INSTALLER_DONE fires, Complete() will not be
     // called.
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                   content::Source<CrxInstaller>(crx_installer.get()));
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::Source<extensions::CrxInstaller>(crx_installer.get()));
 
     crx_installers_[crx_installer.get()] = item->GetId();
     // The status text and percent complete indicator will change now
@@ -621,8 +622,8 @@ void ChromeDownloadManagerDelegate::Observe(
                     chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                     source);
 
-  scoped_refptr<CrxInstaller> installer =
-      content::Source<CrxInstaller>(source).ptr();
+  scoped_refptr<extensions::CrxInstaller> installer =
+      content::Source<extensions::CrxInstaller>(source).ptr();
   int download_id = crx_installers_[installer];
   crx_installers_.erase(installer.get());
 

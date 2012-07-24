@@ -83,12 +83,12 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
   Browser* browser = browser::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   Profile* profile = browser->profile();
-  scoped_refptr<CrxInstaller> crx_installer(
-      CrxInstaller::Create(
+  scoped_refptr<extensions::CrxInstaller> crx_installer(
+      extensions::CrxInstaller::Create(
           extensions::ExtensionSystem::Get(profile)->extension_service(),
           chrome::CreateExtensionInstallPromptWithBrowser(browser)));
   crx_installer->set_off_store_install_allow_reason(
-      CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
+      extensions::CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
 
   const bool kCaseSensitive = false;
 

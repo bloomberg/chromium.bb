@@ -285,12 +285,12 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   ExtensionService* extension_service =
       browser()->profile()->GetExtensionService();
 
-  CrxInstaller* crx_installer = NULL;
+  extensions::CrxInstaller* crx_installer = NULL;
 
   // Create an observer to wait for the update to finish.
   content::WindowedNotificationObserver windowed_observer(
       chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::Source<CrxInstaller>(crx_installer));
+      content::Source<extensions::CrxInstaller>(crx_installer));
   ASSERT_TRUE(extension_service->
       UpdateExtension(extension->id(), path_v2_, GURL(), &crx_installer));
   windowed_observer.Wait();

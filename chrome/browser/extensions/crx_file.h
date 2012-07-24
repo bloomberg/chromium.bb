@@ -9,10 +9,11 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace extensions {
+
 // CRX files have a header that includes a magic key, version number, and
 // some signature sizing information. Use CrxFile object to validate whether
 // the header is valid or not.
-
 class CrxFile {
  public:
 
@@ -69,5 +70,7 @@ class CrxFile {
   // If false is returned, more detailed error code is returned in |error|.
   static bool HeaderIsValid(const Header& header, Error* error);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CRX_FILE_H_

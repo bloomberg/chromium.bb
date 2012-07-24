@@ -245,7 +245,7 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
 
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
 
-  virtual void OnInstallFailure(const CrxInstallerError& error) {}
+  virtual void OnInstallFailure(const extensions::CrxInstallerError& error) {}
 };
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
@@ -312,18 +312,18 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     if (crx_path.empty())
       return NULL;
 
-    scoped_refptr<CrxInstaller> installer(
-        CrxInstaller::Create(service, install_ui));
+    scoped_refptr<extensions::CrxInstaller> installer(
+        extensions::CrxInstaller::Create(service, install_ui));
     installer->set_expected_id(id);
     installer->set_is_gallery_install(from_webstore);
     if (!from_webstore) {
       installer->set_off_store_install_allow_reason(
-          CrxInstaller::OffStoreInstallAllowedInTest);
+          extensions::CrxInstaller::OffStoreInstallAllowedInTest);
     }
 
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                  content::Source<CrxInstaller>(installer.get()));
+                  content::Source<extensions::CrxInstaller>(installer.get()));
 
     installer->InstallCrx(crx_path);
 

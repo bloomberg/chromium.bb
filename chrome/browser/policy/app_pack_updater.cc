@@ -162,7 +162,8 @@ void AppPackUpdater::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
-      OnCrxInstallFailed(content::Source<CrxInstaller>(source).ptr());
+      OnCrxInstallFailed(
+          content::Source<extensions::CrxInstaller>(source).ptr());
       break;
 
     default:
@@ -546,7 +547,7 @@ void AppPackUpdater::OnCacheEntryInstalled(const std::string& id,
   }
 }
 
-void AppPackUpdater::OnCrxInstallFailed(CrxInstaller* installer) {
+void AppPackUpdater::OnCrxInstallFailed(extensions::CrxInstaller* installer) {
   FilePath path = installer->source_file();
 
   // Search for |path| in |cached_extensions_|, and delete it if found.

@@ -235,7 +235,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
                                 SkBitmap* icon);
 
   // Installation failed. This is declared virtual for testing.
-  virtual void OnInstallFailure(const CrxInstallerError& error);
+  virtual void OnInstallFailure(const extensions::CrxInstallerError& error);
 
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(const gfx::Image& image,

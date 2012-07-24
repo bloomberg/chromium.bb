@@ -69,7 +69,7 @@ void SetMockInstallPromptForTesting(ExtensionInstallPrompt* mock_prompt) {
   mock_install_prompt_for_testing = mock_prompt;
 }
 
-scoped_refptr<CrxInstaller> OpenChromeExtension(
+scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
     Profile* profile,
     const DownloadItem& download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -77,8 +77,8 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
   ExtensionService* service = profile->GetExtensionService();
   CHECK(service);
 
-  scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::Create(
+  scoped_refptr<extensions::CrxInstaller> installer(
+      extensions::CrxInstaller::Create(
           service,
           CreateExtensionInstallPrompt(profile),
           WebstoreInstaller::GetAssociatedApproval(download_item)));
@@ -88,7 +88,7 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
 
   if (OffStoreInstallAllowedByPrefs(profile, download_item)) {
     installer->set_off_store_install_allow_reason(
-        CrxInstaller::OffStoreInstallAllowedBecausePref);
+        extensions::CrxInstaller::OffStoreInstallAllowedBecausePref);
   }
 
   if (extensions::UserScript::IsURLUserScript(download_item.GetURL(),

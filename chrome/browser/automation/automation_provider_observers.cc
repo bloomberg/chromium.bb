@@ -763,7 +763,8 @@ void ExtensionsUpdatedObserver::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       // An extension had an error on update installation.
-      CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
+      extensions::CrxInstaller* installer =
+          content::Source<extensions::CrxInstaller>(source).ptr();
       in_progress_updates_.erase(installer->expected_id());
       break;
     }

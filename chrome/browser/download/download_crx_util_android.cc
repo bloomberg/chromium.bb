@@ -18,11 +18,12 @@ void SetMockInstallPromptForTesting(ExtensionInstallPrompt* mock_prompt) {
   NOTIMPLEMENTED();
 }
 
-scoped_refptr<CrxInstaller> OpenChromeExtension(
+scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
     Profile* profile,
     const DownloadItem& download_item) {
   NOTIMPLEMENTED() << "CrxInstaller not implemented on Android";
-  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(NULL, NULL));
+  scoped_refptr<extensions::CrxInstaller> installer(
+      extensions::CrxInstaller::Create(NULL, NULL));
   return installer;
 }
 

@@ -56,6 +56,7 @@
 using application_launch::LaunchParams;
 using application_launch::OpenApplication;
 using content::WebContents;
+using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 

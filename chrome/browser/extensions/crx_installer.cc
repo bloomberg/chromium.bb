@@ -52,8 +52,8 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
-using extensions::Extension;
-using extensions::PermissionsUpdater;
+
+namespace extensions {
 
 namespace {
 
@@ -78,14 +78,14 @@ scoped_refptr<CrxInstaller> CrxInstaller::Create(
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
     ExtensionInstallPrompt* client,
-    const extensions::WebstoreInstaller::Approval* approval) {
+    const WebstoreInstaller::Approval* approval) {
   return new CrxInstaller(frontend->AsWeakPtr(), client, approval);
 }
 
 CrxInstaller::CrxInstaller(
     base::WeakPtr<ExtensionService> frontend_weak,
     ExtensionInstallPrompt* client,
-    const extensions::WebstoreInstaller::Approval* approval)
+    const WebstoreInstaller::Approval* approval)
     : install_directory_(frontend_weak->install_directory()),
       install_source_(Extension::INTERNAL),
       approved_(false),
@@ -142,8 +142,8 @@ CrxInstaller::~CrxInstaller() {
 void CrxInstaller::InstallCrx(const FilePath& source_file) {
   source_file_ = source_file;
 
-  scoped_refptr<extensions::SandboxedUnpacker> unpacker(
-      new extensions::SandboxedUnpacker(
+  scoped_refptr<SandboxedUnpacker> unpacker(
+      new SandboxedUnpacker(
           source_file,
           content::ResourceDispatcherHost::Get() != NULL,
           install_source_,
@@ -152,8 +152,7 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
 
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          base::Bind(
-              &extensions::SandboxedUnpacker::Start, unpacker.get())))
+          base::Bind(&SandboxedUnpacker::Start, unpacker.get())))
     NOTREACHED();
 }
 
@@ -172,7 +171,7 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
 
 void CrxInstaller::ConvertUserScriptOnFileThread() {
   string16 error;
-  scoped_refptr<Extension> extension = extensions::ConvertUserScriptToExtension(
+  scoped_refptr<Extension> extension = ConvertUserScriptToExtension(
       source_file_, download_url_, &error);
   if (!extension) {
     ReportFailureFromFileThread(CrxInstallerError(error));
@@ -248,7 +247,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
   }
 
   if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
-    if (extensions::switch_utils::IsEasyOffStoreInstallEnabled()) {
+    if (switch_utils::IsEasyOffStoreInstallEnabled()) {
       const char* kHistogramName = "Extensions.OffStoreInstallDecisionEasy";
       if (is_gallery_install()) {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,
@@ -315,7 +314,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
       // For self-hosted apps, verify that the entire extent is on the same
       // host (or a subdomain of the host) the download happened from.  There's
       // no way for us to verify that the app controls any other hosts.
-      URLPattern pattern(extensions::UserScript::kValidUserScriptSchemes);
+      URLPattern pattern(UserScript::kValidUserScriptSchemes);
       pattern.SetHost(download_url_.host());
       pattern.SetMatchSubdomains(true);
 
@@ -407,7 +406,7 @@ void CrxInstaller::ConfirmInstall() {
   }
 
   string16 error;
-  if (!extensions::ExtensionSystem::Get(profile_)->management_policy()->
+  if (!ExtensionSystem::Get(profile_)->management_policy()->
       UserMayLoad(extension_, &error)) {
     ReportFailureFromUIThread(CrxInstallerError(error));
     return;
@@ -625,3 +624,5 @@ void CrxInstaller::NotifyCrxInstallComplete(const Extension* extension) {
       content::Source<CrxInstaller>(this),
       content::Details<const Extension>(extension));
 }
+
+}  // namespace extensions

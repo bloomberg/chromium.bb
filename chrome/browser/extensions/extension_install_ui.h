@@ -37,7 +37,7 @@ class ExtensionInstallUI {
   virtual void OnInstallSuccess(const extensions::Extension* extension,
                                 SkBitmap* icon) = 0;
   // Called when an extension failed to install.
-  virtual void OnInstallFailure(const CrxInstallerError& error) = 0;
+  virtual void OnInstallFailure(const extensions::CrxInstallerError& error) = 0;
 
   // Whether or not to show the default UI after completing the installation.
   virtual void SetSkipPostInstallUI(bool skip_ui) = 0;

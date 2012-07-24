@@ -52,7 +52,7 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
   ErrorInfobarDelegate(InfoBarTabHelper* infobar_helper,
                        Browser* browser,
-                       const CrxInstallerError& error)
+                       const extensions::CrxInstallerError& error)
       : ConfirmInfoBarDelegate(infobar_helper),
         browser_(browser),
         error_(error) {
@@ -68,7 +68,7 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
   }
 
   virtual string16 GetLinkText() const OVERRIDE {
-    return error_.type() == CrxInstallerError::ERROR_OFF_STORE ?
+    return error_.type() == extensions::CrxInstallerError::ERROR_OFF_STORE ?
         l10n_util::GetStringUTF16(IDS_LEARN_MORE) : ASCIIToUTF16("");
   }
 
@@ -83,7 +83,7 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
   }
 
   Browser* browser_;
-  CrxInstallerError error_;
+  extensions::CrxInstallerError error_;
 };
 
 }  // namespace
@@ -145,7 +145,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 }
 
 void ExtensionInstallUIDefault::OnInstallFailure(
-    const CrxInstallerError& error) {
+    const extensions::CrxInstallerError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (disable_failure_ui_for_tests || skip_post_install_ui_)
     return;

@@ -680,8 +680,8 @@ void InstallCRX(Browser* browser, const FilePath& path) {
   ExtensionService* service = browser->profile()->GetExtensionService();
   CHECK(service);
 
-  scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::Create(
+  scoped_refptr<extensions::CrxInstaller> installer(
+      extensions::CrxInstaller::Create(
           service,
           chrome::CreateExtensionInstallPromptWithBrowser(browser)));
   installer->set_is_gallery_install(false);

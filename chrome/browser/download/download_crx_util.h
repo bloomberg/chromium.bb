@@ -11,12 +11,15 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
-class CrxInstaller;
 class ExtensionInstallPrompt;
 class Profile;
 
 namespace content {
 class DownloadItem;
+}
+
+namespace extensions {
+class CrxInstaller;
 }
 
 namespace download_crx_util {
@@ -32,7 +35,7 @@ void SetMockInstallPromptForTesting(ExtensionInstallPrompt* mock_prompt);
 // ...).  The installer does work on the file thread, so the installation
 // is not complete when this function returns.  Returns the object managing
 // the installation.
-scoped_refptr<CrxInstaller> OpenChromeExtension(
+scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
     Profile* profile,
     const content::DownloadItem& download_item);
 

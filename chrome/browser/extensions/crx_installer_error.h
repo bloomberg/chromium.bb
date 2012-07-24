@@ -7,6 +7,8 @@
 
 #include "base/string16.h"
 
+namespace extensions {
+
 // Simple error class for CrxInstaller.
 class CrxInstallerError {
  public:
@@ -36,5 +38,7 @@ class CrxInstallerError {
   Type type_;
   string16 message_;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CRX_INSTALLER_ERROR_H_

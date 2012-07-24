@@ -205,8 +205,8 @@ void PerformanceMonitor::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
-      const CrxInstaller* installer =
-          content::Source<CrxInstaller>(source).ptr();
+      const extensions::CrxInstaller* installer =
+          content::Source<extensions::CrxInstaller>(source).ptr();
 
       // Check if the reason for the install was due to an extension update.
       if (installer->install_cause() != extension_misc::INSTALL_CAUSE_UPDATE)

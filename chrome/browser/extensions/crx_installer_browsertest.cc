@@ -24,7 +24,7 @@
 
 class SkBitmap;
 
-using extensions::Extension;
+namespace extensions {
 
 namespace {
 
@@ -92,13 +92,12 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     if (!parsed_manifest)
       return scoped_refptr<CrxInstaller>();
 
-    scoped_ptr<extensions::WebstoreInstaller::Approval> approval;
+    scoped_ptr<WebstoreInstaller::Approval> approval;
     if (!id.empty()) {
-      approval =
-          extensions::WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-              browser()->profile(),
-              id,
-              scoped_ptr<base::DictionaryValue>(parsed_manifest));
+      approval = WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
+          browser()->profile(),
+          id,
+          scoped_ptr<base::DictionaryValue>(parsed_manifest));
     }
 
     scoped_refptr<CrxInstaller> installer(
@@ -129,7 +128,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     scoped_refptr<CrxInstaller> installer =
         InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
 
-    scoped_refptr<extensions::PermissionSet> permissions =
+    scoped_refptr<PermissionSet> permissions =
         service->extension_prefs()->GetGrantedPermissions(
             mock_prompt->extension()->id());
     ASSERT_TRUE(permissions.get());
@@ -189,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
 #endif
 IN_PROC_BROWSER_TEST_F(
     ExtensionCrxInstallerTest, MAYBE_PackAndInstallExtension) {
-  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
+  if (!switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
   const int kNumDownloadsExpected = 1;
@@ -274,3 +273,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_AllowOffStore) {
     }
   }
 }
+
+}  // namespace extensions

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/crx_file.h"
 
+namespace extensions {
+
 namespace {
 
 // The current version of the crx format.
@@ -62,3 +64,5 @@ bool CrxFile::HeaderIsValid(const CrxFile::Header& header,
     valid = true;
   return valid;
 }
+
+}  // namespace extensions

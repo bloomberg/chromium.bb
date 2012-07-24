@@ -169,7 +169,7 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
   }
 
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const CrxInstallerError& error) {}
+  virtual void OnInstallFailure(const extensions::CrxInstallerError& error) {}
 };
 
 // Mock that simulates a permissions dialog where the user allows
@@ -188,7 +188,7 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
   }
 
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const CrxInstallerError& error) {}
+  virtual void OnInstallFailure(const extensions::CrxInstallerError& error) {}
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {

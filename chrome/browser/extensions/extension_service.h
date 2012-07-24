@@ -48,7 +48,6 @@
 
 class AppNotificationManager;
 class BookmarkExtensionEventRouter;
-class CrxInstaller;
 class ExtensionErrorUI;
 class ExtensionFontSettingsEventRouter;
 class ExtensionManagementEventRouter;
@@ -71,6 +70,7 @@ class AppSyncData;
 class BrowserEventRouter;
 class ComponentLoader;
 class ContentSettingsStore;
+class CrxInstaller;
 class Extension;
 class ExtensionCookiesEventRouter;
 class ExtensionManagedModeEventRouter;
@@ -80,6 +80,11 @@ class ExtensionUpdater;
 class SettingsFrontend;
 class WebNavigationEventRouter;
 class WindowEventRouter;
+}
+
+namespace syncer {
+class SyncData;
+class SyncErrorFactory;
 }
 
 namespace syncer {
@@ -107,7 +112,7 @@ class ExtensionServiceInterface : public syncer::SyncableService {
       const std::string& id,
       const FilePath& path,
       const GURL& download_url,
-      CrxInstaller** out_crx_installer) = 0;
+      extensions::CrxInstaller** out_crx_installer) = 0;
   virtual const extensions::Extension* GetExtensionById(const std::string& id,
                                             bool include_disabled) const = 0;
   virtual const extensions::Extension* GetInstalledExtension(
@@ -313,7 +318,7 @@ class ExtensionService
       const std::string& id,
       const FilePath& extension_path,
       const GURL& download_url,
-      CrxInstaller** out_crx_installer) OVERRIDE;
+      extensions::CrxInstaller** out_crx_installer) OVERRIDE;
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);

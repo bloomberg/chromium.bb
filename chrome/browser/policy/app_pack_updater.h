@@ -21,10 +21,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/network_change_notifier.h"
 
-class CrxInstaller;
 class GURL;
 
 namespace extensions {
+class CrxInstaller;
 class ExtensionDownloader;
 class ExternalLoader;
 }
@@ -175,7 +175,7 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
 
   // Handles failure to install CRX files. The file is deleted if it came from
   // the cache.
-  void OnCrxInstallFailed(CrxInstaller* installer);
+  void OnCrxInstallFailed(extensions::CrxInstaller* installer);
 
   // Helper to post blocking IO tasks to the blocking pool.
   void PostBlockingTask(const tracked_objects::Location& from_here,
