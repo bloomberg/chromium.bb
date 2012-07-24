@@ -57,17 +57,8 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
 
  private:
   struct VideoFrameBuffer {
-    VideoFrameBuffer(void* data, const SkISize& size, int bytes_per_pixel,
-                     int bytes_per_row)
-      : data(data), size(size), bytes_per_pixel(bytes_per_pixel),
-        bytes_per_row(bytes_per_row) {
-    }
-    VideoFrameBuffer() {
-      data = 0;
-      size = SkISize::Make(0, 0);
-      bytes_per_pixel = 0;
-      bytes_per_row = 0;
-    }
+    VideoFrameBuffer();
+
     void* data;
     SkISize size;
     int bytes_per_pixel;
@@ -81,7 +72,7 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
 
   // Allocates the specified capture buffer using the current device contexts
   // and desktop dimensions, releasing any pre-existing buffer.
-  void AllocateBuffer(int buffer_index);
+  void AllocateBuffer(int buffer_index, int resource_generation);
 
   void CalculateInvalidRegion();
   void CaptureRegion(const SkRegion& region,
@@ -144,6 +135,14 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
 static const int kPixelsPerMeter = 3780;
 // 32 bit RGBA is 4 bytes per pixel.
 static const int kBytesPerPixel = 4;
+
+VideoFrameCapturerWin::VideoFrameBuffer::VideoFrameBuffer()
+    : data(NULL),
+      size(SkISize::Make(0, 0)),
+      bytes_per_pixel(0),
+      bytes_per_row(0),
+      resource_generation(0) {
+}
 
 VideoFrameCapturerWin::VideoFrameCapturerWin()
     : last_cursor_size_(SkISize::Make(0, 0)),
@@ -257,7 +256,7 @@ void VideoFrameCapturerWin::PrepareCaptureResources() {
   // Note that we can't reallocate other buffers at this point, since the caller
   // may still be reading from them.
   if (resource_generation_ != buffers_[current_buffer_].resource_generation) {
-    AllocateBuffer(current_buffer_);
+    AllocateBuffer(current_buffer_, resource_generation_);
 
     SkRegion region;
     region.op(SkIRect::MakeSize(helper_.size_most_recent()),
@@ -266,7 +265,8 @@ void VideoFrameCapturerWin::PrepareCaptureResources() {
   }
 }
 
-void VideoFrameCapturerWin::AllocateBuffer(int buffer_index) {
+void VideoFrameCapturerWin::AllocateBuffer(int buffer_index,
+                                           int resource_generation) {
   DCHECK(desktop_dc_.get() != NULL);
   DCHECK(memory_dc_.Get() != NULL);
   // Windows requires DIB sections' rows to start DWORD-aligned, which is
@@ -296,6 +296,7 @@ void VideoFrameCapturerWin::AllocateBuffer(int buffer_index) {
   buffers_[buffer_index].bytes_per_pixel = bmi.bmiHeader.biBitCount / 8;
   buffers_[buffer_index].bytes_per_row =
       bmi.bmiHeader.biSizeImage / std::abs(bmi.bmiHeader.biHeight);
+  buffers_[buffer_index].resource_generation = resource_generation;
 }
 
 void VideoFrameCapturerWin::CalculateInvalidRegion() {
