@@ -36,6 +36,8 @@ function FileManager(dialogDom) {
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
 
+  // Optional list of file types.
+  this.fileTypes_ = this.params_.typeList || [];
   metrics.recordEnum('Create', this.dialogType_,
       [FileManager.DialogType.SELECT_FOLDER,
       FileManager.DialogType.SELECT_SAVEAS_FILE,
@@ -442,9 +444,6 @@ FileManager.prototype = {
 
     this.collator_ = v8Intl.Collator([], {numeric: true, sensitivity: 'base'});
 
-    // Optional list of file types.
-    this.fileTypes_ = this.params_.typeList;
-
     this.showCheckboxes_ =
         (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
          this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
@@ -504,6 +503,8 @@ FileManager.prototype = {
 
     this.table_.endBatchUpdates();
     this.grid_.endBatchUpdates();
+
+    this.updateFileTypeFilter_();
 
     // Show the page now unless it's already delayed.
     this.delayShow_(0);
@@ -692,6 +693,8 @@ FileManager.prototype = {
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
 
+    this.fileTypeSelector_ = this.dialogDom_.querySelector('#file-type');
+    this.initFileTypeFilter_();
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
   };
@@ -1029,26 +1032,13 @@ FileManager.prototype = {
   };
 
   /**
-   * "Save a file" dialog is supposed to have a combo box with available
-   * file types. Selecting an item filters files by extension and specifies how
-   * file should be saved.
+   * Index of selected item in the typeList of the dialog params.
    * @return {intener} Index of selected type from this.fileTypes_ + 1. 0
    *                   means value is not specified.
    */
-  FileManager.prototype.getSelectedFilterIndex_ = function(fileName) {
-    // TODO(serya): Implement the combo box
-    // For now try to guess choice by file extension.
-    if (!this.fileTypes_ || this.fileTypes_.length == 0) return 0;
-
-    var extension = /\.[^\.]+$/.exec(fileName);
-    extension = extension ? extension[0].substring(1).toLowerCase() : '';
-    var result = 0;  // Use first type by default.
-    for (var i = 0; i < this.fileTypes_.length; i++) {
-      if (this.fileTypes_[i].extensions.indexOf(extension)) {
-        result = i;
-      }
-    }
-    return result + 1;  // 1-based index.
+  FileManager.prototype.getSelectedFilterIndex_ = function() {
+    // 0 is the 'All files' item.
+    return Math.min(0, this.fileTypeSelector_.selectedIndex);
   };
 
   /**
@@ -1378,6 +1368,61 @@ FileManager.prototype = {
         (this.isOnGData() && this.gdataColumnModel_) ?
             this.gdataColumnModel_ :
             this.regularColumnModel_;
+  };
+
+  /**
+   * Fills the file type list or hides it.
+   */
+  FileManager.prototype.initFileTypeFilter_ = function() {
+    if (this.fileTypes_.length == 0) {
+      this.fileTypeSelector_.hidden = true;
+      return;
+    }
+
+    var option = this.document_.createElement('option');
+    option.innerText = str('ALL_FILES_FILTER');
+    this.fileTypeSelector_.appendChild(option);
+    option.value = 0;
+
+    for (var i = 0; i < this.fileTypes_.length; i++) {
+       var option = this.document_.createElement('option');
+       var description = this.fileTypes_[i].description;
+       if (!description) {
+         if (this.fileTypes_[i].extensions.length == 1) {
+           description = this.getFileTypeString_('.' +
+               this.fileTypes_[i].extensions[0]);
+         } else {
+           description = this.fileTypes_[i].extensions.join(', ');
+         }
+       }
+       option.innerText = description;
+
+       option.value = i + 1;
+
+       if (this.fileTypes_[i].selected)
+         option.selected = true;
+
+       this.fileTypeSelector_.appendChild(option);
+    }
+
+    this.fileTypeSelector_.addEventListener('change',
+        this.updateFileTypeFilter_.bind(this));
+  };
+
+  /**
+   * Filters file according to the selected file type.
+   */
+  FileManager.prototype.updateFileTypeFilter_ = function() {
+    this.directoryModel_.removeFilter('fileType');
+    var selectedIndex = Number(this.fileTypeSelector_.selectedIndex);
+    if (selectedIndex < 1)  // 'All files' or nothing selected.
+      return;
+    var regexp = new RegExp('.*(' +
+        this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
+    function filter(entry) {
+      return entry.isDirectory || regexp.test(entry.name);
+    }
+    this.directoryModel_.addFilter('fileType', filter);
   };
 
   /**
@@ -3735,7 +3780,7 @@ FileManager.prototype = {
       var singleSelection = {
         urls: [url],
         multiple: false,
-        filterIndex: this.getSelectedFilterIndex_(url)
+        filterIndex: this.getSelectedFilterIndex_()
       };
       this.selectFilesAndClose_(singleSelection);
       return;
@@ -3785,7 +3830,7 @@ FileManager.prototype = {
     var singleSelection = {
       urls: [files[0]],
       multiple: false,
-      filterIndex: this.getSelectedFilterIndex_(files[0])
+      filterIndex: this.getSelectedFilterIndex_()
     };
     this.selectFilesAndClose_(singleSelection);
   };
