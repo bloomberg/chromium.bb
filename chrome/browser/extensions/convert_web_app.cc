@@ -103,6 +103,10 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     root->SetString(keys::kPublicKey, GenerateKey(web_app.manifest_url));
   else
     root->SetString(keys::kPublicKey, GenerateKey(web_app.app_url));
+
+  if (web_app.is_offline_enabled)
+    root->SetBoolean(keys::kOfflineEnabled, true);
+
   root->SetString(keys::kName, UTF16ToUTF8(web_app.title));
   root->SetString(keys::kVersion, ConvertTimeToExtensionVersion(create_time));
   root->SetString(keys::kDescription, UTF16ToUTF8(web_app.description));

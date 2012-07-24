@@ -103,6 +103,7 @@ const char WebApplicationInfo::kInvalidIconURL[] =
 
 WebApplicationInfo::WebApplicationInfo() {
   is_bookmark_app = false;
+  is_offline_enabled = false;
 }
 
 WebApplicationInfo::~WebApplicationInfo() {
@@ -315,6 +316,9 @@ bool ParseWebAppFromDefinitionFile(Value* definition_value,
       icons.push_back(icon);
     }
   }
+
+  // Parse if offline mode is enabled.
+  definition->GetBoolean("offline_enabled", &web_app->is_offline_enabled);
 
   CHECK(definition->GetString("name", &web_app->title));
   definition->GetString("description", &web_app->description);

@@ -92,6 +92,7 @@ IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo)
   IPC_STRUCT_TRAITS_MEMBER(icons)
   IPC_STRUCT_TRAITS_MEMBER(permissions)
   IPC_STRUCT_TRAITS_MEMBER(launch_container)
+  IPC_STRUCT_TRAITS_MEMBER(is_offline_enabled)
 IPC_STRUCT_TRAITS_END()
 
 // Singly-included section for custom IPC traits.

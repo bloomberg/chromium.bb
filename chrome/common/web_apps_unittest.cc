@@ -134,6 +134,7 @@ TEST(WebAppInfo, Full) {
   EXPECT_EQ("geolocation", web_app->permissions[0]);
   EXPECT_EQ("notifications", web_app->permissions[1]);
   EXPECT_EQ("panel", web_app->launch_container);
+  EXPECT_EQ(true, web_app->is_offline_enabled);
 }
 
 // Tests ParseIconSizes with various input.

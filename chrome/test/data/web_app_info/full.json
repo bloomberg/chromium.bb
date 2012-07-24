@@ -4,6 +4,7 @@
   "launch_url": "launch_url",
   "launch_container": "panel",
   "permissions": [ "geolocation", "notifications" ],
+  "offline_enabled": true,
   "urls": [ "foobar", "baz" ],
   "icons": {
     "ignored": "ignored.png",
