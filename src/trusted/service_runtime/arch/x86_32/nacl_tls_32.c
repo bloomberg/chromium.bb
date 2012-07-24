@@ -32,8 +32,8 @@ void NaClTlsFini() {
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
   return (uint32_t) NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
                                                 /* read_exec_only= */ 1,
-                                                &natp->tls1,
-                                                4);
+                                                &natp->tls_values,
+                                                sizeof(natp->tls_values));
 }
 
 

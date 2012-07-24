@@ -125,7 +125,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 }
 
 void NaClTlsChange(struct NaClAppThread *natp) {
-  nacl_tls[NaClGetThreadIdx(natp)] = natp->tls1;
+  nacl_tls[NaClGetThreadIdx(natp)] = natp->tls_values.tls1;
 }
 
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {

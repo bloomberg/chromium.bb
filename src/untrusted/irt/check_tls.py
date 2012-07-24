@@ -17,8 +17,9 @@ def Main(args):
   obj_file = args[2]
   if arch == 'x86-32':
     objdump_args = [objdump, '-d', obj_file]
+    # "%gs:4" is allowed but all other uses of %gs are suspect.
     register = '%gs'
-    regex = re.compile(register)
+    regex = re.compile(register + r'(?!:0x4\b)')
   elif arch.startswith('arm'):
     if arch == 'arm-gcc':
       objdump_flags = ['-d']

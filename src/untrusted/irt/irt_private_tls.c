@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -31,7 +31,19 @@ int nacl_tls_init(void *thread_ptr) {
 }
 
 void *nacl_tls_get() {
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+#if defined(__i386__)
+  /*
+   * Calling second_tls_get() works on x86-32, but reading %gs:4 is a
+   * lot faster.
+   */
+  void *result;
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+  __asm__("mov %%gs:4, %0" : "=r"(result));
+  return result;
+#else
   return NACL_SYSCALL(second_tls_get)();
+#endif
 }
 
 void *__nacl_read_tp() {

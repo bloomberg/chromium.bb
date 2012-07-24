@@ -54,6 +54,20 @@ enum NaClSuspendState {
 };
 
 /*
+ * On x86-32, the %gs segment points to this struct when running
+ * untrusted code.  On other architectures, this struct has no
+ * significance other than to group the untrusted TLS values together.
+ */
+struct NaClTlsSegment {
+  /*
+   * tls1 and tls2 are TLS values used by user code and the
+   * integrated runtime (IRT) respectively.
+   */
+  uint32_t tls1;
+  uint32_t tls2;
+};
+
+/*
  * Generally, only the thread itself will need to manipulate this
  * structure, but occasionally we may need to blow away a thread for
  * some reason, and look inside.  While a thread is in the NaCl
@@ -71,12 +85,8 @@ struct NaClAppThread {
   struct NaClApp            *nap;
 
   int                       thread_num;  /* index into nap->threads */
-  /*
-   * tls1 and tls2 are TLS values used by user code and the
-   * integrated runtime (IRT) respectively.
-   */
-  uint32_t                  tls1;     /* first saved TLS value */
-  uint32_t                  tls2;     /* second saved TLS value */
+
+  struct NaClTlsSegment     tls_values;
 
   struct NaClThread         thread;  /* low level thread representation */
 

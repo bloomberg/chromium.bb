@@ -43,7 +43,7 @@ void WINAPI NaClThreadLauncher(void *state) {
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = GetCurrentThreadId();
 #endif
-  nacl_tls[thread_idx] = natp->tls1;
+  nacl_tls[thread_idx] = natp->tls_values.tls1;
 
   /*
    * We have to hold the threads_mu lock until after thread_num field
@@ -166,8 +166,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
    */
   natp->nap = nap;
   natp->thread_num = -1;  /* illegal index */
-  natp->tls1 = user_tls1;
-  natp->tls2 = user_tls2;
+  natp->tls_values.tls1 = user_tls1;
+  natp->tls_values.tls2 = user_tls2;
 
   /*
    * Even though we don't know what segment base/range should gs/r9/nacl_tls_idx

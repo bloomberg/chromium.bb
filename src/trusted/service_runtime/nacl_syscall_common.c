@@ -2296,7 +2296,7 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  natp->tls1 = thread_ptr;
+  natp->tls_values.tls1 = thread_ptr;
   NaClTlsChange(natp);
   retval = 0;
 cleanup:
@@ -2357,17 +2357,17 @@ cleanup:
  * NaClGetTlsFastPath (see nacl_syscall_64.S).
  */
 int32_t NaClCommonSysTlsGet(struct NaClAppThread *natp) {
-  return natp->tls1;
+  return natp->tls_values.tls1;
 }
 
 int32_t NaClSysSecond_Tls_Set(struct NaClAppThread *natp,
                               uint32_t             new_value) {
-  natp->tls2 = new_value;
+  natp->tls_values.tls2 = new_value;
   return 0;
 }
 
 int32_t NaClSysSecond_Tls_Get(struct NaClAppThread *natp) {
-  return natp->tls2;
+  return natp->tls_values.tls2;
 }
 
 int NaClCommonSysThread_Nice(struct NaClAppThread *natp,
