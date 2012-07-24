@@ -236,6 +236,9 @@ class ChromeTests:
   def TestContent(self):
     return self.SimpleTest("content", "content_unittests")
 
+  def TestContentBrowser(self):
+    return self.SimpleTest("content", "content_browsertests")
+
   def TestCourgette(self):
     return self.SimpleTest("courgette", "courgette_unittests")
 
@@ -479,12 +482,14 @@ class ChromeTests:
     "automated_ui" : TestAutomatedUI,
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
+    "content": TestContent,      "content_unittests": TestContent,
+    "content_browsertests": TestContentBrowser,
+    "courgette": TestCourgette,  "courgette_unittests": TestCourgette,
     "crypto": TestCrypto,        "crypto_unittests": TestCrypto,
     "ffmpeg": TestFFmpeg,        "ffmpeg_unittests": TestFFmpeg,
     "ffmpeg_regression_tests": TestFFmpegRegressions,
     "googleurl": TestGURL,       "googleurl_unittests": TestGURL,
-    "content": TestContent,      "content_unittests": TestContent,
-    "courgette": TestCourgette,  "courgette_unittests": TestCourgette,
+    "gpu": TestGPU,              "gpu_unittests": TestGPU,
     "ipc": TestIpc,              "ipc_tests": TestIpc,
     "interactive_ui": TestInteractiveUI,
     "layout": TestLayout,        "layout_tests": TestLayout,
@@ -497,16 +502,15 @@ class ChromeTests:
     "reliability": TestReliability, "reliability_tests": TestReliability,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
     "safe_browsing": TestSafeBrowsing, "safe_browsing_tests": TestSafeBrowsing,
+    "sql": TestSql,              "sql_unittests": TestSql,
     "sync": TestSync,            "sync_unit_tests": TestSync,
     "sync_integration_tests": TestSyncIntegration,
     "sync_integration": TestSyncIntegration,
     "test_shell": TestTestShell, "test_shell_tests": TestTestShell,
-    "unit": TestUnit,            "unit_tests": TestUnit,
-    "sql": TestSql,              "sql_unittests": TestSql,
     "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,
-    "gfx": TestGfx,              "gfx_unittests": TestGfx,
-    "gpu": TestGPU,              "gpu_unittests": TestGPU,
+    "unit": TestUnit,            "unit_tests": TestUnit,
     "views": TestViews,          "views_unittests": TestViews,
+    "gfx": TestGfx,              "gfx_unittests": TestGfx,
   }
 
 

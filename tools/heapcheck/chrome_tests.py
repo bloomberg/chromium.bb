@@ -82,24 +82,25 @@ class ChromeTests(object):
       "aura": self.TestAura,            "aura_unittests": self.TestAura,
       "base": self.TestBase,            "base_unittests": self.TestBase,
       "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
-      "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
-      "googleurl": self.TestGURL,       "googleurl_unittests": self.TestGURL,
       "content": self.TestContent,      "content_unittests": self.TestContent,
+      "content_browsertests": self.TestContentBrowser,
       "courgette": self.TestCourgette,
       "courgette_unittests": self.TestCourgette,
+      "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
+      "googleurl": self.TestGURL,       "googleurl_unittests": self.TestGURL,
       "ipc": self.TestIpc,              "ipc_tests": self.TestIpc,
       "layout": self.TestLayout,        "layout_tests": self.TestLayout,
       "media": self.TestMedia,          "media_unittests": self.TestMedia,
       "net": self.TestNet,              "net_unittests": self.TestNet,
       "printing": self.TestPrinting,    "printing_unittests": self.TestPrinting,
       "remoting": self.TestRemoting,    "remoting_unittests": self.TestRemoting,
+      "sql": self.TestSql,              "sql_unittests": self.TestSql,
       "startup": self.TestStartup,      "startup_tests": self.TestStartup,
       "sync": self.TestSync,            "sync_unit_tests": self.TestSync,
       "test_shell": self.TestTestShell, "test_shell_tests": self.TestTestShell,
+      "ui_unit": self.TestUIUnit,       "ui_unittests": self.TestUIUnit,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
       "views": self.TestViews,          "views_unittests": self.TestViews,
-      "sql": self.TestSql,              "sql_unittests": self.TestSql,
-      "ui_unit": self.TestUIUnit,       "ui_unittests": self.TestUIUnit,
       "gfx": self.TestGfx,              "gfx_unittests": self.TestGfx,
     }
 
@@ -255,20 +256,29 @@ class ChromeTests(object):
   def TestBrowser(self):
     return self.SimpleTest("chrome", "browser_tests")
 
+  def TestContent(self):
+    return self.SimpleTest("content", "content_unittests")
+
+  def TestContentBrowser(self):
+    return self.SimpleTest("content", "content_browsertests")
+
+  def TestCourgette(self):
+    return self.SimpleTest("courgette", "courgette_unittests")
+
   def TestCrypto(self):
     return self.SimpleTest("crypto", "crypto_unittests")
 
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
 
-  def TestContent(self):
-    return self.SimpleTest("content", "content_unittests")
-
-  def TestCourgette(self):
-    return self.SimpleTest("courgette", "courgette_unittests")
+  def TestIpc(self):
+    return self.SimpleTest("ipc", "ipc_tests")
 
   def TestMedia(self):
     return self.SimpleTest("chrome", "media_unittests")
+
+  def TestNet(self):
+    return self.SimpleTest("net", "net_unittests")
 
   def TestPrinting(self):
     return self.SimpleTest("chrome", "printing_unittests")
@@ -278,12 +288,6 @@ class ChromeTests(object):
 
   def TestSync(self):
     return self.SimpleTest("chrome", "sync_unit_tests")
-
-  def TestIpc(self):
-    return self.SimpleTest("ipc", "ipc_tests")
-
-  def TestNet(self):
-    return self.SimpleTest("net", "net_unittests")
 
   def TestStartup(self):
     # We don't need the performance results, we're just looking for pointer
@@ -295,17 +299,17 @@ class ChromeTests(object):
   def TestTestShell(self):
     return self.SimpleTest("webkit", "test_shell_tests")
 
+  def TestUIUnit(self):
+    return self.SimpleTest("chrome", "ui_unittests")
+
   def TestUnit(self):
     return self.SimpleTest("chrome", "unit_tests")
-
-  def TestViews(self):
-    return self.SimpleTest("views", "views_unittests")
 
   def TestSql(self):
     return self.SimpleTest("chrome", "sql_unittests")
 
-  def TestUIUnit(self):
-    return self.SimpleTest("chrome", "ui_unittests")
+  def TestViews(self):
+    return self.SimpleTest("views", "views_unittests")
 
   def TestGfx(self):
     # Run ui_unittests, a successor of gfx_unittests, since gfx_unittests is
