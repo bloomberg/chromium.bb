@@ -24,6 +24,16 @@
 typedef struct _GtkToolItem GtkToolItem;
 #elif defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
+#elif defined(USE_AURA)
+namespace views {
+class Widget;
+class ViewsDelegate;
+}
+namespace aura {
+namespace client {
+class StackingClient;
+}
+}
 #endif
 
 class GURL;
@@ -196,6 +206,11 @@ class Shell : public WebContentsDelegate,
   int content_height_;
 #elif defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+#elif defined(USE_AURA)
+  static aura::client::StackingClient* stacking_client_;
+  static views::ViewsDelegate* views_delegate_;
+
+  views::Widget* window_widget_;
 #endif
 
   // A container of all the open windows. We use a vector so we can keep track

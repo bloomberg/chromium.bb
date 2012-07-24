@@ -132,10 +132,6 @@ class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
 }  // namespace content
 
 int main(int argc, char** argv) {
-#if defined(USE_AURA)
-  LOG(INFO) << "content_browsertests not supported on aura yet.";
-  return 0;
-#endif
   content::ContentTestLauncherDelegate launcher_delegate;
   return test_launcher::LaunchTests(&launcher_delegate, argc, argv);
 }

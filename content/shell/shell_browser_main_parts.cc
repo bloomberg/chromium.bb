@@ -104,6 +104,9 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
+#if defined(USE_AURA)
+  Shell::PlatformExit();
+#endif
   if (devtools_delegate_)
     devtools_delegate_->Stop();
   browser_context_.reset();
