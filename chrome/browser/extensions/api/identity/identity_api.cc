@@ -13,22 +13,27 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/window_open_disposition.h"
 
 namespace extensions {
 
-namespace {
-
+namespace identity_constants {
 const char kInvalidClientId[] = "Invalid OAuth2 Client ID.";
 const char kInvalidScopes[] = "Invalid OAuth2 scopes.";
-const char kInvalidRedirect[] = "Did not redirect to the right URL.";
 const char kAuthFailure[] = "OAuth2 request failed: ";
 const char kNoGrant[] = "OAuth2 not granted or revoked.";
 const char kUserRejected[] = "The user did not approve access.";
-
-}  // namespace
+const char kUserNotSignedIn[] = "The user is not signed in.";
+const char kInvalidRedirect[] = "Did not redirect to the right URL.";
+}
 
 namespace GetAuthToken = extensions::api::experimental_identity::GetAuthToken;
 namespace LaunchWebAuthFlow =
@@ -44,13 +49,33 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
   if (params->details.get() && params->details->interactive.get())
     interactive_ = *params->details->interactive;
 
+  const Extension::OAuth2Info& oauth2_info = GetExtension()->oauth2_info();
+
+  // Check that the necessary information is present in the manfist.
+  if (oauth2_info.client_id.empty()) {
+    error_ = identity_constants::kInvalidClientId;
+    return false;
+  }
+
+  if (oauth2_info.scopes.size() == 0) {
+    error_ = identity_constants::kInvalidScopes;
+    return false;
+  }
+
   // Balanced in OnIssueAdviceSuccess|OnMintTokenSuccess|OnMintTokenFailure|
-  // InstallUIAbort.
+  // InstallUIAbort|OnLoginUIClosed.
   AddRef();
 
-  if (StartFlow(ExtensionInstallPrompt::ShouldAutomaticallyApproveScopes() ?
-                    OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE :
-                    OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE)) {
+  if (!HasLoginToken()) {
+    if (StartLogin()) {
+      return true;
+    } else {
+      Release();
+      return false;
+    }
+  }
+
+  if (StartFlow(GetTokenFlowMode())) {
     return true;
   } else {
     Release();
@@ -67,7 +92,7 @@ void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
 
 void IdentityGetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
-  error_ = std::string(kAuthFailure) + error.ToString();
+  error_ = std::string(identity_constants::kAuthFailure) + error.ToString();
   SendResponse(false);
   Release();  // Balanced in RunImpl.
 }
@@ -79,11 +104,20 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
   if (interactive_) {
     install_ui_.reset(
         chrome::CreateExtensionInstallPromptWithBrowser(GetCurrentBrowser()));
-    install_ui_->ConfirmIssueAdvice(this, GetExtension(), issue_advice);
+    ShowOAuthApprovalDialog(issue_advice);
   } else {
-    error_ = kNoGrant;
+    error_ = identity_constants::kNoGrant;
     SendResponse(false);
     Release();  // Balanced in RunImpl.
+  }
+}
+
+void IdentityGetAuthTokenFunction::OnLoginUIClosed(
+    LoginUIService::LoginUI* ui) {
+  StopObservingLoginService();
+  if (!StartFlow(GetTokenFlowMode())) {
+    SendResponse(false);
+    Release();
   }
 }
 
@@ -96,37 +130,99 @@ void IdentityGetAuthTokenFunction::InstallUIProceed() {
 }
 
 void IdentityGetAuthTokenFunction::InstallUIAbort(bool user_initiated) {
-  error_ = kUserRejected;
+  error_ = identity_constants::kUserRejected;
   SendResponse(false);
   Release();  // Balanced in RunImpl.
 }
 
 bool IdentityGetAuthTokenFunction::StartFlow(OAuth2MintTokenFlow::Mode mode) {
-  const Extension* extension = GetExtension();
-  Extension::OAuth2Info oauth2_info = extension->oauth2_info();
-
-  if (oauth2_info.client_id.empty()) {
-    error_ = kInvalidClientId;
+  if (!HasLoginToken()) {
+    error_ = identity_constants::kUserNotSignedIn;
     return false;
   }
 
-  if (oauth2_info.scopes.size() == 0) {
-    error_ = kInvalidScopes;
+  flow_.reset(CreateMintTokenFlow(mode));
+  flow_->Start();
+  return true;
+}
+
+bool IdentityGetAuthTokenFunction::StartLogin() {
+  if (!interactive_) {
+    error_ = identity_constants::kUserNotSignedIn;
     return false;
   }
 
+  ShowLoginPopup();
+  return true;
+}
+
+void IdentityGetAuthTokenFunction::StartObservingLoginService() {
+  LoginUIService* login_ui_service =
+      LoginUIServiceFactory::GetForProfile(profile());
+  login_ui_service->AddObserver(this);
+}
+
+void IdentityGetAuthTokenFunction::StopObservingLoginService() {
+  LoginUIService* login_ui_service =
+      LoginUIServiceFactory::GetForProfile(profile());
+  login_ui_service->RemoveObserver(this);
+}
+
+void IdentityGetAuthTokenFunction::ShowLoginPopup() {
+  StartObservingLoginService();
+
+  LoginUIService* login_ui_service =
+      LoginUIServiceFactory::GetForProfile(profile());
+  LoginUIService::LoginUI* login_ui = login_ui_service->current_login_ui();
+  if (login_ui) {
+    login_ui->FocusUI();
+  } else {
+    Browser* browser = Browser::CreateWithParams(Browser::CreateParams(
+        Browser::TYPE_POPUP, profile()));
+    // TODO(munjal): Change the source from SOURCE_NTP_LINK to something else
+    // once we have added a new source for extension API.
+    GURL signin_url(SyncPromoUI::GetSyncPromoURL(GURL(),
+                                                 SyncPromoUI::SOURCE_NTP_LINK,
+                                                 true));
+    chrome::NavigateParams params(browser,
+                                  signin_url,
+                                  content::PAGE_TRANSITION_START_PAGE);
+    params.disposition = CURRENT_TAB;
+    params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    chrome::Navigate(&params);
+  }
+}
+
+void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
+    const IssueAdviceInfo& issue_advice) {
+  install_ui_->ConfirmIssueAdvice(this, GetExtension(), issue_advice);
+}
+
+OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
+    OAuth2MintTokenFlow::Mode mode) {
+  const Extension::OAuth2Info& oauth2_info = GetExtension()->oauth2_info();
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-  flow_.reset(new OAuth2MintTokenFlow(
+  return new OAuth2MintTokenFlow(
       profile()->GetRequestContext(),
       this,
       OAuth2MintTokenFlow::Parameters(
           token_service->GetOAuth2LoginRefreshToken(),
-          extension->id(),
+          GetExtension()->id(),
           oauth2_info.client_id,
           oauth2_info.scopes,
-          mode)));
-  flow_->Start();
-  return true;
+          mode));
+}
+
+bool IdentityGetAuthTokenFunction::HasLoginToken() const {
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
+  return token_service->HasOAuthLoginToken();
+}
+
+OAuth2MintTokenFlow::Mode IdentityGetAuthTokenFunction::GetTokenFlowMode()
+    const {
+  return ExtensionInstallPrompt::ShouldAutomaticallyApproveScopes() ?
+      OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE :
+      OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE;
 }
 
 IdentityLaunchWebAuthFlowFunction::IdentityLaunchWebAuthFlowFunction() {}
@@ -157,7 +253,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowSuccess(
 }
 
 void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure() {
-  error_ = kInvalidRedirect;
+  error_ = identity_constants::kInvalidRedirect;
   SendResponse(false);
   Release();  // Balanced in RunImpl.
 }
