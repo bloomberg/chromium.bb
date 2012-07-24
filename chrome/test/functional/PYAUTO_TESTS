@@ -855,7 +855,7 @@
       '-ntp.NTPTest.testLaunchAppFullScreen',
       '-https.SSLTest.testSSLCertOK',
       '-https.SSLTest.testSSLCertAuthorityOK',
-      '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix'
+      '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
       '-policy_prefs_ui.PolicyPrefsUITest.testNoUserPoliciesNoBanner',
       '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
     ],
