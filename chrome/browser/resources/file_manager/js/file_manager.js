@@ -1092,6 +1092,9 @@ FileManager.prototype = {
       // TODO(dgozman): current root may be not yet updated here due
       // to async issues.
       case 'unmount':
+        return this.directoryModel_.getCurrentRootType() == RootType.ARCHIVE ||
+               this.directoryModel_.getCurrentRootType() == RootType.REMOVABLE;
+
       case 'format':
         return this.directoryModel_.getCurrentRootType() == RootType.REMOVABLE;
 
