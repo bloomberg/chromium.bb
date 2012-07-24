@@ -1114,13 +1114,15 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
     NSRange range,
     NSRect* rect,
     NSRange* actual_range) {
+  DCHECK(rect);
   // This exists to make IMEs more responsive, see http://crbug.com/115920
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::GetFirstRectForCharacterRange");
 
   // If requested range is same as caret location, we can just return it.
   if (selection_range_.is_empty() && ui::Range(range) == selection_range_) {
-    *actual_range = range;
+    if (actual_range)
+      *actual_range = range;
     *rect = NSRectFromCGRect(caret_rect_.ToCGRect());
     return true;
   }
