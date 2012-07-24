@@ -13,12 +13,15 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/leveldb_settings_storage_factory.h"
-#include "chrome/browser/extensions/settings/managed_value_store_cache.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
 #include "chrome/browser/extensions/settings/sync_or_local_value_store_cache.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/extensions/settings/managed_value_store_cache.h"
+#endif
 
 using content::BrowserThread;
 
@@ -111,8 +114,11 @@ SettingsFrontend::SettingsFrontend(
           sync_quota_limit_,
           observers_,
           profile_path);
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
   caches_[settings_namespace::MANAGED] =
       new ManagedValueStoreCache(profile->GetPolicyService());
+#endif
 }
 
 SettingsFrontend::~SettingsFrontend() {
@@ -144,6 +150,11 @@ syncer::SyncableService* SettingsFrontend::GetBackendForSync(
   }
 }
 
+bool SettingsFrontend::IsStorageEnabled(
+    settings_namespace::Namespace settings_namespace) const {
+  return caches_.find(settings_namespace) != caches_.end();
+}
+
 void SettingsFrontend::RunWithStorage(
     const std::string& extension_id,
     settings_namespace::Namespace settings_namespace,
@@ -153,14 +164,13 @@ void SettingsFrontend::RunWithStorage(
   ValueStoreCache* cache = caches_[settings_namespace];
   CHECK(cache);
 
+  // The |extension| has already been referenced earlier in the stack, so it
+  // can't be gone here.
+  // TODO(kalman): change RunWithStorage() to take a
+  // scoped_refptr<const Extension> instead.
   scoped_refptr<const Extension> extension =
       profile_->GetExtensionService()->GetExtensionById(extension_id, true);
-  if (!extension) {
-    cache->GetMessageLoop()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, static_cast<ValueStore*>(NULL)));
-    return;
-  }
+  CHECK(extension);
 
   cache->GetMessageLoop()->PostTask(
       FROM_HERE,
@@ -184,6 +194,16 @@ void SettingsFrontend::DeleteStorageSoon(
 scoped_refptr<SettingsObserverList> SettingsFrontend::GetObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return observers_;
+}
+
+void SettingsFrontend::DisableStorageForTesting(
+    settings_namespace::Namespace settings_namespace) {
+  CacheMap::iterator it = caches_.find(settings_namespace);
+  if (it != caches_.end()) {
+    ValueStoreCache* cache = it->second;
+    cache->GetMessageLoop()->DeleteSoon(FROM_HERE, cache);
+    caches_.erase(it);
+  }
 }
 
 }  // namespace extensions

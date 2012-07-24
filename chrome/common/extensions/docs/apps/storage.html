@@ -190,6 +190,8 @@
                 <a href="#property-sync">sync</a>
               </li><li>
                 <a href="#property-local">local</a>
+              </li><li>
+                <a href="#property-managed">managed</a>
               </li>
             </ol>
           </li>
@@ -259,6 +261,8 @@ with the following key differences:
   <a href="manifest.html#incognito">split incognito behavior</a>.</li>
   <li>User data can be stored as objects
   (the <code>localStorage API</code> stores data in strings).</li>
+  <li>Domain policies configured by the administrator for the extension
+  can be read (using <code>storage.managed</code>).</li>
 </ul>
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "storage" permission in the <a href="manifest.html">extension manifest</a>
@@ -296,6 +300,13 @@ to <code>storage.local</code>.
 <p class="warning">
 Confidential user information should not be stored!
 The storage area isn't encrypted.
+</p>
+<p>
+The <code>storage.managed</code> is a read-only
+storage that contains settings configured by the
+domain administrator for the extension. Enforcing
+these settings allows administrators to configure
+your extension on enterprise deployments.
 </p>
 <h2 id="limits">Storage and throttling limits</h2>
 <p><code>chrome.storage</code> is not a big truck.
@@ -560,6 +571,35 @@ You can find examples that use this API on the
               </div>
             </dl>
           </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div>
+              <a name="property-managed"></a>
+              <h4>managed</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span>chrome.storage.</span><span>managed</span>
+              </div>
+              <div>
+          <dt>
+            <var>managed</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="storage.html#type-storage.StorageArea">storage.StorageArea</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Items under the "managed" storage area are set by the domain administrator, and are read-only by the extension; trying to modify this namespace results in an error.</dd>
+          <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->

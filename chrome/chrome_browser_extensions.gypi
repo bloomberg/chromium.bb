@@ -645,6 +645,12 @@
             '../third_party/undoview/undoview.gyp:undoview',
           ],
         }],
+        ['configuration_policy==0', {
+          'sources!': [
+            'browser/extensions/settings/managed_value_store_cache.cc',
+            'browser/extensions/settings/managed_value_store_cache.h',
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',

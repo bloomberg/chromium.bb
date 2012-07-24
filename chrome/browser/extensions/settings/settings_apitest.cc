@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -13,25 +12,40 @@
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_map.h"
+#endif
 
 namespace extensions {
 
 using settings_namespace::FromString;
 using settings_namespace::LOCAL;
+using settings_namespace::MANAGED;
 using settings_namespace::Namespace;
 using settings_namespace::SYNC;
 using settings_namespace::ToString;
+using testing::Return;
 
 namespace {
 
 // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
 const syncer::ModelType kModelType = syncer::EXTENSION_SETTINGS;
+
+// The managed_storage extension has a key defined in its manifest, so that
+// its extension ID is well-known and the policy system can push policies for
+// the extension.
+const char kManagedStorageExtensionId[] = "kjmkgkdkpedkejedfhmfcenooemhbpbo";
 
 class NoopSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
@@ -70,6 +84,16 @@ class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
 
 class ExtensionSettingsApiTest : public ExtensionApiTest {
  protected:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+#if defined(ENABLE_CONFIGURATION_POLICY)
+    EXPECT_CALL(policy_provider_, IsInitializationComplete())
+        .WillRepeatedly(Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+#endif
+  }
+
   void ReplyWhenSatisfied(
       Namespace settings_namespace,
       const std::string& normal_action,
@@ -176,11 +200,14 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     EXPECT_FALSE(
         settings_service->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
   }
+
+ protected:
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::MockConfigurationPolicyProvider policy_provider_;
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SimpleTest) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(RunExtensionTest("settings/simple_test")) << message_;
 }
 
@@ -189,9 +216,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SimpleTest) {
 // incognito looks the same as normal mode when the only API activity comes
 // from background pages.
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SplitModeIncognito) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
@@ -216,9 +240,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SplitModeIncognito) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
     OnChangedNotificationsBetweenBackgroundPages) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
@@ -242,9 +263,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
     SyncAndLocalAreasAreSeparate) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
@@ -296,9 +314,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 // Disabled, see crbug.com/101110
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
     DISABLED_OnChangedNotificationsFromSync) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
@@ -344,9 +359,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 // be testing is that the areas don't overlap.
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
     DISABLED_OnChangedNotificationsFromSyncNotSentToLocal) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
@@ -382,6 +394,74 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, IsStorageEnabled) {
+  SettingsFrontend* frontend =
+      browser()->profile()->GetExtensionService()->settings_frontend();
+  EXPECT_TRUE(frontend->IsStorageEnabled(LOCAL));
+  EXPECT_TRUE(frontend->IsStorageEnabled(SYNC));
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  EXPECT_TRUE(frontend->IsStorageEnabled(MANAGED));
+#else
+  EXPECT_FALSE(frontend->IsStorageEnabled(MANAGED));
+#endif
+}
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
+  // Set policies for the test extension.
+  scoped_ptr<base::DictionaryValue> policy = extensions::DictionaryBuilder()
+      .Set("string-policy", "value")
+      .Set("int-policy", -123)
+      .Set("double-policy", 456e7)
+      .SetBoolean("boolean-policy", true)
+      .Set("list-policy", extensions::ListBuilder()
+          .Append("one")
+          .Append("two")
+          .Append("three"))
+      .Set("dict-policy", extensions::DictionaryBuilder()
+          .Set("list", extensions::ListBuilder()
+              .Append(extensions::DictionaryBuilder()
+                  .Set("one", 1)
+                  .Set("two", 2))
+              .Append(extensions::DictionaryBuilder()
+                  .Set("three", 3))))
+      .Build();
+
+  scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
+  policy::PolicyMap& policy_map =
+      bundle->Get(policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId);
+  policy_map.LoadFrom(
+      policy.get(), policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER);
+  policy_provider_.UpdatePolicy(bundle.Pass());
+
+  // Now run the extension.
+  ASSERT_TRUE(RunExtensionTest("settings/managed_storage")) << message_;
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageDisabled) {
+  // Disable the 'managed' namespace. This is redundant when
+  // ENABLE_CONFIGURATION_POLICY is not defined.
+  SettingsFrontend* frontend =
+      browser()->profile()->GetExtensionService()->settings_frontend();
+  frontend->DisableStorageForTesting(MANAGED);
+  EXPECT_FALSE(frontend->IsStorageEnabled(MANAGED));
+
+  // Set a policy for the extension.
+  scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
+  policy::PolicyMap& policy_map =
+      bundle->Get(policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId);
+  policy_map.Set(
+      "policy", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      base::Value::CreateStringValue("policy_value"));
+  policy_provider_.UpdatePolicy(bundle.Pass());
+
+  // Now run the extension.
+  ASSERT_TRUE(RunExtensionTest("settings/managed_storage_disabled"))
+      << message_;
 }
 
 }  // namespace extensions

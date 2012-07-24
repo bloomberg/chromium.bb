@@ -4,8 +4,6 @@
 
 #include "chrome/common/extensions/value_builder.h"
 
-#include "base/values.h"
-
 using base::DictionaryValue;
 using base::ListValue;
 

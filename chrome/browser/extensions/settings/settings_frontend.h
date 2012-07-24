@@ -44,9 +44,11 @@ class SettingsFrontend {
   // APP_SETTINGS or EXTENSION_SETTINGS.
   syncer::SyncableService* GetBackendForSync(syncer::ModelType type) const;
 
+  // Returns true if |settings_namespace| is a valid namespace.
+  bool IsStorageEnabled(settings_namespace::Namespace settings_namespace) const;
+
   // Runs |callback| with the storage area of the given |settings_namespace|
-  // for the |extension_id|. If there is no extension with that ID, the storage
-  // area will be NULL.
+  // for the |extension_id|.
   void RunWithStorage(
       const std::string& extension_id,
       settings_namespace::Namespace settings_namespace,
@@ -57,6 +59,9 @@ class SettingsFrontend {
 
   // Gets the thread-safe observer list.
   scoped_refptr<SettingsObserverList> GetObservers();
+
+  void DisableStorageForTesting(
+      settings_namespace::Namespace settings_namespace);
 
  private:
   typedef std::map<settings_namespace::Namespace, ValueStoreCache*> CacheMap;

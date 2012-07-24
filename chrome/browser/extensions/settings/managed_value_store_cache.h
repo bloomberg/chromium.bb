@@ -15,7 +15,8 @@ class PolicyService;
 
 namespace extensions {
 
-// TODO(joaodasilva): this is a work in progress. http://crbug.com/108992
+// Runs the StorageCallback with a read-only ValueStore that pulls values from
+// the PolicyService for the given extension.
 class ManagedValueStoreCache : public ValueStoreCache {
  public:
   explicit ManagedValueStoreCache(policy::PolicyService* policy_service);
@@ -32,6 +33,8 @@ class ManagedValueStoreCache : public ValueStoreCache {
   virtual void DeleteStorageSoon(const std::string& extension_id) OVERRIDE;
 
  private:
+  policy::PolicyService* policy_service_;
+
   DISALLOW_COPY_AND_ASSIGN(ManagedValueStoreCache);
 };
 

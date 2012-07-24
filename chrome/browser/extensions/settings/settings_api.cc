@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
@@ -22,6 +23,9 @@ using content::BrowserThread;
 
 namespace {
 const char kUnsupportedArgumentType[] = "Unsupported argument type";
+const char kInvalidNamespaceErrorMessage[] =
+    "\"%s\" is not available in this instance of Chrome";
+const char kStorageErrorMessage[] = "Storage error";
 }  // namespace
 
 // SettingsFunction
@@ -43,19 +47,22 @@ bool SettingsFunction::ShouldSkipQuotaLimiting() const {
 }
 
 bool SettingsFunction::RunImpl() {
-  {
-    std::string settings_namespace_string;
-    EXTENSION_FUNCTION_VALIDATE(
-        args_->GetString(0, &settings_namespace_string));
-    args_->Remove(0, NULL);
-    settings_namespace_ =
-        settings_namespace::FromString(settings_namespace_string);
-    EXTENSION_FUNCTION_VALIDATE(
-        settings_namespace_ != settings_namespace::INVALID);
-  }
+  std::string settings_namespace_string;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &settings_namespace_string));
+  args_->Remove(0, NULL);
+  settings_namespace_ =
+      settings_namespace::FromString(settings_namespace_string);
+  EXTENSION_FUNCTION_VALIDATE(
+      settings_namespace_ != settings_namespace::INVALID);
 
   SettingsFrontend* frontend =
       profile()->GetExtensionService()->settings_frontend();
+  if (!frontend->IsStorageEnabled(settings_namespace_)) {
+    error_ = base::StringPrintf(kInvalidNamespaceErrorMessage,
+                                settings_namespace_string.c_str());
+    return false;
+  }
+
   observers_ = frontend->GetObservers();
   frontend->RunWithStorage(
       extension_id(),

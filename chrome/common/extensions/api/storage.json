@@ -206,6 +206,11 @@
             "description": "The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission. Updates that would cause this limit to be exceeded fail."
           }
         }
+      },
+      "managed": {
+        "$ref": "StorageArea",
+        "description": "Items under the \"managed\" storage area are set by the domain administrator, and are read-only by the extension; trying to modify this namespace results in an error.",
+        "value": [ "managed" ]
       }
     }
   }
