@@ -275,7 +275,7 @@ LF_IFUNC(v,  chroma_intra, depth,  avx)
 LF_FUNCS( uint8_t,  8)
 LF_FUNCS(uint16_t, 10)
 
-#if ARCH_X86_32
+#if ARCH_X86_32 && HAVE_YASM
 LF_FUNC (v8, luma,             8, mmxext)
 static void ff_deblock_v_luma_8_mmxext(uint8_t *pix, int stride, int alpha, int beta, int8_t *tc0)
 {
@@ -362,7 +362,7 @@ void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth, const int chrom
             c->h264_idct_add8       = ff_h264_idct_add8_8_mmx;
         c->h264_idct_add16intra     = ff_h264_idct_add16intra_8_mmx;
         if (mm_flags & AV_CPU_FLAG_CMOV)
-            c->h264_luma_dc_dequant_idct= ff_h264_luma_dc_dequant_idct_mmx;
+            c->h264_luma_dc_dequant_idct = ff_h264_luma_dc_dequant_idct_mmx;
 
         if (mm_flags & AV_CPU_FLAG_MMX2) {
             c->h264_idct_dc_add    = ff_h264_idct_dc_add_8_mmx2;

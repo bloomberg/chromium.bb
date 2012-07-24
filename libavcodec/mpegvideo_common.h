@@ -31,6 +31,7 @@
 #define AVCODEC_MPEGVIDEO_COMMON_H
 
 #include <string.h>
+#include "libavutil/avassert.h"
 #include "avcodec.h"
 #include "dsputil.h"
 #include "mpegvideo.h"
@@ -439,7 +440,7 @@ static inline void obmc_motion(MpegEncContext *s,
     int i;
     uint8_t *ptr[5];
 
-    assert(s->quarter_sample==0);
+    av_assert2(s->quarter_sample==0);
 
     for(i=0; i<5; i++){
         if(i && mv[i][0]==mv[MID][0] && mv[i][1]==mv[MID][1]){
@@ -649,7 +650,7 @@ static av_always_inline void MPV_motion_internal(MpegEncContext *s,
         const int mot_stride= s->b8_stride;
         const int mot_xy= mb_x*2 + mb_y*2*mot_stride;
 
-        assert(!s->mb_skipped);
+        av_assert2(!s->mb_skipped);
 
         memcpy(mv_cache[1][1], s->current_picture.f.motion_val[0][mot_xy             ], sizeof(int16_t) * 4);
         memcpy(mv_cache[2][1], s->current_picture.f.motion_val[0][mot_xy + mot_stride], sizeof(int16_t) * 4);
@@ -719,7 +720,8 @@ static av_always_inline void MPV_motion_internal(MpegEncContext *s,
                         0, 0, 0,
                         ref_picture, pix_op, qpix_op,
                         s->mv[dir][0][0], s->mv[dir][0][1], 16);
-        }else if(!is_mpeg12 && (CONFIG_WMV2_DECODER || CONFIG_WMV2_ENCODER) && s->mspel && s->codec_id == CODEC_ID_WMV2){
+        } else if (!is_mpeg12 && (CONFIG_WMV2_DECODER || CONFIG_WMV2_ENCODER) &&
+                   s->mspel && s->codec_id == CODEC_ID_WMV2) {
             ff_mspel_motion(s, dest_y, dest_cb, dest_cr,
                         ref_picture, pix_op,
                         s->mv[dir][0][0], s->mv[dir][0][1], 16);
@@ -870,7 +872,7 @@ static av_always_inline void MPV_motion_internal(MpegEncContext *s,
             }
         }
     break;
-    default: assert(0);
+    default: av_assert2(0);
     }
 }
 

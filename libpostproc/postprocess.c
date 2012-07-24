@@ -624,8 +624,10 @@ static inline void postProcess(const uint8_t src[], int srcStride, uint8_t dst[]
     PPMode *ppMode= (PPMode *)vm;
     c->ppMode= *ppMode; //FIXME
 
-    if(ppMode->lumMode & BITEXACT)
-        return postProcess_C(src, srcStride, dst, dstStride, width, height, QPs, QPStride, isColor, c);
+    if(ppMode->lumMode & BITEXACT) {
+        postProcess_C(src, srcStride, dst, dstStride, width, height, QPs, QPStride, isColor, c);
+        return;
+    }
 
     // Using ifs here as they are faster than function pointers although the
     // difference would not be measurable here but it is much better because
@@ -725,6 +727,11 @@ pp_mode *pp_get_mode_by_name_and_quality(const char *name, int quality)
     static const char optionDelimiters[] = ":";
     struct PPMode *ppMode;
     char *filterToken;
+
+    if (!name)  {
+        av_log(NULL, AV_LOG_ERROR, "pp: Missing argument\n");
+        return NULL;
+    }
 
     if (!strcmp(name, "help")) {
         const char *p;

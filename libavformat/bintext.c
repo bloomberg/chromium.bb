@@ -48,6 +48,42 @@ typedef struct {
     uint64_t fsize;  /**< file size less metadata buffer */
 } BinDemuxContext;
 
+static AVStream * init_stream(AVFormatContext *s)
+{
+    BinDemuxContext *bin = s->priv_data;
+    AVStream *st = avformat_new_stream(s, NULL);
+    if (!st)
+        return NULL;
+    st->codec->codec_tag   = 0;
+    st->codec->codec_type  = AVMEDIA_TYPE_VIDEO;
+
+    if (bin->video_size) {
+        if (av_parse_video_size(&st->codec->width, &st->codec->height, bin->video_size) < 0) {
+            av_log(s, AV_LOG_ERROR, "Could not parse video size: '%s'\n", bin->video_size);
+            return NULL;
+        }
+    } else {
+        st->codec->width  = (80<<3);
+        st->codec->height = (25<<4);
+    }
+
+    if (bin->framerate) {
+        AVRational framerate;
+        if (av_parse_video_rate(&framerate, bin->framerate) < 0) {
+            av_log(s, AV_LOG_ERROR, "Could not parse framerate: '%s'\n", bin->framerate);
+            return NULL;
+        }
+        avpriv_set_pts_info(st, 60, framerate.den, framerate.num);
+    } else {
+        avpriv_set_pts_info(st, 60, 1, 25);
+    }
+
+    /* simulate tty display speed */
+    bin->chars_per_frame = FFMAX(av_q2d(st->time_base) * bin->chars_per_frame, 1);
+
+    return st;
+}
+
 #if CONFIG_BINTEXT_DEMUXER | CONFIG_ADF_DEMUXER | CONFIG_IDF_DEMUXER
 /**
  * Given filesize and width, calculate height (assume font_height of 16)
@@ -104,42 +140,6 @@ static void predict_width(AVCodecContext *avctx, uint64_t fsize, int got_width)
         avctx->width = fsize > 4000 ? (160<<3) : (80<<3);
 }
 
-static AVStream * init_stream(AVFormatContext *s)
-{
-    BinDemuxContext *bin = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
-    if (!st)
-        return NULL;
-    st->codec->codec_tag   = 0;
-    st->codec->codec_type  = AVMEDIA_TYPE_VIDEO;
-
-    if (bin->video_size) {
-        if (av_parse_video_size(&st->codec->width, &st->codec->height, bin->video_size) < 0) {
-            av_log(s, AV_LOG_ERROR, "Could not parse video size: '%s'\n", bin->video_size);
-            return NULL;
-        }
-    } else {
-        st->codec->width  = (80<<3);
-        st->codec->height = (25<<4);
-    }
-
-    if (bin->framerate) {
-        AVRational framerate;
-        if (av_parse_video_rate(&framerate, bin->framerate) < 0) {
-            av_log(s, AV_LOG_ERROR, "Could not parse framerate: '%s'\n", bin->framerate);
-            return NULL;
-        }
-        avpriv_set_pts_info(st, 60, framerate.den, framerate.num);
-    } else {
-        avpriv_set_pts_info(st, 60, 1, 25);
-    }
-
-    /* simulate tty display speed */
-    bin->chars_per_frame = FFMAX(av_q2d(st->time_base) * bin->chars_per_frame, 1);
-
-    return st;
-}
-
 static int bintext_read_header(AVFormatContext *s)
 {
     BinDemuxContext *bin = s->priv_data;
@@ -151,7 +151,7 @@ static int bintext_read_header(AVFormatContext *s)
     st->codec->codec_id    = CODEC_ID_BINTEXT;
 
     st->codec->extradata_size = 2;
-    st->codec->extradata = av_malloc(st->codec->extradata_size);
+    st->codec->extradata = av_malloc(st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
     if (!st->codec->extradata)
         return AVERROR(ENOMEM);
     st->codec->extradata[0] = 16;
@@ -208,7 +208,7 @@ static int xbin_read_header(AVFormatContext *s)
         st->codec->extradata_size += fontheight * (flags & 0x10 ? 512 : 256);
     st->codec->codec_id    = flags & 4 ? CODEC_ID_XBIN : CODEC_ID_BINTEXT;
 
-    st->codec->extradata = av_malloc(st->codec->extradata_size);
+    st->codec->extradata = av_malloc(st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
     if (!st->codec->extradata)
         return AVERROR(ENOMEM);
     st->codec->extradata[0] = fontheight;
@@ -242,7 +242,7 @@ static int adf_read_header(AVFormatContext *s)
     st->codec->codec_id    = CODEC_ID_BINTEXT;
 
     st->codec->extradata_size = 2 + 48 + 4096;
-    st->codec->extradata = av_malloc(st->codec->extradata_size);
+    st->codec->extradata = av_malloc(st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
     if (!st->codec->extradata)
         return AVERROR(ENOMEM);
     st->codec->extradata[0] = 16;
@@ -299,7 +299,7 @@ static int idf_read_header(AVFormatContext *s)
     st->codec->codec_id    = CODEC_ID_IDF;
 
     st->codec->extradata_size = 2 + 48 + 4096;
-    st->codec->extradata = av_malloc(st->codec->extradata_size);
+    st->codec->extradata = av_malloc(st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
     if (!st->codec->extradata)
         return AVERROR(ENOMEM);
     st->codec->extradata[0] = 16;

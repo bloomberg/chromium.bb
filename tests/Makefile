@@ -28,10 +28,10 @@ tests/data/asynth-%.wav: tests/audiogen$(HOSTEXESUF) | tests/data
 	$(M)./$< $@ $(subst -, ,$*)
 
 tests/data/vsynth1.yuv: tests/videogen$(HOSTEXESUF) | tests/data
-	$(M)$< >$@
+	$(M)$< $@
 
 tests/data/vsynth2.yuv: tests/rotozoom$(HOSTEXESUF) | tests/data
-	$(M)$< $(SRC_PATH)/tests/lena.pnm >$@
+	$(M)$< $(SRC_PATH)/tests/lena.pnm $@
 
 tests/data/%.sw tests/data/asynth% tests/data/vsynth%.yuv tests/vsynth%/00.pgm: TAG = GEN
 
@@ -48,11 +48,14 @@ include $(SRC_PATH)/tests/fate/atrac.mak
 include $(SRC_PATH)/tests/fate/audio.mak
 include $(SRC_PATH)/tests/fate/bmp.mak
 include $(SRC_PATH)/tests/fate/cdxl.mak
+include $(SRC_PATH)/tests/fate/cover-art.mak
 include $(SRC_PATH)/tests/fate/dct.mak
 include $(SRC_PATH)/tests/fate/demux.mak
 include $(SRC_PATH)/tests/fate/dfa.mak
 include $(SRC_PATH)/tests/fate/dpcm.mak
 include $(SRC_PATH)/tests/fate/ea.mak
+include $(SRC_PATH)/tests/fate/filter.mak
+include $(SRC_PATH)/tests/fate/flac.mak
 include $(SRC_PATH)/tests/fate/fft.mak
 include $(SRC_PATH)/tests/fate/h264.mak
 include $(SRC_PATH)/tests/fate/image.mak
@@ -65,6 +68,7 @@ include $(SRC_PATH)/tests/fate/lossless-video.mak
 include $(SRC_PATH)/tests/fate/microsoft.mak
 include $(SRC_PATH)/tests/fate/mp3.mak
 include $(SRC_PATH)/tests/fate/mpc.mak
+include $(SRC_PATH)/tests/fate/options.mak
 include $(SRC_PATH)/tests/fate/pcm.mak
 include $(SRC_PATH)/tests/fate/probe.mak
 include $(SRC_PATH)/tests/fate/prores.mak
@@ -72,6 +76,7 @@ include $(SRC_PATH)/tests/fate/qt.mak
 include $(SRC_PATH)/tests/fate/qtrle.mak
 include $(SRC_PATH)/tests/fate/real.mak
 include $(SRC_PATH)/tests/fate/screen.mak
+include $(SRC_PATH)/tests/fate/subtitles.mak
 include $(SRC_PATH)/tests/fate/utvideo.mak
 include $(SRC_PATH)/tests/fate/video.mak
 include $(SRC_PATH)/tests/fate/voice.mak
@@ -104,7 +109,7 @@ FATE += $(FATE_LIBAVUTIL)
 $(FATE_FFMPEG) $(FATE_LAVF_FATE) $(FATE_SAMPLES_AVCONV) $(FATE_SAMPLES_FFMPEG): ffmpeg$(EXESUF)
 
 $(FATE_LAVF):  $(AREF) $(VREF)
-$(FATE_LAVFI): $(VREF) tools/lavfi-showfiltfmts$(EXESUF)
+$(FATE_LAVFI): $(VREF) libavfilter/filtfmts-test$(EXESUF)
 $(FATE_SEEK):  fate-acodec fate-vsynth2 fate-lavf libavformat/seek-test$(EXESUF)
 
 $(FATE_LAVF_FATE): CMD = lavffatetest
@@ -148,7 +153,7 @@ fate-list:
 clean:: testclean
 
 testclean:
-	$(RM) -r tests/vsynth1 tests/vsynth2 tests/data tools/lavfi-showfiltfmts$(EXESUF)
+	$(RM) -r tests/vsynth1 tests/data tools/lavfi-showfiltfmts$(EXESUF)
 	$(RM) $(CLEANSUFFIXES:%=tests/%)
 	$(RM) $(TESTTOOLS:%=tests/%$(HOSTEXESUF))
 

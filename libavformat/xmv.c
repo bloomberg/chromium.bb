@@ -32,6 +32,7 @@
 #include "avformat.h"
 #include "internal.h"
 #include "riff.h"
+#include "libavutil/avassert.h"
 
 /** The min size of an XMV header. */
 #define XMV_MIN_HEADER_SIZE 36
@@ -294,7 +295,7 @@ static int xmv_process_packet_header(AVFormatContext *s)
      * short for every audio track. But as playing around with XMV files with
      * ADPCM audio showed, taking the extra 4 bytes from the audio data gives
      * you either completely distorted audio or click (when skipping the
-     * remaining 68 bytes of the ADPCM block). Substracting 4 bytes for every
+     * remaining 68 bytes of the ADPCM block). Subtracting 4 bytes for every
      * audio track from the video data works at least for the audio. Probably
      * some alignment thing?
      * The video data has (always?) lots of padding, so it should work out...
@@ -354,7 +355,7 @@ static int xmv_process_packet_header(AVFormatContext *s)
             if (xmv->video.stream_index >= 0) {
                 AVStream *vst = s->streams[xmv->video.stream_index];
 
-                assert(xmv->video.stream_index < s->nb_streams);
+                av_assert0(xmv->video.stream_index < s->nb_streams);
 
                 if (vst->codec->extradata_size < 4) {
                     av_free(vst->codec->extradata);

@@ -536,7 +536,7 @@ static int read_filter_params(MLPDecodeContext *m, GetBitContext *gbp,
     int i, order;
 
     // Filter is 0 for FIR, 1 for IIR.
-    assert(filter < 2);
+    av_assert0(filter < 2);
 
     if (m->filter_changed[channel][filter]++ > 1) {
         av_log(m->avctx, AV_LOG_ERROR, "Filters may change only once per access unit.\n");
@@ -1199,6 +1199,7 @@ error:
     return AVERROR_INVALIDDATA;
 }
 
+#if CONFIG_MLP_DECODER
 AVCodec ff_mlp_decoder = {
     .name           = "mlp",
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -1209,7 +1210,7 @@ AVCodec ff_mlp_decoder = {
     .capabilities   = CODEC_CAP_DR1,
     .long_name      = NULL_IF_CONFIG_SMALL("MLP (Meridian Lossless Packing)"),
 };
-
+#endif
 #if CONFIG_TRUEHD_DECODER
 AVCodec ff_truehd_decoder = {
     .name           = "truehd",

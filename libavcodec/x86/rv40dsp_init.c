@@ -26,8 +26,8 @@
  * 3,3 is bugged in the rv40 format and maps to _xy2 version
  */
 
-#include "libavcodec/x86/dsputil_mmx.h"
 #include "libavcodec/rv34dsp.h"
+#include "dsputil_mmx.h"
 
 void ff_put_rv40_chroma_mc8_mmx  (uint8_t *dst, uint8_t *src,
                                   int stride, int h, int x, int y);
@@ -55,6 +55,8 @@ void ff_rv40_weight_func_nornd_8_##opt (uint8_t *dst, uint8_t *src1, uint8_t *sr
 DECLARE_WEIGHT(mmx2)
 DECLARE_WEIGHT(sse2)
 DECLARE_WEIGHT(ssse3)
+
+#if HAVE_YASM
 
 /** @{ */
 /**
@@ -181,6 +183,8 @@ QPEL_FUNCS_SET (OP, 3, 0, OPT) \
 QPEL_FUNCS_SET (OP, 3, 1, OPT) \
 QPEL_FUNCS_SET (OP, 3, 2, OPT)
 /** @} */
+
+#endif //HAVE_YASM
 
 void ff_rv40dsp_init_x86(RV34DSPContext *c, DSPContext *dsp)
 {

@@ -54,6 +54,11 @@ static av_cold int decode_init(AVCodecContext *avctx)
         s->font_height = p[0];
         s->flags = p[1];
         p += 2;
+        if(avctx->extradata_size < 2 + (!!(s->flags & BINTEXT_PALETTE))*3*16
+                                     + (!!(s->flags & BINTEXT_FONT))*s->font_height*256) {
+            av_log(avctx, AV_LOG_ERROR, "not enough extradata\n");
+            return AVERROR_INVALIDDATA;
+        }
     } else {
         s->font_height = 8;
         s->flags = 0;
@@ -220,7 +225,7 @@ AVCodec ff_bintext_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Binary text"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Binary text"),
 };
 #endif
 #if CONFIG_XBIN_DECODER
@@ -233,7 +238,7 @@ AVCodec ff_xbin_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("eXtended BINary text"),
+    .long_name      = NULL_IF_CONFIG_SMALL("eXtended BINary text"),
 };
 #endif
 #if CONFIG_IDF_DECODER
@@ -246,6 +251,6 @@ AVCodec ff_idf_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("iCEDraw text"),
+    .long_name      = NULL_IF_CONFIG_SMALL("iCEDraw text"),
 };
 #endif

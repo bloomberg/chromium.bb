@@ -128,7 +128,7 @@ static void put_ebml_id(AVIOContext *pb, unsigned int id)
  */
 static void put_ebml_size_unknown(AVIOContext *pb, int bytes)
 {
-    assert(bytes <= 8);
+    av_assert0(bytes <= 8);
     avio_w8(pb, 0x1ff >> bytes);
     while (--bytes)
         avio_w8(pb, 0xff);
@@ -155,14 +155,14 @@ static void put_ebml_num(AVIOContext *pb, uint64_t num, int bytes)
     int i, needed_bytes = ebml_num_size(num);
 
     // sizes larger than this are currently undefined in EBML
-    assert(num < (1ULL<<56)-1);
+    av_assert0(num < (1ULL<<56)-1);
 
     if (bytes == 0)
         // don't care how many bytes are used, so use the min
         bytes = needed_bytes;
     // the bytes needed to write the given size would exceed the bytes
     // that we need to use, so write unknown size. This shouldn't happen.
-    assert(bytes >= needed_bytes);
+    av_assert0(bytes >= needed_bytes);
 
     num |= 1ULL << bytes*7;
     for (i = bytes - 1; i >= 0; i--)
@@ -211,7 +211,7 @@ static void put_ebml_void(AVIOContext *pb, uint64_t size)
 {
     int64_t currentpos = avio_tell(pb);
 
-    assert(size >= 2);
+    av_assert0(size >= 2);
 
     put_ebml_id(pb, EBML_ID_VOID);
     // we need to subtract the length needed to store the size from the
@@ -1311,16 +1311,10 @@ AVOutputFormat ff_matroska_muxer = {
     .mime_type         = "video/x-matroska",
     .extensions        = "mkv",
     .priv_data_size    = sizeof(MatroskaMuxContext),
-#if CONFIG_LIBVORBIS_ENCODER
-    .audio_codec       = CODEC_ID_VORBIS,
-#else
-    .audio_codec       = CODEC_ID_AC3,
-#endif
-#if CONFIG_LIBX264_ENCODER
-    .video_codec       = CODEC_ID_H264,
-#else
-    .video_codec       = CODEC_ID_MPEG4,
-#endif
+    .audio_codec       = CONFIG_LIBVORBIS_ENCODER ?
+                         CODEC_ID_VORBIS : CODEC_ID_AC3,
+    .video_codec       = CONFIG_LIBX264_ENCODER ?
+                         CODEC_ID_H264 : CODEC_ID_MPEG4,
     .write_header      = mkv_write_header,
     .write_packet      = mkv_write_packet,
     .write_trailer     = mkv_write_trailer,
@@ -1355,11 +1349,8 @@ AVOutputFormat ff_matroska_audio_muxer = {
     .mime_type         = "audio/x-matroska",
     .extensions        = "mka",
     .priv_data_size    = sizeof(MatroskaMuxContext),
-#if CONFIG_LIBVORBIS_ENCODER
-    .audio_codec       = CODEC_ID_VORBIS,
-#else
-    .audio_codec       = CODEC_ID_AC3,
-#endif
+    .audio_codec       = CONFIG_LIBVORBIS_ENCODER ?
+                         CODEC_ID_VORBIS : CODEC_ID_AC3,
     .video_codec       = CODEC_ID_NONE,
     .write_header      = mkv_write_header,
     .write_packet      = mkv_write_packet,

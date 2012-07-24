@@ -140,7 +140,8 @@ static av_cold int mpc8_decode_init(AVCodecContext * avctx)
     c->frames = 1 << (get_bits(&gb, 3) * 2);
 
     avctx->sample_fmt = AV_SAMPLE_FMT_S16;
-    avctx->channel_layout = (avctx->channels==2) ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO;
+    avctx->channel_layout = (channels==2) ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO;
+    avctx->channels = channels;
 
     if(vlc_initialized) return 0;
     av_log(avctx, AV_LOG_DEBUG, "Initing VLC\n");
@@ -274,7 +275,8 @@ static int mpc8_decode_frame(AVCodecContext * avctx, void *data,
         maxband = c->last_max_band + get_vlc2(gb, band_vlc.table, MPC8_BANDS_BITS, 2);
         if(maxband > 32) maxband -= 33;
     }
-    if(maxband >= BANDS) {
+
+    if(maxband > c->maxbands + 1) {
         av_log(avctx, AV_LOG_ERROR, "maxband %d too large\n",maxband);
         return AVERROR_INVALIDDATA;
     }
@@ -411,7 +413,8 @@ static int mpc8_decode_frame(AVCodecContext * avctx, void *data,
         }
     }
 
-    ff_mpc_dequantize_and_synth(c, maxband, c->frame.data[0], avctx->channels);
+    ff_mpc_dequantize_and_synth(c, maxband - 1, c->frame.data[0],
+                                avctx->channels);
 
     c->cur_frame++;
 

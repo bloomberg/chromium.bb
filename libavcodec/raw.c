@@ -123,6 +123,18 @@ const PixelFormatTag ff_raw_pix_fmt_tags[] = {
     { PIX_FMT_YUV422P10BE, MKTAG(10 , 10 , '3', 'Y') },
     { PIX_FMT_YUV444P10LE, MKTAG('Y', '3',  0 , 10 ) },
     { PIX_FMT_YUV444P10BE, MKTAG(10 ,  0 , '3', 'Y') },
+    { PIX_FMT_YUV420P12LE, MKTAG('Y', '3', 11 , 12 ) },
+    { PIX_FMT_YUV420P12BE, MKTAG(12 , 11 , '3', 'Y') },
+    { PIX_FMT_YUV422P12LE, MKTAG('Y', '3', 10 , 12 ) },
+    { PIX_FMT_YUV422P12BE, MKTAG(12 , 10 , '3', 'Y') },
+    { PIX_FMT_YUV444P12LE, MKTAG('Y', '3',  0 , 12 ) },
+    { PIX_FMT_YUV444P12BE, MKTAG(12 ,  0 , '3', 'Y') },
+    { PIX_FMT_YUV420P14LE, MKTAG('Y', '3', 11 , 14 ) },
+    { PIX_FMT_YUV420P14BE, MKTAG(14 , 11 , '3', 'Y') },
+    { PIX_FMT_YUV422P14LE, MKTAG('Y', '3', 10 , 14 ) },
+    { PIX_FMT_YUV422P14BE, MKTAG(14 , 10 , '3', 'Y') },
+    { PIX_FMT_YUV444P14LE, MKTAG('Y', '3',  0 , 14 ) },
+    { PIX_FMT_YUV444P14BE, MKTAG(14 ,  0 , '3', 'Y') },
     { PIX_FMT_YUV420P16LE, MKTAG('Y', '3', 11 , 16 ) },
     { PIX_FMT_YUV420P16BE, MKTAG(16 , 11 , '3', 'Y') },
     { PIX_FMT_YUV422P16LE, MKTAG('Y', '3', 10 , 16 ) },
@@ -135,6 +147,8 @@ const PixelFormatTag ff_raw_pix_fmt_tags[] = {
     { PIX_FMT_GRAY8A,      MKTAG('Y', '2',  0 ,  8 ) },
 
     /* quicktime */
+    { PIX_FMT_YUV420P, MKTAG('R', '4', '2', '0') }, /* Radius DV YUV PAL */
+    { PIX_FMT_YUV411P, MKTAG('R', '4', '1', '1') }, /* Radius DV YUV NTSC */
     { PIX_FMT_UYVY422, MKTAG('2', 'v', 'u', 'y') },
     { PIX_FMT_UYVY422, MKTAG('2', 'V', 'u', 'y') },
     { PIX_FMT_UYVY422, MKTAG('A', 'V', 'U', 'I') }, /* FIXME merge both fields */
@@ -172,3 +186,99 @@ unsigned int avcodec_pix_fmt_to_codec_tag(enum PixelFormat fmt)
     }
     return 0;
 }
+
+#ifdef TEST
+
+#include <unistd.h>             /* getopt */
+#include "libavutil/pixdesc.h"
+
+#undef printf
+#undef fprintf
+
+static void usage(void)
+{
+    printf("\n"
+           "Options:\n"
+           "-l                list the pixel format for each fourcc\n"
+           "-L                list the fourccs for each pixel format\n"
+           "-p PIX_FMT        given a pixel format, print the list of associated fourccs\n"
+           "-h                print this help\n");
+}
+
+static void print_pix_fmt_fourccs(enum PixelFormat pix_fmt, char sep)
+{
+    int i;
+
+    for (i = 0; i < FF_ARRAY_ELEMS(ff_raw_pix_fmt_tags); i++) {
+        if (ff_raw_pix_fmt_tags[i].pix_fmt == pix_fmt) {
+            char buf[32];
+            av_get_codec_tag_string(buf, sizeof(buf), ff_raw_pix_fmt_tags[i].fourcc);
+            printf("%s%c", buf, sep);
+        }
+    }
+}
+
+int main(int argc, char **argv)
+{
+    int i, list_fourcc_pix_fmt = 0, list_pix_fmt_fourccs = 0;
+    const char *pix_fmt_name = NULL;
+    char c;
+
+    if (argc == 1) {
+        usage();
+        return 0;
+    }
+
+    while ((c = getopt(argc, argv, "hp:lL")) != -1) {
+        switch (c) {
+        case 'h':
+            usage();
+            return 0;
+        case 'l':
+            list_fourcc_pix_fmt = 1;
+            break;
+        case 'L':
+            list_pix_fmt_fourccs = 1;
+            break;
+        case 'p':
+            pix_fmt_name = optarg;
+            break;
+        case '?':
+            usage();
+            return 1;
+        }
+    }
+
+    if (list_fourcc_pix_fmt) {
+        /* print a list of pixel format / fourcc */
+        for (i = 0; i < FF_ARRAY_ELEMS(ff_raw_pix_fmt_tags); i++) {
+            char buf[32];
+            av_get_codec_tag_string(buf, sizeof(buf), ff_raw_pix_fmt_tags[i].fourcc);
+            if (ff_raw_pix_fmt_tags[i].pix_fmt != PIX_FMT_NONE)
+                printf("%s: %s\n", av_get_pix_fmt_name(ff_raw_pix_fmt_tags[i].pix_fmt), buf);
+        }
+    }
+
+    if (list_pix_fmt_fourccs) {
+        for (i = 0; i < PIX_FMT_NB; i++) {
+            const AVPixFmtDescriptor *pix_desc = &av_pix_fmt_descriptors[i];
+            if (!pix_desc->name || pix_desc->flags & PIX_FMT_HWACCEL)
+                continue;
+            printf("%s: ", pix_desc->name);
+            print_pix_fmt_fourccs(i, ' ');
+            printf("\n");
+        }
+    }
+
+    if (pix_fmt_name) {
+        enum PixelFormat pix_fmt = av_get_pix_fmt(pix_fmt_name);
+        if (pix_fmt == PIX_FMT_NONE) {
+            fprintf(stderr, "Invalid pixel format selected '%s'\n", pix_fmt_name);
+            return 1;
+        }
+        print_pix_fmt_fourccs(pix_fmt, '\n');
+    }
+
+    return 0;
+}
+#endif

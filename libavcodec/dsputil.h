@@ -72,6 +72,8 @@ void ff_h264_chroma_dc_dequant_idct_ ## depth ## _c(DCTELEM *block, int qmul);
 H264_IDCT( 8)
 H264_IDCT( 9)
 H264_IDCT(10)
+H264_IDCT(12)
+H264_IDCT(14)
 
 void ff_svq3_luma_dc_dequant_idct_c(DCTELEM *output, DCTELEM *input, int qp);
 void ff_svq3_add_idct_c(uint8_t *dst, DCTELEM *block, int stride, int qp, int dc);
@@ -98,20 +100,13 @@ void ff_avg_pixels16x16_ ## depth ## _c(uint8_t *dst, uint8_t *src, int stride);
 PUTAVG_PIXELS( 8)
 PUTAVG_PIXELS( 9)
 PUTAVG_PIXELS(10)
+PUTAVG_PIXELS(12)
+PUTAVG_PIXELS(14)
 
 #define ff_put_pixels8x8_c ff_put_pixels8x8_8_c
 #define ff_avg_pixels8x8_c ff_avg_pixels8x8_8_c
 #define ff_put_pixels16x16_c ff_put_pixels16x16_8_c
 #define ff_avg_pixels16x16_c ff_avg_pixels16x16_8_c
-
-/* VP3 DSP functions */
-void ff_vp3_idct_c(DCTELEM *block/* align 16*/);
-void ff_vp3_idct_put_c(uint8_t *dest/*align 8*/, int line_size, DCTELEM *block/*align 16*/);
-void ff_vp3_idct_add_c(uint8_t *dest/*align 8*/, int line_size, DCTELEM *block/*align 16*/);
-void ff_vp3_idct_dc_add_c(uint8_t *dest/*align 8*/, int line_size, const DCTELEM *block/*align 16*/);
-
-void ff_vp3_v_loop_filter_c(uint8_t *src, int stride, int *bounding_values);
-void ff_vp3_h_loop_filter_c(uint8_t *src, int stride, int *bounding_values);
 
 /* EA functions */
 void ff_ea_idct_put_c(uint8_t *dest, int linesize, DCTELEM *block);
@@ -211,6 +206,8 @@ void ff_emulated_edge_mc_ ## depth (uint8_t *buf, const uint8_t *src, int linesi
 EMULATED_EDGE(8)
 EMULATED_EDGE(9)
 EMULATED_EDGE(10)
+EMULATED_EDGE(12)
+EMULATED_EDGE(14)
 
 void ff_add_pixels_clamped_c(const DCTELEM *block, uint8_t *dest, int linesize);
 void ff_put_pixels_clamped_c(const DCTELEM *block, uint8_t *dest, int linesize);
@@ -395,15 +392,10 @@ typedef struct DSPContext {
     void (*x8_v_loop_filter)(uint8_t *src, int stride, int qscale);
     void (*x8_h_loop_filter)(uint8_t *src, int stride, int qscale);
 
-    void (*vp3_idct_dc_add)(uint8_t *dest/*align 8*/, int line_size, const DCTELEM *block/*align 16*/);
-    void (*vp3_v_loop_filter)(uint8_t *src, int stride, int *bounding_values);
-    void (*vp3_h_loop_filter)(uint8_t *src, int stride, int *bounding_values);
-
     /* assume len is a multiple of 4, and arrays are 16-byte aligned */
     void (*vorbis_inverse_coupling)(float *mag, float *ang, int blocksize);
     void (*ac3_downmix)(float (*samples)[256], float (*matrix)[2], int out_ch, int in_ch, int len);
     /* assume len is a multiple of 16, and arrays are 32-byte aligned */
-    void (*vector_fmul)(float *dst, const float *src0, const float *src1, int len);
     void (*vector_fmul_reverse)(float *dst, const float *src0, const float *src1, int len);
     /* assume len is a multiple of 8, and src arrays are 16-byte aligned */
     void (*vector_fmul_add)(float *dst, const float *src0, const float *src1, const float *src2, int len);
@@ -422,17 +414,6 @@ typedef struct DSPContext {
     void (*vector_fmul_scalar)(float *dst, const float *src, float mul,
                                int len);
     /**
-     * Multiply a vector of floats by a scalar float and add to
-     * destination vector.  Source and destination vectors must
-     * overlap exactly or not at all.
-     * @param dst result vector, 16-byte aligned
-     * @param src input vector, 16-byte aligned
-     * @param mul scalar value
-     * @param len length of vector, multiple of 4
-     */
-    void (*vector_fmac_scalar)(float *dst, const float *src, float mul,
-                               int len);
-    /**
      * Calculate the scalar product of two vectors of floats.
      * @param v1  first vector, 16-byte aligned
      * @param v2  second vector, 16-byte aligned
@@ -445,7 +426,7 @@ typedef struct DSPContext {
      * @param v2  second input vector, difference output, 16-byte aligned
      * @param len length of vectors, multiple of 4
      */
-    void (*butterflies_float)(float *restrict v1, float *restrict v2, int len);
+    void (*butterflies_float)(float *av_restrict v1, float *av_restrict v2, int len);
 
     /**
      * Calculate the sum and difference of two vectors of floats and interleave
@@ -564,9 +545,9 @@ typedef struct DSPContext {
      * @param src  source array
      *             constraints: 16-byte aligned
      * @param min  minimum value
-     *             constraints: must in the the range [-(1<<24), 1<<24]
+     *             constraints: must be in the range [-(1 << 24), 1 << 24]
      * @param max  maximum value
-     *             constraints: must in the the range [-(1<<24), 1<<24]
+     *             constraints: must be in the range [-(1 << 24), 1 << 24]
      * @param len  number of elements in the array
      *             constraints: multiple of 32 greater than zero
      */

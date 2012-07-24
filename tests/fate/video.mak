@@ -139,6 +139,9 @@ fate-interplay-mve-8bit: CMD = framecrc -i $(SAMPLES)/interplay-mve/interplay-lo
 FATE_VIDEO += fate-interplay-mve-16bit
 fate-interplay-mve-16bit: CMD = framecrc -i $(SAMPLES)/interplay-mve/descent3-level5-16bit-partial.mve -pix_fmt rgb24 -an
 
+FATE_VIDEO += fate-jv
+fate-jv: CMD = framecrc -i $(SAMPLES)/jv/intro.jv -pix_fmt rgb24 -an
+
 FATE_VIDEO += fate-kgv1
 fate-kgv1: CMD = framecrc -i $(SAMPLES)/kega/kgv1.avi -pix_fmt rgb555le -an
 
@@ -167,6 +170,9 @@ fate-mpeg2-field-enc: CMD = framecrc -flags +bitexact -dct fastint -idct simple 
 FATE_VIDEO += fate-nuv
 fate-nuv: CMD = framecrc -idct simple -i $(SAMPLES)/nuv/Today.nuv -an
 
+FATE_VIDEO += fate-paf-video
+fate-paf-video: CMD = framecrc -i $(SAMPLES)/paf/hod1-partial.paf -pix_fmt rgb24 -an
+
 FATE_VIDEO += fate-qpeg
 fate-qpeg: CMD = framecrc -i $(SAMPLES)/qpeg/Clock.avi -an -pix_fmt rgb24
 
@@ -179,6 +185,9 @@ fate-rl2: CMD = framecrc -i $(SAMPLES)/rl2/Z4915300.RL2 -pix_fmt rgb24 -an
 FATE_VIDEO += fate-roqvideo
 fate-roqvideo: CMD = framecrc -i $(SAMPLES)/idroq/idlogo.roq -an
 
+FATE_VIDEO += fate-sanm
+fate-sanm: CMD = framecrc -i $(SAMPLES)/smush/ronin_part.znm -an -pix_fmt rgb24
+
 FATA_VIDEO += fate-sierra-vmd-video
 fate-sierra-vmd-video: CMD = framecrc -i $(SAMPLES)/vmd/12.vmd -pix_fmt rgb24 -an
 
@@ -190,9 +199,6 @@ fate-smc: CMD = framecrc -i $(SAMPLES)/smc/cass_schi.qt -pix_fmt rgb24
 
 FATE_VIDEO += fate-sp5x
 fate-sp5x: CMD = framecrc -idct simple -i $(SAMPLES)/sp5x/sp5x_problem.avi
-
-FATE_VIDEO += fate-sub-srt
-fate-sub-srt: CMD = md5 -i $(SAMPLES)/sub/SubRip_capability_tester.srt -f ass
 
 FATE_VIDEO += fate-thp
 fate-thp: CMD = framecrc -idct simple -i $(SAMPLES)/thp/pikmin2-opening1-partial.thp -an

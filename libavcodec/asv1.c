@@ -31,9 +31,6 @@
 #include "dsputil.h"
 #include "mpeg12data.h"
 
-//#undef NDEBUG
-//#include <assert.h>
-
 #define VLC_BITS 6
 #define ASV2_LEVEL_VLC_BITS 10
 
@@ -294,7 +291,7 @@ static inline void asv2_encode_block(ASV1Context *a, DCTELEM block[64]){
         if( (block[index + 1] = (block[index + 1]*a->q_intra_matrix[index + 1] + (1<<15))>>16) ) ccp |= 2;
         if( (block[index + 9] = (block[index + 9]*a->q_intra_matrix[index + 9] + (1<<15))>>16) ) ccp |= 1;
 
-        assert(i || ccp<8);
+        av_assert2(i || ccp<8);
         if(i) put_bits(&a->pb, ac_ccp_tab[ccp][1], ac_ccp_tab[ccp][0]);
         else  put_bits(&a->pb, dc_ccp_tab[ccp][1], dc_ccp_tab[ccp][0]);
 
@@ -614,6 +611,7 @@ static av_cold int decode_end(AVCodecContext *avctx){
     return 0;
 }
 
+#if CONFIG_ASV1_DECODER
 AVCodec ff_asv1_decoder = {
     .name           = "asv1",
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -625,7 +623,9 @@ AVCodec ff_asv1_decoder = {
     .capabilities   = CODEC_CAP_DR1,
     .long_name      = NULL_IF_CONFIG_SMALL("ASUS V1"),
 };
+#endif
 
+#if CONFIG_ASV2_DECODER
 AVCodec ff_asv2_decoder = {
     .name           = "asv2",
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -637,6 +637,7 @@ AVCodec ff_asv2_decoder = {
     .capabilities   = CODEC_CAP_DR1,
     .long_name      = NULL_IF_CONFIG_SMALL("ASUS V2"),
 };
+#endif
 
 #if CONFIG_ASV1_ENCODER
 AVCodec ff_asv1_encoder = {

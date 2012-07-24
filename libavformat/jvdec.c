@@ -164,7 +164,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
 
                 AV_WL32(pkt->data, jvf->video_size);
                 pkt->data[4]      = jvf->video_type;
-                if (avio_read(pb, pkt->data + JV_PREAMBLE_SIZE, size) < 0)
+                if ((size = avio_read(pb, pkt->data + JV_PREAMBLE_SIZE, size)) < 0)
                     return AVERROR(EIO);
 
                 pkt->size         = size + JV_PREAMBLE_SIZE;
@@ -216,6 +216,15 @@ static int read_seek(AVFormatContext *s, int stream_index,
     return 0;
 }
 
+static int read_close(AVFormatContext *s)
+{
+    JVDemuxContext *jv = s->priv_data;
+
+    av_freep(&jv->frames);
+
+    return 0;
+}
+
 AVInputFormat ff_jv_demuxer = {
     .name           = "jv",
     .long_name      = NULL_IF_CONFIG_SMALL("Bitmap Brothers JV"),
@@ -224,4 +233,5 @@ AVInputFormat ff_jv_demuxer = {
     .read_header    = read_header,
     .read_packet    = read_packet,
     .read_seek      = read_seek,
+    .read_close     = read_close,
 };

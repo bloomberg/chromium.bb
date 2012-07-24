@@ -34,6 +34,9 @@
 #include "libavutil/parseutils.h"
 #include "drawutils.h"
 #include "avfilter.h"
+#include "internal.h"
+#include "formats.h"
+#include "video.h"
 
 typedef struct {
     const AVClass *class;
@@ -54,19 +57,10 @@ static const AVOption ass_options[] = {
     {NULL},
 };
 
-static const char *ass_get_name(void *ctx)
-{
-    return "ass";
-}
-
-static const AVClass ass_class = {
-    "AssContext",
-    ass_get_name,
-    ass_options
-};
+AVFILTER_DEFINE_CLASS(ass);
 
 /* libass supports a log level ranging from 0 to 7 */
-int ass_libav_log_level_map[] = {
+int ass_libavfilter_log_level_map[] = {
     AV_LOG_QUIET,               /* 0 */
     AV_LOG_PANIC,               /* 1 */
     AV_LOG_FATAL,               /* 2 */
@@ -79,13 +73,13 @@ int ass_libav_log_level_map[] = {
 
 static void ass_log(int ass_level, const char *fmt, va_list args, void *ctx)
 {
-    int level = ass_libav_log_level_map[ass_level];
+    int level = ass_libavfilter_log_level_map[ass_level];
 
     av_vlog(ctx, level, fmt, args);
     av_log(ctx, level, "\n");
 }
 
-static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
+static av_cold int init(AVFilterContext *ctx, const char *args)
 {
     AssContext *ass = ctx->priv;
     int ret;
@@ -145,7 +139,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    avfilter_set_common_pixel_formats(ctx, ff_draw_supported_pixel_formats(0));
+    ff_set_common_formats(ctx, ff_draw_supported_pixel_formats(0));
     return 0;
 }
 
@@ -163,7 +157,7 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static void null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { }
+static int null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { return 0; }
 
 /* libass stores an RGBA color in the format RRGGBBTT, where TT is the transparency level */
 #define AR(c)  ( (c)>>24)
@@ -186,7 +180,7 @@ static void overlay_ass_image(AssContext *ass, AVFilterBufferRef *picref,
     }
 }
 
-static void end_frame(AVFilterLink *inlink)
+static int end_frame(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
@@ -202,8 +196,8 @@ static void end_frame(AVFilterLink *inlink)
 
     overlay_ass_image(ass, picref, image);
 
-    avfilter_draw_slice(outlink, 0, picref->video->h, 1);
-    avfilter_end_frame(outlink);
+    ff_draw_slice(outlink, 0, picref->video->h, 1);
+    return ff_end_frame(outlink);
 }
 
 AVFilter avfilter_vf_ass = {
@@ -217,8 +211,8 @@ AVFilter avfilter_vf_ass = {
     .inputs = (const AVFilterPad[]) {
         { .name             = "default",
           .type             = AVMEDIA_TYPE_VIDEO,
-          .get_video_buffer = avfilter_null_get_video_buffer,
-          .start_frame      = avfilter_null_start_frame,
+          .get_video_buffer = ff_null_get_video_buffer,
+          .start_frame      = ff_null_start_frame,
           .draw_slice       = null_draw_slice,
           .end_frame        = end_frame,
           .config_props     = config_input,

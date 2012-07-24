@@ -208,7 +208,7 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
     }
     wf->length = length;
 
-    /* seek to intial sector */
+    /* seek to initial sector */
     wf->position = 0;
     if (avio_seek(s->pb, (int64_t)wf->sectors[0] << WTV_SECTOR_BITS, SEEK_SET) < 0) {
         av_free(wf->sectors);
@@ -368,20 +368,30 @@ static int read_probe(AVProbeData *p)
 
 /**
  * Convert win32 FILETIME to ISO-8601 string
+ * @return <0 on error
  */
-static void filetime_to_iso8601(char *buf, int buf_size, int64_t value)
+static int filetime_to_iso8601(char *buf, int buf_size, int64_t value)
 {
     time_t t = (value / 10000000LL) - 11644473600LL;
+    struct tm *tm = gmtime(&t);
+    if (!tm)
+        return -1;
     strftime(buf, buf_size, "%Y-%m-%d %H:%M:%S", gmtime(&t));
+    return 0;
 }
 
 /**
  * Convert crazy time (100ns since 1 Jan 0001) to ISO-8601 string
+ * @return <0 on error
  */
-static void crazytime_to_iso8601(char *buf, int buf_size, int64_t value)
+static int crazytime_to_iso8601(char *buf, int buf_size, int64_t value)
 {
     time_t t = (value / 10000000LL) - 719162LL*86400LL;
+    struct tm *tm = gmtime(&t);
+    if (!tm)
+        return -1;
     strftime(buf, buf_size, "%Y-%m-%d %H:%M:%S", gmtime(&t));
+    return 0;
 }
 
 /**
@@ -451,12 +461,18 @@ static void get_tag(AVFormatContext *s, AVIOContext *pb, const char *key, int ty
     } else if (type == 4 && length == 8) {
         int64_t num = avio_rl64(pb);
         if (!strcmp(key, "WM/EncodingTime") ||
-            !strcmp(key, "WM/MediaOriginalBroadcastDateTime"))
-            filetime_to_iso8601(buf, buf_size, num);
-        else if (!strcmp(key, "WM/WMRVEncodeTime") ||
-                 !strcmp(key, "WM/WMRVEndTime"))
-            crazytime_to_iso8601(buf, buf_size, num);
-        else if (!strcmp(key, "WM/WMRVExpirationDate")) {
+            !strcmp(key, "WM/MediaOriginalBroadcastDateTime")) {
+            if (filetime_to_iso8601(buf, buf_size, num) < 0) {
+                av_free(buf);
+                return;
+            }
+        } else if (!strcmp(key, "WM/WMRVEncodeTime") ||
+                   !strcmp(key, "WM/WMRVEndTime")) {
+            if (crazytime_to_iso8601(buf, buf_size, num) < 0) {
+                av_free(buf);
+                return;
+            }
+        } else if (!strcmp(key, "WM/WMRVExpirationDate")) {
             if (oledate_to_iso8601(buf, buf_size, num) < 0 ) {
                 av_free(buf);
                 return;

@@ -349,7 +349,7 @@ static int rv20_decode_picture_header(RVDecContext *rv)
     }
 
     if(RV_GET_MINOR_VER(rv->sub_id) >= 2)
-        s->loop_filter = get_bits1(&s->gb);
+        s->loop_filter = get_bits1(&s->gb) && !s->avctx->lowres;
 
     if(RV_GET_MINOR_VER(rv->sub_id) <= 1)
         seq = get_bits(&s->gb, 8) << 7;
@@ -443,7 +443,7 @@ av_log(s->avctx, AV_LOG_DEBUG, "\n");*/
                    seq, s->mb_x, s->mb_y, s->pict_type, s->qscale, s->no_rounding);
     }
 
-    assert(s->pict_type != AV_PICTURE_TYPE_B || !s->low_delay);
+    av_assert0(s->pict_type != AV_PICTURE_TYPE_B || !s->low_delay);
 
     return s->mb_width*s->mb_height - mb_pos;
 }

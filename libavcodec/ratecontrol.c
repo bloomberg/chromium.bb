@@ -514,14 +514,6 @@ static double predict_size(Predictor *p, double q, double var)
      return p->coeff*var / (q*p->count);
 }
 
-/*
-static double predict_qp(Predictor *p, double size, double var)
-{
-//printf("coeff:%f, count:%f, var:%f, size:%f//\n", p->coeff, p->count, var, size);
-     return p->coeff*var / (size*p->count);
-}
-*/
-
 static void update_predictor(Predictor *p, double q, double var, double size)
 {
     double new_coeff= size*q / (var + 1);
@@ -543,8 +535,8 @@ static void adaptive_quantization(MpegEncContext *s, double q){
     const float border_masking = s->avctx->border_masking;
     float bits_sum= 0.0;
     float cplx_sum= 0.0;
-    float *cplx_tab = av_malloc(s->mb_num * sizeof(*cplx_tab));
-    float *bits_tab = av_malloc(s->mb_num * sizeof(*bits_tab));
+    float *cplx_tab = s->cplx_tab;
+    float *bits_tab = s->bits_tab;
     const int qmin= s->avctx->mb_lmin;
     const int qmax= s->avctx->mb_lmax;
     Picture * const pic= &s->current_picture;
@@ -561,10 +553,6 @@ static void adaptive_quantization(MpegEncContext *s, double q){
         int mb_y = mb_xy / s->mb_stride;
         int mb_distance;
         float mb_factor = 0.0;
-#if 0
-        if(spat_cplx < q/3) spat_cplx= q/3; //FIXME finetune
-        if(temp_cplx < q/3) temp_cplx= q/3; //FIXME finetune
-#endif
         if(spat_cplx < 4) spat_cplx= 4; //FIXME finetune
         if(temp_cplx < 4) temp_cplx= 4; //FIXME finetune
 
@@ -645,9 +633,6 @@ static void adaptive_quantization(MpegEncContext *s, double q){
 //printf("%2d%3d ", intq, ff_sqrt(s->mc_mb_var[i]));
         s->lambda_table[mb_xy]= intq;
     }
-
-    av_free(cplx_tab);
-    av_free(bits_tab);
 }
 
 void ff_get_2pass_fcode(MpegEncContext *s){

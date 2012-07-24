@@ -28,6 +28,7 @@
  */
 
 #include <stdio.h>
+#include "libavutil/audioconvert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/opt.h"
 #include "libswresample/swresample.h"
@@ -95,7 +96,7 @@ static void skip_spaces(char **arg)
     *arg += len;
 }
 
-static av_cold int init(AVFilterContext *ctx, const char *args0, void *opaque)
+static av_cold int init(AVFilterContext *ctx, const char *args0)
 {
     PanContext *const pan = ctx->priv;
     char *arg, *arg0, *tokenizer, *args = av_strdup(args0);
@@ -217,7 +218,7 @@ static int query_formats(AVFilterContext *ctx)
 
     pan->pure_gains = are_gains_pure(pan);
     /* libswr supports any sample and packing formats */
-    avfilter_set_common_sample_formats(ctx, avfilter_make_all_formats(AVMEDIA_TYPE_AUDIO));
+    ff_set_common_formats(ctx, ff_all_formats(AVMEDIA_TYPE_AUDIO));
 
     formats = ff_all_samplerates();
     if (!formats)
@@ -326,7 +327,7 @@ static int config_props(AVFilterLink *link)
                          j ? " + " : "", pan->gain[i][j], j);
             cur += FFMIN(buf + sizeof(buf) - cur, r);
         }
-        av_log(ctx, AV_LOG_INFO, "o%d = %s\n", i, buf);
+        av_log(ctx, AV_LOG_VERBOSE, "o%d = %s\n", i, buf);
     }
     // add channel mapping summary if possible
     if (pan->pure_gains) {
@@ -342,8 +343,9 @@ static int config_props(AVFilterLink *link)
     return 0;
 }
 
-static void filter_samples(AVFilterLink *inlink, AVFilterBufferRef *insamples)
+static int filter_samples(AVFilterLink *inlink, AVFilterBufferRef *insamples)
 {
+    int ret;
     int n = insamples->audio->nb_samples;
     AVFilterLink *const outlink = inlink->dst->outputs[0];
     AVFilterBufferRef *outsamples = ff_get_audio_buffer(outlink, AV_PERM_WRITE, n);
@@ -353,8 +355,9 @@ static void filter_samples(AVFilterLink *inlink, AVFilterBufferRef *insamples)
     avfilter_copy_buffer_ref_props(outsamples, insamples);
     outsamples->audio->channel_layout = outlink->channel_layout;
 
-    ff_filter_samples(outlink, outsamples);
+    ret = ff_filter_samples(outlink, outsamples);
     avfilter_unref_buffer(insamples);
+    return ret;
 }
 
 static av_cold void uninit(AVFilterContext *ctx)

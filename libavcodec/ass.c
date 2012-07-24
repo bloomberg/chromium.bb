@@ -1,5 +1,5 @@
 /*
- * SSA/ASS common funtions
+ * SSA/ASS common functions
  * Copyright (c) 2010  Aurelien Jacobs <aurel@gnuage.org>
  *
  * This file is part of FFmpeg.
@@ -38,7 +38,7 @@ int ff_ass_subtitle_header(AVCodecContext *avctx,
              "Style: Default,%s,%d,&H%x,&H%x,&H%x,&H%x,%d,%d,%d,1,1,0,%d,10,10,10,0,0\r\n"
              "\r\n"
              "[Events]\r\n"
-             "Format: Layer, Start, End, Text\r\n",
+             "Format: Layer, Start, End, Style, Text\r\n",
              font, font_size, color, color, back_color, back_color,
              -bold, -italic, -underline, alignment);
 
@@ -82,7 +82,7 @@ int ff_ass_add_rect(AVSubtitle *sub, const char *dialog,
             snprintf(s_end, sizeof(s_end), "9:59:59.99");
         else
             ts_to_string(s_end, sizeof(s_end), ts_start + duration);
-        len = snprintf(header, sizeof(header), "Dialogue: 0,%s,%s,",
+        len = snprintf(header, sizeof(header), "Dialogue: 0,%s,%s,Default,",
                        s_start, s_end);
     }
 

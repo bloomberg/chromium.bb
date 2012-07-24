@@ -25,6 +25,7 @@
 #include "avio_internal.h"
 #include "riff.h"
 #include "libavcodec/bytestream.h"
+#include "libavutil/avassert.h"
 
 /* Note: when encoding, the first matching tag is used, so order is
    important if multiple tags possible for a given codec. */
@@ -47,8 +48,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { CODEC_ID_H263P,        MKTAG('H', '2', '6', '3') },
     { CODEC_ID_H263I,        MKTAG('I', '2', '6', '3') }, /* intel h263 */
     { CODEC_ID_H261,         MKTAG('H', '2', '6', '1') },
-    { CODEC_ID_H263P,        MKTAG('U', '2', '6', '3') },
-    { CODEC_ID_H263P,        MKTAG('v', 'i', 'v', '1') },
+    { CODEC_ID_H263,         MKTAG('U', '2', '6', '3') },
     { CODEC_ID_MPEG4,        MKTAG('F', 'M', 'P', '4') },
     { CODEC_ID_MPEG4,        MKTAG('D', 'I', 'V', 'X') },
     { CODEC_ID_MPEG4,        MKTAG('D', 'X', '5', '0') },
@@ -87,9 +87,11 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { CODEC_ID_MPEG4,        MKTAG('U', 'L', 'D', 'X') },
     { CODEC_ID_MPEG4,        MKTAG('G', 'E', 'O', 'V') },
     { CODEC_ID_MPEG4,        MKTAG('S', 'I', 'P', 'P') }, /* Samsung SHR-6040 */
+    { CODEC_ID_MPEG4,        MKTAG('S', 'M', '4', 'V') },
     { CODEC_ID_MPEG4,        MKTAG('X', 'V', 'I', 'X') },
     { CODEC_ID_MPEG4,        MKTAG('D', 'r', 'e', 'X') },
     { CODEC_ID_MPEG4,        MKTAG('Q', 'M', 'P', '4') }, /* QNAP Systems */
+    { CODEC_ID_MPEG4,        MKTAG('P', 'L', 'V', '1') }, /* Pelco DVR MPEG-4 */
     { CODEC_ID_MSMPEG4V3,    MKTAG('M', 'P', '4', '3') },
     { CODEC_ID_MSMPEG4V3,    MKTAG('D', 'I', 'V', '3') },
     { CODEC_ID_MSMPEG4V3,    MKTAG('M', 'P', 'G', '3') },
@@ -118,6 +120,8 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { CODEC_ID_DVVIDEO,      MKTAG('d', 'v', 'c', ' ') },
     { CODEC_ID_DVVIDEO,      MKTAG('d', 'v', 'c', 's') },
     { CODEC_ID_DVVIDEO,      MKTAG('d', 'v', 'h', '1') },
+    { CODEC_ID_DVVIDEO,      MKTAG('d', 'v', 'i', 's') },
+    { CODEC_ID_DVVIDEO,      MKTAG('p', 'd', 'v', 'c') },
     { CODEC_ID_DVVIDEO,      MKTAG('S', 'L', '2', '5') },
     { CODEC_ID_DVVIDEO,      MKTAG('S', 'L', 'D', 'V') },
     { CODEC_ID_MPEG1VIDEO,   MKTAG('m', 'p', 'g', '1') },
@@ -261,6 +265,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { CODEC_ID_VC1IMAGE,     MKTAG('W', 'V', 'P', '2') },
     { CODEC_ID_LOCO,         MKTAG('L', 'O', 'C', 'O') },
     { CODEC_ID_WNV1,         MKTAG('W', 'N', 'V', '1') },
+    { CODEC_ID_WNV1,         MKTAG('Y', 'U', 'V', '8') },
     { CODEC_ID_AASC,         MKTAG('A', 'A', 'S', '4') },
     { CODEC_ID_AASC,         MKTAG('A', 'A', 'S', 'C') },
     { CODEC_ID_INDEO2,       MKTAG('R', 'T', '2', '1') },
@@ -306,6 +311,10 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { CODEC_ID_Y41P,         MKTAG('Y', '4', '1', 'P') },
     { CODEC_ID_FLIC,         MKTAG('A', 'F', 'L', 'C') },
     { CODEC_ID_EXR,          MKTAG('e', 'x', 'r', ' ') },
+    { CODEC_ID_MSS1,         MKTAG('M', 'S', 'S', '1') },
+    { CODEC_ID_MSA1,         MKTAG('M', 'S', 'A', '1') },
+    { CODEC_ID_TSCC2,        MKTAG('T', 'S', 'C', '2') },
+    { CODEC_ID_MTS2,         MKTAG('M', 'T', 'S', '2') },
     { CODEC_ID_NONE,         0 }
 };
 
@@ -326,6 +335,7 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { CODEC_ID_TRUESPEECH,      0x0022 },
     { CODEC_ID_GSM_MS,          0x0031 },
     { CODEC_ID_AMR_NB,          0x0038 },  /* rogue format number */
+    { CODEC_ID_G723_1,          0x0042 },
     { CODEC_ID_ADPCM_G726,      0x0045 },
     { CODEC_ID_MP2,             0x0050 },
     { CODEC_ID_MP3,             0x0055 },
@@ -345,6 +355,7 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { CODEC_ID_ATRAC3,          0x0270 },
     { CODEC_ID_ADPCM_G722,      0x028F },
     { CODEC_ID_IMC,             0x0401 },
+    { CODEC_ID_IAC,             0x0402 },
     { CODEC_ID_GSM_MS,          0x1500 },
     { CODEC_ID_TRUESPEECH,      0x1501 },
     { CODEC_ID_AAC,             0x1600 }, /* ADTS AAC */
@@ -388,6 +399,7 @@ const AVMetadataConv ff_riff_info_conv[] = {
     { "IPRD", "album"     },
     { "IPRT", "track"     },
     { "ISFT", "encoder"   },
+    { "ISMP", "timecode"  },
     { "ITCH", "encoded_by"},
     { 0 },
 };
@@ -395,7 +407,7 @@ const AVMetadataConv ff_riff_info_conv[] = {
 const char ff_riff_tags[][5] = {
     "IARL", "IART", "ICMS", "ICMT", "ICOP", "ICRD", "ICRP", "IDIM", "IDPI",
     "IENG", "IGNR", "IKEY", "ILGT", "ILNG", "IMED", "INAM", "IPLT", "IPRD",
-    "IPRT", "ISBJ", "ISFT", "ISHP", "ISRC", "ISRF", "ITCH",
+    "IPRT", "ISBJ", "ISFT", "ISHP", "ISMP", "ISRC", "ISRF", "ITCH",
     {0}
 };
 
@@ -449,7 +461,7 @@ int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
     }
     avio_wl16(pb, enc->channels);
     avio_wl32(pb, enc->sample_rate);
-    if (enc->codec_id == CODEC_ID_MP2 || enc->codec_id == CODEC_ID_MP3 || enc->codec_id == CODEC_ID_GSM_MS) {
+    if (enc->codec_id == CODEC_ID_MP2 || enc->codec_id == CODEC_ID_MP3 || enc->codec_id == CODEC_ID_GSM_MS || enc->codec_id == CODEC_ID_G723_1) {
         bps = 0;
     } else {
         if (!(bps = av_get_bits_per_sample(enc->codec_id))) {
@@ -470,6 +482,8 @@ int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
         //blkalign = 144 * enc->bit_rate/enc->sample_rate;
     } else if (enc->codec_id == CODEC_ID_AC3) {
             blkalign = 3840; //maximum bytes per frame
+    } else if (enc->codec_id == CODEC_ID_G723_1) {
+            blkalign = 24;
     } else if (enc->block_align != 0) { /* specified by the codec */
         blkalign = enc->block_align;
     } else
@@ -481,6 +495,8 @@ int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
         enc->codec_id == CODEC_ID_PCM_F64LE ||
         enc->codec_id == CODEC_ID_PCM_S16LE) {
         bytespersec = enc->sample_rate * blkalign;
+    } else if (enc->codec_id == CODEC_ID_G723_1) {
+        bytespersec = 800;
     } else {
         bytespersec = enc->bit_rate / 8;
     }
@@ -504,6 +520,11 @@ int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
         bytestream_put_le16(&riff_extradata, 16);                         /* fwHeadFlags */
         bytestream_put_le32(&riff_extradata, 0);                          /* dwPTSLow */
         bytestream_put_le32(&riff_extradata, 0);                          /* dwPTSHigh */
+    } else if (enc->codec_id == CODEC_ID_G723_1) {
+        hdrsize += 20;
+        bytestream_put_le32(&riff_extradata, 0x9ace0002); /* extradata needed for msacm g723.1 codec */
+        bytestream_put_le32(&riff_extradata, 0xaea2f732);
+        bytestream_put_le16(&riff_extradata, 0xacde);
     } else if (enc->codec_id == CODEC_ID_GSM_MS || enc->codec_id == CODEC_ID_ADPCM_IMA_WAV) {
         hdrsize += 2;
         bytestream_put_le16(&riff_extradata, frame_size); /* wSamplesPerBlock */
@@ -592,7 +613,9 @@ int ff_get_wav_header(AVIOContext *pb, AVCodecContext *codec, int size)
         cbSize = FFMIN(size, cbSize);
         if (cbSize >= 22 && id == 0xfffe) { /* WAVEFORMATEXTENSIBLE */
             ff_asf_guid subformat;
-            codec->bits_per_coded_sample = avio_rl16(pb);
+            int bps = avio_rl16(pb);
+            if (bps)
+                codec->bits_per_coded_sample = bps;
             codec->channel_layout = avio_rl32(pb); /* dwChannelMask */
             ff_get_guid(pb, &subformat);
             if (!memcmp(subformat + 4, (const uint8_t[]){FF_MEDIASUBTYPE_BASE_GUID}, 12)) {
@@ -704,7 +727,7 @@ void ff_parse_specific_params(AVCodecContext *stream, int *au_rate, int *au_ssiz
 
 void ff_get_guid(AVIOContext *s, ff_asf_guid *g)
 {
-    assert(sizeof(*g) == 16);
+    av_assert0(sizeof(*g) == 16); //compiler will optimize this out
     if (avio_read(s, *g, sizeof(*g)) < (int)sizeof(*g))
         memset(*g, 0, sizeof(*g));
 }

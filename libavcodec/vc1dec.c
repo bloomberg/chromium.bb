@@ -3956,7 +3956,7 @@ static int vc1_decode_p_mb_intfi(VC1Context *v)
         s->current_picture.f.mb_type[mb_pos + v->mb_off] = MB_TYPE_16x16;
         for (i = 0; i < 6; i++) v->mb_type[0][s->block_index[i]] = 0;
         if (idx_mbmode <= 5) { // 1-MV
-            dmv_x = dmv_y = 0;
+            dmv_x = dmv_y = pred_flag = 0;
             if (idx_mbmode & 1) {
                 get_mvdata_interlaced(v, &dmv_x, &dmv_y, &pred_flag);
             }
@@ -4654,7 +4654,7 @@ static void vc1_decode_p_blocks(VC1Context *v)
         if (s->mb_y != s->start_mb_y) ff_draw_horiz_band(s, (s->mb_y - 1) * 16, 16);
         s->first_slice_line = 0;
     }
-    if (apply_loop_filter) {
+    if (apply_loop_filter && v->fcm == PROGRESSIVE) {
         s->mb_x = 0;
         ff_init_block_index(s);
         for (; s->mb_x < s->mb_width; s->mb_x++) {
@@ -5542,6 +5542,9 @@ static int vc1_decode_frame(AVCodecContext *avctx, void *data,
         goto err;
     }
 
+    v->s.current_picture_ptr->f.interlaced_frame = (v->fcm != PROGRESSIVE);
+    v->s.current_picture_ptr->f.top_field_first  = v->tff;
+
     s->me.qpel_put = s->dsp.put_qpel_pixels_tab;
     s->me.qpel_avg = s->dsp.avg_qpel_pixels_tab;
 
@@ -5635,7 +5638,8 @@ static int vc1_decode_frame(AVCodecContext *avctx, void *data,
 //      return -1;
         if(s->error_occurred && s->pict_type == AV_PICTURE_TYPE_B)
             goto err;
-        ff_er_frame_end(s);
+        if(!v->field_mode)
+            ff_er_frame_end(s);
     }
 
     ff_MPV_frame_end(s);

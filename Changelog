@@ -2,7 +2,27 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version next:
-- INI output in ffprobe
+- INI and flat output in ffprobe
+- Scene detection in libavfilter
+- Indeo Audio decoder
+- channelsplit audio filter
+- setnsamples audio filter
+- atempo filter
+- ffprobe -show_data option
+- RTMPT protocol support
+- iLBC encoding/decoding via libilbc
+- Microsoft Screen 1 decoder
+- join audio filter
+- audio channel mapping filter
+- Microsoft ATC Screen decoder
+- RTSP listen mode
+- TechSmith Screen Codec 2 decoder
+- AAC encoding via libfdk-aac
+- Microsoft Expression Encoder Screen decoder
+- RTMPS protocol support
+- RTMPTS protocol support
+- RTMPE protocol support
+- RTMPTE protocol support
 
 
 version 0.11:

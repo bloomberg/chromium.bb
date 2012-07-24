@@ -437,10 +437,17 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
                                plane_start[i], c->frame_pred == PRED_LEFT);
             if (ret)
                 return ret;
-            if (c->frame_pred == PRED_MEDIAN)
-                restore_median(c->pic.data[0] + rgb_order[i], c->planes,
-                               c->pic.linesize[0], avctx->width, avctx->height,
-                               c->slices, 0);
+            if (c->frame_pred == PRED_MEDIAN) {
+                if (!c->interlaced) {
+                    restore_median(c->pic.data[0] + rgb_order[i], c->planes,
+                                   c->pic.linesize[0], avctx->width,
+                                   avctx->height, c->slices, 0);
+                } else {
+                    restore_median_il(c->pic.data[0] + rgb_order[i], c->planes,
+                                      c->pic.linesize[0], avctx->width,
+                                      avctx->height, c->slices, 0);
+                }
+            }
         }
         restore_rgb_planes(c->pic.data[0], c->planes, c->pic.linesize[0],
                            avctx->width, avctx->height);
@@ -490,6 +497,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
 
     c->pic.key_frame = 1;
     c->pic.pict_type = AV_PICTURE_TYPE_I;
+    c->pic.interlaced_frame = !!c->interlaced;
+
     *data_size = sizeof(AVFrame);
     *(AVFrame*)data = c->pic;
 

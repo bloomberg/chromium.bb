@@ -25,6 +25,7 @@
  * @author Michael Niedermayer <michaelni@gmx.at>
  */
 
+#include "libavutil/avassert.h"
 #include "h264pred.h"
 
 #define BIT_DEPTH 8
@@ -36,6 +37,14 @@
 #undef BIT_DEPTH
 
 #define BIT_DEPTH 10
+#include "h264pred_template.c"
+#undef BIT_DEPTH
+
+#define BIT_DEPTH 12
+#include "h264pred_template.c"
+#undef BIT_DEPTH
+
+#define BIT_DEPTH 14
 #include "h264pred_template.c"
 #undef BIT_DEPTH
 
@@ -527,7 +536,14 @@ void ff_h264_pred_init(H264PredContext *h, int codec_id, const int bit_depth, co
         case 10:
             H264_PRED(10)
             break;
+        case 12:
+            H264_PRED(12)
+            break;
+        case 14:
+            H264_PRED(14)
+            break;
         default:
+            av_assert0(bit_depth<=8);
             H264_PRED(8)
             break;
     }

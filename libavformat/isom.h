@@ -123,6 +123,9 @@ typedef struct MOVStreamContext {
     unsigned drefs_count;
     MOVDref *drefs;
     int dref_id;
+    unsigned tref_type;
+    unsigned trefs_count;
+    uint32_t *trefs;
     int wrong_dts;        ///< dts are wrong due to huge ctts offset (iMovie files)
     int width;            ///< tkhd width
     int height;           ///< tkhd height
@@ -132,6 +135,7 @@ typedef struct MOVStreamContext {
     int64_t data_size;
     uint32_t tmcd_flags;  ///< tmcd track flags
     int64_t track_end;    ///< used for dts generation in fragmented movie files
+    int start_pad;        ///< amount of samples to skip due to enc-dec delay
 } MOVStreamContext;
 
 typedef struct MOVContext {
@@ -193,7 +197,7 @@ int ff_mov_read_esds(AVFormatContext *fc, AVIOContext *pb, MOVAtom atom);
 enum CodecID ff_mov_get_lpcm_codec_id(int bps, int flags);
 
 int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries);
-void ff_mov_read_chan(AVFormatContext *s, int64_t size, AVCodecContext *codec);
+int ff_mov_read_chan(AVFormatContext *s, AVStream *st, int64_t size);
 void ff_mov_write_chan(AVIOContext *pb, int64_t channel_layout);
 
 #endif /* AVFORMAT_ISOM_H */

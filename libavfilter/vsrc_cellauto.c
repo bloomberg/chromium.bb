@@ -31,6 +31,9 @@
 #include "libavutil/parseutils.h"
 #include "libavutil/random_seed.h"
 #include "avfilter.h"
+#include "internal.h"
+#include "formats.h"
+#include "video.h"
 
 typedef struct {
     const AVClass *class;
@@ -76,16 +79,7 @@ static const AVOption cellauto_options[] = {
     { NULL },
 };
 
-static const char *cellauto_get_name(void *ctx)
-{
-    return "cellauto";
-}
-
-static const AVClass cellauto_class = {
-    "CellAutoContext",
-    cellauto_get_name,
-    cellauto_options
-};
+AVFILTER_DEFINE_CLASS(cellauto);
 
 #ifdef DEBUG
 static void show_cellauto_row(AVFilterContext *ctx)
@@ -164,7 +158,7 @@ static int init_pattern_from_file(AVFilterContext *ctx)
     return init_pattern_from_string(ctx);
 }
 
-static int init(AVFilterContext *ctx, const char *args, void *opaque)
+static int init(AVFilterContext *ctx, const char *args)
 {
     CellAutoContext *cellauto = ctx->priv;
     AVRational frame_rate;
@@ -219,7 +213,7 @@ static int init(AVFilterContext *ctx, const char *args, void *opaque)
         }
     }
 
-    av_log(ctx, AV_LOG_INFO,
+    av_log(ctx, AV_LOG_VERBOSE,
            "s:%dx%d r:%d/%d rule:%d stitch:%d scroll:%d full:%d seed:%u\n",
            cellauto->w, cellauto->h, frame_rate.num, frame_rate.den,
            cellauto->rule, cellauto->stitch, cellauto->scroll, cellauto->start_full,
@@ -310,7 +304,7 @@ static int request_frame(AVFilterLink *outlink)
 {
     CellAutoContext *cellauto = outlink->src->priv;
     AVFilterBufferRef *picref =
-        avfilter_get_video_buffer(outlink, AV_PERM_WRITE, cellauto->w, cellauto->h);
+        ff_get_video_buffer(outlink, AV_PERM_WRITE, cellauto->w, cellauto->h);
     picref->video->sample_aspect_ratio = (AVRational) {1, 1};
     if (cellauto->generation == 0 && cellauto->start_full) {
         int i;
@@ -327,9 +321,9 @@ static int request_frame(AVFilterLink *outlink)
     show_cellauto_row(outlink->src);
 #endif
 
-    avfilter_start_frame(outlink, avfilter_ref_buffer(picref, ~0));
-    avfilter_draw_slice(outlink, 0, cellauto->h, 1);
-    avfilter_end_frame(outlink);
+    ff_start_frame(outlink, avfilter_ref_buffer(picref, ~0));
+    ff_draw_slice(outlink, 0, cellauto->h, 1);
+    ff_end_frame(outlink);
     avfilter_unref_buffer(picref);
 
     return 0;
@@ -338,7 +332,7 @@ static int request_frame(AVFilterLink *outlink)
 static int query_formats(AVFilterContext *ctx)
 {
     static const enum PixelFormat pix_fmts[] = { PIX_FMT_MONOBLACK, PIX_FMT_NONE };
-    avfilter_set_common_pixel_formats(ctx, avfilter_make_format_list(pix_fmts));
+    ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
     return 0;
 }
 

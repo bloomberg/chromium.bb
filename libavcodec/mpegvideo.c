@@ -140,9 +140,9 @@ const enum PixelFormat ff_hwaccel_pixfmt_list_420[] = {
     PIX_FMT_NONE
 };
 
-const uint8_t *avpriv_mpv_find_start_code(const uint8_t *restrict p,
+const uint8_t *avpriv_mpv_find_start_code(const uint8_t *av_restrict p,
                                           const uint8_t *end,
-                                          uint32_t * restrict state)
+                                          uint32_t *av_restrict state)
 {
     int i;
 
@@ -708,7 +708,7 @@ av_cold int ff_MPV_common_init(MpegEncContext *s)
         avcodec_get_chroma_sub_sample(s->avctx->pix_fmt, &s->chroma_x_shift,
                                       &s->chroma_y_shift);
 
-    /* set default edge pos, will be overriden in decode_header if needed */
+    /* set default edge pos, will be overridden in decode_header if needed */
     s->h_edge_pos = s->mb_width * 16;
     s->v_edge_pos = s->mb_height * 16;
 
@@ -775,6 +775,11 @@ av_cold int ff_MPV_common_init(MpegEncContext *s)
         if(s->avctx->noise_reduction){
             FF_ALLOCZ_OR_GOTO(s->avctx, s->dct_offset, 2 * 64 * sizeof(uint16_t), fail)
         }
+
+            FF_ALLOC_OR_GOTO(s->avctx, s->cplx_tab,
+                             mb_array_size * sizeof(float), fail);
+            FF_ALLOC_OR_GOTO(s->avctx, s->bits_tab,
+                             mb_array_size * sizeof(float), fail);
     }
 
     s->picture_count = MAX_PICTURE_COUNT * FFMAX(1, s->avctx->thread_count);
@@ -784,7 +789,10 @@ av_cold int ff_MPV_common_init(MpegEncContext *s)
         avcodec_get_frame_defaults(&s->picture[i].f);
     }
 
-    FF_ALLOCZ_OR_GOTO(s->avctx, s->error_status_table, mb_array_size*sizeof(uint8_t), fail)
+        FF_ALLOC_OR_GOTO(s->avctx, s->er_temp_buffer,
+                         mb_array_size * sizeof(uint8_t), fail);
+        FF_ALLOCZ_OR_GOTO(s->avctx, s->error_status_table,
+                          mb_array_size * sizeof(uint8_t), fail);
 
         if(s->codec_id==CODEC_ID_MPEG4 || (s->flags & CODEC_FLAG_INTERLACED_ME)){
             /* interlaced direct mode decoding tables */
@@ -923,6 +931,7 @@ void ff_MPV_common_end(MpegEncContext *s)
     av_freep(&s->avctx->stats_out);
     av_freep(&s->ac_stats);
     av_freep(&s->error_status_table);
+    av_freep(&s->er_temp_buffer);
     av_freep(&s->mb_index2xy);
     av_freep(&s->lambda_table);
     if(s->q_chroma_intra_matrix   != s->q_intra_matrix  ) av_freep(&s->q_chroma_intra_matrix);
@@ -936,6 +945,8 @@ void ff_MPV_common_end(MpegEncContext *s)
     av_freep(&s->input_picture);
     av_freep(&s->reordered_input_picture);
     av_freep(&s->dct_offset);
+    av_freep(&s->cplx_tab);
+    av_freep(&s->bits_tab);
 
     if (s->picture && !s->avctx->internal->is_copy) {
         for (i = 0; i < s->picture_count; i++) {
@@ -1436,7 +1447,7 @@ static void draw_line(uint8_t *buf, int sx, int sy, int ex, int ey,
             y  = (x * f) >> 16;
             fr = (x * f) & 0xFFFF;
             buf[y * stride + x]       += (color * (0x10000 - fr)) >> 16;
-            buf[(y + 1) * stride + x] += (color *            fr ) >> 16;
+            if(fr) buf[(y + 1) * stride + x] += (color *            fr ) >> 16;
         }
     } else {
         if (sy > ey) {
@@ -1453,7 +1464,7 @@ static void draw_line(uint8_t *buf, int sx, int sy, int ex, int ey,
             x  = (y*f) >> 16;
             fr = (y*f) & 0xFFFF;
             buf[y * stride + x]     += (color * (0x10000 - fr)) >> 16;
-            buf[y * stride + x + 1] += (color *            fr ) >> 16;
+            if(fr) buf[y * stride + x + 1] += (color *            fr ) >> 16;
         }
     }
 }

@@ -21,7 +21,6 @@
 
 #include "libavutil/avstring.h"
 #include "avformat.h"
-#include <unistd.h>
 #include "internal.h"
 #include "network.h"
 #include "http.h"
@@ -57,6 +56,7 @@ typedef struct {
     int multiple_requests;  /**< A flag which indicates if we use persistent connections. */
     uint8_t *post_data;
     int post_datalen;
+    int is_akamai;
 } HTTPContext;
 
 #define OFFSET(x) offsetof(HTTPContext, x)
@@ -106,7 +106,6 @@ static int http_open_cnx(URLContext *h)
     int port, use_proxy, err, location_changed = 0, redirects = 0, attempts = 0;
     HTTPAuthType cur_auth_type, cur_proxy_auth_type;
     HTTPContext *s = h->priv_data;
-    URLContext *hd = NULL;
 
     proxy_path = getenv("http_proxy");
     use_proxy = (proxy_path != NULL) && !getenv("no_proxy") &&
@@ -147,12 +146,10 @@ static int http_open_cnx(URLContext *h)
     ff_url_join(buf, sizeof(buf), lower_proto, NULL, hostname, port, NULL);
 
     if (!s->hd) {
-        err = ffurl_open(&hd, buf, AVIO_FLAG_READ_WRITE,
+        err = ffurl_open(&s->hd, buf, AVIO_FLAG_READ_WRITE,
                          &h->interrupt_callback, NULL);
         if (err < 0)
             goto fail;
-
-        s->hd = hd;
     }
 
     cur_auth_type = s->auth_state.auth_type;
@@ -163,7 +160,7 @@ static int http_open_cnx(URLContext *h)
     if (s->http_code == 401) {
         if ((cur_auth_type == HTTP_AUTH_NONE || s->auth_state.stale) &&
             s->auth_state.auth_type != HTTP_AUTH_NONE && attempts < 4) {
-            ffurl_close(hd);
+            ffurl_closep(&s->hd);
             goto redo;
         } else
             goto fail;
@@ -171,7 +168,7 @@ static int http_open_cnx(URLContext *h)
     if (s->http_code == 407) {
         if ((cur_proxy_auth_type == HTTP_AUTH_NONE || s->proxy_auth_state.stale) &&
             s->proxy_auth_state.auth_type != HTTP_AUTH_NONE && attempts < 4) {
-            ffurl_close(hd);
+            ffurl_closep(&s->hd);
             goto redo;
         } else
             goto fail;
@@ -179,7 +176,7 @@ static int http_open_cnx(URLContext *h)
     if ((s->http_code == 301 || s->http_code == 302 || s->http_code == 303 || s->http_code == 307)
         && location_changed == 1) {
         /* url moved, get next */
-        ffurl_close(hd);
+        ffurl_closep(&s->hd);
         if (redirects++ >= MAX_REDIRECTS)
             return AVERROR(EIO);
         /* Restart the authentication process with the new target, which
@@ -191,9 +188,8 @@ static int http_open_cnx(URLContext *h)
     }
     return 0;
  fail:
-    if (hd)
-        ffurl_close(hd);
-    s->hd = NULL;
+    if (s->hd)
+        ffurl_closep(&s->hd);
     return AVERROR(EIO);
 }
 
@@ -312,17 +308,18 @@ static int process_line(URLContext *h, char *line, int line_count,
             strcpy(s->location, p);
             *new_location = 1;
         } else if (!av_strcasecmp (tag, "Content-Length") && s->filesize == -1) {
-            s->filesize = atoll(p);
+            s->filesize = strtoll(p, NULL, 10);
         } else if (!av_strcasecmp (tag, "Content-Range")) {
             /* "bytes $from-$to/$document_size" */
             const char *slash;
             if (!strncmp (p, "bytes ", 6)) {
                 p += 6;
-                s->off = atoll(p);
+                s->off = strtoll(p, NULL, 10);
                 if ((slash = strchr(p, '/')) && strlen(slash) > 0)
-                    s->filesize = atoll(slash+1);
+                    s->filesize = strtoll(slash+1, NULL, 10);
             }
-            h->is_streamed = 0; /* we _can_ in fact seek */
+            if (!s->is_akamai || s->filesize != 2147483647)
+                h->is_streamed = 0; /* we _can_ in fact seek */
         } else if (!av_strcasecmp(tag, "Accept-Ranges") && !strncmp(p, "bytes", 5)) {
             h->is_streamed = 0;
         } else if (!av_strcasecmp (tag, "Transfer-Encoding") && !av_strncasecmp(p, "chunked", 7)) {
@@ -337,6 +334,8 @@ static int process_line(URLContext *h, char *line, int line_count,
         } else if (!av_strcasecmp (tag, "Connection")) {
             if (!strcmp(p, "close"))
                 s->willclose = 1;
+        } else if (!av_strcasecmp (tag, "Server") && !av_strcasecmp (p, "AkamaiGHost")) {
+            s->is_akamai = 1;
         }
     }
     return 1;
@@ -355,6 +354,8 @@ static int http_read_header(URLContext *h, int *new_location)
     HTTPContext *s = h->priv_data;
     char line[1024];
     int err = 0;
+
+    s->chunksize = -1;
 
     for (;;) {
         if ((err = http_get_line(s, line, sizeof(line))) < 0)
@@ -474,7 +475,6 @@ static int http_connect(URLContext *h, const char *path, const char *local_path,
         s->http_code = 200;
         return 0;
     }
-    s->chunksize = -1;
 
     /* wait for header */
     err = http_read_header(h, new_location);
@@ -514,14 +514,13 @@ static int http_read(URLContext *h, uint8_t *buf, int size)
     HTTPContext *s = h->priv_data;
     int err, new_location;
 
-    if (s->end_chunked_post) {
-        if (!s->end_header) {
-            err = http_read_header(h, &new_location);
-            if (err < 0)
-                return err;
-        }
+    if (!s->hd)
+        return AVERROR_EOF;
 
-        return http_buf_read(h, buf, size);
+    if (s->end_chunked_post && !s->end_header) {
+        err = http_read_header(h, &new_location);
+        if (err < 0)
+            return err;
     }
 
     if (s->chunksize >= 0) {
@@ -602,7 +601,7 @@ static int http_close(URLContext *h)
     }
 
     if (s->hd)
-        ffurl_close(s->hd);
+        ffurl_closep(&s->hd);
     return ret;
 }
 
@@ -673,6 +672,7 @@ URLProtocol ff_https_protocol = {
     .url_seek            = http_seek,
     .url_close           = http_close,
     .url_get_file_handle = http_get_file_handle,
+    .url_shutdown        = http_shutdown,
     .priv_data_size      = sizeof(HTTPContext),
     .priv_data_class     = &https_context_class,
     .flags               = URL_PROTOCOL_FLAG_NETWORK,
@@ -684,7 +684,7 @@ static int http_proxy_close(URLContext *h)
 {
     HTTPContext *s = h->priv_data;
     if (s->hd)
-        ffurl_close(s->hd);
+        ffurl_closep(&s->hd);
     return 0;
 }
 
@@ -755,8 +755,7 @@ redo:
     if (s->http_code == 407 &&
         (cur_auth_type == HTTP_AUTH_NONE || s->proxy_auth_state.stale) &&
         s->proxy_auth_state.auth_type != HTTP_AUTH_NONE && attempts < 2) {
-        ffurl_close(s->hd);
-        s->hd = NULL;
+        ffurl_closep(&s->hd);
         goto redo;
     }
 

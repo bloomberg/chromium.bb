@@ -175,17 +175,17 @@ int swri_audio_convert(AudioConvert *ctx, AudioData *out, AudioData *in, int len
     //FIXME optimize common cases
 
     if(ctx->simd_f && !ctx->ch_map){
-        off = len/16 * 16;
+        off = len&~15;
         av_assert1(off>=0);
         av_assert1(off<=len);
         if(off>0){
             if(out->planar == in->planar){
                 int planes = out->planar ? out->ch_count : 1;
                 for(ch=0; ch<planes; ch++){
-                    ctx->simd_f(out->ch+ch, in->ch+ch, off * (out->planar ? 1 :out->ch_count));
+                    ctx->simd_f(out->ch+ch, (const uint8_t **)in->ch+ch, off * (out->planar ? 1 :out->ch_count));
                 }
             }else{
-                ctx->simd_f(out->ch, in->ch, off);
+                ctx->simd_f(out->ch, (const uint8_t **)in->ch, off);
             }
         }
         if(off == len)

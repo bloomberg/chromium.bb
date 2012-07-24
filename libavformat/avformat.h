@@ -201,6 +201,10 @@
 #include "avio.h"
 #include "libavformat/version.h"
 
+#if FF_API_AV_GETTIME
+#include "libavutil/time.h"
+#endif
+
 struct AVFormatContext;
 
 
@@ -726,7 +730,7 @@ typedef struct AVStream {
     /**
      * Stream information used internally by av_find_stream_info()
      */
-#define MAX_STD_TIMEBASES (60*12+5)
+#define MAX_STD_TIMEBASES (60*12+6)
     struct {
         int64_t last_dts;
         int64_t duration_gcd;
@@ -801,6 +805,11 @@ typedef struct AVStream {
      * should be discarded.
      */
     int skip_to_keyframe;
+
+    /**
+     * Number of samples to skip at the start of the frame decoded from the next packet.
+     */
+    int skip_samples;
 } AVStream;
 
 #define AV_PROGRAM_RUNNING 1
@@ -833,6 +842,17 @@ typedef struct AVChapter {
     int64_t start, end;     ///< chapter start/end time in time_base units
     AVDictionary *metadata;
 } AVChapter;
+
+
+/**
+ * The duration of a video can be estimated through various ways, and this enum can be used
+ * to know how the duration was estimated.
+ */
+enum AVDurationEstimationMethod {
+    AVFMT_DURATION_FROM_PTS,    ///< Duration accurately estimated from PTSes
+    AVFMT_DURATION_FROM_STREAM, ///< Duration estimated from a stream with a known duration
+    AVFMT_DURATION_FROM_BITRATE ///< Duration estimated from bitrate (less accurate)
+};
 
 /**
  * Format I/O context.
@@ -931,7 +951,7 @@ typedef struct AVFormatContext {
 #define AVFMT_FLAG_MP4A_LATM    0x8000 ///< Enable RTP MP4A-LATM payload
 #define AVFMT_FLAG_SORT_DTS    0x10000 ///< try to interleave outputted packets by dts (using this flag can slow demuxing down)
 #define AVFMT_FLAG_PRIV_OPT    0x20000 ///< Enable use of private options by delaying codec open (this could be made default once all code is converted)
-#define AVFMT_FLAG_KEEP_SIDE_DATA 0x40000 ///< Dont merge side data but keep it separate.
+#define AVFMT_FLAG_KEEP_SIDE_DATA 0x40000 ///< Don't merge side data but keep it separate.
 
     /**
      * decoding: size of data to probe; encoding: unused.
@@ -1099,7 +1119,20 @@ typedef struct AVFormatContext {
     int raw_packet_buffer_remaining_size;
 
     int avio_flags;
+
+    /**
+     * The duration field can be estimated through various ways, and this field can be used
+     * to know how the duration was estimated.
+     */
+    enum AVDurationEstimationMethod duration_estimation_method;
 } AVFormatContext;
+
+/**
+ * Returns the method used to set ctx->duration.
+ *
+ * @return AVFMT_DURATION_FROM_PTS, AVFMT_DURATION_FROM_STREAM, or AVFMT_DURATION_FROM_BITRATE.
+ */
+enum AVDurationEstimationMethod av_fmt_ctx_get_duration_estimation_method(const AVFormatContext* ctx);
 
 typedef struct AVPacketList {
     AVPacket pkt;
@@ -1711,7 +1744,7 @@ int av_get_output_timestamp(struct AVFormatContext *s, int stream,
  * @ingroup libavf
  * @{
  *
- * Miscelaneous utility functions related to both muxing and demuxing
+ * Miscellaneous utility functions related to both muxing and demuxing
  * (or neither).
  */
 
@@ -1838,11 +1871,6 @@ void av_dump_format(AVFormatContext *ic,
                     int is_output);
 
 /**
- * Get the current time in microseconds.
- */
-int64_t av_gettime(void);
-
-/**
  * Return in 'buf' the path with '%d' replaced by a number.
  *
  * Also handles the '%0nd' format where 'n' is the total number
@@ -1921,6 +1949,10 @@ const struct AVCodecTag *avformat_get_riff_video_tags(void);
 const struct AVCodecTag *avformat_get_riff_audio_tags(void);
 
 /**
+ * @}
+ */
+
+/**
  * Guesses the sample aspect ratio of a frame, based on both the stream and the
  * frame aspect ratio.
  *
@@ -1940,8 +1972,20 @@ const struct AVCodecTag *avformat_get_riff_audio_tags(void);
 AVRational av_guess_sample_aspect_ratio(AVFormatContext *format, AVStream *stream, AVFrame *frame);
 
 /**
- * @}
+ * Check if the stream st contained in s is matched by the stream specifier
+ * spec.
+ *
+ * See the "stream specifiers" chapter in the documentation for the syntax
+ * of spec.
+ *
+ * @return  >0 if st is matched by spec;
+ *          0  if st is not matched by spec;
+ *          AVERROR code if spec is invalid
+ *
+ * @note  A stream specifier can match several streams in the format.
  */
+int avformat_match_stream_specifier(AVFormatContext *s, AVStream *st,
+                                    const char *spec);
 
 /**
  * @}

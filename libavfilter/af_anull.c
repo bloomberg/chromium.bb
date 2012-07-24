@@ -24,6 +24,7 @@
 
 #include "audio.h"
 #include "avfilter.h"
+#include "internal.h"
 
 AVFilter avfilter_af_anull = {
     .name      = "anull",
@@ -31,13 +32,12 @@ AVFilter avfilter_af_anull = {
 
     .priv_size = 0,
 
-    .inputs    = (const AVFilterPad[]) {{ .name       = "default",
-                                    .type             = AVMEDIA_TYPE_AUDIO,
-                                    .get_audio_buffer = ff_null_get_audio_buffer,
-                                    .filter_samples   = ff_null_filter_samples },
-                                  { .name = NULL}},
+    .inputs    = (const AVFilterPad[]) {{ .name             = "default",
+                                          .type             = AVMEDIA_TYPE_AUDIO,
+                                          .get_audio_buffer = ff_null_get_audio_buffer, },
+                                        { .name = NULL}},
 
-    .outputs   = (const AVFilterPad[]) {{ .name       = "default",
-                                    .type             = AVMEDIA_TYPE_AUDIO, },
-                                  { .name = NULL}},
+    .outputs   = (const AVFilterPad[]) {{ .name             = "default",
+                                          .type             = AVMEDIA_TYPE_AUDIO, },
+                                        { .name = NULL}},
 };

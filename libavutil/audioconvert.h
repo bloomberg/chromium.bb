@@ -101,6 +101,13 @@
 #define AV_CH_LAYOUT_OCTAGONAL         (AV_CH_LAYOUT_5POINT0|AV_CH_BACK_LEFT|AV_CH_BACK_CENTER|AV_CH_BACK_RIGHT)
 #define AV_CH_LAYOUT_STEREO_DOWNMIX    (AV_CH_STEREO_LEFT|AV_CH_STEREO_RIGHT)
 
+enum AVMatrixEncoding {
+    AV_MATRIX_ENCODING_NONE,
+    AV_MATRIX_ENCODING_DOLBY,
+    AV_MATRIX_ENCODING_DPLII,
+    AV_MATRIX_ENCODING_NB
+};
+
 /**
  * @}
  */
@@ -133,6 +140,12 @@ uint64_t av_get_channel_layout(const char *name);
  */
 void av_get_channel_layout_string(char *buf, int buf_size, int nb_channels, uint64_t channel_layout);
 
+struct AVBPrint;
+/**
+ * Append a description of a channel layout to a bprint buffer.
+ */
+void av_bprint_channel_layout(struct AVBPrint *bp, int nb_channels, uint64_t channel_layout);
+
 /**
  * Return the number of channels in the channel layout.
  */
@@ -142,6 +155,30 @@ int av_get_channel_layout_nb_channels(uint64_t channel_layout);
  * Return default channel layout for a given number of channels.
  */
 int64_t av_get_default_channel_layout(int nb_channels);
+
+/**
+ * Get the index of a channel in channel_layout.
+ *
+ * @param channel a channel layout describing exactly one channel which must be
+ *                present in channel_layout.
+ *
+ * @return index of channel in channel_layout on success, a negative AVERROR
+ *         on error.
+ */
+int av_get_channel_layout_channel_index(uint64_t channel_layout,
+                                        uint64_t channel);
+
+/**
+ * Get the channel with the given index in channel_layout.
+ */
+uint64_t av_channel_layout_extract_channel(uint64_t channel_layout, int index);
+
+/**
+ * Get the name of a given channel.
+ *
+ * @return channel name on success, NULL on error.
+ */
+const char *av_get_channel_name(uint64_t channel);
 
 /**
  * @}

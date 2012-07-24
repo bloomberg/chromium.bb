@@ -191,16 +191,10 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
         if (type == AVMEDIA_TYPE_VIDEO) {
             AVBufferSinkParams *buffersink_params = av_buffersink_params_alloc();
 
-#if FF_API_OLD_VSINK_API
-            ret = avfilter_graph_create_filter(&sink, buffersink,
-                                               inout->name, NULL,
-                                               pix_fmts, lavfi->graph);
-#else
             buffersink_params->pixel_fmts = pix_fmts;
             ret = avfilter_graph_create_filter(&sink, buffersink,
                                                inout->name, NULL,
                                                buffersink_params, lavfi->graph);
-#endif
             av_freep(&buffersink_params);
 
             if (ret < 0)
@@ -211,10 +205,8 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
                                                   AV_SAMPLE_FMT_S32,
                                                   AV_SAMPLE_FMT_FLT,
                                                   AV_SAMPLE_FMT_DBL, -1 };
-            const int64_t *chlayouts = avfilter_all_channel_layouts;
             AVABufferSinkParams *abuffersink_params = av_abuffersink_params_alloc();
             abuffersink_params->sample_fmts = sample_fmts;
-            abuffersink_params->channel_layouts = chlayouts;
 
             ret = avfilter_graph_create_filter(&sink, abuffersink,
                                                inout->name, NULL,

@@ -544,7 +544,7 @@ static int swScale(SwsContext *c, const uint8_t *src[],
         if (!enough_lines)
             break;  // we can't output a dstY line so let's try with the next slice
 
-#if HAVE_MMX
+#if HAVE_MMX && HAVE_INLINE_ASM
         updateMMXDitherTables(c, dstY, lumBufIndex, chrBufIndex,
                               lastInLumBuf, lastInChrBuf);
 #endif
@@ -691,7 +691,7 @@ static av_cold void sws_init_swScale_c(SwsContext *c)
 
 
     if (c->srcBpc == 8) {
-        if (c->dstBpc <= 10) {
+        if (c->dstBpc <= 14) {
             c->hyScale = c->hcScale = hScale8To15_c;
             if (c->flags & SWS_FAST_BILINEAR) {
                 c->hyscale_fast = hyscale_fast_c;
@@ -701,12 +701,12 @@ static av_cold void sws_init_swScale_c(SwsContext *c)
             c->hyScale = c->hcScale = hScale8To19_c;
         }
     } else {
-        c->hyScale = c->hcScale = c->dstBpc > 10 ? hScale16To19_c
+        c->hyScale = c->hcScale = c->dstBpc > 14 ? hScale16To19_c
                                                  : hScale16To15_c;
     }
 
     if (c->srcRange != c->dstRange && !isAnyRGB(c->dstFormat)) {
-        if (c->dstBpc <= 10) {
+        if (c->dstBpc <= 14) {
             if (c->srcRange) {
                 c->lumConvertRange = lumRangeFromJpeg_c;
                 c->chrConvertRange = chrRangeFromJpeg_c;

@@ -34,13 +34,11 @@ static void set_common_formats(AVFilterContext *ctx, AVFilterFormats *fmts,
     int i;
     for (i = 0; i < ctx->input_count; i++)
         if (ctx->inputs[i] && ctx->inputs[i]->type == type)
-            avfilter_formats_ref(fmts,
-                                 (AVFilterFormats **)((uint8_t *)ctx->inputs[i]+offout));
+            ff_formats_ref(fmts, (AVFilterFormats **)((uint8_t *)ctx->inputs[i]+offout));
 
     for (i = 0; i < ctx->output_count; i++)
         if (ctx->outputs[i] && ctx->outputs[i]->type == type)
-            avfilter_formats_ref(fmts,
-                                 (AVFilterFormats **)((uint8_t *)ctx->outputs[i]+offin));
+            ff_formats_ref(fmts, (AVFilterFormats **)((uint8_t *)ctx->outputs[i]+offin));
 
     if (!fmts->refcount) {
         av_free(fmts->formats);
@@ -48,33 +46,3 @@ static void set_common_formats(AVFilterContext *ctx, AVFilterFormats *fmts,
         av_free(fmts);
     }
 }
-
-void avfilter_set_common_pixel_formats(AVFilterContext *ctx, AVFilterFormats *formats)
-{
-    set_common_formats(ctx, formats, AVMEDIA_TYPE_VIDEO,
-                       offsetof(AVFilterLink, in_formats),
-                       offsetof(AVFilterLink, out_formats));
-}
-
-void avfilter_set_common_sample_formats(AVFilterContext *ctx, AVFilterFormats *formats)
-{
-    set_common_formats(ctx, formats, AVMEDIA_TYPE_AUDIO,
-                       offsetof(AVFilterLink, in_formats),
-                       offsetof(AVFilterLink, out_formats));
-}
-
-void avfilter_set_common_channel_layouts(AVFilterContext *ctx, AVFilterFormats *formats)
-{
-    set_common_formats(ctx, formats, AVMEDIA_TYPE_AUDIO,
-                       offsetof(AVFilterLink, in_channel_layouts),
-                       offsetof(AVFilterLink, out_channel_layouts));
-}
-
-#if FF_API_PACKING
-void avfilter_set_common_packing_formats(AVFilterContext *ctx, AVFilterFormats *formats)
-{
-    set_common_formats(ctx, formats, AVMEDIA_TYPE_AUDIO,
-                       offsetof(AVFilterLink, in_packing),
-                       offsetof(AVFilterLink, out_packing));
-}
-#endif

@@ -25,14 +25,12 @@
 #include "libavutil/opt.h"
 #include "libavutil/dict.h"
 #include "libavutil/avstring.h"
+#include "libavutil/avassert.h"
 #include "avformat.h"
 #include "internal.h"
 #include "avi.h"
 #include "dv.h"
 #include "riff.h"
-
-#undef NDEBUG
-#include <assert.h>
 
 typedef struct AVIStream {
     int64_t frame_offset; /* current frame (video) or byte (audio) counter
@@ -40,8 +38,8 @@ typedef struct AVIStream {
     int remaining;
     int packet_size;
 
-    int scale;
-    int rate;
+    uint32_t scale;
+    uint32_t rate;
     int sample_size; /* size of one sample (or packet) (in the rate/scale sense) in bytes */
 
     int64_t cum_len; /* temporary storage (used during seek) */
@@ -84,10 +82,11 @@ static const AVOption options[] = {
 };
 
 static const AVClass demuxer_class = {
-    "AVI demuxer",
-    av_default_item_name,
-    options,
-    LIBAVUTIL_VERSION_INT,
+    .class_name = "avi",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+    .category   = AV_CLASS_CATEGORY_DEMUXER,
 };
 
 
@@ -512,7 +511,7 @@ static int avi_read_header(AVFormatContext *s)
                 break;
             }
 
-            assert(stream_index < s->nb_streams);
+            av_assert0(stream_index < s->nb_streams);
             st->codec->stream_codec_tag= handler;
 
             avio_rl32(pb); /* flags */
@@ -1102,7 +1101,7 @@ static int avi_read_packet(AVFormatContext *s, AVPacket *pkt)
               return AVERROR_EOF;
 //        av_log(s, AV_LOG_DEBUG, "pos=%"PRId64"\n", pos);
 
-            assert(best_ast->remaining <= best_ast->packet_size);
+            av_assert0(best_ast->remaining <= best_ast->packet_size);
 
             avi->stream_index= best_stream_index;
             if(!best_ast->remaining)
@@ -1175,7 +1174,7 @@ resync:
             if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
                 AVIndexEntry *e;
                 int index;
-                assert(st->index_entries);
+                av_assert0(st->index_entries);
 
                 index= av_index_search_timestamp(st, ast->frame_offset, 0);
                 e= &st->index_entries[index];
@@ -1249,6 +1248,7 @@ static int avi_read_idx1(AVFormatContext *s, int size)
     unsigned last_pos= -1;
     unsigned last_idx= -1;
     int64_t idx1_pos, first_packet_pos = 0, data_offset = 0;
+    int anykey = 0;
 
     nb_index_entries = size / 16;
     if (nb_index_entries <= 0)
@@ -1300,6 +1300,14 @@ static int avi_read_idx1(AVFormatContext *s, int size)
         }
         ast->cum_len += get_duration(ast, len);
         last_pos= pos;
+        anykey |= flags&AVIIF_INDEX;
+    }
+    if (!anykey) {
+        for (index = 0; index < s->nb_streams; index++) {
+            st = s->streams[index];
+            if (st->nb_index_entries)
+                st->index_entries[0].flags |= AVINDEX_KEYFRAME;
+        }
     }
     return 0;
 }
@@ -1424,7 +1432,7 @@ static int avi_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
         avi_load_index(s);
         avi->index_loaded |= 1;
     }
-    assert(stream_index>= 0);
+    av_assert0(stream_index>= 0);
 
     st = s->streams[stream_index];
     ast= st->priv_data;
@@ -1448,7 +1456,7 @@ static int avi_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
         /* One and only one real stream for DV in AVI, and it has video  */
         /* offsets. Calling with other stream indexes should have failed */
         /* the av_index_search_timestamp call above.                     */
-        assert(stream_index == 0);
+        av_assert0(stream_index == 0);
 
         if(avio_seek(s->pb, pos, SEEK_SET) < 0)
             return -1;
@@ -1477,8 +1485,8 @@ static int avi_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
         if (st2->nb_index_entries <= 0)
             continue;
 
-//        assert(st2->codec->block_align);
-        assert((int64_t)st2->time_base.num*ast2->rate == (int64_t)st2->time_base.den*ast2->scale);
+//        av_assert1(st2->codec->block_align);
+        av_assert0((int64_t)st2->time_base.num*ast2->rate == (int64_t)st2->time_base.den*ast2->scale);
         index = av_index_search_timestamp(
                 st2,
                 av_rescale_q(timestamp, st->time_base, st2->time_base) * FFMAX(ast2->sample_size, 1),

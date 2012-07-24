@@ -27,6 +27,7 @@
 #include "avformat.h"
 #include "avio_internal.h"
 #include "internal.h"
+#include "libavutil/opt.h"
 
 typedef struct {
     const AVClass *class;  /**< Class for private options. */
@@ -42,7 +43,6 @@ static int write_header(AVFormatContext *s)
     VideoMuxData *img = s->priv_data;
     const char *str;
 
-    img->img_number = 1;
     av_strlcpy(img->path, s->filename, sizeof(img->path));
 
     /* find format */
@@ -137,9 +137,9 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 #define ENC AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption muxoptions[] = {
     { "updatefirst",  "", OFFSET(updatefirst),  AV_OPT_TYPE_INT,    {.dbl = 0},    0, 1, ENC },
+    { "start_number", "first number in the sequence", OFFSET(img_number), AV_OPT_TYPE_INT, {.dbl = 1}, 1, INT_MAX, ENC },
     { NULL },
 };
-
 
 #if CONFIG_IMAGE2_MUXER
 static const AVClass img2mux_class = {
@@ -148,6 +148,7 @@ static const AVClass img2mux_class = {
     .option     = muxoptions,
     .version    = LIBAVUTIL_VERSION_INT,
 };
+
 AVOutputFormat ff_image2_muxer = {
     .name           = "image2",
     .long_name      = NULL_IF_CONFIG_SMALL("image2 sequence"),

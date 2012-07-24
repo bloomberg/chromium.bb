@@ -58,7 +58,7 @@ static int expand_rle_row(SgiState *s, uint8_t *out_buf,
         }
 
         /* Check for buffer overflow. */
-        if(out_buf + pixelstride * count >= out_end) return -1;
+        if(out_buf + pixelstride * (count-1) >= out_end) return -1;
 
         if (pixel & 0x80) {
             while (count--) {
@@ -113,16 +113,15 @@ static int read_rle_sgi(uint8_t *out_buf, SgiState *s)
 /**
  * Read an uncompressed SGI image.
  * @param out_buf output buffer
- * @param out_end end ofoutput buffer
  * @param s the current image state
  * @return 0 if read success, otherwise return -1.
  */
-static int read_uncompressed_sgi(unsigned char* out_buf, uint8_t* out_end,
-                                 SgiState *s)
+static int read_uncompressed_sgi(unsigned char* out_buf, SgiState *s)
 {
     int x, y, z;
     unsigned int offset = s->height * s->width * s->bytes_per_channel;
     GetByteContext gp[4];
+    uint8_t *out_end;
 
     /* Test buffer size. */
     if (offset * s->depth > bytestream2_get_bytes_left(&s->g))
@@ -228,7 +227,7 @@ static int decode_frame(AVCodecContext *avctx,
     if (rle) {
         ret = read_rle_sgi(out_end, s);
     } else {
-        ret = read_uncompressed_sgi(out_buf, out_end, s);
+        ret = read_uncompressed_sgi(out_buf, s);
     }
 
     if (ret == 0) {
@@ -267,5 +266,6 @@ AVCodec ff_sgi_decoder = {
     .init           = sgi_init,
     .close          = sgi_end,
     .decode         = decode_frame,
+    .capabilities   = CODEC_CAP_DR1,
     .long_name      = NULL_IF_CONFIG_SMALL("SGI image"),
 };

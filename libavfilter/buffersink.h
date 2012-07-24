@@ -46,9 +46,6 @@ AVBufferSinkParams *av_buffersink_params_alloc(void);
 typedef struct {
     const enum AVSampleFormat *sample_fmts; ///< list of allowed sample formats, terminated by AV_SAMPLE_FMT_NONE
     const int64_t *channel_layouts;         ///< list of allowed channel layouts, terminated by -1
-#if FF_API_PACKING
-    const int *packing_fmts;                ///< list of allowed packing formats
-#endif
 } AVABufferSinkParams;
 
 /**
@@ -57,6 +54,15 @@ typedef struct {
  * Must be freed with av_free().
  */
 AVABufferSinkParams *av_abuffersink_params_alloc(void);
+
+/**
+ * Set the frame size for an audio buffer sink.
+ *
+ * All calls to av_buffersink_get_buffer_ref will return a buffer with
+ * exactly the specified number of samples, or AVERROR(EAGAIN) if there is
+ * not enough. The last buffer at EOF will be padded with 0.
+ */
+void av_buffersink_set_frame_size(AVFilterContext *ctx, unsigned frame_size);
 
 /**
  * Tell av_buffersink_get_buffer_ref() to read video/samples buffer
@@ -91,14 +97,15 @@ int av_buffersink_get_buffer_ref(AVFilterContext *buffer_sink,
  */
 int av_buffersink_poll_frame(AVFilterContext *ctx);
 
-#if FF_API_OLD_VSINK_API
 /**
- * @deprecated Use av_buffersink_get_buffer_ref() instead.
+ * Get the frame rate of the input.
  */
-attribute_deprecated
-int av_vsink_buffer_get_video_buffer_ref(AVFilterContext *buffer_sink,
-                                         AVFilterBufferRef **picref, int flags);
-#endif
+AVRational av_buffersink_get_frame_rate(AVFilterContext *ctx);
+
+/**
+ * @defgroup libav_api Libav API
+ * @{
+ */
 
 /**
  * Get a buffer with filtered data from sink and put it in buf.
@@ -132,5 +139,9 @@ int av_buffersink_read(AVFilterContext *sink, AVFilterBufferRef **buf);
  */
 int av_buffersink_read_samples(AVFilterContext *ctx, AVFilterBufferRef **buf,
                                int nb_samples);
+
+/**
+ * @}
+ */
 
 #endif /* AVFILTER_BUFFERSINK_H */

@@ -29,8 +29,6 @@
 #include "h264data.h"
 #include "golomb.h"
 
-#include <assert.h>
-
 
 static int ff_h264_find_frame_end(H264Context *h, const uint8_t *buf, int buf_size)
 {
@@ -322,7 +320,7 @@ static int h264_parse(AVCodecParserContext *s,
         }
 
         if(next<0 && next != END_NOT_FOUND){
-            assert(pc->last_index + next >= 0 );
+            av_assert1(pc->last_index + next >= 0 );
             ff_h264_find_frame_end(h, &pc->buffer[pc->last_index + next], -next); //update state
         }
     }

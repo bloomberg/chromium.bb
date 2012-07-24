@@ -32,6 +32,9 @@
 #include "libavutil/parseutils.h"
 #include "libavutil/random_seed.h"
 #include "avfilter.h"
+#include "internal.h"
+#include "formats.h"
+#include "video.h"
 
 typedef struct {
     const AVClass *class;
@@ -95,16 +98,7 @@ static const AVOption life_options[] = {
     { NULL },
 };
 
-static const char *life_get_name(void *ctx)
-{
-    return "life";
-}
-
-static const AVClass life_class = {
-    "LifeContext",
-    life_get_name,
-    life_options
-};
+AVFILTER_DEFINE_CLASS(life);
 
 static int parse_rule(uint16_t *born_rule, uint16_t *stay_rule,
                       const char *rule_str, void *log_ctx)
@@ -225,7 +219,7 @@ static int init_pattern_from_file(AVFilterContext *ctx)
     return 0;
 }
 
-static int init(AVFilterContext *ctx, const char *args, void *opaque)
+static int init(AVFilterContext *ctx, const char *args)
 {
     LifeContext *life = ctx->priv;
     AVRational frame_rate;
@@ -297,7 +291,7 @@ static int init(AVFilterContext *ctx, const char *args, void *opaque)
             return ret;
     }
 
-    av_log(ctx, AV_LOG_INFO,
+    av_log(ctx, AV_LOG_VERBOSE,
            "s:%dx%d r:%d/%d rule:%s stay_rule:%d born_rule:%d stitch:%d seed:%u\n",
            life->w, life->h, frame_rate.num, frame_rate.den,
            life->rule_str, life->stay_rule, life->born_rule, life->stitch,
@@ -436,7 +430,7 @@ static void fill_picture_rgb(AVFilterContext *ctx, AVFilterBufferRef *picref)
 static int request_frame(AVFilterLink *outlink)
 {
     LifeContext *life = outlink->src->priv;
-    AVFilterBufferRef *picref = avfilter_get_video_buffer(outlink, AV_PERM_WRITE, life->w, life->h);
+    AVFilterBufferRef *picref = ff_get_video_buffer(outlink, AV_PERM_WRITE, life->w, life->h);
     picref->video->sample_aspect_ratio = (AVRational) {1, 1};
     picref->pts = life->pts++;
     picref->pos = -1;
@@ -447,9 +441,9 @@ static int request_frame(AVFilterLink *outlink)
     show_life_grid(outlink->src);
 #endif
 
-    avfilter_start_frame(outlink, avfilter_ref_buffer(picref, ~0));
-    avfilter_draw_slice(outlink, 0, life->h, 1);
-    avfilter_end_frame(outlink);
+    ff_start_frame(outlink, avfilter_ref_buffer(picref, ~0));
+    ff_draw_slice(outlink, 0, life->h, 1);
+    ff_end_frame(outlink);
     avfilter_unref_buffer(picref);
 
     return 0;
@@ -467,7 +461,7 @@ static int query_formats(AVFilterContext *ctx)
         pix_fmts[0] = PIX_FMT_MONOBLACK;
         life->draw = fill_picture_monoblack;
     }
-    avfilter_set_common_pixel_formats(ctx, avfilter_make_format_list(pix_fmts));
+    ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
     return 0;
 }
 

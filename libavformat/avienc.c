@@ -25,6 +25,7 @@
 #include "riff.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/dict.h"
+#include "libavutil/avassert.h"
 
 /*
  * TODO:
@@ -130,7 +131,7 @@ static int avi_write_counters(AVFormatContext* s, int riff_id)
     for(n = 0; n < s->nb_streams; n++) {
         AVIStream *avist= s->streams[n]->priv_data;
 
-        assert(avist->frames_hdr_strm);
+        av_assert0(avist->frames_hdr_strm);
         stream = s->streams[n]->codec;
         avio_seek(pb, avist->frames_hdr_strm, SEEK_SET);
         ff_parse_specific_params(stream, &au_byterate, &au_ssize, &au_scale);
@@ -143,7 +144,7 @@ static int avi_write_counters(AVFormatContext* s, int riff_id)
             nb_frames = FFMAX(nb_frames, avist->packet_count);
     }
     if(riff_id == 1) {
-        assert(avi->frames_hdr_all);
+        av_assert0(avi->frames_hdr_all);
         avio_seek(pb, avi->frames_hdr_all, SEEK_SET);
         avio_wl32(pb, nb_frames);
     }
@@ -411,7 +412,7 @@ static int avi_write_ix(AVFormatContext *s)
     char ix_tag[] = "ix00";
     int i, j;
 
-    assert(pb->seekable);
+    av_assert0(pb->seekable);
 
     if (avi->riff_id > AVI_MASTER_INDEX_SIZE)
         return -1;
@@ -653,11 +654,7 @@ AVOutputFormat ff_avi_muxer = {
     .mime_type         = "video/x-msvideo",
     .extensions        = "avi",
     .priv_data_size    = sizeof(AVIContext),
-#if CONFIG_LIBMP3LAME_ENCODER
-    .audio_codec       = CODEC_ID_MP3,
-#else
-    .audio_codec       = CODEC_ID_AC3,
-#endif
+    .audio_codec       = CONFIG_LIBMP3LAME ? CODEC_ID_MP3 : CODEC_ID_AC3,
     .video_codec       = CODEC_ID_MPEG4,
     .write_header      = avi_write_header,
     .write_packet      = avi_write_packet,

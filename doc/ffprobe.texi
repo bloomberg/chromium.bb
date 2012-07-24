@@ -94,6 +94,13 @@ For example for printing the output in JSON format, specify:
 For more details on the available output printing formats, see the
 Writers section below.
 
+@item -show_data
+Show payload data, as an hexadecimal and ASCII dump. Coupled with
+@option{-show_packets}, it will dump the packets' data. Coupled with
+@option{-show_streams}, it will dump the codec extradata.
+
+The dump is printed as the "data" field. It may contain newlines.
+
 @item -show_error
 Show information about the error found when trying to probe the input.
 
@@ -269,6 +276,35 @@ CSV format.
 This writer is equivalent to
 @code{compact=item_sep=,:nokey=1:escape=csv}.
 
+@section flat
+Flat format.
+
+A free-form output where each line contains an explicit key=value, such as
+"streams.stream.3.tags.foo=bar". The output is shell escaped, so it can be
+directly embedded in sh scripts as long as the separator character is an
+alphanumeric character or an underscore (see @var{sep_char} option).
+
+This writer accepts options as a list of @var{key}=@var{value} pairs,
+separated by ":".
+
+The description of the accepted options follows.
+
+@table @option
+@item sep_char, s
+Separator character used to separate the chapter, the section name, IDs and
+potential tags in the printed field key.
+
+Default value is '.'.
+
+@item hierarchical, h
+Specify if the section name specification should be hierarchical. If
+set to 1, and if there is more than one section in the current
+chapter, the section name will be prefixed by the name of the
+chapter. A value of 0 will disable this behavior.
+
+Default value is 1.
+@end table
+
 @section ini
 INI format output.
 
@@ -381,7 +417,7 @@ MOV timecode is extracted from tmcd track, so is available in the tmcd
 stream metadata (@option{-show_streams}, see @var{TAG:timecode}).
 
 @item
-DV and GXF timecodes are available in format metadata
+DV, GXF and AVI timecodes are available in format metadata
 (@option{-show_format}, see @var{TAG:timecode}).
 
 @end itemize

@@ -42,7 +42,13 @@ static const AVOption options[]={
     {"nitris_compat", "encode with Avid Nitris compatibility", offsetof(DNXHDEncContext, nitris_compat), AV_OPT_TYPE_INT, {.dbl = 0}, 0, 1, VE},
 {NULL}
 };
-static const AVClass class = { "dnxhd", av_default_item_name, options, LIBAVUTIL_VERSION_INT };
+
+static const AVClass class = {
+    .class_name = "dnxhd",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
 
 #define LAMBDA_FRAC_BITS 10
 
@@ -127,7 +133,7 @@ static int dnxhd_init_vlc(DNXHDEncContext *ctx)
                 if (ctx->cid_table->ac_level[j] >> 1 == alevel &&
                     (!offset || (ctx->cid_table->ac_flags[j] & 1) && offset) &&
                     (!run    || (ctx->cid_table->ac_flags[j] & 2) && run)) {
-                    assert(!ctx->vlc_codes[index]);
+                    av_assert1(!ctx->vlc_codes[index]);
                     if (alevel) {
                         ctx->vlc_codes[index] = (ctx->cid_table->ac_codes[j]<<1)|(sign&1);
                         ctx->vlc_bits [index] = ctx->cid_table->ac_bits[j]+1;
@@ -138,7 +144,7 @@ static int dnxhd_init_vlc(DNXHDEncContext *ctx)
                     break;
                 }
             }
-            assert(!alevel || j < 257);
+            av_assert0(!alevel || j < 257);
             if (offset) {
                 ctx->vlc_codes[index] = (ctx->vlc_codes[index]<<ctx->cid_table->index_bits)|offset;
                 ctx->vlc_bits [index]+= ctx->cid_table->index_bits;
@@ -147,7 +153,7 @@ static int dnxhd_init_vlc(DNXHDEncContext *ctx)
     }
     for (i = 0; i < 62; i++) {
         int run = ctx->cid_table->run[i];
-        assert(run < 63);
+        av_assert0(run < 63);
         ctx->run_codes[run] = ctx->cid_table->run_codes[i];
         ctx->run_bits [run] = ctx->cid_table->run_bits[i];
     }
@@ -542,7 +548,7 @@ static int dnxhd_calc_bits_thread(AVCodecContext *avctx, void *arg, int jobnr, i
             if (diff < 0) nbits = av_log2_16bit(-2*diff);
             else          nbits = av_log2_16bit( 2*diff);
 
-            assert(nbits < ctx->cid_table->bit_depth + 4);
+            av_assert1(nbits < ctx->cid_table->bit_depth + 4);
             dc_bits += ctx->cid_table->dc_bits[nbits] + nbits;
 
             ctx->m.last_dc[n] = block[0];
@@ -810,13 +816,13 @@ static void radix_count(const RCCMPEntry *data, int size, int buckets[RADIX_PASS
             buckets[j][get_bucket(v, 0)]++;
             v >>= BUCKET_BITS;
         }
-        assert(!v);
+        av_assert1(!v);
     }
     for (j = 0; j < RADIX_PASSES; j++) {
         int offset = size;
         for (i = NBUCKETS - 1; i >= 0; i--)
             buckets[j][i] = offset -= buckets[j][i];
-        assert(!buckets[j][0]);
+        av_assert1(!buckets[j][0]);
     }
 }
 
@@ -941,12 +947,12 @@ static int dnxhd_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
     for (i = 0; i < ctx->m.mb_height; i++) {
         AV_WB32(ctx->msip + i * 4, offset);
         offset += ctx->slice_size[i];
-        assert(!(ctx->slice_size[i] & 3));
+        av_assert1(!(ctx->slice_size[i] & 3));
     }
 
     avctx->execute2(avctx, dnxhd_encode_thread, buf, NULL, ctx->m.mb_height);
 
-    assert(640 + offset + 4 <= ctx->cid_table->coding_unit_size);
+    av_assert1(640 + offset + 4 <= ctx->cid_table->coding_unit_size);
     memset(buf + 640 + offset, 0, ctx->cid_table->coding_unit_size - 4 - offset - 640);
 
     AV_WB32(buf + ctx->cid_table->coding_unit_size - 4, 0x600DC0DE); // EOF

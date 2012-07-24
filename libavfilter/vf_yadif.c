@@ -22,47 +22,13 @@
 #include "libavutil/common.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
+#include "formats.h"
+#include "internal.h"
 #include "video.h"
 #include "yadif.h"
 
 #undef NDEBUG
 #include <assert.h>
-
-typedef struct {
-    /**
-     * 0: send 1 frame for each frame
-     * 1: send 1 frame for each field
-     * 2: like 0 but skips spatial interlacing check
-     * 3: like 1 but skips spatial interlacing check
-     */
-    int mode;
-
-    /**
-     *  0: top field first
-     *  1: bottom field first
-     * -1: auto-detection
-     */
-    int parity;
-
-    int frame_pending;
-
-    /**
-     *  0: deinterlace all frames
-     *  1: only deinterlace frames marked as interlaced
-     */
-    int auto_enable;
-
-    AVFilterBufferRef *cur;
-    AVFilterBufferRef *next;
-    AVFilterBufferRef *prev;
-    AVFilterBufferRef *out;
-    void (*filter_line)(uint8_t *dst,
-                        uint8_t *prev, uint8_t *cur, uint8_t *next,
-                        int w, int prefs, int mrefs, int parity, int mode);
-
-    const AVPixFmtDescriptor *csp;
-    int eof;
-} YADIFContext;
 
 #define CHECK(j)\
     {   int score = FFABS(cur[mrefs-1+(j)] - cur[prefs-1-(j)])\
@@ -168,9 +134,8 @@ static void filter(AVFilterContext *ctx, AVFilterBufferRef *dstpic,
             }
         }
     }
-#if HAVE_MMX
-    __asm__ volatile("emms \n\t" : : : "memory");
-#endif
+
+    emms_c();
 }
 
 static AVFilterBufferRef *get_video_buffer(AVFilterLink *link, int perms, int w, int h)
@@ -191,11 +156,11 @@ static AVFilterBufferRef *get_video_buffer(AVFilterLink *link, int perms, int w,
     return picref;
 }
 
-static void return_frame(AVFilterContext *ctx, int is_second)
+static int return_frame(AVFilterContext *ctx, int is_second)
 {
     YADIFContext *yadif = ctx->priv;
     AVFilterLink *link= ctx->outputs[0];
-    int tff;
+    int tff, ret;
 
     if (yadif->parity == -1) {
         tff = yadif->cur->video->interlaced ?
@@ -205,8 +170,11 @@ static void return_frame(AVFilterContext *ctx, int is_second)
     }
 
     if (is_second) {
-        yadif->out = avfilter_get_video_buffer(link, AV_PERM_WRITE | AV_PERM_PRESERVE |
-                                               AV_PERM_REUSE, link->w, link->h);
+        yadif->out = ff_get_video_buffer(link, AV_PERM_WRITE | AV_PERM_PRESERVE |
+                                         AV_PERM_REUSE, link->w, link->h);
+        if (!yadif->out)
+            return AVERROR(ENOMEM);
+
         avfilter_copy_buffer_ref_props(yadif->out, yadif->cur);
         yadif->out->video->interlaced = 0;
     }
@@ -227,15 +195,19 @@ static void return_frame(AVFilterContext *ctx, int is_second)
         } else {
             yadif->out->pts = AV_NOPTS_VALUE;
         }
-        avfilter_start_frame(ctx->outputs[0], yadif->out);
+        ret = ff_start_frame(ctx->outputs[0], yadif->out);
+        if (ret < 0)
+            return ret;
     }
-    avfilter_draw_slice(ctx->outputs[0], 0, link->h, 1);
-    avfilter_end_frame(ctx->outputs[0]);
+    if ((ret = ff_draw_slice(ctx->outputs[0], 0, link->h, 1)) < 0 ||
+        (ret = ff_end_frame(ctx->outputs[0])) < 0)
+        return ret;
 
     yadif->frame_pending = (yadif->mode&1) && !is_second;
+    return 0;
 }
 
-static void start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
+static int start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
 {
     AVFilterContext *ctx = link->dst;
     YADIFContext *yadif = ctx->priv;
@@ -252,46 +224,52 @@ static void start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     yadif->next = picref;
 
     if (!yadif->cur)
-        return;
+        return 0;
 
     if (yadif->auto_enable && !yadif->cur->video->interlaced) {
         yadif->out  = avfilter_ref_buffer(yadif->cur, AV_PERM_READ);
-        avfilter_unref_buffer(yadif->prev);
-        yadif->prev = NULL;
+        if (!yadif->out)
+            return AVERROR(ENOMEM);
+
+        avfilter_unref_bufferp(&yadif->prev);
         if (yadif->out->pts != AV_NOPTS_VALUE)
             yadif->out->pts *= 2;
-        avfilter_start_frame(ctx->outputs[0], yadif->out);
-        return;
+        return ff_start_frame(ctx->outputs[0], yadif->out);
     }
 
-    if (!yadif->prev)
-        yadif->prev = avfilter_ref_buffer(yadif->cur, AV_PERM_READ);
+    if (!yadif->prev &&
+        !(yadif->prev = avfilter_ref_buffer(yadif->cur, AV_PERM_READ)))
+        return AVERROR(ENOMEM);
 
-    yadif->out = avfilter_get_video_buffer(ctx->outputs[0], AV_PERM_WRITE | AV_PERM_PRESERVE |
-                                       AV_PERM_REUSE, link->w, link->h);
+    yadif->out = ff_get_video_buffer(ctx->outputs[0], AV_PERM_WRITE | AV_PERM_PRESERVE |
+                                     AV_PERM_REUSE, link->w, link->h);
+    if (!yadif->out)
+        return AVERROR(ENOMEM);
 
     avfilter_copy_buffer_ref_props(yadif->out, yadif->cur);
     yadif->out->video->interlaced = 0;
     if (yadif->out->pts != AV_NOPTS_VALUE)
         yadif->out->pts *= 2;
-    avfilter_start_frame(ctx->outputs[0], yadif->out);
+    return ff_start_frame(ctx->outputs[0], yadif->out);
 }
 
-static void end_frame(AVFilterLink *link)
+static int end_frame(AVFilterLink *link)
 {
     AVFilterContext *ctx = link->dst;
     YADIFContext *yadif = ctx->priv;
 
     if (!yadif->out)
-        return;
+        return 0;
 
     if (yadif->auto_enable && !yadif->cur->video->interlaced) {
-        avfilter_draw_slice(ctx->outputs[0], 0, link->h, 1);
-        avfilter_end_frame(ctx->outputs[0]);
-        return;
+        int ret = ff_draw_slice(ctx->outputs[0], 0, link->h, 1);
+        if (ret >= 0)
+            ret = ff_end_frame(ctx->outputs[0]);
+        return ret;
     }
 
     return_frame(ctx, 0);
+    return 0;
 }
 
 static int request_frame(AVFilterLink *link)
@@ -310,10 +288,13 @@ static int request_frame(AVFilterLink *link)
         if (yadif->eof)
             return AVERROR_EOF;
 
-        ret  = avfilter_request_frame(link->src->inputs[0]);
+        ret  = ff_request_frame(link->src->inputs[0]);
 
         if (ret == AVERROR_EOF && yadif->cur) {
             AVFilterBufferRef *next = avfilter_ref_buffer(yadif->next, AV_PERM_READ);
+            if (!next)
+                return AVERROR(ENOMEM);
+
             next->pts = yadif->next->pts * 2 - yadif->cur->pts;
 
             start_frame(link->src->inputs[0], next);
@@ -335,14 +316,14 @@ static int poll_frame(AVFilterLink *link)
     if (yadif->frame_pending)
         return 1;
 
-    val = avfilter_poll_frame(link->src->inputs[0]);
+    val = ff_poll_frame(link->src->inputs[0]);
     if (val <= 0)
         return val;
 
     if (val >= 1 && !yadif->next) { //FIXME change API to not requre this red tape
-        if ((ret = avfilter_request_frame(link->src->inputs[0])) < 0)
+        if ((ret = ff_request_frame(link->src->inputs[0])) < 0)
             return ret;
-        val = avfilter_poll_frame(link->src->inputs[0]);
+        val = ff_poll_frame(link->src->inputs[0]);
         if (val <= 0)
             return val;
     }
@@ -358,9 +339,9 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     YADIFContext *yadif = ctx->priv;
 
-    if (yadif->prev) avfilter_unref_buffer(yadif->prev);
-    if (yadif->cur ) avfilter_unref_buffer(yadif->cur );
-    if (yadif->next) avfilter_unref_buffer(yadif->next);
+    if (yadif->prev) avfilter_unref_bufferp(&yadif->prev);
+    if (yadif->cur ) avfilter_unref_bufferp(&yadif->cur );
+    if (yadif->next) avfilter_unref_bufferp(&yadif->next);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -390,15 +371,14 @@ static int query_formats(AVFilterContext *ctx)
         PIX_FMT_NONE
     };
 
-    avfilter_set_common_pixel_formats(ctx, avfilter_make_format_list(pix_fmts));
+    ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
 
     return 0;
 }
 
-static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
+static av_cold int init(AVFilterContext *ctx, const char *args)
 {
     YADIFContext *yadif = ctx->priv;
-    int cpu_flags = av_get_cpu_flags();
 
     yadif->mode = 0;
     yadif->parity = -1;
@@ -408,19 +388,19 @@ static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
     if (args) sscanf(args, "%d:%d:%d", &yadif->mode, &yadif->parity, &yadif->auto_enable);
 
     yadif->filter_line = filter_line_c;
-    if (HAVE_SSSE3 && cpu_flags & AV_CPU_FLAG_SSSE3)
-        yadif->filter_line = ff_yadif_filter_line_ssse3;
-    else if (HAVE_SSE && cpu_flags & AV_CPU_FLAG_SSE2)
-        yadif->filter_line = ff_yadif_filter_line_sse2;
-    else if (HAVE_MMX && cpu_flags & AV_CPU_FLAG_MMX)
-        yadif->filter_line = ff_yadif_filter_line_mmx;
 
-    av_log(ctx, AV_LOG_INFO, "mode:%d parity:%d auto_enable:%d\n", yadif->mode, yadif->parity, yadif->auto_enable);
+    if (HAVE_MMX)
+        ff_yadif_init_x86(yadif);
+
+    av_log(ctx, AV_LOG_VERBOSE, "mode:%d parity:%d auto_enable:%d\n", yadif->mode, yadif->parity, yadif->auto_enable);
 
     return 0;
 }
 
-static void null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { }
+static int null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir)
+{
+    return 0;
+}
 
 static int config_props(AVFilterLink *link)
 {
@@ -441,19 +421,19 @@ AVFilter avfilter_vf_yadif = {
     .uninit        = uninit,
     .query_formats = query_formats,
 
-    .inputs    = (const AVFilterPad[]) {{ .name       = "default",
-                                    .type             = AVMEDIA_TYPE_VIDEO,
-                                    .start_frame      = start_frame,
-                                    .get_video_buffer = get_video_buffer,
-                                    .draw_slice       = null_draw_slice,
-                                    .end_frame        = end_frame,
-                                    .rej_perms        = AV_PERM_REUSE2, },
-                                  { .name = NULL}},
+    .inputs    = (const AVFilterPad[]) {{ .name             = "default",
+                                          .type             = AVMEDIA_TYPE_VIDEO,
+                                          .start_frame      = start_frame,
+                                          .get_video_buffer = get_video_buffer,
+                                          .draw_slice       = null_draw_slice,
+                                          .end_frame        = end_frame,
+                                          .rej_perms        = AV_PERM_REUSE2, },
+                                        { .name = NULL}},
 
-    .outputs   = (const AVFilterPad[]) {{ .name       = "default",
-                                    .type             = AVMEDIA_TYPE_VIDEO,
-                                    .poll_frame       = poll_frame,
-                                    .request_frame    = request_frame,
-                                    .config_props     = config_props, },
-                                  { .name = NULL}},
+    .outputs   = (const AVFilterPad[]) {{ .name             = "default",
+                                          .type             = AVMEDIA_TYPE_VIDEO,
+                                          .poll_frame       = poll_frame,
+                                          .request_frame    = request_frame,
+                                          .config_props     = config_props, },
+                                        { .name = NULL}},
 };

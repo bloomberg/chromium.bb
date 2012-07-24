@@ -246,14 +246,14 @@ void ff_put_pixels_clamped_mmx(const DCTELEM *block, uint8_t *pixels,
     pix = pixels;
     /* unrolled loop */
     __asm__ volatile (
-        "movq        %3, %%mm0          \n\t"
-        "movq       8%3, %%mm1          \n\t"
-        "movq      16%3, %%mm2          \n\t"
-        "movq      24%3, %%mm3          \n\t"
-        "movq      32%3, %%mm4          \n\t"
-        "movq      40%3, %%mm5          \n\t"
-        "movq      48%3, %%mm6          \n\t"
-        "movq      56%3, %%mm7          \n\t"
+        "movq        (%3), %%mm0          \n\t"
+        "movq       8(%3), %%mm1          \n\t"
+        "movq      16(%3), %%mm2          \n\t"
+        "movq      24(%3), %%mm3          \n\t"
+        "movq      32(%3), %%mm4          \n\t"
+        "movq      40(%3), %%mm5          \n\t"
+        "movq      48(%3), %%mm6          \n\t"
+        "movq      56(%3), %%mm7          \n\t"
         "packuswb %%mm1, %%mm0          \n\t"
         "packuswb %%mm3, %%mm2          \n\t"
         "packuswb %%mm5, %%mm4          \n\t"
@@ -263,7 +263,7 @@ void ff_put_pixels_clamped_mmx(const DCTELEM *block, uint8_t *pixels,
         "movq     %%mm4, (%0, %1, 2)    \n\t"
         "movq     %%mm6, (%0, %2)       \n\t"
         :: "r"(pix), "r"((x86_reg)line_size), "r"((x86_reg)line_size * 3),
-           "m"(*p)
+           "r"(p)
         : "memory");
     pix += line_size * 4;
     p   += 32;
@@ -631,6 +631,34 @@ static void add_hfyu_median_prediction_cmov(uint8_t *dst, const uint8_t *top,
 }
 #endif
 
+static inline void transpose4x4(uint8_t *dst, uint8_t *src, x86_reg dst_stride, x86_reg src_stride){
+    __asm__ volatile( //FIXME could save 1 instruction if done as 8x4 ...
+        "movd  (%1), %%mm0              \n\t"
+        "add   %3, %1                   \n\t"
+        "movd  (%1), %%mm1              \n\t"
+        "movd  (%1,%3,1), %%mm2         \n\t"
+        "movd  (%1,%3,2), %%mm3         \n\t"
+        "punpcklbw %%mm1, %%mm0         \n\t"
+        "punpcklbw %%mm3, %%mm2         \n\t"
+        "movq %%mm0, %%mm1              \n\t"
+        "punpcklwd %%mm2, %%mm0         \n\t"
+        "punpckhwd %%mm2, %%mm1         \n\t"
+        "movd  %%mm0, (%0)              \n\t"
+        "add   %2, %0                   \n\t"
+        "punpckhdq %%mm0, %%mm0         \n\t"
+        "movd  %%mm0, (%0)              \n\t"
+        "movd  %%mm1, (%0,%2,1)         \n\t"
+        "punpckhdq %%mm1, %%mm1         \n\t"
+        "movd  %%mm1, (%0,%2,2)         \n\t"
+
+        :  "+&r" (dst),
+           "+&r" (src)
+        :  "r" (dst_stride),
+           "r" (src_stride)
+        :  "memory"
+    );
+}
+
 #define H263_LOOP_FILTER                        \
     "pxor      %%mm7, %%mm7             \n\t"   \
     "movq         %0, %%mm0             \n\t"   \
@@ -807,7 +835,7 @@ static void draw_edges_mmx(uint8_t *buf, int wrap, int width, int height,
             : "+r"(ptr)
             : "r"((x86_reg)wrap), "r"((x86_reg)width), "r"(ptr + wrap * height)
             );
-    } else {
+    } else if(w==16){
         __asm__ volatile (
             "1:                                 \n\t"
             "movd            (%0), %%mm0        \n\t"
@@ -825,6 +853,25 @@ static void draw_edges_mmx(uint8_t *buf, int wrap, int width, int height,
             "add               %1, %0           \n\t"
             "cmp               %3, %0           \n\t"
             "jb                1b               \n\t"
+            : "+r"(ptr)
+            : "r"((x86_reg)wrap), "r"((x86_reg)width), "r"(ptr + wrap * height)
+            );
+    } else {
+        av_assert1(w == 4);
+        __asm__ volatile (
+            "1:                             \n\t"
+            "movd            (%0), %%mm0    \n\t"
+            "punpcklbw      %%mm0, %%mm0    \n\t"
+            "punpcklwd      %%mm0, %%mm0    \n\t"
+            "movd           %%mm0, -4(%0)   \n\t"
+            "movd      -4(%0, %2), %%mm1    \n\t"
+            "punpcklbw      %%mm1, %%mm1    \n\t"
+            "punpckhwd      %%mm1, %%mm1    \n\t"
+            "punpckhdq      %%mm1, %%mm1    \n\t"
+            "movd           %%mm1, (%0, %2) \n\t"
+            "add               %1, %0       \n\t"
+            "cmp               %3, %0       \n\t"
+            "jb                1b           \n\t"
             : "+r"(ptr)
             : "r"((x86_reg)wrap), "r"((x86_reg)width), "r"(ptr + wrap * height)
             );
@@ -2527,20 +2574,6 @@ static void vector_clipf_sse(float *dst, const float *src,
     );
 }
 
-void ff_vp3_idct_mmx(int16_t *input_data);
-void ff_vp3_idct_put_mmx(uint8_t *dest, int line_size, DCTELEM *block);
-void ff_vp3_idct_add_mmx(uint8_t *dest, int line_size, DCTELEM *block);
-
-void ff_vp3_idct_dc_add_mmx2(uint8_t *dest, int line_size,
-                             const DCTELEM *block);
-
-void ff_vp3_v_loop_filter_mmx2(uint8_t *src, int stride, int *bounding_values);
-void ff_vp3_h_loop_filter_mmx2(uint8_t *src, int stride, int *bounding_values);
-
-void ff_vp3_idct_sse2(int16_t *input_data);
-void ff_vp3_idct_put_sse2(uint8_t *dest, int line_size, DCTELEM *block);
-void ff_vp3_idct_add_sse2(uint8_t *dest, int line_size, DCTELEM *block);
-
 int32_t ff_scalarproduct_int16_mmx2(const int16_t *v1, const int16_t *v2,
                                     int order);
 int32_t ff_scalarproduct_int16_sse2(const int16_t *v1, const int16_t *v2,
@@ -2580,11 +2613,6 @@ int  ff_add_hfyu_left_prediction_sse4(uint8_t *dst, const uint8_t *src,
                                       int w, int left);
 
 float ff_scalarproduct_float_sse(const float *v1, const float *v2, int order);
-
-void ff_vector_fmul_sse(float *dst, const float *src0, const float *src1,
-                        int len);
-void ff_vector_fmul_avx(float *dst, const float *src0, const float *src1,
-                        int len);
 
 void ff_vector_fmul_reverse_sse(float *dst, const float *src0,
                                 const float *src1, int len);
@@ -2740,14 +2768,7 @@ static void dsputil_init_mmx2(DSPContext *c, AVCodecContext *avctx,
             c->avg_pixels_tab[0][3] = avg_pixels16_xy2_mmx2;
             c->avg_pixels_tab[1][3] = avg_pixels8_xy2_mmx2;
         }
-
-        if (CONFIG_VP3_DECODER && HAVE_YASM) {
-            c->vp3_v_loop_filter = ff_vp3_v_loop_filter_mmx2;
-            c->vp3_h_loop_filter = ff_vp3_h_loop_filter_mmx2;
-        }
     }
-    if (CONFIG_VP3_DECODER && HAVE_YASM)
-        c->vp3_idct_dc_add = ff_vp3_idct_dc_add_mmx2;
 
     if (CONFIG_VP3_DECODER && (avctx->codec_id == CODEC_ID_VP3 ||
                                avctx->codec_id == CODEC_ID_THEORA)) {
@@ -2888,7 +2909,8 @@ static void dsputil_init_3dnow(DSPContext *c, AVCodecContext *avctx,
     c->vorbis_inverse_coupling = vorbis_inverse_coupling_3dnow;
 
 #if HAVE_7REGS
-    c->add_hfyu_median_prediction = add_hfyu_median_prediction_cmov;
+    if (mm_flags & AV_CPU_FLAG_CMOV)
+        c->add_hfyu_median_prediction = add_hfyu_median_prediction_cmov;
 #endif
 }
 
@@ -2915,7 +2937,6 @@ static void dsputil_init_sse(DSPContext *c, AVCodecContext *avctx, int mm_flags)
     c->vorbis_inverse_coupling = vorbis_inverse_coupling_sse;
     c->ac3_downmix             = ac3_downmix_sse;
 #if HAVE_YASM
-    c->vector_fmul         = ff_vector_fmul_sse;
     c->vector_fmul_reverse = ff_vector_fmul_reverse_sse;
     c->vector_fmul_add     = ff_vector_fmul_add_sse;
 #endif
@@ -3077,7 +3098,6 @@ static void dsputil_init_avx(DSPContext *c, AVCodecContext *avctx, int mm_flags)
         }
     }
     c->butterflies_float_interleave = ff_butterflies_float_interleave_avx;
-    c->vector_fmul = ff_vector_fmul_avx;
     c->vector_fmul_reverse = ff_vector_fmul_reverse_avx;
     c->vector_fmul_add = ff_vector_fmul_add_avx;
 #endif
@@ -3086,21 +3106,6 @@ static void dsputil_init_avx(DSPContext *c, AVCodecContext *avctx, int mm_flags)
 void ff_dsputil_init_mmx(DSPContext *c, AVCodecContext *avctx)
 {
     int mm_flags = av_get_cpu_flags();
-
-#if 0
-    av_log(avctx, AV_LOG_INFO, "libavcodec: CPU flags:");
-    if (mm_flags & AV_CPU_FLAG_MMX)
-        av_log(avctx, AV_LOG_INFO, " mmx");
-    if (mm_flags & AV_CPU_FLAG_MMX2)
-        av_log(avctx, AV_LOG_INFO, " mmx2");
-    if (mm_flags & AV_CPU_FLAG_3DNOW)
-        av_log(avctx, AV_LOG_INFO, " 3dnow");
-    if (mm_flags & AV_CPU_FLAG_SSE)
-        av_log(avctx, AV_LOG_INFO, " sse");
-    if (mm_flags & AV_CPU_FLAG_SSE2)
-        av_log(avctx, AV_LOG_INFO, " sse2");
-    av_log(avctx, AV_LOG_INFO, "\n");
-#endif
 
     if (mm_flags & AV_CPU_FLAG_MMX) {
         const int idct_algo = avctx->idct_algo;
@@ -3124,20 +3129,6 @@ void ff_dsputil_init_mmx(DSPContext *c, AVCodecContext *avctx)
                 }
                 c->idct_permutation_type = FF_LIBMPEG2_IDCT_PERM;
 #endif
-            } else if ((CONFIG_VP3_DECODER || CONFIG_VP5_DECODER ||
-                        CONFIG_VP6_DECODER) &&
-                       idct_algo == FF_IDCT_VP3 && HAVE_YASM) {
-                if (mm_flags & AV_CPU_FLAG_SSE2) {
-                    c->idct_put              = ff_vp3_idct_put_sse2;
-                    c->idct_add              = ff_vp3_idct_add_sse2;
-                    c->idct                  = ff_vp3_idct_sse2;
-                    c->idct_permutation_type = FF_TRANSPOSE_IDCT_PERM;
-                } else {
-                    c->idct_put              = ff_vp3_idct_put_mmx;
-                    c->idct_add              = ff_vp3_idct_add_mmx;
-                    c->idct                  = ff_vp3_idct_mmx;
-                    c->idct_permutation_type = FF_PARTTRANS_IDCT_PERM;
-                }
             } else if (idct_algo == FF_IDCT_CAVS) {
                     c->idct_permutation_type = FF_TRANSPOSE_IDCT_PERM;
             } else if (idct_algo == FF_IDCT_XVIDMMX) {

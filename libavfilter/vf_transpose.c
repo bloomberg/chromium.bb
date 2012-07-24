@@ -29,6 +29,9 @@
 #include "libavutil/pixdesc.h"
 #include "libavutil/imgutils.h"
 #include "avfilter.h"
+#include "formats.h"
+#include "internal.h"
+#include "video.h"
 
 typedef struct {
     int hsub, vsub;
@@ -41,7 +44,7 @@ typedef struct {
     int dir;
 } TransContext;
 
-static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
+static av_cold int init(AVFilterContext *ctx, const char *args)
 {
     TransContext *trans = ctx->priv;
     trans->dir = 0;
@@ -80,7 +83,7 @@ static int query_formats(AVFilterContext *ctx)
         PIX_FMT_NONE
     };
 
-    avfilter_set_common_pixel_formats(ctx, avfilter_make_format_list(pix_fmts));
+    ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
     return 0;
 }
 
@@ -104,19 +107,23 @@ static int config_props_output(AVFilterLink *outlink)
     } else
         outlink->sample_aspect_ratio = inlink->sample_aspect_ratio;
 
-    av_log(ctx, AV_LOG_INFO, "w:%d h:%d dir:%d -> w:%d h:%d rotation:%s vflip:%d\n",
+    av_log(ctx, AV_LOG_VERBOSE, "w:%d h:%d dir:%d -> w:%d h:%d rotation:%s vflip:%d\n",
            inlink->w, inlink->h, trans->dir, outlink->w, outlink->h,
            trans->dir == 1 || trans->dir == 3 ? "clockwise" : "counterclockwise",
            trans->dir == 0 || trans->dir == 3);
     return 0;
 }
 
-static void start_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
+static int start_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
 {
     AVFilterLink *outlink = inlink->dst->outputs[0];
+    AVFilterBufferRef *buf_out;
 
-    outlink->out_buf = avfilter_get_video_buffer(outlink, AV_PERM_WRITE,
-                                                 outlink->w, outlink->h);
+    outlink->out_buf = ff_get_video_buffer(outlink, AV_PERM_WRITE,
+                                           outlink->w, outlink->h);
+    if (!outlink->out_buf)
+        return AVERROR(ENOMEM);
+
     outlink->out_buf->pts = picref->pts;
 
     if (picref->video->sample_aspect_ratio.num == 0) {
@@ -126,16 +133,19 @@ static void start_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
         outlink->out_buf->video->sample_aspect_ratio.den = picref->video->sample_aspect_ratio.num;
     }
 
-    avfilter_start_frame(outlink, avfilter_ref_buffer(outlink->out_buf, ~0));
+    buf_out = avfilter_ref_buffer(outlink->out_buf, ~0);
+    if (!buf_out)
+        return AVERROR(ENOMEM);
+    return ff_start_frame(outlink, buf_out);
 }
 
-static void end_frame(AVFilterLink *inlink)
+static int end_frame(AVFilterLink *inlink)
 {
     TransContext *trans = inlink->dst->priv;
     AVFilterBufferRef *inpic  = inlink->cur_buf;
     AVFilterBufferRef *outpic = inlink->dst->outputs[0]->out_buf;
     AVFilterLink *outlink = inlink->dst->outputs[0];
-    int plane;
+    int plane, ret;
 
     for (plane = 0; outpic->data[plane]; plane++) {
         int hsub = plane == 1 || plane == 2 ? trans->hsub : 0;
@@ -186,13 +196,13 @@ static void end_frame(AVFilterLink *inlink)
         }
     }
 
-    avfilter_unref_buffer(inpic);
-    avfilter_draw_slice(outlink, 0, outpic->video->h, 1);
-    avfilter_end_frame(outlink);
-    avfilter_unref_buffer(outpic);
+    if ((ret = ff_draw_slice(outlink, 0, outpic->video->h, 1)) < 0 ||
+        (ret = ff_end_frame(outlink)) < 0)
+        return ret;
+    return 0;
 }
 
-static void null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { }
+static int null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { return 0; }
 
 AVFilter avfilter_vf_transpose = {
     .name      = "transpose",
@@ -203,15 +213,15 @@ AVFilter avfilter_vf_transpose = {
 
     .query_formats = query_formats,
 
-    .inputs    = (const AVFilterPad[]) {{ .name      = "default",
-                                    .type            = AVMEDIA_TYPE_VIDEO,
-                                    .start_frame     = start_frame,
-                                    .draw_slice      = null_draw_slice,
-                                    .end_frame       = end_frame,
-                                    .min_perms       = AV_PERM_READ, },
-                                  { .name = NULL}},
-    .outputs   = (const AVFilterPad[]) {{ .name      = "default",
-                                    .config_props    = config_props_output,
-                                    .type            = AVMEDIA_TYPE_VIDEO, },
-                                  { .name = NULL}},
+    .inputs    = (const AVFilterPad[]) {{ .name            = "default",
+                                          .type            = AVMEDIA_TYPE_VIDEO,
+                                          .start_frame     = start_frame,
+                                          .draw_slice      = null_draw_slice,
+                                          .end_frame       = end_frame,
+                                          .min_perms       = AV_PERM_READ, },
+                                        { .name = NULL}},
+    .outputs   = (const AVFilterPad[]) {{ .name            = "default",
+                                          .config_props    = config_props_output,
+                                          .type            = AVMEDIA_TYPE_VIDEO, },
+                                        { .name = NULL}},
 };

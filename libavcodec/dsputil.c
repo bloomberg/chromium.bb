@@ -43,6 +43,7 @@
 uint8_t ff_cropTbl[256 + 2 * MAX_NEG_CROP] = {0, };
 uint32_t ff_squareTbl[512] = {0, };
 
+#define pixeltmp int16_t
 #define BIT_DEPTH 9
 #include "dsputil_template.c"
 #undef BIT_DEPTH
@@ -51,8 +52,21 @@ uint32_t ff_squareTbl[512] = {0, };
 #include "dsputil_template.c"
 #undef BIT_DEPTH
 
+#undef pixeltmp
+#define pixeltmp int32_t
+#define BIT_DEPTH 12
+#include "dsputil_template.c"
+#undef BIT_DEPTH
+
+#define BIT_DEPTH 14
+#include "dsputil_template.c"
+#undef BIT_DEPTH
+
+#undef pixeltmp
+#define pixeltmp int16_t
 #define BIT_DEPTH 8
 #include "dsputil_template.c"
+#undef pixeltmp
 
 // 0x7f7f7f7f or 0x7f7f7f7f7f7f7f7f or whatever, depending on the cpu's native arithmetic size
 #define pb_7f (~0UL/255 * 0x7f)
@@ -2471,12 +2485,6 @@ WRAPPER8_16_SQ(quant_psnr8x8_c, quant_psnr16_c)
 WRAPPER8_16_SQ(rd8x8_c, rd16_c)
 WRAPPER8_16_SQ(bit8x8_c, bit16_c)
 
-static void vector_fmul_c(float *dst, const float *src0, const float *src1, int len){
-    int i;
-    for(i=0; i<len; i++)
-        dst[i] = src0[i] * src1[i];
-}
-
 static void vector_fmul_reverse_c(float *dst, const float *src0, const float *src1, int len){
     int i;
     src1 += len-1;
@@ -2515,15 +2523,7 @@ static void vector_fmul_scalar_c(float *dst, const float *src, float mul,
         dst[i] = src[i] * mul;
 }
 
-static void vector_fmac_scalar_c(float *dst, const float *src, float mul,
-                                 int len)
-{
-    int i;
-    for (i = 0; i < len; i++)
-        dst[i] += src[i] * mul;
-}
-
-static void butterflies_float_c(float *restrict v1, float *restrict v2,
+static void butterflies_float_c(float *av_restrict v1, float *av_restrict v2,
                                 int len)
 {
     int i;
@@ -2870,12 +2870,6 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
             c->idct_add= ff_jref_idct_add;
             c->idct    = ff_j_rev_dct;
             c->idct_permutation_type= FF_LIBMPEG2_IDCT_PERM;
-        }else if((CONFIG_VP3_DECODER || CONFIG_VP5_DECODER || CONFIG_VP6_DECODER ) &&
-                avctx->idct_algo==FF_IDCT_VP3){
-            c->idct_put= ff_vp3_idct_put_c;
-            c->idct_add= ff_vp3_idct_add_c;
-            c->idct    = ff_vp3_idct_c;
-            c->idct_permutation_type= FF_NO_IDCT_PERM;
         }else if(avctx->idct_algo==FF_IDCT_WMV2){
             c->idct_put= ff_wmv2_idct_put_c;
             c->idct_add= ff_wmv2_idct_add_c;
@@ -3037,12 +3031,6 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
         c->h263_v_loop_filter= h263_v_loop_filter_c;
     }
 
-    if (CONFIG_VP3_DECODER) {
-        c->vp3_h_loop_filter= ff_vp3_h_loop_filter_c;
-        c->vp3_v_loop_filter= ff_vp3_v_loop_filter_c;
-        c->vp3_idct_dc_add= ff_vp3_idct_dc_add_c;
-    }
-
     c->h261_loop_filter= h261_loop_filter_c;
 
     c->try_8x8basis= try_8x8basis_c;
@@ -3054,7 +3042,6 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
 #if CONFIG_AC3_DECODER
     c->ac3_downmix = ff_ac3_downmix_c;
 #endif
-    c->vector_fmul = vector_fmul_c;
     c->vector_fmul_reverse = vector_fmul_reverse_c;
     c->vector_fmul_add = vector_fmul_add_c;
     c->vector_fmul_window = vector_fmul_window_c;
@@ -3067,7 +3054,6 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
     c->butterflies_float = butterflies_float_c;
     c->butterflies_float_interleave = butterflies_float_interleave_c;
     c->vector_fmul_scalar = vector_fmul_scalar_c;
-    c->vector_fmac_scalar = vector_fmac_scalar_c;
 
     c->shrink[0]= av_image_copy_plane;
     c->shrink[1]= ff_shrink22;
@@ -3163,8 +3149,24 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
             BIT_DEPTH_FUNCS(10, _16);
         }
         break;
+    case 12:
+        if (c->dct_bits == 32) {
+            BIT_DEPTH_FUNCS(12, _32);
+        } else {
+            BIT_DEPTH_FUNCS(12, _16);
+        }
+        break;
+    case 14:
+        if (c->dct_bits == 32) {
+            BIT_DEPTH_FUNCS(14, _32);
+        } else {
+            BIT_DEPTH_FUNCS(14, _16);
+        }
+        break;
     default:
-        BIT_DEPTH_FUNCS(8, _16);
+        if(avctx->bits_per_raw_sample<=8 || avctx->codec_type != AVMEDIA_TYPE_VIDEO) {
+            BIT_DEPTH_FUNCS(8, _16);
+        }
         break;
     }
 

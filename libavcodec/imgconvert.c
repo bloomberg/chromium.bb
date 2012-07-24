@@ -90,6 +90,78 @@ static const PixFmtInfo pix_fmt_info[PIX_FMT_NB] = {
     [PIX_FMT_YUV440P] = {
         .color_type = FF_COLOR_YUV,
     },
+    [PIX_FMT_YUV420P9LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV422P9LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV444P9LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV420P9BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV422P9BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV444P9BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV420P10LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV422P10LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV444P10LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV420P10BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV422P10BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV444P10BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV420P12LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV422P12LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV444P12LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV420P12BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV422P12BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV444P12BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV420P14LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV422P14LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV444P14LE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV420P14BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV422P14BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
+    [PIX_FMT_YUV444P14BE] = {
+        .color_type = FF_COLOR_YUV,
+    },
     [PIX_FMT_YUV420P16LE] = {
         .color_type = FF_COLOR_YUV,
     },
@@ -280,6 +352,40 @@ static const PixFmtInfo pix_fmt_info[PIX_FMT_NB] = {
     [PIX_FMT_RGBA] = {
         .color_type = FF_COLOR_RGB,
     },
+
+    [PIX_FMT_GBRP] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP9BE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP9LE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP10BE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP10LE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP12BE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP12LE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP14BE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP14LE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP16BE] = {
+        .color_type = FF_COLOR_RGB,
+    },
+    [PIX_FMT_GBRP16LE] = {
+        .color_type = FF_COLOR_RGB,
+    },
 };
 
 void avcodec_get_chroma_sub_sample(enum PixelFormat pix_fmt, int *h_shift, int *v_shift)
@@ -296,72 +402,21 @@ int ff_is_hwaccel_pix_fmt(enum PixelFormat pix_fmt)
 int avpicture_fill(AVPicture *picture, uint8_t *ptr,
                    enum PixelFormat pix_fmt, int width, int height)
 {
-    int ret;
-
-    if ((ret = av_image_check_size(width, height, 0, NULL)) < 0)
-        return ret;
-
-    if ((ret = av_image_fill_linesizes(picture->linesize, pix_fmt, width)) < 0)
-        return ret;
-
-    return av_image_fill_pointers(picture->data, pix_fmt, height, ptr, picture->linesize);
+    return av_image_fill_arrays(picture->data, picture->linesize,
+                                ptr, pix_fmt, width, height, 1);
 }
 
 int avpicture_layout(const AVPicture* src, enum PixelFormat pix_fmt, int width, int height,
                      unsigned char *dest, int dest_size)
 {
-    int i, j, nb_planes = 0, linesizes[4];
-    const AVPixFmtDescriptor *desc = &av_pix_fmt_descriptors[pix_fmt];
-    int size = avpicture_get_size(pix_fmt, width, height);
-
-    if (size > dest_size || size < 0)
-        return AVERROR(EINVAL);
-
-    for (i = 0; i < desc->nb_components; i++)
-        nb_planes = FFMAX(desc->comp[i].plane, nb_planes);
-    nb_planes++;
-
-    av_image_fill_linesizes(linesizes, pix_fmt, width);
-    for (i = 0; i < nb_planes; i++) {
-        int h, shift = (i == 1 || i == 2) ? desc->log2_chroma_h : 0;
-        const unsigned char *s = src->data[i];
-        h = (height + (1 << shift) - 1) >> shift;
-
-        for (j = 0; j < h; j++) {
-            memcpy(dest, s, linesizes[i]);
-            dest += linesizes[i];
-            s += src->linesize[i];
-        }
-    }
-
-    switch (pix_fmt) {
-    case PIX_FMT_RGB8:
-    case PIX_FMT_BGR8:
-    case PIX_FMT_RGB4_BYTE:
-    case PIX_FMT_BGR4_BYTE:
-    case PIX_FMT_GRAY8:
-        // do not include palette for these pseudo-paletted formats
-        return size;
-    }
-
-    if (desc->flags & PIX_FMT_PAL) {
-        uint32_t *d32 = (unsigned char *)(((size_t)dest + 3) & ~3);
-        for (i = 0; i<256; i++)
-            AV_WL32(d32 + i, AV_RN32(src->data[1] + 4*i));
-    }
-
-    return size;
+    return av_image_copy_to_buffer(dest, dest_size,
+                                   src->data, src->linesize,
+                                   pix_fmt, width, height, 1);
 }
 
 int avpicture_get_size(enum PixelFormat pix_fmt, int width, int height)
 {
-    AVPicture dummy_pict;
-    if(av_image_check_size(width, height, 0, NULL))
-        return -1;
-    if (av_pix_fmt_descriptors[pix_fmt].flags & PIX_FMT_PSEUDOPAL)
-        // do not include palette for these pseudo-paletted formats
-        return width * height;
-    return avpicture_fill(&dummy_pict, NULL, pix_fmt, width, height);
+    return av_image_get_buffer_size(pix_fmt, width, height, 1);
 }
 
 static int get_pix_fmt_depth(int *min, int *max, enum PixelFormat pix_fmt)
@@ -460,6 +515,7 @@ static int avg_bits_per_pixel(enum PixelFormat pix_fmt)
         info->padded_size : av_get_bits_per_pixel(desc);
 }
 
+#if FF_API_FIND_BEST_PIX_FMT
 enum PixelFormat avcodec_find_best_pix_fmt(int64_t pix_fmt_mask, enum PixelFormat src_pix_fmt,
                                             int has_alpha, int *loss_ptr)
 {
@@ -476,6 +532,7 @@ enum PixelFormat avcodec_find_best_pix_fmt(int64_t pix_fmt_mask, enum PixelForma
     }
     return dst_pix_fmt;
 }
+#endif /* FF_API_FIND_BEST_PIX_FMT */
 
 enum PixelFormat avcodec_find_best_pix_fmt2(enum PixelFormat dst_pix_fmt1, enum PixelFormat dst_pix_fmt2,
                                             enum PixelFormat src_pix_fmt, int has_alpha, int *loss_ptr)
@@ -486,6 +543,7 @@ enum PixelFormat avcodec_find_best_pix_fmt2(enum PixelFormat dst_pix_fmt1, enum 
         ~0, /* no loss first */
         ~FF_LOSS_ALPHA,
         ~FF_LOSS_RESOLUTION,
+        ~FF_LOSS_COLORSPACE,
         ~(FF_LOSS_COLORSPACE | FF_LOSS_RESOLUTION),
         ~FF_LOSS_COLORQUANT,
         ~FF_LOSS_DEPTH,

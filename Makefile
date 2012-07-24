@@ -70,6 +70,7 @@ SUBDIR_VARS := CLEANFILES EXAMPLES FFLIBS HOSTPROGS TESTPROGS TOOLS      \
                ARCH_HEADERS BUILT_HEADERS SKIPHEADERS                    \
                ALTIVEC-OBJS ARMV5TE-OBJS ARMV6-OBJS ARMVFP-OBJS MMI-OBJS \
                MMX-OBJS NEON-OBJS VIS-OBJS YASM-OBJS                     \
+               MIPSFPU-OBJS MIPSDSPR2-OBJS MIPSDSPR1-OBJS MIPS32R2-OBJS  \
                OBJS TESTOBJS
 
 define RESET
@@ -163,7 +164,7 @@ coverage-html: coverage.info
 	$(Q)genhtml -o $@ $<
 	$(Q)touch $@
 
-check: all alltools checkheaders examples testprogs fate
+check: all alltools examples testprogs fate
 
 include $(SRC_PATH)/doc/Makefile
 include $(SRC_PATH)/tests/Makefile

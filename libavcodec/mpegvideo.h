@@ -599,6 +599,7 @@ typedef struct MpegEncContext {
     struct MJpegContext *mjpeg_ctx;
     int mjpeg_vsample[3];       ///< vertical sampling factors, default = {2, 1, 1}
     int mjpeg_hsample[3];       ///< horizontal sampling factors, default = {2, 1, 1}
+    int esc_pos;
 
     /* MSMPEG4 specific */
     int mv_table_index;
@@ -704,6 +705,12 @@ typedef struct MpegEncContext {
 
     int mpv_flags;      ///< flags set by private options
     int quantizer_noise_shaping;
+
+    /* error resilience stuff */
+    uint8_t *er_temp_buffer;
+
+    /* temp buffers for rate control */
+    float *cplx_tab, *bits_tab;
 } MpegEncContext;
 
 #define REBASE_PICTURE(pic, new_ctx, old_ctx) (pic ? \

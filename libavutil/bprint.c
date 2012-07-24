@@ -26,6 +26,25 @@
 #include "error.h"
 #include "mem.h"
 
+#if defined(_WIN32)
+
+static int vsnprintf_fixed(char *s, size_t n, const char *format, va_list va)
+{
+    va_list va2;
+    int r;
+
+    va_copy(va2, va);
+    r = vsnprintf(s, n, format, va2);
+    va_end(va2);
+    if (r == -1)
+        r = _vscprintf(format, va);
+    return r;
+}
+
+#define vsnprintf vsnprintf_fixed
+
+#endif
+
 #define av_bprint_room(buf) ((buf)->size - FFMIN((buf)->len, (buf)->size))
 #define av_bprint_is_allocated(buf) ((buf)->str != (buf)->reserved_internal_buffer)
 
@@ -76,6 +95,15 @@ void av_bprint_init(AVBPrint *buf, unsigned size_init, unsigned size_max)
     *buf->str = 0;
     if (size_init > buf->size)
         av_bprint_alloc(buf, size_init - 1);
+}
+
+void av_bprint_init_for_buffer(AVBPrint *buf, char *buffer, unsigned size)
+{
+    buf->str      = buffer;
+    buf->len      = 0;
+    buf->size     = size;
+    buf->size_max = size;
+    *buf->str = 0;
 }
 
 void av_bprintf(AVBPrint *buf, const char *fmt, ...)
@@ -178,35 +206,40 @@ static void bprint_pascal(AVBPrint *b, unsigned size)
 int main(void)
 {
     AVBPrint b;
+    char buf[256];
 
     av_bprint_init(&b, 0, -1);
     bprint_pascal(&b, 5);
-    printf("Short text in unlimited buffer: %zu/%u\n", strlen(b.str), b.len);
+    printf("Short text in unlimited buffer: %u/%u\n", (unsigned)strlen(b.str), b.len);
     printf("%s\n", b.str);
     av_bprint_finalize(&b, NULL);
 
     av_bprint_init(&b, 0, -1);
     bprint_pascal(&b, 25);
-    printf("Long text in unlimited buffer: %zu/%u\n", strlen(b.str), b.len);
+    printf("Long text in unlimited buffer: %u/%u\n", (unsigned)strlen(b.str), b.len);
     av_bprint_finalize(&b, NULL);
 
     av_bprint_init(&b, 0, 2048);
     bprint_pascal(&b, 25);
-    printf("Long text in limited buffer: %zu/%u\n", strlen(b.str), b.len);
+    printf("Long text in limited buffer: %u/%u\n", (unsigned)strlen(b.str), b.len);
     av_bprint_finalize(&b, NULL);
 
     av_bprint_init(&b, 0, 1);
     bprint_pascal(&b, 5);
-    printf("Short text in automatic buffer: %zu/%u\n", strlen(b.str), b.len);
+    printf("Short text in automatic buffer: %u/%u\n", (unsigned)strlen(b.str), b.len);
 
     av_bprint_init(&b, 0, 1);
     bprint_pascal(&b, 25);
-    printf("Long text in automatic buffer: %zu/%u\n", strlen(b.str), b.len);
+    printf("Long text in automatic buffer: %u/%u\n", (unsigned)strlen(b.str)/8*8, b.len);
     /* Note that the size of the automatic buffer is arch-dependant. */
 
     av_bprint_init(&b, 0, 0);
     bprint_pascal(&b, 25);
-    printf("Long text count only buffer: %zu/%u\n", strlen(b.str), b.len);
+    printf("Long text count only buffer: %u/%u\n", (unsigned)strlen(b.str), b.len);
+
+    av_bprint_init_for_buffer(&b, buf, sizeof(buf));
+    bprint_pascal(&b, 25);
+    printf("Long text count only buffer: %u/%u\n", (unsigned)strlen(buf), b.len);
 
     return 0;
 }

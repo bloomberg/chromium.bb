@@ -60,7 +60,6 @@
 #define ID_ABIT       MKTAG('A','B','I','T')
 #define ID_BODY       MKTAG('B','O','D','Y')
 #define ID_DBOD       MKTAG('D','B','O','D')
-#define ID_ANNO       MKTAG('A','N','N','O')
 #define ID_DPEL       MKTAG('D','P','E','L')
 
 #define LEFT    2
@@ -124,8 +123,12 @@ static int iff_probe(AVProbeData *p)
 {
     const uint8_t *d = p->buf;
 
-    if ( AV_RL32(d)   == ID_FORM &&
-         (AV_RL32(d+8) == ID_8SVX || AV_RL32(d+8) == ID_PBM || AV_RL32(d+8) == ID_ACBM || AV_RL32(d+8) == ID_DEEP || AV_RL32(d+8) == ID_ILBM) )
+    if (  AV_RL32(d)   == ID_FORM &&
+         (AV_RL32(d+8) == ID_8SVX ||
+          AV_RL32(d+8) == ID_PBM  ||
+          AV_RL32(d+8) == ID_ACBM ||
+          AV_RL32(d+8) == ID_DEEP ||
+          AV_RL32(d+8) == ID_ILBM) )
         return AVPROBE_SCORE_MAX;
     return 0;
 }
@@ -238,7 +241,7 @@ static int iff_read_header(AVFormatContext *s)
             else if (fmt_size == sizeof(deep_rgba) && !memcmp(fmt, deep_rgba, sizeof(deep_rgba)))
                 st->codec->pix_fmt = PIX_FMT_RGBA;
             else {
-                av_log_ask_for_sample(NULL, "unsupported color format\n");
+                av_log_ask_for_sample(s, "unsupported color format\n");
                 return AVERROR_PATCHWELCOME;
             }
             break;

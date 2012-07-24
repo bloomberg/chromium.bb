@@ -46,7 +46,7 @@
 #endif
 #include <linux/videodev2.h>
 #endif
-#include <time.h>
+#include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
@@ -156,9 +156,6 @@ static int device_open(AVFormatContext *ctx)
 {
     struct v4l2_capability cap;
     int fd;
-#if CONFIG_LIBV4L2
-    int fd_libv4l;
-#endif
     int res, err;
     int flags = O_RDWR;
 
@@ -175,16 +172,6 @@ static int device_open(AVFormatContext *ctx)
 
         return AVERROR(err);
     }
-#if CONFIG_LIBV4L2
-    fd_libv4l = v4l2_fd_open(fd, 0);
-    if (fd < 0) {
-        err = AVERROR(errno);
-        av_log(ctx, AV_LOG_ERROR, "Cannot open video device with libv4l neither %s : %s\n",
-               ctx->filename, strerror(errno));
-        return err;
-    }
-    fd = fd_libv4l;
-#endif
 
     res = v4l2_ioctl(fd, VIDIOC_QUERYCAP, &cap);
     if (res < 0) {
@@ -561,7 +548,7 @@ static int mmap_read_frame(AVFormatContext *ctx, AVPacket *pkt)
 
         return AVERROR(errno);
     }
-    assert(buf.index < s->buffers);
+    av_assert0(buf.index < s->buffers);
     if (s->frame_size > 0 && buf.bytesused != s->frame_size) {
         av_log(ctx, AV_LOG_ERROR,
                "The v4l2 frame is %d bytes, but %d bytes are expected\n",
@@ -768,7 +755,7 @@ static uint32_t device_try_init(AVFormatContext *s1,
 
     if (desired_format != 0) {
         *codec_id = fmt_v4l2codec(desired_format);
-        assert(*codec_id != CODEC_ID_NONE);
+        av_assert0(*codec_id != CODEC_ID_NONE);
     }
 
     return desired_format;
