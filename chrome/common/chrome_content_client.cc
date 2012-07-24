@@ -438,7 +438,7 @@ std::string ChromeContentClient::GetUserAgent() const {
   product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
 #if defined(OS_ANDROID)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kTabletUi)) {
+  if (!command_line->HasSwitch(switches::kUseMobileUserAgent)) {
     product += " Mobile";
   }
 #endif

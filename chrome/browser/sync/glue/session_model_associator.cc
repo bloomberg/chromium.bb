@@ -68,6 +68,12 @@ static const int kMaxSyncNavigationCount = 6;
 // stale and becomes a candidate for garbage collection.
 static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
 
+#if defined(OS_ANDROID)
+bool IsTabletUI() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI);
+}
+#endif
+
 sync_pb::SessionHeader::DeviceType GetLocalDeviceType() {
   // TODO(yfriedman): Refactor/combine with "DeviceInformation" code in
   // sync_manager.cc[1060]
@@ -80,7 +86,7 @@ sync_pb::SessionHeader::DeviceType GetLocalDeviceType() {
 #elif defined(OS_WIN)
   return sync_pb::SessionHeader_DeviceType_TYPE_WIN;
 #elif defined(OS_ANDROID)
-  return syncer::internal::IsTabletUi() ?
+  return IsTabletUI() ?
       sync_pb::SessionHeader_DeviceType_TYPE_TABLET :
       sync_pb::SessionHeader_DeviceType_TYPE_PHONE;
 #else

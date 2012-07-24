@@ -16,9 +16,6 @@ std::string GetAndroidId();
 // Return the end-user-visible name for this device.
 std::string GetModel();
 
-// Return if the device is a tablet.
-bool IsTabletUi();
-
 }  // namespace internal
 }  // namespace syncer
 

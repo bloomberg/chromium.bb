@@ -75,7 +75,7 @@ std::string PlatformString() {
   return "linux";
 #elif defined(OS_ANDROID)
   const bool isTablet =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUi);
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI);
   return std::string("android-") + (isTablet ? "tablet" : "phone");
 #else
   return "none";

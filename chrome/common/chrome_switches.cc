@@ -1337,7 +1337,7 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
 #if defined(OS_ANDROID)
 // Use the tablet specific UI components when available.
-const char kTabletUi[]                      = "tablet-ui";
+const char kTabletUI[]                      = "tablet-ui";
 #endif
 
 #if defined(OS_CHROMEOS)

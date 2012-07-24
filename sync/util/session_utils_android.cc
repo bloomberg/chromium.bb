@@ -67,10 +67,5 @@ std::string GetModel() {
   return model;
 }
 
-bool IsTabletUi() {
-  NOTIMPLEMENTED() << "TODO(yfriedman): Upstream this";
-  return true;
-}
-
 }  // namespace internal
 }  // namespace syncer

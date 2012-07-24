@@ -28,11 +28,6 @@ void SetCommandLineSwitchASCII(const std::string& switch_string,
     command_line->AppendSwitchASCII(switch_string, value);
 }
 
-bool IsTabletUi() {
-  NOTIMPLEMENTED() << "TODO(yfriedman): Upstream this";
-  return false;
-}
-
 }  // namespace
 
 void SetChromeSpecificCommandLineFlags() {
@@ -44,10 +39,6 @@ void SetChromeSpecificCommandLineFlags() {
 
   // Turn on autologin.
   SetCommandLineSwitch(switches::kEnableAutologin);
-
-  // Tablet UI switch (used for using correct version of NTP HTML).
-  if (IsTabletUi())
-    SetCommandLineSwitch(switches::kTabletUi);
 
   // Enable prerender for the omnibox.
   SetCommandLineSwitchASCII(

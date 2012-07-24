@@ -631,6 +631,11 @@ const char kZygoteProcess[]                 = "zygote";
 // Enables moving cursor by word in visual order.
 const char kEnableVisualWordMovement[]      = "enable-visual-word-movement";
 
+#if defined(OS_ANDROID)
+// Set when Chromium should use a mobile user agent.
+const char kUseMobileUserAgent[] = "use-mobile-user-agent";
+#endif
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // Specify the amount the trackpad should scroll by.
 const char kScrollPixels[]                  = "scroll-pixels";

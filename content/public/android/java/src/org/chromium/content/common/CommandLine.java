@@ -43,6 +43,9 @@ public abstract class CommandLine {
     // Dump frames-per-second to the log
     public static final String LOG_FPS = "log-fps";
 
+    // Whether Chromium should use a mobile user agent.
+    public static final String USE_MOBILE_UA = "use-mobile-user-agent";
+
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**

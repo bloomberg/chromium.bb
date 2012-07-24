@@ -80,7 +80,7 @@ void NTPResourceCache::CreateNewTabHTML() {
                          ui::SCALE_FACTOR_NONE));
   localized_strings.SetString(
       "device",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUi) ?
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI) ?
           "tablet" : "phone");
   const char* new_tab_link = kLearnMoreIncognitoUrl;
   string16 learnMoreLink = ASCIIToUTF16(

@@ -197,6 +197,10 @@ CONTENT_EXPORT extern const char kFixedPositionCreatesStackingContext[];
 
 extern const char kEnableVisualWordMovement[];
 
+#if defined(OS_ANDROID)
+extern const char kUseMobileUserAgent[];
+#endif
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 extern const char kScrollPixels[];
 #endif

@@ -359,7 +359,7 @@ extern const char kWindowSize[];
 extern const char kWinHttpProxyResolver[];
 
 #if defined(OS_ANDROID)
-extern const char kTabletUi[];
+extern const char kTabletUI[];
 #endif
 
 #if defined(OS_CHROMEOS)
