@@ -65,8 +65,7 @@ class ReleaseAccelerator : public ui::Accelerator {
 class DummyScreenshotDelegate : public ScreenshotDelegate {
  public:
   DummyScreenshotDelegate()
-      : handle_take_screenshot_count_(0),
-        handle_take_partial_screenshot_count_(0) {
+      : handle_take_screenshot_count_(0) {
   }
   virtual ~DummyScreenshotDelegate() {}
 
@@ -78,7 +77,6 @@ class DummyScreenshotDelegate : public ScreenshotDelegate {
 
   virtual void HandleTakePartialScreenshot(
       aura::Window* window, const gfx::Rect& rect) OVERRIDE {
-    ++handle_take_partial_screenshot_count_;
   }
 
   virtual bool CanTakeScreenshot() OVERRIDE {
@@ -89,13 +87,8 @@ class DummyScreenshotDelegate : public ScreenshotDelegate {
     return handle_take_screenshot_count_;
   }
 
-  int handle_take_partial_screenshot_count() const {
-    return handle_take_partial_screenshot_count_;
-  }
-
  private:
   int handle_take_screenshot_count_;
-  int handle_take_partial_screenshot_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyScreenshotDelegate);
 };
@@ -561,19 +554,15 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     GetController()->SetScreenshotDelegate(
         scoped_ptr<ScreenshotDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_take_screenshot_count());
-    EXPECT_EQ(0, delegate->handle_take_partial_screenshot_count());
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_F5, ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(1, delegate->handle_take_screenshot_count());
-    EXPECT_EQ(0, delegate->handle_take_partial_screenshot_count());
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
-    EXPECT_EQ(0, delegate->handle_take_partial_screenshot_count());
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
-    EXPECT_EQ(1, delegate->handle_take_partial_screenshot_count());
   }
   // ToggleAppList
   {

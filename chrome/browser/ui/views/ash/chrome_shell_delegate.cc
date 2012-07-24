@@ -6,7 +6,6 @@
 
 #include "ash/launcher/launcher_types.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -302,11 +301,6 @@ app_list::AppListViewDelegate*
     ChromeShellDelegate::CreateAppListViewDelegate() {
   // Shell will own the created delegate.
   return new AppListViewDelegate;
-}
-
-void ChromeShellDelegate::StartPartialScreenshot(
-    ash::ScreenshotDelegate* screenshot_delegate) {
-  ash::PartialScreenshotView::StartPartialScreenshot(screenshot_delegate);
 }
 
 ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(

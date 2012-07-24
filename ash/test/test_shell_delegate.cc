@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/test_launcher_delegate.h"
@@ -93,12 +92,6 @@ bool TestShellDelegate::IsSpokenFeedbackEnabled() const {
 
 app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
-}
-
-void TestShellDelegate::StartPartialScreenshot(
-    ScreenshotDelegate* screenshot_delegate) {
-  if (screenshot_delegate)
-    screenshot_delegate->HandleTakePartialScreenshot(NULL, gfx::Rect());
 }
 
 LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(

@@ -32,7 +32,6 @@ namespace ash {
 class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
-class ScreenshotDelegate;
 class SystemTray;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
@@ -114,10 +113,6 @@ class ASH_EXPORT ShellDelegate {
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() = 0;
-
-  // Invoked to start taking partial screenshot.
-  virtual void StartPartialScreenshot(
-      ScreenshotDelegate* screenshot_delegate) = 0;
 
   // Creates a new LauncherDelegate. Shell takes ownership of the returned
   // value.

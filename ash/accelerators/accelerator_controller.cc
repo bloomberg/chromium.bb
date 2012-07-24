@@ -30,6 +30,7 @@
 #include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
@@ -452,9 +453,10 @@ bool AcceleratorController::PerformAction(int action,
       // Return true to prevent propagation of the key event.
       return true;
     case TAKE_PARTIAL_SCREENSHOT:
-      if (screenshot_delegate_.get())
-        ash::Shell::GetInstance()->delegate()->
-            StartPartialScreenshot(screenshot_delegate_.get());
+      if (screenshot_delegate_.get()) {
+        ash::PartialScreenshotView::StartPartialScreenshot(
+            screenshot_delegate_.get());
+      }
       // Return true to prevent propagation of the key event because
       // this key combination is reserved for partial screenshot.
       return true;

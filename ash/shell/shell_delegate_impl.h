@@ -41,8 +41,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void ToggleSpokenFeedback() OVERRIDE;
   virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
-  virtual void StartPartialScreenshot(
-      ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
