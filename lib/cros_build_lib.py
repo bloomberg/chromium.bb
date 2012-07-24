@@ -671,6 +671,14 @@ def StripLeadingRefsHeads(ref, strict=True):
   return ref.replace('refs/heads/', '')
 
 
+def StripLeadingRefs(ref):
+  """Remove leading 'refs/heads', 'refs/remotes/[^/]+/' from a ref name."""
+  ref = StripLeadingRefsHeads(ref, False)
+  if ref.startswith("refs/remotes/"):
+    return ref.split("/", 3)[-1]
+  return ref
+
+
 class Manifest(object):
   """SAX handler that parses the manifest document.
 

@@ -317,9 +317,13 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     self.mox.VerifyAll()
 
   @staticmethod
-  def _SetQuery(series, change):
+  def _SetQuery(series, change, is_parent=False):
     helper = series._helper_pool.GetHelper(change.internal)
-    return helper.QuerySingleRecord(change.id, must_match=True)
+    query = change.id
+    if is_parent:
+      query = "project:%s AND branch:%s AND %s" % (
+          change.project, os.path.basename(change.tracking_branch), query)
+    return helper.QuerySingleRecord(query, must_match=True)
 
   def testApplyMissingDep(self):
     """Test that we don't try to apply a change without met dependencies.
@@ -332,7 +336,7 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     patch1, patch2 = self.GetPatches(2)
 
     self.SetPatchDeps(patch2, [patch1.id])
-    self._SetQuery(series, patch1).AndReturn(patch1)
+    self._SetQuery(series, patch1, is_parent=True).AndReturn(patch1)
 
     self.mox.ReplayAll()
     self.assertResults(series, [patch2],
@@ -347,7 +351,7 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     patch2 = self.MockPatch(2)
 
     self.SetPatchDeps(patch2, [patch1.id])
-    self._SetQuery(series, patch1).AndReturn(patch1)
+    self._SetQuery(series, patch1, is_parent=True).AndReturn(patch1)
 
     self.SetPatchApply(patch2)
 

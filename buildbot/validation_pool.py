@@ -209,8 +209,14 @@ class RawPatchSeries(object):
     self._lookup_cache = cros_patch.PatchCache()
     self._change_deps_cache = {}
 
-  def GetTrackingBranchForChange(self, change):
-    return change.tracking_branch
+  def GetTrackingBranchForChange(self, change, gerrit=False):
+    """Identify the branch to work against for this change.
+
+    Args:
+      gerrit: If True, give the shortened form; no refs/heads, no refs/remotes.
+    """
+    branch = change.tracking_branch
+    return cros_build_lib.StripLeadingRefs(branch) if gerrit else branch
 
   def GetGitRepoForChange(self, _change):
     return self._path
@@ -221,13 +227,16 @@ class RawPatchSeries(object):
     # pylint: disable=W0613
     return change.Apply(self._path, change.tracking_branch, trivial=False)
 
-  def _GetGerritPatch(self, change, query):
+  def _GetGerritPatch(self, change, query, parent_lookup=False):
     """Query the configured helpers looking for a given change.
 
     Args:
       change: A cros_patch.GitRepoPatch derivative that we're querying
         on behalf of.
       query: The ChangeId we're searching for.
+      parent_lookup: If True, this means we're tracing out the git parents
+        of the given change- as such limit the query purely to that
+        project/branch.
     """
     is_internal = query.startswith('*')
     helper = self._helper_pool.GetHelper(is_internal)
@@ -236,14 +245,19 @@ class RawPatchSeries(object):
     # Note this forces FormatChangeId to 1) ensure that the query
     # is a valid one, 2) to force our internal ChangeId format into
     # gerrit's format (ie, no leading * for internal changes).
-    change = helper.QuerySingleRecord(
-        cros_patch.FormatPatchDep(query, force_external=True),
-        must_match=True)
+    query_text = cros_patch.FormatPatchDep(query, force_external=True)
+    if parent_lookup:
+      query_text = "project:%s AND branch:%s AND %s" % (
+          change.project,
+          self.GetTrackingBranchForChange(change, True),
+          query_text)
+    change = helper.QuerySingleRecord(query_text, must_match=True)
     self.InjectLookupCache([change])
     return change
 
   @_PatchWrapException
-  def _LookupAndFilterChanges(self, parent, merged, deps, frozen=False):
+  def _LookupAndFilterChanges(self, parent, merged, deps, parent_lookup=False,
+                              frozen=False):
     """Given a set of deps (changes), return unsatisfied dependencies.
 
     Args:
@@ -251,6 +265,9 @@ class RawPatchSeries(object):
       merged: A container of changes we should consider as merged already.
       deps: A sequence of dependencies for the parent that we need to identify
         as either merged, or needing resolving.
+      parent_lookup: If True, this means we're trying to trace out the git
+        parentage of a change, thus limit the lookup to the parents project
+        and branch.
       frozen: If True, then raise an DependencyNotReady exception if any
         new dependencies are required by this change that weren't already
         supplied up front. This is used by the Commit Queue to notify users
@@ -266,24 +283,34 @@ class RawPatchSeries(object):
         continue
 
       dep_change = self._lookup_cache[dep]
+      if parent_lookup and dep_change is not None:
+        if not (parent.project == dep_change.project and
+                self.GetTrackingBranchForChange(parent, True) ==
+                self.GetTrackingBranchForChange(dep_change, True)):
+          # TODO(build): In this scenario, the cache will get updated
+          # with the new CL pulled from gerrit; this is questionable,
+          # but there isn't a good answer here.  Rare enough it's being
+          # ignored either way.
+          dep_change = None
+
       if dep_change is not None:
         if dep_change not in merged and dep_change not in unsatisfied:
           unsatisfied.append(dep_change)
         continue
 
-      dep_change = self._GetGerritPatch(parent, dep)
+      dep_change = self._GetGerritPatch(parent, dep,
+                                        parent_lookup=parent_lookup)
       if dep_change.IsAlreadyMerged():
         self.InjectCommittedPatches([dep_change])
       elif frozen:
         raise DependencyNotReadyForCommit(parent, dep)
 
-      if dep_change is not None:
-        # Note the startswith; that is to handle short form ChangeIds
-        # from CQ-DEPEND, when we decide to allow it.
-        assert (dep in dep_change.LookupAliases() or
-                cros_patch.FormatChangeId(
-                    dep_change.change_id, force_external=True
-                    ).startswith(dep))
+      # Note the startswith; that is to handle short form ChangeIds
+      # from CQ-DEPEND, when we decide to allow it.
+      assert (dep in dep_change.LookupAliases() or
+              cros_patch.FormatChangeId(
+                  dep_change.change_id, force_external=True
+                  ).startswith(dep))
 
       unsatisfied.append(dep_change)
     return unsatisfied
@@ -366,7 +393,8 @@ class RawPatchSeries(object):
     # Pull all deps up front, then process them.  Simplifies flow, and
     # localizes the error closer to the cause.
     gdeps, pdeps = self._GetDepsForChange(change)
-    gdeps = self._LookupAndFilterChanges(change, plan, gdeps, frozen=frozen)
+    gdeps = self._LookupAndFilterChanges(change, plan, gdeps, frozen=frozen,
+                                         parent_lookup=True)
     pdeps = self._LookupAndFilterChanges(change, plan, pdeps, frozen=frozen)
 
     def _ProcessDeps(deps):
@@ -621,13 +649,14 @@ class PatchSeries(RawPatchSeries):
     self._content_merging_projects = {}
     self.force_content_merging = force_content_merging
 
-  def GetTrackingBranchForChange(self, change):
+  def GetTrackingBranchForChange(self, change, gerrit=False):
+    """Identify the branch to work against for this change.
+
+    Args:
+      gerrit: If True, give the shortened form; no refs/heads, no refs/remotes.
+    """
     ref = self.manifest.GetProjectsLocalRevision(change.project)
-    if ref.startswith("refs/"):
-      return ref
-    # Revlocked manifests return sha1s; use the repo defined branch
-    # so tracking is supported.
-    return self.manifest.default_branch
+    return cros_build_lib.StripLeadingRefs(ref) if gerrit else ref
 
   #pylint: disable=W0221
   def Apply(self, changes, **kwargs):
