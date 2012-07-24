@@ -357,7 +357,7 @@ FileTasks.prototype.openGallery_ = function(urls) {
     var readonlyDirName = null;
     if (readonly) {
       readonlyDirName = fm.isOnGData() ?
-          fm.getRootLabel_(PathUtil.getRootPath(currentDir.fullPath)) :
+          PathUtil.getRootLabel(PathUtil.getRootPath(currentDir.fullPath)) :
           fm.directoryModel_.getCurrentRootName();
     }
 
