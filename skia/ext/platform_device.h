@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,9 @@ class PlatformDevice;
 #if defined(OS_WIN)
 typedef HDC PlatformSurface;
 typedef RECT PlatformRect;
+#elif defined(ANDROID)
+typedef void* PlatformSurface;
+typedef SkIRect* PlatformRect;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_FREEBSD) \
     || defined(OS_SUN)
 typedef cairo_t* PlatformSurface;
@@ -44,10 +47,6 @@ typedef cairo_rectangle_t PlatformRect;
 #elif defined(OS_MACOSX)
 typedef CGContextRef PlatformSurface;
 typedef CGRect PlatformRect;
-#elif defined(ANDROID)
-// TODO(tonyg): FIX TYPES!
-typedef void* PlatformSurface;
-typedef void* PlatformRect;
 #endif
 
 // The following routines provide accessor points for the functionality

@@ -18,18 +18,18 @@
 #define SkUserConfig_DEFINED
 
 /*  SkTypes.h, the root of the public header files, does the following trick:
- 
+
     #include <SkPreConfig.h>
     #include <SkUserConfig.h>
     #include <SkPostConfig.h>
- 
+
     SkPreConfig.h runs first, and it is responsible for initializing certain
     skia defines.
- 
+
     SkPostConfig.h runs last, and its job is to just check that the final
     defines are consistent (i.e. that we don't have mutually conflicting
     defines).
- 
+
     SkUserConfig.h (this file) runs in the middle. It gets to change or augment
     the list of flags initially set in preconfig, and then postconfig checks
     that everything still makes sense.
@@ -71,7 +71,7 @@
     parameter checking, but sometimes it can be quite intrusive (e.g. check that
     each 32bit pixel is in premultiplied form). This code can be very useful
     during development, but will slow things down in a shipping product.
- 
+
     By default, these mutually exclusive flags are defined in SkPreConfig.h,
     based on the presence or absence of NDEBUG, but that decision can be changed
     here.
@@ -186,11 +186,12 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
     "%s:%d: failed assertion \"%s\"\n", \
     __FILE__, __LINE__, #cond); } } while (false)
 
-// All little-endian Chrome platforms agree:  BGRA is the optimal pixel layout.
+#if !defined(ANDROID)   // On Android, we use the skia default settings.
 #define SK_A32_SHIFT    24
 #define SK_R32_SHIFT    16
 #define SK_G32_SHIFT    8
 #define SK_B32_SHIFT    0
+#endif
 
 #if defined(SK_BUILD_FOR_WIN32)
 
