@@ -233,7 +233,7 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
                           icon_.width() - bottom_right_badge_->width(),
                           icon_.height() - bottom_right_badge_->height());
     }
-    return gfx::ImageSkiaRep(canvas.ExtractBitmap(), icon_rep.scale_factor());
+    return canvas.ExtractImageRep();
   }
 
  private:

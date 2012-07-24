@@ -453,8 +453,9 @@ void PrintHeaderFooterText(
     SkMatrix m = canvas->getTotalMatrix();
     ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
         SkScalarAbs(m.getScaleX()));
-    gfx::Canvas gfx_canvas(canvas, device_scale_factor, false);
-    paint->Draw(&gfx_canvas);
+    scoped_ptr<gfx::Canvas> gfx_canvas(gfx::Canvas::CreateCanvasWithoutScaling(
+        canvas, device_scale_factor));
+    paint->Draw(gfx_canvas.get());
   }
 #else
   // TODO(arthurhsu): following code has issues with i18n BiDi, see

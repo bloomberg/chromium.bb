@@ -691,13 +691,15 @@ HIMAGELIST TreeView::CreateImageList() {
       // IDR_FOLDER_CLOSED if they aren't already.
       if (model_images[i].width() != width ||
           model_images[i].height() != height) {
-        gfx::Canvas canvas(gfx::Size(width, height), false);
+        gfx::Canvas canvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P,
+            false);
 
         // Draw our icons into this canvas.
         int height_offset = (height - model_images[i].height()) / 2;
         int width_offset = (width - model_images[i].width()) / 2;
         canvas.DrawImageInt(model_images[i], width_offset, height_offset);
-        model_icon = IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap());
+        model_icon = IconUtil::CreateHICONFromSkBitmap(
+            canvas.ExtractImageRep().sk_bitmap());
       } else {
         model_icon = IconUtil::CreateHICONFromSkBitmap(model_images[i]);
       }

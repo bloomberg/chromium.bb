@@ -203,7 +203,8 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     const string16 icon_text = ASCIIToUTF16("ash");
     const gfx::Size icon_size(32, 32);
 
-    gfx::Canvas canvas(icon_size, false /* is_opaque */);
+    gfx::Canvas canvas(icon_size, ui::SCALE_FACTOR_100P,
+                       false /* is_opaque */);
     canvas.DrawStringInt(icon_text,
                          gfx::Font(),
                          SK_ColorBLACK,
@@ -212,7 +213,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
                              gfx::Canvas::TEXT_VALIGN_MIDDLE |
                              gfx::Canvas::NO_SUBPIXEL_RENDERING);
 
-    return gfx::ImageSkia(canvas.ExtractImageSkiaRep());
+    return gfx::ImageSkia(canvas.ExtractImageRep());
   }
 
   void DecorateSearchBox(app_list::SearchBoxModel* search_box_model) {

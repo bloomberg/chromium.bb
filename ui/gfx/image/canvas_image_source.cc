@@ -22,7 +22,7 @@ gfx::ImageSkiaRep CanvasImageSource::GetImageForScale(
     ui::ScaleFactor scale_factor) {
   gfx::Canvas canvas(size_, scale_factor, is_opaque_);
   Draw(&canvas);
-  return canvas.ExtractImageSkiaRep();
+  return canvas.ExtractImageRep();
 }
 
 }  // namespace gfx

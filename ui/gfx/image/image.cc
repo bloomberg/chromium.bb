@@ -32,12 +32,14 @@ namespace internal {
 const ImageSkia ImageSkiaFromGdkPixbuf(GdkPixbuf* pixbuf) {
   CHECK(pixbuf);
   gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
-                               gdk_pixbuf_get_height(pixbuf)), false);
+                               gdk_pixbuf_get_height(pixbuf)),
+                     ui::SCALE_FACTOR_100P,
+                     false);
   skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
   cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
   gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
   cairo_paint(cr);
-  return ImageSkia(SkBitmap(canvas.ExtractBitmap()));
+  return ImageSkia(canvas.ExtractImageRep());
 }
 #endif
 

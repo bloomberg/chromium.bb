@@ -281,6 +281,7 @@ class NativeMenuWin::MenuHostWindow {
             (height - kItemTopMargin - kItemBottomMargin -
              config.check_height) / 2;
         gfx::Canvas canvas(gfx::Size(config.check_width, config.check_height),
+                           ui::SCALE_FACTOR_100P,
                            false);
         NativeTheme::ExtraParams extra;
         extra.menu_check.is_radio = false;

@@ -99,12 +99,6 @@ class UI_EXPORT Canvas {
   // Creates an empty canvas with scale factor of 1x.
   Canvas();
 
-  // Creates canvas with provided DIP |size| and a scale factor of 1x.
-  // If this canvas is not opaque, it's explicitly cleared to transparent before
-  // being returned.
-  // TODO(pkotwicz): Remove this constructor.
-  Canvas(const gfx::Size& size, bool is_opaque);
-
   // Creates canvas with provided DIP |size| and |scale_factor|.
   // If this canvas is not opaque, it's explicitly cleared to transparent before
   // being returned.
@@ -116,13 +110,13 @@ class UI_EXPORT Canvas {
   // provided |image_rep|, and draws the |image_rep| into it.
   Canvas(const gfx::ImageSkiaRep& image_rep, bool is_opaque);
 
-  // Sets scale factor to |scale_factor|.
-  // Only scales canvas if |scale_canvas| is true.
-  Canvas(SkCanvas* canvas,
-         ui::ScaleFactor scale_factor,
-         bool scale_canvas);
-
   virtual ~Canvas();
+
+  // Creates a gfx::Canvas backed by an |sk_canvas| with |scale_factor|.
+  // |sk_canvas| is assumed to be already scaled based on |scale_factor|
+  // so no additional scaling is applied.
+  static Canvas* CreateCanvasWithoutScaling(SkCanvas* sk_canvas,
+                                            ui::ScaleFactor scale_factor);
 
   // Recreates the backing platform canvas with DIP |size| and |scale_factor|.
   // If the canvas is not opaque, it is explicitly cleared.
@@ -172,13 +166,8 @@ class UI_EXPORT Canvas {
                           int x, int y, int w, int h,
                           int flags);
 
-  // Extracts a bitmap from the contents of this canvas.
-  // TODO(pkotwicz): Remove ExtractBitmap once all callers use
-  // ExtractImageSkiaRep instead.
-  SkBitmap ExtractBitmap() const;
-
   // Extracts an ImageSkiaRep from the contents of this canvas.
-  gfx::ImageSkiaRep ExtractImageSkiaRep() const;
+  gfx::ImageSkiaRep ExtractImageRep() const;
 
   // Draws a dashed rectangle of the specified color.
   void DrawDashedRect(const gfx::Rect& rect, SkColor color);
@@ -388,15 +377,11 @@ class UI_EXPORT Canvas {
   ui::ScaleFactor scale_factor() const { return scale_factor_; }
 
  private:
+  Canvas(SkCanvas* canvas, ui::ScaleFactor scale_factor);
+
   // Test whether the provided rectangle intersects the current clip rect.
   bool IntersectsClipRectInt(int x, int y, int w, int h);
   bool IntersectsClipRect(const gfx::Rect& rect);
-
-  // Sets the canvas' scale factor to |scale_factor|. This affects
-  // the scale factor at which drawing bitmaps occurs and the scale factor of
-  // the image rep returned by Canvas::ExtractImageSkiaRep().
-  // If |scale_canvas| is true, scales the canvas by |scale_factor|.
-  void ApplyScaleFactor(ui::ScaleFactor scale_factor, bool scale_canvas);
 
   // Returns the image rep which best matches the canvas |scale_factor_|.
   // Returns a null image rep if |image| contains no image reps.
@@ -410,17 +395,13 @@ class UI_EXPORT Canvas {
       float user_defined_scale_factor_x,
       float user_defined_scale_factor_y)  const;
 
-  scoped_ptr<skia::PlatformCanvas> owned_canvas_;
-  SkCanvas* canvas_;
-
-  // True if the scale factor scales the canvas and the inverse
-  // canvas scale should be applied when the destructor is called.
-  bool scale_factor_scales_canvas_;
-
   // The device scale factor at which drawing on this canvas occurs.
   // An additional scale can be applied via Canvas::Scale(). However,
   // Canvas::Scale() does not affect |scale_factor_|.
   ui::ScaleFactor scale_factor_;
+
+  scoped_ptr<skia::PlatformCanvas> owned_canvas_;
+  SkCanvas* canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);
 };

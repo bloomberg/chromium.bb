@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/layout.h"
@@ -1020,8 +1021,9 @@ void NativeThemeBase::DrawImageInt(
   SkMatrix m = sk_canvas->getTotalMatrix();
   ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
       SkScalarAbs(m.getScaleX()));
-  gfx::Canvas canvas(sk_canvas, device_scale_factor, false);
-  canvas.DrawImageInt(image, src_x, src_y, src_w, src_h,
+  scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
+      sk_canvas, device_scale_factor));
+  canvas->DrawImageInt(image, src_x, src_y, src_w, src_h,
       dest_x, dest_y, dest_w, dest_h, true);
 }
 
@@ -1034,8 +1036,9 @@ void NativeThemeBase::DrawTiledImage(SkCanvas* sk_canvas,
   SkMatrix m = sk_canvas->getTotalMatrix();
   ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
       SkScalarAbs(m.getScaleX()));
-  gfx::Canvas canvas(sk_canvas, device_scale_factor, false);
-  canvas.TileImageInt(image, src_x, src_y, tile_scale_x,
+  scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
+      sk_canvas, device_scale_factor));
+  canvas->TileImageInt(image, src_x, src_y, tile_scale_x,
       tile_scale_y, dest_x, dest_y, w, h);
 }
 

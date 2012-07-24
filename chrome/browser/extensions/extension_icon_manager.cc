@@ -27,13 +27,15 @@ static SkBitmap ApplyPadding(const SkBitmap& source,
                              const gfx::Insets& padding) {
   scoped_ptr<gfx::Canvas> result(
       new gfx::Canvas(gfx::Size(source.width() + padding.width(),
-                                source.height() + padding.height()), false));
+                                source.height() + padding.height()),
+                      ui::SCALE_FACTOR_100P,
+                      false));
   result->DrawImageInt(
       source,
       0, 0, source.width(), source.height(),
       padding.left(), padding.top(), source.width(), source.height(),
       false);
-  return result->ExtractBitmap();
+  return result->ExtractImageRep().sk_bitmap();
 }
 
 }  // namespace

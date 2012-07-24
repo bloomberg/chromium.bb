@@ -102,7 +102,7 @@ void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               ui::OSExchangeData* data_object) {
-  gfx::ImageSkia image = gfx::ImageSkia(canvas.ExtractImageSkiaRep());
+  gfx::ImageSkia image = gfx::ImageSkia(canvas.ExtractImageRep());
   SetDragImageOnDataObject(image, size, cursor_offset, data_object);
 }
 

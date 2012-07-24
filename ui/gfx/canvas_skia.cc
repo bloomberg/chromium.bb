@@ -377,7 +377,7 @@ void Canvas::DrawStringWithHalo(const string16& text,
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
   Size size(w + 2, h + 2);
-  Canvas text_canvas(size, true);
+  Canvas text_canvas(size, scale_factor(), true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
   text_canvas.DrawRect(gfx::Rect(size), bkgnd_paint);
@@ -390,9 +390,9 @@ void Canvas::DrawStringWithHalo(const string16& text,
   SkBitmap& text_bitmap = const_cast<SkBitmap&>(
       skia::GetTopDevice(*text_canvas.sk_canvas())->accessBitmap(true));
 
-  for (int cur_y = 0; cur_y < h + 2; cur_y++) {
+  for (int cur_y = 0; cur_y < text_bitmap.height(); cur_y++) {
     uint32_t* text_row = text_bitmap.getAddr32(0, cur_y);
-    for (int cur_x = 0; cur_x < w + 2; cur_x++) {
+    for (int cur_x = 0; cur_x < text_bitmap.width(); cur_x++) {
       if (text_row[cur_x] == halo_premul) {
         // This pixel was not touched by the text routines. See if it borders
         // a touched pixel in any of the 4 directions (not diagonally).
@@ -405,7 +405,9 @@ void Canvas::DrawStringWithHalo(const string16& text,
   }
 
   // Draw the halo bitmap with blur.
-  DrawImageInt(text_bitmap, x - 1, y - 1);
+  gfx::ImageSkia text_image = gfx::ImageSkia(gfx::ImageSkiaRep(text_bitmap,
+      text_canvas.scale_factor()));
+  DrawImageInt(text_image, x - 1, y - 1);
 }
 
 void Canvas::DrawFadeTruncatingString(

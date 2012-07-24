@@ -109,9 +109,9 @@ struct EdgeResources {
 };
 
 gfx::ImageSkia* CreateImageForColor(SkColor color) {
-  gfx::Canvas canvas(gfx::Size(1, 1), true);
+  gfx::Canvas canvas(gfx::Size(1, 1), ui::SCALE_FACTOR_100P, true);
   canvas.DrawColor(color);
-  return new gfx::ImageSkia(canvas.ExtractBitmap());
+  return new gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
 const EdgeResources& GetFrameEdges() {

@@ -436,7 +436,7 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
     canvas.FillRect(gfx::Rect(size()), SkColorSetARGB(64, 255, 255, 255));
 
   return gfx::ImageSkiaOperations::CreateMaskedImage(
-      gfx::ImageSkia(canvas.ExtractImageSkiaRep()), *mask);
+      gfx::ImageSkia(canvas.ExtractImageRep()), *mask);
 }
 
 gfx::ImageSkia NewTabButton::GetImageForState(
@@ -467,7 +467,7 @@ gfx::ImageSkia NewTabButton::GetImageForState(
   canvas.DrawImageInt(*overlay, 0, 0);
   canvas.Restore();
 
-  return gfx::ImageSkia(canvas.ExtractImageSkiaRep());
+  return gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
 gfx::ImageSkia NewTabButton::GetImage(ui::ScaleFactor scale_factor) const {

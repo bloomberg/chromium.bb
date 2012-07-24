@@ -349,7 +349,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   int width = [image size].width;
   int height = [image size].height;
 
-  gfx::Canvas canvas(gfx::Size(width, height), false);
+  gfx::Canvas canvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P, false);
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     CGContextRef gc = scoped_platform_paint.GetPlatformSurface();
@@ -361,7 +361,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
             operation:NSCompositeCopy
              fraction:1.0];
   }
-  return canvas.ExtractBitmap();
+  return canvas.ExtractImageRep().sk_bitmap();
 }
 
 void Clipboard::ReadCustomData(Buffer buffer,

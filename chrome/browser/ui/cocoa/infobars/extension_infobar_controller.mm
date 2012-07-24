@@ -105,7 +105,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     scoped_ptr<gfx::Canvas> canvas(
         new gfx::Canvas(
             gfx::Size(image_size + kDropArrowLeftMarginPx + drop_image->width(),
-                      image_size), false));
+                      image_size), ui::SCALE_FACTOR_100P, false));
     canvas->DrawImageInt(*icon,
                          0, 0, icon->width(), icon->height(),
                          0, 0, image_size, image_size,
@@ -113,7 +113,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     canvas->DrawImageInt(*drop_image,
                          image_size + kDropArrowLeftMarginPx,
                          image_size / 2);
-    [owner_ setButtonImage:gfx::SkBitmapToNSImage(canvas->ExtractBitmap())];
+    [owner_ setButtonImage:gfx::SkBitmapToNSImage(
+        canvas->ExtractImageRep().sk_bitmap())];
   }
 
   // Overridden from ExtensionInfoBarDelegate::DelegateObserver:
