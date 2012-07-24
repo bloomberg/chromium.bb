@@ -24,16 +24,47 @@ const char* kValidSchemes[] = {
 
 }  // namespace
 
+FrameNavigationState::FrameID::FrameID()
+    : frame_num(-1),
+      render_process_id(-1) {
+}
+
+FrameNavigationState::FrameID::FrameID(int64 frame_num,
+                                       int render_process_id)
+    : frame_num(frame_num),
+      render_process_id(render_process_id) {
+}
+
+bool FrameNavigationState::FrameID::IsValid() const {
+  return frame_num >= 0 && render_process_id >= 0;
+}
+
+bool FrameNavigationState::FrameID::operator<(
+    const FrameNavigationState::FrameID& other) const {
+  return frame_num < other.frame_num ||
+      (frame_num == other.frame_num &&
+       render_process_id < other.render_process_id);
+}
+
+bool FrameNavigationState::FrameID::operator==(
+    const FrameNavigationState::FrameID& other) const {
+  return frame_num == other.frame_num &&
+      render_process_id == other.render_process_id;
+}
+
+bool FrameNavigationState::FrameID::operator!=(
+    const FrameNavigationState::FrameID& other) const {
+  return !(*this == other);
+}
+
 // static
 bool FrameNavigationState::allow_extension_scheme_ = false;
 
-FrameNavigationState::FrameNavigationState()
-    : main_frame_id_(-1) {
-}
+FrameNavigationState::FrameNavigationState() {}
 
 FrameNavigationState::~FrameNavigationState() {}
 
-bool FrameNavigationState::CanSendEvents(int64 frame_id) const {
+bool FrameNavigationState::CanSendEvents(FrameID frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   if (frame_state == frame_state_map_.end() ||
@@ -56,7 +87,7 @@ bool FrameNavigationState::IsValidUrl(const GURL& url) const {
   return false;
 }
 
-void FrameNavigationState::TrackFrame(int64 frame_id,
+void FrameNavigationState::TrackFrame(FrameID frame_id,
                                       const GURL& url,
                                       bool is_main_frame,
                                       bool is_error_page) {
@@ -77,7 +108,7 @@ void FrameNavigationState::TrackFrame(int64 frame_id,
   frame_ids_.insert(frame_id);
 }
 
-void FrameNavigationState::UpdateFrame(int64 frame_id, const GURL& url) {
+void FrameNavigationState::UpdateFrame(FrameID frame_id, const GURL& url) {
   FrameIdToStateMap::iterator frame_state = frame_state_map_.find(frame_id);
   if (frame_state == frame_state_map_.end()) {
     NOTREACHED();
@@ -86,13 +117,13 @@ void FrameNavigationState::UpdateFrame(int64 frame_id, const GURL& url) {
   frame_state->second.url = url;
 }
 
-bool FrameNavigationState::IsValidFrame(int64 frame_id) const {
+bool FrameNavigationState::IsValidFrame(FrameID frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   return (frame_state != frame_state_map_.end());
 }
 
-GURL FrameNavigationState::GetUrl(int64 frame_id) const {
+GURL FrameNavigationState::GetUrl(FrameID frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   if (frame_state == frame_state_map_.end()) {
@@ -102,56 +133,56 @@ GURL FrameNavigationState::GetUrl(int64 frame_id) const {
   return frame_state->second.url;
 }
 
-bool FrameNavigationState::IsMainFrame(int64 frame_id) const {
-  return main_frame_id_ != -1 && main_frame_id_ == frame_id;
+bool FrameNavigationState::IsMainFrame(FrameID frame_id) const {
+  return main_frame_id_.IsValid() && main_frame_id_ == frame_id;
 }
 
-int64 FrameNavigationState::GetMainFrameID() const {
+FrameNavigationState::FrameID FrameNavigationState::GetMainFrameID() const {
   return main_frame_id_;
 }
 
-void FrameNavigationState::SetErrorOccurredInFrame(int64 frame_id) {
+void FrameNavigationState::SetErrorOccurredInFrame(FrameID frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].error_occurred = true;
 }
 
-bool FrameNavigationState::GetErrorOccurredInFrame(int64 frame_id) const {
+bool FrameNavigationState::GetErrorOccurredInFrame(FrameID frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   return (frame_state == frame_state_map_.end() ||
           frame_state->second.error_occurred);
 }
 
-void FrameNavigationState::SetNavigationCompleted(int64 frame_id) {
+void FrameNavigationState::SetNavigationCompleted(FrameID frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].is_navigating = false;
 }
 
-bool FrameNavigationState::GetNavigationCompleted(int64 frame_id) const {
+bool FrameNavigationState::GetNavigationCompleted(FrameID frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   return (frame_state == frame_state_map_.end() ||
           !frame_state->second.is_navigating);
 }
 
-void FrameNavigationState::SetNavigationCommitted(int64 frame_id) {
+void FrameNavigationState::SetNavigationCommitted(FrameID frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].is_committed = true;
 }
 
-bool FrameNavigationState::GetNavigationCommitted(int64 frame_id) const {
+bool FrameNavigationState::GetNavigationCommitted(FrameID frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   return (frame_state != frame_state_map_.end() &&
           frame_state->second.is_committed);
 }
 
-void FrameNavigationState::SetIsServerRedirected(int64 frame_id) {
+void FrameNavigationState::SetIsServerRedirected(FrameID frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].is_server_redirected = true;
 }
 
-bool FrameNavigationState::GetIsServerRedirected(int64 frame_id) const {
+bool FrameNavigationState::GetIsServerRedirected(FrameID frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   return (frame_state != frame_state_map_.end() &&
