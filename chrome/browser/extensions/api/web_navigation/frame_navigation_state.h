@@ -24,6 +24,7 @@ class FrameNavigationState {
   struct FrameID {
     FrameID();
     FrameID(int64 frame_num, int render_process_id);
+    ~FrameID();
 
     bool operator<(const FrameID& other) const;
     bool operator==(const FrameID& other) const;
