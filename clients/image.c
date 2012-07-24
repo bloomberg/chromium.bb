@@ -43,6 +43,7 @@ struct image {
 	struct display *display;
 	char *filename;
 	cairo_surface_t *image;
+	int fullscreen;
 };
 
 static void
@@ -102,6 +103,15 @@ keyboard_focus_handler(struct window *window,
 	window_schedule_redraw(image->window);
 }
 
+static void
+fullscreen_handler(struct window *window, void *data)
+{
+	struct image *image = data;
+
+	image->fullscreen ^= 1;
+	window_set_fullscreen(window, image->fullscreen);
+}
+
 static struct image *
 image_create(struct display *display, const char *filename)
 {
@@ -129,6 +139,7 @@ image_create(struct display *display, const char *filename)
 	widget_set_redraw_handler(image->widget, redraw_handler);
 	window_set_keyboard_focus_handler(image->window,
 					  keyboard_focus_handler);
+	window_set_fullscreen_handler(image->window, fullscreen_handler);
 
 	widget_schedule_resize(image->widget, 500, 400);
 
