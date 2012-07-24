@@ -215,11 +215,11 @@ static FORCEINLINE void rel32_operand(const uint8_t *rip,
 }
 
 enum {
-  kNoRestrictedReg = 32,
-  kSandboxedRsi,
-  kSandboxedRdi,
-  kSandboxedRsiRestrictedRdi,
-  kSandboxedRsiSandboxedRdi
+  kNoRestrictedReg           = 0x1f,
+  kSandboxedRsi              = 0x20 | kNoRestrictedReg,
+  kSandboxedRdi              = 0x40 | kNoRestrictedReg,
+  kSandboxedRsiRestrictedRdi = 0x20 | REG_RDI,
+  kSandboxedRsiSandboxedRdi  = 0x20 | 0x40 | kNoRestrictedReg
 };
 
 static INLINE void check_access(ptrdiff_t instruction_start,
@@ -229,11 +229,8 @@ static INLINE void check_access(ptrdiff_t instruction_start,
                                 uint8_t *valid_targets,
                                 uint32_t *errors_detected) {
   if ((base == REG_RIP) || (base == REG_R15) ||
-      ((base == REG_RSP) && (restricted_register != REG_RSP)) ||
-      ((base == REG_RBP) && (restricted_register != REG_RBP))) {
-    if ((index == restricted_register) ||
-        ((index == REG_RDI) &&
-         (restricted_register == kSandboxedRsiRestrictedRdi))) {
+      (base == REG_RSP) || (base == REG_RBP)) {
+    if (index == (restricted_register & 0x1f)) {
       BitmapClearBit(valid_targets, instruction_start);
     } else if ((index != NO_REG) && (index != REG_RIZ)) {
       *errors_detected |= UNRESTRICTED_INDEX_REGISTER;
@@ -277,13 +274,11 @@ static INLINE void process_1_operands(uint8_t *restricted_register,
       *restricted_register = kNoRestrictedReg;
     }
   }
-  if (*restricted_register == kSandboxedRsi) {
-    if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted)) {
-      *sandboxed_rsi_restricted_rdi = instruction_start;
-      *restricted_register = kSandboxedRsiRestrictedRdi;
-    }
-  }
-  if (*restricted_register != kSandboxedRsiRestrictedRdi) {
+  if ((*restricted_register == kSandboxedRsi) &&
+      CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted)) {
+    *sandboxed_rsi_restricted_rdi = instruction_start;
+    *restricted_register = kSandboxedRsiRestrictedRdi;
+  } else {
     *restricted_register = kNoRestrictedReg;
     if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
         CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
@@ -326,14 +321,12 @@ static INLINE void process_2_operands(uint8_t *restricted_register,
       *restricted_register = kNoRestrictedReg;
     }
   }
-  if (*restricted_register == kSandboxedRsi) {
-    if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted) ||
-        CHECK_OPERAND(1, REG_RDI, OperandSandboxRestricted)) {
-      *sandboxed_rsi_restricted_rdi = instruction_start;
-      *restricted_register = kSandboxedRsiRestrictedRdi;
-    }
-  }
-  if (*restricted_register != kSandboxedRsiRestrictedRdi) {
+  if ((*restricted_register == kSandboxedRsi) &&
+      (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted) ||
+       CHECK_OPERAND(1, REG_RDI, OperandSandboxRestricted))) {
+    *sandboxed_rsi_restricted_rdi = instruction_start;
+    *restricted_register = kSandboxedRsiRestrictedRdi;
+  } else {
     *restricted_register = kNoRestrictedReg;
     if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
         CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
