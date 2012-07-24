@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
+#include "chrome/common/extensions/api/media_galleries.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -32,7 +33,7 @@ const char kInvalidInteractive[] = "Unknown value for interactive.";
 using chrome::MediaFileSystemRegistry;
 using content::ChildProcessSecurityPolicy;
 
-namespace MediaGalleries = extensions::api::experimental_media_galleries;
+namespace MediaGalleries = extensions::api::media_galleries;
 namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
 
 MediaGalleriesGetMediaFileSystemsFunction::

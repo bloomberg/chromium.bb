@@ -46,6 +46,7 @@
           'experimental_socket.idl',
           'experimental_usb.idl',
           'file_system.idl',
+          'media_galleries.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',

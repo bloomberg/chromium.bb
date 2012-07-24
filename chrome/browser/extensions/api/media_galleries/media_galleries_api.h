@@ -14,8 +14,7 @@ namespace extensions {
 
 class MediaGalleriesGetMediaFileSystemsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.mediaGalleries.getMediaFileSystems")
+  DECLARE_EXTENSION_FUNCTION_NAME("mediaGalleries.getMediaFileSystems")
 
  protected:
   virtual ~MediaGalleriesGetMediaFileSystemsFunction();

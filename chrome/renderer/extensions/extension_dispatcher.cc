@@ -563,8 +563,6 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("extension",
       scoped_ptr<NativeHandler>(
           new ExtensionCustomBindings(this)));
-  module_system->RegisterNativeHandler("experimental_mediaGalleries",
-      scoped_ptr<NativeHandler>(new MediaGalleryCustomBindings()));
   module_system->RegisterNativeHandler("experimental_app",
       scoped_ptr<NativeHandler>(new ExperimentalAppCustomBindings()));
   module_system->RegisterNativeHandler("experimental_usb",
@@ -575,6 +573,8 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new FileBrowserPrivateCustomBindings()));
   module_system->RegisterNativeHandler("i18n",
       scoped_ptr<NativeHandler>(new I18NCustomBindings()));
+  module_system->RegisterNativeHandler("mediaGalleries",
+      scoped_ptr<NativeHandler>(new MediaGalleryCustomBindings()));
   module_system->RegisterNativeHandler("page_actions",
       scoped_ptr<NativeHandler>(
           new PageActionsCustomBindings(this)));
@@ -625,7 +625,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("experimental.bluetooth",
                              IDR_EXPERIMENTAL_BLUETOOTH_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.mediaGalleries",
-                             IDR_MEDIA_GALLERY_CUSTOM_BINDINGS_JS);
+                             IDR_EXPERIMENTAL_MEDIA_GALLERY_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.offscreen",
                              IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.usb",
@@ -639,6 +639,8 @@ void ExtensionDispatcher::PopulateSourceMap() {
                              IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("i18n", IDR_I18N_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("mediaGalleries",
+                             IDR_MEDIA_GALLERY_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("omnibox", IDR_OMNIBOX_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("pageActions",
                              IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS);
