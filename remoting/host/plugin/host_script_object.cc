@@ -1051,8 +1051,9 @@ void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
                  &ui_strings.continue_button_text);
   LocalizeString(localize_func, /*i18n-content*/"STOP_SHARING_BUTTON",
                  &ui_strings.stop_sharing_button_text);
-  LocalizeString(localize_func, /*i18n-content*/"MESSAGE_SHARED",
-                 &ui_strings.disconnect_message);
+  LocalizeStringWithSubstitution(localize_func,
+                                 /*i18n-content*/"MESSAGE_SHARED", "$1",
+                                 &ui_strings.disconnect_message);
 
   base::AutoLock auto_lock(ui_strings_lock_);
   ui_strings_ = ui_strings;
@@ -1060,11 +1061,23 @@ void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
 
 bool HostNPScriptObject::LocalizeString(NPObject* localize_func,
                                         const char* tag, string16* result) {
-  NPVariant args[2];
+  return LocalizeStringWithSubstitution(localize_func, tag, NULL, result);
+}
+
+bool HostNPScriptObject::LocalizeStringWithSubstitution(
+    NPObject* localize_func,
+    const char* tag,
+    const char* substitution,
+    string16* result) {
+  int argc = substitution ? 2 : 1;
+  scoped_array<NPVariant> args(new NPVariant[argc]);
   STRINGZ_TO_NPVARIANT(tag, args[0]);
+  if (substitution) {
+    STRINGZ_TO_NPVARIANT(substitution, args[1]);
+  }
   NPVariant np_result;
   bool is_good = g_npnetscape_funcs->invokeDefault(
-      plugin_, localize_func, &args[0], 1, &np_result);
+      plugin_, localize_func, args.get(), argc, &np_result);
   if (!is_good) {
     LOG(ERROR) << "Localization failed for " << tag;
     return false;

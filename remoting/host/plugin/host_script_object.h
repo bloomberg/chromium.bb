@@ -214,11 +214,20 @@ class HostNPScriptObject : public HostStatusObserver {
   void LocalizeStrings(NPObject* localize_func);
 
   // Helper function for executing InvokeDefault on an NPObject that performs
-  // a string->string mapping with one optional substitution parameter. Stores
-  // the translation in |result| and returns true on success, or leaves it
-  // unchanged and returns false on failure.
+  // a string->string mapping without substitution. Stores the translation in
+  // |result| and returns true on success, or leaves it unchanged and returns
+  // false on failure.
   bool LocalizeString(NPObject* localize_func, const char* tag,
                       string16* result);
+
+  // Helper function for executing InvokeDefault on an NPObject that performs
+  // a string->string mapping with one substitution. Stores the translation in
+  // |result| and returns true on success, or leaves it unchanged and returns
+  // false on failure.
+  bool LocalizeStringWithSubstitution(NPObject* localize_func,
+                                      const char* tag,
+                                      const char* substitution,
+                                      string16* result);
 
   // If the web-app has registered a callback to be notified of changes to the
   // NAT traversal policy, notify it.
