@@ -30,9 +30,12 @@ namespace {
 
 class PepperFileChooserHostTest : public RenderViewTest {
  public:
-  PepperFileChooserHostTest() : pp_instance_(123456) {}
+  PepperFileChooserHostTest()
+      : pp_instance_(123456),
+        old_content_client_(NULL) {}
 
   virtual void SetUp() {
+    old_content_client_ = GetContentClient();
     SetContentClient(&client_);
     RenderViewTest::SetUp();
 
@@ -42,7 +45,7 @@ class PepperFileChooserHostTest : public RenderViewTest {
     globals_.GetResourceTracker()->DidDeleteInstance(pp_instance_);
 
     RenderViewTest::TearDown();
-    SetContentClient(NULL);
+    SetContentClient(old_content_client_);
   }
 
   PP_Instance pp_instance() const { return pp_instance_; }
@@ -52,6 +55,9 @@ class PepperFileChooserHostTest : public RenderViewTest {
 
   ppapi::TestGlobals globals_;
   TestContentClient client_;
+
+  // Original value for the content client.
+  ContentClient* old_content_client_;
 };
 
 // For testing to convert our hardcoded file paths to 8-bit.
