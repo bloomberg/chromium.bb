@@ -56,15 +56,24 @@
               'USE_SYSTEM_LIBBZ2',
             ],
           },
-
-          # There aren't any pkg-config files for libbz2
-          'link_settings': {
-            'libraries': [
-              '-lbz2',
-            ],
-          },
+          'conditions': [
+            ['OS=="ios"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/usr/lib/libbz2.dylib',
+                ],
+              },
+            }, {
+              # There aren't any pkg-config files for libbz2
+              'link_settings': {
+                'libraries': [
+                  '-lbz2',
+                ],
+              },
+            }],
+          ],
         },
-      ]
+      ],
     }],
   ],
 }
