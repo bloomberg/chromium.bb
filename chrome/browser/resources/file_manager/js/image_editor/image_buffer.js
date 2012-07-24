@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,7 @@ function ImageBuffer() {
   this.overlays_ = [];
 }
 
-/**
- * @param {ImageBuffer.Overlay} overlay
- */
+//TODO(JSDOC)
 ImageBuffer.prototype.addOverlay = function(overlay) {
   var zIndex = overlay.getZIndex();
   // Store the overlays in the ascending Z-order.
@@ -26,9 +24,7 @@ ImageBuffer.prototype.addOverlay = function(overlay) {
   this.overlays_.splice(i, 0, overlay);
 };
 
-/**
- * @param {ImageBuffer.Overlay} overlay
- */
+//TODO(JSDOC)
 ImageBuffer.prototype.removeOverlay = function(overlay) {
   for (var i = 0; i != this.overlays_.length; i++) {
     if (this.overlays_[i] == overlay) {
@@ -50,6 +46,9 @@ ImageBuffer.prototype.draw = function() {
 
 /**
  * Searches for a cursor style in the descending Z-order.
+ * @param {number} x X coordinate for cursor.
+ * @param {number} y Y coordinate for cursor.
+ * @param {boolean} mouseDown If mouse button is down.
  * @return {String} A value for style.cursor CSS property.
  */
 ImageBuffer.prototype.getCursorStyle = function(x, y, mouseDown) {
@@ -62,6 +61,8 @@ ImageBuffer.prototype.getCursorStyle = function(x, y, mouseDown) {
 
 /**
  * Searches for a click handler in the descending Z-order.
+ * @param {number} x X coordinate for click event.
+ * @param {number} y Y coordinate for click event.
  * @return {Boolean} True if handled.
  */
 ImageBuffer.prototype.onClick = function(x, y) {
@@ -92,7 +93,7 @@ ImageBuffer.prototype.getDragHandler = function(x, y, touch) {
  * layers in the descending Z-order.
  * @param {number} x X coordinate of the event.
  * @param {number} y Y coordinate of the event.
- * @return {ImageBuffer.DoubleTapAction}
+ * @return {ImageBuffer.DoubleTapAction} Action to perform as result.
  */
 ImageBuffer.prototype.getDoubleTapAction = function(x, y) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
@@ -116,19 +117,27 @@ ImageBuffer.DoubleTapAction = {
 /**
  * ImageBuffer.Overlay is a pluggable extension that modifies the outlook
  * and the behavior of the ImageBuffer instance.
+ * @class
  */
+//TODO(JSDOC)
 ImageBuffer.Overlay = function() {};
 
+//TODO(JSDOC)
 ImageBuffer.Overlay.prototype.getZIndex = function() { return 0 };
 
+//TODO(JSDOC)
 ImageBuffer.Overlay.prototype.draw = function() {};
 
+//TODO(JSDOC)
 ImageBuffer.Overlay.prototype.getCursorStyle = function() { return null };
 
+//TODO(JSDOC)
 ImageBuffer.Overlay.prototype.onClick = function() { return false };
 
+//TODO(JSDOC)
 ImageBuffer.Overlay.prototype.getDragHandler = function() { return null };
 
+//TODO(JSDOC)
 ImageBuffer.Overlay.prototype.getDoubleTapAction = function(x, y) {
   return ImageBuffer.DoubleTapAction.NOTHING;
 };

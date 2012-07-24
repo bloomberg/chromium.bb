@@ -2,32 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/*
- * Base class that Ribbon uses to display photos.
+/**
+ * Base interface Ribbon uses to display photos.
+ * @interface
  */
-
 function RibbonClient() {}
 
+/**
+ * Request prefetch for an image.
+ * @param {number} id The content id for caching.
+ * @param {string} url Image url.
+ */
 RibbonClient.prototype.prefetchImage = function(id, url) {};
 
-RibbonClient.prototype.openImage = function(id, url, metadata, direction) {
-};
+//TODO(JSDOC)
+RibbonClient.prototype.openImage = function(id, url, metadata, direction) {};
 
+//TODO(JSDOC)
 RibbonClient.prototype.closeImage = function(item) {};
 
 /**
  * Image gallery for viewing and editing image files.
  *
- * @param {HTMLDivElement} container
+ * @param {HTMLDivElement} container Container to create gallery in.
  * @param {Object} context Object containing the following:
- *     {function(string)} onNameChange Called every time a selected
- *         item name changes (on rename and on selection change).
- *     {function} onClose
- *     {MetadataCache} metadataCache
- *     {Array.<Object>} shareActions
- *     {string} readonlyDirName Directory name for readonly warning or null.
- *     {DirEntry} saveDirEntry Directory to save to.
- *     {function(string)} displayStringFunction
+ * @class
+ * @constructor
+ * @implements {RibbonClient}
  */
 function Gallery(container, context) {
   this.container_ = container;
@@ -51,6 +52,7 @@ function Gallery(container, context) {
 
 Gallery.prototype = { __proto__: RibbonClient.prototype };
 
+//TODO(JSDOC)
 Gallery.open = function(context, items, selectedItem) {
   var container = document.querySelector('.gallery');
   ImageUtil.removeChildren(container);
@@ -58,6 +60,10 @@ Gallery.open = function(context, items, selectedItem) {
   gallery.load(items, selectedItem);
 };
 
+/**
+ * List of available editor modes.
+ * @type {Array.<ImageEditor.Mode>}
+ */
 Gallery.editorModes = [
   new ImageEditor.Mode.InstantAutofix(),
   new ImageEditor.Mode.Crop(),
@@ -66,8 +72,19 @@ Gallery.editorModes = [
   new ImageEditor.Mode.OneClick('rotate_right', new Command.Rotate(1))
 ];
 
+/**
+ * Fade timeout im milliseconds on image transition.
+ * @type {Number}
+ */
 Gallery.FADE_TIMEOUT = 3000;
+
+/**
+ * Fade timeout im milliseconds on first gallery load.
+ * @type {Number}
+ */
 Gallery.FIRST_FADE_TIMEOUT = 1000;
+
+//TODO(JSDOC)
 Gallery.OVERWRITE_BUBBLE_MAX_TIMES = 5;
 
 /**
@@ -75,6 +92,10 @@ Gallery.OVERWRITE_BUBBLE_MAX_TIMES = 5;
  */
 Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|streaming';
 
+/**
+ * Initializes gallery UI
+ * @private
+ */
 Gallery.prototype.initDom_ = function() {
   var doc = this.document_;
 
@@ -239,7 +260,7 @@ Gallery.prototype.initDom_ = function() {
       this, this.metadataCache_, this.arrowLeft_, this.arrowRight_);
   this.ribbonSpacer_.appendChild(this.ribbon_);
 
-  this.editBar_  = doc.createElement('div');
+  this.editBar_ = doc.createElement('div');
   this.editBar_.className = 'edit-bar';
   this.toolbar_.appendChild(this.editBar_);
 
@@ -249,15 +270,15 @@ Gallery.prototype.initDom_ = function() {
   this.editButton_.addEventListener('click', this.onEdit_.bind(this));
   this.toolbar_.appendChild(this.editButton_);
 
-  this.editBarMain_  = doc.createElement('div');
+  this.editBarMain_ = doc.createElement('div');
   this.editBarMain_.className = 'edit-main';
   this.editBar_.appendChild(this.editBarMain_);
 
-  this.editBarMode_  = doc.createElement('div');
+  this.editBarMode_ = doc.createElement('div');
   this.editBarMode_.className = 'edit-modal';
   this.container_.appendChild(this.editBarMode_);
 
-  this.editBarModeWrapper_  = doc.createElement('div');
+  this.editBarModeWrapper_ = doc.createElement('div');
   this.editBarModeWrapper_.hidden = true;
   this.editBarModeWrapper_.className = 'edit-modal-wrapper';
   this.editBarMode_.appendChild(this.editBarModeWrapper_);
@@ -292,12 +313,19 @@ Gallery.prototype.initDom_ = function() {
   }.bind(this));
 };
 
+/**
+ * BeforeUnload event listener.
+ * @param {Event} event Not used
+ * @return {string} Message to show if there's unsaved changes.
+ * @private
+ */
 Gallery.prototype.onBeforeUnload_ = function(event) {
   if (this.editor_.isBusy())
     return this.displayStringFunction_('unsaved_changes');
   return null;
 };
 
+//TODO(JSDOC)
 Gallery.prototype.load = function(items, selectedItem) {
   var urls = [];
   var selectedIndex = -1;
@@ -342,7 +370,7 @@ Gallery.prototype.load = function(items, selectedItem) {
   // Show the selected item ASAP, then complete the initialization (populating
   // the ribbon can take especially long time).
   this.metadataCache_.get(selectedURL, Gallery.METADATA_TYPE,
-      function (metadata) {
+      function(metadata) {
         self.openImage(selectedIndex, selectedURL, metadata, 0, initRibbon);
       });
 
@@ -358,6 +386,7 @@ Gallery.prototype.load = function(items, selectedItem) {
   }.bind(this));
 };
 
+//TODO(JSDOC)
 Gallery.prototype.onImageContentChanged_ = function() {
   var revision = this.imageView_.getContentRevision();
   if (revision == 0) {
@@ -379,6 +408,7 @@ Gallery.prototype.onImageContentChanged_ = function() {
   }
 };
 
+//TODO(JSDOC)
 Gallery.prototype.flashSavedLabel_ = function() {
   var selLabelHighlighted =
       ImageUtil.setAttribute.bind(null, this.savedLabel_, 'highlighted');
@@ -386,13 +416,15 @@ Gallery.prototype.flashSavedLabel_ = function() {
   setTimeout(selLabelHighlighted.bind(null, false), 300);
 };
 
+//TODO(JSDOC)
 Gallery.prototype.applyDefaultOverwrite_ = function() {
   var key = 'gallery-overwrite-original';
-  var overwrite = key in localStorage ? (localStorage[key] == "true") : true;
+  var overwrite = key in localStorage ? (localStorage[key] == 'true') : true;
   this.overwriteOriginal_.checked = overwrite;
   this.applyOverwrite_(overwrite);
 };
 
+//TODO(JSDOC)
 Gallery.prototype.applyOverwrite_ = function(overwrite) {
   if (overwrite) {
     this.ribbon_.getSelectedItem().setOriginalName(this.context_.saveDirEntry,
@@ -404,17 +436,20 @@ Gallery.prototype.applyOverwrite_ = function(overwrite) {
   }
 };
 
+//TODO(JSDOC)
 Gallery.prototype.onOverwriteOriginalClick_ = function(event) {
   var overwrite = event.target.checked;
   localStorage['gallery-overwrite-original'] = overwrite;
   this.applyOverwrite_(overwrite);
 };
 
+//TODO(JSDOC)
 Gallery.prototype.onCloseBubble_ = function(event) {
   this.bubble_.hidden = true;
   localStorage['gallery-overwrite-bubble'] = Gallery.OVERWRITE_BUBBLE_MAX_TIMES;
 };
 
+//TODO(JSDOC)
 Gallery.prototype.saveCurrentImage_ = function(callback) {
   var item = this.ribbon_.getSelectedItem();
   var canvas = this.imageView_.getCanvas();
@@ -441,6 +476,7 @@ Gallery.prototype.saveCurrentImage_ = function(callback) {
       }.bind(this));
 };
 
+//TODO(JSDOC)
 Gallery.prototype.onActionExecute_ = function(action) {
   // |executeWhenReady| closes the sharing menu.
   this.editor_.executeWhenReady(function() {
@@ -448,6 +484,7 @@ Gallery.prototype.onActionExecute_ = function(action) {
   }.bind(this));
 };
 
+//TODO(JSDOC)
 Gallery.prototype.updateFilename_ = function(opt_url) {
   var fullName;
 
@@ -467,6 +504,10 @@ Gallery.prototype.updateFilename_ = function(opt_url) {
   this.filenameText_.textContent = displayName;
 };
 
+/**
+ * Click event handler on filename edit box
+ * @private
+ */
 Gallery.prototype.onFilenameClick_ = function() {
   // We can't rename files in readonly directory.
   if (this.context_.readonlyDirName)
@@ -477,6 +518,10 @@ Gallery.prototype.onFilenameClick_ = function() {
   this.cancelFading_();
 };
 
+/**
+ * Blur event handler on filename edit box
+ * @private
+ */
 Gallery.prototype.onFilenameEditBlur_ = function() {
   if (this.filenameEdit_.value && this.filenameEdit_.value[0] == '.') {
     this.editor_.getPrompt().show('file_hidden_name', 5000);
@@ -493,6 +538,10 @@ Gallery.prototype.onFilenameEditBlur_ = function() {
   this.initiateFading_();
 };
 
+/**
+ * Keydown event handler on filename edit box
+ * @private
+ */
 Gallery.prototype.onFilenameEditKeydown_ = function() {
   switch (event.keyCode) {
     case 27:  // Escape
@@ -507,6 +556,7 @@ Gallery.prototype.onFilenameEditKeydown_ = function() {
   event.stopPropagation();
 };
 
+//TODO(JSDOC)
 Gallery.prototype.renameItem_ = function(item, name) {
   var dir = this.context_.saveDirEntry;
   var self = this;
@@ -553,20 +603,32 @@ Gallery.prototype.renameItem_ = function(item, name) {
       onVictimFound, doRename);
 };
 
+/**
+ * @return {Boolean} True if file renaming is currently in progress
+ * @private
+ */
 Gallery.prototype.isRenaming_ = function() {
   return this.filenameSpacer_.hasAttribute('renaming');
 };
 
+/**
+ * @return {Object} File browser private API.
+ */
 Gallery.getFileBrowserPrivate = function() {
   return chrome.fileBrowserPrivate || window.top.chrome.fileBrowserPrivate;
 };
 
+/**
+ * Switches gallery to fullscreen mode and back
+ * @private
+ */
 Gallery.prototype.toggleFullscreen_ = function() {
   Gallery.getFileBrowserPrivate().toggleFullscreen();
 };
 
 /**
  * Close the Gallery.
+ * @private
  */
 Gallery.prototype.close_ = function() {
   Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
@@ -579,6 +641,7 @@ Gallery.prototype.close_ = function() {
 
 /**
  * Handle user's 'Close' action (Escape or a click on the X icon).
+ * @private
  */
 Gallery.prototype.onClose_ = function() {
   // TODO: handle write errors gracefully (suggest retry or saving elsewhere).
@@ -618,9 +681,9 @@ Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
 
     self.showSpinner_(false);
     if (loadType == ImageView.LOAD_TYPE_ERROR) {
-      self.showErrorBanner_(video? 'VIDEO_ERROR' : 'IMAGE_ERROR');
+      self.showErrorBanner_(video ? 'VIDEO_ERROR' : 'IMAGE_ERROR');
     } else if (loadType == ImageView.LOAD_TYPE_OFFLINE) {
-      self.showErrorBanner_(video? 'VIDEO_OFFLINE' : 'IMAGE_OFFLINE');
+      self.showErrorBanner_(video ? 'VIDEO_OFFLINE' : 'IMAGE_OFFLINE');
     }
 
     if (video) {
@@ -656,6 +719,7 @@ Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
       id, url, metadata, slide, this.saveCurrentImage_.bind(this), loadDone);
 };
 
+//TODO(JSDOC)
 Gallery.prototype.closeImage = function(callback) {
   this.showSpinner_(false);
   this.showErrorBanner_(false);
@@ -850,14 +914,7 @@ Gallery.prototype.cancelFading_ = function() {
   }
 };
 
-/**
- * @param {HTMLDocument} document
- * @param {RibbonClient} client
- * @param {MetadataCache} metadataCache
- * @param {HTMLElement} arrowLeft
- * @param {HTMLElement} arrowRight
- * @constructor
- */
+//TODO(JSDOC)
 function Ribbon(document, client, metadataCache, arrowLeft, arrowRight) {
   var self = document.createElement('div');
   Ribbon.decorate(self, client, metadataCache, arrowLeft, arrowRight);
@@ -866,13 +923,7 @@ function Ribbon(document, client, metadataCache, arrowLeft, arrowRight) {
 
 Ribbon.prototype.__proto__ = HTMLDivElement.prototype;
 
-/**
- * @param {HTMLDivElement} self Element to decorate.
- * @param {RibbonClient} client
- * @param {MetadataCache} metadataCache
- * @param {HTMLElement} arrowLeft
- * @param {HTMLElement} arrowRight
- */
+//TODO(JSDOC)
 Ribbon.decorate = function(
     self, client, metadataCache, arrowLeft, arrowRight) {
   self.__proto__ = Ribbon.prototype;
@@ -891,18 +942,22 @@ Ribbon.decorate = function(
       addEventListener('click', self.selectNext.bind(self, 1, null));
 
   self.className = 'ribbon';
-}
+};
 
+//TODO(JSDOC)
 Ribbon.PAGING_SINGLE_ITEM_DELAY = 20;
+
+//TODO(JSDOC)
 Ribbon.PAGING_ANIMATION_DURATION = 200;
 
 /**
  * @return {Ribbon.Item?} The selected item.
  */
-Ribbon.prototype.getSelectedItem = function () {
+Ribbon.prototype.getSelectedItem = function() {
   return this.items_[this.selectedIndex_];
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.clear = function() {
   this.textContent = '';
   this.items_ = [];
@@ -913,6 +968,7 @@ Ribbon.prototype.clear = function() {
   this.sequenceLength_ = 0;
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.add = function(url) {
   var index = this.items_.length;
   var item = new Ribbon.Item(this.ownerDocument, index, url);
@@ -920,6 +976,7 @@ Ribbon.prototype.add = function(url) {
   this.items_.push(item);
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.load = function(urls, selectedIndex) {
   this.clear();
   for (var index = 0; index < urls.length; ++index) {
@@ -940,6 +997,7 @@ Ribbon.prototype.load = function(urls, selectedIndex) {
   ImageUtil.setAttribute(this.arrowRight_, 'active', this.items_.length > 1);
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.select = function(index, opt_forceStep, opt_callback) {
   if (index == this.selectedIndex_)
     return;  // Do not reselect.
@@ -948,6 +1006,7 @@ Ribbon.prototype.select = function(index, opt_forceStep, opt_callback) {
       this.doSelect_.bind(this, index, opt_forceStep, opt_callback));
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.doSelect_ = function(index, opt_forceStep, opt_callback) {
   if (index == this.selectedIndex_)
     return;  // Do not reselect
@@ -1017,6 +1076,7 @@ Ribbon.prototype.doSelect_ = function(index, opt_forceStep, opt_callback) {
       Gallery.METADATA_TYPE, onMetadata);
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.requestPrefetch = function(direction) {
   if (this.items_.length < 2) return;
 
@@ -1031,8 +1091,10 @@ Ribbon.prototype.requestPrefetch = function(direction) {
       }.bind(this));
 };
 
+//TODO(JSDOC)
 Ribbon.ITEMS_COUNT = 5;
 
+//TODO(JSDOC)
 Ribbon.prototype.redraw = function() {
   // Never show a single thumbnail.
   if (this.items_.length == 1)
@@ -1133,6 +1195,7 @@ Ribbon.prototype.redraw = function() {
   }.bind(this), 200);
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.getNextSelectedIndex_ = function(direction) {
   var index = this.selectedIndex_ + (direction > 0 ? 1 : -1);
   if (index == -1) return this.items_.length - 1;
@@ -1140,14 +1203,17 @@ Ribbon.prototype.getNextSelectedIndex_ = function(direction) {
   return index;
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.selectNext = function(direction, opt_callback) {
   this.select(this.getNextSelectedIndex_(direction), direction, opt_callback);
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.selectFirst = function() {
   this.select(0);
 };
 
+//TODO(JSDOC)
 Ribbon.prototype.selectLast = function() {
   this.select(this.items_.length - 1);
 };
@@ -1170,6 +1236,7 @@ Ribbon.prototype.toggleDebugSlideshow = function() {
   }
 };
 
+//TODO(JSDOC)
 Ribbon.Item = function(document, index, url) {
   var self = document.createElement('div');
   Ribbon.Item.decorate(self, index, url);
@@ -1178,6 +1245,7 @@ Ribbon.Item = function(document, index, url) {
 
 Ribbon.Item.prototype.__proto__ = HTMLDivElement.prototype;
 
+//TODO(JSDOC)
 Ribbon.Item.decorate = function(self, index, url, selectClosure) {
   self.__proto__ = Ribbon.Item.prototype;
   self.index_ = index;
@@ -1193,29 +1261,39 @@ Ribbon.Item.decorate = function(self, index, url, selectClosure) {
   self.nameForSaving_ = null;
 };
 
-Ribbon.Item.prototype.getIndex = function () { return this.index_ };
+//TODO(JSDOC)
+Ribbon.Item.prototype.getIndex = function() { return this.index_ };
 
-Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
+//TODO(JSDOC)
+Ribbon.Item.prototype.isOriginal = function() { return this.original_ };
 
-Ribbon.Item.prototype.getUrl = function () { return this.url_ };
-Ribbon.Item.prototype.setUrl = function (url) { this.url_ = url };
+//TODO(JSDOC)
+Ribbon.Item.prototype.getUrl = function() { return this.url_ };
 
-Ribbon.Item.prototype.getNameAfterSaving = function () {
+//TODO(JSDOC)
+Ribbon.Item.prototype.setUrl = function(url) { this.url_ = url };
+
+//TODO(JSDOC)
+Ribbon.Item.prototype.getNameAfterSaving = function() {
   return this.nameForSaving_ || ImageUtil.getFullNameFromUrl(this.url_);
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.hasNameForSaving = function() {
   return !!this.nameForSaving_;
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.isSelected = function() {
   return this.hasAttribute('selected');
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.select = function(on) {
   ImageUtil.setAttribute(this, 'selected', on);
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.saveToFile = function(
     dirEntry, canvas, metadataEncoder, opt_callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
@@ -1273,14 +1351,18 @@ Ribbon.Item.prototype.saveToFile = function(
 };
 
 // TODO: Localize?
+//TODO(JSDOC)
 Ribbon.Item.COPY_SIGNATURE = 'Edited';
 
+//TODO(JSDOC)
 Ribbon.Item.REGEXP_COPY_N =
     new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + ' \\((\\d+)\\)( - .+)$');
 
+//TODO(JSDOC)
 Ribbon.Item.REGEXP_COPY_0 =
     new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + '( - .+)$');
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.createCopyName_ = function(dirEntry, metadata, callback) {
   var name = ImageUtil.getFullNameFromUrl(this.url_);
 
@@ -1332,6 +1414,7 @@ Ribbon.Item.prototype.createCopyName_ = function(dirEntry, metadata, callback) {
   tryNext(10);
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.setCopyName = function(dirEntry, metadata, opt_callback) {
   this.createCopyName_(dirEntry, metadata, function(name) {
     this.nameForSaving_ = name;
@@ -1339,28 +1422,29 @@ Ribbon.Item.prototype.setCopyName = function(dirEntry, metadata, opt_callback) {
   }.bind(this));
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.setOriginalName = function(dirEntry, opt_callback) {
   this.nameForSaving_ = null;
   if (opt_callback) opt_callback();
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.setNameForSaving = function(newName) {
   this.nameForSaving_ = newName;
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.hasThumbnail = function() {
   return !!this.querySelector('img[src]');
 };
 
+//TODO(JSDOC)
 Ribbon.Item.prototype.setThumbnail = function(metadata) {
   new ThumbnailLoader(this.url_, metadata).
       load(this.querySelector('.image-wrapper'), true /* fill */);
 };
 
-/**
- * @constructor
- * @extends {ImageEditor.Mode}
- */
+//TODO(JSDOC)
 function ShareMode(editor, container, toolbar, shareActions,
                    onClick, actionCallback, displayStringFunction) {
   ImageEditor.Mode.call(this, 'share');
@@ -1415,12 +1499,14 @@ ShareMode.prototype.cleanUpUI = function() {
 };
 
 /**
- * Overlay that handles swipe gestures. Changes to the next or the previus file.
+ * Overlay that handles swipe gestures. Changes to the next or previous file.
+ * @param {Ribbon} ribbon Ribbon to handle swipes.
  * @constructor
+ * @implements {ImageBuffer.Overlay}
  */
 function SwipeOverlay(ribbon) {
   this.ribbon_ = ribbon;
-};
+}
 
 SwipeOverlay.prototype.__proto__ = ImageBuffer.Overlay.prototype;
 
@@ -1450,6 +1536,7 @@ SwipeOverlay.prototype.getDragHandler = function(x, y, touch) {
 /**
  * Called when the swipe gesture is recognized.
  * @param {number} direction 1 means swipe to left, -1 swipe to right.
+ * @private
  */
 SwipeOverlay.prototype.handleSwipe_ = function(direction) {
   this.ribbon_.selectNext(direction);

@@ -729,11 +729,11 @@ ImageEditor.MouseControl.prototype.onTouchEnd = function(e) {
  * @param {number} y Y coordinate of the event.
  * @private
  */
-ImageEditor.MouseControl.prototype.doubleTapCallback_ = function(x, y) {}
+ImageEditor.MouseControl.prototype.doubleTapCallback_ = function(x, y) {};
 
 /**
  * Sets callback to be called when double tap detected.
- * @param {function(number, number)} callback.
+ * @param {function(number, number)} callback New double tap callback.
  */
 ImageEditor.MouseControl.prototype.setDoubleTapCallback = function(callback) {
   this.doubleTapCallback_ = callback;

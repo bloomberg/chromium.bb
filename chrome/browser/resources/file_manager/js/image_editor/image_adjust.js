@@ -6,6 +6,7 @@
  * The base class for simple filters that only modify the image content
  * but do not modify the image dimensions.
  * @constructor
+ * @extends ImageEditor.Mode
  */
 ImageEditor.Mode.Adjust = function() {
   ImageEditor.Mode.apply(this, arguments);
@@ -16,21 +17,20 @@ ImageEditor.Mode.Adjust = function() {
 
 ImageEditor.Mode.Adjust.prototype = {__proto__: ImageEditor.Mode.prototype};
 
-/*
- *  ImageEditor.Mode methods overridden.
- */
-
+/** @inheritDoc */
 ImageEditor.Mode.Adjust.prototype.getCommand = function() {
   if (!this.filter_) return null;
 
   return new Command.Filter(this.name, this.filter_, this.doneMessage_);
 };
 
+/** @inheritDoc */
 ImageEditor.Mode.Adjust.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
   this.hidePreview();
 };
 
+//TODO(JSDOC)
 ImageEditor.Mode.Adjust.prototype.hidePreview = function() {
   if (this.canvas_) {
     this.canvas_.parentNode.removeChild(this.canvas_);
@@ -38,17 +38,20 @@ ImageEditor.Mode.Adjust.prototype.hidePreview = function() {
   }
 };
 
+//TODO(JSDOC)
 ImageEditor.Mode.Adjust.prototype.cleanUpCaches = function() {
   this.filter_ = null;
   this.previewImageData_ = null;
 };
 
+//TODO(JSDOC)
 ImageEditor.Mode.Adjust.prototype.reset = function() {
   ImageEditor.Mode.prototype.reset.call(this);
   this.hidePreview();
   this.cleanUpCaches();
 };
 
+//TODO(JSDOC)
 ImageEditor.Mode.Adjust.prototype.update = function(options) {
   ImageEditor.Mode.prototype.update.apply(this, arguments);
 
@@ -87,6 +90,7 @@ ImageEditor.Mode.Adjust.prototype.updatePreviewImage = function() {
  * Own methods
  */
 
+//TODO(JSDOC)
 ImageEditor.Mode.Adjust.prototype.createFilter = function(options) {
   return filter.create(this.name, options);
 };

@@ -659,4 +659,3 @@ ImageUtil.getMetricName = function(name) {
  * Used for metrics reporting, keep in sync with the histogram description.
  */
 ImageUtil.FILE_TYPES = ['jpg', 'png', 'gif', 'bmp', 'webp'];
-

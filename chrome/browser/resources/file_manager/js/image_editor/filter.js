@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@ var filter = {};
  *
  * @param {string} name Maps to a filter method name.
  * @param {Object} options A map of filter-specific options.
- * @return {function(ImageData,ImageData,number,number)}
+ * @return {function(ImageData,ImageData,number,number)} created function.
  */
 filter.create = function(name, options) {
   var filterFunc = filter[name](options);
@@ -30,11 +30,11 @@ filter.create = function(name, options) {
  *
  * To be used with large images to avoid freezing up the UI.
  *
- * @param {HTMLCanvasElement} dstCanvas
- * @param {HTMLCanvasElement} srcCanvas
- * @param {function(ImageData,ImageData,number,number)} filterFunc
- * @param {function(number,number} progressCallback
- * @param {number} maxPixelsPerStrip
+ * @param {HTMLCanvasElement} dstCanvas Destination canvas.
+ * @param {HTMLCanvasElement} srcCanvas Source canvas.
+ * @param {Function(ImageData,ImageData,number,number)} filterFunc Filter.
+ * @param {function(number,number)} progressCallback Progress callback.
+ * @param {number} maxPixelsPerStrip Pixel number to process at once.
  */
 filter.applyByStrips = function(
     dstCanvas, srcCanvas, filterFunc, progressCallback, maxPixelsPerStrip) {
@@ -42,11 +42,11 @@ filter.applyByStrips = function(
   var srcContext = srcCanvas.getContext('2d');
   var source = srcContext.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
 
-  var stripCount = Math.ceil (srcCanvas.width * srcCanvas.height /
+  var stripCount = Math.ceil(srcCanvas.width * srcCanvas.height /
       (maxPixelsPerStrip || 1000000));  // 1 Mpix is a reasonable default.
 
   var strip = srcContext.getImageData(0, 0,
-      srcCanvas.width, Math.ceil (srcCanvas.height / stripCount));
+      srcCanvas.width, Math.ceil(srcCanvas.height / stripCount));
 
   var offset = 0;
 
@@ -81,8 +81,9 @@ filter.applyByStrips = function(
 /**
  * Return a color histogram for an image.
  *
- * @param {HTMLCanvasElement|ImageData} source
+ * @param {HTMLCanvasElement|ImageData} source Image data to analyze.
  * @return {{r: Array.<number>, g: Array.<number>, b: Array.<number>}}
+ *     histogram.
  */
 filter.getHistogram = function(source) {
   var imageData;
@@ -122,12 +123,12 @@ filter.getHistogram = function(source) {
  * Useful to speed up pixel manipulations.
  *
  * @param {number} maxArg Maximum argument value (inclusive).
- * @param {function(number): number} func
+ * @param {function(number): number} func Function to precompute.
  * @return {Uint8Array} Computed results
  */
 filter.precompute = function(maxArg, func) {
   var results = new Uint8Array(maxArg + 1);
-  for (var arg = 0; arg <= maxArg; arg ++) {
+  for (var arg = 0; arg <= maxArg; arg++) {
     results[arg] = Math.max(0, Math.min(0xFF, Math.round(func(arg))));
   }
   return results;
@@ -160,8 +161,8 @@ filter.mapPixels = function(rMap, gMap, bMap, dst, src, offsetX, offsetY) {
 
   var dstIndex = 0;
   for (var y = 0; y != dstHeight; y++) {
-    var srcIndex = (offsetX + (offsetY + y)* srcWidth)* 4;
-    for (var x = 0; x != dstWidth; x++ ) {
+    var srcIndex = (offsetX + (offsetY + y) * srcWidth) * 4;
+    for (var x = 0; x != dstWidth; x++) {
       dstData[dstIndex++] = rMap[srcData[srcIndex++]];
       dstData[dstIndex++] = gMap[srcData[srcIndex++]];
       dstData[dstIndex++] = bMap[srcData[srcIndex++]];
@@ -171,14 +172,27 @@ filter.mapPixels = function(rMap, gMap, bMap, dst, src, offsetX, offsetY) {
   }
 };
 
+/**
+ * Number of digits after period(in binary form) to preserve.
+ * @type {number}
+ */
 filter.FIXED_POINT_SHIFT = 16;
-// Maximum value that can be represented in fixed point without overflow.
+
+/**
+ * Maximum value that can be represented in fixed point without overflow.
+ * @type {number}
+ */
 filter.MAX_FLOAT_VALUE = 0x7FFFFFFF >> filter.FIXED_POINT_SHIFT;
 
+/**
+ * Converts floating point to fixed.
+ * @param {number} x Number to convert.
+ * @return {number} Converted number.
+ */
 filter.floatToFixedPoint = function(x) {
   // Math.round on negative arguments causes V8 to deoptimize the calling
   // function, so we are using >> 0 instead.
-  return (x * (1<< filter.FIXED_POINT_SHIFT)) >> 0;
+  return (x * (1 << filter.FIXED_POINT_SHIFT)) >> 0;
 };
 
 /**
@@ -235,7 +249,7 @@ filter.convolve5x5 = function(weights, dst, src, offsetX, offsetY) {
     var dstIndex = y * dstStride + startX * 4;
     var srcIndex = (y + offsetY) * srcStride + (startX + offsetX) * 4;
 
-    for (var x = startX; x != endX; x++ ) {
+    for (var x = startX; x != endX; x++) {
       for (var c = 0; c != 3; c++) {
         var sum = w0 * srcData[srcIndex] +
                   w1 * (srcData[srcIndex - 4] +
@@ -267,8 +281,8 @@ filter.convolve5x5 = function(weights, dst, src, offsetX, offsetY) {
 /**
  * Compute the average color for the image.
  *
- * @param {ImageData} imageData
- * @return {{r: number, g: number, b: number}}
+ * @param {ImageData} imageData Image data to analyze
+ * @return {{r: number, g: number, b: number}} average color.
  */
 filter.getAverageColor = function(imageData) {
   var data = imageData.data;
@@ -295,8 +309,8 @@ filter.getAverageColor = function(imageData) {
 /**
  * Compute the average color with more weight given to pixes at the center.
  *
- * @param {ImageData} imageData
- * @return {{r: number, g: number, b: number}}
+ * @param {ImageData} imageData Image data to analyze
+ * @return {{r: number, g: number, b: number}} weighted average color.
  */
 filter.getWeightedAverageColor = function(imageData) {
   var data = imageData.data;
@@ -331,13 +345,16 @@ filter.getWeightedAverageColor = function(imageData) {
 };
 
 /**
- * Apply a 3x3 color matrix.
+ * Copy part of src image to dst, applying matrix color filter on-the-fly.
  *
- * @param {Array.<number>} matrix 3x3 color matrix
- * @param {ImageData} dst
- * @param {ImageData} src
- * @param {number} offsetX
- * @param {number} offsetY
+ * The copied part of src should completely fit into dst (there is no clipping
+ * on either side).
+ *
+ * @param {Array.<number>} matrix 3x3 color matrix.
+ * @param {ImageData} dst Destination image data.
+ * @param {ImageData} src Source image data.
+ * @param {number} offsetX X offset in source to start processing.
+ * @param {number} offsetY Y offset in source to start processing.
  */
 filter.colorMatrix3x3 = function(matrix, dst, src, offsetX, offsetY) {
   var c11 = filter.floatToFixedPoint(matrix[0]);
@@ -369,8 +386,8 @@ filter.colorMatrix3x3 = function(matrix, dst, src, offsetX, offsetY) {
 
   var dstIndex = 0;
   for (var y = 0; y != dstHeight; y++) {
-    var srcIndex = (offsetX + (offsetY + y)* srcWidth)* 4;
-    for (var x = 0; x != dstWidth; x++ ) {
+    var srcIndex = (offsetX + (offsetY + y) * srcWidth) * 4;
+    for (var x = 0; x != dstWidth; x++) {
       var r = srcData[srcIndex++];
       var g = srcData[srcIndex++];
       var b = srcData[srcIndex++];
@@ -414,7 +431,7 @@ filter.colorMatrix3x3 = function(matrix, dst, src, offsetX, offsetY) {
  *
  * @param {Array.<number>} weights Weights for the convolution matrix
  *                                 (not normalized).
- * @return {function(ImageData,ImageData,number,number)}
+ * @return {function(ImageData,ImageData,number,number)} Convolution filter.
  */
 filter.createConvolutionFilter = function(weights) {
   // Normalize the weights to sum to 1.
@@ -442,6 +459,11 @@ filter.createConvolutionFilter = function(weights) {
   return filter.convolve5x5.bind(null, normalized);
 };
 
+/**
+ * Creates matrix filter.
+ * @param {Array.<number>} matrix Color transformation matrix.
+ * @return {function(ImageData,ImageData,number,number)} Matrix filter.
+ */
 filter.createColorMatrixFilter = function(matrix) {
   for (var r = 0; r != 3; r++) {
     var maxRowSum = 0;
@@ -457,8 +479,8 @@ filter.createColorMatrixFilter = function(matrix) {
 
 /**
  * Return a blur filter.
- * @param {Object} options
- * @return {function(ImageData,ImageData,number,number)}
+ * @param {Object} options Blur options.
+ * @return {function(ImageData,ImageData,number,number)} Blur filter.
  */
 filter.blur = function(options) {
   if (options.radius == 1)
@@ -474,8 +496,8 @@ filter.blur = function(options) {
 
 /**
  * Return a sharpen filter.
- * @param {Object} options
- * @return {function(ImageData,ImageData,number,number)}
+ * @param {Object} options Sharpen options.
+ * @return {function(ImageData,ImageData,number,number)} Sharpen filter.
  */
 filter.sharpen = function(options) {
   if (options.radius == 1)
@@ -491,8 +513,8 @@ filter.sharpen = function(options) {
 
 /**
  * Return an exposure filter.
- * @param {Object} options
- * @return {function(ImageData,ImageData,number,number)}
+ * @param {Object} options exposure options.
+ * @return {function(ImageData,ImageData,number,number)} Exposure filter.
  */
 filter.exposure = function(options) {
   var pixelMap = filter.precompute(
@@ -512,8 +534,8 @@ filter.exposure = function(options) {
 
 /**
  * Return a color autofix filter.
- * @param {Object} options
- * @return {function(ImageData,ImageData,number,number)}
+ * @param {Object} options Histogram for autofix.
+ * @return {function(ImageData,ImageData,number,number)} Autofix filter.
  */
 filter.autofix = function(options) {
   return filter.mapPixels.bind(null,
@@ -525,23 +547,23 @@ filter.autofix = function(options) {
 /**
  * Return a conversion table that stretches the range of colors used
  * in the image to 0..255.
- * @param {Array.<number>} channelHistogram
- * @return {Array.<number>}
+ * @param {Array.<number>} channelHistogram Histogram to calculate range.
+ * @return {Uint8Array} Color mapping array.
  */
 filter.autofix.stretchColors = function(channelHistogram) {
   var range = filter.autofix.getRange(channelHistogram);
   return filter.precompute(
       255,
       function(x) {
-        return (x - range.first) / (range.last - range.first) * 255
+        return (x - range.first) / (range.last - range.first) * 255;
       }
   );
 };
 
 /**
  * Return a range that encloses non-zero elements values in a histogram array.
- * @param {Array.<number>} channelHistogram
- * @return {{first: number, last: number}}
+ * @param {Array.<number>} channelHistogram Histogram to analyze.
+ * @return {{first: number, last: number}} Channel range in histogram.
  */
 filter.autofix.getRange = function(channelHistogram) {
   var first = 0;
@@ -558,17 +580,23 @@ filter.autofix.getRange = function(channelHistogram) {
     return {first: first, last: last};
 };
 
-filter.autofix.SENSITIVITY = 8;  // Reasonable empirical value.
+/**
+ * Minimum channel offset that makes visual difference. If autofix calculated
+ * offset is less than SENSITIVITY, probably autofix is not needed.
+ * Reasonable empirical value.
+ * @type {number}
+ */
+filter.autofix.SENSITIVITY = 8;
 
 /**
- * @param {Array.<number>} channelHistogram
+ * @param {Array.<number>} channelHistogram Histogram to analyze.
  * @return {boolean} True if stretching this range to 0..255 would make
  *                   a visible difference.
  */
 filter.autofix.needsStretching = function(channelHistogram) {
   var range = filter.autofix.getRange(channelHistogram);
   return (range.first >= filter.autofix.SENSITIVITY ||
-          range.last  <= 255 - filter.autofix.SENSITIVITY);
+          range.last <= 255 - filter.autofix.SENSITIVITY);
 };
 
 /**

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,13 +80,13 @@ ImageEditor.Mode.Crop.prototype.positionDOM = function() {
       screenCrop.inflate(-delta, -delta));
 
   this.domOverlay_.style.left = screenClipped.left + 'px';
-  this.domOverlay_.style.top  = screenClipped.top + 'px';
+  this.domOverlay_.style.top = screenClipped.top + 'px';
   this.domOverlay_.style.width = screenClipped.width + 'px';
   this.domOverlay_.style.height = screenClipped.height + 'px';
 
   this.shadowLeft_.style.width = screenCrop.left - screenClipped.left + 'px';
 
-  this.shadowTop_.style.height  = screenCrop.top - screenClipped.top + 'px';
+  this.shadowTop_.style.height = screenCrop.top - screenClipped.top + 'px';
 
   this.shadowRight_.style.width = screenClipped.left + screenClipped.width -
       (screenCrop.left + screenCrop.width) + 'px';
@@ -112,7 +112,7 @@ ImageEditor.Mode.Crop.prototype.getCommand = function() {
 
 ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
   var rect = new Rect(this.getViewport().getImageClipped());
-  rect = rect.inflate (
+  rect = rect.inflate(
       -Math.round(rect.width / 6), -Math.round(rect.height / 6));
   this.cropRect_ = new DraggableRect(rect, this.getViewport());
   this.positionDOM();
@@ -138,10 +138,10 @@ ImageEditor.Mode.Crop.prototype.getDoubleTapAction = function(x, y) {
   return this.cropRect_.getDoubleTapAction(x, y);
 };
 
-/**
+/*
  * A draggable rectangle over the image.
  */
-
+//TODO(JSDOC)
 function DraggableRect(rect, viewport, sensitivity) {
 
   // The bounds are not held in a regular rectangle (with width/height).
@@ -177,24 +177,30 @@ DraggableRect.TOP = 'top';
 DraggableRect.BOTTOM = 'bottom';
 DraggableRect.NONE = 'none';
 
-DraggableRect.prototype.getLeft = function () {
+//TODO(JSDOC)
+DraggableRect.prototype.getLeft = function() {
   return this.bounds_[DraggableRect.LEFT];
 };
 
+//TODO(JSDOC)
 DraggableRect.prototype.getRight = function() {
   return this.bounds_[DraggableRect.RIGHT];
 };
 
-DraggableRect.prototype.getTop = function () {
+//TODO(JSDOC)
+DraggableRect.prototype.getTop = function() {
   return this.bounds_[DraggableRect.TOP];
 };
 
+//TODO(JSDOC)
 DraggableRect.prototype.getBottom = function() {
   return this.bounds_[DraggableRect.BOTTOM];
 };
 
+//TODO(JSDOC)
 DraggableRect.prototype.getRect = function() { return new Rect(this.bounds_) };
 
+//TODO(JSDOC)
 DraggableRect.prototype.getDragMode = function(x, y, touch) {
   var result = {
     xSide: DraggableRect.NONE,

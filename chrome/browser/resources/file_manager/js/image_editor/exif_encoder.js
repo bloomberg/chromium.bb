@@ -1,36 +1,38 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // TODO:(kaznacheev) Share the EXIF constants with exif_parser.js
-const EXIF_MARK_SOS = 0xffda;  // Start of "stream" (the actual image data).
-const EXIF_MARK_SOI = 0xffd8;  // Start of image data.
-const EXIF_MARK_EOI = 0xffd9;  // End of image data.
+var EXIF_MARK_SOS = 0xffda;  // Start of "stream" (the actual image data).
+var EXIF_MARK_SOI = 0xffd8;  // Start of image data.
+var EXIF_MARK_EOI = 0xffd9;  // End of image data.
 
-const EXIF_MARK_APP0 = 0xffe0;  // APP0 block, most commonly JFIF data.
-const EXIF_MARK_EXIF = 0xffe1;  // Start of exif block.
+var EXIF_MARK_APP0 = 0xffe0;  // APP0 block, most commonly JFIF data.
+var EXIF_MARK_EXIF = 0xffe1;  // Start of exif block.
 
-const EXIF_ALIGN_LITTLE = 0x4949;  // Indicates little endian exif data.
-const EXIF_ALIGN_BIG = 0x4d4d;  // Indicates big endian exif data.
+var EXIF_ALIGN_LITTLE = 0x4949;  // Indicates little endian exif data.
+var EXIF_ALIGN_BIG = 0x4d4d;  // Indicates big endian exif data.
 
-const EXIF_TAG_TIFF = 0x002a;  // First directory containing TIFF data.
-const EXIF_TAG_GPSDATA = 0x8825;  // Pointer from TIFF to the GPS directory.
-const EXIF_TAG_EXIFDATA = 0x8769;  // Pointer from TIFF to the EXIF IFD.
+var EXIF_TAG_TIFF = 0x002a;  // First directory containing TIFF data.
+var EXIF_TAG_GPSDATA = 0x8825;  // Pointer from TIFF to the GPS directory.
+var EXIF_TAG_EXIFDATA = 0x8769;  // Pointer from TIFF to the EXIF IFD.
 
-const EXIF_TAG_JPG_THUMB_OFFSET = 0x0201;  // Pointer from TIFF to thumbnail.
-const EXIF_TAG_JPG_THUMB_LENGTH = 0x0202;  // Length of thumbnail data.
+var EXIF_TAG_JPG_THUMB_OFFSET = 0x0201;  // Pointer from TIFF to thumbnail.
+var EXIF_TAG_JPG_THUMB_LENGTH = 0x0202;  // Length of thumbnail data.
 
-const EXIF_TAG_IMAGE_WIDTH = 0x0100;
-const EXIF_TAG_IMAGE_HEIGHT = 0x0101;
+var EXIF_TAG_IMAGE_WIDTH = 0x0100;
+var EXIF_TAG_IMAGE_HEIGHT = 0x0101;
 
-const EXIF_TAG_ORIENTATION = 0x0112;
-const EXIF_TAG_X_DIMENSION = 0xA002;
-const EXIF_TAG_Y_DIMENSION = 0xA003;
+var EXIF_TAG_ORIENTATION = 0x0112;
+var EXIF_TAG_X_DIMENSION = 0xA002;
+var EXIF_TAG_Y_DIMENSION = 0xA003;
 
 /**
  * The Exif metadata encoder.
  * Uses the metadata format as defined by ExifParser.
- * @param {Object} original_metadata
+ * @param {Object} original_metadata Metadata to encode.
+ * @constructor
+ * @extends {ImageEncoder.MetadataEncoder}
  */
 function ExifEncoder(original_metadata) {
   ImageEncoder.MetadataEncoder.apply(this, arguments);
@@ -45,7 +47,7 @@ ExifEncoder.prototype = {__proto__: ImageEncoder.MetadataEncoder.prototype};
 ImageEncoder.registerMetadataEncoder(ExifEncoder, 'image/jpeg');
 
 /**
- * @param {HTMLCanvasElement|Object} canvas Canvas or or anything with
+ * @param {HTMLCanvasElement|Object} canvas Canvas or anything with
  *                                          width and height properties.
  */
 ExifEncoder.prototype.setImageData = function(canvas) {
@@ -85,8 +87,8 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
   var pixelCount = this.metadata_.width * this.metadata_.height;
   var maxEncodedSize = 5000 * Math.min(10, 1 + pixelCount / 1000000);
 
-  const DATA_URL_PREFIX = 'data:' + this.mimeType + ';base64,';
-  const BASE64_BLOAT = 4 / 3;
+  var DATA_URL_PREFIX = 'data:' + this.mimeType + ';base64,';
+  var BASE64_BLOAT = 4 / 3;
   var maxDataURLLength =
       DATA_URL_PREFIX.length + Math.ceil(maxEncodedSize * BASE64_BLOAT);
 
@@ -128,18 +130,18 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
 
 /**
  * Return a range where the metadata is (or should be) located.
- * @param {String} encodedImage
+ * @param {String} encodedImage Raw image data to look for metadata.
  * @return {Object} An object with from and to properties.
  */
 ExifEncoder.prototype.findInsertionRange = function(encodedImage) {
   function getWord(pos) {
     if (pos + 2 > encodedImage.length)
       throw 'Reading past the buffer end @' + pos;
-    return encodedImage.charCodeAt(pos) << 8 | encodedImage.charCodeAt(pos+1);
+    return encodedImage.charCodeAt(pos) << 8 | encodedImage.charCodeAt(pos + 1);
   }
 
   if (getWord(0) != EXIF_MARK_SOI)
-    throw new Error("Jpeg data starts from 0x" + getWord(0).toString(16));
+    throw new Error('Jpeg data starts from 0x' + getWord(0).toString(16));
 
   var sectionStart = 2;
 
@@ -147,7 +149,7 @@ ExifEncoder.prototype.findInsertionRange = function(encodedImage) {
   // Will be returned in absense of APP0 or Exif sections.
   var range = {from: sectionStart, to: sectionStart};
 
-  for(;;) {
+  for (;;) {
     var tag = getWord(sectionStart);
 
     if (tag == EXIF_MARK_SOS)
@@ -176,11 +178,10 @@ ExifEncoder.prototype.findInsertionRange = function(encodedImage) {
 };
 
 /**
- * Return serialized metadata ready to write to an image file.
- * @return {ArrayBuffer}
+ * @return {ArrayBuffer} serialized metadata ready to write to an image file.
  */
 ExifEncoder.prototype.encode = function() {
-  const HEADER_SIZE = 10;
+  var HEADER_SIZE = 10;
 
   // Allocate the largest theoretically possible size.
   var bytes = new Uint8Array(0x10000);
@@ -258,12 +259,12 @@ ExifEncoder.prototype.encode = function() {
 };
 
 /*
- * Static methods
+ * Static methods.
  */
 
 /**
  * Write the contents of an IFD directory.
- * @param {ByteWriter} bw
+ * @param {ByteWriter} bw ByteWriter to use.
  * @param {Object} directory A directory map as created by ExifParser.
  * @param {Array} resolveLater An array of tag ids for which the values will be
  *                resolved later.
@@ -321,6 +322,7 @@ ExifEncoder.encodeDirectory = function(
 };
 
 // TODO(kaznacheev): Share with ExifParser?
+// TODO(JSDOC)
 ExifEncoder.getComponentWidth = function(tag) {
   switch (tag.format) {
     case 1:  // Byte
@@ -341,15 +343,15 @@ ExifEncoder.getComponentWidth = function(tag) {
 
     default:  // ???
       throw new Error('Unknown tag format 0x' +
-          Number(tag.id).toString(16) +': ' + tag.format);
+          Number(tag.id).toString(16) + ': ' + tag.format);
       return 4;
   }
 };
 
 /**
  * Writes out the tag value.
- * @param {ByteWriter} bw
- * @param {Object} tag
+ * @param {ByteWriter} bw Writer to use.
+ * @param {Object} tag Tag, which value to write.
  */
 ExifEncoder.writeValue = function(bw, tag) {
   if (tag.format == 2) {  // String
@@ -381,6 +383,7 @@ ExifEncoder.writeValue = function(bw, tag) {
   }
 };
 
+//TODO(JSDOC)
 ExifEncoder.findOrCreateTag = function(directory, id, format, componentCount) {
   if (!(id in directory)) {
     directory[id] = {
@@ -394,8 +397,12 @@ ExifEncoder.findOrCreateTag = function(directory, id, format, componentCount) {
 
 /**
  * ByteWriter class.
+ * @param {ArrayBuffer} arrayBuffer Underlying buffer to use.
+ * @param {number} offset Offset at which to start writing.
+ * @param {number} length Maximum length to use.
+ * @class
+ * @constructor
  */
-
 function ByteWriter(arrayBuffer, offset, length) {
   length = length || (arrayBuffer.byteLength - offset);
   this.view_ = new DataView(arrayBuffer, offset, length);
@@ -404,21 +411,36 @@ function ByteWriter(arrayBuffer, offset, length) {
   this.forwards_ = {};
 }
 
+/**
+ * Little endian byte order.
+ * @type {number}
+ */
 ByteWriter.LITTLE_ENDIAN = 0;
+
+/**
+ * Bug endian byte order.
+ * @type {number}
+ */
 ByteWriter.BIG_ENDIAN = 1;
 
 /**
  * Set the byte ordering for future writes.
+ * @param {number} order ByteOrder to use {ByteWriter.LITTLE_ENDIAN}
+ *   or {ByteWriter.BIG_ENDIAN}
  */
 ByteWriter.prototype.setByteOrder = function(order) {
   this.littleEndian_ = (order == ByteWriter.LITTLE_ENDIAN);
 };
 
 /**
- * Return the current write position.
+ * @return {number} the current write position.
  */
 ByteWriter.prototype.tell = function() { return this.pos_ };
 
+/**
+ * Skips desired amount of bytes in output stream.
+ * @param {number} count Byte count to skip.
+ */
 ByteWriter.prototype.skip = function(count) {
   this.validateWrite(count);
   this.pos_ += count;
@@ -427,13 +449,19 @@ ByteWriter.prototype.skip = function(count) {
 /**
  * Check if the buffer has enough room to read 'width' bytes. Throws an error
  * if it has not.
- * @param {Number} width
+ * @param {number} width Amount of bytes to check.
  */
 ByteWriter.prototype.validateWrite = function(width) {
   if (this.pos_ + width > this.view_.byteLength)
     throw new Error('Writing past the end of the buffer');
 };
 
+/**
+ * Writes scalar value to output stream.
+ * @param {number} value Value to write.
+ * @param {number} width Desired width of written value.
+ * @param {boolean} opt_signed True if value represents signed number.
+ */
 ByteWriter.prototype.writeScalar = function(value, width, opt_signed) {
   var method;
 // The below switch is so verbose for two reasons:
@@ -466,6 +494,10 @@ ByteWriter.prototype.writeScalar = function(value, width, opt_signed) {
   this.pos_ += width;
 };
 
+/**
+ * Writes string.
+ * @param {String} str String to write.
+ */
 ByteWriter.prototype.writeString = function(str) {
   this.validateWrite(str.length);
   for (var i = 0; i != str.length; i++) {
@@ -476,8 +508,8 @@ ByteWriter.prototype.writeString = function(str) {
 /**
  * Allocate the space for 'width' bytes for the value that will be set later.
  * To be followed by a 'resolve' call with the same key.
- * @param {String} key A key to identify the value.
- * @param {Number} width Width of the value in bytes.
+ * @param {string} key A key to identify the value.
+ * @param {number} width Width of the value in bytes.
  */
 ByteWriter.prototype.forward = function(key, width) {
   if (key in this.forwards_)
@@ -492,8 +524,8 @@ ByteWriter.prototype.forward = function(key, width) {
 
 /**
  * Set the value previously allocated with a 'forward' call.
- * @param {String} key A key to identify the value.
- * @param {Number} value
+ * @param {string} key A key to identify the value.
+ * @param {number} value value to write in pre-allocated space.
  */
 ByteWriter.prototype.resolve = function(key, value) {
   if (!(key in this.forwards_))
@@ -508,6 +540,7 @@ ByteWriter.prototype.resolve = function(key, value) {
 
 /**
  * A shortcut to resolve the value to the current write position.
+ * @param {string} key A key to identify pre-allocated position.
  */
 ByteWriter.prototype.resolveOffset = function(key) {
   this.resolve(key, this.tell());
@@ -518,6 +551,6 @@ ByteWriter.prototype.resolveOffset = function(key) {
  */
 ByteWriter.prototype.checkResolved = function() {
   for (var key in this.forwards_) {
-    throw new Error ('Unresolved forward pointer ' + key.toString(16));
+    throw new Error('Unresolved forward pointer ' + key.toString(16));
   }
 };

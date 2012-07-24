@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const EXIF_MARK_SOI = 0xffd8;  // Start of image data.
-const EXIF_MARK_SOS = 0xffda;  // Start of "stream" (the actual image data).
-const EXIF_MARK_SOF = 0xffc0;  // Start of "frame"
-const EXIF_MARK_EXIF = 0xffe1;  // Start of exif block.
+var EXIF_MARK_SOI = 0xffd8;  // Start of image data.
+var EXIF_MARK_SOS = 0xffda;  // Start of "stream" (the actual image data).
+var EXIF_MARK_SOF = 0xffc0;  // Start of "frame"
+var EXIF_MARK_EXIF = 0xffe1;  // Start of exif block.
 
-const EXIF_ALIGN_LITTLE = 0x4949;  // Indicates little endian exif data.
-const EXIF_ALIGN_BIG = 0x4d4d;  // Indicates big endian exif data.
+var EXIF_ALIGN_LITTLE = 0x4949;  // Indicates little endian exif data.
+var EXIF_ALIGN_BIG = 0x4d4d;  // Indicates big endian exif data.
 
-const EXIF_TAG_TIFF = 0x002a;  // First directory containing TIFF data.
-const EXIF_TAG_GPSDATA = 0x8825;  // Pointer from TIFF to the GPS directory.
-const EXIF_TAG_EXIFDATA = 0x8769;  // Pointer from TIFF to the EXIF IFD.
-const EXIF_TAG_SUBIFD = 0x014a;  // Pointer from TIFF to "Extra" IFDs.
+var EXIF_TAG_TIFF = 0x002a;  // First directory containing TIFF data.
+var EXIF_TAG_GPSDATA = 0x8825;  // Pointer from TIFF to the GPS directory.
+var EXIF_TAG_EXIFDATA = 0x8769;  // Pointer from TIFF to the EXIF IFD.
+var EXIF_TAG_SUBIFD = 0x014a;  // Pointer from TIFF to "Extra" IFDs.
 
-const EXIF_TAG_JPG_THUMB_OFFSET = 0x0201;  // Pointer from TIFF to thumbnail.
-const EXIF_TAG_JPG_THUMB_LENGTH = 0x0202;  // Length of thumbnail data.
+var EXIF_TAG_JPG_THUMB_OFFSET = 0x0201;  // Pointer from TIFF to thumbnail.
+var EXIF_TAG_JPG_THUMB_LENGTH = 0x0202;  // Length of thumbnail data.
 
-const EXIF_TAG_ORIENTATION = 0x0112;
-const EXIF_TAG_X_DIMENSION = 0xA002;
-const EXIF_TAG_Y_DIMENSION = 0xA003;
+var EXIF_TAG_ORIENTATION = 0x0112;
+var EXIF_TAG_X_DIMENSION = 0xA002;
+var EXIF_TAG_Y_DIMENSION = 0xA003;
 
 function ExifParser(parent) {
   ImageParser.call(this, parent, 'jpeg', /\.jpe?g$/i);
@@ -32,7 +32,7 @@ ExifParser.prototype.parse = function(file, metadata, callback, errorCallback) {
   this.requestSlice(file, callback, errorCallback, metadata, 0);
 };
 
-ExifParser.prototype.requestSlice = function (
+ExifParser.prototype.requestSlice = function(
     file, callback, errorCallback, metadata, filePos, opt_length) {
   // Read at least 1Kb so that we do not issue too many read requests.
   opt_length = Math.max(1024, opt_length || 0);
@@ -319,13 +319,13 @@ ExifParser.prototype.readTagValue = function(br, tag) {
 
     case 5: // Rational
       safeRead(8, function() {
-        return [ br.readScalar(4), br.readScalar(4) ];
+        return [br.readScalar(4), br.readScalar(4)];
       });
       break;
 
     case 10: // Signed Rational
       safeRead(8, function() {
-        return [ br.readScalar(4, true), br.readScalar(4, true) ];
+        return [br.readScalar(4, true), br.readScalar(4, true)];
       });
       break;
 
@@ -340,15 +340,21 @@ ExifParser.prototype.readTagValue = function(br, tag) {
             tag.value);
 };
 
-ExifParser.SCALEX   = [1, -1, -1,  1,  1,  1, -1, -1];
-ExifParser.SCALEY   = [1,  1, -1, -1, -1,  1,  1, -1];
-ExifParser.ROTATE90 = [0,  0,  0,  0,  1,  1,  1,  1];
+//TODO(JSDOC)
+ExifParser.SCALEX = [1, -1, -1, 1, 1, 1, -1, -1];
+
+//TODO(JSDOC)
+ExifParser.SCALEY = [1, 1, -1, -1, -1, 1, 1, -1];
+
+//TODO(JSDOC)
+ExifParser.ROTATE90 = [0, 0, 0, 0, 1, 1, 1, 1];
 
 /**
  * Transform exif-encoded orientation into a set of parameters compatible with
  * CSS and canvas transforms (scaleX, scaleY, rotation).
  *
  * @param {Object} ifd exif property dictionary (image or thumbnail)
+ * @return {Object} //TODO(JSDOC)
  */
 ExifParser.prototype.parseOrientation = function(ifd) {
   if (ifd[EXIF_TAG_ORIENTATION]) {
@@ -357,7 +363,7 @@ ExifParser.prototype.parseOrientation = function(ifd) {
       scaleX: ExifParser.SCALEX[index],
       scaleY: ExifParser.SCALEY[index],
       rotate90: ExifParser.ROTATE90[index]
-    }
+    };
   }
   return null;
 };
