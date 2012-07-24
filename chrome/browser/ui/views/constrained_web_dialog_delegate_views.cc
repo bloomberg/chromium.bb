@@ -143,6 +143,10 @@ class ConstrainedWebDialogDelegateViewViews
       GetWebDialogDelegate()->GetDialogSize(&size);
     return size;
   }
+  virtual gfx::Size GetMinimumSize() OVERRIDE {
+    // Return an empty size so that we can be made smaller.
+    return gfx::Size();
+  }
 
  private:
   scoped_ptr<ConstrainedWebDialogDelegateViews> impl_;

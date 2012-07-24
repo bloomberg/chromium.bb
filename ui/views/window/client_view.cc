@@ -48,9 +48,13 @@ void ClientView::WidgetClosing() {
 gfx::Size ClientView::GetPreferredSize() {
   // |contents_view_| is allowed to be NULL up until the point where this view
   // is attached to a Container.
-  if (contents_view_)
-    return contents_view_->GetPreferredSize();
-  return gfx::Size();
+  return contents_view_ ? contents_view_->GetPreferredSize() : gfx::Size();
+}
+
+gfx::Size ClientView::GetMinimumSize() {
+  // |contents_view_| is allowed to be NULL up until the point where this view
+  // is attached to a Container.
+  return contents_view_ ? contents_view_->GetMinimumSize() : gfx::Size();
 }
 
 void ClientView::Layout() {

@@ -359,7 +359,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
       aura::client::GetScreenPositionClient(window_->GetRootWindow());
   if (screen_position_client) {
     gfx::Point origin = work_area.origin();
-    screen_position_client->ConvertPointFromScreen(window_->parent(),
+    screen_position_client->ConvertPointFromScreen(window_->GetRootWindow(),
                                                    &origin);
     work_area.set_origin(origin);
   }
@@ -381,7 +381,9 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
       parent_bounds.y() + (parent_bounds.height() - size.height()) / 2,
       size.width(),
       size.height());
-  window_bounds = window_bounds.AdjustToFit(work_area);
+  // Don't size the window bigger than the parent, otherwise the user may not be
+  // able to close or move it.
+  window_bounds = window_bounds.AdjustToFit(parent_bounds);
 
   // Convert the bounds back relative to the parent.
   gfx::Point origin = window_bounds.origin();
