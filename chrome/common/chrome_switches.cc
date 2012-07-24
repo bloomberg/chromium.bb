@@ -543,9 +543,6 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // Without this flag, pipelining will never be used.
 const char kEnableHttpPipelining[]          = "enable-http-pipelining";
 
-// Enables new WebRTC implementation of user image picker.
-const char kEnableHtml5Camera[]             = "enable-html5-camera";
-
 // Enable Instant extended API.
 const char kEnableInstantExtendedAPI[]      = "enable-instant-extended-api";
 
@@ -1344,8 +1341,11 @@ const char kTabletUI[]                      = "tablet-ui";
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";
 
+// Disables new WebRTC implementation of user image picker.
+const char kDisableHtml5Camera[]            = "disable-html5-camera";
+
 // Disables new OOBE/sign in design.
-extern const char kDisableNewOobe[]         = "disable-new-oobe";
+const char kDisableNewOobe[]                = "disable-new-oobe";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]

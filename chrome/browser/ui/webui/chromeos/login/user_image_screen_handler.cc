@@ -67,10 +67,12 @@ void UserImageScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO));
   localized_strings->SetString("okButtonText",
       l10n_util::GetStringUTF16(IDS_OK));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHtml5Camera))
+  if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kDisableHtml5Camera)) {
     localized_strings->SetString("cameraType", "webrtc");
-  else
+  } else {
     localized_strings->SetString("cameraType", "old");
+  }
 }
 
 void UserImageScreenHandler::Initialize() {
@@ -139,8 +141,10 @@ void UserImageScreenHandler::ShowCameraInitializing() {
 
 void UserImageScreenHandler::CheckCameraPresence() {
   // For WebRTC, camera presence checked is done on JS side.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHtml5Camera))
+  if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kDisableHtml5Camera)) {
     return;
+  }
   CameraDetector::StartPresenceCheck(
       base::Bind(&UserImageScreenHandler::OnCameraPresenceCheckDone,
                  weak_factory_.GetWeakPtr()));

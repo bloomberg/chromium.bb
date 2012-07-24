@@ -101,10 +101,12 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO));
   localized_strings->SetString("previewAltText",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_PREVIEW_ALT));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHtml5Camera))
+  if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kDisableHtml5Camera)) {
     localized_strings->SetString("cameraType", "webrtc");
-  else
+  } else {
     localized_strings->SetString("cameraType", "old");
+  }
 }
 
 void ChangePictureOptionsHandler::RegisterMessages() {
@@ -196,8 +198,8 @@ void ChangePictureOptionsHandler::HandlePageInitialized(
     const base::ListValue* args) {
   DCHECK(args && args->empty());
 
-  if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableHtml5Camera)) {
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kDisableHtml5Camera)) {
     // If no camera presence check has been performed in this session,
     // start one now.
     if (CameraDetector::camera_presence() ==
@@ -365,8 +367,10 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
 
 void ChangePictureOptionsHandler::CheckCameraPresence() {
   // For WebRTC, camera presence checked is done on JS side.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHtml5Camera))
+  if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kDisableHtml5Camera)) {
     return;
+  }
   CameraDetector::StartPresenceCheck(
       base::Bind(&ChangePictureOptionsHandler::OnCameraPresenceCheckDone,
                  weak_factory_.GetWeakPtr()));

@@ -796,11 +796,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableDriveV2Api),
   },
   {
-    "enable-html5-camera",
-    IDS_FLAGS_ENABLE_HTML5_CAMERA,
-    IDS_FLAGS_ENABLE_HTML5_CAMERA_DESCRIPTION,
+    "disable-html5-camera",
+    IDS_FLAGS_DISABLE_HTML5_CAMERA,
+    IDS_FLAGS_DISABLE_HTML5_CAMERA_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableHtml5Camera),
+    SINGLE_VALUE_TYPE(switches::kDisableHtml5Camera),
   },
   {
     "disable-new-oobe",
