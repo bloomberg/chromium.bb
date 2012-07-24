@@ -73,6 +73,7 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
                                int y);
 
   void TooltipTimerFired();
+  void TooltipShownTimerFired();
 
   // Updates the tooltip if required (if there is any change in the tooltip
   // text or the aura::Window.
@@ -96,6 +97,10 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   scoped_ptr<Tooltip> tooltip_;
 
   base::RepeatingTimer<TooltipController> tooltip_timer_;
+
+  // Timer to timeout the life of an on-screen tooltip. We hide the tooltip when
+  // this timer fires.
+  base::OneShotTimer<TooltipController> tooltip_shown_timer_;
 
   gfx::Point curr_mouse_loc_;
 
