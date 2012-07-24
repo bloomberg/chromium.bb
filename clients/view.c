@@ -159,6 +159,15 @@ button_handler(struct widget *widget, struct input *input, uint32_t time,
 }
 
 static void
+fullscreen_handler(struct window *window, void *data)
+{
+	struct view *view = data;
+
+	view->fullscreen ^= 1;
+	window_set_fullscreen(window, view->fullscreen);
+}
+
+static void
 key_handler(struct window *window, struct input *input, uint32_t time,
 	    uint32_t key, uint32_t unicode,
 	    enum wl_keyboard_key_state state, void *data)
@@ -169,10 +178,6 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	        return;
 
 	switch (key) {
-	case KEY_F11:
-		view->fullscreen ^= 1;
-		window_set_fullscreen(window, view->fullscreen);
-		break;
 	case KEY_SPACE:
 	case KEY_PAGEDOWN:
 	case KEY_RIGHT:
@@ -238,6 +243,8 @@ view_create(struct display *display,
 	window_set_key_handler(view->window, key_handler);
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler);
+	window_set_fullscreen_handler(view->window, fullscreen_handler);
+
 	widget_set_button_handler(view->widget, button_handler);
 	widget_set_resize_handler(view->widget, resize_handler);
 	widget_set_redraw_handler(view->widget, redraw_handler);

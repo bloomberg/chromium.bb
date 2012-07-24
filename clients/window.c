@@ -157,6 +157,7 @@ struct window {
 	window_data_handler_t data_handler;
 	window_drop_handler_t drop_handler;
 	window_close_handler_t close_handler;
+	window_fullscreen_handler_t fullscreen_handler;
 
 	struct frame *frame;
 	struct widget *widget;
@@ -1560,7 +1561,8 @@ frame_menu_func(struct window *window, int index, void *data)
 		break;
 	case 1: /* fullscreen */
 		/* we don't have a way to get out of fullscreen for now */
-		window_set_fullscreen(window, 1);
+		if (window->fullscreen_handler)
+			window->fullscreen_handler(window, window->user_data);
 		break;
 	case 2: /* rotate */
 	case 3: /* scale */
@@ -1886,6 +1888,10 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
 			window_set_maximized(window,
 					     window->type != TYPE_MAXIMIZED);
+	} else if (sym == XKB_KEY_F11 &&
+		   window->fullscreen_handler &&
+		   state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+		window->fullscreen_handler(window, window->user_data);
 	} else if (window->key_handler) {
 		(*window->key_handler)(window, input, time, key,
 				       sym, state, window->user_data);
@@ -2834,6 +2840,13 @@ window_set_close_handler(struct window *window,
 			 window_close_handler_t handler)
 {
 	window->close_handler = handler;
+}
+
+void
+window_set_fullscreen_handler(struct window *window,
+			      window_fullscreen_handler_t handler)
+{
+	window->fullscreen_handler = handler;
 }
 
 void

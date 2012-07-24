@@ -176,6 +176,7 @@ typedef void (*window_drop_handler_t)(struct window *window,
 				      int32_t x, int32_t y, void *data);
 
 typedef void (*window_close_handler_t)(struct window *window, void *data);
+typedef void (*window_fullscreen_handler_t)(struct window *window, void *data);
 
 typedef void (*widget_resize_handler_t)(struct widget *widget,
 					int32_t width, int32_t height,
@@ -303,6 +304,9 @@ window_set_drop_handler(struct window *window,
 void
 window_set_close_handler(struct window *window,
 			 window_close_handler_t handler);
+void
+window_set_fullscreen_handler(struct window *window,
+			      window_fullscreen_handler_t handler);
 
 void
 window_set_title(struct window *window, const char *title);

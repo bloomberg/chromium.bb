@@ -2057,6 +2057,15 @@ static const struct wl_data_source_listener data_source_listener = {
 	data_source_cancelled
 };
 
+static void
+fullscreen_handler(struct window *window, void *data)
+{
+	struct terminal *terminal = data;
+
+	terminal->fullscreen ^= 1;
+	window_set_fullscreen(window, terminal->fullscreen);
+}
+
 static int
 handle_bound_key(struct terminal *terminal,
 		 struct input *input, uint32_t sym, uint32_t time)
@@ -2115,13 +2124,6 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		return;
 
 	switch (sym) {
-	case XKB_KEY_F11:
-		if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
-			break;
-		terminal->fullscreen ^= 1;
-		window_set_fullscreen(window, terminal->fullscreen);
-		break;
-
 	case XKB_KEY_BackSpace:
 		if (modifiers & MOD_ALT_MASK)
 			ch[len++] = 0x1b;
@@ -2457,6 +2459,8 @@ terminal_create(struct display *display, int fullscreen)
 	window_set_key_handler(terminal->window, key_handler);
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler);
+	window_set_fullscreen_handler(terminal->window, fullscreen_handler);
+
 	widget_set_redraw_handler(terminal->widget, redraw_handler);
 	widget_set_resize_handler(terminal->widget, resize_handler);
 	widget_set_button_handler(terminal->widget, button_handler);
