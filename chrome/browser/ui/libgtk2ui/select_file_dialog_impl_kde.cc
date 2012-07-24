@@ -15,7 +15,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
+//#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
 
 // TODO(erg): Move all of this into WorkerPool.
 #include "content/public/browser/browser_thread.h"

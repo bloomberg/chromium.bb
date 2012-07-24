@@ -4,7 +4,7 @@
 //
 // This file implements common select dialog functionality between GTK and KDE.
 
-#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
+//#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
 
 #include "base/environment.h"
 #include "base/file_util.h"
