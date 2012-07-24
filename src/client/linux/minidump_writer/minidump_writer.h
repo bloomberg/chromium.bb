@@ -51,16 +51,6 @@ struct MappingEntry {
 // A list of <MappingInfo, GUID>
 typedef std::list<MappingEntry> MappingList;
 
-// These entries store a list of memory regions that the client wants included
-// in the minidump.
-struct AppMemory {
-  AppMemory(void *ptr, size_t length) : ptr(ptr), length(length) {}
-
-  void *ptr;
-  size_t length;
-};
-typedef std::list<AppMemory> AppMemoryList;
-
 // Write a minidump to the filesystem. This function does not malloc nor use
 // libc functions which may. Thus, it can be used in contexts where the state
 // of the heap may be corrupt.
@@ -74,16 +64,13 @@ typedef std::list<AppMemory> AppMemoryList;
 bool WriteMinidump(const char* filename, pid_t crashing_process,
                    const void* blob, size_t blob_size);
 
-// This overload also allows passing a list of known mappings and
-// a list of additional memory regions to be included in the minidump.
+// This overload also allows passing a list of known mappings.
 bool WriteMinidump(const char* filename, pid_t crashing_process,
                    const void* blob, size_t blob_size,
-                   const MappingList& mappings,
-                   const AppMemoryList& appdata);
+                   const MappingList& mappings);
 
 bool WriteMinidump(const char* filename,
                    const MappingList& mappings,
-                   const AppMemoryList& appdata,
                    LinuxDumper* dumper);
 
 }  // namespace google_breakpad

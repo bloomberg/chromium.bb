@@ -46,7 +46,9 @@ static const int kExceptionHandlerThreadInitialStackSize = 64 * 1024;
 
 // This is passed as the context to the MinidumpWriteDump callback.
 typedef struct {
-  AppMemoryList::const_iterator iter, end;
+  ULONG64 memory_base;
+  ULONG memory_size;
+  bool finished;
 } MinidumpCallbackContext;
 
 vector<ExceptionHandler*>* ExceptionHandler::handler_stack_ = NULL;
@@ -217,9 +219,6 @@ void ExceptionHandler::Initialize(const wstring& dump_path,
     // strings, and their equivalent c_str pointers.
     set_dump_path(dump_path);
   }
-
-  // Reserve one element for the instruction memory
-  app_memory_info_.push_back(AppMemory(0, 0));
 
   // There is a race condition here. If the first instance has not yet
   // initialized the critical section, the second (and later) instances may
@@ -796,6 +795,9 @@ bool ExceptionHandler::WriteMinidumpWithException(
           ++user_streams.UserStreamCount;
         }
 
+        MINIDUMP_CALLBACK_INFORMATION callback;
+        MinidumpCallbackContext context;
+        MINIDUMP_CALLBACK_INFORMATION* callback_pointer = NULL;
         // Older versions of DbgHelp.dll don't correctly put the memory around
         // the faulting instruction pointer into the minidump. This
         // callback will ensure that it gets included.
@@ -820,32 +822,22 @@ bool ExceptionHandler::WriteMinidumpWithException(
             // pointer, but settle for whatever's available up to the
             // boundaries of the memory region.
             const ULONG64 kIPMemorySize = 256;
-            ULONG64 base =
+            context.memory_base =
               (std::max)(reinterpret_cast<ULONG64>(info.BaseAddress),
                        instruction_pointer - (kIPMemorySize / 2));
             ULONG64 end_of_range =
               (std::min)(instruction_pointer + (kIPMemorySize / 2),
                        reinterpret_cast<ULONG64>(info.BaseAddress)
                        + info.RegionSize);
-            ULONG size = static_cast<ULONG>(end_of_range - base);
+            context.memory_size =
+                static_cast<ULONG>(end_of_range - context.memory_base);
 
-           AppMemory &elt = app_memory_info_.front();
-           elt.ptr = base;
-           elt.length = size;
+            context.finished = false;
+            callback.CallbackRoutine = MinidumpWriteDumpCallback;
+            callback.CallbackParam = reinterpret_cast<void*>(&context);
+            callback_pointer = &callback;
           }
         }
-
-        MinidumpCallbackContext context;
-        context.iter = app_memory_info_.begin();
-        context.end = app_memory_info_.end();
-
-       // Skip the reserved element if there was no instruction memory
-       if (context.iter->ptr == 0)
- 	context.iter++;
-        
-        MINIDUMP_CALLBACK_INFORMATION callback;
-        callback.CallbackRoutine = MinidumpWriteDumpCallback;
-        callback.CallbackParam = reinterpret_cast<void*>(&context);
 
         // The explicit comparison to TRUE avoids a warning (C4800).
         success = (minidump_write_dump_(GetCurrentProcess(),
@@ -854,7 +846,7 @@ bool ExceptionHandler::WriteMinidumpWithException(
                                         dump_type_,
                                         exinfo ? &except_info : NULL,
                                         &user_streams,
-                                        &callback) == TRUE);
+                                        callback_pointer) == TRUE);
 
         CloseHandle(dump_file);
       }
@@ -882,13 +874,13 @@ BOOL CALLBACK ExceptionHandler::MinidumpWriteDumpCallback(
   case MemoryCallback: {
     MinidumpCallbackContext* callback_context =
         reinterpret_cast<MinidumpCallbackContext*>(context);
-    if (callback_context->iter == callback_context->end)
+    if (callback_context->finished)
       return FALSE;
 
     // Include the specified memory region.
-    callback_output->MemoryBase = callback_context->iter->ptr;
-    callback_output->MemorySize = callback_context->iter->length;
-    callback_context->iter++;
+    callback_output->MemoryBase = callback_context->memory_base;
+    callback_output->MemorySize = callback_context->memory_size;
+    callback_context->finished = true;
     return TRUE;
   }
     
@@ -930,22 +922,6 @@ void ExceptionHandler::UpdateNextID() {
 
   next_minidump_path_ = minidump_path;
   next_minidump_path_c_ = next_minidump_path_.c_str();
-}
-
-void ExceptionHandler::RegisterAppMemory(void *ptr, size_t length) {
-  app_memory_info_.push_back(AppMemory(reinterpret_cast<ULONG64>(ptr),
-                                       static_cast<ULONG>(length)));
-}
-
-void ExceptionHandler::UnregisterAppMemory(void *ptr) {
-  for (AppMemoryList::iterator iter = app_memory_info_.begin();
-       iter != app_memory_info_.end();
-       ++iter) {
-    if (iter->ptr == reinterpret_cast<ULONG64>(ptr)) {
-      app_memory_info_.erase(iter);
-      return;
-    }
-  }
 }
 
 }  // namespace google_breakpad
