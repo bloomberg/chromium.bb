@@ -1,9 +1,8 @@
-Name: EXIF Library
-Short Name: libexif
+Name: libexif
 URL: http://libexif.sourceforge.net/
 Version: 0.6.21
 License: LGPL 2.1
-License File: LICENSE
+License File: sources/COPYING
 Date: 2012-06-04
 Security Critical: yes.
 
