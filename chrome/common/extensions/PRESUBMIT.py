@@ -14,6 +14,8 @@ JS_DIR = os.path.join(DOC_DIR, 'js')
 CSS_DIR = os.path.join(DOC_DIR, 'css')
 STATIC_DIR = os.path.join(DOC_DIR, 'static')
 SAMPLES_DIR = os.path.join(DOC_DIR, 'examples')
+APPS_DIR = os.path.join(DOC_DIR, 'apps')
+EXTENSIONS_DIR = os.path.join(DOC_DIR, 'extensions')
 
 EXCEPTIONS = ['README', 'README.txt', 'OWNERS']
 
@@ -143,8 +145,11 @@ def StaticDocBuilt(static_file, input_api):
   """Return True if the generated doc that corresponds to the |static_file|
   is also in this change. Both files must also contain matching changes.
   """
-  generated_file = _FindFileInAlternateDir(static_file, DOC_DIR, input_api)
-  return _ChangesMatch(generated_file, static_file)
+  for subdir in [APPS_DIR, EXTENSIONS_DIR]:
+    generated_file = _FindFileInAlternateDir(static_file, subdir, input_api)
+    if not _ChangesMatch(generated_file, static_file):
+      return False
+  return True
 
 def _FindFileInAlternateDir(affected_file, alt_dir, input_api):
   """Return an AffectFile for the file in |alt_dir| that corresponds to

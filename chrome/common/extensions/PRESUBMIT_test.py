@@ -251,10 +251,16 @@ class TestPresubmit(unittest.TestCase):
     static_file = FakeAffectedFile(
         local_path='chrome/common/extensions/docs/static/index.html',
         changed_contents=[(3, 'foo!'), (4, 'bar!')])
-    generated_file = FakeAffectedFile(
-        local_path='chrome/common/extensions/docs/index.html',
+    generated_apps_file = FakeAffectedFile(
+        local_path='chrome/common/extensions/docs/apps/index.html',
         changed_contents=[(13, 'foo!'), (14, 'bar!')])
-    input_api = FakeInputApi(affected_files=[generated_file, static_file])
+    generated_extensions_file = FakeAffectedFile(
+        local_path='chrome/common/extensions/docs/extensions/index.html',
+        changed_contents=[(13, 'foo!'), (14, 'bar!')])
+    input_api = FakeInputApi(affected_files=[
+        generated_apps_file,
+        generated_extensions_file,
+        static_file])
 
     self.assertTrue(PRESUBMIT.StaticDocBuilt(static_file, input_api))
 
