@@ -217,7 +217,7 @@ void ConnectionToHost::OnSessionChannelReady(const std::string& channel_name,
     not_ready_channels_.insert(channel_name);
   }
 
-  event_callback_->OnConnectionReady(ready);
+  event_callback_->OnConnectionReady(not_ready_channels_.empty());
 }
 
 ConnectionToHost::State ConnectionToHost::state() const {

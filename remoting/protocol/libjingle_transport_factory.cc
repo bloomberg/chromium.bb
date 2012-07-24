@@ -243,7 +243,7 @@ void LibjingleStreamTransport::OnRouteChange(
 
 void LibjingleStreamTransport::OnWritableState(
     cricket::TransportChannel* channel) {
-  event_handler_->OnTransportReady(this, !channel->writable());
+  event_handler_->OnTransportReady(this, channel->writable());
 }
 
 void LibjingleStreamTransport::OnTcpConnected(int result) {
