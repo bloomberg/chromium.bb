@@ -1238,8 +1238,13 @@ tarball() {
   fi
   local tarball="$(ArgumentToAbsolutePath "$1")"
   StepBanner "TARBALL" "Creating tar ball ${tarball}"
-  RecordRevisionInfo
+  # TODO(robertm): remove this hack
+  # http://code.google.com/p/nativeclient/issues/detail?id=2918
+  if ! ${BUILD_PLATFORM_WIN} ; then
+    RecordRevisionInfo
+  fi
   tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
+  ls -l ${tarball}
 }
 
 translator-tarball() {
@@ -3280,11 +3285,7 @@ driver-install-translator() {
 
 RecordRevisionInfo() {
   if [ -d .svn ]; then
-    # TODO(robertm): remove this hack
-    # http://code.google.com/p/nativeclient/issues/detail?id=2918
-    if ! ${SVN} info > "${INSTALL_ROOT}/REV" ; then
-      echo "ERROR failed to determin svn rev for tarball marker"
-    fi
+    ${SVN} info > "${INSTALL_ROOT}/REV"
   elif [ -d .git ]; then
     ${GIT} log | grep git-svn | head -1 > "${INSTALL_ROOT}/REV"
   fi
