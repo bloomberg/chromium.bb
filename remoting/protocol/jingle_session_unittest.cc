@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AtLeast;
 using testing::AtMost;
 using testing::DeleteArg;
 using testing::DoAll;
@@ -236,6 +237,7 @@ class JingleSessionTest : public testing::Test {
         &JingleSessionTest::OnHostChannelCreated, base::Unretained(this)));
 
     int counter = 2;
+    ExpectRouteChange();
     EXPECT_CALL(client_channel_callback_, OnDone(_))
         .WillOnce(QuitThreadOnCounter(&counter));
     EXPECT_CALL(host_channel_callback_, OnDone(_))
@@ -244,6 +246,15 @@ class JingleSessionTest : public testing::Test {
 
     EXPECT_TRUE(client_socket_.get());
     EXPECT_TRUE(host_socket_.get());
+  }
+
+  void ExpectRouteChange() {
+    EXPECT_CALL(host_session_event_handler_,
+                OnSessionRouteChange(kChannelName, _))
+        .Times(AtLeast(1));
+    EXPECT_CALL(client_session_event_handler_,
+                OnSessionRouteChange(kChannelName, _))
+        .Times(AtLeast(1));
   }
 
   scoped_ptr<JingleThreadMessageLoop> message_loop_;
@@ -381,6 +392,7 @@ TEST_F(JingleSessionTest, TestFailedChannelAuth) {
       .WillOnce(QuitThread());
   EXPECT_CALL(client_channel_callback_, OnDone(_))
       .Times(AtMost(1));
+  ExpectRouteChange();
 
   message_loop_->Run();
 
