@@ -199,6 +199,11 @@ void InitializeForceCompositingModeFieldTrial() {
     return;
 #endif
 
+  // The performance of accelerated compositing is too low with software
+  // rendering.
+  if (content::GpuDataManager::GetInstance()->ShouldUseSoftwareRendering())
+    return;
+
   // Don't activate the field trial if force-compositing-mode has been
   // explicitly disabled from the command line.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
