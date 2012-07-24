@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "jingle/notifier/base/task_pump.h"
+#include "jingle/glue/task_pump.h"
 #include "talk/base/sigslot.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,7 @@ const char kOutputLog[] = "output log";
 
 class WeakXmppClientTest : public testing::Test {
  protected:
-  WeakXmppClientTest() : task_pump_(new TaskPump()) {}
+  WeakXmppClientTest() : task_pump_(new jingle_glue::TaskPump()) {}
 
   virtual ~WeakXmppClientTest() {}
 
@@ -62,7 +62,7 @@ class WeakXmppClientTest : public testing::Test {
   // Needed by TaskPump.
   MessageLoop message_loop_;
 
-  scoped_ptr<TaskPump> task_pump_;
+  scoped_ptr<jingle_glue::TaskPump> task_pump_;
   MockXmppDelegate mock_xmpp_delegate_;
 };
 

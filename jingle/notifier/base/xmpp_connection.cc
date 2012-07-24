@@ -9,8 +9,8 @@
 #include "base/message_loop.h"
 #include "base/string_piece.h"
 #include "jingle/glue/chrome_async_socket.h"
+#include "jingle/glue/task_pump.h"
 #include "jingle/glue/xmpp_client_socket_factory.h"
-#include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
@@ -51,7 +51,7 @@ XmppConnection::XmppConnection(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     Delegate* delegate,
     buzz::PreXmppAuth* pre_xmpp_auth)
-    : task_pump_(new TaskPump()),
+    : task_pump_(new jingle_glue::TaskPump()),
       on_connect_called_(false),
       delegate_(delegate) {
   DCHECK(delegate_);

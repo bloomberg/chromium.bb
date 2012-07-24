@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "jingle/notifier/base/task_pump.h"
+#include "jingle/glue/task_pump.h"
 
 namespace buzz {
 class XmppTaskParentInterface;
@@ -26,7 +26,7 @@ class FakeBaseTask {
   base::WeakPtr<buzz::XmppTaskParentInterface> AsWeakPtr();
 
  private:
-  notifier::TaskPump task_pump_;
+  jingle_glue::TaskPump task_pump_;
   base::WeakPtr<buzz::XmppTaskParentInterface> base_task_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBaseTask);

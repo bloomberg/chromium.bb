@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef JINGLE_NOTIFIER_BASE_TASK_PUMP_H_
-#define JINGLE_NOTIFIER_BASE_TASK_PUMP_H_
+#ifndef JINGLE_GLUE_TASK_PUMP_H_
+#define JINGLE_GLUE_TASK_PUMP_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "talk/base/taskrunner.h"
+#include "third_party/libjingle/source/talk/base/taskrunner.h"
 
-namespace notifier {
+namespace jingle_glue {
 
+// talk_base::TaskRunner implementation that works on chromium threads.
 class TaskPump : public talk_base::TaskRunner, public base::NonThreadSafe {
  public:
   TaskPump();
@@ -36,6 +37,6 @@ class TaskPump : public talk_base::TaskRunner, public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(TaskPump);
 };
 
-}  // namespace notifier
+}  // namespace jingle_glue
 
-#endif  // JINGLE_NOTIFIER_BASE_TASK_PUMP_H_
+#endif  // JINGLE_GLUE_TASK_PUMP_H_

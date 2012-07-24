@@ -4,13 +4,13 @@
 //
 // A mock of talk_base::Task.
 
-#ifndef JINGLE_NOTIFIER_MOCK_TASK_H_
-#define JINGLE_NOTIFIER_MOCK_TASK_H_
+#ifndef JINGLE_GLUE_MOCK_TASK_H_
+#define JINGLE_GLUE_MOCK_TASK_H_
 
-#include "talk/base/task.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/libjingle/source/talk/base/task.h"
 
-namespace notifier {
+namespace jingle_glue {
 
 class MockTask : public talk_base::Task {
  public:
@@ -21,6 +21,6 @@ class MockTask : public talk_base::Task {
   MOCK_METHOD0(ProcessStart, int());
 };
 
-}  // namespace notifier
+}  // namespace jingle_glue
 
-#endif  // JINGLE_NOTIFIER_MOCK_TASK_H_
+#endif  // JINGLE_GLUE_MOCK_TASK_H_

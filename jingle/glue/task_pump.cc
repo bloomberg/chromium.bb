@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "jingle/notifier/base/task_pump.h"
+#include "jingle/glue/task_pump.h"
 
-namespace notifier {
+namespace jingle_glue {
 
 TaskPump::TaskPump()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
@@ -56,4 +56,4 @@ void TaskPump::CheckAndRunTasks() {
   RunTasks();
 }
 
-}  // namespace notifier
+}  // namespace jingle_glue
