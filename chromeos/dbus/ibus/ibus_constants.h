@@ -41,6 +41,26 @@ const char kCreateEngineMethod[] = "CreateEngine";
 
 namespace engine {
 const char kServicePathPrefix[] = "/org/freedesktop/IBus/Engine/";
+const char kServiceInterface[] = "org.freedesktop.IBus.Engine";
+const char kFocusInMethod[] = "FocusIn";
+const char kFocusOutMethod[] = "FocusOut";
+const char kEnableMethod[] = "Enable";
+const char kDisableMethod[] = "Disable";
+const char kPropertyActivateMethod[] = "PropertyActivate";
+const char kPropertyShowMethod[] = "PropertyShow";
+const char kPropertyHideMethod[] = "PropertyHide";
+const char kSetCapabilityMethod[] = "SetCapability";
+const char kResetMethod[] = "Reset";
+const char kProcessKeyEventMethod[] = "ProcessKeyEvent";
+const char kCandidateClickedMethod[] = "CandidateClicked";
+const char kSetSurroundingTextMethod[] = "SetSurroundingText";
+const char kRegisterPropertiesSignal[] = "RegisterProperties";
+const char kUpdatePreeditSignal[] = "UpdatePreedit";
+const char kUpdateAuxiliaryTextSignal[] = "UpdateAuxiliaryText";
+const char kUpdateLookupTableSignal[] = "UpdateLookupTable";
+const char kUpdatePropertySignal[] = "UpdateProperty";
+const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
+const char kRequireSurroundingTextSignal[] = "RequireSurroundingText";
 }  // namespace engine
 
 }  // namespace ibus
