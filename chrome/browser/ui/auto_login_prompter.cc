@@ -101,6 +101,43 @@ void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
 }
 
 // static
+bool AutoLoginPrompter::ParseAutoLoginHeader(const std::string& input,
+                                             Params* output) {
+  // TODO(pliard): Investigate/fix potential internationalization issue. It
+  // seems that "account" from the x-auto-login header might contain non-ASCII
+  // characters.
+  if (input.empty())
+    return false;
+
+  std::vector<std::pair<std::string, std::string> > pairs;
+  if (!base::SplitStringIntoKeyValuePairs(input, '=', '&', &pairs))
+    return false;
+
+  // Parse the information from the |input| string.
+  Params params;
+  for (size_t i = 0; i < pairs.size(); ++i) {
+    const std::pair<std::string, std::string>& pair = pairs[i];
+    std::string unescaped_value(net::UnescapeURLComponent(
+          pair.second, net::UnescapeRule::URL_SPECIAL_CHARS));
+    if (pair.first == "realm") {
+      // Currently we only accept GAIA credentials.
+      if (unescaped_value != "com.google")
+        return false;
+      params.realm = unescaped_value;
+    } else if (pair.first == "account") {
+      params.account = unescaped_value;
+    } else if (pair.first == "args") {
+      params.args = unescaped_value;
+    }
+  }
+  if (params.realm.empty() || params.args.empty())
+    return false;
+
+  *output = params;
+  return true;
+}
+
+// static
 void AutoLoginPrompter::ShowInfoBarUIThread(Params params,
                                             const GURL& url,
                                             int child_id,
@@ -151,41 +188,4 @@ void AutoLoginPrompter::Observe(int type,
   // contents was destroyed before the navigation completed.  In any case
   // there's no reason to live further.
   delete this;
-}
-
-// static
-bool AutoLoginPrompter::ParseAutoLoginHeader(const std::string& input,
-                                             Params* output) {
-  // TODO(pliard): Investigate/fix potential internationalization issue. It
-  // seems that "account" from the x-auto-login header might contain non-ASCII
-  // characters.
-  if (input.empty())
-    return false;
-
-  std::vector<std::pair<std::string, std::string> > pairs;
-  if (!base::SplitStringIntoKeyValuePairs(input, '=', '&', &pairs))
-    return false;
-
-  // Parse the information from the |input| string.
-  Params params;
-  for (size_t i = 0; i < pairs.size(); ++i) {
-    const std::pair<std::string, std::string>& pair = pairs[i];
-    std::string unescaped_value(net::UnescapeURLComponent(
-          pair.second, net::UnescapeRule::URL_SPECIAL_CHARS));
-    if (pair.first == "realm") {
-      // Currently we only accept GAIA credentials.
-      if (unescaped_value != "com.google")
-        return false;
-      params.realm = unescaped_value;
-    } else if (pair.first == "account") {
-      params.account = unescaped_value;
-    } else if (pair.first == "args") {
-      params.args = unescaped_value;
-    }
-  }
-  if (params.realm.empty() || params.args.empty())
-    return false;
-
-  *output = params;
-  return true;
 }

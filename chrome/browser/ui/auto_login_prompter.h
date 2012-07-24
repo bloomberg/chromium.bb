@@ -37,6 +37,9 @@ class AutoLoginPrompter : public content::NotificationObserver {
                                     int child_id,
                                     int route_id);
 
+  // Returns whether parsing succeeded.
+  static bool ParseAutoLoginHeader(const std::string& input, Params* output);
+
  private:
   friend class AutoLoginPrompterTest;
 
@@ -53,9 +56,6 @@ class AutoLoginPrompter : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Returns whether parsing succeeded.
-  static bool ParseAutoLoginHeader(const std::string& input, Params* output);
 
   content::WebContents* web_contents_;
   const Params params_;
