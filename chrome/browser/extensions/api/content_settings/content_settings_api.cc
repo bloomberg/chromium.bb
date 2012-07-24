@@ -117,11 +117,8 @@ bool GetContentSettingFunction::RunImpl() {
   }
 
   std::string resource_identifier;
-  if (params->details.resource_identifier.get()) {
-    EXTENSION_FUNCTION_VALIDATE(
-        params->details.resource_identifier->ToValue()->GetString(keys::kIdKey,
-            &resource_identifier));
-  }
+  if (params->details.resource_identifier.get())
+    resource_identifier = params->details.resource_identifier->id;
 
   bool incognito = false;
   if (params->details.incognito.get())
@@ -198,13 +195,8 @@ bool SetContentSettingFunction::RunImpl() {
   }
 
   std::string resource_identifier;
-  if (params->details.resource_identifier.get()) {
-    DictionaryValue* resource_identifier_dict =
-        params->details.resource_identifier->ToValue().get();
-    EXTENSION_FUNCTION_VALIDATE(
-        resource_identifier_dict->GetString(keys::kIdKey,
-                                            &resource_identifier));
-  }
+  if (params->details.resource_identifier.get())
+    resource_identifier = params->details.resource_identifier->id;
 
   std::string setting_str;
   EXTENSION_FUNCTION_VALIDATE(
