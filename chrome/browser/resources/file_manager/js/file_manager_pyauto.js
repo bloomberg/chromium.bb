@@ -85,7 +85,10 @@ var pyautoAPI = {
   executeDefaultTask: function() {
     switch (fileManager.dialogType_) {
       case FileManager.DialogType.FULL_PAGE:
-        fileManager.dispatchDefaultTask_();
+        if (fileManager.selection.tasks)
+          fileManager.selection.tasks.executeDefault();
+        else
+          throw new Error('Cannot execute a task on an empty selection.');
         break;
       default:
         throw new Error('Cannot execute a task in this dialog type.');
