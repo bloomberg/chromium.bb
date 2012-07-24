@@ -29,6 +29,7 @@ class GPUTestConfig {
     kOsMac = kOsMacLeopard | kOsMacSnowLeopard | kOsMacLion,
     kOsLinux = 1 << 6,
     kOsChromeOS = 1 << 7,
+    kOsAndroid = 1 << 8,
   };
 
   enum BuildType {

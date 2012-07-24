@@ -45,6 +45,8 @@ GPUTestConfig::OS GetCurrentOS() {
         return GPUTestConfig::kOsMacLion;
     }
   }
+#elif defined(OS_ANDROID)
+  return GPUTestConfig::kOsAndroid;
 #endif
   return GPUTestConfig::kOsUnknown;
 }
@@ -61,7 +63,7 @@ GPUTestConfig::~GPUTestConfig() {
 }
 
 void GPUTestConfig::set_os(int32 os) {
-  DCHECK_EQ(0, os & ~(kOsWin | kOsMac | kOsLinux | kOsChromeOS));
+  DCHECK_EQ(0, os & ~(kOsAndroid | kOsWin | kOsMac | kOsLinux | kOsChromeOS));
   os_ = os;
 }
 
@@ -147,6 +149,7 @@ bool GPUTestBotConfig::IsValid() const {
     case kOsMacLion:
     case kOsLinux:
     case kOsChromeOS:
+    case kOsAndroid:
       break;
     default:
       return false;
