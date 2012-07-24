@@ -379,7 +379,7 @@ WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
     case ui::ET_GESTURE_MULTIFINGER_SWIPE:
       return WebKit::WebGestureEvent::Undefined;
     case ui::ET_GESTURE_TWO_FINGER_TAP:
-      return WebKit::WebGestureEvent::Undefined;
+      return WebKit::WebGestureEvent::GestureTwoFingerTap;
     case ui::ET_TOUCH_PRESSED:
       return WebKit::WebInputEvent::TouchStart;
     case ui::ET_TOUCH_MOVED:
