@@ -519,12 +519,12 @@
       'conditions': [
         ['chromeos==0', {
           'sources/': [
+            ['exclude', 'browser/extensions/api/input_ime/input_ime_api.cc'],
+            ['exclude', 'browser/extensions/api/input_ime/input_ime_api.h'],
             ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.cc'],
             ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.h'],
             ['exclude', 'browser/extensions/api/terminal/terminal_private_api.cc'],
             ['exclude', 'browser/extensions/api/terminal/terminal_private_api.h'],
-            ['exclude', 'browser/extensions/extension_input_ime_api.cc'],
-            ['exclude', 'browser/extensions/extension_input_ime_api.h'],
             ['exclude', 'browser/extensions/extension_input_method_api.cc'],
             ['exclude', 'browser/extensions/extension_input_method_api.h'],
           ],
@@ -546,6 +546,8 @@
             'browser/extensions/api/page_capture/page_capture_api.h',
             'browser/extensions/api/debugger/debugger_api.cc',
             'browser/extensions/api/debugger/debugger_api.h',
+            'browser/extensions/api/input_ime/input_ime_api.cc',
+            'browser/extensions/api/input_ime/input_ime_api.h',
             'browser/extensions/api/managed_mode/managed_mode_api.cc',
             'browser/extensions/api/managed_mode/managed_mode_api.h',
             'browser/extensions/api/metrics/metrics.cc',
@@ -570,8 +572,6 @@
             'browser/extensions/extension_idle_api.h',
             'browser/extensions/extension_input_api.cc',
             'browser/extensions/extension_input_api.h',
-            'browser/extensions/extension_input_ime_api.cc',
-            'browser/extensions/extension_input_ime_api.h',
             'browser/extensions/extension_input_method_api.cc',
             'browser/extensions/extension_input_method_api.h',
             'browser/extensions/extension_management_api.cc',

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_IME_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_IME_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_INPUT_IME_INPUT_IME_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_INPUT_IME_INPUT_IME_API_H_
 
 #include "chrome/browser/extensions/extension_function.h"
 
@@ -23,9 +23,11 @@ class InputMethodEngine;
 class ImeObserver;
 }
 
-class ExtensionInputImeEventRouter {
+namespace extensions {
+
+class InputImeEventRouter {
  public:
-  static ExtensionInputImeEventRouter* GetInstance();
+  static InputImeEventRouter* GetInstance();
   void Init();
 
   bool RegisterIme(Profile* profile,
@@ -46,12 +48,12 @@ class ExtensionInputImeEventRouter {
                          chromeos::input_method::KeyEventHandle* key_data);
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionInputImeEventRouter>;
+  friend struct DefaultSingletonTraits<InputImeEventRouter>;
   typedef std::map<std::string, std::pair<std::string,
           chromeos::input_method::KeyEventHandle*> > RequestMap;
 
-  ExtensionInputImeEventRouter();
-  ~ExtensionInputImeEventRouter();
+  InputImeEventRouter();
+  ~InputImeEventRouter();
 
   std::map<std::string, std::map<std::string, chromeos::InputMethodEngine*> >
       engines_;
@@ -61,7 +63,7 @@ class ExtensionInputImeEventRouter {
   unsigned int next_request_id_;
   RequestMap request_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInputImeEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
 };
 
 class SetCompositionFunction : public SyncExtensionFunction {
@@ -168,4 +170,6 @@ class InputEventHandled : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_IME_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_INPUT_IME_INPUT_IME_API_H_

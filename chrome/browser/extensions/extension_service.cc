@@ -46,7 +46,6 @@
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_font_settings_api.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
@@ -115,7 +114,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/extensions/extension_input_ime_api.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #endif
@@ -503,7 +502,7 @@ void ExtensionService::InitEventRouters() {
       new chromeos::ExtensionInputMethodEventRouter);
 
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
-  ExtensionInputImeEventRouter::GetInstance()->Init();
+  extensions::InputImeEventRouter::GetInstance()->Init();
 #endif
 #endif  // defined(ENABLE_EXTENSIONS)
   event_routers_initialized_ = true;
@@ -1029,7 +1028,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
        component != extension->input_components().end();
        ++component) {
     if (component->type == Extension::INPUT_COMPONENT_TYPE_IME) {
-      ExtensionInputImeEventRouter::GetInstance()->RegisterIme(
+      extensions::InputImeEventRouter::GetInstance()->RegisterIme(
           profile_, extension->id(), *component);
     }
   }
@@ -1071,7 +1070,7 @@ void ExtensionService::NotifyExtensionUnloaded(
   }
 
   if (extension->input_components().size() > 0) {
-    ExtensionInputImeEventRouter::GetInstance()->UnregisterAllImes(
+    extensions::InputImeEventRouter::GetInstance()->UnregisterAllImes(
         profile_, extension->id());
   }
 #endif
