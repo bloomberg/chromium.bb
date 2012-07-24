@@ -52,6 +52,7 @@
 #include "client/linux/minidump_writer/minidump_writer_unittest_utils.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/file_id.h"
+#include "common/linux/ignore_ret.h"
 #include "common/linux/safe_readlink.h"
 #include "common/memory.h"
 #include "common/using_std_string.h"
@@ -343,7 +344,7 @@ TEST(LinuxPtraceDumperTest, LinuxGateMappingIDChild) {
     close(fds[1]);
     // Now wait forever for the parent.
     char b;
-    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
     syscall(__NR_exit);
   }
@@ -395,7 +396,7 @@ TEST(LinuxPtraceDumperTest, FileIDsMatch) {
     close(fds[1]);
     // Now wait forever for the parent.
     char b;
-    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
     syscall(__NR_exit);
   }

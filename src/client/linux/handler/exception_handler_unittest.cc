@@ -43,6 +43,7 @@
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/file_id.h"
+#include "common/linux/ignore_ret.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/tests/auto_tempdir.h"
 #include "common/using_std_string.h"
@@ -88,8 +89,8 @@ static bool DoneCallback(const char* dump_path,
 
   int fd = (intptr_t) context;
   uint32_t len = my_strlen(minidump_id);
-  HANDLE_EINTR(sys_write(fd, &len, sizeof(len)));
-  HANDLE_EINTR(sys_write(fd, minidump_id, len));
+  IGNORE_RET(HANDLE_EINTR(sys_write(fd, &len, sizeof(len))));
+  IGNORE_RET(HANDLE_EINTR(sys_write(fd, minidump_id, len)));
   sys_close(fd);
 
   return true;
@@ -703,11 +704,13 @@ CrashHandler(const void* crash_context, size_t crash_context_size,
   cred->gid = getgid();
   cred->pid = getpid();
 
-  HANDLE_EINTR(sys_sendmsg(fd, &msg, 0));
+  ssize_t ret = HANDLE_EINTR(sys_sendmsg(fd, &msg, 0));
   sys_close(fds[1]);
+  if (ret <= 0)
+    return false;
 
   char b;
-  HANDLE_EINTR(sys_read(fds[0], &b, 1));
+  IGNORE_RET(HANDLE_EINTR(sys_read(fds[0], &b, 1)));
 
   return true;
 }
@@ -772,7 +775,7 @@ TEST(ExceptionHandlerTest, ExternalDumper) {
   ASSERT_TRUE(WriteMinidump(templ.c_str(), crashing_pid, context,
                             kCrashContextSize));
   static const char b = 0;
-  HANDLE_EINTR(write(signal_fd, &b, 1));
+  ASSERT_EQ(1U, (HANDLE_EINTR(write(signal_fd, &b, 1))));
   ASSERT_EQ(close(signal_fd), 0);
 
   int status;

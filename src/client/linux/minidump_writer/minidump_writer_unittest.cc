@@ -44,6 +44,7 @@
 #include "client/linux/minidump_writer/minidump_writer_unittest_utils.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/file_id.h"
+#include "common/linux/ignore_ret.h"
 #include "common/linux/safe_readlink.h"
 #include "common/tests/auto_tempdir.h"
 #include "common/using_std_string.h"
@@ -68,7 +69,7 @@ TEST(MinidumpWriterTest, Setup) {
   if (child == 0) {
     close(fds[1]);
     char b;
-    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
     syscall(__NR_exit);
   }
@@ -132,7 +133,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
   if (child == 0) {
     close(fds[1]);
     char b;
-    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
     syscall(__NR_exit);
   }
@@ -237,7 +238,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   if (child == 0) {
     close(fds[1]);
     char b;
-    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
     syscall(__NR_exit);
   }

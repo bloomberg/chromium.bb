@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Google Inc.
+// Copyright (c) 2012 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,21 +27,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef COMMON_LINUX_EINTR_WRAPPER_H_
-#define COMMON_LINUX_EINTR_WRAPPER_H_
+#ifndef COMMON_LINUX_IGNORE_RET_H_
+#define COMMON_LINUX_IGNORE_RET_H_
 
-#include <errno.h>
+// Some compilers are prone to warn about unused return values. In cases where
+// either a) the call cannot fail, or b) there is nothing that can be done when
+// the call fails, IGNORE_RET() can be used to mark the return code as ignored.
+// This avoids spurious compiler warnings.
 
-// This provides a wrapper around system calls which may be interrupted by a
-// signal and return EINTR. See man 7 signal.
-//
+#define IGNORE_RET(x) do { if (x); } while (0)
 
-#define HANDLE_EINTR(x) ({ \
-  typeof(x) __eintr_result__; \
-  do { \
-    __eintr_result__ = x; \
-  } while (__eintr_result__ == -1 && errno == EINTR); \
-  __eintr_result__;\
-})
-
-#endif  // COMMON_LINUX_EINTR_WRAPPER_H_
+#endif  // COMMON_LINUX_IGNORE_RET_H_
