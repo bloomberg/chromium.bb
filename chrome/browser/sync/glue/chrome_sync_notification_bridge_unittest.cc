@@ -126,18 +126,6 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
       ADD_FAILURE() << "Sync Observer did not receive proper notification.";
   }
 
-  void VerifyAndDestroyObserverOnSyncThread() {
-    DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    if (!sync_observer_) {
-      sync_observer_notification_failure_ = true;
-    } else {
-      sync_observer_notification_failure_ =
-          !sync_observer_->ReceivedProperNotification();
-      delete sync_observer_;
-      sync_observer_ = NULL;
-    }
-  }
-
   void VerifyAndDestroyObserver() {
     ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
@@ -145,17 +133,6 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
                        VerifyAndDestroyObserverOnSyncThread,
                    base::Unretained(this))));
     BlockForSyncThread();
-  }
-
-  void CreateObserverOnSyncThread(
-      syncer::ModelTypePayloadMap expected_payloads,
-      syncer::IncomingNotificationSource expected_source) {
-    DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    sync_observer_ = new FakeSyncNotifierObserver(
-        sync_thread_.message_loop_proxy(),
-        bridge_.get(),
-        expected_payloads,
-        expected_source);
   }
 
   void CreateObserverWithExpectations(
@@ -171,6 +148,56 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
     BlockForSyncThread();
   }
 
+  void UpdateBridgeEnabledTypes(syncer::ModelTypeSet enabled_types) {
+    ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &ChromeSyncNotificationBridgeTest::
+                UpdateBridgeEnabledTypesOnSyncThread,
+            base::Unretained(this),
+            enabled_types)));
+    BlockForSyncThread();
+  }
+
+  void TriggerRefreshNotification(
+      int type,
+      const syncer::ModelTypePayloadMap& payload_map) {
+    content::NotificationService::current()->Notify(
+        type,
+        content::Source<Profile>(&mock_profile_),
+        content::Details<const syncer::ModelTypePayloadMap>(&payload_map));
+  }
+
+ private:
+  void VerifyAndDestroyObserverOnSyncThread() {
+    DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
+    if (!sync_observer_) {
+      sync_observer_notification_failure_ = true;
+    } else {
+      sync_observer_notification_failure_ =
+          !sync_observer_->ReceivedProperNotification();
+      delete sync_observer_;
+      sync_observer_ = NULL;
+    }
+  }
+
+  void CreateObserverOnSyncThread(
+      syncer::ModelTypePayloadMap expected_payloads,
+      syncer::IncomingNotificationSource expected_source) {
+    DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
+    sync_observer_ = new FakeSyncNotifierObserver(
+        sync_thread_.message_loop_proxy(),
+        bridge_.get(),
+        expected_payloads,
+        expected_source);
+  }
+
+  void UpdateBridgeEnabledTypesOnSyncThread(
+      syncer::ModelTypeSet enabled_types) {
+    DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
+    bridge_->UpdateEnabledTypes(enabled_types);
+  }
+
   void SignalOnSyncThread() {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
     done_.Signal();
@@ -184,19 +211,9 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
                    base::Unretained(this))));
     done_.TimedWait(TestTimeouts::action_timeout());
     if (!done_.IsSignaled())
-      ADD_FAILURE() << "Timed out waiting for IO thread.";
+      ADD_FAILURE() << "Timed out waiting for sync thread.";
   }
 
-  void TriggerRefreshNotification(
-      int type,
-      const syncer::ModelTypePayloadMap& payload_map) {
-    content::NotificationService::current()->Notify(
-        type,
-        content::Source<Profile>(&mock_profile_),
-        content::Details<const syncer::ModelTypePayloadMap>(&payload_map));
-  }
-
- private:
   content::TestBrowserThread ui_thread_;
   base::Thread sync_thread_;
   NiceMock<ProfileMock> mock_profile_;
@@ -241,8 +258,9 @@ TEST_F(ChromeSyncNotificationBridgeTest, LocalNotificationEmptyPayloadMap) {
       syncer::ModelTypePayloadMapFromEnumSet(enabled_types, std::string());
   CreateObserverWithExpectations(
       enabled_types_payload_map, syncer::LOCAL_NOTIFICATION);
+  UpdateBridgeEnabledTypes(enabled_types);
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-                             enabled_types_payload_map);
+                             syncer::ModelTypePayloadMap());
   VerifyAndDestroyObserver();
 }
 
@@ -256,8 +274,9 @@ TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotificationEmptyPayloadMap) {
       syncer::ModelTypePayloadMapFromEnumSet(enabled_types, std::string());
   CreateObserverWithExpectations(
       enabled_types_payload_map, syncer::REMOTE_NOTIFICATION);
+  UpdateBridgeEnabledTypes(enabled_types);
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
-                             enabled_types_payload_map);
+                             syncer::ModelTypePayloadMap());
   VerifyAndDestroyObserver();
 }
 

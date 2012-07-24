@@ -341,8 +341,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Called when the syncer has finished performing a configuration.
   void FinishConfigureDataTypesOnFrontendLoop(
-      const syncer::ModelTypeSet types_to_configure,
-      const syncer::ModelTypeSet configured_types,
+      const syncer::ModelTypeSet failed_configuration_types,
       const base::Callback<void(syncer::ModelTypeSet)>& ready_task);
 
  private:

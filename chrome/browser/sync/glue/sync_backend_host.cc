@@ -124,9 +124,6 @@ class SyncBackendHost::Core
   // SyncBackendHost::UpdateCredentials
   void DoUpdateCredentials(const syncer::SyncCredentials& credentials);
 
-  // Called when the user disables or enables a sync type.
-  void DoUpdateEnabledTypes(const syncer::ModelTypeSet& enabled_types);
-
   // Called to tell the syncapi to start syncing (generally after
   // initialization and authentication).
   void DoStartSyncing(const syncer::ModelSafeRoutingInfo& routing_info);
@@ -220,6 +217,10 @@ class SyncBackendHost::Core
   // Our parent's registrar (not owned).  Non-NULL only between
   // calls to DoInitialize() and DoShutdown().
   SyncBackendRegistrar* registrar_;
+
+  // Our parent's notification bridge (not owned).  Non-NULL only
+  // between calls to DoInitialize() and DoShutdown().
+  ChromeSyncNotificationBridge* chrome_sync_notification_bridge_;
 
   // The timer used to periodically call SaveChanges.
   scoped_ptr<base::RepeatingTimer<Core> > save_changes_timer_;
@@ -318,6 +319,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
 
 SyncBackendHost::~SyncBackendHost() {
   DCHECK(!core_ && !frontend_) << "Must call Shutdown before destructor.";
+  DCHECK(!chrome_sync_notification_bridge_.get());
   DCHECK(!registrar_.get());
 }
 
@@ -745,28 +747,11 @@ void SyncBackendHost::RequestConfigureSyncer(
 }
 
 void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop(
-    syncer::ModelTypeSet types_to_configure,
-    syncer::ModelTypeSet configured_types,
+    syncer::ModelTypeSet failed_configuration_types,
     const base::Callback<void(syncer::ModelTypeSet)>& ready_task) {
-  const syncer::ModelTypeSet failed_configuration_types =
-      Difference(types_to_configure, configured_types);
-  SDVLOG(1)
-      << "Added types: "
-      << syncer::ModelTypeSetToString(types_to_configure)
-      << ", configured types: "
-      << syncer::ModelTypeSetToString(configured_types)
-      << ", failed configuration types: "
-      << syncer::ModelTypeSetToString(failed_configuration_types);
-
-  // Update |chrome_sync_notification_bridge_|'s enabled types here as it has
-  // to happen on the UI thread.
-  chrome_sync_notification_bridge_->UpdateEnabledTypes(configured_types);
-
-  // Notify SyncManager (especially the notification listener) about new types.
-  sync_thread_.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoUpdateEnabledTypes, core_.get(),
-                 configured_types));
-
+  if (!frontend_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   if (!ready_task.is_null())
     ready_task.Run(failed_configuration_types);
 }
@@ -819,7 +804,8 @@ SyncBackendHost::Core::Core(const std::string& name,
       sync_data_folder_path_(sync_data_folder_path),
       host_(backend),
       sync_loop_(NULL),
-      registrar_(NULL) {
+      registrar_(NULL),
+      chrome_sync_notification_bridge_(NULL) {
   DCHECK(backend.get());
 }
 
@@ -968,6 +954,10 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   registrar_ = options.registrar;
   DCHECK(registrar_);
 
+  DCHECK(!chrome_sync_notification_bridge_);
+  chrome_sync_notification_bridge_ = options.chrome_sync_notification_bridge;
+  DCHECK(chrome_sync_notification_bridge_);
+
   sync_manager_ = options.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
   success = sync_manager_->Init(
@@ -1010,12 +1000,6 @@ void SyncBackendHost::Core::DoUpdateCredentials(
     const SyncCredentials& credentials) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->UpdateCredentials(credentials);
-}
-
-void SyncBackendHost::Core::DoUpdateEnabledTypes(
-    const syncer::ModelTypeSet& enabled_types) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->UpdateEnabledTypes(enabled_types);
 }
 
 void SyncBackendHost::Core::DoStartSyncing(
@@ -1065,6 +1049,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   sync_manager_->ShutdownOnSyncThread();
   sync_manager_->RemoveObserver(this);
   sync_manager_.reset();
+  chrome_sync_notification_bridge_ = NULL;
   registrar_ = NULL;
 
   if (sync_disabled)
@@ -1099,13 +1084,19 @@ void SyncBackendHost::Core::DoFinishConfigureDataTypes(
     syncer::ModelTypeSet types_to_config,
     const base::Callback<void(syncer::ModelTypeSet)>& ready_task) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  syncer::ModelTypeSet configured_types =
-      sync_manager_->InitialSyncEndedTypes();
-  configured_types.RetainAll(types_to_config);
+
+  // Update the enabled types for the bridge and sync manager.
+  syncer::ModelSafeRoutingInfo routing_info;
+  registrar_->GetModelSafeRoutingInfo(&routing_info);
+  const syncer::ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
+  chrome_sync_notification_bridge_->UpdateEnabledTypes(enabled_types);
+  sync_manager_->UpdateEnabledTypes(enabled_types);
+
+  const syncer::ModelTypeSet failed_configuration_types =
+      Difference(types_to_config, sync_manager_->InitialSyncEndedTypes());
   host_.Call(FROM_HERE,
              &SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop,
-             types_to_config,
-             configured_types,
+             failed_configuration_types,
              ready_task);
 }
 

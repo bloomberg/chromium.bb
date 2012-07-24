@@ -42,6 +42,12 @@ ModelTypeSet FakeSyncManager::GetAndResetDownloadedTypes() {
   return downloaded_types;
 }
 
+ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
+  ModelTypeSet enabled_types = enabled_types_;
+  enabled_types_.Clear();
+  return enabled_types;
+}
+
 bool FakeSyncManager::Init(
     const FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,
@@ -102,7 +108,7 @@ void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {
 }
 
 void FakeSyncManager::UpdateEnabledTypes(const ModelTypeSet& types) {
-  // Do nothing.
+  enabled_types_ = types;
 }
 
 void FakeSyncManager::StartSyncingNormally(

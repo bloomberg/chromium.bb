@@ -86,12 +86,11 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
     const syncer::ModelSafeRoutingInfo& routing_info,
     const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
-  syncer::ModelTypeSet sync_ended;
-  if (!fail_initial_download_)
-    sync_ended.PutAll(types_to_config);
+  syncer::ModelTypeSet failed_configuration_types;
+  if (fail_initial_download_)
+    failed_configuration_types = types_to_config;
 
-  FinishConfigureDataTypesOnFrontendLoop(types_to_config,
-                                         sync_ended,
+  FinishConfigureDataTypesOnFrontendLoop(failed_configuration_types,
                                          ready_task);
 }
 

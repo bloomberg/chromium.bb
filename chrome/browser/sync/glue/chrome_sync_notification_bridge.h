@@ -35,10 +35,9 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
       const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner);
   virtual ~ChromeSyncNotificationBridge();
 
-  // Must be called on the UI thread.
-  void UpdateEnabledTypes(const syncer::ModelTypeSet enabled_types);
-
   // Must be called on the sync task runner.
+  void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types);
+  // Marked virtual for tests.
   virtual void AddObserver(syncer::SyncNotifierObserver* observer);
   virtual void RemoveObserver(syncer::SyncNotifierObserver* observer);
 
@@ -58,7 +57,6 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
 
   // Used only on the UI thread.
   content::NotificationRegistrar registrar_;
-  syncer::ModelTypeSet enabled_types_;
 };
 
 }  // namespace browser_sync

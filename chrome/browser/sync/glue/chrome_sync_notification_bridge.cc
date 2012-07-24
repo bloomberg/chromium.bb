@@ -25,11 +25,12 @@ class ChromeSyncNotificationBridge::Core
 
   // All member functions below must be called on the sync task runner.
 
+  void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types);
   void AddObserver(syncer::SyncNotifierObserver* observer);
   void RemoveObserver(syncer::SyncNotifierObserver* observer);
 
   void EmitNotification(
-      syncer::ModelTypePayloadMap payload_map,
+      const syncer::ModelTypePayloadMap& payload_map,
       syncer::IncomingNotificationSource notification_source);
 
  private:
@@ -57,6 +58,12 @@ ChromeSyncNotificationBridge::Core::~Core() {
          sync_task_runner_->RunsTasksOnCurrentThread());
 }
 
+void ChromeSyncNotificationBridge::Core::UpdateEnabledTypes(
+    syncer::ModelTypeSet types) {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  enabled_types_ = types;
+}
+
 void ChromeSyncNotificationBridge::Core::AddObserver(
     syncer::SyncNotifierObserver* observer) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
@@ -70,12 +77,17 @@ void ChromeSyncNotificationBridge::Core::RemoveObserver(
 }
 
 void ChromeSyncNotificationBridge::Core::EmitNotification(
-    syncer::ModelTypePayloadMap payload_map,
+    const syncer::ModelTypePayloadMap& payload_map,
     syncer::IncomingNotificationSource notification_source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  const syncer::ModelTypePayloadMap& effective_payload_map =
+      payload_map.empty() ?
+      syncer::ModelTypePayloadMapFromEnumSet(enabled_types_, std::string()) :
+      payload_map;
+
   FOR_EACH_OBSERVER(
       syncer::SyncNotifierObserver, observers_,
-      OnIncomingNotification(payload_map, notification_source));
+      OnIncomingNotification(effective_payload_map, notification_source));
 }
 
 ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
@@ -94,9 +106,9 @@ ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
 ChromeSyncNotificationBridge::~ChromeSyncNotificationBridge() {}
 
 void ChromeSyncNotificationBridge::UpdateEnabledTypes(
-    const syncer::ModelTypeSet types) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  enabled_types_ = types;
+    syncer::ModelTypeSet types) {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  core_->UpdateEnabledTypes(types);
 }
 
 void ChromeSyncNotificationBridge::AddObserver(
@@ -129,14 +141,7 @@ void ChromeSyncNotificationBridge::Observe(
 
   content::Details<const syncer::ModelTypePayloadMap>
       payload_details(details);
-  syncer::ModelTypePayloadMap payload_map = *(payload_details.ptr());
-
-  if (payload_map.empty()) {
-    // No model types to invalidate, invalidating all enabled types.
-    payload_map =
-        syncer::ModelTypePayloadMapFromEnumSet(enabled_types_, std::string());
-  }
-
+  const syncer::ModelTypePayloadMap& payload_map = *(payload_details.ptr());
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Core::EmitNotification,

@@ -216,6 +216,8 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
       syncer::ModelTypeSet(syncer::NIGORI)));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(
       syncer::ModelTypeSet(syncer::NIGORI)));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(
+      syncer::ModelTypeSet(syncer::NIGORI)));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       syncer::ModelTypeSet(syncer::NIGORI)).Empty());
 }
@@ -227,6 +229,8 @@ TEST_F(SyncBackendHostTest, FirstTimeSync) {
       syncer::ModelTypeSet(syncer::NIGORI)));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(
       syncer::ModelTypeSet(syncer::NIGORI)));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(
+      syncer::ModelTypeSet(syncer::NIGORI)));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       syncer::ModelTypeSet(syncer::NIGORI)).Empty());
 
@@ -237,6 +241,7 @@ TEST_F(SyncBackendHostTest, FirstTimeSync) {
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
       enabled_types_));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 }
@@ -246,14 +251,14 @@ TEST_F(SyncBackendHostTest, FirstTimeSync) {
 TEST_F(SyncBackendHostTest, Restart) {
   sync_prefs_->SetSyncSetupCompleted();
   syncer::ModelTypeSet all_but_nigori = enabled_types_;
-  fake_manager_->set_progress_marker_types(
-      enabled_types_);
+  fake_manager_->set_progress_marker_types(enabled_types_);
   fake_manager_->set_initial_sync_ended_types(enabled_types_);
   InitializeBackend(enabled_types_);
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Empty());
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Empty());
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 
@@ -265,6 +270,7 @@ TEST_F(SyncBackendHostTest, Restart) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 }
@@ -289,6 +295,7 @@ TEST_F(SyncBackendHostTest, PartialTypes) {
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(
       full_types));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Empty());
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Equals(partial_types));
 
@@ -303,6 +310,7 @@ TEST_F(SyncBackendHostTest, PartialTypes) {
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       partial_types));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 }
@@ -318,6 +326,7 @@ TEST_F(SyncBackendHostTest, LostDB) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Empty());
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Empty());
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Equals(enabled_types_));
 
@@ -331,6 +340,7 @@ TEST_F(SyncBackendHostTest, LostDB) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 }
@@ -348,6 +358,7 @@ TEST_F(SyncBackendHostTest, DisableTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 
@@ -367,6 +378,7 @@ TEST_F(SyncBackendHostTest, DisableTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            old_types).Equals(disabled_types));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 }
@@ -384,6 +396,7 @@ TEST_F(SyncBackendHostTest, AddTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 
@@ -403,6 +416,7 @@ TEST_F(SyncBackendHostTest, AddTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 }
@@ -421,6 +435,7 @@ TEST_F(SyncBackendHostTest, AddDisableTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 
@@ -444,6 +459,7 @@ TEST_F(SyncBackendHostTest, AddDisableTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            old_types).Equals(disabled_types));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       old_types).Equals(disabled_types));
 }
@@ -467,6 +483,7 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(old_types));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Empty());
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Equals(new_types));
 
@@ -480,6 +497,7 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 }
@@ -507,6 +525,7 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(full_types));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Empty());
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Equals(Union(new_types, partial_types)));
 
@@ -521,6 +540,7 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 }

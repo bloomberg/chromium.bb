@@ -45,6 +45,11 @@ class FakeSyncManager : public SyncManager {
   // GetAndResetDownloadedTypes(), or since startup if never called.
   ModelTypeSet GetAndResetDownloadedTypes();
 
+  // Returns those types that have been marked as enabled since the
+  // last call to GetAndResetEnabledTypes(), or since startup if never
+  // called.
+  ModelTypeSet GetAndResetEnabledTypes();
+
   // SyncManager implementation.
   // Note: we treat whatever message loop this is called from as the sync
   // loop for purposes of callbacks.
@@ -115,6 +120,8 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet cleaned_types_;
   // The set of types that have been downloaded.
   ModelTypeSet downloaded_types_;
+  // The set of types that have been enabled.
+  ModelTypeSet enabled_types_;
 
   // For StopSyncingForShutdown's callback.
   MessageLoop* sync_loop_;
