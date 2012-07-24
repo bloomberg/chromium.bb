@@ -2458,3 +2458,9 @@
    fun:_ZN3WTF10RefCountedIN7WebCore8NodeListEE5derefEv
    fun:_ZN6WebKit11WebNodeList6assignEPN7WebCore8NodeListE
 }
+{
+   bug_138693
+   Memcheck:Leak
+   ...
+   fun:CTFontCreateWithName
+}
