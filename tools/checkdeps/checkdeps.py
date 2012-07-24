@@ -55,9 +55,12 @@ only lowercase.
 import os
 import optparse
 import pipes
-import re
 import sys
 import copy
+
+import cpp_checker
+import java_checker
+
 
 # Variable name used in the DEPS file to add or subtract include files from
 # the module-level deps.
@@ -67,19 +70,8 @@ INCLUDE_RULES_VAR_NAME = "include_rules"
 # be checked. This allows us to skip third party code, for example.
 SKIP_SUBDIRS_VAR_NAME = "skip_child_includes"
 
-# The maximum number of non-include lines we can see before giving up.
-MAX_UNINTERESTING_LINES = 50
-
-# The maximum line length, this is to be efficient in the case of very long
-# lines (which can't be #includes).
-MAX_LINE_LENGTH = 128
-
 # Set to true for more output. This is set by the command line options.
 VERBOSE = False
-
-# This regular expression will be used to extract filenames from include
-# statements.
-EXTRACT_INCLUDE_PATH = re.compile('[ \t]*#[ \t]*(?:include|import)[ \t]+"(.*)"')
 
 # In lowercase, using forward slashes as directory separators, ending in a
 # forward slash. Set by the command line options.
@@ -91,13 +83,13 @@ GIT_SOURCE_DIRECTORY = set()
 
 # Specifies a single rule for an include, which can be either allow or disallow.
 class Rule(object):
-  def __init__(self, allow, dir, source):
-    self._allow = allow
-    self._dir = dir
+  def __init__(self, allow, directory, source):
+    self.allow = allow
+    self._dir = directory
     self._source = source
 
   def __str__(self):
-    if (self._allow):
+    if (self.allow):
       return '"+%s" from %s.' % (self._dir, self._source)
     return '"-%s" from %s.' % (self._dir, self._source)
 
@@ -160,7 +152,7 @@ class Rules:
     for rule in self._rules:
       if rule.ChildOrMatch(allowed_dir):
         # This rule applies.
-        if rule._allow:
+        if rule.allow:
           return (True, "")
         return (False, rule.__str__())
     # No rules apply, fail.
@@ -196,7 +188,7 @@ def ApplyRules(existing_rules, includes, cur_dir):
                     (cur_dir, BASE_DIRECTORY))
 
   # Last, apply the additional explicit rules.
-  for (index, rule_str) in enumerate(includes):
+  for (_, rule_str) in enumerate(includes):
     if not len(relative_dir):
       rule_description = "the top level include_rules"
     else:
@@ -233,10 +225,10 @@ def ApplyDirectoryRules(existing_rules, dir_name):
   # Check the DEPS file in this directory.
   if VERBOSE:
     print "Applying rules from", dir_name
-  def FromImpl(unused, unused2):
+  def FromImpl(_unused, _unused2):
     pass  # NOP function so "From" doesn't fail.
 
-  def FileImpl(unused):
+  def FileImpl(_unused):
     pass  # NOP function so "File" doesn't fail.
 
   class _VarImpl:
@@ -247,7 +239,7 @@ def ApplyDirectoryRules(existing_rules, dir_name):
       """Implements the Var syntax."""
       if var_name in self._local_scope.get("vars", {}):
         return self._local_scope["vars"][var_name]
-      raise Error("Var is not defined: %s" % var_name)
+      raise Exception("Var is not defined: %s" % var_name)
 
   local_scope = {}
   global_scope = {
@@ -270,111 +262,7 @@ def ApplyDirectoryRules(existing_rules, dir_name):
   return (ApplyRules(existing_rules, include_rules, dir_name), skip_subdirs)
 
 
-def ShouldCheckFile(file_name):
-  """Returns True if the given file is a type we want to check."""
-  checked_extensions = [
-      '.h',
-      '.cc',
-      '.m',
-      '.mm',
-  ]
-  basename, extension = os.path.splitext(file_name)
-  return extension in checked_extensions
-
-
-def CheckLine(rules, line):
-  """Checks the given file with the given rule set.
-  Returns a tuple (is_include, illegal_description).
-  If the line is an #include directive the first value will be True.
-  If it is also an illegal include, the second value will be a string describing
-  the error.  Otherwise, it will be None."""
-  found_item = EXTRACT_INCLUDE_PATH.match(line)
-  if not found_item:
-    return False, None  # Not a match
-
-  include_path = found_item.group(1)
-
-  # Fix up backslashes in case somebody accidentally used them.
-  include_path.replace("\\", "/")
-
-  if include_path.find("/") < 0:
-    # Don't fail when no directory is specified. We may want to be more
-    # strict about this in the future.
-    if VERBOSE:
-      print " WARNING: directory specified with no path: " + include_path
-    return True, None
-
-  (allowed, why_failed) = rules.DirAllowed(include_path)
-  if not allowed:
-    if VERBOSE:
-      retval = "\nFor " + rules.__str__()
-    else:
-      retval = ""
-    return True, retval + ('Illegal include: "%s"\n    Because of %s' %
-        (include_path, why_failed))
-
-  return True, None
-
-
-def CheckFile(rules, file_name):
-  """Checks the given file with the given rule set.
-
-  Args:
-    rules: The set of rules that apply to files in this directory.
-    file_name: The source file to check.
-
-  Returns: Either a string describing the error if there was one, or None if
-           the file checked out OK.
-  """
-  if VERBOSE:
-    print "Checking: " + file_name
-
-  ret_val = ""  # We'll collect the error messages in here
-  last_include = 0
-  try:
-    cur_file = open(file_name, "r")
-    in_if0 = 0
-    for line_num in xrange(sys.maxint):
-      if line_num - last_include > MAX_UNINTERESTING_LINES:
-        break
-
-      cur_line = cur_file.readline(MAX_LINE_LENGTH)
-      if cur_line == "":
-        break
-      cur_line = cur_line.strip()
-
-      # Check to see if we're at / inside a #if 0 block
-      if cur_line == '#if 0':
-        in_if0 += 1
-        continue
-      if in_if0 > 0:
-        if cur_line.startswith('#if'):
-          in_if0 += 1
-        elif cur_line == '#endif':
-          in_if0 -= 1
-        continue
-
-      is_include, line_status = CheckLine(rules, cur_line)
-      if is_include:
-        last_include = line_num
-      if line_status is not None:
-        if len(line_status) > 0:  # Add newline to separate messages.
-          line_status += "\n"
-        ret_val += line_status
-    cur_file.close()
-
-  except IOError:
-    if VERBOSE:
-      print "Unable to open file: " + file_name
-    cur_file.close()
-
-  # Map empty string to None for easier checking.
-  if len(ret_val) == 0:
-    return None
-  return ret_val
-
-
-def CheckDirectory(parent_rules, dir_name):
+def CheckDirectory(parent_rules, checkers, dir_name):
   (rules, skip_subdirs) = ApplyDirectoryRules(parent_rules, dir_name)
   if rules == None:
     return True
@@ -390,19 +278,20 @@ def CheckDirectory(parent_rules, dir_name):
     full_name = os.path.join(dir_name, cur)
     if os.path.isdir(full_name):
       dirs_to_check.append(full_name)
-    elif ShouldCheckFile(full_name):
+    elif os.path.splitext(full_name)[1] in checkers:
       files_to_check.append(full_name)
 
   # First check all files in this directory.
   for cur in files_to_check:
-    file_status = CheckFile(rules, cur)
-    if file_status != None:
+    checker = checkers[os.path.splitext(cur)[1]]
+    file_status = checker.CheckFile(rules, cur)
+    if file_status:
       print "ERROR in " + cur + "\n" + file_status
       success = False
 
   # Next recurse into the subdirectories.
   for cur in dirs_to_check:
-    if not CheckDirectory(rules, cur):
+    if not CheckDirectory(rules, checkers, cur):
       success = False
 
   return success
@@ -488,7 +377,12 @@ def checkdeps(options, args):
     global GIT_SOURCE_DIRECTORY
     GIT_SOURCE_DIRECTORY = GetGitSourceDirectory(BASE_DIRECTORY)
 
-  success = CheckDirectory(base_rules, start_dir)
+  java = java_checker.JavaChecker(BASE_DIRECTORY, VERBOSE)
+  cpp = cpp_checker.CppChecker(VERBOSE)
+  checkers = dict(
+      (extension, checker)
+      for checker in [java, cpp] for extension in checker.EXTENSIONS)
+  success = CheckDirectory(base_rules, checkers, start_dir)
   if not success:
     print "\nFAILED\n"
     return 1
