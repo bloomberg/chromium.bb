@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
   params.page_url = url;
   params.frame_id = WebNavigationTabObserver::Get(tab)->
-      frame_navigation_state().GetMainFrameID().frame_num;
+      frame_navigation_state().GetMainFrameID();
   params.link_url = extension->GetResourceURL("userAction/b.html");
 
   TestRenderViewContextMenu menu(tab, params);

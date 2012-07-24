@@ -18,24 +18,7 @@ namespace extensions {
 // occurred so no further events for this frame are being sent.
 class FrameNavigationState {
  public:
-  // A frame is uniquely identified by its frame ID and the render process ID.
-  // We use the render process ID instead of e.g. a pointer to the RVH so we
-  // don't depend on the lifetime of the RVH.
-  struct FrameID {
-    FrameID();
-    FrameID(int64 frame_num, int render_process_id);
-    ~FrameID();
-
-    bool operator<(const FrameID& other) const;
-    bool operator==(const FrameID& other) const;
-    bool operator!=(const FrameID& other) const;
-
-    int64 frame_num;
-    int render_process_id;
-  };
-  typedef std::set<FrameID>::const_iterator const_iterator;
-
-  static FrameID kInvalidFrameID;
+  typedef std::set<int64>::const_iterator const_iterator;
 
   FrameNavigationState();
   ~FrameNavigationState();
@@ -45,59 +28,59 @@ class FrameNavigationState {
   const_iterator end() const { return frame_ids_.end(); }
 
   // True if navigation events for the given frame can be sent.
-  bool CanSendEvents(FrameID frame_id) const;
+  bool CanSendEvents(int64 frame_id) const;
 
   // True if in general webNavigation events may be sent for the given URL.
   bool IsValidUrl(const GURL& url) const;
 
   // Starts to track a frame identified by its |frame_id| showing the URL |url|.
-  void TrackFrame(FrameID frame_id,
+  void TrackFrame(int64 frame_id,
                   const GURL& url,
                   bool is_main_frame,
                   bool is_error_page);
 
   // Update the URL associated with a given frame.
-  void UpdateFrame(FrameID frame_id, const GURL& url);
+  void UpdateFrame(int64 frame_id, const GURL& url);
 
   // Returns true if |frame_id| is a known frame.
-  bool IsValidFrame(FrameID frame_id) const;
+  bool IsValidFrame(int64 frame_id) const;
 
   // Returns the URL corresponding to a tracked frame given by its |frame_id|.
-  GURL GetUrl(FrameID frame_id) const;
+  GURL GetUrl(int64 frame_id) const;
 
   // True if the frame given by its |frame_id| is the main frame of its tab.
-  bool IsMainFrame(FrameID frame_id) const;
+  bool IsMainFrame(int64 frame_id) const;
 
   // Returns the frame ID of the main frame, or -1 if the frame ID is not
   // known.
-  FrameID GetMainFrameID() const;
+  int64 GetMainFrameID() const;
 
   // Marks a frame as in an error state, i.e. the onErrorOccurred event was
   // fired for this frame, and no further events should be sent for it.
-  void SetErrorOccurredInFrame(FrameID frame_id);
+  void SetErrorOccurredInFrame(int64 frame_id);
 
   // True if the frame is marked as being in an error state.
-  bool GetErrorOccurredInFrame(FrameID frame_id) const;
+  bool GetErrorOccurredInFrame(int64 frame_id) const;
 
   // Marks a frame as having finished its last navigation, i.e. the onCompleted
   // event was fired for this frame.
-  void SetNavigationCompleted(FrameID frame_id);
+  void SetNavigationCompleted(int64 frame_id);
 
   // True if the frame is currently not navigating.
-  bool GetNavigationCompleted(FrameID frame_id) const;
+  bool GetNavigationCompleted(int64 frame_id) const;
 
   // Marks a frame as having committed its navigation, i.e. the onCommitted
   // event was fired for this frame.
-  void SetNavigationCommitted(FrameID frame_id);
+  void SetNavigationCommitted(int64 frame_id);
 
   // True if the frame has committed its navigation.
-  bool GetNavigationCommitted(FrameID frame_id) const;
+  bool GetNavigationCommitted(int64 frame_id) const;
 
   // Marks a frame as redirected by the server.
-  void SetIsServerRedirected(FrameID frame_id);
+  void SetIsServerRedirected(int64 frame_id);
 
   // True if the frame was redirected by the server.
-  bool GetIsServerRedirected(FrameID frame_id) const;
+  bool GetIsServerRedirected(int64 frame_id) const;
 
 #ifdef UNIT_TEST
   static void set_allow_extension_scheme(bool allow_extension_scheme) {
@@ -114,16 +97,16 @@ class FrameNavigationState {
     bool is_server_redirected;  // True if a server redirect happened.
     GURL url;  // URL of this frame.
   };
-  typedef std::map<FrameID, FrameState> FrameIdToStateMap;
+  typedef std::map<int64, FrameState> FrameIdToStateMap;
 
   // Tracks the state of known frames.
   FrameIdToStateMap frame_state_map_;
 
   // Set of all known frames.
-  std::set<FrameID> frame_ids_;
+  std::set<int64> frame_ids_;
 
   // The current main frame.
-  FrameID main_frame_id_;
+  int64 main_frame_id_;
 
   // If true, also allow events from chrome-extension:// URLs.
   static bool allow_extension_scheme_;

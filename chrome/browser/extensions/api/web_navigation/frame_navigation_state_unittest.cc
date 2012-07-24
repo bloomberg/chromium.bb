@@ -17,8 +17,8 @@ class FrameNavigationStateTest : public ChromeRenderViewHostTestHarness {
 // goes away.
 TEST_F(FrameNavigationStateTest, TrackFrame) {
   FrameNavigationState navigation_state;
-  const FrameNavigationState::FrameID frame_id1(23, 1);
-  const FrameNavigationState::FrameID frame_id2(42, 1);
+  const int64 frame_id1 = 23;
+  const int64 frame_id2 = 42;
   const GURL url1("http://www.google.com/");
   const GURL url2("http://mail.google.com/");
 
@@ -48,7 +48,7 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
 // before a new navigation happened in this frame.
 TEST_F(FrameNavigationStateTest, ErrorState) {
   FrameNavigationState navigation_state;
-  const FrameNavigationState::FrameID frame_id(42, 1);
+  const int64 frame_id = 42;
   const GURL url("http://www.google.com/");
 
   navigation_state.TrackFrame(frame_id, url, true, false);
@@ -75,8 +75,8 @@ TEST_F(FrameNavigationStateTest, ErrorState) {
 // before a new navigation happened in this frame.
 TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
   FrameNavigationState navigation_state;
-  const FrameNavigationState::FrameID frame_id1(23, 1);
-  const FrameNavigationState::FrameID frame_id2(42, 1);
+  const int64 frame_id1 = 23;
+  const int64 frame_id2 = 42;
   const GURL url("http://www.google.com/");
 
   navigation_state.TrackFrame(frame_id1, url, true, false);
@@ -103,7 +103,7 @@ TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
 // Tests that no events are send for a not web-safe scheme.
 TEST_F(FrameNavigationStateTest, WebSafeScheme) {
   FrameNavigationState navigation_state;
-  const FrameNavigationState::FrameID frame_id(23, 1);
+  const int64 frame_id = 23;
   const GURL url("unsafe://www.google.com/");
 
   navigation_state.TrackFrame(frame_id, url, true, false);
