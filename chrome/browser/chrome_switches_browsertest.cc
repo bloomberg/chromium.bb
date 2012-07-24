@@ -9,6 +9,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 
 class HostRulesTest : public InProcessBrowserTest {
@@ -38,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(HostRulesTest, TestMap) {
   ui_test_utils::NavigateToURL(browser(), test_url);
 
   std::string html;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(document.body.outerHTML);",

@@ -19,13 +19,14 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
+using content::ExecuteJavaScript;
+using content::ExecuteJavaScriptAndExtractString;
 using content::NavigationController;
 using content::WebContents;
 using content::RenderViewHost;
-using ui_test_utils::ExecuteJavaScript;
-using ui_test_utils::ExecuteJavaScriptAndExtractString;
 
 namespace {
 
@@ -120,11 +121,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   RenderViewHost* app1_rvh = tab1->GetRenderViewHost();
   RenderViewHost* app2_rvh = tab2->GetRenderViewHost();
   RenderViewHost* non_app_rvh = tab3->GetRenderViewHost();
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(ExecuteJavaScript(
       app1_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app1');"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(ExecuteJavaScript(
       app2_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app2');"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(ExecuteJavaScript(
       non_app_rvh, L"",
       L"window.localStorage.setItem('testdata', 'ls_normal');"));
 
@@ -227,11 +228,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
       chrome::GetWebContentsAt(browser(), 1)->GetRenderViewHost();
   RenderViewHost* non_app_rvh =
       chrome::GetWebContentsAt(browser(), 2)->GetRenderViewHost();
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(ExecuteJavaScript(
       app1_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app1');"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(ExecuteJavaScript(
       app2_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app2');"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(ExecuteJavaScript(
       non_app_rvh, L"",
       L"window.localStorage.setItem('testdata', 'ls_normal');"));
 

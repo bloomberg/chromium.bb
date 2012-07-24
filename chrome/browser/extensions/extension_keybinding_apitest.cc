@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 
 using content::WebContents;
 
@@ -63,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
   // Verify the command worked.
   WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
       L"setInterval(function(){"
       L"  if(document.body.bgColor == 'red'){"
@@ -76,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
       browser(), ui::VKEY_Y, true, true, false, false));
 
   result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
       L"setInterval(function(){"
       L"  if(document.body.bgColor == 'blue'){"
@@ -115,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, PageAction) {
   // Verify the command worked (the page action turns the page red).
   WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
       L"setInterval(function(){"
       L"  if(document.body.bgColor == 'red'){"

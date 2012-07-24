@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/mock_host_resolver.h"
@@ -73,7 +74,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
     bool result = false;
     std::string script = StringPrintf("%s('%s')", test_function_name.c_str(),
         test_gallery_url_.c_str());
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
         UTF8ToWide(script), &result));
     EXPECT_TRUE(result);

@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 
@@ -32,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeInternalLoadsNTP) {
   // Ensure that we get there by checking for non-empty page content.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome-internal:"));
   bool empty_inner_html = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.body.innerHTML == '')",
       &empty_inner_html));

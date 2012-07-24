@@ -13,6 +13,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 
 class BookmarksTest : public InProcessBrowserTest {
@@ -31,11 +32,11 @@ class BookmarksTest : public InProcessBrowserTest {
   void AssertIsBookmarksPage(content::WebContents* tab) {
     GURL url;
     std::string out;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
         tab->GetRenderViewHost(), L"",
         L"domAutomationController.send(location.protocol)", &out));
     ASSERT_EQ("chrome-extension:", out);
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
         tab->GetRenderViewHost(), L"",
         L"domAutomationController.send(location.pathname)", &out));
     ASSERT_EQ("/main.html", out);

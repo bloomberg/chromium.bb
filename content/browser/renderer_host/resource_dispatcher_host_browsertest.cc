@@ -124,8 +124,7 @@ bool ResourceDispatcherHostBrowserTest::GetPopupTitle(const GURL& url,
       content::NotificationService::AllSources());
 
   // Create dynamic popup.
-  if (!ui_test_utils::ExecuteJavaScript(
-          render_view_host(), L"", L"OpenPopup();"))
+  if (!content::ExecuteJavaScript(render_view_host(), L"", L"OpenPopup();"))
     return false;
 
   observer.Wait();
@@ -216,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(DidSyncRequestSucceed());",
@@ -234,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(DidSucceed());",
@@ -409,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   std::string redirect_script = "window.location='" +
       test_url.possibly_invalid_spec() + "';" +
       "window.domAutomationController.send(true);";
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"", ASCIIToWide(redirect_script), &success));
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());

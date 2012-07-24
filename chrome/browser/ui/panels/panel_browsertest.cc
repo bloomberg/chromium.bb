@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -377,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   content::WindowedNotificationObserver enlarge(
       chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
       content::NotificationService::AllSources());
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+  EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(50);"));
@@ -390,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   content::WindowedNotificationObserver shrink(
       chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
       content::NotificationService::AllSources());
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+  EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(-30);"));
@@ -1500,7 +1501,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   content::WindowedNotificationObserver enlarge(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+  EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"document.body.innerHTML ="

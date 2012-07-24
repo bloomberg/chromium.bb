@@ -9,6 +9,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
@@ -36,7 +37,7 @@ class DomStorageBrowserTest : public InProcessBrowserTest {
         chrome::GetActiveWebContents(the_browser)->GetURL().ref();
     if (result != "pass") {
       std::string js_result;
-      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
           chrome::GetActiveWebContents(the_browser)->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;

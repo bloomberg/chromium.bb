@@ -23,6 +23,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -83,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   // Verify the command worked.
   WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
       L"setInterval(function(){"
       L"  if(document.body.bgColor == 'red'){"

@@ -35,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 
 using content::BrowserThread;
@@ -97,7 +98,7 @@ void RunTestFunction(DevToolsWindow* window, const char* test_name) {
   // checking that global variable uiTests exists(it's created after all js
   // files have been loaded) and has runTest method.
   ASSERT_TRUE(
-      ui_test_utils::ExecuteJavaScriptAndExtractString(
+      content::ExecuteJavaScriptAndExtractString(
           window->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send("
@@ -106,7 +107,7 @@ void RunTestFunction(DevToolsWindow* window, const char* test_name) {
 
   if (result == "function") {
     ASSERT_TRUE(
-        ui_test_utils::ExecuteJavaScriptAndExtractString(
+        content::ExecuteJavaScriptAndExtractString(
             window->GetRenderViewHost(),
             L"",
             UTF8ToWide(base::StringPrintf("uiTests.runTest('%s')",
@@ -543,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   OpenDevToolsWindow("about:blank");
   std::string result;
   ASSERT_TRUE(
-      ui_test_utils::ExecuteJavaScriptAndExtractString(
+      content::ExecuteJavaScriptAndExtractString(
           window_->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send("

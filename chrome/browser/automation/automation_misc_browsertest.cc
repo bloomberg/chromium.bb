@@ -15,6 +15,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(AutomationMiscBrowserTest, ProcessMouseEvent) {
 
   content::RenderViewHost* view =
       chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       view,
       L"",
       L"window.didClick = false;"
@@ -97,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(AutomationMiscBrowserTest, ProcessMouseEvent) {
       mock.error_callback());
 
   bool did_click = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       view,
       L"",
       L"window.domAutomationController.send(window.didClick);",

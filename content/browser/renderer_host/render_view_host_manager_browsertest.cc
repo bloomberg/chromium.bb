@@ -23,6 +23,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -73,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
@@ -98,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   // We should have access to the opened tab's location.
   chrome::ActivateTabAt(browser(), 0, true);
   success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
@@ -115,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   // We should no longer have script access to the opened tab's location.
   chrome::ActivateTabAt(browser(), 0, true);
   success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
@@ -150,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Test clicking a rel=noreferrer + target=blank link.
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefTargetBlankLink());",
       &success));
@@ -208,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Test clicking a same-site rel=noreferrer + target=foo link.
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteNoRefTargetedLink());",
       &success));
@@ -265,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Test clicking a target=blank link.
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickTargetBlankLink());",
       &success));
@@ -318,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Test clicking a rel=noreferrer link.
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
@@ -369,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
@@ -405,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &new_contents->GetController()));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
@@ -428,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   content::WindowedNotificationObserver close_observer(
         content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<content::WebContents>(new_contents));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(testCloseWindow());",
       &success));
@@ -479,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       opener_contents->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
@@ -502,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   chrome::ActivateTabAt(browser(), 0, true);
   ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer2((
       content::Source<content::WebContentsDelegate>(browser())));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetBlankLink());",
       &success));
@@ -530,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // 2) Fail to post a message from the foo window to the opener if the target
   // origin is wrong.  We won't see an error, but we can check for the right
   // number of received messages below.
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       foo_contents->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(postToOpener('msg',"
       L"'http://google.com'));",
@@ -542,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   content::WindowedNotificationObserver title_observer(
         content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
         content::Source<content::WebContents>(foo_contents));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       foo_contents->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(postToOpener('msg','*'));",
       &success));
@@ -552,12 +553,12 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // We should have received only 1 message in the opener and "foo" tabs,
   // and updated the title.
   int opener_received_messages = 0;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractInt(
       opener_contents->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(window.receivedMessages);",
       &opener_received_messages));
   int foo_received_messages = 0;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractInt(
       foo_contents->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(window.receivedMessages);",
       &foo_received_messages));
@@ -570,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   content::WindowedNotificationObserver title_observer2(
         content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
         content::Source<content::WebContents>(foo_contents));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       new_contents->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(postToFoo('msg2'));",
       &success));
@@ -614,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
@@ -650,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &orig_contents->GetController()));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(navigateOpener());",
       &success));
@@ -698,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
@@ -789,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 
   // Renderer-initiated navigations should work.
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
@@ -961,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
@@ -980,7 +981,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   RenderViewHost* rvh =
       chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       rvh, L"",
       L"window.domAutomationController.send("
           L"document.webkitVisibilityState == 'visible');",
@@ -993,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title1.html"));
 
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       rvh, L"",
       L"window.domAutomationController.send("
           L"document.webkitVisibilityState == 'hidden');",
@@ -1017,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   EXPECT_EQ(rvh, chrome::GetActiveWebContents(browser())->GetRenderViewHost());
 
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       rvh, L"",
       L"window.domAutomationController.send("
           L"document.webkitVisibilityState == 'visible');",

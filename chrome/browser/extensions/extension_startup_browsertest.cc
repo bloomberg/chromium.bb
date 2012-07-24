@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 
 // This file contains high-level startup tests for the extensions system. We've
@@ -117,7 +118,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
 
     bool result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
         L"window.domAutomationController.send("
         L"document.defaultView.getComputedStyle(document.body, null)."
@@ -126,7 +127,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     EXPECT_EQ(expect_css, result);
 
     result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(document.title == 'Modified')",
         &result));

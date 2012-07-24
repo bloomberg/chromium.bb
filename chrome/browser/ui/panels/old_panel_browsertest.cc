@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DISABLED_AutoResize) {
   content::WindowedNotificationObserver enlarge(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+  EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(50);"));
@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DISABLED_AutoResize) {
   content::WindowedNotificationObserver shrink(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+  EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(-30);"));
@@ -1457,7 +1457,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, TightAutosizeAroundSingleLine) {
   content::WindowedNotificationObserver enlarge(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+  EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"document.body.innerHTML ="

@@ -164,7 +164,7 @@ class SSLUITest : public InProcessBrowserTest {
 
     while (base::Time::Now() < timeToQuit) {
       bool workerFinished = false;
-      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
           tab->GetRenderViewHost(), std::wstring(),
           L"window.domAutomationController.send(IsWorkerFinished());",
           &workerFinished));
@@ -181,7 +181,7 @@ class SSLUITest : public InProcessBrowserTest {
     }
 
     bool actuallyLoadedContent = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(IsContentLoaded());",
         &actuallyLoadedContent));
@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
   EXPECT_EQ(0, GetConstrainedWindowCount());
 
   int img_width;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractInt(
       tab->GetRenderViewHost(), std::wstring(),
       L"window.domAutomationController.send(ImageWidth());", &img_width));
   // In order to check that the image was not loaded, we check its width.
@@ -744,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
   EXPECT_LT(img_width, 100);
 
   bool js_result = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), std::wstring(),
       L"window.domAutomationController.send(IsFooSet());", &js_result));
   EXPECT_FALSE(js_result);
@@ -769,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentLoadedFromJS) {
 
   // Load the insecure image.
   bool js_result = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), std::wstring(), L"loadBadImage();",
       &js_result));
   EXPECT_TRUE(js_result);
@@ -1171,7 +1171,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
         &success));
@@ -1187,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
         &success));
@@ -1203,7 +1203,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   std::wstring content_frame_xpath(L"html/frameset/frame[2]");
   std::wstring is_evil_js(L"window.domAutomationController.send("
                           L"document.getElementById('evilDiv') != null);");
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), content_frame_xpath, is_evil_js,
       &is_content_evil));
   EXPECT_FALSE(is_content_evil);
@@ -1223,7 +1223,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('HTTPLink'));",
         &success));
@@ -1270,7 +1270,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
   content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), std::wstring(),
       L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
       &success));
@@ -1307,7 +1307,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
         &success));
@@ -1324,7 +1324,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
         &success));
@@ -1340,7 +1340,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
   std::wstring content_frame_xpath(L"html/frameset/frame[2]");
   std::wstring is_evil_js(L"window.domAutomationController.send("
                           L"document.getElementById('evilDiv') != null);");
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), content_frame_xpath, is_evil_js,
       &is_content_evil));
   EXPECT_FALSE(is_content_evil);

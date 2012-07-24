@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -241,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
   int y_offset = 0;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       std::wstring(),
       L"window.domAutomationController.send(plugin.pageYOffset())",
@@ -321,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
       // doing async loading.  This happens when the first loader is cancelled
       // and before creating a byte-range request loader.
       bool complete = false;
-      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
           chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
           std::wstring(),
           L"window.domAutomationController.send(plugin.documentLoadComplete())",
@@ -349,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_OnLoadAndReload) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       std::wstring(),
       L"reloadPDF();"));

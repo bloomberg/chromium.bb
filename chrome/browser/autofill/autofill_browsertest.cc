@@ -131,7 +131,7 @@ class AutofillTest : public InProcessBrowserTest {
   void ExpectFieldValue(const std::wstring& field_name,
                         const std::string& expected_value) {
     std::string value;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
         chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
         L"window.domAutomationController.send("
         L"document.getElementById('" + field_name + L"').value);", &value));
@@ -188,7 +188,7 @@ class AutofillTest : public InProcessBrowserTest {
 
     LOG(WARNING) << "Focusing the first name field.";
     bool result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         render_view_host(), L"",
         L"if (document.readyState === 'complete')"
         L"  document.getElementById('firstname').focus();"
@@ -358,17 +358,17 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
   bool unfocused_fired = false;
   bool changed_select_fired = false;
   bool unchanged_select_fired = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       render_view_host(), L"",
       L"domAutomationController.send(focused_fired);", &focused_fired));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       render_view_host(), L"",
       L"domAutomationController.send(unfocused_fired);", &unfocused_fired));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       render_view_host(), L"",
       L"domAutomationController.send(changed_select_fired);",
       &changed_select_fired));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       render_view_host(), L"",
       L"domAutomationController.send(unchanged_select_fired);",
       &unchanged_select_fired));
@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
   EXPECT_FALSE(unchanged_select_fired);
 
   // Unfocus the first name field. Its change event should fire.
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       render_view_host(), L"",
       L"document.getElementById('firstname').blur();"
       L"domAutomationController.send(focused_fired);", &focused_fired));
@@ -593,8 +593,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DynamicFormFill) {
            "</script>")));
 
   // Dynamically construct the form.
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(render_view_host(), L"",
-                                               L"BuildForm();"));
+  ASSERT_TRUE(content::ExecuteJavaScript(render_view_host(), L"",
+                                         L"BuildForm();"));
 
   // Invoke Autofill.
   TryBasicFormFill();
@@ -699,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
   // Simulate translation to kick onTranslateElementLoad.
   // But right now, the call stucks here.
   // Once click the text field, it starts again.
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       render_view_host(), L"",
       L"cr.googleTranslate.onTranslateElementLoad();"));
 

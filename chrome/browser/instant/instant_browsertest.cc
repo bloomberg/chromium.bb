@@ -36,6 +36,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -142,7 +143,7 @@ class InstantTest : public InProcessBrowserTest {
         "window.setSuggestionsArgument = %s;", argument.c_str()));
     content::RenderViewHost* rvh =
         preview()->web_contents()->GetRenderViewHost();
-    return ui_test_utils::ExecuteJavaScript(rvh, std::wstring(), script);
+    return content::ExecuteJavaScript(rvh, std::wstring(), script);
   }
 
   std::wstring WrapScript(const std::string& script) {
@@ -153,21 +154,21 @@ class InstantTest : public InProcessBrowserTest {
   bool GetStringFromJavascript(WebContents* tab,
                                const std::string& script,
                                std::string* result) {
-    return ui_test_utils::ExecuteJavaScriptAndExtractString(
+    return content::ExecuteJavaScriptAndExtractString(
         tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
   bool GetIntFromJavascript(WebContents* tab,
                             const std::string& script,
                             int* result) {
-    return ui_test_utils::ExecuteJavaScriptAndExtractInt(
+    return content::ExecuteJavaScriptAndExtractInt(
         tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
   bool GetBoolFromJavascript(WebContents* tab,
                              const std::string& script,
                              bool* result) {
-    return ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    return content::ExecuteJavaScriptAndExtractBool(
         tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
@@ -610,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(SearchToNonSearch)) {
 
   // Send onchange so that the page sends up suggestions. See the comments in
   // NonSearchToSearch for why this is needed.
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       preview()->web_contents()->GetRenderViewHost(), std::wstring(),
       L"window.chrome.searchBox.onchange();"));
   ASSERT_TRUE(WaitForMessageToBeProcessedByRenderer());

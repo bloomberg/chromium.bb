@@ -145,34 +145,6 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
                                                 const GURL& url,
                                                 int number_of_navigations);
 
-// Executes the passed |script| in the frame pointed to by |frame_xpath| (use
-// empty string for main frame).  The |script| should not invoke
-// domAutomationController.send(); otherwise, your test will hang or be flaky.
-// If you want to extract a result, use one of the below functions.
-// Returns true on success.
-bool ExecuteJavaScript(content::RenderViewHost* render_view_host,
-                       const std::wstring& frame_xpath,
-                       const std::wstring& script) WARN_UNUSED_RESULT;
-
-// The following methods executes the passed |script| in the frame pointed to by
-// |frame_xpath| (use empty string for main frame) and sets |result| to the
-// value returned by the script evaluation.
-// They return true on success, false if the script evaluation failed or did not
-// evaluate to the expected type.
-bool ExecuteJavaScriptAndExtractInt(content::RenderViewHost* render_view_host,
-                                    const std::wstring& frame_xpath,
-                                    const std::wstring& script,
-                                    int* result) WARN_UNUSED_RESULT;
-bool ExecuteJavaScriptAndExtractBool(content::RenderViewHost* render_view_host,
-                                     const std::wstring& frame_xpath,
-                                     const std::wstring& script,
-                                     bool* result) WARN_UNUSED_RESULT;
-bool ExecuteJavaScriptAndExtractString(
-    content::RenderViewHost* render_view_host,
-    const std::wstring& frame_xpath,
-    const std::wstring& script,
-    std::string* result) WARN_UNUSED_RESULT;
-
 // Generate the file path for testing a particular test.
 // The file for the tests is all located in
 // test_root_directory/dir/<file>

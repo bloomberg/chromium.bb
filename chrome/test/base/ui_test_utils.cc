@@ -95,48 +95,6 @@ namespace ui_test_utils {
 
 namespace {
 
-class DOMOperationObserver : public content::NotificationObserver,
-                             public content::WebContentsObserver {
- public:
-  explicit DOMOperationObserver(RenderViewHost* render_view_host)
-      : content::WebContentsObserver(
-            WebContents::FromRenderViewHost(render_view_host)),
-        did_respond_(false) {
-    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   content::Source<RenderViewHost>(render_view_host));
-    message_loop_runner_ = new content::MessageLoopRunner;
-  }
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    DCHECK(type == content::NOTIFICATION_DOM_OPERATION_RESPONSE);
-    content::Details<DomOperationNotificationDetails> dom_op_details(details);
-    response_ = dom_op_details->json;
-    did_respond_ = true;
-    message_loop_runner_->Quit();
-  }
-
-  // Overridden from content::WebContentsObserver:
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
-    message_loop_runner_->Quit();
-  }
-
-  bool WaitAndGetResponse(std::string* response) WARN_UNUSED_RESULT {
-    message_loop_runner_->Run();
-    *response = response_;
-    return did_respond_;
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  std::string response_;
-  bool did_respond_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DOMOperationObserver);
-};
-
 class FindInPageNotificationObserver : public content::NotificationObserver {
  public:
   explicit FindInPageNotificationObserver(TabContents* parent_tab)
@@ -190,46 +148,6 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
 };
-
-// Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
-                             const std::wstring& frame_xpath,
-                             const std::wstring& original_script,
-                             scoped_ptr<Value>* result) WARN_UNUSED_RESULT;
-
-// Executes the passed |original_script| in the frame pointed to by
-// |frame_xpath|.  If |result| is not NULL, stores the value that the evaluation
-// of the script in |result|.  Returns true on success.
-bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
-                             const std::wstring& frame_xpath,
-                             const std::wstring& original_script,
-                             scoped_ptr<Value>* result) {
-  // TODO(jcampan): we should make the domAutomationController not require an
-  //                automation id.
-  std::wstring script = L"window.domAutomationController.setAutomationId(0);" +
-      original_script;
-  DOMOperationObserver dom_op_observer(render_view_host);
-  render_view_host->ExecuteJavascriptInWebFrame(WideToUTF16Hack(frame_xpath),
-                                                WideToUTF16Hack(script));
-  std::string json;
-  if (!dom_op_observer.WaitAndGetResponse(&json)) {
-    DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
-    return false;
-  }
-
-  // Nothing more to do for callers that ignore the returned JS value.
-  if (!result)
-    return true;
-
-  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  result->reset(reader.ReadToValue(json));
-  if (!result->get()) {
-    DLOG(ERROR) << reader.GetErrorMessage();
-    return false;
-  }
-
-  return true;
-}
 
 void RunAllPendingMessageAndSendQuit(content::BrowserThread::ID thread_id,
                                      const base::Closure& quit_task) {
@@ -444,53 +362,6 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
       number_of_navigations,
       CURRENT_TAB,
       BROWSER_TEST_WAIT_FOR_NAVIGATION);
-}
-
-bool ExecuteJavaScript(RenderViewHost* render_view_host,
-                       const std::wstring& frame_xpath,
-                       const std::wstring& original_script) {
-  std::wstring script =
-      original_script + L";window.domAutomationController.send(0);";
-  return ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, NULL);
-}
-
-bool ExecuteJavaScriptAndExtractInt(RenderViewHost* render_view_host,
-                                    const std::wstring& frame_xpath,
-                                    const std::wstring& script,
-                                    int* result) {
-  DCHECK(result);
-  scoped_ptr<Value> value;
-  if (!ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, &value) ||
-      !value.get())
-    return false;
-
-  return value->GetAsInteger(result);
-}
-
-bool ExecuteJavaScriptAndExtractBool(RenderViewHost* render_view_host,
-                                     const std::wstring& frame_xpath,
-                                     const std::wstring& script,
-                                     bool* result) {
-  DCHECK(result);
-  scoped_ptr<Value> value;
-  if (!ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, &value) ||
-      !value.get())
-    return false;
-
-  return value->GetAsBoolean(result);
-}
-
-bool ExecuteJavaScriptAndExtractString(RenderViewHost* render_view_host,
-                                       const std::wstring& frame_xpath,
-                                       const std::wstring& script,
-                                       std::string* result) {
-  DCHECK(result);
-  scoped_ptr<Value> value;
-  if (!ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, &value) ||
-      !value.get())
-    return false;
-
-  return value->GetAsString(result);
 }
 
 FilePath GetTestFilePath(const FilePath& dir, const FilePath& file) {
@@ -945,8 +816,7 @@ class SnapshotTaker {
         L"window.domAutomationController.send("
         L"    JSON.stringify([document.width, document.height]))";
     std::string json;
-    if (!ui_test_utils::ExecuteJavaScriptAndExtractString(
-            rvh, L"", script, &json))
+    if (!content::ExecuteJavaScriptAndExtractString(rvh, L"", script, &json))
       return false;
 
     // Parse the JSON.

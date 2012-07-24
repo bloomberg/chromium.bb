@@ -9,6 +9,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 
 using content::WebContents;
 
@@ -45,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, DISABLED_SharedWorkersList) {
 
   std::string result;
   ASSERT_TRUE(
-      ui_test_utils::ExecuteJavaScriptAndExtractString(
+      content::ExecuteJavaScriptAndExtractString(
           web_contents->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send("

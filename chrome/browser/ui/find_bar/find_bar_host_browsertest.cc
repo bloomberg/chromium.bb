@@ -27,6 +27,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -258,7 +259,7 @@ bool FocusedOnPage(WebContents* web_contents, std::string* result)
     WARN_UNUSED_RESULT;
 
 bool FocusedOnPage(WebContents* web_contents, std::string* result) {
-  return ui_test_utils::ExecuteJavaScriptAndExtractString(
+  return content::ExecuteJavaScriptAndExtractString(
       web_contents->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(getFocusedElement());",
@@ -301,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   EXPECT_EQ(1, ordinal);
 
   // Move the selection to link 1, after searching.
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       tab_contents->web_contents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(selectLink1());",
@@ -371,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   // Move the selection to link 1, after searching.
   std::string result;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       tab->web_contents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(selectLink1());",

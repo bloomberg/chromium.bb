@@ -9,6 +9,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -29,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
   // Request permission by calling request() while eval'ing an inline script;
   // That's considered a user gesture to webkit, and should produce an infobar.
   bool result;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(request());",

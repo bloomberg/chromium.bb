@@ -21,6 +21,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/gpu/test_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -162,7 +163,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     js_call << new_bounds.width() << ", " << new_bounds.height();
     js_call << ");";
 
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+    ASSERT_TRUE(content::ExecuteJavaScript(
         chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
         L"", js_call.str()));
 

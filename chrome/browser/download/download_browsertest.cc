@@ -60,6 +60,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_mock_http_job.h"
@@ -1026,7 +1027,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
       NULL,
       1);
   bool download_assempted;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(startDownload());",
@@ -1607,7 +1608,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   WebContents* contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(contents);
   bool webui_responded = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       contents->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(window.webui_responded_);",
@@ -1627,7 +1628,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
   WebContents* contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(contents);
   bool result = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       contents->GetRenderViewHost(),
       L"",
       L"window.onunload = function() { var do_nothing = 0; }; "

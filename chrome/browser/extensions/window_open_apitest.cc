@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -282,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
                           start_url.Resolve("newtab.html"), true, &newtab));
 
   bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       newtab->GetRenderViewHost(), L"", L"testExtensionApi()", &result));
   EXPECT_TRUE(result);
 }
@@ -319,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 
   // Extension API should succeed.
   bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       newtab->GetRenderViewHost(), L"", L"testExtensionApi()", &result));
   EXPECT_TRUE(result);
 }

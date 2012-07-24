@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -33,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("chrome-extension://gbmgkahjioeacddebbnengilkgbkhodg/index.html"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
@@ -44,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("chrome-extension://apocjbpjpkghdepdngjlknfpmabcmlao/index.html"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
@@ -64,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
   Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(),
       GURL("chrome-extension://gbmgkahjioeacddebbnengilkgbkhodg/index.html"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(otr_browser)->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
@@ -75,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
   ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(),
       GURL("chrome-extension://apocjbpjpkghdepdngjlknfpmabcmlao/index.html"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(otr_browser)->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));

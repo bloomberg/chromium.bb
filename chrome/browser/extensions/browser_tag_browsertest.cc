@@ -9,6 +9,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
@@ -81,10 +82,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTagTest, Isolation) {
   EXPECT_NE(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
             source2->GetWebContents()->GetRenderProcessHost()->GetID());
 
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+  EXPECT_TRUE(content::ExecuteJavaScript(
       source1->GetWebContents()->GetRenderViewHost(), std::wstring(),
       cookie_script1));
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+  EXPECT_TRUE(content::ExecuteJavaScript(
       source2->GetWebContents()->GetRenderViewHost(), std::wstring(),
       cookie_script2));
 

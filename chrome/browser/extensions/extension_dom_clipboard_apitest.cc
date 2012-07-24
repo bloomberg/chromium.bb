@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -66,7 +67,7 @@ bool ClipboardApiTest::ExecutePasteInSelectedTab(bool* result) {
 
 bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::wstring& script,
                                                   bool* result) {
-  if (!ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  if (!content::ExecuteJavaScriptAndExtractBool(
           chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
           L"",
           script,

@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::PluginService;
@@ -99,11 +100,11 @@ class NaClExtensionTest : public ExtensionBrowserTest {
     bool embedded_plugin_created = false;
     bool content_handler_plugin_created = false;
     WebContents* web_contents = chrome::GetActiveWebContents(browser());
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         web_contents->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(EmbeddedPluginCreated());",
         &embedded_plugin_created));
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         web_contents->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(ContentHandlerPluginCreated());",
         &content_handler_plugin_created));

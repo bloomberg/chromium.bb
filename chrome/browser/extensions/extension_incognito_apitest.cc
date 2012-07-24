@@ -14,6 +14,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
 using content::WebContents;
@@ -35,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
 
   // Verify the script didn't run.
   bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title == 'Unmodified')",
       &result));
@@ -70,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
 
   // Verify the script ran.
   bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title == 'modified')",
       &result));

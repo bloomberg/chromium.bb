@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -103,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // And check that its styles were affected by the styles that just got loaded.
   bool styles_injected;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send("
       L"document.defaultView.getComputedStyle(document.body, null)."

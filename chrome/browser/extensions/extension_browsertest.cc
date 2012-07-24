@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/test/browser_test_utils.h"
 
 using extensions::Extension;
 using extensions::ExtensionCreator;
@@ -493,7 +494,7 @@ void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       contents->GetRenderViewHost(), L"",
       L"window.open('" + UTF8ToWide(url.spec()) + L"');"));
 
@@ -521,7 +522,7 @@ void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       contents->GetRenderViewHost(), L"",
       L"window.addEventListener('unload', function() {"
       L"    window.domAutomationController.send(true);"

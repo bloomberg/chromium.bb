@@ -60,7 +60,7 @@ bool ReadExpectedResult(const FilePath& result_dir_path,
 }
 
 void ScrapeResultFromBrowser(Browser* browser, std::string* actual_text) {
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(browser)->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(document.body.innerText);",

@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -47,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   ui_test_utils::NavigateToURL(
       browser(), web_resource.ReplaceComponents(make_host_a_com));
   std::string result;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
     chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
@@ -59,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
           "files/extensions/api_test/extension_resource_request_policy/"
           "non_existent_extension.html"));
   ui_test_utils::NavigateToURL(browser(), non_existent_extension);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
     chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
@@ -73,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
                     .AppendASCII("index.html"), &file_source));
   ui_test_utils::NavigateToURL(browser(),
       GURL(std::string("data:text/html;charset=utf-8,") + file_source));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
@@ -87,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("chrome-extension://pbkkcbgdkliohhfaeefcijaghglkahja/index.html"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
@@ -143,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "files/extensions/api_test/extension_resource_request_policy/"
           "web_accessible/accessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), accessible_resource);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
     chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/xhr_accessible_resource.html"));
   ui_test_utils::NavigateToURL(
       browser(), xhr_accessible_resource);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
     chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
@@ -167,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/xhr_inaccessible_resource.html"));
   ui_test_utils::NavigateToURL(
       browser(), xhr_inaccessible_resource);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
     chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
@@ -178,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "files/extensions/api_test/extension_resource_request_policy/"
           "web_accessible/nonaccessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonaccessible_resource);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
     chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
@@ -189,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "files/extensions/api_test/extension_resource_request_policy/"
           "web_accessible/nonexistent_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonexistent_resource);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
     chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
@@ -200,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "files/extensions/api_test/extension_resource_request_policy/"
           "web_accessible/nonaccessible_chrome_resource_scheme.html"));
   ui_test_utils::NavigateToURL(browser(), nonaccessible_cer_resource);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
     chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));

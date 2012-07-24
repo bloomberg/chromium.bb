@@ -7,6 +7,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 
 class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
@@ -19,7 +20,7 @@ class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
     // zero it out so the test is stable.
     content::RenderViewHost* rvh =
         chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+    ASSERT_TRUE(content::ExecuteJavaScript(
         rvh, L"",
         L"window.before.firstPaintAfterLoadTime = 0;"
         L"window.before.firstPaintTime = 0;"
@@ -28,10 +29,10 @@ class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
 
     std::string before;
     std::string after;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
         rvh, L"", L"window.domAutomationController.send("
         L"JSON.stringify(before))", &before));
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
         rvh, L"", L"window.domAutomationController.send("
         L"JSON.stringify(after))", &after));
     EXPECT_EQ(before, after);
@@ -45,11 +46,11 @@ IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
   ui_test_utils::NavigateToURL(browser(), plain_url);
   content::RenderViewHost* rvh =
       chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       rvh, L"", L"window.before = window.chrome.loadTimes()"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       rvh, L"", L"window.location.href = window.location + \"#\""));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       rvh, L"", L"window.after = window.chrome.loadTimes()"));
   CompareBeforeAndAfter();
 }
@@ -62,10 +63,10 @@ IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
   ui_test_utils::NavigateToURL(browser(), plain_url);
   content::RenderViewHost* rvh =
       chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       rvh, L"", L"window.before = window.chrome.loadTimes()"));
   ui_test_utils::NavigateToURL(browser(), hash_url);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteJavaScript(
       rvh, L"", L"window.after = window.chrome.loadTimes()"));
   CompareBeforeAndAfter();
 }

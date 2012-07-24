@@ -6,6 +6,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 
 // Tests that we can load extension pages into the tab area and they can call
 // extension APIs.
@@ -20,7 +21,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
 
   bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"testTabsAPI()", &result));
   EXPECT_TRUE(result);
@@ -32,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
       browser(),
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
   result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
       L"testTabsAPI()", &result));
   EXPECT_TRUE(result);
