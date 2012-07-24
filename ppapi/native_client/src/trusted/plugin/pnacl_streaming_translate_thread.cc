@@ -24,7 +24,6 @@ void PnaclStreamingTranslateThread::RunTranslate(
     const Manifest* ld_manifest,
     LocalTempFile* obj_file,
     LocalTempFile* nexe_file,
-    nacl::DescWrapper* pexe_wrapper,
     ErrorInfo* error_info,
     PnaclResources* resources,
     Plugin* plugin) {
@@ -33,8 +32,6 @@ void PnaclStreamingTranslateThread::RunTranslate(
   ld_manifest_ = ld_manifest;
   obj_file_ = obj_file;
   nexe_file_ = nexe_file;
-  pexe_wrapper_ = NULL; // The streaming translator doesn't use a pexe desc.
-  DCHECK(pexe_wrapper == NULL);
   coordinator_error_info_ = error_info;
   resources_ = resources;
   plugin_ = plugin;

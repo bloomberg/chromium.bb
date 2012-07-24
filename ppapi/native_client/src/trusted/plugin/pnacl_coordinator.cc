@@ -239,8 +239,6 @@ PnaclCoordinator::PnaclCoordinator(
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
   ld_manifest_.reset(new PnaclLDManifest(plugin_->manifest(), manifest_.get()));
-  // TODO(dschuff): stream ALL the translations!
-  do_streaming_translation_ = (getenv("NACL_STREAMING_TRANSLATION") != NULL);
 }
 
 PnaclCoordinator::~PnaclCoordinator() {
@@ -463,48 +461,34 @@ void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
     NexeReadDidOpen(PP_OK);
     return;
   }
-  if (do_streaming_translation_) {
-    // Create the translation thread object immediately. This ensures that any
-    // pieces of the file that get downloaded before the compilation thread
-    // is accepting SRPCs won't get dropped.
-    translate_thread_.reset(new PnaclStreamingTranslateThread());
-    if (translate_thread_ == NULL) {
-      ReportNonPpapiError("could not allocate translation thread.");
-      return;
-    }
-    // In the streaming case we also want to open the object file now so the
-    // translator can start writing to it during streaming translation.
-    // In the non-streaming case this can wait until the bitcode download is
-    // finished.
-    obj_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
+
+  // Create the translation thread object immediately. This ensures that any
+  // pieces of the file that get downloaded before the compilation thread
+  // is accepting SRPCs won't get dropped.
+  translate_thread_.reset(new PnaclStreamingTranslateThread());
+  if (translate_thread_ == NULL) {
+    ReportNonPpapiError("could not allocate translation thread.");
+    return;
+  }
+  // In the streaming case we also want to open the object file now so the
+  // translator can start writing to it during streaming translation.
+  // In the non-streaming case this can wait until the bitcode download is
+  // finished.
+  obj_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
                                     nacl::string(kPnaclTempDir)));
-    pp::CompletionCallback obj_cb =
+  pp::CompletionCallback obj_cb =
       callback_factory_.NewCallback(&PnaclCoordinator::ObjectWriteDidOpen);
-    obj_file_->OpenWrite(obj_cb);
+  obj_file_->OpenWrite(obj_cb);
 
-    streaming_downloader_.reset(new FileDownloader());
-    streaming_downloader_->Initialize(plugin_);
-    pp::CompletionCallback cb =
-        callback_factory_.NewCallback(
-            &PnaclCoordinator::BitcodeStreamDidFinish);
+  streaming_downloader_.reset(new FileDownloader());
+  streaming_downloader_->Initialize(plugin_);
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(
+          &PnaclCoordinator::BitcodeStreamDidFinish);
 
-    // TODO(dschuff): need to use url_util_->ResolveRelativeToURL?
-    if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
-        ReportNonPpapiError(nacl::string("failed to open stream ") + pexe_url_);
-    }
-
-  } else {
-    translate_thread_.reset(new PnaclTranslateThread());
-    if (translate_thread_ == NULL) {
-      ReportNonPpapiError("could not allocate translation thread.");
-      return;
-    }
-    // load the pexe and set up temp files for translation.
-    pp::CompletionCallback cb =
-        callback_factory_.NewCallback(&PnaclCoordinator::BitcodeFileDidOpen);
-    if (!plugin_->StreamAsFile(pexe_url_, cb.pp_completion_callback())) {
-      ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_+ ".");
-    }
+  // TODO(dschuff): need to use url_util_->ResolveRelativeToURL?
+  if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
+    ReportNonPpapiError(nacl::string("failed to open stream ") + pexe_url_);
   }
 }
 
@@ -535,25 +519,6 @@ void PnaclCoordinator::BitcodeStreamGotData(int32_t pp_error,
 StreamCallback PnaclCoordinator::GetCallback() {
   return callback_factory_.NewCallbackWithOutput(
       &PnaclCoordinator::BitcodeStreamGotData);
-}
-
-void PnaclCoordinator::BitcodeFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeFileDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  // We have to get the fd immediately after streaming, otherwise it
-  // seems like the temp file will get GC'ed.
-  int32_t fd = GetLoadedFileDesc(pp_error, pexe_url_, "pexe");
-  if (fd < 0) {
-    // Error already reported by GetLoadedFileDesc().
-    return;
-  }
-  pexe_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
-
-  obj_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
-                                    nacl::string(kPnaclTempDir)));
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::ObjectWriteDidOpen);
-  obj_file_->OpenWrite(cb);
 }
 
 void PnaclCoordinator::ObjectWriteDidOpen(int32_t pp_error) {
@@ -598,7 +563,6 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
                                   ld_manifest_.get(),
                                   obj_file_.get(),
                                   nexe_file_.get(),
-                                  pexe_wrapper_.get(),
                                   &error_info_,
                                   resources_.get(),
                                   plugin_);

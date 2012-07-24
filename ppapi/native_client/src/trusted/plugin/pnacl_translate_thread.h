@@ -38,10 +38,9 @@ class PnaclTranslateThread {
                     const Manifest* ld_manifest,
                     LocalTempFile* obj_file,
                     LocalTempFile* nexe_file,
-                    nacl::DescWrapper* pexe_wrapper,
                     ErrorInfo* error_info,
                     PnaclResources* resources,
-                    Plugin* plugin);
+                    Plugin* plugin) = 0;
   // Returns true if the translate thread and subprocesses should stop.
   bool SubprocessesShouldDie();
   // Signal the translate thread and subprocesses that they should stop.
@@ -56,7 +55,7 @@ class PnaclTranslateThread {
   // PnaclTranslateThread and calls DoTranslate().
   static void WINAPI DoTranslateThread(void* arg);
   // Runs the SRPCs that control translation. Called from the helper thread.
-  virtual void DoTranslate();
+  virtual void DoTranslate() = 0;
   // Signal that Pnacl translation failed, from the translation thread only.
   void TranslateFailed(const nacl::string& error_string);
   // Run the LD subprocess, returning true on success
@@ -78,7 +77,6 @@ class PnaclTranslateThread {
   const Manifest* ld_manifest_;
   LocalTempFile* obj_file_;
   LocalTempFile* nexe_file_;
-  nacl::DescWrapper* pexe_wrapper_;
   ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;
   Plugin* plugin_;

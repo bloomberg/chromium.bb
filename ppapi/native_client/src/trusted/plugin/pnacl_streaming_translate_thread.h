@@ -26,7 +26,6 @@ class PnaclStreamingTranslateThread : public PnaclTranslateThread {
                             const Manifest* ld_manifest,
                             LocalTempFile* obj_file,
                             LocalTempFile* nexe_file,
-                            nacl::DescWrapper* pexe_wrapper,
                             ErrorInfo* error_info,
                             PnaclResources* resources,
                             Plugin* plugin);

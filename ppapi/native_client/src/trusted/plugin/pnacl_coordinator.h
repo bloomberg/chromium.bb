@@ -152,8 +152,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   void BitcodeStreamGotData(int32_t pp_error, FileStreamData data);
   // Invoked when the pexe download finishes (using streaming translation)
   void BitcodeStreamDidFinish(int32_t pp_error);
-  // Invoked after we have started pulling down the bitcode file.
-  void BitcodeFileDidOpen(int32_t pp_error);
   // Invoked when the write descriptor for obj_file_ is created.
   void ObjectWriteDidOpen(int32_t pp_error);
   // Invoked when the read descriptor for obj_file_ is created.
@@ -214,8 +212,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   nacl::string pexe_url_;
   // Optional cache identity for translation caching.
   nacl::string cache_identity_;
-  // Borrowed reference which must outlive the thread.
-  nacl::scoped_ptr<nacl::DescWrapper> pexe_wrapper_;
   // Object file, produced by the translator and consumed by the linker.
   nacl::scoped_ptr<LocalTempFile> obj_file_;
   // Translated nexe file, produced by the linker and consumed by sel_ldr.
@@ -223,7 +219,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // Downloader for streaming translation
   nacl::scoped_ptr<FileDownloader> streaming_downloader_;
-  bool do_streaming_translation_;
 
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;
