@@ -120,7 +120,7 @@ SelLdrLauncherBase::StartModuleAndSetupAppChannel(
                                                              &start_result);
   NaClLog(4, "SelLdrLauncher::StartModule rpc result %d\n",
           static_cast<int>(rpc_result));
-  if (NACL_SRPC_RESULT_OK != rpc_result && LOAD_OK != start_result) {
+  if (NACL_SRPC_RESULT_OK != rpc_result || LOAD_OK != start_result) {
     NaClSrpcDtor(command);
     NaClLog(4, "SelLdrLauncher::StartModuleAndSetupAppChannel: "
             "start_module failed: rpc_result=%d, start_result=%d (%s)\n",
