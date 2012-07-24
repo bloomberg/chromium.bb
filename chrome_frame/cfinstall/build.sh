@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,13 +29,15 @@ CLOSURE_COMPILER_ZIP=$DEPS_DIR/compiler-latest.zip
 CLOSURE_COMPILER_JAR_ZIP_RELATIVE=compiler.jar
 CLOSURE_COMPILER_JAR=$DEPS_DIR/$CLOSURE_COMPILER_JAR_ZIP_RELATIVE
 
+# TODO(palmer): Convert the svn checkout to HTTPS with the broken SVN
+# clients are finally gone. As of 24 July 2012, that should be pretty soon.
 mkdir -p $DEPS_DIR &&
 mkdir -p $OUT_DIR &&
 { [[ -e $CLOSURE_LIBRARY_DIR ]] || \
   svn checkout http://closure-library.googlecode.com/svn/trunk/ \
     $CLOSURE_LIBRARY_DIR; } && \
 { [[ -e $CLOSURE_COMPILER_JAR ]] ||
-  { wget http://closure-compiler.googlecode.com/files/compiler-latest.zip \
+  { wget https://closure-compiler.googlecode.com/files/compiler-latest.zip \
       -O $CLOSURE_COMPILER_ZIP && \
     unzip -d $DEPS_DIR $CLOSURE_COMPILER_ZIP \
       $CLOSURE_COMPILER_JAR_ZIP_RELATIVE >/dev/null; }; } &&
