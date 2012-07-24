@@ -15,15 +15,17 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
-#include "chrome/browser/ui/select_file_dialog.h"
-#include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
+#include "ui/base/dialogs/gtk/select_file_dialog_impl.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
 // Implementation of SelectFileDialog that shows a Gtk common dialog for
 // choosing a file or folder. This acts as a modal dialog.
-class SelectFileDialogImplGTK : public SelectFileDialogImpl {
+class SelectFileDialogImplGTK : public ui::SelectFileDialogImpl {
  public:
   explicit SelectFileDialogImplGTK(Listener* listener,
                                    ui::SelectFilePolicy* policy);
@@ -131,11 +133,6 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl {
 // be preserved.
 static const int kPreviewWidth = 256;
 static const int kPreviewHeight = 512;
-
-SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplGTK(
-    Listener* listener, ui::SelectFilePolicy* policy) {
-  return new SelectFileDialogImplGTK(listener, policy);
-}
 
 SelectFileDialogImplGTK::SelectFileDialogImplGTK(Listener* listener,
                                                  ui::SelectFilePolicy* policy)
@@ -546,3 +543,14 @@ void SelectFileDialogImplGTK::OnUpdatePreview(GtkWidget* chooser) {
   gtk_file_chooser_set_preview_widget_active(GTK_FILE_CHOOSER(chooser),
                                              pixbuf ? TRUE : FALSE);
 }
+
+}  // namespace
+
+namespace ui {
+
+SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplGTK(
+    Listener* listener, ui::SelectFilePolicy* policy) {
+  return new SelectFileDialogImplGTK(listener, policy);
+}
+
+}  // namespace ui

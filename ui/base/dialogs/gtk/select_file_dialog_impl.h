@@ -4,14 +4,16 @@
 //
 // This file implements common select dialog functionality between GTK and KDE.
 
-#ifndef CHROME_BROWSER_UI_GTK_SELECT_FILE_DIALOG_IMPL_H_
-#define CHROME_BROWSER_UI_GTK_SELECT_FILE_DIALOG_IMPL_H_
+#ifndef UI_BASE_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_
+#define UI_BASE_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_
 
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/nix/xdg_util.h"
-#include "chrome/browser/ui/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog.h"
+
+namespace ui {
 
 // Shared implementation SelectFileDialog used by SelectFileDialogImplGTK
 class SelectFileDialogImpl : public SelectFileDialog {
@@ -77,4 +79,10 @@ class SelectFileDialogImpl : public SelectFileDialog {
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_SELECT_FILE_DIALOG_IMPL_H_
+SelectFileDialog* CreateLinuxSelectFileDialog(
+    SelectFileDialog::Listener* listener,
+    SelectFilePolicy* policy);
+
+}  // namespace ui
+
+#endif  // UI_BASE_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_

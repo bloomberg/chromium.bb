@@ -4,15 +4,12 @@
 //
 // This file implements common select dialog functionality between GTK and KDE.
 
-#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
+#include "ui/base/dialogs/gtk/select_file_dialog_impl.h"
 
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -26,13 +23,15 @@ UseKdeFileDialogStatus use_kde_ = UNKNOWN;
 
 }  // namespace
 
+namespace ui {
+
 FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
 FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
 
 // static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener,
-                                           ui::SelectFilePolicy* policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+SelectFileDialog* CreateLinuxSelectFileDialog(
+    SelectFileDialog::Listener* listener,
+    SelectFilePolicy* policy) {
   if (use_kde_ == UNKNOWN) {
     // Start out assumimg we are not going to use KDE.
     use_kde_ = NO_KDE;
@@ -88,3 +87,5 @@ bool SelectFileDialogImpl::CallDirectoryExistsOnUIThread(const FilePath& path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   return file_util::DirectoryExists(path);
 }
+
+}  // namespace ui

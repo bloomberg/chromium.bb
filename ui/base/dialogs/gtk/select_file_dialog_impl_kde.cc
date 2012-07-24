@@ -8,25 +8,23 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
-
-// TODO(erg): Move all of this into WorkerPool.
-#include "content/public/browser/browser_thread.h"
-#include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
+#include "ui/base/dialogs/gtk/select_file_dialog_impl.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
-
-using content::BrowserThread;
 
 namespace {
 
@@ -36,11 +34,9 @@ std::string GetTitle(const std::string& title, int message_id) {
 
 const char kKdialogBinary[] = "kdialog";
 
-}  // namespace
-
 // Implementation of SelectFileDialog that shows a KDE common dialog for
 // choosing a file or folder. This acts as a modal dialog.
-class SelectFileDialogImplKDE : public SelectFileDialogImpl {
+class SelectFileDialogImplKDE : public ui::SelectFileDialogImpl {
  public:
   SelectFileDialogImplKDE(Listener* listener,
                           ui::SelectFilePolicy* policy,
@@ -64,6 +60,7 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
   struct KDialogParams {
+    // This constructor can only be run from the UI thread.
     KDialogParams(const std::string& type, const std::string& title,
                   const FilePath& default_path, gfx::NativeWindow parent,
                   bool file_operation, bool multiple_selection,
@@ -73,7 +70,9 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
         : type(type), title(title), default_path(default_path), parent(parent),
           file_operation(file_operation),
           multiple_selection(multiple_selection),
-          kdialog_params(kdialog_params), callback(callback) {
+          kdialog_params(kdialog_params),
+          ui_loop_proxy(MessageLoopForUI::current()->message_loop_proxy()),
+          callback(callback) {
     }
 
     std::string type;
@@ -83,6 +82,8 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
     bool file_operation;
     bool multiple_selection;
     void* kdialog_params;
+    scoped_refptr<base::MessageLoopProxy> ui_loop_proxy;
+
     void (SelectFileDialogImplKDE::*callback)(const std::string&, int, void*);
   };
 
@@ -95,7 +96,8 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
       const FilePath& default_path, gfx::NativeWindow parent,
       bool file_operation, bool multiple_selection, CommandLine* command_line);
 
-  // Call KDialog on the FILE thread and post results back to the UI thread.
+  // Call KDialog on a worker thread and post results back to the caller
+  // thread.
   void CallKDialogOutput(const KDialogParams& params);
 
   // Notifies the listener that a single file was chosen.
@@ -142,28 +144,6 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImplKDE);
 };
-
-// static
-bool SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread() {
-  // No choice. UI thread can't continue without an answer here. Fortunately we
-  // only do this once, the first time a file dialog is displayed.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-  CommandLine::StringVector cmd_vector;
-  cmd_vector.push_back(kKdialogBinary);
-  cmd_vector.push_back("--version");
-  CommandLine command_line(cmd_vector);
-  std::string dummy;
-  return base::GetAppOutput(command_line, &dummy);
-}
-
-// static
-SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplKDE(
-    Listener* listener,
-    ui::SelectFilePolicy* policy,
-    base::nix::DesktopEnvironment desktop) {
-  return new SelectFileDialogImplKDE(listener, policy, desktop);
-}
 
 SelectFileDialogImplKDE::SelectFileDialogImplKDE(
     Listener* listener,
@@ -231,7 +211,6 @@ bool SelectFileDialogImplKDE::HasMultipleFileTypeChoicesImpl() {
 }
 
 std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::string filter_string;
   // We need a filter set because the same mime type can appear multiple times.
   std::set<std::string> filter_set;
@@ -258,7 +237,6 @@ std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
 }
 
 void SelectFileDialogImplKDE::CallKDialogOutput(const KDialogParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   CommandLine::StringVector cmd_vector;
   cmd_vector.push_back(kKdialogBinary);
   CommandLine command_line(cmd_vector);
@@ -276,8 +254,7 @@ void SelectFileDialogImplKDE::CallKDialogOutput(const KDialogParams& params) {
   std::set<GtkWindow*>::iterator iter = parents_.find(params.parent);
   if (iter != parents_.end())
     parents_.erase(iter);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  params.ui_loop_proxy->PostTask(FROM_HERE,
       base::Bind(params.callback, this, output, exit_code,
                  params.kdialog_params));
 }
@@ -345,8 +322,7 @@ void SelectFileDialogImplKDE::FileNotSelected(void* params) {
 void SelectFileDialogImplKDE::CreateSelectFolderDialog(
     const std::string& title, const FilePath& default_path,
     gfx::NativeWindow parent, void *params) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::WorkerPool::PostTask(FROM_HERE,
       base::Bind(
           &SelectFileDialogImplKDE::CallKDialogOutput,
           this,
@@ -355,14 +331,14 @@ void SelectFileDialogImplKDE::CreateSelectFolderDialog(
               GetTitle(title, IDS_SELECT_FOLDER_DIALOG_TITLE),
               default_path.empty() ? *last_opened_path_ : default_path,
               parent, false, false, params,
-              &SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse)));
+              &SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse)),
+      true);
 }
 
 void SelectFileDialogImplKDE::CreateFileOpenDialog(
     const std::string& title, const FilePath& default_path,
     gfx::NativeWindow parent, void* params) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::WorkerPool::PostTask(FROM_HERE,
       base::Bind(
           &SelectFileDialogImplKDE::CallKDialogOutput,
           this,
@@ -371,14 +347,14 @@ void SelectFileDialogImplKDE::CreateFileOpenDialog(
               GetTitle(title, IDS_OPEN_FILE_DIALOG_TITLE),
               default_path.empty() ? *last_opened_path_ : default_path,
               parent, true, false, params,
-              &SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse)));
+              &SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse)),
+      true);
 }
 
 void SelectFileDialogImplKDE::CreateMultiFileOpenDialog(
     const std::string& title, const FilePath& default_path,
     gfx::NativeWindow parent, void* params) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::WorkerPool::PostTask(FROM_HERE,
       base::Bind(
           &SelectFileDialogImplKDE::CallKDialogOutput,
           this,
@@ -387,14 +363,14 @@ void SelectFileDialogImplKDE::CreateMultiFileOpenDialog(
               GetTitle(title, IDS_OPEN_FILES_DIALOG_TITLE),
               default_path.empty() ? *last_opened_path_ : default_path,
               parent, true, true, params,
-              &SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse)));
+              &SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse)),
+      true);
 }
 
 void SelectFileDialogImplKDE::CreateSaveAsDialog(
     const std::string& title, const FilePath& default_path,
     gfx::NativeWindow parent, void* params) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::WorkerPool::PostTask(FROM_HERE,
       base::Bind(
           &SelectFileDialogImplKDE::CallKDialogOutput,
           this,
@@ -403,7 +379,8 @@ void SelectFileDialogImplKDE::CreateSaveAsDialog(
               GetTitle(title, IDS_SAVE_AS_DIALOG_TITLE),
               default_path.empty() ? *last_saved_path_ : default_path,
               parent, true, false, params,
-              &SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse)));
+              &SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse)),
+      true);
 }
 
 void SelectFileDialogImplKDE::SelectSingleFileHelper(const std::string& output,
@@ -428,19 +405,16 @@ void SelectFileDialogImplKDE::SelectSingleFileHelper(const std::string& output,
 
 void SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse(
     const std::string& output, int exit_code, void* params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SelectSingleFileHelper(output, exit_code, params, false);
 }
 
 void SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse(
     const std::string& output, int exit_code, void* params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SelectSingleFileHelper(output, exit_code, params, true);
 }
 
 void SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse(
     const std::string& output, int exit_code, void* params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "[kdialog] MultiFileResponse: " << output;
 
   if (exit_code != 0 || output.empty()) {
@@ -465,3 +439,32 @@ void SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse(
   }
   MultiFilesSelected(filenames_fp, params);
 }
+
+}  // namespace
+
+namespace ui {
+
+// static
+bool SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread() {
+  // No choice. UI thread can't continue without an answer here. Fortunately we
+  // only do this once, the first time a file dialog is displayed.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  CommandLine::StringVector cmd_vector;
+  cmd_vector.push_back(kKdialogBinary);
+  cmd_vector.push_back("--version");
+  CommandLine command_line(cmd_vector);
+  std::string dummy;
+  return base::GetAppOutput(command_line, &dummy);
+}
+
+// static
+SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplKDE(
+    Listener* listener,
+    ui::SelectFilePolicy* policy,
+    base::nix::DesktopEnvironment desktop) {
+  return new SelectFileDialogImplKDE(listener, policy, desktop);
+}
+
+}  // namespace ui
+

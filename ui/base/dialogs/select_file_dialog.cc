@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "build/build_config.h"
 #include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/dialogs/select_file_dialog_factory.h"
 #include "ui/base/dialogs/select_file_policy.h"
@@ -16,6 +17,8 @@
 #include "ui/base/dialogs/select_file_dialog_win.h"
 #elif defined(OS_MACOSX)
 #include "ui/base/dialogs/select_file_dialog_mac.h"
+#elif defined(TOOLKIT_GTK)
+#include "ui/base/dialogs/gtk/select_file_dialog_impl.h"
 #endif
 
 namespace {
@@ -54,7 +57,6 @@ void SelectFileDialog::SetFactory(ui::SelectFileDialogFactory* factory) {
   dialog_factory_ = factory;
 }
 
-#if !defined(TOOLKIT_GTK)
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener,
                                            ui::SelectFilePolicy* policy) {
@@ -67,12 +69,13 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener,
   // TODO(erg): Proxy to LinuxUI here.
 
   // TODO(erg): Add other OSs one by one here.
-
 #if defined(OS_WIN) && !defined(USE_AURA)
   // TODO(port): The windows people need this to work in aura, too.
   return CreateWinSelectFileDialog(listener, policy);
 #elif defined(OS_MACOSX) && !defined(USE_AURA)
   return CreateMacSelectFileDialog(listener, policy);
+#elif defined(TOOLKIT_GTK)
+  return CreateLinuxSelectFileDialog(listener, policy);
 #elif defined(OS_ANDROID)
   // see crbug.com/116131 to track implemenation of SelectFileDialog
   NOTIMPLEMENTED();
@@ -80,7 +83,6 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener,
 
   return NULL;
 }
-#endif
 
 void SelectFileDialog::SelectFile(Type type,
                                   const string16& title,

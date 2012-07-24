@@ -8547,10 +8547,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         The app is currently unreachable.
       </message>
 
-      <message name="IDS_SAVEAS_ALL_FILES" desc="Save As dialog box default text">
-        All Files
-      </message>
-
       <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
         <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
       </message>
@@ -12795,20 +12791,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <!-- Color chooser dialog default titles (only used on Linux) -->
     <message name="IDS_SELECT_COLOR_DIALOG_TITLE" desc="The default title for the Select Color color chooser dialog.">
       Select Color
-    </message>
-
-    <!-- File chooser dialog default titles (only used on Linux) -->
-    <message name="IDS_SELECT_FOLDER_DIALOG_TITLE" desc="The default title for the Select Folder file chooser dialog.">
-      Select Folder
-    </message>
-    <message name="IDS_SAVE_AS_DIALOG_TITLE" desc="The default title for the Save As file chooser dialog.">
-      Save File
-    </message>
-    <message name="IDS_OPEN_FILE_DIALOG_TITLE" desc="The default title for the Open File file chooser dialog (single file).">
-      Open File
-    </message>
-    <message name="IDS_OPEN_FILES_DIALOG_TITLE" desc="The default title for the Open File file chooser dialog (multiple files).">
-      Open Files
     </message>
 
     <!-- Geolocation messages -->

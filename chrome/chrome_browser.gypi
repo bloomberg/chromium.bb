@@ -3186,10 +3186,6 @@
         'browser/ui/gtk/sad_tab_gtk.cc',
         'browser/ui/gtk/sad_tab_gtk.h',
         'browser/ui/gtk/simple_message_box_gtk.cc',
-        'browser/ui/gtk/select_file_dialog_impl.cc',
-        'browser/ui/gtk/select_file_dialog_impl.h',
-        'browser/ui/gtk/select_file_dialog_impl_gtk.cc',
-        'browser/ui/gtk/select_file_dialog_impl_kde.cc',
         'browser/ui/gtk/slide_animator_gtk.cc',
         'browser/ui/gtk/slide_animator_gtk.h',
         'browser/ui/gtk/speech_recognition_bubble_gtk.cc',
@@ -5334,10 +5330,6 @@
         # File manager extension replaces the native OS file open/save dialog.
         ['file_manager_extension==1', {
           'sources/': [
-            ['exclude', '^browser/ui/gtk/select_file_dialog_impl.cc'],
-            ['exclude', '^browser/ui/gtk/select_file_dialog_impl.h'],
-            ['exclude', '^browser/ui/gtk/select_file_dialog_impl_gtk.cc'],
-            ['exclude', '^browser/ui/gtk/select_file_dialog_impl_kde.cc'],
             ['include', '^browser/ui/views/select_file_dialog_extension.cc'],
             ['include', '^browser/ui/views/select_file_dialog_extension.h'],
             ['include', '^browser/ui/views/select_file_dialog_extension_factory.cc'],
