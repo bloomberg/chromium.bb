@@ -271,7 +271,7 @@ void AppLauncherHandler::Observe(int type,
 
       scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
       if (app_info.get()) {
-        visible_apps_.insert(extension);
+        visible_apps_.insert(extension->id());
 
         ExtensionPrefs* prefs = extension_service_->extension_prefs();
         scoped_ptr<base::FundamentalValue> highlight(Value::CreateBooleanValue(
@@ -297,7 +297,7 @@ void AppLauncherHandler::Observe(int type,
               content::Details<extensions::UnloadedExtensionInfo>(
                   details)->reason == extension_misc::UNLOAD_REASON_UNINSTALL));
       if (app_info.get()) {
-        visible_apps_.erase(extension);
+        visible_apps_.erase(extension->id());
 
         scoped_ptr<base::FundamentalValue> from_page(
             Value::CreateBooleanValue(!extension_id_prompting_.empty()));
@@ -359,10 +359,10 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 
   ListValue* list = new ListValue();
 
-  for (std::set<const Extension*>::iterator it = visible_apps_.begin();
+  for (std::set<std::string>::iterator it = visible_apps_.begin();
        it != visible_apps_.end(); ++it) {
-    const Extension* extension = *it;
-    if (extension->ShouldDisplayInLauncher()) {
+    const Extension* extension = extension_service_->GetInstalledExtension(*it);
+    if (extension && extension->ShouldDisplayInLauncher()) {
       DictionaryValue* app_info = GetAppInfo(extension);
       list->Append(app_info);
     }
@@ -460,13 +460,22 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // of apps visible on the NTP.
   if (!has_loaded_apps_) {
     const ExtensionSet* extensions = extension_service_->extensions();
-    visible_apps_.insert(extensions->begin(), extensions->end());
+    for (ExtensionSet::const_iterator it = extensions->begin();
+         it != extensions->end(); ++it) {
+      visible_apps_.insert((*it)->id());
+    }
 
     extensions = extension_service_->disabled_extensions();
-    visible_apps_.insert(extensions->begin(), extensions->end());
+    for (ExtensionSet::const_iterator it = extensions->begin();
+         it != extensions->end(); ++it) {
+      visible_apps_.insert((*it)->id());
+    }
 
     extensions = extension_service_->terminated_extensions();
-    visible_apps_.insert(extensions->begin(), extensions->end());
+    for (ExtensionSet::const_iterator it = extensions->begin();
+         it != extensions->end(); ++it) {
+      visible_apps_.insert((*it)->id());
+    }
   }
 
   SetAppToBeHighlighted();

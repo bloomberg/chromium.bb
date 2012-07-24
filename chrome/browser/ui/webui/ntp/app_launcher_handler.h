@@ -181,8 +181,8 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Used to show confirmation UI for enabling extensions in incognito mode.
   scoped_ptr<ExtensionInstallPrompt> extension_install_ui_;
 
-  // The set of apps to show on the NTP.
-  std::set<const extensions::Extension*> visible_apps_;
+  // The ids of apps to show on the NTP.
+  std::set<std::string> visible_apps_;
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;
