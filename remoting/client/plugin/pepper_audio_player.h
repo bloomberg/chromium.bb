@@ -15,25 +15,23 @@
 #include "ppapi/cpp/audio.h"
 #include "ppapi/cpp/instance.h"
 #include "remoting/client/audio_player.h"
+#include "remoting/proto/audio.pb.h"
 
 namespace remoting {
-
-class AudioPacket;
 
 class PepperAudioPlayer : public AudioPlayer {
  public:
   explicit PepperAudioPlayer(pp::Instance* instance);
   virtual ~PepperAudioPlayer();
 
-  // Returns true if successful, false otherwise.
-  virtual bool Start() OVERRIDE;
-
   virtual void ProcessAudioPacket(scoped_ptr<AudioPacket> packet) OVERRIDE;
-
-  virtual bool IsRunning() const OVERRIDE;
 
  private:
   typedef std::list<AudioPacket*> AudioPacketQueue;
+
+  // Resets the audio player and starts the playback.
+  // Returns true on success.
+  bool ResetAudioPlayer(AudioPacket::SamplingRate sampling_rate);
 
   // Function called by the browser when it needs more audio samples.
   static void PepperAudioPlayerCallback(void* samples,
@@ -42,7 +40,10 @@ class PepperAudioPlayer : public AudioPlayer {
 
   void FillWithSamples(void* samples, uint32_t buffer_size);
 
+  pp::Instance* instance_;
   pp::Audio audio_;
+
+  AudioPacket::SamplingRate sampling_rate_;
 
   // The count of sample frames per channel in an audio buffer.
   uint32_t samples_per_frame_;
@@ -57,7 +58,7 @@ class PepperAudioPlayer : public AudioPlayer {
   // The number of bytes from |queued_packets_| that have been consumed.
   size_t bytes_consumed_;
 
-  bool running_;
+  bool start_failed_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperAudioPlayer);
 };

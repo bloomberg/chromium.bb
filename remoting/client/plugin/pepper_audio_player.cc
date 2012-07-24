@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
-#include "remoting/proto/audio.pb.h"
 
 namespace {
 // Constants used to create an audio configuration resource.
@@ -17,38 +16,59 @@ const uint32_t kSampleFrameCount = 4096u;
 // for now).
 const uint32_t kChannels = 2u;
 const int kSampleSizeBytes = 2;
+
+PP_AudioSampleRate ConvertToPepperSampleRate(
+    remoting::AudioPacket::SamplingRate sampling_rate) {
+  switch (sampling_rate) {
+    case remoting::AudioPacket::SAMPLING_RATE_44100:
+      return PP_AUDIOSAMPLERATE_44100;
+    case remoting::AudioPacket::SAMPLING_RATE_48000:
+      return PP_AUDIOSAMPLERATE_48000;
+    default:
+      NOTREACHED();
+  }
+  return PP_AUDIOSAMPLERATE_NONE;
+}
+
 }  // namespace
 
 namespace remoting {
 
-bool PepperAudioPlayer::IsRunning() const {
-  return running_;
+PepperAudioPlayer::PepperAudioPlayer(pp::Instance* instance)
+    : instance_(instance),
+      sampling_rate_(AudioPacket::SAMPLING_RATE_INVALID),
+      samples_per_frame_(kSampleFrameCount),
+      bytes_consumed_(0),
+      start_failed_(false) {
 }
 
-PepperAudioPlayer::PepperAudioPlayer(pp::Instance* instance)
-      : samples_per_frame_(kSampleFrameCount),
-        bytes_consumed_(0),
-        running_(false) {
+PepperAudioPlayer::~PepperAudioPlayer() {}
+
+bool PepperAudioPlayer::ResetAudioPlayer(
+    AudioPacket::SamplingRate sampling_rate) {
+  sampling_rate_ = sampling_rate;
+  PP_AudioSampleRate sample_rate =
+      ConvertToPepperSampleRate(sampling_rate);
+
   // Ask the browser/device for an appropriate sample frame count size.
   samples_per_frame_ =
-      pp::AudioConfig::RecommendSampleFrameCount(instance,
-                                                 PP_AUDIOSAMPLERATE_44100,
+      pp::AudioConfig::RecommendSampleFrameCount(instance_,
+                                                 sample_rate,
                                                  kSampleFrameCount);
 
   // Create an audio configuration resource.
-  pp::AudioConfig audio_config = pp::AudioConfig(instance,
-                                                 PP_AUDIOSAMPLERATE_44100,
+  pp::AudioConfig audio_config = pp::AudioConfig(instance_,
+                                                 sample_rate,
                                                  samples_per_frame_);
 
   // Create an audio resource.
-  audio_ = pp::Audio(instance, audio_config, PepperAudioPlayerCallback, this);
-}
+  audio_ = pp::Audio(instance_, audio_config, PepperAudioPlayerCallback, this);
 
-PepperAudioPlayer::~PepperAudioPlayer() { }
-
-bool PepperAudioPlayer::Start() {
-  running_ = audio_.StartPlayback();
-  return running_;
+  // Immediately start the player.
+  bool success = audio_.StartPlayback();
+  if (!success)
+    LOG(ERROR) << "Failed to start Pepper audio player";
+  return success;
 }
 
 void PepperAudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
@@ -59,6 +79,24 @@ void PepperAudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
     return;
   }
   base::AutoLock auto_lock(lock_);
+
+  // No-op if the Pepper player won't start.
+  if (start_failed_) {
+    return;
+  }
+
+  // Start the Pepper audio player if this is the first packet.
+  if (sampling_rate_ != packet->sampling_rate()) {
+    // Drop all packets currently in the queue, since they are sampled at the
+    // wrong rate.
+    STLDeleteElements(&queued_packets_);
+
+    bool success = ResetAudioPlayer(packet->sampling_rate());
+    if (!success) {
+      start_failed_ = true;
+      return;
+    }
+  }
 
   queued_packets_.push_back(packet.release());
 }

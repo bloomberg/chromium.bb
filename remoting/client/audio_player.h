@@ -19,12 +19,7 @@ class AudioPlayer {
  public:
   virtual ~AudioPlayer() {}
 
-  // Returns true if successful, false otherwise.
-  virtual bool Start() = 0;
-
   virtual void ProcessAudioPacket(scoped_ptr<AudioPacket> packet) = 0;
-
-  virtual bool IsRunning() const = 0;
 
  protected:
   AudioPlayer() {}

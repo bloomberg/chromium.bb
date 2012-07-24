@@ -144,8 +144,6 @@ int ChromotingClient::GetPendingVideoPackets() {
 void ChromotingClient::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
                                           const base::Closure& done) {
   audio_player_->ProcessAudioPacket(packet.Pass());
-  if (!audio_player_->IsRunning() && connection_->config().is_audio_enabled())
-    audio_player_->Start();
   done.Run();
 }
 
