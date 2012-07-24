@@ -1237,11 +1237,11 @@ void Pipeline::DoSeek(base::TimeDelta seek_timestamp,
 
   if (audio_renderer_)
     status_cbs->push(base::Bind(
-        &AudioRenderer::Seek, audio_renderer_, seek_timestamp));
+        &AudioRenderer::Preroll, audio_renderer_, seek_timestamp));
 
   if (video_renderer_)
     status_cbs->push(base::Bind(
-        &VideoRenderer::Seek, video_renderer_, seek_timestamp));
+        &VideoRenderer::Preroll, video_renderer_, seek_timestamp));
 
   RunInSeriesWithStatus(status_cbs.Pass(), base::Bind(
       &Pipeline::ReportStatus, this, done_cb));

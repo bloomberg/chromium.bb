@@ -186,7 +186,7 @@ class PipelineTest : public ::testing::Test {
 
     // Startup sequence.
     EXPECT_CALL(*mocks_->video_renderer(),
-                Seek(mocks_->demuxer()->GetStartTime(), _))
+                Preroll(mocks_->demuxer()->GetStartTime(), _))
         .WillOnce(RunPipelineStatusCB1());
     EXPECT_CALL(*mocks_->video_renderer(), Play(_))
         .WillOnce(RunClosure());
@@ -211,7 +211,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*mocks_->audio_renderer(), SetVolume(1.0f));
 
     // Startup sequence.
-    EXPECT_CALL(*mocks_->audio_renderer(), Seek(base::TimeDelta(), _))
+    EXPECT_CALL(*mocks_->audio_renderer(), Preroll(base::TimeDelta(), _))
         .WillOnce(RunPipelineStatusCB1());
     EXPECT_CALL(*mocks_->audio_renderer(), Play(_))
         .WillOnce(RunClosure());
@@ -256,7 +256,7 @@ class PipelineTest : public ::testing::Test {
           .WillOnce(RunClosure());
       EXPECT_CALL(*mocks_->audio_renderer(), Flush(_))
           .WillOnce(RunClosure());
-      EXPECT_CALL(*mocks_->audio_renderer(), Seek(seek_time, _))
+      EXPECT_CALL(*mocks_->audio_renderer(), Preroll(seek_time, _))
           .WillOnce(RunPipelineStatusCB1());
       EXPECT_CALL(*mocks_->audio_renderer(), Play(_))
           .WillOnce(RunClosure());
@@ -267,7 +267,7 @@ class PipelineTest : public ::testing::Test {
           .WillOnce(RunClosure());
       EXPECT_CALL(*mocks_->video_renderer(), Flush(_))
           .WillOnce(RunClosure());
-      EXPECT_CALL(*mocks_->video_renderer(), Seek(seek_time, _))
+      EXPECT_CALL(*mocks_->video_renderer(), Preroll(seek_time, _))
           .WillOnce(RunPipelineStatusCB1());
       EXPECT_CALL(*mocks_->video_renderer(), Play(_))
           .WillOnce(RunClosure());
@@ -891,7 +891,7 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
       .WillOnce(RunClosure());
   EXPECT_CALL(*mocks_->audio_renderer(), Flush(_))
       .WillOnce(RunClosure());
-  EXPECT_CALL(*mocks_->audio_renderer(), Seek(seek_time, _))
+  EXPECT_CALL(*mocks_->audio_renderer(), Preroll(seek_time, _))
       .WillOnce(RunPipelineStatusCB1());
   EXPECT_CALL(*mocks_->audio_renderer(), Play(_))
       .WillOnce(RunClosure());
