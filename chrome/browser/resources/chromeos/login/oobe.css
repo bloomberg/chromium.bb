@@ -529,7 +529,6 @@ html[oobe=old] #user-image {
  */
 
 #user-image-preview {
-  border-radius: 4px;
   float: right;
   margin: 4px;
   max-width: 220px;
@@ -552,6 +551,8 @@ html[camera=webrtc] .camera.live #user-image-preview-img {
 .default-image #user-image-preview-img {
   background: white;
   border: solid 1px #cacaca;
+  border-radius: 4px;
+  padding: 2px;
 }
 
 .user-image-stream-area {

@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#change-picture-page .content-area {
+  min-width: 800px;
+}
+
 #user-image-grid {
   -webkit-user-drag: none;
   -webkit-user-select: none;
@@ -11,7 +15,7 @@
   /* Necessary for correct metrics calculation by grid.js. */
   overflow: hidden;
   padding: 0;
-  width: 562px;
+  width: 538px;
 }
 
 #user-image-grid * {
@@ -30,7 +34,7 @@
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
   display: inline-block;
-  margin: 10px;
+  margin: 8px;
   padding: 3px;
 }
 
@@ -50,7 +54,6 @@
  */
 
 #user-image-preview {
-  border-radius: 4px;
   display: inline-block;
   margin-right: 10px;
   margin-top: 20px;
@@ -79,6 +82,8 @@ html[dir=rtl] #user-image-preview {
 .default-image .user-image-preview-img {
   background: white;
   border: solid 1px #cacaca;
+  border-radius: 4px;
+  padding: 2px;
 }
 
 .user-image-stream-area {
