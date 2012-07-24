@@ -45,7 +45,7 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
       level_(level) {
   // Read initial policy.
   prefs_.reset(CreatePreferencesFromPolicies());
-  policy_service_->AddObserver(POLICY_DOMAIN_CHROME, "", this);
+  policy_service_->AddObserver(POLICY_DOMAIN_CHROME, this);
 }
 
 void ConfigurationPolicyPrefStore::AddObserver(PrefStore::Observer* observer) {
@@ -109,7 +109,7 @@ ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(
 }
 
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
-  policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, "", this);
+  policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {

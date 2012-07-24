@@ -30,20 +30,16 @@ PolicyServiceImpl::~PolicyServiceImpl() {
 }
 
 void PolicyServiceImpl::AddObserver(PolicyDomain domain,
-                                    const std::string& component_id,
                                     PolicyService::Observer* observer) {
-  PolicyBundle::PolicyNamespace ns(domain, component_id);
-  Observers*& list = observers_[ns];
+  Observers*& list = observers_[domain];
   if (!list)
     list = new Observers();
   list->AddObserver(observer);
 }
 
 void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
-                                       const std::string& component_id,
                                        PolicyService::Observer* observer) {
-  PolicyBundle::PolicyNamespace ns(domain, component_id);
-  ObserverMap::iterator it = observers_.find(ns);
+  ObserverMap::iterator it = observers_.find(domain);
   if (it == observers_.end()) {
     NOTREACHED();
     return;
@@ -117,7 +113,7 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
     const PolicyBundle::PolicyNamespace& ns,
     const PolicyMap& previous,
     const PolicyMap& current) {
-  ObserverMap::iterator iterator = observers_.find(ns);
+  ObserverMap::iterator iterator = observers_.find(ns.first);
   if (iterator != observers_.end()) {
     FOR_EACH_OBSERVER(
         PolicyService::Observer,

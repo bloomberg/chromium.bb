@@ -57,13 +57,10 @@ class PolicyService {
 
   virtual ~PolicyService() {}
 
-  virtual void AddObserver(PolicyDomain domain,
-                           const std::string& component_id,
-                           Observer* observer) = 0;
+  // Observes changes to all components of the given |domain|.
+  virtual void AddObserver(PolicyDomain domain, Observer* observer) = 0;
 
-  virtual void RemoveObserver(PolicyDomain domain,
-                              const std::string& component_id,
-                              Observer* observer) = 0;
+  virtual void RemoveObserver(PolicyDomain domain, Observer* observer) = 0;
 
   virtual const PolicyMap& GetPolicies(
       PolicyDomain domain,

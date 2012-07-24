@@ -13,11 +13,9 @@ PolicyServiceStub::PolicyServiceStub() {}
 PolicyServiceStub::~PolicyServiceStub() {}
 
 void PolicyServiceStub::AddObserver(PolicyDomain domain,
-                                    const std::string& component_id,
                                     Observer* observer) {}
 
 void PolicyServiceStub::RemoveObserver(PolicyDomain domain,
-                                       const std::string& component_id,
                                        Observer* observer) {}
 
 const PolicyMap& PolicyServiceStub::GetPolicies(

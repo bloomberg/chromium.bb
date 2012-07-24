@@ -17,13 +17,13 @@ PolicyChangeRegistrar::PolicyChangeRegistrar(PolicyService* policy_service,
 
 PolicyChangeRegistrar::~PolicyChangeRegistrar() {
   if (!callback_map_.empty())
-    policy_service_->RemoveObserver(domain_, component_id_, this);
+    policy_service_->RemoveObserver(domain_, this);
 }
 
 void PolicyChangeRegistrar::Observe(const std::string& policy_name,
                                     const UpdateCallback& callback) {
   if (callback_map_.empty())
-    policy_service_->AddObserver(domain_, component_id_, this);
+    policy_service_->AddObserver(domain_, this);
   callback_map_[policy_name] = callback;
 }
 
@@ -31,6 +31,8 @@ void PolicyChangeRegistrar::OnPolicyUpdated(PolicyDomain domain,
                                             const std::string& component_id,
                                             const PolicyMap& previous,
                                             const PolicyMap& current) {
+  if (component_id != component_id_)
+    return;
   for (CallbackMap::iterator it = callback_map_.begin();
        it != callback_map_.end(); ++it) {
     const Value* prev = previous.GetValue(it->first);

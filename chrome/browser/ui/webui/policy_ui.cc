@@ -171,13 +171,11 @@ PolicyUIHandler::PolicyUIHandler()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
 PolicyUIHandler::~PolicyUIHandler() {
-  GetPolicyService()->RemoveObserver(
-      policy::POLICY_DOMAIN_CHROME, "", this);
+  GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
 }
 
 void PolicyUIHandler::RegisterMessages() {
-  GetPolicyService()->AddObserver(
-      policy::POLICY_DOMAIN_CHROME, "", this);
+  GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
   web_ui()->RegisterMessageCallback(
       "requestData",
       base::Bind(&PolicyUIHandler::HandleRequestData,
