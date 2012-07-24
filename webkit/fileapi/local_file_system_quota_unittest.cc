@@ -16,10 +16,10 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_operation.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
@@ -35,11 +35,11 @@ void AssertFileErrorEq(base::PlatformFileError expected,
 
 } // namespace
 
-class FileSystemQuotaTest
+class LocalFileSystemQuotaTest
     : public testing::Test,
-      public base::SupportsWeakPtr<FileSystemQuotaTest> {
+      public base::SupportsWeakPtr<LocalFileSystemQuotaTest> {
  public:
-  FileSystemQuotaTest()
+  LocalFileSystemQuotaTest()
       : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         next_unique_path_suffix_(0),
         status_(kFileOperationStatusNotSet),
@@ -47,7 +47,7 @@ class FileSystemQuotaTest
         usage_(-1),
         quota_(-1) {}
 
-  FileSystemOperation* operation();
+  LocalFileSystemOperation* operation();
 
   int status() const { return status_; }
   quota::QuotaStatusCode quota_status() const { return quota_status_; }
@@ -93,7 +93,7 @@ class FileSystemQuotaTest
   void GetUsageAndQuotaFromQuotaManager() {
     quota_manager_->GetUsageAndQuota(
         test_helper_.origin(), test_helper_.storage_type(),
-        base::Bind(&FileSystemQuotaTest::OnGetUsageAndQuota,
+        base::Bind(&LocalFileSystemQuotaTest::OnGetUsageAndQuota,
                    weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
   }
@@ -152,20 +152,20 @@ class FileSystemQuotaTest
  protected:
   // Callback for recording test results.
   FileSystemOperationInterface::StatusCallback RecordStatusCallback() {
-    return base::Bind(&FileSystemQuotaTest::DidFinish, AsWeakPtr());
+    return base::Bind(&LocalFileSystemQuotaTest::DidFinish, AsWeakPtr());
   }
 
   void DidFinish(base::PlatformFileError status) {
     status_ = status;
   }
 
-  FileSystemTestOriginHelper test_helper_;
+  LocalFileSystemTestOriginHelper test_helper_;
 
   ScopedTempDir work_dir_;
   MessageLoop message_loop_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
 
-  base::WeakPtrFactory<FileSystemQuotaTest> weak_factory_;
+  base::WeakPtrFactory<LocalFileSystemQuotaTest> weak_factory_;
 
   int next_unique_path_suffix_;
 
@@ -175,10 +175,10 @@ class FileSystemQuotaTest
   int64 usage_;
   int64 quota_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaTest);
+  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemQuotaTest);
 };
 
-void FileSystemQuotaTest::SetUp() {
+void LocalFileSystemQuotaTest::SetUp() {
   ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
   FilePath filesystem_dir_path = work_dir_.path().AppendASCII("filesystem");
   ASSERT_TRUE(file_util::CreateDirectory(filesystem_dir_path));
@@ -196,23 +196,23 @@ void FileSystemQuotaTest::SetUp() {
                      NULL);
 }
 
-void FileSystemQuotaTest::TearDown() {
+void LocalFileSystemQuotaTest::TearDown() {
   quota_manager_ = NULL;
   test_helper_.TearDown();
 }
 
-FileSystemOperation* FileSystemQuotaTest::operation() {
+LocalFileSystemOperation* LocalFileSystemQuotaTest::operation() {
   return test_helper_.NewOperation();
 }
 
-void FileSystemQuotaTest::OnGetUsageAndQuota(
+void LocalFileSystemQuotaTest::OnGetUsageAndQuota(
     quota::QuotaStatusCode status, int64 usage, int64 quota) {
   quota_status_ = status;
   usage_ = usage;
   quota_ = quota;
 }
 
-void FileSystemQuotaTest::PrepareFileSet(const FilePath& virtual_path) {
+void LocalFileSystemQuotaTest::PrepareFileSet(const FilePath& virtual_path) {
   int64 usage = SizeByQuotaUtil();
   child_dir_path_ = CreateUniqueDirInDir(virtual_path);
   child_file1_path_ = CreateUniqueFileInDir(virtual_path);
@@ -225,7 +225,7 @@ void FileSystemQuotaTest::PrepareFileSet(const FilePath& virtual_path) {
   grandchild_path_cost_ = SizeByQuotaUtil() - usage;
 }
 
-TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
+TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   FilePath src_dir_path(CreateUniqueDir());
   int src_path_cost = SizeByQuotaUtil();
   PrepareFileSet(src_dir_path);
@@ -273,7 +273,7 @@ TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   ASSERT_LT(all_file_size + total_path_cost - src_path_cost, quota());
 }
 
-TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
+TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   FilePath src_dir_path(CreateUniqueDir());
   PrepareFileSet(src_dir_path);
   FilePath dest_dir1_path(CreateUniqueDir());

@@ -13,8 +13,8 @@ class Value;
 }
 
 namespace fileapi {
-class FileSystemOperation;
 class FileWriterDelegate;
+class LocalFileSystemOperation;
 }
 
 namespace chromeos {
@@ -66,7 +66,8 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
       base::ProcessHandle peer_handle,
       const OpenFileCallback& callback) OVERRIDE;
   virtual void NotifyCloseFile(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual fileapi::FileSystemOperation* AsFileSystemOperation() OVERRIDE;
+  virtual fileapi::LocalFileSystemOperation*
+      AsLocalFileSystemOperation() OVERRIDE;
   virtual void CreateSnapshotFile(
       const fileapi::FileSystemURL& url,
       const SnapshotFileCallback& callback) OVERRIDE;

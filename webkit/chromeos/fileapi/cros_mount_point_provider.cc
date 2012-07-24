@@ -19,10 +19,10 @@
 #include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -252,7 +252,7 @@ CrosMountPointProvider::CreateFileSystemOperation(
   if (mount_point && mount_point->location == REMOTE)
     return new chromeos::RemoteFileSystemOperation(mount_point->remote_proxy);
 
-  return new fileapi::FileSystemOperation(context);
+  return new fileapi::LocalFileSystemOperation(context);
 }
 
 webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(

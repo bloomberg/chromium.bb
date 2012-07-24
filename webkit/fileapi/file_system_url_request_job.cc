@@ -29,8 +29,8 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/blob/file_stream_reader.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 
 using net::URLRequest;
 using net::URLRequestJob;

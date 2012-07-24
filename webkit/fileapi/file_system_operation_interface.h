@@ -30,7 +30,7 @@ class GURL;
 namespace fileapi {
 
 class FileSystemURL;
-class FileSystemOperation;
+class LocalFileSystemOperation;
 
 // The interface class for FileSystemOperation implementations.
 //
@@ -236,7 +236,7 @@ class FileSystemOperationInterface {
   // For downcasting to FileSystemOperation.
   // TODO(kinuko): this hack should go away once appropriate upload-stream
   // handling based on element types is supported.
-  virtual FileSystemOperation* AsFileSystemOperation() = 0;
+  virtual LocalFileSystemOperation* AsLocalFileSystemOperation() = 0;
 
   // Creates a local snapshot file for a given |path| and returns the
   // metadata and platform path of the snapshot file via |callback|.

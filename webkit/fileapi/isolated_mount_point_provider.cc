@@ -15,12 +15,12 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_file_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/native_file_util.h"
 
 namespace fileapi {
@@ -109,7 +109,7 @@ FileSystemOperationInterface*
 IsolatedMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context) const {
-  return new FileSystemOperation(context);
+  return new LocalFileSystemOperation(context);
 }
 
 webkit_blob::FileStreamReader*

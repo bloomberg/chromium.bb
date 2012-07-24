@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_TEST_HELPER_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_TEST_HELPER_H_
+#ifndef WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_TEST_HELPER_H_
+#define WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_TEST_HELPER_H_
 
 #include <string>
 
@@ -25,22 +25,22 @@ namespace fileapi {
 
 class FileSystemContext;
 class FileSystemFileUtil;
-class FileSystemOperation;
 class FileSystemOperationContext;
+class LocalFileSystemOperation;
 
 // Filesystem test helper class that encapsulates test environment for
 // a given {origin, type} pair.
-class FileSystemTestOriginHelper {
+class LocalFileSystemTestOriginHelper {
  public:
-  FileSystemTestOriginHelper(const GURL& origin, FileSystemType type);
-  FileSystemTestOriginHelper();
-  ~FileSystemTestOriginHelper();
+  LocalFileSystemTestOriginHelper(const GURL& origin, FileSystemType type);
+  LocalFileSystemTestOriginHelper();
+  ~LocalFileSystemTestOriginHelper();
 
   void SetUp(const FilePath& base_dir, FileSystemFileUtil* file_util);
-  // If you want to use more than one FileSystemTestOriginHelper in a single
-  // base directory, they have to share a context, so that they don't have
-  // multiple databases fighting over the lock to the origin directory [deep
-  // down inside ObfuscatedFileUtil].
+  // If you want to use more than one LocalFileSystemTestOriginHelper in
+  // a single base directory, they have to share a context, so that they don't
+  // have multiple databases fighting over the lock to the origin directory
+  // [deep down inside ObfuscatedFileUtil].
   void SetUp(FileSystemContext* file_system_context,
              FileSystemFileUtil* file_util);
   void SetUp(const FilePath& base_dir,
@@ -79,7 +79,7 @@ class FileSystemTestOriginHelper {
 
   int64 ComputeCurrentDirectoryDatabaseUsage() const;
 
-  FileSystemOperation* NewOperation();
+  LocalFileSystemOperation* NewOperation();
   FileSystemOperationContext* NewOperationContext();
 
   FileSystemContext* file_system_context() const {
@@ -102,4 +102,4 @@ class FileSystemTestOriginHelper {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_TEST_HELPER_H_
+#endif  // WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_TEST_HELPER_H_

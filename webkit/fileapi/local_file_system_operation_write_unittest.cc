@@ -20,9 +20,9 @@
 #include "webkit/blob/blob_url_request_job.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_operation.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/local_file_util.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -66,11 +66,11 @@ class MockQuotaManager : public QuotaManager {
 
 }  // namespace
 
-class FileSystemOperationWriteTest
+class LocalFileSystemOperationWriteTest
     : public testing::Test,
-      public base::SupportsWeakPtr<FileSystemOperationWriteTest> {
+      public base::SupportsWeakPtr<LocalFileSystemOperationWriteTest> {
  public:
-  FileSystemOperationWriteTest()
+  LocalFileSystemOperationWriteTest()
       : test_helper_(GURL("http://example.com"), kFileSystemTypeTest),
         loop_(MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
@@ -78,7 +78,7 @@ class FileSystemOperationWriteTest
         bytes_written_(0),
         complete_(false) {}
 
-  FileSystemOperation* operation();
+  LocalFileSystemOperation* operation();
 
   base::PlatformFileError status() const { return status_; }
   base::PlatformFileError cancel_status() const { return cancel_status_; }
@@ -100,11 +100,13 @@ class FileSystemOperationWriteTest
 
   // Callback function for recording test results.
   FileSystemOperationInterface::WriteCallback RecordWriteCallback() {
-    return base::Bind(&FileSystemOperationWriteTest::DidWrite, AsWeakPtr());
+    return base::Bind(&LocalFileSystemOperationWriteTest::DidWrite,
+                      AsWeakPtr());
   }
 
   FileSystemOperationInterface::StatusCallback RecordCancelCallback() {
-    return base::Bind(&FileSystemOperationWriteTest::DidCancel, AsWeakPtr());
+    return base::Bind(&LocalFileSystemOperationWriteTest::DidCancel,
+                      AsWeakPtr());
   }
 
   void DidWrite(base::PlatformFileError status, int64 bytes, bool complete) {
@@ -131,7 +133,7 @@ class FileSystemOperationWriteTest
   }
 
   scoped_refptr<MockQuotaManager> quota_manager_;
-  FileSystemTestOriginHelper test_helper_;
+  LocalFileSystemTestOriginHelper test_helper_;
 
   MessageLoop loop_;
 
@@ -144,7 +146,7 @@ class FileSystemOperationWriteTest
   int64 bytes_written_;
   bool complete_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationWriteTest);
+  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperationWriteTest);
 };
 
 namespace {
@@ -196,7 +198,7 @@ class TestURLRequestContext : public net::URLRequestContext {
 
 }  // namespace (anonymous)
 
-void FileSystemOperationWriteTest::SetUp() {
+void LocalFileSystemOperationWriteTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
   FilePath base_dir = dir_.path().AppendASCII("filesystem");
 
@@ -212,16 +214,16 @@ void FileSystemOperationWriteTest::SetUp() {
       base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
 }
 
-void FileSystemOperationWriteTest::TearDown() {
+void LocalFileSystemOperationWriteTest::TearDown() {
   quota_manager_ = NULL;
   test_helper_.TearDown();
 }
 
-FileSystemOperation* FileSystemOperationWriteTest::operation() {
+LocalFileSystemOperation* LocalFileSystemOperationWriteTest::operation() {
   return test_helper_.NewOperation();
 }
 
-TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {
+TEST_F(LocalFileSystemOperationWriteTest, TestWriteSuccess) {
   GURL blob_url("blob:success");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("Hello, world!\n");
@@ -241,7 +243,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationWriteTest, TestWriteZero) {
+TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
   GURL blob_url("blob:zero");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
 
@@ -260,7 +262,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteZero) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
+TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
   TestURLRequestContext url_request_context;
 
   operation()->Write(&url_request_context, URLForPath(virtual_path_),
@@ -272,7 +274,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationWriteTest, TestWriteInvalidFile) {
+TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
   GURL blob_url("blob:writeinvalidfile");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written.");
@@ -293,7 +295,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidFile) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
+TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
   FilePath virtual_dir_path(FILE_PATH_LITERAL("d"));
   operation()->CreateDirectory(
       URLForPath(virtual_dir_path),
@@ -323,7 +325,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationWriteTest, TestWriteFailureByQuota) {
+TEST_F(LocalFileSystemOperationWriteTest, TestWriteFailureByQuota) {
   GURL blob_url("blob:success");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("Hello, world!\n");
@@ -344,7 +346,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteFailureByQuota) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
+TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   GURL blob_url("blob:success");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("Hello, world!\n");
@@ -372,7 +374,7 @@ TEST_F(FileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
+TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   GURL blob_url("blob:writeinvalidfile");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written.");

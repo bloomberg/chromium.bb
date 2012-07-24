@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_test_helper.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_util_helper.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/test_mount_point_provider.h"
@@ -21,26 +21,26 @@
 
 namespace fileapi {
 
-FileSystemTestOriginHelper::FileSystemTestOriginHelper(
+LocalFileSystemTestOriginHelper::LocalFileSystemTestOriginHelper(
     const GURL& origin, FileSystemType type)
     : origin_(origin), type_(type), file_util_(NULL) {
 }
 
-FileSystemTestOriginHelper::FileSystemTestOriginHelper()
+LocalFileSystemTestOriginHelper::LocalFileSystemTestOriginHelper()
     : origin_(GURL("http://foo.com")),
       type_(kFileSystemTypeTemporary),
       file_util_(NULL) {
 }
 
-FileSystemTestOriginHelper::~FileSystemTestOriginHelper() {
+LocalFileSystemTestOriginHelper::~LocalFileSystemTestOriginHelper() {
 }
 
-void FileSystemTestOriginHelper::SetUp(
+void LocalFileSystemTestOriginHelper::SetUp(
     const FilePath& base_dir, FileSystemFileUtil* file_util) {
   SetUp(base_dir, false, NULL, file_util);
 }
 
-void FileSystemTestOriginHelper::SetUp(
+void LocalFileSystemTestOriginHelper::SetUp(
     FileSystemContext* file_system_context, FileSystemFileUtil* file_util) {
   file_util_ = file_util;
   file_system_context_ = file_system_context;
@@ -59,7 +59,7 @@ void FileSystemTestOriginHelper::SetUp(
     FileSystemUsageCache::UpdateUsage(usage_cache_path, 0);
 }
 
-void FileSystemTestOriginHelper::SetUp(
+void LocalFileSystemTestOriginHelper::SetUp(
     const FilePath& base_dir,
     bool unlimited_quota,
     quota::QuotaManagerProxy* quota_manager_proxy,
@@ -101,18 +101,18 @@ void FileSystemTestOriginHelper::SetUp(
     FileSystemUsageCache::UpdateUsage(usage_cache_path, 0);
 }
 
-void FileSystemTestOriginHelper::TearDown() {
+void LocalFileSystemTestOriginHelper::TearDown() {
   file_system_context_ = NULL;
   MessageLoop::current()->RunAllPending();
 }
 
-FilePath FileSystemTestOriginHelper::GetOriginRootPath() const {
+FilePath LocalFileSystemTestOriginHelper::GetOriginRootPath() const {
   return file_system_context_->GetMountPointProvider(type_)->
       GetFileSystemRootPathOnFileThread(
           origin_, type_, FilePath(), false);
 }
 
-FilePath FileSystemTestOriginHelper::GetLocalPath(const FilePath& path) {
+FilePath LocalFileSystemTestOriginHelper::GetLocalPath(const FilePath& path) {
   DCHECK(file_util_);
   FilePath local_path;
   scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
@@ -120,12 +120,12 @@ FilePath FileSystemTestOriginHelper::GetLocalPath(const FilePath& path) {
   return local_path;
 }
 
-FilePath FileSystemTestOriginHelper::GetLocalPathFromASCII(
+FilePath LocalFileSystemTestOriginHelper::GetLocalPathFromASCII(
     const std::string& path) {
   return GetLocalPath(FilePath().AppendASCII(path));
 }
 
-FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
+FilePath LocalFileSystemTestOriginHelper::GetUsageCachePath() const {
   if (type_ != kFileSystemTypeTemporary &&
       type_ != kFileSystemTypePersistent)
     return FilePath();
@@ -133,52 +133,54 @@ FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
       sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
 }
 
-FileSystemURL FileSystemTestOriginHelper::CreateURL(const FilePath& path)
+FileSystemURL LocalFileSystemTestOriginHelper::CreateURL(const FilePath& path)
     const {
   return FileSystemURL(origin_, type_, path);
 }
 
-base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilCopy(
+base::PlatformFileError LocalFileSystemTestOriginHelper::SameFileUtilCopy(
     FileSystemOperationContext* context,
     const FileSystemURL& src,
     const FileSystemURL& dest) const {
   return FileUtilHelper::Copy(context, file_util(), file_util(), src, dest);
 }
 
-base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilMove(
+base::PlatformFileError LocalFileSystemTestOriginHelper::SameFileUtilMove(
     FileSystemOperationContext* context,
     const FileSystemURL& src,
     const FileSystemURL& dest) const {
   return FileUtilHelper::Move(context, file_util(), file_util(), src, dest);
 }
 
-int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {
+int64 LocalFileSystemTestOriginHelper::GetCachedOriginUsage() const {
   return file_system_context_->GetQuotaUtil(type_)->GetOriginUsageOnFileThread(
       file_system_context_, origin_, type_);
 }
 
-int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
+int64 LocalFileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
   int64 size = file_util::ComputeDirectorySize(GetOriginRootPath());
   if (file_util::PathExists(GetUsageCachePath()))
     size -= FileSystemUsageCache::kUsageFileSize;
   return size;
 }
 
-int64 FileSystemTestOriginHelper::ComputeCurrentDirectoryDatabaseUsage() const {
+int64
+LocalFileSystemTestOriginHelper::ComputeCurrentDirectoryDatabaseUsage() const {
   return file_util::ComputeDirectorySize(
       GetOriginRootPath().AppendASCII("Paths"));
 }
 
-FileSystemOperation* FileSystemTestOriginHelper::NewOperation() {
+LocalFileSystemOperation* LocalFileSystemTestOriginHelper::NewOperation() {
   DCHECK(file_system_context_.get());
   DCHECK(file_util_);
-  FileSystemOperation* operation =
-    new FileSystemOperation(file_system_context_.get());
+  LocalFileSystemOperation* operation =
+    new LocalFileSystemOperation(file_system_context_.get());
   operation->set_override_file_util(file_util_);
   return operation;
 }
 
-FileSystemOperationContext* FileSystemTestOriginHelper::NewOperationContext() {
+FileSystemOperationContext*
+LocalFileSystemTestOriginHelper::NewOperationContext() {
   DCHECK(file_system_context_.get());
   FileSystemOperationContext* context =
     new FileSystemOperationContext(file_system_context_.get());

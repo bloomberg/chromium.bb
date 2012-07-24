@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
+#ifndef WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_OPERATION_H_
+#define WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_OPERATION_H_
 
 #include <string>
 #include <vector>
@@ -43,10 +43,10 @@ class FileSystemURL;
 class FileWriterDelegate;
 
 // FileSystemOperation implementation for local file systems.
-class FILEAPI_EXPORT FileSystemOperation
+class FILEAPI_EXPORT LocalFileSystemOperation
     : public NON_EXPORTED_BASE(FileSystemOperationInterface) {
  public:
-  virtual ~FileSystemOperation();
+  virtual ~LocalFileSystemOperation();
 
   // FileSystemOperation overrides.
   virtual void CreateFile(const FileSystemURL& url,
@@ -89,7 +89,7 @@ class FILEAPI_EXPORT FileSystemOperation
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void NotifyCloseFile(const FileSystemURL& url) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
-  virtual FileSystemOperation* AsFileSystemOperation() OVERRIDE;
+  virtual LocalFileSystemOperation* AsLocalFileSystemOperation() OVERRIDE;
   virtual void CreateSnapshotFile(
       const FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
@@ -127,10 +127,10 @@ class FILEAPI_EXPORT FileSystemOperation
   friend class FileSystemOperationTest;
   friend class FileSystemOperationWriteTest;
   friend class FileWriterDelegateTest;
-  friend class FileSystemTestOriginHelper;
   friend class FileSystemQuotaTest;
+  friend class LocalFileSystemTestOriginHelper;
 
-  explicit FileSystemOperation(FileSystemContext* file_system_context);
+  explicit LocalFileSystemOperation(FileSystemContext* file_system_context);
 
   FileSystemContext* file_system_context() const {
     return operation_context_.file_system_context();
@@ -271,13 +271,13 @@ class FILEAPI_EXPORT FileSystemOperation
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
 
-  // FileSystemOperation instance is usually deleted upon completion but
+  // LocalFileSystemOperation instance is usually deleted upon completion but
   // could be deleted while it has inflight callbacks when Cancel is called.
-  base::WeakPtrFactory<FileSystemOperation> weak_factory_;
+  base::WeakPtrFactory<LocalFileSystemOperation> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
+  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperation);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
+#endif  // WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_OPERATION_H_

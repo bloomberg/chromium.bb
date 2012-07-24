@@ -177,7 +177,7 @@ class FILEAPI_EXPORT SandboxMountPointProvider
   // filesystem.
   bool IsAllowedScheme(const GURL& url) const;
 
-  friend class FileSystemTestOriginHelper;
+  friend class LocalFileSystemTestOriginHelper;
   friend class SandboxMountPointProviderMigrationTest;
   friend class SandboxMountPointProviderOriginEnumeratorTest;
 

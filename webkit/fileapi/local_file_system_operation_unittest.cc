@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -18,8 +18,8 @@
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_quota_util.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
 
 using quota::QuotaClient;
@@ -159,18 +159,18 @@ FilePath ASCIIToFilePath(const std::string& str) {
 
 }  // namespace (anonymous)
 
-// Test class for FileSystemOperation.
-class FileSystemOperationTest
+// Test class for LocalFileSystemOperation.
+class LocalFileSystemOperationTest
     : public testing::Test,
-      public base::SupportsWeakPtr<FileSystemOperationTest> {
+      public base::SupportsWeakPtr<LocalFileSystemOperationTest> {
  public:
-  FileSystemOperationTest()
+  LocalFileSystemOperationTest()
       : status_(kFileOperationStatusNotSet),
         next_unique_path_suffix_(0) {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
   }
 
-  FileSystemOperation* operation();
+  LocalFileSystemOperation* operation();
 
   int status() const { return status_; }
   const base::PlatformFileInfo& info() const { return info_; }
@@ -258,25 +258,27 @@ class FileSystemOperationTest
     return CreateUniqueDirInDir(FilePath());
   }
 
-  FileSystemTestOriginHelper test_helper_;
+  LocalFileSystemTestOriginHelper test_helper_;
 
   // Callbacks for recording test results.
   FileSystemOperationInterface::StatusCallback RecordStatusCallback() {
-    return base::Bind(&FileSystemOperationTest::DidFinish, AsWeakPtr());
+    return base::Bind(&LocalFileSystemOperationTest::DidFinish, AsWeakPtr());
   }
 
   FileSystemOperationInterface::ReadDirectoryCallback
   RecordReadDirectoryCallback() {
-    return base::Bind(&FileSystemOperationTest::DidReadDirectory, AsWeakPtr());
+    return base::Bind(&LocalFileSystemOperationTest::DidReadDirectory,
+                      AsWeakPtr());
   }
 
   FileSystemOperationInterface::GetMetadataCallback RecordMetadataCallback() {
-    return base::Bind(&FileSystemOperationTest::DidGetMetadata, AsWeakPtr());
+    return base::Bind(&LocalFileSystemOperationTest::DidGetMetadata,
+                      AsWeakPtr());
   }
 
   FileSystemOperationInterface::SnapshotFileCallback
       RecordSnapshotFileCallback() {
-    return base::Bind(&FileSystemOperationTest::DidCreateSnapshotFile,
+    return base::Bind(&LocalFileSystemOperationTest::DidCreateSnapshotFile,
                       AsWeakPtr());
   }
 
@@ -332,7 +334,7 @@ class FileSystemOperationTest
     quota_manager_->GetUsageAndQuota(
         test_helper_.origin(),
         test_helper_.storage_type(),
-        base::Bind(&FileSystemOperationTest::DidGetUsageAndQuota,
+        base::Bind(&LocalFileSystemOperationTest::DidGetUsageAndQuota,
                    &status, usage, quota));
     MessageLoop::current()->RunAllPending();
     ASSERT_EQ(quota::kQuotaStatusOk, status);
@@ -385,10 +387,10 @@ class FileSystemOperationTest
 
   int next_unique_path_suffix_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationTest);
+  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperationTest);
 };
 
-void FileSystemOperationTest::SetUp() {
+void LocalFileSystemOperationTest::SetUp() {
   FilePath base_dir = base_.path().AppendASCII("filesystem");
   quota_manager_ = new MockQuotaManager(
       base_dir, test_helper_.origin(), test_helper_.storage_type());
@@ -399,7 +401,7 @@ void FileSystemOperationTest::SetUp() {
                      NULL);
 }
 
-void FileSystemOperationTest::TearDown() {
+void LocalFileSystemOperationTest::TearDown() {
   // Let the client go away before dropping a ref of the quota manager proxy.
   quota_manager_proxy()->SimulateQuotaManagerDestroyed();
   quota_manager_ = NULL;
@@ -407,11 +409,11 @@ void FileSystemOperationTest::TearDown() {
   test_helper_.TearDown();
 }
 
-FileSystemOperation* FileSystemOperationTest::operation() {
+LocalFileSystemOperation* LocalFileSystemOperationTest::operation() {
   return test_helper_.NewOperation();
 }
 
-TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
+TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
   FileSystemURL src(URLForPath(FilePath(FILE_PATH_LITERAL("a"))));
   FileSystemURL dest(URLForPath(FilePath(FILE_PATH_LITERAL("b"))));
   operation()->Move(src, dest, RecordStatusCallback());
@@ -419,7 +421,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
 
-TEST_F(FileSystemOperationTest, TestMoveFailureContainsPath) {
+TEST_F(LocalFileSystemOperationTest, TestMoveFailureContainsPath) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_dir_path(CreateUniqueDirInDir(src_dir_path));
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path),
@@ -428,7 +430,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureContainsPath) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
-TEST_F(FileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
+TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
   // Src exists and is dir. Dest is a file.
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_dir_path(CreateUniqueDir());
@@ -440,7 +442,8 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
-TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestNonEmptyDir) {
+TEST_F(LocalFileSystemOperationTest,
+       TestMoveFailureSrcFileExistsDestNonEmptyDir) {
   // Src exists and is a directory. Dest is a non-empty directory.
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_dir_path(CreateUniqueDir());
@@ -452,7 +455,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestNonEmptyDir) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, status());
 }
 
-TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
+TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
   // Src exists and is a file. Dest is a directory.
   FilePath src_dir_path(CreateUniqueDir());
   FilePath src_file_path(CreateUniqueFileInDir(src_dir_path));
@@ -464,7 +467,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
-TEST_F(FileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
+TEST_F(LocalFileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   FilePath src_dir_path(CreateUniqueDir());
   FilePath nonexisting_file = FilePath(FILE_PATH_LITERAL("NonexistingDir")).
@@ -476,7 +479,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
 
-TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
+TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath src_file_path(CreateUniqueFileInDir(src_dir_path));
   FilePath dest_dir_path(CreateUniqueDir());
@@ -493,7 +496,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
   EXPECT_EQ(0, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
+TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath src_file_path(CreateUniqueFileInDir(src_dir_path));
   FilePath dest_dir_path(CreateUniqueDir());
@@ -506,7 +509,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
   EXPECT_TRUE(FileExists(dest_file_path));
 }
 
-TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
+TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_dir_path(CreateUniqueDir());
 
@@ -522,7 +525,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
       dest_dir_path.Append(VirtualPath::BaseName(src_dir_path))));
 }
 
-TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
+TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_parent_dir_path(CreateUniqueDir());
   FilePath dest_child_dir_path(dest_parent_dir_path.
@@ -536,7 +539,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
   EXPECT_TRUE(DirectoryExists(dest_child_dir_path));
 }
 
-TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
+TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath child_dir_path(CreateUniqueDirInDir(src_dir_path));
   FilePath grandchild_file_path(
@@ -555,7 +558,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
       VirtualPath::BaseName(grandchild_file_path))));
 }
 
-TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
+TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
   operation()->Copy(URLForPath(FilePath(FILE_PATH_LITERAL("a"))),
                     URLForPath(FilePath(FILE_PATH_LITERAL("b"))),
                     RecordStatusCallback());
@@ -563,7 +566,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCopyFailureContainsPath) {
+TEST_F(LocalFileSystemOperationTest, TestCopyFailureContainsPath) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_dir_path(CreateUniqueDirInDir(src_dir_path));
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir_path),
@@ -572,7 +575,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureContainsPath) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
+TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
   // Src exists and is dir. Dest is a file.
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_dir_path(CreateUniqueDir());
@@ -584,7 +587,8 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestNonEmptyDir) {
+TEST_F(LocalFileSystemOperationTest,
+       TestCopyFailureSrcFileExistsDestNonEmptyDir) {
   // Src exists and is a directory. Dest is a non-empty directory.
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_dir_path(CreateUniqueDir());
@@ -596,7 +600,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestNonEmptyDir) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
+TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
   // Src exists and is a file. Dest is a directory.
   FilePath src_dir_path(CreateUniqueDir());
   FilePath src_file_path(CreateUniqueFileInDir(src_dir_path));
@@ -608,7 +612,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
+TEST_F(LocalFileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   FilePath src_dir_path(CreateUniqueDir());
   FilePath nonexisting_path = FilePath(FILE_PATH_LITERAL("DontExistDir"));
@@ -623,7 +627,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCopyFailureByQuota) {
+TEST_F(LocalFileSystemOperationTest, TestCopyFailureByQuota) {
   base::PlatformFileInfo info;
 
   FilePath src_dir_path(CreateUniqueDir());
@@ -654,7 +658,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureByQuota) {
   EXPECT_FALSE(FileExists(dest_file_path));
 }
 
-TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
+TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath src_file_path(CreateUniqueFileInDir(src_dir_path));
   FilePath dest_dir_path(CreateUniqueDir());
@@ -668,7 +672,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
+TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath src_file_path(CreateUniqueFileInDir(src_dir_path));
   FilePath dest_dir_path(CreateUniqueDir());
@@ -682,7 +686,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
+TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_dir_path(CreateUniqueDir());
 
@@ -698,7 +702,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
+TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath dest_parent_dir_path(CreateUniqueDir());
   FilePath dest_child_dir_path(dest_parent_dir_path.
@@ -712,7 +716,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
+TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   FilePath src_dir_path(CreateUniqueDir());
   FilePath child_dir_path(CreateUniqueDirInDir(src_dir_path));
   FilePath grandchild_file_path(
@@ -732,7 +736,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestCreateFileFailure) {
+TEST_F(LocalFileSystemOperationTest, TestCreateFileFailure) {
   // Already existing file and exclusive true.
   FilePath dir_path(CreateUniqueDir());
   FilePath file_path(CreateUniqueFileInDir(dir_path));
@@ -742,7 +746,7 @@ TEST_F(FileSystemOperationTest, TestCreateFileFailure) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileExists) {
+TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessFileExists) {
   // Already existing file and exclusive false.
   FilePath dir_path(CreateUniqueDir());
   FilePath file_path(CreateUniqueFileInDir(dir_path));
@@ -753,7 +757,7 @@ TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileExists) {
   EXPECT_TRUE(FileExists(file_path));
 }
 
-TEST_F(FileSystemOperationTest, TestCreateFileSuccessExclusive) {
+TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessExclusive) {
   // File doesn't exist but exclusive is true.
   FilePath dir_path(CreateUniqueDir());
   FilePath file_path(dir_path.Append(FILE_PATH_LITERAL("FileDoesntExist")));
@@ -764,7 +768,7 @@ TEST_F(FileSystemOperationTest, TestCreateFileSuccessExclusive) {
   EXPECT_TRUE(FileExists(file_path));
 }
 
-TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileDoesntExist) {
+TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessFileDoesntExist) {
   // Non existing file.
   FilePath dir_path(CreateUniqueDir());
   FilePath file_path(dir_path.Append(FILE_PATH_LITERAL("FileDoesntExist")));
@@ -774,7 +778,7 @@ TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileDoesntExist) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 }
 
-TEST_F(FileSystemOperationTest,
+TEST_F(LocalFileSystemOperationTest,
        TestCreateDirFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   FilePath nonexisting_path(FilePath(
@@ -787,7 +791,7 @@ TEST_F(FileSystemOperationTest,
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCreateDirFailureDirExists) {
+TEST_F(LocalFileSystemOperationTest, TestCreateDirFailureDirExists) {
   // Exclusive and dir existing at path.
   FilePath src_dir_path(CreateUniqueDir());
   operation()->CreateDirectory(URLForPath(src_dir_path), true, false,
@@ -796,7 +800,7 @@ TEST_F(FileSystemOperationTest, TestCreateDirFailureDirExists) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCreateDirFailureFileExists) {
+TEST_F(LocalFileSystemOperationTest, TestCreateDirFailureFileExists) {
   // Exclusive true and file existing at path.
   FilePath dir_path(CreateUniqueDir());
   FilePath file_path(CreateUniqueFileInDir(dir_path));
@@ -806,7 +810,7 @@ TEST_F(FileSystemOperationTest, TestCreateDirFailureFileExists) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
 }
 
-TEST_F(FileSystemOperationTest, TestCreateDirSuccess) {
+TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccess) {
   // Dir exists and exclusive is false.
   FilePath dir_path(CreateUniqueDir());
   operation()->CreateDirectory(URLForPath(dir_path), false, false,
@@ -824,7 +828,7 @@ TEST_F(FileSystemOperationTest, TestCreateDirSuccess) {
   EXPECT_TRUE(DirectoryExists(nonexisting_dir_path));
 }
 
-TEST_F(FileSystemOperationTest, TestCreateDirSuccessExclusive) {
+TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccessExclusive) {
   // Dir doesn't exist.
   FilePath nonexisting_dir_path(FilePath(
       FILE_PATH_LITERAL("nonexistingdir")));
@@ -836,7 +840,7 @@ TEST_F(FileSystemOperationTest, TestCreateDirSuccessExclusive) {
   EXPECT_TRUE(DirectoryExists(nonexisting_dir_path));
 }
 
-TEST_F(FileSystemOperationTest, TestExistsAndMetadataFailure) {
+TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataFailure) {
   FilePath nonexisting_dir_path(FilePath(
       FILE_PATH_LITERAL("nonexistingdir")));
   operation()->GetMetadata(URLForPath(nonexisting_dir_path),
@@ -856,7 +860,7 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataFailure) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
 
-TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
+TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataSuccess) {
   FilePath dir_path(CreateUniqueDir());
   int read_access = 0;
 
@@ -889,7 +893,7 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
   EXPECT_EQ(read_access, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestTypeMismatchErrors) {
+TEST_F(LocalFileSystemOperationTest, TestTypeMismatchErrors) {
   FilePath dir_path(CreateUniqueDir());
   operation()->FileExists(URLForPath(dir_path), RecordStatusCallback());
   MessageLoop::current()->RunAllPending();
@@ -902,7 +906,7 @@ TEST_F(FileSystemOperationTest, TestTypeMismatchErrors) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
 }
 
-TEST_F(FileSystemOperationTest, TestReadDirFailure) {
+TEST_F(LocalFileSystemOperationTest, TestReadDirFailure) {
   // Path doesn't exist
   FilePath nonexisting_dir_path(FilePath(
       FILE_PATH_LITERAL("NonExistingDir")));
@@ -922,7 +926,7 @@ TEST_F(FileSystemOperationTest, TestReadDirFailure) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
 
-TEST_F(FileSystemOperationTest, TestReadDirSuccess) {
+TEST_F(LocalFileSystemOperationTest, TestReadDirSuccess) {
   //      parent_dir
   //       |       |
   //  child_dir  child_file
@@ -950,7 +954,7 @@ TEST_F(FileSystemOperationTest, TestReadDirSuccess) {
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestRemoveFailure) {
+TEST_F(LocalFileSystemOperationTest, TestRemoveFailure) {
   // Path doesn't exist.
   FilePath nonexisting_path(FilePath(
       FILE_PATH_LITERAL("NonExistingDir")));
@@ -979,7 +983,7 @@ TEST_F(FileSystemOperationTest, TestRemoveFailure) {
             status());
 }
 
-TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
+TEST_F(LocalFileSystemOperationTest, TestRemoveSuccess) {
   FilePath empty_dir_path(CreateUniqueDir());
   EXPECT_TRUE(DirectoryExists(empty_dir_path));
 
@@ -1009,7 +1013,7 @@ TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
   EXPECT_EQ(0, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestTruncate) {
+TEST_F(LocalFileSystemOperationTest, TestTruncate) {
   FilePath dir_path(CreateUniqueDir());
   FilePath file_path(CreateUniqueFileInDir(dir_path));
 
@@ -1065,7 +1069,7 @@ TEST_F(FileSystemOperationTest, TestTruncate) {
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
-TEST_F(FileSystemOperationTest, TestTruncateFailureByQuota) {
+TEST_F(LocalFileSystemOperationTest, TestTruncateFailureByQuota) {
   base::PlatformFileInfo info;
 
   FilePath dir_path(CreateUniqueDir());
@@ -1089,7 +1093,7 @@ TEST_F(FileSystemOperationTest, TestTruncateFailureByQuota) {
   EXPECT_EQ(10, info.size);
 }
 
-TEST_F(FileSystemOperationTest, TestTouchFile) {
+TEST_F(LocalFileSystemOperationTest, TestTouchFile) {
   FilePath file_path(CreateUniqueFileInDir(FilePath()));
   FilePath platform_path = PlatformPath(file_path);
 
@@ -1121,7 +1125,7 @@ TEST_F(FileSystemOperationTest, TestTouchFile) {
   EXPECT_EQ(new_accessed_time.ToTimeT(), info.last_accessed.ToTimeT());
 }
 
-TEST_F(FileSystemOperationTest, TestCreateSnapshotFile) {
+TEST_F(LocalFileSystemOperationTest, TestCreateSnapshotFile) {
   FilePath dir_path(CreateUniqueDir());
 
   // Create a file for the testing.
@@ -1133,9 +1137,9 @@ TEST_F(FileSystemOperationTest, TestCreateSnapshotFile) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
   // See if we can get a 'snapshot' file info for the file.
-  // Since FileSystemOperation assumes the file exists in the local directory
-  // it should just returns the same metadata and platform_path as
-  // the file itself.
+  // Since LocalFileSystemOperation assumes the file exists in the local
+  // directory it should just returns the same metadata and platform_path
+  // as the file itself.
   operation()->CreateSnapshotFile(URLForPath(file_path),
                                   RecordSnapshotFileCallback());
   MessageLoop::current()->RunAllPending();

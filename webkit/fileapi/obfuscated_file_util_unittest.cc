@@ -17,9 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_util_helper.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/test_file_set.h"
@@ -152,7 +152,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return LimitedContext(kint64max);
   }
 
-  FileSystemOperationContext* NewContext(FileSystemTestOriginHelper* helper) {
+  FileSystemOperationContext* NewContext(
+      LocalFileSystemTestOriginHelper* helper) {
     FileSystemOperationContext* context;
     if (helper)
       context = helper->NewOperationContext();
@@ -166,10 +167,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
   // and obfuscated_file_util_.
   // Use this for tests which need to run in multiple origins; we need a test
   // helper per origin.
-  FileSystemTestOriginHelper* NewHelper(
+  LocalFileSystemTestOriginHelper* NewHelper(
       const GURL& origin, fileapi::FileSystemType type) {
-    FileSystemTestOriginHelper* helper =
-        new FileSystemTestOriginHelper(origin, type);
+    LocalFileSystemTestOriginHelper* helper =
+        new LocalFileSystemTestOriginHelper(origin, type);
 
     helper->SetUp(file_system_context_.get(),
                   obfuscated_file_util_);
@@ -323,7 +324,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   class UsageVerifyHelper {
    public:
     UsageVerifyHelper(scoped_ptr<FileSystemOperationContext> context,
-                      FileSystemTestOriginHelper* test_helper,
+                      LocalFileSystemTestOriginHelper* test_helper,
                       int64 expected_usage)
         : context_(context.Pass()),
           test_helper_(test_helper),
@@ -344,7 +345,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     }
 
     scoped_ptr<FileSystemOperationContext> context_;
-    FileSystemTestOriginHelper* test_helper_;
+    LocalFileSystemTestOriginHelper* test_helper_;
     int64 expected_usage_;
   };
 
@@ -597,7 +598,9 @@ class ObfuscatedFileUtilTest : public testing::Test {
         test_helper().ComputeCurrentDirectoryDatabaseUsage();
   }
 
-  const FileSystemTestOriginHelper& test_helper() const { return test_helper_; }
+  const LocalFileSystemTestOriginHelper& test_helper() const {
+    return test_helper_;
+  }
 
  private:
   ScopedTempDir data_dir_;
@@ -608,7 +611,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   GURL origin_;
   fileapi::FileSystemType type_;
   base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_;
-  FileSystemTestOriginHelper test_helper_;
+  LocalFileSystemTestOriginHelper test_helper_;
   quota::QuotaStatusCode quota_status_;
   int64 usage_;
 
@@ -1416,7 +1419,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
     GURL origin_url(record.origin_url);
     origins_expected.insert(origin_url);
     if (record.has_temporary) {
-      scoped_ptr<FileSystemTestOriginHelper> helper(
+      scoped_ptr<LocalFileSystemTestOriginHelper> helper(
           NewHelper(origin_url, kFileSystemTypeTemporary));
       scoped_ptr<FileSystemOperationContext> context(NewContext(helper.get()));
       bool created = false;
@@ -1428,7 +1431,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
       EXPECT_TRUE(created);
     }
     if (record.has_persistent) {
-      scoped_ptr<FileSystemTestOriginHelper> helper(
+      scoped_ptr<LocalFileSystemTestOriginHelper> helper(
           NewHelper(origin_url, kFileSystemTypePersistent));
       scoped_ptr<FileSystemOperationContext> context(NewContext(helper.get()));
       bool created = false;

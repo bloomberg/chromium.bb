@@ -16,12 +16,12 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/sandbox_file_stream_writer.h"
@@ -434,7 +434,7 @@ FileSystemOperationInterface*
 SandboxMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context) const {
-  return new FileSystemOperation(context);
+  return new LocalFileSystemOperation(context);
 }
 
 webkit_blob::FileStreamReader*

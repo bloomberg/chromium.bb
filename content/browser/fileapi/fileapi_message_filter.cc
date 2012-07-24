@@ -28,10 +28,10 @@
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 using content::BrowserMessageFilter;
@@ -40,8 +40,8 @@ using content::UserMetricsAction;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemMountPointProvider;
-using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationInterface;
+using fileapi::LocalFileSystemOperation;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
 
@@ -480,8 +480,8 @@ void FileAPIMessageFilter::OnSyncGetPlatformPath(
   // (e.g. TEMPORARY or PERSISTENT).
   // TODO(kinuko): this hack should go away once appropriate upload-stream
   // handling based on element types is supported.
-  FileSystemOperation* operation =
-      context_->CreateFileSystemOperation(url)->AsFileSystemOperation();
+  LocalFileSystemOperation* operation =
+      context_->CreateFileSystemOperation(url)->AsLocalFileSystemOperation();
   DCHECK(operation);
   operation->SyncGetPlatformPath(url, platform_path);
 }

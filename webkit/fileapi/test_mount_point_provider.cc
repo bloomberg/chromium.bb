@@ -11,9 +11,9 @@
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/sandbox_file_stream_writer.h"
@@ -137,7 +137,7 @@ FileSystemOperationInterface*
 TestMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context) const {
-  return new FileSystemOperation(context);
+  return new LocalFileSystemOperation(context);
 }
 
 webkit_blob::FileStreamReader* TestMountPointProvider::CreateFileStreamReader(

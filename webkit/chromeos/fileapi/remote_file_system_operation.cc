@@ -175,8 +175,8 @@ void RemoteFileSystemOperation::NotifyCloseFile(
   delete this;
 }
 
-fileapi::FileSystemOperation*
-RemoteFileSystemOperation::AsFileSystemOperation() {
+fileapi::LocalFileSystemOperation*
+RemoteFileSystemOperation::AsLocalFileSystemOperation() {
   NOTIMPLEMENTED();
   return NULL;
 }

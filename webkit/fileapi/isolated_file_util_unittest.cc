@@ -16,10 +16,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_file_util.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/native_file_util.h"
@@ -223,7 +223,7 @@ class IsolatedFileUtilTest : public testing::Test {
   std::map<FilePath, FilePath> toplevel_root_map_;
   scoped_ptr<IsolatedFileUtil> file_util_;
   scoped_ptr<LocalFileUtil> other_file_util_;
-  FileSystemTestOriginHelper other_file_util_helper_;
+  LocalFileSystemTestOriginHelper other_file_util_helper_;
   DISALLOW_COPY_AND_ASSIGN(IsolatedFileUtilTest);
 };
 

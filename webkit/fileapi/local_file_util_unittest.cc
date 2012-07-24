@@ -15,8 +15,8 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/native_file_util.h"
 
@@ -91,7 +91,7 @@ class LocalFileUtilTest : public testing::Test {
         Path(file_name), created);
   }
 
-  const FileSystemTestOriginHelper& test_helper() const {
+  const LocalFileSystemTestOriginHelper& test_helper() const {
     return test_helper_;
   }
 
@@ -99,7 +99,7 @@ class LocalFileUtilTest : public testing::Test {
   scoped_ptr<LocalFileUtil> local_file_util_;
   ScopedTempDir data_dir_;
   MessageLoop message_loop_;
-  FileSystemTestOriginHelper test_helper_;
+  LocalFileSystemTestOriginHelper test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileUtilTest);
 };

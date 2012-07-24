@@ -11,8 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_util_helper.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/test_file_set.h"
@@ -35,7 +35,8 @@ class FileSystemFileUtilTest : public testing::Test {
   void SetUp() {
   }
 
-  FileSystemOperationContext* NewContext(FileSystemTestOriginHelper* helper) {
+  FileSystemOperationContext* NewContext(
+      LocalFileSystemTestOriginHelper* helper) {
     FileSystemOperationContext* context = helper->NewOperationContext();
     // We need to allocate quota for paths for
     // TestCrossFileSystemCopyMoveHelper, since it calls into OFSFU, which
@@ -52,13 +53,13 @@ class FileSystemFileUtilTest : public testing::Test {
     ASSERT_TRUE(base_dir.CreateUniqueTempDir());
     scoped_ptr<ObfuscatedFileUtil> file_util(
         new ObfuscatedFileUtil(base_dir.path()));
-    FileSystemTestOriginHelper src_helper(src_origin, src_type);
+    LocalFileSystemTestOriginHelper src_helper(src_origin, src_type);
     src_helper.SetUp(base_dir.path(),
                      false,  // unlimited quota
                      NULL,  // quota::QuotaManagerProxy
                      file_util.get());
 
-    FileSystemTestOriginHelper dest_helper(dest_origin, dest_type);
+    LocalFileSystemTestOriginHelper dest_helper(dest_origin, dest_type);
     dest_helper.SetUp(src_helper.file_system_context(), file_util.get());
 
     // Set up all the source data.
