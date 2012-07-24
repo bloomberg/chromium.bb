@@ -426,6 +426,9 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
 
   // Allow file:// access on ChromeOS.
   command_line->AppendSwitch(switches::kAllowFileAccess);
+
+  // The tests assume that file:// URIs can freely access other file:// URIs.
+  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
 }
 
 bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state,
