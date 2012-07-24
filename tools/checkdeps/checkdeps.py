@@ -273,10 +273,16 @@ def ApplyDirectoryRules(existing_rules, dir_name):
 def ShouldCheckFile(file_name):
   """Returns True if the given file is a type we want to check."""
   checked_extensions = [
-      '.h',
+      '.c',
       '.cc',
+      '.h',
       '.m',
       '.mm',
+      # These are not the preferred extension in our codebase,
+      # but including them for good measure.
+      # (They do appear in the newlib toolchain + third_party libraries).
+      '.cpp',
+      '.hpp',
   ]
   basename, extension = os.path.splitext(file_name)
   return extension in checked_extensions

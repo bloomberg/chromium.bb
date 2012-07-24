@@ -8,9 +8,7 @@ import os
 
 Import('env')
 
-# TODO(robertm): consider adding this to the top level scons files
-env.Append(CPPPATH=['${TARGET_ROOT}'])
-# this is needed for including gen/... files, see GENERATED below
+env.Append(CPPPATH=['${TARGET_ROOT}/gen'])
 
 # There is a circular dependency between debug_stub and sel. Adding sel to this
 # list is a quick and dirty workaround.

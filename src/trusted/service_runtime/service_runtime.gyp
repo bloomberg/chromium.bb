@@ -117,7 +117,7 @@
                 {
                   'action_name': 'mig_exc_generation',
                   'variables': {
-                    'gen_dir': '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime',
+                    'gen_dir': '<(INTERMEDIATE_DIR)/native_client/src/trusted/service_runtime',
                   },
                   'inputs': [
                     'osx/run_mig.py',
