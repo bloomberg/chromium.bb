@@ -34,8 +34,6 @@ typedef HRESULT (WINAPI *Direct3DCreate9ExFunc)(UINT sdk_version,
 
 const wchar_t kD3D9ModuleName[] = L"d3d9.dll";
 const char kCreate3D9DeviceExName[] = "Direct3DCreate9Ex";
-const char kReverseImageTransportSurfaceRows[] =
-    "reverse-image-transport-surface-rows";
 
 struct Vertex {
   float x, y, z, w;
@@ -400,8 +398,6 @@ AcceleratedPresenter::AcceleratedPresenter(gfx::NativeWindow window)
       window_(window),
       event_(false, false),
       hidden_(true) {
-  reverse_rows_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      kReverseImageTransportSurfaceRows);
 }
 
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
@@ -755,61 +751,45 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   {
     TRACE_EVENT0("gpu", "Copy");
 
-    if (!reverse_rows_) {
-      // Use a simple pixel / vertex shader pair to render a quad that flips the
-      // source texture on the vertical axis.
-      IDirect3DSurface9 *default_render_target = NULL;
-      present_thread_->device()->GetRenderTarget(0, &default_render_target);
+    // Use a simple pixel / vertex shader pair to render a quad that flips the
+    // source texture on the vertical axis.
+    IDirect3DSurface9 *default_render_target = NULL;
+    present_thread_->device()->GetRenderTarget(0, &default_render_target);
 
-      present_thread_->device()->SetRenderTarget(0, dest_surface);
-      present_thread_->device()->SetTexture(0, source_texture_);
+    present_thread_->device()->SetRenderTarget(0, dest_surface);
+    present_thread_->device()->SetTexture(0, source_texture_);
 
-      D3DVIEWPORT9 viewport = {
-        0, 0,
-        size.width(), size.height(),
-        0, 1
-      };
-      present_thread_->device()->SetViewport(&viewport);
+    D3DVIEWPORT9 viewport = {
+      0, 0,
+      size.width(), size.height(),
+      0, 1
+    };
+    present_thread_->device()->SetViewport(&viewport);
 
-      float halfPixelX = -1.0f / size.width();
-      float halfPixelY = 1.0f / size.height();
-      Vertex vertices[] = {
-        { halfPixelX - 1, halfPixelY + 1, 0.5f, 1, 0, 1 },
-        { halfPixelX + 1, halfPixelY + 1, 0.5f, 1, 1, 1 },
-        { halfPixelX + 1, halfPixelY - 1, 0.5f, 1, 1, 0 },
-        { halfPixelX - 1, halfPixelY - 1, 0.5f, 1, 0, 0 }
-      };
+    float halfPixelX = -1.0f / size.width();
+    float halfPixelY = 1.0f / size.height();
+    Vertex vertices[] = {
+      { halfPixelX - 1, halfPixelY + 1, 0.5f, 1, 0, 1 },
+      { halfPixelX + 1, halfPixelY + 1, 0.5f, 1, 1, 1 },
+      { halfPixelX + 1, halfPixelY - 1, 0.5f, 1, 1, 0 },
+      { halfPixelX - 1, halfPixelY - 1, 0.5f, 1, 0, 0 }
+    };
 
-      present_thread_->device()->BeginScene();
-      present_thread_->device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,
-                                                 arraysize(vertices),
-                                                 vertices,
-                                                 sizeof(vertices[0]));
-      present_thread_->device()->EndScene();
+    present_thread_->device()->BeginScene();
+    present_thread_->device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,
+                                               arraysize(vertices),
+                                               vertices,
+                                               sizeof(vertices[0]));
+    present_thread_->device()->EndScene();
 
-      present_thread_->device()->SetTexture(0, NULL);
-      present_thread_->device()->SetRenderTarget(0, default_render_target);
-      default_render_target->Release();
-    } else {
-      // Copy the source texture directly into the swap chain without reversing
-      // the rows.
-      hr = present_thread_->device()->StretchRect(source_surface,
-                                                  &rect,
-                                                  dest_surface,
-                                                  &rect,
-                                                  D3DTEXF_NONE);
-      if (FAILED(hr))
-        return;
-    }
+    present_thread_->device()->SetTexture(0, NULL);
+    present_thread_->device()->SetRenderTarget(0, default_render_target);
+    default_render_target->Release();
   }
 
   hr = present_thread_->query()->Issue(D3DISSUE_END);
   if (FAILED(hr))
     return;
-
-  // Flush so the StretchRect can be processed by the GPU while the window is
-  // being resized.
-  present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
 
   present_size_ = size;
 
