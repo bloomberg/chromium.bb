@@ -2623,8 +2623,10 @@ st57:
 	if ( ++p == pe )
 		goto _test_eof57;
 case 57:
-	if ( (*p) == 0u )
-		goto st58;
+	switch( (*p) ) {
+		case 0u: goto st58;
+		case 4u: goto st58;
+	}
 	goto tr19;
 st58:
 	if ( ++p == pe )
