@@ -5738,6 +5738,23 @@
    fun:_ZN7testing8internal11CmpHelperGEIddEENS_15AssertionResultEPKcS4_RKT_RKT0_
    fun:_ZN3gfx30JPEGCodec_EncodeDecodeRGB_Test8TestBodyEv
 }
+{
+   bug_138720
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base22PosixDynamicThreadPool7AddTaskEPNS_11PendingTaskE
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
+   fun:_ZN4base12_GLOBAL__N_114WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEEb
+   fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEEb
+   fun:_ZN4base12_GLOBAL__N_126PostTaskAndReplyWorkerPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
+   fun:_ZN12_GLOBAL__N_122URLRequestExtensionJob5StartEv
+   fun:_ZN3net10URLRequest8StartJobEPNS_13URLRequestJobE
+   fun:_ZN3net10URLRequest5StartEv
+   fun:_ZN12_GLOBAL__N_121ExtensionProtocolTest12StartRequestEPN3net10URLRequestEN12ResourceType4TypeE
+   fun:_ZN12_GLOBAL__N_143ExtensionProtocolTest_IncognitoRequest_Test8TestBodyEv
+}
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
