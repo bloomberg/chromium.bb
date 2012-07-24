@@ -1,7 +1,3 @@
-if HAVE_PUBLICAN
-noinst_DATA = Wayland $(publican_targets)
-pubdir = $(docdir)/Wayland/en-US
-
 publican_sources = \
 	$(srcdir)/en_US/Wayland.ent \
 	$(srcdir)/en_US/Architecture.xml \
@@ -15,6 +11,10 @@ publican_sources = \
 	$(srcdir)/en_US/images/wayland-architecture.png \
 	$(srcdir)/en_US/images/wayland.png  \
 	$(srcdir)/en_US/images/x-architecture.png
+
+if HAVE_PUBLICAN
+noinst_DATA = Wayland $(publican_targets)
+pubdir = $(docdir)/Wayland/en-US
 
 publican_targets = $(publican_sources:$(srcdir)/en_US%=$(builddir)/en-US%) \
 	en-US/ProtocolSpec.xml
@@ -66,6 +66,6 @@ uninstall-local:
 	  fi; \
 	fi;
 
-EXTRA_DIST = $(publican_sources) publican.cfg protocol-to-docbook.xsl
-
 endif
+
+EXTRA_DIST = $(publican_sources) publican.cfg protocol-to-docbook.xsl
