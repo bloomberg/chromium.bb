@@ -476,8 +476,7 @@ void MergeOnHeadersReceivedResponses(
       {
         for (i = (*delta)->deleted_response_headers.begin();
              i != (*delta)->deleted_response_headers.end(); ++i) {
-          (*override_response_headers)->RemoveHeaderWithValue(i->first,
-                                                              i->second);
+          (*override_response_headers)->RemoveHeaderLine(i->first, i->second);
           removed_headers.insert(ToLowerCase(*i));
         }
       }

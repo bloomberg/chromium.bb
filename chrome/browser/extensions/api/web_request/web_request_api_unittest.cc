@@ -928,7 +928,7 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
   char base_headers_string[] =
       "HTTP/1.0 200 OK\r\n"
       "Key1: Value1\r\n"
-      "Key2: Value2\r\n"
+      "Key2: Value2, Bar\r\n"
       "Key3: Value3\r\n"
       "\r\n";
   scoped_refptr<net::HttpResponseHeaders> base_headers(
@@ -954,7 +954,7 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
                        ResponseHeader("Key4", "Value4")));
   EXPECT_EQ(2u, delta->deleted_response_headers.size());
   EXPECT_TRUE(Contains(delta->deleted_response_headers,
-                        ResponseHeader("Key2", "Value2")));
+                        ResponseHeader("Key2", "Value2, Bar")));
   EXPECT_TRUE(Contains(delta->deleted_response_headers,
                         ResponseHeader("Key3", "Value3")));
 }
@@ -1289,7 +1289,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   char base_headers_string[] =
       "HTTP/1.0 200 OK\r\n"
       "Key1: Value1\r\n"
-      "Key2: Value2\r\n"
+      "Key2: Value2, Foo\r\n"
       "\r\n";
   scoped_refptr<net::HttpResponseHeaders> base_headers(
       new net::HttpResponseHeaders(
@@ -1311,7 +1311,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   linked_ptr<EventResponseDelta> d1(
       new EventResponseDelta("extid1", base::Time::FromInternalValue(2000)));
   d1->deleted_response_headers.push_back(ResponseHeader("KEY1", "Value1"));
-  d1->deleted_response_headers.push_back(ResponseHeader("KEY2", "Value2"));
+  d1->deleted_response_headers.push_back(ResponseHeader("KEY2", "Value2, Foo"));
   d1->added_response_headers.push_back(ResponseHeader("Key2", "Value3"));
   deltas.push_back(d1);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
@@ -1340,7 +1340,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
       new EventResponseDelta("extid2", base::Time::FromInternalValue(1500)));
   // Note that we use a different capitalization of KeY2. This should not
   // matter.
-  d2->deleted_response_headers.push_back(ResponseHeader("KeY2", "Value2"));
+  d2->deleted_response_headers.push_back(ResponseHeader("KeY2", "Value2, Foo"));
   d2->added_response_headers.push_back(ResponseHeader("Key2", "Value4"));
   deltas.push_back(d2);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
