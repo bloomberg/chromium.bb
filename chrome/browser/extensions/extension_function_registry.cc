@@ -132,6 +132,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<BrowserActionGetBadgeTextFunction>();
   RegisterFunction<BrowserActionGetBadgeBackgroundColorFunction>();
   RegisterFunction<BrowserActionGetPopupFunction>();
+  RegisterFunction<BrowserActionEnableFunction>();
+  RegisterFunction<BrowserActionDisableFunction>();
 
   // Script Badges.
   RegisterFunction<ScriptBadgeGetAttentionFunction>();

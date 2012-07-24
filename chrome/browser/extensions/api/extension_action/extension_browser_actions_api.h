@@ -89,4 +89,20 @@ class BrowserActionGetBadgeBackgroundColorFunction
   virtual ~BrowserActionGetBadgeBackgroundColorFunction() {}
 };
 
+class BrowserActionEnableFunction : public ExtensionActionShowFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.enable")
+
+ protected:
+  virtual ~BrowserActionEnableFunction() {}
+};
+
+class BrowserActionDisableFunction : public ExtensionActionHideFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.disable")
+
+ protected:
+  virtual ~BrowserActionDisableFunction() {}
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_BROWSER_ACTIONS_API_H_

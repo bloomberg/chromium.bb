@@ -31,6 +31,8 @@
     "chrome.bookmarks.removeTree": "bookmarks.html#method-removeTree",
     "chrome.bookmarks.search": "bookmarks.html#method-search",
     "chrome.bookmarks.update": "bookmarks.html#method-update",
+    "chrome.browserAction.disable": "browserAction.html#method-disable",
+    "chrome.browserAction.enable": "browserAction.html#method-enable",
     "chrome.browserAction.getBadgeBackgroundColor": "browserAction.html#method-getBadgeBackgroundColor",
     "chrome.browserAction.getBadgeText": "browserAction.html#method-getBadgeText",
     "chrome.browserAction.getPopup": "browserAction.html#method-getPopup",

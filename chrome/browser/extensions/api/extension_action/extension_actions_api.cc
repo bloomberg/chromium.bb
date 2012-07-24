@@ -91,6 +91,10 @@ bool ExtensionActionFunction::RunImpl() {
         break;
       }
 
+      case Value::TYPE_NULL:
+        // The tabId might be an optional argument.
+        break;
+
       default:
         EXTENSION_FUNCTION_VALIDATE(false);
     }

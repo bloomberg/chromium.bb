@@ -259,6 +259,34 @@
             ]
           }
         ]
+      },
+      {
+        "name": "enable",
+        "type": "function",
+        "description": "Enables the browser action for a tab. By default, browser actions are enabled.",
+        "parameters": [
+          {
+            "type": "integer",
+            "optional": true,
+            "name": "tabId",
+            "minimum": 0,
+            "description": "The id of the tab for which you want to modify the browser action."
+          }
+        ]
+      },
+      {
+        "name": "disable",
+        "type": "function",
+        "description": "Disables the browser action for a tab.",
+        "parameters": [
+          {
+            "type": "integer",
+            "optional": true,
+            "name": "tabId",
+            "minimum": 0,
+            "description": "The id of the tab for which you want to modify the browser action."
+          }
+        ]
       }
     ],
     "events": [
