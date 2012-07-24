@@ -9,10 +9,12 @@ import logging
 import os
 import random
 import re
+import string
 
 from chromite.lib import cros_build_lib
 
 _MAXIMUM_GERRIT_NUMBER_LENGTH = 6
+
 
 class PatchException(Exception):
   """Base exception class all patch exception derive from."""
@@ -243,9 +245,7 @@ def FormatChangeId(text, force_internal=False, force_external=False,
 
   # Drop the leading I.
   text = text[1:].lower()
-  try:
-    _ = int(text, 16)
-  except ValueError:
+  if any(x not in string.hexdigits for x in text):
     raise ValueError("FormatChangeId invoked w/ a non hex ChangeId value: %s"
                      % original_text)
 
@@ -277,6 +277,7 @@ def FormatSha1(text, force_internal=False, force_external=False, strict=False):
   if not text:
     raise ValueError("FormatSha1 invoked w/ an empty value: %r" % (text,))
 
+
   original_text = text
   prefix = '*' if force_internal else ''
   if text[0].startswith('*'):
@@ -291,13 +292,12 @@ def FormatSha1(text, force_internal=False, force_external=False, strict=False):
     raise ValueError("FormatSha1 invoked w/ a malformed value, "
                      "value isn't 40 characters: %r" % (original_text,))
 
-  try:
-    _ = int(text, 16)
-  except ValueError:
+  text = text.lower()
+  if any(x not in string.hexdigits for x in text):
     raise ValueError("FormatSha1 invoked w/ a non hex sha1 value: %s"
                      % original_text)
 
-  return '%s%s' % (prefix, text.lower())
+  return '%s%s' % (prefix, text)
 
 
 def FormatGerritNumber(text, force_internal=False, force_external=False,
@@ -352,7 +352,7 @@ def FormatGerritNumber(text, force_internal=False, force_external=False,
 
 def FormatPatchDep(text, force_internal=False, force_external=False,
                    strict=False, sha1=True, changeId=True,
-                   gerrit_number=True):
+                   gerrit_number=True, allow_CL=False):
   """Given a patch dependency, ensure it's formatted correctly.
 
   This should be used when the consumer doesn't care what type of dep
@@ -365,31 +365,46 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
     sha1: If False, throw ValueError if the dep is a sha1.
     changeId: If False, throw ValueError if the dep is a ChangeId.
     gerrit_number: If False, throw ValueError if the dep is a gerrit number.
+    allow_CL: If True, allow CL: prefix; else view it as an error.
+      That format is primarily used for -g, and in CQ-Depend.
   """
   if not text:
     raise ValueError("FormatPatchDep invoked with an empty value: %r"
                      % (text,))
-  original_text = text
+  original_text = target_text = text
+
+  # Deal w/ CL: targets.
+  if text.upper().startswith("CL:"):
+    if not allow_CL:
+      raise ValueError(
+          "FormatPatchDep: 'CL:' is disallowed in this context: %r"
+          % (original_text,))
+    elif not text.startswith("CL:"):
+      raise ValueError(
+          "FormatPatchDep: 'CL:' must be upper case: %r"
+          % (original_text,))
+    target_text = text = text[3:]
+
   text = text.lstrip('*')
   if text[0:1] in 'Ii':
     if not changeId:
       raise ValueError(
           "FormatPatchDep: ChangeId isn't allowed in this context: %r"
-          % (text,))
+          % (original_text,))
     target = FormatChangeId
   elif text.isdigit() and len(text) <= _MAXIMUM_GERRIT_NUMBER_LENGTH:
     if not gerrit_number:
       raise ValueError(
           "FormatPatchDep: ChangeId isn't allowed in this context: %r"
-          % (text,))
+          % (original_text,))
     target = FormatGerritNumber
   elif not sha1:
     raise ValueError(
         "FormatPatchDep: sha1 isn't allowed in this context: %r"
-        % (text,))
+        % (original_text,))
   else:
     target = FormatSha1
-  return target(original_text, force_internal=force_internal,
+  return target(target_text, force_internal=force_internal,
                 force_external=force_external, strict=strict)
 
 
@@ -405,7 +420,6 @@ class GitRepoPatch(object):
   _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
                                  re.I|re.MULTILINE)
   _PALADIN_DEPENDENCY_RE = re.compile(r'^CQ-DEPEND=(.*)$', re.MULTILINE)
-  _PALADIN_BUG_RE = re.compile(r'(\w+)')
 
   def __init__(self, project_url, project, ref, tracking_branch, internal,
                sha1=None, change_id=None):
@@ -835,7 +849,7 @@ class GitRepoPatch(object):
       chunks = chunks.split()
       for chunk in chunks:
         try:
-          chunk = FormatPatchDep(chunk, sha1=False)
+          chunk = FormatPatchDep(chunk, sha1=False, allow_CL=True)
         except ValueError, e:
           raise BrokenCQDepends(self, chunk, str(e))
 

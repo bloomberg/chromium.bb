@@ -48,7 +48,40 @@ GERRIT_MERGED_CHANGEID = '3'
 GERRIT_ABANDONED_CHANGEID = '1'
 
 
-class TestGitRepoPatch(cros_test_lib.TempDirMixin, unittest.TestCase):
+class UsableAssertRaises(object):
+  """This is a mixin to provide a assertRaises2, allowing finer grained tests.
+  """
+
+  # TODO(build): move this into lib/ once we rebase everything to import from
+  # our own custom unittest.TestCase.
+
+  def assertRaises2(self, exception, functor, *args, **kwargs):
+    exact_kls = kwargs.pop('exact_kls', None)
+    check_attrs = kwargs.pop('check_attrs', {})
+    msg = kwargs.pop('msg', None)
+    if msg is None:
+      msg = ("%s(*%r, **%r) didn't throw an exception"
+             % (functor.__name__, args, kwargs))
+    try:
+      functor(*args, **kwargs)
+      raise AssertionError(msg)
+    except exception, e:
+      if exact_kls:
+        self.assertEqual(e.__class__, exception)
+      bad = []
+      for attr, required in check_attrs.iteritems():
+        self.assertTrue(hasattr(e, attr),
+                        msg="%s lacks attr %s" % (e, attr))
+        value = getattr(e, attr)
+        if value != required:
+          bad.append("%s attr is %s, needed to be %s"
+                     % (attr, value, required))
+      if bad:
+        raise AssertionError("\n".join(bad))
+
+
+class TestGitRepoPatch(UsableAssertRaises, cros_test_lib.TempDirMixin,
+                       unittest.TestCase):
 
   # No pymox bits are to be used in this class's tests.
   # This needs to actually validate git output, and git behaviour, rather
@@ -205,30 +238,6 @@ I am the first commit.
     patch.project_url='/dev/null'
     patch.Apply(git3, self.DEFAULT_TRACKING)
     self.assertEqual(patch.sha1, self._GetSha1(git3, 'HEAD'))
-
-  def assertRaises2(self, exception, functor, *args, **kwargs):
-    exact_kls = kwargs.pop('exact_kls', None)
-    check_attrs = kwargs.pop('check_attrs', {})
-    msg = kwargs.pop('msg', None)
-    if msg is None:
-      msg = ("%s(*%r, **%r) didn't throw an exception"
-             % (functor.__name__, args, kwargs))
-    try:
-      functor(*args, **kwargs)
-      raise AssertionError(msg)
-    except exception, e:
-      if exact_kls:
-        self.assertEqual(e.__class__, exception)
-      bad = []
-      for attr, required in check_attrs.iteritems():
-        self.assertTrue(hasattr(e, attr),
-                        msg="%s lacks attr %s" % (e, attr))
-        value = getattr(e, attr)
-        if value != required:
-          bad.append("%s attr is %s, needed to be %s"
-                     % (attr, value, required))
-      if bad:
-        raise AssertionError("\n".join(bad))
 
   def testFailsApply(self):
     git1, git2, patch1 = self._CommonGitSetup()
@@ -728,6 +737,125 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
         SystemExit,
         cros_patch.PrepareLocalPatches,
         self.manifest, self.patches)
+
+
+class TestFormatting(UsableAssertRaises, unittest.TestCase):
+
+  def _assertResult(self, functor, value, expected=None, raises=False,
+                    fixup=str, **kwds):
+    if raises:
+      self.assertRaises2(ValueError, functor, fixup(value),
+                         msg="%s(%r), original %r, did not throw a ValueError"
+                         % (functor.__name__, fixup(value), value),  **kwds)
+    else:
+      self.assertEqual(functor(value, **kwds), expected,
+                       msg="failed: %s(%r) != %r; originals: %r %r"
+                       % (functor.__name__, fixup(value), fixup(expected),
+                          value, expected))
+
+  def _assertBad(self, functor, values, fixup=str, allow_CL=False, **kwds):
+    values = map(fixup, values)
+    pass_allow_CL = kwds.pop('pass_allow', False)
+    for prefix in ([""] + ['CL:'] if allow_CL else []):
+      if pass_allow_CL:
+        kwds['allow_CL'] = bool(prefix)
+      for value in values:
+        self._assertResult(functor, prefix + value, raises=True, **kwds)
+
+      for value in values:
+        self._assertResult(functor, prefix + '*' + value, raises=True, **kwds)
+
+  def _assertGood(self, functor, values, fixup=str, allow_CL=False, **kwds):
+    pass_allow_CL = kwds.pop('pass_allow', False)
+    values = [map(fixup, x) for x in values]
+    for prefix in ([""] + ['CL:'] if allow_CL else []):
+      if pass_allow_CL:
+        kwds['allow_CL'] = bool(prefix)
+      for value, expected in values:
+        self._assertResult(functor, prefix + value, expected, **kwds)
+
+      for value, expected in values:
+        self._assertResult(functor, prefix + '*' + value, '*' + expected,
+                           **kwds)
+
+  @staticmethod
+  def _ChangeIdFixup(value):
+    s = value.lstrip('iI*')
+    l = len(value)
+    return '%s%s' % (value[0:l-len(s)], s.ljust(40 - len(s), "0"))
+
+  def testFormatChangeId(self):
+    fixup = self._ChangeIdFixup
+    self._assertBad(
+        cros_patch.FormatChangeId,
+        ['is', '**i1325', 'iz12345', 'Iz12365', 'II', 'ii', 'I1234+'],
+        fixup=fixup, allow_CL=True)
+    # Note the lack of fixup; we're checking size handling here.
+    self._assertBad(
+        cros_patch.FormatChangeId,
+        ['I012365', 'Ia0123456'.ljust(42, '0'), 'Ia'.ljust(40, '0')],
+        allow_CL=True, strict=True)
+    self._assertGood(
+        cros_patch.FormatChangeId,
+        [('I012345', 'I012345'),
+         ('Iabcdf', 'Iabcdf'),
+         ('IABCDF', 'Iabcdf')],
+        fixup=fixup)
+
+  def testFormatGerritNumber(self):
+    self._assertBad(
+        cros_patch.FormatGerritNumber,
+        ['is', 'i1325', '01234567', '012345a', '**12345', '+123', '/0123'],
+        allow_CL=True)
+    self._assertGood(
+        cros_patch.FormatChangeId,
+        [('1',) * 2,
+         ('123',) * 2,
+         ('123456',) * 2,
+         ('001', '1')])
+
+  @staticmethod
+  def _Sha1Fixup(value):
+    return value.ljust(40, '0')
+
+  def testFormatSha1(self):
+    fixup = self._Sha1Fixup
+    self._assertBad(
+        cros_patch.FormatSha1,
+        ['0abcg', 'Z', '**a', '+123', '1234ab' * 10],
+        fixup=fixup, allow_CL=True)
+    # Length checks.
+    self._assertBad(
+        cros_patch.FormatSha1,
+        ['0' * 41, 'a' * 39],
+        strict=True)
+    self._assertGood(
+        cros_patch.FormatSha1,
+        [('1' * 40,) * 2,
+         ('a' * 40,) * 2,
+         ('0123456789abcdef',) * 2,
+         ('0123456789ABCDEF', '0123456789abcdef')],
+        fixup=fixup)
+
+  def testFormatPatchDeps(self):
+    sha1 = self._Sha1Fixup
+    changeId = self._ChangeIdFixup
+    # Validate control over formats allowed:
+    self._assertBad(cros_patch.FormatPatchDep,
+                    ['12345', '1234567'],
+                    gerrit_number=False, allow_CL=True, pass_allow=True)
+    self._assertBad(cros_patch.FormatPatchDep,
+                    map(changeId, ['I1234567']),
+                    changeId=False, allow_CL=True, pass_allow=True)
+    self._assertBad(cros_patch.FormatPatchDep,
+                    map(sha1, ['1234567', 'asdf1']),
+                    sha1=False, allow_CL=True, pass_allow=True)
+
+    self._assertGood(
+        cros_patch.FormatPatchDep,
+        [('12345', '12345'), ('1', '1'), ('98765', '98765'), ('001', '1'),
+         (changeId('Iabcd'),) *2,
+         (sha1('0123cde'),) *2], allow_CL=True, pass_allow=True)
 
 
 if __name__ == '__main__':

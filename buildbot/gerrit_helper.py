@@ -378,7 +378,7 @@ def GetGerritPatchInfo(patches):
   """Query Gerrit server for patch information.
 
   Args:
-    patches: a list of patch ID's to query.  Internal patches start with a '*'.
+    patches: a list of patch IDs to query.  Internal patches start with a '*'.
 
   Returns:
     A list of GerritPatch objects describing each patch.  Only the first
@@ -389,13 +389,13 @@ def GetGerritPatchInfo(patches):
   """
   parsed_patches = {}
 
-  def _FixupFormatting(item):
-    return cros_patch.FormatPatchDep(item, sha1=False)
+  # First, standardize 'em.
+  patches = [cros_patch.FormatPatchDep(x, sha1=False, allow_CL=True)
+             for x in patches]
 
-  internal_patches = ['*%s' % _FixupFormatting(x[1:]) for x in patches
-                      if x.startswith('*')]
-  external_patches = [_FixupFormatting(x) for x in patches
-                      if not x.startswith('*')]
+  # Next, split on internal vs external.
+  internal_patches = [x for x in patches if x.startswith('*')]
+  external_patches = [x for x in patches if not x.startswith('*')]
 
   if internal_patches:
     # feed it id's w/ * stripped off, but bind them back
