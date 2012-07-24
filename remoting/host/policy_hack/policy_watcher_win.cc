@@ -10,7 +10,7 @@
 //
 // This is a reduction of the functionality in those classes.
 
-#include "remoting/host/policy_hack/nat_policy.h"
+#include "remoting/host/policy_hack/policy_watcher.h"
 
 #include <userenv.h>
 
@@ -38,23 +38,24 @@ const wchar_t kRegistrySubKey[] = L"SOFTWARE\\Policies\\Google\\Chrome";
 
 }  // namespace
 
-class NatPolicyWin :
-  public NatPolicy,
+class PolicyWatcherWin :
+  public PolicyWatcher,
   public base::win::ObjectWatcher::Delegate {
  public:
-  explicit NatPolicyWin(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : NatPolicy(task_runner),
+  explicit PolicyWatcherWin(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : PolicyWatcher(task_runner),
         user_policy_changed_event_(false, false),
         machine_policy_changed_event_(false, false),
         user_policy_watcher_failed_(false),
         machine_policy_watcher_failed_(false) {
   }
 
-  virtual ~NatPolicyWin() {
+  virtual ~PolicyWatcherWin() {
   }
 
   virtual void StartWatchingInternal() OVERRIDE {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
 
     if (!RegisterGPNotification(user_policy_changed_event_.handle(), false)) {
       PLOG(WARNING) << "Failed to register user group policy notification";
@@ -70,7 +71,7 @@ class NatPolicyWin :
   }
 
   virtual void StopWatchingInternal() OVERRIDE {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
 
     if (!UnregisterGPNotification(user_policy_changed_event_.handle())) {
       PLOG(WARNING) << "Failed to unregister user group policy notification";
@@ -88,7 +89,7 @@ class NatPolicyWin :
  private:
   // Updates the watchers and schedules the reload task if appropriate.
   void SetupWatches() {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
 
     if (!user_policy_watcher_failed_ &&
         !user_policy_watcher_.GetWatchedObject() &&
@@ -142,10 +143,13 @@ class NatPolicyWin :
   base::DictionaryValue* Load() {
     base::DictionaryValue* policy = new base::DictionaryValue();
 
-    bool bool_value;
-    const string16 name(ASCIIToUTF16(kNatPolicyName));
-    if (GetRegistryPolicyBoolean(name, &bool_value)) {
-      policy->SetBoolean(kNatPolicyName, bool_value);
+    for (int i = 0; i < kBooleanPolicyNamesNum; ++i) {
+      const char* policy_name = kBooleanPolicyNames[i];
+      bool bool_value;
+      const string16 name(ASCIIToUTF16(policy_name));
+      if (GetRegistryPolicyBoolean(name, &bool_value)) {
+        policy->SetBoolean(policy_name, bool_value);
+      }
     }
 
     return policy;
@@ -153,15 +157,15 @@ class NatPolicyWin :
 
   // Post a reload notification and update the watch machinery.
   void Reload() {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     SetupWatches();
     scoped_ptr<DictionaryValue> new_policy(Load());
-    UpdateNatPolicy(new_policy.get());
+    UpdatePolicies(new_policy.get());
   }
 
   // ObjectWatcher::Delegate overrides:
   virtual void OnObjectSignaled(HANDLE object) {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     DCHECK(object == user_policy_changed_event_.handle() ||
            object == machine_policy_changed_event_.handle())
         << "unexpected object signaled policy reload, obj = "
@@ -177,9 +181,9 @@ class NatPolicyWin :
   bool machine_policy_watcher_failed_;
 };
 
-NatPolicy* NatPolicy::Create(
+PolicyWatcher* PolicyWatcher::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return new NatPolicyWin(task_runner);
+  return new PolicyWatcherWin(task_runner);
 }
 
 }  // namespace policy_hack

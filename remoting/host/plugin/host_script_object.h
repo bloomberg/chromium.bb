@@ -41,7 +41,7 @@ class SignalStrategy;
 class SupportAccessVerifier;
 
 namespace policy_hack {
-class NatPolicy;
+class PolicyWatcher;
 }  // namespace policy_hack
 
 // NPAPI plugin implementation for remoting host script object.
@@ -208,6 +208,9 @@ class HostNPScriptObject : public HostStatusObserver {
   // Callback for ChromotingHost::Shutdown().
   void OnShutdownFinished();
 
+  // Called when a policy is updated.
+  void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
+
   // Called when the nat traversal policy is updated.
   void OnNatPolicyUpdate(bool nat_traversal_enabled);
 
@@ -319,7 +322,7 @@ class HostNPScriptObject : public HostStatusObserver {
 
   base::Lock nat_policy_lock_;
 
-  scoped_ptr<policy_hack::NatPolicy> nat_policy_;
+  scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
 
   // Host the current nat traversal policy setting.
   bool nat_traversal_enabled_;

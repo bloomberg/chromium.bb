@@ -26,7 +26,7 @@
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/plugin/daemon_controller.h"
 #include "remoting/host/plugin/host_log_handler.h"
-#include "remoting/host/policy_hack/nat_policy.h"
+#include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -104,11 +104,11 @@ HostNPScriptObject::~HostNPScriptObject() {
   plugin_task_runner_->Detach();
 
   // Stop listening for policy updates.
-  if (nat_policy_.get()) {
-    base::WaitableEvent nat_policy_stopped_(true, false);
-    nat_policy_->StopWatching(&nat_policy_stopped_);
-    nat_policy_stopped_.Wait();
-    nat_policy_.reset();
+  if (policy_watcher_.get()) {
+    base::WaitableEvent policy_watcher_stopped_(true, false);
+    policy_watcher_->StopWatching(&policy_watcher_stopped_);
+    policy_watcher_stopped_.Wait();
+    policy_watcher_.reset();
   }
 
   if (host_context_.get()) {
@@ -144,10 +144,10 @@ bool HostNPScriptObject::Init() {
     return false;
   }
 
-  nat_policy_.reset(
-      policy_hack::NatPolicy::Create(host_context_->network_task_runner()));
-  nat_policy_->StartWatching(
-      base::Bind(&HostNPScriptObject::OnNatPolicyUpdate,
+  policy_watcher_.reset(
+      policy_hack::PolicyWatcher::Create(host_context_->network_task_runner()));
+  policy_watcher_->StartWatching(
+      base::Bind(&HostNPScriptObject::OnPolicyUpdate,
                  base::Unretained(this)));
   return true;
 }
@@ -889,6 +889,23 @@ void HostNPScriptObject::OnShutdownFinished() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   disconnected_event_.Signal();
+}
+
+void HostNPScriptObject::OnPolicyUpdate(
+    scoped_ptr<base::DictionaryValue> policies) {
+  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
+    host_context_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&HostNPScriptObject::OnPolicyUpdate,
+                   base::Unretained(this), base::Passed(&policies)));
+    return;
+  }
+
+  bool bool_value;
+  if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
+                           &bool_value)) {
+    OnNatPolicyUpdate(bool_value);
+  }
 }
 
 void HostNPScriptObject::OnNatPolicyUpdate(bool nat_traversal_enabled) {

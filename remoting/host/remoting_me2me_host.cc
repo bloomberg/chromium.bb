@@ -41,7 +41,7 @@
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/network_settings.h"
-#include "remoting/host/policy_hack/nat_policy.h"
+#include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/usage_stats_consent.h"
@@ -213,7 +213,7 @@ class HostProcess
     host_user_interface_.reset(new HostUserInterface(context_.get()));
 #endif
 
-    StartWatchingNatPolicy();
+    StartWatchingPolicy();
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
     context_->file_task_runner()->PostTask(
@@ -228,9 +228,9 @@ class HostProcess
 #endif
 
     base::WaitableEvent done_event(true, false);
-    nat_policy_->StopWatching(&done_event);
+    policy_watcher_->StopWatching(&done_event);
     done_event.Wait();
-    nat_policy_.reset();
+    policy_watcher_.reset();
 
     return exit_code_;
   }
@@ -242,11 +242,11 @@ class HostProcess
   }
 
  private:
-  void StartWatchingNatPolicy() {
-    nat_policy_.reset(
-        policy_hack::NatPolicy::Create(context_->file_task_runner()));
-    nat_policy_->StartWatching(
-        base::Bind(&HostProcess::OnNatPolicyUpdate, base::Unretained(this)));
+  void StartWatchingPolicy() {
+    policy_watcher_.reset(
+        policy_hack::PolicyWatcher::Create(context_->file_task_runner()));
+    policy_watcher_->StartWatching(
+        base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)));
   }
 
   // Read Host config from disk, returning true if successful.
@@ -312,6 +312,21 @@ class HostProcess
       xmpp_auth_service_ = kChromotingTokenDefaultServiceName;
     }
     return true;
+  }
+
+  void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
+    if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+      context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
+          &HostProcess::OnPolicyUpdate, base::Unretained(this),
+          base::Passed(&policies)));
+      return;
+    }
+
+    bool bool_value;
+    if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
+                             &bool_value)) {
+      OnNatPolicyUpdate(bool_value);
+    }
   }
 
   void OnNatPolicyUpdate(bool nat_traversal_enabled) {
@@ -498,7 +513,7 @@ class HostProcess
   std::string oauth_refresh_token_;
   bool oauth_use_official_client_id_;
 
-  scoped_ptr<policy_hack::NatPolicy> nat_policy_;
+  scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   bool allow_nat_traversal_;
   scoped_ptr<base::files::FilePathWatcher> config_watcher_;
   scoped_ptr<base::DelayTimer<HostProcess> > config_updated_timer_;

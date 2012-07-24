@@ -12,7 +12,7 @@
 
 #include <set>
 
-#include "remoting/host/policy_hack/nat_policy.h"
+#include "remoting/host/policy_hack/policy_watcher.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -42,11 +42,11 @@ const int kSettleIntervalSeconds = 5;
 
 }  // namespace
 
-class NatPolicyLinux : public NatPolicy {
+class PolicyWatcherLinux : public PolicyWatcher {
  public:
-  NatPolicyLinux(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                 const FilePath& config_dir)
-      : NatPolicy(task_runner),
+  PolicyWatcherLinux(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                     const FilePath& config_dir)
+      : PolicyWatcher(task_runner),
         config_dir_(config_dir),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     // Detach the factory because we ensure that only the policy thread ever
@@ -57,11 +57,11 @@ class NatPolicyLinux : public NatPolicy {
     weak_factory_.DetachFromThread();
   }
 
-  virtual ~NatPolicyLinux() {}
+  virtual ~PolicyWatcherLinux() {}
 
  protected:
   virtual void StartWatchingInternal() OVERRIDE {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     watcher_.reset(new base::files::FilePathWatcher());
 
     if (!config_dir_.empty() &&
@@ -80,30 +80,30 @@ class NatPolicyLinux : public NatPolicy {
   }
 
   virtual void StopWatchingInternal() OVERRIDE {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     // Cancel any inflight requests.
     watcher_.reset();
   }
 
   // Called by FilePathWatcherDelegate.
   virtual void OnFilePathError(const FilePath& path) {
-    LOG(ERROR) << "NatPolicyLinux on " << path.value()
+    LOG(ERROR) << "PolicyWatcherLinux on " << path.value()
                << " failed.";
   }
 
   // Called by FilePathWatcherDelegate.
   virtual void OnFilePathChanged(const FilePath& path) {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
 
     Reload();
   }
 
  private:
-  // Needed to avoid refcounting NatPolicyLinux.
+  // Needed to avoid refcounting PolicyWatcherLinux.
   class FilePathWatcherDelegate :
     public base::files::FilePathWatcher::Delegate {
    public:
-    FilePathWatcherDelegate(base::WeakPtr<NatPolicyLinux> policy_watcher)
+    FilePathWatcherDelegate(base::WeakPtr<PolicyWatcherLinux> policy_watcher)
         : policy_watcher_(policy_watcher) {
     }
 
@@ -123,11 +123,11 @@ class NatPolicyLinux : public NatPolicy {
     virtual ~FilePathWatcherDelegate() {}
 
    private:
-    base::WeakPtr<NatPolicyLinux> policy_watcher_;
+    base::WeakPtr<PolicyWatcherLinux> policy_watcher_;
   };
 
   base::Time GetLastModification() {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     base::Time last_modification = base::Time();
     base::PlatformFileInfo file_info;
 
@@ -156,7 +156,7 @@ class NatPolicyLinux : public NatPolicy {
 
   // Caller owns the value.
   DictionaryValue* Load() {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     // Enumerate the files and sort them lexicographically.
     std::set<FilePath> files;
     file_util::FileEnumerator file_enumerator(config_dir_, false,
@@ -192,7 +192,7 @@ class NatPolicyLinux : public NatPolicy {
   }
 
   void Reload() {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     // Check the directory time in order to see whether a reload is required.
     base::TimeDelta delay;
     base::Time now = base::Time::Now();
@@ -209,13 +209,13 @@ class NatPolicyLinux : public NatPolicy {
 
     // Load the policy definitions.
     scoped_ptr<DictionaryValue> new_policy(Load());
-    UpdateNatPolicy(new_policy.get());
+    UpdatePolicies(new_policy.get());
 
     ScheduleFallbackReloadTask();
   }
 
   bool IsSafeToReloadPolicy(const base::Time& now, base::TimeDelta* delay) {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     DCHECK(delay);
     const base::TimeDelta kSettleInterval =
         base::TimeDelta::FromSeconds(kSettleIntervalSeconds);
@@ -247,10 +247,10 @@ class NatPolicyLinux : public NatPolicy {
   }
 
   // Managed with a scoped_ptr rather than being declared as an inline member to
-  // decouple the watcher's life cycle from the NatPolicyLinux. This decoupling
-  // makes it possible to destroy the watcher before the loader's destructor is
-  // called (e.g. during Stop), since |watcher_| internally holds a reference to
-  // the loader and keeps it alive.
+  // decouple the watcher's life cycle from the PolicyWatcherLinux. This
+  // decoupling makes it possible to destroy the watcher before the loader's
+  // destructor is called (e.g. during Stop), since |watcher_| internally holds
+  // a reference to the loader and keeps it alive.
   scoped_ptr<base::files::FilePathWatcher> watcher_;
 
   // Records last known modification timestamp of |config_dir_|.
@@ -265,13 +265,13 @@ class NatPolicyLinux : public NatPolicy {
   const FilePath config_dir_;
 
   // Allows us to cancel any inflight FileWatcher events or scheduled reloads.
-  base::WeakPtrFactory<NatPolicyLinux> weak_factory_;
+  base::WeakPtrFactory<PolicyWatcherLinux> weak_factory_;
 };
 
-NatPolicy* NatPolicy::Create(
+PolicyWatcher* PolicyWatcher::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   FilePath policy_dir(kPolicyDir);
-  return new NatPolicyLinux(task_runner, policy_dir);
+  return new PolicyWatcherLinux(task_runner, policy_dir);
 }
 
 }  // namespace policy_hack

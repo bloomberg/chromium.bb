@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/policy_hack/nat_policy.h"
+#include "remoting/host/policy_hack/policy_watcher.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -20,13 +20,14 @@ namespace policy_hack {
 // practice on the Mac that the user must logout/login for policies to be
 // applied. This will actually pick up policies every
 // |kFallbackReloadDelayMinutes| which is sufficient for right now.
-class NatPolicyMac : public NatPolicy {
+class PolicyWatcherMac : public PolicyWatcher {
  public:
-  explicit NatPolicyMac(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-     : NatPolicy(task_runner) {
+  explicit PolicyWatcherMac(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : PolicyWatcher(task_runner) {
   }
 
-  virtual ~NatPolicyMac() {
+  virtual ~PolicyWatcherMac() {
   }
 
  protected:
@@ -38,34 +39,37 @@ class NatPolicyMac : public NatPolicy {
   }
 
   virtual void Reload() OVERRIDE {
-    DCHECK(OnPolicyThread());
+    DCHECK(OnPolicyWatcherThread());
     base::DictionaryValue policy;
 
     CFStringRef policy_bundle_id = CFSTR("com.google.Chrome");
     if (CFPreferencesAppSynchronize(policy_bundle_id)) {
-      base::mac::ScopedCFTypeRef<CFStringRef> policy_key(
-          base::SysUTF8ToCFStringRef(kNatPolicyName));
-      Boolean valid = false;
-      bool allowed = CFPreferencesGetAppBooleanValue(policy_key,
-                                                     policy_bundle_id,
-                                                     &valid);
-      if (valid) {
-        policy.SetBoolean(kNatPolicyName, allowed);
+      for (int i = 0; i < kBooleanPolicyNamesNum; ++i) {
+        const char* policy_name = kBooleanPolicyNames[i];
+        base::mac::ScopedCFTypeRef<CFStringRef> policy_key(
+            base::SysUTF8ToCFStringRef(policy_name));
+        Boolean valid = false;
+        bool allowed = CFPreferencesGetAppBooleanValue(policy_key,
+                                                       policy_bundle_id,
+                                                       &valid);
+        if (valid) {
+          policy.SetBoolean(policy_name, allowed);
+        }
       }
     }
 
     // Set policy. Policy must be set (even if it is empty) so that the
     // default policy is picked up the first time reload is called.
-    UpdateNatPolicy(&policy);
+    UpdatePolicies(&policy);
 
     // Reschedule task.
     ScheduleFallbackReloadTask();
   }
 };
 
-NatPolicy* NatPolicy::Create(
+PolicyWatcher* PolicyWatcher::Create(
         scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return new NatPolicyMac(task_runner);
+  return new PolicyWatcherMac(task_runner);
 }
 
 }  // namespace policy_hack
