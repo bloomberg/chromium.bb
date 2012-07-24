@@ -21,15 +21,21 @@
 %%{
   machine x86_64_decoder;
   alphtype unsigned char;
+  variable p current_position;
+  variable pe end_of_bundle;
+  variable eof end_of_bundle;
+  variable cs current_state;
 
   action rel8_operand {
-    rel8_operand(p + 1, data, jump_dests, size, &errors_detected);
+    rel8_operand(current_position + 1, data, jump_dests, size,
+                 &errors_detected);
   }
   action rel16_operand {
     #error rel16_operand should never be used in nacl
   }
   action rel32_operand {
-    rel32_operand(p + 1, data, jump_dests, size, &errors_detected);
+    rel32_operand(current_position + 1, data, jump_dests, size,
+                  &errors_detected);
   }
 
   # Do nothing when IMM operand is detected for now.  Will be used later for
@@ -56,29 +62,29 @@
      0x83 0xe6 0xe0 0xff (0xd6|0xe6)  | # naclcall/jmp %esi
      0x83 0xe7 0xe0 0xff (0xd7|0xe7))   # naclcall/jmp %edi
     @{
-      BitmapClearBit(valid_targets, (p - data) - 1);
+      BitmapClearBit(valid_targets, (current_position - data) - 1);
     } |
     (0x65 0xa1 (0x00|0x04) 0x00 0x00 0x00      | # mov %gs:0x0/0x4,%eax
      0x65 0x8b (0x05|0x0d|0x015|0x1d|0x25|0x2d|0x35|0x3d)
           (0x00|0x04) 0x00 0x00 0x00);           # mov %gs:0x0/0x4,%reg
 
   main := ((one_instruction | special_instruction) >{
-        begin = p;
+        instruction_start = current_position;
         errors_detected = 0;
-        BitmapSetBit(valid_targets, p - data);
+        BitmapSetBit(valid_targets, current_position - data);
      })*
      @{
        if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
+         process_error(instruction_start, errors_detected, userdata);
          result = 1;
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       begin = p + 1;
+       instruction_start = current_position + 1;
      }
     $err{
-        process_error(begin, UNRECOGNIZED_INSTRUCTION, userdata);
+        process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
         goto error_detected;
     };
@@ -95,8 +101,9 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
 
-  const uint8_t *p = data;
-  const uint8_t *begin = p;  /* Start of the instruction being processed.  */
+  const uint8_t *current_position = data;
+  /* Start of the instruction being processed.  */
+  const uint8_t *instruction_start = current_position;
 
   int result = 0;
 
@@ -106,10 +113,9 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
 
   assert(size % kBundleSize == 0);
 
-  while (p < data + size) {
-    const uint8_t *pe = p + kBundleSize;
-    const uint8_t *eof = pe;
-    int cs;
+  while (current_position < data + size) {
+    const uint8_t *end_of_bundle = current_position + kBundleSize;
+    int current_state;
 
     %% write init;
     %% write exec;

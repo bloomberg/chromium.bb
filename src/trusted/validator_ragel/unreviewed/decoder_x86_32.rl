@@ -18,12 +18,16 @@
 %%{
   machine x86_32_decoder;
   alphtype unsigned char;
+  variable p current_position;
+  variable pe end_of_data;
+  variable eof end_of_data;
+  variable cs current_state;
 
   include decode_x86_32 "decoder_x86_32_instruction.rl";
 
   main := (one_instruction
     >{
-        begin = p;
+        instruction_start = current_position;
         SET_DISP_TYPE(DISPNONE);
         SET_IMM_TYPE(IMMNONE);
         SET_IMM2_TYPE(IMMNONE);
@@ -67,9 +71,10 @@
             (imm2[0] + 256U * (imm2[1] + 256U * (imm2[2] + 256U * (imm2[3]))));
             break;
         }
-        process_instruction(begin, p+1, &instruction, userdata);
+        process_instruction(instruction_start, current_position+1, &instruction,
+                            userdata);
     })*
-    $!{ process_error(p, userdata);
+    $!{ process_error(current_position, userdata);
         result = 1;
         goto error_detected;
     };
@@ -127,13 +132,12 @@ enum imm_mode {
 int DecodeChunkIA32(const uint8_t *data, size_t size,
                     process_instruction_func process_instruction,
                     process_decoding_error_func process_error, void *userdata) {
-  const uint8_t *p = data;
-  const uint8_t *pe = data + size;
-  const uint8_t *eof = pe;
+  const uint8_t *current_position = data;
+  const uint8_t *end_of_data = data + size;
   const uint8_t *disp = NULL;
   const uint8_t *imm = NULL;
   const uint8_t *imm2 = NULL;
-  const uint8_t *begin = p;
+  const uint8_t *instruction_start = current_position;
   uint8_t vex_prefix3 = 0x00;
   enum disp_mode disp_type = DISPNONE;
   enum imm_mode imm_operand = IMMNONE;
@@ -141,7 +145,7 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   struct instruction instruction;
   int result = 0;
 
-  int cs;
+  int current_state;
 
   /* Not used in ia32_mode.  */
   instruction.prefix.rex = 0;

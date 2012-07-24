@@ -19,12 +19,16 @@
 %%{
   machine x86_64_decoder;
   alphtype unsigned char;
+  variable p current_position;
+  variable pe end_of_data;
+  variable eof end_of_data;
+  variable cs current_state;
 
   include decode_x86_64 "decoder_x86_64_instruction.rl";
 
   main := (one_instruction
     >{
-        begin = p;
+        instruction_start = current_position;
         SET_DISP_TYPE(DISPNONE);
         SET_IMM_TYPE(IMMNONE);
         SET_IMM2_TYPE(IMMNONE);
@@ -85,9 +89,10 @@
                                                                  imm2[7])))))));
             break;
         }
-        process_instruction(begin, p+1, &instruction, userdata);
+        process_instruction(instruction_start, current_position+1, &instruction,
+                            userdata);
     })*
-    $!{ process_error(p, userdata);
+    $!{ process_error(current_position, userdata);
         result = 1;
         goto error_detected;
     };
@@ -152,13 +157,12 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
                      process_instruction_func process_instruction,
                      process_decoding_error_func process_error,
                      void *userdata) {
-  const uint8_t *p = data;
-  const uint8_t *pe = data + size;
-  const uint8_t *eof = pe;
+  const uint8_t *current_position = data;
+  const uint8_t *end_of_data = data + size;
   const uint8_t *disp = NULL;
   const uint8_t *imm = NULL;
   const uint8_t *imm2 = NULL;
-  const uint8_t *begin = p;
+  const uint8_t *instruction_start = current_position;
   uint8_t vex_prefix2 = 0xe0;
   uint8_t vex_prefix3 = 0x00;
   enum disp_mode disp_type = DISPNONE;
@@ -167,7 +171,7 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
   struct instruction instruction;
   int result = 0;
 
-  int cs;
+  int current_state;
 
   %% write init;
   %% write exec;

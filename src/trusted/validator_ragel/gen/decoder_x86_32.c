@@ -2903,7 +2903,7 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	96u, 103u, 104u, 111u, 112u, 119u, 120u, 127u, 
 	128u, 135u, 136u, 143u, 144u, 151u, 152u, 159u, 
 	160u, 167u, 168u, 175u, 176u, 183u, 184u, 191u, 
-	192u, 199u, 208u, 215u, 216u, 223u, 224u, 231u, 
+	192u, 199u, 200u, 207u, 208u, 215u, 224u, 231u, 
 	232u, 239u, 240u, 247u, 248u, 255u, 4u, 5u, 
 	12u, 13u, 20u, 21u, 28u, 29u, 36u, 37u, 
 	44u, 45u, 52u, 53u, 60u, 61u, 68u, 76u, 
@@ -2916,7 +2916,7 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	136u, 143u, 144u, 151u, 152u, 159u, 160u, 167u, 
 	168u, 175u, 176u, 183u, 184u, 191u, 192u, 199u, 
 	200u, 207u, 208u, 215u, 216u, 223u, 224u, 231u, 
-	240u, 247u, 248u, 255u, 4u, 5u, 12u, 13u, 
+	232u, 239u, 248u, 255u, 4u, 5u, 12u, 13u, 
 	20u, 21u, 28u, 29u, 36u, 37u, 44u, 45u, 
 	68u, 76u, 84u, 92u, 100u, 108u, 132u, 140u, 
 	148u, 156u, 164u, 172u, 0u, 47u, 64u, 111u, 
@@ -3233,8 +3233,8 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	225u, 226u, 227u, 228u, 229u, 230u, 231u, 233u, 
 	234u, 235u, 236u, 237u, 238u, 239u, 241u, 242u, 
 	243u, 244u, 245u, 246u, 247u, 248u, 249u, 250u, 
-	251u, 252u, 253u, 254u, 255u, 0u, 63u, 128u, 
-	191u, 192u, 240u, 81u, 83u, 88u, 89u, 90u, 
+	251u, 252u, 253u, 254u, 255u, 0u, 63u, 64u, 
+	127u, 192u, 240u, 81u, 83u, 88u, 89u, 90u, 
 	92u, 93u, 94u, 95u, 194u, 81u, 88u, 89u, 
 	90u, 92u, 93u, 94u, 95u, 124u, 125u, 194u, 
 	208u, 16u, 17u, 18u, 22u, 81u, 82u, 83u, 
@@ -3297,7 +3297,7 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	96u, 103u, 104u, 111u, 112u, 119u, 120u, 127u, 
 	128u, 135u, 136u, 143u, 144u, 151u, 152u, 159u, 
 	160u, 167u, 168u, 175u, 176u, 183u, 184u, 191u, 
-	192u, 199u, 200u, 207u, 216u, 223u, 224u, 231u, 
+	200u, 207u, 208u, 215u, 216u, 223u, 224u, 231u, 
 	232u, 239u, 240u, 247u, 248u, 255u, 4u, 5u, 
 	20u, 21u, 28u, 29u, 36u, 37u, 44u, 45u, 
 	52u, 53u, 60u, 61u, 68u, 84u, 92u, 100u, 
@@ -4348,7 +4348,7 @@ static const short _x86_32_decoder_trans_targs[] = {
 	242, 243, 244, 247, 235, 301, 302, 242, 
 	243, 244, 247, 235, 301, 302, 242, 243, 
 	244, 247, 248, 250, 303, 304, 254, 255, 
-	257, 258, 347, 3, 232, 7, 223, 223, 
+	257, 258, 347, 7, 232, 3, 223, 223, 
 	223, 223, 223, 223, 223, 223, 223, 200, 
 	0, 223, 223, 223, 223, 223, 223, 223, 
 	223, 223, 223, 200, 223, 0, 56, 31, 
@@ -4934,16 +4934,16 @@ static const short _x86_32_decoder_trans_actions[] = {
 	9869, 7195, 10177, 11745, 10057, 12713, 10297, 13185, 
 	16017, 10721, 10185, 11753, 10065, 12721, 10305, 13193, 
 	16025, 10729, 10185, 11753, 10065, 12721, 10305, 13193, 
-	16025, 10729, 6894, 6817, 9330, 6971, 9687, 9862, 
-	7188, 8574, 6887, 10169, 8567, 11737, 6810, 10049, 
+	16025, 10729, 6894, 8574, 6817, 6971, 9687, 9862, 
+	7188, 9330, 6887, 10169, 8567, 11737, 6810, 10049, 
 	9323, 12705, 6964, 10289, 9680, 13177, 9855, 16009, 
 	7181, 10713, 6887, 8567, 6810, 9323, 6964, 9680, 
 	9855, 7181, 6887, 8567, 6810, 9323, 6964, 9680, 
 	9855, 7181, 10153, 11721, 10033, 12689, 10273, 13161, 
 	15993, 10697, 10161, 11729, 10041, 12697, 10281, 13169, 
 	16001, 10705, 10161, 11729, 10041, 12697, 10281, 13169, 
-	16001, 10705, 6880, 8560, 6803, 9316, 6957, 9848, 
-	7174, 9673, 8406, 11545, 8406, 11545, 8406, 11545, 
+	16001, 10705, 6880, 8560, 6803, 9316, 6957, 9673, 
+	7174, 9848, 8406, 11545, 8406, 11545, 8406, 11545, 
 	8406, 11545, 8406, 11545, 8406, 11545, 8406, 8406, 
 	8406, 8406, 8406, 8406, 8406, 8406, 8406, 8406, 
 	8406, 8406, 17285, 11537, 11537, 11577, 31, 8427, 
@@ -5294,8 +5294,8 @@ static const short _x86_32_decoder_trans_actions[] = {
 	2562, 2322, 2334, 2670, 2682, 2346, 2358, 10785, 
 	11137, 10817, 10833, 11273, 11289, 10849, 10865, 7258, 
 	7874, 7314, 7342, 8077, 8105, 7370, 7398, 7258, 
-	7874, 7314, 7342, 8077, 8105, 7370, 7398, 16781, 
-	16898, 6684, 16907, 16916, 16880, 16889, 6677, 2532, 
+	7874, 7314, 7342, 8077, 8105, 7370, 7398, 16898, 
+	6677, 6684, 16907, 16916, 16880, 16889, 16781, 2532, 
 	7811, 2640, 8014, 2652, 8042, 2556, 7867, 2550, 
 	7853, 2622, 7958, 2604, 7937, 2532, 2640, 2652, 
 	2556, 2550, 2622, 2604, 2532, 2640, 2652, 2556, 
@@ -5602,13 +5602,12 @@ enum imm_mode {
 int DecodeChunkIA32(const uint8_t *data, size_t size,
                     process_instruction_func process_instruction,
                     process_decoding_error_func process_error, void *userdata) {
-  const uint8_t *p = data;
-  const uint8_t *pe = data + size;
-  const uint8_t *eof = pe;
+  const uint8_t *current_position = data;
+  const uint8_t *end_of_data = data + size;
   const uint8_t *disp = NULL;
   const uint8_t *imm = NULL;
   const uint8_t *imm2 = NULL;
-  const uint8_t *begin = p;
+  const uint8_t *instruction_start = current_position;
   uint8_t vex_prefix3 = 0x00;
   enum disp_mode disp_type = DISPNONE;
   enum imm_mode imm_operand = IMMNONE;
@@ -5616,14 +5615,14 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   struct instruction instruction;
   int result = 0;
 
-  int cs;
+  int current_state;
 
   /* Not used in ia32_mode.  */
   instruction.prefix.rex = 0;
 
   
 	{
-	cs = x86_32_decoder_start;
+	( current_state) = x86_32_decoder_start;
 	}
 
   
@@ -5634,15 +5633,15 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
 	unsigned int _nacts;
 	const unsigned char *_keys;
 
-	if ( p == pe )
+	if ( ( current_position) == ( end_of_data) )
 		goto _test_eof;
-	if ( cs == 0 )
+	if ( ( current_state) == 0 )
 		goto _out;
 _resume:
-	_keys = _x86_32_decoder_trans_keys + _x86_32_decoder_key_offsets[cs];
-	_trans = _x86_32_decoder_index_offsets[cs];
+	_keys = _x86_32_decoder_trans_keys + _x86_32_decoder_key_offsets[( current_state)];
+	_trans = _x86_32_decoder_index_offsets[( current_state)];
 
-	_klen = _x86_32_decoder_single_lengths[cs];
+	_klen = _x86_32_decoder_single_lengths[( current_state)];
 	if ( _klen > 0 ) {
 		const unsigned char *_lower = _keys;
 		const unsigned char *_mid;
@@ -5652,9 +5651,9 @@ _resume:
 				break;
 
 			_mid = _lower + ((_upper-_lower) >> 1);
-			if ( (*p) < *_mid )
+			if ( (*( current_position)) < *_mid )
 				_upper = _mid - 1;
-			else if ( (*p) > *_mid )
+			else if ( (*( current_position)) > *_mid )
 				_lower = _mid + 1;
 			else {
 				_trans += (unsigned int)(_mid - _keys);
@@ -5665,7 +5664,7 @@ _resume:
 		_trans += _klen;
 	}
 
-	_klen = _x86_32_decoder_range_lengths[cs];
+	_klen = _x86_32_decoder_range_lengths[( current_state)];
 	if ( _klen > 0 ) {
 		const unsigned char *_lower = _keys;
 		const unsigned char *_mid;
@@ -5675,9 +5674,9 @@ _resume:
 				break;
 
 			_mid = _lower + (((_upper-_lower) >> 1) & ~1);
-			if ( (*p) < _mid[0] )
+			if ( (*( current_position)) < _mid[0] )
 				_upper = _mid - 2;
-			else if ( (*p) > _mid[1] )
+			else if ( (*( current_position)) > _mid[1] )
 				_lower = _mid + 2;
 			else {
 				_trans += (unsigned int)((_mid - _keys)>>1);
@@ -5688,7 +5687,7 @@ _resume:
 	}
 
 _match:
-	cs = _x86_32_decoder_trans_targs[_trans];
+	( current_state) = _x86_32_decoder_trans_targs[_trans];
 
 	if ( _x86_32_decoder_trans_actions[_trans] == 0 )
 		goto _again;
@@ -5706,7 +5705,7 @@ _match:
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
     SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(p);
+    SET_DISP_PTR(current_position);
   }
 	break;
 	case 1:
@@ -5716,7 +5715,7 @@ _match:
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
     SET_DISP_TYPE(DISP16);
-    SET_DISP_PTR(p - 1);
+    SET_DISP_PTR(current_position - 1);
   }
 	break;
 	case 2:
@@ -5726,7 +5725,7 @@ _match:
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
     SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(p - 3);
+    SET_DISP_PTR(current_position - 3);
   }
 	break;
 	case 3:
@@ -5794,62 +5793,62 @@ _match:
 	case 15:
 	{
     SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(p);
+    SET_DISP_PTR(current_position);
   }
 	break;
 	case 16:
 	{
     SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(p - 3);
+    SET_DISP_PTR(current_position - 3);
   }
 	break;
 	case 17:
 	{
     SET_IMM_TYPE(IMM2);
-    SET_IMM_PTR(p);
+    SET_IMM_PTR(current_position);
   }
 	break;
 	case 18:
 	{
     SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(p);
+    SET_IMM_PTR(current_position);
   }
 	break;
 	case 19:
 	{
     SET_IMM2_TYPE(IMM8);
-    SET_IMM2_PTR(p);
+    SET_IMM2_PTR(current_position);
   }
 	break;
 	case 20:
 	{
     SET_IMM_TYPE(IMM16);
-    SET_IMM_PTR(p - 1);
+    SET_IMM_PTR(current_position - 1);
   }
 	break;
 	case 21:
 	{
     SET_IMM2_TYPE(IMM16);
-    SET_IMM2_PTR(p - 1);
+    SET_IMM2_PTR(current_position - 1);
   }
 	break;
 	case 22:
 	{
     SET_IMM_TYPE(IMM32);
-    SET_IMM_PTR(p - 3);
+    SET_IMM_PTR(current_position - 3);
   }
 	break;
 	case 23:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE((*p) & 0x07);
+    SET_MODRM_BASE((*current_position) & 0x07);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
 	break;
 	case 24:
 	{
-    SET_MODRM_BASE((*p) & 0x07);
+    SET_MODRM_BASE((*current_position) & 0x07);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -5865,27 +5864,27 @@ _match:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[((*p) & 0x38) >> 3]);
-    SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[((*current_position) & 0x38) >> 3]);
+    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	break;
 	case 27:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE((*p) & 0x7);
-    SET_MODRM_INDEX(index_registers[((*p) & 0x38) >> 3]);
-    SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
+    SET_MODRM_BASE((*current_position) & 0x7);
+    SET_MODRM_INDEX(index_registers[((*current_position) & 0x38) >> 3]);
+    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	break;
 	case 28:
 	{
-    SET_VEX_PREFIX3(*p);
+    SET_VEX_PREFIX3(*current_position);
   }
 	break;
 	case 29:
 	{
     /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
+    SET_VEX_PREFIX3((*current_position) & 0x7f);
   }
 	break;
 	case 30:
@@ -6058,22 +6057,22 @@ _match:
 	break;
 	case 63:
 	{
-    SET_OPERAND_NAME(0, (*p) & 0x7);
+    SET_OPERAND_NAME(0, (*current_position) & 0x7);
   }
 	break;
 	case 64:
 	{
-    SET_OPERAND_NAME(0, (*p) & 0x07);
+    SET_OPERAND_NAME(0, (*current_position) & 0x07);
   }
 	break;
 	case 65:
 	{
-    SET_OPERAND_NAME(0, ((*p) & 0x38) >> 3);
+    SET_OPERAND_NAME(0, ((*current_position) & 0x38) >> 3);
   }
 	break;
 	case 66:
 	{
-    SET_OPERAND_NAME(0, ((*p) & 0x38) >> 3);
+    SET_OPERAND_NAME(0, ((*current_position) & 0x38) >> 3);
   }
 	break;
 	case 67:
@@ -6226,22 +6225,22 @@ _match:
 	break;
 	case 96:
 	{
-    SET_OPERAND_NAME(1, (*p) & 0x7);
+    SET_OPERAND_NAME(1, (*current_position) & 0x7);
   }
 	break;
 	case 97:
 	{
-    SET_OPERAND_NAME(1, (*p) & 0x07);
+    SET_OPERAND_NAME(1, (*current_position) & 0x07);
   }
 	break;
 	case 98:
 	{
-    SET_OPERAND_NAME(1, ((*p) & 0x38) >> 3);
+    SET_OPERAND_NAME(1, ((*current_position) & 0x38) >> 3);
   }
 	break;
 	case 99:
 	{
-    SET_OPERAND_NAME(1, ((*p) & 0x38) >> 3);
+    SET_OPERAND_NAME(1, ((*current_position) & 0x38) >> 3);
   }
 	break;
 	case 100:
@@ -6351,17 +6350,17 @@ _match:
 	break;
 	case 121:
 	{
-    SET_OPERAND_NAME(2, p[0] >> 4);
+    SET_OPERAND_NAME(2, (*current_position) >> 4);
   }
 	break;
 	case 122:
 	{
-    SET_OPERAND_NAME(2, (*p) & 0x07);
+    SET_OPERAND_NAME(2, (*current_position) & 0x07);
   }
 	break;
 	case 123:
 	{
-    SET_OPERAND_NAME(2, ((*p) & 0x38) >> 3);
+    SET_OPERAND_NAME(2, ((*current_position) & 0x38) >> 3);
   }
 	break;
 	case 124:
@@ -6431,12 +6430,12 @@ _match:
 	break;
 	case 137:
 	{
-    SET_OPERAND_NAME(3, p[0] >> 4);
+    SET_OPERAND_NAME(3, (*current_position) >> 4);
   }
 	break;
 	case 138:
 	{
-    SET_OPERAND_NAME(3, (*p) & 0x07);
+    SET_OPERAND_NAME(3, (*current_position) & 0x07);
   }
 	break;
 	case 139:
@@ -9720,7 +9719,7 @@ _match:
 	break;
 	case 1200:
 	{
-        begin = p;
+        instruction_start = current_position;
         SET_DISP_TYPE(DISPNONE);
         SET_IMM_TYPE(IMMNONE);
         SET_IMM2_TYPE(IMMNONE);
@@ -9766,11 +9765,12 @@ _match:
             (imm2[0] + 256U * (imm2[1] + 256U * (imm2[2] + 256U * (imm2[3]))));
             break;
         }
-        process_instruction(begin, p+1, &instruction, userdata);
+        process_instruction(instruction_start, current_position+1, &instruction,
+                            userdata);
     }
 	break;
 	case 1202:
-	{ process_error(p, userdata);
+	{ process_error(current_position, userdata);
         result = 1;
         goto error_detected;
     }
@@ -9779,19 +9779,19 @@ _match:
 	}
 
 _again:
-	if ( cs == 0 )
+	if ( ( current_state) == 0 )
 		goto _out;
-	if ( ++p != pe )
+	if ( ++( current_position) != ( end_of_data) )
 		goto _resume;
 	_test_eof: {}
-	if ( p == eof )
+	if ( ( current_position) == ( end_of_data) )
 	{
-	const short *__acts = _x86_32_decoder_actions + _x86_32_decoder_eof_actions[cs];
+	const short *__acts = _x86_32_decoder_actions + _x86_32_decoder_eof_actions[( current_state)];
 	unsigned int __nacts = (unsigned int) *__acts++;
 	while ( __nacts-- > 0 ) {
 		switch ( *__acts++ ) {
 	case 1202:
-	{ process_error(p, userdata);
+	{ process_error(current_position, userdata);
         result = 1;
         goto error_detected;
     }

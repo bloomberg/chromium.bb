@@ -17,20 +17,26 @@
 %%{
   machine x86_64_decoder;
   alphtype unsigned char;
+  variable p current_position;
+  variable pe end_of_bundle;
+  variable eof end_of_bundle;
+  variable cs current_state;
 
   action check_access {
-    check_access(begin - data, base, index, restricted_register, valid_targets,
+    check_access(instruction_start - data, base, index, restricted_register, valid_targets,
                  &errors_detected);
   }
 
   action rel8_operand {
-    rel8_operand(p + 1, data, jump_dests, size, &errors_detected);
+    rel8_operand(current_position + 1, data, jump_dests, size,
+                 &errors_detected);
   }
   action rel16_operand {
     #error rel16_operand should never be used in nacl
   }
   action rel32_operand {
-    rel32_operand(p + 1, data, jump_dests, size, &errors_detected);
+    rel32_operand(current_position + 1, data, jump_dests, size,
+                  &errors_detected);
   }
 
   # Do nothing when IMM operand is detected for now.  Will be used later for
@@ -50,11 +56,13 @@
   }
   action process_1_operands {
     process_1_operands(&restricted_register, &errors_detected, rex_prefix,
-                       operand_states, begin, &sandboxed_rsi_restricted_rdi);
+                       operand_states, instruction_start,
+                       &sandboxed_rsi_restricted_rdi);
   }
   action process_2_operands {
     process_2_operands(&restricted_register, &errors_detected, rex_prefix,
-                       operand_states, begin, &sandboxed_rsi_restricted_rdi);
+                       operand_states, instruction_start,
+                       &sandboxed_rsi_restricted_rdi);
   }
 
   include decode_x86_64 "validator_x86_64_instruction.rl";
@@ -78,7 +86,7 @@
          errors_detected |= RESTRICTED_RBP_UNPROCESSED;
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
+       BitmapClearBit(valid_targets, (instruction_start - data));
     };
 
   # Special %rbp modifications without required sandboxing
@@ -96,7 +104,7 @@
          errors_detected |= RESTRICTED_RSP_UNPROCESSED;
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
+       BitmapClearBit(valid_targets, (instruction_start - data));
     };
 
   # naclcall - old version (is not used by contemporary toolchain)
@@ -123,8 +131,8 @@
       (any{3,4} 0x49 0x8d 0x34 any 0xff (0xd6|0xe6)) | # lea (%r15,%rXX),%rdi
       (any{3,4} 0x49 0x8d 0x3c any 0xff (0xd7|0xe7)))) #   call/jmp %rdi
     @{
-       BitmapClearBit(valid_targets, (p - data) - 6);
-       BitmapClearBit(valid_targets, (p - data) - 1);
+       BitmapClearBit(valid_targets, (current_position - data) - 6);
+       BitmapClearBit(valid_targets, (current_position - data) - 1);
        restricted_register = kNoRestrictedReg;
     } |
     (((0x83 0xe0 0xe0 0x4d 0x8d any 0x07 any{3})  | # and $~0x1f, %eax
@@ -148,8 +156,8 @@
       (any{3,4} 0x4d 0x8d 0x2c any 0x41 0xff (0xd5|0xe5)) | #               %r14
       (any{3,4} 0x4d 0x8d 0x34 any 0x41 0xff (0xd6|0xe6)))) #   call/jmp %r14
     @{
-       BitmapClearBit(valid_targets, (p - data) - 7);
-       BitmapClearBit(valid_targets, (p - data) - 2);
+       BitmapClearBit(valid_targets, (current_position - data) - 7);
+       BitmapClearBit(valid_targets, (current_position - data) - 2);
        restricted_register = kNoRestrictedReg;
     };
 
@@ -164,8 +172,8 @@
      0x83 0xe6 0xe0 0x4c 0x01 0xfe 0xff (0xd6|0xe6) | # naclcall/jmp %esi, %r15
      0x83 0xe7 0xe0 0x4c 0x01 0xff 0xff (0xd7|0xe7))  # naclcall/jmp %edi, %r15
     @{
-       BitmapClearBit(valid_targets, (p - data) - 4);
-       BitmapClearBit(valid_targets, (p - data) - 1);
+       BitmapClearBit(valid_targets, (current_position - data) - 4);
+       BitmapClearBit(valid_targets, (current_position - data) - 1);
        restricted_register = kNoRestrictedReg;
     } |
     (0x41 0x83 0xe0 0xe0 0x4d 0x01 0xf8 0x41 0xff (0xd0|0xe0) | # naclcall/jmp
@@ -176,8 +184,8 @@
      0x41 0x83 0xe5 0xe0 0x4d 0x01 0xfd 0x41 0xff (0xd5|0xe5) | # naclcall/jmp
      0x41 0x83 0xe6 0xe0 0x4d 0x01 0xfe 0x41 0xff (0xd6|0xe6))  #   %r14d, %r15
     @{
-       BitmapClearBit(valid_targets, (p - data) - 5);
-       BitmapClearBit(valid_targets, (p - data) - 2);
+       BitmapClearBit(valid_targets, (current_position - data) - 5);
+       BitmapClearBit(valid_targets, (current_position - data) - 2);
        restricted_register = kNoRestrictedReg;
     };
 
@@ -185,7 +193,7 @@
   rsi_sandboxing =
     (0x49 0x8d 0x34 0x37) # lea (%r15,%rsi,1),%rsi
     @{ if (restricted_register == REG_RSI) {
-         sandboxed_rsi = begin;
+         sandboxed_rsi = instruction_start;
          restricted_register = kSandboxedRsi;
        } else {
          restricted_register = kNoRestrictedReg;
@@ -196,10 +204,10 @@
   rdi_sandboxing =
     (0x49 0x8d 0x3c 0x3f) # lea (%r15,%rdi,1),%rdi
     @{ if (restricted_register == REG_RDI) {
-         sandboxed_rdi = begin;
+         sandboxed_rdi = instruction_start;
          restricted_register = kSandboxedRdi;
        } else if (restricted_register == kSandboxedRsiRestrictedRdi) {
-         sandboxed_rdi = begin;
+         sandboxed_rdi = instruction_start;
          restricted_register = kSandboxedRsiSandboxedRdi;
        } else {
          restricted_register = kNoRestrictedReg;
@@ -214,7 +222,7 @@
     @{ if (restricted_register != kSandboxedRsi) {
          errors_detected |= RSI_UNSANDBOXDED;
        } else {
-         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (instruction_start - data));
          BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
@@ -233,7 +241,7 @@
            restricted_register != kSandboxedRsiSandboxedRdi) {
          errors_detected |= RDI_UNSANDBOXDED;
        } else {
-         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (instruction_start - data));
          BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
@@ -254,7 +262,7 @@
            errors_detected |= RSI_UNSANDBOXDED;
          }
        } else {
-         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (instruction_start - data));
          BitmapClearBit(valid_targets, (sandboxed_rsi - data));
          BitmapClearBit(valid_targets, (sandboxed_rsi_restricted_rdi - data));
          BitmapClearBit(valid_targets, (sandboxed_rdi - data));
@@ -279,9 +287,9 @@
   normal_instruction = one_instruction - special_instruction;
 
   main := ((normal_instruction | special_instruction) >{
-        begin = p;
+        instruction_start = current_position;
         errors_detected = 0;
-        BitmapSetBit(valid_targets, p - data);
+        BitmapSetBit(valid_targets, current_position - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
         SET_VEX_PREFIX3(0x00);
@@ -289,16 +297,16 @@
      }
      @{
        if (errors_detected) {
-         process_error(begin, errors_detected, userdata);
+         process_error(instruction_start, errors_detected, userdata);
          result = 1;
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
-       begin = p + 1;
+       instruction_start = current_position + 1;
      })*
     $err{
-        process_error(begin, UNRECOGNIZED_INSTRUCTION, userdata);
+        process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
         goto error_detected;
     };
@@ -314,8 +322,9 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
 
-  const uint8_t *p = data;
-  const uint8_t *begin = p;  /* Start of the instruction being processed.  */
+  const uint8_t *current_position = data;
+  /* Start of the instruction being processed.  */
+  const uint8_t *instruction_start = current_position;
 
   uint8_t rex_prefix = FALSE;
   uint8_t vex_prefix2 = 0xe0;
@@ -340,20 +349,19 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
 
   assert(size % kBundleSize == 0);
 
-  while (p < data + size) {
-    const uint8_t *pe = p + kBundleSize;
-    const uint8_t *eof = pe;
-    int cs;
+  while (current_position < data + size) {
+    const uint8_t *end_of_bundle = current_position + kBundleSize;
+    int current_state;
     uint8_t restricted_register = kNoRestrictedReg;
 
     %% write init;
     %% write exec;
 
     if (restricted_register == REG_RBP) {
-      process_error(begin, RESTRICTED_RBP_UNPROCESSED, userdata);
+      process_error(instruction_start, RESTRICTED_RBP_UNPROCESSED, userdata);
       result = 1;
     } else if (restricted_register == REG_RSP) {
-      process_error(begin, RESTRICTED_RSP_UNPROCESSED, userdata);
+      process_error(instruction_start, RESTRICTED_RSP_UNPROCESSED, userdata);
       result = 1;
     }
   }
