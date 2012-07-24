@@ -5732,7 +5732,12 @@
    fun:_ZN3WTFL16threadEntryPointEPv
    fun:_ZN3WTFL19wtfThreadEntryPointEPv
 }
-
+{
+   bug_138712
+   Memcheck:Uninitialized
+   fun:_ZN7testing8internal11CmpHelperGEIddEENS_15AssertionResultEPKcS4_RKT_RKT0_
+   fun:_ZN3gfx30JPEGCodec_EncodeDecodeRGB_Test8TestBodyEv
+}
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
