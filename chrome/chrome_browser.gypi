@@ -3911,6 +3911,8 @@
         'browser/ui/webui/chromeos/login/base_screen_handler.h',
         'browser/ui/webui/chromeos/login/core_oobe_handler.cc',
         'browser/ui/webui/chromeos/login/core_oobe_handler.h',
+        'browser/ui/webui/chromeos/drive_internals_ui.cc',
+        'browser/ui/webui/chromeos/drive_internals_ui.h',
         'browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.cc',
         'browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h',
         'browser/ui/webui/chromeos/login/eula_screen_handler.cc',
