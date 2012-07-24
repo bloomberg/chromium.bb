@@ -2975,6 +2975,11 @@ spanyolmeggyen
 testmode: backtranslate
 spanyolmeggyen
 
+stílusszerű, stílusszerkesztő
+
+testmode: backtranslate
+stílusszerű, stílusszerkesztő
+
 sugárzásszerű 
 
 testmode: backtranslate

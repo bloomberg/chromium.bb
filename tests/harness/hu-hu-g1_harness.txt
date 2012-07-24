@@ -2387,6 +2387,10 @@
           "output": "spanyolmeggyen"
         }, 
         {
+          "input": "⠎⠞⠌⠇⠥⠎⠱⠑⠗⠾⠂ ⠎⠞⠌⠇⠥⠎⠱⠑⠗⠅⠑⠱⠞⠻", 
+          "output": "stílusszerű, stílusszerkesztő"
+        }, 
+        {
           "input": "⠎⠥⠛⠈⠗⠣⠈⠎⠱⠑⠗⠾ ", 
           "output": "sugárzásszerű "
         }, 
@@ -5529,6 +5533,10 @@
         {
           "input": "spanyolmeggyen", 
           "output": "⠎⠏⠁⠫⠕⠇⠍⠑⠹⠹⠑⠝"
+        }, 
+        {
+          "input": "stílusszerű, stílusszerkesztő", 
+          "output": "⠎⠞⠌⠇⠥⠎⠱⠑⠗⠾⠂ ⠎⠞⠌⠇⠥⠎⠱⠑⠗⠅⠑⠱⠞⠻"
         }, 
         {
           "input": "sugárzásszerű ", 

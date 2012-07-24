@@ -737,6 +737,7 @@ partword kattintássz 13-1-2345-2345-24-1345-2345-4-234-156	For example kattint�
 begword rúzsossz 1235-346-345-135-234-156	For example rúzsosszájú word
 partword formánsszint 124-135-1235-134-4-1345-234-156-24-1345-2345	For example formánsszintetizátor word
 partword vírussz 1236-34-1235-136-234-156	For example vírusszűrés word
+partword stílussz 234-2345-34-123-136-234-156	For example stílusszerű, stílusszerkesztő words
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules
