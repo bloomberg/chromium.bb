@@ -271,4 +271,16 @@ void DocumentsService::AuthorizeApp(const GURL& resource_url,
                                  resource_url, app_ids));
 }
 
+bool DocumentsService::IsFullyAuthenticated() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  return runner_->auth_service()->IsFullyAuthenticated();
+}
+
+bool DocumentsService::IsPartiallyAuthenticated() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  return runner_->auth_service()->IsPartiallyAuthenticated();
+}
+
 }  // namespace gdata
