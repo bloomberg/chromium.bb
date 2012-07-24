@@ -27,18 +27,9 @@ static const char kChromeExtensionSchemeUrlPattern[] =
 static const char kChromiumDomainRedirectUrlPattern[] =
     "https://%s.chromiumapp.org/";
 
-extensions::WebAuthFlow::InterceptorForTests* g_interceptor_for_tests = NULL;
-
 }  // namespace
 
 namespace extensions {
-
-// static
-void WebAuthFlow::SetInterceptorForTests(InterceptorForTests* interceptor) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType));
-  CHECK(NULL == g_interceptor_for_tests);  // Only one at a time.
-  g_interceptor_for_tests = interceptor;
-}
 
 WebAuthFlow::WebAuthFlow(
     Delegate* delegate,
@@ -69,18 +60,6 @@ WebAuthFlow::~WebAuthFlow() {
 }
 
 void WebAuthFlow::Start() {
-  if (g_interceptor_for_tests != NULL) {
-    // We use PostTask, instead of calling the delegate directly, because the
-    // message loop will run a few times before we notify the delegate in the
-    // real implementation.
-    GURL result = g_interceptor_for_tests->DoIntercept(provider_url_);
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebAuthFlow::ReportResult,
-                   base::Unretained(this), result));
-    return;
-  }
-
   contents_ = CreateWebContents();
   contents_->SetDelegate(this);
   contents_->GetController().LoadURL(

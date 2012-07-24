@@ -54,14 +54,6 @@ class WebAuthFlow : public content::WebContentsDelegate,
     virtual ~Delegate() {}
   };
 
-  // Interceptor interface for testing.
-  class InterceptorForTests {
-   public:
-    virtual GURL DoIntercept(const GURL& provider_url) = 0;
-    virtual ~InterceptorForTests() { }
-  };
-  static void SetInterceptorForTests(InterceptorForTests* interceptor);
-
   // Creates an instance with the given parameters.
   // Caller owns |delegate|.
   WebAuthFlow(Delegate* delegate,
@@ -89,8 +81,6 @@ class WebAuthFlow : public content::WebContentsDelegate,
 
   // WebAuthFlowWindow::Delegate implementation.
   virtual void OnClose() OVERRIDE;
-
-  static InterceptorForTests* interceptor;
 
   void OnUrlLoaded();
   // Reports the results back to the delegate.

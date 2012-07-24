@@ -63,8 +63,6 @@ static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
   }
 }
 
-OAuth2MintTokenFlow::InterceptorForTests* g_interceptor_for_tests = NULL;
-
 }  // namespace
 
 IssueAdviceInfoEntry::IssueAdviceInfoEntry() {}
@@ -91,14 +89,6 @@ OAuth2MintTokenFlow::Parameters::Parameters(
 
 OAuth2MintTokenFlow::Parameters::~Parameters() {}
 
-// static
-void OAuth2MintTokenFlow::SetInterceptorForTests(
-    OAuth2MintTokenFlow::InterceptorForTests* interceptor) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType));
-  CHECK(NULL == g_interceptor_for_tests);  // Only one at a time.
-  g_interceptor_for_tests = interceptor;
-}
-
 OAuth2MintTokenFlow::OAuth2MintTokenFlow(
     URLRequestContextGetter* context,
     Delegate* delegate,
@@ -114,32 +104,6 @@ OAuth2MintTokenFlow::OAuth2MintTokenFlow(
 }
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
-
-void OAuth2MintTokenFlow::Start() {
-  if (g_interceptor_for_tests) {
-    std::string auth_token;
-    GoogleServiceAuthError error = GoogleServiceAuthError::None();
-
-    // We use PostTask, instead of calling the delegate directly, because the
-    // message loop will run a few times before we notify the delegate in the
-    // real implementation.
-    if (g_interceptor_for_tests->DoIntercept(this, &auth_token, &error)) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&OAuth2MintTokenFlow::ReportSuccess,
-                     weak_factory_.GetWeakPtr(), auth_token));
-    } else {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&OAuth2MintTokenFlow::ReportFailure,
-                     weak_factory_.GetWeakPtr(), error));
-    }
-    return;
-  }
-
-
-  OAuth2ApiCallFlow::Start();
-}
 
 void OAuth2MintTokenFlow::FireAndForget() {
   delete_when_done_ = true;
