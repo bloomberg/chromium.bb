@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -108,7 +110,6 @@ class NotificationPromoTest {
 
     // Test the fields.
     TestNotification();
-    TestPrefs();
   }
 
   void TestNotification() {
@@ -149,43 +150,6 @@ class NotificationPromoTest {
     EXPECT_EQ(notification_promo_.views_, 0);
 
     EXPECT_EQ(notification_promo_.gplus_required_, gplus_required_);
-  }
-
-  void TestPrefs() {
-    EXPECT_EQ(prefs_->GetString(prefs::kNtpPromoLine), promo_text_);
-#if defined(OS_ANDROID)
-    EXPECT_EQ(prefs_->GetString(prefs::kNtpPromoLineLong), promo_text_long_);
-    EXPECT_EQ(prefs_->GetString(prefs::kNtpPromoActionType),
-                                promo_action_type_);
-    const base::ListValue* lv = prefs_->GetList(prefs::kNtpPromoActionArgs);
-    EXPECT_TRUE(lv != NULL);
-    EXPECT_EQ(lv->GetSize(), promo_action_args_.size());
-    for (std::size_t i = 0; i < lv->GetSize(); ++i) {
-      std::string value;
-      EXPECT_TRUE(lv->GetString(i, &value));
-      EXPECT_EQ(value, promo_action_args_[i]);
-    }
-#endif  // defined(OS_ANDROID)
-
-    EXPECT_EQ(prefs_->GetDouble(prefs::kNtpPromoStart), start_);
-    EXPECT_EQ(prefs_->GetDouble(prefs::kNtpPromoEnd), end_);
-
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoNumGroups), num_groups_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoInitialSegment),
-                                 initial_segment_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoIncrement), increment_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoGroupTimeSlice), time_slice_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoGroupMax), max_group_);
-
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoViewsMax), max_views_);
-    EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoClosed), closed_);
-
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoGroup),
-              notification_promo_.group_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoViews), 0);
-
-    EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoGplusRequired),
-              gplus_required_);
   }
 
   // Create a new NotificationPromo from prefs and compare to current
@@ -265,9 +229,22 @@ class NotificationPromoTest {
       notification_promo_.group_ = i;
       EXPECT_TRUE(notification_promo_.CanShow());
     }
+    notification_promo_.WritePrefs();
   }
 
   void TestViews() {
+    notification_promo_.views_ = notification_promo_.max_views_ - 2;
+    notification_promo_.WritePrefs();
+
+    NotificationPromo new_promo(profile_);
+    new_promo.HandleViewed();
+    EXPECT_TRUE(new_promo.CanShow());
+    new_promo.HandleViewed();
+    EXPECT_FALSE(new_promo.CanShow());
+
+    notification_promo_.InitFromPrefs();
+    EXPECT_FALSE(notification_promo_.CanShow());
+
     // Test out of range views.
     for (int i = max_views_; i < max_views_ * 2; ++i) {
       notification_promo_.views_ = i;
@@ -279,14 +256,24 @@ class NotificationPromoTest {
       notification_promo_.views_ = i;
       EXPECT_TRUE(notification_promo_.CanShow());
     }
+    notification_promo_.WritePrefs();
   }
 
   void TestClosed() {
+    NotificationPromo new_promo(profile_);
+    new_promo.InitFromPrefs();
+    EXPECT_TRUE(new_promo.CanShow());
+    new_promo.HandleClosed();
+    EXPECT_FALSE(new_promo.CanShow());
+    new_promo.InitFromPrefs();
+    EXPECT_FALSE(new_promo.CanShow());
+
     notification_promo_.closed_ = true;
     EXPECT_FALSE(notification_promo_.CanShow());
 
     notification_promo_.closed_ = false;
     EXPECT_TRUE(notification_promo_.CanShow());
+    notification_promo_.WritePrefs();
   }
 
   void TestPromoText() {
@@ -420,9 +407,6 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   ASSERT_TRUE(prefs != NULL);
 
   NotificationPromoTest promo_test(&profile_);
-
-  // Make sure prefs are unset.
-  promo_test.TestPrefs();
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.

@@ -35,13 +35,29 @@ const int kDefaultGroupSize = 100;
 
 const char promo_server_url[] = "https://clients3.google.com/crsignal/client";
 
+const char kPrefPromoObject[] = "promo";
+const char kPrefPromoText[] = "text";
+#if defined(OS_ANDROID)
+const char kPrefPromoTextLong[] = "text_long";
+const char kPrefPromoActionType[] = "action_type";
+const char kPrefPromoActionArgs[] = "action_args";
+#endif
+const char kPrefPromoStart[] = "start";
+const char kPrefPromoEnd[] = "end";
+const char kPrefPromoNumGroups[] = "num_groups";
+const char kPrefPromoSegment[] = "segment";
+const char kPrefPromoIncrement[] = "increment";
+const char kPrefPromoIncrementFrequency[] = "increment_frequency";
+const char kPrefPromoIncrementMax[] = "increment_max";
+const char kPrefPromoMaxViews[] = "max_views";
+const char kPrefPromoGroup[] = "group";
+const char kPrefPromoViews[] = "views";
+const char kPrefPromoClosed[] = "closed";
+const char kPrefPromoGPlusRequired[] = "gplus_required";
+
 #if defined(OS_ANDROID)
 const int kCurrentMobilePayloadFormatVersion = 3;
 #endif  // defined(OS_ANDROID)
-
-double GetTimeFromPrefs(PrefService* prefs, const char* pref) {
-  return prefs->HasPrefPath(pref) ? prefs->GetDouble(pref) : 0.0;
-}
 
 // Returns a string suitable for the Promo Server URL 'osname' value.
 std::string PlatformString() {
@@ -89,11 +105,92 @@ const char* ChannelString() {
   }
 }
 
+// TODO(achuith): remove this in m23.
+void ClearDeprecatedPrefs(PrefService* prefs) {
+  prefs->RegisterStringPref(prefs::kNtpPromoLine,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->ClearPref(prefs::kNtpPromoLine);
+#if defined(OS_ANDROID)
+  prefs->RegisterStringPref(prefs::kNtpPromoLineLong,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kNtpPromoActionType,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kNtpPromoActionArgs,
+                          new base::ListValue,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->ClearPref(prefs::kNtpPromoLineLong);
+  prefs->ClearPref(prefs::kNtpPromoActionType);
+  prefs->ClearPref(prefs::kNtpPromoActionArgs);
+#endif  // defined(OS_ANDROID)
+
+  prefs->RegisterDoublePref(prefs::kNtpPromoStart,
+                            0,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(prefs::kNtpPromoEnd,
+                            0,
+                            PrefService::UNSYNCABLE_PREF);
+
+  prefs->RegisterIntegerPref(prefs::kNtpPromoNumGroups,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNtpPromoInitialSegment,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNtpPromoIncrement,
+                             1,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNtpPromoGroupTimeSlice,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNtpPromoGroupMax,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+
+  prefs->RegisterIntegerPref(prefs::kNtpPromoViewsMax,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+
+  prefs->RegisterIntegerPref(prefs::kNtpPromoGroup,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNtpPromoViews,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kNtpPromoClosed,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+
+  prefs->RegisterBooleanPref(prefs::kNtpPromoGplusRequired,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+
+  prefs->ClearPref(prefs::kNtpPromoStart);
+  prefs->ClearPref(prefs::kNtpPromoEnd);
+  prefs->ClearPref(prefs::kNtpPromoNumGroups);
+  prefs->ClearPref(prefs::kNtpPromoInitialSegment);
+  prefs->ClearPref(prefs::kNtpPromoIncrement);
+  prefs->ClearPref(prefs::kNtpPromoGroupTimeSlice);
+  prefs->ClearPref(prefs::kNtpPromoGroupMax);
+  prefs->ClearPref(prefs::kNtpPromoViewsMax);
+  prefs->ClearPref(prefs::kNtpPromoGroup);
+  prefs->ClearPref(prefs::kNtpPromoViews);
+  prefs->ClearPref(prefs::kNtpPromoClosed);
+  prefs->ClearPref(prefs::kNtpPromoGplusRequired);
+}
+
 }  // namespace
+
+const char NotificationPromo::kNtpNotificationPromoType[] =
+    "ntp_notification_promo";
+const char NotificationPromo::kBubblePromoType[] = "bubble_promo";
 
 NotificationPromo::NotificationPromo(Profile* profile)
     : profile_(profile),
       prefs_(profile_->GetPrefs()),
+      promo_type_(kNtpNotificationPromoType),
 #if defined(OS_ANDROID)
       promo_action_args_(new base::ListValue),
 #endif  // defined(OS_ANDROID)
@@ -119,7 +216,7 @@ NotificationPromo::~NotificationPromo() {}
 void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   ListValue* promo_list = NULL;
 #if !defined(OS_ANDROID)
-  if (!json.GetList("ntp_notification_promo", &promo_list))
+  if (!json.GetList(promo_type_, &promo_list))
     return;
 #else
   if (!json.GetList("mobile_ntp_sync_promo", &promo_list)) {
@@ -154,13 +251,13 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
           base::Time::FromString(time_str.c_str(), &time)) {
         start_ = time.ToDoubleT();
         DVLOG(1) << "start str=" << time_str
-                   << ", start_="<< base::DoubleToString(start_);
+                 << ", start_="<< base::DoubleToString(start_);
       }
       if (date->GetString("end", &time_str) &&
           base::Time::FromString(time_str.c_str(), &time)) {
         end_ = time.ToDoubleT();
         DVLOG(1) << "end str =" << time_str
-                   << ", end_=" << base::DoubleToString(end_);
+                 << ", end_=" << base::DoubleToString(end_);
       }
     }
   }
@@ -245,9 +342,11 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
 }
 
 void NotificationPromo::CheckForNewNotification() {
-  const double old_start = GetTimeFromPrefs(prefs_, prefs::kNtpPromoStart);
-  const double old_end = GetTimeFromPrefs(prefs_, prefs::kNtpPromoEnd);
-  const std::string old_promo_text = prefs_->GetString(prefs::kNtpPromoLine);
+  NotificationPromo old_promo(profile_);
+  old_promo.InitFromPrefs();
+  const double old_start = old_promo.start_;
+  const double old_end = old_promo.end_;
+  const std::string old_promo_text = old_promo.promo_text_;
 
   new_notification_ =
       old_start != start_ || old_end != end_ || old_promo_text != promo_text_;
@@ -263,152 +362,115 @@ void NotificationPromo::OnNewNotification() {
 
 // static
 void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kNtpPromoLine,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-#if defined(OS_ANDROID)
-  prefs->RegisterStringPref(prefs::kNtpPromoLineLong,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kNtpPromoActionType,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kNtpPromoActionArgs,
-                          new base::ListValue,
-                          PrefService::UNSYNCABLE_PREF);
-#endif  // defined(OS_ANDROID)
-
-  prefs->RegisterDoublePref(prefs::kNtpPromoStart,
-                            0,
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(prefs::kNtpPromoEnd,
-                            0,
-                            PrefService::UNSYNCABLE_PREF);
-
-  prefs->RegisterIntegerPref(prefs::kNtpPromoNumGroups,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoInitialSegment,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoIncrement,
-                             1,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoGroupTimeSlice,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoGroupMax,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-
-  prefs->RegisterIntegerPref(prefs::kNtpPromoViewsMax,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-
-  prefs->RegisterIntegerPref(prefs::kNtpPromoGroup,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoViews,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kNtpPromoClosed,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-
-  prefs->RegisterBooleanPref(prefs::kNtpPromoGplusRequired,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-
-  // TODO(achuith): Delete this in M22.
-  prefs->RegisterIntegerPref(prefs::kNtpPromoBuild,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoPlatform,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->ClearPref(prefs::kNtpPromoBuild);
-  prefs->ClearPref(prefs::kNtpPromoPlatform);
+  ClearDeprecatedPrefs(prefs);
+  prefs->RegisterDictionaryPref("promo",
+                                new base::DictionaryValue,
+                                PrefService::UNSYNCABLE_PREF);
 }
 
 void NotificationPromo::WritePrefs() {
-  prefs_->SetString(prefs::kNtpPromoLine, promo_text_);
+  DVLOG(1) << "WritePrefs";
+  base::DictionaryValue* ntp_promo = new base::DictionaryValue;
+  ntp_promo->SetString(kPrefPromoText, promo_text_);
 #if defined(OS_ANDROID)
-  prefs_->SetString(prefs::kNtpPromoLineLong, promo_text_long_);
-  prefs_->SetString(prefs::kNtpPromoActionType, promo_action_type_);
-  DCHECK(promo_action_args_.get() != NULL);
-  prefs_->Set(prefs::kNtpPromoActionArgs, *promo_action_args_.get());
+  ntp_promo->SetString(kPrefPromoTextLong, promo_text_long_);
+  ntp_promo->SetString(kPrefPromoActionType, promo_action_type_);
+  DCHECK(promo_action_args_.get());
+  ntp_promo->Set(kPrefPromoActionArgs, promo_action_args_->DeepCopy());
 #endif  // defined(OS_ANDROID)
+  ntp_promo->SetDouble(kPrefPromoStart, start_);
+  ntp_promo->SetDouble(kPrefPromoEnd, end_);
 
-  prefs_->SetDouble(prefs::kNtpPromoStart, start_);
-  prefs_->SetDouble(prefs::kNtpPromoEnd, end_);
+  ntp_promo->SetInteger(kPrefPromoNumGroups, num_groups_);
+  ntp_promo->SetInteger(kPrefPromoSegment, initial_segment_);
+  ntp_promo->SetInteger(kPrefPromoIncrement, increment_);
+  ntp_promo->SetInteger(kPrefPromoIncrementFrequency, time_slice_);
+  ntp_promo->SetInteger(kPrefPromoIncrementMax, max_group_);
 
-  prefs_->SetInteger(prefs::kNtpPromoNumGroups, num_groups_);
-  prefs_->SetInteger(prefs::kNtpPromoInitialSegment, initial_segment_);
-  prefs_->SetInteger(prefs::kNtpPromoIncrement, increment_);
-  prefs_->SetInteger(prefs::kNtpPromoGroupTimeSlice, time_slice_);
-  prefs_->SetInteger(prefs::kNtpPromoGroupMax, max_group_);
+  ntp_promo->SetInteger(kPrefPromoMaxViews, max_views_);
 
-  prefs_->SetInteger(prefs::kNtpPromoViewsMax, max_views_);
+  ntp_promo->SetInteger(kPrefPromoGroup, group_);
+  ntp_promo->SetInteger(kPrefPromoViews, views_);
+  ntp_promo->SetBoolean(kPrefPromoClosed, closed_);
 
-  prefs_->SetInteger(prefs::kNtpPromoGroup, group_);
-  prefs_->SetInteger(prefs::kNtpPromoViews, views_);
-  prefs_->SetBoolean(prefs::kNtpPromoClosed, closed_);
+  ntp_promo->SetBoolean(kPrefPromoGPlusRequired, gplus_required_);
 
-  prefs_->SetBoolean(prefs::kNtpPromoGplusRequired, gplus_required_);
+  base::ListValue* promo_list = new base::ListValue;
+  promo_list->Set(0, ntp_promo);  // Only support 1 promo for now.
+
+  base::DictionaryValue promo_dict;
+  promo_dict.Set(promo_type_, promo_list);
+  prefs_->Set(kPrefPromoObject, promo_dict);
 }
 
 void NotificationPromo::InitFromPrefs() {
-  promo_text_ = prefs_->GetString(prefs::kNtpPromoLine);
+  const base::DictionaryValue* promo_dict =
+      prefs_->GetDictionary(kPrefPromoObject);
+  if (!promo_dict)
+    return;
+
+  base::ListValue* promo_list(NULL);
+  promo_dict->GetList(promo_type_, &promo_list);
+  if (!promo_list)
+    return;
+
+  base::DictionaryValue* ntp_promo(NULL);
+  promo_list->GetDictionary(0, &ntp_promo);
+  if (!ntp_promo)
+    return;
+
+  ntp_promo->GetString(kPrefPromoText, &promo_text_);
 #if defined(OS_ANDROID)
-  promo_text_long_ = prefs_->GetString(prefs::kNtpPromoLineLong);
-  promo_action_type_ = prefs_->GetString(prefs::kNtpPromoActionType);
-  const base::ListValue* lv = prefs_->GetList(prefs::kNtpPromoActionArgs);
+  ntp_promo->GetString(kPrefPromoTextLong, &promo_text_long_);
+  ntp_promo->GetString(kPrefPromoActionType, &promo_action_type_);
+  base::ListValue* lv(NULL);
+  ntp_promo->GetList(kPrefPromoActionArgs, &lv);
   DCHECK(lv != NULL);
   promo_action_args_.reset(lv->DeepCopy());
 #endif  // defined(OS_ANDROID)
 
-  start_ = prefs_->GetDouble(prefs::kNtpPromoStart);
-  end_ = prefs_->GetDouble(prefs::kNtpPromoEnd);
+  ntp_promo->GetDouble(kPrefPromoStart, &start_);
+  ntp_promo->GetDouble(kPrefPromoEnd, &end_);
 
-  num_groups_ = prefs_->GetInteger(prefs::kNtpPromoNumGroups);
-  initial_segment_ = prefs_->GetInteger(prefs::kNtpPromoInitialSegment);
-  increment_ = prefs_->GetInteger(prefs::kNtpPromoIncrement);
-  time_slice_ = prefs_->GetInteger(prefs::kNtpPromoGroupTimeSlice);
-  max_group_ = prefs_->GetInteger(prefs::kNtpPromoGroupMax);
+  ntp_promo->GetInteger(kPrefPromoNumGroups, &num_groups_);
+  ntp_promo->GetInteger(kPrefPromoSegment, &initial_segment_);
+  ntp_promo->GetInteger(kPrefPromoIncrement, &increment_);
+  ntp_promo->GetInteger(kPrefPromoIncrementFrequency, &time_slice_);
+  ntp_promo->GetInteger(kPrefPromoIncrementMax, &max_group_);
 
-  max_views_ = prefs_->GetInteger(prefs::kNtpPromoViewsMax);
+  ntp_promo->GetInteger(kPrefPromoMaxViews, &max_views_);
 
-  group_ = prefs_->GetInteger(prefs::kNtpPromoGroup);
-  views_ = prefs_->GetInteger(prefs::kNtpPromoViews);
-  closed_ = prefs_->GetBoolean(prefs::kNtpPromoClosed);
+  ntp_promo->GetInteger(kPrefPromoGroup, &group_);
+  ntp_promo->GetInteger(kPrefPromoViews, &views_);
+  ntp_promo->GetBoolean(kPrefPromoClosed, &closed_);
 
-  gplus_required_ = prefs_->GetBoolean(prefs::kNtpPromoGplusRequired);
+  ntp_promo->GetBoolean(kPrefPromoGPlusRequired, &gplus_required_);
 }
 
 bool NotificationPromo::CanShow() const {
   return !closed_ &&
-      !promo_text_.empty() &&
-      !ExceedsMaxGroup() &&
-      !ExceedsMaxViews() &&
-      base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
-      base::Time::FromDoubleT(EndTime()) > base::Time::Now() &&
-      IsGPlusRequired();
+         !promo_text_.empty() &&
+         !ExceedsMaxGroup() &&
+         !ExceedsMaxViews() &&
+         base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
+         base::Time::FromDoubleT(EndTime()) > base::Time::Now() &&
+         IsGPlusRequired();
 }
 
 void NotificationPromo::HandleClosed() {
   content::RecordAction(UserMetricsAction("NTPPromoClosed"));
-  prefs_->SetBoolean(prefs::kNtpPromoClosed, true);
+  InitFromPrefs();
+  if (!closed_) {
+    closed_ = true;
+    WritePrefs();
+  }
 }
 
 bool NotificationPromo::HandleViewed() {
   content::RecordAction(UserMetricsAction("NTPPromoShown"));
-  if (prefs_->HasPrefPath(prefs::kNtpPromoViewsMax))
-    max_views_ = prefs_->GetInteger(prefs::kNtpPromoViewsMax);
-
-  if (prefs_->HasPrefPath(prefs::kNtpPromoViews))
-    views_ = prefs_->GetInteger(prefs::kNtpPromoViews);
-
-  prefs_->SetInteger(prefs::kNtpPromoViews, ++views_);
+  InitFromPrefs();
+  ++views_;
+  WritePrefs();
   return ExceedsMaxViews();
 }
 

@@ -27,6 +27,9 @@ class NotificationPromo {
  public:
   static GURL PromoServerURL();
 
+  static const char kNtpNotificationPromoType[];
+  static const char kBubblePromoType[];
+
   explicit NotificationPromo(Profile* profile);
   ~NotificationPromo();
 
@@ -79,6 +82,7 @@ class NotificationPromo {
   Profile* profile_;
   PrefService* prefs_;
 
+  std::string promo_type_;
   std::string promo_text_;
 #if defined(OS_ANDROID)
   std::string promo_text_long_;
