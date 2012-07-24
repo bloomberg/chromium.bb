@@ -203,7 +203,8 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
       console.error('Received incorrect onConnectionReady message.');
       return;
     }
-    this.onConnectionReadyHandler(message.data['ready']);
+    var ready = /** @type {boolean} */ message.data['ready'];
+    this.onConnectionReadyHandler(ready);
   }
 }
 
