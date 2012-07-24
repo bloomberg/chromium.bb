@@ -186,6 +186,9 @@ dnd_redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
 	cairo_fill(cr);
 
+	cairo_rectangle(cr, allocation.x, allocation.y,
+			allocation.width, allocation.height);
+	cairo_clip(cr);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
 		if (!dnd->items[i])
