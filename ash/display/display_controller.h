@@ -25,7 +25,6 @@ class RootWindowController;
 
 // DisplayController owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
-// TODO(oshima): Rename DisplayXXX to DisplayXXX.
 class ASH_EXPORT DisplayController : public aura::DisplayObserver {
  public:
   // Layout options where the secondary display should be positioned.
