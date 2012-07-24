@@ -178,6 +178,7 @@ readonly PNACL_PP="${INSTALL_NEWLIB_BIN}/pnacl-clang -E"
 readonly PNACL_AR="${INSTALL_NEWLIB_BIN}/pnacl-ar"
 readonly PNACL_RANLIB="${INSTALL_NEWLIB_BIN}/pnacl-ranlib"
 readonly PNACL_AS="${INSTALL_NEWLIB_BIN}/pnacl-as"
+readonly PNACL_DIS="${INSTALL_NEWLIB_BIN}/pnacl-dis"
 readonly PNACL_NM="${INSTALL_NEWLIB_BIN}/pnacl-nm"
 readonly PNACL_TRANSLATE="${INSTALL_NEWLIB_BIN}/pnacl-translate"
 readonly PNACL_READELF="${INSTALL_NEWLIB_BIN}/pnacl-readelf"
@@ -3303,10 +3304,6 @@ RecordRevisionInfo() {
 ######################################################################
 ######################################################################
 
-readonly LLVM_DIS=${LLVM_INSTALL_DIR}/bin/llvm-dis
-readonly LLVM_BCANALYZER=${LLVM_INSTALL_DIR}/bin/llvm-bcanalyzer
-readonly LLVM_OPT=${LLVM_INSTALL_DIR}/bin/opt
-
 # Note: we could replace this with a modified version of tools/elf_checker.py
 #       if we do not want to depend on binutils
 readonly NACL_OBJDUMP=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-objdump
@@ -3392,7 +3389,7 @@ VerifyArchive() {
 #
 #   Verifies that a given .o file is bitcode and free of ASMSs
 verify-object-llvm() {
-  if ${LLVM_DIS} "$1" -o - | grep asm ; then
+  if ${PNACL_DIS} "$1" -o - | grep asm ; then
     echo
     echo "ERROR asm in $1"
     echo
