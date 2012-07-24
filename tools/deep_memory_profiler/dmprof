@@ -7,6 +7,7 @@
 
 from datetime import datetime
 import json
+import optparse
 import os
 import re
 import shutil
@@ -29,6 +30,10 @@ COMMITTED = 1
 ALLOC_COUNT = 2
 FREE_COUNT = 3
 NULL_REGEX = re.compile('')
+
+POLICIES_JSON_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    'policies.json')
 
 # Heap Profile Dump versions
 
@@ -72,11 +77,6 @@ POLICY_DEEP_1 = 'POLICY_DEEP_1'
 # mmap regions are distincted w/ the allocation_type column.
 POLICY_DEEP_2 = 'POLICY_DEEP_2'
 
-# TODO(dmikurube): Avoid global variables.
-address_symbol_dict = {}
-appeared_addresses = set()
-components = []
-
 
 class EmptyDumpException(Exception):
   def __init__(self, value):
@@ -106,7 +106,8 @@ class ObsoleteDumpVersionException(ParsingException):
     return "obsolete heap profile dump version: %s" % repr(self.value)
 
 
-class Policy(object):
+class Rule(object):
+  """Represents one matching rule in a policy file."""
 
   def __init__(self, name, mmap, pattern):
     self.name = name
@@ -114,60 +115,74 @@ class Policy(object):
     self.condition = re.compile(pattern + r'\Z')
 
 
-def get_component(policy_list, bucket):
+class Policy(object):
+  """Represents a policy, a content of a policy file."""
+
+  def __init__(self, rules, version, components):
+    self.rules = rules
+    self.version = version
+    self.components = components
+
+  def append_rule(self, rule):
+    self.rules.append(rule)
+
+
+def get_component(rule_list, bucket, symbols):
   """Returns a component name which a given bucket belongs to.
 
   Args:
-      policy_list: A list containing Policy objects.  (Parsed policy data by
-          parse_policy.)
+      rule_list: A list of Rule objects.
       bucket: A Bucket object to be searched for.
+      symbols: A dict mapping runtime addresses to symbol names.
 
   Returns:
       A string representing a component name.
   """
   if not bucket:
     return 'no-bucket'
-  if bucket.component:
-    return bucket.component
+  if bucket.component_cache:
+    return bucket.component_cache
 
-  stacktrace = ''.join(
-      address_symbol_dict[a] + ' ' for a in bucket.stacktrace).strip()
+  stacktrace = ''.join(symbols[a] + ' ' for a in bucket.stacktrace).strip()
 
-  for policy in policy_list:
-    if bucket.mmap == policy.mmap and policy.condition.match(stacktrace):
-      bucket.component = policy.name
-      return policy.name
+  for rule in rule_list:
+    if bucket.mmap == rule.mmap and rule.condition.match(stacktrace):
+      bucket.component_cache = rule.name
+      return rule.name
 
   assert False
 
 
 class Bucket(object):
+  """Represents a bucket, which is a unit of memory classification."""
 
   def __init__(self, stacktrace, mmap):
     self.stacktrace = stacktrace
     self.mmap = mmap
-    self.component = ''
+    self.component_cache = ''
+
+  def clear_component_cache(self):
+    self.component_cache = ''
 
 
-class Log(object):
+class Dump(object):
+  """Represents one heap profile dump."""
 
-  """A class representing one dumped log data."""
-  def __init__(self, log_path):
-    self.log_path = log_path
-    self.log_lines = [
-        l for l in open(self.log_path, 'r') if l and not l.startswith('#')]
-    self.log_version = ''
-    sys.stderr.write('Loading a dump: %s\n' % log_path)
+  def __init__(self, dump_path):
+    self.dump_path = dump_path
+    self.dump_lines = [
+        l for l in open(self.dump_path, 'r') if l and not l.startswith('#')]
+    self.dump_version = ''
     self.stacktrace_lines = []
     self.counters = {}
-    self.log_time = os.stat(self.log_path).st_mtime
+    self.dump_time = os.stat(self.dump_path).st_mtime
 
-  def dump_stacktrace(buckets):
+  def print_stacktrace(self, buckets, symbols):
     """Prints a given stacktrace.
 
     Args:
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
+        buckets: A dict mapping bucket ids to Bucket objects.
+        symbols: A dict mapping runtime addresses to symbol names.
     """
     for line in self.stacktrace_lines:
       words = line.split()
@@ -177,21 +192,20 @@ class Log(object):
       for i in range(0, BUCKET_ID - 1):
         sys.stdout.write(words[i] + ' ')
       for address in bucket.stacktrace:
-        sys.stdout.write((address_symbol_dict.get(address) or address) + ' ')
+        sys.stdout.write((symbols.get(address) or address) + ' ')
       sys.stdout.write('\n')
 
   @staticmethod
-  def accumulate_size_for_pprof(stacktrace_lines, policy_list, buckets,
-                                component_name):
+  def accumulate_size_for_pprof(stacktrace_lines, rule_list, buckets,
+                                component_name, symbols):
     """Accumulates size of committed chunks and the number of allocated chunks.
 
     Args:
         stacktrace_lines: A list of strings which are valid as stacktraces.
-        policy_list: A list containing Policy objects.  (Parsed policy data by
-            parse_policy.)
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
+        rule_list: A list of Rule objects.
+        buckets: A dict mapping bucket ids to Bucket objects.
         component_name: A name of component for filtering.
+        symbols: A dict mapping runtime addresses to symbol names.
 
     Returns:
         Two integers which are the accumulated size of committed regions and the
@@ -204,7 +218,7 @@ class Log(object):
       bucket = buckets.get(int(words[BUCKET_ID]))
       if (not bucket or
           (component_name and
-           component_name != get_component(policy_list, bucket))):
+           component_name != get_component(rule_list, bucket, symbols))):
         continue
 
       com_committed += int(words[COMMITTED])
@@ -213,24 +227,23 @@ class Log(object):
     return com_committed, com_allocs
 
   @staticmethod
-  def dump_stacktrace_lines_for_pprof(stacktrace_lines, policy_list,
-                                      buckets, component_name):
+  def print_stacktrace_lines_for_pprof(stacktrace_lines, rule_list,
+                                      buckets, component_name, symbols):
     """Prints information of stacktrace lines for pprof.
 
     Args:
         stacktrace_lines: A list of strings which are valid as stacktraces.
-        policy_list: A list containing Policy objects.  (Parsed policy data by
-            parse_policy.)
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
+        rule_list: A list of Rule objects.
+        buckets: A dict mapping bucket ids to Bucket objects.
         component_name: A name of component for filtering.
+        symbols: A dict mapping runtime addresses to symbol names.
     """
     for line in stacktrace_lines:
       words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
       if (not bucket or
           (component_name and
-           component_name != get_component(policy_list, bucket))):
+           component_name != get_component(rule_list, bucket, symbols))):
         continue
 
       sys.stdout.write('%6d: %8s [%6d: %8s] @' % (
@@ -242,39 +255,39 @@ class Log(object):
         sys.stdout.write(' ' + address)
       sys.stdout.write('\n')
 
-  def dump_for_pprof(self, policy_list, buckets, mapping_lines, component_name):
-    """Converts the log file so it can be processed by pprof.
+  def print_for_pprof(
+      self, rule_list, buckets, maps_lines, component_name, symbols):
+    """Converts the heap profile dump so it can be processed by pprof.
 
     Args:
-        policy_list: A list containing Policy objects.  (Parsed policy data by
-            parse_policy.)
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
-        mapping_lines: A list of strings containing /proc/.../maps.
+        rule_list: A list of Rule objects.
+        buckets: A dict mapping bucket ids to Bucket objects.
+        maps_lines: A list of strings containing /proc/.../maps.
         component_name: A name of component for filtering.
+        symbols: A dict mapping runtime addresses to symbol names.
     """
     sys.stdout.write('heap profile: ')
     com_committed, com_allocs = self.accumulate_size_for_pprof(
-        self.stacktrace_lines, policy_list, buckets, component_name)
+        self.stacktrace_lines, rule_list, buckets, component_name, symbols)
 
     sys.stdout.write('%6d: %8s [%6d: %8s] @ heapprofile\n' % (
         com_allocs, com_committed, com_allocs, com_committed))
 
-    self.dump_stacktrace_lines_for_pprof(
-        self.stacktrace_lines, policy_list, buckets, component_name)
+    self.print_stacktrace_lines_for_pprof(
+        self.stacktrace_lines, rule_list, buckets, component_name, symbols)
 
     sys.stdout.write('MAPPED_LIBRARIES:\n')
-    for line in mapping_lines:
+    for line in maps_lines:
       sys.stdout.write(line)
 
   @staticmethod
-  def check_stacktrace_line(stacktrace_line, buckets):
+  def check_stacktrace_line(stacktrace_line, buckets, appeared_addresses):
     """Checks if a given stacktrace_line is valid as stacktrace.
 
     Args:
         stacktrace_line: A string to be checked.
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
+        buckets: A dict mapping bucket ids to Bucket objects.
+        appeared_addresses: A list where appeared addresses will be stored.
 
     Returns:
         True if the given stacktrace_line is valid.
@@ -305,61 +318,59 @@ class Log(object):
         return line_number, False
     return line_number, True
 
-  def parse_stacktraces_while_valid(self, buckets, log_lines, line_number):
+  def parse_stacktraces_while_valid(
+      self, buckets, dump_lines, line_number, appeared_addresses):
     """Parses stacktrace lines while the lines are valid.
 
     Args:
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
-        log_lines: A list of lines to be parsed.
-        line_number: An integer representing the starting line number in
-            log_lines.
+        buckets: A dict mapping bucket ids to Bucket objects.
+        dump_lines: A list of lines to be parsed.
+        line_number: A line number to start parsing in dump_lines.
+        appeared_addresses: A list where appeared addresses will be stored.
 
     Returns:
         A pair of a list of valid lines and an integer representing the last
-        line number in log_lines.
+        line number in dump_lines.
     """
     (line_number, _) = self.skip_lines_while(
-        line_number, len(log_lines),
-        lambda n: not log_lines[n].split()[0].isdigit())
+        line_number, len(dump_lines),
+        lambda n: not dump_lines[n].split()[0].isdigit())
     stacktrace_lines_start = line_number
     (line_number, _) = self.skip_lines_while(
-        line_number, len(log_lines),
-        lambda n: self.check_stacktrace_line(log_lines[n], buckets))
-    return (log_lines[stacktrace_lines_start:line_number], line_number)
+        line_number, len(dump_lines),
+        lambda n: self.check_stacktrace_line(
+            dump_lines[n], buckets, appeared_addresses))
+    return (dump_lines[stacktrace_lines_start:line_number], line_number)
 
-  def parse_stacktraces(self, buckets, line_number):
-    """Parses lines in self.log_lines as stacktrace.
+  def parse_stacktraces(self, buckets, line_number, appeared_addresses):
+    """Parses lines in self.dump_lines as stacktrace.
 
     Valid stacktrace lines are stored into self.stacktrace_lines.
 
     Args:
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
-        line_number: An integer representing the starting line number in
-            log_lines.
+        buckets: A dict mapping bucket ids to Bucket objects.
+        line_number: A line number to start parsing in dump_lines.
+        appeared_addresses: A list where appeared addresses will be stored.
 
     Raises:
         ParsingException for invalid dump versions.
     """
-    sys.stderr.write('  Version: %s\n' % self.log_version)
-
-    if self.log_version == DUMP_DEEP_5:
+    if self.dump_version == DUMP_DEEP_5:
       (self.stacktrace_lines, line_number) = (
           self.parse_stacktraces_while_valid(
-              buckets, self.log_lines, line_number))
+              buckets, self.dump_lines, line_number, appeared_addresses))
 
-    elif self.log_version in DUMP_DEEP_OBSOLETE:
-      raise ObsoleteDumpVersionException(self.log_version)
+    elif self.dump_version in DUMP_DEEP_OBSOLETE:
+      raise ObsoleteDumpVersionException(self.dump_version)
 
     else:
-      raise InvalidDumpException('Invalid version: %s' % self.log_version)
+      raise InvalidDumpException('Invalid version: %s' % self.dump_version)
 
   def parse_global_stats(self):
-    """Parses lines in self.log_lines as global stats."""
+    """Parses lines in self.dump_lines as global stats."""
     (ln, _) = self.skip_lines_while(
-        0, len(self.log_lines),
-        lambda n: self.log_lines[n] != 'GLOBAL_STATS:\n')
+        0, len(self.dump_lines),
+        lambda n: self.dump_lines[n] != 'GLOBAL_STATS:\n')
 
     global_stat_names = [
         'total', 'file-exec', 'file-nonexec', 'anonymous', 'stack', 'other',
@@ -370,14 +381,14 @@ class Log(object):
 
     for prefix in global_stat_names:
       (ln, _) = self.skip_lines_while(
-          ln, len(self.log_lines),
-          lambda n: self.log_lines[n].split()[0] != prefix)
-      words = self.log_lines[ln].split()
+          ln, len(self.dump_lines),
+          lambda n: self.dump_lines[n].split()[0] != prefix)
+      words = self.dump_lines[ln].split()
       self.counters[prefix + '_virtual'] = int(words[-2])
       self.counters[prefix + '_committed'] = int(words[-1])
 
   def parse_version(self):
-    """Parses a version string in self.log_lines.
+    """Parses a version string in self.dump_lines.
 
     Returns:
         A pair of (a string representing a version of the stacktrace dump,
@@ -390,44 +401,44 @@ class Log(object):
 
     # Skip until an identifiable line.
     headers = ('STACKTRACES:\n', 'MMAP_STACKTRACES:\n', 'heap profile: ')
-    if not self.log_lines:
+    if not self.dump_lines:
       raise EmptyDumpException('Empty heap dump file.')
     (ln, found) = self.skip_lines_while(
-        0, len(self.log_lines),
-        lambda n: not self.log_lines[n].startswith(headers))
+        0, len(self.dump_lines),
+        lambda n: not self.dump_lines[n].startswith(headers))
     if not found:
       raise InvalidDumpException('No version header.')
 
     # Identify a version.
-    if self.log_lines[ln].startswith('heap profile: '):
-      version = self.log_lines[ln][13:].strip()
+    if self.dump_lines[ln].startswith('heap profile: '):
+      version = self.dump_lines[ln][13:].strip()
       if version == DUMP_DEEP_5:
         (ln, _) = self.skip_lines_while(
-            ln, len(self.log_lines),
-            lambda n: self.log_lines[n] != 'STACKTRACES:\n')
+            ln, len(self.dump_lines),
+            lambda n: self.dump_lines[n] != 'STACKTRACES:\n')
       elif version in DUMP_DEEP_OBSOLETE:
         raise ObsoleteDumpVersionException(version)
       else:
         raise InvalidDumpException('Invalid version: %s' % version)
-    elif self.log_lines[ln] == 'STACKTRACES:\n':
+    elif self.dump_lines[ln] == 'STACKTRACES:\n':
       raise ObsoleteDumpVersionException(DUMP_DEEP_1)
-    elif self.log_lines[ln] == 'MMAP_STACKTRACES:\n':
+    elif self.dump_lines[ln] == 'MMAP_STACKTRACES:\n':
       raise ObsoleteDumpVersionException(DUMP_DEEP_2)
 
     return (version, ln)
 
-  def parse_log(self, buckets):
-    self.log_version, ln = self.parse_version()
+  def parse_dump(self, buckets, appeared_addresses):
+    self.dump_version, ln = self.parse_version()
     self.parse_global_stats()
-    self.parse_stacktraces(buckets, ln)
+    self.parse_stacktraces(buckets, ln, appeared_addresses)
 
   @staticmethod
   def accumulate_size_for_policy(stacktrace_lines,
-                                 policy_list, buckets, sizes):
+                                 rule_list, buckets, sizes, symbols):
     for line in stacktrace_lines:
       words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
-      component_match = get_component(policy_list, bucket)
+      component_match = get_component(rule_list, bucket, symbols)
       sizes[component_match] += int(words[COMMITTED])
 
       if component_match.startswith('tc-'):
@@ -437,29 +448,30 @@ class Log(object):
       else:
         sizes['other-total-log'] += int(words[COMMITTED])
 
-  def apply_policy(self, policy_list, buckets, first_log_time):
+  def apply_policy(
+      self, rule_list, buckets, first_dump_time, components, symbols):
     """Aggregates the total memory size of each component.
 
     Iterate through all stacktraces and attribute them to one of the components
     based on the policy.  It is important to apply policy in right order.
 
     Args:
-        policy_list: A list containing Policy objects.  (Parsed policy data by
-            parse_policy.)
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
-        first_log_time: An integer representing time when the first log is
+        rule_list: A list of Rule objects.
+        buckets: A dict mapping bucket ids to Bucket objects.
+        first_dump_time: An integer representing time when the first dump is
             dumped.
+        components: A list of strings of component names.
+        symbols: A dict mapping runtime addresses to symbol names.
 
     Returns:
         A dict mapping components and their corresponding sizes.
     """
 
-    sys.stderr.write('apply policy:%s\n' % (self.log_path))
+    sys.stderr.write('Applying policy: "%s".\n' % self.dump_path)
     sizes = dict((c, 0) for c in components)
 
     self.accumulate_size_for_policy(self.stacktrace_lines,
-                                    policy_list, buckets, sizes)
+                                    rule_list, buckets, sizes, symbols)
 
     mmap_prefix = 'profiled-mmap'
     malloc_prefix = 'profiled-malloc'
@@ -513,46 +525,45 @@ class Log(object):
       sizes['total-exclude-profiler'] = (
           self.counters['total_committed'] - sizes['mmap-profiler'])
     if 'hour' in sizes:
-      sizes['hour'] = (self.log_time - first_log_time) / 60.0 / 60.0
+      sizes['hour'] = (self.dump_time - first_dump_time) / 60.0 / 60.0
     if 'minute' in sizes:
-      sizes['minute'] = (self.log_time - first_log_time) / 60.0
+      sizes['minute'] = (self.dump_time - first_dump_time) / 60.0
     if 'second' in sizes:
-      sizes['second'] = self.log_time - first_log_time
+      sizes['second'] = self.dump_time - first_dump_time
 
     return sizes
 
   @staticmethod
-  def accumulate_size_for_expand(stacktrace_lines, policy_list, buckets,
-                                 component_name, depth, sizes):
+  def accumulate_size_for_expand(stacktrace_lines, rule_list, buckets,
+                                 component_name, depth, sizes, symbols):
     for line in stacktrace_lines:
       words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
-      component_match = get_component(policy_list, bucket)
+      component_match = get_component(rule_list, bucket, symbols)
       if component_match == component_name:
         stacktrace_sequence = ''
         for address in bucket.stacktrace[0 : min(len(bucket.stacktrace),
                                                  1 + depth)]:
-          stacktrace_sequence += address_symbol_dict[address] + ' '
+          stacktrace_sequence += symbols[address] + ' '
         if not stacktrace_sequence in sizes:
           sizes[stacktrace_sequence] = 0
         sizes[stacktrace_sequence] += int(words[COMMITTED])
 
-  def expand(self, policy_list, buckets, component_name, depth):
+  def expand(self, rule_list, buckets, component_name, depth, symbols):
     """Prints all stacktraces in a given component of given depth.
 
     Args:
-        policy_list: A list containing Policy objects.  (Parsed policy data by
-            parse_policy.)
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
+        rule_list: A list of Rule objects.
+        buckets: A dict mapping bucket ids to Bucket objects.
         component_name: A name of component for filtering.
         depth: An integer representing depth to be printed.
+        symbols: A dict mapping runtime addresses to symbol names.
     """
     sizes = {}
 
     self.accumulate_size_for_expand(
-        self.stacktrace_lines, policy_list, buckets, component_name,
-        depth, sizes)
+        self.stacktrace_lines, rule_list, buckets, component_name,
+        depth, sizes, symbols)
 
     sorted_sizes_list = sorted(
         sizes.iteritems(), key=(lambda x: x[1]), reverse=True)
@@ -563,7 +574,8 @@ class Log(object):
     sys.stderr.write('total: %d\n' % (total))
 
 
-def update_symbols(symbol_path, mapping_lines, maps_path):
+def update_symbols(
+    symbol_path, maps_path, appeared_addresses, symbols):
   """Updates address/symbol mapping on memory and in a .symbol cache file.
 
   It reads cached address/symbol mapping from a .symbol file if it exists.
@@ -578,30 +590,43 @@ def update_symbols(symbol_path, mapping_lines, maps_path):
 
   Args:
       symbol_path: A string representing a path for a .symbol file.
-      mapping_lines: A list of strings containing /proc/.../maps.
       maps_path: A string of the path of /proc/.../maps.
+      appeared_addresses: A list of known addresses.
+      symbols: A dict mapping runtime addresses to symbol names.
   """
   with open(symbol_path, mode='a+') as symbol_f:
     symbol_lines = symbol_f.readlines()
     if symbol_lines:
       for line in symbol_lines:
         items = line.split(None, 1)
-        address_symbol_dict[items[0]] = items[1].rstrip()
+        if len(items) == 1:
+          items.append('??')
+        symbols[items[0]] = items[1].rstrip()
+    if symbols:
+      sys.stderr.write('  Found %d symbols in cache.\n' % len(symbols))
+    else:
+      sys.stderr.write('  No symbols found in cache.\n')
 
     unresolved_addresses = sorted(
-        a for a in appeared_addresses if a not in address_symbol_dict)
+        a for a in appeared_addresses if a not in symbols)
 
-    if unresolved_addresses:
+    if not unresolved_addresses:
+      sys.stderr.write('  No need to resolve any more addresses.\n')
+    else:
+      sys.stderr.write('  %d addresses are unresolved.\n' %
+                       len(unresolved_addresses))
       prepared_data_dir = tempfile.mkdtemp()
       try:
         prepare_symbol_info(maps_path, prepared_data_dir)
 
-        symbols = find_runtime_symbols_list(
+        symbol_list = find_runtime_symbols_list(
             prepared_data_dir, unresolved_addresses)
 
-        for address, symbol in zip(unresolved_addresses, symbols):
+        for address, symbol in zip(unresolved_addresses, symbol_list):
+          if not symbol:
+            symbol = '??'
           stripped_symbol = symbol.strip()
-          address_symbol_dict[address] = stripped_symbol
+          symbols[address] = stripped_symbol
           symbol_f.write('%s %s\n' % (address, stripped_symbol))
       finally:
         shutil.rmtree(prepared_data_dir)
@@ -627,10 +652,10 @@ def parse_policy(policy_path):
   if policy_lines[0].startswith('heap profile policy: '):
     policy_version = policy_lines[0][21:].strip()
     policy_lines.pop(0)
-  policy_list = []
+  rule_list = []
+  components = []
 
   if policy_version == POLICY_DEEP_2 or policy_version == POLICY_DEEP_1:
-    sys.stderr.write('  heap profile policy version: %s\n' % policy_version)
     for line in policy_lines:
       if line[0] == '#':
         continue
@@ -646,7 +671,7 @@ def parse_policy(policy_path):
         mmap = False
 
       if pattern != 'default':
-        policy_list.append(Policy(name, mmap, pattern))
+        rule_list.append(Rule(name, mmap, pattern))
       if components.count(name) == 0:
         components.append(name)
 
@@ -654,57 +679,16 @@ def parse_policy(policy_path):
     sys.stderr.write('  invalid heap profile policy version: %s\n' % (
         policy_version))
 
-  return policy_list
+  return rule_list, policy_version, components
 
 
-def main():
-  if (len(sys.argv) < 4) or (not (sys.argv[1] in ['--csv',
-                                                  '--json',
-                                                  '--expand',
-                                                  '--list',
-                                                  '--stacktrace',
-                                                  '--pprof'])):
-    sys.stderr.write("""Usage:
-%s [options] <chrome-binary> <policy> <profile> [component-name] [depth]
+def find_prefix(path):
+  return re.sub('\.[0-9][0-9][0-9][0-9]\.heap', '', path)
 
-Options:
-  --csv                         Output result in csv format
-  --json                        Output result in json format
-  --stacktrace                  Convert raw address to symbol names
-  --list                        Lists components and their sizes
-  --expand                      Show all stacktraces in the specified component
-                                of given depth with their sizes
-  --pprof                       Format the profile file so it can be processed
-                                by pprof
 
-Examples:
-  dmprof --csv Debug/chrome dmpolicy hprof.12345.0001.heap > result.csv
-  dmprof --json Debug/chrome dmpolicy hprof.12345.0001.heap > result.json
-  dmprof --list Debug/chrome dmpolicy hprof.12345.0012.heap
-  dmprof --expand Debug/chrome dmpolicy hprof.12345.0012.heap tc-webkit 4
-  dmprof --pprof Debug/chrome dmpolicy hprof.12345.0012.heap > for_pprof.txt
-""" % (sys.argv[0]))
-    sys.exit(1)
-
-  action = sys.argv[1]
-  chrome_path = sys.argv[2]
-  policy_path = sys.argv[3]
-  log_path = sys.argv[4]
-
-  sys.stderr.write('parsing a policy file\n')
-  policy_list = parse_policy(policy_path)
-
-  p = re.compile('\.[0-9][0-9][0-9][0-9]\.heap')
-  prefix = p.sub('', log_path)
-  symbol_path = prefix + '.symbols'
-
-  sys.stderr.write('parsing the maps file\n')
-  maps_path = prefix + '.maps'
-  with open(maps_path, 'r') as maps_f:
-    maps_lines = maps_f.readlines()
-
+def load_buckets(prefix):
   # Reading buckets
-  sys.stderr.write('parsing the bucket file\n')
+  sys.stderr.write('Loading bucket files.\n')
   buckets = {}
   bucket_count = 0
   n = 0
@@ -715,80 +699,259 @@ Examples:
         break
       n += 1
       continue
-    sys.stderr.write('reading buckets from %s\n' % (buckets_path))
+    sys.stderr.write('  %s\n' % buckets_path)
     with open(buckets_path, 'r') as buckets_f:
       for line in buckets_f:
         words = line.split()
         buckets[int(words[0])] = Bucket(words[2:], words[1] == 'mmap')
     n += 1
 
-  log_path_list = [log_path]
+  return buckets
 
-  if action in ('--csv', '--json'):
-    # search for the sequence of files
-    n = int(log_path[len(log_path) - 9 : len(log_path) - 5])
-    n += 1  # skip current file
-    while True:
-      p = '%s.%04d.heap' % (prefix, n)
-      if os.path.exists(p):
-        log_path_list.append(p)
-      else:
-        break
-      n += 1
 
-  logs = []
-  for path in log_path_list:
-    new_log = Log(path)
-    sys.stderr.write('Parsing a dump: %s\n' % path)
-    try:
-      new_log.parse_log(buckets)
-    except EmptyDumpException:
-      sys.stderr.write('  WARNING: ignored an empty dump: %s\n' % path)
-    except ParsingException, e:
-      sys.stderr.write('  Error in parsing heap profile dump: %s\n' % e)
-      sys.exit(1)
+def determine_dump_path_list(dump_path, prefix):
+  dump_path_list = [dump_path]
+
+  # search for the sequence of files
+  n = int(dump_path[len(dump_path) - 9 : len(dump_path) - 5])
+  n += 1  # skip current file
+  while True:
+    p = '%s.%04d.heap' % (prefix, n)
+    if os.path.exists(p):
+      dump_path_list.append(p)
     else:
-      logs.append(new_log)
+      break
+    n += 1
 
-  sys.stderr.write('getting symbols\n')
-  update_symbols(symbol_path, maps_lines, maps_path)
+  return dump_path_list
 
-  # TODO(dmikurube): Many modes now.  Split them into separete functions.
-  if action == '--stacktrace':
-    logs[0].dump_stacktrace(buckets)
 
-  elif action == '--csv':
-    sys.stdout.write(','.join(components))
-    sys.stdout.write('\n')
+def load_single_dump(dump_path, buckets, appeared_addresses):
+  new_dump = Dump(dump_path)
+  try:
+    new_dump.parse_dump(buckets, appeared_addresses)
+  except EmptyDumpException:
+    sys.stderr.write('... ignored an empty dump')
+  except ParsingException, e:
+    sys.stderr.write('... error in parsing: %s' % e)
+    sys.exit(1)
+  else:
+    sys.stderr.write(' (version: %s)' % new_dump.dump_version)
 
-    for log in logs:
-      component_sizes = log.apply_policy(policy_list, buckets, logs[0].log_time)
+  return new_dump
+
+
+def load_dump(dump_path, buckets):
+  sys.stderr.write('Loading a heap dump file: "%s"' % dump_path)
+  appeared_addresses = set()
+  dump = load_single_dump(dump_path, buckets, appeared_addresses)
+  sys.stderr.write('.\n')
+  return dump, appeared_addresses
+
+
+def load_dumps(dump_path_list, buckets):
+  sys.stderr.write('Loading heap dump files.\n')
+  appeared_addresses = set()
+  dumps = []
+  for path in dump_path_list:
+    sys.stderr.write('  %s' % path)
+    dumps.append(load_single_dump(path, buckets, appeared_addresses))
+    sys.stderr.write('\n')
+  return dumps, appeared_addresses
+
+
+def load_and_update_symbol_cache(prefix, appeared_addresses):
+  maps_path = prefix + '.maps'
+  symbol_path = prefix + '.symbols'
+  sys.stderr.write('Loading and updating symbol cache: "%s".\n' % symbol_path)
+  symbols = {}
+  update_symbols(symbol_path, maps_path, appeared_addresses, symbols)
+  return symbols
+
+
+def load_default_policies():
+  with open(POLICIES_JSON_PATH, mode='r') as policies_f:
+    default_policies = json.load(policies_f)
+  return default_policies
+
+
+def load_policy(policies_dict, policy_label):
+  policy_file = policies_dict[policy_label]['file']
+  policy_path = os.path.join(os.path.dirname(__file__), policy_file)
+  rule_list, policy_version, components = parse_policy(policy_path)
+  sys.stderr.write('  %s: %s (version: %s)\n' %
+                   (policy_label, policy_path, policy_version))
+  return Policy(rule_list, policy_version, components)
+
+
+def load_policies_dict(policies_dict):
+  sys.stderr.write('Loading policy files.\n')
+  policies = {}
+  for policy_label in policies_dict:
+    policies[policy_label] = load_policy(policies_dict, policy_label)
+  return policies
+
+
+def load_policies(options_policy):
+  default_policies = load_default_policies()
+  if options_policy:
+    policy_labels = options_policy.split(',')
+    specified_policies = {}
+    for specified_policy in policy_labels:
+      if specified_policy in default_policies:
+        specified_policies[specified_policy] = (
+            default_policies[specified_policy])
+    policies = load_policies_dict(specified_policies)
+  else:
+    policies = load_policies_dict(default_policies)
+  return policies
+
+
+def do_stacktrace(sys_argv):
+  parser = optparse.OptionParser(usage='Usage: %prog stacktrace <dump>')
+  options, args = parser.parse_args(sys_argv)
+
+  if len(args) != 2:
+    parser.error('needs 1 argument.')
+    return 1
+
+  dump_path = args[1]
+
+  prefix = find_prefix(dump_path)
+  buckets = load_buckets(prefix)
+  dump, appeared_addresses = load_dump(dump_path, buckets)
+  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+
+  dump.print_stacktrace(buckets, symbols)
+
+  return 0
+
+
+def do_csv(sys_argv):
+  parser = optparse.OptionParser('Usage: %prog csv [-p POLICY] <first-dump>')
+  parser.add_option('-p', '--policy', type='string', dest='policy',
+                    help='profile with POLICY', metavar='POLICY')
+  options, args = parser.parse_args(sys_argv)
+
+  if len(args) != 2:
+    parser.error('needs 1 argument.')
+    return 1
+
+  dump_path = args[1]
+
+  prefix = find_prefix(dump_path)
+  buckets = load_buckets(prefix)
+  dumps, appeared_addresses = load_dumps(
+      determine_dump_path_list(dump_path, prefix), buckets)
+  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  policies = load_policies(options.policy)
+
+  max_components = 0
+  for policy in policies:
+    max_components = max(max_components, len(policies[policy].components))
+
+  for policy in sorted(policies):
+    rule_list = policies[policy].rules
+    components = policies[policy].components
+
+    if len(policies) > 1:
+      sys.stdout.write('%s%s\n' % (policy, ',' * (max_components - 1)))
+    sys.stdout.write('%s%s\n' % (
+        ','.join(components), ',' * (max_components - len(components))))
+
+    for dump in dumps:
+      component_sizes = dump.apply_policy(
+          rule_list, buckets, dumps[0].dump_time, components, symbols)
       s = []
       for c in components:
         if c in ('hour', 'minute', 'second'):
           s.append('%05.5f' % (component_sizes[c]))
         else:
           s.append('%05.5f' % (component_sizes[c] / 1024.0 / 1024.0))
-      sys.stdout.write(','.join(s))
-      sys.stdout.write('\n')
+      sys.stdout.write('%s%s\n' % (
+            ','.join(s), ',' * (max_components - len(components))))
 
-  elif action == '--json':
-    json_base = {
-      'version': 'JSON_DEEP_1',
+    for bucket in buckets.itervalues():
+      bucket.clear_component_cache()
+
+  return 0
+
+
+def do_json(sys_argv):
+  parser = optparse.OptionParser('Usage: %prog json [-p POLICY] <first-dump>')
+  parser.add_option('-p', '--policy', type='string', dest='policy',
+                    help='profile with POLICY', metavar='POLICY')
+  options, args = parser.parse_args(sys_argv)
+
+  if len(args) != 2:
+    parser.error('needs 1 argument.')
+    return 1
+
+  dump_path = args[1]
+
+  prefix = find_prefix(dump_path)
+  buckets = load_buckets(prefix)
+  dumps, appeared_addresses = load_dumps(
+      determine_dump_path_list(dump_path, prefix), buckets)
+  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  policies = load_policies(options.policy)
+
+  json_base = {
+    'version': 'JSON_DEEP_2',
+    'policies': {},
+  }
+
+  for policy in sorted(policies):
+    rule_list = policies[policy].rules
+    components = policies[policy].components
+
+    json_base['policies'][policy] = {
       'legends': components,
       'snapshots': [],
     }
-    for log in logs:
-      component_sizes = log.apply_policy(policy_list, buckets, logs[0].log_time)
-      component_sizes['log_path'] = log.log_path
-      component_sizes['log_time'] = datetime.fromtimestamp(
-          log.log_time).strftime('%Y-%m-%d %H:%M:%S')
-      json_base['snapshots'].append(component_sizes)
-    json.dump(json_base, sys.stdout, indent=2, sort_keys=True)
 
-  elif action == '--list':
-    component_sizes = logs[0].apply_policy(
-        policy_list, buckets, logs[0].log_time)
+    for dump in dumps:
+      component_sizes = dump.apply_policy(
+          rule_list, buckets, dumps[0].dump_time, components, symbols)
+      component_sizes['dump_path'] = dump.dump_path
+      component_sizes['dump_time'] = datetime.fromtimestamp(
+          dump.dump_time).strftime('%Y-%m-%d %H:%M:%S')
+      json_base['policies'][policy]['snapshots'].append(component_sizes)
+
+    for bucket in buckets.itervalues():
+      bucket.clear_component_cache()
+
+  json.dump(json_base, sys.stdout, indent=2, sort_keys=True)
+
+  return 0
+
+
+def do_list(sys_argv):
+  parser = optparse.OptionParser('Usage: %prog [-p POLICY] list <first-dump>')
+  parser.add_option('-p', '--policy', type='string', dest='policy',
+                    help='profile with POLICY', metavar='POLICY')
+  options, args = parser.parse_args(sys_argv)
+
+  if len(args) != 2:
+    parser.error('needs 1 argument.')
+    return 1
+
+  dump_path = args[1]
+
+  prefix = find_prefix(dump_path)
+  buckets = load_buckets(prefix)
+  dumps, appeared_addresses = load_dumps(
+      determine_dump_path_list(dump_path, prefix), buckets)
+  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  policies = load_policies(options.policy)
+
+  for policy in sorted(policies):
+    rule_list = policies[policy].rules
+    components = policies[policy].components
+
+    component_sizes = dumps[0].apply_policy(
+        rule_list, buckets, dumps[0].dump_time, components, symbols)
+    sys.stdout.write('%s:\n' % policy)
     for c in components:
       if c in ['hour', 'minute', 'second']:
         sys.stdout.write('%30s %10.3f\n' % (c, component_sizes[c]))
@@ -796,16 +959,112 @@ Examples:
         sys.stdout.write('%30s %10.3f\n' % (
             c, component_sizes[c] / 1024.0 / 1024.0))
 
-  elif action == '--expand':
-    component_name = sys.argv[5]
-    depth = sys.argv[6]
-    logs[0].expand(policy_list, buckets, component_name, int(depth))
+    for bucket in buckets.itervalues():
+      bucket.clear_component_cache()
 
-  elif action == '--pprof':
-    if len(sys.argv) > 5:
-      logs[0].dump_for_pprof(policy_list, buckets, maps_lines, sys.argv[5])
-    else:
-      logs[0].dump_for_pprof(policy_list, buckets, maps_lines, None)
+  return 0
+
+
+def do_expand(sys_argv):
+  parser = optparse.OptionParser(
+      'Usage: %prog expand <dump> <policy> <component> <depth>')
+  options, args = parser.parse_args(sys_argv)
+
+  if len(args) != 5:
+    parser.error('needs 4 arguments.')
+    return 1
+
+  dump_path = args[1]
+  target_policy = args[2]
+  component_name = args[3]
+  depth = args[4]
+
+  prefix = find_prefix(dump_path)
+  buckets = load_buckets(prefix)
+  dump, appeared_addresses = load_dump(dump_path, buckets)
+  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  policies = load_policies(target_policy)
+
+  rule_list = policies[target_policy].rules
+
+  dump.expand(rule_list, buckets, component_name, int(depth), symbols)
+
+  return 0
+
+
+def do_pprof(sys_argv):
+  parser = optparse.OptionParser(
+      'Usage: %prog pprof [-c COMPONENT] <dump> <policy>')
+  parser.add_option('-c', '--component', type='string', dest='component',
+                    help='restrict to COMPONENT', metavar='COMPONENT')
+  options, args = parser.parse_args(sys_argv)
+
+  if len(args) != 3:
+    parser.error('needs 2 arguments.')
+    return 1
+
+  dump_path = args[1]
+  target_policy = args[2]
+  component = options.component
+
+  prefix = find_prefix(dump_path)
+  buckets = load_buckets(prefix)
+  dump, appeared_addresses = load_dump(dump_path, buckets)
+  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  policies = load_policies(target_policy)
+
+  rule_list = policies[target_policy].rules
+
+  with open(prefix + '.maps', 'r') as maps_f:
+    maps_lines = maps_f.readlines()
+  dump.print_for_pprof(rule_list, buckets, maps_lines, component, symbols)
+
+  return 0
+
+
+def main():
+  COMMANDS = {
+    'csv': do_csv,
+    'expand': do_expand,
+    'json': do_json,
+    'list': do_list,
+    'pprof': do_pprof,
+    'stacktrace': do_stacktrace,
+  }
+
+  # TODO(dmikurube): Remove this message after a while.
+  if len(sys.argv) >= 2 and sys.argv[1].startswith('--'):
+    sys.stderr.write("""
+**************** NOTICE!! ****************
+   The command line format has changed.
+   Please look at the description below.
+******************************************
+
+""")
+
+  if len(sys.argv) < 2 or (not sys.argv[1] in COMMANDS):
+    sys.stderr.write("""Usage: %s <command> [options] [<args>]
+
+Commands:
+   csv          Classify memory usage in CSV
+   expand       Show all stacktraces contained in the specified component
+   json         Classify memory usage in JSON
+   list         Classify memory usage in simple listing format
+   pprof        Format the profile dump so that it can be processed by pprof
+   stacktrace   Convert runtime addresses to symbol names
+
+Quick Reference:
+   dmprof csv [-p POLICY] <first-dump>
+   dmprof expand <dump> <policy> <component> <depth>
+   dmprof json [-p POLICY] <first-dump>
+   dmprof list [-p POLICY] <first-dump>
+   dmprof pprof [-c COMPONENT] <dump> <policy>
+   dmprof stacktrace <dump>
+""" % (sys.argv[0]))
+    sys.exit(1)
+  action = sys.argv.pop(1)
+
+  return COMMANDS[action](sys.argv)
 
 
 if __name__ == '__main__':
