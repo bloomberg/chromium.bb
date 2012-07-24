@@ -297,6 +297,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the volume slider.">
         Volume
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_VOLUME_MUTE" desc="The label text for the volume mute segment.">
+        mute
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DISABLE_BLUETOOTH" desc="The label used in the tray popup to disable bluetooth.">
         Disable Bluetooth
       </message>

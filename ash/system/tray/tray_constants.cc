@@ -30,6 +30,7 @@ const int kTrayPopupTextSpacingVertical = 4;
 const int kTrayPopupItemHeight = 48;
 const int kTrayPopupDetailsIconWidth = 27;
 const int kTrayRoundedBorderRadius = 2;
+const int kTrayBarButtonWidth = 39;
 
 const SkColor kBackgroundColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);

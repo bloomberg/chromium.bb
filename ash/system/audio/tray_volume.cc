@@ -91,6 +91,26 @@ class VolumeButton : public views::ToggleImageButton {
   DISALLOW_COPY_AND_ASSIGN(VolumeButton);
 };
 
+class MuteButton : public ash::internal::TrayBarButtonWithTitle {
+ public:
+  explicit MuteButton(views::ButtonListener* listener)
+      : TrayBarButtonWithTitle(listener,
+            IDS_ASH_STATUS_TRAY_VOLUME_MUTE,
+            kTrayBarButtonWidth) {
+    Update();
+  }
+  virtual ~MuteButton() {}
+
+  void Update() {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    UpdateButton(delegate->IsAudioMuted());
+    SchedulePaint();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MuteButton);
+};
+
 class VolumeView : public views::View,
                    public views::ButtonListener,
                    public views::SliderListener {
@@ -101,6 +121,9 @@ class VolumeView : public views::View,
 
     icon_ = new VolumeButton(this);
     AddChildView(icon_);
+
+    mute_ = new MuteButton(this);
+    AddChildView(mute_);
 
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
@@ -125,6 +148,7 @@ class VolumeView : public views::View,
     // did not change. In that case, setting the value of the slider won't
     // trigger an update. So explicitly trigger an update.
     icon_->Update();
+    mute_->Update();
     slider_->set_enable_accessibility_events(true);
   }
 
@@ -138,7 +162,7 @@ class VolumeView : public views::View,
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
-    CHECK(sender == icon_);
+    CHECK(sender == icon_ || sender == mute_);
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
     delegate->SetAudioMuted(!delegate->IsAudioMuted());
@@ -158,6 +182,7 @@ class VolumeView : public views::View,
   }
 
   VolumeButton* icon_;
+  MuteButton* mute_;
   views::Slider* slider_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeView);

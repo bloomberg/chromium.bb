@@ -28,6 +28,18 @@ namespace {
 const int kIconPaddingLeft = 5;
 const int kPaddingAroundButtons = 5;
 
+const int kBarImagesActive[] = {
+  IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_LEFT,
+  IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_CENTER,
+  IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_RIGHT,
+};
+
+const int kBarImagesDisabled[] = {
+  IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_LEFT,
+  IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_CENTER,
+  IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_RIGHT,
+};
+
 views::View* CreatePopupHeaderButtonsContainer() {
   views::View* view = new views::View;
   view->SetLayoutManager(new
@@ -428,6 +440,83 @@ void TrayPopupHeaderButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
 
 void TrayPopupHeaderButton::StateChanged() {
   SchedulePaint();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TrayBarButtonWithTitle
+
+class TrayBarButtonWithTitle::TrayBarButton
+  : public views::View {
+ public:
+  TrayBarButton(const int bar_active_images[], const int bar_disabled_images[])
+    : views::View(),
+      bar_active_images_(bar_active_images),
+      bar_disabled_images_(bar_disabled_images),
+      painter_(new views::HorizontalPainter(bar_active_images_)){
+  }
+  virtual ~TrayBarButton() {}
+
+  // Overriden from views::View
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    painter_->Paint(canvas, size());
+  }
+
+  void Update(bool control_on) {
+    painter_.reset(new views::HorizontalPainter(
+        control_on ? bar_active_images_ : bar_disabled_images_));
+    SchedulePaint();
+  }
+
+ private:
+  const int* bar_active_images_;
+  const int* bar_disabled_images_;
+  scoped_ptr<views::HorizontalPainter> painter_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrayBarButton);
+};
+
+TrayBarButtonWithTitle::TrayBarButtonWithTitle(views::ButtonListener* listener,
+                                               int title_id,
+                                               int width)
+    : views::CustomButton(listener),
+      image_(new TrayBarButton(kBarImagesActive, kBarImagesDisabled)),
+      title_(new views::Label),
+      width_(width) {
+  AddChildView(image_);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  string16 text = rb.GetLocalizedString(title_id);
+  title_->SetText(text);
+  AddChildView(title_);
+
+  image_height_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      kBarImagesActive[0]).ToImageSkia()->height();
+}
+
+TrayBarButtonWithTitle::~TrayBarButtonWithTitle() {}
+
+gfx::Size TrayBarButtonWithTitle::GetPreferredSize() {
+  return gfx::Size(width_, kTrayPopupItemHeight);
+}
+
+void TrayBarButtonWithTitle::Layout() {
+  gfx::Size title_size = title_->GetPreferredSize();
+  gfx::Rect rect(GetContentsBounds());
+  int bar_image_y = rect.height() / 2 - image_height_ / 2;
+  gfx::Rect bar_image_rect(rect.x(),
+                           bar_image_y,
+                           rect.width(),
+                           image_height_);
+  image_->SetBoundsRect(bar_image_rect);
+  // The image_ has some empty space below the bar image, move the title
+  // a little bit up to look closer to the bar.
+  title_->SetBounds(rect.x(),
+                    bar_image_y + image_height_ - 3,
+                    rect.width(),
+                    title_size.height());
+}
+
+void TrayBarButtonWithTitle::UpdateButton(bool control_on) {
+  image_->Update(control_on);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

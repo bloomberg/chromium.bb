@@ -154,7 +154,13 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="ash/status_update_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="ash/status_volume_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="ash/status_volume_mute.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WEB_NOTIFICATON" file="ash/statusbar_notifications.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_CENTER" file="ash/slider_center_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_LEFT" file="ash/slider_left_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_RIGHT" file="ash/slider_right_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_CENTER" file="ash/slider_center_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_LEFT" file="ash/slider_left_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_RIGHT" file="ash/slider_right_disabled.png" />        
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WEB_NOTIFICATON" file="ash/statusbar_notifications.png" />        
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="ash/status_wifi_disabled.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="ash/status_wifi_disabled_h.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="ash/status_wifi_enabled.png" />
