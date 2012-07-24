@@ -4,8 +4,12 @@
 
 # This validator test was taken from branch "x86-64" in the repo:
 #   https://github.com/mseaborn/x86-decoder
-# The test was modified to address intentional validator differences.
+# The test was modified to:
+#   * address intentional validator differences
+#   * to take the external validating executable as a command-line argument
 
+import optparse
+import os
 import subprocess
 
 
@@ -17,22 +21,28 @@ def WriteFile(filename, data):
     fh.close()
 
 
-bits = 64
+BITS = 64
+TEST_CASES = []
+NCVAL_EXECUTABLE = None
 
-test_cases = []
 
 def TestCase(asm, accept):
   def Func():
     print '* test %r' % asm
     full_asm = asm + '\n.p2align 5, 0x90\n'
-    WriteFile('tmp.S', full_asm)
-    subprocess.check_call(['gcc', '-m%i' % bits, '-c', 'tmp.S', '-o', 'tmp.o'])
-    rc = subprocess.call(['./dfa_ncval', 'tmp.o'])
+    try:
+      WriteFile('scons-out/tmp.S', full_asm)
+      subprocess.check_call(['gcc', '-m%i' % BITS, '-c', 'scons-out/tmp.S',
+                             '-o', 'scons-out/tmp.o'])
+      rc = subprocess.call([NCVAL_EXECUTABLE, 'scons-out/tmp.o'])
+    finally:
+      os.unlink('scons-out/tmp.S')
+      os.unlink('scons-out/tmp.o')
     if accept:
       assert rc == 0, rc
     else:
       assert rc == 1, rc
-  test_cases.append(Func)
+  TEST_CASES.append(Func)
 
 
 # Check some simple allowed instructions.
@@ -270,8 +280,14 @@ TestCase(accept=True, asm='prefetchnta (%rax)')
 TestCase(accept=False, asm='mov %rax, %es');
 TestCase(accept=False, asm='mov %es, %rax');
 
+
 def Main():
-  for test_case in test_cases:
+  global NCVAL_EXECUTABLE
+  parser = optparse.OptionParser()
+  (options, args) = parser.parse_args()
+  assert len(args) == 1
+  NCVAL_EXECUTABLE = args[0]
+  for test_case in TEST_CASES:
     test_case()
   print 'PASS'
 

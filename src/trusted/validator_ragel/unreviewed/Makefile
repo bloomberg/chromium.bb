@@ -195,18 +195,12 @@ clean-tests:
 
 # The target for all short-running tests.
 .PHONY: check
-check: check-irt check-as-alt-validator check-ncval
+check: check-irt check-ncval
 
 # Checks that the IRT is not rejected by the validator.
 .PHONY: check-irt
 check-irt: outdirs $(OBJD)/validator_test
 	$(OBJD)/validator_test nacl_irt_x86_64.nexe
-
-.PHONY: check-as-alt-validator
-check-as-alt-validator: $(OBJD)/validator_test
-	ln -sfn $(OBJD)/validator_test dfa_ncval
-	$(PYTHON2X) validator_test.py
-	rm -f dfa_ncval
 
 # Checks that all byte sequences accepted by the DFA are decoded identically to
 # the objdump. A long-running test.
