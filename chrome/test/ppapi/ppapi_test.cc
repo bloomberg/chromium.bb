@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/gpu/test_switches.h"
 #include "media/audio/audio_manager.h"
 #include "net/base/net_util.h"
@@ -184,7 +185,7 @@ void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   FilePath websocket_root_dir;
   ASSERT_TRUE(
       PathService::Get(content::DIR_LAYOUT_TESTS, &websocket_root_dir));
-  ui_test_utils::TestWebSocketServer server;
+  content::TestWebSocketServer server;
   int port = server.UseRandomPort();
   ASSERT_TRUE(server.Start(websocket_root_dir));
   FilePath http_document_root;

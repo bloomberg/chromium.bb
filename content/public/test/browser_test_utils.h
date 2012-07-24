@@ -10,12 +10,20 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/process.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
+#endif
+
+class CommandLine;
 
 namespace base {
 class RunLoop;
@@ -118,6 +126,70 @@ class TitleWatcher : public NotificationObserver {
   bool quit_loop_on_observation_;
 
   DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
+};
+
+// This is a utility class for running a python websocket server
+// during tests. The server is started during the construction of the
+// object, and is stopped when the destructor is called. Note that
+// because of the underlying script that is used:
+//
+//    third_paty/WebKit/Tools/Scripts/new-run-webkit-websocketserver
+//
+// Only *_wsh.py handlers found under "http/tests/websocket/tests" from the
+// |root_directory| will be found and active while running the test
+// server.
+class TestWebSocketServer {
+ public:
+  TestWebSocketServer();
+
+  // Stops the python websocket server if it was already started.
+  ~TestWebSocketServer();
+
+  // Use a random port, useful for tests that are sharded. Returns the port.
+  int UseRandomPort();
+
+  // Serves with TLS.
+  void UseTLS();
+
+  // Starts the python websocket server using |root_directory|. Returns whether
+  // the server was successfully started.
+  bool Start(const FilePath& root_directory);
+
+ private:
+  // Sets up PYTHONPATH to run websocket_server.py.
+  void SetPythonPath();
+
+  // Creates a CommandLine for invoking the python interpreter.
+  CommandLine* CreatePythonCommandLine();
+
+  // Creates a CommandLine for invoking the python websocker server.
+  CommandLine* CreateWebSocketServerCommandLine();
+
+  // Has the server been started?
+  bool started_;
+
+  // A Scoped temporary directory for holding the python pid file.
+  ScopedTempDir temp_dir_;
+
+  // Used to close the same python interpreter when server falls out
+  // scope.
+  FilePath websocket_pid_file_;
+
+#if defined(OS_POSIX)
+  // ProcessHandle used to terminate child process.
+  base::ProcessHandle process_group_id_;
+#elif defined(OS_WIN)
+  // JobObject used to clean up orphaned child process.
+  base::win::ScopedHandle job_handle_;
+#endif
+
+  // Holds port number which the python websocket server uses.
+  int port_;
+
+  // If the python websocket server serves with TLS.
+  bool secure_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
 };
 
 }  // namespace content

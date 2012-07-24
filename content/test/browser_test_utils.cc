@@ -4,7 +4,13 @@
 
 #include "content/public/test/browser_test_utils.h"
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/path_service.h"
+#include "base/process_util.h"
+#include "base/rand_util.h"
+#include "base/string_number_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
@@ -13,7 +19,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/python_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+static const int kDefaultWsPort = 8880;
 
 namespace content {
 
@@ -303,6 +312,152 @@ void TitleWatcher::Observe(int type,
     quit_loop_on_observation_ = false;
     message_loop_runner_->Quit();
   }
+}
+
+TestWebSocketServer::TestWebSocketServer()
+    : started_(false),
+      port_(kDefaultWsPort),
+      secure_(false) {
+#if defined(OS_POSIX)
+  process_group_id_ = base::kNullProcessHandle;
+#endif
+}
+
+int TestWebSocketServer::UseRandomPort() {
+  port_ = base::RandInt(1024, 65535);
+  return port_;
+}
+
+void TestWebSocketServer::UseTLS() {
+  secure_ = true;
+}
+
+bool TestWebSocketServer::Start(const FilePath& root_directory) {
+  if (started_)
+    return true;
+  // Append CommandLine arguments after the server script, switches won't work.
+  scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
+  cmd_line->AppendArg("--server=start");
+  cmd_line->AppendArg("--chromium");
+  cmd_line->AppendArg("--register_cygwin");
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--root=") +
+                            root_directory.value());
+  cmd_line->AppendArg("--port=" + base::IntToString(port_));
+  if (secure_)
+    cmd_line->AppendArg("--tls");
+  if (!temp_dir_.CreateUniqueTempDir()) {
+    LOG(ERROR) << "Unable to create a temporary directory.";
+    return false;
+  }
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--output-dir=") +
+                            temp_dir_.path().value());
+  websocket_pid_file_ = temp_dir_.path().AppendASCII("websocket.pid");
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--pidfile=") +
+                            websocket_pid_file_.value());
+  SetPythonPath();
+
+  base::LaunchOptions options;
+  base::ProcessHandle process_handle;
+
+#if defined(OS_POSIX)
+  options.new_process_group = true;
+#elif defined(OS_WIN)
+  job_handle_.Set(CreateJobObject(NULL, NULL));
+  if (!job_handle_.IsValid()) {
+    LOG(ERROR) << "Could not create JobObject.";
+    return false;
+  }
+
+  if (!base::SetJobObjectAsKillOnJobClose(job_handle_.Get())) {
+    LOG(ERROR) << "Could not SetInformationJobObject.";
+    return false;
+  }
+
+  options.inherit_handles = true;
+  options.job_handle = job_handle_.Get();
+#endif
+
+  // Launch a new WebSocket server process.
+  if (!base::LaunchProcess(*cmd_line.get(), options, &process_handle)) {
+    LOG(ERROR) << "Unable to launch websocket server.";
+    return false;
+  }
+#if defined(OS_POSIX)
+  process_group_id_ = process_handle;
+#endif
+  int exit_code;
+  bool wait_success = base::WaitForExitCodeWithTimeout(
+      process_handle,
+      &exit_code,
+      TestTimeouts::action_max_timeout());
+  base::CloseProcessHandle(process_handle);
+
+  if (!wait_success || exit_code != 0) {
+    LOG(ERROR) << "Failed to run new-run-webkit-websocketserver: "
+               << "wait_success = " << wait_success << ", "
+               << "exit_code = " << exit_code;
+    return false;
+  }
+
+  started_ = true;
+  return true;
+}
+
+CommandLine* TestWebSocketServer::CreatePythonCommandLine() {
+  // Note: Python's first argument must be the script; do not append CommandLine
+  // switches, as they would precede the script path and break this CommandLine.
+  FilePath path;
+  CHECK(GetPythonRunTime(&path));
+  return new CommandLine(path);
+}
+
+void TestWebSocketServer::SetPythonPath() {
+  FilePath scripts_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &scripts_path);
+
+  scripts_path = scripts_path
+      .Append(FILE_PATH_LITERAL("third_party"))
+      .Append(FILE_PATH_LITERAL("WebKit"))
+      .Append(FILE_PATH_LITERAL("Tools"))
+      .Append(FILE_PATH_LITERAL("Scripts"));
+  AppendToPythonPath(scripts_path);
+}
+
+CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
+  FilePath src_path;
+  // Get to 'src' dir.
+  PathService::Get(base::DIR_SOURCE_ROOT, &src_path);
+
+  FilePath script_path(src_path);
+  script_path = script_path.AppendASCII("third_party");
+  script_path = script_path.AppendASCII("WebKit");
+  script_path = script_path.AppendASCII("Tools");
+  script_path = script_path.AppendASCII("Scripts");
+  script_path = script_path.AppendASCII("new-run-webkit-websocketserver");
+
+  CommandLine* cmd_line = CreatePythonCommandLine();
+  cmd_line->AppendArgPath(script_path);
+  return cmd_line;
+}
+
+TestWebSocketServer::~TestWebSocketServer() {
+  if (!started_)
+    return;
+  // Append CommandLine arguments after the server script, switches won't work.
+  scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
+  cmd_line->AppendArg("--server=stop");
+  cmd_line->AppendArg("--chromium");
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--pidfile=") +
+                            websocket_pid_file_.value());
+  base::LaunchOptions options;
+  options.wait = true;
+  base::LaunchProcess(*cmd_line.get(), options, NULL);
+
+#if defined(OS_POSIX)
+  // Just to make sure that the server process terminates certainly.
+  if (process_group_id_ != base::kNullProcessHandle)
+    base::KillProcessGroup(process_group_id_);
+#endif
 }
 
 }  // namespace content

@@ -570,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   // Start pywebsocket with TLS.
-  ui_test_utils::TestWebSocketServer wss_server;
+  content::TestWebSocketServer wss_server;
   int port = wss_server.UseRandomPort();
   wss_server.UseTLS();
   FilePath wss_root_dir;

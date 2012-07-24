@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(WorkerWebSocketHttpLayoutTest, DISABLED_Tests) {
   FilePath websocket_test_dir;
   ASSERT_TRUE(PathService::Get(content::DIR_LAYOUT_TESTS, &websocket_test_dir));
 
-  ui_test_utils::TestWebSocketServer websocket_server;
+  content::TestWebSocketServer websocket_server;
   ASSERT_TRUE(websocket_server.Start(websocket_test_dir));
 
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
