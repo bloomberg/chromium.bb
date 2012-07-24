@@ -608,7 +608,22 @@ void BrowserMainLoop::BrowserThreadsStarted() {
 
   // Start the GpuDataManager before we set up the MessageLoops because
   // otherwise we'll trigger the assertion about doing IO on the UI thread.
-  content::GpuDataManager::GetInstance();
+  GpuDataManager* gpu_data_manager = content::GpuDataManager::GetInstance();
+
+  // When running the GPU thread in-process, avoid optimistically starting it
+  // since creating the GPU thread races against creation of the one-and-only
+  // ChildProcess instance which is created by the renderer thread.
+  if (gpu_data_manager->GpuAccessAllowed() &&
+      !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
+      !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
+      !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
+    TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process");
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(
+            base::IgnoreResult(&GpuProcessHost::Get),
+            GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+            content::CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP));
+  }
 }
 
 void BrowserMainLoop::InitializeToolkit() {
