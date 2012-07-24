@@ -13,6 +13,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_display_manager.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -96,11 +97,18 @@ class DemoStackingClient : public aura::client::StackingClient {
   // Overridden from aura::client::StackingClient:
   virtual aura::Window* GetDefaultParent(aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE {
+
+    if (!capture_client_.get()) {
+      capture_client_.reset(
+          new aura::shared::RootWindowCaptureClient(root_window_));
+    }
     return root_window_;
   }
 
  private:
   aura::RootWindow* root_window_;
+
+  scoped_ptr<aura::shared::RootWindowCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoStackingClient);
 };

@@ -15,6 +15,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_display_manager.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -296,6 +297,9 @@ int main(int argc, char** argv) {
   aura::Env::GetInstance()->SetDisplayManager(manager);
   scoped_ptr<aura::RootWindow> root_window(
       aura::DisplayManager::CreateRootWindowForPrimaryDisplay());
+  aura::client::SetCaptureClient(
+      root_window.get(),
+      new aura::shared::RootWindowCaptureClient(root_window.get()));
 
   // add layers
   ColoredLayer background(SK_ColorRED);
