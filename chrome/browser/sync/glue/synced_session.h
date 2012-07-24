@@ -93,6 +93,30 @@ struct SyncedSession {
   // itself and free'd on destruction.
   SyncedWindowMap windows;
 
+  // Converts the DeviceType enum value to a string. This is used
+  // in the NTP handler for foreign sessions for matching session
+  // types to an icon style.
+  std::string DeviceTypeAsString() const {
+    switch (device_type) {
+      case SyncedSession::TYPE_WIN:
+        return "win";
+      case SyncedSession::TYPE_MACOSX:
+        return "macosx";
+      case SyncedSession::TYPE_LINUX:
+        return "linux";
+      case SyncedSession::TYPE_CHROMEOS:
+        return "chromeos";
+      case SyncedSession::TYPE_OTHER:
+        return "other";
+      case SyncedSession::TYPE_PHONE:
+        return "phone";
+      case SyncedSession::TYPE_TABLET:
+        return "tablet";
+      default:
+        return "";
+    }
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedSession);
 };

@@ -161,6 +161,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
       scoped_ptr<DictionaryValue> session_data(new DictionaryValue());
       session_data->SetString("tag", session_tag);
       session_data->SetString("name", session->session_name);
+      session_data->SetString("deviceType", session->DeviceTypeAsString());
       session_data->SetString("modifiedTime",
                               FormatSessionTime(session->modified_time));
 
@@ -331,7 +332,7 @@ bool ForeignSessionHandler::SessionWindowToValue(
       modification_time = std::max(modification_time,
                                    window.tabs[i]->timestamp);
       tab_values->Append(tab_value.release());
-  }
+    }
   }
   if (tab_values->GetSize() == 0)
     return false;
