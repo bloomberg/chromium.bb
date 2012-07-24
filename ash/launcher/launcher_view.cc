@@ -283,8 +283,7 @@ LauncherView::LauncherView(LauncherModel* model,
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
   focus_search_.reset(new LauncherFocusSearch(view_model_.get()));
-  tooltip_.reset(new LauncherTooltipManager(
-      alignment_, shelf_layout_manager, this));
+  tooltip_.reset(new LauncherTooltipManager(alignment_, shelf_layout_manager));
 }
 
 LauncherView::~LauncherView() {
@@ -813,6 +812,20 @@ void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
   return this;
+}
+
+void LauncherView::OnMouseMoved(const views::MouseEvent& event) {
+  if (ShouldHideTooltip(event.location()) && tooltip_->IsVisible())
+    tooltip_->Close();
+}
+
+void LauncherView::OnMouseExited(const views::MouseEvent& event) {
+  // Mouse exit events are fired for entering to a launcher button from
+  // the launcher view, so it checks the location by ShouldHideTooltip().
+  gfx::Point point = event.location();
+  views::View::ConvertPointToView(parent(), this, &point);
+  if (ShouldHideTooltip(point) && tooltip_->IsVisible())
+    tooltip_->Close();
 }
 
 void LauncherView::LauncherItemAdded(int model_index) {

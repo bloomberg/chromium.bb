@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "ui/gfx/rect.h"
-#include "ui/aura/event_filter.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
@@ -31,16 +30,13 @@ class LauncherViewTest;
 }
 
 namespace internal {
-class LauncherView;
 
 // LauncherTooltipManager manages the tooltip balloon poping up on launcher
 // items.
-class ASH_EXPORT LauncherTooltipManager : public aura::EventFilter,
-                                          public ShelfLayoutManager::Observer {
+class ASH_EXPORT LauncherTooltipManager : public ShelfLayoutManager::Observer {
  public:
   LauncherTooltipManager(ShelfAlignment alignment,
-                         ShelfLayoutManager* shelf_layout_manager,
-                         LauncherView* launcher_view);
+                         ShelfLayoutManager* shelf_layout_manager);
   virtual ~LauncherTooltipManager();
 
   // Called when the bubble is closed.
@@ -70,17 +66,6 @@ class ASH_EXPORT LauncherTooltipManager : public aura::EventFilter,
   bool IsVisible();
 
 protected:
-  // aura::EventFilter overrides:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus PreHandleGestureEvent(
-      aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
-
   // ShelfLayoutManager::Observer overrides:
   virtual void WillDeleteShelf() OVERRIDE;
   virtual void WillChangeVisibilityState(
@@ -97,14 +82,12 @@ protected:
   void CreateBubble(views::View* anchor, const string16& text);
 
   LauncherTooltipBubble* view_;
-  views::Widget* widget_;
   views::View* anchor_;
   string16 text_;
   ShelfAlignment alignment_;
   scoped_ptr<base::Timer> timer_;
 
   ShelfLayoutManager* shelf_layout_manager_;
-  LauncherView* launcher_view_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherTooltipManager);
 };
