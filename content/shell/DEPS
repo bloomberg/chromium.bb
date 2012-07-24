@@ -10,8 +10,4 @@ include_rules = [
 
   # Shell resources
   "+grit/shell_resources.h",
-
-  # The content_shell for aura must work with the views and aura
-  "+ui/views",
-  "+ui/aura",
 ]

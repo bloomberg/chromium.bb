@@ -146,19 +146,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/shell',
           ],
         }],  # OS=="android"
-        ['use_aura==1 and linux_use_tcmalloc==1', {
-          'dependencies': [
-            # This is needed by content/app/content_main_runner.cc
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['use_aura==1', {
-          'dependencies':[
-            '../ui/aura/aura.gyp:aura',
-            '../ui/base/strings/ui_strings.gyp:ui_strings',
-            '../ui/views/views.gyp:views',
-            '../ui/ui.gyp:ui_resources',
-          ],
           'sources/': [
             ['exclude', 'shell/shell_gtk.cc'],
             ['exclude', 'shell/shell_win.cc'],
