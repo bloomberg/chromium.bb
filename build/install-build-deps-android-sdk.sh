@@ -129,6 +129,7 @@ fi
 # configuration and override the existing one, since there is no easy way to
 # check whether current AVD has correct configuration and it takes almost no
 # time to create a new one.  Create one ARM AVD and one x86 AVD.
+export ANDROID_SDK_HOME=${ANDROID_SDK_ROOT}
 "${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name avd_armeabi \
   --abi armeabi-v7a --target ${SDK_TARGET_ID} -c 64M --force <<< "no"
 
