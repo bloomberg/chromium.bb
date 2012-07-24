@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/zygote_host_impl_linux.h"
+#include "content/browser/zygote_host/zygote_host_impl_linux.h"
 
 #include <sys/socket.h>
 #include <sys/stat.h>

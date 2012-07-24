@@ -31,7 +31,7 @@
 #elif defined(OS_POSIX)
 #include "base/memory/singleton.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
-#include "content/browser/zygote_host_impl_linux.h"
+#include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #endif
 
 #if defined(OS_POSIX)
