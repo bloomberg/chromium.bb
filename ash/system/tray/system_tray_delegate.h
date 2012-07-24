@@ -148,10 +148,10 @@ class SystemTrayDelegate {
   // Mutes/Unmutes the audio system.
   virtual void SetAudioMuted(bool muted) = 0;
 
-  // Gets the volume level.
+  // Gets the volume level. The range is [0, 1.0].
   virtual float GetVolumeLevel() const = 0;
 
-  // Sets the volume level.
+  // Sets the volume level. The range is [0, 1.0].
   virtual void SetVolumeLevel(float level) = 0;
 
   // Gets whether the caps lock is on.

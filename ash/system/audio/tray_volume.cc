@@ -4,6 +4,8 @@
 
 #include "ash/system/audio/tray_volume.h"
 
+#include <cmath>
+
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -18,6 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -31,7 +34,11 @@ namespace internal {
 namespace {
 const int kVolumeImageWidth = 25;
 const int kVolumeImageHeight = 25;
-const int kVolumeLevel = 4;
+
+// IDR_AURA_UBER_TRAY_VOLUME_LEVELS contains 5 images,
+// The one for mute is at the 0 index and the other
+// four are used for ascending volume levels.
+const int kVolumeLevels = 4;
 }
 
 namespace tray {
@@ -53,24 +60,16 @@ class VolumeButton : public views::ToggleImageButton {
   void Update() {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    int level = static_cast<int>(delegate->GetVolumeLevel() * 100);
-    int image_index = level / (100 / kVolumeLevel);
-    if (level > 0 && image_index == 0)
-      ++image_index;
-    if (level == 100)
-      image_index = kVolumeLevel - 1;
-    else if (image_index == kVolumeLevel - 1)
-      --image_index;
-    // Index 0 is reserved for mute.
-    if (delegate->IsAudioMuted())
-      image_index = 0;
-    else
-      ++image_index;
+    float level = delegate->GetVolumeLevel();
+    int image_index = delegate->IsAudioMuted() ?
+        0 : (level == 1.0 ?
+             kVolumeLevels : std::ceil(level * (kVolumeLevels - 1)));
+
     if (image_index != image_index_) {
-      SkIRect region = SkIRect::MakeXYWH(0, image_index * kVolumeImageHeight,
-          kVolumeImageWidth, kVolumeImageHeight);
-      gfx::ImageSkia image_skia;
-      image_.ToImageSkia()->extractSubset(&image_skia, region);
+      gfx::Rect region(0, image_index * kVolumeImageHeight,
+                       kVolumeImageWidth, kVolumeImageHeight);
+      gfx::ImageSkia image_skia = gfx::ImageSkiaOperations::ExtractSubset(
+          *(image_.ToImageSkia()), region);
       SetImage(views::CustomButton::BS_NORMAL, &image_skia);
       image_index_ = image_index;
     }
