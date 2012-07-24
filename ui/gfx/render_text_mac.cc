@@ -167,8 +167,8 @@ void RenderTextMac::EnsureLayout() {
   runs_valid_ = false;
 
   const Font& font = GetFont();
-  CTFontRef ct_font =
-      CreateCTFontWithPixelSize(font.GetFontName(), font.GetFontSize());
+  base::mac::ScopedCFTypeRef<CTFontRef> ct_font(
+      CreateCTFontWithPixelSize(font.GetFontName(), font.GetFontSize()));
 
   const void* keys[] = { kCTFontAttributeName };
   const void* values[] = { ct_font };
