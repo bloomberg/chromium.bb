@@ -1151,7 +1151,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsDevCommandEnabled(id);
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
-      return source_web_contents_->GetController().GetActiveEntry() != NULL;
+      if (source_web_contents_->GetController().GetActiveEntry() == NULL)
+        return false;
+      // Disabled if no browser is associated (e.g. desktop notifications).
+      if (browser::FindBrowserWithWebContents(source_web_contents_) == NULL)
+        return false;
+      return true;
 
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       TabContents* tab_contents =
@@ -1341,7 +1346,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
+      return true;
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO:
+      // Disabled if no browser is associated (e.g. desktop notifications).
+      if (browser::FindBrowserWithWebContents(source_web_contents_) == NULL)
+        return false;
       return true;
 
     case IDC_CHECK_SPELLING_WHILE_TYPING:
