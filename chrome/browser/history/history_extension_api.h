@@ -6,12 +6,20 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/common/extensions/api/history.h"
 #include "content/public/browser/notification_registrar.h"
+
+typedef std::vector<linked_ptr<
+    extensions::api::history::HistoryItem> > HistoryItemList;
+typedef std::vector<linked_ptr<
+    extensions::api::history::VisitItem> > VisitItemList;
 
 // Observes History service and routes the notifications as events to the
 // extension system.
