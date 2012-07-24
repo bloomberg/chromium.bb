@@ -60,14 +60,6 @@ class TabAndroid {
       const GURL& url, const string16& title, const SkBitmap& skbitmap,
       int r_value, int g_value, int b_value) = 0;
 
-  // TODO(felipeg,tedchoc): Remove this when possible.
-  // http://crbug.com/138216
-  // Called when the mobile promo action asks to send email.
-  virtual void PromoSendEmail(const string16& data_email,
-                              const string16& data_subj,
-                              const string16& data_body,
-                              const string16& data_inv) = 0;
-
  protected:
   virtual ~TabAndroid();
 
