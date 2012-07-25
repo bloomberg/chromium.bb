@@ -259,11 +259,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns true if the |point_in_root| in root window's coordinate falls
   // within this window's bounds. Returns false if the window is detached
   // from root window.
-  bool ContainsPointInRoot(const gfx::Point& point_in_root);
+  bool ContainsPointInRoot(const gfx::Point& point_in_root) const;
 
   // Returns true if relative-to-this-Window's-origin |local_point| falls
   // within this Window's bounds.
-  bool ContainsPoint(const gfx::Point& local_point);
+  bool ContainsPoint(const gfx::Point& local_point) const;
 
   // Returns true if the mouse pointer at relative-to-this-Window's-origin
   // |local_point| can trigger an event for this Window.

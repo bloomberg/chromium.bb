@@ -479,8 +479,8 @@ void Window::RemoveObserver(WindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) {
-  Window* root_window = GetRootWindow();
+bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) const {
+  const Window* root_window = GetRootWindow();
   if (!root_window)
     return false;
   gfx::Point local_point(point_in_root);
@@ -488,7 +488,7 @@ bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) {
   return gfx::Rect(GetTargetBounds().size()).Contains(local_point);
 }
 
-bool Window::ContainsPoint(const gfx::Point& local_point) {
+bool Window::ContainsPoint(const gfx::Point& local_point) const {
   return gfx::Rect(bounds().size()).Contains(local_point);
 }
 
