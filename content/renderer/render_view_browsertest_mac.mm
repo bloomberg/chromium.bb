@@ -7,6 +7,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/shell/shell_main_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <Cocoa/Cocoa.h>
@@ -44,6 +45,7 @@ NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
 // Test that cmd-up/down scrolls the page exactly if it is not intercepted by
 // javascript.
 TEST_F(RenderViewTest, MacTestCmdUp) {
+  content::ShellMainDelegate::InitializeResourceBundle();
   // Some preprocessor trickery so that we can have literal html in our source,
   // makes it easier to copy html to and from an html file for testing (the
   // preprocessor will remove the newlines at the line ends, turning this into

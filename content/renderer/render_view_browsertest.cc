@@ -10,9 +10,14 @@
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/shell/shell_content_client.h"
+#include "content/shell/shell_content_browser_client.h"
+#include "content/shell/shell_main_delegate.h"
 #include "content/test/mock_keyboard.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,6 +78,57 @@ int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
   return flags;
 }
 #endif
+
+class WebUITestWebUIControllerFactory : public content::WebUIControllerFactory {
+ public:
+  virtual content::WebUIController* CreateWebUIControllerForURL(
+      content::WebUI* web_ui, const GURL& url) const OVERRIDE {
+    return NULL;
+  }
+  virtual content::WebUI::TypeID GetWebUIType(
+      content::BrowserContext* browser_context,
+      const GURL& url) const OVERRIDE {
+    return content::WebUI::kNoWebUI;
+  }
+  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+                              const GURL& url) const OVERRIDE {
+    return content::GetContentClient()->HasWebUIScheme(url);
+  }
+  virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
+                                      const GURL& url) const OVERRIDE {
+    return content::GetContentClient()->HasWebUIScheme(url);
+  }
+  virtual bool IsURLAcceptableForWebUI(
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      bool data_urls_allowed) const OVERRIDE {
+    return false;
+  }
+};
+
+class WebUITestClient : public content::ShellContentClient {
+ public:
+  WebUITestClient() {
+  }
+
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
+    return url.SchemeIs(chrome::kChromeUIScheme);
+  }
+};
+
+class WebUITestBrowserClient : public content::ShellContentBrowserClient {
+ public:
+  WebUITestBrowserClient() {}
+
+  virtual content::WebUIControllerFactory*
+      GetWebUIControllerFactory() OVERRIDE {
+    return &factory_;
+  }
+
+ private:
+  WebUITestWebUIControllerFactory factory_;
+};
+
 }
 
 class RenderViewImplTest : public content::RenderViewTest {
@@ -80,6 +136,11 @@ class RenderViewImplTest : public content::RenderViewTest {
   RenderViewImplTest() {
     // Attach a pseudo keyboard device to this object.
     mock_keyboard_.reset(new MockKeyboard());
+  }
+
+  virtual void SetUp() OVERRIDE {
+    content::RenderViewTest::SetUp();
+    content::ShellMainDelegate::InitializeResourceBundle();
   }
 
   RenderViewImpl* view() {
@@ -240,6 +301,16 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
 }
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
+  WebUITestClient client;
+  WebUITestBrowserClient browser_client;
+  content::ContentClient* old_client = content::GetContentClient();
+  content::ContentBrowserClient* old_browser_client =
+      content::GetContentClient()->browser();
+
+  content::SetContentClient(&client);
+  content::GetContentClient()->set_browser_for_testing(&browser_client);
+  client.set_renderer_for_testing(old_client->renderer());
+
   // Navigations to normal HTTP URLs can be handled locally.
   WebKit::WebURLRequest request(GURL("http://foo.com"));
   WebKit::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
@@ -273,6 +344,9 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       WebKit::WebNavigationPolicyNewForegroundTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+
+  content::GetContentClient()->set_browser_for_testing(old_browser_client);
+  content::SetContentClient(old_client);
 }
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {

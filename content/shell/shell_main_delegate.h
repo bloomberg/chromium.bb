@@ -32,9 +32,9 @@ class ShellMainDelegate : public ContentMainDelegate {
   virtual ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
   virtual ContentRendererClient* CreateContentRendererClient() OVERRIDE;
 
- private:
-  void InitializeResourceBundle();
+  static void InitializeResourceBundle();
 
+ private:
   scoped_ptr<ShellContentBrowserClient> browser_client_;
   scoped_ptr<ShellContentRendererClient> renderer_client_;
   ShellContentClient content_client_;

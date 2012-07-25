@@ -4,8 +4,8 @@
 
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
-#include "content/public/test/render_view_test.h"
 #include "content/common/view_messages.h"
+#include "content/public/test/render_view_test.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_instance_state_accessor.h"
