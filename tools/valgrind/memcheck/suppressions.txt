@@ -5682,6 +5682,24 @@
    fun:_ZN12_GLOBAL__N_121ExtensionProtocolTest12StartRequestEPN3net10URLRequestEN12ResourceType4TypeE
    fun:_ZN12_GLOBAL__N_143ExtensionProtocolTest_IncognitoRequest_Test8TestBodyEv
 }
+{
+   bug_77766
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN7WebCore18PerformTaskContextnwEm
+   fun:_ZN7WebCore8Document8postTaskEN3WTF10PassOwnPtrINS_22ScriptExecutionContext4TaskEEE
+   fun:_ZN7WebCore20WorkerMessagingProxy22workerContextDestroyedEv
+   fun:_ZN6WebKit19WebWorkerClientImpl22workerContextDestroyedEv
+   fun:_ZN7WebCore13WorkerContextD2Ev
+   fun:_ZN7WebCore22DedicatedWorkerContextD0Ev
+   fun:_ZN3WTF10RefCountedIN7WebCore13WorkerContextEE5derefEv
+   fun:_ZN3WTF6RefPtrIN7WebCore13WorkerContextEEaSEPS2_
+   fun:_ZN7WebCore12WorkerThread12workerThreadEv
+   fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
+   fun:_ZN3WTFL16threadEntryPointEPv
+   fun:_ZN3WTFL19wtfThreadEntryPointEPv
+}
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
