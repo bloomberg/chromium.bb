@@ -33,6 +33,7 @@
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/views/views.gyp:views',
+        '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
       ],
       'defines': [
         'ASH_IMPLEMENTATION',
@@ -110,6 +111,10 @@
         'display/screen_position_controller.h',
         'display/secondary_display_view.cc',
         'display/secondary_display_view.h',
+        'keyboard_overlay/keyboard_overlay_delegate.cc',
+        'keyboard_overlay/keyboard_overlay_delegate.h',
+        'keyboard_overlay/keyboard_overlay_view.cc',
+        'keyboard_overlay/keyboard_overlay_view.h',
         'root_window_controller.cc',
         'root_window_controller.h',
         'rotator/screen_rotation.cc',
