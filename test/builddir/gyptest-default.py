@@ -27,6 +27,13 @@ import TestGyp
 test = TestGyp.TestGyp(formats=['!make', '!ninja', '!android'])
 
 test.run_gyp('prog1.gyp', '--depth=..', chdir='src')
+if test.format == 'msvs':
+  if test.uses_msbuild:
+    test.must_contain('src/prog1.vcxproj',
+      '<OutDir>..\\builddir\\Default\\</OutDir>')
+  else:
+    test.must_contain('src/prog1.vcproj',
+      'OutputDirectory="..\\builddir\\Default"')
 
 test.relocate('src', 'relocate/src')
 

@@ -1248,10 +1248,10 @@ def _GetMSVSAttributes(spec, config, config_type):
   prepared_attrs['ConfigurationType'] = config_type
   output_dir = prepared_attrs.get('OutputDirectory',
                                   '$(SolutionDir)$(ConfigurationName)')
-  prepared_attrs['OutputDirectory'] = output_dir
+  prepared_attrs['OutputDirectory'] = _FixPath(output_dir)
   if 'IntermediateDirectory' not in prepared_attrs:
     intermediate = '$(ConfigurationName)\\obj\\$(ProjectName)'
-    prepared_attrs['IntermediateDirectory'] = intermediate
+    prepared_attrs['IntermediateDirectory'] = _FixPath(intermediate)
   return prepared_attrs
 
 
@@ -2504,9 +2504,6 @@ def _GetMSBuildPropertySheets(configurations):
     return sheets
 
 def _ConvertMSVSBuildAttributes(spec, config, build_file):
-
-
-
   config_type = _GetMSVSConfigurationType(spec, build_file)
   msvs_attributes = _GetMSVSAttributes(spec, config, config_type)
   msbuild_attributes = {}
@@ -2557,10 +2554,10 @@ def _GetMSBuildAttributes(spec, config, build_file):
     msbuild_attributes['ConfigurationType'] = config_type
     output_dir = msbuild_attributes.get('OutputDirectory',
                                       '$(SolutionDir)$(Configuration)\\')
-    msbuild_attributes['OutputDirectory'] = output_dir
+    msbuild_attributes['OutputDirectory'] = _FixPath(output_dir)
     if 'IntermediateDirectory' not in msbuild_attributes:
       intermediate = '$(Configuration)\\'
-      msbuild_attributes['IntermediateDirectory'] = intermediate
+      msbuild_attributes['IntermediateDirectory'] = _FixPath(intermediate)
     if 'CharacterSet' in msbuild_attributes:
       msbuild_attributes['CharacterSet'] = _ConvertMSVSCharacterSet(
           msbuild_attributes['CharacterSet'])
@@ -2583,7 +2580,7 @@ def _GetMSBuildAttributes(spec, config, build_file):
     msbuild_settings = config['finalized_msbuild_settings']
     out_file = msbuild_settings[msbuild_tool].get('OutputFile')
     if out_file:
-      msbuild_attributes['TargetPath'] = out_file
+      msbuild_attributes['TargetPath'] = _FixPath(out_file)
 
   return msbuild_attributes
 
