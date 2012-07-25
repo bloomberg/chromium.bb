@@ -6,7 +6,7 @@ import json
 import logging
 import re
 
-DEFAULT_ICON_PATH = '/static/images/sample-default-icon.png'
+DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
@@ -16,7 +16,9 @@ class SamplesDataSource(object):
     """A factory to create SamplesDataSource instances bound to individual
     Requests.
     """
-    def __init__(self, file_system, cache_builder, samples_path):
+    def __init__(self, branch, file_system, cache_builder, samples_path):
+      self._static_path = ((('/' + branch) if branch != 'local' else '') +
+                           '/static')
       self._file_system = file_system
       self._cache = cache_builder.build(self._MakeSamplesList)
       self._samples_path = samples_path
@@ -91,7 +93,7 @@ class SamplesDataSource(object):
         l10n_data = self._GetDataFromManifest(sample_path)
         sample_base_path = sample_path.split('/', 1)[1]
         if l10n_data['icon'] is None:
-          icon_path = DEFAULT_ICON_PATH
+          icon_path = self._static_path + DEFAULT_ICON_PATH
         else:
           icon_path = sample_base_path + '/' + l10n_data['icon']
         l10n_data.update({

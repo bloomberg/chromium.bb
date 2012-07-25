@@ -85,7 +85,8 @@ class Handler(webapp.RequestHandler):
                                              PUBLIC_TEMPLATE_PATH)
     intro_data_source = IntroDataSource(cache_builder,
                                         [INTRO_PATH, ARTICLE_PATH])
-    samples_data_source_factory = SamplesDataSource.Factory(file_system,
+    samples_data_source_factory = SamplesDataSource.Factory(branch,
+                                                            file_system,
                                                             cache_builder,
                                                             EXAMPLES_PATH)
     template_data_source_factory = TemplateDataSource.Factory(
