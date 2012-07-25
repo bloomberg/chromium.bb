@@ -57,7 +57,7 @@ ShaderTranslator* ShaderIndexToTranslator(
 // and sets element_index to 456. returns false if element expression was not a
 // whole decimal number. For example: "foo[1b2]"
 bool GetUniformNameSansElement(
-    const std::string name, int* element_index, std::string* new_name) {
+    const std::string& name, int* element_index, std::string* new_name) {
   DCHECK(element_index);
   DCHECK(new_name);
   if (name.size() < 3 || name[name.size() - 1] != ']') {
@@ -1117,5 +1117,3 @@ int32 ProgramManager::MakeFakeLocation(int32 index, int32 element) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-
