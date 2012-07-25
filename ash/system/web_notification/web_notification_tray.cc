@@ -327,12 +327,14 @@ class WebNotificationView : public views::View,
     close_button_->SetImage(
         views::CustomButton::BS_NORMAL,
         ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_AURA_WINDOW_CLOSE));
+            IDR_AURA_UBER_TRAY_NOTIFY_CLOSE));
+    close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                     views::ImageButton::ALIGN_MIDDLE);
 
     if (!notification.extension_id.empty() ||
         !notification.display_source.empty()) {
       menu_button_ = new views::MenuButton(NULL, string16(), this, true);
-      menu_button_->set_border(NULL);
+      menu_button_->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 2));
     }
 
     views::GridLayout* layout = new views::GridLayout(this);
@@ -343,7 +345,7 @@ class WebNotificationView : public views::View,
     columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
 
     // Notification Icon.
-    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                        0, /* resize percent */
                        views::GridLayout::FIXED,
                        kWebNotificationIconSize, kWebNotificationIconSize);
@@ -351,20 +353,18 @@ class WebNotificationView : public views::View,
     columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
 
     // Notification message text.
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                        100, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);
 
     columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
 
     // Close and menu buttons.
-    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                        0, /* resize percent */
                        views::GridLayout::FIXED,
                        kWebNotificationButtonWidth,
                        kWebNotificationButtonWidth);
-
-    columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
 
     // Layout rows
     layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
@@ -377,10 +377,8 @@ class WebNotificationView : public views::View,
     layout->StartRow(0, 0);
     layout->SkipColumns(2);
     layout->AddView(message, 1, 1);
-    if (menu_button_) {
-      layout->AddView(menu_button_, 1, 1,
-                      views::GridLayout::CENTER, views::GridLayout::LEADING);
-    }
+    if (menu_button_)
+      layout->AddView(menu_button_, 1, 1);
     layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
   }
 
@@ -435,12 +433,11 @@ class WebNotificationView : public views::View,
 };
 
 // The view for the buttons at the bottom of the web notification tray.
-class WebNotificationButtonView : public TrayPopupTextButtonContainer,
+class WebNotificationButtonView : public views::View,
                                   public views::ButtonListener {
  public:
   explicit WebNotificationButtonView(WebNotificationTray* tray)
       : tray_(tray),
-        settings_button_(NULL),
         close_all_button_(NULL) {
     set_background(views::Background::CreateBackgroundPainter(
         true,
@@ -450,14 +447,20 @@ class WebNotificationButtonView : public TrayPopupTextButtonContainer,
     set_border(views::Border::CreateSolidSidedBorder(
         2, 0, 0, 0, ash::kBorderDarkColor));
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    settings_button_ = new TrayPopupTextButton(
-        this, rb.GetLocalizedString(IDS_ASH_WEB_NOTFICATION_TRAY_SETTINGS));
-    AddTextButton(settings_button_);
+    views::GridLayout* layout = new views::GridLayout(this);
+    SetLayoutManager(layout);
+    views::ColumnSet* columns = layout->AddColumnSet(0);
+    columns->AddPaddingColumn(100, 0);
+    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                       0, /* resize percent */
+                       views::GridLayout::USE_PREF, 0, 0);
 
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_all_button_ = new TrayPopupTextButton(
-        this, rb.GetLocalizedString(IDS_ASH_WEB_NOTFICATION_TRAY_CLOSE_ALL));
-    AddTextButton(close_all_button_);
+        this, rb.GetLocalizedString(IDS_ASH_WEB_NOTFICATION_TRAY_CLEAR_ALL));
+
+    layout->StartRow(0, 0);
+    layout->AddView(close_all_button_);
   }
 
   virtual ~WebNotificationButtonView() {
@@ -466,15 +469,12 @@ class WebNotificationButtonView : public TrayPopupTextButtonContainer,
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
-    if (sender == settings_button_)
-      tray_->ShowSettings("");
-    else if (sender == close_all_button_)
+    if (sender == close_all_button_)
       tray_->RemoveAllNotifications();
   }
 
  private:
   WebNotificationTray* tray_;
-  TrayPopupTextButton* settings_button_;
   TrayPopupTextButton* close_all_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonView);

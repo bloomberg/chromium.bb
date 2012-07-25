@@ -14,6 +14,12 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/grid_layout.h"
 
+namespace {
+
+const int kNotificationButtonWidth = 32;
+
+}  // namespace
+
 namespace ash {
 namespace internal {
 
@@ -35,7 +41,9 @@ void TrayNotificationView::InitView(views::View* contents) {
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
                          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_AURA_WINDOW_CLOSE));
+                             IDR_AURA_UBER_TRAY_NOTIFY_CLOSE));
+  close_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                  views::ImageButton::ALIGN_MIDDLE);
 
   icon_ = new views::ImageView;
   if (icon_id_ != 0) {
@@ -57,7 +65,7 @@ void TrayNotificationView::InitView(views::View* contents) {
 
   // Contents
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                     0, /* resize percent */
+                     100, /* resize percent */
                      views::GridLayout::FIXED,
                      kTrayNotificationContentsWidth,
                      kTrayNotificationContentsWidth);
@@ -65,12 +73,10 @@ void TrayNotificationView::InitView(views::View* contents) {
   columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
 
   // Close button
-  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                      0, /* resize percent */
                      views::GridLayout::FIXED,
-                     kNotificationIconWidth, kNotificationIconWidth);
-
-  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+                     kNotificationButtonWidth, kNotificationButtonWidth);
 
   // Layout rows
   layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);

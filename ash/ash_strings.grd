@@ -409,8 +409,8 @@ Press Search key to cancel.
       <message name="IDS_ASH_WEB_NOTFICATION_TRAY_SETTINGS" desc="The menu entry or button for visiting the appropriate settings page.">
         Settings...
       </message>
-      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_CLOSE_ALL" desc="The button for closing all notifications.">
-        Close All
+      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_CLEAR_ALL" desc="The button for clearing all notifications.">
+        Clear All
       </message>
     </messages>
   </release>
