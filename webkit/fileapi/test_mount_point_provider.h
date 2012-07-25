@@ -49,7 +49,7 @@ class FILEAPI_EXPORT_PRIVATE TestMountPointProvider
                                FileSystemType type,
                                const FilePath& virtual_path) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
-  virtual FileSystemFileUtil* GetFileUtil() OVERRIDE;
+  virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
       const OVERRIDE;
   virtual FileSystemOperationInterface* CreateFileSystemOperation(

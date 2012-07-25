@@ -181,7 +181,7 @@ void IsolatedContext::RemoveReference(const std::string& filesystem_id) {
 
 bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
                                         std::string* filesystem_id,
-                                        FileInfo* root_info,
+                                        FileSystemType* type,
                                         FilePath* path) const {
   DCHECK(filesystem_id);
   DCHECK(path);
@@ -204,6 +204,8 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
   if (found_instance == instance_map_.end())
     return false;
   *filesystem_id = fsid;
+  if (type)
+    *type = found_instance->second->type();
   if (components.size() == 1) {
     path->clear();
     return true;
@@ -213,8 +215,6 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
   std::string name = FilePath(components[1]).AsUTF8Unsafe();
   if (!found_instance->second->ResolvePathForName(name, &cracked_path))
     return false;
-  if (root_info)
-    *root_info = FileInfo(name, cracked_path);
   for (size_t i = 2; i < components.size(); ++i)
     cracked_path = cracked_path.Append(components[i]);
   *path = cracked_path;

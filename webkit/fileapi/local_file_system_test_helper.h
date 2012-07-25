@@ -29,7 +29,8 @@ class FileSystemOperationContext;
 class LocalFileSystemOperation;
 
 // Filesystem test helper class that encapsulates test environment for
-// a given {origin, type} pair.
+// a given {origin, type} pair.  This helper only works for sandboxed
+// file systems (Temporary, Persistent or Test types).
 class LocalFileSystemTestOriginHelper {
  public:
   LocalFileSystemTestOriginHelper(const GURL& origin, FileSystemType type);

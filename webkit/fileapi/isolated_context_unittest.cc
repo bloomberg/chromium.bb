@@ -94,15 +94,14 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
     FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
         .AppendASCII(names_[i]);
     std::string cracked_id;
-    FileInfo root_info;
     FilePath cracked_path;
+    FileSystemType cracked_type;
     ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
-        virtual_path, &cracked_id, &root_info, &cracked_path));
+        virtual_path, &cracked_id, &cracked_type, &cracked_path));
     ASSERT_EQ(kTestPaths[i].NormalizePathSeparators().value(),
               cracked_path.value());
-    ASSERT_TRUE(fileset_.find(root_info.path.NormalizePathSeparators())
-                != fileset_.end());
     ASSERT_EQ(id_, cracked_id);
+    ASSERT_EQ(kFileSystemTypeDragged, cracked_type);
   }
 
   // Make sure GetRegisteredPath returns false for id_ since it is
@@ -152,21 +151,20 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
       FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
           .AppendASCII(names_[i]).Append(relatives[j].path);
       std::string cracked_id;
-      FileInfo root_info;
       FilePath cracked_path;
+    FileSystemType cracked_type;
       if (!relatives[j].valid) {
         ASSERT_FALSE(isolated_context()->CrackIsolatedPath(
-            virtual_path, &cracked_id, &root_info, &cracked_path));
+            virtual_path, &cracked_id, &cracked_type, &cracked_path));
         continue;
       }
       ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
-          virtual_path, &cracked_id, &root_info, &cracked_path));
-      ASSERT_TRUE(fileset_.find(root_info.path.NormalizePathSeparators())
-                  != fileset_.end());
+          virtual_path, &cracked_id, &cracked_type, &cracked_path));
       ASSERT_EQ(kTestPaths[i].Append(relatives[j].path)
                     .NormalizePathSeparators().value(),
                 cracked_path.value());
       ASSERT_EQ(id_, cracked_id);
+      ASSERT_EQ(kFileSystemTypeDragged, cracked_type);
     }
   }
 }

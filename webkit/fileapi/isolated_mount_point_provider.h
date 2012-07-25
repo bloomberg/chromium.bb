@@ -12,6 +12,7 @@
 
 namespace fileapi {
 
+class DraggedFileUtil;
 class IsolatedContext;
 class IsolatedFileUtil;
 
@@ -38,7 +39,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
                                FileSystemType type,
                                const FilePath& virtual_path) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
-  virtual FileSystemFileUtil* GetFileUtil() OVERRIDE;
+  virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
       const OVERRIDE;
   virtual FileSystemOperationInterface* CreateFileSystemOperation(
@@ -56,6 +57,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
 
  private:
   scoped_ptr<IsolatedFileUtil> isolated_file_util_;
+  scoped_ptr<DraggedFileUtil> dragged_file_util_;
 };
 
 }  // namespace fileapi

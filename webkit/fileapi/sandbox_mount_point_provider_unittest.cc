@@ -155,7 +155,7 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
   }
 
   FileSystemFileUtil* file_util() {
-    return sandbox_provider()->GetFileUtil();
+    return sandbox_provider()->GetFileUtil(kFileSystemTypeTemporary);
   }
 
   void OnValidate(base::PlatformFileError result) {

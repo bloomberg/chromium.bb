@@ -203,7 +203,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   FileSystemFileUtil* file_util() {
-    return file_system_context_->sandbox_provider()->GetFileUtil();
+    return file_system_context_->sandbox_provider()->GetFileUtil(
+        kFileSystemTypeTemporary);
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.

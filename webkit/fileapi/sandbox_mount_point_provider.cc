@@ -419,7 +419,8 @@ bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
   return false;
 }
 
-FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil() {
+FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil(
+    FileSystemType type) {
   return sandbox_file_util_.get();
 }
 

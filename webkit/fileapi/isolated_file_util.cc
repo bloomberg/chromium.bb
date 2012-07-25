@@ -28,10 +28,8 @@ namespace {
 // Used to enumerate top-level paths of an isolated filesystem.
 class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  SetFileEnumerator(const std::vector<FileInfo>& files,
-                    const FilePath& root)
-      : files_(files),
-        root_(root) {
+  explicit SetFileEnumerator(const std::vector<FileInfo>& files)
+      : files_(files) {
     file_iter_ = files_.begin();
   }
   virtual ~SetFileEnumerator() {}
@@ -42,7 +40,7 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
       return FilePath();
     FilePath platform_file = (file_iter_++)->path;
     NativeFileUtil::GetFileInfo(platform_file, &file_info_);
-    return root_.Append(platform_file.BaseName());
+    return platform_file;
   }
   virtual int64 Size() OVERRIDE { return file_info_.size; }
   virtual bool IsDirectory() OVERRIDE { return file_info_.is_directory; }
@@ -53,74 +51,17 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  private:
   std::vector<FileInfo> files_;
   std::vector<FileInfo>::const_iterator file_iter_;
-  FilePath root_;
   base::PlatformFileInfo file_info_;
-};
-
-// A wrapper file enumerator which returns a virtual path of the path returned
-// by the wrapped enumerator.
-//
-// A virtual path is constructed as following:
-//   virtual_path = |virtual_base_path| + relative-path-to-|platform_base_path|
-//
-// Where |virtual_base_path| is in our case the virtual top-level directory
-// that looks like: '/<filesystem_id>'.
-//
-// Example:
-//     Suppose virtual_base_path is: '/CAFEBABE/dir',
-//            platform_base_path is: '/full/path/to/example/dir', and
-//   a path returned by wrapped_ is: '/full/path/to/example/dir/a/b/c',
-//              Next() would return: '/CAFEBABE/dir/a/b/c'.
-//
-class PathConverterEnumerator
-    : public FileSystemFileUtil::AbstractFileEnumerator {
- public:
-  PathConverterEnumerator(
-      FileSystemFileUtil::AbstractFileEnumerator* wrapped,
-      const FilePath& virtual_base_path,
-      const FilePath& platform_base_path)
-      : wrapped_(wrapped),
-        virtual_base_path_(virtual_base_path),
-        platform_base_path_(platform_base_path) {}
-  virtual ~PathConverterEnumerator() {}
-
-  // AbstractFileEnumerator overrides.
-  virtual FilePath Next() OVERRIDE {
-    DCHECK(wrapped_.get());
-    FilePath path = wrapped_->Next();
-    // Don't return symlinks in subdirectories.
-    while (!path.empty() && file_util::IsLink(path))
-      path = wrapped_->Next();
-    if (path.empty())
-      return path;
-    FilePath virtual_path = virtual_base_path_;
-    platform_base_path_.AppendRelativePath(path, &virtual_path);
-    return virtual_path;
-  }
-  virtual int64 Size() OVERRIDE { return wrapped_->Size(); }
-  virtual bool IsDirectory() OVERRIDE { return wrapped_->IsDirectory(); }
-  virtual base::Time LastModifiedTime() OVERRIDE {
-    return wrapped_->LastModifiedTime();
-  }
-
- private:
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> wrapped_;
-  FilePath virtual_base_path_;
-  FilePath platform_base_path_;
 };
 
 // Recursively enumerate each path from a given paths set.
 class RecursiveSetFileEnumerator
     : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  RecursiveSetFileEnumerator(const FilePath& virtual_base_path,
-                             const std::vector<FileInfo>& files,
-                             const FilePath& root)
-      : virtual_base_path_(virtual_base_path),
-        files_(files),
-        root_(root) {
+  RecursiveSetFileEnumerator(const std::vector<FileInfo>& files)
+      : files_(files) {
     file_iter_ = files_.begin();
-    current_enumerator_.reset(new SetFileEnumerator(files, root));
+    current_enumerator_.reset(new SetFileEnumerator(files));
   }
   virtual ~RecursiveSetFileEnumerator() {}
 
@@ -140,11 +81,9 @@ class RecursiveSetFileEnumerator
   }
 
  private:
-  FilePath virtual_base_path_;
   std::vector<FileInfo> files_;
   std::vector<FileInfo>::iterator file_iter_;
   base::PlatformFileInfo file_info_;
-  FilePath root_;
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> current_enumerator_;
 };
 
@@ -162,60 +101,43 @@ FilePath RecursiveSetFileEnumerator::Next() {
   // Enumerates subdirectories of the next path.
   FileInfo& next_file = *file_iter_++;
   current_enumerator_.reset(
-      new PathConverterEnumerator(
-          NativeFileUtil::CreateFileEnumerator(
-              next_file.path, true /* recursive */),
-          virtual_base_path_.AppendASCII(next_file.name), next_file.path));
+        NativeFileUtil::CreateFileEnumerator(
+            next_file.path, true /* recursive */));
   DCHECK(current_enumerator_.get());
   return current_enumerator_->Next();
 }
 
 }  // namespace
 
-IsolatedFileUtil::IsolatedFileUtil() {
-}
+//-------------------------------------------------------------------------
 
-PlatformFileError IsolatedFileUtil::CreateOrOpen(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url, int file_flags,
-    PlatformFile* file_handle, bool* created) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
+IsolatedFileUtil::IsolatedFileUtil() {}
 
-PlatformFileError IsolatedFileUtil::Close(
-    FileSystemOperationContext* context,
-    PlatformFile file_handle) {
-  // We don't allow open thus Close won't be called.
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
-
-PlatformFileError IsolatedFileUtil::EnsureFileExists(
+PlatformFileError IsolatedFileUtil::GetLocalFilePath(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
-    bool* created) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
+    FilePath* local_file_path) {
+  DCHECK(local_file_path);
+  if (url.path().empty()) {
+    // Root direcory case, which should not be accessed.
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  }
+  *local_file_path = url.path();
+  return base::PLATFORM_FILE_OK;
 }
 
-PlatformFileError IsolatedFileUtil::CreateDirectory(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    bool exclusive,
-    bool recursive) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
+//-------------------------------------------------------------------------
 
-PlatformFileError IsolatedFileUtil::GetFileInfo(
+DraggedFileUtil::DraggedFileUtil() {}
+
+PlatformFileError DraggedFileUtil::GetFileInfo(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     PlatformFileInfo* file_info,
     FilePath* platform_path) {
   DCHECK(file_info);
   std::string filesystem_id;
-  FilePath cracked_path;
-  if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          url.path(), &filesystem_id, NULL, &cracked_path))
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-  if (cracked_path.empty()) {
+  if (url.path().empty()) {
     // The root directory case.
     // For now we leave three time fields (modified/accessed/creation time)
     // NULL as it is not really clear what to be set for this virtual directory.
@@ -227,171 +149,65 @@ PlatformFileError IsolatedFileUtil::GetFileInfo(
     return base::PLATFORM_FILE_OK;
   }
   base::PlatformFileError error =
-      NativeFileUtil::GetFileInfo(cracked_path, file_info);
-  if (file_util::IsLink(cracked_path) && !FilePath().IsParent(cracked_path)) {
+      NativeFileUtil::GetFileInfo(url.path(), file_info);
+  if (file_util::IsLink(url.path()) && !FilePath().IsParent(url.path())) {
     // Don't follow symlinks unless it's the one that are selected by the user.
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }
   if (error == base::PLATFORM_FILE_OK)
-    *platform_path = cracked_path;
+    *platform_path = url.path();
   return error;
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*
-IsolatedFileUtil::CreateFileEnumerator(
+DraggedFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
     const FileSystemURL& root,
     bool recursive) {
-  std::string filesystem_id;
-  FileInfo root_info;
-  FilePath cracked_path;
-  if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          root.path(), &filesystem_id, &root_info, &cracked_path))
-    return NULL;
-
-  FilePath virtual_base_path =
-      IsolatedContext::GetInstance()->CreateVirtualRootPath(filesystem_id);
-
-  if (!cracked_path.empty()) {
-    return new PathConverterEnumerator(
-        NativeFileUtil::CreateFileEnumerator(cracked_path, recursive),
-        virtual_base_path.AppendASCII(root_info.name), root_info.path);
-  }
+  if (!root.path().empty())
+    return NativeFileUtil::CreateFileEnumerator(root.path(), recursive);
 
   // Root path case.
   std::vector<FileInfo> toplevels;
   IsolatedContext::GetInstance()->GetDraggedFileInfo(
-      filesystem_id, &toplevels);
+      root.filesystem_id(), &toplevels);
   if (!recursive)
-    return new SetFileEnumerator(toplevels, root.path());
-  return new RecursiveSetFileEnumerator(
-      virtual_base_path, toplevels, root.path());
+    return new SetFileEnumerator(toplevels);
+  return new RecursiveSetFileEnumerator(toplevels);
 }
 
-PlatformFileError IsolatedFileUtil::GetLocalFilePath(
-    FileSystemOperationContext* context,
-    const FileSystemURL& file_system_url,
-    FilePath* local_file_path) {
-  if (GetPlatformPath(file_system_url, local_file_path))
-    return base::PLATFORM_FILE_OK;
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
-
-PlatformFileError IsolatedFileUtil::Touch(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    const base::Time& last_access_time,
-    const base::Time& last_modified_time) {
-  FilePath platform_path;
-  if (!GetPlatformPath(url, &platform_path) || platform_path.empty())
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-  return NativeFileUtil::Touch(
-      platform_path, last_access_time, last_modified_time);
-}
-
-PlatformFileError IsolatedFileUtil::Truncate(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    int64 length) {
-  FilePath platform_path;
-  if (!GetPlatformPath(url, &platform_path) || platform_path.empty())
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-  return NativeFileUtil::Truncate(platform_path, length);
-}
-
-bool IsolatedFileUtil::PathExists(
+bool DraggedFileUtil::PathExists(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  FilePath platform_path;
-  if (!GetPlatformPath(url, &platform_path))
-    return false;
-  if (platform_path.empty()) {
+  if (url.path().empty()) {
     // The root directory case.
     return true;
   }
-  return NativeFileUtil::PathExists(platform_path);
+  return NativeFileUtil::PathExists(url.path());
 }
 
-bool IsolatedFileUtil::DirectoryExists(
+bool DraggedFileUtil::DirectoryExists(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  FilePath platform_path;
-  if (!GetPlatformPath(url, &platform_path))
-    return false;
-  if (platform_path.empty()) {
+  if (url.path().empty()) {
     // The root directory case.
     return true;
   }
-  return NativeFileUtil::DirectoryExists(platform_path);
+  return NativeFileUtil::DirectoryExists(url.path());
 }
 
-bool IsolatedFileUtil::IsDirectoryEmpty(
+bool DraggedFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  std::string filesystem_id;
-  FilePath platform_path;
-  if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          url.path(), &filesystem_id,
-          NULL, &platform_path))
-    return false;
-  if (platform_path.empty()) {
+  if (url.path().empty()) {
     // The root directory case.
     std::vector<FileInfo> toplevels;
     bool success = IsolatedContext::GetInstance()->GetDraggedFileInfo(
-        filesystem_id, &toplevels);
+        url.filesystem_id(), &toplevels);
     DCHECK(success);
     return toplevels.empty();
   }
-  return NativeFileUtil::IsDirectoryEmpty(platform_path);
-}
-
-PlatformFileError IsolatedFileUtil::CopyOrMoveFile(
-      FileSystemOperationContext* context,
-      const FileSystemURL& src_url,
-      const FileSystemURL& dest_url,
-      bool copy) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
-
-PlatformFileError IsolatedFileUtil::CopyInForeignFile(
-      FileSystemOperationContext* context,
-      const FilePath& src_file_path,
-      const FileSystemURL& dest_url) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
-
-PlatformFileError IsolatedFileUtil::DeleteFile(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
-
-PlatformFileError IsolatedFileUtil::DeleteSingleDirectory(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
-
-scoped_refptr<webkit_blob::ShareableFileReference>
-IsolatedFileUtil::CreateSnapshotFile(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    base::PlatformFileError* result,
-    base::PlatformFileInfo* file_info,
-    FilePath* platform_path) {
-  DCHECK(result);
-  *result = GetFileInfo(context, url, file_info, platform_path);
-  return NULL;
-}
-
-bool IsolatedFileUtil::GetPlatformPath(const FileSystemURL& url,
-                                       FilePath* platform_path) const {
-  DCHECK(platform_path);
-  std::string filesystem_id;
-  if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          url.path(), &filesystem_id, NULL, platform_path))
-    return false;
-  return true;
+  return NativeFileUtil::IsDirectoryEmpty(url.path());
 }
 
 }  // namespace

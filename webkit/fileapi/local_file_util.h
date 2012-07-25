@@ -37,9 +37,6 @@ class FileSystemURL;
 // An instance of this class is created and owned by *MountPointProvider.
 class FILEAPI_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
  public:
-  // |underlying_file_util| is owned by the instance.  It will be deleted by
-  // the owner instance.  For example, it can be instanciated as follows:
-  // FileSystemFileUtil* file_util = new LocalFileUtil(new NativeFileUtil());
   LocalFileUtil();
   virtual ~LocalFileUtil();
 

@@ -125,14 +125,11 @@ class FILEAPI_EXPORT IsolatedContext {
   // Returns false if the given virtual_path or the cracked filesystem_id
   // is not valid.
   //
-  // Note that |root_info| and |path| are set to empty paths if
-  // |virtual_path| has no <relative_path> part (i.e. pointing to
-  // the virtual root).
-  //
-  // TODO(kinuko): Return filesystem type as well.
+  // Note that |path| is set to empty paths if |virtual_path| has no
+  // <relative_path> part (i.e. pointing to the virtual root).
   bool CrackIsolatedPath(const FilePath& virtual_path,
                          std::string* filesystem_id,
-                         FileInfo* root_info,
+                         FileSystemType* type,
                          FilePath* path) const;
 
   // Returns a set of dragged FileInfo's registered for the |filesystem_id|.

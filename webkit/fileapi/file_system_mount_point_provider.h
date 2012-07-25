@@ -68,7 +68,7 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
   virtual bool IsRestrictedFileName(const FilePath& filename) const = 0;
 
   // Returns the specialized FileSystemFileUtil for this mount point.
-  virtual FileSystemFileUtil* GetFileUtil() = 0;
+  virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) = 0;
 
   // Returns file path we should use to check access permissions for
   // |virtual_path|.

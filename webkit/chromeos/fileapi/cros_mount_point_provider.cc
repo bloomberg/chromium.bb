@@ -212,7 +212,8 @@ std::vector<FilePath> CrosMountPointProvider::GetRootDirectories() const {
   return root_dirs;
 }
 
-fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil() {
+fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil(
+    fileapi::FileSystemType type) {
   return local_file_util_.get();
 }
 

@@ -124,7 +124,7 @@ bool TestMountPointProvider::IsRestrictedFileName(
   return false;
 }
 
-FileSystemFileUtil* TestMountPointProvider::GetFileUtil() {
+FileSystemFileUtil* TestMountPointProvider::GetFileUtil(FileSystemType type) {
   return local_file_util_.get();
 }
 

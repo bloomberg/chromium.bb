@@ -148,10 +148,10 @@ class FileSystemQuotaClientTest : public testing::Test {
     if (file_path.empty())
       return false;
 
-    FileSystemFileUtil* file_util = file_system_context_->
-        sandbox_provider()->GetFileUtil();
-
     FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
+    FileSystemFileUtil* file_util = file_system_context_->
+        sandbox_provider()->GetFileUtil(type);
+
     FileSystemURL url(GURL(origin_url), type, file_path);
     scoped_ptr<FileSystemOperationContext> context(
         CreateFileSystemOperationContext());

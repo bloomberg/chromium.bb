@@ -33,6 +33,9 @@ class FILEAPI_EXPORT FileSystemURL {
   // TODO(kinuko): this must be std::string.
   const FilePath& path() const { return path_; }
 
+  // For isolated filesystem.
+  const std::string& filesystem_id() const { return filesystem_id_; }
+
   std::string spec() const;
 
   // Returns a new FileSystemURL with the given path.
@@ -42,9 +45,13 @@ class FILEAPI_EXPORT FileSystemURL {
   bool operator==(const FileSystemURL& that) const;
 
  private:
+  void MayCrackIsolatedPath();
+
   GURL origin_;
   FileSystemType type_;
   FilePath path_;
+  std::string filesystem_id_;  // For isolated filesystem.
+
   bool is_valid_;
 };
 

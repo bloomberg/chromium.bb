@@ -141,7 +141,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
   void CreateDirectory(const base::StringPiece& dir_name) {
     FileSystemFileUtil* file_util = file_system_context_->
-        sandbox_provider()->GetFileUtil();
+        sandbox_provider()->GetFileUtil(kFileSystemTypeTemporary);
     FileSystemURL url(GURL("http://remote"),
                       kFileSystemTypeTemporary,
                       FilePath().AppendASCII(dir_name));
@@ -159,7 +159,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   void WriteFile(const base::StringPiece& file_name,
                  const char* buf, int buf_size) {
     FileSystemFileUtil* file_util = file_system_context_->
-        sandbox_provider()->GetFileUtil();
+        sandbox_provider()->GetFileUtil(kFileSystemTypeTemporary);
     FileSystemURL url(GURL("http://remote"),
                       kFileSystemTypeTemporary,
                       FilePath().AppendASCII(file_name));

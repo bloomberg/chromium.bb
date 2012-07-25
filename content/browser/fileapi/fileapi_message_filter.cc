@@ -706,19 +706,12 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  // Special handling for isolated filesystem.
+  // Special handling for filesystems which have isolated filesystem_id.
   // (See ChildProcessSecurityPolicy::GrantReadFileSystem for more
   // details about access permission for isolated filesystem.)
-  if (url.type() == fileapi::kFileSystemTypeIsolated) {
-    std::string filesystem_id;
-    if (!fileapi::IsolatedContext::GetInstance()->CrackIsolatedPath(
-            url.path(), &filesystem_id, NULL, &file_path)) {
-      *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
-      return false;
-    }
-    // The root directory case. Always allow read-only access as far as the
-    // filesystem is valid.
-    if (file_path.empty()) {
+  if (!url.filesystem_id().empty()) {
+    // The root directory of the dragged filesystem is read-only.
+    if (url.type() == fileapi::kFileSystemTypeDragged && url.path().empty()) {
       if (permissions != kReadFilePermissions) {
         *error = base::PLATFORM_FILE_ERROR_SECURITY;
         return false;
@@ -729,7 +722,7 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
     // Access permission to the file system overrides the file permission
     // (if and only if they accessed via an isolated file system).
     bool success = policy->HasPermissionsForFileSystem(
-        process_id_, filesystem_id, permissions);
+        process_id_, url.filesystem_id(), permissions);
     if (!success)
       *error = base::PLATFORM_FILE_ERROR_SECURITY;
     return success;

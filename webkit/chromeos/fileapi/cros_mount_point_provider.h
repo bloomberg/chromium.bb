@@ -59,7 +59,8 @@ class CrosMountPointProvider
       fileapi::FileSystemType type,
       const FilePath& virtual_path) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
-  virtual fileapi::FileSystemFileUtil* GetFileUtil() OVERRIDE;
+  virtual fileapi::FileSystemFileUtil* GetFileUtil(
+      fileapi::FileSystemType type) OVERRIDE;
   virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
       const OVERRIDE;
   virtual fileapi::FileSystemOperationInterface* CreateFileSystemOperation(

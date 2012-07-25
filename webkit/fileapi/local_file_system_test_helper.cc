@@ -91,7 +91,7 @@ void LocalFileSystemTestOriginHelper::SetUp(
   if (file_util)
     file_util_ = file_util;
   else
-    file_util_ = mount_point_provider->GetFileUtil();
+    file_util_ = mount_point_provider->GetFileUtil(type_);
 
   DCHECK(file_util_);
 

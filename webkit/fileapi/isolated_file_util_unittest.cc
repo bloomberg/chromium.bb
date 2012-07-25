@@ -50,13 +50,15 @@ FilePath GetTopLevelPath(const FilePath& path) {
 
 }  // namespace
 
+// TODO(kinuko): we should have separate tests for DraggedFileUtil and
+// IsolatedFileUtil.
 class IsolatedFileUtilTest : public testing::Test {
  public:
   IsolatedFileUtilTest() {}
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    file_util_.reset(new IsolatedFileUtil());
+    file_util_.reset(new DraggedFileUtil());
 
     // Register the files/directories of RegularTestCases (with random
     // root paths) as dropped files.
@@ -99,6 +101,13 @@ class IsolatedFileUtilTest : public testing::Test {
         NormalizePathSeparators();
   }
 
+  FilePath GetTestCaseLocalPath(const FilePath& path) {
+    FilePath relative;
+    if (data_dir_.path().AppendRelativePath(path, &relative))
+      return relative;
+    return path;
+  }
+
   FileSystemURL GetFileSystemURL(const FilePath& path) const {
     FilePath virtual_path = isolated_context()->CreateVirtualRootPath(
         filesystem_id()).Append(path);
@@ -108,7 +117,7 @@ class IsolatedFileUtilTest : public testing::Test {
   }
 
   FileSystemURL GetOtherFileSystemURL(const FilePath& path) {
-    return other_file_util_helper_.CreateURL(path);
+    return other_file_util_helper_.CreateURL(GetTestCaseLocalPath(path));
   }
 
   void VerifyFilesHaveSameContent(FileSystemFileUtil* file_util1,
@@ -150,6 +159,8 @@ class IsolatedFileUtilTest : public testing::Test {
                                         const FileSystemURL& root1,
                                         const FileSystemURL& root2) {
     scoped_ptr<FileSystemOperationContext> context;
+    FilePath root_path1 = root1.path();
+    FilePath root_path2 = root2.path();
 
     scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum1;
     context.reset(new FileSystemOperationContext(file_system_context()));
@@ -161,7 +172,9 @@ class IsolatedFileUtilTest : public testing::Test {
     while (!(current = file_enum1->Next()).empty()) {
       if (file_enum1->IsDirectory())
         continue;
-      file_set1.insert(current);
+      FilePath relative;
+      root_path1.AppendRelativePath(current, &relative);
+      file_set1.insert(relative);
     }
 
     scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum2;
@@ -170,8 +183,10 @@ class IsolatedFileUtilTest : public testing::Test {
         context.get(), root2, true /* recursive */));
 
     while (!(current = file_enum2->Next()).empty()) {
-      FileSystemURL url1 = root1.WithPath(current);
-      FileSystemURL url2 = root2.WithPath(current);
+      FilePath relative;
+      root_path2.AppendRelativePath(current, &relative);
+      FileSystemURL url1 = root1.WithPath(root_path1.Append(relative));
+      FileSystemURL url2 = root2.WithPath(root_path2.Append(relative));
       if (file_enum2->IsDirectory()) {
         FileSystemOperationContext context1(file_system_context());
         FileSystemOperationContext context2(file_system_context());
@@ -179,7 +194,7 @@ class IsolatedFileUtilTest : public testing::Test {
                   file_util2->IsDirectoryEmpty(&context2, url2));
         continue;
       }
-      EXPECT_TRUE(file_set1.find(current) != file_set1.end());
+      EXPECT_TRUE(file_set1.find(relative) != file_set1.end());
       VerifyFilesHaveSameContent(file_util1, file_util2, url1, url2);
     }
   }
@@ -287,7 +302,7 @@ TEST_F(IsolatedFileUtilTest, UnregisteredPathsTest) {
     base::PlatformFileInfo info;
     FilePath platform_path;
     FileSystemOperationContext context(file_system_context());
-    ASSERT_EQ(base::PLATFORM_FILE_ERROR_SECURITY,
+    ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
               file_util()->GetFileInfo(&context, url, &info, &platform_path));
   }
 }
@@ -394,14 +409,6 @@ TEST_F(IsolatedFileUtilTest, CopyOutFileTest) {
                   file_util(), other_file_util(),
                   src_url, dest_url));
 
-    // The other way (copy-in) should not work.
-    context.reset(new FileSystemOperationContext(file_system_context()));
-    ASSERT_EQ(base::PLATFORM_FILE_ERROR_SECURITY,
-              FileUtilHelper::Copy(
-                  context.get(),
-                  other_file_util(), file_util(),
-                  dest_url, src_url));
-
     VerifyFilesHaveSameContent(file_util(), other_file_util(),
                                src_url, dest_url);
   }
@@ -441,15 +448,6 @@ TEST_F(IsolatedFileUtilTest, CopyOutDirectoryTest) {
                   context.get(),
                   file_util(), other_file_util(),
                   src_url, dest_url));
-
-    // The other way (copy-in) should not work for two reasons:
-    // write is prohibited in the isolated filesystem, and copying directory
-    // to non-empty directory shouldn't work.
-    context.reset(new FileSystemOperationContext(file_system_context()));
-    base::PlatformFileError result = FileUtilHelper::Copy(
-        context.get(), other_file_util(), file_util(), dest_url, src_url);
-    ASSERT_TRUE(result == base::PLATFORM_FILE_ERROR_FAILED ||
-                result == base::PLATFORM_FILE_ERROR_NOT_EMPTY);
 
     VerifyDirectoriesHaveSameContent(file_util(), other_file_util(),
                                      src_url, dest_url);
