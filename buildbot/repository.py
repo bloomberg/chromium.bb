@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -360,17 +360,34 @@ class RepoRepository(object):
       True: If the manifests are different
       False: If the manifests are same
     """
+    logging.debug('Calling IsManifestDifferent against %s', other_manifest)
+
     black_list = ['="chromium/']
-    logging.debug('Calling DiffManifests against %s', other_manifest)
+    blacklist_pattern = re.compile(r'|'.join(black_list))
+    manifest_revision_pattern = re.compile(r'<manifest revision="[a-f0-9]+">',
+                                           re.I)
 
     current = self.ExportManifest()
-    blacklist_pattern = re.compile(r'|'.join(black_list))
     with open(other_manifest, 'r') as manifest2_fh:
       for (line1, line2) in zip(current.splitlines(), manifest2_fh):
+        line1 = line1.strip()
+        line2 = line2.strip()
         if blacklist_pattern.search(line1):
           logging.debug('%s ignored %s', line1, line2)
           continue
 
         if line1 != line2:
+          logging.debug('Current and other manifest differ.')
+          logging.debug('current: "%s"', line1)
+          logging.debug('other  : "%s"', line2)
+
+          # Ignore revision differences on the manifest line. The revision of
+          # the manifest.git repo is uninteresting when determining if the
+          # current manifest describes the same sources as the other manifest.
+          if manifest_revision_pattern.search(line2):
+            logging.debug('Ignoring difference in manifest revision.')
+            continue
+
           return True
+
       return False
