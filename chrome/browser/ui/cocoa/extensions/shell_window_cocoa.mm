@@ -92,7 +92,7 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
                   backing:NSBackingStoreBuffered
                     defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(extension->name())];
-  gfx::Size min_size = params.maximum_size;
+  gfx::Size min_size = params.minimum_size;
   if (min_size.width() || min_size.height()) {
     [window setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
   }
