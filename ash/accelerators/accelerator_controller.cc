@@ -153,9 +153,6 @@ bool HandleRotatePaneFocus(Shell::Direction direction) {
 
 // Rotates the default window container.
 bool HandleRotateWindows() {
-  if (!DebugShortcutsEnabled())
-    return true;
-
   aura::Window* target =
       Shell::GetPrimaryRootWindowController()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
@@ -168,9 +165,6 @@ bool HandleRotateWindows() {
 
 // Rotates the screen.
 bool HandleRotateScreen() {
-  if (!DebugShortcutsEnabled())
-    return true;
-
   static int i = 0;
   int delta = 0;
   switch (i) {
@@ -202,9 +196,6 @@ bool HandleRotateScreen() {
 }
 
 bool HandleToggleDesktopBackgroundMode() {
-  if (!DebugShortcutsEnabled())
-    return true;
-
   DesktopBackgroundController* desktop_background_controller =
       Shell::GetInstance()->desktop_background_controller();
   if (desktop_background_controller->desktop_background_mode() ==
@@ -219,9 +210,6 @@ bool HandleToggleDesktopBackgroundMode() {
 }
 
 bool HandleToggleRootWindowFullScreen() {
-  if (!DebugShortcutsEnabled())
-    return true;
-
   Shell::GetPrimaryRootWindow()->ToggleFullScreen();
   return true;
 }
@@ -311,15 +299,10 @@ void AcceleratorController::Init() {
     reserved_actions_.insert(kReservedActions[i]);
   }
 
-  for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
-    ui::Accelerator accelerator(kAcceleratorData[i].keycode,
-                                kAcceleratorData[i].modifiers);
-    accelerator.set_type(kAcceleratorData[i].trigger_on_press ?
-                         ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED);
-    Register(accelerator, this);
-    accelerators_.insert(
-        std::make_pair(accelerator, kAcceleratorData[i].action));
-  }
+  RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
+
+  if (DebugShortcutsEnabled())
+    RegisterAccelerators(kDebugAcceleratorData, kDebugAcceleratorDataLength);
 }
 
 void AcceleratorController::Register(const ui::Accelerator& accelerator,
@@ -641,16 +624,13 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
     case DISPLAY_ADD_REMOVE:
-      if (DebugShortcutsEnabled())
-        internal::MultiDisplayManager::AddRemoveDisplay();
+      internal::MultiDisplayManager::AddRemoveDisplay();
       return true;
     case DISPLAY_CYCLE:
-      if (DebugShortcutsEnabled())
-        internal::MultiDisplayManager::CycleDisplay();
+      internal::MultiDisplayManager::CycleDisplay();
       return true;
     case DISPLAY_TOGGLE_SCALE:
-      if (DebugShortcutsEnabled())
-        internal::MultiDisplayManager::ToggleDisplayScale();
+      internal::MultiDisplayManager::ToggleDisplayScale();
       return true;
     case MAGNIFY_SCREEN_ZOOM_IN:
       return HandleMagnifyScreen(1);
@@ -738,6 +718,20 @@ void AcceleratorController::SwitchToWindow(int window) {
       items[found_index].status == ash::STATUS_RUNNING) {
     // Then set this one as active.
     Shell::GetInstance()->launcher()->ActivateLauncherItem(found_index);
+  }
+}
+
+void AcceleratorController::RegisterAccelerators(
+    const AcceleratorData accelerators[],
+    size_t accelerators_length) {
+  for (size_t i = 0; i < accelerators_length; ++i) {
+    ui::Accelerator accelerator(accelerators[i].keycode,
+                                accelerators[i].modifiers);
+    accelerator.set_type(accelerators[i].trigger_on_press ?
+                         ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED);
+    Register(accelerator, this);
+    accelerators_.insert(
+        std::make_pair(accelerator, accelerators[i].action));
   }
 }
 

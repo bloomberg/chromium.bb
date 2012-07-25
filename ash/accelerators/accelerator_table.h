@@ -96,6 +96,13 @@ ASH_EXPORT extern const AcceleratorData kAcceleratorData[];
 // The number of elements in kAcceleratorData.
 ASH_EXPORT extern const size_t kAcceleratorDataLength;
 
+// Debug accelerators enabled only when "Debugging keyboard shortcuts" flag
+// (--ash-debug-shortcuts) is enabled.
+ASH_EXPORT extern const AcceleratorData kDebugAcceleratorData[];
+
+// The number of elements in kDebugAcceleratorData.
+ASH_EXPORT extern const size_t kDebugAcceleratorDataLength;
+
 // Actions that should be handled very early in Ash unless the current target
 // window is full-screen.
 ASH_EXPORT extern const AcceleratorAction kReservedActions[];

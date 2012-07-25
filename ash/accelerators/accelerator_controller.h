@@ -20,6 +20,7 @@ class AcceleratorManager;
 
 namespace ash {
 
+struct AcceleratorData;
 class BrightnessControlDelegate;
 class CapsLockDelegate;
 class ImeControlDelegate;
@@ -100,6 +101,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Switches to a 0-indexed (in order of creation) window.
   // A negative index switches to the last window in the list.
   void SwitchToWindow(int window);
+
+  // Registers the specified accelerators.
+  void RegisterAccelerators(const AcceleratorData accelerators[],
+                            size_t accelerators_length);
 
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
 
