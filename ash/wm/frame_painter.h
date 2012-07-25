@@ -80,6 +80,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
                        const gfx::Point& point);
   gfx::Size GetMinimumSize(views::NonClientFrameView* view);
 
+  // Returns the inset from the right edge.
+  int GetRightInset() const;
+
   // Paints the frame header.
   void PaintHeader(views::NonClientFrameView* view,
                    gfx::Canvas* canvas,

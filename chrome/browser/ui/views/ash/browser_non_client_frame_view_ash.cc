@@ -191,21 +191,19 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
-  int tabstrip_x =
-      avatar_button() ?
-      (avatar_button()->bounds().right() + kAvatarSideSpacing) :
-      kTabstripLeftSpacing;
-  int tabstrip_width =
-      size_button_->x() - kTabstripRightSpacing - tabstrip_x;
-  return gfx::Rect(tabstrip_x,
-                   GetHorizontalTabStripVerticalOffset(false),
-                   std::max(0, tabstrip_width),
+  TabStripInsets insets(GetTabStripInsets(false));
+  return gfx::Rect(insets.left, insets.top,
+                   std::max(0, width() - insets.left - insets.right),
                    tabstrip->GetPreferredSize().height());
 }
 
-int BrowserNonClientFrameViewAsh::GetHorizontalTabStripVerticalOffset(
-    bool force_restored) const {
-  return NonClientTopBorderHeight(force_restored);
+BrowserNonClientFrameView::TabStripInsets
+BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
+  int left = avatar_button() ? kAvatarSideSpacing +
+      browser_view()->GetOTRAvatarIcon().width() + kAvatarSideSpacing :
+      kTabstripLeftSpacing;
+  int right = frame_painter_->GetRightInset() + kTabstripRightSpacing;
+  return TabStripInsets(NonClientTopBorderHeight(force_restored), left, right);
 }
 
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
@@ -320,8 +318,7 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {
-  bool maximized_layout = UseShortHeader();
-  frame_painter_->LayoutHeader(this, maximized_layout);
+  frame_painter_->LayoutHeader(this, UseShortHeader());
   if (avatar_button())
     LayoutAvatar();
   BrowserNonClientFrameView::Layout();
@@ -474,7 +471,7 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(avatar_button());
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
-  int avatar_bottom = GetHorizontalTabStripVerticalOffset(false) +
+  int avatar_bottom = GetTabStripInsets(false).top +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
   int avatar_y = frame()->IsMaximized() ?
@@ -524,7 +521,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
       browser_view()->GetToolbarBackgroundImage(mode);
   canvas->TileImageInt(
       *theme_toolbar,
-      x, bottom_y - GetHorizontalTabStripVerticalOffset(false),
+      x, bottom_y - GetTabStripInsets(false).top,
       x, bottom_y,
       w, theme_toolbar->height());
 

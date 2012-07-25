@@ -230,12 +230,14 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
   return bounds;
 }
 
-int OpaqueBrowserFrameView::GetHorizontalTabStripVerticalOffset(
-    bool restored) const {
-  return NonClientTopBorderHeight(restored) + ((!restored &&
+BrowserNonClientFrameView::TabStripInsets
+OpaqueBrowserFrameView::GetTabStripInsets(bool restored) const {
+  int top = NonClientTopBorderHeight(restored) + ((!restored &&
       (frame()->IsMaximized() ||
       frame()->IsFullscreen())) ?
       0 : kNonClientRestoredExtraThickness);
+  // TODO: include OTR and caption.
+  return TabStripInsets(top, 0, 0);
 }
 
 void OpaqueBrowserFrameView::UpdateThrobber(bool running) {
@@ -584,7 +586,7 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStripAndAvatarArea(
       kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing;
   const int tabstrip_x = NonClientBorderThickness();
   const int tabstrip_width = available_width - tabstrip_x - caption_spacing;
-  return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
+  return gfx::Rect(tabstrip_x, GetTabStripInsets(false).top,
                    std::max(0, tabstrip_width),
                    tabstrip->GetPreferredSize().height());
 }
@@ -623,7 +625,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Theme frame must be aligned with the tabstrip as if we were
   // in restored mode.  Note that the top of the tabstrip is
   // kTabstripTopShadowThickness px off the top of the screen.
-  int theme_background_y = -(GetHorizontalTabStripVerticalOffset(true) +
+  int theme_background_y = -(GetTabStripInsets(true).top +
       kTabstripTopShadowThickness);
   frame_background_->set_theme_background_y(theme_background_y);
 
@@ -709,7 +711,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   // Tile the toolbar image starting at the frame edge on the left and where the
   // horizontal tabstrip is (or would be) on the top.
   canvas->TileImageInt(*theme_toolbar, x,
-                       bottom_y - GetHorizontalTabStripVerticalOffset(false), x,
+                       bottom_y - GetTabStripInsets(false).top, x,
                        bottom_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.
@@ -1013,7 +1015,7 @@ void OpaqueBrowserFrameView::LayoutAvatar() {
   // can be customized so we can't depend on its size to perform layout.
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
-  int avatar_bottom = GetHorizontalTabStripVerticalOffset(false) +
+  int avatar_bottom = GetTabStripInsets(false).top +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
   int avatar_y = frame()->IsMaximized() ?

@@ -42,8 +42,7 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
   // BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(
       views::View* tabstrip) const OVERRIDE;
-  virtual int GetHorizontalTabStripVerticalOffset(
-      bool restored) const OVERRIDE;
+  virtual TabStripInsets GetTabStripInsets(bool restored) const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
 
   // View:

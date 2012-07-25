@@ -113,14 +113,15 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   int tabstrip_width = minimize_button_offset - tabstrip_x -
       (frame()->IsMaximized() ?
           kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
-  return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
+  return gfx::Rect(tabstrip_x, GetTabStripInsets(false).top,
                    std::max(0, tabstrip_width),
                    tabstrip->GetPreferredSize().height());
 }
 
-int GlassBrowserFrameView::GetHorizontalTabStripVerticalOffset(
-    bool restored) const {
-  return NonClientTopBorderHeight(restored);
+BrowserNonClientFrameView::TabStripInsets
+GlassBrowserFrameView::GetTabStripInsets(bool restored) const {
+  // TODO: include OTR and caption.
+  return TabStripInsets(NonClientTopBorderHeight(restored), 0, 0);
 }
 
 void GlassBrowserFrameView::UpdateThrobber(bool running) {
@@ -296,7 +297,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   int y = toolbar_bounds.y();
   int dest_y = y + (kFrameShadowThickness * 2);
   canvas->TileImageInt(*theme_toolbar, x,
-                       dest_y - GetHorizontalTabStripVerticalOffset(false), x,
+                       dest_y - GetTabStripInsets(false).top, x,
                        dest_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.
@@ -413,7 +414,7 @@ void GlassBrowserFrameView::LayoutAvatar() {
   if (base::i18n::IsRTL())
     avatar_x += width() - frame()->GetMinimizeButtonOffset();
 
-  int avatar_bottom = GetHorizontalTabStripVerticalOffset(false) +
+  int avatar_bottom = GetTabStripInsets(false).top +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
   int avatar_y = frame()->IsMaximized() ?

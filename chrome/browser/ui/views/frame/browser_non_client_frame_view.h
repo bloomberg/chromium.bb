@@ -16,6 +16,19 @@ class BrowserView;
 // Browser-specific methods.
 class BrowserNonClientFrameView : public views::NonClientFrameView {
  public:
+  // Insets around the tabstrip.
+  struct TabStripInsets {
+    TabStripInsets() : top(0), left(0), right(0) {}
+    TabStripInsets(int top, int left, int right)
+        : top(top),
+          left(left),
+          right(right) {}
+
+    int top;
+    int left;
+    int right;
+  };
+
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~BrowserNonClientFrameView();
 
@@ -24,12 +37,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Returns the bounds within which the TabStrip should be laid out.
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;
 
-  // Returns the y coordinate within the window at which the tab strip begins.
-  // If |as_restored| is true, this is calculated as if we were in restored mode
-  // regardless of the current mode. This is used to correctly align theme
-  // images.
-  virtual int GetHorizontalTabStripVerticalOffset(
-      bool force_restored) const = 0;
+  // Returns the TabStripInsets within the window at which the tab strip is
+  // positioned. If |as_restored| is true, this is calculated as if we were in
+  // restored mode regardless of the current mode.
+  virtual TabStripInsets GetTabStripInsets(bool force_restored) const = 0;
 
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;

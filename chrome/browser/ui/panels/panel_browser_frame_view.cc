@@ -327,10 +327,11 @@ gfx::Rect PanelBrowserFrameView::GetBoundsForTabStrip(
   return gfx::Rect();
 }
 
-int PanelBrowserFrameView::GetHorizontalTabStripVerticalOffset(
+BrowserNonClientFrameView::TabStripInsets
+PanelBrowserFrameView::GetTabStripInsets(
     bool restored) const {
   // This is not needed since we do not show tab strip for the panel.
-  return 0;
+  return TabStripInsets();
 }
 
 void PanelBrowserFrameView::UpdateThrobber(bool running) {

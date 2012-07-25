@@ -293,6 +293,13 @@ gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
   return min_size;
 }
 
+int FramePainter::GetRightInset() const {
+  gfx::Size close_size = close_button_->GetPreferredSize();
+  gfx::Size size_button_size = size_button_->GetPreferredSize();
+  return close_size.width() + kCloseButtonOffsetX + size_button_size.width() -
+      kButtonOverlap;
+}
+
 void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
                                HeaderMode header_mode,

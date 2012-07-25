@@ -234,9 +234,9 @@ gfx::Rect AppNonClientFrameViewAura::GetBoundsForTabStrip(
   return gfx::Rect();
 }
 
-int AppNonClientFrameViewAura::GetHorizontalTabStripVerticalOffset(
-    bool restored) const {
-  return 0;
+BrowserNonClientFrameView::TabStripInsets
+AppNonClientFrameViewAura::GetTabStripInsets(bool restored) const {
+  return TabStripInsets();
 }
 
 void AppNonClientFrameViewAura::UpdateThrobber(bool running) {

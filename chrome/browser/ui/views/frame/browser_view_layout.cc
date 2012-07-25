@@ -21,7 +21,6 @@
 #include "ui/gfx/size.h"
 #include "ui/views/controls/single_split_view.h"
 
-
 namespace {
 
 // The visible height of the shadow above the tabs. Clicks in this area are
@@ -67,11 +66,11 @@ BrowserViewLayout::~BrowserViewLayout() {
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize() {
-  // TODO(noname): In theory the tabstrip width should probably be
-  // (OTR + tabstrip + caption buttons) width.
   gfx::Size tabstrip_size(
       browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
       tabstrip_->GetMinimumSize() : gfx::Size());
+  BrowserNonClientFrameView::TabStripInsets tab_strip_insets(
+      browser_view_->frame()->GetTabStripInsets(false));
   gfx::Size toolbar_size(
       (browser()->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
        browser()->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR)) ?
@@ -90,8 +89,11 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
 
   int min_height = tabstrip_size.height() + toolbar_size.height() +
       bookmark_bar_size.height() + contents_size.height();
-  int widths[] = { tabstrip_size.width(), toolbar_size.width(),
-                   bookmark_bar_size.width(), contents_size.width() };
+  int widths[] = {
+        tabstrip_size.width() + tab_strip_insets.left + tab_strip_insets.right,
+        toolbar_size.width(),
+        bookmark_bar_size.width(),
+        contents_size.width() };
   int min_width = *std::max_element(&widths[0], &widths[arraysize(widths)]);
   return gfx::Size(min_width, min_height);
 }
@@ -257,7 +259,7 @@ void BrowserViewLayout::Layout(views::View* host) {
   if (browser_view_->IsTabStripVisible()) {
     tabstrip_->SetBackgroundOffset(gfx::Point(
         tabstrip_->GetMirroredX() + browser_view_->GetMirroredX(),
-        browser_view_->frame()->GetHorizontalTabStripVerticalOffset(false)));
+        browser_view_->frame()->GetTabStripInsets(false).top));
   }
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);

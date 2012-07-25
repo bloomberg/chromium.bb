@@ -432,7 +432,7 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
   // vertically at the top edge of the horizontal tab strip (or where it would
   // be).  We expect our parent's origin to be the window origin.
   gfx::Point window_point(point.Add(GetMirroredPosition()));
-  window_point.Offset(0, -frame_->GetHorizontalTabStripVerticalOffset(false));
+  window_point.Offset(0, -frame_->GetTabStripInsets(false).top);
   return window_point;
 }
 

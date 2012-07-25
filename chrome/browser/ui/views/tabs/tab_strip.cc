@@ -1233,12 +1233,19 @@ std::string TabStrip::GetClassName() const {
 }
 
 gfx::Size TabStrip::GetPreferredSize() {
-  // Report the minimum width as the size required for a single selected tab
-  // plus the new tab button. Don't base it on the actual number of tabs because
-  // it's undesirable to have the minimum window size change when a new tab is
-  // opened.
-  int needed_width = Tab::GetMinimumSelectedSize().width() -
-      tab_h_offset() + new_tab_button_width();
+  // For stacked tabs the minimum size is calculated as the size needed to
+  // handle showing any number of tabs. Otherwise report the minimum width as
+  // the size required for a single selected tab plus the new tab button. Don't
+  // base it on the actual number of tabs because it's undesirable to have the
+  // minimum window size change when a new tab is opened.
+  int needed_width;
+  if (touch_layout_.get() || adjust_layout_) {
+    needed_width = Tab::GetTouchWidth() +
+        (2 * kStackedPadding * kMaxStackedCount);
+  } else {
+    needed_width = Tab::GetMinimumSelectedSize().width();
+  }
+  needed_width += new_tab_button_width();
   return gfx::Size(needed_width, Tab::GetMinimumUnselectedSize().height());
 }
 
@@ -2341,7 +2348,7 @@ bool TabStrip::NeedsTouchLayout() const {
 
   int mini_tab_count = GetMiniTabCount();
   int normal_count = tab_count() - mini_tab_count;
-  if (normal_count == 0 || normal_count == mini_tab_count)
+  if (normal_count <= 1 || normal_count == mini_tab_count)
     return false;
   int x = GetStartXForNormalTabs();
   int available_width = width() - x - new_tab_button_width();

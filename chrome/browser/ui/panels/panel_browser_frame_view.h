@@ -52,7 +52,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
  protected:
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
-  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
+  virtual TabStripInsets GetTabStripInsets(bool restored) const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
 
   // Overridden from views::NonClientFrameView:
