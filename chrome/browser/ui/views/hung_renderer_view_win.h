@@ -5,16 +5,45 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_WIN_H_
 
-#include "chrome/browser/ui/views/hung_renderer_view.h"
+#include "base/basictypes.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
-class HungRendererDialogViewWin : public HungRendererDialogView {
+// This class provides functionality to display a Windows 8 metro style hung
+// renderer dialog.
+class HungRendererDialogMetro {
  public:
-  HungRendererDialogViewWin() {}
-  virtual ~HungRendererDialogViewWin() {}
+  // Creates or returns the global instance of the HungRendererDialogMetro
+  // class
+  static HungRendererDialogMetro* Create();
+  static HungRendererDialogMetro* GetInstance();
 
-  // HungRendererDialogView overrides.
-  virtual void ShowForWebContents(WebContents* contents) OVERRIDE;
-  virtual void EndForWebContents(WebContents* contents) OVERRIDE;
+  void Show(content::WebContents* contents);
+  void Hide(content::WebContents* contents);
+
+ private:
+  HungRendererDialogMetro();
+  ~HungRendererDialogMetro();
+
+  // Handlers for the hang monitor dialog displayed in Windows 8 metro.
+  static void OnMetroKillProcess();
+  static void OnMetroWait();
+
+  // Resets Windows 8 metro specific state like whether the dialog was
+  // displayed, etc.
+  void ResetMetroState();
+
+  content::WebContents* contents_;
+
+  // Set to true if the metro version of the hang dialog is displayed.
+  // Helps ensure that only one instance of the dialog is displayed at any
+  // given time.
+  bool metro_dialog_displayed_;
+
+  // Pointer to the global instance of the HungRendererDialogMetro class.
+  static HungRendererDialogMetro* g_instance_;
+
+  DISALLOW_COPY_AND_ASSIGN(HungRendererDialogMetro);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_WIN_H_

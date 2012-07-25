@@ -99,8 +99,16 @@ class HungRendererDialogView : public views::DialogDelegateView,
   // Factory function for creating an instance of the HungRendererDialogView
   // class. At any given point only one instance can be active.
   static HungRendererDialogView* Create();
+
   // Returns a pointer to the singleton instance if any.
   static HungRendererDialogView* GetInstance();
+
+  // Platform specific function to kill the renderer process identified by the
+  // handle passed in.
+  static void KillRendererProcess(base::ProcessHandle process_handle);
+
+  // Returns true if the frame is in the foreground.
+  static bool IsFrameActive(WebContents* contents);
 
   virtual void ShowForWebContents(WebContents* contents);
   virtual void EndForWebContents(WebContents* contents);
@@ -129,9 +137,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
-
-  // Returns true if the frame is in the foreground.
-  bool IsFrameActive(WebContents* contents);
 
   static HungRendererDialogView* g_instance_;
 

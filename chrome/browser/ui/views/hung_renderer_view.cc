@@ -39,9 +39,20 @@
 #include "ui/aura/window.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
-#endif
+// These functions allow certain chrome platforms to override the default hung
+// renderer dialog. For e.g. Chrome on Windows 8 metro
+bool PlatformShowCustomHungRendererDialog(WebContents* contents);
+bool PlatformHideCustomHungRendererDialog(WebContents* contents);
+
+#if !defined(OS_WIN)
+bool PlatformShowCustomHungRendererDialog(WebContents* contents) {
+  return false;
+}
+
+bool PlatformHideCustomHungRendererDialog(WebContents* contents) {
+  return false;
+}
+#endif  // OS_WIN
 
 HungRendererDialogView* HungRendererDialogView::g_instance_ = NULL;
 
@@ -173,8 +184,6 @@ static const int kTableViewHeight = 100;
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView, public:
 
-#if !defined(OS_WIN)
-
 // static
 HungRendererDialogView* HungRendererDialogView::Create() {
   if (!g_instance_) {
@@ -183,12 +192,27 @@ HungRendererDialogView* HungRendererDialogView::Create() {
   }
   return g_instance_;
 }
-#endif  // defined(OS_WIN)
 
 // static
 HungRendererDialogView* HungRendererDialogView::GetInstance() {
   return g_instance_;
 }
+
+// static
+bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
+  gfx::NativeView frame_view =
+      platform_util::GetTopLevel(contents->GetNativeView());
+  return platform_util::IsWindowActive(frame_view);
+}
+
+#if !defined(OS_WIN)
+// static
+void HungRendererDialogView::KillRendererProcess(
+    base::ProcessHandle process_handle) {
+  base::KillProcess(process_handle, content::RESULT_CODE_HUNG, false);
+}
+#endif  // OS_WIN
+
 
 HungRendererDialogView::HungRendererDialogView()
     : hung_pages_table_(NULL),
@@ -208,7 +232,8 @@ void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
   // Don't show the warning unless the foreground window is the frame, or this
   // window (but still invisible). If the user has another window or
   // application selected, activating ourselves is rude.
-  if (!IsFrameActive(contents))
+  if (!IsFrameActive(contents) &&
+      !platform_util::IsWindowActive(GetWidget()->GetNativeWindow()))
     return;
 
   if (!GetWidget()->IsActive()) {
@@ -306,13 +331,7 @@ void HungRendererDialogView::ButtonPressed(
     base::ProcessHandle process_handle =
         hung_pages_table_model_->GetRenderProcessHost()->GetHandle();
 
-#if defined(OS_WIN)
-    // Try to generate a crash report for the hung process.
-    CrashDumpAndTerminateHungChildProcess(process_handle);
-#else
-    // Kill the process.
-    base::KillProcess(process_handle, content::RESULT_CODE_HUNG, false);
-#endif
+    KillRendererProcess(process_handle);
   }
 }
 
@@ -331,16 +350,6 @@ void HungRendererDialogView::ViewHierarchyChanged(bool is_add,
                                                   views::View* child) {
   if (!initialized_ && is_add && child == this && GetWidget())
     Init();
-}
-
-bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
-  gfx::NativeView frame_view =
-      platform_util::GetTopLevel(contents->GetNativeView());
-  if (!platform_util::IsWindowActive(frame_view) &&
-      !platform_util::IsWindowActive(GetWidget()->GetNativeWindow())) {
-    return false;
-  }
-  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -452,7 +461,8 @@ void HungRendererDialogView::InitClass() {
 namespace chrome {
 
 void ShowHungRendererDialog(WebContents* contents) {
-  if (!logging::DialogsAreSuppressed()) {
+  if (!logging::DialogsAreSuppressed() &&
+      !PlatformShowCustomHungRendererDialog(contents)) {
     HungRendererDialogView* view = HungRendererDialogView::Create();
     view->ShowForWebContents(contents);
   }
@@ -460,6 +470,7 @@ void ShowHungRendererDialog(WebContents* contents) {
 
 void HideHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() &&
+      !PlatformHideCustomHungRendererDialog(contents) &&
       HungRendererDialogView::GetInstance())
     HungRendererDialogView::GetInstance()->EndForWebContents(contents);
 }
