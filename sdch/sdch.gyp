@@ -55,6 +55,7 @@
       'conditions': [
         [ 'OS == "linux" or OS == "android"', { 'include_dirs': [ 'linux' ] } ],
         [ 'os_bsd==1 or OS=="solaris"', { 'include_dirs': [ 'bsd' ] } ],
+        [ 'OS == "ios"', { 'include_dirs': [ 'ios' ] } ],
         [ 'OS == "mac"', { 'include_dirs': [ 'mac' ] } ],
         [ 'OS == "win"', { 'include_dirs': [ 'open-vcdiff/vsprojects' ] } ],
       ],
