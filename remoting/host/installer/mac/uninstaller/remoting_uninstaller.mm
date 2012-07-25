@@ -7,34 +7,10 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_authorizationref.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "remoting/host/constants_mac.h"
 
-@implementation RemotingUninstallerAppDelegate
 
-NSString* const kLaunchAgentsDir = @"/Library/LaunchAgents";
-NSString* const kPrefPaneDir = @"/Library/PreferencePanes";
-NSString* const kHelperToolsDir = @"/Library/PrivilegedHelperTools";
-NSString* const kApplicationDir = @"/Applications";
-
-NSString* const kPrefPaneName = @kServiceName ".prefPane";
-NSString* const kUninstallerName =
-    @"Chrome Remote Desktop Host Uninstaller.app";
-
-// Keystone
-const char kKeystoneAdmin[] = "/Library/Google/GoogleSoftwareUpdate/"
-                              "GoogleSoftwareUpdate.bundle/Contents/MacOS/"
-                              "ksadmin";
-const char kKeystonePID[] = "com.google.chrome_remote_desktop";
-
-- (void)dealloc {
-  [super dealloc];
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
-}
-
-- (void)logOutput:(FILE*) pipe {
+void logOutput(FILE* pipe) {
   char readBuffer[128];
   for (;;) {
     long bytesRead = read(fileno(pipe), readBuffer, sizeof(readBuffer) - 1);
@@ -45,28 +21,38 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
   }
 }
 
-- (void)messageBox:(const char*)message {
-  base::mac::ScopedCFTypeRef<CFStringRef> message_ref(
-      CFStringCreateWithCString(NULL, message, (int)strlen(message)));
-  CFOptionFlags result;
-  CFUserNotificationDisplayAlert(0, kCFUserNotificationNoteAlertLevel,
-                                 NULL, NULL, NULL,
-                                 CFSTR("Chrome Remote Desktop Uninstaller"),
-                                 message_ref, NULL, NULL, NULL, &result);
+NSArray* convertToNSArray(const char** array) {
+  NSMutableArray* ns_array = [[[NSMutableArray alloc] init] autorelease];
+  int i = 0;
+  const char* element = array[i++];
+  while (element != NULL) {
+    [ns_array addObject:[NSString stringWithUTF8String:element]];
+    element = array[i++];
+  }
+  return ns_array;
 }
 
--(void)runCommand:(NSString*)cmd
-    withArguments:(NSArray*)args {
+@implementation RemotingUninstaller
+
+// Keystone
+const char kKeystoneAdmin[] = "/Library/Google/GoogleSoftwareUpdate/"
+                              "GoogleSoftwareUpdate.bundle/Contents/MacOS/"
+                              "ksadmin";
+const char kKeystonePID[] = "com.google.chrome_remote_desktop";
+
+- (void)runCommand:(const char*)cmd
+     withArguments:(const char**)args {
   NSTask* task;
   NSPipe* output = [NSPipe pipe];
   NSString* result;
 
-  NSLog(@"Executing: %@ %@", cmd, [args componentsJoinedByString:@" "]);
+  NSArray* arg_array = convertToNSArray(args);
+  NSLog(@"Executing: %s %@", cmd, [arg_array componentsJoinedByString:@" "]);
 
   @try {
     task = [[[NSTask alloc] init] autorelease];
-    [task setLaunchPath:cmd];
-    [task setArguments:args];
+    [task setLaunchPath:[NSString stringWithUTF8String:cmd]];
+    [task setArguments:arg_array];
     [task setStandardInput:[NSPipe pipe]];
     [task setStandardOutput:output];
     [task launch];
@@ -96,14 +82,7 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 - (void)sudoCommand:(const char*)cmd
       withArguments:(const char**)args
           usingAuth:(AuthorizationRef)authRef  {
-
-  NSMutableArray* arg_array = [[[NSMutableArray alloc] init] autorelease];
-  int i = 0;
-  const char* arg = args[i++];
-  while (arg != NULL) {
-    [arg_array addObject:[NSString stringWithUTF8String:arg]];
-    arg = args[i++];
-  }
+  NSArray* arg_array = convertToNSArray(args);
   NSLog(@"Executing (as Admin): %s %@", cmd,
         [arg_array componentsJoinedByString:@" "]);
   FILE* pipe = NULL;
@@ -118,7 +97,7 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
   } else if (status != errAuthorizationSuccess) {
     NSLog(@"Error while executing %s. Status=%lx", cmd, status);
   } else {
-    [self logOutput:pipe];
+    logOutput(pipe);
   }
 
   if (pipe != NULL)
@@ -131,119 +110,64 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
   [self sudoCommand:"/bin/rm" withArguments:args usingAuth:authRef];
 }
 
--(void)shutdownService {
-  NSString* launchCtl = @"/bin/launchctl";
-  NSArray* argsStop = [NSArray arrayWithObjects:@"stop",
-                      @kServiceName, nil];
+- (void)shutdownService {
+  const char* launchCtl = "/bin/launchctl";
+  const char* argsStop[] = { "stop", remoting::kServiceName, NULL };
   [self runCommand:launchCtl withArguments:argsStop];
 
-  NSString* plist = [NSString stringWithFormat:@"%@/%@.plist",
-                     kLaunchAgentsDir, @kServiceName];
-  if ([[NSFileManager defaultManager] fileExistsAtPath:plist]) {
-    NSArray* argsUnload = [NSArray arrayWithObjects:@"unload",
-                           @"-w", @"-S", @"Aqua", plist, nil];
+  if ([[NSFileManager defaultManager] fileExistsAtPath:
+       [NSString stringWithUTF8String:remoting::kServicePlistPath]]) {
+    const char* argsUnload[] = { "unload", "-w", "-S", "Aqua",
+                                remoting::kServicePlistPath, NULL };
     [self runCommand:launchCtl withArguments:argsUnload];
   }
 }
 
--(void)keystoneUnregisterUsingAuth:(AuthorizationRef)authRef {
+- (void)keystoneUnregisterUsingAuth:(AuthorizationRef)authRef {
   const char* args[] = { "--delete", "--productid", kKeystonePID, "-S", NULL };
   [self sudoCommand:kKeystoneAdmin withArguments:args usingAuth:authRef];
 }
 
--(void)remotingUninstallUsingAuth:(AuthorizationRef)authRef {
-  NSString* host_enabled = [NSString stringWithFormat:@"%@/%@.me2me_enabled",
-                            kHelperToolsDir, @kServiceName];
-  [self sudoDelete:[host_enabled UTF8String] usingAuth:authRef];
+- (void)remotingUninstallUsingAuth:(AuthorizationRef)authRef {
+  // Remove the enabled file before shutting down the service or else it might
+  // restart itself.
+  [self sudoDelete:remoting::kHostEnabledPath usingAuth:authRef];
 
   [self shutdownService];
 
-  NSString* plist = [NSString stringWithFormat:@"%@/%@.plist",
-                     kLaunchAgentsDir, @kServiceName];
-  [self sudoDelete:[plist UTF8String] usingAuth:authRef];
-
-  NSString* host_binary = [NSString stringWithFormat:@"%@/%@.me2me_host.app",
-                           kHelperToolsDir, @kServiceName];
-  [self sudoDelete:[host_binary UTF8String] usingAuth:authRef];
-
-  NSString* host_script = [NSString stringWithFormat:@"%@/%@.me2me.sh",
-                           kHelperToolsDir, @kServiceName];
-  [self sudoDelete:[host_script UTF8String] usingAuth:authRef];
-
-  NSString* auth = [NSString stringWithFormat:@"%@/%@.json",
-                    kHelperToolsDir, @kServiceName];
-  [self sudoDelete:[auth UTF8String] usingAuth:authRef];
-
-  NSString* prefpane = [NSString stringWithFormat:@"%@/%@",
-                        kPrefPaneDir, kPrefPaneName];
-  [self sudoDelete:[prefpane UTF8String] usingAuth:authRef];
-
-  NSString* uninstaller = [NSString stringWithFormat:@"%@/%@",
-                           kApplicationDir, kUninstallerName];
-  [self sudoDelete:[uninstaller UTF8String] usingAuth:authRef];
+  [self sudoDelete:remoting::kServicePlistPath usingAuth:authRef];
+  [self sudoDelete:remoting::kHostBinaryPath usingAuth:authRef];
+  [self sudoDelete:remoting::kHostHelperScriptPath usingAuth:authRef];
+  [self sudoDelete:remoting::kHostConfigFilePath usingAuth:authRef];
+  [self sudoDelete:remoting::kPrefPaneFilePath usingAuth:authRef];
+  [self sudoDelete:remoting::kBrandedUninstallerPath usingAuth:authRef];
+  [self sudoDelete:remoting::kUnbrandedUninstallerPath usingAuth:authRef];
 
   [self keystoneUnregisterUsingAuth:authRef];
 }
 
-- (IBAction)uninstall:(NSButton*)sender {
+- (OSStatus)remotingUninstall {
   base::mac::ScopedAuthorizationRef authRef;
-
-  NSLog(@"Chrome Remote Desktop uninstall starting.");
-
-  @try {
-    OSStatus status;
-    status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment,
-                                 kAuthorizationFlagDefaults, &authRef);
-    if (status != errAuthorizationSuccess) {
-      [NSException raise:@"AuthorizationCreate Failure"
-          format:@"Error during AuthorizationCreate status=%ld", status];
-    }
-
-    AuthorizationItem right = {kAuthorizationRightExecute, 0, NULL, 0};
-    AuthorizationRights rights = {1, &right};
-    AuthorizationFlags flags = kAuthorizationFlagDefaults |
-                               kAuthorizationFlagInteractionAllowed |
-                               kAuthorizationFlagPreAuthorize |
-                               kAuthorizationFlagExtendRights;
-    status = AuthorizationCopyRights(authRef, &rights, NULL, flags, NULL);
-    if (status == errAuthorizationCanceled) {
-      NSLog(@"Chrome Remote Desktop Host uninstall canceled.");
-      const char* message = "Chrome Remote Desktop Host uninstall canceled.";
-      [self messageBox:message];
-    } else if (status == errAuthorizationSuccess) {
-      [self remotingUninstallUsingAuth:authRef];
-
-      NSLog(@"Chrome Remote Desktop Host uninstall complete.");
-      const char* message =
-          "Chrome Remote Desktop Host was successfully uninstalled.";
-      [self messageBox:message];
-    } else {
-      [NSException raise:@"AuthorizationCopyRights Failure"
-          format:@"Error during AuthorizationCopyRights status=%ld", status];
-    }
-  }
-  @catch (NSException* exception) {
-    NSLog(@"Exception %@ %@", [exception name], [exception reason]);
-    const char* message =
-        "Error! Unable to uninstall Chrome Remote Desktop Host.";
-    [self messageBox:message];
+  OSStatus status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment,
+                                        kAuthorizationFlagDefaults, &authRef);
+  if (status != errAuthorizationSuccess) {
+    [NSException raise:@"AuthorizationCreate Failure"
+                format:@"Error during AuthorizationCreate status=%ld", status];
   }
 
-  [NSApp terminate:self];
-}
-
-- (IBAction)cancel:(id)sender {
-  [NSApp terminate:self];
-}
-
-- (IBAction)handleMenuClose:(NSMenuItem*)sender {
-  [NSApp terminate:self];
+  AuthorizationItem right = {kAuthorizationRightExecute, 0, NULL, 0};
+  AuthorizationRights rights = {1, &right};
+  AuthorizationFlags flags = kAuthorizationFlagDefaults |
+                             kAuthorizationFlagInteractionAllowed |
+                             kAuthorizationFlagPreAuthorize |
+                             kAuthorizationFlagExtendRights;
+  status = AuthorizationCopyRights(authRef, &rights, NULL, flags, NULL);
+  if (status == errAuthorizationSuccess) {
+    RemotingUninstaller* uninstaller =
+        [[[RemotingUninstaller alloc] init] autorelease];
+    [uninstaller remotingUninstallUsingAuth:authRef];
+  }
+  return status;
 }
 
 @end
-
-int main(int argc, char* argv[])
-{
-  return NSApplicationMain(argc, (const char**)argv);
-}
-

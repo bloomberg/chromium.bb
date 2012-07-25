@@ -33,8 +33,8 @@ bool GetTemporaryConfigFilePath(std::string* path) {
   if (filename == nil)
     return false;
 
-  filename = [filename stringByAppendingString:@"/" kServiceName ".json"];
-  *path = [filename UTF8String];
+  *path = [[NSString stringWithFormat:@"%@/%s",
+            filename, remoting::kHostConfigFileName] UTF8String];
   return true;
 }
 
@@ -226,6 +226,7 @@ OSStatus ExecuteWithPrivilegesAndGetPID(AuthorizationRef authorization,
 }  // namespace base
 
 namespace remoting {
+
 JsonHostConfig::JsonHostConfig(const std::string& filename)
     : filename_(filename) {
 }
@@ -282,7 +283,7 @@ std::string JsonHostConfig::GetSerializedData() const {
       [NSDistributedNotificationCenter defaultCenter];
   [center addObserver:self
              selector:@selector(onNewConfigFile:)
-                 name:@kServiceName
+                 name:[NSString stringWithUTF8String:remoting::kServiceName]
                object:nil];
 
   service_status_timer_ =
@@ -314,7 +315,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   [service_status_timer_ release];
   service_status_timer_ = nil;
 
-  [self notifyPlugin:kUpdateFailedNotificationName];
+  [self notifyPlugin:UPDATE_FAILED_NOTIFICATION_NAME];
 }
 
 - (void)applyConfiguration:(id)sender
@@ -358,7 +359,7 @@ std::string JsonHostConfig::GetSerializedData() const {
                               inputData:""]) {
     NSLog(@"Failed to run the helper tool");
     [self showError];
-    [self notifyPlugin: kUpdateFailedNotificationName];
+    [self notifyPlugin:UPDATE_FAILED_NOTIFICATION_NAME];
     return;
   }
 
@@ -381,7 +382,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   [self updateServiceStatus];
   if (awaiting_service_stop_ && !is_service_running_) {
     awaiting_service_stop_ = NO;
-    [self notifyPlugin:kUpdateSucceededNotificationName];
+    [self notifyPlugin:UPDATE_SUCCEEDED_NOTIFICATION_NAME];
   }
 
   if (was_running != is_service_running_)
@@ -399,7 +400,7 @@ std::string JsonHostConfig::GetSerializedData() const {
 }
 
 - (void)updateServiceStatus {
-  pid_t job_pid = base::mac::PIDForJob(kServiceName);
+  pid_t job_pid = base::mac::PIDForJob(remoting::kServiceName);
   is_service_running_ = (job_pid > 0);
 }
 
@@ -525,11 +526,11 @@ std::string JsonHostConfig::GetSerializedData() const {
   // If the service is running, send a signal to cause it to reload its
   // configuration, otherwise start the service.
   if (is_service_running_) {
-    pid_t job_pid = base::mac::PIDForJob(kServiceName);
+    pid_t job_pid = base::mac::PIDForJob(remoting::kServiceName);
     if (job_pid > 0) {
       kill(job_pid, SIGHUP);
     } else {
-      NSLog(@"Failed to obtain PID of service " kServiceName);
+      NSLog(@"Failed to obtain PID of service %s", remoting::kServiceName);
       [self showError];
     }
   } else {
@@ -538,7 +539,7 @@ std::string JsonHostConfig::GetSerializedData() const {
 
   // Broadcast a distributed notification to inform the plugin that the
   // configuration has been applied.
-  [self notifyPlugin: kUpdateSucceededNotificationName];
+  [self notifyPlugin:UPDATE_SUCCEEDED_NOTIFICATION_NAME];
 }
 
 - (BOOL)runHelperAsRootWithCommand:(const char*)command
@@ -558,7 +559,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   pid_t pid;
   OSStatus status = base::mac::ExecuteWithPrivilegesAndGetPID(
       authorization,
-      remoting::kHostHelperTool,
+      remoting::kHostHelperScriptPath,
       kAuthorizationFlagDefaults,
       arguments,
       &pipe,
@@ -618,7 +619,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   if (WIFEXITED(exit_status) && WEXITSTATUS(exit_status) == 0) {
     return YES;
   } else {
-    NSLog(@"%s failed with exit status %d", remoting::kHostHelperTool,
+    NSLog(@"%s failed with exit status %d", remoting::kHostHelperScriptPath,
           exit_status);
     return NO;
   }
@@ -626,7 +627,7 @@ std::string JsonHostConfig::GetSerializedData() const {
 
 - (BOOL)sendJobControlMessage:(const char*)launch_key {
   base::mac::ScopedLaunchData response(
-      base::mac::MessageForJob(kServiceName, launch_key));
+      base::mac::MessageForJob(remoting::kServiceName, launch_key));
   if (!response) {
     NSLog(@"Failed to send message to launchd");
     [self showError];
@@ -742,14 +743,14 @@ std::string JsonHostConfig::GetSerializedData() const {
     }
 
     remove(file.c_str());
-    [self notifyPlugin:kUpdateFailedNotificationName];
+    [self notifyPlugin:UPDATE_FAILED_NOTIFICATION_NAME];
   }
 }
 
 - (void)restartSystemPreferences {
   NSTask* task = [[NSTask alloc] init];
   NSString* command =
-      [NSString stringWithUTF8String:remoting::kHostHelperTool];
+      [NSString stringWithUTF8String:remoting::kHostHelperScriptPath];
   NSArray* arguments = [NSArray arrayWithObjects:@"--relaunch-prefpane", nil];
   [task setLaunchPath:command];
   [task setArguments:arguments];

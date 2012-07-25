@@ -272,8 +272,12 @@
             '<(DEPTH)/base/base.gyp:base',
           ],
           'sources': [
+            'host/constants_mac.cc',
+            'host/constants_mac.h',
             'host/installer/mac/uninstaller/remoting_uninstaller.h',
             'host/installer/mac/uninstaller/remoting_uninstaller.mm',
+            'host/installer/mac/uninstaller/remoting_uninstaller_app.h',
+            'host/installer/mac/uninstaller/remoting_uninstaller_app.mm',
           ],
           'xcode_settings': {
             'INFOPLIST_FILE': 'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
