@@ -115,14 +115,16 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(
     return;
   }
 
-  PendingTasksList* tasks = map_it->second.get();
-  for (PendingTasksList::const_iterator it = tasks->begin();
-       it != tasks->end(); ++it) {
+  // Swap the pending tasks to a temporary, to avoid problems if the task
+  // list is modified during processing.
+  PendingTasksList tasks;
+  tasks.swap(*map_it->second);
+  for (PendingTasksList::const_iterator it = tasks.begin();
+       it != tasks.end(); ++it) {
     it->Run(host);
   }
 
-  tasks->clear();
-  pending_tasks_.erase(map_it);
+  pending_tasks_.erase(key);
 
   // Balance the keepalive in AddPendingTask. Note we don't do this on a
   // failure to load, because the keepalive count is reset in that case.
