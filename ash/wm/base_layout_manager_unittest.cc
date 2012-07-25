@@ -9,6 +9,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
@@ -190,6 +191,34 @@ TEST_F(BaseLayoutManagerTest, MaximizeResetsRestoreBounds) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ("1,2 3x4", window->bounds().ToString());
   EXPECT_TRUE(GetRestoreBoundsInScreen(window.get()) == NULL);
+}
+
+// Verifies that the restore bounds do not get reset when restoring to a
+// maximzied state from a minimized state.
+TEST_F(BaseLayoutManagerTest, BoundsAfterRestoringToMaximizeFromMinimize) {
+  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
+  gfx::Rect bounds(10, 15, 25, 35);
+  window->SetBounds(bounds);
+
+  // Maximize it, which should reset restore bounds.
+  wm::MaximizeWindow(window.get());
+  EXPECT_EQ(bounds.ToString(),
+            GetRestoreBoundsInParent(window.get()).ToString());
+
+  // Minimize the window. The restore bounds should not change.
+  wm::MinimizeWindow(window.get());
+  EXPECT_EQ(bounds.ToString(),
+            GetRestoreBoundsInParent(window.get()).ToString());
+
+  // Show the window again. The window should be maximized, and the restore
+  // bounds should not change.
+  window->Show();
+  EXPECT_EQ(bounds.ToString(),
+            GetRestoreBoundsInParent(window.get()).ToString());
+  EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
+
+  wm::RestoreWindow(window.get());
+  EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
 }
 
 }  // namespace

@@ -135,7 +135,7 @@ void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
     ui::WindowShowState old_state = static_cast<ui::WindowShowState>(old);
     ui::WindowShowState new_state =
         window->GetProperty(aura::client::kShowStateKey);
-    if (old_state != new_state &&
+    if (old_state != new_state && old_state != ui::SHOW_STATE_MINIMIZED &&
         ((new_state == ui::SHOW_STATE_MAXIMIZED &&
           old_state != ui::SHOW_STATE_FULLSCREEN) ||
          (new_state == ui::SHOW_STATE_FULLSCREEN &&
