@@ -9,9 +9,12 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "grit/ui_resources.h"
+#include "skia/ext/image_operations.h"
+#include "ui/aura/event.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/events.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -366,6 +369,12 @@ void LauncherButton::OnMouseExited(const views::MouseEvent& event) {
 ui::GestureStatus LauncherButton::OnGestureEvent(
     const views::GestureEvent& event) {
   switch (event.type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      AddState(STATE_HOVERED);
+      return CustomButton::OnGestureEvent(event);
+    case ui::ET_GESTURE_END:
+      ClearState(STATE_HOVERED);
+      return CustomButton::OnGestureEvent(event);
     case ui::ET_GESTURE_SCROLL_BEGIN:
       host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, event);
       return ui::GESTURE_STATUS_CONSUMED;
