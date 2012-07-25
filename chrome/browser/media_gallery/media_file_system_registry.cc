@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
 
 namespace chrome {
@@ -146,8 +147,8 @@ std::string MediaFileSystemRegistry::RegisterPathAsFileSystem(
   // a fixed name (as we only register a single directory per file system).
   std::string register_name("_");
   const std::string fsid =
-      IsolatedContext::GetInstance()->RegisterFileSystemForFile(
-          path, &register_name);
+      IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+          fileapi::kFileSystemTypeIsolated, path, &register_name);
   CHECK(!fsid.empty());
   return fsid;
 }

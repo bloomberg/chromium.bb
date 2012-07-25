@@ -156,6 +156,7 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
     url += (kTestDir + 1);  // We don't want the leading slash.
     return GURL(url + "/");
   case kFileSystemTypeUnknown:
+  case kFileSystemTypeDragged:
     NOTREACHED();
   }
   NOTREACHED();

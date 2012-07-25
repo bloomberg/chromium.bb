@@ -33,6 +33,10 @@ enum FileSystemType {
 
   // Should be used only for testing.
   kFileSystemTypeTest = 100,
+
+  // Internal filesystem types, which are not exposed to WebKit but are
+  // accessible via Isolated file system.
+  kFileSystemTypeDragged,
 };
 
 }  // namespace fileapi

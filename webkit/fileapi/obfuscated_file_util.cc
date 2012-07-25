@@ -971,6 +971,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     case kFileSystemTypeIsolated:
     case kFileSystemTypeExternal:
     case kFileSystemTypeTest:
+    case kFileSystemTypeDragged:
       NOTREACHED();
   }
   if (!file_util::DirectoryExists(

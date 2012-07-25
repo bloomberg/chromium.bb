@@ -129,6 +129,7 @@ FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
         return provider_map_.find(type)->second;
       // Fall through.
     case kFileSystemTypeUnknown:
+    case kFileSystemTypeDragged:
       NOTREACHED();
       return NULL;
   }

@@ -20,6 +20,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 
@@ -181,8 +182,8 @@ void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
   DCHECK(isolated_context);
 
   std::string registered_name;
-  std::string filesystem_id = isolated_context->RegisterFileSystemForFile(
-      path, &registered_name);
+  std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
+      fileapi::kFileSystemTypeIsolated, path, &registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();

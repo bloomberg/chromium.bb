@@ -92,16 +92,15 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
   } else if (source_intent_->data_type ==
              webkit_glue::WebIntentData::FILESYSTEM) {
     const int child_id = render_view_host->GetProcess()->GetID();
-    std::vector<fileapi::IsolatedContext::FileInfo> files;
+    FilePath path;
     const bool valid =
-        fileapi::IsolatedContext::GetInstance()->GetRegisteredFileInfo(
-            source_intent_->filesystem_id, &files);
+        fileapi::IsolatedContext::GetInstance()->GetRegisteredPath(
+            source_intent_->filesystem_id, &path);
     DCHECK(valid);
-    DCHECK_EQ(1U, files.size());
     ChildProcessSecurityPolicy* policy =
          ChildProcessSecurityPolicy::GetInstance();
-    if (!policy->CanReadFile(child_id, files[0].path))
-      policy->GrantReadFile(child_id, files[0].path);
+    if (!policy->CanReadFile(child_id, path))
+      policy->GrantReadFile(child_id, path);
     policy->GrantReadFileSystem(child_id, source_intent_->filesystem_id);
   }
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/web_intent_data.h"
 
@@ -50,9 +51,10 @@ void DeviceAttachedIntentSource::OnMediaDeviceAttached(
   std::string device_name;
 
   // Register device path as an isolated file system.
+  // TODO(kinuko, kmadhusu): Use a different file system type for MTP.
   const std::string filesystem_id =
-      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForFile(
-          device_path, &device_name);
+      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+          fileapi::kFileSystemTypeIsolated, device_path, &device_name);
 
   CHECK(!filesystem_id.empty());
   webkit_glue::WebIntentData intent(

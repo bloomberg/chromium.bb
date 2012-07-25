@@ -542,7 +542,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
 
     // Make sure we have the same display_name as the one we register.
     if (iter->display_name.empty()) {
-      std::string name = files.AddPath(path);
+      std::string name;
+      files.AddPath(path, &name);
       iter->display_name = UTF8ToUTF16(name);
     } else {
       files.AddPathWithName(path, UTF16ToUTF8(iter->display_name));
@@ -568,7 +569,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
   fileapi::IsolatedContext* isolated_context =
       fileapi::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
-  std::string filesystem_id = isolated_context->RegisterFileSystem(files);
+  std::string filesystem_id = isolated_context->RegisterDraggedFileSystem(
+      files);
   if (!filesystem_id.empty()) {
     // Grant the permission iff the ID is valid.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);

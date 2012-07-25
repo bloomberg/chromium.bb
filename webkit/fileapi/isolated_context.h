@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/lazy_instance.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/fileapi_export.h"
 
 namespace fileapi {
@@ -47,12 +48,15 @@ class FILEAPI_EXPORT IsolatedContext {
     FileInfoSet();
     ~FileInfoSet();
 
-    // Add the given |path| to the set and returns the registered name
-    // assigned for the path.
-    std::string AddPath(const FilePath& path);
+    // Add the given |path| to the set and populates |registered_name| with
+    // the registered name assigned for the path. |path| needs to be
+    // absolute and should not contain parent references.
+    // Return false if the |path| is not valid and could not be added.
+    bool AddPath(const FilePath& path, std::string* registered_name);
 
     // Add the given |path| with the |name|.
-    // Returns false if the |name| is already registered in the set.
+    // Return false if the |name| is already registered in the set or
+    // is not valid and could not be added.
     bool AddPathWithName(const FilePath& path, const std::string& name);
 
     const std::set<FileInfo>& fileset() const { return fileset_; }
@@ -85,13 +89,16 @@ class FILEAPI_EXPORT IsolatedContext {
   //
   // Note that the path in |fileset| that contains '..' or is not an
   // absolute path is skipped and is not registerred.
-  std::string RegisterFileSystem(const FileInfoSet& files);
+  std::string RegisterDraggedFileSystem(const FileInfoSet& files);
 
-  // Registers a new isolated filesystem for a given |path|.
+  // Registers a new isolated filesystem for a given |path| of filesystem
+  // |type| filesystem and returns a new filesystem ID.
+  // |path| must be an absolute path which has no parent references ('..').
   // If |register_name| is non-null and has non-empty string the path is
   // registered as the given |register_name|, otherwise it is populated
   // with the name internally assigned to the path.
-  std::string RegisterFileSystemForFile(const FilePath& path,
+  std::string RegisterFileSystemForPath(FileSystemType type,
+                                        const FilePath& path,
                                         std::string* register_name);
 
   // Revokes filesystem specified by the given filesystem_id.
@@ -111,25 +118,36 @@ class FILEAPI_EXPORT IsolatedContext {
 
   // Cracks the given |virtual_path| (which should look like
   // "/<filesystem_id>/<registered_name>/<relative_path>") and populates
-  // the |filesystem_id| and |platform_path| if the embedded <filesystem_id>
+  // the |filesystem_id| and |path| if the embedded <filesystem_id>
   // is registerred to this context.  |root_path| is also populated to have
   // the registered root (toplevel) file info for the |virtual_path|.
   //
   // Returns false if the given virtual_path or the cracked filesystem_id
   // is not valid.
   //
-  // Note that |root_info| and |platform_path| are set to empty paths if
+  // Note that |root_info| and |path| are set to empty paths if
   // |virtual_path| has no <relative_path> part (i.e. pointing to
   // the virtual root).
+  //
+  // TODO(kinuko): Return filesystem type as well.
   bool CrackIsolatedPath(const FilePath& virtual_path,
                          std::string* filesystem_id,
                          FileInfo* root_info,
-                         FilePath* platform_path) const;
+                         FilePath* path) const;
 
-  // Returns a set of FileInfo registered for the |filesystem_id|.
+  // Returns a set of dragged FileInfo's registered for the |filesystem_id|.
+  // The filesystem_id must be pointing to a dragged file system
+  // (i.e. must be the one registered by RegisterDraggedFileSystem).
   // Returns false if the |filesystem_id| is not valid.
-  bool GetRegisteredFileInfo(const std::string& filesystem_id,
-                             std::vector<FileInfo>* files) const;
+  bool GetDraggedFileInfo(const std::string& filesystem_id,
+                          std::vector<FileInfo>* files) const;
+
+  // Returns the file path registered for the |filesystem_id|.
+  // The filesystem_id must NOT be pointing to a dragged file system
+  // (i.e. must be the one registered by RegisterFileSystemForPath).
+  // Returns false if the |filesystem_id| is not valid.
+  bool GetRegisteredPath(const std::string& filesystem_id,
+                         FilePath* path) const;
 
   // Returns the virtual root path that looks like /<filesystem_id>.
   FilePath CreateVirtualRootPath(const std::string& filesystem_id) const;
@@ -137,30 +155,50 @@ class FILEAPI_EXPORT IsolatedContext {
  private:
   friend struct base::DefaultLazyInstanceTraits<IsolatedContext>;
 
-  // Maps from filesystem id to a path conversion map for top-level entries.
-  typedef std::set<FileInfo> FileSet;
-  typedef std::map<std::string, FileSet> IDToFileSet;
+  // Represents each isolated file system instance.
+  class Instance {
+   public:
+    Instance(FileSystemType type, const FileInfo& file_info);
+    explicit Instance(const std::set<FileInfo>& dragged_files);
+    ~Instance();
+
+    FileSystemType type() const { return type_; }
+    const FileInfo& file_info() const { return file_info_; }
+    const std::set<FileInfo>& dragged_files() const { return dragged_files_; }
+    int ref_counts() const { return ref_counts_; }
+
+    void AddRef() { ++ref_counts_; }
+    void RemoveRef() { --ref_counts_; }
+
+    bool ResolvePathForName(const std::string& name, FilePath* path);
+
+   private:
+    const FileSystemType type_;
+    const FileInfo file_info_;
+
+    // For dragged file system.
+    const std::set<FileInfo> dragged_files_;
+
+    // Reference counts. Note that an isolated filesystem is created with ref==0
+    // and will get deleted when the ref count reaches <=0.
+    int ref_counts_;
+
+    DISALLOW_COPY_AND_ASSIGN(Instance);
+  };
+
+  typedef std::map<std::string, Instance*> IDToInstance;
 
   // Obtain an instance of this class via GetInstance().
   IsolatedContext();
   ~IsolatedContext();
 
-  // Removes the given filesystem without locking.
-  // (The caller must hold a lock)
-  void RevokeWithoutLocking(const std::string& filesystem_id);
-
   // Returns a new filesystem_id.  Called with lock.
   std::string GetNewFileSystemId() const;
 
-  // This lock needs to be obtained when accessing the toplevel_map_.
+  // This lock needs to be obtained when accessing the instance_map_.
   mutable base::Lock lock_;
 
-  // Maps the toplevel entries to the filesystem id.
-  IDToFileSet toplevel_map_;
-
-  // Reference counts. Note that an isolated filesystem is created with ref==0.
-  // and will get deleted when the ref count reaches <=0.
-  std::map<std::string, int> ref_counts_;
+  IDToInstance instance_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedContext);
 };

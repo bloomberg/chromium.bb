@@ -206,14 +206,14 @@ class IsolatedFileUtilTest : public testing::Test {
         FilePath root = root_path().Append(
             kRootPaths[(root_path_index++) % arraysize(kRootPaths)]);
         toplevel_root_map_[toplevel] = root;
-        toplevels.AddPath(root.Append(path));
+        toplevels.AddPath(root.Append(path), NULL);
       }
 
       test::SetUpOneTestCase(toplevel_root_map_[toplevel], test_case);
     }
 
     // Register the toplevel entries.
-    filesystem_id_ = isolated_context()->RegisterFileSystem(toplevels);
+    filesystem_id_ = isolated_context()->RegisterDraggedFileSystem(toplevels);
   }
 
   ScopedTempDir data_dir_;

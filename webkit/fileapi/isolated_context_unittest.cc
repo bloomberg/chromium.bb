@@ -51,9 +51,13 @@ class IsolatedContextTest : public testing::Test {
 
   void SetUp() {
     IsolatedContext::FileInfoSet files;
-    for (size_t i = 0; i < arraysize(kTestPaths); ++i)
-      names_.push_back(files.AddPath(kTestPaths[i].NormalizePathSeparators()));
-    id_ = IsolatedContext::GetInstance()->RegisterFileSystem(files);
+    for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
+      std::string name;
+      ASSERT_TRUE(
+          files.AddPath(kTestPaths[i].NormalizePathSeparators(), &name));
+      names_.push_back(name);
+    }
+    id_ = IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
     ASSERT_FALSE(id_.empty());
   }
 
@@ -77,14 +81,14 @@ class IsolatedContextTest : public testing::Test {
 TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   // See if the returned top-level entries match with what we registered.
   std::vector<FileInfo> toplevels;
-  ASSERT_TRUE(isolated_context()->GetRegisteredFileInfo(id_, &toplevels));
+  ASSERT_TRUE(isolated_context()->GetDraggedFileInfo(id_, &toplevels));
   ASSERT_EQ(fileset_.size(), toplevels.size());
   for (size_t i = 0; i < toplevels.size(); ++i) {
     ASSERT_TRUE(fileset_.find(toplevels[i].path) != fileset_.end());
   }
 
   // See if the name of each registered kTestPaths (that is what we
-  // register in SetUp() by RegisterFileSystem) is properly cracked as
+  // register in SetUp() by RegisterDraggedFileSystem) is properly cracked as
   // a valid virtual path in the isolated filesystem.
   for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
     FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
@@ -101,14 +105,23 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
     ASSERT_EQ(id_, cracked_id);
   }
 
-  // Revoking the current one and registering a new (empty) one.
-  isolated_context()->RevokeFileSystem(id_);
-  std::string id2 = isolated_context()->RegisterFileSystem(
-      IsolatedContext::FileInfoSet());
+  // Make sure GetRegisteredPath returns false for id_ since it is
+  // registered for dragged files.
+  FilePath path;
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id_, &path));
 
-  // Make sure the GetRegisteredFileInfo returns true only for the new one.
-  ASSERT_TRUE(isolated_context()->GetRegisteredFileInfo(id2, &toplevels));
-  ASSERT_FALSE(isolated_context()->GetRegisteredFileInfo(id_, &toplevels));
+  // Revoking the current one and registering a new one.
+  isolated_context()->RevokeFileSystem(id_);
+  std::string id2 = isolated_context()->RegisterFileSystemForPath(
+      kFileSystemTypeIsolated, FilePath(DRIVE FPL("/foo")), NULL);
+
+  // Make sure the GetDraggedFileInfo returns false for both ones.
+  ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(id2, &toplevels));
+  ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(id_, &toplevels));
+
+  // Make sure the GetRegisteredPath returns true only for the new one.
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id2, &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id_, &path));
 
   isolated_context()->RevokeFileSystem(id2);
 }

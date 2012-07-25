@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -201,8 +202,8 @@ class PlatformAppCommandLineLauncher
     fileapi::IsolatedContext* isolated_context =
         fileapi::IsolatedContext::GetInstance();
     DCHECK(isolated_context);
-    std::string filesystem_id = isolated_context->RegisterFileSystemForFile(
-        file_path, &registered_name);
+    std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
+        fileapi::kFileSystemTypeIsolated, file_path, &registered_name);
     // Granting read file system permission as well to allow file-system
     // read operations.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);

@@ -260,7 +260,7 @@ IsolatedFileUtil::CreateFileEnumerator(
 
   // Root path case.
   std::vector<FileInfo> toplevels;
-  IsolatedContext::GetInstance()->GetRegisteredFileInfo(
+  IsolatedContext::GetInstance()->GetDraggedFileInfo(
       filesystem_id, &toplevels);
   if (!recursive)
     return new SetFileEnumerator(toplevels, root.path());
@@ -337,7 +337,7 @@ bool IsolatedFileUtil::IsDirectoryEmpty(
   if (platform_path.empty()) {
     // The root directory case.
     std::vector<FileInfo> toplevels;
-    bool success = IsolatedContext::GetInstance()->GetRegisteredFileInfo(
+    bool success = IsolatedContext::GetInstance()->GetDraggedFileInfo(
         filesystem_id, &toplevels);
     DCHECK(success);
     return toplevels.empty();

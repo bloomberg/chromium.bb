@@ -802,10 +802,10 @@ WebKit::WebString RegisterIsolatedFileSystem(
   fileapi::IsolatedContext::FileInfoSet files;
   for (size_t i = 0; i < filenames.size(); ++i) {
     FilePath path = webkit_glue::WebStringToFilePath(filenames[i]);
-    files.AddPath(path);
+    files.AddPath(path, NULL);
   }
   std::string filesystemId =
-      fileapi::IsolatedContext::GetInstance()->RegisterFileSystem(files);
+      fileapi::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
   return UTF8ToUTF16(filesystemId);
 }
 

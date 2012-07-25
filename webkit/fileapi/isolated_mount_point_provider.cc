@@ -93,6 +93,7 @@ bool IsolatedMountPointProvider::IsRestrictedFileName(
 }
 
 FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil() {
+  // TODO(kinuko): Return different FileUtil's based on types.
   return isolated_file_util_.get();
 }
 
