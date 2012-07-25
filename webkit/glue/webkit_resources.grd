@@ -10,8 +10,6 @@
   <release seq="1">
     <includes>
       <include name="IDR_BROKENIMAGE" file="resources\broken-image.gif" type="BINDATA" />
-      <include name="IDC_HAND_GRAB" file="resources\hand_grab.cur" type="CURSOR" />
-      <include name="IDC_HAND_GRABBING" file="resources\hand_grabbing.cur" type="CURSOR" />
       <include name="IDR_INPUT_SPEECH" file="resources\input_speech.png" type="BINDATA" />
       <include name="IDR_INPUT_SPEECH_RECORDING" file="resources\input_speech_recording.png" type="BINDATA" />
       <include name="IDR_INPUT_SPEECH_WAITING" file="resources\input_speech_waiting.png" type="BINDATA" />

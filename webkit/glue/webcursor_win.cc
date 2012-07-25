@@ -96,10 +96,11 @@ static LPCWSTR ToCursorID(WebCursorInfo::Type type) {
       return MAKEINTRESOURCE(IDC_ZOOMIN);
     case WebCursorInfo::TypeZoomOut:
       return MAKEINTRESOURCE(IDC_ZOOMOUT);
+    // TODO(avi): get cursor images for grab/grabbing
+    // http://crbug.com/74699
     case WebCursorInfo::TypeGrab:
-      return MAKEINTRESOURCE(IDC_HAND_GRAB);
     case WebCursorInfo::TypeGrabbing:
-      return MAKEINTRESOURCE(IDC_HAND_GRABBING);
+      return IDC_ARROW;
   }
   NOTREACHED();
   return NULL;
