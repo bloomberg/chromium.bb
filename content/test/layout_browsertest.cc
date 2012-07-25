@@ -12,14 +12,12 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/layout_test_http_server.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test_utils.h"
+#include "content/test/layout_test_http_server.h"
 #include "net/base/net_util.h"
 
 #if defined(OS_WIN)
@@ -59,9 +57,9 @@ bool ReadExpectedResult(const FilePath& result_dir_path,
       expected_result_path, expected_result_value);
 }
 
-void ScrapeResultFromBrowser(Browser* browser, std::string* actual_text) {
+void ScrapeResultFromBrowser(content::Shell* window, std::string* actual_text) {
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser)->GetRenderViewHost(),
+      window->web_contents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(document.body.innerText);",
       actual_text));
@@ -186,15 +184,14 @@ void InProcessBrowserLayoutTest::RunLayoutTestInternal(
     const std::string& test_case_file_name, const GURL& url) {
   LOG(INFO) << "Navigating to URL " << url << " and blocking.";
   const string16 expected_title = ASCIIToUTF16("done");
-  content::TitleWatcher title_watcher(
-      chrome::GetActiveWebContents(browser()), expected_title);
-  ui_test_utils::NavigateToURL(browser(), url);
+  content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  content::NavigateToURL(shell(), url);
   LOG(INFO) << "Navigation completed, now waiting for title.";
   string16 final_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, final_title);
 
   std::string actual_text;
-  ScrapeResultFromBrowser(browser(), &actual_text);
+  ScrapeResultFromBrowser(shell(), &actual_text);
   ReplaceSubstringsAfterOffset(&actual_text, 0, "\r", "");
   TrimString(actual_text, "\n", &actual_text);
 

@@ -16,6 +16,7 @@
 #include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -36,7 +37,7 @@ class DromaeoTest : public UIPerfTest {
     FilePath test_path = GetDromaeoDir();
     std::string query_string = suite + "&automated";
     test_path = test_path.Append(FILE_PATH_LITERAL("index.html"));
-    GURL test_url(ui_test_utils::GetFileUrlWithQuery(test_path, query_string));
+    GURL test_url(content::GetFileUrlWithQuery(test_path, query_string));
 
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(test_url));

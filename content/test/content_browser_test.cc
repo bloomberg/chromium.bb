@@ -12,7 +12,10 @@
 #include "base/path_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/shell.h"
+#include "content/shell/shell_browser_context.h"
+#include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_main_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "content/test/test_content_client.h"
@@ -33,6 +36,7 @@ ContentBrowserTest::ContentBrowserTest() {
       FILE_PATH_LITERAL("Content Shell.app/Contents/MacOS/Content Shell"));
   CHECK(PathService::Override(base::FILE_EXE, content_shell_path));
 #endif
+  CreateTestServer("content/test/data");
 }
 
 ContentBrowserTest::~ContentBrowserTest() {
@@ -115,6 +119,28 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
        !i.IsAtEnd(); i.Advance()) {
     i.GetCurrentValue()->FastShutdownIfPossible();
   }
+}
+
+Shell* ContentBrowserTest::CreateBrowser() {
+  ShellContentBrowserClient* browser_client =
+      static_cast<ShellContentBrowserClient*>(GetContentClient()->browser());
+  return Shell::CreateNewWindow(
+      browser_client->browser_context(),
+      GURL(chrome::kAboutBlankURL),
+      NULL,
+      MSG_ROUTING_NONE,
+      NULL);
+}
+
+Shell* ContentBrowserTest::CreateOffTheRecordBrowser() {
+  ShellContentBrowserClient* browser_client =
+      static_cast<ShellContentBrowserClient*>(GetContentClient()->browser());
+  return Shell::CreateNewWindow(
+      browser_client->off_the_record_browser_context(),
+      GURL(chrome::kAboutBlankURL),
+      NULL,
+      MSG_ROUTING_NONE,
+      NULL);
 }
 
 }  // namespace content

@@ -15,6 +15,4 @@ const char kContentBrowserTest[] = "browser-test";
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 
-const char kOffTheRecord[] = "off-the-record";
-
 }  // namespace switches

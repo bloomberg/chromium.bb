@@ -7,21 +7,18 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/shell/shell.h"
 #include "content/test/layout_browsertest.h"
+#include "content/test/content_browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 
-class MediaTest : public InProcessBrowserTest {
+class MediaTest : public content::ContentBrowserTest {
  protected:
   GURL GetTestURL(const char* tag, const char* media_file) {
-    FilePath test_file_path = ui_test_utils::GetTestFilePath(
-        FilePath(FILE_PATH_LITERAL("media")),
-        FilePath(FILE_PATH_LITERAL("player.html")));
+    FilePath test_file_path = content::GetTestFilePath("media", "player.html");
     std::string query = base::StringPrintf("%s=%s", tag, media_file);
-    return ui_test_utils::GetFileUrlWithQuery(test_file_path, query);
+    return content::GetFileUrlWithQuery(test_file_path, query);
   }
 
   void PlayMedia(const char* tag, const char* media_file) {
@@ -31,12 +28,11 @@ class MediaTest : public InProcessBrowserTest {
     const string16 kPlaying = ASCIIToUTF16("PLAYING");
     const string16 kFailed = ASCIIToUTF16("FAILED");
     const string16 kError = ASCIIToUTF16("ERROR");
-    content::TitleWatcher title_watcher(
-        chrome::GetActiveWebContents(browser()), kPlaying);
+    content::TitleWatcher title_watcher(shell()->web_contents(), kPlaying);
     title_watcher.AlsoWaitForTitle(kFailed);
     title_watcher.AlsoWaitForTitle(kError);
 
-    ui_test_utils::NavigateToURL(browser(), player_gurl);
+    content::NavigateToURL(shell(), player_gurl);
 
     string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(kPlaying, final_title);

@@ -40,6 +40,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 #endif
 
   ShellBrowserContext* browser_context();
+  ShellBrowserContext* off_the_record_browser_context();
+  ShellResourceDispatcherHostDelegate* resource_dispatcher_host_delegate() {
+    return resource_dispatcher_host_delegate_.get();
+  }
 
  private:
   scoped_ptr<ShellResourceDispatcherHostDelegate>

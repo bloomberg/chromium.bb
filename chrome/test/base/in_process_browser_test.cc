@@ -78,11 +78,7 @@ InProcessBrowserTest::InProcessBrowserTest()
   chrome_path = chrome_path.Append(chrome::kBrowserProcessExecutablePath);
   CHECK(PathService::Override(base::FILE_EXE, chrome_path));
 #endif  // defined(OS_MACOSX)
-
-  test_server_.reset(new net::TestServer(
-      net::TestServer::TYPE_HTTP,
-      net::TestServer::kLocalhost,
-      FilePath(FILE_PATH_LITERAL("chrome/test/data"))));
+  CreateTestServer("chrome/test/data");
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() {
@@ -155,8 +151,6 @@ void InProcessBrowserTest::SetUp() {
 void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   // Propagate commandline settings from test_launcher_utils.
   test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
-
-  command_line->AppendSwitch(switches::kDomAutomationController);
 
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);

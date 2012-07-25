@@ -12,7 +12,6 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test.h"
 #include "content/test/browser_test_base.h"
-#include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -124,10 +123,6 @@ class InProcessBrowserTest : public BrowserTestBase {
   // BrowserTestBase:
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
-  // Returns the testing server. Guaranteed to be non-NULL.
-  const net::TestServer* test_server() const { return test_server_.get(); }
-  net::TestServer* test_server() { return test_server_.get(); }
-
   // Creates a browser with a single tab (about:blank), waits for the tab to
   // finish loading and shows the browser.
   //
@@ -194,9 +189,6 @@ class InProcessBrowserTest : public BrowserTestBase {
 
   // Browser created from CreateBrowser.
   Browser* browser_;
-
-  // Testing server, started on demand.
-  scoped_ptr<net::TestServer> test_server_;
 
   // ContentRendererClient when running in single-process mode.
   scoped_ptr<content::ContentRendererClient> single_process_renderer_client_;

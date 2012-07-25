@@ -27,7 +27,8 @@
 
 namespace content {
 
-ShellBrowserContext::ShellBrowserContext() {
+ShellBrowserContext::ShellBrowserContext(bool off_the_record)
+    : off_the_record_(off_the_record) {
   InitWhileIOAllowed();
 }
 
@@ -75,7 +76,7 @@ FilePath ShellBrowserContext::GetPath() {
 }
 
 bool ShellBrowserContext::IsOffTheRecord() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kOffTheRecord);
+  return off_the_record_;
 }
 
 DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {

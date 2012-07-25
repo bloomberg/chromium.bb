@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/net_util.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
@@ -145,6 +146,18 @@ void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
 }
 
 }  // namespace
+
+
+GURL GetFileUrlWithQuery(const FilePath& path,
+                         const std::string& query_string) {
+  GURL url = net::FilePathToFileURL(path);
+  if (!query_string.empty()) {
+    GURL::Replacements replacements;
+    replacements.SetQueryStr(query_string);
+    return url.ReplaceComponents(replacements);
+  }
+  return url;
+}
 
 void SimulateMouseClick(WebContents* web_contents) {
   int x = web_contents->GetView()->GetContainerSize().width() / 2;

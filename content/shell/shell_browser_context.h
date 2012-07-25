@@ -21,7 +21,7 @@ class ShellDownloadManagerDelegate;
 
 class ShellBrowserContext : public BrowserContext {
  public:
-  ShellBrowserContext();
+  explicit ShellBrowserContext(bool off_the_record);
   virtual ~ShellBrowserContext();
 
   // BrowserContext implementation.
@@ -45,6 +45,7 @@ class ShellBrowserContext : public BrowserContext {
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
+  bool off_the_record_;
   ScopedTempDir testing_path_;
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;

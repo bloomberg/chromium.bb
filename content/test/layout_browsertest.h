@@ -4,11 +4,12 @@
 
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "content/test/content_browser_test.h"
 
+class GURL;
 class LayoutTestHttpServer;
 
-class InProcessBrowserLayoutTest : public InProcessBrowserTest {
+class InProcessBrowserLayoutTest : public content::ContentBrowserTest {
  public:
   explicit InProcessBrowserLayoutTest(const FilePath& test_parent_dir,
                                       const FilePath& test_case_dir);

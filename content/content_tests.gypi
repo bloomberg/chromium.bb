@@ -542,7 +542,12 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        'browser/appcache/appcache_browsertest.cc',
+        'browser/audio_browsertest.cc',
+        'browser/in_process_webkit/indexed_db_layout_browsertest.cc',
+        'browser/media_browsertest.cc',
         'browser/plugin_browsertest.cc',
+        'browser/worker_host/test/worker_browsertest.cc',
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
         'test/content_browser_test_utils.cc',
@@ -550,6 +555,10 @@
         'test/content_browser_test_utils_mac.mm',
         'test/content_browser_test_test.cc',
         'test/content_test_launcher.cc',
+        'test/layout_browsertest.cc',
+        'test/layout_browsertest.h',
+        'test/layout_test_http_server.cc',
+        'test/layout_test_http_server.h',
       ],
       'conditions': [
         ['OS=="win"', {

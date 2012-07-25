@@ -88,6 +88,11 @@ ShellBrowserContext* ShellContentBrowserClient::browser_context() {
   return shell_browser_main_parts_->browser_context();
 }
 
+ShellBrowserContext*
+    ShellContentBrowserClient::off_the_record_browser_context() {
+  return shell_browser_main_parts_->off_the_record_browser_context();
+}
+
 AccessTokenStore* ShellContentBrowserClient::CreateAccessTokenStore() {
   return new ShellAccessTokenStore(browser_context()->GetRequestContext());
 }

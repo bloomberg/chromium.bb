@@ -13,6 +13,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -50,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, DISABLED_Kill) {
 
   ui_test_utils::NavigateToURL(
       browser(),
-      ui_test_utils::GetFileUrlWithQuery(
+      content::GetFileUrlWithQuery(
           gpu_test_dir_.AppendASCII("webgl.html"), "query=kill"));
   SimulateGPUCrash(browser());
 
@@ -65,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, WebkitLoseContext) {
 
   ui_test_utils::NavigateToURL(
       browser(),
-      ui_test_utils::GetFileUrlWithQuery(
+      content::GetFileUrlWithQuery(
           gpu_test_dir_.AppendASCII("webgl.html"),
           "query=WEBGL_lose_context"));
 

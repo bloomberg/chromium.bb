@@ -85,7 +85,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new content::ShellBrowserContext);
+  browser_context_.reset(new content::ShellBrowserContext(false));
 
   // A ViewsDelegate is required.
   if (!views::ViewsDelegate::views_delegate)

@@ -289,18 +289,12 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
 
-  content::WindowedNotificationObserver auth_observer(
-      chrome::NOTIFICATION_AUTH_NEEDED,
-      content::NotificationService::AllSources());
-
   browser->OpenURL(OpenURLParams(
       url, Referrer(), disposition, content::PAGE_TRANSITION_TYPED, false));
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
     tab_added_observer.Wait();
-  if (browser_test_flags & BROWSER_TEST_WAIT_FOR_AUTH)
-    auth_observer.Wait();
   if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
     // Some other flag caused the wait prior to this.
     return;
@@ -367,17 +361,6 @@ FilePath GetTestFilePath(const FilePath& dir, const FilePath& file) {
 
 GURL GetTestUrl(const FilePath& dir, const FilePath& file) {
   return net::FilePathToFileURL(GetTestFilePath(dir, file));
-}
-
-GURL GetFileUrlWithQuery(const FilePath& path,
-                         const std::string& query_string) {
-  GURL url = net::FilePathToFileURL(path);
-  if (!query_string.empty()) {
-    GURL::Replacements replacements;
-    replacements.SetQueryStr(query_string);
-    return url.ReplaceComponents(replacements);
-  }
-  return url;
 }
 
 AppModalDialog* WaitForAppModalDialog() {

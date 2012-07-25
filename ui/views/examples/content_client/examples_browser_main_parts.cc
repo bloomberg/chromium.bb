@@ -51,7 +51,7 @@ ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
 }
 
 void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new content::ShellBrowserContext);
+  browser_context_.reset(new content::ShellBrowserContext(false));
 
 #if defined(USE_AURA)
   aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);

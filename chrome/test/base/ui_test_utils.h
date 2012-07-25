@@ -75,7 +75,6 @@ enum BrowserTestWaitFlags {
   BROWSER_TEST_WAIT_FOR_BROWSER = 1 << 0,     // Wait for a new browser.
   BROWSER_TEST_WAIT_FOR_TAB = 1 << 1,         // Wait for a new tab.
   BROWSER_TEST_WAIT_FOR_NAVIGATION = 1 << 2,  // Wait for navigation to finish.
-  BROWSER_TEST_WAIT_FOR_AUTH = 1 << 3,        // Wait for auth prompt.
 
   BROWSER_TEST_MASK = BROWSER_TEST_WAIT_FOR_BROWSER |
                       BROWSER_TEST_WAIT_FOR_TAB |
@@ -149,9 +148,6 @@ FilePath GetTestFilePath(const FilePath& dir, const FilePath& file);
 // test_root_directory/dir/<file>
 // The returned path is GURL format.
 GURL GetTestUrl(const FilePath& dir, const FilePath& file);
-
-// Generate a URL for a file path including a query string.
-GURL GetFileUrlWithQuery(const FilePath& path, const std::string& query_string);
 
 // Blocks until an application modal dialog is showns and returns it.
 AppModalDialog* WaitForAppModalDialog();

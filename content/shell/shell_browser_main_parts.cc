@@ -65,7 +65,8 @@ void ShellBrowserMainParts::PreEarlyInitialization() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new ShellBrowserContext);
+  browser_context_.reset(new ShellBrowserContext(false));
+  off_the_record_browser_context_.reset(new ShellBrowserContext(true));
 
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
@@ -107,6 +108,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   if (devtools_delegate_)
     devtools_delegate_->Stop();
   browser_context_.reset();
+  off_the_record_browser_context_.reset();
 }
 
 }  // namespace

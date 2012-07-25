@@ -46,6 +46,9 @@ class MessageLoopRunner;
 class RenderViewHost;
 class WebContents;
 
+// Generate a URL for a file path including a query string.
+GURL GetFileUrlWithQuery(const FilePath& path, const std::string& query_string);
+
 // Simulates clicking at the center of the given tab asynchronously.
 void SimulateMouseClick(WebContents* web_contents);
 

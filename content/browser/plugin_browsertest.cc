@@ -39,13 +39,10 @@ class PluginTest : public ContentBrowserTest {
     // Some NPAPI tests schedule garbage collection to force object tear-down.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose_gc");
 
+#if defined(OS_WIN)
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
-    if (strcmp(test_info->name(), "PrivateEnabled") == 0) {
-      command_line->AppendSwitch(switches::kOffTheRecord);
-    }
-#if defined(OS_WIN)
-    else if (strcmp(test_info->name(), "MediaPlayerNew") == 0) {
+    if (strcmp(test_info->name(), "MediaPlayerNew") == 0) {
       // The installer adds our process names to the registry key below.  Since
       // the installer might not have run on this machine, add it manually.
       base::win::RegKey regkey;
@@ -78,12 +75,12 @@ class PluginTest : public ContentBrowserTest {
         BrowserThread::IO, FROM_HERE, base::Bind(&SetUrlRequestMock, path));
   }
 
-  void LoadAndWait(const GURL& url) {
+  static void LoadAndWaitInWindow(Shell* window, const GURL& url) {
     string16 expected_title(ASCIIToUTF16("OK"));
-    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    TitleWatcher title_watcher(window->web_contents(), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("plugin_not_found"));
-    NavigateToURL(shell(), url);
+    NavigateToURL(window, url);
     string16 title = title_watcher.WaitAndGetTitle();
     if (title == ASCIIToUTF16("plugin_not_found")) {
       const testing::TestInfo* const test_info =
@@ -93,6 +90,10 @@ class PluginTest : public ContentBrowserTest {
     } else {
       EXPECT_EQ(expected_title, title);
     }
+  }
+
+  void LoadAndWait(const GURL& url) {
+    LoadAndWaitInWindow(shell(), url);
   }
 
   GURL GetURL(const char* filename) {
@@ -333,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, PluginThreadAsyncCall) {
 IN_PROC_BROWSER_TEST_F(PluginTest, PrivateEnabled) {
   GURL url = GetURL("private.html");
   url = GURL(url.spec() + "?private");
-  LoadAndWait(url);
+  LoadAndWaitInWindow(CreateOffTheRecordBrowser(), url);
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
