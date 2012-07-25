@@ -103,6 +103,10 @@ class ResourceCreationAPI {
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) = 0;
+  virtual PP_Resource CreateImageDataNaCl(PP_Instance instance,
+                                          PP_ImageDataFormat format,
+                                          const PP_Size& size,
+                                          PP_Bool init_to_zero) = 0;
   virtual PP_Resource CreateGraphics2D(PP_Instance instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) = 0;

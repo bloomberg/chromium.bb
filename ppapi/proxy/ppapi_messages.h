@@ -909,6 +909,14 @@ IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,
                            ppapi::HostResource /* result_resource */,
                            std::string /* image_data_desc */,
                            ppapi::proxy::ImageHandle /* result */)
+IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_CreateNaCl,
+                           PP_Instance /* instance */,
+                           int32 /* format */,
+                           PP_Size /* size */,
+                           PP_Bool /* init_to_zero */,
+                           ppapi::HostResource /* result_resource */,
+                           std::string /* image_data_desc */,
+                           base::SharedMemoryHandle /* result */)
 
 // PPB_Instance.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetWindowObject,

@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -29,21 +30,30 @@
 namespace ppapi {
 namespace proxy {
 
+#if !defined(OS_NACL)
 ImageData::ImageData(const HostResource& resource,
                      const PP_ImageDataDesc& desc,
                      ImageHandle handle)
     : Resource(OBJECT_IS_PROXY, resource),
       desc_(desc) {
-#if defined(OS_NACL)
-  // TODO(brettw) implement NaCl ImageData. This will involve just
-  // memory-mapping the handle as raw memory rather than as a transport DIB.
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
 #else
   transport_dib_.reset(TransportDIB::Map(handle));
-#endif
+#endif  // defined(OS_WIN)
 }
+#else  // !defined(OS_NACL)
+
+ImageData::ImageData(const HostResource& resource,
+                     const PP_ImageDataDesc& desc,
+                     const base::SharedMemoryHandle& handle)
+    : Resource(OBJECT_IS_PROXY, resource),
+      desc_(desc),
+      shm_(handle, false /* read_only */),
+      size_(desc.size.width * desc.size.height * 4),
+      map_count_(0) {
+}
+#endif  // !defined(OS_NACL)
 
 ImageData::~ImageData() {
 }
@@ -59,7 +69,9 @@ PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
 
 void* ImageData::Map() {
 #if defined(OS_NACL)
-  NOTIMPLEMENTED();
+  if (map_count_++ == 0)
+    shm_.Map(size_);
+  return shm_.memory();
 #else
   if (!mapped_canvas_.get()) {
     mapped_canvas_.reset(transport_dib_->GetPlatformCanvas(desc_.size.width,
@@ -77,7 +89,8 @@ void* ImageData::Map() {
 
 void ImageData::Unmap() {
 #if defined(OS_NACL)
-  NOTIMPLEMENTED();
+  if (--map_count_ == 0)
+    shm_.Unmap();
 #else
   // TODO(brettw) have a way to unmap a TransportDIB. Currently this isn't
   // possible since deleting the TransportDIB also frees all the handles.
@@ -100,6 +113,15 @@ skia::PlatformCanvas* ImageData::GetPlatformCanvas() {
 #endif
 }
 
+SkCanvas* ImageData::GetCanvas() {
+#if defined(OS_NACL)
+  return NULL;  // No canvas in NaCl.
+#else
+  return mapped_canvas_.get();
+#endif
+}
+
+#if !defined(OS_NACL)
 // static
 ImageHandle ImageData::NullHandle() {
 #if defined(OS_WIN)
@@ -120,6 +142,7 @@ ImageHandle ImageData::HandleFromInt(int32_t i) {
     return static_cast<ImageHandle>(i);
 #endif
 }
+#endif  // !defined(OS_NACL)
 
 PPB_ImageData_Proxy::PPB_ImageData_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher) {
@@ -139,10 +162,17 @@ PP_Resource PPB_ImageData_Proxy::CreateProxyResource(PP_Instance instance,
 
   HostResource result;
   std::string image_data_desc;
+#if defined(OS_NACL)
+  base::SharedMemoryHandle image_handle = base::SharedMemory::NULLHandle();
+  dispatcher->Send(new PpapiHostMsg_PPBImageData_CreateNaCl(
+      kApiID, instance, format, size, init_to_zero,
+      &result, &image_data_desc, &image_handle));
+#else
   ImageHandle image_handle = ImageData::NullHandle();
   dispatcher->Send(new PpapiHostMsg_PPBImageData_Create(
       kApiID, instance, format, size, init_to_zero,
       &result, &image_data_desc, &image_handle));
+#endif
 
   if (result.is_null() || image_data_desc.size() != sizeof(PP_ImageDataDesc))
     return 0;
@@ -158,6 +188,8 @@ bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_ImageData_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_Create, OnHostMsgCreate)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_CreateNaCl,
+                        OnHostMsgCreateNaCl)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -170,6 +202,11 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
                                           HostResource* result,
                                           std::string* image_data_desc,
                                           ImageHandle* result_image_handle) {
+#if defined(OS_NACL)
+  // This message should never be received in untrusted code. To minimize the
+  // size of the IRT, we just don't handle it.
+  return;
+#else
   *result_image_handle = ImageData::NullHandle();
 
   thunk::EnterResourceCreation enter(instance);
@@ -200,8 +237,67 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
     *result_image_handle = dispatcher()->ShareHandleWithRemote(ih, false);
 #else
     *result_image_handle = ImageData::HandleFromInt(handle);
-#endif
+#endif  // defined(OS_WIN)
   }
+#endif  // defined(OS_NACL)
+}
+
+void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
+    PP_Instance instance,
+    int32_t format,
+    const PP_Size& size,
+    PP_Bool init_to_zero,
+    HostResource* result,
+    std::string* image_data_desc,
+    base::SharedMemoryHandle* result_image_handle) {
+#if defined(OS_NACL)
+  // This message should never be received in untrusted code. To minimize the
+  // size of the IRT, we just don't handle it.
+  return;
+#else
+  *result_image_handle = base::SharedMemory::NULLHandle();
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+
+  thunk::EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return;
+
+  PP_Resource resource = enter.functions()->CreateImageDataNaCl(
+      instance, static_cast<PP_ImageDataFormat>(format), size, init_to_zero);
+  if (!resource)
+    return;
+  result->SetHostResource(instance, resource);
+
+  // Get the description, it's just serialized as a string.
+  thunk::EnterResourceNoLock<thunk::PPB_ImageData_API> enter_resource(
+      resource, false);
+  if (enter_resource.failed())
+    return;
+  PP_ImageDataDesc desc;
+  if (enter_resource.object()->Describe(&desc) == PP_TRUE) {
+    image_data_desc->resize(sizeof(PP_ImageDataDesc));
+    memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
+  }
+  int local_fd;
+  uint32_t byte_count;
+  if (enter_resource.object()->GetSharedMemory(&local_fd, &byte_count) != PP_OK)
+    return;
+
+  // TODO(dmichael): Change trusted interface to return a PP_FileHandle, those
+  // casts are ugly.
+  base::PlatformFile platform_file =
+#if defined(OS_WIN)
+      reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd));
+#elif defined(OS_POSIX)
+      local_fd;
+#else
+  #error Not implemented.
+#endif  // defined(OS_WIN)
+  *result_image_handle =
+      dispatcher->ShareHandleWithRemote(platform_file, false);
+#endif  // defined(OS_NACL)
 }
 
 }  // namespace proxy

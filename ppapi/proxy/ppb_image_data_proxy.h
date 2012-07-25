@@ -6,6 +6,7 @@
 #define PPAPI_PPB_IMAGE_DATA_PROXY_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/shared_memory.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -32,9 +33,19 @@ class ImageData : public ppapi::Resource,
                   public ppapi::thunk::PPB_ImageData_API,
                   public ppapi::PPB_ImageData_Shared {
  public:
+#if !defined(OS_NACL)
   ImageData(const ppapi::HostResource& resource,
             const PP_ImageDataDesc& desc,
             ImageHandle handle);
+#else
+  // In NaCl, we only allow creating an ImageData using a SharedMemoryHandle.
+  // ImageHandle can differ by host platform. We need something that is
+  // more consistent across platforms for NaCl, so that we can communicate to
+  // the host OS in a consistent way.
+  ImageData(const ppapi::HostResource& resource,
+            const PP_ImageDataDesc& desc,
+            const base::SharedMemoryHandle& handle);
+#endif
   virtual ~ImageData();
 
   // Resource overrides.
@@ -46,17 +57,22 @@ class ImageData : public ppapi::Resource,
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
   virtual skia::PlatformCanvas* GetPlatformCanvas() OVERRIDE;
+  virtual SkCanvas* GetCanvas() OVERRIDE;
 
   const PP_ImageDataDesc& desc() const { return desc_; }
 
+#if !defined(OS_NACL)
   static ImageHandle NullHandle();
   static ImageHandle HandleFromInt(int32_t i);
+#endif
 
  private:
   PP_ImageDataDesc desc_;
 
 #if defined(OS_NACL)
-  // TODO(brettw) implement this (see .cc file).
+  base::SharedMemory shm_;
+  uint32 size_;
+  int map_count_;
 #else
   scoped_ptr<TransportDIB> transport_dib_;
 
@@ -83,7 +99,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
   static const ApiID kApiID = API_ID_PPB_IMAGE_DATA;
 
  private:
-  // Message handler.
+  // Message handlers.
   void OnHostMsgCreate(PP_Instance instance,
                        int32_t format,
                        const PP_Size& size,
@@ -91,6 +107,13 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
                        HostResource* result,
                        std::string* image_data_desc,
                        ImageHandle* result_image_handle);
+  void OnHostMsgCreateNaCl(PP_Instance instance,
+                           int32_t format,
+                           const PP_Size& size,
+                           PP_Bool init_to_zero,
+                           HostResource* result,
+                           std::string* image_data_desc,
+                           base::SharedMemoryHandle* result_image_handle);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_ImageData_Proxy);
 };

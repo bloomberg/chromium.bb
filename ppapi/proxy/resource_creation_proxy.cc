@@ -189,6 +189,17 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
                                                   init_to_zero);
 }
 
+PP_Resource ResourceCreationProxy::CreateImageDataNaCl(
+    PP_Instance instance,
+    PP_ImageDataFormat format,
+    const PP_Size& size,
+    PP_Bool init_to_zero) {
+  // These really only are different on the host side. On the plugin side, we
+  // always request a "platform" ImageData if we're trusted, or a "NaCl" one
+  // if we're untrusted (see PPB_ImageData_Proxy::CreateProxyResource()).
+  return CreateImageData(instance, format, size, init_to_zero);
+}
+
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
                                                     const PP_Size& size,
                                                     PP_Bool is_always_opaque) {

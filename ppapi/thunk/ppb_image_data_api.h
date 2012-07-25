@@ -12,6 +12,8 @@ namespace skia {
 class PlatformCanvas;
 }
 
+class SkCanvas;
+
 namespace ppapi {
 namespace thunk {
 
@@ -26,9 +28,24 @@ class PPB_ImageData_API {
   // Trusted inteface.
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) = 0;
 
-  // The canvas will be NULL if the image is not mapped and under Native
-  // Client (which does not have skia).
+  // Get the platform-specific canvas that backs this ImageData, if there is
+  // one.
+  // The canvas will be NULL:
+  //   * If the image is not mapped.
+  //   * Within untrusted code (which does not have skia).
+  //   * If the ImageData is not backed by a platform-specific image buffer.
+  //     This will be the case for ImageDatas created for use in NaCl.
+  // For this last reason, you should prefer GetCanvas any time you don't need
+  // a platform-specific canvas (e.g., for use with platform-specific APIs).
+  // Anything that relies on having a PlatformCanvas will not work for ImageDat
+  // objects created from NaCl.
   virtual skia::PlatformCanvas* GetPlatformCanvas() = 0;
+
+  // Get the canvas that backs this ImageData, if there is one.
+  // The canvas will be NULL:
+  //   * If the image is not mapped.
+  //   * Within untrusted code (which does not have skia).
+  virtual SkCanvas* GetCanvas() = 0;
 };
 
 }  // namespace thunk

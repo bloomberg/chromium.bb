@@ -853,6 +853,10 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   // store when seeing if we cover the given paint bounds, since the backing
   // store could be smaller than the declared plugin area.
   PPB_ImageData_Impl* image_data = GetBoundGraphics2D()->image_data();
+  // ImageDatas created by NaCl don't have a PlatformImage, so can't be
+  // optimized this way.
+  if (!image_data->PlatformImage())
+    return false;
   gfx::Rect plugin_backing_store_rect(
       PP_ToGfxPoint(view_data_.rect.point),
       gfx::Size(image_data->width(), image_data->height()));
@@ -863,7 +867,7 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   if (!plugin_paint_rect.Contains(paint_bounds))
     return false;
 
-  *dib = image_data->platform_image()->GetTransportDIB();
+  *dib = image_data->PlatformImage()->GetTransportDIB();
   *location = plugin_backing_store_rect;
   *clip = clip_page;
   return true;

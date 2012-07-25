@@ -66,6 +66,10 @@ class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) OVERRIDE;
+  virtual PP_Resource CreateImageDataNaCl(PP_Instance instance,
+                                          PP_ImageDataFormat format,
+                                          const PP_Size& size,
+                                          PP_Bool init_to_zero) OVERRIDE;
   virtual PP_Resource CreateIMEInputEvent(PP_Instance instance,
                                           PP_InputEvent_Type type,
                                           PP_TimeTicks time_stamp,

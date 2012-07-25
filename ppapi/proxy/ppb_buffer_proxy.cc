@@ -29,7 +29,6 @@ Buffer::Buffer(const HostResource& resource,
     : Resource(OBJECT_IS_PROXY, resource),
       shm_(shm_handle, false),
       size_(size),
-      mapped_data_(NULL),
       map_count_(0) {
 }
 
@@ -47,7 +46,7 @@ PP_Bool Buffer::Describe(uint32_t* size_in_bytes) {
 }
 
 PP_Bool Buffer::IsMapped() {
-  return PP_FromBool(!!mapped_data_);
+  return PP_FromBool(map_count_ > 0);
 }
 
 void* Buffer::Map() {

@@ -170,7 +170,9 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
   if (!content::GetHostGlobals()->GetInstance(instance_id))
     return 0;
   scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
-      new webkit::ppapi::PPB_ImageData_Impl(instance_id));
+      new webkit::ppapi::PPB_ImageData_Impl(
+          instance_id,
+          webkit::ppapi::PPB_ImageData_Impl::PLATFORM));
   if (!image_data->Init(
           webkit::ppapi::PPB_ImageData_Impl::GetNativeImageDataFormat(),
           res_bitmap->width(), res_bitmap->height(), false)) {

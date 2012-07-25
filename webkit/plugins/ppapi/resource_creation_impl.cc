@@ -174,7 +174,15 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance instance,
                                                   PP_ImageDataFormat format,
                                                   const PP_Size& size,
                                                   PP_Bool init_to_zero) {
-  return PPB_ImageData_Impl::Create(instance, format, size, init_to_zero);
+  return PPB_ImageData_Impl::CreatePlatform(instance, format, size,
+                                            init_to_zero);
+}
+
+PP_Resource ResourceCreationImpl::CreateImageDataNaCl(PP_Instance instance,
+                                                      PP_ImageDataFormat format,
+                                                      const PP_Size& size,
+                                                      PP_Bool init_to_zero) {
+  return PPB_ImageData_Impl::CreateNaCl(instance, format, size, init_to_zero);
 }
 
 PP_Resource ResourceCreationImpl::CreateIMEInputEvent(

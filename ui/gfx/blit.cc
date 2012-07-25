@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,30 +126,27 @@ void BlitCanvasToCanvas(SkCanvas *dst_canvas,
   skia::EndPlatformPaint(dst_canvas);
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-
-void ScrollCanvas(SkCanvas* canvas,
-                  const gfx::Rect& clip,
-                  const gfx::Point& amount) {
-  DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.
-  DCHECK(skia::SupportsPlatformPaint(canvas));
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-  HDC hdc = scoped_platform_paint.GetPlatformSurface();
-
-  RECT damaged_rect;
-  RECT r = clip.ToRECT();
-  ScrollDC(hdc, amount.x(), amount.y(), NULL, &r, NULL, &damaged_rect);
-}
-
-#elif defined(OS_POSIX) || defined(USE_AURA)
-// Cairo has no nice scroll function so we do our own. On Mac it's possible to
-// use platform scroll code, but it's complex so we just use the same path
-// here. Either way it will be software-only, so it shouldn't matter much.
-
 void ScrollCanvas(SkCanvas* canvas,
                   const gfx::Rect& in_clip,
                   const gfx::Point& amount) {
   DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.
+#if defined(OS_WIN)
+  // If we have a PlatformCanvas, we should use ScrollDC. Otherwise, fall
+  // through to the software implementation.
+  if (skia::SupportsPlatformPaint(canvas)) {
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas);
+    HDC hdc = scoped_platform_paint.GetPlatformSurface();
+
+    RECT damaged_rect;
+    RECT r = in_clip.ToRECT();
+    ScrollDC(hdc, amount.x(), amount.y(), NULL, &r, NULL, &damaged_rect);
+    return;
+  }
+#endif  // defined(OS_WIN)
+  // For non-windows, always do scrolling in software.
+  // Cairo has no nice scroll function so we do our own. On Mac it's possible to
+  // use platform scroll code, but it's complex so we just use the same path
+  // here. Either way it will be software-only, so it shouldn't matter much.
   SkBitmap& bitmap = const_cast<SkBitmap&>(
       skia::GetTopDevice(*canvas)->accessBitmap(true));
   SkAutoLockPixels lock(bitmap);
@@ -195,7 +192,5 @@ void ScrollCanvas(SkCanvas* canvas,
     }
   }
 }
-
-#endif
 
 }  // namespace gfx
