@@ -46,6 +46,9 @@ net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
   net::SSLClientSocketContext context;
   context.cert_verifier =
       request_context_getter_->GetURLRequestContext()->cert_verifier();
+  context.transport_security_state = request_context_getter_->
+      GetURLRequestContext()->transport_security_state();
+  DCHECK(context.transport_security_state);
   // TODO(rkn): context.server_bound_cert_service is NULL because the
   // ServerBoundCertService class is not thread safe.
   return client_socket_factory_->CreateSSLClientSocket(
