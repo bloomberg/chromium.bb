@@ -107,18 +107,25 @@ function swapDomNodes(a, b) {
 }
 
 /**
- * Disables text selection and dragging.
+ * Disables text selection and dragging, with optional whitelist callbacks.
+ * @param {function(Event):boolean=} opt_allowSelectStart Unless this function
+ *    is defined and returns true, the onselectionstart event will be
+ *    surpressed.
+ * @param {function(Event):boolean=} opt_allowDragStart Unless this function
+ *    is defined and returns true, the ondragstart event will be surpressed.
  */
-function disableTextSelectAndDrag() {
+function disableTextSelectAndDrag(opt_allowSelectStart, opt_allowDragStart) {
   // Disable text selection.
   document.onselectstart = function(e) {
-    e.preventDefault();
-  }
+    if (!(opt_allowSelectStart && opt_allowSelectStart.call(this, e)))
+      e.preventDefault();
+  };
 
   // Disable dragging.
   document.ondragstart = function(e) {
-    e.preventDefault();
-  }
+    if (!(opt_allowDragStart && opt_allowDragStart.call(this, e)))
+      e.preventDefault();
+  };
 }
 
 /**
