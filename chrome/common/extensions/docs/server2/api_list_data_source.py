@@ -25,9 +25,11 @@ class APIListDataSource(object):
     for i, template_name in enumerate(template_names):
       if model.UnixName(template_name) in api_names:
         if template_name.startswith('experimental'):
-          experimental_apis.append(template_name.replace('_', '.'))
+          experimental_apis.append({ 'name': template_name.replace('_', '.') })
         else:
-          chrome_apis.append(template_name.replace('_', '.'))
+          chrome_apis.append({ 'name': template_name.replace('_', '.') })
+    chrome_apis[-1]['last'] = True
+    experimental_apis[-1]['last'] = True
     return {
       'chrome': sorted(chrome_apis),
       'experimental': sorted(experimental_apis)

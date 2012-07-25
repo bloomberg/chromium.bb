@@ -5,6 +5,8 @@
 import json
 import re
 
+DEFAULT_ICON_PATH = '/static/images/sample-default-icon.png'
+
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
   """
@@ -24,7 +26,11 @@ class SamplesDataSource(object):
     manifest_path = path + '/manifest.json'
     manifest = self._fetcher.Read([manifest_path]).Get()[manifest_path]
     manifest_json = json.loads(manifest)
-    return (manifest_json.get('name'), manifest_json.get('description'))
+    return {
+      'name': manifest_json.get('name'),
+      'description': manifest_json.get('description'),
+      'icon': manifest_json.get('icons', {}).get('128', None)
+    }
 
   def _MakeSamplesList(self, files):
     samples_list = []
@@ -55,14 +61,19 @@ class SamplesDataSource(object):
             'name': item,
             'link': self._MakeApiLink('method', item)
           })
-      name, description = self._GetDataFromManifest(sample_path)
-      samples_list.append({
-        'name': name,
-        'description': description,
-        'path': sample_path.split('/', 1)[1],
+      samples_info = self._GetDataFromManifest(sample_path)
+      sample_base_path = sample_path.split('/', 1)[1]
+      if samples_info['icon'] is None:
+        icon_path = DEFAULT_ICON_PATH
+      else:
+        icon_path = sample_base_path + '/' + samples_info['icon']
+      samples_info.update({
+        'icon': icon_path,
+        'path': sample_base_path,
         'files': [f.replace(sample_path + '/', '') for f in sample_files],
         'api_calls': api_calls
       })
+      samples_list.append(samples_info)
     return samples_list
 
   def __getitem__(self, key):
