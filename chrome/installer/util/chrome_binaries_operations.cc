@@ -19,22 +19,14 @@ void ChromeBinariesOperations::ReadOptions(
     const MasterPreferences& prefs,
     std::set<std::wstring>* options) const {
   DCHECK(options);
-
-  bool pref_value;
-
-  if (prefs.GetBool(master_preferences::kMultiInstall, &pref_value) &&
-      pref_value) {
-    options->insert(kOptionMultiInstall);
-  }
+  options->insert(kOptionMultiInstall);
 }
 
 void ChromeBinariesOperations::ReadOptions(
     const CommandLine& uninstall_command,
     std::set<std::wstring>* options) const {
   DCHECK(options);
-
-  if (uninstall_command.HasSwitch(switches::kMultiInstall))
-    options->insert(kOptionMultiInstall);
+  options->insert(kOptionMultiInstall);
 }
 
 void ChromeBinariesOperations::AddKeyFiles(
@@ -54,11 +46,11 @@ void ChromeBinariesOperations::AppendProductFlags(
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
-  if (options.find(kOptionMultiInstall) != options.end()) {
-    // Add --multi-install if it isn't already there.
-    if (!cmd_line->HasSwitch(switches::kMultiInstall))
-      cmd_line->AppendSwitch(switches::kMultiInstall);
-  }
+  DCHECK(options.find(kOptionMultiInstall) != options.end());
+
+  // Add --multi-install if it isn't already there.
+  if (!cmd_line->HasSwitch(switches::kMultiInstall))
+    cmd_line->AppendSwitch(switches::kMultiInstall);
 }
 
 void ChromeBinariesOperations::AppendRenameFlags(
@@ -66,11 +58,11 @@ void ChromeBinariesOperations::AppendRenameFlags(
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
+  DCHECK(options.find(kOptionMultiInstall) != options.end());
+
   // Add --multi-install if it isn't already there.
-  if (options.find(kOptionMultiInstall) != options.end() &&
-      !cmd_line->HasSwitch(switches::kMultiInstall)) {
+  if (!cmd_line->HasSwitch(switches::kMultiInstall))
     cmd_line->AppendSwitch(switches::kMultiInstall);
-  }
 }
 
 bool ChromeBinariesOperations::SetChannelFlags(

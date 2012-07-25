@@ -382,6 +382,8 @@ void AddEulaAcceptedWorkItems(const InstallationState& original_state,
     DWORD eula_accepted;
     const Products& products = installer_state.products();
     for (size_t i = 0, count = products.size(); i != count; ++i) {
+      if (products[i]->is_chrome_binaries())
+        continue;
       DWORD dword_value = 0;
       BrowserDistribution::Type this_type =
           products[i]->distribution()->GetType();
@@ -636,35 +638,18 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
             google_update::kRegCriticalVersionField);
       }
 
-      // Adding this registry entry for all products is overkill.
-      // However, as it stands, we don't have a way to know which distribution
-      // will check the key and run the command, so we add it for all.  The
-      // first to run it will perform the operation and clean up the other
+      // Adding this registry entry for all products (but the binaries) is
+      // overkill. However, as it stands, we don't have a way to know which
+      // product will check the key and run the command, so we add it for all.
+      // The first to run it will perform the operation and clean up the other
       // values.
-      CommandLine product_rename_cmd(rename);
-      products[i]->AppendRenameFlags(&product_rename_cmd);
-      in_use_update_work_items->AddSetRegValueWorkItem(
-          root, version_key, google_update::kRegRenameCmdField,
-          product_rename_cmd.GetCommandLineString(), true);
-    }
-
-    if (current_version != NULL && installer_state.is_multi_install()) {
-      BrowserDistribution* dist =
-          installer_state.multi_package_binaries_distribution();
-      version_key = dist->GetVersionKey();
-      in_use_update_work_items->AddSetRegValueWorkItem(
-          root, version_key, google_update::kRegOldVersionField,
-          ASCIIToWide(current_version->GetString()), true);
-      if (critical_version.IsValid()) {
+      if (dist->GetType() != BrowserDistribution::CHROME_BINARIES) {
+        CommandLine product_rename_cmd(rename);
+        products[i]->AppendRenameFlags(&product_rename_cmd);
         in_use_update_work_items->AddSetRegValueWorkItem(
-            root, version_key, google_update::kRegCriticalVersionField,
-            ASCIIToWide(critical_version.GetString()), true);
-      } else {
-        in_use_update_work_items->AddDeleteRegValueWorkItem(
-            root, version_key, google_update::kRegCriticalVersionField);
+            root, version_key, google_update::kRegRenameCmdField,
+            product_rename_cmd.GetCommandLineString(), true);
       }
-      // TODO(tommi): We should move the rename command here. We also need to
-      // update upgrade_utils::SwapNewChromeExeIfPresent.
     }
 
     if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
@@ -717,14 +702,11 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       // Make a best-effort attempt to delete any shortcuts left over from
       // previous non-MSI installations for the same type of install (system or
       // per user).
-      AddDeleteUninstallShortcutsForMSIWorkItems(installer_state, *product,
-                                                 temp_path,
-                                                 post_install_task_list);
-    }
-    if (installer_state.is_multi_install()) {
-      AddSetMsiMarkerWorkItem(installer_state,
-          installer_state.multi_package_binaries_distribution(), true,
-          post_install_task_list);
+      if (product->ShouldCreateUninstallEntry()) {
+        AddDeleteUninstallShortcutsForMSIWorkItems(installer_state, *product,
+                                                   temp_path,
+                                                   post_install_task_list);
+      }
     }
   }
 

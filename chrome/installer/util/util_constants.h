@@ -70,17 +70,18 @@ enum InstallStatus {
   CONFLICTING_CHANNEL_EXISTS,  // 39. A multi-install product on a different
                                // update channel exists.
   READY_MODE_REQUIRES_CHROME,  // 40. Chrome Frame in ready-mode requires Chrome
-  REQUIRES_MULTI_INSTALL,      // 41. --multi-install was missing from the
+  APP_HOST_REQUIRES_MULTI_INSTALL,  // 41. --multi-install was missing from the
                                // command line.
   APPLY_DIFF_PATCH_FAILED,     // 42. Failed to apply a diff patch.
   INCONSISTENT_UPDATE_POLICY,  // 43. Inconsistent update policy GP settings.
+  APP_HOST_REQUIRES_USER_LEVEL,  // 44. --system-level is forbidden.
+  APP_HOST_REQUIRES_BINARIES,  // 45. No Chrome binaries at either level.
+  // Friendly reminder: note the COMPILE_ASSERT below.
 };
 
 
-// If the following compile assert fires it means that the InstallStatus
-// enumeration changed which will break the contract between the old
-// chrome installed and the new setup.exe that is trying to upgrade.
-COMPILE_ASSERT(installer::INCONSISTENT_UPDATE_POLICY == 43,
+// Existing InstallStatus values must not change.  Always add to the end.
+COMPILE_ASSERT(installer::APP_HOST_REQUIRES_BINARIES == 45,
                dont_change_enum);
 
 // The type of an update archive.

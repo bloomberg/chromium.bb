@@ -217,27 +217,13 @@ installer::InstallStatus RenameChromeExecutables(
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
       ->set_ignore_failure(true);
 
-  // Collect the set of distributions we need to update, which is the
-  // multi-install binaries (if this is a multi-install operation) and all
-  // products we're operating on.
-  BrowserDistribution* dists[BrowserDistribution::NUM_TYPES];
-  int num_dists = 0;
-  // First, add the multi-install binaries, if relevant.
-  if (installer_state->is_multi_install())
-    dists[num_dists++] = installer_state->multi_package_binaries_distribution();
-  // Next, add all products we're operating on.  std::transform can handily do
-  // this for us, but this is discouraged as being too tricky.
-  const Products& products = installer_state->products();
-  for (Products::size_type i = 0; i < products.size(); ++i) {
-    dists[num_dists++] = products[i]->distribution();
-  }
-
   // Add work items to delete the "opv", "cpv", and "cmd" values from all
-  // distributions.
+  // products we're operating on (which including the multi-install binaries).
+  const Products& products = installer_state->products();
   HKEY reg_root = installer_state->root_key();
   string16 version_key;
-  for (int i = 0; i < num_dists; ++i) {
-    version_key = dists[i]->GetVersionKey();
+  for (size_t i = 0; i < products.size(); ++i) {
+    version_key = products[i]->distribution()->GetVersionKey();
     install_list->AddDeleteRegValueWorkItem(
         reg_root, version_key, google_update::kRegOldVersionField);
     install_list->AddDeleteRegValueWorkItem(
@@ -383,14 +369,23 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
             original_state.GetProductState(
                 true,  // system
                 BrowserDistribution::CHROME_BINARIES)) {
+          VLOG(1) << "Installing/updating Application Host without binaries.";
           return true;
         } else {
+          // Somehow the binaries were present when the quick-enable app host
+          // command was run, but now they appear to be missing.
+          // TODO(erikwright): should the binaries be implicitly added?
+          LOG(ERROR) << "Cannot install Application Host without binaries.";
+          *status = installer::APP_HOST_REQUIRES_BINARIES;
+          installer_state->WriteInstallerResult(*status, 0, NULL);
           return false;
         }
       } else {
         // Every other scenario requires the binaries to be installed/updated
-        // simultaneous to the main product.
-        return false;
+        // along with the main product.  This will only be hit if
+        // --multi-install is given with no products.  See
+        // CheckPreInstallConditions for handling of this case.
+        return true;
       }
     }
 
@@ -417,10 +412,10 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
           VLOG(1) << "Performing initial install of Chrome Frame ready-mode.";
         }
       }
-    } else if (chrome_state != NULL) {
-      // Chrome Frame is being installed in multi-install mode, and Chrome is
-      // already present. Add Chrome to the set of products (making it
-      // multi-install in the process) so that it is updated, too.
+    } else if (chrome_state) {
+      // A product other than Chrome is being installed in multi-install mode,
+      // and Chrome is already present. Add Chrome to the set of products
+      // (making it multi-install in the process) so that it is updated, too.
       scoped_ptr<Product> multi_chrome(new Product(
           BrowserDistribution::GetSpecificDistribution(
               BrowserDistribution::CHROME_BROWSER)));
@@ -440,8 +435,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
 
     // Fail if we're installing Chrome Frame when a single-install of it is
     // already installed.
-    // TODO(grt): Add support for migration of Chrome Frame from single- to
-    // multi-install.
     if (chrome_frame && cf_state && !cf_state->is_multi_install()) {
       LOG(ERROR) << "Cannot migrate existing Chrome Frame installation to "
                  << "multi-install.";
@@ -452,13 +445,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
     }
   } else {
     // This is a non-multi installation.
-
-    // It isn't possible to stuff two products into a single-install
-    // InstallerState.  Abort the process here in debug builds just in case
-    // someone finds a way.
-    DCHECK_EQ(1U, products.size());
-    if (products.size() != 1)
-      return false;
 
     // Check for an existing installation of the product.
     const ProductState* product_state = original_state.GetProductState(
@@ -475,25 +461,36 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
         return false;
       }
     }
-
   }
 
   return true;
 }
 
+// Checks app host pre-install conditions, specifically that this is a
+// user-level multi-install.  When the pre-install conditions are not
+// satisfied, the result is written to the registry (via WriteInstallerResult),
+// |status| is set appropriately, and false is returned.
 bool CheckAppHostPreconditions(const InstallationState& original_state,
-                               InstallerState* installer_state) {
-  if (!installer_state->FindProduct(BrowserDistribution::CHROME_APP_HOST))
-    return true;
+                               InstallerState* installer_state,
+                               installer::InstallStatus* status) {
+  if (installer_state->FindProduct(BrowserDistribution::CHROME_APP_HOST)) {
 
-  if (!installer_state->is_multi_install()) {
-    VLOG(1) << "Application Host may only be installed in multi-install mode.";
-    return false;
-  }
+    if (!installer_state->is_multi_install()) {
+      LOG(DFATAL) << "Application Host requires multi install";
+      *status = installer::APP_HOST_REQUIRES_MULTI_INSTALL;
+      // No message string since there is nothing a user can do.
+      installer_state->WriteInstallerResult(*status, 0, NULL);
+      return false;
+    }
 
-  if (installer_state->system_install()) {
-    VLOG(1) << "Application Host may only be installed at user-level.";
-    return false;
+    if (installer_state->system_install()) {
+      LOG(DFATAL) << "Application Host may only be installed at user-level.";
+      *status = installer::APP_HOST_REQUIRES_USER_LEVEL;
+      // No message string since there is nothing a user can do.
+      installer_state->WriteInstallerResult(*status, 0, NULL);
+      return false;
+    }
+
   }
 
   return true;
@@ -511,11 +508,19 @@ bool CheckAppHostPreconditions(const InstallationState& original_state,
 bool CheckPreInstallConditions(const InstallationState& original_state,
                                InstallerState* installer_state,
                                installer::InstallStatus* status) {
-  if (!CheckAppHostPreconditions(original_state, installer_state))
+  if (!CheckAppHostPreconditions(original_state, installer_state, status)) {
+    DCHECK_NE(*status, installer::UNKNOWN_STATUS);
     return false;
+  }
 
-  if (!CheckMultiInstallConditions(original_state, installer_state, status))
+  // See what products are already installed in multi mode.  When we do multi
+  // installs, we must upgrade all installations since they share the binaries.
+  AddExistingMultiInstalls(original_state, installer_state);
+
+  if (!CheckMultiInstallConditions(original_state, installer_state, status)) {
+    DCHECK_NE(*status, installer::UNKNOWN_STATUS);
     return false;
+  }
 
   const Products& products = installer_state->products();
   if (products.empty()) {
@@ -528,16 +533,18 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
     return false;
   }
 
-  // See what products are already installed in multi mode.  When we do multi
-  // installs, we must upgrade all installations since they share the binaries.
-  AddExistingMultiInstalls(original_state, installer_state);
-
   if (!installer_state->system_install()) {
     // This is a user-level installation. Make sure that we are not installing
     // on top of an existing system-level installation.
     for (size_t i = 0; i < products.size(); ++i) {
       const Product* product = products[i];
       BrowserDistribution* browser_dist = product->distribution();
+
+      // Skip over the binaries, as it's okay for them to be at both levels
+      // for different products.
+      if (browser_dist->GetType() == BrowserDistribution::CHROME_BINARIES)
+        continue;
+
       const ProductState* user_level_product_state =
           original_state.GetProductState(false, browser_dist->GetType());
       const ProductState* system_level_product_state =
@@ -873,6 +880,9 @@ installer::InstallStatus InstallProducts(
     VLOG(1) << "Installing to " << installer_state->target_path().value();
     install_status = InstallProductsHelper(
         original_state, cmd_line, prefs, *installer_state, &archive_type);
+  } else {
+    // CheckPreInstallConditions must set the status on failure.
+    DCHECK_NE(install_status, installer::UNKNOWN_STATUS);
   }
 
   const Products& products = installer_state->products();
@@ -880,10 +890,6 @@ installer::InstallStatus InstallProducts(
   for (size_t i = 0; i < products.size(); ++i) {
     const Product* product = products[i];
     product->distribution()->UpdateInstallStatus(
-        system_install, archive_type, install_status);
-  }
-  if (installer_state->is_multi_install()) {
-    installer_state->multi_package_binaries_distribution()->UpdateInstallStatus(
         system_install, archive_type, install_status);
   }
 
@@ -1464,7 +1470,13 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     } else if (is_uninstall) {
       // Only show the message box if Chrome Frame was the only product being
       // uninstalled.
-      if (installer_state.products().size() == 1U) {
+      const Products& products = installer_state.products();
+      int num_products = 0;
+      for (size_t i = 0; i < products.size(); ++i) {
+        if (!products[i]->is_chrome_binaries())
+          ++num_products;
+      }
+      if (num_products == 1U) {
         ::MessageBoxW(NULL,
                       installer::GetLocalizedString(
                           IDS_UNINSTALL_COMPLETE_BASE).c_str(),
