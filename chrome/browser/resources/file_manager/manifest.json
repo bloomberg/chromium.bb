@@ -25,6 +25,7 @@
   "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' data: filesystem: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src filesystem: https://*.googleusercontent.com;",
   "app": {
     "launch": {
+      "container": "panel",
       "local_path": "main.html"
     }
   },
