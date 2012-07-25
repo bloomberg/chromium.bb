@@ -108,9 +108,6 @@ void SetContentCommandLineFlags(int max_render_process_count,
   // standalone process.
   parsed_command_line->AppendSwitch(switches::kInProcessGPU);
 
-  // Disable WebGL for now (See http://b/5634125)
-  parsed_command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
-
   // Always use fixed layout and viewport tag.
   parsed_command_line->AppendSwitch(switches::kEnableFixedLayout);
   parsed_command_line->AppendSwitch(switches::kEnableViewport);

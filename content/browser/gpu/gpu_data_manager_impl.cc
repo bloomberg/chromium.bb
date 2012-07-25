@@ -164,8 +164,10 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
 
   uint32 flags = GetGpuFeatureType();
   if ((flags & content::GPU_FEATURE_TYPE_WEBGL)) {
+#if !defined(OS_ANDROID)
     if (!command_line->HasSwitch(switches::kDisableExperimentalWebGL))
       command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
+#endif
     if (!command_line->HasSwitch(switches::kDisablePepper3dForUntrustedUse))
       command_line->AppendSwitch(switches::kDisablePepper3dForUntrustedUse);
   }

@@ -434,7 +434,11 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.experimental_webgl_enabled =
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisable3DAPIs) &&
+#if defined(OS_ANDROID)
+      command_line.HasSwitch(switches::kEnableExperimentalWebGL);
+#else
       !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
+#endif
 
   prefs.flash_3d_enabled =
       GpuProcessHost::gpu_enabled() &&

@@ -332,7 +332,11 @@ Value* GetFeatureStatus() {
       {
           "webgl",
           flags & content::GPU_FEATURE_TYPE_WEBGL,
+#if defined(OS_ANDROID)
+          !command_line.HasSwitch(switches::kEnableExperimentalWebGL),
+#else
           command_line.HasSwitch(switches::kDisableExperimentalWebGL),
+#endif
           "WebGL has been disabled, either via about:flags or command line.",
           false
       },
@@ -577,7 +581,11 @@ void UpdateStats() {
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
       command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+#if defined(OS_ANDROID)
+      !command_line.HasSwitch(switches::kEnableExperimentalWebGL)
+#else
       command_line.HasSwitch(switches::kDisableExperimentalWebGL)
+#endif
   };
 #if defined(OS_WIN)
   const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {

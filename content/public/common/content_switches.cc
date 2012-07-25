@@ -86,8 +86,13 @@ const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 // Disables device orientation events.
 const char kDisableDeviceOrientation[]      = "disable-device-orientation";
 
+#if defined(OS_ANDROID)
+// WebGL is disabled by default on Android.
+const char kEnableExperimentalWebGL[]       = "enable-webgl";
+#else
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
+#endif
 
 // Blacklist the GPU for accelerated compositing.
 const char kBlacklistAcceleratedCompositing[] =
