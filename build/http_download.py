@@ -9,6 +9,7 @@ This module supports username and password with basic authentication.
 """
 
 import base64
+import os
 import os.path
 import sys
 import urllib2
@@ -42,7 +43,14 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
     else:
       auth_code = base64.b64encode(username)
     headers.append(('Authorization', 'Basic ' + auth_code))
-  opener = urllib2.build_opener()
+  if os.environ.get('http_proxy'):
+    proxy = os.environ.get('http_proxy')
+    proxy_handler = urllib2.ProxyHandler({
+        'http': proxy,
+        'https': proxy})
+    opener = urllib2.build_opener(proxy_handler)
+  else:
+    opener = urllib2.build_opener()
   opener.addheaders = headers
   urllib2.install_opener(opener)
   _CreateDirectory(os.path.split(target)[0])
