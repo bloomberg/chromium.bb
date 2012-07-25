@@ -114,7 +114,7 @@ def IsSampleFile(path, input_api):
   return input_api.os_path.dirname(path).startswith(SAMPLES_DIR)
 
 def IsGeneratedDoc(path, input_api):
-  return (input_api.os_path.dirname(path) == DOC_DIR and
+  return (input_api.os_path.dirname(path) in [APPS_DIR, EXTENSIONS_DIR]  and
           path.endswith('.html'))
 
 def DocsGenerated(input_api):
