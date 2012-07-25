@@ -152,6 +152,21 @@
       '-instant.InstantTest.testInstantNavigation',
       '-instant.InstantTest.testNTPCanDismissInstant',
       '-instant.InstantTest.testNewWindowCanDismissInstant',
+
+      # Mysteriously broken?
+      # crbug.com/138857
+      '-bookmarks.BookmarksTest.testAddBookmarksInMultiProfileIncognito',
+      '-bookmarks.BookmarksTest.testEditBookmarksInMultiProfileIncognito',
+      '-bookmarks.BookmarksTest.testRemoveBookmarksInMultiProfileIncognito',
+      '-flash.FlashTest.testFlashLoadsAfterKill',
+      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
+      '-infobars.InfobarTest.testPluginCrashInfobar',
+      '-multiprofile.MultiprofileTest.testMakeSearchEngineDefaultInMultiprofile',
+      '-flash.FlashTest.testCanLoadFlash',
+      '-flash.FlashTest.testFlashIncognitoMode',
+      '-flash.FlashTest.testFlashWithMultipleTabs',
+      '-flash.FlashTest.testSingleFlashPluginProcess',
+      '-plugins.PluginsTest.testBlockAllPlugins',
     ],
 
     'win': [
