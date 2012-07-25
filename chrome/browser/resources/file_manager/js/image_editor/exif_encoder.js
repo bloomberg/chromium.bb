@@ -321,8 +321,11 @@ ExifEncoder.encodeDirectory = function(
   }
 };
 
-// TODO(kaznacheev): Share with ExifParser?
-// TODO(JSDOC)
+/**
+ * @param {{format:number, id:number}} tag EXIF tag object.
+ * @return {number} Width in bytes of the data unit associated with this tag.
+ * TODO(kaznacheev): Share with ExifParser?
+ */
 ExifEncoder.getComponentWidth = function(tag) {
   switch (tag.format) {
     case 1:  // Byte
@@ -342,7 +345,7 @@ ExifEncoder.getComponentWidth = function(tag) {
       return 8;
 
     default:  // ???
-      throw new Error('Unknown tag format 0x' +
+      console.warn('Unknown tag format 0x' +
           Number(tag.id).toString(16) + ': ' + tag.format);
       return 4;
   }
@@ -383,7 +386,15 @@ ExifEncoder.writeValue = function(bw, tag) {
   }
 };
 
-//TODO(JSDOC)
+/**
+ * @param {{Object.<number,Object>}} directory EXIF directory.
+ * @param {number} id Tag id.
+ * @param {number} format Tag format
+ *                        (used in {@link ExifEncoder#getComponentWidth}).
+ * @param {number} componentCount Number of components in this tag.
+ * @return {{id:number, format:number, componentCount:number}}
+ *     Tag found or created.
+ */
 ExifEncoder.findOrCreateTag = function(directory, id, format, componentCount) {
   if (!(id in directory)) {
     directory[id] = {
