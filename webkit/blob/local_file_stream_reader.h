@@ -28,9 +28,6 @@ namespace webkit_blob {
 // handling.
 class BLOB_EXPORT LocalFileStreamReader : public FileStreamReader {
  public:
-  // A convenient method to translate platform file error to net error code.
-  static int PlatformFileErrorToNetError(base::PlatformFileError file_error);
-
   // Creates a new FileReader for a local file |file_path|.
   // |initial_offset| specifies the offset in the file where the first read
   // should start.  If the given offset is out of the file range any

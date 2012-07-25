@@ -10,15 +10,6 @@
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
 
-namespace {
-
-int PlatformFileErrorToNetError(base::PlatformFileError error) {
-  // TODO(kinuko): Move this static method to more convenient place.
-  return webkit_blob::LocalFileStreamReader::PlatformFileErrorToNetError(error);
-}
-
-}  // namespace
-
 namespace fileapi {
 
 RemoteFileStreamWriter::RemoteFileStreamWriter(
@@ -73,7 +64,7 @@ void RemoteFileStreamWriter::OnFileOpened(
   }
 
   if (open_result != base::PLATFORM_FILE_OK) {
-    callback.Run(PlatformFileErrorToNetError(open_result));
+    callback.Run(net::PlatformFileErrorToNetError(open_result));
     return;
   }
 

@@ -79,8 +79,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
   has_pending_create_snapshot_ = false;
 
   if (file_error != base::PLATFORM_FILE_OK) {
-    callback.Run(
-        LocalFileStreamReader::PlatformFileErrorToNetError(file_error));
+    callback.Run(net::PlatformFileErrorToNetError(file_error));
     return;
   }
 

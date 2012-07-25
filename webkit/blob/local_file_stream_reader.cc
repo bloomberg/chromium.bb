@@ -32,21 +32,6 @@ bool VerifySnapshotTime(const base::Time& expected_modification_time,
 
 }  // namespace
 
-// static
-int LocalFileStreamReader::PlatformFileErrorToNetError(
-    base::PlatformFileError file_error) {
-  switch (file_error) {
-    case base::PLATFORM_FILE_OK:
-      return net::OK;
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
-      return net::ERR_FILE_NOT_FOUND;
-    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-      return net::ERR_ACCESS_DENIED;
-    default:
-      return net::ERR_FAILED;
-  }
-}
-
 LocalFileStreamReader::LocalFileStreamReader(
     base::TaskRunner* task_runner,
     const FilePath& file_path,
@@ -169,7 +154,7 @@ void LocalFileStreamReader::DidGetFileInfoForGetLength(
     return;
   }
   if (error != base::PLATFORM_FILE_OK) {
-    callback.Run(LocalFileStreamReader::PlatformFileErrorToNetError(error));
+    callback.Run(net::PlatformFileErrorToNetError(error));
     return;
   }
   if (!VerifySnapshotTime(expected_modification_time_, file_info)) {

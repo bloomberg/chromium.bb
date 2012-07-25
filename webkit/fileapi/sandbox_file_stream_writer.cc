@@ -21,11 +21,6 @@ namespace fileapi {
 
 namespace {
 
-int PlatformFileErrorToNetError(base::PlatformFileError error) {
-  // TODO(kinuko): Move this static method to more convenient place.
-  return webkit_blob::LocalFileStreamReader::PlatformFileErrorToNetError(error);
-}
-
 // Adjust the |quota| value in overwriting case (i.e. |file_size| > 0 and
 // |file_offset| < |file_size|) to make the remaining quota calculation easier.
 // Specifically this widens the quota for overlapping range (so that we can
@@ -127,7 +122,7 @@ void SandboxFileStreamWriter::DidGetFileInfo(
   if (CancelIfRequested())
     return;
   if (file_error != base::PLATFORM_FILE_OK) {
-    callback.Run(PlatformFileErrorToNetError(file_error));
+    callback.Run(net::PlatformFileErrorToNetError(file_error));
     return;
   }
   if (file_info.is_directory) {
