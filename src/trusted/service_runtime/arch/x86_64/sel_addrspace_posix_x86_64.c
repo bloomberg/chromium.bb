@@ -6,6 +6,12 @@
 
 #include <errno.h>
 #include <sys/mman.h>
+#if NACL_LINUX
+/*
+ * For getrlimit.
+ */
+# include <sys/resource.h>
+#endif
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -111,6 +117,9 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
                           NACL_ADDRSPACE_UPPER_GUARD_SIZE);
   size_t        log_align = ALIGN_BITS;
   void          *mem_ptr;
+#if NACL_LINUX
+  struct rlimit rlim;
+#endif
 
   NaClLog(4, "NaClAllocateSpace(*, 0x%016"NACL_PRIxS" bytes).\n",
           addrsp_size);
@@ -126,6 +135,47 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
       perror("NaClAllocatePow2AlignedMemory");
     }
     NaClLog(LOG_WARNING, "Memory allocation failed\n");
+#if NACL_LINUX
+    /*
+     * Check with getrlimit whether RLIMIT_AS was likely to be the
+     * problem with an allocation failure.  If so, generate a log
+     * message.  Since this is a debugging aid and we don't know about
+     * the memory requirement of the code that is embedding native
+     * client, there is some slop.
+     */
+    if (0 != getrlimit(RLIMIT_AS, &rlim)) {
+      perror("NaClAllocatePow2AlignedMemory::getrlimit");
+    } else {
+      if (rlim.rlim_cur < mem_sz) {
+        /*
+         * Developer hint/warning; this will show up in the crash log
+         * and must be brief.
+         */
+        NaClLog(LOG_INFO,
+                "Please run \"ulimit -v unlimited\" (bash)"
+                " or \"limit vmemoryuse unlimited\" (tcsh)\n");
+        NaClLog(LOG_INFO,
+                "and restart the app.  NaCl requires at least %"NACL_PRIdS""
+                " kilobytes of virtual\n",
+                mem_sz / 1024);
+        NaClLog(LOG_INFO,
+                "address space. NB: Raising the hard limit requires"
+                " root access.\n");
+      }
+    }
+#elif NACL_OSX
+    /*
+     * In OSX, RLIMIT_AS and RLIMIT_RSS have the same value; i.e., OSX
+     * conflates the notion of virtual address space used with the
+     * resident set size.  In particular, the way NaCl uses virtual
+     * address space is to allocate guard pages so that certain
+     * addressing modes will not need to be explicitly masked; the
+     * guard pages are allocated but inaccessible, never faulted so
+     * not even zero-filled on demand, so they should not count
+     * against the resident set -- which is supposed to be only the
+     * frequently accessed pages in the first place.
+     */
+#endif
 
     return LOAD_NO_MEMORY;
   }
