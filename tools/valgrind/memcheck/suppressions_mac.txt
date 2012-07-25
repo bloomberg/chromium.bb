@@ -1797,6 +1797,7 @@
    fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_*
    fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_*
    fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_*
+   ...
    fun:_ZN7WebCore11RenderBlock13paintChildrenERNS_9PaintInfoERKNS_*
    fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_*
    fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_*
