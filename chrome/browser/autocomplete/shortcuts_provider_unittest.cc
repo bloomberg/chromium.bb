@@ -303,16 +303,40 @@ TEST_F(ShortcutsProviderTest, DaysAgoMatches) {
   RunTest(text, expected_urls, "http://www.daysagotest.com/a.html");
 }
 
-TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
-  string16 data(ASCIIToUTF16("A man, a plan, a canal Panama"));
-  ACMatchClassifications matches;
-  // Non-matched text does not have special attributes.
-  matches.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
+// Helper class to make running tests of ClassifyAllMatchesInString() more
+// convenient.
+class ClassifyTest {
+ public:
+  ClassifyTest(const string16& text, ACMatchClassifications matches);
+  ~ClassifyTest();
 
-  ACMatchClassifications spans_a =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("man"),
-                                                    data,
-                                                    matches);
+  ACMatchClassifications RunTest(const string16& find_text);
+
+ private:
+  const string16 text_;
+  const ACMatchClassifications matches_;
+};
+
+ClassifyTest::ClassifyTest(const string16& text, ACMatchClassifications matches)
+    : text_(text),
+      matches_(matches) {
+}
+
+ClassifyTest::~ClassifyTest() {
+}
+
+ACMatchClassifications ClassifyTest::RunTest(const string16& find_text) {
+  return ShortcutsProvider::ClassifyAllMatchesInString(find_text,
+      ShortcutsProvider::CreateWordMapForString(find_text), text_, matches_);
+}
+
+TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
+  ACMatchClassifications matches;
+  matches.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
+  ClassifyTest classify_test(ASCIIToUTF16("A man, a plan, a canal Panama"),
+                             matches);
+
+  ACMatchClassifications spans_a = classify_test.RunTest(ASCIIToUTF16("man"));
   // ACMatch spans should be: '--MMM------------------------'
   ASSERT_EQ(3U, spans_a.size());
   EXPECT_EQ(0U, spans_a[0].offset);
@@ -322,10 +346,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(5U, spans_a[2].offset);
   EXPECT_EQ(ACMatchClassification::NONE, spans_a[2].style);
 
-  ACMatchClassifications spans_b =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("man p"),
-                                                    data,
-                                                    matches);
+  ACMatchClassifications spans_b = classify_test.RunTest(ASCIIToUTF16("man p"));
   // ACMatch spans should be: '--MMM----M-------------M-----'
   ASSERT_EQ(7U, spans_b.size());
   EXPECT_EQ(0U, spans_b[0].offset);
@@ -344,8 +365,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(ACMatchClassification::NONE, spans_b[6].style);
 
   ACMatchClassifications spans_c =
-      ShortcutsProvider::ClassifyAllMatchesInString(
-          ASCIIToUTF16("man plan panama"), data, matches);
+      classify_test.RunTest(ASCIIToUTF16("man plan panama"));
   // ACMatch spans should be:'--MMM----MMMM----------MMMMMM'
   ASSERT_EQ(6U, spans_c.size());
   EXPECT_EQ(0U, spans_c[0].offset);
@@ -361,15 +381,10 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(23U, spans_c[5].offset);
   EXPECT_EQ(ACMatchClassification::MATCH, spans_c[5].style);
 
-  data = ASCIIToUTF16(
-      "Yahoo! Sports - Sports News, Scores, Rumors, Fantasy Games, and more");
-  matches.clear();
-  matches.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
+  ClassifyTest classify_test2(ASCIIToUTF16("Yahoo! Sports - Sports News, "
+      "Scores, Rumors, Fantasy Games, and more"), matches);
 
-  ACMatchClassifications spans_d =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("ne"),
-                                                    data,
-                                                    matches);
+  ACMatchClassifications spans_d = classify_test2.RunTest(ASCIIToUTF16("ne"));
   // ACMatch spans should match first two letters of the "news".
   ASSERT_EQ(3U, spans_d.size());
   EXPECT_EQ(0U, spans_d[0].offset);
@@ -380,9 +395,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(ACMatchClassification::NONE, spans_d[2].style);
 
   ACMatchClassifications spans_e =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("news r"),
-                                                    data,
-                                                    matches);
+      classify_test2.RunTest(ASCIIToUTF16("news r"));
   // ACMatch spans should be the same as original matches.
   ASSERT_EQ(15U, spans_e.size());
   EXPECT_EQ(0U, spans_e[0].offset);
@@ -423,15 +436,11 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(67U, spans_e[14].offset);
   EXPECT_EQ(ACMatchClassification::NONE, spans_e[14].style);
 
-  data = ASCIIToUTF16("livescore.goal.com");
   matches.clear();
-  // Matches for URL.
   matches.push_back(ACMatchClassification(0, ACMatchClassification::URL));
+  ClassifyTest classify_test3(ASCIIToUTF16("livescore.goal.com"), matches);
 
-  ACMatchClassifications spans_f =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("go"),
-                                                    data,
-                                                    matches);
+  ACMatchClassifications spans_f = classify_test3.RunTest(ASCIIToUTF16("go"));
   // ACMatch spans should match first two letters of the "goal".
   ASSERT_EQ(3U, spans_f.size());
   EXPECT_EQ(0U, spans_f[0].offset);
@@ -442,16 +451,13 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(12U, spans_f[2].offset);
   EXPECT_EQ(ACMatchClassification::URL, spans_f[2].style);
 
-  data = ASCIIToUTF16("Email login: mail.somecorp.com");
   matches.clear();
-  // Matches for URL.
   matches.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
   matches.push_back(ACMatchClassification(13, ACMatchClassification::URL));
+  ClassifyTest classify_test4(ASCIIToUTF16("Email login: mail.somecorp.com"),
+                              matches);
 
-  ACMatchClassifications spans_g =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("ail"),
-                                                    data,
-                                                    matches);
+  ACMatchClassifications spans_g = classify_test4.RunTest(ASCIIToUTF16("ail"));
   ASSERT_EQ(6U, spans_g.size());
   EXPECT_EQ(0U, spans_g[0].offset);
   EXPECT_EQ(ACMatchClassification::NONE, spans_g[0].style);
@@ -468,9 +474,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(ACMatchClassification::URL, spans_g[5].style);
 
   ACMatchClassifications spans_h =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("lo log"),
-                                                    data,
-                                                    matches);
+      classify_test4.RunTest(ASCIIToUTF16("lo log"));
   ASSERT_EQ(4U, spans_h.size());
   EXPECT_EQ(0U, spans_h[0].offset);
   EXPECT_EQ(ACMatchClassification::NONE, spans_h[0].style);
@@ -482,9 +486,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(ACMatchClassification::URL, spans_h[3].style);
 
   ACMatchClassifications spans_i =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("ail em"),
-                                                    data,
-                                                    matches);
+      classify_test4.RunTest(ASCIIToUTF16("ail em"));
   // 'Email' and 'ail' should be matched.
   ASSERT_EQ(5U, spans_i.size());
   EXPECT_EQ(0U, spans_i[0].offset);
@@ -501,21 +503,25 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
 
   // Some web sites do not have a description, so second and third parameters in
   // ClassifyAllMatchesInString could be empty.
-  ACMatchClassifications spans_j =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("man"),
-                                                    string16(),
-                                                    ACMatchClassifications());
+  // Extra parens in the next line hack around C++03's "most vexing parse".
+  class ClassifyTest classify_test5((string16()), ACMatchClassifications());
+  ACMatchClassifications spans_j = classify_test5.RunTest(ASCIIToUTF16("man"));
   ASSERT_EQ(0U, spans_j.size());
 
   // Matches which end at beginning of classification merge properly.
-  data = ASCIIToUTF16("html password example");
   matches.clear();
   matches.push_back(ACMatchClassification(0, ACMatchClassification::DIM));
   matches.push_back(ACMatchClassification(9, ACMatchClassification::NONE));
+  ClassifyTest classify_test6(ASCIIToUTF16("html password example"), matches);
+
+  // Extra space in the next string avoids having the string be a prefix of the
+  // text above, which would allow for two different valid classification sets,
+  // one of which uses two spans (the first of which would mark all of "html
+  // pass" as a match) and one which uses four (which marks the individual words
+  // as matches but not the space between them).  This way only the latter is
+  // valid.
   ACMatchClassifications spans_k =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("html pass"),
-                                                    data,
-                                                    matches);
+      classify_test6.RunTest(ASCIIToUTF16("html  pass"));
   ASSERT_EQ(4U, spans_k.size());
   EXPECT_EQ(0U, spans_k[0].offset);
   EXPECT_EQ(ACMatchClassification::DIM | ACMatchClassification::MATCH,
@@ -530,14 +536,13 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
 
   // Multiple matches with both beginning and end at beginning of
   // classifications merge properly.
-  data = ASCIIToUTF16("http://a.co is great");
   matches.clear();
   matches.push_back(ACMatchClassification(0, ACMatchClassification::URL));
   matches.push_back(ACMatchClassification(11, ACMatchClassification::NONE));
+  ClassifyTest classify_test7(ASCIIToUTF16("http://a.co is great"), matches);
+
   ACMatchClassifications spans_l =
-      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("ht co"),
-                                                    data,
-                                                    matches);
+      classify_test7.RunTest(ASCIIToUTF16("ht co"));
   ASSERT_EQ(4U, spans_l.size());
   EXPECT_EQ(0U, spans_l[0].offset);
   EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
