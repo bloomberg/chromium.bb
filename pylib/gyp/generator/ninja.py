@@ -881,8 +881,12 @@ class NinjaWriter:
                                                 self.GypPathToNinja)
       self.WriteVariableList(
           'libflags', gyp.common.uniquer(map(self.ExpandSpecial, libflags)))
-      ldflags = self.msvs_settings.GetLdflags(config_name,
-          self.GypPathToNinja, self.ExpandSpecial)
+      is_executable = spec['type'] == 'executable'
+      manifest_name = self.GypPathToUniqueOutput(
+          self.ComputeOutputFileName(spec))
+      ldflags, manifest_files = self.msvs_settings.GetLdflags(config_name,
+          self.GypPathToNinja, self.ExpandSpecial, manifest_name, is_executable)
+      self.WriteVariableList('manifests', manifest_files)
     else:
       ldflags = config.get('ldflags', [])
     self.WriteVariableList('ldflags',
@@ -1304,6 +1308,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('ar', 'lib.exe')
     master_ninja.variable('rc', 'rc.exe')
     master_ninja.variable('asm', 'ml.exe')
+    master_ninja.variable('mt', 'mt.exe')
   else:
     master_ninja.variable('ld', flock + ' linker.lock $cxx')
     master_ninja.variable('ar', os.environ.get('AR', 'ar'))
@@ -1452,6 +1457,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     dllcmd = ('%s gyp-win-tool link-wrapper $arch '
               '$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
               '/PDB:$dll.pdb @$dll.rsp' % sys.executable)
+    dllcmd += (' && %s gyp-win-tool manifest-wrapper $arch '
+               '$mt -nologo -manifest $manifests -out:$dll.manifest' %
+               sys.executable)
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp',
                       rspfile_content='$libs $in_newline $ldflags',
@@ -1466,8 +1474,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         'link',
         description='LINK $out',
         command=('%s gyp-win-tool link-wrapper $arch '
-                 '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp' %
-                 sys.executable),
+                 '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp && '
+                 '%s gyp-win-tool manifest-wrapper $arch '
+                 '$mt -nologo -manifest $manifests -out:$out.manifest' %
+                 (sys.executable, sys.executable)),
         rspfile='$out.rsp',
         rspfile_content='$in_newline $libs $ldflags')
   else:
