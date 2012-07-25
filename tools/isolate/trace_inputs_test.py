@@ -50,7 +50,6 @@ class TraceInputs(unittest.TestCase):
           expected,
           trace_inputs.Dtrace.Context.process_escaped_arguments(actual))
 
-
   def test_variable_abs(self):
     value = trace_inputs.Results.File(None, '/foo/bar', False, False)
     actual = value.replace_variables({'$FOO': '/foo'})
