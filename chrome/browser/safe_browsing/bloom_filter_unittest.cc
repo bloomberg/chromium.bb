@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,12 +41,14 @@ TEST(SafeBrowsingBloomFilter, BloomFilterUse) {
     values.insert(value);
     filter->Insert(value);
   }
+  EXPECT_TRUE(filter->CheckChecksum());
 
   // Check serialization works.
   char* data_copy = new char[filter->size()];
   memcpy(data_copy, filter->data(), filter->size());
   scoped_refptr<BloomFilter> filter_copy(
       new BloomFilter(data_copy, filter->size(), filter->hash_keys_));
+  EXPECT_TRUE(filter_copy->CheckChecksum());
 
   // Check no false negatives by ensuring that every time we inserted exists.
   for (Values::const_iterator i = values.begin(); i != values.end(); ++i)
@@ -88,6 +90,7 @@ TEST(SafeBrowsingBloomFilter, BloomFilterFile) {
 
   for (int i = 0; i < kTestEntries; ++i)
     filter_write->Insert(GenHash());
+  EXPECT_TRUE(filter_write->CheckChecksum());
 
   // Remove any left over test filters and serialize.
   ScopedTempDir temp_dir;
@@ -99,6 +102,7 @@ TEST(SafeBrowsingBloomFilter, BloomFilterFile) {
   BloomFilter* filter = BloomFilter::LoadFile(filter_path);
   ASSERT_TRUE(filter != NULL);
   scoped_refptr<BloomFilter> filter_read(filter);
+  EXPECT_TRUE(filter_read->CheckChecksum());
 
   // Check data consistency.
   EXPECT_EQ(filter_write->hash_keys_.size(), filter_read->hash_keys_.size());
