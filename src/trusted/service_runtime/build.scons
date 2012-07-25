@@ -522,12 +522,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
   env.Requires(mmap_test_exe, crt)
 
   mmap_test_file = env.File(arch_testdata_dir + '/hello_world.nexe')
-  bootstrap, bootstrap_arg = env.GetBootstrap()
-  if bootstrap is None:
-    mmap_test_command = [mmap_test_exe, mmap_test_file]
-  else:
-    mmap_test_command = [bootstrap, mmap_test_exe,
-                         bootstrap_arg, mmap_test_file]
+  mmap_test_command = env.AddBootstrap(mmap_test_exe, [mmap_test_file])
 
   # TODO(robertm): This test emits lots of messages to stderr
   node = env.CommandTest (
@@ -548,8 +543,7 @@ if env.Bit('linux'):
   bootstrap, bootstrap_arg = env.GetBootstrap()
   node = env.CommandTest(
       'nacl_bootstrap_prereservation_test.out',
-      command=[bootstrap, nacl_bootstrap_prereservation_test_exe,
-               bootstrap_arg])
+      command=env.AddBootstrap(nacl_bootstrap_prereservation_test_exe, []))
   env.AddNodeToTestSuite(node, ['small_tests'],
                          'run_nacl_bootstrap_prereservation_test')
 
