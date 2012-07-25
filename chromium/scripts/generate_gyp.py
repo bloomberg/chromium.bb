@@ -120,7 +120,6 @@ def CleanObjectFiles(object_files):
       'libavutil/file.o',
       'libavutil/lls.o',
       'libavutil/rc4.o',
-      'libavutil/sha.o',
       'libavutil/tree.o',
   ]
   for name in blacklist:

@@ -57,3 +57,12 @@
 /tools/probetest
 /tools/qt-faststart
 /tools/trasher
+
+# Chromium stuff.
+/chromium/binaries/Chrome
+/ffmpeg.props
+/ffmpeg.sln
+/ffmpeg.targets
+/ffmpeg.vcxproj
+/ffmpeg.vcxproj.filters
+/ffmpeg.xml

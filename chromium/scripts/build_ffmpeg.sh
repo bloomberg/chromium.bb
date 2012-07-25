@@ -169,7 +169,6 @@ function build {
   mkdir -p $CONFIG_DIR
   pushd $CONFIG_DIR
   mkdir out
-  shift
 
   # Configure and check for exit status.
   echo "Configuring $CONFIG..."
@@ -240,16 +239,27 @@ function build {
   popd
 }
 
-# Common configuration.
-add_flag_common --disable-doc
+# Common configuration.  Note: --disable-everything does not in fact disable
+# everything, just non-library components such as decoders and demuxers.
 add_flag_common --disable-everything
+add_flag_common --disable-avdevice
+add_flag_common --disable-avfilter
+add_flag_common --disable-bzlib
+add_flag_common --disable-doc
+add_flag_common --disable-network
+add_flag_common --disable-postproc
+add_flag_common --disable-swresample
+add_flag_common --disable-swscale
+add_flag_common --disable-zlib
 add_flag_common --enable-fft
 add_flag_common --enable-rdft
-add_flag_common --disable-network
-add_flag_common --disable-bzlib
-add_flag_common --disable-zlib
-add_flag_common --disable-swscale
 add_flag_common --enable-shared
+
+# Disable hardware decoding options which will sometimes turn on via autodetect.
+add_flag_common --disable-dxva2
+add_flag_common --disable-vaapi
+add_flag_common --disable-vda
+add_flag_common --disable-vdpau
 
 # --optflags doesn't append multiple entries, so set all at once.
 if [[ "$TARGET_OS" = "mac" && "$TARGET_ARCH" = "ia32" ]]; then
@@ -261,6 +271,7 @@ fi
 # Common codecs.
 add_flag_common --enable-decoder=theora,vorbis,vp8
 add_flag_common --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_f32le
+add_flag_common --enable-decoder=pcm_s16be,pcm_s24be
 add_flag_common --enable-demuxer=ogg,matroska,wav
 add_flag_common --enable-parser=vp3,vorbis,vp8
 
@@ -371,16 +382,6 @@ if [ "$TARGET_OS" = "mac" ]; then
     echo "merge of config files with new linux ia32 config.h by hand."
     exit 1
   fi
-  # Configure seems to enable VDA despite --disable-everything if you have
-  # XCode installed, so force disable it.
-  add_flag_common --disable-vda
-
-  # TODO(ihf): Remove --enable-memalign-hack when
-  # DEPLOYMENT_TARGET >= 10.7. Background: If MACOSX_DEPLOYMENT_TARGET < 10.7
-  # we have to disable posix_memalign by hand, as it was introduced somewhere
-  # in OSX 10.6 (configure finds it) but we can't use it yet. Just check
-  # common.gypi for 'mac_deployment_target%': '10.5'.
-  add_flag_common --enable-memalign-hack
 fi
 
 # Chromium & ChromiumOS specific configuration.
@@ -414,8 +415,10 @@ add_flag_chromeos --enable-demuxer=flac
 add_flag_chromeos --enable-decoder=flac
 add_flag_chromeos --enable-parser=flac
 # Wav files for playing phone messages.
-# Maybe later: gsm_ms,adpcm_ima_wav
 add_flag_chromeos --enable-decoder=pcm_mulaw
+add_flag_chromeos --enable-decoder=gsm_ms
+add_flag_chromeos --enable-demuxer=gsm
+add_flag_chromeos --enable-parser=gsm
 
 echo "Chromium configure/build:"
 build Chromium $FLAGS_COMMON $FLAGS_CHROMIUM

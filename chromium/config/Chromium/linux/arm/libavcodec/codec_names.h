@@ -329,6 +329,14 @@ case CODEC_ID_XBM:
     return "xbm";
 case CODEC_ID_ZEROCODEC:
     return "zerocodec";
+case CODEC_ID_MSS1:
+    return "mss1";
+case CODEC_ID_MSA1:
+    return "msa1";
+case CODEC_ID_TSCC2:
+    return "tscc2";
+case CODEC_ID_MTS2:
+    return "mts2";
 case CODEC_ID_Y41P:
     return "y41p";
 case CODEC_ID_ESCAPE130:
@@ -349,11 +357,16 @@ case CODEC_ID_V408:
     return "v408";
 case CODEC_ID_YUV4:
     return "yuv4";
+case CODEC_ID_SANM:
+    return "sanm";
+case CODEC_ID_PAF_VIDEO:
+    return "paf_video";
 case CODEC_ID_PCM_S16LE:
     { extern AVCodec ff_pcm_s16le_decoder;
       return ff_pcm_s16le_decoder.name; }
 case CODEC_ID_PCM_S16BE:
-    return "pcm_s16be";
+    { extern AVCodec ff_pcm_s16be_decoder;
+      return ff_pcm_s16be_decoder.name; }
 case CODEC_ID_PCM_U16LE:
     return "pcm_u16le";
 case CODEC_ID_PCM_U16BE:
@@ -379,7 +392,8 @@ case CODEC_ID_PCM_S24LE:
     { extern AVCodec ff_pcm_s24le_decoder;
       return ff_pcm_s24le_decoder.name; }
 case CODEC_ID_PCM_S24BE:
-    return "pcm_s24be";
+    { extern AVCodec ff_pcm_s24be_decoder;
+      return ff_pcm_s24be_decoder.name; }
 case CODEC_ID_PCM_U24LE:
     return "pcm_u24le";
 case CODEC_ID_PCM_U24BE:
@@ -469,6 +483,8 @@ case CODEC_ID_ADPCM_G722:
     return "adpcm_g722";
 case CODEC_ID_ADPCM_IMA_APC:
     return "adpcm_ima_apc";
+case CODEC_ID_VIMA:
+    return "vima";
 case CODEC_ID_AMR_NB:
     return "amr_nb";
 case CODEC_ID_AMR_WB:
@@ -604,6 +620,10 @@ case CODEC_ID_BMV_AUDIO:
     return "bmv_audio";
 case CODEC_ID_RALF:
     return "ralf";
+case CODEC_ID_IAC:
+    return "iac";
+case CODEC_ID_ILBC:
+    return "ilbc";
 case CODEC_ID_FFWAVESYNTH:
     return "ffwavesynth";
 case CODEC_ID_8SVX_RAW:
@@ -612,6 +632,10 @@ case CODEC_ID_SONIC:
     return "sonic";
 case CODEC_ID_SONIC_LS:
     return "sonic_ls";
+case CODEC_ID_PAF_AUDIO:
+    return "paf_audio";
+case CODEC_ID_OPUS:
+    return "opus";
 case CODEC_ID_DVD_SUBTITLE:
     return "dvd_subtitle";
 case CODEC_ID_DVB_SUBTITLE:
@@ -636,6 +660,10 @@ case CODEC_ID_EIA_608:
     return "eia_608";
 case CODEC_ID_JACOSUB:
     return "jacosub";
+case CODEC_ID_SAMI:
+    return "sami";
+case CODEC_ID_REALTEXT:
+    return "realtext";
 case CODEC_ID_TTF:
     return "ttf";
 case CODEC_ID_BINTEXT:
