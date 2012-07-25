@@ -83,10 +83,6 @@ bool GetUniformNameSansElement(
     index = index * 10 + digit;
   }
 
-  if (index < 0) {
-    return false;
-  }
-
   *element_index = index;
   *new_name = name.substr(0, open_pos);
   return true;
