@@ -14,6 +14,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chromeos {
+
+class SimplePngEncoder;
+
 namespace options2 {
 
 // A DataSource for chrome://wallpaper/ URL, provides current user's wallpaper.
@@ -43,12 +46,15 @@ class WallpaperImageSource : public ChromeURLDataManager::DataSource {
   // Cancel current image encoding operation.
   void CancelPendingEncodingOperation();
 
-    // Send image stored in |data| as a reply to request
+  // Callback to call if we cancel the wallpaper encode operation.
+  void CancelCallback(int request_id);
+
+  // Send image stored in |data| as a reply to request
   // identifed by |request_id|.
   void SendCurrentUserWallpaper(int request_id,
                                 scoped_refptr<base::RefCountedBytes> data);
 
-  scoped_refptr<WallpaperEncodingOperation> wallpaper_encoding_op_;
+  scoped_refptr<SimplePngEncoder> png_encoder_;
 
   base::WeakPtrFactory<WallpaperImageSource> weak_ptr_factory_;
 
