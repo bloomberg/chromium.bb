@@ -1610,7 +1610,7 @@ void TabDragController::ResetSelection(TabStripModel* model) {
 }
 
 void TabDragController::RevertDragAt(size_t drag_index) {
-  DCHECK(started_drag_);
+  DCHECK(started_drag_ && source_tabstrip_);
 
   TabDragData* data = &(drag_data_[drag_index]);
   if (attached_tabstrip_) {
