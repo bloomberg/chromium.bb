@@ -25,13 +25,20 @@ enum NotificationType {
   NOTIFICATION_BROWSER_WINDOW_READY,
 
   // This message is sent when a browser is closing. The source is a
-  // Source<Browser> containing the affected Browser. No details are expected.
-  // This is sent prior to BROWSER_CLOSED, and may be sent more than once for a
-  // particular browser.
+  // Source<Browser> containing the affected Browser. Details is a boolean
+  // that if true indicates that the application will be closed as a result of
+  // this browser window closure (i.e. this was the last opened browser
+  // window on win/linux). This is sent prior to BROWSER_CLOSED, and may be
+  // sent more than once for a particular browser.
   NOTIFICATION_BROWSER_CLOSING,
 
   // This message is sent after a window has been closed.  The source is a
-  // Source<Browser> containing the affected Browser.  No details are exptected.
+  // Source<Browser> containing the affected Browser.  Details is a boolean
+  // that if true indicates that the last browser window has closed - this
+  // does not indicate that the application is exiting (observers should
+  // listen for APP_TERMINATING if they want to detect when the application
+  // will shut down). Note that the boolean pointed to by details is only
+  // valid for the duration of this call.
   NOTIFICATION_BROWSER_CLOSED,
 
   // This message is sent when closing a browser has been cancelled, either by

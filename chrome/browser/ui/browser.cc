@@ -591,6 +591,8 @@ void Browser::OnWindowClosing() {
   if (!ShouldCloseWindow())
     return;
 
+  bool exiting = false;
+
   // Application should shutdown on last window close if the user is explicitly
   // trying to quit, or if there is nothing keeping the browser alive (such as
   // AppController on the Mac, or BackgroundContentsService for background
@@ -598,8 +600,10 @@ void Browser::OnWindowClosing() {
   bool should_quit_if_last_browser =
       browser_shutdown::IsTryingToQuit() || !browser::WillKeepAlive();
 
-  if (should_quit_if_last_browser && BrowserList::size() == 1)
+  if (should_quit_if_last_browser && BrowserList::size() == 1) {
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
+    exiting = true;
+  }
 
   // Don't use GetForProfileIfExisting here, we want to force creation of the
   // session service so that user can restore what was open.
@@ -623,7 +627,7 @@ void Browser::OnWindowClosing() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSING,
       content::Source<Browser>(this),
-      content::NotificationService::NoDetails());
+      content::Details<bool>(&exiting));
 
   chrome::CloseAllTabs(this);
 }
