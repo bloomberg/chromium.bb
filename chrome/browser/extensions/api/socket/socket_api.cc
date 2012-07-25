@@ -143,7 +143,9 @@ void SocketDestroyFunction::Work() {
   manager_->Remove(socket_id_);
 }
 
-SocketConnectFunction::SocketConnectFunction() {
+SocketConnectFunction::SocketConnectFunction()
+    : socket_id_(0),
+      port_(0) {
 }
 
 SocketConnectFunction::~SocketConnectFunction() {

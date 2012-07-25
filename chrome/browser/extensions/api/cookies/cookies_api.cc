@@ -323,7 +323,7 @@ void GetAllCookiesFunction::RespondOnUIThread() {
   SendResponse(true);
 }
 
-SetCookieFunction::SetCookieFunction() {
+SetCookieFunction::SetCookieFunction() : success_(false) {
 }
 
 SetCookieFunction::~SetCookieFunction() {
