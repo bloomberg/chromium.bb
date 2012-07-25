@@ -18,9 +18,9 @@ namespace {
 
 // Appends the header name and the value to |output|, if the value is
 // not empty.
-static void AppendStringHeader(const std::string& header_name,
-                               const std::string& header_value,
-                               std::string* output) {
+void AppendStringHeader(const std::string& header_name,
+                        const std::string& header_value,
+                        std::string* output) {
   if (!header_value.empty()) {
     *output += header_name + ": " + header_value + "\n";
   }
@@ -28,9 +28,9 @@ static void AppendStringHeader(const std::string& header_name,
 
 // Appends the header name and the value to |output|, if the value is
 // nonzero.
-static void AppendUint32Header(const std::string& header_name,
-                               uint32 header_value,
-                               std::string* output) {
+void AppendUint32Header(const std::string& header_name,
+                        uint32 header_value,
+                        std::string* output) {
   if (header_value != 0) {
     *output += (header_name + ": " + base::StringPrintf("%u", header_value) +
                 "\n");
@@ -40,6 +40,12 @@ static void AppendUint32Header(const std::string& header_name,
 }  // namespace
 
 namespace dbus {
+
+bool IsDBusTypeUnixFdSupported() {
+  int major = 0, minor = 0, micro = 0;
+  dbus_get_version(&major, &minor, &micro);
+  return major >= 1 && minor >= 4;
+}
 
 Message::Message()
     : raw_message_(NULL) {
@@ -211,7 +217,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         break;
       }
       case UNIX_FD: {
-        CHECK(kDBusTypeUnixFdIsSupported);
+        CHECK(IsDBusTypeUnixFdSupported());
 
         FileDescriptor file_descriptor;
         if (!reader->PopFileDescriptor(&file_descriptor))
@@ -690,7 +696,7 @@ void MessageWriter::AppendVariantOfBasic(int dbus_type, const void* value) {
 }
 
 void MessageWriter::AppendFileDescriptor(const FileDescriptor& value) {
-  CHECK(kDBusTypeUnixFdIsSupported);
+  CHECK(IsDBusTypeUnixFdSupported());
 
   if (!value.is_valid()) {
     // NB: sending a directory potentially enables sandbox escape
@@ -960,7 +966,7 @@ bool MessageReader::PopVariantOfBasic(int dbus_type, void* value) {
 }
 
 bool MessageReader::PopFileDescriptor(FileDescriptor* value) {
-  CHECK(kDBusTypeUnixFdIsSupported);
+  CHECK(IsDBusTypeUnixFdSupported());
 
   int fd = -1;
   const bool success = PopBasic(DBUS_TYPE_UNIX_FD, &fd);

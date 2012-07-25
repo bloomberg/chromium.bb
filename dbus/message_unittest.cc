@@ -97,7 +97,7 @@ TEST(MessageTest, AppendAndPopBasicDataTypes) {
 
 // Check all basic types can be properly written and read.
 TEST(MessageTest, AppendAndPopFileDescriptor) {
-  if (!dbus::kDBusTypeUnixFdIsSupported) {
+  if (!dbus::IsDBusTypeUnixFdSupported()) {
     LOG(WARNING) << "FD passing is not supported";
     return;
   }

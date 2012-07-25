@@ -28,12 +28,14 @@ class MessageWriter;
 class MessageReader;
 
 // DBUS_TYPE_UNIX_FD was added in D-Bus version 1.4
-#if defined(DBUS_TYPE_UNIX_FD)
-const bool kDBusTypeUnixFdIsSupported = true;
-#else
-const bool kDBusTypeUnixFdIsSupported = false;
+#if !defined(DBUS_TYPE_UNIX_FD)
 #define DBUS_TYPE_UNIX_FD      ((int) 'h')
 #endif
+
+// Returns true if Unix FD passing is supported in libdbus.
+// The check is done runtime rather than compile time as the libdbus
+// version used at runtime may be different from the one used at compile time.
+bool IsDBusTypeUnixFdSupported();
 
 // Message is the base class of D-Bus message types. Client code must use
 // sub classes such as MethodCall and Response instead.
