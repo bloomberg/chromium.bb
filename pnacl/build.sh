@@ -1188,10 +1188,6 @@ libs-clean() {
 #+ prune                 - Prune toolchain
 prune() {
   StepBanner "PRUNE" "Pruning toolchain"
-  # ACCEPTABLE_SIZE should be much lower for real release,
-  # but we are currently doing a debug build and not pruning
-  # as aggressively as we could.
-  local ACCEPTABLE_SIZE=300
   local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
 
   SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
@@ -1218,13 +1214,6 @@ prune() {
 
   local dir_size_after=$(get_dir_size_in_mb "${INSTALL_ROOT}")
   SubBanner "Size after: ${INSTALL_ROOT} ${dir_size_after}MB"
-
-  if [[ ${dir_size_after} -gt ${ACCEPTABLE_SIZE} ]] ; then
-    # TODO(pdox): Move this to the buildbot script so that
-    # it can make the bot red without ruining the toolchain archive.
-    echo "WARNING: size of toolchain exceeds ${ACCEPTABLE_SIZE}MB"
-  fi
-
 }
 
 #+ tarball <filename>    - Produce tarball file

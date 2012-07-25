@@ -13,7 +13,7 @@ export PNACL_BUILDBOT=true
 # build.sh output)
 export PNACL_VERBOSE=true
 
-# This affects trusted compoents of gyp and scons builds.
+# This affects trusted components of gyp and scons builds.
 # The setting OPT reuslts in optimized/release trusted executables,
 # the setting DEBUG results in unoptimized/debug trusted executables
 BUILD_MODE_HOST=OPT
@@ -32,6 +32,7 @@ readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 # This script is used by toolchain bots (i.e. tc-xxx functions)
 readonly PNACL_BUILD="pnacl/build.sh"
+readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=50
 
 tc-clobber() {
   local label=$1
@@ -57,6 +58,14 @@ tc-compile-toolchain() {
   ${PNACL_BUILD} everything
   ${PNACL_BUILD} tarball pnacl-toolchain.tgz
   chmod a+r pnacl-toolchain.tgz
+
+  # Size sanity check
+  local byte_size=$(wc -c < pnacl-toolchain.tgz)
+  local max_size=$((1024 * 1024 * ${ACCEPTABLE_TOOLCHAIN_SIZE_MB}))
+  if [[ ${byte_size} -gt ${max_size} ]] ; then
+      echo "ERROR: toolchain tarball is too large: ${byte_size} > ${max_size}"
+      handle-error
+  fi
 }
 
 tc-untar-toolchain() {
