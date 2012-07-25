@@ -163,6 +163,14 @@ class BrowserActionButton : public content::NotificationObserver,
         this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
         content::Source<Profile>(
             toolbar->browser()->profile()->GetOriginalProfile()));
+    registrar_.Add(
+        this, chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
+        content::Source<Profile>(
+        toolbar->browser()->profile()->GetOriginalProfile()));
+    registrar_.Add(
+        this, chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
+        content::Source<Profile>(
+        toolbar->browser()->profile()->GetOriginalProfile()));
   }
 
   ~BrowserActionButton() {
@@ -195,6 +203,21 @@ class BrowserActionButton : public content::NotificationObserver,
      case chrome::NOTIFICATION_WINDOW_CLOSED:
       DisconnectBrowserActionPopupAccelerator();
       break;
+     case chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED:
+     case chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
+      std::pair<const std::string, const std::string>* payload =
+          content::Details<std::pair<const std::string, const std::string> >(
+              details).ptr();
+      if (extension_->id() == payload->first &&
+          payload->second ==
+              extension_manifest_values::kBrowserActionKeybindingEvent) {
+        if (type == chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED)
+          ConnectBrowserActionPopupAccelerator();
+        else
+          DisconnectBrowserActionPopupAccelerator();
+      }
+      break;
+     }
      default:
       NOTREACHED();
       break;
@@ -434,6 +457,11 @@ class BrowserActionButton : public content::NotificationObserver,
       g_object_unref(accel_group_);
       accel_group_ = NULL;
       keybinding_.reset(NULL);
+
+      // We've removed the accelerator, so no need to listen to this anymore.
+      registrar_.Remove(this,
+                        chrome::NOTIFICATION_WINDOW_CLOSED,
+                        content::Source<GtkWindow>(window));
     }
   }
 
