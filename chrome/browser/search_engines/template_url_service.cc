@@ -93,8 +93,10 @@ const char kFirstPotentialEngineHistogramName[] =
 // FirstPotentialDefaultEngine is called, and from where.
 enum FirstPotentialEngineCaller {
   FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP,
-  FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_SYNCING,
+  FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_PROCESSING_SYNC_CHANGES,
   FIRST_POTENTIAL_CALLSITE_ON_LOAD,
+  FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_SYNCING,
+  FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_NOT_SYNCING,
   FIRST_POTENTIAL_CALLSITE_MAX,
 };
 
@@ -612,13 +614,23 @@ TemplateURL* TemplateURLService::FindNewDefaultSearchProvider() {
   // If not, use the first non-extension keyword of the templates that supports
   // search term replacement.
   if (processing_syncer_changes_) {
-    UMA_HISTOGRAM_ENUMERATION(kFirstPotentialEngineHistogramName,
-                              FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_SYNCING,
-                              FIRST_POTENTIAL_CALLSITE_MAX);
+    UMA_HISTOGRAM_ENUMERATION(
+        kFirstPotentialEngineHistogramName,
+        FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_PROCESSING_SYNC_CHANGES,
+        FIRST_POTENTIAL_CALLSITE_MAX);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kFirstPotentialEngineHistogramName,
-                              FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP,
-                              FIRST_POTENTIAL_CALLSITE_MAX);
+    if (sync_processor_.get()) {
+      // We're not currently in a sync cycle, but we're syncing.
+      UMA_HISTOGRAM_ENUMERATION(kFirstPotentialEngineHistogramName,
+                                FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_SYNCING,
+                                FIRST_POTENTIAL_CALLSITE_MAX);
+    } else {
+      // We're not syncing at all.
+      UMA_HISTOGRAM_ENUMERATION(
+          kFirstPotentialEngineHistogramName,
+          FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_NOT_SYNCING,
+          FIRST_POTENTIAL_CALLSITE_MAX);
+    }
   }
   return FirstPotentialDefaultEngine(template_urls_);
 }
