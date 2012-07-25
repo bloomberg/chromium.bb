@@ -5,8 +5,13 @@
 #include "content/shell/android/shell_manager.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
+#include "content/shell/shell.h"
+#include "content/shell/shell_browser_context.h"
+#include "content/shell/shell_content_browser_client.h"
+#include "googleurl/src/gurl.h"
 #include "jni/ShellManager_jni.h"
 
 using base::android::ScopedJavaLocalRef;
@@ -30,6 +35,18 @@ bool RegisterShellManager(JNIEnv* env) {
 static void Init(JNIEnv* env, jclass clazz, jobject obj) {
   g_content_shell_manager.Get().Reset(
       base::android::ScopedJavaLocalRef<jobject>(env, obj));
+}
+
+void LaunchShell(JNIEnv* env, jclass clazz, jstring jurl) {
+  ShellBrowserContext* browserContext =
+      static_cast<ShellContentBrowserClient*>(
+          GetContentClient()->browser())->browser_context();
+  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  Shell::CreateNewWindow(browserContext,
+                         url,
+                         NULL,
+                         MSG_ROUTING_NONE,
+                         NULL);
 }
 
 }  // namespace content

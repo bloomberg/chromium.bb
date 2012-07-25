@@ -73,9 +73,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * application process in a separate thread. If the special value MAX_RENDERERS_AUTOMATIC is
      * used then the number of renderers will be determined based on the device memory class. The
      * maximum number of allowed renderers is capped by MAX_RENDERERS_LIMIT.
+     * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static void enableMultiProcess(Context context, int maxRendererProcesses) {
-        ContentViewCore.enableMultiProcess(context, maxRendererProcesses);
+    public static boolean enableMultiProcess(Context context, int maxRendererProcesses) {
+        return ContentViewCore.enableMultiProcess(context, maxRendererProcesses);
     }
 
     /**
@@ -84,10 +85,11 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      *
      * @param context Context used to obtain the application context.
      * @param maxRendererProcesses Same as ContentView.enableMultiProcess()
+     * @return Whether the process actually needed to be initialized (false if already running).
      * @hide Only used by the platform browser.
      */
-    public static void initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
-        ContentViewCore.initChromiumBrowserProcess(context, maxRendererProcesses);
+    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
+        return ContentViewCore.initChromiumBrowserProcess(context, maxRendererProcesses);
     }
 
     private ContentViewCore mContentViewCore;

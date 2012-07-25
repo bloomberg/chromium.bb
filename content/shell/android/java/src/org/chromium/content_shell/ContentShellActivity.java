@@ -24,6 +24,9 @@ public class ContentShellActivity extends Activity {
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String TAG = ContentShellActivity.class.getName();
 
+    private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
+    private static final String DEFAULT_SHELL_URL = "http://www.google.com";
+
     private ShellManager mShellManager;
 
     @Override
@@ -31,7 +34,7 @@ public class ContentShellActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         // Initializing the command line must occur before loading the library.
-        CommandLine.initFromFile(COMMAND_LINE_FILE);
+        if (!CommandLine.isInitialized()) CommandLine.initFromFile(COMMAND_LINE_FILE);
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {
             CommandLine.getInstance().appendSwitchesAndArguments(
@@ -44,7 +47,23 @@ public class ContentShellActivity extends Activity {
 
         setContentView(R.layout.content_shell_activity);
         mShellManager = (ShellManager) findViewById(R.id.shell_container);
-        ContentView.enableMultiProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC);
+        if (!ContentView.enableMultiProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC)) {
+            String shellUrl = DEFAULT_SHELL_URL;
+            if (savedInstanceState != null
+                    && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {
+                shellUrl = savedInstanceState.getString(ACTIVE_SHELL_URL_KEY);
+            }
+            mShellManager.launchShell(shellUrl);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Shell activeShell = getActiveShell();
+        if (activeShell != null) {
+            outState.putString(ACTIVE_SHELL_URL_KEY, activeShell.getContentView().getUrl());
+        }
     }
 
     private void waitForDebuggerIfNeeded() {

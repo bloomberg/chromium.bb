@@ -35,6 +35,14 @@ public class ShellManager extends FrameLayout {
         return mActiveShell;
     }
 
+    /**
+     * Creates a new shell pointing to the specified URL.
+     * @param url The URL the shell should load upon creation.
+     */
+    public void launchShell(String url) {
+        nativeLaunchShell(url);
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private Object createShell() {
@@ -51,4 +59,5 @@ public class ShellManager extends FrameLayout {
     }
 
     private static native void nativeInit(Object shellManagerInstance);
+    private static native void nativeLaunchShell(String url);
 }

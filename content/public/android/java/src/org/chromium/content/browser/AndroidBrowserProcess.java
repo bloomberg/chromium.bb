@@ -13,8 +13,6 @@ import org.chromium.base.JNINamespace;
 import org.chromium.content.app.AppResource;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.ResourceExtractor;
 import org.chromium.content.common.CommandLine;
 
 // NOTE: This file hasn't been fully upstreamed, please don't merge to downstream.
@@ -59,9 +57,10 @@ public class AndroidBrowserProcess {
      *
      * @param context Context used to obtain the application context.
      * @param maxRendererProcesses See ContentView.enableMultiProcess().
+     * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static void initContentViewProcess(Context context, int maxRendererProcesses) {
-        genericChromiumProcessInit(context, maxRendererProcesses, false);
+    public static boolean initContentViewProcess(Context context, int maxRendererProcesses) {
+        return genericChromiumProcessInit(context, maxRendererProcesses, false);
     }
 
     /**
@@ -70,9 +69,10 @@ public class AndroidBrowserProcess {
      *
      * @param context Context used to obtain the application context.
      * @param maxRendererProcesses See ContentView.enableMultiProcess().
+     * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static void initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
-        genericChromiumProcessInit(context, maxRendererProcesses, true);
+    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
+        return genericChromiumProcessInit(context, maxRendererProcesses, true);
     }
 
     /**
@@ -80,12 +80,11 @@ public class AndroidBrowserProcess {
      * @param context Context used to obtain the application context
      * @param maxRendererProcesses See ContentView.enableMultiProcess()
      * @param hostIsChrome pass true if running as the system browser process.
+     * @return Whether the process actually needed to be initialized (false if already running).
      */
-    private static void genericChromiumProcessInit(Context context, int maxRendererProcesses,
+    private static boolean genericChromiumProcessInit(Context context, int maxRendererProcesses,
             boolean hostIsChrome) {
-        if (sInitialized) {
-            return;
-        }
+        if (sInitialized) return false;
         sInitialized = true;
 
         // Normally Main.java will have kicked this off asynchronously for Chrome. But
@@ -128,6 +127,7 @@ public class AndroidBrowserProcess {
         nativeSetCommandLineFlags(maxRenderers, getPlugins(context));
         ContentMain.initApplicationContext(appContext);
         ContentMain.start();
+        return true;
     }
 
     private static String getPlugins(final Context context) {
