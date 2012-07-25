@@ -53,13 +53,15 @@ std::vector<MetricInfo> AggregateMetric(
   return results;
 }
 
-bool PostTaskToDatabaseThreadAndReply(const base::Closure& request,
-                                      const base::Closure& reply) {
+bool PostTaskToDatabaseThreadAndReply(
+    const tracked_objects::Location& from_here,
+    const base::Closure& request,
+    const base::Closure& reply) {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken token =
       pool->GetNamedSequenceToken(Database::kDatabaseSequenceToken);
   return pool->GetSequencedTaskRunner(token)->PostTaskAndReply(
-      FROM_HERE, request, reply);
+      from_here, request, reply);
 }
 
 scoped_ptr<Event> CreateExtensionInstallEvent(const base::Time& time,

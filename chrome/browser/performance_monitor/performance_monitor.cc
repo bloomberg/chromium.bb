@@ -51,7 +51,7 @@ PerformanceMonitor* PerformanceMonitor::GetInstance() {
 }
 
 void PerformanceMonitor::Start() {
-  BrowserThread::PostBlockingPoolTaskAndReply(
+  util::PostTaskToDatabaseThreadAndReply(
       FROM_HERE,
       base::Bind(&PerformanceMonitor::InitOnBackgroundThread,
                  base::Unretained(this)),
@@ -81,6 +81,7 @@ void PerformanceMonitor::FinishInit() {
   // to the background thread, and do not rely upon a reply from the background
   // thread; this is necessary for this notification to be valid.
   util::PostTaskToDatabaseThreadAndReply(
+      FROM_HERE,
       base::Bind(&base::DoNothing),
       base::Bind(&PerformanceMonitor::NotifyInitialized,
                  base::Unretained(this)));

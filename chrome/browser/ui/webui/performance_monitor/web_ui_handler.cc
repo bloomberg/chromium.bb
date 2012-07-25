@@ -79,7 +79,13 @@ void DoGetMetric(ListValue* results,
 
 }  // namespace
 
-WebUIHandler::WebUIHandler() {}
+WebUIHandler::WebUIHandler() {
+  // TODO(mtytel): Remove this check when the PerformanceMonitor starts up
+  // before the WebUI.
+  if (!PerformanceMonitor::GetInstance()->database())
+    PerformanceMonitor::GetInstance()->Start();
+}
+
 WebUIHandler::~WebUIHandler() {}
 
 void WebUIHandler::RegisterMessages() {
@@ -122,9 +128,10 @@ void WebUIHandler::HandleGetActiveIntervals(const ListValue* args) {
 
   ListValue* results = new ListValue();
   util::PostTaskToDatabaseThreadAndReply(
+      FROM_HERE,
       base::Bind(&DoGetActiveIntervals, results, start, end),
       base::Bind(&WebUIHandler::ReturnResults, AsWeakPtr(),
-                 "performance_monitor.getActiveIntervalsCallback",
+                 "PerformanceMonitor.getActiveIntervalsCallback",
                  base::Owned(results)));
 }
 
@@ -140,8 +147,7 @@ void WebUIHandler::HandleGetAllEventTypes(const ListValue* args) {
                                EventTypeToString(event_type));
     results.Append(event_type_info);
   }
-
-  ReturnResults("performance_monitor.getAllEventTypesCallback", &results);
+  ReturnResults("PerformanceMonitor.getAllEventTypesCallback", &results);
 }
 
 void WebUIHandler::HandleGetEvents(const ListValue* args) {
@@ -160,11 +166,12 @@ void WebUIHandler::HandleGetEvents(const ListValue* args) {
   DictionaryValue* results = new DictionaryValue();
   ListValue* points_results = new ListValue();
   results->Set("points", points_results);
-  results->SetInteger("type", event_type);
+  results->SetInteger("eventType", event_type);
   util::PostTaskToDatabaseThreadAndReply(
+      FROM_HERE,
       base::Bind(&DoGetEvents, points_results, event_type, start, end),
       base::Bind(&WebUIHandler::ReturnResults, AsWeakPtr(),
-                 "performance_monitor.getEventsCallback",
+                 "PerformanceMonitor.getEventsCallback",
                  base::Owned(results)));
 }
 
@@ -185,7 +192,7 @@ void WebUIHandler::HandleGetAllMetricTypes(const ListValue* args) {
     results.Append(metric_type_info);
   }
 
-  ReturnResults("performance_monitor.getAllMetricTypesCallback", &results);
+  ReturnResults("PerformanceMonitor.getAllMetricTypesCallback", &results);
 }
 
 void WebUIHandler::HandleGetMetric(const ListValue* args) {
@@ -207,14 +214,15 @@ void WebUIHandler::HandleGetMetric(const ListValue* args) {
       base::TimeDelta::FromMilliseconds(resolution_in_milliseconds);
 
   DictionaryValue* results = new DictionaryValue();
-  results->SetInteger("type", metric_type);
+  results->SetInteger("metricType", metric_type);
   ListValue* points_results = new ListValue();
   results->Set("points", points_results);
   util::PostTaskToDatabaseThreadAndReply(
+      FROM_HERE,
       base::Bind(&DoGetMetric, points_results, metric_type,
                  start, end, resolution),
       base::Bind(&WebUIHandler::ReturnResults, AsWeakPtr(),
-                 "performance_monitor.getMetricCallback",
+                 "PerformanceMonitor.getMetricCallback",
                  base::Owned(results)));
 }
 

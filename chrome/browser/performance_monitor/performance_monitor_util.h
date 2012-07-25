@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/time.h"
+#include "base/tracked_objects.h"
 #include "chrome/browser/performance_monitor/event.h"
 #include "chrome/browser/performance_monitor/metric_info.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -28,8 +29,10 @@ std::vector<MetricInfo> AggregateMetric(
 // Posts |request| to the performance monitor database's sequenced thread. On
 // completion |reply| is posted to the thread that called
 // PostTaskToDatabaseThreadAndReply.
-bool PostTaskToDatabaseThreadAndReply(const base::Closure& request,
-                                      const base::Closure& reply);
+bool PostTaskToDatabaseThreadAndReply(
+    const tracked_objects::Location& from_here,
+    const base::Closure& request,
+    const base::Closure& reply);
 
 // These are a collection of methods designed to create an event to store the
 // pertinent information, given all the fields. Please use these methods to
