@@ -173,8 +173,8 @@ class PluginsTest(pyauto.PyUITest):
     """Verify that all the plugins can be blocked.
     Verifying by checking that flash plugin was blocked.
     """
-    flash_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'plugin', 'flash-clicktoplay.html'))
+    flash_url = self.GetFileURLForContentDataPath(
+        'plugin', 'flash-clicktoplay.html')
     self.NavigateToURL(flash_url)
     flash_pid = self._GetPluginPID('Shockwave Flash')
     self.assertTrue(flash_pid, msg='No plugin process for Shockwave Flash')

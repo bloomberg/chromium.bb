@@ -51,7 +51,7 @@ class InfobarTest(pyauto.PyUITest):
 
   def testPluginCrashInfobar(self):
     """Verify the "plugin crashed" infobar."""
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
+    flash_url = self.GetFileURLForContentDataPath('plugin', 'flash.swf')
     # Trigger flash plugin
     self.NavigateToURL(flash_url)
     child_processes = self.GetBrowserInfo()['child_processes']
@@ -158,7 +158,7 @@ class InfobarTest(pyauto.PyUITest):
   def testPluginCrashForMultiTabs(self):
     """Verify plugin crash infobar shows up only on the tabs using plugin."""
     non_flash_url = self.GetFileURLForDataPath('english_page.html')
-    flash_url = self.GetFileURLForDataPath('plugin', 'FlashSpin.swf')
+    flash_url = self.GetFileURLForContentDataPath('plugin', 'FlashSpin.swf')
     # False = Non flash url, True = Flash url
     # We have set of these values to compare a flash page and a non-flash page
     urls_type = [False, True, False, True, False]

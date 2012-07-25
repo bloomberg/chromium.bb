@@ -43,13 +43,13 @@ class FlashTest(pyauto.PyUITest):
 
     We merely check that the Flash process kicks in.
     """
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
+    flash_url = self.GetFileURLForContentDataPath('plugin', 'flash.swf')
     self.NavigateToURL(flash_url)
     self._AssertFlashProcessPresent()
 
   def testSingleFlashPluginProcess(self):
     """Verify there's only one Flash plugin process shared across all uses."""
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
+    flash_url = self.GetFileURLForContentDataPath('plugin', 'flash.swf')
     self.NavigateToURL(flash_url)
     for _ in range(2):
       self.AppendTab(pyauto.GURL(flash_url))
@@ -64,7 +64,7 @@ class FlashTest(pyauto.PyUITest):
 
   def testFlashLoadsAfterKill(self):
     """Verify that Flash process reloads after crashing (or being killed)."""
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
+    flash_url = self.GetFileURLForContentDataPath('plugin', 'flash.swf')
     self.NavigateToURL(flash_url)
     flash_process_id1 = self._GetFlashProcessesInfo()[0]['pid']
     self.Kill(flash_process_id1)
@@ -96,7 +96,7 @@ class FlashTest(pyauto.PyUITest):
         self.assertTrue(plugin['enabled'])
         # Toggle plugin to disable flash.
         self.DisablePlugin(plugin['path'])
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.html')
+    flash_url = self.GetFileURLForContentDataPath('plugin', 'flash.html')
     self.NavigateToURL(flash_url)
     # Verify shockwave flash process not present.
     self._AssertFlashProcessNotPresent()
@@ -105,14 +105,14 @@ class FlashTest(pyauto.PyUITest):
     """Verify we can play flash on an incognito window."""
     # Verify no flash process is currently running
     self._AssertFlashProcessNotPresent()
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
+    flash_url = self.GetFileURLForContentDataPath('plugin', 'flash.swf')
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(flash_url, 1, 0)
     self._AssertFlashProcessPresent()
 
   def testFlashWithMultipleTabs(self):
     """Verify we can play flash in multiple tabs."""
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
+    flash_url = self.GetFileURLForContentDataPath('plugin', 'flash.swf')
     # Verify no flash process is currently running
     self._AssertFlashProcessNotPresent()
     self.NavigateToURL(flash_url)

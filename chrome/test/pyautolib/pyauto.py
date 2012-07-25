@@ -608,6 +608,23 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return _HTTP_SERVER.GetURL(os.path.join('files', *relative_path)).spec()
 
   @staticmethod
+  def ContentDataDir():
+    """Get path to content/test/data."""
+    return os.path.join(PyUITest.DataDir(), os.pardir, os.pardir, os.pardir,
+        'content', 'test', 'data')
+
+  @staticmethod
+  def GetFileURLForContentDataPath(*relative_path):
+    """Get file:// url for the given path relative to content test data dir.
+
+    Also quotes the url using urllib.quote().
+
+    Args:
+      relative_path: Variable number of strings that can be joined.
+    """
+    return PyUITest.GetFileURLForPath(PyUITest.ContentDataDir(), *relative_path)
+
+  @staticmethod
   def GetFtpURLForDataPath(ftp_server, *relative_path):
     """Get ftp:// url for the given path in the data dir.
 
