@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Simulate a google-test executable.
+"""Simulate a failing google-test executable.
 
 http://code.google.com/p/googletest/
 """
@@ -11,41 +11,14 @@ http://code.google.com/p/googletest/
 import optparse
 import sys
 
+import gtest_fake_base
+
 
 TESTS = {
   'Foo': ['Bar1', 'Bar2', 'Bar3'],
   'Baz': ['Fail'],
 }
 TOTAL = sum(len(v) for v in TESTS.itervalues())
-
-
-def get_test_output(test_name):
-  fixture, case = test_name.split('.', 1)
-  return (
-    '[==========] Running 1 test from 1 test case.\n'
-    '[----------] Global test environment set-up.\n'
-    '[----------] 1 test from %(fixture)s\n'
-    '[ RUN      ] %(fixture)s.%(case)s\n'
-    '[       OK ] %(fixture)s.%(case)s (0 ms)\n'
-    '[----------] 1 test from %(fixture)s (0 ms total)\n'
-    '\n') % {
-      'fixture': fixture,
-      'case': case,
-    }
-
-
-def get_footer(number):
-  return (
-    '[----------] Global test environment tear-down\n'
-    '[==========] %(number)d test from %(total)d test case ran. (0 ms total)\n'
-    '[  PASSED  ] %(number)d test.\n'
-    '\n'
-    '  YOU HAVE 5 DISABLED TESTS\n'
-    '\n'
-    '  YOU HAVE 2 tests with ignored failures (FAILS prefix)\n') % {
-      'number': number,
-      'total': TOTAL,
-    }
 
 
 def main():
@@ -68,15 +41,15 @@ def main():
   if options.gtest_filter:
     # Simulate running one test.
     print 'Note: Google Test filter = %s\n' % options.gtest_filter
-    print get_test_output(options.gtest_filter)
-    print get_footer(1)
+    print gtest_fake_base.get_test_output(options.gtest_filter)
+    print gtest_fake_base.get_footer(1, 1)
     # Make Baz.Fail fail.
     return options.gtest_filter == 'Baz.Fail'
 
   for fixture, cases in TESTS.iteritems():
     for case in cases:
-      print get_test_output('%s.%s' % (fixture, case))
-  print get_footer(TOTAL)
+      print gtest_fake_base.get_test_output('%s.%s' % (fixture, case))
+  print gtest_fake_base.get_footer(TOTAL, TOTAL)
   return 1
 
 

@@ -554,7 +554,7 @@ def run_test_cases(executable, test_cases, jobs, timeout, no_dump):
       len(results),
       nb_runs,
       nb_runs / duration)
-  return 0
+  return int(bool(fail))
 
 
 def main():

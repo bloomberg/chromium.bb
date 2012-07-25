@@ -16,7 +16,9 @@ import trace_inputs
 
 FILE_PATH = os.path.realpath(unicode(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(FILE_PATH)
-TARGET_PATH = os.path.join(ROOT_DIR, 'data', 'gtest_fake', 'gtest_fake.py')
+TARGET_UTIL_PATH = os.path.join(ROOT_DIR, 'data', 'gtest_fake',
+                                'gtest_fake_base.py')
+TARGET_PATH = os.path.join(ROOT_DIR, 'data', 'gtest_fake', 'gtest_fake_fail.py')
 
 
 class TraceTestCases(unittest.TestCase):
@@ -63,7 +65,13 @@ class TraceTestCases(unittest.TestCase):
           u'executable': self.real_executable,
           u'files': [
             {
-              u'path': os.path.join(u'data', 'gtest_fake', 'gtest_fake.py'),
+              u'path': os.path.join(u'data', 'gtest_fake',
+                                    'gtest_fake_base.py'),
+              u'size': os.stat(TARGET_UTIL_PATH).st_size,
+            },
+            {
+              u'path': os.path.join(u'data', 'gtest_fake',
+                                    'gtest_fake_fail.py'),
               u'size': os.stat(TARGET_PATH).st_size,
             },
           ],
@@ -73,7 +81,8 @@ class TraceTestCases(unittest.TestCase):
       u'valid': True,
       u'variables': {
         u'isolate_dependency_tracked': [
-          u'<(PRODUCT_DIR)/gtest_fake/gtest_fake.py',
+          u'<(PRODUCT_DIR)/gtest_fake/gtest_fake_base.py',
+          u'<(PRODUCT_DIR)/gtest_fake/gtest_fake_fail.py',
         ],
       },
     }
