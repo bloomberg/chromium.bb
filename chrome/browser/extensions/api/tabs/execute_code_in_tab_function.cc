@@ -23,8 +23,8 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -172,7 +172,8 @@ void ExecuteCodeInTabFunction::DidLoadFile(bool success,
   if (success &&
       function_name == TabsInsertCSSFunction::function_name() &&
       extension != NULL &&
-      data.find(ExtensionMessageBundle::kMessageBegin) != std::string::npos) {
+      data.find(
+          extensions::MessageBundle::kMessageBegin) != std::string::npos) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&ExecuteCodeInTabFunction::LocalizeCSS, this,
@@ -191,13 +192,13 @@ void ExecuteCodeInTabFunction::LocalizeCSS(
     const FilePath& extension_path,
     const std::string& extension_default_locale) {
   scoped_ptr<SubstitutionMap> localization_messages(
-      extension_file_util::LoadExtensionMessageBundleSubstitutionMap(
+      extension_file_util::LoadMessageBundleSubstitutionMap(
           extension_path, extension_id, extension_default_locale));
 
   // We need to do message replacement on the data, so it has to be mutable.
   std::string css_data = data;
   std::string error;
-  ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
+  extensions::MessageBundle::ReplaceMessagesWithExternalDictionary(
       *localization_messages, &css_data, &error);
 
   // Call back DidLoadAndLocalizeFile on the UI thread. The success parameter

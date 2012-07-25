@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MESSAGE_SERVICE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_MESSAGE_SERVICE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_MESSAGE_SERVICE_H_
+#define CHROME_BROWSER_EXTENSIONS_MESSAGE_SERVICE_H_
 
 #include <map>
 #include <set>
@@ -24,7 +24,6 @@ class WebContents;
 
 namespace extensions {
 class LazyBackgroundTaskQueue;
-}
 
 // This class manages message and event passing between renderer processes.
 // It maintains a list of processes that are listening to events and a set of
@@ -47,7 +46,7 @@ class LazyBackgroundTaskQueue;
 // port: an IPC::Message::Process interface and an optional routing_id (in the
 // case that the port is a tab).  The Process is usually either a
 // RenderProcessHost or a RenderViewHost.
-class ExtensionMessageService : public content::NotificationObserver {
+class MessageService : public content::NotificationObserver {
  public:
   // A messaging channel. Note that the opening port can be the same as the
   // receiver, if an extension background page wants to talk to its tab (for
@@ -59,8 +58,8 @@ class ExtensionMessageService : public content::NotificationObserver {
   // NOTE: this can be called from any thread.
   static void AllocatePortIdPair(int* port1, int* port2);
 
-  explicit ExtensionMessageService(extensions::LazyBackgroundTaskQueue* queue);
-  virtual ~ExtensionMessageService();
+  explicit MessageService(LazyBackgroundTaskQueue* queue);
+  virtual ~MessageService();
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is
@@ -87,7 +86,7 @@ class ExtensionMessageService : public content::NotificationObserver {
   void PostMessageFromRenderer(int port_id, const std::string& message);
 
  private:
-  friend class MockExtensionMessageService;
+  friend class MockMessageService;
   struct OpenChannelParams;
 
   // A map of channel ID to its channel object.
@@ -143,9 +142,11 @@ class ExtensionMessageService : public content::NotificationObserver {
   PendingChannelMap pending_channels_;
 
   // Weak pointer. Guaranteed to outlive this class.
-  extensions::LazyBackgroundTaskQueue* lazy_background_task_queue_;
+  LazyBackgroundTaskQueue* lazy_background_task_queue_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionMessageService);
+  DISALLOW_COPY_AND_ASSIGN(MessageService);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_MESSAGE_SERVICE_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_MESSAGE_SERVICE_H_

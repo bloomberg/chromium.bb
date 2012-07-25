@@ -18,7 +18,6 @@
 
 class ExtensionDevToolsManager;
 class ExtensionInfoMap;
-class ExtensionMessageService;
 class ExtensionNavigationObserver;
 class ExtensionProcessManager;
 class ExtensionService;
@@ -34,6 +33,7 @@ class ExtensionPrefs;
 class ExtensionSystemSharedFactory;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
+class MessageService;
 class RulesRegistryService;
 class StateStore;
 class UserScriptMaster;
@@ -89,8 +89,8 @@ class ExtensionSystem : public ProfileKeyedService {
   // The LazyBackgroundTaskQueue is created at startup.
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() = 0;
 
-  // The ExtensionMessageService is created at startup.
-  virtual ExtensionMessageService* message_service() = 0;
+  // The MessageService is created at startup.
+  virtual MessageService* message_service() = 0;
 
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
@@ -151,7 +151,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
-  virtual ExtensionMessageService* message_service() OVERRIDE;  // shared
+  virtual MessageService* message_service() OVERRIDE;  // shared
   virtual EventRouter* event_router() OVERRIDE;  // shared
   virtual RulesRegistryService* rules_registry_service()
       OVERRIDE;  // shared
@@ -191,7 +191,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     UserScriptMaster* user_script_master();
     ExtensionInfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
-    ExtensionMessageService* message_service();
+    MessageService* message_service();
     EventRouter* event_router();
     RulesRegistryService* rules_registry_service();
 
@@ -208,9 +208,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_refptr<UserScriptMaster> user_script_master_;
     // extension_info_map_ needs to outlive extension_process_manager_.
     scoped_refptr<ExtensionInfoMap> extension_info_map_;
-    // This is a dependency of ExtensionMessageService and EventRouter.
+    // This is a dependency of MessageService and EventRouter.
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
-    scoped_ptr<ExtensionMessageService> extension_message_service_;
+    scoped_ptr<MessageService> message_service_;
     scoped_ptr<EventRouter> extension_event_router_;
     scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
     scoped_ptr<RulesRegistryService> rules_registry_service_;

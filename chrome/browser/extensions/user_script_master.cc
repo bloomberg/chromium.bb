@@ -21,9 +21,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -196,7 +196,7 @@ static bool LoadScriptContent(UserScript::File* script_file,
   // Localize the content.
   if (localization_messages) {
     std::string error;
-    ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
+    MessageBundle::ReplaceMessagesWithExternalDictionary(
         *localization_messages, &content, &error);
     if (!error.empty()) {
       LOG(WARNING) << "Failed to replace messages in script: " << error;
@@ -239,7 +239,7 @@ SubstitutionMap* UserScriptMaster::ScriptReloader::GetLocalizationMessages(
     return NULL;
   }
 
-  return extension_file_util::LoadExtensionMessageBundleSubstitutionMap(
+  return extension_file_util::LoadMessageBundleSubstitutionMap(
       extensions_info_[extension_id].first,
       extension_id,
       extensions_info_[extension_id].second);

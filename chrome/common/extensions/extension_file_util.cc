@@ -22,9 +22,9 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
@@ -482,7 +482,7 @@ void GarbageCollectExtensions(
   }
 }
 
-ExtensionMessageBundle* LoadExtensionMessageBundle(
+extensions::MessageBundle* LoadMessageBundle(
     const FilePath& extension_path,
     const std::string& default_locale,
     std::string* error) {
@@ -504,7 +504,7 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
     return NULL;
   }
 
-  ExtensionMessageBundle* message_bundle =
+  extensions::MessageBundle* message_bundle =
       extension_l10n_util::LoadMessageCatalogs(
           locale_path,
           default_locale,
@@ -515,7 +515,7 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
   return message_bundle;
 }
 
-SubstitutionMap* LoadExtensionMessageBundleSubstitutionMap(
+SubstitutionMap* LoadMessageBundleSubstitutionMap(
     const FilePath& extension_path,
     const std::string& extension_id,
     const std::string& default_locale) {
@@ -523,8 +523,8 @@ SubstitutionMap* LoadExtensionMessageBundleSubstitutionMap(
   if (!default_locale.empty()) {
     // Touch disk only if extension is localized.
     std::string error;
-    scoped_ptr<ExtensionMessageBundle> bundle(
-        LoadExtensionMessageBundle(extension_path, default_locale, &error));
+    scoped_ptr<extensions::MessageBundle> bundle(
+        LoadMessageBundle(extension_path, default_locale, &error));
 
     if (bundle.get())
       *returnValue = *bundle->dictionary();
@@ -533,7 +533,7 @@ SubstitutionMap* LoadExtensionMessageBundleSubstitutionMap(
   // Add @@extension_id reserved message here, so it's available to
   // non-localized extensions too.
   returnValue->insert(
-      std::make_pair(ExtensionMessageBundle::kExtensionIdKey, extension_id));
+      std::make_pair(extensions::MessageBundle::kExtensionIdKey, extension_id));
 
   return returnValue;
 }

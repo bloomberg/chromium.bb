@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/message_bundle.h"
 
 #include <string>
 #include <vector>
@@ -20,7 +20,9 @@
 
 namespace errors = extension_manifest_errors;
 
-class ExtensionMessageBundleTest : public testing::Test {
+namespace extensions {
+
+class MessageBundleTest : public testing::Test {
  protected:
   enum BadDictionary {
     INVALID_NAME,
@@ -44,7 +46,7 @@ class ExtensionMessageBundleTest : public testing::Test {
                          const std::string& content,
                          DictionaryValue* dict) {
     DictionaryValue* content_tree = new DictionaryValue;
-    content_tree->SetString(ExtensionMessageBundle::kContentKey, content);
+    content_tree->SetString(MessageBundle::kContentKey, content);
     SetDictionary(name, content_tree, dict);
   }
 
@@ -53,7 +55,7 @@ class ExtensionMessageBundleTest : public testing::Test {
     CreateContentTree("a", "A", placeholders_tree);
     CreateContentTree("b", "B", placeholders_tree);
     CreateContentTree("c", "C", placeholders_tree);
-    SetDictionary(ExtensionMessageBundle::kPlaceholdersKey,
+    SetDictionary(MessageBundle::kPlaceholdersKey,
                   placeholders_tree,
                   dict);
   }
@@ -65,7 +67,7 @@ class ExtensionMessageBundleTest : public testing::Test {
     DictionaryValue* message_tree = new DictionaryValue;
     if (create_placeholder_subtree)
       CreatePlaceholdersTree(message_tree);
-    message_tree->SetString(ExtensionMessageBundle::kMessageKey, message);
+    message_tree->SetString(MessageBundle::kMessageKey, message);
     SetDictionary(name, message_tree, dict);
   }
 
@@ -124,10 +126,10 @@ class ExtensionMessageBundleTest : public testing::Test {
     return 5U;
   }
 
-  void CheckReservedMessages(ExtensionMessageBundle* handler) {
+  void CheckReservedMessages(MessageBundle* handler) {
     std::string ui_locale = extension_l10n_util::CurrentLocaleOrDefault();
     EXPECT_EQ(ui_locale,
-              handler->GetL10nMessage(ExtensionMessageBundle::kUILocaleKey));
+              handler->GetL10nMessage(MessageBundle::kUILocaleKey));
 
     std::string text_dir = "ltr";
     if (base::i18n::GetTextDirectionForLocale(ui_locale.c_str()) ==
@@ -135,7 +137,7 @@ class ExtensionMessageBundleTest : public testing::Test {
       text_dir = "rtl";
 
     EXPECT_EQ(text_dir, handler->GetL10nMessage(
-        ExtensionMessageBundle::kBidiDirectionKey));
+        MessageBundle::kBidiDirectionKey));
   }
 
   bool AppendReservedMessages(const std::string& application_locale) {
@@ -146,7 +148,7 @@ class ExtensionMessageBundleTest : public testing::Test {
 
   std::string CreateMessageBundle() {
     std::string error;
-    handler_.reset(ExtensionMessageBundle::Create(catalogs_, &error));
+    handler_.reset(MessageBundle::Create(catalogs_, &error));
 
     return error;
   }
@@ -155,22 +157,22 @@ class ExtensionMessageBundleTest : public testing::Test {
     handler_->dictionary_.clear();
   }
 
-  scoped_ptr<ExtensionMessageBundle> handler_;
+  scoped_ptr<MessageBundle> handler_;
   std::vector<linked_ptr<DictionaryValue> > catalogs_;
 };
 
-TEST_F(ExtensionMessageBundleTest, ReservedMessagesCount) {
+TEST_F(MessageBundleTest, ReservedMessagesCount) {
   ASSERT_EQ(5U, ReservedMessagesCount());
 }
 
-TEST_F(ExtensionMessageBundleTest, InitEmptyDictionaries) {
+TEST_F(MessageBundleTest, InitEmptyDictionaries) {
   CreateMessageBundle();
   EXPECT_TRUE(handler_.get() != NULL);
   EXPECT_EQ(0U + ReservedMessagesCount(), handler_->size());
   CheckReservedMessages(handler_.get());
 }
 
-TEST_F(ExtensionMessageBundleTest, InitGoodDefaultDict) {
+TEST_F(MessageBundleTest, InitGoodDefaultDict) {
   catalogs_.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
   CreateMessageBundle();
 
@@ -183,7 +185,7 @@ TEST_F(ExtensionMessageBundleTest, InitGoodDefaultDict) {
   CheckReservedMessages(handler_.get());
 }
 
-TEST_F(ExtensionMessageBundleTest, InitAppDictConsultedFirst) {
+TEST_F(MessageBundleTest, InitAppDictConsultedFirst) {
   catalogs_.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
   catalogs_.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
 
@@ -207,7 +209,7 @@ TEST_F(ExtensionMessageBundleTest, InitAppDictConsultedFirst) {
   CheckReservedMessages(handler_.get());
 }
 
-TEST_F(ExtensionMessageBundleTest, InitBadAppDict) {
+TEST_F(MessageBundleTest, InitBadAppDict) {
   catalogs_.push_back(
       linked_ptr<DictionaryValue>(CreateBadDictionary(INVALID_NAME)));
   catalogs_.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
@@ -219,56 +221,56 @@ TEST_F(ExtensionMessageBundleTest, InitBadAppDict) {
             "[A-Z], [0-9] and \"_\" are allowed.", error);
 
   catalogs_[0].reset(CreateBadDictionary(NAME_NOT_A_TREE));
-  handler_.reset(ExtensionMessageBundle::Create(catalogs_, &error));
+  handler_.reset(MessageBundle::Create(catalogs_, &error));
   EXPECT_TRUE(handler_.get() == NULL);
   EXPECT_EQ("Not a valid tree for key n4.", error);
 
   catalogs_[0].reset(CreateBadDictionary(EMPTY_NAME_TREE));
-  handler_.reset(ExtensionMessageBundle::Create(catalogs_, &error));
+  handler_.reset(MessageBundle::Create(catalogs_, &error));
   EXPECT_TRUE(handler_.get() == NULL);
   EXPECT_EQ("There is no \"message\" element for key n4.", error);
 
   catalogs_[0].reset(CreateBadDictionary(MISSING_MESSAGE));
-  handler_.reset(ExtensionMessageBundle::Create(catalogs_, &error));
+  handler_.reset(MessageBundle::Create(catalogs_, &error));
   EXPECT_TRUE(handler_.get() == NULL);
   EXPECT_EQ("There is no \"message\" element for key n1.", error);
 
   catalogs_[0].reset(CreateBadDictionary(PLACEHOLDER_NOT_A_TREE));
-  handler_.reset(ExtensionMessageBundle::Create(catalogs_, &error));
+  handler_.reset(MessageBundle::Create(catalogs_, &error));
   EXPECT_TRUE(handler_.get() == NULL);
   EXPECT_EQ("Not a valid \"placeholders\" element for key n1.", error);
 
   catalogs_[0].reset(CreateBadDictionary(EMPTY_PLACEHOLDER_TREE));
-  handler_.reset(ExtensionMessageBundle::Create(catalogs_, &error));
+  handler_.reset(MessageBundle::Create(catalogs_, &error));
   EXPECT_TRUE(handler_.get() == NULL);
   EXPECT_EQ("Variable $a$ used but not defined.", error);
 
   catalogs_[0].reset(CreateBadDictionary(CONTENT_MISSING));
-  handler_.reset(ExtensionMessageBundle::Create(catalogs_, &error));
+  handler_.reset(MessageBundle::Create(catalogs_, &error));
   EXPECT_TRUE(handler_.get() == NULL);
   EXPECT_EQ("Invalid \"content\" element for key n1.", error);
 
   catalogs_[0].reset(CreateBadDictionary(MESSAGE_PLACEHOLDER_DOESNT_MATCH));
-  handler_.reset(ExtensionMessageBundle::Create(catalogs_, &error));
+  handler_.reset(MessageBundle::Create(catalogs_, &error));
   EXPECT_TRUE(handler_.get() == NULL);
   EXPECT_EQ("Variable $a$ used but not defined.", error);
 }
 
-TEST_F(ExtensionMessageBundleTest, ReservedMessagesOverrideDeveloperMessages) {
+TEST_F(MessageBundleTest, ReservedMessagesOverrideDeveloperMessages) {
   catalogs_.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
 
   DictionaryValue* dict = catalogs_[0].get();
-  CreateMessageTree(ExtensionMessageBundle::kUILocaleKey, "x", false, dict);
+  CreateMessageTree(MessageBundle::kUILocaleKey, "x", false, dict);
 
   std::string error = CreateMessageBundle();
 
   EXPECT_TRUE(handler_.get() == NULL);
   std::string expected_error = ExtensionErrorUtils::FormatErrorMessage(
-      errors::kReservedMessageFound, ExtensionMessageBundle::kUILocaleKey);
+      errors::kReservedMessageFound, MessageBundle::kUILocaleKey);
   EXPECT_EQ(expected_error, error);
 }
 
-TEST_F(ExtensionMessageBundleTest, AppendReservedMessagesForLTR) {
+TEST_F(MessageBundleTest, AppendReservedMessagesForLTR) {
   CreateMessageBundle();
 
   ASSERT_TRUE(handler_.get() != NULL);
@@ -276,18 +278,18 @@ TEST_F(ExtensionMessageBundleTest, AppendReservedMessagesForLTR) {
   ASSERT_TRUE(AppendReservedMessages("en_US"));
 
   EXPECT_EQ("en_US",
-            handler_->GetL10nMessage(ExtensionMessageBundle::kUILocaleKey));
+            handler_->GetL10nMessage(MessageBundle::kUILocaleKey));
   EXPECT_EQ("ltr", handler_->GetL10nMessage(
-      ExtensionMessageBundle::kBidiDirectionKey));
+      MessageBundle::kBidiDirectionKey));
   EXPECT_EQ("rtl", handler_->GetL10nMessage(
-      ExtensionMessageBundle::kBidiReversedDirectionKey));
+      MessageBundle::kBidiReversedDirectionKey));
   EXPECT_EQ("left", handler_->GetL10nMessage(
-      ExtensionMessageBundle::kBidiStartEdgeKey));
+      MessageBundle::kBidiStartEdgeKey));
   EXPECT_EQ("right", handler_->GetL10nMessage(
-      ExtensionMessageBundle::kBidiEndEdgeKey));
+      MessageBundle::kBidiEndEdgeKey));
 }
 
-TEST_F(ExtensionMessageBundleTest, AppendReservedMessagesForRTL) {
+TEST_F(MessageBundleTest, AppendReservedMessagesForRTL) {
   CreateMessageBundle();
 
   ASSERT_TRUE(handler_.get() != NULL);
@@ -295,24 +297,24 @@ TEST_F(ExtensionMessageBundleTest, AppendReservedMessagesForRTL) {
   ASSERT_TRUE(AppendReservedMessages("he"));
 
   EXPECT_EQ("he",
-            handler_->GetL10nMessage(ExtensionMessageBundle::kUILocaleKey));
+            handler_->GetL10nMessage(MessageBundle::kUILocaleKey));
   EXPECT_EQ("rtl", handler_->GetL10nMessage(
-      ExtensionMessageBundle::kBidiDirectionKey));
+      MessageBundle::kBidiDirectionKey));
   EXPECT_EQ("ltr", handler_->GetL10nMessage(
-      ExtensionMessageBundle::kBidiReversedDirectionKey));
+      MessageBundle::kBidiReversedDirectionKey));
   EXPECT_EQ("right", handler_->GetL10nMessage(
-      ExtensionMessageBundle::kBidiStartEdgeKey));
+      MessageBundle::kBidiStartEdgeKey));
   EXPECT_EQ("left", handler_->GetL10nMessage(
-      ExtensionMessageBundle::kBidiEndEdgeKey));
+      MessageBundle::kBidiEndEdgeKey));
 }
 
-TEST_F(ExtensionMessageBundleTest, IsValidNameCheckValidCharacters) {
-  EXPECT_TRUE(ExtensionMessageBundle::IsValidName(std::string("a__BV_9")));
-  EXPECT_TRUE(ExtensionMessageBundle::IsValidName(std::string("@@a__BV_9")));
-  EXPECT_FALSE(ExtensionMessageBundle::IsValidName(std::string("$a__BV_9$")));
-  EXPECT_FALSE(ExtensionMessageBundle::IsValidName(std::string("a-BV-9")));
-  EXPECT_FALSE(ExtensionMessageBundle::IsValidName(std::string("a#BV!9")));
-  EXPECT_FALSE(ExtensionMessageBundle::IsValidName(std::string("a<b")));
+TEST_F(MessageBundleTest, IsValidNameCheckValidCharacters) {
+  EXPECT_TRUE(MessageBundle::IsValidName(std::string("a__BV_9")));
+  EXPECT_TRUE(MessageBundle::IsValidName(std::string("@@a__BV_9")));
+  EXPECT_FALSE(MessageBundle::IsValidName(std::string("$a__BV_9$")));
+  EXPECT_FALSE(MessageBundle::IsValidName(std::string("a-BV-9")));
+  EXPECT_FALSE(MessageBundle::IsValidName(std::string("a#BV!9")));
+  EXPECT_FALSE(MessageBundle::IsValidName(std::string("a<b")));
 }
 
 struct ReplaceVariables {
@@ -324,11 +326,11 @@ struct ReplaceVariables {
   bool pass;
 };
 
-TEST(ExtensionMessageBundle, ReplaceMessagesInText) {
-  const char* kMessageBegin = ExtensionMessageBundle::kMessageBegin;
-  const char* kMessageEnd = ExtensionMessageBundle::kMessageEnd;
-  const char* kPlaceholderBegin = ExtensionMessageBundle::kPlaceholderBegin;
-  const char* kPlaceholderEnd = ExtensionMessageBundle::kPlaceholderEnd;
+TEST(MessageBundle, ReplaceMessagesInText) {
+  const char* kMessageBegin = MessageBundle::kMessageBegin;
+  const char* kMessageEnd = MessageBundle::kMessageEnd;
+  const char* kPlaceholderBegin = MessageBundle::kPlaceholderBegin;
+  const char* kPlaceholderEnd = MessageBundle::kPlaceholderEnd;
 
   static ReplaceVariables test_cases[] = {
     // Message replacement.
@@ -371,7 +373,7 @@ TEST(ExtensionMessageBundle, ReplaceMessagesInText) {
        kPlaceholderBegin, kPlaceholderEnd, false },
   };
 
-  ExtensionMessageBundle::SubstitutionMap messages;
+  MessageBundle::SubstitutionMap messages;
   messages.insert(std::make_pair("simple", "simple"));
   messages.insert(std::make_pair("long", "A pretty long replacement"));
   messages.insert(std::make_pair("long_v", "A pretty long replacement"));
@@ -382,11 +384,11 @@ TEST(ExtensionMessageBundle, ReplaceMessagesInText) {
     std::string text = test_cases[i].original;
     std::string error;
     EXPECT_EQ(test_cases[i].pass,
-      ExtensionMessageBundle::ReplaceVariables(messages,
-                                               test_cases[i].begin_delimiter,
-                                               test_cases[i].end_delimiter,
-                                               &text,
-                                               &error));
+              MessageBundle::ReplaceVariables(messages,
+                                              test_cases[i].begin_delimiter,
+                                              test_cases[i].end_delimiter,
+                                              &text,
+                                              &error));
     EXPECT_EQ(test_cases[i].result, text);
   }
 }
@@ -423,3 +425,5 @@ TEST(GetExtensionToL10nMessagesMapTest, ReturnsMapForKnownExtensionId) {
   EXPECT_EQ(1U, map->size());
   EXPECT_EQ("message_value", (*map)["message_name"]);
 }
+
+}  // namespace extensions

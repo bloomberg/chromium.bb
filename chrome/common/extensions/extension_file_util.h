@@ -9,13 +9,17 @@
 #include <map>
 
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/message_bundle.h"
 
-class ExtensionMessageBundle;
 class FilePath;
 class GURL;
+
 namespace base {
 class DictionaryValue;
+}
+
+namespace extensions {
+class MessageBundle;
 }
 
 // Utilities for manipulating the on-disk storage of extensions.
@@ -86,15 +90,14 @@ void GarbageCollectExtensions(
 
 // Loads extension message catalogs and returns message bundle.
 // Returns NULL on error, or if extension is not localized.
-ExtensionMessageBundle* LoadExtensionMessageBundle(
+extensions::MessageBundle* LoadMessageBundle(
     const FilePath& extension_path,
     const std::string& default_locale,
     std::string* error);
 
 // Loads the extension message bundle substitution map. Contains at least
 // extension_id item.
-ExtensionMessageBundle::SubstitutionMap*
-    LoadExtensionMessageBundleSubstitutionMap(
+extensions::MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
     const FilePath& extension_path,
     const std::string& extension_id,
     const std::string& default_locale);

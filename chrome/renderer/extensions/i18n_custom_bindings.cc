@@ -5,7 +5,7 @@
 #include "chrome/renderer/extensions/i18n_custom_bindings.h"
 
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
@@ -57,7 +57,7 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
 
   std::string message_name = *v8::String::AsciiValue(args[0]);
   std::string message =
-      ExtensionMessageBundle::GetL10nMessage(message_name, *l10n_messages);
+      MessageBundle::GetL10nMessage(message_name, *l10n_messages);
 
   std::vector<std::string> substitutions;
   if (args[1]->IsArray()) {

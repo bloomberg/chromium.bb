@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_navigation_observer.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
+#include "chrome/browser/extensions/message_service.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
@@ -107,9 +107,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
+  message_service_.reset(new MessageService(lazy_background_task_queue_.get()));
   extension_event_router_.reset(new EventRouter(profile_));
-  extension_message_service_.reset(new ExtensionMessageService(
-      lazy_background_task_queue_.get()));
   extension_navigation_observer_.reset(
       new ExtensionNavigationObserver(profile_));
 
@@ -229,8 +228,8 @@ LazyBackgroundTaskQueue*
   return lazy_background_task_queue_.get();
 }
 
-ExtensionMessageService* ExtensionSystemImpl::Shared::message_service() {
-  return extension_message_service_.get();
+MessageService* ExtensionSystemImpl::Shared::message_service() {
+  return message_service_.get();
 }
 
 EventRouter* ExtensionSystemImpl::Shared::event_router() {
@@ -327,7 +326,7 @@ LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
   return shared_->lazy_background_task_queue();
 }
 
-ExtensionMessageService* ExtensionSystemImpl::message_service() {
+MessageService* ExtensionSystemImpl::message_service() {
   return shared_->message_service();
 }
 

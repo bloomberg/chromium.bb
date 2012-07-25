@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"

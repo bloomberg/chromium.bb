@@ -15,10 +15,10 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/message_service.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/nacl_host/pnacl_file_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -29,8 +29,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -268,7 +268,7 @@ void ChromeRenderMessageFilter::OnOpenChannelToExtension(
     const std::string& target_extension_id,
     const std::string& channel_name, int* port_id) {
   int port2_id;
-  ExtensionMessageService::AllocatePortIdPair(port_id, &port2_id);
+  extensions::MessageService::AllocatePortIdPair(port_id, &port2_id);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -294,7 +294,7 @@ void ChromeRenderMessageFilter::OnOpenChannelToTab(
     int routing_id, int tab_id, const std::string& extension_id,
     const std::string& channel_name, int* port_id) {
   int port2_id;
-  ExtensionMessageService::AllocatePortIdPair(port_id, &port2_id);
+  extensions::MessageService::AllocatePortIdPair(port_id, &port2_id);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -341,8 +341,8 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  scoped_ptr<ExtensionMessageBundle::SubstitutionMap> dictionary_map(
-      extension_file_util::LoadExtensionMessageBundleSubstitutionMap(
+  scoped_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
+      extension_file_util::LoadMessageBundleSubstitutionMap(
           extension_path,
           extension_id,
           default_locale));
@@ -423,7 +423,7 @@ void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id,
   if (!content::RenderProcessHost::FromID(render_process_id_))
     return;  // To guard against crash in browser_tests shutdown.
 
-  ExtensionMessageService* message_service =
+  extensions::MessageService* message_service =
       extensions::ExtensionSystem::Get(profile_)->message_service();
   if (message_service)
     message_service->CloseChannel(port_id, connection_error);

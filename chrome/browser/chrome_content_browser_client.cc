@@ -29,12 +29,12 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
+#include "chrome/browser/extensions/message_handler.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gpu_util.h"
@@ -438,7 +438,7 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
 
   new ChromeRenderViewHostObserver(render_view_host,
                                    profile->GetNetworkPredictor());
-  new ExtensionMessageHandler(render_view_host);
+  new extensions::MessageHandler(render_view_host);
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(

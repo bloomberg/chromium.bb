@@ -18,7 +18,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/uloc.h"
@@ -63,7 +63,7 @@ bool ShouldRelocalizeManifest(const extensions::ExtensionInfo& info) {
 
 // Localizes manifest value for a given key.
 static bool LocalizeManifestValue(const std::string& key,
-                                  const ExtensionMessageBundle& messages,
+                                  const extensions::MessageBundle& messages,
                                   DictionaryValue* manifest,
                                   std::string* error) {
   std::string result;
@@ -77,7 +77,7 @@ static bool LocalizeManifestValue(const std::string& key,
   return true;
 }
 
-bool LocalizeManifest(const ExtensionMessageBundle& messages,
+bool LocalizeManifest(const extensions::MessageBundle& messages,
                       DictionaryValue* manifest,
                       std::string* error) {
   // Initialize name.
@@ -174,8 +174,8 @@ bool LocalizeExtension(const FilePath& extension_path,
 
   std::string default_locale = GetDefaultLocaleFromManifest(*manifest, error);
 
-  scoped_ptr<ExtensionMessageBundle> message_bundle(
-      extension_file_util::LoadExtensionMessageBundle(
+  scoped_ptr<extensions::MessageBundle> message_bundle(
+      extension_file_util::LoadMessageBundle(
           extension_path, default_locale, error));
 
   if (!message_bundle.get() && !error->empty())
@@ -292,7 +292,7 @@ static DictionaryValue* LoadMessageFile(const FilePath& locale_path,
   return static_cast<DictionaryValue*>(dictionary);
 }
 
-ExtensionMessageBundle* LoadMessageCatalogs(
+extensions::MessageBundle* LoadMessageCatalogs(
     const FilePath& locale_path,
     const std::string& default_locale,
     const std::string& application_locale,
@@ -320,7 +320,7 @@ ExtensionMessageBundle* LoadMessageCatalogs(
     }
   }
 
-  return ExtensionMessageBundle::Create(catalogs, error);
+  return extensions::MessageBundle::Create(catalogs, error);
 }
 
 bool ShouldSkipValidation(const FilePath& locales_path,

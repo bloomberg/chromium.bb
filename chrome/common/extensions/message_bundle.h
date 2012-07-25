@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
+#ifndef CHROME_COMMON_EXTENSIONS_MESSAGE_BUNDLE_H_
+#define CHROME_COMMON_EXTENSIONS_MESSAGE_BUNDLE_H_
 
 #include <map>
 #include <string>
@@ -15,9 +15,11 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace extensions {
+
 // Contains localized extension messages for one locale. Any messages that the
 // locale does not provide are pulled from the default locale.
-class ExtensionMessageBundle {
+class MessageBundle {
  public:
   typedef std::map<std::string, std::string> SubstitutionMap;
   typedef std::vector<linked_ptr<base::DictionaryValue> > CatalogVector;
@@ -52,11 +54,11 @@ class ExtensionMessageBundle {
   static const char* kBidiLeftEdgeValue;
   static const char* kBidiRightEdgeValue;
 
-  // Creates ExtensionMessageBundle or returns NULL if there was an error.
-  // Expects locale_catalogs to be sorted from more specific to less specific,
-  // with default catalog at the end.
-  static ExtensionMessageBundle* Create(const CatalogVector& locale_catalogs,
-                                        std::string* error);
+  // Creates MessageBundle or returns NULL if there was an error. Expects
+  // locale_catalogs to be sorted from more specific to less specific, with
+  // default catalog at the end.
+  static MessageBundle* Create(const CatalogVector& locale_catalogs,
+                               std::string* error);
 
   // Get message from the catalog with given key.
   // Returned message has all of the internal placeholders resolved to their
@@ -100,14 +102,14 @@ class ExtensionMessageBundle {
   // Getter for dictionary_.
   const SubstitutionMap* dictionary() const { return &dictionary_; }
 
-  ~ExtensionMessageBundle();
+  ~MessageBundle();
 
  private:
   // Testing friend.
-  friend class ExtensionMessageBundleTest;
+  friend class MessageBundleTest;
 
-  // Use Create to create ExtensionMessageBundle instance.
-  ExtensionMessageBundle();
+  // Use Create to create MessageBundle instance.
+  MessageBundle();
 
   // Initializes the instance from the contents of vector of catalogs.
   // If the key is not present in more specific catalog we fall back to next one
@@ -162,4 +164,6 @@ ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap();
 // Returns message map that matches given extension_id, or NULL.
 L10nMessagesMap* GetL10nMessagesMap(const std::string& extension_id);
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
+}  // namsepace extensions
+
+#endif  // CHROME_COMMON_EXTENSIONS_MESSAGE_BUNDLE_H_

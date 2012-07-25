@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/message_bundle.h"
 
 #include <string>
 #include <vector>
@@ -23,27 +23,29 @@
 
 namespace errors = extension_manifest_errors;
 
-const char* ExtensionMessageBundle::kContentKey = "content";
-const char* ExtensionMessageBundle::kMessageKey = "message";
-const char* ExtensionMessageBundle::kPlaceholdersKey = "placeholders";
+namespace extensions {
 
-const char* ExtensionMessageBundle::kPlaceholderBegin = "$";
-const char* ExtensionMessageBundle::kPlaceholderEnd = "$";
-const char* ExtensionMessageBundle::kMessageBegin = "__MSG_";
-const char* ExtensionMessageBundle::kMessageEnd = "__";
+const char* MessageBundle::kContentKey = "content";
+const char* MessageBundle::kMessageKey = "message";
+const char* MessageBundle::kPlaceholdersKey = "placeholders";
+
+const char* MessageBundle::kPlaceholderBegin = "$";
+const char* MessageBundle::kPlaceholderEnd = "$";
+const char* MessageBundle::kMessageBegin = "__MSG_";
+const char* MessageBundle::kMessageEnd = "__";
 
 // Reserved messages names.
-const char* ExtensionMessageBundle::kUILocaleKey = "@@ui_locale";
-const char* ExtensionMessageBundle::kBidiDirectionKey = "@@bidi_dir";
-const char* ExtensionMessageBundle::kBidiReversedDirectionKey =
+const char* MessageBundle::kUILocaleKey = "@@ui_locale";
+const char* MessageBundle::kBidiDirectionKey = "@@bidi_dir";
+const char* MessageBundle::kBidiReversedDirectionKey =
     "@@bidi_reversed_dir";
-const char* ExtensionMessageBundle::kBidiStartEdgeKey = "@@bidi_start_edge";
-const char* ExtensionMessageBundle::kBidiEndEdgeKey = "@@bidi_end_edge";
-const char* ExtensionMessageBundle::kExtensionIdKey = "@@extension_id";
+const char* MessageBundle::kBidiStartEdgeKey = "@@bidi_start_edge";
+const char* MessageBundle::kBidiEndEdgeKey = "@@bidi_end_edge";
+const char* MessageBundle::kExtensionIdKey = "@@extension_id";
 
 // Reserved messages values.
-const char* ExtensionMessageBundle::kBidiLeftEdgeValue = "left";
-const char* ExtensionMessageBundle::kBidiRightEdgeValue = "right";
+const char* MessageBundle::kBidiLeftEdgeValue = "left";
+const char* MessageBundle::kBidiRightEdgeValue = "right";
 
 // Formats message in case we encounter a bad formed key in the JSON object.
 // Returns false and sets |error| to actual error message.
@@ -56,19 +58,17 @@ static bool BadKeyMessage(const std::string& name, std::string* error) {
 }
 
 // static
-ExtensionMessageBundle* ExtensionMessageBundle::Create(
-    const CatalogVector& locale_catalogs,
-    std::string* error) {
-  scoped_ptr<ExtensionMessageBundle> message_bundle(
-      new ExtensionMessageBundle);
+MessageBundle* MessageBundle::Create(const CatalogVector& locale_catalogs,
+                                     std::string* error) {
+  scoped_ptr<MessageBundle> message_bundle(new MessageBundle);
   if (!message_bundle->Init(locale_catalogs, error))
     return NULL;
 
   return message_bundle.release();
 }
 
-bool ExtensionMessageBundle::Init(const CatalogVector& locale_catalogs,
-                                  std::string* error) {
+bool MessageBundle::Init(const CatalogVector& locale_catalogs,
+                         std::string* error) {
   dictionary_.clear();
 
   for (CatalogVector::const_reverse_iterator it = locale_catalogs.rbegin();
@@ -94,7 +94,7 @@ bool ExtensionMessageBundle::Init(const CatalogVector& locale_catalogs,
   return true;
 }
 
-bool ExtensionMessageBundle::AppendReservedMessagesForLocale(
+bool MessageBundle::AppendReservedMessagesForLocale(
     const std::string& app_locale, std::string* error) {
   SubstitutionMap append_messages;
   append_messages[kUILocaleKey] = app_locale;
@@ -129,10 +129,10 @@ bool ExtensionMessageBundle::AppendReservedMessagesForLocale(
   return true;
 }
 
-bool ExtensionMessageBundle::GetMessageValue(const std::string& key,
-                                             const DictionaryValue& catalog,
-                                             std::string* value,
-                                             std::string* error) const {
+bool MessageBundle::GetMessageValue(const std::string& key,
+                                    const DictionaryValue& catalog,
+                                    std::string* value,
+                                    std::string* error) const {
   // Get the top level tree for given key (name part).
   DictionaryValue* name_tree;
   if (!catalog.GetDictionaryWithoutPathExpansion(key, &name_tree)) {
@@ -156,13 +156,13 @@ bool ExtensionMessageBundle::GetMessageValue(const std::string& key,
   return true;
 }
 
-ExtensionMessageBundle::ExtensionMessageBundle() {
+MessageBundle::MessageBundle() {
 }
 
-bool ExtensionMessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
-                                             const std::string& name_key,
-                                             SubstitutionMap* placeholders,
-                                             std::string* error) const {
+bool MessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
+                                    const std::string& name_key,
+                                    SubstitutionMap* placeholders,
+                                    std::string* error) const {
   if (!name_tree.HasKey(kPlaceholdersKey))
     return true;
 
@@ -198,10 +198,9 @@ bool ExtensionMessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
   return true;
 }
 
-bool ExtensionMessageBundle::ReplacePlaceholders(
-    const SubstitutionMap& placeholders,
-    std::string* message,
-    std::string* error) const {
+bool MessageBundle::ReplacePlaceholders(const SubstitutionMap& placeholders,
+                                        std::string* message,
+                                        std::string* error) const {
   return ReplaceVariables(placeholders,
                           kPlaceholderBegin,
                           kPlaceholderEnd,
@@ -209,27 +208,26 @@ bool ExtensionMessageBundle::ReplacePlaceholders(
                           error);
 }
 
-bool ExtensionMessageBundle::ReplaceMessages(std::string* text,
-                                             std::string* error) const {
+bool MessageBundle::ReplaceMessages(std::string* text,
+                                    std::string* error) const {
   return ReplaceMessagesWithExternalDictionary(dictionary_, text, error);
 }
 
-ExtensionMessageBundle::~ExtensionMessageBundle() {
+MessageBundle::~MessageBundle() {
 }
 
 // static
-bool ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
+bool MessageBundle::ReplaceMessagesWithExternalDictionary(
     const SubstitutionMap& dictionary, std::string* text, std::string* error) {
   return ReplaceVariables(dictionary, kMessageBegin, kMessageEnd, text, error);
 }
 
 // static
-bool ExtensionMessageBundle::ReplaceVariables(
-    const SubstitutionMap& variables,
-    const std::string& var_begin_delimiter,
-    const std::string& var_end_delimiter,
-    std::string* message,
-    std::string* error) {
+bool MessageBundle::ReplaceVariables(const SubstitutionMap& variables,
+                                     const std::string& var_begin_delimiter,
+                                     const std::string& var_end_delimiter,
+                                     std::string* message,
+                                     std::string* error) {
   std::string::size_type beg_index = 0;
   const std::string::size_type var_begin_delimiter_size =
     var_begin_delimiter.size();
@@ -277,7 +275,7 @@ bool ExtensionMessageBundle::ReplaceVariables(
 }
 
 // static
-bool ExtensionMessageBundle::IsValidName(const std::string& name) {
+bool MessageBundle::IsValidName(const std::string& name) {
   if (name.empty())
     return false;
 
@@ -293,14 +291,13 @@ bool ExtensionMessageBundle::IsValidName(const std::string& name) {
 
 // Dictionary interface.
 
-std::string ExtensionMessageBundle::GetL10nMessage(
-    const std::string& name) const {
+std::string MessageBundle::GetL10nMessage(const std::string& name) const {
   return GetL10nMessage(name, dictionary_);
 }
 
 // static
-std::string ExtensionMessageBundle::GetL10nMessage(
-    const std::string& name, const SubstitutionMap& dictionary) {
+std::string MessageBundle::GetL10nMessage(const std::string& name,
+                                          const SubstitutionMap& dictionary) {
   SubstitutionMap::const_iterator it =
     dictionary.find(StringToLowerASCII(name));
   if (it != dictionary.end()) {
@@ -344,3 +341,5 @@ L10nMessagesMap* GetL10nMessagesMap(const std::string& extension_id) {
 
   return NULL;
 }
+
+}  // namespace extensions

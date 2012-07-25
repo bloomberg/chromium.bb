@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-class ExtensionMessageBundle;
 class FilePath;
 
 namespace base {
@@ -20,6 +19,7 @@ class DictionaryValue;
 
 namespace extensions {
 struct ExtensionInfo;
+class MessageBundle;
 }
 
 namespace extension_l10n_util {
@@ -40,7 +40,7 @@ bool ShouldRelocalizeManifest(const extensions::ExtensionInfo& info);
 
 // Localize extension name, description, browser_action and other fields
 // in the manifest.
-bool LocalizeManifest(const ExtensionMessageBundle& messages,
+bool LocalizeManifest(const extensions::MessageBundle& messages,
                       base::DictionaryValue* manifest,
                       std::string* error);
 
@@ -84,7 +84,7 @@ bool GetValidLocales(const FilePath& locale_path,
 // parents.
 // Returns message bundle if it can load default locale messages file, and all
 // messages are valid, else returns NULL and sets error.
-ExtensionMessageBundle* LoadMessageCatalogs(
+extensions::MessageBundle* LoadMessageCatalogs(
     const FilePath& locale_path,
     const std::string& default_locale,
     const std::string& app_locale,

@@ -1967,7 +1967,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN23ExtensionMessageService16AddEventListenerERKSsi
+   fun:_ZN23MessageService16AddEventListenerERKSsi
    fun:_ZN24BrowserRenderProcessHost22OnExtensionAddListenerERKSs
 }
 {

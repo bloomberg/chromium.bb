@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
@@ -100,23 +100,24 @@ void ExtensionLocalizationPeer::ReplaceMessages() {
     return;
 
   std::string extension_id = request_url_.host();
-  L10nMessagesMap* l10n_messages = GetL10nMessagesMap(extension_id);
+  extensions::L10nMessagesMap* l10n_messages =
+      extensions::GetL10nMessagesMap(extension_id);
   if (!l10n_messages) {
-    L10nMessagesMap messages;
+    extensions::L10nMessagesMap messages;
     message_sender_->Send(new ExtensionHostMsg_GetMessageBundle(
         extension_id, &messages));
 
     // Save messages we got, so we don't have to ask again.
     // Messages map is never empty, it contains at least @@extension_id value.
-    ExtensionToL10nMessagesMap& l10n_messages_map =
-        *GetExtensionToL10nMessagesMap();
+    extensions::ExtensionToL10nMessagesMap& l10n_messages_map =
+        *extensions::GetExtensionToL10nMessagesMap();
     l10n_messages_map[extension_id] = messages;
 
-    l10n_messages = GetL10nMessagesMap(extension_id);
+    l10n_messages = extensions::GetL10nMessagesMap(extension_id);
   }
 
   std::string error;
-  if (ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
+  if (extensions::MessageBundle::ReplaceMessagesWithExternalDictionary(
           *l10n_messages, &data_, &error)) {
     data_.resize(data_.size());
   }
