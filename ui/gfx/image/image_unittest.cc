@@ -17,7 +17,7 @@
 
 namespace {
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 const bool kUsesSkiaNatively = true;
 #else
 const bool kUsesSkiaNatively = false;
