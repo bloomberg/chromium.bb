@@ -50,16 +50,16 @@
       {
         "name": "selectFile",
         "type": "function",
-        "description": "Prompts user to select file path under which a new file will be created. When the user selects file, the file gets created or, if it already existed, truncated. The function has to be called with a user gesture.",
+        "description": "Prompts user to select file path under which file should be saved. When the file is selected, file access permission required to use the file (read, write and create) are granted to the caller. The file will not actually get created during the functin call, so function caller must ensure its existance before using it. The function has to be invoked with a user gesture.",
         "parameters": [
           {
             "name": "selectionParams",
             "type": "object",
-            "description": "Parameters that will be used to create a new file.",
+            "description": "Parameters that will be used while selecting the file.",
             "properties": {
               "suggestedName": {
                   "type": "string",
-                  "description": "Suggested name for the new file."
+                  "description": "Suggested name for the file."
               }
             } 
           },
@@ -75,7 +75,7 @@
                 "properties": {
                   "success": {
                     "type": "boolean",
-                    "description": "Has the file been selected."
+                    "description": "Whether the file has been selected."
                   },
                   "entry": {
                     "type": "object",

@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -169,36 +171,18 @@ typedef base::Callback<void (bool success,
                              const GURL& file_system_root)>
     FileSystemOpenCallback;
 
-void RelayOpenFileSystemCallbackToFileThread(
+void RunOpenFileSystemCallback(
     const FileSystemOpenCallback& callback,
     base::PlatformFileError error,
     const std::string& file_system_name,
     const GURL& file_system_root) {
   bool success = (error == base::PLATFORM_FILE_OK);
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(callback, success, file_system_name, file_system_root));
+  callback.Run(success, file_system_name, file_system_root);
 }
 
 }  // namespace
 
 FileHandlerSelectFileFunction::FileHandlerSelectFileFunction() {}
-
-void FileHandlerSelectFileFunction::OnFilePathSelected(
-    bool success,
-    const FilePath& full_path) {
-  if (!success) {
-    Respond(false, std::string(), GURL(), FilePath());
-    return;
-  }
-
-  full_path_ = full_path;
-
-  BrowserContext::GetFileSystemContext(profile_)->OpenFileSystem(
-      source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
-      base::Bind(&RelayOpenFileSystemCallbackToFileThread,
-          base::Bind(&FileHandlerSelectFileFunction::CreateFileOnFileThread,
-                     this)));
-};
 
 // static
 void FileHandlerSelectFileFunction::set_file_selector_for_test(
@@ -231,30 +215,40 @@ bool FileHandlerSelectFileFunction::RunImpl() {
   return true;
 }
 
-void FileHandlerSelectFileFunction::CreateFileOnFileThread(
+void FileHandlerSelectFileFunction::OnFilePathSelected(
     bool success,
-    const std::string& file_system_name,
-    const GURL& file_system_root) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+    const FilePath& full_path) {
+  if (!success) {
+    Respond(false, std::string(), GURL(), FilePath());
+    return;
+  }
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&FileHandlerSelectFileFunction::OnFileCreated, this,
-          success, file_system_name, file_system_root));
-}
+  full_path_ = full_path;
 
-void FileHandlerSelectFileFunction::OnFileCreated(
+  BrowserContext::GetFileSystemContext(profile_)->OpenFileSystem(
+      source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
+      base::Bind(&RunOpenFileSystemCallback,
+          base::Bind(&FileHandlerSelectFileFunction::OnFileSystemOpened,
+                     this)));
+};
+
+void FileHandlerSelectFileFunction::OnFileSystemOpened(
     bool success,
     const std::string& file_system_name,
     const GURL& file_system_root) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  FilePath virtual_path;
-  if (success)
-    virtual_path = GrantPermissions();
-  Respond(success, file_system_name, file_system_root, virtual_path);
+  if (success) {
+    GrantPermissions(base::Bind(
+        &FileHandlerSelectFileFunction::Respond, this,
+            success, file_system_name, file_system_root));
+    return;
+  }
+  Respond(success, file_system_name, file_system_root, FilePath());
 }
 
-FilePath FileHandlerSelectFileFunction::GrantPermissions() {
+void FileHandlerSelectFileFunction::GrantPermissions(
+    const GrantPermissionsCallback& callback) {
   fileapi::ExternalFileSystemMountPointProvider* external_provider =
       BrowserContext::GetFileSystemContext(profile_)->external_provider();
   DCHECK(external_provider);
@@ -267,12 +261,39 @@ FilePath FileHandlerSelectFileFunction::GrantPermissions() {
   // ensure that the target extension can access only this FS entry and
   // prevent from traversing FS hierarchy upward.
   external_provider->GrantFileAccessToExtension(extension_id(), virtual_path);
-  content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      render_view_host()->GetProcess()->GetID(),
-      full_path_,
-      file_handler_util::GetReadWritePermissions());
 
-  return virtual_path;
+  // Give read write permissions for the file.
+  permissions_to_grant_.push_back(std::make_pair(
+      full_path_,
+      file_handler_util::GetReadWritePermissions()));
+
+  if (!gdata::util::IsUnderGDataMountPoint(full_path_)) {
+    OnGotPermissionsToGrant(callback, virtual_path);
+    return;
+  }
+
+  // For drive files, we also have to grant permissions for cache paths.
+  scoped_ptr<std::vector<FilePath> > gdata_paths(new std::vector<FilePath>());
+  gdata_paths->push_back(virtual_path);
+
+  gdata::util::InsertGDataCachePathsPermissions(
+      profile(),
+      gdata_paths.Pass(),
+      &permissions_to_grant_,
+      base::Bind(&FileHandlerSelectFileFunction::OnGotPermissionsToGrant,
+          this, callback, virtual_path));
+}
+
+void FileHandlerSelectFileFunction::OnGotPermissionsToGrant(
+    const GrantPermissionsCallback& callback,
+    const FilePath& virtual_path) {
+  for (size_t i = 0; i < permissions_to_grant_.size(); i++) {
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+        render_view_host()->GetProcess()->GetID(),
+        permissions_to_grant_[i].first,
+        permissions_to_grant_[i].second);
+  }
+  callback.Run(virtual_path);
 }
 
 void FileHandlerSelectFileFunction::Respond(
