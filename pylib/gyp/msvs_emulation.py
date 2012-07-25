@@ -415,15 +415,16 @@ class MsvsSettings(object):
     if not filter(lambda x: 'NXCOMPAT' in x, ldflags):
       ldflags.append('/NXCOMPAT')
 
+    have_def_file = filter(lambda x: x.startswith('/DEF:'), ldflags)
     manifest_flags, intermediate_manifest_file = self._GetLdManifestFlags(
-        config, manifest_base_name, is_executable)
+        config, manifest_base_name, is_executable and not have_def_file)
     ldflags.extend(manifest_flags)
     manifest_files = self._GetAdditionalManifestFiles(config, gyp_to_build_path)
     manifest_files.append(intermediate_manifest_file)
 
     return ldflags, manifest_files
 
-  def _GetLdManifestFlags(self, config, name, is_executable):
+  def _GetLdManifestFlags(self, config, name, allow_isolation):
     """Returns the set of flags that need to be added to the link to generate
     a default manifest, as well as the name of the generated file."""
     # Add manifest flags that mirror the defaults in VS. Chromium dev builds
@@ -437,7 +438,7 @@ class MsvsSettings(object):
       '/ManifestFile:' + output_name,
       '''/MANIFESTUAC:"level='asInvoker' uiAccess='false'"'''
     ]
-    if is_executable:
+    if allow_isolation:
       flags.append('/ALLOWISOLATION')
     return flags, output_name
 
