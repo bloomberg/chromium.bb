@@ -10,8 +10,8 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/sys_string_conversions.h"
-#include "skia/ext/skia_utils_mac.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 void IconLoader::ReadIcon() {
   NSString* group = base::SysUTF8ToNSString(group_);
@@ -33,7 +33,7 @@ void IconLoader::ReadIcon() {
       default:
         NOTREACHED();
     }
-    image_.reset(new gfx::Image(gfx::NSImageToSkBitmap(icon, size, false)));
+    image_.reset(new gfx::Image(gfx::ImageSkiaFromResizedNSImage(icon, size)));
   }
 
   target_message_loop_->PostTask(FROM_HERE,
