@@ -400,13 +400,10 @@ void ChromeDownloadManagerDelegate::OpenWithWebIntent(
   intent_data.extra_data.insert(make_pair(
       ASCIIToUTF16("url"), ASCIIToUTF16(item->GetURL().spec())));
 
-  // The SuggestedFilename is not always filled in in the DownloadItem.
-  // When it is, it comes from the purpose-built HTML algorithm, but
-  // in practice it is frequently just inferred.
-  string16 filename = UTF8ToUTF16(item->GetSuggestedFilename());
-  if (filename.empty())
-    filename = item->GetFileNameToReportUser().LossyDisplayName();
-  intent_data.extra_data.insert(make_pair(ASCIIToUTF16("filename"), filename));
+  // Pass the downloaded filename to the service app as the name hint.
+  intent_data.extra_data.insert(
+      make_pair(ASCIIToUTF16("filename"),
+                item->GetFileNameToReportUser().LossyDisplayName()));
 
   content::WebIntentsDispatcher* dispatcher =
       content::WebIntentsDispatcher::Create(intent_data);
