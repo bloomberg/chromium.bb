@@ -1,3 +1,5 @@
+set noparent
+
 # Reviewers:
 ben@chromium.org
 brettw@chromium.org
