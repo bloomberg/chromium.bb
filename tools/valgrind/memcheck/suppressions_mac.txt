@@ -2365,21 +2365,6 @@
    fun:_ZN7WebCore11EventTarget18fireEventListenersEPNS_5EventEPNS_15EventTargetDataERN3WTF6VectorINS_23RegisteredEventListenerELm1EEE
 }
 {
-   bug_124445
-   Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
-   fun:error_get_my_stack
-   fun:nss_SetError
-   ...
-   fun:CERT_NewTempCertificate
-   fun:_ZN3net18SSLServerSocketNSS20InitializeSSLOptionsEv
-   fun:_ZN3net18SSLServerSocketNSS9HandshakeERKN4base8CallbackIFviEEE
-   fun:_ZN8remoting8protocol27SslHmacChannelAuthenticator21SecureAndAuthenticateE10scoped_ptrIN3net12StreamSocketEERKN4base8CallbackIFvNS3_5ErrorES5_EEE
-   fun:_ZN8remoting8protocol21AuthenticatorTestBase14RunChannelAuthEb
-   fun:_ZN8remoting8protocol52NegotiatingAuthenticatorTest_SuccessfulAuthHmac_Test8TestBodyEv
-}
-{
    bug_127499_a
    Memcheck:Uninitialized
    ...

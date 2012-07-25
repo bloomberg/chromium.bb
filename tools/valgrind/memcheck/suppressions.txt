@@ -5309,6 +5309,18 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
+   bug_124445
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:error_get_my_stack
+   ...
+   fun:CERT_NewTempCertificate
+   ...
+   fun:_ZN3net18SSL*SocketNSS*
+   fun:_ZN3net18SSL*SocketNSS*
+}
+{
    bug_123453
    Memcheck:Unaddressable
    fun:_ZN9GrTexture14asRenderTargetEv
