@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,8 @@ extern const char kGTestListTestsFlag[];
 extern const char kGTestRepeatFlag[];
 extern const char kGTestRunDisabledTestsFlag[];
 extern const char kGTestOutputFlag[];
+extern const char kSingleProcessTestsFlag[];
+extern const char kSingleProcessTestsAndChromeFlag[];
 extern const char kHelpFlag[];
 
 // Flag that causes only the kEmptyTestName test to be run.
