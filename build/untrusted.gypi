@@ -155,6 +155,7 @@
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'out_newlib64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
+                'source_list_newlib64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
              },
              'actions': [
                {
@@ -184,8 +185,8 @@
                    '>@(_defines)',
                    '-DNACL_BUILD_SUBARCH=64',
                    '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64 >(link_flags) >(_link_flags)',
-                   '^@(_sources)',
-                   '^@(sources)',
+                   '--source-list',
+                   '^|(<(source_list_newlib64) ^(_sources) ^(sources))',
                  ],
                },
              ],
@@ -195,6 +196,7 @@
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
+                'source_list_newlib64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
                 'out_newlib64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
@@ -225,8 +227,8 @@
                    '>@(_defines)',
                    '-DNACL_BUILD_SUBARCH=64',
                    '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64 >(link_flags) >(_link_flags)',
-                   '^@(sources)',
-                   '^@(_sources)',
+                   '--source-list',
+                   '^|(<(source_list_newlib64) ^(_sources) ^(sources))',
                  ],
                },
              ],
@@ -237,6 +239,7 @@
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'out_newlib32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
+                'source_list_newlib32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
              },
              'actions': [
                {
@@ -266,8 +269,8 @@
                    '>@(_defines)',
                    '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 >(link_flags) >(_link_flags)',
-                   '^@(sources)',
-                   '^@(_sources)',
+                   '--source-list',
+                   '^|(<(source_list_newlib32) ^(_sources) ^(sources))',
                  ],
                },
              ],
@@ -278,6 +281,7 @@
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'out_newlib32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
+                'source_list_newlib32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
              },
              'actions': [
                {
@@ -307,8 +311,8 @@
                    '>@(_defines)',
                    '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 >(link_flags) >(_link_flags)',
-                   '^@(sources)',
-                   '^@(_sources)',
+                   '--source-list',
+                   '^|(<(source_list_newlib32) ^(_sources) ^(sources))',
                  ],
                },
              ],
@@ -325,6 +329,7 @@
               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
               'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
              },
             'actions': [
               {
@@ -354,8 +359,8 @@
                   '>@(_defines)',
                   '-DNACL_BUILD_SUBARCH=32',
                   '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm >(link_flags) >(_link_flags)',
-                  '^@(sources)',
-                  '^@(_sources)',
+                  '--source-list',
+                  '^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
                  ],
               },
             ],
@@ -366,6 +371,7 @@
               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
             },
             'actions': [
               {
@@ -395,8 +401,8 @@
                   '>@(_defines)',
                   '-DNACL_BUILD_SUBARCH=32',
                   '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm >(link_flags) >(_link_flags)',
-                  '^@(sources)',
-                  '^@(_sources)',
+                  '--source-list',
+                  '^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
                 ],
               },
             ],
@@ -413,6 +419,7 @@
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
                 'out_glibc64%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x64.nexe',
                 'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
+                'source_list_glibc64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
              },
              'actions': [
                {
@@ -442,8 +449,8 @@
                    '>@(_defines)',
                    '-DNACL_BUILD_SUBARCH=64',
                    '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 >(link_flags) >(_link_flags)',
-                   '^@(sources)',
-                   '^@(_sources)',
+                   '--source-list',
+                   '^|(<(source_list_glibc64) ^(_sources) ^(sources))',
                  ],
                },
              ],
@@ -454,6 +461,7 @@
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
                 'out_glibc32%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x32.nexe',
                 'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
+                'source_list_glibc32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
              },
              'actions': [
                {
@@ -483,8 +491,8 @@
                    '>@(_defines)',
                    '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32 >(link_flags) >(_link_flags)',
-                   '^@(sources)',
-                   '^@(_sources)',
+                   '--source-list',
+                   '^|(<(source_list_glibc32) ^(_sources) ^(sources))',
                  ],
                },
              ],
@@ -494,6 +502,7 @@
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
                 'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
+                'source_list_glibc64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
                 'out_glibc64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
@@ -524,8 +533,8 @@
                    '>@(_defines)',
                    '-DNACL_BUILD_SUBARCH=64',
                    '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 >(link_flags) >(_link_flags)',
-                   '^@(sources)',
-                   '^@(_sources)',
+                   '--source-list',
+                   '^|(<(source_list_glibc64) ^(_sources) ^(sources))',
                  ],
                },
              ],
@@ -536,6 +545,7 @@
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
                 'out_glibc32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
                 'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
+                'source_list_glibc32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
              },
              'actions': [
                {
@@ -565,8 +575,8 @@
                    '>@(_defines)',
                    '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32 >(link_flags) >(_link_flags)',
-                   '^@(sources)',
-                   '^@(_sources)',
+                   '--source-list',
+                   '^|(<(source_list_glibc32) ^(_sources) ^(sources))',
                  ],
                },
              ],

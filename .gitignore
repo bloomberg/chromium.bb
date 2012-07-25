@@ -4,6 +4,7 @@
 
 # Ignore these filename patterns
 *~
+*.gypcmd
 *.Makefile
 *.mk
 *.pyc

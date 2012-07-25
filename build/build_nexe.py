@@ -360,6 +360,8 @@ def Main(argv):
                     help='Strip the NEXE', action='store_true')
   parser.add_option('--strip', dest='strip', default='',
                     help='Strip the filename')
+  parser.add_option('--source-list', dest='source_list',
+                    help='Filename to load a source list from')
   parser.add_option('-a', '--arch', dest='arch',
                     help='Set target architecture')
   parser.add_option('-c', '--compile', dest='compile_only', default=False,
@@ -388,6 +390,12 @@ def Main(argv):
   if not argv:
     parser.print_help()
     return 1
+
+  if options.source_list:
+    source_list_handle = open(options.source_list, 'r')
+    source_list = source_list_handle.read().splitlines()
+    source_list_handle.close()
+    files = files + source_list
 
   build = Builder(options)
   objs = []
