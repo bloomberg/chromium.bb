@@ -417,6 +417,15 @@
             'shell/shell_content_main.cc',
             'shell/shell_content_main.h',
           ],
+          'copies': [
+            {
+              # Copy FFmpeg binaries for audio/video support.
+              'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+              'files': [
+                '<(PRODUCT_DIR)/ffmpegsumo.so',
+              ],
+            },
+          ],
         },  # target content_shell_framework
         {
           'target_name': 'content_shell_helper_app',
