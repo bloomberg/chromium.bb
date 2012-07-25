@@ -549,8 +549,8 @@ void HostNPScriptObject::FinishConnectNetworkThread(
 
   // Create XMPP connection.
   scoped_ptr<SignalStrategy> signal_strategy(
-      new XmppSignalStrategy(host_context_->jingle_thread(), uid,
-                             auth_token, auth_service));
+      new XmppSignalStrategy(host_context_->url_request_context_getter(),
+                             uid, auth_token, auth_service));
 
   // Request registration of the host for support.
   scoped_ptr<RegisterSupportHostRequest> register_request(

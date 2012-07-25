@@ -17,7 +17,6 @@
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
-#include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,9 +88,7 @@ class MockStreamChannelCallback {
 class JingleSessionTest : public testing::Test {
  public:
   JingleSessionTest() {
-    talk_base::ThreadManager::Instance()->WrapCurrentThread();
-    message_loop_.reset(
-        new JingleThreadMessageLoop(talk_base::Thread::Current()));
+    message_loop_.reset(new MessageLoopForIO());
   }
 
   // Helper method that handles OnIncomingSession().
@@ -257,7 +254,7 @@ class JingleSessionTest : public testing::Test {
         .Times(AtLeast(1));
   }
 
-  scoped_ptr<JingleThreadMessageLoop> message_loop_;
+  scoped_ptr<MessageLoopForIO> message_loop_;
 
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
