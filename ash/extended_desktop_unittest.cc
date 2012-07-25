@@ -59,32 +59,14 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
 };
 
+internal::MultiDisplayManager* GetDisplayManager() {
+  return static_cast<internal::MultiDisplayManager*>(
+      aura::Env::GetInstance()->display_manager());
+}
+
 }  // namespace
 
-class ExtendedDesktopTest : public test::AshTestBase {
- public:
-  ExtendedDesktopTest() {}
-  virtual ~ExtendedDesktopTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    internal::DisplayController::SetExtendedDesktopEnabled(true);
-    AshTestBase::SetUp();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    AshTestBase::TearDown();
-    internal::DisplayController::SetExtendedDesktopEnabled(false);
-  }
-
- protected:
-  internal::MultiDisplayManager* display_manager() {
-    return static_cast<internal::MultiDisplayManager*>(
-        aura::Env::GetInstance()->display_manager());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtendedDesktopTest);
-};
+typedef test::AshTestBase ExtendedDesktopTest;
 
 // Test conditions that root windows in extended desktop mode
 // must satisfy.
@@ -461,10 +443,10 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
   UpdateDisplay("1000x600,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   gfx::Display& display_1 =
-      display_manager()->FindDisplayForRootWindow(root_windows[0]);
+      GetDisplayManager()->FindDisplayForRootWindow(root_windows[0]);
   EXPECT_EQ("0,0", display_1.bounds().origin().ToString());
   gfx::Display& display_2 =
-      display_manager()->FindDisplayForRootWindow(root_windows[1]);
+      GetDisplayManager()->FindDisplayForRootWindow(root_windows[1]);
   EXPECT_EQ("1000,0", display_2.bounds().origin().ToString());
 
   aura::Window* d1 =
@@ -494,7 +476,7 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
   Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
       internal::DisplayController::BOTTOM);
 
-  display_2 = display_manager()->FindDisplayForRootWindow(root_windows[1]);
+  display_2 = GetDisplayManager()->FindDisplayForRootWindow(root_windows[1]);
   EXPECT_EQ("0,600", display_2.bounds().origin().ToString());
 
   // Convert point in Root2's window to Root1's window Coord.

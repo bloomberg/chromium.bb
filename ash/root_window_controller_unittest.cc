@@ -61,24 +61,8 @@ aura::Window* GetModalContainer(aura::RootWindow* root_window) {
 }  // namespace
 
 namespace test {
-class RootWindowControllerTest : public test::AshTestBase {
- public:
-  RootWindowControllerTest() {}
-  virtual ~RootWindowControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    internal::DisplayController::SetExtendedDesktopEnabled(true);
-    AshTestBase::SetUp();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    AshTestBase::TearDown();
-    internal::DisplayController::SetExtendedDesktopEnabled(false);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RootWindowControllerTest);
-};
+typedef test::AshTestBase RootWindowControllerTest;
 
 TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   UpdateDisplay("600x600,500x500");

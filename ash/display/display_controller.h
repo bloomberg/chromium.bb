@@ -84,8 +84,6 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
 
   // Is extended desktop enabled?
   static bool IsExtendedDesktopEnabled();
-  // Change the extended desktop mode. Used for testing.
-  static void SetExtendedDesktopEnabled(bool enabled);
 
  private:
   // Creates a root window for |display| and stores it in the |root_windows_|

@@ -19,10 +19,6 @@
 
 namespace ash {
 namespace internal {
-namespace {
-// True if the extended desktop mode is enabled.
-bool extended_desktop_enabled = false;
-}  // namespace
 
 DisplayController::DisplayController()
     : secondary_display_layout_(RIGHT) {
@@ -233,14 +229,10 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
 
 // static
 bool DisplayController::IsExtendedDesktopEnabled(){
-  return extended_desktop_enabled ||
+  static bool extended_desktop_disabled =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshExtendedDesktop);
-}
-
-// static
-void DisplayController::SetExtendedDesktopEnabled(bool enabled) {
-  extended_desktop_enabled = enabled;
+          switches::kAshExtendedDesktopDisabled);
+  return !extended_desktop_disabled;
 }
 
 aura::RootWindow* DisplayController::AddRootWindowForDisplay(
