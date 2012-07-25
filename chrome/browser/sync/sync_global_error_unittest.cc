@@ -28,6 +28,8 @@ using content::BrowserThread;
 
 namespace {
 
+#if 0
+// TODO(altimofeev) See below.
 class BrowserMock: public Browser {
  public:
   explicit BrowserMock(Type type, Profile* profile) : Browser(type, profile) {}
@@ -35,6 +37,7 @@ class BrowserMock: public Browser {
   MOCK_METHOD2(ExecuteCommandWithDisposition,
                void(int command_id, WindowOpenDisposition));
 };
+#endif
 
 class LoginUIServiceMock: public LoginUIService {
  public:
@@ -53,6 +56,8 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
   SyncGlobalErrorTest() {}
   virtual ~SyncGlobalErrorTest() {}
 
+#if 0
+  // TODO(altimofeev): see below.
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
 
@@ -65,6 +70,7 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
   virtual void TearDown() OVERRIDE {
     testing::Test::TearDown();
   }
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncGlobalErrorTest);

@@ -132,7 +132,7 @@ void MediaPlayer::PopupMediaPlayer() {
                          kPopupHeight);
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  mediaplayer_browser_ = Browser::CreateWithParams(
+  mediaplayer_browser_ = new Browser(
       Browser::CreateParams::CreateForApp(Browser::TYPE_PANEL,
                                           kMediaPlayerAppName,
                                           bounds,

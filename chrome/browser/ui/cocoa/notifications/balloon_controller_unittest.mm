@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 
@@ -62,7 +63,7 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     CocoaTest::BootstrapCocoa();
     profile()->CreateRequestContext();
-    browser_.reset(new Browser(Browser::TYPE_TABBED, profile()));
+    browser_.reset(chrome::CreateBrowserWithTestWindowForProfile(profile()));
     collection_.reset(new MockBalloonCollection());
   }
 

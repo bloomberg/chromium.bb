@@ -39,7 +39,7 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
   Browser* browser = browser::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
-    browser = Browser::Create(profile);
+    browser = new Browser(Browser::CreateParams(profile));
   chrome::NavigateParams nav_params(browser, params.url, params.transition);
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
@@ -81,7 +81,7 @@ void ChromeWebContentsHandler::AddNewContents(
   Browser* browser = browser::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
-    browser = Browser::Create(profile);
+    browser = new Browser(Browser::CreateParams(profile));
   TabContents* tab_contents = new TabContents(new_contents);
   chrome::NavigateParams params(browser, tab_contents);
   // TODO(pinkerton): no way to get a TabContents for this.

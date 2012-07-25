@@ -33,7 +33,7 @@ namespace {
 // it.
 class TestBrowserWindowAura : public TestBrowserWindow {
  public:
-  TestBrowserWindowAura(Browser* browser, aura::Window *native_window);
+  explicit TestBrowserWindowAura(aura::Window *native_window);
   virtual ~TestBrowserWindowAura();
 
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
@@ -46,10 +46,8 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowAura);
 };
 
-TestBrowserWindowAura::TestBrowserWindowAura(Browser* browser,
-                                             aura::Window *native_window) :
-    TestBrowserWindow(browser),
-    native_window_(native_window) {
+TestBrowserWindowAura::TestBrowserWindowAura(aura::Window *native_window)
+    : native_window_(native_window) {
 }
 
 TestBrowserWindowAura::~TestBrowserWindowAura() {}
@@ -132,28 +130,22 @@ void WindowPositionerTest::SetUp() {
   panel_->SetBounds(gfx::Rect(32, 48, 256, 512));
 
   // Create a browser for the window.
-  window_owning_browser_.reset(new Browser(Browser::TYPE_TABBED,
-                                           profile_.get()));
-  browser_window_.reset(new TestBrowserWindowAura(
-                            window_owning_browser_.get(),
-                            window_.get()));
-  window_owning_browser_->SetWindowForTesting(browser_window_.get());
+  browser_window_.reset(new TestBrowserWindowAura(window_.get()));
+  Browser::CreateParams window_params(profile_.get());
+  window_params.window = browser_window_.get();
+  window_owning_browser_.reset(new Browser(window_params));
 
   // Creating a browser for the popup.
-  popup_owning_browser_.reset(new Browser(Browser::TYPE_POPUP,
-                                          profile_.get()));
-  browser_popup_.reset(new TestBrowserWindowAura(
-                           popup_owning_browser_.get(),
-                           popup_.get()));
-  popup_owning_browser_->SetWindowForTesting(browser_popup_.get());
+  browser_popup_.reset(new TestBrowserWindowAura(popup_.get()));
+  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile_.get());
+  popup_params.window = browser_popup_.get();
+  popup_owning_browser_.reset(new Browser(popup_params));
 
   // Creating a browser for the panel.
-  panel_owning_browser_.reset(new Browser(Browser::TYPE_PANEL,
-                                          profile_.get()));
-  browser_panel_.reset(new TestBrowserWindowAura(
-                          panel_owning_browser_.get(),
-                          panel_.get()));
-  panel_owning_browser_->SetWindowForTesting(browser_panel_.get());
+  browser_panel_.reset(new TestBrowserWindowAura(panel_.get()));
+  Browser::CreateParams panel_params(Browser::TYPE_PANEL, profile_.get());
+  panel_params.window = browser_panel_.get();
+  panel_owning_browser_.reset(new Browser(panel_params));
   // We hide all windows upon start - each user is required to set it up
   // as he needs it.
   window()->Hide();

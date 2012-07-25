@@ -36,8 +36,7 @@ class TabposeWindowTest : public CocoaProfileTest {
 
 // Check that this doesn't leak.
 TEST_F(TabposeWindowTest, TestShow) {
-  BrowserWindow* browser_window = CreateBrowserWindow();
-  NSWindow* parent = browser_window->GetNativeWindow();
+  NSWindow* parent = browser()->window()->GetNativeWindow();
 
   [parent orderFront:nil];
   EXPECT_TRUE([parent isVisible]);
@@ -58,8 +57,7 @@ TEST_F(TabposeWindowTest, TestShow) {
 }
 
 TEST_F(TabposeWindowTest, TestModelObserver) {
-  BrowserWindow* browser_window = CreateBrowserWindow();
-  NSWindow* parent = browser_window->GetNativeWindow();
+  NSWindow* parent = browser()->window()->GetNativeWindow();
   [parent orderFront:nil];
 
   // Add a few tabs to the tab strip model.

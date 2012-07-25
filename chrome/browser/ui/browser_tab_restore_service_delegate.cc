@@ -87,9 +87,9 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
     const std::string& app_name) {
   Browser* browser;
   if (app_name.empty()) {
-    browser = Browser::Create(profile);
+    browser = new Browser(Browser::CreateParams(profile));
   } else {
-    browser = Browser::CreateWithParams(
+    browser = new Browser(
         Browser::CreateParams::CreateForApp(
             Browser::TYPE_POPUP, app_name, gfx::Rect(), profile));
   }

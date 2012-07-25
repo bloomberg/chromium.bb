@@ -41,9 +41,10 @@ void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 
   set_profile(CreateProfile());
-  browser_.reset(new Browser(Browser::TYPE_TABBED, profile()));
-  window_.reset(new TestBrowserWindow(browser()));
-  browser_->SetWindowForTesting(window_.get());
+  window_.reset(new TestBrowserWindow);
+  Browser::CreateParams params(profile());
+  params.window = window_.get();
+  browser_.reset(new Browser(params));
 #if defined(USE_AURA)
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&ui_loop_));
   aura_test_helper_->SetUp();

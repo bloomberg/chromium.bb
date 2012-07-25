@@ -95,12 +95,7 @@ void BrowserListImpl::RemoveBrowser(Browser* browser) {
 
   RemoveBrowserFrom(browser, &browsers_);
 
-  // Do some basic checking to try to catch evil observers
-  // that change the list from under us.
-  size_t original_count = observers_.size();
   FOR_EACH_OBSERVER(BrowserListObserver, observers_, OnBrowserRemoved(browser));
-  DCHECK_EQ(original_count, observers_.size())
-      << "observer list modified during notification";
 
   g_browser_process->ReleaseModule();
 

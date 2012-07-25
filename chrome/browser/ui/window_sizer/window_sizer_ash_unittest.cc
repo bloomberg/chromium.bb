@@ -26,7 +26,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
 
-
 namespace {
 
 typedef ash::test::AshTestBase WindowSizerTest;
@@ -60,7 +59,7 @@ WindowSizerTestWithBrowser::~WindowSizerTestWithBrowser() {
 // it.
 class TestBrowserWindowAura : public TestBrowserWindow {
  public:
-  TestBrowserWindowAura(Browser* browser, aura::Window* native_window);
+  explicit TestBrowserWindowAura(aura::Window* native_window);
   virtual ~TestBrowserWindowAura();
 
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
@@ -75,11 +74,8 @@ class TestBrowserWindowAura : public TestBrowserWindow {
 
 } // namespace
 
-TestBrowserWindowAura::TestBrowserWindowAura(
-    Browser* browser,
-    aura::Window *native_window)
-    : TestBrowserWindow(browser),
-      native_window_(native_window) {
+TestBrowserWindowAura::TestBrowserWindowAura(aura::Window *native_window)
+    : native_window_(native_window) {
 }
 
 TestBrowserWindowAura::~TestBrowserWindowAura() {}
@@ -621,40 +617,33 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindowOverOldWindow) {
 
   // Create a browser which we can use to pass into the GetWindowBounds
   // function.
-  scoped_ptr<TestingProfile> profile;
-  profile.reset(new TestingProfile());
-  scoped_ptr<Browser> browser;
+  scoped_ptr<TestingProfile> profile(new TestingProfile());
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
-  browser.reset(new Browser(Browser::TYPE_TABBED, profile.get()));
+  scoped_ptr<Browser> browser(
+      chrome::CreateBrowserWithTestWindowForProfile(profile.get()));
 
-  scoped_ptr<Browser> window_owning_browser;
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
-  window_owning_browser.reset(new Browser(Browser::TYPE_TABBED,
-                                          profile.get()));
-  scoped_ptr<BrowserWindow> browser_window;
-  browser_window.reset(new TestBrowserWindowAura(window_owning_browser.get(),
-                                                 window.get()));
-  window_owning_browser->SetWindowForTesting(browser_window.get());
+  scoped_ptr<BrowserWindow> browser_window(
+      new TestBrowserWindowAura(window.get()));
+  Browser::CreateParams window_params(profile.get());
+  window_params.window = browser_window.get();
+  scoped_ptr<Browser> window_owning_browser(new Browser(window_params));
 
-  scoped_ptr<Browser> popup_owning_browser;
   // Creating a popup to make sure it does not interfere with the positioning.
-  popup_owning_browser.reset(new Browser(Browser::TYPE_POPUP,
-                                          profile.get()));
-  scoped_ptr<BrowserWindow> browser_popup;
-  browser_popup.reset(new TestBrowserWindowAura(popup_owning_browser.get(),
-                                                popup.get()));
-  popup_owning_browser->SetWindowForTesting(browser_popup.get());
+  scoped_ptr<BrowserWindow> browser_popup(
+      new TestBrowserWindowAura(popup.get()));
+  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile.get());
+  popup_params.window = browser_popup.get();
+  scoped_ptr<Browser> popup_owning_browser(new Browser(popup_params));
 
-  scoped_ptr<Browser> panel_owning_browser;
   // Creating a panel to make sure it does not interfere with the positioning.
-  panel_owning_browser.reset(new Browser(Browser::TYPE_PANEL,
-                                          profile.get()));
-  scoped_ptr<BrowserWindow> browser_panel;
-  browser_panel.reset(new TestBrowserWindowAura(panel_owning_browser.get(),
-                                                panel.get()));
-  panel_owning_browser->SetWindowForTesting(browser_panel.get());
+  scoped_ptr<BrowserWindow> browser_panel(
+      new TestBrowserWindowAura(panel.get()));
+  Browser::CreateParams panel_params(Browser::TYPE_POPUP, profile.get());
+  panel_params.window = browser_panel.get();
+  scoped_ptr<Browser> panel_owning_browser(new Browser(panel_params));
 
   window->Show();
   { // With a shown window it's size should get returned.

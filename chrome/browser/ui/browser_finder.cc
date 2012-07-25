@@ -111,7 +111,7 @@ Browser* FindTabbedBrowser(Profile* profile, bool match_original_profiles) {
 Browser* FindOrCreateTabbedBrowser(Profile* profile) {
   Browser* browser = FindTabbedBrowser(profile, false);
   if (!browser)
-    browser = Browser::Create(profile);
+    browser = new Browser(Browser::CreateParams(profile));
   return browser;
 }
 

@@ -231,7 +231,7 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
   Browser* browser = browser::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
-    browser = Browser::Create(profile);
+    browser = new Browser(Browser::CreateParams(profile));
   TabContents* tab_contents = new TabContents(web_contents);
   chrome::NavigateParams params(browser, tab_contents);
 

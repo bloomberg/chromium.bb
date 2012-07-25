@@ -93,7 +93,7 @@ void AvatarMenuModel::EditProfile(size_t index) {
   if (!browser) {
     Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
         profile_info_->GetPathOfProfileAtIndex(GetItemAt(index).model_index));
-    browser = Browser::Create(profile);
+    browser = new Browser(Browser::CreateParams(profile));
   }
   std::string page = chrome::kManageProfileSubPage;
   page += "#";

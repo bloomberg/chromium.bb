@@ -56,9 +56,8 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
     PanelManager* manager = PanelManager::GetInstance();
     int panels_count = manager->num_panels();
 
-    Browser* panel_browser = Browser::CreateWithParams(
-        Browser::CreateParams::CreateForApp(
-            Browser::TYPE_PANEL, panel_name, gfx::Rect(), profile()));
+    Browser* panel_browser = new Browser(Browser::CreateParams::CreateForApp(
+        Browser::TYPE_PANEL, panel_name, gfx::Rect(), profile()));
     EXPECT_EQ(panels_count + 1, manager->num_panels());
 
     PanelBrowserWindow* panel_browser_window =

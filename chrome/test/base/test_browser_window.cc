@@ -4,11 +4,13 @@
 
 #include "chrome/test/base/test_browser_window.h"
 
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "ui/gfx/rect.h"
 
 using content::NativeWebKeyboardEvent;
 
-TestBrowserWindow::TestBrowserWindow(Browser* browser) {}
+TestBrowserWindow::TestBrowserWindow() {}
 
 TestBrowserWindow::~TestBrowserWindow() {}
 
@@ -130,3 +132,46 @@ WindowOpenDisposition TestBrowserWindow::GetDispositionForPopupBounds(
 FindBar* TestBrowserWindow::CreateFindBar() {
   return NULL;
 }
+
+namespace chrome {
+
+namespace {
+
+// Handles destroying a TestBrowserWindow when the Browser it is attached to is
+// destroyed.
+class TestBrowserWindowOwner : public chrome::BrowserListObserver {
+ public:
+  explicit TestBrowserWindowOwner(TestBrowserWindow* window) : window_(window) {
+    BrowserList::AddObserver(this);
+  }
+  virtual ~TestBrowserWindowOwner() {
+    BrowserList::RemoveObserver(this);
+  }
+
+ private:
+  // Overridden from BrowserListObserver:
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE {
+    if (browser->window() == window_.get())
+      delete this;
+  }
+
+  scoped_ptr<TestBrowserWindow> window_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowOwner);
+};
+
+}  // namespace
+
+Browser* CreateBrowserWithTestWindowForProfile(Profile* profile) {
+  Browser::CreateParams params(profile);
+  return CreateBrowserWithTestWindowForParams(&params);
+}
+
+Browser* CreateBrowserWithTestWindowForParams(Browser::CreateParams* params) {
+  TestBrowserWindow* window = new TestBrowserWindow;
+  new TestBrowserWindowOwner(window);
+  params->window = window;
+  return new Browser(*params);
+}
+
+}  // namespace chrome

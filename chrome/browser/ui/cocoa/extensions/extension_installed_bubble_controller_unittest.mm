@@ -49,7 +49,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
-    window_ = CreateBrowserWindow()->GetNativeWindow();
+    window_ = browser()->window()->GetNativeWindow();
     icon_ = LoadTestIcon();
   }
 

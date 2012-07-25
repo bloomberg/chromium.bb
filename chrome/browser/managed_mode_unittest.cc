@@ -65,19 +65,16 @@ class FakeManagedMode : public ManagedMode {
 
 class MockBrowserWindow : public TestBrowserWindow {
  public:
-  explicit MockBrowserWindow(Browser* browser) : TestBrowserWindow(browser) {
-  }
-
   MOCK_METHOD0(Close, void());
 };
 
 class BrowserFixture {
  public:
   BrowserFixture(FakeManagedMode* managed_mode,
-                 TestingProfile* profile)
-      : browser_(Browser::TYPE_TABBED, profile),
-        window_(&browser_) {
-    browser_.SetWindowForTesting(&window_);
+                 TestingProfile* profile) {
+    Browser::CreateParams params(profile);
+    params.window = &window_;
+    browser_.reset(new Browser(params));
   }
 
   ~BrowserFixture() {
@@ -88,7 +85,7 @@ class BrowserFixture {
   }
 
  private:
-  Browser browser_;
+  scoped_ptr<Browser> browser_;
   StrictMock<MockBrowserWindow> window_;
 };
 

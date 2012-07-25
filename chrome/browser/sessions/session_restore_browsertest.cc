@@ -227,8 +227,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Create a new popup.
   Profile* profile = browser()->profile();
-  Browser* popup = Browser::CreateWithParams(
-      Browser::CreateParams(Browser::TYPE_POPUP, profile));
+  Browser* popup =
+      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile));
   popup->window()->Show();
 
   // Close the browser.
@@ -601,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
   AssertOneWindowWithOneTab(browser());
 
   // Open a popup.
-  Browser* popup = Browser::CreateWithParams(
+  Browser* popup = new Browser(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   popup->window()->Show();
   ASSERT_EQ(2u, BrowserList::size());

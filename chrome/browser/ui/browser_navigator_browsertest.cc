@@ -68,15 +68,14 @@ chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
 
 Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
                                                          Profile* profile) {
-  Browser* browser = Browser::CreateWithParams(
-      Browser::CreateParams(type, profile));
+  Browser* browser = new Browser(Browser::CreateParams(type, profile));
   chrome::AddBlankTab(browser, true);
   return browser;
 }
 
 Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
                                                         Profile* profile) {
-  Browser* browser = Browser::CreateWithParams(
+  Browser* browser = new Browser(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_POPUP, "Test", gfx::Rect(), profile));
   chrome::AddBlankTab(browser, true);
@@ -1243,7 +1242,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserNavigatorTest, NavigateFromCrashedPanel) {
   GURL url2("http://maps.google.com/#b");
 
   // Create a panel.
-  Browser* panel_browser = Browser::CreateWithParams(
+  Browser* panel_browser = new Browser(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_PANEL, "Test", gfx::Rect(100, 100),
           browser()->profile()));

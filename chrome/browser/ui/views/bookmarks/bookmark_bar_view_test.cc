@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -175,7 +176,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_->BlockUntilBookmarkModelLoaded();
     profile_->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
-    browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
+    browser_.reset(
+        chrome::CreateBrowserWithTestWindowForProfile(profile_.get()));
 
     model_ = profile_->GetBookmarkModel();
     model_->ClearStore();

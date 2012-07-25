@@ -101,7 +101,7 @@ WebContents* GetOrCloneTabForDisposition(Browser* browser,
     }
     case NEW_WINDOW: {
       current_tab = current_tab->Clone();
-      Browser* b = Browser::Create(browser->profile());
+      Browser* b = new Browser(Browser::CreateParams(browser->profile()));
       b->tab_strip_model()->AddTabContents(
           current_tab, -1, content::PAGE_TRANSITION_LINK,
           TabStripModel::ADD_ACTIVE);
@@ -254,7 +254,7 @@ void NewEmptyWindow(Profile* profile) {
 }
 
 Browser* OpenEmptyWindow(Profile* profile) {
-  Browser* browser = Browser::Create(profile);
+  Browser* browser = new Browser(Browser::CreateParams(profile));
   AddBlankTab(browser, true);
   browser->window()->Show();
   return browser;
@@ -507,13 +507,13 @@ void DuplicateTabAt(Browser* browser, int index) {
     if (browser->is_app()) {
       CHECK(!browser->is_type_popup());
       CHECK(!browser->is_type_panel());
-      browser = Browser::CreateWithParams(
+      browser = new Browser(
           Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
                                               browser->app_name(),
                                               gfx::Rect(),
                                               browser->profile()));
     } else if (browser->is_type_popup()) {
-      browser = Browser::CreateWithParams(
+      browser = new Browser(
           Browser::CreateParams(Browser::TYPE_POPUP, browser->profile()));
     }
 
@@ -547,7 +547,7 @@ void ConvertPopupToTabbedBrowser(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowAsTab"));
   TabContents* contents =
       browser->tab_strip_model()->DetachTabContentsAt(browser->active_index());
-  Browser* b = Browser::Create(browser->profile());
+  Browser* b = new Browser(Browser::CreateParams(browser->profile()));
   b->tab_strip_model()->AppendTabContents(contents, true);
   b->window()->Show();
 }
@@ -926,7 +926,7 @@ void ViewSource(Browser* browser,
                                                     view_source_contents,
                                                     add_types);
   } else {
-    Browser* b = Browser::CreateWithParams(
+    Browser* b = new Browser(
         Browser::CreateParams(Browser::TYPE_TABBED, browser->profile()));
 
     // Preserve the size of the original window. The new window has already
@@ -977,7 +977,7 @@ void ConvertTabToAppWindow(Browser* browser,
   if (index >= 0)
     browser->tab_strip_model()->DetachTabContentsAt(index);
 
-  Browser* app_browser = Browser::CreateWithParams(
+  Browser* app_browser = new Browser(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_POPUP, app_name, gfx::Rect(), browser->profile()));
   TabContents* tab_contents = TabContents::FromWebContents(contents);

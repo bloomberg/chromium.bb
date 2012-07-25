@@ -52,10 +52,9 @@ TEST_F(PinnedTabServiceTest, Popup) {
   browser()->tab_strip_model()->SetTabPinned(0, true);
 
   // Create a popup.
-  scoped_ptr<Browser> popup(new Browser(Browser::TYPE_POPUP, profile()));
-  scoped_ptr<TestBrowserWindow> popup_window(
-      new TestBrowserWindow(popup.get()));
-  popup->SetWindowForTesting(popup_window.get());
+  Browser::CreateParams params(Browser::TYPE_POPUP, profile());
+  scoped_ptr<Browser> popup(
+      chrome::CreateBrowserWithTestWindowForParams(&params));
 
   // Close the browser. This should trigger saving the tabs. No need to destroy
   // the browser (this happens automatically in the test destructor).
@@ -68,7 +67,6 @@ TEST_F(PinnedTabServiceTest, Popup) {
   // Close the popup. This shouldn't reset the saved state.
   chrome::CloseAllTabs(popup.get());
   popup.reset(NULL);
-  popup_window.reset(NULL);
 
   // Check the state to make sure it hasn't changed.
   result = PinnedTabTestUtils::TabsToString(

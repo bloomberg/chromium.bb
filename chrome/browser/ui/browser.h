@@ -155,6 +155,7 @@ class Browser : public TabStripModelObserver,
 
   struct CreateParams {
     CreateParams();
+    explicit CreateParams(Profile* profile);
     CreateParams(Type type, Profile* profile);
 
     static CreateParams CreateForApp(Type type,
@@ -185,24 +186,16 @@ class Browser : public TabStripModelObserver,
     ui::WindowShowState initial_show_state;
 
     bool is_session_restore;
+
+    // Supply a custom BrowserWindow implementation, to be used instead of the
+    // default. Intended for testing.
+    BrowserWindow* window;
   };
 
   // Constructors, Creation, Showing //////////////////////////////////////////
 
-  // Creates a new browser of the given |type| and for the given |profile|. The
-  // Browser has a NULL window after its construction, InitBrowserWindow must
-  // be called after configuration for window() to be valid.
-  // Avoid using this constructor directly if you can use one of the Create*()
-  // methods below. This applies to almost all non-testing code.
-  Browser(Type type, Profile* profile);
+  explicit Browser(const CreateParams& params);
   virtual ~Browser();
-
-  // Creates a normal tabbed browser with the specified profile. The Browser's
-  // window is created by this function call.
-  static Browser* Create(Profile* profile);
-
-  // Like Create, but creates a browser of the specified parameters.
-  static Browser* CreateWithParams(const CreateParams& params);
 
   // Set overrides for the initial window bounds and maximized state.
   void set_override_bounds(const gfx::Rect& bounds) {
@@ -225,16 +218,6 @@ class Browser : public TabStripModelObserver,
   bool is_session_restore() const {
     return is_session_restore_;
   }
-
-  // Creates the Browser Window. Prefer to use the static helpers above where
-  // possible. This does not show the window. You need to call window()->Show()
-  // to show it.
-  void InitBrowserWindow();
-
-  // Sets the BrowserWindow. This is intended for tests only.
-  // Use CreateBrowserWindow outside of testing, or the static convenience
-  // methods that create a BrowserWindow for you.
-  void SetWindowForTesting(BrowserWindow* window);
 
   // Accessors ////////////////////////////////////////////////////////////////
 
@@ -483,11 +466,6 @@ class Browser : public TabStripModelObserver,
   extensions::WindowController* extension_window_controller() const {
     return extension_window_controller_.get();
   }
-
- protected:
-  // Funnel for the factory method in BrowserWindow. This allows subclasses to
-  // set their own window.
-  virtual BrowserWindow* CreateBrowserWindow();
 
  private:
   friend class BrowserTest;

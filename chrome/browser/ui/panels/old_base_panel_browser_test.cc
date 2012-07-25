@@ -299,7 +299,7 @@ Panel* OldBasePanelBrowserTest::CreatePanelWithParams(
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-  Browser* panel_browser = Browser::CreateWithParams(
+  Browser* panel_browser = new Browser(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_PANEL, params.name, params.bounds,
           browser()->profile()));

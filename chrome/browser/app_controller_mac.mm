@@ -675,7 +675,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
         // downloads page if the user chooses to wait.
         Browser* browser = browser::FindBrowserWithProfile(profiles[i]);
         if (!browser) {
-          browser = Browser::Create(profiles[i]);
+          browser = new Browser(Browser::CreateParams(profiles[i]));
           browser->window()->Show();
         }
         DCHECK(browser);
@@ -1093,7 +1093,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   Browser* browser = browser::GetLastActiveBrowser();
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
-    browser = Browser::Create([self lastProfile]);
+    browser = new Browser(Browser::CreateParams([self lastProfile]));
     browser->window()->Show();
   }
 

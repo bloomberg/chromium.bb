@@ -44,7 +44,7 @@ class NewBrowserPageNavigator : public content::PageNavigator {
     if (!browser_) {
       Profile* profile = (params.disposition == OFF_THE_RECORD) ?
           profile_->GetOffTheRecordProfile() : profile_;
-      browser_ = Browser::Create(profile);
+      browser_ = new Browser(Browser::CreateParams(profile));
     }
 
     OpenURLParams forward_params = params;

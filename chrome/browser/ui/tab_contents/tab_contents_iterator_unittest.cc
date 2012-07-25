@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -50,17 +51,12 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
   EXPECT_EQ(0U, CountAllTabs());
 
   // Create more browsers/windows.
-  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_TABBED, profile()));
-  scoped_ptr<Browser> browser3(new Browser(Browser::TYPE_TABBED, profile()));
-  scoped_ptr<Browser> browser4(new Browser(Browser::TYPE_TABBED, profile()));
-
-  scoped_ptr<TestBrowserWindow> window2(new TestBrowserWindow(browser2.get()));
-  scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));
-  scoped_ptr<TestBrowserWindow> window4(new TestBrowserWindow(browser4.get()));
-
-  browser2->SetWindowForTesting(window2.get());
-  browser3->SetWindowForTesting(window3.get());
-  browser4->SetWindowForTesting(window4.get());
+  scoped_ptr<Browser> browser2(
+      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+  scoped_ptr<Browser> browser3(
+      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+  scoped_ptr<Browser> browser4(
+      chrome::CreateBrowserWithTestWindowForProfile(profile()));
 
   // Sanity checks.
   EXPECT_EQ(4U, BrowserList::size());
@@ -97,14 +93,10 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   EXPECT_EQ(1U, BrowserList::size());
 
   // Create more browsers/windows.
-  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_TABBED, profile()));
-  scoped_ptr<Browser> browser3(new Browser(Browser::TYPE_TABBED, profile()));
-
-  scoped_ptr<TestBrowserWindow> window2(new TestBrowserWindow(browser2.get()));
-  scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));
-
-  browser2->SetWindowForTesting(window2.get());
-  browser3->SetWindowForTesting(window3.get());
+  scoped_ptr<Browser> browser2(
+      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+  scoped_ptr<Browser> browser3(
+      chrome::CreateBrowserWithTestWindowForProfile(profile()));
 
   // Sanity checks.
   EXPECT_EQ(3U, BrowserList::size());
@@ -168,14 +160,10 @@ TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
   EXPECT_EQ(1U, BrowserList::size());
 
   // Create more browsers/windows.
-  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_TABBED, profile()));
-  scoped_ptr<Browser> browser3(new Browser(Browser::TYPE_TABBED, profile()));
-
-  scoped_ptr<TestBrowserWindow> window2(new TestBrowserWindow(browser2.get()));
-  scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));
-
-  browser2->SetWindowForTesting(window2.get());
-  browser3->SetWindowForTesting(window3.get());
+  scoped_ptr<Browser> browser2(
+      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+  scoped_ptr<Browser> browser3(
+      chrome::CreateBrowserWithTestWindowForProfile(profile()));
 
   EXPECT_EQ(0U, CountAllTabs());
 

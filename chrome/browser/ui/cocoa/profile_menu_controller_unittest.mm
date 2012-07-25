@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -139,7 +140,8 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   ASSERT_EQ(7, [menu numberOfItems]);
 
   // Create a browser and "show" it.
-  scoped_ptr<Browser> p2_browser(new Browser(Browser::TYPE_TABBED, profile2));
+  scoped_ptr<Browser> p2_browser(
+      chrome::CreateBrowserWithTestWindowForProfile(profile2));
   BrowserList::SetLastActive(p2_browser.get());
   VerifyProfileNamedIsActive(@"Profile 2", __LINE__);
 
@@ -148,7 +150,8 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   VerifyProfileNamedIsActive(@"Profile 2", __LINE__);
 
   // Open a new browser and make sure it takes effect.
-  scoped_ptr<Browser> p3_browser(new Browser(Browser::TYPE_TABBED, profile3));
+  scoped_ptr<Browser> p3_browser(
+      chrome::CreateBrowserWithTestWindowForProfile(profile3));
   BrowserList::SetLastActive(p3_browser.get());
   VerifyProfileNamedIsActive(@"Profile 3", __LINE__);
 

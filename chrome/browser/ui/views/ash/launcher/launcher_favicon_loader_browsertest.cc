@@ -78,7 +78,7 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
   }
 
   void CreatePanelBrowser(const char* url, Browser** result) {
-    Browser* panel_browser =  Browser::CreateWithParams(
+    Browser* panel_browser =  new Browser(
         Browser::CreateParams::CreateForApp(
             Browser::TYPE_PANEL, "Test Panel", gfx::Rect(),
             browser()->profile()));

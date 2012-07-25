@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,8 @@ class BookmarkBarGtkUnittest : public testing::Test {
     profile_->BlockUntilBookmarkModelLoaded();
     model_ = profile_->GetBookmarkModel();
 
-    browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
+    browser_.reset(
+        chrome::CreateBrowserWithTestWindowForProfile(profile_.get()));
     origin_provider_.reset(new EmptyTabstripOriginProvider);
     bookmark_bar_.reset(new BookmarkBarGtk(NULL, browser_.get(),
                                            origin_provider_.get()));

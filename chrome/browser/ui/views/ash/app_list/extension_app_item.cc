@@ -167,9 +167,10 @@ void ExtensionAppItem::ShowExtensionOptions() {
   if (!extension)
     return;
 
+  // TODO(beng): use Navigate()!
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
   if (!browser) {
-    browser = Browser::Create(profile_);
+    browser = new Browser(Browser::CreateParams(profile_));
     browser->window()->Show();
   }
 

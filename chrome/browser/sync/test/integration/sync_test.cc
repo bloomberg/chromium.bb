@@ -281,7 +281,7 @@ void SyncTest::InitializeInstance(int index) {
   EXPECT_FALSE(GetProfile(index) == NULL) << "Could not create Profile "
                                           << index << ".";
 
-  browsers_[index] = Browser::Create(GetProfile(index));
+  browsers_[index] = new Browser(Browser::CreateParams(GetProfile(index)));
   EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
                                           << index << ".";
 

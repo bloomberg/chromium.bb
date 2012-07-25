@@ -58,7 +58,7 @@ bool WindowCanOpenTabs(Browser* browser) {
 // such Browser is located.
 Browser* GetOrCreateBrowser(Profile* profile) {
   Browser* browser = browser::FindTabbedBrowser(profile, false);
-  return browser ? browser : Browser::Create(profile);
+  return browser ? browser : new Browser(Browser::CreateParams(profile));
 }
 
 // Change some of the navigation parameters based on the particular URL.
@@ -137,19 +137,15 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
       if (app_name.empty()) {
         Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile);
         browser_params.initial_bounds = params->window_bounds;
-        return Browser::CreateWithParams(browser_params);
+        return new Browser(browser_params);
       }
 
-      return Browser::CreateWithParams(
-          Browser::CreateParams::CreateForApp(
-              Browser::TYPE_POPUP, app_name, params->window_bounds,
-              profile));
+      return new Browser(Browser::CreateParams::CreateForApp(
+          Browser::TYPE_POPUP, app_name, params->window_bounds, profile));
     }
     case NEW_WINDOW: {
       // Make a new normal browser window.
-      Browser* browser = new Browser(Browser::TYPE_TABBED, profile);
-      browser->InitBrowserWindow();
-      return browser;
+      return new Browser(Browser::CreateParams(profile));
     }
     case OFF_THE_RECORD:
       // Make or find an incognito window.

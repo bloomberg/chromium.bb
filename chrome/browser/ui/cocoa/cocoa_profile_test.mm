@@ -71,7 +71,7 @@ void CocoaProfileTest::SetUp() {
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
 
-  browser_.reset(new Browser(Browser::TYPE_TABBED, profile_));
+  browser_.reset(CreateBrowser());
   ASSERT_TRUE(browser_.get());
 }
 
@@ -82,11 +82,6 @@ void CocoaProfileTest::TearDown() {
   CocoaTest::TearDown();
 }
 
-BrowserWindow* CocoaProfileTest::CreateBrowserWindow() {
-  browser_->InitBrowserWindow();
-  return browser_->window();
-}
-
 void CocoaProfileTest::CloseBrowserWindow() {
   // Check to make sure a window was actually created.
   DCHECK(browser_->window());
@@ -94,4 +89,8 @@ void CocoaProfileTest::CloseBrowserWindow() {
   chrome::CloseWindow(browser_.get());
   // |browser_| will be deleted by its BrowserWindowController.
   ignore_result(browser_.release());
+}
+
+Browser* CocoaProfileTest::CreateBrowser() {
+  return new Browser(Browser::CreateParams(profile()));
 }

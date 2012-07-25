@@ -47,14 +47,14 @@ class CocoaProfileTest : public CocoaTest {
   TestingProfile* profile() { return profile_; }
   Browser* browser() { return browser_.get(); }
 
-  // Creates the browser window. To close this window call |CloseBrowserWindow|.
-  // Do NOT call close directly on the window.
-  BrowserWindow* CreateBrowserWindow();
-
-  // Closes the window for this browser. This must only be called after
-  // CreateBrowserWindow(). This will automatically be called as part of
-  // TearDown() if it's not been done already.
+  // Closes the window for this browser. This will automatically be called as
+  // part of TearDown() if it's not been done already.
   void CloseBrowserWindow();
+
+ protected:
+  // Overridden by test subclasses to create their own browser, e.g. with a
+  // test window.
+  virtual Browser* CreateBrowser();
 
  private:
   MessageLoopForUI message_loop_;

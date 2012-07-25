@@ -1042,10 +1042,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
   // end up maximized).
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
-    Browser* max_browser = new Browser(types[i], browser()->profile());
-    max_browser->set_initial_show_state(ui::SHOW_STATE_MAXIMIZED);
-    max_browser->InitBrowserWindow();
-    AddBlankTabAndShow(max_browser);
+    Browser::CreateParams params(types[i], browser()->profile());
+    params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
+    AddBlankTabAndShow(new Browser(params));
   }
 }
 
@@ -1062,10 +1061,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_StartMinimized) {
   // end up minimized).
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
-    Browser* min_browser = new Browser(types[i], browser()->profile());
-    min_browser->set_initial_show_state(ui::SHOW_STATE_MINIMIZED);
-    min_browser->InitBrowserWindow();
-    AddBlankTabAndShow(min_browser);
+    Browser::CreateParams params(types[i], browser()->profile());
+    params.initial_show_state = ui::SHOW_STATE_MINIMIZED;
+    AddBlankTabAndShow(new Browser(params));
   }
 }
 
@@ -1125,7 +1123,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
 
   // Create a new browser.
-  Browser* new_browser = Browser::Create(browser()->profile());
+  Browser* new_browser =
+      new Browser(Browser::CreateParams(browser()->profile()));
   CommandUpdater* new_command_updater =
       new_browser->command_controller()->command_updater();
   // It should have Bookmarks & Settings commands disabled by default.
@@ -1157,7 +1156,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_OPTIONS));
 
   // Create a new browser.
-  Browser* new_browser = Browser::Create(browser()->profile());
+  Browser* new_browser =
+      new Browser(Browser::CreateParams(browser()->profile()));
   CommandUpdater* new_command_updater =
       new_browser->command_controller()->command_updater();
   EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
@@ -1188,7 +1188,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
   // Create a popup (non-main-UI-type) browser. Settings command as well
   // as Extensions should be disabled.
-  Browser* popup_browser = browser()->CreateWithParams(
+  Browser* popup_browser = new Browser(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   CommandUpdater* popup_command_updater =
       popup_browser->command_controller()->command_updater();
@@ -1204,7 +1204,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserTest,
                        DisableOptionsAndImportMenuItemsConsistently) {
   // Create a popup browser.
-  Browser* popup_browser = browser()->CreateWithParams(
+  Browser* popup_browser = new Browser(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   CommandUpdater* command_updater =
       popup_browser->command_controller()->command_updater();
@@ -1371,7 +1371,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(1, browser()->tab_count());
 
   // Open a popup browser with a single blank foreground tab.
-  Browser* popup_browser = browser()->CreateWithParams(
+  Browser* popup_browser = new Browser(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   chrome::AddBlankTab(popup_browser, true);
   EXPECT_EQ(1, popup_browser->tab_count());
@@ -1388,9 +1388,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(2, browser()->tab_count());
 
   // Open an app frame browser with a single blank foreground tab.
-  Browser* app_browser = browser()->CreateWithParams(
-      Browser::CreateParams::CreateForApp(
-          L"Test", browser()->profile(), false));
+  Browser* app_browser = new Browser(Browser::CreateParams::CreateForApp(
+      L"Test", browser()->profile(), false));
   chrome::AddBlankTab(app_browser, true);
   EXPECT_EQ(1, app_browser->tab_count());
 
@@ -1407,9 +1406,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(3, browser()->tab_count());
 
   // Open an app frame popup browser with a single blank foreground tab.
-  Browser* app_popup_browser = browser()->CreateWithParams(
-      Browser::CreateParams::CreateForApp(
-          L"Test", browser()->profile(), false));
+  Browser* app_popup_browser = new Browser(Browser::CreateParams::CreateForApp(
+      L"Test", browser()->profile(), false));
   chrome::AddBlankTab(app_popup_browser, true);
   EXPECT_EQ(1, app_popup_browser->tab_count());
 

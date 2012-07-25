@@ -125,7 +125,7 @@ WebContents* OpenApplicationWindow(
   }
 #endif
 
-  Browser* browser = Browser::CreateWithParams(params);
+  Browser* browser = new Browser(params);
 
   if (app_browser)
     *app_browser = browser;
@@ -158,7 +158,7 @@ WebContents* OpenApplicationTab(Profile* profile,
   WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.
-    browser = Browser::Create(profile);
+    browser = new Browser(Browser::CreateParams(profile));
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
     disposition = NEW_FOREGROUND_TAB;

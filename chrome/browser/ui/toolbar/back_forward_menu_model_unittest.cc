@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -503,11 +504,12 @@ TEST_F(BackFwdMenuModelTest, EscapeLabel) {
 TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   profile()->CreateHistoryService(true, false);
   profile()->CreateFaviconService();
-  Browser browser(Browser::TYPE_TABBED, profile());
+  scoped_ptr<Browser> browser(
+      chrome::CreateBrowserWithTestWindowForProfile(profile()));
   FaviconDelegate favicon_delegate;
 
   BackForwardMenuModel back_model(
-      &browser, BackForwardMenuModel::BACKWARD_MENU);
+      browser.get(), BackForwardMenuModel::BACKWARD_MENU);
   back_model.set_test_web_contents(controller().GetWebContents());
   back_model.SetMenuModelDelegate(&favicon_delegate);
 
@@ -563,7 +565,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
                       new_icon_bitmap.getSize()));
 
   // Make sure the browser deconstructor doesn't have problems.
-  chrome::CloseAllTabs(&browser);
+  chrome::CloseAllTabs(browser.get());
   // This is required to prevent the message loop from hanging.
   profile()->DestroyHistoryService();
 }

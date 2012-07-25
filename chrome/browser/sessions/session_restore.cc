@@ -578,7 +578,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     bool use_new_window = disposition == NEW_WINDOW;
 
-    Browser* browser = use_new_window ? Browser::Create(profile_) : browser_;
+    Browser* browser = use_new_window ?
+        new Browser(Browser::CreateParams(profile_)) : browser_;
 
     RecordAppLaunchForTab(browser, tab, selected_index);
 
@@ -663,7 +664,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   Browser* FinishedTabCreation(bool succeeded, bool created_tabbed_browser) {
     Browser* browser = NULL;
     if (!created_tabbed_browser && always_create_tabbed_browser_) {
-      browser = Browser::Create(profile_);
+      browser = new Browser(Browser::CreateParams(profile_));
       if (urls_to_open_.empty()) {
         // No tab browsers were created and no URLs were supplied on the command
         // line. Add an empty URL, which is treated as opening the users home
@@ -927,7 +928,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     params.initial_bounds = bounds;
     params.initial_show_state = show_state;
     params.is_session_restore = true;
-    return Browser::CreateWithParams(params);
+    return new Browser(params);
   }
 
   void ShowBrowser(Browser* browser, int selected_tab_index) {

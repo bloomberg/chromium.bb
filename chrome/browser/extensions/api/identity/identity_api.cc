@@ -177,8 +177,8 @@ void IdentityGetAuthTokenFunction::ShowLoginPopup() {
   if (login_ui) {
     login_ui->FocusUI();
   } else {
-    Browser* browser = Browser::CreateWithParams(Browser::CreateParams(
-        Browser::TYPE_POPUP, profile()));
+    Browser* browser =
+        new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile()));
     // TODO(munjal): Change the source from SOURCE_NTP_LINK to something else
     // once we have added a new source for extension API.
     GURL signin_url(SyncPromoUI::GetSyncPromoURL(GURL(),

@@ -254,7 +254,7 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
       if (!browser) {
         // It is possible that there is no browser window (e.g. when there are
         // background pages, or for a chrome frame process on windows).
-        browser = Browser::Create(balloon_->profile());
+        browser = new Browser(Browser::CreateParams(balloon_->profile()));
       }
       chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;

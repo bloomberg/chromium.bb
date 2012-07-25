@@ -422,7 +422,7 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
-    Browser* current_browser = Browser::CreateWithParams(
+    Browser* current_browser = new Browser(
         Browser::CreateParams(Browser::TYPE_POPUP, profile));
     if (!current_browser) {
       NOTREACHED() << "Failed to create popup browser window";

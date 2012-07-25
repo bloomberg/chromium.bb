@@ -32,7 +32,7 @@ class OneClickSigninBubbleControllerTest : public CocoaProfileTest {
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     BrowserWindowCocoa* browser_window =
-        static_cast<BrowserWindowCocoa*>(CreateBrowserWindow());
+        static_cast<BrowserWindowCocoa*>(browser()->window());
     controller_.reset(
         [[OneClickSigninBubbleController alloc]
             initWithBrowserWindowController:browser_window->cocoa_controller()

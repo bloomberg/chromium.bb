@@ -9,8 +9,6 @@ class Browser;
 
 namespace chrome {
 
-// Implementations must not change the contents of the BrowserList inside any
-// of these methods.
 class BrowserListObserver {
   public:
   // Called immediately after a browser is added to the list

@@ -244,6 +244,14 @@ bool AllowPanels(const std::string& app_name) {
       web_app::GetExtensionIdFromApplicationName(app_name));
 }
 
+BrowserWindow* CreateBrowserWindow(Browser* browser) {
+#if !defined(USE_ASH)
+  if (browser->is_type_panel())
+    return PanelManager::GetInstance()->CreatePanel(browser)->browser_window();
+#endif
+  return BrowserWindow::CreateBrowserWindow(browser);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -252,8 +260,19 @@ bool AllowPanels(const std::string& app_name) {
 Browser::CreateParams::CreateParams()
     : type(TYPE_TABBED),
       profile(NULL),
+      app_type(APP_TYPE_HOST),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
-      is_session_restore(false) {
+      is_session_restore(false),
+      window(NULL) {
+}
+
+Browser::CreateParams::CreateParams(Profile* profile)
+  : type(TYPE_TABBED),
+    profile(profile),
+    app_type(APP_TYPE_HOST),
+    initial_show_state(ui::SHOW_STATE_DEFAULT),
+    is_session_restore(false),
+    window(NULL) {
 }
 
 Browser::CreateParams::CreateParams(Type type, Profile* profile)
@@ -261,7 +280,8 @@ Browser::CreateParams::CreateParams(Type type, Profile* profile)
       profile(profile),
       app_type(APP_TYPE_HOST),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
-      is_session_restore(false) {
+      is_session_restore(false),
+      window(NULL) {
 }
 
 // static
@@ -295,21 +315,23 @@ Browser::CreateParams Browser::CreateParams::CreateForDevTools(
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Constructors, Creation, Showing:
 
-Browser::Browser(Type type, Profile* profile)
-    : type_(type),
-      profile_(profile),
+Browser::Browser(const CreateParams& params)
+    : type_(params.type),
+      profile_(params.profile),
       window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           tab_strip_model_delegate_(
             new chrome::BrowserTabStripModelDelegate(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           tab_strip_model_(new TabStripModel(tab_strip_model_delegate_.get(),
-                           profile))),
-      app_type_(APP_TYPE_HOST),
+                                             params.profile))),
+      app_name_(params.app_name),
+      app_type_(params.app_type),
       chrome_updater_factory_(this),
       cancel_download_confirmation_state_(NOT_PROMPTED),
-      initial_show_state_(ui::SHOW_STATE_DEFAULT),
-      is_session_restore_(false),
+      override_bounds_(params.initial_bounds),
+      initial_show_state_(params.initial_show_state),
+      is_session_restore_(params.is_session_restore),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           unload_controller_(new chrome::UnloadController(this))),
       weak_factory_(this),
@@ -330,6 +352,8 @@ Browser::Browser(Type type, Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           command_controller_(new chrome::BrowserCommandController(this))),
       window_has_shown_(false) {
+  if (!app_name_.empty())
+    chrome::RegisterAppPrefs(app_name_, profile_);
   tab_strip_model_->AddObserver(this);
 
   toolbar_model_.reset(new ToolbarModel(toolbar_model_delegate_.get()));
@@ -372,8 +396,53 @@ Browser::Browser(Type type, Profile* profile)
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
-  FilePath profile_path = profile->GetPath();
+  FilePath profile_path = profile_->GetPath();
   ProfileMetrics::LogProfileLaunch(profile_path);
+
+  window_ = params.window ? params.window : CreateBrowserWindow(this);
+
+  // TODO(beng): move to BrowserFrameWin.
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Set the app user model id for this application to that of the application
+  // name.  See http://crbug.com/7028.
+  ui::win::SetAppIdForWindow(
+      is_app() && !is_type_panel() ?
+      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(app_name_),
+                                                profile_->GetPath()) :
+      ShellIntegration::GetChromiumModelIdForProfile(profile_->GetPath()),
+      window()->GetNativeWindow());
+
+  if (is_type_panel()) {
+    ui::win::SetAppIconForWindow(ShellIntegration::GetChromiumIconPath(),
+                                 window()->GetNativeWindow());
+  }
+#endif
+
+  // Create the extension window controller before sending notifications.
+  extension_window_controller_.reset(
+      new BrowserExtensionWindowController(this));
+
+  // TODO(beng): Move BrowserList::AddBrowser() to the end of this function and
+  //             replace uses of this with BL's notifications.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      content::Source<Browser>(this),
+      content::NotificationService::NoDetails());
+
+  // TODO(beng): move to ChromeBrowserMain:
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state && local_state->FindPreference(
+      prefs::kAutofillPersonalDataManagerFirstRun) &&
+      local_state->GetBoolean(prefs::kAutofillPersonalDataManagerFirstRun)) {
+    // Notify PDM that this is a first run.
+#if defined(OS_WIN)
+    ImportAutofillDataWin(PersonalDataManagerFactory::GetForProfile(profile_));
+#endif  // defined(OS_WIN)
+    // Reset the preference so we don't call it again for subsequent windows.
+    local_state->ClearPref(prefs::kAutofillPersonalDataManagerFirstRun);
+  }
+
+  fullscreen_controller_ = new FullscreenController(window_, profile_, this);
 }
 
 Browser::~Browser() {
@@ -426,79 +495,6 @@ Browser::~Browser() {
   // away so they don't try and call back to us.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
-}
-
-// static
-Browser* Browser::Create(Profile* profile) {
-  Browser* browser = new Browser(TYPE_TABBED, profile);
-  browser->InitBrowserWindow();
-  return browser;
-}
-
-// static
-Browser* Browser::CreateWithParams(const CreateParams& params) {
-  if (!params.app_name.empty())
-    chrome::RegisterAppPrefs(params.app_name, params.profile);
-
-  Browser* browser = new Browser(params.type, params.profile);
-  browser->app_name_ = params.app_name;
-  browser->app_type_ = params.app_type;
-  browser->set_override_bounds(params.initial_bounds);
-  browser->set_initial_show_state(params.initial_show_state);
-  browser->set_is_session_restore(params.is_session_restore);
-
-  browser->InitBrowserWindow();
-  return browser;
-}
-
-void Browser::InitBrowserWindow() {
-  DCHECK(!window_);
-
-  window_ = CreateBrowserWindow();
-  fullscreen_controller_ = new FullscreenController(window_, profile_, this);
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Set the app user model id for this application to that of the application
-  // name.  See http://crbug.com/7028.
-  ui::win::SetAppIdForWindow(
-      is_app() && !is_type_panel() ?
-      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(app_name_),
-                                                profile_->GetPath()) :
-      ShellIntegration::GetChromiumModelIdForProfile(profile_->GetPath()),
-      window()->GetNativeWindow());
-
-  if (is_type_panel()) {
-    ui::win::SetAppIconForWindow(ShellIntegration::GetChromiumIconPath(),
-                                 window()->GetNativeWindow());
-  }
-#endif
-
-  // Create the extension window controller before sending notifications.
-  extension_window_controller_.reset(
-      new BrowserExtensionWindowController(this));
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::Source<Browser>(this),
-      content::NotificationService::NoDetails());
-
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state && local_state->FindPreference(
-      prefs::kAutofillPersonalDataManagerFirstRun) &&
-      local_state->GetBoolean(prefs::kAutofillPersonalDataManagerFirstRun)) {
-    // Notify PDM that this is a first run.
-#if defined(OS_WIN)
-    ImportAutofillDataWin(PersonalDataManagerFactory::GetForProfile(profile_));
-#endif  // defined(OS_WIN)
-    // Reset the preference so we don't call it again for subsequent windows.
-    local_state->ClearPref(prefs::kAutofillPersonalDataManagerFirstRun);
-  }
-}
-
-void Browser::SetWindowForTesting(BrowserWindow* window) {
-  DCHECK(!window_);
-  window_ = window;
-  fullscreen_controller_ = new FullscreenController(window_, profile_, this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1216,17 +1212,6 @@ void Browser::OnWindowDidShow() {
 
 void Browser::ShowFirstRunBubble() {
   window()->GetLocationBar()->ShowFirstRunBubble();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Browser, protected:
-
-BrowserWindow* Browser::CreateBrowserWindow() {
-#if !defined(USE_ASH)
-  if (is_type_panel())
-    return PanelManager::GetInstance()->CreatePanel(this)->browser_window();
-#endif
-  return BrowserWindow::CreateBrowserWindow(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

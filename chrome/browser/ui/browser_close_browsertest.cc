@@ -171,7 +171,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
 
   // Create a Browser (with associated window) on the specified profile.
   Browser* CreateBrowserOnProfile(Profile* profile) {
-    Browser* new_browser = Browser::Create(profile);
+    Browser* new_browser = new Browser(Browser::CreateParams(profile));
     chrome::AddSelectedTabWithURL(new_browser, GURL(chrome::kAboutBlankURL),
                                   content::PAGE_TRANSITION_START_PAGE);
     ui_test_utils::WaitForLoadStop(

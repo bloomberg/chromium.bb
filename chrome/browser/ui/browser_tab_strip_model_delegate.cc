@@ -61,11 +61,11 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
     dock_info.AdjustOtherWindowBounds();
 
   // Create an empty new browser window the same size as the old one.
-  Browser* browser = new Browser(Browser::TYPE_TABBED, browser_->profile());
-  browser->set_override_bounds(new_window_bounds);
-  browser->set_initial_show_state(
-      maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL);
-  browser->InitBrowserWindow();
+  Browser::CreateParams params(browser_->profile());
+  params.initial_bounds = new_window_bounds;
+  params.initial_show_state =
+      maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
+  Browser* browser = new Browser(params);
   browser->tab_strip_model()->AppendTabContents(detached_contents, true);
   // Make sure the loading state is updated correctly, otherwise the throbber
   // won't start if the page is loading.

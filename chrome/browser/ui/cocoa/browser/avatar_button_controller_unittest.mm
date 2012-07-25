@@ -16,7 +16,6 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
-    browser()->InitBrowserWindow();
 
     controller_.reset(
         [[AvatarButtonController alloc] initWithBrowser:browser()]);

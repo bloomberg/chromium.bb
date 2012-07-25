@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/test_location_bar.h"
 
@@ -20,7 +21,7 @@ class Extension;
 // See BrowserWithTestWindowTest for an example of using this class.
 class TestBrowserWindow : public BrowserWindow {
  public:
-  explicit TestBrowserWindow(Browser* browser);
+  TestBrowserWindow();
   virtual ~TestBrowserWindow();
 
   // BrowserWindow:
@@ -149,5 +150,13 @@ class TestBrowserWindow : public BrowserWindow {
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);
 };
+
+namespace chrome {
+
+// Helpers that handle the lifetime of TestBrowserWindow instances.
+Browser* CreateBrowserWithTestWindowForProfile(Profile* profile);
+Browser* CreateBrowserWithTestWindowForParams(Browser::CreateParams* params);
+
+}  // namespace chrome
 
 #endif  // CHROME_TEST_BASE_TEST_BROWSER_WINDOW_H_

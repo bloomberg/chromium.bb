@@ -30,7 +30,7 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
         browser()->profile());
     params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
     params.app_type = Browser::APP_TYPE_HOST;
-    app_browser_ = Browser::CreateWithParams(params);
+    app_browser_ = new Browser(params);
     chrome::AddBlankTab(app_browser_, true);
     app_browser_->window()->Show();
   }

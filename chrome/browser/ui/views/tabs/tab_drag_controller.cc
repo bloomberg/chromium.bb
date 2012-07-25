@@ -1880,7 +1880,8 @@ Browser* TabDragController::CreateBrowserForDrag(
     TabStrip* source,
     const gfx::Point& screen_point,
     std::vector<gfx::Rect>* drag_bounds) {
-  Browser* browser = Browser::Create(drag_data_[0].contents->profile());
+  Browser* browser = new Browser(
+      Browser::CreateParams(drag_data_[0].contents->profile()));
   gfx::Point center(0, source->height() / 2);
   views::View::ConvertPointToWidget(source, &center);
   gfx::Rect new_bounds(source->GetWidget()->GetWindowBoundsInScreen());

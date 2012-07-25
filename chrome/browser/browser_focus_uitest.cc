@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_BrowsersRememberFocus) {
   // of Activate() is not well defined and can vary by window manager.
 #if defined(OS_WIN)
   // Open a new browser window.
-  Browser* browser2 = Browser::Create(browser()->profile());
+  Browser* browser2 = new Browser(Browser::CreateParams(browser()->profile()));
   ASSERT_TRUE(browser2);
   chrome::AddBlankTab(browser2, true);
   browser2->window()->Show();
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   ASSERT_TRUE(test_server()->Start());
 
   // Open a new browser window.
-  Browser* browser2 = Browser::Create(browser()->profile());
+  Browser* browser2 = new Browser(Browser::CreateParams(browser()->profile()));
   ASSERT_TRUE(browser2);
   chrome::AddBlankTab(browser2, true);
   browser2->window()->Show();
