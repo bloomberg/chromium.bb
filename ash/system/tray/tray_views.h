@@ -66,6 +66,8 @@ class ASH_EXPORT ActionableView : public views::View {
   const string16& accessible_name() const { return accessible_name_; }
 
  protected:
+  void DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds);
+
   // Performs an action when user clicks on the view (on mouse-press event), or
   // presses a key when this view is in focus. Returns true if the event has
   // been handled and an action was performed. Returns false otherwise.

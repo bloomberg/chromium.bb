@@ -584,7 +584,7 @@ void SystemTray::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // sure clicking on the edges brings up the popup. However, the focus border
   // should be only around the container.
   if (GetWidget() && GetWidget()->IsActive())
-    canvas->DrawFocusRect(tray_container_->bounds());
+    DrawBorder(canvas, GetContentsBounds());
 }
 
 }  // namespace ash

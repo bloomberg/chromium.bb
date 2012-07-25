@@ -109,6 +109,12 @@ ActionableView::ActionableView()
 ActionableView::~ActionableView() {
 }
 
+void ActionableView::DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds) {
+  gfx::Rect rect = bounds;
+  rect.Inset(1, 1, 3, 3);
+  canvas->DrawRect(rect, kFocusBorderColor);
+}
+
 bool ActionableView::OnKeyPressed(const views::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
@@ -137,10 +143,8 @@ void ActionableView::SetAccessibleName(const string16& name) {
 }
 
 void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
-    canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
-                     kFocusBorderColor);
-  }
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable()))
+    DrawBorder(canvas, GetLocalBounds());
 }
 
 ui::GestureStatus ActionableView::OnGestureEvent(

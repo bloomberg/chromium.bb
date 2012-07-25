@@ -164,6 +164,7 @@ TimeView::TimeView(TrayDate::ClockLayout clock_layout)
   SetupLabels();
   UpdateTextInternal(base::Time::Now());
   UpdateClockLayout(clock_layout);
+  set_focusable(false);
 }
 
 TimeView::~TimeView() {
@@ -232,7 +233,6 @@ void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout){
     layout->AddPaddingRow(0, kTrayLabelItemVerticalPaddingVeriticalAlignment);
   }
   Layout();
-  set_focusable(true);
 }
 
 void TimeView::SetBorder(TrayDate::ClockLayout clock_layout) {
