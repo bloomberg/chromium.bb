@@ -86,14 +86,6 @@ struct PPBFlash_DrawGlyphs_Params {
   std::vector<PP_Point> glyph_advances;
 };
 
-struct PPBAudio_NotifyAudioStreamCreated_Params {
-  ppapi::HostResource audio_id;
-  int32_t result_code;  // Will be != PP_OK on failure
-  IPC::PlatformFileForTransit socket_handle;
-  base::SharedMemoryHandle handle;
-  int32_t length;
-};
-
 struct PPBURLLoader_UpdateProgress_Params {
   PP_Instance instance;
   ppapi::HostResource resource;
