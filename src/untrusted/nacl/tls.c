@@ -159,8 +159,15 @@ static char *tp_from_combined_area(const struct tls_info *info,
      *                    +--- $tp points here
      *                    |
      *                    +--- first word's value is $tp address
+     *
+     * The linker increases the size of the TLS block up to its alignment
+     * requirement, and that total is subtracted from the $tp address to
+     * access the TLS area.  To keep that final address properly aligned,
+     * we need to align up from the allocated space and then add the
+     * aligned size.
      */
-    return aligned_addr((char *) combined_area + tls_size, info->tls_alignment);
+    tls_size = aligned_size(tls_size, info->tls_alignment);
+    return aligned_addr((char *) combined_area, info->tls_alignment) + tls_size;
   }
 }
 
