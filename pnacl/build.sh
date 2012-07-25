@@ -1880,28 +1880,24 @@ binutils-configure() {
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
 
-  # We llvm's mc for asseblemy so we no longer build gas
-
-  # TODO(pdox): Building binutils for nacl/nacl64 target currently requires
-  # providing NACL_ALIGN_* defines. This should really be defined inside
-  # binutils instead.
-  local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"
+  # We llvm's mc for assembly so we no longer build gas
+  # TODO(robertm): We no longer use ld and should really use
+  #                --enable-ld=no but the binutils build setup is buggy
   RunWithLog binutils.configure \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    CC="${CC}" \
-    CXX="${CXX}" \
-    CFLAGS="${flags}" \
-    CXXFLAGS="${flags}" \
-    ${srcdir}/binutils-2.20/configure --prefix="${BINUTILS_INSTALL_DIR}" \
-                                      --target=${BINUTILS_TARGET} \
-                                      --enable-targets=${targ} \
-                                      --enable-gold=yes \
-                                      --enable-ld=yes \
-                                      --enable-plugins \
-                                      --disable-werror \
-                                      --without-gas \
-                                      --with-sysroot="${NONEXISTENT_PATH}"
+      env -i \
+      PATH="/usr/bin:/bin" \
+      CC="${CC}" \
+      CXX="${CXX}" \
+      ${srcdir}/binutils-2.20/configure \
+          --prefix="${BINUTILS_INSTALL_DIR}" \
+          --target=${BINUTILS_TARGET} \
+          --enable-targets=${targ} \
+          --enable-gold=yes \
+          --enable-ld=yes \
+          --enable-plugins \
+          --disable-werror \
+          --without-gas \
+          --with-sysroot="${NONEXISTENT_PATH}"
   # There's no point in setting the correct path as sysroot, because we
   # want the toolchain to be relocatable. The driver will use ld command-line
   # option --sysroot= to override this value and set it to the correct path.
@@ -1954,6 +1950,14 @@ binutils-install() {
     env -i PATH="/usr/bin:/bin" \
     make \
       install ${MAKE_OPTS}
+
+  # TODO(robertm): remove this once we manage to avoid building
+  #                ld in the first place
+  echo "pruning hack: ${BINUTILS_INSTALL_DIR}"
+  rm -f "${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld"
+  rm -f "${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld.bfd"
+  rm -f "${BINUTILS_INSTALL_DIR}/arm-pc-nacl/bin/ld"
+  rm -f "${BINUTILS_INSTALL_DIR}/arm-pc-nacl/bin/ld.bfd"
 
   spopd
 }
