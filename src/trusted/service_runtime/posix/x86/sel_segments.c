@@ -102,11 +102,3 @@ nacl_reg_t NaClGetStackPtr(void) {
 #else
 # error "Woe to the service runtime.  Is it running on a 128-bit machine?!?"
 #endif
-
-
-uint32_t NaClGetEbx(void) {
-  uint32_t  ebx;
-
-  __asm__("movl %%ebx, %0" : "=r" (ebx) : );
-  return ebx;
-}

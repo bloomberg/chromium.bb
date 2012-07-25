@@ -38,10 +38,6 @@ void    NaClSetGs(uint16_t v);
 
 uint16_t NaClGetSs(void);
 
-/* not really a segment registers, but ... */
-
-uint32_t NaClGetEbx(void);
-
 /*
  * On a context switch through the syscall interface, not all
  * registers are saved.  We assume that C calling convention is used,

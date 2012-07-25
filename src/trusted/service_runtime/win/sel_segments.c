@@ -88,12 +88,4 @@ uint32_t NaClGetStackPtr(void) {
   _asm mov stack_ptr, esp;
   return stack_ptr;
 }
-
-
-uint32_t NaClGetEbx(void) {
-  uint32_t result;
-
-  _asm mov result, ebx;
-  return result;
-}
 #endif
