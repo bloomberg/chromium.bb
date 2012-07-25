@@ -54,7 +54,8 @@ enum RunTestFlags {
 
 enum ThroughputTestFlags {
   kSW = 0,
-  kGPU = 1 << 0
+  kGPU = 1 << 0,
+  kCompositorThread = 1 << 1
 };
 
 const int kSpinUpTimeMs = 4 * 1000;
@@ -63,8 +64,9 @@ const int kIgnoreSomeFrames = 3;
 
 class ThroughputTest : public BrowserPerfTest {
  public:
-  explicit ThroughputTest(ThroughputTestFlags flags) :
+  explicit ThroughputTest(int flags) :
       use_gpu_(flags & kGPU),
+      use_compositor_thread_(flags & kCompositorThread),
       spinup_time_ms_(kSpinUpTimeMs),
       run_time_ms_(kRunTimeMs) {}
 
@@ -194,6 +196,12 @@ class ThroughputTest : public BrowserPerfTest {
       command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
       command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
       command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+    }
+    if (use_compositor_thread_) {
+      ASSERT_TRUE(use_gpu_);
+      command_line->AppendSwitch(switches::kEnableThreadedCompositing);
+    } else {
+      command_line->AppendSwitch(switches::kDisableThreadedCompositing);
     }
   }
 
@@ -368,7 +376,8 @@ class ThroughputTest : public BrowserPerfTest {
     // Print perf results.
     double mean_ms = stats.mean_us / 1000.0;
     double std_dev_ms = stats.standard_deviation_us / 1000.0 / 1000.0;
-    std::string trace_name = ran_on_gpu ? "gpu" : "software";
+    std::string trace_name = use_compositor_thread_? "gpu_thread" :
+                             ran_on_gpu ? "gpu" : "software";
     std::string mean_and_error = base::StringPrintf("%f,%f", mean_ms,
                                                     std_dev_ms);
     perf_test::PrintResultMeanAndError(test_name, "", trace_name,
@@ -426,6 +435,7 @@ class ThroughputTest : public BrowserPerfTest {
   };
 
   bool use_gpu_;
+  bool use_compositor_thread_;
   int spinup_time_ms_;
   int run_time_ms_;
   FilePath local_cache_path_;
@@ -438,6 +448,12 @@ class ThroughputTest : public BrowserPerfTest {
 class ThroughputTestGPU : public ThroughputTest {
  public:
   ThroughputTestGPU() : ThroughputTest(kGPU) {}
+};
+
+// For running tests on GPU with the compositor thread:
+class ThroughputTestThread : public ThroughputTest {
+ public:
+  ThroughputTestThread() : ThroughputTest(kGPU | kCompositorThread) {}
 };
 
 // For running tests on Software:
@@ -479,11 +495,19 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, Particles) {
   RunTest("particles", kInternal);
 }
 
+IN_PROC_BROWSER_TEST_F(ThroughputTestThread, Particles) {
+  RunTest("particles", kInternal);
+}
+
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasDemoSW) {
   RunTest("canvas-demo", kInternal);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasDemoGPU) {
+  RunTest("canvas-demo", kInternal | kIsGpuCanvasTest);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestThread, CanvasDemoGPU) {
   RunTest("canvas-demo", kInternal | kIsGpuCanvasTest);
 }
 
@@ -504,6 +528,10 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DrawImageShadowSW) {
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DrawImageShadowGPU) {
+  RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestThread, DrawImageShadowGPU) {
   RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest);
 }
 
@@ -556,6 +584,10 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasManyImagesSW) {
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasManyImagesGPU) {
+  RunCanvasBenchTest("many_images", kNone | kIsGpuCanvasTest);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestThread, CanvasManyImagesGPU) {
   RunCanvasBenchTest("many_images", kNone | kIsGpuCanvasTest);
 }
 
