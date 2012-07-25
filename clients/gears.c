@@ -59,6 +59,8 @@ struct gears {
 
 	GLint gear_list[3];
 	int fullscreen;
+	int frames;
+	uint32_t last_fps;
 };
 
 struct gear_template {
@@ -203,9 +205,32 @@ make_gear(const struct gear_template *t)
 }
 
 static void
+update_fps(struct gears *gears, uint32_t time)
+{
+	long diff_ms;
+
+	gears->frames++;
+
+	diff_ms = time - gears->last_fps;
+
+	if (diff_ms > 5000) {
+		float seconds = diff_ms / 1000.0;
+		float fps = gears->frames / seconds;
+
+		printf("%d frames in %6.3f seconds = %6.3f FPS\n", gears->frames, seconds, fps);
+		fflush(stdout);
+
+		gears->frames = 0;
+		gears->last_fps = time;
+	}
+}
+
+static void
 frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct gears *gears = data;
+
+	update_fps(gears, time);
 
 	gears->angle = (GLfloat) (time % 8192) * 360 / 8192.0;
 
@@ -368,6 +393,7 @@ gears_create(struct display *display)
 {
 	const int width = 450, height = 500;
 	struct gears *gears;
+	struct timeval tv;
 	int i;
 
 	gears = malloc(sizeof *gears);
@@ -406,6 +432,9 @@ gears_create(struct display *display)
 
 	gears->view.rotx = 20.0;
 	gears->view.roty = 30.0;
+
+	gettimeofday(&tv, NULL);
+	gears->last_fps = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 
 	glEnable(GL_NORMALIZE);
 
