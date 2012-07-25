@@ -115,6 +115,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, TransactionTests) {
 }
 
 // Frequent flaky timeouts.  http://crbug.com/123685
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_RegressionTests) {
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, RegressionTests) {
   RunLayoutTests(kRegressionTests);
 }
