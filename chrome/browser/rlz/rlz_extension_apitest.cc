@@ -46,7 +46,14 @@ ExtensionFunction* MockRlzSendFinancialPingFunctionFactory() {
   return new MockRlzSendFinancialPingFunction();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
+// Mac is flaky - http://crbug.com/137834.
+#if defined(OS_MACOSX)
+#define MAYBE_Rlz DISABLED_Rlz
+#else
+#define MAYBE_Rlz Rlz
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Rlz) {
   // The default test resolver doesn't allow lookups to *.google.com. That
   // makes sense, but it does make RLZ's SendFinancialPing() fail -- so allow
   // connections to google.com in this test.
