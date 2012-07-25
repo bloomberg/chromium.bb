@@ -80,6 +80,7 @@ using trace_analyzer::TraceEventVector;
 
 enum LatencyTestMode {
   kWebGL,
+  kWebGLThread,
   kSoftware
 };
 
@@ -109,7 +110,7 @@ class LatencyTest
     : public BrowserPerfTest,
       public ::testing::WithParamInterface<int> {
  public:
-  LatencyTest() :
+  explicit LatencyTest(LatencyTestMode mode) :
       query_instant_(Query::EventPhase() ==
                      Query::Phase(TRACE_EVENT_PHASE_INSTANT)),
       // These queries are initialized in RunTest.
@@ -120,20 +121,20 @@ class LatencyTest
       query_clears_(Query::Bool(false)),
       mouse_x_(0),
       tab_width_(0),
-      mode_(kWebGL),
+      mode_(mode),
       delay_time_us_(0),
       num_frames_(0),
       verbose_(false),
-      test_flags_(0) {}
+      test_flags_(0),
+      use_gpu_(mode == kWebGL || mode == kWebGLThread) {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
   std::vector<int> GetAllBehaviors();
 
-  // Run test with specified |mode| and |behaviors|.
-  // |mode| can be webgl or software.
+  // Run test with specified |behaviors|.
   // |behaviors| is a list of combinations of LatencyTestFlags.
-  void RunTest(LatencyTestMode mode, const std::vector<int>& behaviors);
+  void RunTest(const std::vector<int>& behaviors);
 
  private:
   void RunTestInternal(const std::string& test_url,
@@ -146,6 +147,8 @@ class LatencyTest
     switch (mode_) {
       case kWebGL:
         return "webgl";
+      case kWebGLThread:
+        return "webgl_thread";
       case kSoftware:
         return "software";
       default:
@@ -220,14 +223,20 @@ class LatencyTest
 
   // Current test flags combination, determining the behavior of the test.
   int test_flags_;
+
+  bool use_gpu_;
 };
 
 void LatencyTest::SetUpCommandLine(CommandLine* command_line) {
   BrowserPerfTest::SetUpCommandLine(command_line);
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableThreadedCompositing)) {
+  if (mode_ == kWebGLThread) {
+    ASSERT_TRUE(use_gpu_);
     command_line->AppendSwitch(switches::kEnableThreadedCompositing);
+  } else {
+    command_line->AppendSwitch(switches::kDisableThreadedCompositing);
   }
+  if (!use_gpu_)
+    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
   command_line->AppendSwitch(switches::kDisableBackgroundNetworking);
 }
 
@@ -239,9 +248,7 @@ std::vector<int> LatencyTest::GetAllBehaviors() {
   return behaviors;
 }
 
-void LatencyTest::RunTest(LatencyTestMode mode,
-                          const std::vector<int>& behaviors) {
-  mode_ = mode;
+void LatencyTest::RunTest(const std::vector<int>& behaviors) {
   verbose_ = (logging::GetVlogLevel("latency_tests") > 0);
 
   // Linux Intel uses mesa driver, where multisampling is not supported.
@@ -270,7 +277,7 @@ void LatencyTest::RunTest(LatencyTestMode mode,
 #endif
 
   // Construct queries for searching trace events via TraceAnalyzer.
-  if (mode_ == kWebGL) {
+  if (use_gpu_) {
     query_begin_swaps_ = query_instant_ &&
         Query::EventName() == Query::String("SwapBuffersLatency") &&
         Query::EventArg("width") != Query::Int(kWebGLCanvasWidth);
@@ -293,8 +300,10 @@ void LatencyTest::RunTest(LatencyTestMode mode,
   query_clears_ = query_instant_ &&
       Query::EventName() == Query::String("DoClear") &&
       Query::EventArg("green") == Query::Int(kClearColorGreen);
-  Query query_width_swaps = query_begin_swaps_;
-  if (mode_ == kSoftware) {
+  Query query_width_swaps = Query::Bool(false);
+  if (use_gpu_) {
+    query_width_swaps = query_begin_swaps_;
+  } else if (mode_ == kSoftware) {
     query_width_swaps = query_instant_ &&
         Query::EventName() == Query::String("UpdateRectWidth") &&
         Query::EventArg("width") > Query::Int(kWebGLCanvasWidth);
@@ -422,7 +431,7 @@ void LatencyTest::RunTestInternal(const std::string& test_url,
 
 double LatencyTest::CalculateLatency() {
   TraceEventVector events;
-  if (mode_ == kWebGL) {
+  if (use_gpu_) {
     // Search for three types of events in WebGL mode:
     //  - onscreen swaps.
     //  - DoClear calls that contain the mouse x coordinate.
@@ -460,7 +469,7 @@ double LatencyTest::CalculateLatency() {
                                &begin_swap_pos));
 
         int mouse_x = 0;
-        if (mode_ == kWebGL) {
+        if (use_gpu_) {
           // Trace backwards through the events to find the input event that
           // matches the glClear that was presented by this SwapBuffers.
 
@@ -639,36 +648,66 @@ void LatencyTest::PrintEvents(const TraceEventVector& events) {
   printf("\n");
 }
 
+// For running tests on GPU:
+class LatencyTestWebGL : public LatencyTest {
+ public:
+  LatencyTestWebGL() : LatencyTest(kWebGL) {}
+};
+
+// For running tests on GPU with the compositor thread:
+class LatencyTestWebGLThread : public LatencyTest {
+ public:
+  LatencyTestWebGLThread() : LatencyTest(kWebGLThread) {}
+};
+
+// For running tests on Software:
+class LatencyTestSW : public LatencyTest {
+ public:
+  LatencyTestSW() : LatencyTest(kSoftware) {}
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Tests
 
 using ::testing::Values;
 
 // For manual testing only, run all input latency tests and print summary.
-IN_PROC_BROWSER_TEST_F(LatencyTest, DISABLED_LatencyWebGLAll) {
-  RunTest(kWebGL, GetAllBehaviors());
+IN_PROC_BROWSER_TEST_F(LatencyTestWebGL, DISABLED_LatencyWebGLAll) {
+  RunTest(GetAllBehaviors());
 }
 
 // For manual testing only, run all input latency tests and print summary.
-IN_PROC_BROWSER_TEST_F(LatencyTest, DISABLED_LatencySoftwareAll) {
-  RunTest(kSoftware, GetAllBehaviors());
+IN_PROC_BROWSER_TEST_F(LatencyTestWebGLThread, DISABLED_LatencyWebGLThreadAll) {
+  RunTest(GetAllBehaviors());
 }
 
-IN_PROC_BROWSER_TEST_P(LatencyTest, LatencySoftware) {
-  RunTest(kSoftware, std::vector<int>(1, GetParam()));
+// For manual testing only, run all input latency tests and print summary.
+IN_PROC_BROWSER_TEST_F(LatencyTestSW, DISABLED_LatencySoftwareAll) {
+  RunTest(GetAllBehaviors());
 }
 
-IN_PROC_BROWSER_TEST_P(LatencyTest, LatencyWebGL) {
-  RunTest(kWebGL, std::vector<int>(1, GetParam()));
+IN_PROC_BROWSER_TEST_P(LatencyTestWebGL, LatencyWebGL) {
+  RunTest(std::vector<int>(1, GetParam()));
 }
 
-INSTANTIATE_TEST_CASE_P(, LatencyTest, ::testing::Values(
-    0,
-    kInputHeavy,
-    kInputHeavy | kInputDirty | kRafHeavy,
-    kInputHeavy | kInputDirty | kRafHeavy | kPaintHeavy,
-    kInputDirty | kPaintHeavy,
-    kInputDirty | kRafHeavy | kPaintHeavy
-    ));
+IN_PROC_BROWSER_TEST_P(LatencyTestWebGLThread, LatencyWebGLThread) {
+  RunTest(std::vector<int>(1, GetParam()));
+}
+
+IN_PROC_BROWSER_TEST_P(LatencyTestSW, LatencySoftware) {
+  RunTest(std::vector<int>(1, GetParam()));
+}
+
+#define LATENCY_SUITE_MODES() ::testing::Values( \
+    0, \
+    kInputHeavy, \
+    kInputHeavy | kInputDirty | kRafHeavy, \
+    kInputHeavy | kInputDirty | kRafHeavy | kPaintHeavy, \
+    kInputDirty | kPaintHeavy, \
+    kInputDirty | kRafHeavy | kPaintHeavy)
+
+INSTANTIATE_TEST_CASE_P(, LatencyTestWebGL, LATENCY_SUITE_MODES());
+INSTANTIATE_TEST_CASE_P(, LatencyTestWebGLThread, LATENCY_SUITE_MODES());
+INSTANTIATE_TEST_CASE_P(, LatencyTestSW, LATENCY_SUITE_MODES());
 
 }  // namespace

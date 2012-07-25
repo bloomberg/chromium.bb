@@ -58,7 +58,7 @@ function setCoordinates(e) {
 function init() {
   parseParams();
 
-  if (testParams.mode == 'webgl') {
+  if (testParams.mode.indexOf('webgl') != -1) {
     var canvas = document.getElementById('canvas');
     if (!canvas)
       return false;
@@ -101,7 +101,7 @@ function draw() {
     sleep(parseInt(testParams.delayTimeMS));
   }
 
-  if (testParams.mode == 'webgl') {
+  if (testParams.mode.indexOf('webgl') != -1) {
     gl.viewport(0, 0, testParams.canvasWidth, testParams.canvasWidth);
     if (testParams.paintHeavy) {
       gl.clearColor(0, 0, 0.0, 1.0);
@@ -128,7 +128,7 @@ function draw() {
 
   frameCount++;
   if (frameCount == parseInt(testParams.numFrames)) {
-    if (testParams.mode == 'webgl')
+    if (testParams.mode.indexOf('webgl') != -1)
       gl.finish();
     endTest();
   } else {
