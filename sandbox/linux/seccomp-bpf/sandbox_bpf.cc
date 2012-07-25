@@ -249,7 +249,7 @@ bool Sandbox::isSingleThreaded(int proc_fd) {
   return true;
 }
 
-static bool isDenied(Sandbox::ErrorCode code) {
+static bool isDenied(const Sandbox::ErrorCode& code) {
   return (code & SECCOMP_RET_ACTION) == SECCOMP_RET_TRAP ||
          (code >= (SECCOMP_RET_ERRNO + 1) &&
           code <= (SECCOMP_RET_ERRNO + 4095));

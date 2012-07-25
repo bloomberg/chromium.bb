@@ -325,7 +325,7 @@ class Sandbox {
   friend class Util;
   friend class Verifier;
   struct Range {
-    Range(uint32_t f, uint32_t t, ErrorCode e) :
+    Range(uint32_t f, uint32_t t, const ErrorCode& e) :
       from(f),
       to(t),
       err(e) {

@@ -37,7 +37,7 @@ void ShellWindowRegistry::RemoveObserver(Observer* observer) {
 }
 
 ShellWindowRegistry::ShellWindowSet ShellWindowRegistry::GetShellWindowsForApp(
-    const std::string app_id) const {
+    const std::string& app_id) const {
   ShellWindowSet app_windows;
   for (ShellWindowSet::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {

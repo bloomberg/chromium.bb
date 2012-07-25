@@ -58,7 +58,7 @@ class ShellWindowRegistry : public ProfileKeyedService {
   void RemoveObserver(Observer* observer);
 
   // Returns a set of windows owned by the application identified by app_id.
-  ShellWindowSet GetShellWindowsForApp(const std::string app_id) const;
+  ShellWindowSet GetShellWindowsForApp(const std::string& app_id) const;
   const ShellWindowSet& shell_windows() const { return shell_windows_; }
 
   // Helper functions to find shell windows with particular attributes.
