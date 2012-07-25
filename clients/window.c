@@ -323,16 +323,6 @@ enum window_location {
 	WINDOW_CLIENT_AREA = 18,
 };
 
-const char *option_xkb_layout = "us";
-const char *option_xkb_variant = "";
-const char *option_xkb_options = "";
-
-static const struct weston_option xkb_options[] = {
-	{ WESTON_OPTION_STRING, "xkb-layout", 0, &option_xkb_layout },
-	{ WESTON_OPTION_STRING, "xkb-variant", 0, &option_xkb_variant },
-	{ WESTON_OPTION_STRING, "xkb-options", 0, &option_xkb_options },
-};
-
 static const cairo_user_data_key_t surface_data_key;
 struct surface_data {
 	struct wl_buffer *buffer;
@@ -3522,9 +3512,6 @@ struct display *
 display_create(int argc, char *argv[])
 {
 	struct display *d;
-
-	argc = parse_options(xkb_options,
-			     ARRAY_LENGTH(xkb_options), argc, argv);
 
 	d = malloc(sizeof *d);
 	if (d == NULL)
