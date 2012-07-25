@@ -4,6 +4,7 @@
 
 #include "ash/launcher/launcher_tooltip_manager.h"
 
+#include "ash/launcher/launcher_view.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
@@ -11,7 +12,10 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/events.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
@@ -51,11 +55,9 @@ class LauncherTooltipManager::LauncherTooltipBubble
                         LauncherTooltipManager* host);
 
   void SetText(const string16& text);
+  void Close();
 
  private:
-  // views::View overrides:
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-
   // views::WidgetDelegate overrides;
   virtual void WindowClosing() OVERRIDE;
 
@@ -95,31 +97,41 @@ void LauncherTooltipManager::LauncherTooltipBubble::SetText(
   SizeToContents();
 }
 
-void LauncherTooltipManager::LauncherTooltipBubble::OnMouseExited(
-    const views::MouseEvent& event) {
-  GetWidget()->Close();
-  host_->OnBubbleClosed(this);
+void LauncherTooltipManager::LauncherTooltipBubble::Close() {
+  if (GetWidget()) {
+    host_ = NULL;
+    GetWidget()->Close();
+  }
 }
 
 void LauncherTooltipManager::LauncherTooltipBubble::WindowClosing() {
   views::BubbleDelegateView::WindowClosing();
-  host_->OnBubbleClosed(this);
+  if (host_)
+    host_->OnBubbleClosed(this);
 }
 
 LauncherTooltipManager::LauncherTooltipManager(
-    ShelfAlignment alignment, ShelfLayoutManager* shelf_layout_manager)
+    ShelfAlignment alignment,
+    ShelfLayoutManager* shelf_layout_manager,
+    LauncherView* launcher_view)
     : view_(NULL),
+      widget_(NULL),
       anchor_(NULL),
       alignment_(alignment),
-      shelf_layout_manager_(shelf_layout_manager) {
+      shelf_layout_manager_(shelf_layout_manager),
+      launcher_view_(launcher_view) {
   if (shelf_layout_manager)
     shelf_layout_manager->AddObserver(this);
+  if (Shell::HasInstance())
+    Shell::GetInstance()->AddEnvEventFilter(this);
 }
 
 LauncherTooltipManager::~LauncherTooltipManager() {
   Close();
   if (shelf_layout_manager_)
     shelf_layout_manager_->RemoveObserver(this);
+  if (Shell::HasInstance())
+    Shell::GetInstance()->RemoveEnvEventFilter(this);
 }
 
 void LauncherTooltipManager::ShowDelayed(views::View* anchor,
@@ -135,7 +147,7 @@ void LauncherTooltipManager::ShowDelayed(views::View* anchor,
     return;
 
   CreateBubble(anchor, text);
-  gfx::NativeView native_view = view_->GetWidget()->GetNativeView();
+  gfx::NativeView native_view = widget_->GetNativeView();
   SetWindowVisibilityAnimationType(
       native_view, WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
   SetWindowVisibilityAnimationTransition(native_view, ANIMATE_SHOW);
@@ -154,22 +166,24 @@ void LauncherTooltipManager::ShowImmediately(views::View* anchor,
     return;
 
   CreateBubble(anchor, text);
-  gfx::NativeView native_view = view_->GetWidget()->GetNativeView();
+  gfx::NativeView native_view = widget_->GetNativeView();
   SetWindowVisibilityAnimationTransition(native_view, ANIMATE_NONE);
   ShowInternal();
 }
 
 void LauncherTooltipManager::Close() {
   if (view_) {
-    view_->GetWidget()->Close();
+    view_->Close();
     view_ = NULL;
+    widget_ = NULL;
   }
 }
 
-void LauncherTooltipManager::OnBubbleClosed(
-    views::BubbleDelegateView* view) {
-  if (view == view_)
+void LauncherTooltipManager::OnBubbleClosed(views::BubbleDelegateView* view) {
+  if (view == view_) {
     view_ = NULL;
+    widget_ = NULL;
+  }
 }
 
 void LauncherTooltipManager::SetArrowLocation(ShelfAlignment alignment) {
@@ -211,7 +225,66 @@ bool LauncherTooltipManager::IsVisible() {
   if (timer_.get() && timer_->IsRunning())
     return false;
 
-  return view_ && view_->GetWidget() && view_->GetWidget()->IsVisible();
+  return widget_ && widget_->IsVisible();
+}
+
+bool LauncherTooltipManager::PreHandleKeyEvent(aura::Window* target,
+                                               aura::KeyEvent* event) {
+  // Not handled.
+  return false;
+}
+
+bool LauncherTooltipManager::PreHandleMouseEvent(aura::Window* target,
+                                                 aura::MouseEvent* event) {
+  DCHECK(target);
+  DCHECK(event);
+  if (!widget_ || !widget_->IsVisible())
+    return false;
+
+  DCHECK(view_);
+  DCHECK(launcher_view_);
+
+  if (widget_->GetNativeWindow()->GetRootWindow() != target->GetRootWindow()) {
+    CloseSoon();
+    return false;
+  }
+
+  gfx::Point location_in_launcher_view = event->location();
+  aura::Window::ConvertPointToWindow(
+      target, launcher_view_->GetWidget()->GetNativeWindow(),
+      &location_in_launcher_view);
+
+  gfx::Point location_on_screen = event->location();
+  aura::Window::ConvertPointToWindow(
+      target, target->GetRootWindow(), &location_on_screen);
+  gfx::Rect bubble_rect = widget_->GetWindowBoundsInScreen();
+
+  if (launcher_view_->ShouldHideTooltip(location_in_launcher_view) &&
+      !bubble_rect.Contains(location_on_screen)) {
+    // Because this mouse event may arrive to |view_|, here we just schedule
+    // the closing event rather than directly calling Close().
+    CloseSoon();
+  }
+
+  return false;
+}
+
+ui::TouchStatus LauncherTooltipManager::PreHandleTouchEvent(
+    aura::Window* target, aura::TouchEvent* event) {
+  if (widget_ && widget_->IsVisible() && widget_->GetNativeWindow() != target)
+    Close();
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus LauncherTooltipManager::PreHandleGestureEvent(
+    aura::Window* target, aura::GestureEvent* event) {
+  if (widget_ && widget_->IsVisible()) {
+    // Because this mouse event may arrive to |view_|, here we just schedule
+    // the closing event rather than directly calling Close().
+    CloseSoon();
+  }
+
+  return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 void LauncherTooltipManager::WillDeleteShelf() {
@@ -233,10 +306,14 @@ void LauncherTooltipManager::OnAutoHideStateChanged(
     // AutoHide state change happens during an event filter, so immediate close
     // may cause a crash in the HandleMouseEvent() after the filter.  So we just
     // schedule the Close here.
-    MessageLoopForUI::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&LauncherTooltipManager::Close, base::Unretained(this)));
+    CloseSoon();
   }
+}
+
+void LauncherTooltipManager::CloseSoon() {
+  MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&LauncherTooltipManager::Close, base::Unretained(this)));
 }
 
 void LauncherTooltipManager::ShowInternal() {
@@ -255,6 +332,7 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
   view_ = new LauncherTooltipBubble(
       anchor, GetArrowLocation(alignment_), this);
   views::BubbleDelegateView::CreateBubble(view_);
+  widget_ = view_->GetWidget();
   view_->SetText(text_);
 }
 
