@@ -5578,13 +5578,6 @@
    fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_21FractionalLayoutPointE
 }
 {
-   bug_138228
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25MockWebKitPlatformSupport6createEv
-   fun:_ZN28WebKitSupportTestEnvironmentC1Ev
-}
-{
    bug_138231
    Memcheck:Leak
    fun:_Znw*
