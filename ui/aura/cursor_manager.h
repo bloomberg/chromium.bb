@@ -26,6 +26,8 @@ class AURA_EXPORT CursorManager {
   void LockCursor();
   void UnlockCursor();
 
+  bool is_cursor_locked() const { return cursor_lock_count_ > 0; }
+
   void SetCursor(gfx::NativeCursor);
 
   // Shows or hides the cursor.
@@ -55,4 +57,3 @@ class AURA_EXPORT CursorManager {
 }  // namespace aura
 
 #endif  // UI_AURA_CURSOR_MANAGER_H_
-
