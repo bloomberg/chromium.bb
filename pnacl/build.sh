@@ -1415,8 +1415,6 @@ llvm-install-links() {
   fi
   mkdir -p "${BFD_PLUGIN_DIR}"
 
-  ls -R "${BINUTILS_INSTALL_DIR}"
-
   # TODO(dschuff): These are still necessary, but a change to gold
   # could make them unnecessary
   if [ -f "${BINUTILS_INSTALL_DIR}/${SO_DIR}/LLVMgold${SO_EXT}" ]; then
