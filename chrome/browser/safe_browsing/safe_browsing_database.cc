@@ -236,19 +236,26 @@ bool SBAddFullHashPrefixLess(const SBAddFullHash& a, const SBAddFullHash& b) {
 // - Bloom filter false positives are prefix set misses.
 // The following is to log actual performance to verify this.
 enum PrefixSetEvent {
-  PREFIX_SET_EVENT_HIT,
-  PREFIX_SET_EVENT_BLOOM_HIT,
-  PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT,
-  PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT_INVALID,
+  // Hits to prefix set and bloom filter.
+  PREFIX_SET_HIT,
+  PREFIX_SET_BLOOM_HIT,
+  // These were to track bloom misses which hit the prefix set, with
+  // _INVALID to track where the item didn't appear to actually be in
+  // the prefix set.  _INVALID was never hit.
+  PREFIX_SET_BLOOM_MISS_PREFIX_SET_HIT,
+  PREFIX_SET_BLOOM_MISS_PREFIX_SET_HIT_INVALID_OBSOLETE,
+  // GetPrefixes() after creation failed to get the same prefixes.
   PREFIX_SET_GETPREFIXES_BROKEN,
-  PREFIX_SET_GETPREFIXES_BROKEN_SIZE,
-  PREFIX_SET_GETPREFIXES_FIRST_BROKEN,
-  PREFIX_SET_SBPREFIX_WAS_BROKEN,
-  PREFIX_SET_GETPREFIXES_BROKEN_SORTING,
-  PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION,
-  PREFIX_SET_GETPREFIX_UNSORTED_IS_DELTA,
-  PREFIX_SET_GETPREFIX_UNSORTED_IS_INDEX,
-  PREFIX_SET_GETPREFIX_CHECKSUM_MISMATCH,
+  // Fine-grained tests which didn't provide any good direction.
+  PREFIX_SET_GETPREFIXES_BROKEN_SIZE_OBSOLETE,
+  PREFIX_SET_GETPREFIXES_FIRST_BROKEN_OBSOLETE,
+  PREFIX_SET_SBPREFIX_WAS_BROKEN_OBSOLETE,
+  PREFIX_SET_GETPREFIXES_BROKEN_SORTING_OBSOLETE,
+  PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION_OBSOLETE,
+  PREFIX_SET_GETPREFIXES_UNSORTED_IS_DELTA_OBSOLETE,
+  PREFIX_SET_GETPREFIXES_UNSORTED_IS_INDEX_OBSOLETE,
+  // Failed checksum when creating prefix set.
+  PREFIX_SET_CREATE_PREFIX_SET_CHECKSUM,
 
   // Memory space for histograms is determined by the max.  ALWAYS ADD
   // NEW VALUES BEFORE THIS ONE.
@@ -260,10 +267,14 @@ void RecordPrefixSetInfo(PrefixSetEvent event_type) {
                             PREFIX_SET_EVENT_MAX);
 }
 
+// Helper to reduce code duplication.
+safe_browsing::PrefixSet* CreateEmptyPrefixSet() {
+  return new safe_browsing::PrefixSet(std::vector<SBPrefix>());
+}
+
 // Generate a |PrefixSet| instance from the contents of
 // |add_prefixes|.  Additionally performs various checks to make sure
-// that the resulting prefix set is valid, so that the
-// PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT_INVALID histogram in
+// that the resulting prefix set is valid, so that histograms in
 // ContainsBrowseUrl() can be trustworthy.
 safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
     const SBAddPrefixes& add_prefixes) {
@@ -293,107 +304,35 @@ safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
       std::equal(prefixes.begin(), prefixes.end(), restored.begin()))
     return prefix_set.release();
 
-  // Log BROKEN for continuity with previous release, and SIZE to
-  // distinguish which test failed.
+  // NOTE(shess): Past histograms have indicated that in a given day,
+  // about 1 in 100,000 updates result in a PrefixSet which was
+  // inconsistent relative to the BloomFilter.  Windows is about 5x
+  // more likely to build an inconsistent PrefixSet than Mac.  A
+  // number of developers have reviewed the code, and I ran extensive
+  // fuzzing with random data, so at this point I'm trying to
+  // demonstrate memory corruption.
+  //
+  // Other findings from past instrumentation:
+  // - half of one percent of brokenness cases implied duplicate items
+  //   in |prefixes|.  Per the code above, this should not be
+  //   possible.
+  // - about 1/20 of broken cases happened more than once for a given
+  //   user.  Note that empty updates generally don't hit this code at
+  //   all, so that may not imply a specific input pattern breaking things.
+  // - about 1/3 of broken cases show a checksum mismatch between the
+  //   checksum calculated while creating |prefix_set| and the
+  //   checksum calculated immediately after creation.  This is almost
+  //   certainly memory corruption.
   NOTREACHED();
   RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN);
-  if (restored.size() != prefixes.size())
-    RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_SIZE);
 
-  // Try to distinguish between updates from one broken user and a
-  // distributed problem.
-  static bool logged_broken = false;
-  if (!logged_broken) {
-    RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_FIRST_BROKEN);
-    logged_broken = true;
-  }
-
-  // This seems so very very unlikely.  But if it ever were true, then
-  // it could explain why GetPrefixes() seemed broken.
-  if (sizeof(int) != sizeof(int32))
-    RecordPrefixSetInfo(PREFIX_SET_SBPREFIX_WAS_BROKEN);
-
-  // Check if memory was corrupted during construction.
+  // Broken because internal memory was corrupted during construction.
   if (!prefix_set->CheckChecksum())
-    RecordPrefixSetInfo(PREFIX_SET_GETPREFIX_CHECKSUM_MISMATCH);
+    RecordPrefixSetInfo(PREFIX_SET_CREATE_PREFIX_SET_CHECKSUM);
 
-  // Check whether |restored| is unsorted, or has duplication.
-  if (restored.size()) {
-    size_t unsorted_count = 0;
-    bool duplicates = false;
-    SBPrefix prev = restored[0];
-    for (size_t i = 0; i < restored.size(); prev = restored[i], ++i) {
-      if (prev > restored[i]) {
-        unsorted_count++;
-        UMA_HISTOGRAM_COUNTS("SB2.PrefixSetUnsortedDifference",
-                             prev - restored[i]);
+  // TODO(shess): Test whether |prefixes| changed during construction.
 
-        // When unsorted, how big is the set, and how far are we into
-        // it.  If the set is very small or large, that might inform
-        // pursuit of a degenerate case.  If the percentage is close
-        // to 0%, 100%, or 50%, then there might be an interesting
-        // degenerate case to explore.
-        UMA_HISTOGRAM_COUNTS("SB2.PrefixSetUnsortedSize", restored.size());
-        UMA_HISTOGRAM_PERCENTAGE("SB2.PrefixSetUnsortedPercent",
-                                 i * 100 / restored.size());
-
-        if (prefix_set->IsDeltaAt(i)) {
-          RecordPrefixSetInfo(PREFIX_SET_GETPREFIX_UNSORTED_IS_DELTA);
-
-          // Histograms require memory on the order of the number of
-          // buckets, making high-precision logging expensive.  For
-          // now aim for a sense of the range of the problem.
-          UMA_HISTOGRAM_CUSTOM_COUNTS("SB2.PrefixSetUnsortedDelta",
-                                      prefix_set->DeltaAt(i), 1, 0xFFFF, 50);
-        } else {
-          RecordPrefixSetInfo(PREFIX_SET_GETPREFIX_UNSORTED_IS_INDEX);
-        }
-      }
-      if (prev == restored[i])
-        duplicates = true;
-    }
-
-    // Record findings.
-    if (unsorted_count) {
-      RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_SORTING);
-      UMA_HISTOGRAM_COUNTS_100("SB2.PrefixSetUnsorted", unsorted_count);
-    }
-    if (duplicates)
-      RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION);
-
-    // Fix the problems noted.  If |restored| was unsorted, then
-    // |duplicates| may give a false negative.
-    if (unsorted_count)
-      std::sort(restored.begin(), restored.end());
-    if (unsorted_count || duplicates)
-      restored.erase(std::unique(restored.begin(), restored.end()),
-                     restored.end());
-  }
-
-  // NOTE(shess): The following could be done using a single
-  // uber-loop, but it's complicated by needing multiple parallel
-  // iterators.  Didn't seem worthwhile for something that will only
-  // live for a short period and only fires for one in a million
-  // updates.
-
-  // Find elements in |restored| which are not in |prefixes|.
-  std::vector<SBPrefix> difference;
-  std::set_difference(restored.begin(), restored.end(),
-                      prefixes.begin(), prefixes.end(),
-                      std::back_inserter(difference));
-  if (difference.size())
-    UMA_HISTOGRAM_COUNTS_100("SB2.PrefixSetRestoredExcess", difference.size());
-
-  // Find elements in |prefixes| which are not in |restored|.
-  difference.clear();
-  std::set_difference(prefixes.begin(), prefixes.end(),
-                      restored.begin(), restored.end(),
-                      std::back_inserter(difference));
-  if (difference.size())
-    UMA_HISTOGRAM_COUNTS_100("SB2.PrefixSetRestoredShortfall",
-                             difference.size());
-
-  return prefix_set.release();
+  return CreateEmptyPrefixSet();
 }
 
 }  // namespace
@@ -616,7 +555,7 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
                                            BloomFilter::kBloomFilterSizeRatio);
     // TODO(shess): It is simpler for the code to assume that presence
     // of a bloom filter always implies presence of a prefix set.
-    prefix_set_.reset(new safe_browsing::PrefixSet(std::vector<SBPrefix>()));
+    prefix_set_.reset(CreateEmptyPrefixSet());
   }
   // Wants to acquire the lock itself.
   WhitelistEverything(&csd_whitelist_);
@@ -654,44 +593,26 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   // not empty.
   const bool prefix_set_empty = !prefix_set_->GetSize();
 
-  // Used to double-check in case of a hit mis-match.
-  std::vector<SBPrefix> restored;
-
   size_t miss_count = 0;
   for (size_t i = 0; i < full_hashes.size(); ++i) {
     bool found = prefix_set_->Exists(full_hashes[i].prefix);
 
     if (browse_bloom_filter_->Exists(full_hashes[i].prefix)) {
       if (!prefix_set_empty) {
-        RecordPrefixSetInfo(PREFIX_SET_EVENT_BLOOM_HIT);
+        RecordPrefixSetInfo(PREFIX_SET_BLOOM_HIT);
+        // This should be less than PREFIX_SET_BLOOM_HIT by the
+        // false positive rate.
         if (found)
-          RecordPrefixSetInfo(PREFIX_SET_EVENT_HIT);
+          RecordPrefixSetInfo(PREFIX_SET_HIT);
       }
       prefix_hits->push_back(full_hashes[i].prefix);
       if (prefix_miss_cache_.count(full_hashes[i].prefix) > 0)
         ++miss_count;
     } else {
-      // Bloom filter misses should never be in prefix set.  Re-create
-      // the original prefixes and manually search for it, to check if
-      // there's a bug with how |Exists()| is implemented.
-      // |UpdateBrowseStore()| previously verified that
-      // |GetPrefixes()| returns the same prefixes as were passed to
-      // the constructor.
+      // Bloom filter misses should never be in prefix set.
       DCHECK(!found);
-      if (found && !prefix_set_empty) {
-        if (restored.empty())
-          prefix_set_->GetPrefixes(&restored);
-
-        // If the item is not in the re-created list, then there is an
-        // error in |PrefixSet::Exists()|.  If the item is in the
-        // re-created list, then the bloom filter was wrong.
-        if (std::binary_search(restored.begin(), restored.end(),
-                               full_hashes[i].prefix)) {
-          RecordPrefixSetInfo(PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT);
-        } else {
-          RecordPrefixSetInfo(PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT_INVALID);
-        }
-      }
+      if (found)
+        RecordPrefixSetInfo(PREFIX_SET_BLOOM_MISS_PREFIX_SET_HIT);
     }
   }
 
@@ -1386,7 +1307,7 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
     RecordFailure(FAILURE_DATABASE_FILTER_READ);
 
   // Use an empty prefix set until the first update.
-  prefix_set_.reset(new safe_browsing::PrefixSet(std::vector<SBPrefix>()));
+  prefix_set_.reset(CreateEmptyPrefixSet());
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
