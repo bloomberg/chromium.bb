@@ -9,6 +9,11 @@
 
 int global_var;
 
+void test_two_line_function(int arg) {
+  global_var = arg - 1;
+  global_var = arg;
+}
+
 void test_stepi_after_break() {
   /* Something meaningful to step through.  */
   global_var = 0;
@@ -38,6 +43,10 @@ int test_print_symbol() {
 int main(int argc, char **argv) {
   assert(argc >= 2);
 
+  if (strcmp(argv[1], "break_inside_function") == 0) {
+    test_two_line_function(1);
+    return 0;
+  }
   if (strcmp(argv[1], "stepi_after_break") == 0) {
     test_stepi_after_break();
     return 0;

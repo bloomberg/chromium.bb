@@ -9,6 +9,20 @@ import re
 import subprocess
 
 
+def FilenameToUnix(str):
+  return str.replace('\\', '/')
+
+
+def KillProcess(process):
+  try:
+    process.kill()
+  except OSError:
+    # If process is already terminated, kill() throws
+    # "WindowsError: [Error 5] Access is denied" on Windows.
+    pass
+  process.wait()
+
+
 def LaunchSelLdr(program, name):
   out_dir = os.environ['OUT_DIR']
   stdout = open(os.path.join(out_dir, name + '.pout'), 'w')
@@ -21,7 +35,7 @@ def LaunchSelLdr(program, name):
   if os.environ.has_key('NACL_LD_SO'):
     args += ['-a', '--', os.environ['NACL_LD_SO'],
              '--library-path', os.environ['NACL_LIBS']]
-  args += [program, name]
+  args += [FilenameToUnix(program), name]
   return subprocess.Popen(args, stdout=stdout, stderr=stderr)
 
 
@@ -137,8 +151,9 @@ class RecordParser(object):
 
 class Gdb(object):
 
-  def __init__(self, name):
+  def __init__(self, name, program):
     self._name = name
+    self._program = program
     args = [os.environ['NACL_GDB'], '--interpreter=mi']
     out_dir = os.environ['OUT_DIR']
     stderr = open(os.path.join(out_dir, name + '.err'), 'w')
@@ -152,8 +167,7 @@ class Gdb(object):
     return self
 
   def __exit__(self, type, value, traceback):
-    self._gdb.kill()
-    self._gdb.wait()
+    KillProcess(self._gdb)
     self._log.close()
 
   def _SendRequest(self, request):
@@ -205,25 +219,36 @@ class Gdb(object):
   def Eval(self, expression):
     return self.Command('-data-evaluate-expression ' + expression)['value']
 
-  def Connect(self, program):
+  def LoadSymbolFile(self):
+    self.Command('symbol-file ' + FilenameToUnix(self._program))
+
+  def ReloadSymbols(self):
+    self.Command('symbol-file')
+    if os.environ.has_key('NACL_LD_SO'):
+      self.Command('file ' + FilenameToUnix(os.environ['NACL_LD_SO']))
+    else:
+      self.Command('file ' + FilenameToUnix(self._program))
+
+  def Connect(self):
     self._GetResponse()
     if os.environ.has_key('NACL_LD_SO'):
-      self.Command('file ' + os.environ['NACL_LD_SO'])
-      manifest_file = GenerateManifest(program, os.environ['NACL_LD_SO'],
+      # gdb uses bash-like escaping which removes slashes from Windows paths.
+      self.Command('file ' + FilenameToUnix(os.environ['NACL_LD_SO']))
+      manifest_file = GenerateManifest(self._program,
+                                       os.environ['NACL_LD_SO'],
                                        self._name)
-      self.Command('nacl-manifest ' + manifest_file)
+      self.Command('nacl-manifest ' + FilenameToUnix(manifest_file))
       self.Command('set breakpoint pending on')
     else:
-      self.Command('file ' + program)
+      self.Command('file ' + FilenameToUnix(self._program))
     self.Command('target remote :4014')
 
 
 def RunTest(test_func, test_name, program):
   sel_ldr = LaunchSelLdr(program, test_name)
   try:
-    with Gdb(test_name) as gdb:
-      gdb.Connect(program)
+    with Gdb(test_name, program) as gdb:
+      gdb.Connect()
       test_func(gdb)
   finally:
-    sel_ldr.kill()
-    sel_ldr.wait()
+    KillProcess(sel_ldr)
