@@ -1938,7 +1938,8 @@ void BrowserView::Init() {
   // SearchViewController doesn't work on windows yet.
 #if defined(USE_AURA)
   if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile())) {
-    search_view_controller_.reset(new SearchViewController(contents_));
+    search_view_controller_.reset(
+        new SearchViewController(browser_->profile(), contents_));
     omnibox_popup_view_parent =
         search_view_controller_->omnibox_popup_view_parent();
   }

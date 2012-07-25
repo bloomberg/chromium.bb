@@ -12,15 +12,37 @@
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
+#include "chrome/common/url_constants.h"
 #include "grit/theme_resources.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 namespace {
+
+// Stacks view's layer above all its sibling layers.
+void StackViewsLayerAtTop(views::View* view) {
+  DCHECK(view->layer());
+  DCHECK(view->layer()->parent());
+  view->layer()->parent()->StackAtTop(view->layer());
+}
+
+// Stacks native view's layer above all its sibling layers.
+void StackWebViewLayerAtTop(views::WebView* view) {
+  if (!view->web_contents())
+    return;
+
+  ui::Layer* native_view_layer = view->web_contents()->GetNativeView()->layer();
+  native_view_layer->parent()->StackAtTop(native_view_layer);
+}
 
 // SearchContainerView ---------------------------------------------------------
 
@@ -126,7 +148,7 @@ class NTPViewBackground : public views::Background {
 // LayoutManager for the NTPView.
 class NTPViewLayoutManager : public views::LayoutManager {
  public:
-  NTPViewLayoutManager(views::View* logo_view, views::View* content_view)
+  NTPViewLayoutManager(views::View* logo_view, views::WebView* content_view)
       : logo_view_(logo_view),
         content_view_(content_view) {
   }
@@ -141,12 +163,17 @@ class NTPViewLayoutManager : public views::LayoutManager {
         logo_pref.width(),
         logo_pref.height());
 
-    gfx::Size content_pref(content_view_->GetPreferredSize());
-    int content_y = std::max(chrome::search::kOmniboxYPosition + 50,
-                             host->height() - content_pref.height() - 50);
-    content_view_->SetBounds((host->width() - content_pref.width()) / 2,
-                             content_y, content_pref.width(),
-                             content_pref.height());
+    const int kContentTop = chrome::search::kOmniboxYPosition + 50;
+    content_view_->SetBounds(0,
+                             kContentTop,
+                             host->width(),
+                             host->height() - kContentTop);
+
+    // TODO(dhollowa): This is a hack to patch up ordering of native layer.
+    // Changes to the view hierarchy can |ReorderLayers| which messes with
+    // layer stacking.  Layout typically follows reorderings, so we patch
+    // things up here.
+    StackWebViewLayerAtTop(content_view_);
   }
 
   virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE {
@@ -156,17 +183,10 @@ class NTPViewLayoutManager : public views::LayoutManager {
 
  private:
   views::View* logo_view_;
-  views::View* content_view_;
+  views::WebView* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPViewLayoutManager);
 };
-
-// Stacks view's layer above all its sibling layers.
-void StackViewsLayerAtTop(views::View* view) {
-  DCHECK(view->layer());
-  DCHECK(view->layer()->parent());
-  view->layer()->parent()->StackAtTop(view->layer());
-}
 
 }  // namespace
 
@@ -216,11 +236,13 @@ void SearchViewController::OmniboxPopupViewParent::ChildPreferredSizeChanged(
 // SearchViewController --------------------------------------------------------
 
 SearchViewController::SearchViewController(
+    content::BrowserContext* browser_context,
     ContentsContainer* contents_container)
-    : contents_container_(contents_container),
+    : browser_context_(browser_context),
+      contents_container_(contents_container),
       location_bar_container_(NULL),
       state_(STATE_NOT_VISIBLE),
-      tab_(NULL),
+      tab_contents_(NULL),
       search_container_(NULL),
       ntp_view_(NULL),
       logo_view_(NULL),
@@ -243,13 +265,13 @@ views::View* SearchViewController::omnibox_popup_view_parent() {
   return omnibox_popup_view_parent_;
 }
 
-void SearchViewController::SetTabContents(TabContents* tab) {
-  if (tab_ == tab)
+void SearchViewController::SetTabContents(TabContents* tab_contents) {
+  if (tab_contents_ == tab_contents)
     return;
 
   if (search_model())
     search_model()->RemoveObserver(this);
-  tab_ = tab;
+  tab_contents_ = tab_contents;
   if (search_model())
     search_model()->AddObserver(this);
 
@@ -262,7 +284,7 @@ void SearchViewController::StackAtTop() {
     StackViewsLayerAtTop(search_container_);
     StackViewsLayerAtTop(ntp_view_);
     StackViewsLayerAtTop(logo_view_);
-    StackViewsLayerAtTop(content_view_);
+    StackWebViewLayerAtTop(content_view_);
   }
 #else
   NOTIMPLEMENTED();
@@ -334,6 +356,9 @@ void SearchViewController::SetState(State state) {
     case STATE_NTP:
       DestroyViews();
       CreateViews();
+      // TODO(dhollowa): This is temporary. The |content_view_| should pull its
+      // web contents from the current tab's |search_tab_helper|.
+      content_view_->LoadInitialURL(GURL(chrome::kChromeUINewTabURL));
       break;
 
     case STATE_ANIMATING:
@@ -377,7 +402,8 @@ void SearchViewController::StartAnimation() {
   }
 
   {
-    ui::Layer* content_layer = content_view_->layer();
+    ui::Layer* content_layer =
+        content_view_->web_contents()->GetNativeView()->layer();
     ui::ScopedLayerAnimationSettings settings(content_layer->GetAnimator());
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(180 * factor));
@@ -405,26 +431,19 @@ void SearchViewController::CreateViews() {
   logo_view_->SetPaintToLayer(true);
   logo_view_->SetFillsBoundsOpaquely(false);
 
-  // TODO: replace with WebContents for NTP.
-  content_view_ = new views::View;
-  content_view_->SetLayoutManager(
-      new FixedSizeLayoutManager(gfx::Size(400, 200)));
-  content_view_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorBLUE));
-  content_view_->SetPaintToLayer(true);
+  content_view_ = new views::WebView(browser_context_);
   content_view_->SetFillsBoundsOpaquely(false);
 
   ntp_view_->SetLayoutManager(
       new NTPViewLayoutManager(logo_view_, content_view_));
+  ntp_view_->AddChildView(logo_view_);
+  ntp_view_->AddChildView(content_view_);
 
   search_container_ =
       new SearchContainerView(ntp_view_, omnibox_popup_view_parent_);
   search_container_->SetPaintToLayer(true);
   search_container_->SetLayoutManager(new views::FillLayout);
   search_container_->layer()->SetMasksToBounds(true);
-
-  ntp_view_->AddChildView(logo_view_);
-  ntp_view_->AddChildView(content_view_);
 
   contents_container_->SetOverlay(search_container_);
 }
@@ -440,8 +459,10 @@ void SearchViewController::DestroyViews() {
 
   contents_container_->SetOverlay(NULL);
   delete search_container_;
-  search_container_ = ntp_view_ = NULL;
-  content_view_ = logo_view_ = NULL;
+  search_container_ = NULL;
+  ntp_view_ = NULL;
+  logo_view_ = NULL;
+  content_view_ = NULL;
 
   state_ = STATE_NOT_VISIBLE;
 }
@@ -456,5 +477,9 @@ void SearchViewController::PopupVisibilityChanged() {
 }
 
 chrome::search::SearchModel* SearchViewController::search_model() {
-  return tab_ ? tab_->search_tab_helper()->model() : NULL;
+  return tab_contents_ ? tab_contents_->search_tab_helper()->model() : NULL;
+}
+
+content::WebContents* SearchViewController::web_contents() {
+  return tab_contents_ ? tab_contents_->web_contents() : NULL;
 }

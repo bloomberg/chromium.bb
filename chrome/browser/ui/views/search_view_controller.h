@@ -20,8 +20,14 @@ class SearchModel;
 }
 }
 
+namespace content {
+class BrowserContext;
+class WebContents;
+}
+
 namespace views {
 class View;
+class WebView;
 }
 
 // SearchViewController maintains the search overlay (native new tab page).
@@ -32,7 +38,8 @@ class SearchViewController
     : public chrome::search::SearchModelObserver,
       public ui::ImplicitAnimationObserver {
  public:
-  explicit SearchViewController(ContentsContainer* contents_container);
+  SearchViewController(content::BrowserContext* browser_context,
+                       ContentsContainer* contents_container);
   virtual ~SearchViewController();
 
   views::View* omnibox_popup_view_parent();
@@ -43,7 +50,7 @@ class SearchViewController
   }
 
   // Sets the active tab.
-  void SetTabContents(TabContents* tab);
+  void SetTabContents(TabContents* tab_contents);
 
   // Stacks the overlay at the top.
   void StackAtTop();
@@ -95,19 +102,25 @@ class SearchViewController
   // Invoked when the visibility of the omnibox popup changes.
   void PopupVisibilityChanged();
 
-  // Returns the SearchModel for the current tab, or NULL if there
-  // is no current tab.
+  // Access active search model.
   chrome::search::SearchModel* search_model();
 
-  // Where the overlay is placed.
+  // Access active web contents.
+  content::WebContents* web_contents();
+
+  // The profile.  Weak.
+  content::BrowserContext* browser_context_;
+
+  // Where the overlay is placed.  Weak.
   ContentsContainer* contents_container_;
 
+  // Weak.
   LocationBarContainer* location_bar_container_;
 
   State state_;
 
-  // The active TabContents; may be NULL.
-  TabContents* tab_;
+  // The active TabContents.  Weak.  May be NULL.
+  TabContents* tab_contents_;
 
   // The following views are created to render the NTP. Visually they look
   // something like:
@@ -141,7 +154,7 @@ class SearchViewController
   views::View* search_container_;
   views::View* ntp_view_;
   views::View* logo_view_;
-  views::View* content_view_;
+  views::WebView* content_view_;
   OmniboxPopupViewParent* omnibox_popup_view_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchViewController);

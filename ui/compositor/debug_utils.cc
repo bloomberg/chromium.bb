@@ -23,9 +23,6 @@ namespace {
 
 void PrintLayerHierarchyImp(const Layer* layer, int indent,
                             gfx::Point mouse_location) {
-  if (!layer->visible())
-    return;
-
   std::wostringstream buf;
   std::string indent_str(indent, ' ');
   std::string content_indent_str(indent+1, ' ');
@@ -55,6 +52,9 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
       buf << L" solid";
       break;
   }
+
+  if (!layer->visible())
+    buf << L" !visible";
 
   buf << L'\n' << UTF8ToWide(content_indent_str);
   buf << L"bounds: " << layer->bounds().x() << L',' << layer->bounds().y();
