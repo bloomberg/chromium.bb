@@ -2979,7 +2979,7 @@ static int mov_read_header(AVFormatContext *s)
         AVStream *st = s->streams[i];
         MOVStreamContext *sc = st->priv_data;
         if(st->codec->codec_type == AVMEDIA_TYPE_AUDIO && st->codec->codec_id == CODEC_ID_AAC) {
-            sc->start_pad = 2112;
+            sc->start_pad = 0; // 2112; TODO(dalecurtis): Disabled until non-Apple encoders are supported.
             st->skip_samples = sc->start_pad;
         }
     }
