@@ -4,6 +4,7 @@ deps = {
   'src/chrome/test/data': '/trunk/src/chrome/test/data',
   'src/chrome/test/functional': '/trunk/src/chrome/test/functional',
   'src/chrome/test/pyautolib': '/trunk/src/chrome/test/pyautolib',
+  'src/content/test/data': '/trunk/src/content/test/data',
   'src/net/data/ssl/certificates': '/trunk/src/net/data/ssl/certificates',
   'src/net/tools/testserver': '/trunk/src/net/tools/testserver',
   'src/third_party/pyftpdlib/src': 'http://pyftpdlib.googlecode.com/svn/trunk',
