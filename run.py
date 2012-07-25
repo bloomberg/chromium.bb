@@ -225,6 +225,8 @@ def RunSelLdr(args):
     bootstrap = os.path.join(os.path.dirname(env.sel_ldr),
                              'nacl_helper_bootstrap')
     loader = [bootstrap, env.sel_ldr]
+    args = ['--r_debug=0xXXXXXXXXXXXXXXXX',
+            '--reserved_at_zero=0xXXXXXXXX'] + args
   else:
     loader = [env.sel_ldr]
   Run(prefix + loader + args)
