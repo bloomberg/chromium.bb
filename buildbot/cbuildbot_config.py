@@ -578,10 +578,6 @@ chrome_pfq.add_config('alex-chrome-pfq',
   boards=['x86-alex'],
 )
 
-chrome_pfq.add_config('alex32-chrome-pfq',
-  boards=['x86-alex32'],
-)
-
 chrome_pfq.add_config('lumpy-chrome-pfq',
   boards=['lumpy'],
   # lumpy changes optimization relevant flags from x86-generic, so we should
