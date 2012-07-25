@@ -3044,9 +3044,11 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	else if (IS_GEN6(bufmgr_gem->pci_device))
 		bufmgr_gem->gen = 6;
 	else if (IS_GEN7(bufmgr_gem->pci_device))
-        	bufmgr_gem->gen = 7;
-	else
-        	assert(0);
+		bufmgr_gem->gen = 7;
+	else {
+		free(bufmgr_gem);
+		return NULL;
+	}
 
 	if (IS_GEN3(bufmgr_gem->pci_device) &&
 	    bufmgr_gem->gtt_size > 256*1024*1024) {
