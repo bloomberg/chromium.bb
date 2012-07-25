@@ -297,11 +297,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   HANDLE lockdown_token_temp;
   DWORD win_result = policy_base->MakeTokens(&initial_token_temp,
                                              &lockdown_token_temp);
-  base::win::ScopedHandle initial_token(initial_token_temp);
-  base::win::ScopedHandle lockdown_token(lockdown_token_temp);
-
   if (ERROR_SUCCESS != win_result)
     return SBOX_ERROR_GENERIC;
+
+  base::win::ScopedHandle initial_token(initial_token_temp);
+  base::win::ScopedHandle lockdown_token(lockdown_token_temp);
 
   HANDLE job_temp;
   win_result = policy_base->MakeJobObject(&job_temp);
