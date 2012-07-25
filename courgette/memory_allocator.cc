@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,6 +135,8 @@ bool TempMapping::Initialize(size_t size) {
 
 void* TempMapping::memory() const {
   uint8* mem = reinterpret_cast<uint8*>(mapping_.view());
+  // The 'this' pointer is written at the start of mapping_.view(), so
+  // go past it. (See Initialize()).
   if (mem)
     mem += sizeof(this);
   DCHECK(mem);
