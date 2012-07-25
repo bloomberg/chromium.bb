@@ -28,10 +28,7 @@ class MessageWriter;
 class MessageReader;
 
 // DBUS_TYPE_UNIX_FD was added in D-Bus version 1.4
-#if defined(DBUS_TYPE_UNIX_FD)
-const bool kDBusTypeUnixFdIsSupported = true;
-#else
-const bool kDBusTypeUnixFdIsSupported = false;
+#if !defined(DBUS_TYPE_UNIX_FD)
 #define DBUS_TYPE_UNIX_FD      ((int) 'h')
 #endif
 
