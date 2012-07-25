@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
@@ -257,8 +258,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE {
     // If we're either logged in (doesn't matter in KioskMode or not),
     // or not in KioskMode at all, return true.
+    // If not registered i.e. OOBE is still active, start with tray hidden,
+    // it will be enabled if needed by OOBE flow.
+    bool is_registered = chromeos::WizardController::IsDeviceRegistered();
     return UserManager::Get()->IsUserLoggedIn() ||
-        !chromeos::KioskModeSettings::Get()->IsKioskModeEnabled();
+        (!chromeos::KioskModeSettings::Get()->IsKioskModeEnabled() &&
+            is_registered);
   }
 
   virtual const string16 GetUserDisplayName() const OVERRIDE {

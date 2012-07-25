@@ -236,10 +236,13 @@ void WebUILoginView::OpenProxySettings() {
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
   ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
   if (tray) {
-    if (visible)
+    if (visible) {
+      // Tray may have been initialized being hidden.
+      tray->SetVisible(visible);
       tray->GetWidget()->Show();
-    else
+    } else {
       tray->GetWidget()->Hide();
+    }
   }
 }
 

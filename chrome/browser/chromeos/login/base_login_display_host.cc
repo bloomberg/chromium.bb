@@ -218,6 +218,7 @@ void BaseLoginDisplayHost::StartSignInScreen() {
   sign_in_controller_.reset(new chromeos::ExistingUserController(this));
   oobe_progress_bar_visible_ = !WizardController::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
+  SetStatusAreaVisible(true);
   SetShutdownButtonEnabled(true);
   sign_in_controller_->Init(users);
 
@@ -244,6 +245,7 @@ void BaseLoginDisplayHost::ResumeSignInScreen() {
   DVLOG(1) << "Resuming sign in screen";
   CHECK(sign_in_controller_.get());
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
+  SetStatusAreaVisible(true);
   SetShutdownButtonEnabled(true);
   sign_in_controller_->ResumeLogin();
 }
