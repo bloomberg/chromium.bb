@@ -35,6 +35,7 @@ setbacklight_SOURCES =				\
 	$(top_srcdir)/src/libbacklight.c	\
 	$(top_srcdir)/src/libbacklight.h
 
-setbacklight_LDADD = -ludev -ldrm
+setbacklight_CFLAGS = $(AM_CFLAGS) $(SETBACKLIGHT_CFLAGS)
+setbacklight_LDADD = $(SETBACKLIGHT_LIBS)
 
 EXTRA_DIST = weston-test
