@@ -120,7 +120,7 @@ deps = {
     'src/third_party/webgl_conformance':
         Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@30876f3405c5cd90e00117caba57127480c30bd6',
     'src/third_party/webpagereplay':
-        Var('git_url') + '/external/web-page-replay.git@6da5ba3ef84bee414fd1b8c83d1ee053eefa1980',
+        Var('git_url') + '/external/web-page-replay.git@1f4bc503e6d8f465c0785725ad2f494a7302efcd',
     'src/third_party/webrtc':
         Var('git_url') + '/external/webrtc/stable/src.git@29fcc9a330b79d8a34a4c43569859f2dfe9bace0',
     'src/third_party/yasm/source/patched-yasm':
