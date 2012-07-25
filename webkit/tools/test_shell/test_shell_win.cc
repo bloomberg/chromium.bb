@@ -182,11 +182,21 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
         parsed_command_line.GetSwitchValueNative(test_shell::kCrashDumps));
     if (parsed_command_line.HasSwitch(test_shell::kCrashDumpsFulldump)) {
         new google_breakpad::ExceptionHandler(
-            dir, 0, &MinidumpCallback, 0, true,
-            kFullDumpType, 0, 0);
+            dir,  // dump_path
+            NULL,  // filter
+            &MinidumpCallback,  // callback
+            NULL,  // callback_context
+            google_breakpad::ExceptionHandler::HANDLER_ALL,  // handler_types
+            kFullDumpType,  // dump_type
+            static_cast<const wchar_t*>(NULL),  // pipe_name
+            NULL);  // custom_info
     } else {
         new google_breakpad::ExceptionHandler(
-            dir, 0, &MinidumpCallback, 0, true);
+            dir,  // dump_path
+            NULL,  // filter
+            &MinidumpCallback,  // callback
+            NULL,  // callback_context
+            google_breakpad::ExceptionHandler::HANDLER_ALL);  // handler_tpes
     }
   }
 }
