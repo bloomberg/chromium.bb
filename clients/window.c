@@ -1882,6 +1882,14 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		   window->fullscreen_handler &&
 		   state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		window->fullscreen_handler(window, window->user_data);
+	} else if (sym == XKB_KEY_F4 &&
+		   input->modifiers == MOD_ALT_MASK &&
+		   state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+		if (window->close_handler)
+			window->close_handler(window->parent,
+					      window->user_data);
+		else
+			display_exit(window->display);
 	} else if (window->key_handler) {
 		(*window->key_handler)(window, input, time, key,
 				       sym, state, window->user_data);
