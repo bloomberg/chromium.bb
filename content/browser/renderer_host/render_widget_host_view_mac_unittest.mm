@@ -337,8 +337,14 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
   const gfx::Point kOrigin(10, 11);
   const gfx::Size kBoundsUnit(10, 20);
 
-  // If there are no update from renderer, always returned caret position.
   NSRect rect;
+  // Make sure not crashing by passing NULL pointer instead of |actual_range|.
+  EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
+      ui::Range(0, 0).ToNSRange(),
+      &rect,
+      NULL));
+
+  // If there are no update from renderer, always returned caret position.
   NSRange actual_range;
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
       ui::Range(0, 0).ToNSRange(),
@@ -415,6 +421,13 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
             &actual_range));
       EXPECT_EQ(ui::Range(request_range), ui::Range(actual_range));
       EXPECT_EQ(expected_rect, gfx::Rect(NSRectToCGRect(rect)));
+
+      // Make sure not crashing by passing NULL pointer instead of
+      // |actual_range|.
+      EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
+            request_range,
+            &rect,
+            NULL));
     }
   }
 }
