@@ -63,7 +63,6 @@
         <include name="IDR_FILE_MANAGER_ID3_PARSER" file="file_manager/js/metadata/id3_parser.js" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_PARALLEL" file="file_manager/js/metadata/function_parallel.js" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_SEQUENCE" file="file_manager/js/metadata/function_sequence.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_GDRIVE_WELCOME_STYLE" file="file_manager/css/gdrive_welcome.css" type="BINDATA" />
 
         <!-- Images referenced from the manifest or the code -->
         <include name="IDR_FILE_MANAGER_ICON_16" file="file_manager/images/icon16.png" type="BINDATA" />
@@ -122,6 +121,12 @@
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_2X_GENERIC" file="file_manager/images/files/thumbnails/2x/generic.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_2X_IMAGE" file="file_manager/images/files/thumbnails/2x/image.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_2X_VIDEO" file="file_manager/images/files/thumbnails/2x/video.png" type="BINDATA" />
+
+        <!-- Resources used for non-flattened HTML files. -->
+        <include name="IDR_FILE_MANAGER_GDRIVE_WELCOME_STYLE" file="file_manager/css/gdrive_welcome.css" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_UI_GDRIVE_WELCOME_BACKGROUND" file="file_manager/images/files/ui/clouds.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_UI_GDRIVE_WELCOME_LOGO" file="file_manager/images/files/ui/gdrive_logo.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_UI_2X_GDRIVE_WELCOME_LOGO" file="file_manager/images/files/ui/2x/gdrive_logo.png" type="BINDATA" />
 
         <!-- Custom cursors (which grit cannot inline). No 2x versions too as WebKit does not yet support 'image-set' for cursors. -->
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="file_manager/images/gallery/cursor_crop.png" type="BINDATA" />
