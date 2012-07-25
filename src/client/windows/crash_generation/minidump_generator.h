@@ -33,7 +33,6 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <list>
-#include "client/windows/common/ipc_protocol.h"
 #include "google_breakpad/common/minidump_format.h"
 
 namespace google_breakpad {
@@ -58,7 +57,6 @@ class MinidumpGenerator {
                      DWORD requesting_thread_id,
                      EXCEPTION_POINTERS* exception_pointers,
                      MDRawAssertionInfo* assert_info,
-                     CustomDataStream* custom_data_stream,
                      MINIDUMP_TYPE dump_type,
                      bool is_client_pointers,
                      std::wstring* dump_path);
@@ -72,7 +70,6 @@ class MinidumpGenerator {
                      DWORD requesting_thread_id,
                      EXCEPTION_POINTERS* exception_pointers,
                      MDRawAssertionInfo* assert_info,
-                     CustomDataStream* custom_data_stream,
                      MINIDUMP_TYPE dump_type,
                      bool is_client_pointers,
                      std::wstring* dump_path,

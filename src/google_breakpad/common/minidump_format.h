@@ -341,8 +341,7 @@ typedef enum {
   MD_LINUX_ENVIRON               = 0x47670007,  /* /proc/$x/environ   */
   MD_LINUX_AUXV                  = 0x47670008,  /* /proc/$x/auxv      */
   MD_LINUX_MAPS                  = 0x47670009,  /* /proc/$x/maps      */
-  MD_LINUX_DSO_DEBUG             = 0x4767000A,  /* MDRawDebug         */
-  MD_CUSTOM_DATA_STREAM          = 0x4767000B   /* MDRawCustomDataStream */
+  MD_LINUX_DSO_DEBUG             = 0x4767000A   /* MDRawDebug         */
 } MDStreamType;  /* MINIDUMP_STREAM_TYPE */
 
 
@@ -735,9 +734,6 @@ typedef enum {
  * Breakpad extension types
  */
 
-typedef struct {
-  u_int8_t stream[1];
-} MDRawCustomDataStream;
 
 typedef struct {
   /* validity is a bitmask with values from MDBreakpadInfoValidity, indicating

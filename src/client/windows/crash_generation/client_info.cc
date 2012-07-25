@@ -31,8 +31,6 @@
 #include "client/windows/common/ipc_protocol.h"
 
 static const wchar_t kCustomInfoProcessUptimeName[] = L"ptime";
-static const wchar_t kCustomDataStreamCustomFieldName[] = L"custom-data-stream";
-static const size_t kMaxCustomDataStreamSize = 100 * 1024 * 1024;
 static const size_t kMaxCustomInfoEntries = 4096;
 
 namespace google_breakpad {
@@ -50,7 +48,6 @@ ClientInfo::ClientInfo(CrashGenerationServer* crash_server,
       ex_info_(ex_info),
       assert_info_(assert_info),
       custom_client_info_(custom_client_info),
-      custom_data_stream_(NULL),
       thread_id_(thread_id),
       process_handle_(NULL),
       dump_requested_handle_(NULL),
@@ -89,11 +86,6 @@ bool ClientInfo::Initialize() {
 }
 
 ClientInfo::~ClientInfo() {
-  if (custom_data_stream_) {
-    delete custom_data_stream_;
-    custom_data_stream_ = NULL;
-  }
-
   if (dump_request_wait_handle_) {
     // Wait for callbacks that might already be running to finish.
     UnregisterWaitEx(dump_request_wait_handle_, INVALID_HANDLE_VALUE);
@@ -205,43 +197,6 @@ bool ClientInfo::PopulateCustomInfo() {
 
   SetProcessUptime();
   return (bytes_count != read_count);
-}
-
-bool ClientInfo::PopulateCustomDataStream() {
-  for (SIZE_T i = 0; i < custom_client_info_.count; ++i) {
-    if (_wcsicmp(kCustomDataStreamCustomFieldName,
-                 custom_client_info_.entries[i].name) != 0) {
-      continue;
-    }
-    wchar_t address_str[CustomInfoEntry::kValueMaxLength];
-    memcpy(address_str, custom_client_info_.entries[i].value,
-           CustomInfoEntry::kValueMaxLength);
-    wchar_t* size_str = wcschr(address_str, ':');
-    if (!size_str)
-      return false;
-
-    size_str[0] = 0;
-    ++size_str;
-    void* address = reinterpret_cast<void*>(_wcstoi64(address_str, NULL, 16));
-    long size = wcstol(size_str, NULL, 16);
-    if (size <= 0 || size > kMaxCustomDataStreamSize)
-      return false;
-
-    custom_data_stream_ = reinterpret_cast<CustomDataStream*>(
-        new u_int8_t[sizeof(CustomDataStream) + size - 1]);
-
-    SIZE_T bytes_count = 0;
-    if (!ReadProcessMemory(process_handle_, address,
-                           custom_data_stream_->stream, size, &bytes_count)) {
-      delete custom_data_stream_;
-      custom_data_stream_ = NULL;
-      return false;
-    }
-
-    return true;
-  }
-
-  return false;
 }
 
 CustomClientInfo ClientInfo::GetCustomInfo() const {

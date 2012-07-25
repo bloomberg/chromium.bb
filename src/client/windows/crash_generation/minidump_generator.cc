@@ -271,15 +271,14 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
                                       DWORD requesting_thread_id,
                                       EXCEPTION_POINTERS* exception_pointers,
                                       MDRawAssertionInfo* assert_info,
-                                      CustomDataStream* custom_data_stream,
                                       MINIDUMP_TYPE dump_type,
                                       bool is_client_pointers,
                                       wstring* dump_path) {
   // Just call the full WriteMinidump with NULL as the full_dump_path.
   return this->WriteMinidump(process_handle, process_id, thread_id,
                              requesting_thread_id, exception_pointers,
-                             assert_info, custom_data_stream, dump_type,
-                             is_client_pointers, dump_path, NULL);
+                             assert_info, dump_type, is_client_pointers,
+                             dump_path, NULL);
 }
 
 bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
@@ -288,7 +287,6 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
                                       DWORD requesting_thread_id,
                                       EXCEPTION_POINTERS* exception_pointers,
                                       MDRawAssertionInfo* assert_info,
-                                      CustomDataStream* custom_data_stream,
                                       MINIDUMP_TYPE dump_type,
                                       bool is_client_pointers,
                                       wstring* dump_path,
@@ -370,9 +368,9 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
     breakpad_info.requesting_thread_id = requesting_thread_id;
   }
 
-  // Leave room in user_stream_array for possible assertion info, handle
-  // operations, and custom data streams.
-  MINIDUMP_USER_STREAM user_stream_array[4];
+  // Leave room in user_stream_array for possible assertion info and handle
+  // operations streams.
+  MINIDUMP_USER_STREAM user_stream_array[3];
   user_stream_array[0].Type = MD_BREAKPAD_INFO_STREAM;
   user_stream_array[0].BufferSize = sizeof(breakpad_info);
   user_stream_array[0].Buffer = &breakpad_info;
@@ -413,16 +411,6 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
     user_stream_array[1].Type = MD_ASSERTION_INFO_STREAM;
     user_stream_array[1].BufferSize = sizeof(MDRawAssertionInfo);
     user_stream_array[1].Buffer = actual_assert_info;
-    ++user_streams.UserStreamCount;
-  }
-
-  if (custom_data_stream) {
-    user_stream_array[user_streams.UserStreamCount].Type =
-        MD_CUSTOM_DATA_STREAM;
-    user_stream_array[user_streams.UserStreamCount].BufferSize =
-        static_cast<ULONG>(custom_data_stream->size);
-    user_stream_array[user_streams.UserStreamCount].Buffer =
-        custom_data_stream->stream;
     ++user_streams.UserStreamCount;
   }
 

@@ -31,7 +31,6 @@
 #include <objbase.h>
 #include <dbghelp.h>
 
-#include "../common/ipc_protocol.h"
 #include "../crash_generation/minidump_generator.h"
 #include "dump_analysis.h"  // NOLINT
 
@@ -87,8 +86,7 @@ class MinidumpTest: public testing::Test {
     }
   }
 
-  bool WriteDump(ULONG flags, MDRawAssertionInfo* assert,
-                 google_breakpad::CustomDataStream* custom_data) {
+  bool WriteDump(ULONG flags) {
     using google_breakpad::MinidumpGenerator;
 
     // Fake exception is access violation on write to this.
@@ -114,8 +112,7 @@ class MinidumpTest: public testing::Test {
                                           ::GetCurrentThreadId(),
                                           ::GetCurrentThreadId(),
                                           &ex_ptrs,
-                                          assert,
-                                          custom_data,
+                                          NULL,
                                           static_cast<MINIDUMP_TYPE>(flags),
                                           TRUE,
                                           &dump_file_,
@@ -180,7 +177,7 @@ TEST_F(MinidumpTest, Version) {
 }
 
 TEST_F(MinidumpTest, Normal) {
-  EXPECT_TRUE(WriteDump(MiniDumpNormal, NULL, NULL));
+  EXPECT_TRUE(WriteDump(MiniDumpNormal));
   DumpAnalysis mini(dump_file_);
 
   // We expect threads, modules and some memory.
@@ -209,13 +206,10 @@ TEST_F(MinidumpTest, Normal) {
 
   // We expect no off-stack memory in this dump.
   EXPECT_FALSE(mini.HasMemory(this));
-
-  // We do not expect a custom data stream.
-  EXPECT_FALSE(mini.HasStream(MD_CUSTOM_DATA_STREAM));
 }
 
 TEST_F(MinidumpTest, SmallDump) {
-  ASSERT_TRUE(WriteDump(kSmallDumpType, NULL, NULL));
+  ASSERT_TRUE(WriteDump(kSmallDumpType));
   DumpAnalysis mini(dump_file_);
 
   EXPECT_TRUE(mini.HasStream(ThreadListStream));
@@ -246,7 +240,7 @@ TEST_F(MinidumpTest, SmallDump) {
 }
 
 TEST_F(MinidumpTest, LargerDump) {
-  ASSERT_TRUE(WriteDump(kLargerDumpType, NULL, NULL));
+  ASSERT_TRUE(WriteDump(kLargerDumpType));
   DumpAnalysis mini(dump_file_);
 
   // The dump should have all of these streams.
@@ -278,7 +272,7 @@ TEST_F(MinidumpTest, LargerDump) {
 }
 
 TEST_F(MinidumpTest, FullDump) {
-  ASSERT_TRUE(WriteDump(kFullDumpType, NULL, NULL));
+  ASSERT_TRUE(WriteDump(kFullDumpType));
   ASSERT_TRUE(dump_file_ != L"");
   ASSERT_TRUE(full_dump_file_ != L"");
   DumpAnalysis mini(dump_file_);
@@ -333,17 +327,6 @@ TEST_F(MinidumpTest, FullDump) {
   EXPECT_FALSE(full.HasStream(HandleOperationListStream));
   EXPECT_FALSE(mini.HasStream(TokenStream));
   EXPECT_FALSE(full.HasStream(TokenStream));
-}
-
-TEST_F(MinidumpTest, CustomData) {
-  google_breakpad::CustomDataStream custom_data;
-  custom_data.size = 1;
-  custom_data.stream[0] = 'A';
-  EXPECT_TRUE(WriteDump(MiniDumpNormal, NULL, &custom_data));
-  DumpAnalysis mini(dump_file_);
-
-  // We expect a custom data stream.
-  EXPECT_TRUE(mini.HasStream(MD_CUSTOM_DATA_STREAM));
 }
 
 }  // namespace

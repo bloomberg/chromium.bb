@@ -61,7 +61,6 @@ class ClientInfo {
   MINIDUMP_TYPE dump_type() const { return dump_type_; }
   EXCEPTION_POINTERS** ex_info() const { return ex_info_; }
   MDRawAssertionInfo* assert_info() const { return assert_info_; }
-  CustomDataStream* custom_data_stream() const { return custom_data_stream_; }
   DWORD* thread_id() const { return thread_id_; }
   HANDLE process_handle() const { return process_handle_; }
   HANDLE dump_requested_handle() const { return dump_requested_handle_; }
@@ -90,10 +89,6 @@ class ClientInfo {
   bool Initialize();
   bool GetClientExceptionInfo(EXCEPTION_POINTERS** ex_info) const;
   bool GetClientThreadId(DWORD* thread_id) const;
-
-  // Reads the custom data stream (if supplied) from the client process
-  // address space.
-  bool PopulateCustomDataStream();
 
   // Reads the custom information from the client process address space.
   bool PopulateCustomInfo();
@@ -134,9 +129,6 @@ class ClientInfo {
 
   // Custom information about the client.
   CustomClientInfo custom_client_info_;
-
-  // Custom data stream supplied by the client.
-  CustomDataStream* custom_data_stream_;
 
   // Contains the custom client info entries read from the client process
   // memory. This will be populated only if the method GetClientCustomInfo

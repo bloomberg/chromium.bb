@@ -82,11 +82,6 @@ struct CustomInfoEntry {
   wchar_t value[kValueMaxLength];
 };
 
-struct CustomDataStream {
-  size_t size;
-  u_int8_t stream[1];
-};
-
 // Constants for the protocol between client and the server.
 
 // Tags sent with each message indicating the purpose of
