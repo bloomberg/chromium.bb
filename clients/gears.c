@@ -58,6 +58,7 @@ struct gears {
 	int last_x, last_y;
 
 	GLint gear_list[3];
+	int fullscreen;
 };
 
 struct gear_template {
@@ -353,6 +354,15 @@ keyboard_focus_handler(struct window *window,
 	window_schedule_redraw(window);
 }
 
+static void
+fullscreen_handler(struct window *window, void *data)
+{
+	struct gears *gears = data;
+
+	gears->fullscreen ^= 1;
+	window_set_fullscreen(window, gears->fullscreen);
+}
+
 static struct gears *
 gears_create(struct display *display)
 {
@@ -418,6 +428,7 @@ gears_create(struct display *display)
 	widget_set_motion_handler(gears->widget, motion_handler);
 	window_set_keyboard_focus_handler(gears->window,
 					  keyboard_focus_handler);
+	window_set_fullscreen_handler(gears->window, fullscreen_handler);
 
 	window_schedule_resize(gears->window, width, height);
 
