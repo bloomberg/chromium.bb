@@ -233,6 +233,32 @@ TranslatorPatterns = [
   ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
+
+def CheckForArmByvalVarargBug(bc_contents):
+  """ Check for a known ARM bug:
+  http://code.google.com/p/nativeclient/issues/detail?id=2746
+  remove this check when that bug is fixed!
+  """
+  bad_pattern = re.compile(r'^define.*@.* byval .*\.\.\.')
+  for (line_num, line) in enumerate(bc_contents.splitlines()):
+    if bad_pattern.match(line):
+      Log.Warning(
+          'Found instance of ARM bug (passing structs by value + varargs)!')
+      Log.Warning(
+          'Line %d in bitcode asm: %s' % (line_num, line))
+
+def CheckForKnownBugs(bcfile):
+  """ Check for known compiler bugs and emit a warning.  Remove this
+  when known bugs are fixed!!!
+  """
+  if env.getone('ARCH') == 'ARM':
+    llvm_dis = env.getone('LLVM_DIS')
+    args = [ llvm_dis, bcfile, '-o', '-' ]
+    _, stdout_contents, _  = driver_tools.Run(args,
+                                              redirect_stdout=subprocess.PIPE)
+    CheckForArmByvalVarargBug(stdout_contents)
+
+
 def main(argv):
   env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, TranslatorPatterns)
@@ -261,6 +287,9 @@ def main(argv):
     bcfile = bcfiles[0]
   else:
     bcfile = None
+
+  # TODO(jvoung): remove this when known bug is fixed.
+  CheckForKnownBugs(bcfile)
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
