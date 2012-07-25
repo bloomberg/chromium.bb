@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -129,13 +129,6 @@
  */
 
 /*
- * Minimum alignment that the thread pointer address ($tp) must have.
- * This is independent of any alignment requirement for actual TLS data,
- * which might be more or less than this.
- */
-size_t __nacl_tp_alignment(void) asm("llvm.nacl.tp.alignment");
-
-/*
  * Signed offset from $tp to the beginning of TLS data.
  * This is where the actual TLS for a thread is found.
  * The address ($tp + __nacl_tp_tls_offset(tls_size))
@@ -188,16 +181,6 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
   return 0;
 }
 
-/*
- * No particular alignment is required by the ABI.  But some x86 chips
- * behave poorly if the segment is not aligned to a cache line.  Those
- * chips have 64-byte cache lines (Atom).
- */
-static inline __attribute__((__unused__))
-size_t __nacl_tp_alignment(void) {
-  return 64;
-}
-
 static inline __attribute__((__unused__))
 size_t __nacl_thread_stack_padding(void) {
 #ifdef __x86_64__
@@ -231,14 +214,6 @@ ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) {
 static inline __attribute__((__unused__))
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
   return -(ptrdiff_t) tdb_size;
-}
-
-/*
- * No special alignment is required by the ABI.
- */
-static inline __attribute__((__unused__))
-size_t __nacl_tp_alignment(void) {
-  return 4;
 }
 
 static inline __attribute__((__unused__))

@@ -147,8 +147,7 @@ static char *tp_from_combined_area(const struct tls_info *info,
      * Instead, align from the putative end of the TDB, to decide where
      * $tp--the true end of the TDB--should actually lie.
      */
-    size_t align = aligned_size(info->tls_alignment, __nacl_tp_alignment());
-    return aligned_addr((char *) combined_area + tdb_size, align);
+    return aligned_addr((char *) combined_area + tdb_size, info->tls_alignment);
   } else {
     /*
      * x86 case:
@@ -161,8 +160,7 @@ static char *tp_from_combined_area(const struct tls_info *info,
      *                    |
      *                    +--- first word's value is $tp address
      */
-    size_t align = aligned_size(info->tls_alignment, __nacl_tp_alignment());
-    return aligned_addr((char *) combined_area + tls_size, align);
+    return aligned_addr((char *) combined_area + tls_size, info->tls_alignment);
   }
 }
 
@@ -236,8 +234,7 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
      *
      * The TDB alignment doesn't matter too much.
      */
-    return (tdb_size + __nacl_tp_alignment() - 1 +
-            tlsoff + tls_size + info->tls_alignment - 1);
+    return tdb_size + tlsoff + tls_size + info->tls_alignment - 1;
   } else {
     /*
      * x86 case:
@@ -252,8 +249,7 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
      *
      * The TDB alignment doesn't matter too much.
      */
-    size_t align = aligned_size(info->tls_alignment, __nacl_tp_alignment());
-    return align - 1 + tls_size + tdb_size;
+    return info->tls_alignment - 1 + tls_size + tdb_size;
   }
 }
 
