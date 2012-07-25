@@ -200,10 +200,6 @@ This file contains the strings for ash.
         Pull down to minimize, left or right to tile
       </message>
 
-      <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
-        Keyboard Overlay
-      </message>
-
       <!-- Status tray items -->
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the status tray.">
         Status tray

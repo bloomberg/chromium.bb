@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard_overlay/keyboard_overlay_delegate.h"
+#include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
 
 #include <algorithm>
 
@@ -10,8 +10,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
@@ -58,10 +61,8 @@ void PaintMessageHandler::DidPaint(const ListValue* args) {
 
 }  // namespace
 
-KeyboardOverlayDelegate::KeyboardOverlayDelegate(const string16& title,
-                                                 const GURL& url)
+KeyboardOverlayDelegate::KeyboardOverlayDelegate(const string16& title)
     : title_(title),
-      url_(url),
       view_(NULL) {
 }
 
@@ -100,7 +101,8 @@ string16 KeyboardOverlayDelegate::GetDialogTitle() const {
 }
 
 GURL KeyboardOverlayDelegate::GetDialogContentURL() const {
-  return url_;
+  std::string url_string(chrome::kChromeUIKeyboardOverlayURL);
+  return GURL(url_string);
 }
 
 void KeyboardOverlayDelegate::GetWebUIMessageHandlers(

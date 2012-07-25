@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_
-#define ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
+#define CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "googleurl/src/gurl.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace views {
@@ -16,7 +15,7 @@ class WebDialogView;
 
 class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
  public:
-  KeyboardOverlayDelegate(const string16& title, const GURL& url);
+  explicit KeyboardOverlayDelegate(const string16& title);
 
   void Show(views::WebDialogView* view);
 
@@ -43,9 +42,6 @@ class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
   // The dialog title.
   string16 title_;
 
-  // The URL of the keyboard overlay.
-  GURL url_;
-
   // The view associated with this delegate.
   // This class does not own the pointer.
   views::WebDialogView* view_;
@@ -53,4 +49,4 @@ class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDelegate);
 };
 
-#endif  // ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_

@@ -34,7 +34,6 @@
 #include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/keyboard_overlay/keyboard_overlay_view.h"
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
@@ -43,6 +42,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
+#include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -262,12 +262,8 @@ bool ChromeShellDelegate::RotatePaneFocus(ash::Shell::Direction direction) {
 
 void ChromeShellDelegate::ShowKeyboardOverlay() {
 #if defined(OS_CHROMEOS)
-  // TODO(mazda): Move the show logic to ash (http://crbug.com/124222).
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  std::string url(chrome::kChromeUIKeyboardOverlayURL);
-  KeyboardOverlayView::ShowDialog(profile,
-                                  new ChromeWebContentsHandler,
-                                  GURL(url));
+  KeyboardOverlayDialogView::ShowDialog(profile, new ChromeWebContentsHandler);
 #endif
 }
 
