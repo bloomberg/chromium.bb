@@ -677,5 +677,81 @@
         },
       ],
     }],
+    [ 'OS=="ios"', {
+      'targets': [
+        {
+          'target_name': 'breakpad_client',
+          'type': '<(library)',
+          'sources': [
+            'src/client/ios/Breakpad.h',
+            'src/client/ios/Breakpad.mm',
+            'src/client/ios/BreakpadController.h',
+            'src/client/ios/BreakpadController.mm',
+            'src/client/ios/handler/ios_exception_minidump_generator.mm',
+            'src/client/ios/handler/ios_exception_minidump_generator.h',
+            'src/client/mac/crash_generation/ConfigFile.h',
+            'src/client/mac/crash_generation/ConfigFile.mm',
+            'src/client/mac/handler/breakpad_nlist_64.cc',
+            'src/client/mac/handler/breakpad_nlist_64.h',
+            'src/client/mac/handler/dynamic_images.cc',
+            'src/client/mac/handler/dynamic_images.h',
+            'src/client/mac/handler/protected_memory_allocator.cc',
+            'src/client/mac/handler/protected_memory_allocator.h',
+            'src/client/mac/handler/exception_handler.cc',
+            'src/client/mac/handler/exception_handler.h',
+            'src/client/mac/handler/minidump_generator.cc',
+            'src/client/mac/handler/minidump_generator.h',
+            'src/client/mac/sender/uploader.h',
+            'src/client/mac/sender/uploader.mm',
+            'src/client/minidump_file_writer.cc',
+            'src/client/minidump_file_writer.h',
+            'src/client/minidump_file_writer-inl.h',
+            'src/common/convert_UTF.c',
+            'src/common/convert_UTF.h',
+            'src/common/mac/file_id.cc',
+            'src/common/mac/file_id.h',
+            'src/common/mac/GTMLogger.m',
+            'src/common/mac/HTTPMultipartUpload.m',
+            'src/common/mac/macho_id.cc',
+            'src/common/mac/macho_id.h',
+            'src/common/mac/macho_utilities.cc',
+            'src/common/mac/macho_utilities.h',
+            'src/common/mac/macho_walker.cc',
+            'src/common/mac/macho_walker.h',
+            'src/common/mac/string_utilities.cc',
+            'src/common/mac/string_utilities.h',
+            'src/common/mac/SimpleStringDictionary.mm',
+            'src/common/mac/SimpleStringDictionary.h',
+            'src/common/md5.cc',
+            'src/common/md5.h',
+            'src/common/string_conversion.cc',
+            'src/common/string_conversion.h',
+            'src/google_breakpad/common/minidump_format.h',
+          ],
+          'xcode_settings': {
+            # With the Xcode 4.2 toolchain (iOS 5.0 SDK), there is a change to
+            # exception handling when building for arm (but not simulator).
+            # __EXCEPTIONS is still defined if objc exceptions are enabled but
+            # c++ exceptions are not.  With Xcode 3.2.6 (iOS 4.3 SDK) for both
+            # device and simulator turning off c++ exceptions caused gcc to
+            # still honor try/catch in .mm files as if they were @try/@catch
+            # due to the new runtime support for exceptions.  The clang arm
+            # compiler in Xcode 4.2 does not do this and exception_defines.h
+            # does not kick in because __EXCEPTIONS is still defined.  So
+            # the compile fails for trying to use try without compiler support
+            # for c++ exceptions.  The simulator build in that setup still
+            # works.  Turning off objc exceptions is just enough to get
+            # __EXCEPTIONS to not be defined and exception_defines.h kicks in
+            # to let the code compile.
+            'GCC_ENABLE_OBJC_EXCEPTIONS': 'NO',
+          },
+          'include_dirs': [
+            'src',
+            'src/client/mac/Framework',
+            'src/common/mac',
+          ],
+        },
+      ],
+    }],
   ],
 }
