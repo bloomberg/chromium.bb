@@ -414,7 +414,13 @@ class SystemPinchHandler {
         phantom_state_ = PHANTOM_WINDOW_NORMAL;
 
         if (event.details().swipe_left() || event.details().swipe_right()) {
-          // Snap for left/right swipes.
+          // Snap for left/right swipes. In case the window is
+          // maximized/fullscreen, then restore the window first so that tiling
+          // works correctly.
+          if (wm::IsWindowMaximized(target_) ||
+              wm::IsWindowFullscreen(target_))
+            wm::RestoreWindow(target_);
+
           ui::ScopedLayerAnimationSettings settings(
               target_->layer()->GetAnimator());
           SnapSizer sizer(target_,
