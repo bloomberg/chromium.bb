@@ -81,6 +81,7 @@ class APIPermission {
     kUnlimitedStorage,
     kUsb,
     kVideoCapture,
+    kWallpaperPrivate,
     kWebNavigation,
     kWebRequest,
     kWebRequestBlocking,

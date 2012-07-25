@@ -5,6 +5,8 @@
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_RESOURCES_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_RESOURCES_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -32,6 +34,7 @@ const SkColor kLoginWallpaperColor = 0xFEFEFE;
 ASH_EXPORT int GetDefaultWallpaperIndex();
 ASH_EXPORT int GetGuestWallpaperIndex();
 ASH_EXPORT int GetInvalidWallpaperIndex();
+ASH_EXPORT WallpaperLayout GetLayoutEnum(const std::string& layout);
 ASH_EXPORT int GetNextWallpaperIndex(int index);
 ASH_EXPORT int GetSolidColorIndex();
 ASH_EXPORT int GetWallpaperCount();

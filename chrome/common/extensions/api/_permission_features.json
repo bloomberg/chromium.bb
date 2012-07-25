@@ -291,6 +291,11 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
+  "wallpaperPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app"],
+    "location": "component"
+  },
   "webNavigation": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

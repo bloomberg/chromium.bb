@@ -67,6 +67,15 @@ void WallpaperManager::SetLastSelectedUser(
   last_selected_user_ = last_selected_user;
 }
 
+void WallpaperManager::SetWallpaperFromFile(std::string email,
+                                            const std::string& path,
+                                            ash::WallpaperLayout layout) {
+  image_loader_->Start(
+      path, 0, false,
+      base::Bind(&WallpaperManager::OnCustomWallpaperLoaded,
+                 base::Unretained(this), email, layout));
+}
+
 void WallpaperManager::UserDeselected() {
   if (!UserManager::Get()->IsUserLoggedIn()) {
     // This will set default login wallpaper (#fefefe).
@@ -80,6 +89,14 @@ void WallpaperManager::UserDeselected() {
 WallpaperManager::~WallpaperManager() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+}
+
+void WallpaperManager::OnCustomWallpaperLoaded(const std::string& email,
+                                               ash::WallpaperLayout layout,
+                                               const UserImage& user_image) {
+  const SkBitmap& wallpaper = user_image.image();
+  ash::Shell::GetInstance()->desktop_background_controller()->
+      SetCustomWallpaper(wallpaper, layout);
 }
 
 void WallpaperManager::BatchUpdateWallpaper() {

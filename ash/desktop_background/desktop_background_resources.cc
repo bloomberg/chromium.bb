@@ -12,6 +12,14 @@
 
 namespace {
 
+// Keeps in sync (same order) with WallpaperLayout enum in header file.
+const char* kWallpaperLayoutArrays[] = {
+    "CENTER",
+    "CENTER_CROPPED",
+    "STRETCH",
+    "TILE"
+};
+
 const ash::WallpaperInfo kDefaultWallpapers[] = {
 #if !defined(GOOGLE_CHROME_BUILD)
     {
@@ -221,6 +229,7 @@ const ash::WallpaperInfo kDefaultWallpapers[] = {
     },
 };
 
+const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
 const int kDefaultWallpaperCount = arraysize(kDefaultWallpapers);
 const int kInvalidWallpaperIndex = -1;
 const int kSolidColorIndex = -2;
@@ -256,6 +265,15 @@ int GetGuestWallpaperIndex() {
 
 int GetInvalidWallpaperIndex() {
   return kInvalidWallpaperIndex;
+}
+
+WallpaperLayout GetLayoutEnum(const std::string& layout) {
+  for (int i = 0; i < kWallpaperLayoutCount; i++) {
+    if (layout.compare(kWallpaperLayoutArrays[i]) == 0)
+      return static_cast<WallpaperLayout>(i);
+  }
+  // Default to use CENTER layout.
+  return CENTER;
 }
 
 int GetNextWallpaperIndex(int index) {

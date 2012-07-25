@@ -66,6 +66,7 @@
       <include name="IDR_EXTENSION_API_JSON_TTS" file="extensions\api\tts.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TTSENGINE" file="extensions\api\tts_engine.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TYPES" file="extensions\api\types.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_WALLPAPERPRIVATE" file="extensions\api\wallpaper_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBNAVIGATION" file="extensions\api\web_navigation.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBREQUEST" file="extensions\api\web_request.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSOCKETPROXYPRIVATE" file="extensions\api\web_socket_proxy_private.json" type="BINDATA" />

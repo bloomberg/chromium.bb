@@ -1,0 +1,52 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace":"wallpaperPrivate",
+    "nodoc": "true",
+    "functions": [
+      {
+        "name": "getStrings",
+        "type": "function",
+        "description": "Gets translated strings.",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "object",
+                "additionalProperties": {"type": "string"}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setWallpaper",
+        "type": "function",
+        "description": "Sets wallpaper to the image from url with specified layout",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "type": "binary",
+            "name": "wallpaper"
+          },
+          {
+            "type": "string",
+            "name": "layout",
+            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED"]
+          },
+          {
+            "type": "string",
+            "name": "url"
+          }
+        ]
+      }
+    ]
+  }
+]

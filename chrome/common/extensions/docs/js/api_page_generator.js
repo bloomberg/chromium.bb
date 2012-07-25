@@ -85,6 +85,7 @@ var MODULE_SCHEMAS = [
   '../../api/tts.json',
   '../../api/tts_engine.json',
   '../../api/types.json',
+  '../../api/wallpaper_private.json',
   '../../api/web_navigation.json',
   '../../api/web_request.json',
   '../../api/web_socket_proxy_private.json',

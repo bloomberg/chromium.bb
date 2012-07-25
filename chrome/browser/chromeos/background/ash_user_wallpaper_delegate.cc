@@ -10,7 +10,7 @@
 #include "ash/wm/window_animations.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/extensions/wallpaper_manager_api.h"
+#include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"

@@ -10809,6 +10809,29 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Deny
       </message>
 
+      <!-- Wallpaper Manager -->
+      <message name="IDS_WALLPAPER_MANAGER_SEARCH_TEXT_LABEL" desc="Search text field label.">
+        Search backgrounds
+      </message>
+      <message name="IDS_WALLPAPER_MANAGER_AUTHOR_LABEL" desc="Wallpaper author label.">
+        By
+      </message>
+      <message name="IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL" desc="Wallpaper category label.">
+        Custom
+      </message>
+      <message name="IDS_WALLPAPER_MANAGER_SELECT_CUSTOM_LABEL" desc="Selects custom wallpaper label.">
+        Custom Image:
+      </message>
+      <message name="IDS_WALLPAPER_MANAGER_POSITION_LABEL" desc="Custom wallpaper position label">
+        Position:
+      </message>
+      <message name="IDS_WALLPAPER_MANAGER_COLOR_LABEL" desc="Custom wallpaper color label.">
+        Color:
+      </message>
+      <message name="IDS_WALLPAPER_MANAGER_PREVIEW_LABEL" desc="Custom wallpaper preview label.">
+        Preview:
+      </message>
+ 
       <!-- File Browser -->
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files

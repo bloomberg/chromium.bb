@@ -7,7 +7,11 @@
 
 #include <string>
 
+#include "ash/desktop_background/desktop_background_resources.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/login/user_image.h"
+#include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "unicode/timezone.h"
@@ -34,16 +38,28 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Sets last selected user on user pod row.
   void SetLastSelectedUser(const std::string& last_selected_user);
 
+  // Sets wallpaper to the image file |path| points to.
+  void SetWallpaperFromFile(std::string email,
+                            const std::string& path,
+                            ash::WallpaperLayout layout);
+
   // User was deselected at login screen, reset wallpaper if needed.
   void UserDeselected();
 
  private:
   virtual ~WallpaperManager();
 
+  void OnCustomWallpaperLoaded(const std::string& email,
+                               ash::WallpaperLayout layout,
+                               const UserImage& user_image);
+
   // Change the wallpapers for users who choose DAILY wallpaper type. Updates
   // current wallpaper if it changed. This function should be called at exactly
   // at 0am if chromeos device is on.
   void BatchUpdateWallpaper();
+
+  // Loads user image from its file.
+  scoped_refptr<UserImageLoader> image_loader_;
 
   // Overridden from chromeos::ResumeObserver
   virtual void SystemResumed() OVERRIDE;

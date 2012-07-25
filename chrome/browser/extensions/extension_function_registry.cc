@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
+#include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/media/media_player_extension_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
@@ -385,6 +386,10 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetPlaylistMediaplayerFunction>();
   RegisterFunction<SetWindowHeightMediaplayerFunction>();
   RegisterFunction<CloseWindowMediaplayerFunction>();
+
+  // WallpaperManagerPrivate functions.
+  RegisterFunction<WallpaperStringsFunction>();
+  RegisterFunction<WallpaperSetWallpaperFunction>();
 
   // InputMethod
   RegisterFunction<GetInputMethodFunction>();

@@ -9,8 +9,17 @@
     "wallpapers": "main.html"
   },
   "permissions": [
-    "tabs"
+    "wallpaperPrivate",
+    "tabs",
+    "webRequest",
+    "http://lh5.ggpht.com/",
+    "http://*.googleapis.com/"
   ],
+  "app": {
+    "launch": {
+      "local_path": "main.html"
+    }
+  },
   "content_security_policy":
     "default-src:none; object-src 'none'; script-src 'self'"
 }

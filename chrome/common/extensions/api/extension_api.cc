@@ -455,6 +455,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_TTS));
   RegisterSchema("types", ReadFromResource(
       IDR_EXTENSION_API_JSON_TYPES));
+  RegisterSchema("wallpaperPrivate", ReadFromResource(
+      IDR_EXTENSION_API_JSON_WALLPAPERPRIVATE));
   RegisterSchema("webNavigation", ReadFromResource(
       IDR_EXTENSION_API_JSON_WEBNAVIGATION));
   RegisterSchema("webRequest", ReadFromResource(
