@@ -23,6 +23,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
@@ -37,8 +38,6 @@ using ppapi::proxy::PluginDispatcher;
 using ppapi::proxy::PluginGlobals;
 
 namespace {
-
-struct PP_ThreadFunctions thread_funcs;
 
 // Copied from src/content/ppapi_plugin/ppapi_thread. This is a minimal
 // implementation to get us started.
@@ -101,8 +100,10 @@ class PluginDispatcherDelegate : public PluginDispatcher::PluginDelegate {
 }  // namespace
 
 void PpapiPluginRegisterThreadCreator(
-    const struct PP_ThreadFunctions* new_funcs) {
-  thread_funcs = *new_funcs;
+    const struct PP_ThreadFunctions* thread_functions) {
+  // Initialize all classes that need to create threads that call back into
+  // user code.
+  ppapi::PPB_Audio_Shared::SetThreadFunctions(thread_functions);
 }
 
 int IrtInit() {

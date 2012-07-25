@@ -5,6 +5,9 @@ include_rules = [
   "+skia",
   "+webkit/glue",
 
+  # The untrusted build references the NaCl integrated runtime (IRT).
+  "+native_client/src/untrusted/irt",
+
   # Since this is used by the implementation in /webkit, we don't want it to
   # depend on IPC.
   "-ipc",

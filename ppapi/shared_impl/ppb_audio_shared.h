@@ -13,6 +13,10 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_api.h"
 
+#if defined(OS_NACL)
+#include "native_client/src/untrusted/irt/irt_ppapi.h"
+#endif
+
 namespace ppapi {
 
 // Implements the logic to map shared memory and run the audio thread signaled
@@ -54,6 +58,11 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
                      size_t shared_memory_size,
                      base::SyncSocket::Handle socket_handle);
 
+#if defined(OS_NACL)
+  // NaCl has a special API for IRT code to create threads that can call back
+  // into user code.
+  static void SetThreadFunctions(const struct PP_ThreadFunctions* functions);
+#endif
  private:
   // Starts execution of the audio thread.
   void StartThread();
@@ -79,8 +88,15 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // The size of the sample buffer in bytes.
   size_t shared_memory_size_;
 
+#if !defined(OS_NACL)
   // When the callback is set, this thread is spawned for calling it.
   scoped_ptr<base::DelegateSimpleThread> audio_thread_;
+#else
+  uintptr_t thread_id_;
+  bool thread_active_;
+
+  static void CallRun(void* self);
+#endif
 
   // Callback to call when audio is ready to accept new samples.
   PPB_Audio_Callback callback_;
