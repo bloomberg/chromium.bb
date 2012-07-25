@@ -453,6 +453,10 @@ void Shell::Init() {
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);
 
+  tooltip_controller_.reset(new internal::TooltipController(
+      drag_drop_controller_.get()));
+  AddEnvEventFilter(tooltip_controller_.get());
+
   InitRootWindowController(root_window_controller);
 
   // Initialize Primary RootWindow specific items.
@@ -476,13 +480,6 @@ void Shell::Init() {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
     shadow_controller_.reset(new internal::ShadowController());
   }
-
-  // Tooltip controller must be created after shadow controller so that the
-  // tooltip window can be initialized with appropriate shadows.
-  tooltip_controller_.reset(new internal::TooltipController(
-      drag_drop_controller_.get()));
-  AddEnvEventFilter(tooltip_controller_.get());
-  aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
 
   if (!delegate_.get() || delegate_->IsUserLoggedIn())
     CreateLauncher();
@@ -710,6 +707,7 @@ void Shell::InitRootWindowController(
   aura::client::SetCaptureClient(root_window, capture_controller_.get());
   aura::client::SetScreenPositionClient(root_window,
                                         screen_position_controller_.get());
+  aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
 
   if (nested_dispatcher_controller_.get()) {
     aura::client::SetDispatcherClient(root_window,

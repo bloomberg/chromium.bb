@@ -84,6 +84,10 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
 
   bool IsDragDropInProgress();
 
+  // This lazily creates the Tooltip instance so that the tooltip window will
+  // be initialized with appropriate drop shadows.
+  Tooltip* GetTooltip();
+
   aura::client::DragDropClient* drag_drop_client_;
 
   aura::Window* tooltip_window_;
