@@ -113,7 +113,6 @@
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.rc',
       ],
       'include_dirs': [
         '../',
