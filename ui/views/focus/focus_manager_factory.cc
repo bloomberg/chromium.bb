@@ -7,17 +7,17 @@
 #include "base/compiler_specific.h"
 #include "ui/views/focus/focus_manager.h"
 
+namespace views {
+
 namespace {
 
-using views::FocusManager;
-
-class DefaultFocusManagerFactory : public views::FocusManagerFactory {
+class DefaultFocusManagerFactory : public FocusManagerFactory {
  public:
-  DefaultFocusManagerFactory() : views::FocusManagerFactory() {}
+  DefaultFocusManagerFactory() : FocusManagerFactory() {}
   virtual ~DefaultFocusManagerFactory() {}
 
  protected:
-  virtual FocusManager* CreateFocusManager(views::Widget* widget) OVERRIDE {
+  virtual FocusManager* CreateFocusManager(Widget* widget) OVERRIDE {
     return new FocusManager(widget, NULL /* delegate */);
   }
 
@@ -25,11 +25,9 @@ class DefaultFocusManagerFactory : public views::FocusManagerFactory {
   DISALLOW_COPY_AND_ASSIGN(DefaultFocusManagerFactory);
 };
 
-views::FocusManagerFactory* focus_manager_factory = NULL;
+FocusManagerFactory* focus_manager_factory = NULL;
 
 }  // namespace
-
-namespace views {
 
 FocusManagerFactory::FocusManagerFactory() {
 }
