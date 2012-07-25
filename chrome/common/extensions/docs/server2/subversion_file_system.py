@@ -5,10 +5,10 @@
 import re
 import xml.dom.minidom as xml
 
-from file_system import FileSystem
+import file_system
 from future import Future
 
-class SubversionFileSystem(FileSystem):
+class SubversionFileSystem(file_system.FileSystem):
   """Class to fetch resources from src.chromium.org.
   """
   def __init__(self, fetcher):
@@ -45,7 +45,7 @@ class _AsyncFetchFuture(object):
       elif path.endswith('/'):
         self._value[path] = self._ListDir(result.content)
       else:
-        self._value[path] = result.content
+        self._value[path] = file_system._ProcessFileData(result.content, path)
     if self._error is not None:
       raise self._error
     return self._value

@@ -29,7 +29,7 @@ class SubversionFileSystemTest(unittest.TestCase):
     for i in range(7):
       expected.append('file%d.html' % i)
     self.assertEqual(expected,
-                     sorted(self._file_system.Read(['list/']).Get()['list/']))
+                     sorted(self._file_system.ReadSingle('list/')))
 
   def testStat(self):
     # Value is hard-coded into FakeUrlFetcher.

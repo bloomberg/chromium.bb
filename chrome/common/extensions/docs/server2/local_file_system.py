@@ -4,10 +4,10 @@
 
 import os
 
-from file_system import FileSystem
+import file_system
 from future import Future
 
-class LocalFileSystem(FileSystem):
+class LocalFileSystem(file_system.FileSystem):
   """FileSystem implementation which fetches resources from the local
   filesystem.
   """
@@ -19,7 +19,7 @@ class LocalFileSystem(FileSystem):
 
   def _ReadFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
-      return f.read()
+      return file_system._ProcessFileData(f.read(), filename)
 
   def _ListDir(self, dir_name):
     all_files = []

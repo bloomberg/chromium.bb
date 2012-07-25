@@ -32,16 +32,14 @@ class LocalFileSystemTest(unittest.TestCase):
     expected = ['dir/']
     for i in range(7):
       expected.append('file%d.html' % i)
-    self.assertEqual(
-        expected,
-        sorted(self._file_system.Read(['list/']).Get()['list/']))
+    self.assertEqual(expected,
+                     sorted(self._file_system.ReadSingle('list/')))
     expected.remove('file0.html')
     self._memcache.Set('list/',
                        (expected, self._file_system.Stat('list/')),
                        memcache.MEMCACHE_FILE_SYSTEM_READ)
-    self.assertEqual(
-        expected,
-        sorted(self._file_system.Read(['list/']).Get()['list/']))
+    self.assertEqual(expected,
+                     sorted(self._file_system.ReadSingle('list/')))
 
 if __name__ == '__main__':
   unittest.main()

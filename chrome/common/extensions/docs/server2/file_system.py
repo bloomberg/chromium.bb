@@ -2,6 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
+def _ProcessFileData(data, path):
+  if os.path.splitext(path)[-1] not in ['.js', '.html', '.json']:
+    return data
+  try:
+    return unicode(data, 'utf-8')
+  except:
+    return unicode(data, 'latin-1')
+
 class FileSystem(object):
   """A FileSystem interface that can read files and directories.
   """

@@ -26,9 +26,6 @@ class FileSystemCache(object):
     self._populate_function = populate_function
     self._cache = {}
 
-  def _FetchFile(self, filename):
-    return self._file_system.Read([filename]).Get()[filename]
-
   def _RecursiveList(self, files):
     all_files = files[:]
     dirs = {}
@@ -49,7 +46,7 @@ class FileSystemCache(object):
         self._cache.pop(path)
       else:
         return self._cache[path]._cache_data
-    cache_data = self._FetchFile(path)
+    cache_data = self._file_system.ReadSingle(path)
     self._cache[path] = self._CacheEntry(self._populate_function(cache_data),
                                          version)
     return self._cache[path]._cache_data
@@ -66,7 +63,8 @@ class FileSystemCache(object):
         self._cache.pop(path)
       else:
         return self._cache[path]._cache_data
-    cache_data = self._RecursiveList([path + f for f in self._FetchFile(path)])
+    cache_data = self._RecursiveList(
+        [path + f for f in self._file_system.ReadSingle(path)])
     self._cache[path] = self._CacheEntry(self._populate_function(cache_data),
                                          version)
     return self._cache[path]._cache_data

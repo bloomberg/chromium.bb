@@ -42,7 +42,7 @@ class TemplateDataSource(object):
                  api_data_source,
                  api_list_data_source,
                  intro_data_source,
-                 samples_data_source,
+                 samples_data_source_factory,
                  cache_builder,
                  public_template_path,
                  private_template_path):
@@ -52,7 +52,7 @@ class TemplateDataSource(object):
       self._api_data_source = api_data_source
       self._api_list_data_source = api_list_data_source
       self._intro_data_source = intro_data_source
-      self._samples_data_source = samples_data_source
+      self._samples_data_source_factory = samples_data_source_factory
       self._cache = cache_builder.build(Handlebar)
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
@@ -65,7 +65,7 @@ class TemplateDataSource(object):
                                 self._api_data_source,
                                 self._api_list_data_source,
                                 self._intro_data_source,
-                                self._samples_data_source,
+                                self._samples_data_source_factory,
                                 self._cache,
                                 self._public_template_path,
                                 self._private_template_path,
@@ -77,7 +77,7 @@ class TemplateDataSource(object):
                api_data_source,
                api_list_data_source,
                intro_data_source,
-               samples_data_source,
+               samples_data_source_factory,
                cache,
                public_template_path,
                private_template_path,
@@ -87,7 +87,7 @@ class TemplateDataSource(object):
     self._api_data_source = api_data_source
     self._api_list_data_source = api_list_data_source
     self._intro_data_source = intro_data_source
-    self._samples_data_source = samples_data_source
+    self._samples_data_source = samples_data_source_factory.Create(request)
     self._cache = cache
     self._public_template_path = public_template_path
     self._private_template_path = private_template_path

@@ -282,7 +282,7 @@ span.displayModeWarning {
 #gc-toc {
   margin: 0;
   width: 180px;
-  position: absolute;
+  float: left;
 }
 
 #gc-toc * {

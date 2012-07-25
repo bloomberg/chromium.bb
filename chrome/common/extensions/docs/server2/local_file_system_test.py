@@ -28,7 +28,7 @@ class LocalFileSystemTest(unittest.TestCase):
     for i in range(7):
       expected.append('file%d.html' % i)
     self.assertEqual(expected,
-                     sorted(self._file_system.Read(['list/']).Get()['list/']))
+                     sorted(self._file_system.ReadSingle('list/')))
 
 if __name__ == '__main__':
   unittest.main()

@@ -60,16 +60,13 @@ class IntroDataSource(object):
     self._base_paths = base_paths
 
   def _MakeIntroDict(self, intro):
-    try:
-      parser = _IntroParser()
-      parser.feed(intro)
-      return {
-        'intro': Handlebar(intro),
-        'toc': parser.toc,
-        'title': parser.page_title
-      }
-    except Exception as e:
-      logging.info(e)
+    parser = _IntroParser()
+    parser.feed(intro)
+    return {
+      'intro': Handlebar(intro),
+      'toc': parser.toc,
+      'title': parser.page_title
+    }
 
   def __getitem__(self, key):
     return self.get(key)

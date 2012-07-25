@@ -13,8 +13,11 @@ from template_data_source import TemplateDataSource
 from third_party.handlebar import Handlebar
 
 class _FakeRequest(object):
-  def __init__(self):
     pass
+
+class _FakeSamplesDataSource(object):
+  def Create(self, request):
+    return {}
 
 class TemplateDataSourceTest(unittest.TestCase):
   def setUp(self):
@@ -22,7 +25,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._fake_api_data_source = {}
     self._fake_api_list_data_source = {}
     self._fake_intro_data_source = {}
-    self._fake_samples_data_source = {}
+    self._fake_samples_data_source = _FakeSamplesDataSource()
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
