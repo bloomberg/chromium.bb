@@ -62,7 +62,7 @@ vars = {
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
   "v8_revision": "12191",
-  "webrtc_revision": "2525",
+  "webrtc_revision": "2529",
   "jsoncpp_revision": "248",
   "nss_revision": "145873",
 }
