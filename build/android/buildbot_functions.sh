@@ -73,7 +73,7 @@ function bb_run_gclient_hooks {
 #   $1: source root.
 #   $2 and beyond: key value pairs which are parsed by bb_parse_args.
 function bb_baseline_setup {
-  echo "@@@BUILD_STEP cd into source root@@@"
+  echo "@@@BUILD_STEP Environment setup@@@"
   SRC_ROOT="$1"
   # Remove SRC_ROOT param
   shift
@@ -93,7 +93,6 @@ function bb_baseline_setup {
     return 1
   fi
 
-  echo "@@@BUILD_STEP Basic setup@@@"
   bb_setup_environment
 
   for mandatory_directory in $(dirname "${ANDROID_SDK_ROOT}") \
@@ -115,7 +114,6 @@ function bb_baseline_setup {
     bb_install_build_deps $SRC_ROOT
   fi
 
-  echo "@@@BUILD_STEP Configure with envsetup.sh@@@"
   . build/android/envsetup.sh
 
   if [ "$NEED_CLOBBER" -eq 1 ]; then
@@ -129,6 +127,8 @@ function bb_baseline_setup {
 
   # Should be called only after envsetup is done.
   bb_run_gclient_hooks
+
+  python build/android/device_status_check.py
 }
 
 
