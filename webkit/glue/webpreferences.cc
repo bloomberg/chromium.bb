@@ -102,6 +102,7 @@ WebPreferences::WebPreferences()
       visual_word_movement_enabled(false),
       css_regions_enabled(false),
       css_shaders_enabled(false),
+      css_variables_enabled(false),
       device_supports_touch(false),
       device_supports_mouse(true),
 #if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
@@ -387,6 +388,7 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setExperimentalCSSRegionsEnabled(css_regions_enabled);
   settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
+  settings->setExperimentalCSSVariablesEnabled(css_variables_enabled);
 
   settings->setDeviceSupportsTouch(device_supports_touch);
   settings->setDeviceSupportsMouse(device_supports_mouse);

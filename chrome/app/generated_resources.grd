@@ -5760,6 +5760,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CSS_REGIONS_DESCRIPTION" desc="Description for the flag to enable CSS Regions.">
         Enable CSS Regions.
       </message>
+      <message name="IDS_FLAGS_CSS_VARIABLES_NAME" desc="Name for the flag to enable CSS Variables.">
+        Enable CSS Variables.
+      </message>
+      <message name="IDS_FLAGS_CSS_VARIABLES_DESCRIPTION" desc="Description for the flag to enable CSS Variables.">
+        Enable CSS Variables.
+      </message>
       <message name="IDS_FLAGS_APP_INSTALL_HINT_NAME" desc="Name for the flag to show the app install hint on the NTP.">
         NTP App Install Hint
       </message>

@@ -248,6 +248,9 @@ const char kEnableCssRegions[]              = "enable-css-regions";
 // Enables CSS3 custom filters
 const char kEnableCssShaders[]              = "enable-css-shaders";
 
+// Enables CSS variables
+const char kEnableCssVariables[]            = "enable-css-variables";
+
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 

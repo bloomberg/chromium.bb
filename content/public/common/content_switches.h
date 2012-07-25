@@ -86,6 +86,7 @@ extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 extern const char kEnableCssRegions[];
 extern const char kEnableCssShaders[];
+extern const char kEnableCssVariables[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 extern const char kEnableEncryptedMedia[];
 extern const char kEnableFastback[];

@@ -491,6 +491,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableCssRegions);
   prefs.css_shaders_enabled =
       command_line.HasSwitch(switches::kEnableCssShaders);
+  prefs.css_variables_enabled =
+      command_line.HasSwitch(switches::kEnableCssVariables);
   prefs.device_supports_touch =
       ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
 #if defined(OS_ANDROID)
