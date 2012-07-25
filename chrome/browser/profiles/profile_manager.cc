@@ -561,8 +561,13 @@ void ProfileManager::Observe(
       DCHECK(profile);
       if (!profile->IsOffTheRecord() && ++browser_counts_[profile] == 1) {
         active_profiles_.push_back(profile);
-        save_active_profiles = !closing_all_browsers_;
+        save_active_profiles = true;
       }
+      // If browsers are opening, we can't be closing all the browsers. This
+      // can happen if the application was exited, but background mode or
+      // packaged apps prevented the process from shutting down, and then
+      // a new browser window was opened.
+      closing_all_browsers_ = false;
       break;
     }
     case chrome::NOTIFICATION_BROWSER_CLOSED: {

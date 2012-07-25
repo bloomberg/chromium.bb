@@ -312,11 +312,8 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_CloseTab,
 //   - int: handle of the browser which contains the tab
 // Response:
 //  - bool: whether the operation was successfull.
-//  - bool: whether the browser process will be terminated as a result (if
-//          this was the last closed browser window).
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_CloseBrowser,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_CloseBrowser,
                             int,
-                            bool,
                             bool)
 
 #if defined(OS_WIN)

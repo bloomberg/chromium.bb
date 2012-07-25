@@ -21,9 +21,6 @@ class PinnedTabService : public content::NotificationObserver,
   explicit PinnedTabService(Profile* profile);
 
  private:
-  // Invoked when we're about to exit.
-  void GotExit();
-
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -31,9 +28,9 @@ class PinnedTabService : public content::NotificationObserver,
 
   Profile* profile_;
 
-  // If true we've seen an exit event (or the last browser is closing which
-  // triggers an exit) and can ignore all other events.
-  bool got_exiting_;
+  // True if we should save the pinned tabs when a browser window closes or the
+  // user exits the application.
+  bool save_pinned_tabs_;
 
   // True if there is at least one normal browser for our profile.
   bool has_normal_browser_;

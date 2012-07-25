@@ -888,8 +888,7 @@ void BrowserClosedNotificationObserver::Observe(
       AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
                                                            true);
     } else {
-      AutomationMsg_CloseBrowser::WriteReplyParams(reply_message_.get(), true,
-                                                   *(close_app.ptr()));
+      AutomationMsg_CloseBrowser::WriteReplyParams(reply_message_.get(), true);
     }
     automation_->Send(reply_message_.release());
   }

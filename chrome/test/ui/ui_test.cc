@@ -413,7 +413,7 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
   bool result = true;
 
   bool succeeded = automation()->Send(new AutomationMsg_CloseBrowser(
-      browser->handle(), &result, application_closed));
+      browser->handle(), &result));
 
   if (!succeeded)
     return false;
