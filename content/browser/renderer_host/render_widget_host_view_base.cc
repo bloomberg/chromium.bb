@@ -44,7 +44,8 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       mouse_locked_(false),
       showing_context_menu_(false),
       selection_text_offset_(0),
-      selection_range_(ui::Range::InvalidRange()) {
+      selection_range_(ui::Range::InvalidRange()),
+      current_device_scale_factor_(0) {
 }
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {

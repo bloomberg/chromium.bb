@@ -48,6 +48,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include <cstring>
 #include <atlbase.h>
 #include <atlapp.h>
 #include <malloc.h>
@@ -398,6 +399,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
         is_shutdown_(false),
         completed_basic_startup_(false),
         delegate_(NULL) {
+#if defined(OS_WIN)
+    memset(&sandbox_info_, 0, sizeof(sandbox_info_));
+#endif
   }
 
   ~ContentMainRunnerImpl() {
