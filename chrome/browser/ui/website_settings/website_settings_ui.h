@@ -14,12 +14,10 @@
 #include "chrome/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
 
-class CookieInfoList;
+
 class GURL;
-class PermissionInfoList;
 class Profile;
 class WebsiteSettings;
-
 namespace content {
 struct SSLStatus;
 }
@@ -85,6 +83,9 @@ class WebsiteSettingsUI {
     std::string connection_status_description;
   };
 
+  typedef std::vector<CookieInfo> CookieInfoList;
+  typedef std::vector<PermissionInfo> PermissionInfoList;
+
   virtual ~WebsiteSettingsUI();
 
   // Returns the UI string for the given permission |type|.
@@ -130,11 +131,7 @@ class WebsiteSettingsUI {
   virtual void SetFirstVisit(const string16& first_visit) = 0;
 };
 
-class CookieInfoList : public std::vector<WebsiteSettingsUI::CookieInfo> {
-};
-
-class PermissionInfoList
-    : public std::vector<WebsiteSettingsUI::PermissionInfo> {
-};
+typedef WebsiteSettingsUI::CookieInfoList CookieInfoList;
+typedef WebsiteSettingsUI::PermissionInfoList PermissionInfoList;
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_UI_H_

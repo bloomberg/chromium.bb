@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/cookies/canonical_cookie.h"
 
 class CookiesTreeModel;
 class Profile;
@@ -29,7 +30,6 @@ class RenderViewHost;
 }
 
 namespace net {
-class CookieList;
 class CookieOptions;
 }
 

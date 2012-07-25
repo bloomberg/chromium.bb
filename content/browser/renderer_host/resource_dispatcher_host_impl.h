@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "ipc/ipc_message.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
 
@@ -43,7 +44,6 @@ struct ResourceHostMsg_Request;
 struct ViewMsg_SwapOut_Params;
 
 namespace net {
-class CookieList;
 class URLRequestJobFactory;
 }
 

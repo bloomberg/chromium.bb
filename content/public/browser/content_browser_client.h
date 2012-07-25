@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/window_container_type.h"
+#include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -37,7 +38,6 @@ class ImageSkia;
 }
 
 namespace net {
-class CookieList;
 class CookieOptions;
 class HttpNetworkSession;
 class NetLog;

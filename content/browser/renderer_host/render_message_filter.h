@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "media/base/channel_layout.h"
+#include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
@@ -52,7 +53,6 @@ struct MediaLogEvent;
 }
 
 namespace net {
-class CookieList;
 class URLRequestContextGetter;
 }
 
