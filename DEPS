@@ -336,7 +336,7 @@ deps = {
     "/trunk/tools/deps2git@139377",
 
   "src/third_party/webpagereplay":
-    (Var("googlecode_url") % "web-page-replay") + "/trunk@482",
+    (Var("googlecode_url") % "web-page-replay") + "/trunk@489",
 }
 
 
