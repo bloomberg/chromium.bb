@@ -274,7 +274,7 @@ class VaapiH264Decoder {
   int pic_width_;
   int pic_height_;
 
-  // Data queued up for HW decoder, to be commited on next HW decode.
+  // Data queued up for HW decoder, to be committed on next HW decode.
   std::queue<VABufferID> pending_slice_bufs_;
   std::queue<VABufferID> pending_va_bufs_;
 

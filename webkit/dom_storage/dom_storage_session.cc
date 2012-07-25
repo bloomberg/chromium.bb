@@ -61,7 +61,8 @@ DomStorageSession::DomStorageSession(DomStorageContext* context,
                                      const std::string& persistent_namespace_id)
     : context_(context),
       namespace_id_(namespace_id),
-      persistent_namespace_id_(persistent_namespace_id) {
+      persistent_namespace_id_(persistent_namespace_id),
+      should_persist_(false) {
   // This ctor is intended for use by the Clone() method.
 }
 

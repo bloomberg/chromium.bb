@@ -65,7 +65,7 @@ scoped_ptr<URLBlacklist> BuildBlacklist(scoped_ptr<base::ListValue> block,
 }  // namespace
 
 struct URLBlacklist::FilterComponents {
-  FilterComponents() : match_subdomains(true), allow(true) {}
+  FilterComponents() : port(0), match_subdomains(true), allow(true) {}
   ~FilterComponents() {}
 
   std::string scheme;

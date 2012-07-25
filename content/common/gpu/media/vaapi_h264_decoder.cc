@@ -242,11 +242,13 @@ VaapiH264Decoder::DecodeSurface::DecodeSurface(
       va_display_(va_display),
       make_context_current_(make_context_current),
       va_surface_id_(va_surface_id),
+      input_id_(0),
       picture_buffer_id_(picture_buffer_id),
       texture_id_(texture_id),
       width_(width),
       height_(height),
       available_(false),
+      poc_(0),
       x_pixmap_(0),
       glx_pixmap_(0) {
   // Bind the surface to a texture of the given width and height,
@@ -332,6 +334,10 @@ bool VaapiH264Decoder::DecodeSurface::Sync() {
 
 VaapiH264Decoder::VaapiH264Decoder() {
   Reset();
+  curr_input_id_ = -1;
+  x_display_ = NULL;
+  fb_config_ = NULL;
+  va_display_ = NULL;
   curr_sps_id_ = -1;
   curr_pps_id_ = -1;
   pic_width_ = -1;

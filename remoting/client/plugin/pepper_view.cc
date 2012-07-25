@@ -50,6 +50,7 @@ PepperView::PepperView(ChromotingInstance* instance,
     view_size_dips_(SkISize::Make(0, 0)),
     view_scale_(1.0f),
     flush_pending_(false),
+    is_initialized_(false),
     frame_received_(false) {
   InitiateDrawing();
 }

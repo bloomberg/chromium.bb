@@ -91,7 +91,10 @@ bool GetUniformNameSansElement(
 }  // anonymous namespace.
 
 ProgramManager::ProgramInfo::UniformInfo::UniformInfo()
-    : size(0) {
+    : size(0),
+      type(GL_NONE),
+      fake_location_base(0),
+      is_array(false) {
 }
 
 ProgramManager::ProgramInfo::UniformInfo::UniformInfo(
@@ -233,7 +236,7 @@ void ProgramManager::ProgramInfo::ClearUniforms(
 namespace {
 
 struct UniformData {
-  UniformData() : size(-1), type(GL_NONE), added(false) {
+  UniformData() : size(-1), type(GL_NONE), location(0), added(false) {
   }
   std::string queried_name;
   std::string corrected_name;

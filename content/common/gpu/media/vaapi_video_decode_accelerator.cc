@@ -28,7 +28,7 @@
 
 using content::VaapiH264Decoder;
 
-VaapiVideoDecodeAccelerator::InputBuffer::InputBuffer() {
+VaapiVideoDecodeAccelerator::InputBuffer::InputBuffer() : id(0), size(0) {
 }
 
 VaapiVideoDecodeAccelerator::InputBuffer::~InputBuffer() {

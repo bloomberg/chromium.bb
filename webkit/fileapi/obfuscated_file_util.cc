@@ -126,7 +126,8 @@ class ObfuscatedFileEnumerator
         obfuscated_file_util_(obfuscated_file_util),
         origin_(root_url.origin()),
         type_(root_url.type()),
-        recursive_(recursive) {
+        recursive_(recursive),
+        current_file_id_(0) {
     FilePath root_virtual_path = root_url.path();
     FileId file_id;
 

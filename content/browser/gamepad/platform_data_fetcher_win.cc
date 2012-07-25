@@ -147,6 +147,8 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
 }
 
 bool GamepadPlatformDataFetcherWin::GetXinputDllFunctions() {
+  xinput_get_capabilities_ = NULL;
+  xinput_get_state_ = NULL;
   xinput_enable_ = static_cast<XInputEnableFunc>(
       xinput_dll_.GetFunctionPointer("XInputEnable"));
   if (!xinput_enable_)

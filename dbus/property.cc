@@ -323,7 +323,7 @@ void Property<uint32>::AppendSetValueToWriter(MessageWriter* writer) {
 //
 
 template <>
-Property<int64>::Property() : value_(0) {
+Property<int64>::Property() : value_(0), set_value_(0) {
 }
 
 template <>
