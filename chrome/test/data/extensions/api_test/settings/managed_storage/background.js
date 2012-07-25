@@ -26,7 +26,6 @@ chrome.test.runTests([
 
   function getAllPolicies() {
     chrome.storage.managed.get(
-        null,
         chrome.test.callbackPass(function(results) {
           chrome.test.assertEq({
             'string-policy': 'value',
@@ -43,7 +42,6 @@ chrome.test.runTests([
 
   function getBytesInUse() {
     chrome.storage.managed.getBytesInUse(
-        null,
         chrome.test.callbackPass(function(bytes) {
           chrome.test.assertEq(0, bytes);
         }));

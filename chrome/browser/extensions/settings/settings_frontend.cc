@@ -117,7 +117,7 @@ SettingsFrontend::SettingsFrontend(
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   caches_[settings_namespace::MANAGED] =
-      new ManagedValueStoreCache(profile->GetPolicyService());
+      new ManagedValueStoreCache(profile->GetPolicyService(), observers_);
 #endif
 }
 
@@ -128,6 +128,7 @@ SettingsFrontend::~SettingsFrontend() {
   // after any other task that might've been posted before.
   for (CacheMap::iterator it = caches_.begin(); it != caches_.end(); ++it) {
     ValueStoreCache* cache = it->second;
+    cache->ShutdownOnUI();
     cache->GetMessageLoop()->DeleteSoon(FROM_HERE, cache);
   }
 }
@@ -201,6 +202,7 @@ void SettingsFrontend::DisableStorageForTesting(
   CacheMap::iterator it = caches_.find(settings_namespace);
   if (it != caches_.end()) {
     ValueStoreCache* cache = it->second;
+    cache->ShutdownOnUI();
     cache->GetMessageLoop()->DeleteSoon(FROM_HERE, cache);
     caches_.erase(it);
   }

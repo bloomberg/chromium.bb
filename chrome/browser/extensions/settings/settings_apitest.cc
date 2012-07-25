@@ -139,6 +139,17 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
               GetBackendForSync(kModelType));
   }
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  void SetPolicies(const base::DictionaryValue& policies) {
+    scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
+    policy::PolicyMap& policy_map = bundle->Get(
+        policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId);
+    policy_map.LoadFrom(
+        &policies, policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER);
+    policy_provider_.UpdatePolicy(bundle.Pass());
+  }
+#endif
+
  private:
   const Extension* MaybeLoadAndReplyWhenSatisfied(
       Namespace settings_namespace,
@@ -429,18 +440,40 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
               .Append(extensions::DictionaryBuilder()
                   .Set("three", 3))))
       .Build();
-
-  scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
-  policy::PolicyMap& policy_map =
-      bundle->Get(policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId);
-  policy_map.LoadFrom(
-      policy.get(), policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER);
-  policy_provider_.UpdatePolicy(bundle.Pass());
-
+  SetPolicies(*policy);
   // Now run the extension.
   ASSERT_TRUE(RunExtensionTest("settings/managed_storage")) << message_;
 }
-#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
+  ResultCatcher catcher;
+
+  // Set policies for the test extension.
+  scoped_ptr<base::DictionaryValue> policy = extensions::DictionaryBuilder()
+      .Set("constant-policy", "aaa")
+      .Set("changes-policy", "bbb")
+      .Set("deleted-policy", "ccc")
+      .Build();
+  SetPolicies(*policy);
+
+  ExtensionTestMessageListener ready_listener("ready", false);
+  // Load the extension to install the event listener.
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("settings/managed_storage_events"));
+  ASSERT_TRUE(extension);
+  // Wait until the extension sends the "ready" message.
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  // Now change the policies and wait until the extension is done.
+  policy = extensions::DictionaryBuilder()
+      .Set("constant-policy", "aaa")
+      .Set("changes-policy", "ddd")
+      .Set("new-policy", "eee")
+      .Build();
+  SetPolicies(*policy);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageDisabled) {
   // Disable the 'managed' namespace. This is redundant when
@@ -449,16 +482,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageDisabled) {
       browser()->profile()->GetExtensionService()->settings_frontend();
   frontend->DisableStorageForTesting(MANAGED);
   EXPECT_FALSE(frontend->IsStorageEnabled(MANAGED));
-
-  // Set a policy for the extension.
-  scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
-  policy::PolicyMap& policy_map =
-      bundle->Get(policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId);
-  policy_map.Set(
-      "policy", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-      base::Value::CreateStringValue("policy_value"));
-  policy_provider_.UpdatePolicy(bundle.Pass());
-
   // Now run the extension.
   ASSERT_TRUE(RunExtensionTest("settings/managed_storage_disabled"))
       << message_;

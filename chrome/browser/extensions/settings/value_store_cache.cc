@@ -8,4 +8,6 @@ namespace extensions {
 
 ValueStoreCache::~ValueStoreCache() {}
 
+void ValueStoreCache::ShutdownOnUI() {}
+
 }  // namespace extensions

@@ -19,13 +19,19 @@ class Extension;
 
 // Each namespace of the storage API implements this interface.
 // Instances are created on the UI thread, but from then on live on the loop
-// returned by GetMessageLoop() and every methods (except GetMessageLoop())
-// are always called in that loop, including the destructor.
+// returned by GetMessageLoop() and every method (except GetMessageLoop()
+// and ShutdownOnUI()) is always called in that loop, including the destructor.
 class ValueStoreCache {
  public:
   typedef base::Callback<void(ValueStore*)> StorageCallback;
 
   virtual ~ValueStoreCache();
+
+  // This is invoked from the UI thread during destruction of the Profile that
+  // ultimately owns this object. Any Profile-related cleanups should be
+  // performed in this method, since the destructor will execute later, after
+  // the Profile is already gone.
+  virtual void ShutdownOnUI();
 
   // Returns the loop that the methods of this class should be invoked on.
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() const = 0;
