@@ -395,6 +395,7 @@ extern const char kCompressSystemFeedback[];
 extern const char kAuthExtensionPath[];
 extern const char kEnterpriseEnrollmentInitialModulus[];
 extern const char kEnterpriseEnrollmentModulusLimit[];
+extern const char kChromeOSReleaseBoard[];
 #ifndef NDEBUG
 extern const char kOobeSkipPostLogin[];
 #endif

@@ -81,6 +81,11 @@ FileManager.prototype = {
       'https://support.google.com/chromeos/?p=filemanager_drive';
 
   /**
+   * Location of the Chromebook information page.
+   */
+  var CHROMEBOOK_INFO_URL = 'http://google.com/chromebook';
+
+  /**
    * Location of the page to buy more storage for Google Drive.
    */
   var GOOGLE_DRIVE_BUY_STORAGE =
@@ -4031,6 +4036,9 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.createGDataWelcomeHandler_ = function() {
+    var board = str('CHROMEOS_RELEASE_BOARD');
+    var new_welcome = board.match(/^(stumpy|lumpy)/i);
+
     var WELCOME_HEADER_COUNTER_KEY = 'gdataWelcomeHeaderCounter';
     var WELCOME_HEADER_COUNTER_LIMIT = 5;
 
@@ -4076,21 +4084,42 @@ FileManager.prototype = {
       var message = createDiv('gdrive-welcome-message', wrapper);
 
       var title = createDiv('gdrive-welcome-title', message);
-      title.textContent = str('GDATA_WELCOME_TITLE');
 
       var text = createDiv('gdrive-welcome-text', message);
       text.innerHTML = str(messageId);
 
       var links = createDiv('gdrive-welcome-links', message);
 
-      var more = createDiv('gdrive-welcome-more plain-link', links);
-      more.textContent = str('GDATA_LEARN_MORE');
-      more.addEventListener('click',
-          self.onExternalLinkClick_.bind(self, GOOGLE_DRIVE_FAQ_URL));
+      var more;
+      if (new_welcome) {
+        title.textContent = str('GDATA_WELCOME_TITLE_ALTERNATIVE');
+        more = self.document_.createElement('a');
+        more.className = 'gdata-welcome-button gdata-welcome-start';
+        more.textContent = str('GDATA_WELCOME_GET_STARTED');
+        more.addEventListener('click',
+            self.onExternalLinkClick_.bind(self, CHROMEBOOK_INFO_URL));
+      } else {
+        title.textContent = str('GDATA_WELCOME_TITLE');
+        more = self.document_.createElement('div');
+        more.className = 'plain-link';
+        more.textContent = str('GDATA_LEARN_MORE');
+        more.addEventListener('click',
+            self.onExternalLinkClick_.bind(self, GOOGLE_DRIVE_FAQ_URL));
+      }
+      links.appendChild(more);
 
-      var dismiss = createDiv('gdrive-welcome-dismiss plain-link', links);
+      var dismiss;
+      if (new_welcome) {
+        dismiss = self.document_.createElement('a');
+        dismiss.className = 'gdata-welcome-button';
+      } else {
+        dismiss = self.document_.createElement('div');
+        dismiss.className = 'plain-link';
+      }
+      dismiss.classList.add('gdrive-welcome-dismiss');
       dismiss.textContent = str('GDATA_WELCOME_DISMISS');
       dismiss.addEventListener('click', closeBanner);
+      links.appendChild(dismiss);
     }
 
     var previousDirWasOnGData = false;
@@ -4133,7 +4162,19 @@ FileManager.prototype = {
       localStorage[WELCOME_HEADER_COUNTER_KEY] = WELCOME_HEADER_COUNTER_LIMIT;
     }
 
-    return maybeShowBanner;
+    function checkSpaceAndShowBanner() {
+      if (new_welcome && self.isOnGData())
+        chrome.fileBrowserPrivate.getSizeStats(self.getCurrentDirectoryURL(),
+           function(result) {
+             if (result.totalSizeKB >= 100 * 1024 * 1024)  // Already >= 100 GB.
+               new_welcome = false;
+             maybeShowBanner();
+           });
+      else
+        maybeShowBanner();
+    }
+
+    return checkSpaceAndShowBanner;
   };
 
   /**

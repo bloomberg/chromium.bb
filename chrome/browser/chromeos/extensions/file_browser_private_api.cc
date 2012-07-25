@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -1633,6 +1634,8 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, GDATA_WELCOME_TEXT_SHORT);
   SET_STRING(IDS_FILE_BROWSER, GDATA_WELCOME_TEXT_LONG);
   SET_STRING(IDS_FILE_BROWSER, GDATA_WELCOME_DISMISS);
+  SET_STRING(IDS_FILE_BROWSER, GDATA_WELCOME_TITLE_ALTERNATIVE);
+  SET_STRING(IDS_FILE_BROWSER, GDATA_WELCOME_GET_STARTED);
   SET_STRING(IDS_FILE_BROWSER, NO_ACTION_FOR_FILE);
 
   // MP3 metadata extractor plugin
@@ -1734,6 +1737,14 @@ bool FileDialogStringsFunction::RunImpl() {
 #else
   dict->SetBoolean("ASH", false);
 #endif
+
+  std::string board;
+  const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
+    board = "unknown";
+  dict->SetString(kMachineInfoBoard, board);
 
   return true;
 }

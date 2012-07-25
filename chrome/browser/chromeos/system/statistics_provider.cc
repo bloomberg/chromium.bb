@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -16,6 +17,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -210,6 +212,14 @@ class StatisticsProviderStubImpl : public StatisticsProvider {
   // StatisticsProvider implementation:
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) OVERRIDE {
+    if (name == "CHROMEOS_RELEASE_BOARD") {
+      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (command_line->HasSwitch(switches::kChromeOSReleaseBoard)) {
+        *result = command_line->
+            GetSwitchValueASCII(switches::kChromeOSReleaseBoard);
+        return true;
+      }
+    }
     return false;
   }
 

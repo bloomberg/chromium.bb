@@ -1447,6 +1447,9 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
+// Enables overriding the Chrome OS board type when running on Linux.
+const char kChromeOSReleaseBoard[]          = "chromeos-release-board";
+
 #ifndef NDEBUG
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";

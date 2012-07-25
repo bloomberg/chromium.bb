@@ -7,6 +7,7 @@
   /* This image looks good in high DPI as is. */
   background-image: url('../images/files/ui/clouds.png');
   background-repeat: repeat-x;
+  color: #333;
 }
 
 .gdrive-welcome-icon {
@@ -19,6 +20,51 @@
 .gdrive-welcome-links {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
+}
+
+.gdata-welcome-button {
+  -webkit-border-radius: 2px;
+  -webkit-transition: all 218ms;
+  -webkit-user-select: none;
+  background-image: -webkit-linear-gradient(top,#f5f5f5,#f1f1f1);
+  border: 1px solid rgba(0,0,0,0.1);
+  color: #444;
+  cursor: default;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: bold;
+  height: 27px;
+  line-height: 27px;
+  padding: 0 8px;
+  text-align: center;
+}
+
+.gdata-welcome-button:hover {
+  -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  -webkit-transition: all 0;
+  background-image: -webkit-linear-gradient(top,#f8f8f8,#f1f1f1);
+  border-color: #C6C6C6;
+  color: #222;
+}
+
+.gdata-welcome-button:active {
+  -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  background-image: -webkit-linear-gradient(top,#f6f6f6,#f1f1f1);
+}
+
+
+.gdata-welcome-button.gdata-welcome-start {
+  background-image:
+    -webkit-linear-gradient(top, rgb(77, 144, 254), rgb(71, 135, 237));
+  border-color: rgb(48, 121, 237);
+  color: white;
+}
+
+.gdata-welcome-button.gdata-welcome-start:hover {
+  -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  background-image:
+    -webkit-linear-gradient(top, rgb(77, 144, 254), rgb(53, 122, 232));
+  border-color: rgb(47, 91, 183);
 }
 
 /* Header welcome banner. */
@@ -47,7 +93,7 @@
 }
 
 .gdrive-welcome.header .gdrive-welcome-icon {
-  background-position: center 20px;
+  background-position: center 18px;
   background-size: 51px 44px;
   width: 120px;
 }
@@ -60,12 +106,12 @@
 
 .gdrive-welcome.header .gdrive-welcome-title {
   font-size: 140%;
-  margin-bottom: 8px;
-  margin-top: 16px;
+  margin-bottom: 4px;
+  margin-top: 14px;
 }
 
 .gdrive-welcome.header .gdrive-welcome-text {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .gdrive-welcome.header .gdrive-welcome-dismiss {
@@ -114,7 +160,6 @@
 }
 
 .gdrive-welcome.page .gdrive-welcome-message {
-  color: #333;
   margin-left: 10px;
   margin-right: 10px;
   max-width: 525px;

@@ -321,7 +321,13 @@ chrome.fileBrowserPrivate = {
     });
   },
 
-  getSizeStats: function() {},
+  getSizeStats: function(url, callback) {
+    var kB_inGb = 1024 * 1024;
+    callback({
+      remainingSizeKB: 9 * kB_inGb,
+      totalSizeKB: 10 * kB_inGb
+    });
+  },
 
   getVolumeMetadata: function(url, callback) {
     var metadata = {};
@@ -433,6 +439,8 @@ chrome.fileBrowserPrivate = {
 
       FILE_IS_DIRECTORY: 'Folder',
 
+      CHROMEOS_RELEASE_BOARD: 'stumpy',
+
       GDATA_DIRECTORY_LABEL: 'Google Drive',
       ENABLE_GDATA: true,
       PDF_VIEW_ENABLED: true,
@@ -542,6 +550,7 @@ chrome.fileBrowserPrivate = {
       GDATA_CANNOT_REACH: '$1 cannot be reached at this time',
 
       GDATA_WELCOME_TITLE: 'Welcome to Google Drive!',
+      GDATA_WELCOME_TITLE_ALTERNATIVE: 'Get 100 GB free with Google Drive',
       GDATA_WELCOME_TEXT_SHORT:
           'All files saved in this folder are backed up online automatically',
       GDATA_WELCOME_TEXT_LONG:
@@ -552,6 +561,7 @@ chrome.fileBrowserPrivate = {
           'safely stored in Google Drive .</p>' +
           '<p><strong>Share, create and collaborate</strong> ' +
           'on files with others all in one place .</p>',
+      GDATA_WELCOME_GET_STARTED: 'Get started',
       GDATA_WELCOME_DISMISS: 'Dismiss',
       GDATA_LOADING_PROGRESS: '$1 files fetched',
 
