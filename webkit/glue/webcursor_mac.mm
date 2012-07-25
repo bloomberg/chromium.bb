@@ -11,11 +11,12 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
+#include "grit/webkit_chromium_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
-#include "ui/gfx/mac/nsimage_cache.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebCursorInfo;
 using WebKit::WebImage;
@@ -114,13 +115,9 @@ typedef long long CrCoreCursorType;
 
 namespace {
 
-// Loads a cursor from the image cache.
-NSCursor* LoadCursor(const char* name, int hotspot_x, int hotspot_y) {
-  NSString* file_name = [NSString stringWithUTF8String:name];
-  DCHECK(file_name);
-  // TODO: This image fetch can (and probably should) be serviced by the
-  // resource resource bundle instead of going through the image cache.
-  NSImage* cursor_image = gfx::GetCachedImageWithName(file_name);
+NSCursor* LoadCursor(int resource_id, int hotspot_x, int hotspot_y) {
+  NSImage* cursor_image =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
   DCHECK(cursor_image);
   return [[[NSCursor alloc] initWithImage:cursor_image
                                   hotSpot:NSMakePoint(hotspot_x,
@@ -130,7 +127,7 @@ NSCursor* LoadCursor(const char* name, int hotspot_x, int hotspot_y) {
 // Gets a specified cursor from CoreCursor, falling back to loading it from the
 // image cache if CoreCursor cannot provide it.
 NSCursor* GetCoreCursorWithFallback(CrCoreCursorType type,
-                                    const char* name,
+                                    int resource_id,
                                     int hotspot_x,
                                     int hotspot_y) {
   if (base::mac::IsOSLionOrLater()) {
@@ -139,7 +136,7 @@ NSCursor* GetCoreCursorWithFallback(CrCoreCursorType type,
       return cursor;
   }
 
-  return LoadCursor(name, hotspot_x, hotspot_y);
+  return LoadCursor(resource_id, hotspot_x, hotspot_y);
 }
 
 // TODO(avi): When Skia becomes default, fold this function into the remaining
@@ -227,59 +224,61 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       if (base::mac::IsOSLionOrLater())
         return [NSCursor pointingHandCursor];
       else
-        return LoadCursor("linkCursor", 6, 1);
+        return LoadCursor(IDR_LINK_CURSOR, 6, 1);
     case WebCursorInfo::TypeIBeam:
       return [NSCursor IBeamCursor];
     case WebCursorInfo::TypeWait:
       return GetCoreCursorWithFallback(kBusyButClickableCursor,
-                                       "waitCursor", 7, 7);
+                                       IDR_WAIT_CURSOR, 7, 7);
     case WebCursorInfo::TypeHelp:
       return GetCoreCursorWithFallback(kHelpCursor,
-                                       "helpCursor", 8, 8);
+                                       IDR_HELP_CURSOR, 8, 8);
     case WebCursorInfo::TypeEastResize:
     case WebCursorInfo::TypeEastPanning:
       return GetCoreCursorWithFallback(kResizeEastCursor,
-                                       "eastResizeCursor", 14, 7);
+                                       IDR_EAST_RESIZE_CURSOR, 14, 7);
     case WebCursorInfo::TypeNorthResize:
     case WebCursorInfo::TypeNorthPanning:
       return GetCoreCursorWithFallback(kResizeNorthCursor,
-                                       "northResizeCursor", 7, 1);
+                                       IDR_NORTH_RESIZE_CURSOR, 7, 1);
     case WebCursorInfo::TypeNorthEastResize:
     case WebCursorInfo::TypeNorthEastPanning:
       return GetCoreCursorWithFallback(kResizeNortheastCursor,
-                                       "northEastResizeCursor", 14, 1);
+                                       IDR_NORTHEAST_RESIZE_CURSOR, 14, 1);
     case WebCursorInfo::TypeNorthWestResize:
     case WebCursorInfo::TypeNorthWestPanning:
       return GetCoreCursorWithFallback(kResizeNorthwestCursor,
-                                       "northWestResizeCursor", 0, 0);
+                                       IDR_NORTHWEST_RESIZE_CURSOR, 0, 0);
     case WebCursorInfo::TypeSouthResize:
     case WebCursorInfo::TypeSouthPanning:
       return GetCoreCursorWithFallback(kResizeSouthCursor,
-                                       "southResizeCursor", 7, 14);
+                                       IDR_SOUTH_RESIZE_CURSOR, 7, 14);
     case WebCursorInfo::TypeSouthEastResize:
     case WebCursorInfo::TypeSouthEastPanning:
       return GetCoreCursorWithFallback(kResizeSoutheastCursor,
-                                       "southEastResizeCursor", 14, 14);
+                                       IDR_SOUTHEAST_RESIZE_CURSOR, 14, 14);
     case WebCursorInfo::TypeSouthWestResize:
     case WebCursorInfo::TypeSouthWestPanning:
       return GetCoreCursorWithFallback(kResizeSouthwestCursor,
-                                       "southWestResizeCursor", 1, 14);
+                                       IDR_SOUTHWEST_RESIZE_CURSOR, 1, 14);
     case WebCursorInfo::TypeWestResize:
     case WebCursorInfo::TypeWestPanning:
       return GetCoreCursorWithFallback(kResizeWestCursor,
-                                       "westResizeCursor", 1, 7);
+                                       IDR_WEST_RESIZE_CURSOR, 1, 7);
     case WebCursorInfo::TypeNorthSouthResize:
       return GetCoreCursorWithFallback(kResizeNorthSouthCursor,
-                                       "northSouthResizeCursor", 7, 7);
+                                       IDR_NORTHSOUTH_RESIZE_CURSOR, 7, 7);
     case WebCursorInfo::TypeEastWestResize:
       return GetCoreCursorWithFallback(kResizeEastWestCursor,
-                                       "eastWestResizeCursor", 7, 7);
+                                       IDR_EASTWEST_RESIZE_CURSOR, 7, 7);
     case WebCursorInfo::TypeNorthEastSouthWestResize:
       return GetCoreCursorWithFallback(kResizeNortheastSouthwestCursor,
-                                       "northEastSouthWestResizeCursor", 7, 7);
+                                       IDR_NORTHEASTSOUTHWEST_RESIZE_CURSOR,
+                                       7, 7);
     case WebCursorInfo::TypeNorthWestSouthEastResize:
       return GetCoreCursorWithFallback(kResizeNorthwestSoutheastCursor,
-                                       "northWestSouthEastResizeCursor", 7, 7);
+                                       IDR_NORTHWESTSOUTHEAST_RESIZE_CURSOR,
+                                       7, 7);
     case WebCursorInfo::TypeColumnResize:
       return [NSCursor resizeLeftRightCursor];
     case WebCursorInfo::TypeRowResize:
@@ -287,28 +286,28 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     case WebCursorInfo::TypeMiddlePanning:
     case WebCursorInfo::TypeMove:
       return GetCoreCursorWithFallback(kMoveCursor,
-                                       "moveCursor", 7, 7);
+                                       IDR_MOVE_CURSOR, 7, 7);
     case WebCursorInfo::TypeVerticalText:
       // IBeamCursorForVerticalLayout is >= 10.7.
       if ([NSCursor respondsToSelector:@selector(IBeamCursorForVerticalLayout)])
         return [NSCursor IBeamCursorForVerticalLayout];
       else
-        return LoadCursor("verticalTextCursor", 7, 7);
+        return LoadCursor(IDR_VERTICALTEXT_CURSOR, 7, 7);
     case WebCursorInfo::TypeCell:
       return GetCoreCursorWithFallback(kCellCursor,
-                                       "cellCursor", 7, 7);
+                                       IDR_CELL_CURSOR, 7, 7);
     case WebCursorInfo::TypeContextMenu:
       // contextualMenuCursor is >= 10.6.
       if ([NSCursor respondsToSelector:@selector(contextualMenuCursor)])
         return [NSCursor contextualMenuCursor];
       else
-        return LoadCursor("contextMenuCursor", 3, 2);
+        return LoadCursor(IDR_CONTEXTMENU_CURSOR, 3, 2);
     case WebCursorInfo::TypeAlias:
       return GetCoreCursorWithFallback(kMakeAliasCursor,
-                                       "aliasCursor", 11, 3);
+                                       IDR_ALIAS_CURSOR, 11, 3);
     case WebCursorInfo::TypeProgress:
       return GetCoreCursorWithFallback(kBusyButClickableCursor,
-                                       "progressCursor", 3, 2);
+                                       IDR_PROGRESS_CURSOR, 3, 2);
     case WebCursorInfo::TypeNoDrop:
     case WebCursorInfo::TypeNotAllowed:
       // Docs say that operationNotAllowedCursor is >= 10.6, and it's not in the
@@ -319,15 +318,15 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       if ([NSCursor respondsToSelector:@selector(dragCopyCursor)])
         return [NSCursor dragCopyCursor];
       else
-        return LoadCursor("copyCursor", 3, 2);
+        return LoadCursor(IDR_COPY_CURSOR, 3, 2);
     case WebCursorInfo::TypeNone:
-      return LoadCursor("noneCursor", 7, 7);
+      return LoadCursor(IDR_NONE_CURSOR, 7, 7);
     case WebCursorInfo::TypeZoomIn:
       return GetCoreCursorWithFallback(kZoomInCursor,
-                                       "zoomInCursor", 7, 7);
+                                       IDR_ZOOMIN_CURSOR, 7, 7);
     case WebCursorInfo::TypeZoomOut:
       return GetCoreCursorWithFallback(kZoomOutCursor,
-                                       "zoomOutCursor", 7, 7);
+                                       IDR_ZOOMOUT_CURSOR, 7, 7);
     case WebCursorInfo::TypeGrab:
       return [NSCursor openHandCursor];
     case WebCursorInfo::TypeGrabbing:
