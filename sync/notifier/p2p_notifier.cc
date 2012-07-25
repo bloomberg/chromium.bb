@@ -260,13 +260,14 @@ void P2PNotifier::OnIncomingNotification(
              << "not emitting notification";
     return;
   }
-  if (notification_data.GetChangedTypes().Empty()) {
-    DVLOG(1) << "No changed types -- not emitting notification";
+  const ModelTypeSet types_to_notify =
+      Intersection(enabled_types_, notification_data.GetChangedTypes());
+  if (types_to_notify.Empty()) {
+    DVLOG(1) << "No enabled and changed types -- not emitting notification";
     return;
   }
   const ModelTypePayloadMap& type_payloads =
-      ModelTypePayloadMapFromEnumSet(
-          notification_data.GetChangedTypes(), std::string());
+      ModelTypePayloadMapFromEnumSet(types_to_notify, std::string());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
                     OnIncomingNotification(type_payloads, REMOTE_NOTIFICATION));
 }
