@@ -126,9 +126,6 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
     // message, so we don't need to worry about arbitrary message boundaries.
     std::string to_be_sent_;
 
-    // Wrapped descriptors and handles for transfer to untrusted code.
-    ScopedVector<nacl::DescWrapper> nacl_descs_;
-
     bool channel_closed_;
   };
 
@@ -143,8 +140,8 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
   virtual ~NaClIPCAdapter();
 
-  // Reads up to the given amount of data. Returns 0 if nothing is waiting.
-  int LockedReceive(char* output_buffer, size_t output_buffer_size);
+  // Returns 0 if nothing is waiting.
+  int LockedReceive(NaClImcTypedMsgHdr* msg);
 
   // Sends a message that we know has been completed to the Chrome process.
   bool SendCompleteMessage(const char* buffer, size_t buffer_len);
@@ -160,7 +157,8 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
   // Saves the message to forward to NaCl. This method assumes that the caller
   // holds the lock for locked_data_.
-  void SaveMessage(const IPC::Message& message);
+  void SaveMessage(const IPC::Message& message,
+                   RewrittenMessage* rewritten_message);
 
   base::Lock lock_;
   base::ConditionVariable cond_var_;
