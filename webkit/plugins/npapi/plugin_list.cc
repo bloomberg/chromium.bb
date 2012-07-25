@@ -292,8 +292,12 @@ PluginList::PluginList()
 
 PluginList::PluginList(const PluginGroupDefinition* definitions,
                        size_t num_definitions)
-    : loading_state_(LOADING_STATE_NEEDS_REFRESH) {
-  // Don't do platform-dependend initialization in unit tests.
+    :
+#if defined(OS_WIN)
+      dont_load_new_wmp_(false),
+#endif
+      loading_state_(LOADING_STATE_NEEDS_REFRESH) {
+  // Don't do platform-dependent initialization in unit tests.
   AddHardcodedPluginGroups(definitions, num_definitions);
 }
 

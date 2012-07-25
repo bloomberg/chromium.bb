@@ -402,7 +402,9 @@ void ProfileIOData::set_http_server_properties_manager(
 }
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
-    : io_data_(io_data) {
+    : io_data_(io_data),
+      host_resolver_(NULL),
+      request_context_(NULL) {
   DCHECK(io_data);
 }
 

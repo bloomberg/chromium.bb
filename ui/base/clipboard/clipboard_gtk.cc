@@ -204,7 +204,7 @@ uint8_t* BGRAToRGBA(const uint8_t* pixels, int width, int height, int stride) {
 
 }  // namespace
 
-Clipboard::FormatType::FormatType() {
+Clipboard::FormatType::FormatType() : data_(GDK_NONE) {
 }
 
 Clipboard::FormatType::FormatType(const std::string& format_string)

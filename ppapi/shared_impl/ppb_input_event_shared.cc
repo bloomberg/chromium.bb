@@ -23,6 +23,7 @@ InputEventData::InputEventData()
       wheel_ticks(PP_MakeFloatPoint(0.0f, 0.0f)),
       wheel_scroll_by_page(false),
       key_code(0),
+      usb_key_code(0),
       character_text(),
       composition_target_segment(-1),
       composition_selection_start(0),

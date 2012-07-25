@@ -31,7 +31,7 @@ class HWNDMessageFilter;
 class CONTENT_EXPORT WebContentsViewWin
     : public content::WebContentsView,
       public content::RenderViewHostDelegateView,
-                                          public ui::WindowImpl {
+      public ui::WindowImpl {
  public:
   WebContentsViewWin(WebContentsImpl* web_contents,
                      content::WebContentsViewDelegate* delegate);
