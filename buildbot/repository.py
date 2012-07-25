@@ -203,35 +203,8 @@ class RepoRepository(object):
       init_cmd.extend(['--manifest-branch', self.branch])
 
     cros_build_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
-    self._FixRepoManifestBugs()
     if local_manifest and local_manifest != self.DEFAULT_MANIFEST:
       self._SwitchToLocalManifest(local_manifest)
-
-  def _FixRepoManifestBugs(self):
-    # pylint: disable=C0301
-    # Repo v1.9.4 has some known bugs; see
-    # https://groups.google.com/forum/?fromgroups#!msg/repo-discuss/4WmUJ2ttN8o/ssYVLO5TCVYJ
-    # TODO(ferringb): Remove this, both via upstream fixes, and via running
-    # down where/why cbuildbot is stupidly leaving the manifest on a
-    # detached HEAD.
-    path = os.path.join(self.directory, '.repo', 'manifests')
-    branch = ('master' if not self.branch else
-              cros_build_lib.StripLeadingRefsHeads(self.branch, False))
-    if cros_build_lib.GetCurrentBranch(path) != 'default':
-      # This actually isn't a repo bug; something within cbuildbot, or an
-      # interaction w/ repo's misbehaviours, results in this occurring.
-      logging.warn("Repository %s had its manifest on a branch other than "
-                   "repo's norm of 'default'; fixing it.", self.directory)
-      cros_build_lib.RunGitCommand(
-        path, ['checkout', '-B', 'default',
-               '-t', 'remotes/origin/%s' % branch])
-    else:
-      # During branch switches, v1.9.4 is known to leave an invalid git
-      # configuration in place; thus manually force these settings.
-      cros_build_lib.RunGitCommand(
-          path, ['config', 'branch.default.origin', 'origin'])
-      cros_build_lib.RunGitCommand(
-          path, ['config', 'branch.default.merge', branch])
 
   @property
   def _ManifestConfig(self):
