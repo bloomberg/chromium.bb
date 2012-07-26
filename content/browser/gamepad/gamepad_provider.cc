@@ -22,6 +22,7 @@ namespace content {
 
 GamepadProvider::GamepadProvider()
     : is_paused_(true),
+      have_scheduled_do_poll_(false),
       devices_changed_(true) {
   size_t data_size = sizeof(GamepadHardwareBuffer);
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
@@ -118,6 +119,9 @@ void GamepadProvider::SendPauseHint(bool paused) {
 
 void GamepadProvider::DoPoll() {
   DCHECK(MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(have_scheduled_do_poll_);
+  have_scheduled_do_poll_ = false;
+
   bool changed;
   GamepadHardwareBuffer* hwbuf = SharedMemoryAsHardwareBuffer();
 
@@ -144,6 +148,8 @@ void GamepadProvider::DoPoll() {
 
 void GamepadProvider::ScheduleDoPoll() {
   DCHECK(MessageLoop::current() == polling_thread_->message_loop());
+  if (have_scheduled_do_poll_)
+    return;
 
   {
     base::AutoLock lock(is_paused_lock_);
@@ -155,6 +161,7 @@ void GamepadProvider::ScheduleDoPoll() {
       FROM_HERE,
       base::Bind(&GamepadProvider::DoPoll, Unretained(this)),
       base::TimeDelta::FromMilliseconds(kDesiredSamplingIntervalMs));
+  have_scheduled_do_poll_ = true;
 }
 
 GamepadHardwareBuffer* GamepadProvider::SharedMemoryAsHardwareBuffer() {

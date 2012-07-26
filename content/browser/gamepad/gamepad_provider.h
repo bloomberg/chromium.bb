@@ -65,6 +65,11 @@ class CONTENT_EXPORT GamepadProvider :
   base::Lock is_paused_lock_;
   bool is_paused_;
 
+  // Keep track of when a polling task is schedlued, so as to prevent us from
+  // accidentally scheduling more than one at any time, when rapidly toggling
+  // |is_paused_|.
+  bool have_scheduled_do_poll_;
+
   // Updated based on notification from SystemMonitor when the system devices
   // have been updated, and this notification is passed on to the data fetcher
   // to enable it to avoid redundant (and possibly expensive) is-connected
