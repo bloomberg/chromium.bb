@@ -3307,12 +3307,11 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
 
   content::PageTransition transition_type = content::PAGE_TRANSITION_LINK;
   DocumentState* document_state = DocumentState::FromDataSource(data_source);
+  DCHECK(document_state);
   NavigationState* navigation_state = document_state->navigation_state();
-  if (document_state) {
-    if (document_state->is_cache_policy_override_set())
-      request.setCachePolicy(document_state->cache_policy_override());
-    transition_type = navigation_state->transition_type();
-  }
+  if (document_state->is_cache_policy_override_set())
+    request.setCachePolicy(document_state->cache_policy_override());
+  transition_type = navigation_state->transition_type();
 
   WebKit::WebReferrerPolicy referrer_policy;
   if (document_state && document_state->is_referrer_policy_set()) {
