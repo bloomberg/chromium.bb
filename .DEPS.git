@@ -12,19 +12,19 @@ vars = {
 
 deps = {
     'base':
-        Var('git_url') + '/chromium/src/base.git@840dc3c0c98a422ae57a2e76c39e3b6867eb1b57',
+        Var('git_url') + '/chromium/src/base.git@9206024f3b6b6b695cb7db800c9489b554bccf9c',
     'build':
-        Var('git_url') + '/chromium/src/build.git@45a76f9594d20b45434ce48e7619b4a5cfddd83d',
+        Var('git_url') + '/chromium/src/build.git@f5f7865054fbf59c65f1aa6e5bbb6393332c0463',
     'chrome/test/pyautolib':
-        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@ef1bcfbcb69c642f60614829fe5b0e3a88ce79fa',
+        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@2765c22a732ea18fe1a6cd3d2e29c9f3224438aa',
     'gpu':
-        Var('git_url') + '/chromium/src/gpu.git@358d0b0cba31a2a1f8aeec49951c89c73e277f47',
+        Var('git_url') + '/chromium/src/gpu.git@b66d14e4340be9e843eea450c13baa7682bb70db',
     'native_client/tools/perf_expectations':
-        Var('git_url') + '/chromium/src/tools/perf_expectations.git@cbf2134ed9f844330014fb2f9896375e48133079',
+        Var('git_url') + '/chromium/src/tools/perf_expectations.git@5a2630c1fc344fe96931d1e4d8dd758ec7970da0',
     'net/tools/testserver':
         Var('git_url') + '/chromium/src/net/tools/testserver.git@983fc4633ff0069243b05a8a3a7d370399f11043',
     'ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@de76604e4e76ef0db5428a6c249b11fc54885c23',
+        Var('git_url') + '/chromium/src/ppapi.git@8a76deb2712f1f6ea154e24e594b53a74cb42667',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@090d8a824857f24e5ec780112a3d4b269f9a7d3d',
     'third_party':
@@ -56,11 +56,11 @@ deps = {
     'third_party/tlslite':
         Var('git_url') + '/chromium/src/third_party/tlslite.git@7eeab74ea2dbd602e31a021ed26e96205eb18b3b',
     'tools/clang':
-        Var('git_url') + '/chromium/src/tools/clang.git@aa027b0a39d6078a29d73bc1e6e6a0393b59f887',
+        Var('git_url') + '/chromium/src/tools/clang.git@348b9ca0608cb1a3418a0137f786ab0d6551ca5e',
     'tools/gyp':
-        Var('git_url') + '/external/gyp.git@62b326129ee85ec5c10e56b165cbf44fa4406cdd',
+        Var('git_url') + '/external/gyp.git@4bfc711e69c1fb69ec8a6c53286985c7d38c916c',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@c5512b8f152d472fddc42a7e6928ed987818153b',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@bda0bee6d7276913a8a35c7471ab5c66d591070e',
     'validator_snapshots':
         Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
