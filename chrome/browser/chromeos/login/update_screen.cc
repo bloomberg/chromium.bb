@@ -96,7 +96,9 @@ UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
       is_shown_(false),
       ignore_idle_status_(true),
       actor_(actor) {
-  actor_->SetDelegate(this);
+  DCHECK(actor_);
+  if (actor_)
+    actor_->SetDelegate(this);
   GetInstanceSet().insert(this);
 }
 
@@ -109,6 +111,9 @@ UpdateScreen::~UpdateScreen() {
 
 void UpdateScreen::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
+  if (!actor_)
+    return;
+
   if (is_checking_for_update_ &&
       status.status > UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE) {
     is_checking_for_update_ = false;
@@ -223,12 +228,15 @@ void UpdateScreen::CancelUpdate() {
 
 void UpdateScreen::Show() {
   is_shown_ = true;
-  actor_->Show();
-  actor_->SetProgress(kBeforeUpdateCheckProgress);
+  if (actor_) {
+    actor_->Show();
+    actor_->SetProgress(kBeforeUpdateCheckProgress);
+  }
 }
 
 void UpdateScreen::Hide() {
-  actor_->Hide();
+  if (actor_)
+    actor_->Hide();
   is_shown_ = false;
 }
 
@@ -237,7 +245,8 @@ std::string UpdateScreen::GetName() const {
 }
 
 void UpdateScreen::PrepareToShow() {
-  actor_->PrepareToShow();
+  if (actor_)
+    actor_->PrepareToShow();
 }
 
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
@@ -287,7 +296,8 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
   MakeSureScreenIsShown();
-  actor_->ShowManualRebootInfo();
+  if (actor_)
+    actor_->ShowManualRebootInfo();
 }
 
 void UpdateScreen::MakeSureScreenIsShown() {
@@ -308,6 +318,8 @@ void UpdateScreen::SetIgnoreIdleStatus(bool ignore_idle_status) {
 
 void UpdateScreen::UpdateDownloadingStats(
     const UpdateEngineClient::Status& status) {
+  if (!actor_)
+    return;
   base::Time download_current_time = base::Time::Now();
   if (download_current_time >= download_last_time_ + kMinTimeStep &&
       status.download_progress >=

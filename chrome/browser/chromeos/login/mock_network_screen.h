@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,9 @@ class MockNetworkScreenActor : public NetworkScreenActor {
   MockNetworkScreenActor();
   virtual ~MockNetworkScreenActor();
 
-  MOCK_METHOD1(SetDelegate, void(Delegate* screen));
+  virtual void SetDelegate(Delegate* delegate);
+
+  MOCK_METHOD1(MockSetDelegate, void(Delegate* delegate));
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
@@ -34,6 +36,10 @@ class MockNetworkScreenActor : public NetworkScreenActor {
   MOCK_METHOD1(EnableContinue, void(bool enabled));
   MOCK_CONST_METHOD0(IsContinueEnabled, bool());
   MOCK_CONST_METHOD0(IsConnecting, bool());
+
+  private:
+   Delegate* delegate_;
+
 };
 
 }  // namespace chromeos

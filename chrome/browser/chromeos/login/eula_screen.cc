@@ -15,7 +15,9 @@ namespace chromeos {
 
 EulaScreen::EulaScreen(ScreenObserver* observer, EulaScreenActor* actor)
     : WizardScreen(observer), actor_(actor), password_fetcher_(this) {
-  actor_->SetDelegate(this);
+  DCHECK(actor_);
+  if (actor_)
+    actor_->SetDelegate(this);
 }
 
 EulaScreen::~EulaScreen() {
@@ -24,18 +26,21 @@ EulaScreen::~EulaScreen() {
 }
 
 void EulaScreen::PrepareToShow() {
-  actor_->PrepareToShow();
+  if (actor_)
+    actor_->PrepareToShow();
 }
 
 void EulaScreen::Show() {
   // Command to own the TPM.
   chromeos::CrosLibrary::Get()->
       GetCryptohomeLibrary()->TpmCanAttemptOwnership();
-  actor_->Show();
+  if (actor_)
+    actor_->Show();
 }
 
 void EulaScreen::Hide() {
-  actor_->Hide();
+  if (actor_)
+    actor_->Hide();
 }
 
 std::string EulaScreen::GetName() const {
@@ -73,7 +78,7 @@ void EulaScreen::InitiatePasswordFetch() {
   if (tpm_password_.empty()) {
     password_fetcher_.Fetch();
     // Will call actor after password has been fetched.
-  } else {
+  } else if (actor_) {
     actor_->OnPasswordFetched(tpm_password_);
   }
 }

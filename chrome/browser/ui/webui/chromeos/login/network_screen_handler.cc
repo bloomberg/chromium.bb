@@ -47,6 +47,8 @@ NetworkScreenHandler::NetworkScreenHandler()
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
+  if (screen_)
+    screen_->OnActorDestroyed(this);
 }
 
 // NetworkScreenHandler, NetworkScreenActor implementation: --------------------
@@ -151,7 +153,8 @@ void NetworkScreenHandler::RegisterMessages() {
 
 void NetworkScreenHandler::HandleOnExit(const ListValue* args) {
   ClearErrors();
-  screen_->OnContinuePressed();
+  if (screen_)
+    screen_->OnContinuePressed();
 }
 
 void NetworkScreenHandler::HandleOnLanguageChanged(const ListValue* args) {

@@ -34,6 +34,7 @@ class NetworkScreen : public WizardScreen,
   virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib) OVERRIDE;
 
   // NetworkScreenActor::Delegate implementation:
+  virtual void OnActorDestroyed(NetworkScreenActor* actor) OVERRIDE;
   virtual void OnContinuePressed() OVERRIDE;
 
   NetworkScreenActor* actor() const { return actor_; }

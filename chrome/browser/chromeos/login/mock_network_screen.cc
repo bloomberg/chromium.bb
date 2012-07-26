@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,19 @@ MockNetworkScreen::MockNetworkScreen(ScreenObserver* observer,
 MockNetworkScreen::~MockNetworkScreen() {
 }
 
+
 MockNetworkScreenActor::MockNetworkScreenActor() {
-  EXPECT_CALL(*this, SetDelegate(NotNull())).Times(AtLeast(1));
+  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
 }
 
 MockNetworkScreenActor::~MockNetworkScreenActor() {
+  if (delegate_)
+    delegate_->OnActorDestroyed(this);
+}
+
+void MockNetworkScreenActor::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+  MockSetDelegate(delegate);
 }
 
 }  // namespace chromeos
