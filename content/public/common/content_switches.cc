@@ -212,8 +212,13 @@ const char kSpeechRecognitionWebserviceKey[] = "speech-service-key";
 // Disables animation on the compositor thread.
 const char kDisableThreadedAnimation[]      = "disable-threaded-animation";
 
+#if defined(OS_ANDROID)
+// Enable web audio API.
+const char kEnableWebAudio[]                = "enable-webaudio";
+#else
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
+#endif
 
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";

@@ -79,7 +79,11 @@ CONTENT_EXPORT extern const char kEnableScriptedSpeech[];
 extern const char kSpeechRecognitionWebserviceURL[];
 extern const char kSpeechRecognitionWebserviceKey[];
 CONTENT_EXPORT extern const char kDisableThreadedAnimation[];
+#if defined(OS_ANDROID)
+CONTENT_EXPORT extern const char kEnableWebAudio[];
+#else
 CONTENT_EXPORT extern const char kDisableWebAudio[];
+#endif
 extern const char kDisableWebSecurity[];
 extern const char kDisableWebSockets[];
 extern const char kDisableXSSAuditor[];

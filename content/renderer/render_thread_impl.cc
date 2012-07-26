@@ -586,9 +586,15 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::WebRuntimeFeatures::enableEncryptedMedia(
       command_line.HasSwitch(switches::kEnableEncryptedMedia));
 
+#if defined(OS_ANDROID)
+  WebRuntimeFeatures::enableWebAudio(
+      command_line.HasSwitch(switches::kEnableWebAudio) &&
+      media::IsMediaLibraryInitialized());
+#else
   WebRuntimeFeatures::enableWebAudio(
       !command_line.HasSwitch(switches::kDisableWebAudio) &&
       media::IsMediaLibraryInitialized());
+#endif
 
   WebRuntimeFeatures::enablePushState(true);
 

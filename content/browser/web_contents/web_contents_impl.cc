@@ -428,8 +428,13 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableLocalStorage);
   prefs.databases_enabled =
       !command_line.HasSwitch(switches::kDisableDatabases);
+#if defined(OS_ANDROID)
+  prefs.webaudio_enabled =
+      command_line.HasSwitch(switches::kEnableWebAudio);
+#else
   prefs.webaudio_enabled =
       !command_line.HasSwitch(switches::kDisableWebAudio);
+#endif
 
   prefs.experimental_webgl_enabled =
       GpuProcessHost::gpu_enabled() &&
