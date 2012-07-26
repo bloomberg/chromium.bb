@@ -13,6 +13,12 @@ def FilenameToUnix(str):
   return str.replace('\\', '/')
 
 
+def MakeOutFileName(name, ext):
+  out_dir = os.environ['OUT_DIR']
+  # File name should be consistent with .out file name from nacl.scons
+  return os.path.join(out_dir, 'gdb_' + name + ext)
+
+
 def KillProcess(process):
   try:
     process.kill()
@@ -24,9 +30,8 @@ def KillProcess(process):
 
 
 def LaunchSelLdr(program, name):
-  out_dir = os.environ['OUT_DIR']
-  stdout = open(os.path.join(out_dir, name + '.pout'), 'w')
-  stderr = open(os.path.join(out_dir, name + '.perr'), 'w')
+  stdout = open(MakeOutFileName(name, '.pout'), 'w')
+  stderr = open(MakeOutFileName(name, '.perr'), 'w')
   sel_ldr = os.environ['NACL_SEL_LDR']
   irt = os.environ['NACL_IRT']
   args = [sel_ldr, '-g', '-B', irt]
@@ -40,7 +45,8 @@ def LaunchSelLdr(program, name):
 
 
 def GenerateManifest(nexe, runnable_ld, name):
-  manifest_dir = os.environ['OUT_DIR']
+  manifest_filename = MakeOutFileName(name, '.nmf')
+  manifest_dir = os.path.dirname(manifest_filename)
   runnable_ld_url = {'url': os.path.relpath(runnable_ld, manifest_dir)}
   nexe_url = {'url': os.path.relpath(nexe, manifest_dir)}
   manifest = {
@@ -55,10 +61,9 @@ def GenerateManifest(nexe, runnable_ld, name):
           },
       },
   }
-  filename = os.path.join(manifest_dir, name + '.nmf')
-  with open(filename, 'w') as manifest_file:
+  with open(manifest_filename, 'w') as manifest_file:
     json.dump(manifest, manifest_file)
-  return filename
+  return manifest_filename
 
 
 class RecordParser(object):
@@ -155,9 +160,8 @@ class Gdb(object):
     self._name = name
     self._program = program
     args = [os.environ['NACL_GDB'], '--interpreter=mi']
-    out_dir = os.environ['OUT_DIR']
-    stderr = open(os.path.join(out_dir, name + '.err'), 'w')
-    self._log = open(os.path.join(out_dir, name + '.log'), 'w')
+    stderr = open(MakeOutFileName(name, '.err'), 'w')
+    self._log = open(MakeOutFileName(name, '.log'), 'w')
     self._gdb = subprocess.Popen(args,
                                  stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE,
