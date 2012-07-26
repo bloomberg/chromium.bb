@@ -1199,6 +1199,9 @@ prune() {
     echo "NOTE: some failures during stripping are expected"
   fi
 
+  echo "removing llvm's tblgen binaries which are not needed"
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/*-tblgen
+
   echo "removing llvm headers"
   rm -rf "${LLVM_INSTALL_DIR}"/include/llvm*
 
