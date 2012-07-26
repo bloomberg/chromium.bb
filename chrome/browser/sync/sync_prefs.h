@@ -98,6 +98,9 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   std::string GetEncryptionBootstrapToken() const;
   void SetEncryptionBootstrapToken(const std::string& token);
 
+  // Maps |data_type| to its corresponding preference name.
+  static const char* GetPrefNameForDataType(syncer::ModelType data_type);
+
 #if defined(OS_CHROMEOS)
   // Use this spare bootstrap token only when setting up sync for the first
   // time.

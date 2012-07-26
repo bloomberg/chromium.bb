@@ -158,6 +158,7 @@ const FilePath::CharType kShortcutsDatabaseName[] = FPL("Shortcuts");
 const FilePath::CharType kSingletonCookieFilename[] = FPL("SingletonCookie");
 const FilePath::CharType kSingletonLockFilename[] = FPL("SingletonLock");
 const FilePath::CharType kSingletonSocketFilename[] = FPL("SingletonSocket");
+const FilePath::CharType kSyncCredentialsFilename[] = FPL("Sync Credentials");
 const FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
 const FilePath::CharType kThumbnailsFilename[] = FPL("Thumbnails");
 const FilePath::CharType kTopSitesFilename[] = FPL("Top Sites");

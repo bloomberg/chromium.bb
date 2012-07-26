@@ -45,6 +45,9 @@
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
+#if defined(OS_WIN)
+#include "chrome/browser/sync/credential_cache_service_factory_win.h"
+#endif  // OS_WIN
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
@@ -250,6 +253,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   ChromeSpeechRecognitionPreferences::InitializeFactory();
 #endif
   SpellCheckFactory::GetInstance();
+#if defined(OS_WIN)
+  syncer::CredentialCacheServiceFactory::GetInstance();
+#endif  // OS_WIN
   TabRestoreServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();

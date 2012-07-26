@@ -177,6 +177,44 @@ void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
   pref_service_->SetString(prefs::kSyncEncryptionBootstrapToken, token);
 }
 
+// static
+const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
+  switch (data_type) {
+    case syncer::BOOKMARKS:
+      return prefs::kSyncBookmarks;
+    case syncer::PASSWORDS:
+      return prefs::kSyncPasswords;
+    case syncer::PREFERENCES:
+      return prefs::kSyncPreferences;
+    case syncer::AUTOFILL:
+      return prefs::kSyncAutofill;
+    case syncer::AUTOFILL_PROFILE:
+      return prefs::kSyncAutofillProfile;
+    case syncer::THEMES:
+      return prefs::kSyncThemes;
+    case syncer::TYPED_URLS:
+      return prefs::kSyncTypedUrls;
+    case syncer::EXTENSION_SETTINGS:
+      return prefs::kSyncExtensionSettings;
+    case syncer::EXTENSIONS:
+      return prefs::kSyncExtensions;
+    case syncer::APP_SETTINGS:
+      return prefs::kSyncAppSettings;
+    case syncer::APPS:
+      return prefs::kSyncApps;
+    case syncer::SEARCH_ENGINES:
+      return prefs::kSyncSearchEngines;
+    case syncer::SESSIONS:
+      return prefs::kSyncSessions;
+    case syncer::APP_NOTIFICATIONS:
+      return prefs::kSyncAppNotifications;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return NULL;
+}
+
 #if defined(OS_CHROMEOS)
 std::string SyncPrefs::GetSpareBootstrapToken() const {
   DCHECK(CalledOnValidThread());
@@ -240,47 +278,6 @@ syncer::ModelTypeSet SyncPrefs::GetAcknowledgeSyncedTypesForTest() const {
   return syncer::ModelTypeSetFromValue(
       *pref_service_->GetList(prefs::kSyncAcknowledgedSyncTypes));
 }
-
-namespace {
-
-const char* GetPrefNameForDataType(syncer::ModelType data_type) {
-  switch (data_type) {
-    case syncer::BOOKMARKS:
-      return prefs::kSyncBookmarks;
-    case syncer::PASSWORDS:
-      return prefs::kSyncPasswords;
-    case syncer::PREFERENCES:
-      return prefs::kSyncPreferences;
-    case syncer::AUTOFILL:
-      return prefs::kSyncAutofill;
-    case syncer::AUTOFILL_PROFILE:
-      return prefs::kSyncAutofillProfile;
-    case syncer::THEMES:
-      return prefs::kSyncThemes;
-    case syncer::TYPED_URLS:
-      return prefs::kSyncTypedUrls;
-    case syncer::EXTENSION_SETTINGS:
-      return prefs::kSyncExtensionSettings;
-    case syncer::EXTENSIONS:
-      return prefs::kSyncExtensions;
-    case syncer::APP_SETTINGS:
-      return prefs::kSyncAppSettings;
-    case syncer::APPS:
-      return prefs::kSyncApps;
-    case syncer::SEARCH_ENGINES:
-      return prefs::kSyncSearchEngines;
-    case syncer::SESSIONS:
-      return prefs::kSyncSessions;
-    case syncer::APP_NOTIFICATIONS:
-      return prefs::kSyncAppNotifications;
-    default:
-      break;
-  }
-  NOTREACHED();
-  return NULL;
-}
-
-}  // namespace
 
 void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[syncer::APPS].Put(syncer::APP_NOTIFICATIONS);

@@ -82,6 +82,7 @@ extern const FilePath::CharType kShortcutsDatabaseName[];
 extern const FilePath::CharType kSingletonCookieFilename[];
 extern const FilePath::CharType kSingletonLockFilename[];
 extern const FilePath::CharType kSingletonSocketFilename[];
+extern const FilePath::CharType kSyncCredentialsFilename[];
 extern const FilePath::CharType kThemePackFilename[];
 extern const FilePath::CharType kThumbnailsFilename[];
 extern const FilePath::CharType kTopSitesFilename[];
