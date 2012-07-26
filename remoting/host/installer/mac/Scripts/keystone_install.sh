@@ -6,4 +6,4 @@
 
 # Version = @@VERSION@@
 
-/usr/sbin/installer -pkg "$1/@@HOST_PKG@@.mpkg" -target /
+/usr/sbin/installer -pkg "$1/@@HOST_PKG@@.pkg" -target /
