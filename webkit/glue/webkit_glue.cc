@@ -139,15 +139,6 @@ string16 DumpRenderer(WebFrame* web_frame) {
   return web_frame->renderTreeAsText();
 }
 
-int PageNumberForElementById(WebFrame* web_frame,
-                             const std::string& id,
-                             float page_width_in_pixels,
-                             float page_height_in_pixels) {
-  return web_frame->pageNumberForElementById(WebString::fromUTF8(id),
-                                             page_width_in_pixels,
-                                             page_height_in_pixels);
-}
-
 int NumberOfPages(WebFrame* web_frame,
                   float page_width_in_pixels,
                   float page_height_in_pixels) {
