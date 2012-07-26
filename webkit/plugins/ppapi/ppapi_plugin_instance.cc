@@ -1351,11 +1351,22 @@ void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
 }
 
 void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
-  if (flash_fullscreen == flash_fullscreen_)
+  bool is_mouselock_pending = TrackedCallback::IsPending(lock_mouse_callback_);
+
+  if (flash_fullscreen == flash_fullscreen_) {
+    // Manually clear callback when fullscreen fails with mouselock pending.
+    if (!flash_fullscreen && is_mouselock_pending)
+      TrackedCallback::ClearAndRun(&lock_mouse_callback_, PP_ERROR_FAILED);
     return;
+  }
 
   bool old_plugin_focus = PluginHasFocus();
   flash_fullscreen_ = flash_fullscreen;
+  if (is_mouselock_pending && !delegate()->IsMouseLocked(this)) {
+    if (!delegate()->LockMouse(this))
+      TrackedCallback::ClearAndRun(&lock_mouse_callback_, PP_ERROR_FAILED);
+  }
+
   if (PluginHasFocus() != old_plugin_focus)
     SendFocusChangeNotification();
 }
@@ -1995,12 +2006,16 @@ int32_t PluginInstance::LockMouse(PP_Instance instance,
   if (!CanAccessMainFrame())
     return PP_ERROR_NOACCESS;
 
-  if (delegate()->LockMouse(this)) {
-    lock_mouse_callback_ = callback;
-    return PP_OK_COMPLETIONPENDING;
-  } else {
-    return PP_ERROR_FAILED;
+  // Attempt mouselock only if Flash isn't waiting on fullscreen, otherwise
+  // we wait and call LockMouse() in UpdateFlashFullscreenState().
+  if (!FlashIsFullscreenOrPending() || flash_fullscreen()) {
+    if (!delegate()->LockMouse(this))
+      return PP_ERROR_FAILED;
   }
+
+  // Either mouselock succeeded or a Flash fullscreen is pending.
+  lock_mouse_callback_ = callback;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void PluginInstance::UnlockMouse(PP_Instance instance) {
