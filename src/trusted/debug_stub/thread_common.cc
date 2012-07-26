@@ -14,6 +14,7 @@
 #include "native_client/src/trusted/port/thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 namespace {
@@ -158,12 +159,8 @@ void IThread::SuspendAllThreadsExceptSignaled(uint32_t signaled_tid) {
       if ((thread->natp_->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
         thread->context_ = *thread->natp_->suspended_registers;
       } else {
-        // TODO(eaeltsin): fetch context from NaClAppThread.user.
-        memset(&thread->context_, 0, sizeof(thread->context_));
-        NaClLog(LOG_WARNING,
-                "IThread::SuspendAllThreadsExceptSignaled: thread 0x%x "
-                "registers not fetched\n",
-                thread->id_);
+        NaClThreadContextToSignalContext(&thread->natp_->user,
+                                         &thread->context_);
       }
     }
   }

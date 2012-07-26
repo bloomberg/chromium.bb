@@ -17,12 +17,20 @@
 #error Unknown platform!
 #endif
 
-struct NaClApp; /* fwd */
+EXTERN_C_BEGIN
 
-void      NaClInitGlobals();
+struct NaClApp;
+struct NaClSignalContext;
 
-uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx);
+void NaClInitGlobals();
 
-void      NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp);
+uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext *th_ctx);
+
+void NaClSetThreadCtxSp(struct NaClThreadContext *th_ctx, uintptr_t sp);
+
+void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
+                                      struct NaClSignalContext *sig_ctx);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_SEL_RT_H__ */

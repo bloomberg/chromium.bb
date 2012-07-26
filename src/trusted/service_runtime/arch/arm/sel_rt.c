@@ -8,6 +8,7 @@
  * NaCl Secure Runtime
  */
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
@@ -51,4 +52,25 @@ uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
 
 void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
   th_ctx->stack_ptr = (uint32_t) sp;
+}
+
+
+void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
+                                      struct NaClSignalContext *sig_ctx) {
+  sig_ctx->r0        = 0;
+  sig_ctx->r1        = 0;
+  sig_ctx->r2        = 0;
+  sig_ctx->r3        = 0;
+  sig_ctx->r4        = th_ctx->r4;
+  sig_ctx->r5        = th_ctx->r5;
+  sig_ctx->r6        = th_ctx->r6;
+  sig_ctx->r7        = th_ctx->r7;
+  sig_ctx->r8        = th_ctx->r8;
+  sig_ctx->r9        = th_ctx->r9;
+  sig_ctx->r10       = th_ctx->r10;
+  sig_ctx->r11       = th_ctx->fp;
+  sig_ctx->r12       = 0;
+  sig_ctx->stack_ptr = th_ctx->stack_ptr;
+  sig_ctx->lr        = 0;
+  sig_ctx->prog_ctr  = th_ctx->new_eip;
 }

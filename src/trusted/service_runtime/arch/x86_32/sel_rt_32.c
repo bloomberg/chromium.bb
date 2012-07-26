@@ -8,6 +8,7 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -97,4 +98,25 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   NaClLog(4, "user.ss: 0x%02x\n", ntcp->ss);
 
   return 1;
+}
+
+
+void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
+                                      struct NaClSignalContext *sig_ctx) {
+  sig_ctx->eax       = 0;
+  sig_ctx->ecx       = 0;
+  sig_ctx->edx       = 0;
+  sig_ctx->ebx       = th_ctx->ebx;
+  sig_ctx->stack_ptr = th_ctx->stack_ptr.ptr_32.ptr;
+  sig_ctx->ebp       = th_ctx->frame_ptr.ptr_32.ptr;
+  sig_ctx->esi       = th_ctx->esi;
+  sig_ctx->edi       = th_ctx->edi;
+  sig_ctx->prog_ctr  = th_ctx->new_prog_ctr;
+  sig_ctx->flags     = 0;
+  sig_ctx->cs        = th_ctx->cs;
+  sig_ctx->ss        = th_ctx->ss;
+  sig_ctx->ds        = th_ctx->ds;
+  sig_ctx->es        = th_ctx->es;
+  sig_ctx->fs        = th_ctx->fs;
+  sig_ctx->gs        = th_ctx->gs;
 }

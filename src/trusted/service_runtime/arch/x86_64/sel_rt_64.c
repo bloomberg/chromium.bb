@@ -7,6 +7,7 @@
 #include <float.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
@@ -71,4 +72,32 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 #endif
 
   return 1;
+}
+
+void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
+                                      struct NaClSignalContext *sig_ctx) {
+  sig_ctx->rax       = th_ctx->rax;
+  sig_ctx->rbx       = th_ctx->rbx;
+  sig_ctx->rcx       = th_ctx->rcx;
+  sig_ctx->rdx       = th_ctx->rdx;
+  sig_ctx->rsi       = th_ctx->rsi;
+  sig_ctx->rdi       = th_ctx->rdi;
+  sig_ctx->rbp       = th_ctx->rbp;
+  sig_ctx->stack_ptr = th_ctx->rsp;
+  sig_ctx->r8        = th_ctx->r8;
+  sig_ctx->r9        = th_ctx->r9;
+  sig_ctx->r10       = th_ctx->r10;
+  sig_ctx->r11       = th_ctx->r11;
+  sig_ctx->r12       = th_ctx->r12;
+  sig_ctx->r13       = th_ctx->r13;
+  sig_ctx->r14       = th_ctx->r14;
+  sig_ctx->r15       = th_ctx->r15;
+  sig_ctx->prog_ctr  = th_ctx->new_prog_ctr;
+  sig_ctx->flags     = 0;
+  sig_ctx->cs        = 0;
+  sig_ctx->ss        = 0;
+  sig_ctx->ds        = 0;
+  sig_ctx->es        = 0;
+  sig_ctx->fs        = 0;
+  sig_ctx->gs        = 0;
 }
