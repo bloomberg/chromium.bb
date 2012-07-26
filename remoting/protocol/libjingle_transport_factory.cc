@@ -320,6 +320,11 @@ LibjingleTransportFactory::LibjingleTransportFactory()
       port_allocator_(new cricket::BasicPortAllocator(
           network_manager_.get(), socket_factory_.get())),
       incoming_only_(false) {
+  port_allocator_->set_flags(
+      cricket::PORTALLOCATOR_DISABLE_TCP |
+      cricket::PORTALLOCATOR_DISABLE_STUN |
+      cricket::PORTALLOCATOR_DISABLE_RELAY |
+      cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG);
 }
 
 LibjingleTransportFactory::~LibjingleTransportFactory() {
