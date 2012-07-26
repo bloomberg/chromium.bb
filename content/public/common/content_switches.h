@@ -107,6 +107,7 @@ extern const char kEnableMediaSource[];
 extern const char kEnablePeerConnection[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnablePartialSwap[];
+extern const char kEnableUIReleaseFrontSurface[];
 extern const char kEnablePinch[];
 extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];

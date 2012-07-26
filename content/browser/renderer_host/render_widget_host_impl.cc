@@ -1919,6 +1919,21 @@ void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {
     Send(new ViewMsg_SwapBuffers_ACK(routing_id_));
 }
 
+#if defined(USE_AURA)
+// static
+void RenderWidgetHostImpl::SendFrontSurfaceIsProtected(
+    bool is_protected,
+    uint32 protection_state_id,
+    int32 route_id,
+    int gpu_host_id) {
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
+  if (ui_shim) {
+    ui_shim->Send(new AcceleratedSurfaceMsg_SetFrontSurfaceIsProtected(
+        route_id, is_protected, protection_state_id));
+  }
+}
+#endif
+
 void RenderWidgetHostImpl::DelayedAutoResized() {
   gfx::Size new_size = new_auto_size_;
   // Clear the new_auto_size_ since the empty value is used as a flag to

@@ -155,6 +155,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // having been hidden.
   void WasHidden();
   void WasRestored();
+  bool IsHidden() const { return is_hidden_; }
 
   // Returns true if the RenderWidget is hidden.
   bool is_hidden() const { return is_hidden_; }
@@ -370,6 +371,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // nothing if the compositor thread is enabled.
   // TODO(jbates) Once the compositor thread is always on, this can be removed.
   void AcknowledgeSwapBuffersToRenderer();
+
+#if defined(USE_AURA)
+  // Called by the view in response to visibility changes:
+  // 1. After the front surface is guarenteed to no longer be in use by the ui
+  //    (protected false),
+  // 2. When the ui expects to have a valid front surface (protected true).
+  static void SendFrontSurfaceIsProtected(bool is_protected,
+                                          uint32 protection_state_id,
+                                          int32 route_id,
+                                          int gpu_host_id);
+#endif
 
   // Signals that the compositing surface was updated, e.g. after a lost context
   // event.

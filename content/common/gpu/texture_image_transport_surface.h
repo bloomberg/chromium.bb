@@ -48,6 +48,9 @@ class TextureImageTransportSurface :
   virtual void OnBufferPresented(
       uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
+  virtual void OnSetFrontSurfaceIsProtected(
+      bool is_protected,
+      uint32 protection_state_id) OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
@@ -74,10 +77,12 @@ class TextureImageTransportSurface :
 
   virtual ~TextureImageTransportSurface();
   void CreateBackTexture(const gfx::Size& size);
-  void ReleaseBackTexture();
   void AttachBackTextureToFBO();
+  void ReleaseTexture(int id);
   void ReleaseParentStub();
+  void AdjustFrontBufferAllocation();
   void BufferPresentedImpl();
+  int front() const { return front_; }
   int back() const { return 1 - front_; }
 
   // The framebuffer that represents this surface (service id). Allocated lazily
@@ -97,6 +102,9 @@ class TextureImageTransportSurface :
 
   bool backbuffer_suggested_allocation_;
   bool frontbuffer_suggested_allocation_;
+
+  bool frontbuffer_is_protected_;
+  uint32 protection_state_id_;
 
   scoped_ptr<ImageTransportHelper> helper_;
   gfx::GLSurfaceHandle handle_;

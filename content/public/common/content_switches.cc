@@ -304,6 +304,10 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // Enables partial swaps in the WK compositor on platforms that support it.
 const char kEnablePartialSwap[]             = "enable-partial-swap";
 
+// Enables UI releasing handle to front surface for background tabs on platforms
+// that support it.
+const char kEnableUIReleaseFrontSurface[] = "enable-ui-release-front-surface";
+
 // Enables touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 

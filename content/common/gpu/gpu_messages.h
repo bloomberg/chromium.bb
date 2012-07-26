@@ -62,6 +62,8 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
 #elif defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
 #endif
+  IPC_STRUCT_MEMBER(uint32, protection_state_id)
+  IPC_STRUCT_MEMBER(bool, skip_ack)
 IPC_STRUCT_END()
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT
@@ -77,6 +79,7 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
 #endif
+  IPC_STRUCT_MEMBER(uint32, protection_state_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
@@ -221,6 +224,11 @@ IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 // Tells the GPU process that the browser process has finished resizing the
 // view.
 IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_ResizeViewACK)
+
+// Tells the GPU process if it's worth suggesting release of the front surface.
+IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_SetFrontSurfaceIsProtected,
+                    bool /* is_protected */,
+                    uint32 /* protection_state_id */)
 
 // Tells the GPU process that the browser process has handled the swap
 // buffers or post sub-buffer request. A non-zero sync point means

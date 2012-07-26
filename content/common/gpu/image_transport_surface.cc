@@ -22,6 +22,10 @@ ImageTransportSurface::ImageTransportSurface() {}
 
 ImageTransportSurface::~ImageTransportSurface() {}
 
+void ImageTransportSurface::OnSetFrontSurfaceIsProtected(
+    bool is_protected, uint32 protection_state_id) {
+}
+
 void ImageTransportSurface::GetRegionsToCopy(
     const gfx::Rect& previous_damage_rect,
     const gfx::Rect& new_damage_rect,
@@ -93,6 +97,8 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
                         OnBufferPresented)
+    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_SetFrontSurfaceIsProtected,
+                        OnSetFrontSurfaceIsProtected)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_ResizeViewACK, OnResizeViewACK);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -194,6 +200,11 @@ gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
   if (!stub_.get())
     return NULL;
   return stub_->decoder();
+}
+
+void ImageTransportHelper::OnSetFrontSurfaceIsProtected(
+    bool is_protected, uint32 protection_state_id) {
+  surface_->OnSetFrontSurfaceIsProtected(is_protected, protection_state_id);
 }
 
 void ImageTransportHelper::OnBufferPresented(uint32 sync_point) {
