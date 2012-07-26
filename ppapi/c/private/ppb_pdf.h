@@ -6,6 +6,7 @@
 #define PPAPI_C_PRIVATE_PPB_PDF_H_
 
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
@@ -92,6 +93,10 @@ typedef enum {
   PP_PRIVATEFONTCHARSET_OEM = 255
 } PP_PrivateFontCharset;
 
+typedef enum {
+  PP_PDFFEATURE_HIDPI = 0
+} PP_PDFFeature;
+
 struct PP_PrivateFontFileDescription {
   const char* face;
   uint32_t weight;
@@ -162,6 +167,8 @@ struct PPB_PDF {
 
   // Invoke Print dialog for plugin.
   void (*Print)(PP_Instance instance);
+
+  PP_Bool(*IsFeatureEnabled)(PP_PDFFeature feature);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_

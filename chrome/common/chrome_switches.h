@@ -152,6 +152,7 @@ extern const char kEnableExtensionActivityUI[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFramelessConstrainedDialogs[];
 extern const char kEnableFileCookies[];
+extern const char kEnableHighDPIPDFPlugin[];
 extern const char kEnableHttpPipelining[];
 extern const char kEnableInstantExtendedAPI[];
 extern const char kEnableIPv6[];

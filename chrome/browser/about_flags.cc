@@ -727,6 +727,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE_AND_VALUE(switches::kForceDeviceScaleFactor, "2")
   },
+  {
+    "enable-hidpi-pdf-plugin",
+    IDS_FLAGS_ENABLE_HIGH_DPI_PDF_PLUGIN_NAME,
+    IDS_FLAGS_ENABLE_HIGH_DPI_PDF_PLUGIN_DESCRIPTION,
+    kOsCrOS | kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnableHighDPIPDFPlugin)
+  },
 #if defined(OS_CHROMEOS)
   {
     "allow-touchpad-three-finger-click",
