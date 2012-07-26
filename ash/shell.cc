@@ -45,6 +45,7 @@
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/power_button_controller.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
@@ -306,7 +307,7 @@ void Shell::DeleteInstance() {
 
 // static
 internal::RootWindowController* Shell::GetPrimaryRootWindowController() {
-  return wm::GetRootWindowController(GetPrimaryRootWindow());
+  return GetRootWindowController(GetPrimaryRootWindow());
 }
 
 // static

@@ -605,7 +605,7 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     return ui::GESTURE_STATUS_UNKNOWN;
 
   RootWindowController* root_controller =
-      wm::GetRootWindowController(system_target->GetRootWindow());
+      GetRootWindowController(system_target->GetRootWindow());
   CHECK(root_controller);
   aura::Window* desktop_container = root_controller->GetContainer(
       ash::internal::kShellWindowId_DesktopBackgroundContainer);
