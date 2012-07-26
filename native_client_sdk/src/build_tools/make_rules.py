@@ -12,7 +12,7 @@ NEWLIB_CC?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-gcc -c
 NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c -std=gnu++98
 NEWLIB_LINK?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -Wl,-as-needed
 NEWLIB_DUMP?=$(TC_PATH)/$(OSNAME)_x86_newlib/x86_64-nacl/bin/objdump
-NEWLIB_CCFLAGS?=-O0 -g -pthread $(NACL_WARNINGS)
+NEWLIB_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS)
 NEWLIB_LDFLAGS?=-g -pthread
 """
 
@@ -23,7 +23,7 @@ GLIBC_LINK?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -Wl,-as-needed
 GLIBC_DUMP?=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
 GLIBC_PATHS:=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
 GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
-GLIBC_CCFLAGS?=-O0 -g -pthread $(NACL_WARNINGS)
+GLIBC_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS)
 GLIBC_LDFLAGS?=-g -pthread
 """
 
@@ -33,7 +33,7 @@ PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++ -c -std=gnu++
 PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++
 PNACL_DUMP?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/objdump
 PNACL_CCFLAGS?=-O0 -g -pthread $(NACL_WARNINGS)
-PNACL_LDFLAGS?=-g -pthread
+PNACL_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS)
 TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 """
 
@@ -51,12 +51,14 @@ WIN_LDFLAGS=/LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host
 #
 NACL_CC_RULE = """
 <OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
+DEPFILES+=$(<OBJS>:.o=.d)
 $(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
 <TAB>$(<CC>) -o $@ $< <MACH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST>
 """
 
 SO_CC_RULE = """
 <OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
+DEPFILES+=$(<OBJS>:.o=.d)
 $(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
 <TAB>$(<CC>) -o $@ $< <MACH> -fPIC $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST>
 """
@@ -271,7 +273,7 @@ def BuildToolDict(toolchain, project, arch = {}, ext='nexe', **kwargs):
   # Add other passed in replacements
   for key in kwargs:
     replace['<%s>' % key] = kwargs[key]
-    
+
   if '<OBJS>' not in replace:
     if replace.get('<ARCH>', ''):
       replace['<OBJS>'] = '%s_%s_%s_%s_O' % (TC, PROJ, replace['<ARCH>'], EXT)
