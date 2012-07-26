@@ -27,28 +27,22 @@
 using content::BrowserContext;
 using content::BrowserThread;
 
+namespace gdata {
 namespace {
 
 // Used in test to setup system service.
-gdata::DocumentsServiceInterface* g_test_documents_service = NULL;
+DocumentsServiceInterface* g_test_documents_service = NULL;
 const std::string* g_test_cache_root = NULL;
 
-scoped_refptr<base::SequencedTaskRunner> GetTaskRunner(
-    const base::SequencedWorkerPool::SequenceToken& sequence_token) {
-  return BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-      sequence_token);
-}
+}  // namespace
 
-}  // nemaspace
-
-namespace gdata {
-
-//===================== GDataSystemService ====================================
 GDataSystemService::GDataSystemService(Profile* profile)
     : profile_(profile),
-      sequence_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()),
       cache_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
+  blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
+      blocking_pool->GetSequenceToken());
 }
 
 GDataSystemService::~GDataSystemService() {
@@ -64,7 +58,7 @@ void GDataSystemService::Initialize(
   documents_service_.reset(documents_service);
   cache_ = GDataCache::CreateGDataCacheOnUIThread(
       cache_root,
-      GetTaskRunner(sequence_token_));
+      blocking_task_runner_);
   uploader_.reset(new GDataUploader(docs_service()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
   file_system_.reset(new GDataFileSystem(profile_,
@@ -72,7 +66,7 @@ void GDataSystemService::Initialize(
                                          docs_service(),
                                          uploader(),
                                          webapps_registry(),
-                                         GetTaskRunner(sequence_token_)));
+                                         blocking_task_runner_));
   download_observer_.reset(new GDataDownloadObserver(uploader(),
                                                      file_system()));
   sync_client_.reset(new GDataSyncClient(profile_, file_system(), cache()));

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYSTEM_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYSTEM_SERVICE_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -66,7 +68,7 @@ class GDataSystemService : public ProfileKeyedService  {
   friend class GDataSystemServiceFactory;
 
   Profile* profile_;
-  const base::SequencedWorkerPool::SequenceToken sequence_token_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   GDataCache* cache_;
   scoped_ptr<DocumentsServiceInterface> documents_service_;
   scoped_ptr<GDataUploader> uploader_;
