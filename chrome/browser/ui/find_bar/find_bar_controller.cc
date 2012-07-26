@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
