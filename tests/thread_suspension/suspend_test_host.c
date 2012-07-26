@@ -232,7 +232,7 @@ static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap) {
 static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
   struct SuspendTestShm *test_shm;
   struct NaClAppThread *natp;
-  struct NaClSignalContext *regs;
+  struct NaClSignalContext regs;
 
   test_shm = StartGuestWithSharedMemory(nap, "RegisterSetterThread");
   /*
@@ -258,48 +258,48 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
    * natp in case the thread exited.
    */
   natp = GetOnlyThread(nap);
-  regs = natp->suspended_registers;
-  CHECK(regs != NULL);
+  CHECK(natp->suspended_registers != NULL);
+  NaClAppThreadGetSuspendedRegisters(natp, &regs);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  CHECK(regs->eax == test_shm->var);
-  CHECK(regs->ebx == regs->prog_ctr + 0x2000);
-  CHECK(regs->ecx == regs->stack_ptr + 0x1000);
-  CHECK(regs->edx == 0x10000001);
-  CHECK(regs->ebp == 0x20000002);
-  CHECK(regs->esi == 0x30000003);
-  CHECK(regs->edi == 0x40000004);
+  CHECK(regs.eax == test_shm->var);
+  CHECK(regs.ebx == regs.prog_ctr + 0x2000);
+  CHECK(regs.ecx == regs.stack_ptr + 0x1000);
+  CHECK(regs.edx == 0x10000001);
+  CHECK(regs.ebp == 0x20000002);
+  CHECK(regs.esi == 0x30000003);
+  CHECK(regs.edi == 0x40000004);
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  CHECK(regs->rax == test_shm->var);
-  CHECK(regs->rbx == regs->prog_ctr + 0x2000);
-  CHECK(regs->rcx == regs->stack_ptr + 0x1000);
-  CHECK(regs->rbp == regs->r15 + 0x10000001);
-  CHECK(regs->rdx == 0x2000000000000002);
-  CHECK(regs->rsi == 0x3000000000000003);
-  CHECK(regs->rdi == 0x4000000000000004);
-  CHECK(regs->r8 == 0x8000000000000008);
-  CHECK(regs->r9 == 0x9000000000000009);
-  CHECK(regs->r10 == 0xa00000000000000a);
-  CHECK(regs->r11 == 0xb00000000000000b);
-  CHECK(regs->r12 == 0xc00000000000000c);
-  CHECK(regs->r13 == 0xd00000000000000d);
-  CHECK(regs->r14 == 0xe00000000000000e);
+  CHECK(regs.rax == test_shm->var);
+  CHECK(regs.rbx == regs.prog_ctr + 0x2000);
+  CHECK(regs.rcx == regs.stack_ptr + 0x1000);
+  CHECK(regs.rbp == regs.r15 + 0x10000001);
+  CHECK(regs.rdx == 0x2000000000000002);
+  CHECK(regs.rsi == 0x3000000000000003);
+  CHECK(regs.rdi == 0x4000000000000004);
+  CHECK(regs.r8 == 0x8000000000000008);
+  CHECK(regs.r9 == 0x9000000000000009);
+  CHECK(regs.r10 == 0xa00000000000000a);
+  CHECK(regs.r11 == 0xb00000000000000b);
+  CHECK(regs.r12 == 0xc00000000000000c);
+  CHECK(regs.r13 == 0xd00000000000000d);
+  CHECK(regs.r14 == 0xe00000000000000e);
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  CHECK(regs->r0 == test_shm->var);
-  CHECK(regs->r1 == regs->prog_ctr + 0x2000);
-  CHECK(regs->r2 == regs->stack_ptr + 0x1000);
-  CHECK(regs->r3 == 0x30000003);
-  CHECK(regs->r4 == 0x40000004);
-  CHECK(regs->r5 == 0x50000005);
-  CHECK(regs->r6 == 0x60000006);
-  CHECK(regs->r7 == 0x70000007);
-  CHECK(regs->r8 == 0x80000008);
+  CHECK(regs.r0 == test_shm->var);
+  CHECK(regs.r1 == regs.prog_ctr + 0x2000);
+  CHECK(regs.r2 == regs.stack_ptr + 0x1000);
+  CHECK(regs.r3 == 0x30000003);
+  CHECK(regs.r4 == 0x40000004);
+  CHECK(regs.r5 == 0x50000005);
+  CHECK(regs.r6 == 0x60000006);
+  CHECK(regs.r7 == 0x70000007);
+  CHECK(regs.r8 == 0x80000008);
   /* r9 is reserved for TLS and is read-only. */
-  CHECK(regs->r9 == natp->user.r9);
-  CHECK(regs->r10 == 0xa000000a);
-  CHECK(regs->r11 == 0xb000000b);
-  CHECK(regs->r12 == 0xc000000c);
-  CHECK(regs->lr == 0xe000000e);
+  CHECK(regs.r9 == natp->user.r9);
+  CHECK(regs.r10 == 0xa000000a);
+  CHECK(regs.r11 == 0xb000000b);
+  CHECK(regs.r12 == 0xc000000c);
+  CHECK(regs.lr == 0xe000000e);
 #else
 # error Unsupported architecture
 #endif
@@ -319,51 +319,52 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
    */
   if (!NACL_OSX) {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-    regs->eax = 0x12340001;
-    regs->ecx = 0x12340002;
-    regs->edx = 0x12340003;
-    regs->ebx = 0x12340004;
+    regs.eax = 0x12340001;
+    regs.ecx = 0x12340002;
+    regs.edx = 0x12340003;
+    regs.ebx = 0x12340004;
     /* Leave %esp and %ebp alone for now. */
-    regs->esi = 0x12340005;
-    regs->edi = 0x12340006;
-    regs->prog_ctr = test_shm->continue_after_suspension_func;
+    regs.esi = 0x12340005;
+    regs.edi = 0x12340006;
+    regs.prog_ctr = test_shm->continue_after_suspension_func;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-    regs->rax = 0x1234567800000001;
-    regs->rcx = 0x1234567800000002;
-    regs->rdx = 0x1234567800000003;
-    regs->rbx = 0x1234567800000004;
+    regs.rax = 0x1234567800000001;
+    regs.rcx = 0x1234567800000002;
+    regs.rdx = 0x1234567800000003;
+    regs.rbx = 0x1234567800000004;
     /* Leave %rsp and %rbp alone for now. */
-    regs->rsi = 0x1234567800000005;
-    regs->rdi = 0x1234567800000006;
-    regs->r8 = 0x1234567800000007;
-    regs->r9 = 0x1234567800000008;
-    regs->r10 = 0x1234567800000009;
-    regs->r11 = 0x123456780000000a;
-    regs->r12 = 0x123456780000000b;
-    regs->r13 = 0x123456780000000c;
-    regs->r14 = 0x123456780000000d;
+    regs.rsi = 0x1234567800000005;
+    regs.rdi = 0x1234567800000006;
+    regs.r8 = 0x1234567800000007;
+    regs.r9 = 0x1234567800000008;
+    regs.r10 = 0x1234567800000009;
+    regs.r11 = 0x123456780000000a;
+    regs.r12 = 0x123456780000000b;
+    regs.r13 = 0x123456780000000c;
+    regs.r14 = 0x123456780000000d;
     /* The x86-64 sandbox requires %r15 to stay the same. */
-    regs->prog_ctr = regs->r15 + test_shm->continue_after_suspension_func;
+    regs.prog_ctr = regs.r15 + test_shm->continue_after_suspension_func;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-    regs->r0 = 0x12340001;
-    regs->r1 = 0x12340002;
-    regs->r2 = 0x12340003;
-    regs->r3 = 0x12340004;
-    regs->r4 = 0x12340005;
-    regs->r5 = 0x12340006;
-    regs->r6 = 0x12340007;
-    regs->r7 = 0x12340008;
-    regs->r8 = 0x12340009;
+    regs.r0 = 0x12340001;
+    regs.r1 = 0x12340002;
+    regs.r2 = 0x12340003;
+    regs.r3 = 0x12340004;
+    regs.r4 = 0x12340005;
+    regs.r5 = 0x12340006;
+    regs.r6 = 0x12340007;
+    regs.r7 = 0x12340008;
+    regs.r8 = 0x12340009;
     /* In the ARM sandbox, r9 is supposed to be read-only. */
-    regs->r10 = 0x1234000a;
-    regs->r11 = 0x1234000b;
-    regs->r12 = 0x1234000c;
+    regs.r10 = 0x1234000a;
+    regs.r11 = 0x1234000b;
+    regs.r12 = 0x1234000c;
     /* Leave sp (r13) and lr (r14) alone for now. */
-    regs->prog_ctr = test_shm->continue_after_suspension_func;
+    regs.prog_ctr = test_shm->continue_after_suspension_func;
 #else
 # error Unsupported architecture
 #endif
 
+    NaClAppThreadSetSuspendedRegisters(natp, &regs);
     NaClUntrustedThreadsResumeAll(nap);
     CHECK(NaClWaitForMainThreadToExit(nap) == 0);
   }

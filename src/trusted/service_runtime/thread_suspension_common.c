@@ -4,8 +4,12 @@
  * found in the LICENSE file.
  */
 
+#include <string.h>
+
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 void NaClUntrustedThreadsSuspendAllButOne(struct NaClApp *nap,
@@ -49,4 +53,24 @@ void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
 
 void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
   NaClUntrustedThreadsResumeAllButOne(nap, NULL);
+}
+
+void NaClAppThreadGetSuspendedRegisters(struct NaClAppThread *natp,
+                                        struct NaClSignalContext *regs) {
+  if ((natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
+    *regs = *natp->suspended_registers;
+  } else {
+    NaClThreadContextToSignalContext(&natp->user, regs);
+  }
+}
+
+void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
+                                        const struct NaClSignalContext *regs) {
+  if ((natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
+    *natp->suspended_registers = *regs;
+  } else {
+    /* TODO(eaeltsin): can we alter NaClAppThread.user? */
+    NaClLog(LOG_WARNING,
+            "NaClAppThreadSetSuspendedRegisters: Registers not modified\n");
+  }
 }

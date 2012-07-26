@@ -70,6 +70,16 @@ void NaClUntrustedThreadsSuspendAllButOne(struct NaClApp *nap,
 void NaClUntrustedThreadsResumeAllButOne(struct NaClApp *nap,
                                          struct NaClAppThread *natp_to_skip);
 
+/*
+ * Get or modify the untrusted register state of a thread.  Calling
+ * these functions is only valid if the thread is currently suspended
+ * and was suspended with save_registers=1.
+ */
+void NaClAppThreadGetSuspendedRegisters(struct NaClAppThread *natp,
+                                        struct NaClSignalContext *regs);
+void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
+                                        const struct NaClSignalContext *regs);
+
 #if NACL_LINUX
 void NaClSuspendSignalHandler(struct NaClSignalContext *regs);
 #endif

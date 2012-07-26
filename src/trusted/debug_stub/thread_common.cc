@@ -14,7 +14,6 @@
 #include "native_client/src/trusted/port/thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
-#include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 namespace {
@@ -156,12 +155,7 @@ void IThread::SuspendAllThreadsExceptSignaled(uint32_t signaled_tid) {
   for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
     Thread *thread = it->second;
     if (thread->id_ != signaled_tid) {
-      if ((thread->natp_->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
-        thread->context_ = *thread->natp_->suspended_registers;
-      } else {
-        NaClThreadContextToSignalContext(&thread->natp_->user,
-                                         &thread->context_);
-      }
+      NaClAppThreadGetSuspendedRegisters(thread->natp_, &thread->context_);
     }
   }
 }
@@ -175,15 +169,7 @@ void IThread::ResumeAllThreadsExceptSignaled(uint32_t signaled_tid) {
   for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
     Thread *thread = it->second;
     if (thread->id_ != signaled_tid) {
-      if ((thread->natp_->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
-        *thread->natp_->suspended_registers = thread->context_;
-      } else {
-        // TODO(eaeltsin): can we alter NaClAppThread.user?
-        NaClLog(LOG_WARNING,
-                "IThread::ResumeAllThreadsExceptSignaled: thread 0x%x "
-                "registers not restored\n",
-                thread->id_);
-      }
+      NaClAppThreadSetSuspendedRegisters(thread->natp_, &thread->context_);
     }
   }
 
