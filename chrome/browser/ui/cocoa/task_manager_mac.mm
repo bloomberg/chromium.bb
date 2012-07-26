@@ -223,7 +223,7 @@ class SortHelper {
 // if the column is initially visible.
 - (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible {
   scoped_nsobject<NSTableColumn> column([[NSTableColumn alloc]
-      initWithIdentifier:[NSNumber numberWithInt:columnId]]);
+      initWithIdentifier:[NSString stringWithFormat:@"%d", columnId]]);
 
   NSTextAlignment textAlignment =
       (columnId == IDS_TASK_MANAGER_TASK_COLUMN ||

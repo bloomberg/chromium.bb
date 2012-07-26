@@ -71,7 +71,7 @@ TEST_F(TaskManagerWindowControllerTest, Sort) {
 
   // Test that table is sorted on title.
   NSTableColumn* title_column = [table tableColumnWithIdentifier:
-      [NSNumber numberWithInt:IDS_TASK_MANAGER_TASK_COLUMN]];
+      [NSString stringWithFormat:@"%d", IDS_TASK_MANAGER_TASK_COLUMN]];
   NSCell* cell;
   cell = [controller tableView:table dataCellForTableColumn:title_column row:0];
   EXPECT_NSEQ(@"zzb", [cell title]);
