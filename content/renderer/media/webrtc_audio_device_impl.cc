@@ -147,7 +147,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
   // input side as well.
   DCHECK(RenderThreadImpl::current()) <<
       "WebRtcAudioDeviceImpl must be constructed on the render thread";
-  audio_output_device_ = AudioDeviceFactory::Create();
+  audio_output_device_ = AudioDeviceFactory::NewOutputDevice();
   DCHECK(audio_output_device_);
 }
 
@@ -398,6 +398,8 @@ int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(
 int32_t WebRtcAudioDeviceImpl::Init() {
   DVLOG(1) << "Init()";
 
+  // TODO(henrika): After switching to using the AudioDeviceFactory for
+  // instantiating the input device, maybe this isn't a requirement anymore?
   if (!render_loop_->BelongsToCurrentThread()) {
     int32_t error = 0;
     base::WaitableEvent event(false, false);
@@ -578,8 +580,8 @@ int32_t WebRtcAudioDeviceImpl::Init() {
       16, in_buffer_size);
 
   // Create and configure the audio capturing client.
-  audio_input_device_ = new AudioInputDevice(
-      input_audio_parameters_, this, this);
+  audio_input_device_ = AudioDeviceFactory::NewInputDevice();
+  audio_input_device_->Initialize(input_audio_parameters_, this, this);
 
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputChannelLayout",
                             out_channel_layout, CHANNEL_LAYOUT_MAX);

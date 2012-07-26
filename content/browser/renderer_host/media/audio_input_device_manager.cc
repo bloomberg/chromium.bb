@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_manager_base.h"
 
 using content::BrowserThread;
@@ -15,8 +16,6 @@ using content::BrowserThread;
 namespace media_stream {
 
 const int AudioInputDeviceManager::kFakeOpenSessionId = 1;
-const int AudioInputDeviceManager::kInvalidSessionId = 0;
-const char AudioInputDeviceManager::kInvalidDeviceId[] = "";
 
 // Starting id for the first capture session.
 const int kFirstSessionId = AudioInputDeviceManager::kFakeOpenSessionId + 1;
@@ -158,15 +157,15 @@ void AudioInputDeviceManager::Start(
   }
 
   // Checks if the device has been opened or not.
-  std::string device_id = (devices_.find(session_id) == devices_.end()) ?
-      kInvalidDeviceId : devices_[session_id].unique_id;
+  std::string device_id;
 
   // Adds the event handler to the session if the session has not been started,
-  // otherwise post a |kInvalidDeviceId| to indicate that Start() fails.
-  if (event_handlers_.find(session_id) == event_handlers_.end())
+  // otherwise post an empty |device_id| to indicate that Start() fails.
+  if (event_handlers_.find(session_id) == event_handlers_.end()) {
     event_handlers_.insert(std::make_pair(session_id, event_handler));
-  else
-    device_id = kInvalidDeviceId;
+    if (devices_.find(session_id) != devices_.end())
+      device_id = devices_[session_id].unique_id;
+  }
 
   // Posts a callback through the AudioInputRendererHost to notify the renderer
   // that the device has started.

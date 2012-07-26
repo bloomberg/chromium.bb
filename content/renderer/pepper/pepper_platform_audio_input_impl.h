@@ -28,12 +28,12 @@ class PepperPluginDelegateImpl;
 // except the destructor, must be called on the main thread. The notifications
 // to the users of this class (via the PlatformAudioInputClient interface) are
 // also sent on the main thread. Internally, this class sends audio input IPC
-// messages and receives AudioInputMessageFilter::Delegate notifications on the
+// messages and receives media::AudioInputIPCDelegate notifications on the
 // I/O thread.
 
 class PepperPlatformAudioInputImpl
     : public webkit::ppapi::PluginDelegate::PlatformAudioInput,
-      public AudioInputMessageFilter::Delegate,
+      public media::AudioInputIPCDelegate,
       public base::RefCountedThreadSafe<PepperPlatformAudioInputImpl> {
  public:
   // Factory function, returns NULL on failure. StreamCreated() will be called
@@ -50,13 +50,15 @@ class PepperPlatformAudioInputImpl
   virtual void StopCapture() OVERRIDE;
   virtual void ShutDown() OVERRIDE;
 
-  // AudioInputMessageFilter::Delegate.
+  // media::AudioInputIPCDelegate.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               uint32 length) OVERRIDE;
+                               int length) OVERRIDE;
   virtual void OnVolume(double volume) OVERRIDE;
-  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
+  virtual void OnStateChanged(
+      media::AudioInputIPCDelegate::State state) OVERRIDE;
   virtual void OnDeviceReady(const std::string&) OVERRIDE;
+  virtual void OnIPCClosed() OVERRIDE;
 
  protected:
   virtual ~PepperPlatformAudioInputImpl();
@@ -89,9 +91,9 @@ class PepperPlatformAudioInputImpl
   // ACCESSED ON THE MAIN THREAD.
   webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client_;
 
-  // MessageFilter used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
+  // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O thread except to send messages and get the message loop.
-  scoped_refptr<AudioInputMessageFilter> filter_;
+  media::AudioInputIPC* ipc_;
 
   // Our ID on the MessageFilter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
   // or else you could race with the initialize function which sets it.

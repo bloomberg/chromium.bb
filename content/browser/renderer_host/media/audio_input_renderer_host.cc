@@ -291,8 +291,8 @@ void AudioInputRendererHost::OnSetVolume(int stream_id, double volume) {
 }
 
 void AudioInputRendererHost::SendErrorMessage(int stream_id) {
-  Send(new AudioInputMsg_NotifyStreamStateChanged(stream_id,
-                                                  kAudioStreamError));
+  Send(new AudioInputMsg_NotifyStreamStateChanged(
+      stream_id, media::AudioInputIPCDelegate::kError));
 }
 
 void AudioInputRendererHost::DeleteEntries() {
@@ -333,8 +333,8 @@ void AudioInputRendererHost::OnDeviceStopped(int session_id) {
     // Device has been stopped, close the input stream.
     CloseAndDeleteStream(entry);
     // Notify the renderer that the state of the input stream has changed.
-    Send(new AudioInputMsg_NotifyStreamStateChanged(stream_id,
-                                                    kAudioStreamPaused));
+    Send(new AudioInputMsg_NotifyStreamStateChanged(
+        stream_id, media::AudioInputIPCDelegate::kStopped));
   }
 
   // Delete the session entry.

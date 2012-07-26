@@ -24,7 +24,7 @@ PepperPlatformAudioInputImpl* PepperPlatformAudioInputImpl::Create(
     int frames_per_buffer,
     webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client) {
   scoped_refptr<PepperPlatformAudioInputImpl> audio_input(
-      new PepperPlatformAudioInputImpl);
+      new PepperPlatformAudioInputImpl());
   if (audio_input->Initialize(plugin_delegate, device_id, sample_rate,
                               frames_per_buffer, client)) {
     // Balanced by Release invoked in
@@ -64,7 +64,7 @@ void PepperPlatformAudioInputImpl::ShutDown() {
 void PepperPlatformAudioInputImpl::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
-    uint32 length) {
+    int length) {
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -97,7 +97,9 @@ void PepperPlatformAudioInputImpl::OnStreamCreated(
 
 void PepperPlatformAudioInputImpl::OnVolume(double volume) {}
 
-void PepperPlatformAudioInputImpl::OnStateChanged(AudioStreamState state) {}
+void PepperPlatformAudioInputImpl::OnStateChanged(
+    media::AudioInputIPCDelegate::State state) {
+}
 
 void PepperPlatformAudioInputImpl::OnDeviceReady(const std::string& device_id) {
   DCHECK(ChildProcess::current()->io_message_loop_proxy()->
@@ -113,9 +115,12 @@ void PepperPlatformAudioInputImpl::OnDeviceReady(const std::string& device_id) {
                    this));
   } else {
     // We will be notified by OnStreamCreated().
-    filter_->Send(new AudioInputHostMsg_CreateStream(stream_id_, params_,
-                                                     device_id, false));
+    ipc_->CreateStream(stream_id_, params_, device_id, false);
   }
+}
+
+void PepperPlatformAudioInputImpl::OnIPCClosed() {
+  ipc_ = NULL;
 }
 
 PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
@@ -135,7 +140,7 @@ PepperPlatformAudioInputImpl::PepperPlatformAudioInputImpl()
       stream_id_(0),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
       shutdown_called_(false) {
-  filter_ = RenderThreadImpl::current()->audio_input_message_filter();
+  ipc_ = RenderThreadImpl::current()->audio_input_message_filter();
 }
 
 bool PepperPlatformAudioInputImpl::Initialize(
@@ -180,17 +185,16 @@ void PepperPlatformAudioInputImpl::InitializeOnIOThread(int session_id) {
 
   // Make sure we don't call init more than once.
   DCHECK_EQ(0, stream_id_);
-  stream_id_ = filter_->AddDelegate(this);
+  stream_id_ = ipc_->AddDelegate(this);
   DCHECK_NE(0, stream_id_);
 
   if (!session_id) {
     // We will be notified by OnStreamCreated().
-    filter_->Send(new AudioInputHostMsg_CreateStream(
-        stream_id_, params_,
-        media::AudioManagerBase::kDefaultDeviceId, false));
+    ipc_->CreateStream(stream_id_, params_,
+        media::AudioManagerBase::kDefaultDeviceId, false);
   } else {
     // We will be notified by OnDeviceReady().
-    filter_->Send(new AudioInputHostMsg_StartDevice(stream_id_, session_id));
+    ipc_->StartDevice(stream_id_, session_id);
   }
 }
 
@@ -199,7 +203,7 @@ void PepperPlatformAudioInputImpl::StartCaptureOnIOThread() {
       BelongsToCurrentThread());
 
   if (stream_id_)
-    filter_->Send(new AudioInputHostMsg_RecordStream(stream_id_));
+    ipc_->RecordStream(stream_id_);
 }
 
 void PepperPlatformAudioInputImpl::StopCaptureOnIOThread() {
@@ -208,7 +212,7 @@ void PepperPlatformAudioInputImpl::StopCaptureOnIOThread() {
 
   // TODO(yzshen): We cannot re-start capturing if the stream is closed.
   if (stream_id_)
-    filter_->Send(new AudioInputHostMsg_CloseStream(stream_id_));
+    ipc_->CloseStream(stream_id_);
 }
 
 void PepperPlatformAudioInputImpl::ShutDownOnIOThread() {
@@ -221,8 +225,8 @@ void PepperPlatformAudioInputImpl::ShutDownOnIOThread() {
   shutdown_called_ = true;
 
   if (stream_id_) {
-    filter_->Send(new AudioInputHostMsg_CloseStream(stream_id_));
-    filter_->RemoveDelegate(stream_id_);
+    ipc_->CloseStream(stream_id_);
+    ipc_->RemoveDelegate(stream_id_);
     stream_id_ = 0;
   }
 

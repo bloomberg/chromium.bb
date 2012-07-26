@@ -118,15 +118,20 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   void OnStreamStateChanged(const IPC::Message& msg, int stream_id,
-                            AudioStreamState state) {
-    if (state == kAudioStreamPlaying) {
-      OnStreamPlaying(stream_id);
-    } else if (state == kAudioStreamPaused) {
-      OnStreamPaused(stream_id);
-    } else if (state == kAudioStreamError) {
-      OnStreamError(stream_id);
-    } else {
-      FAIL() << "Unknown stream state";
+                            media::AudioOutputIPCDelegate::State state) {
+    switch (state) {
+      case media::AudioOutputIPCDelegate::kPlaying:
+        OnStreamPlaying(stream_id);
+        break;
+      case media::AudioOutputIPCDelegate::kPaused:
+        OnStreamPaused(stream_id);
+        break;
+      case media::AudioOutputIPCDelegate::kError:
+        OnStreamError(stream_id);
+        break;
+      default:
+        FAIL() << "Unknown stream state";
+        break;
     }
   }
 

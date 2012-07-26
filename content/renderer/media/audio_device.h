@@ -23,19 +23,19 @@
 //
 //            Task [IO thread]                  IPC [IO thread]
 //
-// Start -> CreateStreamOnIOThread -----> AudioHostMsg_CreateStream ------>
+// Start -> CreateStreamOnIOThread -----> CreateStream ------>
 //       <- OnStreamCreated <- AudioMsg_NotifyStreamCreated <-
-//       ---> PlayOnIOThread -----------> AudioHostMsg_PlayStream -------->
+//       ---> PlayOnIOThread -----------> PlayStream -------->
 //
 // Optionally Play() / Pause() sequences may occur:
-// Play -> PlayOnIOThread --------------> AudioHostMsg_PlayStream --------->
-// Pause -> PauseOnIOThread ------------> AudioHostMsg_PauseStream -------->
+// Play -> PlayOnIOThread --------------> PlayStream --------->
+// Pause -> PauseOnIOThread ------------> PauseStream -------->
 // (note that Play() / Pause() sequences before OnStreamCreated are
 //  deferred until OnStreamCreated, with the last valid state being used)
 //
 // AudioDevice::Render => audio transport on audio thread =>
 //                               |
-// Stop --> ShutDownOnIOThread -------->  AudioHostMsg_CloseStream -> Close
+// Stop --> ShutDownOnIOThread -------->  CloseStream -> Close
 //
 // This class utilizes several threads during its lifetime, namely:
 // 1. Creating thread.
@@ -70,8 +70,8 @@
 #include "base/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/audio_device_thread.h"
-#include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/scoped_loop_observer.h"
+#include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 
@@ -79,13 +79,9 @@ namespace media {
 class AudioParameters;
 }
 
-namespace content {
-class AudioDeviceFactory;
-}
-
 class CONTENT_EXPORT AudioDevice
     : NON_EXPORTED_BASE(public media::AudioRendererSink),
-      public AudioMessageFilter::Delegate,
+      public media::AudioOutputIPCDelegate,
       NON_EXPORTED_BASE(public ScopedLoopObserver) {
  public:
   // Methods called on main render thread -------------------------------------
@@ -100,24 +96,22 @@ class CONTENT_EXPORT AudioDevice
   virtual bool SetVolume(double volume) OVERRIDE;
 
   // Methods called on IO thread ----------------------------------------------
-  // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
-  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
+  // AudioOutputIPCDelegate methods.
+  virtual void OnStateChanged(
+      media::AudioOutputIPCDelegate::State state) OVERRIDE;
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               uint32 length) OVERRIDE;
-
- protected:
-  friend class content::AudioDeviceFactory;
+                               int length) OVERRIDE;
+  virtual void OnIPCClosed() OVERRIDE;
 
   // Creates an uninitialized AudioDevice. Clients must call Initialize()
-  // before using.  The constructor is protected to ensure that the
-  // AudioDeviceFactory is always used for construction in Chrome.
-  // Tests should use a test class that inherits from AudioDevice to gain
-  // access to the constructor.
+  // before using.
   // TODO(tommi): When all dependencies on |content| have been removed
   // from AudioDevice, move this class over to media/audio.
-  explicit AudioDevice(const scoped_refptr<base::MessageLoopProxy>& io_loop);
+  AudioDevice(media::AudioOutputIPC* ipc,
+              const scoped_refptr<base::MessageLoopProxy>& io_loop);
 
+ protected:
   // Magic required by ref_counted.h to avoid any code deleting the object
   // accidentally while there are references to it.
   friend class base::RefCountedThreadSafe<AudioDevice>;
@@ -134,8 +128,6 @@ class CONTENT_EXPORT AudioDevice
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
 
-  void Send(IPC::Message* message);
-
   // MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
@@ -144,12 +136,13 @@ class CONTENT_EXPORT AudioDevice
 
   RenderCallback* callback_;
 
-  // Cached audio message filter (lives on the main render thread).
-  scoped_refptr<AudioMessageFilter> filter_;
+  // A pointer to the IPC layer that takes care of sending requests over to
+  // the AudioRendererHost.
+  media::AudioOutputIPC* ipc_;
 
   // Our stream ID on the message filter. Only accessed on the IO thread.
   // Must only be modified on the IO thread.
-  int32 stream_id_;
+  int stream_id_;
 
   // State of Play() / Pause() calls before OnStreamCreated() is called.
   bool play_on_start_;

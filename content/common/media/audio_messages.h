@@ -12,16 +12,18 @@
 #include "base/sync_socket.h"
 #include "content/common/content_export.h"
 #include "content/common/media/audio_param_traits.h"
-#include "content/common/media/audio_stream_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_buffers_state.h"
+#include "media/audio/audio_input_ipc.h"
+#include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START AudioMsgStart
 
-IPC_ENUM_TRAITS(AudioStreamState)
+IPC_ENUM_TRAITS(media::AudioInputIPCDelegate::State)
+IPC_ENUM_TRAITS(media::AudioOutputIPCDelegate::State)
 
 IPC_STRUCT_TRAITS_BEGIN(media::AudioBuffersState)
   IPC_STRUCT_TRAITS_MEMBER(pending_bytes)
@@ -70,12 +72,12 @@ IPC_MESSAGE_CONTROL4(AudioInputMsg_NotifyStreamCreated,
 // update after the renderer has requested a Create/Start/Close.
 IPC_MESSAGE_CONTROL2(AudioMsg_NotifyStreamStateChanged,
                      int /* stream id */,
-                     AudioStreamState /* new state */)
+                     media::AudioOutputIPCDelegate::State /* new state */)
 
 // Notification message sent from browser to renderer for state update.
 IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamStateChanged,
                      int /* stream id */,
-                     AudioStreamState /* new state */)
+                     media::AudioInputIPCDelegate::State /* new state */)
 
 IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
                      int /* stream id */,

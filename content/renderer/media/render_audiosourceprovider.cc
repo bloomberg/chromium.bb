@@ -35,7 +35,7 @@ RenderAudioSourceProvider::RenderAudioSourceProvider()
     default_sink_ = RenderThreadImpl::current()->
         GetAudioRendererMixerManager()->CreateInput();
   } else {
-    default_sink_ = AudioDeviceFactory::Create();
+    default_sink_ = AudioDeviceFactory::NewOutputDevice();
   }
 }
 

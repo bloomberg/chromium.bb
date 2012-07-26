@@ -8,8 +8,6 @@
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
-#include "content/common/media/audio_messages.h"
-#include "content/common/view_messages.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_util.h"
 
@@ -38,15 +36,15 @@ class AudioDevice::AudioThreadCallback
 };
 
 AudioDevice::AudioDevice(
+    media::AudioOutputIPC* ipc,
     const scoped_refptr<base::MessageLoopProxy>& io_loop)
     : ScopedLoopObserver(io_loop),
       callback_(NULL),
+      ipc_(ipc),
       stream_id_(0),
       play_on_start_(true),
       is_started_(false) {
-  // Use the filter instance already created on the main render thread.
-  CHECK(AudioMessageFilter::Get()) << "Invalid audio message filter.";
-  filter_ = AudioMessageFilter::Get();
+  CHECK(ipc_);
 }
 
 void AudioDevice::Initialize(const media::AudioParameters& params,
@@ -112,14 +110,14 @@ void AudioDevice::CreateStreamOnIOThread(const media::AudioParameters& params) {
   if (stream_id_)
     return;
 
-  stream_id_ = filter_->AddDelegate(this);
-  Send(new AudioHostMsg_CreateStream(stream_id_, params));
+  stream_id_ = ipc_->AddDelegate(this);
+  ipc_->CreateStream(stream_id_, params);
 }
 
 void AudioDevice::PlayOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_ && is_started_)
-    Send(new AudioHostMsg_PlayStream(stream_id_));
+    ipc_->PlayStream(stream_id_);
   else
     play_on_start_ = true;
 }
@@ -127,9 +125,9 @@ void AudioDevice::PlayOnIOThread() {
 void AudioDevice::PauseOnIOThread(bool flush) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_ && is_started_) {
-    Send(new AudioHostMsg_PauseStream(stream_id_));
+    ipc_->PauseStream(stream_id_);
     if (flush)
-      Send(new AudioHostMsg_FlushStream(stream_id_));
+      ipc_->FlushStream(stream_id_);
   } else {
     // Note that |flush| isn't relevant here since this is the case where
     // the stream is first starting.
@@ -144,8 +142,8 @@ void AudioDevice::ShutDownOnIOThread() {
   if (stream_id_) {
     is_started_ = false;
 
-    filter_->RemoveDelegate(stream_id_);
-    Send(new AudioHostMsg_CloseStream(stream_id_));
+    ipc_->CloseStream(stream_id_);
+    ipc_->RemoveDelegate(stream_id_);
     stream_id_ = 0;
   }
 
@@ -164,17 +162,17 @@ void AudioDevice::ShutDownOnIOThread() {
 void AudioDevice::SetVolumeOnIOThread(double volume) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_)
-    Send(new AudioHostMsg_SetVolume(stream_id_, volume));
+    ipc_->SetVolume(stream_id_, volume);
 }
 
-void AudioDevice::OnStateChanged(AudioStreamState state) {
+void AudioDevice::OnStateChanged(media::AudioOutputIPCDelegate::State state) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
   if (!stream_id_)
     return;
 
-  if (state == kAudioStreamError) {
+  if (state == media::AudioOutputIPCDelegate::kError) {
     DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
     // Don't dereference the callback object if the audio thread
     // is stopped or stopping.  That could mean that the callback
@@ -190,10 +188,9 @@ void AudioDevice::OnStateChanged(AudioStreamState state) {
 void AudioDevice::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
-    uint32 length) {
+    int length) {
   DCHECK(message_loop()->BelongsToCurrentThread());
-  // TODO(vrk): Remove cast when |length| is int instead of uint32.
-  DCHECK_GE(length, static_cast<uint32>(audio_parameters_.GetBytesPerBuffer()));
+  DCHECK_GE(length, audio_parameters_.GetBytesPerBuffer());
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -202,15 +199,14 @@ void AudioDevice::OnStreamCreated(
   DCHECK_GE(socket_handle, 0);
 #endif
 
-  base::AutoLock auto_lock(audio_thread_lock_);
+  // We should only get this callback if stream_id_ is valid.  If it is not,
+  // the IPC layer should have closed the shared memory and socket handles
+  // for us and not invoked the callback.  The basic assertion is that when
+  // stream_id_ is 0 the AudioDevice instance is not registered as a delegate
+  // and hence it should not receive callbacks.
+  DCHECK(stream_id_);
 
-  // Takes care of the case when Stop() is called before OnStreamCreated().
-  if (!stream_id_) {
-    base::SharedMemory::CloseHandle(handle);
-    // Close the socket handler.
-    base::SyncSocket socket(socket_handle);
-    return;
-  }
+  base::AutoLock auto_lock(audio_thread_lock_);
 
   DCHECK(audio_thread_.IsStopped());
   audio_callback_.reset(new AudioDevice::AudioThreadCallback(audio_parameters_,
@@ -224,8 +220,8 @@ void AudioDevice::OnStreamCreated(
     PlayOnIOThread();
 }
 
-void AudioDevice::Send(IPC::Message* message) {
-  filter_->Send(message);
+void AudioDevice::OnIPCClosed() {
+  ipc_ = NULL;
 }
 
 void AudioDevice::WillDestroyCurrentMessageLoop() {

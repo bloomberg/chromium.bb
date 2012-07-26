@@ -11,6 +11,7 @@
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_hardware.h"
+#include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/render_thread_impl.h"
 
 namespace content {
@@ -21,7 +22,7 @@ PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
     int frames_per_buffer,
     webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
   scoped_refptr<PepperPlatformAudioOutputImpl> audio_output(
-      new PepperPlatformAudioOutputImpl);
+      new PepperPlatformAudioOutputImpl());
   if (audio_output->Initialize(sample_rate, frames_per_buffer, client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioOutputImpl::ShutDownOnIOThread().
@@ -31,7 +32,7 @@ PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
 }
 
 bool PepperPlatformAudioOutputImpl::StartPlayback() {
-  if (filter_) {
+  if (ipc_) {
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread,
@@ -42,7 +43,7 @@ bool PepperPlatformAudioOutputImpl::StartPlayback() {
 }
 
 bool PepperPlatformAudioOutputImpl::StopPlayback() {
-  if (filter_) {
+  if (ipc_) {
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&PepperPlatformAudioOutputImpl::StopPlaybackOnIOThread,
@@ -61,12 +62,14 @@ void PepperPlatformAudioOutputImpl::ShutDown() {
       base::Bind(&PepperPlatformAudioOutputImpl::ShutDownOnIOThread, this));
 }
 
-void PepperPlatformAudioOutputImpl::OnStateChanged(AudioStreamState state) {}
+void PepperPlatformAudioOutputImpl::OnStateChanged(
+    media::AudioOutputIPCDelegate::State state) {
+}
 
 void PepperPlatformAudioOutputImpl::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
-    uint32 length) {
+    int length) {
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -88,6 +91,10 @@ void PepperPlatformAudioOutputImpl::OnStreamCreated(
   }
 }
 
+void PepperPlatformAudioOutputImpl::OnIPCClosed() {
+  ipc_ = NULL;
+}
+
 PepperPlatformAudioOutputImpl::~PepperPlatformAudioOutputImpl() {
   // Make sure we have been shut down. Warning: this will usually happen on
   // the I/O thread!
@@ -99,7 +106,7 @@ PepperPlatformAudioOutputImpl::PepperPlatformAudioOutputImpl()
     : client_(NULL),
       stream_id_(0),
       main_message_loop_proxy_(base::MessageLoopProxy::current()) {
-  filter_ = RenderThreadImpl::current()->audio_message_filter();
+  ipc_ = RenderThreadImpl::current()->audio_message_filter();
 }
 
 bool PepperPlatformAudioOutputImpl::Initialize(
@@ -136,18 +143,18 @@ bool PepperPlatformAudioOutputImpl::Initialize(
 
 void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
     const media::AudioParameters& params) {
-  stream_id_ = filter_->AddDelegate(this);
-  filter_->Send(new AudioHostMsg_CreateStream(stream_id_, params));
+  stream_id_ = ipc_->AddDelegate(this);
+  ipc_->CreateStream(stream_id_, params);
 }
 
 void PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread() {
   if (stream_id_)
-    filter_->Send(new AudioHostMsg_PlayStream(stream_id_));
+    ipc_->PlayStream(stream_id_);
 }
 
 void PepperPlatformAudioOutputImpl::StopPlaybackOnIOThread() {
   if (stream_id_)
-    filter_->Send(new AudioHostMsg_PauseStream(stream_id_));
+    ipc_->PauseStream(stream_id_);
 }
 
 void PepperPlatformAudioOutputImpl::ShutDownOnIOThread() {
@@ -155,8 +162,8 @@ void PepperPlatformAudioOutputImpl::ShutDownOnIOThread() {
   if (!stream_id_)
     return;
 
-  filter_->Send(new AudioHostMsg_CloseStream(stream_id_));
-  filter_->RemoveDelegate(stream_id_);
+  ipc_->CloseStream(stream_id_);
+  ipc_->RemoveDelegate(stream_id_);
   stream_id_ = 0;
 
   Release();  // Release for the delegate, balances out the reference taken in

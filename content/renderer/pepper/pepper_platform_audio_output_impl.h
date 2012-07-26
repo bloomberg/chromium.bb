@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "content/renderer/media/audio_message_filter.h"
+#include "media/audio/audio_output_ipc.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace media{
@@ -22,7 +22,7 @@ namespace content {
 
 class PepperPlatformAudioOutputImpl
     : public webkit::ppapi::PluginDelegate::PlatformAudioOutput,
-      public AudioMessageFilter::Delegate,
+      public media::AudioOutputIPCDelegate,
       public base::RefCountedThreadSafe<PepperPlatformAudioOutputImpl> {
  public:
   // Factory function, returns NULL on failure. StreamCreated() will be called
@@ -37,11 +37,13 @@ class PepperPlatformAudioOutputImpl
   virtual bool StopPlayback() OVERRIDE;
   virtual void ShutDown() OVERRIDE;
 
-  // AudioMessageFilter::Delegate.
-  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
+  // media::AudioOutputIPCDelegate implementation.
+  virtual void OnStateChanged(
+      media::AudioOutputIPCDelegate::State state) OVERRIDE;
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               uint32 length) OVERRIDE;
+                               int length) OVERRIDE;
+  virtual void OnIPCClosed() OVERRIDE;
 
  protected:
   virtual ~PepperPlatformAudioOutputImpl();
@@ -66,9 +68,9 @@ class PepperPlatformAudioOutputImpl
   // ACCESSED ON THE MAIN THREAD.
   webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client_;
 
-  // MessageFilter used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
+  // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O thread except to send messages and get the message loop.
-  scoped_refptr<AudioMessageFilter> filter_;
+  media::AudioOutputIPC* ipc_;
 
   // Our ID on the MessageFilter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
   // or else you could race with the initialize function which sets it.

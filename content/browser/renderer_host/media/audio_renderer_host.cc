@@ -147,7 +147,7 @@ void AudioRendererHost::DoSendPlayingMessage(
     return;
 
   Send(new AudioMsg_NotifyStreamStateChanged(
-    entry->stream_id, kAudioStreamPlaying));
+      entry->stream_id, media::AudioOutputIPCDelegate::kPlaying));
 }
 
 void AudioRendererHost::DoSendPausedMessage(
@@ -159,7 +159,7 @@ void AudioRendererHost::DoSendPausedMessage(
     return;
 
   Send(new AudioMsg_NotifyStreamStateChanged(
-      entry->stream_id, kAudioStreamPaused));
+      entry->stream_id, media::AudioOutputIPCDelegate::kPaused));
 }
 
 void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,
@@ -312,7 +312,8 @@ void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
 }
 
 void AudioRendererHost::SendErrorMessage(int32 stream_id) {
-  Send(new AudioMsg_NotifyStreamStateChanged(stream_id, kAudioStreamError));
+  Send(new AudioMsg_NotifyStreamStateChanged(
+      stream_id, media::AudioOutputIPCDelegate::kError));
 }
 
 void AudioRendererHost::DeleteEntries() {

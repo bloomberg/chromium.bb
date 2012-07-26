@@ -48,7 +48,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
       hardware_sample_rate_, 16, hardware_buffer_size_);
 
   media::AudioRendererMixer* mixer = new media::AudioRendererMixer(
-      params, output_params, AudioDeviceFactory::Create());
+      params, output_params, AudioDeviceFactory::NewOutputDevice());
 
   AudioRendererMixerReference mixer_reference = { mixer, 1 };
   mixers_[params] = mixer_reference;

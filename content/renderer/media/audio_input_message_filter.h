@@ -14,49 +14,35 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/common/content_export.h"
-#include "content/common/media/audio_stream_state.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
+#include "media/audio/audio_input_ipc.h"
 
 class CONTENT_EXPORT AudioInputMessageFilter
-    : public IPC::ChannelProxy::MessageFilter {
+    : public IPC::ChannelProxy::MessageFilter,
+      public NON_EXPORTED_BASE(media::AudioInputIPC) {
  public:
-  class CONTENT_EXPORT Delegate {
-   public:
-    // Called when an audio input stream has been created in the browser
-    // process.
-    virtual void OnStreamCreated(base::SharedMemoryHandle handle,
-                                 base::SyncSocket::Handle socket_handle,
-                                 uint32 length) = 0;
-
-    // Called when notification of input stream volume is received from the
-    // browser process.
-    virtual void OnVolume(double volume) = 0;
-
-    // Called when state of an input stream has changed in the browser process.
-    virtual void OnStateChanged(AudioStreamState state) = 0;
-
-    // Called when the device referenced by the index has been started in
-    // the browswer process.
-    virtual void OnDeviceReady(const std::string& device_id) = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   AudioInputMessageFilter();
 
-  // Add a delegate to the map and return id of the entry.
-  int32 AddDelegate(Delegate* delegate);
+  // Getter for the one AudioInputMessageFilter object.
+  static AudioInputMessageFilter* Get();
 
-  // Remove a delegate referenced by |id| from the map.
-  void RemoveDelegate(int32 id);
-
-  // Sends an IPC message using |channel_|.
-  bool Send(IPC::Message* message);
+  // Implementation of AudioInputIPC.
+  virtual int AddDelegate(
+      media::AudioInputIPCDelegate* delegate) OVERRIDE;
+  virtual void RemoveDelegate(int id) OVERRIDE;
+  virtual void CreateStream(int stream_id, const media::AudioParameters& params,
+      const std::string& device_id, bool automatic_gain_control) OVERRIDE;
+  virtual void StartDevice(int stream_id, int session_id) OVERRIDE;
+  virtual void RecordStream(int stream_id) OVERRIDE;
+  virtual void CloseStream(int stream_id) OVERRIDE;
+  virtual void SetVolume(int stream_id, double volume) OVERRIDE;
 
  private:
   virtual ~AudioInputMessageFilter();
+
+  // Sends an IPC message using |channel_|.
+  bool Send(IPC::Message* message);
 
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -78,15 +64,19 @@ class CONTENT_EXPORT AudioInputMessageFilter
 
   // Received when internal state of browser process' audio input stream has
   // changed.
-  void OnStreamStateChanged(int stream_id, AudioStreamState state);
+  void OnStreamStateChanged(int stream_id,
+                            media::AudioInputIPCDelegate::State state);
 
   // Notification of the opened device of an audio session.
   void OnDeviceStarted(int stream_id, const std::string& device_id);
 
   // A map of stream ids to delegates.
-  IDMap<Delegate> delegates_;
+  IDMap<media::AudioInputIPCDelegate> delegates_;
 
   IPC::Channel* channel_;
+
+  // The singleton instance for this filter.
+  static AudioInputMessageFilter* filter_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputMessageFilter);
 };

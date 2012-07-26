@@ -459,8 +459,7 @@ TEST_F(AudioInputDeviceManagerTest, StartInvalidSession) {
   int invalid_session_id = session_id + 1;
   manager_->Start(invalid_session_id, audio_input_event_handler.get());
   EXPECT_CALL(*audio_input_event_handler,
-              DeviceStarted(invalid_session_id,
-                            AudioInputDeviceManager::kInvalidDeviceId))
+              DeviceStarted(invalid_session_id, std::string()))
       .Times(1);
   message_loop_->RunAllPending();
 
@@ -505,8 +504,7 @@ TEST_F(AudioInputDeviceManagerTest, StartSessionTwice) {
   // Starts the session for the second time, it should fail.
   manager_->Start(session_id, audio_input_event_handler.get());
   EXPECT_CALL(*audio_input_event_handler,
-              DeviceStarted(session_id,
-                            AudioInputDeviceManager::kInvalidDeviceId))
+              DeviceStarted(session_id, std::string()))
       .Times(1);
 
   manager_->Stop(session_id);

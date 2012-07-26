@@ -27,11 +27,16 @@ class MockAudioRenderSinkFactory : public AudioDeviceFactory {
   virtual ~MockAudioRenderSinkFactory() {}
 
  protected:
-  virtual media::MockAudioRendererSink* CreateAudioDevice() {
+  virtual media::MockAudioRendererSink* CreateOutputDevice() OVERRIDE {
     media::MockAudioRendererSink* sink = new media::MockAudioRendererSink();
     EXPECT_CALL(*sink, Start());
     EXPECT_CALL(*sink, Stop());
     return sink;
+  }
+
+  virtual AudioInputDevice* CreateInputDevice() OVERRIDE {
+    ADD_FAILURE();
+    return NULL;
   }
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioRenderSinkFactory);

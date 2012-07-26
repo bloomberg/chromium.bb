@@ -16,7 +16,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     WebAudioDevice::RenderCallback* callback)
     : is_running_(false),
       client_callback_(callback) {
-  audio_device_ = AudioDeviceFactory::Create();
+  audio_device_ = AudioDeviceFactory::NewOutputDevice();
   audio_device_->Initialize(params, this);
 }
 

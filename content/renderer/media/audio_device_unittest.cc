@@ -30,16 +30,6 @@ using testing::WithArgs;
 
 namespace {
 
-// Derived from AudioDevice to gain access to the protected constructor.
-class TestAudioDevice : public AudioDevice {
- public:
-  explicit TestAudioDevice(const scoped_refptr<base::MessageLoopProxy>& io_loop)
-      : AudioDevice(io_loop) {}
-
- protected:
-  virtual ~TestAudioDevice() {}
-};
-
 class MockRenderCallback : public media::AudioRendererSink::RenderCallback {
  public:
   MockRenderCallback() {}
@@ -55,29 +45,13 @@ class MockAudioMessageFilter : public AudioMessageFilter {
  public:
   MockAudioMessageFilter() {}
 
-  virtual bool Send(IPC::Message* message) OVERRIDE {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(MockAudioMessageFilter, *message)
-      IPC_MESSAGE_HANDLER(AudioHostMsg_CreateStream, OnCreateStream)
-      IPC_MESSAGE_HANDLER(AudioHostMsg_PlayStream, OnPlayStream)
-      IPC_MESSAGE_HANDLER(AudioHostMsg_CloseStream, OnCloseStream)
-      IPC_MESSAGE_HANDLER(AudioHostMsg_SetVolume, OnSetVolume)
-      IPC_MESSAGE_HANDLER(AudioHostMsg_PauseStream, OnPauseStream)
-      IPC_MESSAGE_HANDLER(AudioHostMsg_FlushStream, OnFlushStream)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    EXPECT_TRUE(handled);
-    delete message;
-    return true;
-  }
-
-  MOCK_METHOD2(OnCreateStream,
+  MOCK_METHOD2(CreateStream,
       void(int stream_id, const media::AudioParameters& params));
-  MOCK_METHOD1(OnPlayStream, void(int stream_id));
-  MOCK_METHOD1(OnCloseStream, void(int stream_id));
-  MOCK_METHOD2(OnSetVolume, void(int stream_id, double volume));
-  MOCK_METHOD1(OnPauseStream, void(int stream_id));
-  MOCK_METHOD1(OnFlushStream, void(int stream_id));
+  MOCK_METHOD1(PlayStream, void(int stream_id));
+  MOCK_METHOD1(CloseStream, void(int stream_id));
+  MOCK_METHOD2(SetVolume, void(int stream_id, double volume));
+  MOCK_METHOD1(PauseStream, void(int stream_id));
+  MOCK_METHOD1(FlushStream, void(int stream_id));
 
  protected:
   virtual ~MockAudioMessageFilter() {}
@@ -145,7 +119,8 @@ class AudioDeviceTest : public testing::Test {
   }
 
   AudioDevice* CreateAudioDevice() {
-    return new TestAudioDevice(io_loop_.message_loop_proxy());
+    return new AudioDevice(
+        audio_message_filter_, io_loop_.message_loop_proxy());
   }
 
   void set_stream_id(int stream_id) { stream_id_ = stream_id; }
@@ -162,8 +137,7 @@ class AudioDeviceTest : public testing::Test {
 };
 
 // The simplest test for AudioDevice.  Used to test construction of AudioDevice
-// and that the runtime environment is set up correctly (e.g. ChildProcess and
-// AudioMessageFilter global pointers).
+// and that the runtime environment is set up correctly.
 TEST_F(AudioDeviceTest, Initialize) {
   scoped_refptr<AudioDevice> audio_device(CreateAudioDevice());
   audio_device->Initialize(default_audio_parameters_, &callback_);
@@ -179,8 +153,8 @@ TEST_F(AudioDeviceTest, StartStop) {
   audio_device->Start();
   audio_device->Stop();
 
-  EXPECT_CALL(*audio_message_filter_, OnCreateStream(_, _));
-  EXPECT_CALL(*audio_message_filter_, OnCloseStream(_));
+  EXPECT_CALL(*audio_message_filter_, CreateStream(_, _));
+  EXPECT_CALL(*audio_message_filter_, CloseStream(_));
 
   io_loop_.RunAllPending();
 }
@@ -194,11 +168,12 @@ TEST_F(AudioDeviceTest, CreateStream) {
 
   audio_device->Start();
 
-  EXPECT_CALL(*audio_message_filter_, OnCreateStream(_, _))
+  EXPECT_CALL(*audio_message_filter_, CreateStream(_, _))
       .WillOnce(WithArgs<0>(Invoke(this, &AudioDeviceTest::set_stream_id)));
 
   EXPECT_EQ(stream_id_, -1);
   io_loop_.RunAllPending();
+
   // OnCreateStream() must have been called and we should have a valid
   // stream id.
   ASSERT_NE(stream_id_, -1);
@@ -211,7 +186,6 @@ TEST_F(AudioDeviceTest, CreateStream) {
       default_audio_parameters_.GetBytesPerBuffer());
   SharedMemory shared_memory;
   ASSERT_TRUE(shared_memory.CreateAndMapAnonymous(memory_size));
-  // Initialize the memory.
   memset(shared_memory.memory(), 0xff, memory_size);
 
   CancelableSyncSocket browser_socket, renderer_socket;
@@ -231,7 +205,7 @@ TEST_F(AudioDeviceTest, CreateStream) {
   // Respond by asking for some audio data.  This should ask our callback
   // to provide some audio data that AudioDevice then writes into the shared
   // memory section.
-  EXPECT_CALL(*audio_message_filter_, OnPlayStream(stream_id_))
+  EXPECT_CALL(*audio_message_filter_, PlayStream(stream_id_))
       .WillOnce(SendPendingBytes(&browser_socket, memory_size));
 
   // We expect calls to our audio renderer callback, which returns the number
@@ -268,8 +242,7 @@ TEST_F(AudioDeviceTest, CreateStream) {
   io_loop_.Run();
 
   // Close the stream sequence.
-
-  EXPECT_CALL(*audio_message_filter_, OnCloseStream(stream_id_));
+  EXPECT_CALL(*audio_message_filter_, CloseStream(stream_id_));
 
   audio_device->Stop();
   io_loop_.RunAllPending();

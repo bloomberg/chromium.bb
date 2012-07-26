@@ -38,9 +38,6 @@ class CONTENT_EXPORT AudioInputDeviceManager
   // AudioInputDeviceManager before MediaStream is implemented.
   static const int kFakeOpenSessionId;
 
-  static const int kInvalidSessionId;
-  static const char kInvalidDeviceId[];
-
   explicit AudioInputDeviceManager(media::AudioManager* audio_manager);
 
   // MediaStreamProvider implementation, called on IO thread.

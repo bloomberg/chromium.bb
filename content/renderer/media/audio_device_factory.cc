@@ -7,6 +7,9 @@
 #include "base/logging.h"
 #include "content/common/child_process.h"
 #include "content/renderer/media/audio_device.h"
+#include "content/renderer/media/audio_input_device.h"
+#include "content/renderer/media/audio_input_message_filter.h"
+#include "content/renderer/media/audio_message_filter.h"
 
 namespace content {
 
@@ -14,11 +17,24 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 // static
-media::AudioRendererSink* AudioDeviceFactory::Create() {
-  if (factory_) {
-    return factory_->CreateAudioDevice();
-  }
-  return new AudioDevice(
+media::AudioRendererSink* AudioDeviceFactory::NewOutputDevice() {
+  media::AudioRendererSink* device = NULL;
+  if (factory_)
+    device = factory_->CreateOutputDevice();
+
+  return device ? device : new AudioDevice(
+      AudioMessageFilter::Get(),
+      ChildProcess::current()->io_message_loop()->message_loop_proxy());
+}
+
+// static
+AudioInputDevice* AudioDeviceFactory::NewInputDevice() {
+  AudioInputDevice* device = NULL;
+  if (factory_)
+    device = factory_->CreateInputDevice();
+
+  return device ? device : new AudioInputDevice(
+      AudioInputMessageFilter::Get(),
       ChildProcess::current()->io_message_loop()->message_loop_proxy());
 }
 

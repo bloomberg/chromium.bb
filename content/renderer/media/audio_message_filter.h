@@ -14,42 +14,30 @@
 #include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
-#include "content/common/media/audio_stream_state.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
+#include "media/audio/audio_output_ipc.h"
 
 class CONTENT_EXPORT AudioMessageFilter
-    : public IPC::ChannelProxy::MessageFilter {
+    : public IPC::ChannelProxy::MessageFilter,
+      public NON_EXPORTED_BASE(media::AudioOutputIPC) {
  public:
-  class CONTENT_EXPORT Delegate {
-   public:
-    // Called when state of an audio stream has changed in the browser process.
-    virtual void OnStateChanged(AudioStreamState state) = 0;
-
-    // Called when an audio stream has been created in the browser process.
-    virtual void OnStreamCreated(base::SharedMemoryHandle handle,
-                                 base::SyncSocket::Handle socket_handle,
-                                 uint32 length) = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   AudioMessageFilter();
 
   // Getter for the one AudioMessageFilter object.
   static AudioMessageFilter* Get();
 
-  // Add a delegate to the map and return id of the entry.
-  int32 AddDelegate(Delegate* delegate);
-
-  // Remove a delegate referenced by |id| from the map.
-  void RemoveDelegate(int32 id);
-
-  // Sends an IPC message using |channel_|.
-  // This method is virtual so that it can be overridden in tests.
-  virtual bool Send(IPC::Message* message);
+  // media::AudioOutputIPCDelegate implementation.
+  virtual int AddDelegate(media::AudioOutputIPCDelegate* delegate) OVERRIDE;
+  virtual void RemoveDelegate(int id) OVERRIDE;
+  virtual void CreateStream(int stream_id,
+      const media::AudioParameters& params) OVERRIDE;
+  virtual void PlayStream(int stream_id) OVERRIDE;
+  virtual void PauseStream(int stream_id) OVERRIDE;
+  virtual void FlushStream(int stream_id) OVERRIDE;
+  virtual void CloseStream(int stream_id) OVERRIDE;
+  virtual void SetVolume(int stream_id, double volume) OVERRIDE;
 
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -64,6 +52,9 @@ class CONTENT_EXPORT AudioMessageFilter
   FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Delegates);
 
+  // Sends an IPC message using |channel_|.
+  bool Send(IPC::Message* message);
+
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
 #if defined(OS_WIN)
@@ -73,16 +64,16 @@ class CONTENT_EXPORT AudioMessageFilter
 #endif
                        uint32 length);
 
-
   // Received when internal state of browser process' audio output device has
   // changed.
-  void OnStreamStateChanged(int stream_id, AudioStreamState state);
+  void OnStreamStateChanged(int stream_id,
+                            media::AudioOutputIPCDelegate::State state);
 
   // The singleton instance for this filter.
   static AudioMessageFilter* filter_;
 
   // A map of stream ids to delegates.
-  IDMap<Delegate> delegates_;
+  IDMap<media::AudioOutputIPCDelegate> delegates_;
 
   IPC::Channel* channel_;
 
