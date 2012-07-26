@@ -11,10 +11,22 @@ function FileCopyManager(root) {
   this.cancelObservers_ = [];
   this.cancelRequested_ = false;
   this.root_ = root;
+  this.unloadTimeout_ = null;
 }
 
-FileCopyManager.prototype = {
-  __proto__: cr.EventTarget.prototype
+var fileCopyManagerInstance = null;
+
+/**
+ * Get FileCopyManager instance. In case is hasn't been initialized, a new
+ * instance is created.
+ * @param {DirectoryEntry} root Root entry.
+ * @return {FileCopyManager} A FileCopyManager instance.
+ */
+FileCopyManager.getInstance = function(root) {
+  if (fileCopyManagerInstance === null) {
+    fileCopyManagerInstance = new FileCopyManager(root);
+  }
+  return fileCopyManagerInstance;
 };
 
 /**
@@ -237,17 +249,50 @@ FileCopyManager.prototype.getProgress = function() {
 };
 
 /**
+ * Send an event to all the FileManager windows.
+ * @private
+ * @param {string} eventName Event name.
+ * @param {Object} eventArgs An object with arbitrary event parameters.
+ */
+FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
+  var windows = chrome.extension.getViews();
+  for (var i = 0; i < windows.length; i++) {
+    var w = windows[i];
+    if (w.fileCopyManagerWrapper)
+      w.fileCopyManagerWrapper.onEvent(eventName, eventArgs);
+  }
+
+  if (this.copyTasks_.length === 0) {
+    if (this.unloadTimeout_ === null)
+      this.unloadTimeout_ = setTimeout(close, 5000);
+  } else {
+    this.unloadTimeout_ = null;
+  }
+};
+
+/**
+ * Write to console.log on all the active FileManager windows.
+ * @private
+ */
+FileCopyManager.prototype.log_ = function() {
+  var windows = chrome.extension.getViews();
+  for (var i = 0; i < windows.length; i++) {
+    windows[i].console.log.apply(windows[i].console, arguments);
+  }
+};
+
+/**
  * Dispatch a simple copy-progress event with reason and optional err data.
  * @private
  * @param {string} reason Event type.
  * @param {FileCopyManager.Error} opt_err Error.
  */
 FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
-  var event = new cr.Event('copy-progress');
+  var event = {};
   event.reason = reason;
   if (opt_err)
     event.error = opt_err;
-  this.dispatchEvent(event);
+  this.sendEvent_('copy-progress', event);
 };
 
 /**
@@ -258,10 +303,10 @@ FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
  */
 FileCopyManager.prototype.sendOperationEvent_ = function(reason,
                                                          affectedEntries) {
-  var event = new cr.Event('copy-operation-complete');
+  var event = {};
   event.reason = reason;
   event.affectedEntries = affectedEntries;
-  this.dispatchEvent(event);
+  this.sendEvent_('copy-operation-complete', event);
 };
 
 /**
@@ -626,7 +671,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
   }
 
   function onError(reason, data) {
-    console.log('serviceNextTaskEntry error: ' + reason + ':', data);
+    this.log_('serviceNextTaskEntry error: ' + reason + ':', data);
     errorCallback(new FileCopyManager.Error(reason, data));
   }
 
@@ -767,7 +812,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
           chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
               onFileTransfersUpdated);
           if (chrome.extension.lastError) {
-            console.log(
+            this.log_(
                 'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
             onFilesystemError({
               code: chrome.extension.lastError.message,
@@ -888,3 +933,4 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
 
   sourceEntry.file(onSourceFileFound, errorCallback);
 };
+

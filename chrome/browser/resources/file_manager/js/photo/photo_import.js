@@ -19,7 +19,7 @@ function PhotoImport(dom, filesystem, params) {
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = params.metadataCache;
   this.volumeManager_ = new VolumeManager();
-  this.copyManager_ = new FileCopyManager(this.filesystem_.root);
+  this.copyManager_ = FileCopyManagerWrapper.getInstance(this.filesystem_.root);
   this.mediaFilesList_ = null;
   this.albums_ = null;
   this.albumsDir_ = null;

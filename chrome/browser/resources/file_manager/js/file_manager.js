@@ -519,7 +519,8 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.initDataTransferOperations_ = function() {
-    this.copyManager_ = new FileCopyManager(this.filesystem_.root);
+    this.copyManager_ = new FileCopyManagerWrapper.getInstance(
+        this.filesystem_.root);
     this.copyManager_.addEventListener('copy-progress',
                                        this.onCopyProgress_.bind(this));
     this.copyManager_.addEventListener('copy-operation-complete',
@@ -4226,3 +4227,4 @@ FileManager.prototype = {
     defaultActionSeparator.hidden = !taskItem;
   }
 })();
+

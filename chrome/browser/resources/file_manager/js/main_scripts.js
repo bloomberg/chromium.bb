@@ -48,17 +48,18 @@
 //<include src="../../shared/js/cr/ui/context_menu_handler.js"/>
 //<include src="combobutton.js"/>
 //
+//<include src="path_util.js"/>
 //<include src="util.js"/>
 //<include src="breadcrumbs_controller.js"/>
 //<include src="directory_contents.js">
-//<include src="volume_manager.js"/>
 //<include src="directory_model.js"/>
-//<include src="file_copy_manager.js"/>
+//<include src="file_copy_manager_wrapper.js"/>
 //<include src="file_manager.js"/>
 //<include src="file_manager_pyauto.js"/>
 //<include src="file_tasks.js"/>
-//<include src="file_type.js"/>
 //<include src="file_transfer_controller.js"/>
+//<include src="file_type.js"/>
+//<include src="volume_manager.js"/>
 //<include src="media/media_util.js"/>
 //<include src="metadata/metadata_cache.js"/>
 //<include src="default_action_dialog.js"/>

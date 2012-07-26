@@ -149,5 +149,12 @@
   ],
   "chrome_url_overrides": {
     "files": "main.html"
+  },
+  "background": {
+    "transient": true,
+    "persistent": false,
+    "scripts": ["js/file_copy_manager.js",
+                "js/path_util.js",
+                "js/util.js"]
   }
 }
