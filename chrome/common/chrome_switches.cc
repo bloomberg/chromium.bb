@@ -1490,6 +1490,10 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 // Disables profile desktop shortcuts handling, preventing their creation,
 // modification or removal.
 const char kDisableDesktopShortcuts[]       = "disable-desktop-shortcuts";
+
+// Enable Website Settings. The Website Settings UI will replace the Page Info
+// Bubble.
+const char kDisableWebsiteSettings[]         = "disable-website-settings";
 #endif
 
 #if defined(USE_AURA)

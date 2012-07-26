@@ -417,6 +417,7 @@ extern const char kUseMockKeychain[];
 
 #if defined(OS_WIN)
 extern const char kDisableDesktopShortcuts[];
+extern const char kDisableWebsiteSettings[];
 #endif
 
 #if defined(USE_AURA)
