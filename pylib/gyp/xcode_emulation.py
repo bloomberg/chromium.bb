@@ -244,8 +244,9 @@ class XcodeSettings(object):
   def _SdkPath(self):
     sdk_root = self.GetPerTargetSetting('SDKROOT', default='macosx10.5')
     if sdk_root.startswith('macosx'):
-      sdk_root = 'MacOSX' + sdk_root[len('macosx'):]
-    return os.path.join(self._GetSdkBaseDir(), '%s.sdk' % sdk_root)
+      return os.path.join(self._GetSdkBaseDir(),
+                          'MacOSX' + sdk_root[len('macosx'):] + '.sdk')
+    return sdk_root
 
   def GetCflags(self, configname):
     """Returns flags that need to be added to .c, .cc, .m, and .mm
