@@ -308,20 +308,6 @@ function getKeyLabel(keyData, modifiers) {
 }
 
 /**
- * Returns the label corresponding to the key code.
- * @param {string} keyCode Key code
- * @return {string} Label of the key code.
- */
-function getKeyLabelFromKeyCode(keyCode) {
-  if ('0'.charCodeAt(0) <= keyCode && keyCode <= 'Z'.charCodeAt(0))
-    return String.fromCharCode(keyCode).toLowerCase();
-  var label = KEYCODE_TO_LABEL[keyCode];
-  if (label)
-    return label;
-  return '';
-}
-
-/**
  * Returns a normalized string used for a key of shortcutData.
  *
  * Examples:
@@ -448,15 +434,7 @@ function handleKeyEvent(e) {
   if (!getKeyboardOverlayId()) {
     return;
   }
-  var label = getKeyLabelFromKeyCode(e.keyCode);
   var modifiers = getModifiers(e);
-  var shortcutData = getShortcutData();
-  var action = getAction(label, modifiers);
-  if (e.type == 'keydown' &&
-      (contains(CLOSE_LABELS, label) || shortcutData[action])) {
-    chrome.send('DialogClose');
-    return;
-  }
   update(modifiers);
   KeyboardOverlayAccessibilityHelper.maybeSpeakAllShortcuts(modifiers);
   e.preventDefault();

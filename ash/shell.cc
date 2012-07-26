@@ -41,9 +41,9 @@
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/event_rewriter_event_filter.h"
+#include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/panel_window_event_filter.h"
-#include "ash/wm/partial_screenshot_event_filter.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -209,7 +209,7 @@ Shell::~Shell() {
   // Please keep in same order as in Init() because it's easy to miss one.
   RemoveEnvEventFilter(user_activity_detector_.get());
   RemoveEnvEventFilter(event_rewriter_filter_.get());
-  RemoveEnvEventFilter(partial_screenshot_filter_.get());
+  RemoveEnvEventFilter(overlay_filter_.get());
   RemoveEnvEventFilter(input_method_filter_.get());
   RemoveEnvEventFilter(window_modality_controller_.get());
   if (mouse_cursor_filter_.get())
@@ -398,9 +398,9 @@ void Shell::Init() {
   AddEnvEventFilter(event_rewriter_filter_.get());
 
   DCHECK_EQ(2U, GetEnvEventFilterCount());
-  partial_screenshot_filter_.reset(new internal::PartialScreenshotEventFilter);
-  AddEnvEventFilter(partial_screenshot_filter_.get());
-  AddShellObserver(partial_screenshot_filter_.get());
+  overlay_filter_.reset(new internal::OverlayEventFilter);
+  AddEnvEventFilter(overlay_filter_.get());
+  AddShellObserver(overlay_filter_.get());
 
   DCHECK_EQ(3U, GetEnvEventFilterCount());
   input_method_filter_.reset(new aura::shared::InputMethodEventFilter());

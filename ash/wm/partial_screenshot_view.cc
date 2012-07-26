@@ -7,7 +7,7 @@
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/partial_screenshot_event_filter.h"
+#include "ash/wm/overlay_event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
@@ -54,20 +54,28 @@ void PartialScreenshotView::StartPartialScreenshot(
   // events.  This will close the context menu.
   widget->GetNativeView()->SetCapture();
 
-  Shell::GetInstance()->partial_screenshot_filter()->Activate(view);
-}
-
-void PartialScreenshotView::Cancel() {
-  Shell::GetInstance()->partial_screenshot_filter()->Deactivate();
-  views::Widget* widget = GetWidget();
-  if (widget)
-    widget->Close();
+  Shell::GetInstance()->overlay_filter()->Activate(view);
 }
 
 gfx::NativeCursor PartialScreenshotView::GetCursor(
     const views::MouseEvent& event) {
   // Always use "crosshair" cursor.
   return ui::kCursorCross;
+}
+
+void PartialScreenshotView::Cancel() {
+  Shell::GetInstance()->overlay_filter()->Deactivate();
+  views::Widget* widget = GetWidget();
+  if (widget)
+    widget->Close();
+}
+
+bool PartialScreenshotView::IsCancelingKeyEvent(aura::KeyEvent* event) {
+  return event->key_code() == ui::VKEY_ESCAPE;
+}
+
+aura::Window* PartialScreenshotView::GetWindow() {
+  return GetWidget()->GetNativeWindow();
 }
 
 void PartialScreenshotView::OnPaint(gfx::Canvas* canvas) {

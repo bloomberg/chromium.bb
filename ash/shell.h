@@ -79,14 +79,14 @@ class AcceleratorFilter;
 class ActivationController;
 class AppListController;
 class CaptureController;
+class DisplayController;
 class DragDropController;
 class EventRewriterEventFilter;
 class FocusCycler;
 class MagnificationController;
-class DisplayController;
 class MouseCursorEventFilter;
+class OverlayEventFilter;
 class PanelLayoutManager;
-class PartialScreenshotEventFilter;
 class ResizeShadowController;
 class RootWindowController;
 class RootWindowLayoutManager;
@@ -95,9 +95,9 @@ class ShadowController;
 class ShelfLayoutManager;
 class ShellContextMenu;
 class SlowAnimationEventFilter;
-class SystemGestureEventFilter;
 class StackingController;
 class StatusAreaWidget;
+class SystemGestureEventFilter;
 class TooltipController;
 class TouchObserverHUD;
 class VisibilityController;
@@ -262,8 +262,8 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   internal::EventRewriterEventFilter* event_rewriter_filter() {
     return event_rewriter_filter_.get();
   }
-  internal::PartialScreenshotEventFilter* partial_screenshot_filter() {
-    return partial_screenshot_filter_.get();
+  internal::OverlayEventFilter* overlay_filter() {
+    return overlay_filter_.get();
   }
   DesktopBackgroundController* desktop_background_controller() {
     return desktop_background_controller_.get();
@@ -447,7 +447,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
 
   // An event filter that pre-handles key events while the partial
   // screenshot UI is active.
-  scoped_ptr<internal::PartialScreenshotEventFilter> partial_screenshot_filter_;
+  scoped_ptr<internal::OverlayEventFilter> overlay_filter_;
 
   // An event filter which handles system level gestures
   scoped_ptr<internal::SystemGestureEventFilter> system_gesture_filter_;

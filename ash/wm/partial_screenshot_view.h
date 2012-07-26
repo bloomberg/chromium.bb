@@ -6,6 +6,7 @@
 #define ASH_WM_PARTIAL_SCREENSHOT_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/overlay_event_filter.h"
 #include "base/compiler_specific.h"
 #include "ui/gfx/point.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -16,7 +17,9 @@ class ScreenshotDelegate;
 // The view of taking partial screenshot, i.e.: drawing region
 // rectangles during drag, and changing the mouse cursor to indicate
 // the current mode.
-class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
+class ASH_EXPORT PartialScreenshotView
+    : public views::WidgetDelegateView,
+      public internal::OverlayEventFilter::Delegate {
  public:
   PartialScreenshotView(ScreenshotDelegate* screenshot_delegate);
   virtual ~PartialScreenshotView();
@@ -24,11 +27,13 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
   // Starts the UI for taking partial screenshot; dragging to select a region.
   static void StartPartialScreenshot(ScreenshotDelegate* screenshot_delegate);
 
-  // Cancels the current screenshot UI.
-  void Cancel();
-
   // Overriddden from View:
   virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
+
+  // Overridden from internal::OverlayEventFilter::Delegate:
+  virtual void Cancel() OVERRIDE;
+  virtual bool IsCancelingKeyEvent(aura::KeyEvent* event) OVERRIDE;
+  virtual aura::Window* GetWindow() OVERRIDE;
 
  private:
   gfx::Rect GetScreenshotRect() const;
