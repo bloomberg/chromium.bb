@@ -1182,6 +1182,7 @@ H264Parser::Result H264Parser::ParseSEI(H264SEIMessage* sei_msg) {
   }
   sei_msg->type += byte;
 
+  READ_BITS_OR_RETURN(8, &byte);
   while (byte == 0xff) {
     sei_msg->payload_size += 255;
     READ_BITS_OR_RETURN(8, &byte);
