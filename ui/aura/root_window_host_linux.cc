@@ -321,12 +321,13 @@ class RootWindowHostLinux::ImageCursors {
       return;
     scale_factor_ = scale_factor;
     UnloadAll();
-    // The cursor's hot points are defined in chromeos's
-    // src/platforms/assets/cursors/*.cfg files.
-    LoadImageCursor(ui::kCursorNull, IDR_AURA_CURSOR_PTR, 9, 5);
-    LoadImageCursor(ui::kCursorPointer, IDR_AURA_CURSOR_PTR, 9, 5);
-    LoadImageCursor(ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP, 9, 5);
-    LoadImageCursor(ui::kCursorCopy, IDR_AURA_CURSOR_COPY, 9, 5);
+    // The cursor's hot points are defined in chromeos cursor images at:
+    // http://folder/kuscher/projects/Chrome_OS/Pointers/focuspoint
+    LoadImageCursor(ui::kCursorNull, IDR_AURA_CURSOR_PTR, 8, 3);
+    LoadImageCursor(ui::kCursorPointer, IDR_AURA_CURSOR_PTR, 8, 3);
+    LoadImageCursor(ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP, 5, 4);
+    LoadImageCursor(ui::kCursorNotAllowed, IDR_AURA_CURSOR_NO_DROP, 5, 4);
+    LoadImageCursor(ui::kCursorCopy, IDR_AURA_CURSOR_COPY, 5, 5);
     LoadImageCursor(ui::kCursorHand, IDR_AURA_CURSOR_HAND, 9, 4);
     LoadImageCursor(ui::kCursorMove, IDR_AURA_CURSOR_MOVE, 12, 12);
     LoadImageCursor(ui::kCursorNorthEastResize,
