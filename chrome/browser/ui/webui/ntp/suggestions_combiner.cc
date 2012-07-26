@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source_discovery.h"
-#include "chrome/browser/ui/webui/ntp/suggestions_source_top_sites.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -80,8 +79,6 @@ void SuggestionsCombiner::SetSuggestionsCount(size_t suggestions_count) {
 SuggestionsCombiner* SuggestionsCombiner::Create(
     SuggestionsCombiner::Delegate* delegate, Profile* profile) {
   SuggestionsCombiner* combiner = new SuggestionsCombiner(delegate, profile);
-  combiner->AddSource(new SuggestionsSourceTopSites());
-
   extensions::SuggestedLinksRegistry* registry =
       extensions::SuggestedLinksRegistryFactory::GetForProfile(profile);
   scoped_ptr<std::vector<std::string> > list = registry->GetExtensionIds();

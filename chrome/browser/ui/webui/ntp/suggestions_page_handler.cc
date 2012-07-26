@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "chrome/browser/ui/webui/ntp/ntp_stats.h"
+#include "chrome/browser/ui/webui/ntp/suggestions_source_top_sites.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -82,7 +83,9 @@ void SuggestionsHandler::RegisterMessages() {
   }
 
   // Setup the suggestions sources.
-  suggestions_combiner_.reset(SuggestionsCombiner::Create(this, profile));
+  SuggestionsCombiner* combiner = new SuggestionsCombiner(this, profile);
+  combiner->AddSource(new SuggestionsSourceTopSites());
+  suggestions_combiner_.reset(combiner);
 
   // We pre-emptively make a fetch for suggestions so we have the results
   // sooner.

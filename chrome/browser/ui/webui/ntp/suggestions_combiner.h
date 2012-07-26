@@ -37,6 +37,9 @@ class SuggestionsCombiner {
 
   virtual ~SuggestionsCombiner();
 
+  explicit SuggestionsCombiner(SuggestionsCombiner::Delegate* delegate,
+                               Profile* profile);
+
   // Add a new source. The SuggestionsCombiner takes ownership of |source|.
   void AddSource(SuggestionsSource* source);
 
@@ -64,9 +67,6 @@ class SuggestionsCombiner {
 
  private:
   friend class SuggestionsCombinerTest;
-
-  explicit SuggestionsCombiner(SuggestionsCombiner::Delegate* delegate,
-                               Profile* profile);
 
   // Fill the page values from the suggestion sources so they can be sent to
   // the JavaScript side. This should only be called when all the suggestion
