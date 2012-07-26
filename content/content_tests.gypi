@@ -549,6 +549,12 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        'browser/accessibility/cross_platform_accessibility_browsertest.cc',
+        'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+        'browser/accessibility/dump_accessibility_tree_helper.cc',
+        'browser/accessibility/dump_accessibility_tree_helper.h',
+        'browser/accessibility/dump_accessibility_tree_helper_mac.mm',
+        'browser/accessibility/dump_accessibility_tree_helper_win.cc',
         'browser/appcache/appcache_browsertest.cc',
         'browser/audio_browsertest.cc',
         'browser/child_process_security_policy_browsertest.cc',
@@ -603,6 +609,7 @@
           ],
           'dependencies': [
             '<(DEPTH)/net/net.gyp:net_resources',
+            '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
           ],
@@ -621,6 +628,12 @@
             '../base/allocator/allocator.gyp:allocator',
           ],
         }],
+        ['OS=="linux"', {
+          'sources!': [
+            'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+            'browser/accessibility/dump_accessibility_tree_helper.cc',
+          ],
+        }],
         ['OS=="mac"', {
           'dependencies': [
             'content_shell',  # Needed for Content Shell.app's Helper.
@@ -628,6 +641,9 @@
         }],
         ['use_aura==1', {
           'sources!': [
+            'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+            'browser/accessibility/dump_accessibility_tree_helper_win.cc',
+            'browser/accessibility/dump_accessibility_tree_helper.cc',
             'browser/plugin_browsertest.cc',
           ],
         }],

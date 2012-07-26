@@ -3034,12 +3034,6 @@
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
-        '../content/browser/accessibility/cross_platform_accessibility_browsertest.cc',
-        '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
-        '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
-        '../content/browser/accessibility/dump_accessibility_tree_helper.h',
-        '../content/browser/accessibility/dump_accessibility_tree_helper_mac.mm',
-        '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
         '../content/browser/renderer_host/render_process_host_browsertest.cc',
         '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_browsertest.cc',
@@ -3171,12 +3165,6 @@
         ['OS!="linux" or toolkit_views==1', {
           'sources!': [
             'browser/ui/gtk/view_id_util_browsertest.cc',
-          ],
-        }],
-        ['OS=="linux"', {
-          'sources!': [
-            '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
-            '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
           ],
         }],
         ['OS!="win" and OS!="mac"', {
@@ -3319,13 +3307,7 @@
             '../content/common/socket_stream_dispatcher.cc',
           ]},
         ],
-        ['use_aura==1', {
-          'sources!': [
-            '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
-            '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
-            '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
-          ]
-        }, { # else: use_aura == 0
+        ['use_aura==0', {
           'sources!': [
             'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
         ],

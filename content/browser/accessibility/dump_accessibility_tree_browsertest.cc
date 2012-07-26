@@ -10,9 +10,6 @@
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/dump_accessibility_tree_helper.h"
@@ -23,14 +20,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
+#include "content/shell/shell.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::OpenURLParams;
-using content::RenderViewHostImpl;
-using content::RenderWidgetHostImpl;
-using content::RenderWidgetHost;
-using content::RenderWidgetHostViewPort;
-using content::Referrer;
 
 namespace {
 // Required to enter html content into a url.
@@ -40,6 +33,8 @@ namespace {
   static const char* kMarkEndOfFile = "<-- End-of-file -->";
   static const char* kSignalDiff = "*";
 } // namespace
+
+namespace content {
 
 // This test takes a snapshot of the platform BrowserAccessibility tree and
 // tests it against an expected baseline.
@@ -51,7 +46,7 @@ namespace {
 //    readable string.
 // 4. Perform a comparison between actual and expected and fail if they do not
 //    exactly match.
-class DumpAccessibilityTreeTest : public InProcessBrowserTest {
+class DumpAccessibilityTreeTest : public ContentBrowserTest {
  public:
   // Utility helper that does a comment aware equality check.
   // Returns array of lines from expected file which are different.
@@ -85,7 +80,7 @@ class DumpAccessibilityTreeTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        DISABLED_PlatformTreeDifferenceTest) {
   RenderWidgetHostViewPort* host_view = static_cast<RenderWidgetHostViewPort*>(
-      chrome::GetActiveWebContents(browser())->GetRenderWidgetHostView());
+      shell()->web_contents()->GetRenderWidgetHostView());
   RenderWidgetHost* host = host_view->GetRenderWidgetHost();
   RenderViewHostImpl* view_host =
       static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(host));
@@ -94,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 
   // Setup test paths.
   FilePath dir_test_data;
-  EXPECT_TRUE(PathService::Get(content::DIR_TEST_DATA, &dir_test_data));
+  EXPECT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
   FilePath test_path(dir_test_data.Append(FILE_PATH_LITERAL("accessibility")));
   EXPECT_TRUE(file_util::PathExists(test_path))
       << test_path.LossyDisplayName();
@@ -138,14 +133,13 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     printf("Testing %s\n", html_file.BaseName().MaybeAsASCII().c_str());
 
     // Load the page.
-    content::WindowedNotificationObserver tree_updated_observer(
-        content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-        content::NotificationService::AllSources());
+    WindowedNotificationObserver tree_updated_observer(
+        NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+        NotificationService::AllSources());
     string16 html_contents16;
     html_contents16 = UTF8ToUTF16(html_contents);
     GURL url(UTF8ToUTF16(kUrlPreamble) + html_contents16);
-    browser()->OpenURL(OpenURLParams(
-        url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+    NavigateToURL(shell(), url);
 
     // Wait for the tree.
     tree_updated_observer.Wait();
@@ -202,3 +196,5 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     }
   } while (!(html_file = file_enumerator.Next()).empty());
 }
+
+}  // namespace content
