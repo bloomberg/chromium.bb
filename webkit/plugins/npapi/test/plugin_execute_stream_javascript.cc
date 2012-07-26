@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,14 @@ int32 ExecuteStreamJavaScript::Write(NPStream *stream, int32 offset, int32 len,
 
   std::string javascript("javascript:");
   javascript.append(static_cast<char*>(buffer), len);
+  size_t js_length = javascript.length();
+  if (js_length != static_cast<uint32_t>(js_length)) {
+    SetError("Javascript too long.");
+    return -1;
+  }
 
-  NPString script_string = { javascript.c_str(), javascript.length() };
+  NPString script_string = { javascript.c_str(),
+                             static_cast<uint32_t>(js_length) };
   NPObject *window_obj = NULL;
   NPAPIClient::PluginClient::HostFunctions()->getvalue(
       id(), NPNVWindowNPObject, &window_obj);

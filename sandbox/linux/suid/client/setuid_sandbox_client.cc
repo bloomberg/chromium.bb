@@ -4,6 +4,7 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include "base/eintr_wrapper.h"
 #include "base/environment.h"

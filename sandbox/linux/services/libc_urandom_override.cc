@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,13 @@ NPError WindowlessPluginTest::ExecuteScript(NPNetscapeFuncs* browser, NPP id,
   std::string script_url = "javascript:";
   script_url += script;
 
-  NPString script_string = { script_url.c_str(), script_url.length() };
+  size_t script_length = script_url.length();
+  if (script_length != static_cast<uint32_t>(script_length)) {
+    return NPERR_GENERIC_ERROR;
+  }
+
+  NPString script_string = { script_url.c_str(),
+                             static_cast<uint32_t>(script_length) };
   NPObject *window_obj = NULL;
   browser->getvalue(id, NPNVWindowNPObject, &window_obj);
 
