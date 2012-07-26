@@ -37,7 +37,8 @@ class RenderWidgetFullscreenPepper :
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
       webkit::ppapi::PluginInstance* plugin,
-      const GURL& active_url);
+      const GURL& active_url,
+      const WebKit::WebScreenInfo& screen_info);
 
   // WebGraphicscontext3DSwapBuffersClient implementation
   virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
@@ -66,7 +67,8 @@ class RenderWidgetFullscreenPepper :
 
  protected:
   RenderWidgetFullscreenPepper(webkit::ppapi::PluginInstance* plugin,
-                               const GURL& active_url);
+                               const GURL& active_url,
+                               const WebKit::WebScreenInfo& screen_info);
   virtual ~RenderWidgetFullscreenPepper();
 
   // RenderWidget API.

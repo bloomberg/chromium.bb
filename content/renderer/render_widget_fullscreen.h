@@ -19,7 +19,7 @@ class RenderWidgetFullscreen : public RenderWidget {
   virtual void show(WebKit::WebNavigationPolicy);
 
  protected:
-  RenderWidgetFullscreen();
+  RenderWidgetFullscreen(const WebKit::WebScreenInfo& screen_info);
   virtual ~RenderWidgetFullscreen();
 
   virtual WebKit::WebWidget* CreateWebWidget();

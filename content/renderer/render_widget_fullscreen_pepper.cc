@@ -255,18 +255,20 @@ void DestroyContext(WebGraphicsContext3DCommandBufferImpl* context,
 // static
 RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32 opener_id, webkit::ppapi::PluginInstance* plugin,
-    const GURL& active_url) {
+    const GURL& active_url,
+    const WebKit::WebScreenInfo& screen_info) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
-      new RenderWidgetFullscreenPepper(plugin, active_url));
+      new RenderWidgetFullscreenPepper(plugin, active_url, screen_info));
   widget->Init(opener_id);
   return widget.release();
 }
 
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     webkit::ppapi::PluginInstance* plugin,
-    const GURL& active_url)
-    : RenderWidgetFullscreen(),
+    const GURL& active_url,
+    const WebKit::WebScreenInfo& screen_info)
+    : RenderWidgetFullscreen(screen_info),
       active_url_(active_url),
       plugin_(plugin),
       context_(NULL),
@@ -413,8 +415,9 @@ void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
                                             const gfx::Rect& resizer_rect,
                                             bool is_fullscreen) {
   if (context_) {
-    context_->reshape(size.width(), size.height());
-    context_->viewport(0, 0, size.width(), size.height());
+    gfx::Size pixel_size = size.Scale(deviceScaleFactor());
+    context_->reshape(pixel_size.width(), pixel_size.height());
+    context_->viewport(0, 0, pixel_size.width(), pixel_size.height());
   }
   RenderWidget::OnResize(size, resizer_rect, is_fullscreen);
 }
@@ -501,8 +504,9 @@ const float kTexCoords[] = {
 }  // anonymous namespace
 
 bool RenderWidgetFullscreenPepper::InitContext() {
-  context_->reshape(size().width(), size().height());
-  context_->viewport(0, 0, size().width(), size().height());
+  gfx::Size pixel_size = size().Scale(deviceScaleFactor());
+  context_->reshape(pixel_size.width(), pixel_size.height());
+  context_->viewport(0, 0, pixel_size.width(), pixel_size.height());
 
   program_ = context_->createProgram();
 
