@@ -503,7 +503,7 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
   if (view_ && is_accelerated_compositing_active_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
-#if defined(USE_AURA) || defined(LINUX)
+#if defined(USE_AURA) || defined(OS_LINUX)
     gfx::Rect copy_rect = src_subrect.IsEmpty() ?
         gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
 #else
