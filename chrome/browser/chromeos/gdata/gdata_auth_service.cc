@@ -55,10 +55,10 @@ void GDataAuthService::StartAuthentication(
   scoped_refptr<base::MessageLoopProxy> relay_proxy(
       base::MessageLoopProxy::current());
 
-  if (IsFullyAuthenticated()) {
+  if (HasAccessToken()) {
     relay_proxy->PostTask(FROM_HERE,
-         base::Bind(callback, gdata::HTTP_SUCCESS, oauth2_auth_token()));
-  } else if (IsPartiallyAuthenticated()) {
+         base::Bind(callback, gdata::HTTP_SUCCESS, access_token_));
+  } else if (HasRefreshToken()) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -83,22 +83,22 @@ void GDataAuthService::StartAuthenticationOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We have refresh token, let's gets authenticated.
   (new AuthOperation(registry, profile_,
-                     callback, GetOAuth2RefreshToken()))->Start();
+                     callback, refresh_token_))->Start();
 }
 
 void GDataAuthService::OnAuthCompleted(
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
     const AuthStatusCallback& callback,
     GDataErrorCode error,
-    const std::string& auth_token) {
+    const std::string& access_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == HTTP_SUCCESS)
-    auth_token_ = auth_token;
+    access_token_ = access_token;
 
   // TODO(zelidrag): Add retry, back-off logic when things go wrong here.
   if (!callback.is_null())
-    relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error, auth_token));
+    relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error, access_token));
 }
 
 void GDataAuthService::AddObserver(Observer* observer) {
@@ -120,7 +120,7 @@ void GDataAuthService::Observe(int type,
   if (token_details->service() != GaiaConstants::kGaiaOAuth2LoginRefreshToken)
     return;
 
-  auth_token_.clear();
+  access_token_.clear();
   if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
     TokenService* service = TokenServiceFactory::GetForProfile(profile_);
     refresh_token_ = service->GetOAuth2LoginRefreshToken();

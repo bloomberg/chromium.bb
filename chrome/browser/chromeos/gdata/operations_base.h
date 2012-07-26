@@ -43,7 +43,7 @@ class AuthOperation : public GDataOperationRegistry::Operation,
 
  private:
   Profile* profile_;
-  std::string token_;
+  std::string refresh_token_;
   AuthStatusCallback callback_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
 

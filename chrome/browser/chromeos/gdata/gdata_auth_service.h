@@ -54,36 +54,35 @@ class GDataAuthService : public content::NotificationObserver {
   void StartAuthentication(GDataOperationRegistry* registry,
                            const AuthStatusCallback& callback);
 
-  // True if OAuth2 auth token is retrieved and believed to be fresh.
-  bool IsFullyAuthenticated() const { return !auth_token_.empty(); }
+  // True if an OAuth2 access token is retrieved and believed to be fresh.
+  // The access token is used to access the gdata server.
+  bool HasAccessToken() const { return !access_token_.empty(); }
 
-  // True if OAuth2 refresh token is present. It's absence means that user
+  // True if an OAuth2 refresh token is present. Its absence means that user
   // is not properly authenticated.
-  bool IsPartiallyAuthenticated() const { return !refresh_token_.empty(); }
+  // The refresh token is used to get the access token.
+  bool HasRefreshToken() const { return !refresh_token_.empty(); }
 
-  // Gets OAuth2 auth token.
-  const std::string& oauth2_auth_token() const { return auth_token_; }
+  // Returns OAuth2 access token.
+  const std::string& access_token() const { return access_token_; }
 
-  // Clears OAuth2 token.
-  void ClearOAuth2Token() { auth_token_.clear(); }
-
-  // Gets OAuth2 refresh token.
-  const std::string& GetOAuth2RefreshToken() { return refresh_token_; }
+  // Clears OAuth2 access token.
+  void ClearAccessToken() { access_token_.clear(); }
 
   // Callback for AuthOperation (InternalAuthStatusCallback).
   void OnAuthCompleted(scoped_refptr<base::MessageLoopProxy> relay_proxy,
                        const AuthStatusCallback& callback,
                        GDataErrorCode error,
-                       const std::string& auth_token);
+                       const std::string& access_token);
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Sets the auth_token as specified.  This should be used only for testing.
-  void set_oauth2_auth_token_for_testing(const std::string& token) {
-    auth_token_ = token;
+  // Sets the access_token as specified.  This should be used only for testing.
+  void set_access_token_for_testing(const std::string& token) {
+    access_token_ = token;
   }
 
  private:
@@ -95,7 +94,7 @@ class GDataAuthService : public content::NotificationObserver {
 
   Profile* profile_;
   std::string refresh_token_;
-  std::string auth_token_;
+  std::string access_token_;
   ObserverList<Observer> observers_;
 
   content::NotificationRegistrar registrar_;

@@ -271,16 +271,16 @@ void DocumentsService::AuthorizeApp(const GURL& resource_url,
                                  resource_url, app_ids));
 }
 
-bool DocumentsService::IsFullyAuthenticated() const {
+bool DocumentsService::HasAccessToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return runner_->auth_service()->IsFullyAuthenticated();
+  return runner_->auth_service()->HasAccessToken();
 }
 
-bool DocumentsService::IsPartiallyAuthenticated() const {
+bool DocumentsService::HasRefreshToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return runner_->auth_service()->IsPartiallyAuthenticated();
+  return runner_->auth_service()->HasRefreshToken();
 }
 
 }  // namespace gdata

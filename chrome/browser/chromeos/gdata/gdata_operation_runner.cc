@@ -57,7 +57,7 @@ void GDataOperationRunner::StartOperationWithRetry(
 void GDataOperationRunner::StartOperation(GDataOperationInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!auth_service_->IsFullyAuthenticated()) {
+  if (!auth_service_->HasAccessToken()) {
     // Fetch OAuth2 authentication token from the refresh token first.
     auth_service_->StartAuthentication(
         operation_registry_.get(),
@@ -67,7 +67,7 @@ void GDataOperationRunner::StartOperation(GDataOperationInterface* operation) {
     return;
   }
 
-  operation->Start(auth_service_->oauth2_auth_token());
+  operation->Start(auth_service_->access_token());
 }
 
 void GDataOperationRunner::OnOperationAuthRefresh(
@@ -77,7 +77,7 @@ void GDataOperationRunner::OnOperationAuthRefresh(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (code == HTTP_SUCCESS) {
-    DCHECK(auth_service_->IsPartiallyAuthenticated());
+    DCHECK(auth_service_->HasRefreshToken());
     StartOperation(operation);
   } else {
     operation->OnAuthFailed(code);
@@ -87,7 +87,7 @@ void GDataOperationRunner::OnOperationAuthRefresh(
 void GDataOperationRunner::RetryOperation(GDataOperationInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  auth_service_->ClearOAuth2Token();
+  auth_service_->ClearAccessToken();
   // User authentication might have expired - rerun the request to force
   // auth token refresh.
   StartOperation(operation);

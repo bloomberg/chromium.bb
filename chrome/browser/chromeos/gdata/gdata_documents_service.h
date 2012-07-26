@@ -185,11 +185,11 @@ class DocumentsServiceInterface {
                             const std::string& app_id,
                             const GetDataCallback& callback) = 0;
 
-  // True if OAuth2 auth token is retrieved and believed to be fresh.
-  virtual bool IsFullyAuthenticated() const = 0;
+  // True if OAuth2 access token is retrieved and believed to be fresh.
+  virtual bool HasAccessToken() const = 0;
 
   // True if OAuth2 refresh token is present.
-  virtual bool IsPartiallyAuthenticated() const = 0;
+  virtual bool HasRefreshToken() const = 0;
 };
 
 // This class provides documents feed service calls.
@@ -254,8 +254,8 @@ class DocumentsService : public DocumentsServiceInterface {
   virtual void AuthorizeApp(const GURL& resource_url,
                             const std::string& app_id,
                             const GetDataCallback& callback) OVERRIDE;
-  virtual bool IsFullyAuthenticated() const OVERRIDE;
-  virtual bool IsPartiallyAuthenticated() const OVERRIDE;
+  virtual bool HasAccessToken() const OVERRIDE;
+  virtual bool HasRefreshToken() const OVERRIDE;
 
  private:
   Profile* profile_;
