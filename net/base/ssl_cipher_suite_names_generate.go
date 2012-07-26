@@ -6,28 +6,28 @@
 package main
 
 import (
+	"encoding/xml"
 	"fmt"
 	"os"
 	"sort"
 	"strings"
-	"xml"
 )
 
 // Structures for parsing the XML
 
 type TLSRegistry struct {
-	Registry []Registry
+	Registry []Registry `xml:"registry"`
 }
 
 type Registry struct {
-	Id     string "attr"
-	Title  string
-	Record []Record
+	Id     string   `xml:"id,attr"`
+	Title  string   `xml:"title"`
+	Record []Record `xml:"record"`
 }
 
 type Record struct {
-	Value       string
-	Description string
+	Value       string `xml:"value"`
+	Description string `xml:"description"`
 }
 
 type CipherSuite struct {
@@ -105,14 +105,14 @@ func parseCipherSuiteString(s string) (kx, cipher, mac string) {
 }
 
 func main() {
-	infile, err := os.Open("/tmp/tls-parameters.xml", os.O_RDONLY, 0)
+	infile, err := os.Open("/tmp/tls-parameters.xml")
 	if err != nil {
 		fmt.Printf("Cannot open input: %s\n", err)
 		return
 	}
 
 	var input TLSRegistry
-	err = xml.Unmarshal(infile, &input)
+	err = xml.NewDecoder(infile).Decode(&input)
 	if err != nil {
 		fmt.Printf("Error parsing XML: %s\n", err)
 		return
