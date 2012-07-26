@@ -1113,7 +1113,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
  private:
   friend class internal::RootView;
   friend class FocusManager;
-  friend class ViewStorage;
   friend class Widget;
   friend class PaintLock;
 
