@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -157,7 +158,7 @@ void BookmarkSubMenuModel::MenuWillShow() {
   AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_MENU_LABEL);
   fixed_items_ = bookmark_end_ = GetItemCount();
   if (!model()) {
-    set_model(browser_->profile()->GetBookmarkModel());
+    set_model(BookmarkModelFactory::GetForProfile(browser_->profile()));
     if (!model())
       return;
     model()->AddObserver(this);

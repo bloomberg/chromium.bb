@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_editor_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
 #include "chrome/test/base/testing_profile.h"
@@ -39,7 +40,7 @@ class BookmarkEditorGtkTest : public testing::Test {
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
 
-    model_ = profile_->GetBookmarkModel();
+    model_ = BookmarkModelFactory::GetForProfile(profile_.get());
 
     AddTestData();
   }

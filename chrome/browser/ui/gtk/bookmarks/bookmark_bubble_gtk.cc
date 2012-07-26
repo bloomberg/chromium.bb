@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -91,7 +92,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
                                      bool newly_bookmarked)
     : url_(url),
       profile_(profile),
-      model_(profile->GetBookmarkModel()),
+      model_(BookmarkModelFactory::GetForProfile(profile)),
       theme_service_(GtkThemeService::GetFrom(profile_)),
       anchor_(anchor),
       content_(NULL),

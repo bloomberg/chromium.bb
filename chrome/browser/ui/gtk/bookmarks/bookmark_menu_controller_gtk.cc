@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -74,7 +75,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
     : browser_(browser),
       page_navigator_(navigator),
       parent_window_(window),
-      model_(browser->profile()->GetBookmarkModel()),
+      model_(BookmarkModelFactory::GetForProfile(browser->profile())),
       node_(node),
       drag_icon_(NULL),
       ignore_button_release_(false),

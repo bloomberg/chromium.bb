@@ -12,6 +12,7 @@
 #include "base/pickle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -281,7 +282,7 @@ void BookmarkBarGtk::Init() {
 
   AddCoreButtons();
   // TODO(erg): Handle extensions
-  model_ = profile->GetBookmarkModel();
+  model_ = BookmarkModelFactory::GetForProfile(profile);
   model_->AddObserver(this);
   if (model_->IsLoaded())
     Loaded(model_, false);
