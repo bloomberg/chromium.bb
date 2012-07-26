@@ -195,12 +195,7 @@ clean-tests:
 
 # The target for all short-running tests.
 .PHONY: check
-check: check-irt check-ncval
-
-# Checks that the IRT is not rejected by the validator.
-.PHONY: check-irt
-check-irt: outdirs $(OBJD)/validator_test
-	$(OBJD)/validator_test nacl_irt_x86_64.nexe
+check: check-ncval
 
 # Checks that all byte sequences accepted by the DFA are decoded identically to
 # the objdump. A long-running test.

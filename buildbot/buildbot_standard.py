@@ -382,14 +382,20 @@ def BuildScript(status, context):
     SCons(context, parallel=True, args=['validator_ragel=1'])
 
   # Smoke tests for the R-DFA validator.
-  # TODO(pasko): hook in more tests.
   with Step('validator_ragel_tests', status):
-    args = ['validator_ragel=1', 'run_dfa_validator_hello_world_test']
+    args = ['validator_ragel=1',
+            'run_dfa_validator_hello_world_test',
+            'run_hello_world_test_irt',
+            ]
     # Run R-DFA validator command-line tool only on Linux because it cannot
     # recognize ELF class on other systems.
     if context.Linux():
       args.append('run_validator_test_py')
-    SCons(context, args=args)
+    # Add nacl_irt_test mode to be able to run run_hello_world_test_irt that
+    # tests validation of the IRT.
+    SCons(context,
+          mode=context['default_scons_mode'] + ['nacl_irt_test'],
+          args=args)
 
 
 def Main():
