@@ -63,6 +63,7 @@ class EmptyResponseExpectation {
 
   // Evaluates the given |resposne| has no argument.
   void Evaluate(dbus::Response* response) {
+    scoped_ptr<dbus::Response> response_deleter(response);
     EXPECT_EQ(serial_no_, response->GetReplySerial());
     dbus::MessageReader reader(response);
     EXPECT_FALSE(reader.HasMoreData());
@@ -84,6 +85,7 @@ class BoolResponseExpectation {
   // Evaluates the given |resposne| has only one boolean and which is equals to
   // |result_| which is given in ctor.
   void Evaluate(dbus::Response* response) {
+    scoped_ptr<dbus::Response> response_deleter(response);
     EXPECT_EQ(serial_no_, response->GetReplySerial());
     dbus::MessageReader reader(response);
     bool result = false;

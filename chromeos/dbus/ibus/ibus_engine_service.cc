@@ -219,9 +219,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
                dbus::ExportedObject::ResponseSender response_sender) {
     DCHECK(engine_handler_.get());
     engine_handler_->FocusIn();
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles FocusOut method call from ibus-daemon.
@@ -229,9 +228,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
                 dbus::ExportedObject::ResponseSender response_sender) {
     DCHECK(engine_handler_.get());
     engine_handler_->FocusOut();
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles Enable method call from ibus-daemon.
@@ -239,9 +237,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
               dbus::ExportedObject::ResponseSender response_sender) {
     DCHECK(engine_handler_.get());
     engine_handler_->Enable();
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles Disable method call from ibus-daemon.
@@ -249,9 +246,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
                dbus::ExportedObject::ResponseSender response_sender) {
     DCHECK(engine_handler_.get());
     engine_handler_->Disable();
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles PropertyActivate method call from ibus-daemon.
@@ -275,9 +271,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
         property_name,
         static_cast<IBusEngineHandlerInterface::IBusPropertyState>(
             property_state));
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles PropertyShow method call from ibus-daemon.
@@ -292,9 +287,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
     }
     DCHECK(engine_handler_.get());
     engine_handler_->PropertyShow(property_name);
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles PropertyHide method call from ibus-daemon.
@@ -309,9 +303,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
     }
     DCHECK(engine_handler_.get());
     engine_handler_->PropertyHide(property_name);
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles SetCapability method call from ibus-daemon.
@@ -327,18 +320,16 @@ class IBusEngineServiceImpl : public IBusEngineService {
     DCHECK(engine_handler_.get());
     engine_handler_->SetCapability(
         static_cast<IBusEngineHandlerInterface::IBusCapability>(capability));
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   void Reset(dbus::MethodCall* method_call,
              dbus::ExportedObject::ResponseSender response_sender) {
     DCHECK(engine_handler_.get());
     engine_handler_->Reset();
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles ProcessKeyEvent method call from ibus-daemon.
@@ -365,11 +356,10 @@ class IBusEngineServiceImpl : public IBusEngineService {
     }
     DCHECK(engine_handler_.get());
     bool consume = engine_handler_->ProcessKeyEvent(keysym, keycode, state);
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    dbus::MessageWriter writer(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    dbus::MessageWriter writer(response);
     writer.AppendBool(consume);
-    response_sender.Run(response.get());
+    response_sender.Run(response);
   }
 
   // Handles CandidateClicked method call from ibus-daemon.
@@ -399,9 +389,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
         index,
         static_cast<IBusEngineHandlerInterface::IBusMouseButton>(button),
         state);
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Handles SetSurroundingText method call from ibus-daemon.
@@ -430,9 +419,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
 
     DCHECK(engine_handler_.get());
     engine_handler_->SetSurroundingText(text, cursor_pos, anchor_pos);
-    scoped_ptr<dbus::Response> response(
-        dbus::Response::FromMethodCall(method_call));
-    response_sender.Run(response.get());
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
   }
 
   // Called when the method call is exported.

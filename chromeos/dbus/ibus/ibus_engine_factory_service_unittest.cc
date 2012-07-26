@@ -32,6 +32,7 @@ class MockCreateEngineResponseSender {
 
   // Checks the given |response| meets expectation for the CreateEngine method.
   void CheckCreateEngineResponse(dbus::Response* response) {
+    scoped_ptr<dbus::Response> response_deleter(response);
     dbus::MessageReader reader(response);
     dbus::ObjectPath actual_path;
     ASSERT_TRUE(reader.PopObjectPath(&actual_path));
@@ -129,6 +130,7 @@ TEST_F(IBusEngineFactoryServiceTest, CreateEngineTest) {
   dbus::MethodCall method_call(
       ibus::engine_factory::kServiceInterface,
       ibus::engine_factory::kCreateEngineMethod);
+  method_call.SetSerial(10);
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(kSampleEngine);
   ASSERT_FALSE(

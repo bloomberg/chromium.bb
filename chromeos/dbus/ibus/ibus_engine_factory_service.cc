@@ -65,11 +65,11 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
     if(create_engine_handler_.is_null()) {
       LOG(WARNING) << "The CreateEngine handler is NULL.";
     } else {
+      dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+      dbus::MessageWriter writer(response);
       const dbus::ObjectPath path = create_engine_handler_.Run(engine_name);
-      scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-      dbus::MessageWriter writer(response.get());
       writer.AppendObjectPath(path);
-      response_sender.Run(response.get());
+      response_sender.Run(response);
     }
   }
 
