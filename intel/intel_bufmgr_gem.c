@@ -2908,9 +2908,8 @@ drm_intel_gem_context_create(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
 	struct drm_i915_gem_context_create create;
-	drm_i915_getparam_t gp;
 	drm_intel_context *context = NULL;
-	int tmp = 0, ret;
+	int ret;
 
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CONTEXT_CREATE, &create);
 	if (ret != 0) {
