@@ -32,53 +32,47 @@ namespace {
 //
 // We disable optimizations for this block of functions so the compiler doesn't
 // merge them all together.
-
-// TODO(eroman): What is the equivalent for other compilers?
-#if defined(COMPILER_MSVC)
-#pragma optimize("", off)
+MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
-#endif
 
 int* NullPointer() {
   return reinterpret_cast<int*>(NULL);
 }
 
-void ThreadUnresponsive_UI() {
+NOINLINE void ThreadUnresponsive_UI() {
   *NullPointer() = __LINE__;
 }
 
-void ThreadUnresponsive_DB() {
+NOINLINE void ThreadUnresponsive_DB() {
   *NullPointer() = __LINE__;
 }
 
-void ThreadUnresponsive_WEBKIT() {
+NOINLINE void ThreadUnresponsive_WEBKIT() {
   *NullPointer() = __LINE__;
 }
 
-void ThreadUnresponsive_FILE() {
+NOINLINE void ThreadUnresponsive_FILE() {
   *NullPointer() = __LINE__;
 }
 
-void ThreadUnresponsive_FILE_USER_BLOCKING() {
+NOINLINE void ThreadUnresponsive_FILE_USER_BLOCKING() {
   *NullPointer() = __LINE__;
 }
 
-void ThreadUnresponsive_PROCESS_LAUNCHER() {
+NOINLINE void ThreadUnresponsive_PROCESS_LAUNCHER() {
   *NullPointer() = __LINE__;
 }
 
-void ThreadUnresponsive_CACHE() {
+NOINLINE void ThreadUnresponsive_CACHE() {
   *NullPointer() = __LINE__;
 }
 
-void ThreadUnresponsive_IO() {
+NOINLINE void ThreadUnresponsive_IO() {
   *NullPointer() = __LINE__;
 }
 
-#if defined(COMPILER_MSVC)
 MSVC_POP_WARNING()
-#pragma optimize("", on)
-#endif
+MSVC_ENABLE_OPTIMIZE();
 
 void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
   base::debug::Alias(&thread_id);

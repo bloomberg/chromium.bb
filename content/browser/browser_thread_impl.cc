@@ -100,49 +100,51 @@ void BrowserThreadImpl::Init() {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
-void BrowserThreadImpl::UIThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::UIThreadRun(MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-void BrowserThreadImpl::DBThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::DBThreadRun(MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-void BrowserThreadImpl::WebKitThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::WebKitThreadRun(MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-void BrowserThreadImpl::FileThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::FileThreadRun(MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-void BrowserThreadImpl::FileUserBlockingThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::FileUserBlockingThreadRun(
+    MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-void BrowserThreadImpl::ProcessLauncherThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::ProcessLauncherThreadRun(
+    MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-void BrowserThreadImpl::CacheThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::CacheThreadRun(MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-void BrowserThreadImpl::IOThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::IOThreadRun(MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
