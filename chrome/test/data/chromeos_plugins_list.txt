@@ -7,7 +7,7 @@
   }, {
     u'boards': ['x86-mario', 'x86-alex', 'x86-zgb', 'stumpy', 'lumpy'],
     u'enabled': 1,
-    u'name': 'Remoting Viewer',
+    u'name': 'Chrome Remote Desktop Viewer',
     u'version': u''
   }, {
     u'boards': ['x86-mario', 'x86-alex', 'x86-zgb', 'stumpy', 'lumpy'],
