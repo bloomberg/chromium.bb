@@ -2383,11 +2383,16 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->AddAudioRenderer(audio_renderer);
   }
 
+  bool use_accelerated_video_decode = false;
+#if defined(OS_CHROMEOS)
+  use_accelerated_video_decode = true;
+#endif
+  use_accelerated_video_decode &= !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableAcceleratedVideoDecode);
   base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context3d =
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAcceleratedVideoDecode) ?
-      base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>() :
-      RenderThreadImpl::current()->GetGpuVDAContext3D();
+      use_accelerated_video_decode ?
+      RenderThreadImpl::current()->GetGpuVDAContext3D() :
+      base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>();
   if (context3d) {
     MessageLoop* factories_loop =
         RenderThreadImpl::current()->compositor_thread() ?

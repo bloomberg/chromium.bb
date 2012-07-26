@@ -854,11 +854,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableUnsupportedBluetoothDevices)
   },
 #endif
-  { "enable-accelerated-video-decode",
-    IDS_FLAGS_ENABLE_ACCELERATED_VIDEO_DECODE_NAME,
-    IDS_FLAGS_ENABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION,
+  { "disable-accelerated-video-decode",
+    IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME,
+    IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableAcceleratedVideoDecode),
+    SINGLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
   },
 #if defined(USE_ASH)
   {
