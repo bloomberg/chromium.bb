@@ -52,10 +52,10 @@ WorkspaceWindowResizer::~WorkspaceWindowResizer() {
 // static
 WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
     aura::Window* window,
-    const gfx::Point& location,
+    const gfx::Point& location_in_parent,
     int window_component,
     const std::vector<aura::Window*>& attached_windows) {
-  Details details(window, location, window_component);
+  Details details(window, location_in_parent, window_component);
   return details.is_resizable ?
       new WorkspaceWindowResizer(details, attached_windows) : NULL;
 }

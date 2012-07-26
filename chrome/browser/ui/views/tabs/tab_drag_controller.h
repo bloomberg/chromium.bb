@@ -108,7 +108,7 @@ class TabDragController : public content::WebContentsDelegate,
   bool started_drag() const { return started_drag_; }
 
   // Invoked to drag to the new location, in screen coordinates.
-  void Drag(const gfx::Point& screen_point);
+  void Drag(const gfx::Point& point_in_screen);
 
   // Complete the current drag session. If the drag session was canceled
   // because the user pressed escape or something interrupted it, |canceled|
@@ -241,7 +241,7 @@ class TabDragController : public content::WebContentsDelegate,
   // current mouse position |origin|.
   gfx::Point GetWindowCreatePoint(const gfx::Point& origin) const;
 
-  void UpdateDockInfo(const gfx::Point& screen_point);
+  void UpdateDockInfo(const gfx::Point& point_in_screen);
 
   // Saves focus in the window that the drag initiated from. Focus will be
   // restored appropriately if the drag ends within this same window.
@@ -251,40 +251,40 @@ class TabDragController : public content::WebContentsDelegate,
   // the drag ends within the same Window as it began.
   void RestoreFocus();
 
-  // Tests whether |screen_point| is past a minimum elasticity threshold
+  // Tests whether |point_in_screen| is past a minimum elasticity threshold
   // required to start a drag.
-  bool CanStartDrag(const gfx::Point& screen_point) const;
+  bool CanStartDrag(const gfx::Point& point_in_screen) const;
 
   // Move the DraggedTabView according to the current mouse screen position,
   // potentially updating the source and other TabStrips.
-  void ContinueDragging(const gfx::Point& screen_point);
+  void ContinueDragging(const gfx::Point& point_in_screen);
 
   // Transitions dragging from |attached_tabstrip_| to |target_tabstrip|.
   // |target_tabstrip| is NULL if the mouse is not over a valid tab strip.  See
   // DragBrowserResultType for details of the return type.
   DragBrowserResultType DragBrowserToNewTabStrip(
       TabStrip* target_tabstrip,
-      const gfx::Point& screen_point);
+      const gfx::Point& point_in_screen);
 
   // Handles dragging for a touch tabstrip when the tabs are stacked. Doesn't
   // actually reorder the tabs in anyway, just changes what's visible.
-  void DragActiveTabStacked(const gfx::Point& screen_point);
+  void DragActiveTabStacked(const gfx::Point& point_in_screen);
 
   // Moves the active tab to the next/previous tab. Used when the next/previous
   // tab is stacked.
-  void MoveAttachedToNextStackedIndex(const gfx::Point& screen_point);
-  void MoveAttachedToPreviousStackedIndex(const gfx::Point& screen_point);
+  void MoveAttachedToNextStackedIndex(const gfx::Point& point_in_screen);
+  void MoveAttachedToPreviousStackedIndex(const gfx::Point& point_in_screen);
 
   // Handles dragging tabs while the tabs are attached.
-  void MoveAttached(const gfx::Point& screen_point);
+  void MoveAttached(const gfx::Point& point_in_screen);
 
   // Handles dragging while the tabs are detached.
-  void MoveDetached(const gfx::Point& screen_point);
+  void MoveDetached(const gfx::Point& point_in_screen);
 
   // If necessary starts the |move_stacked_timer_|. The timer is started if
   // close enough to an edge with stacked tabs.
   void StartMoveStackedTimerIfNecessary(
-      const gfx::Point& screen_point,
+      const gfx::Point& point_in_screen,
       int delay_ms);
 
   // Returns the TabStrip for the specified window, or NULL if one doesn't exist
@@ -293,28 +293,28 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Returns the compatible TabStrip that is under the specified point (screen
   // coordinates), or NULL if there is none.
-  TabStrip* GetTabStripForPoint(const gfx::Point& screen_point);
+  TabStrip* GetTabStripForPoint(const gfx::Point& point_in_screen);
 
   // Returns true if |tabstrip| contains the specified point in screen
   // coordinates.
   bool DoesTabStripContain(TabStrip* tabstrip,
-                           const gfx::Point& screen_point) const;
+                           const gfx::Point& point_in_screen) const;
 
   // Returns the DetachPosition given the specified location in screen
   // coordinates.
-  DetachPosition GetDetachPosition(const gfx::Point& screen_point);
+  DetachPosition GetDetachPosition(const gfx::Point& point_in_screen);
 
-  DockInfo GetDockInfoAtPoint(const gfx::Point& screen_point);
+  DockInfo GetDockInfoAtPoint(const gfx::Point& point_in_screen);
 
   // Attach the dragged Tab to the specified TabStrip.
-  void Attach(TabStrip* attached_tabstrip, const gfx::Point& screen_point);
+  void Attach(TabStrip* attached_tabstrip, const gfx::Point& point_in_screen);
 
   // Detach the dragged Tab from the current TabStrip.
   void Detach(ReleaseCapture release_capture);
 
   // Detaches the tabs being dragged, creates a new Browser to contain them and
   // runs a nested move loop.
-  void DetachIntoNewBrowserAndRunMoveLoop(const gfx::Point& screen_point);
+  void DetachIntoNewBrowserAndRunMoveLoop(const gfx::Point& point_in_screen);
 
   // Runs a nested message loop that handles moving the current Browser.
   void RunMoveLoop();
@@ -354,7 +354,7 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Get the position of the dragged tab view relative to the attached tab
   // strip with the mirroring transform applied.
-  gfx::Point GetAttachedDragPoint(const gfx::Point& screen_point);
+  gfx::Point GetAttachedDragPoint(const gfx::Point& point_in_screen);
 
   // Finds the Tabs within the specified TabStrip that corresponds to the
   // WebContents of the dragged tabs. Returns an empty vector if not attached.
@@ -401,7 +401,7 @@ class TabDragController : public content::WebContentsDelegate,
 
   void DockDisplayerDestroyed(DockDisplayer* controller);
 
-  void BringWindowUnderPointToFront(const gfx::Point& screen_point);
+  void BringWindowUnderPointToFront(const gfx::Point& point_in_screen);
 
   // Convenience for getting the TabDragData corresponding to the tab the user
   // started dragging.
@@ -423,7 +423,7 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Creates and returns a new Browser to handle the drag.
   Browser* CreateBrowserForDrag(TabStrip* source,
-                                const gfx::Point& screen_point,
+                                const gfx::Point& point_in_screen,
                                 std::vector<gfx::Rect>* drag_bounds);
 
   // Returns the TabStripModel for the specified tabstrip.
@@ -457,7 +457,7 @@ class TabDragController : public content::WebContentsDelegate,
   // The position of the mouse (in screen coordinates) at the start of the drag
   // operation. This is used to calculate minimum elasticity before a
   // DraggedTabView is constructed.
-  gfx::Point start_screen_point_;
+  gfx::Point start_point_in_screen_;
 
   // This is the offset of the mouse from the top left of the Tab where
   // dragging begun. This is used to ensure that the dragged view is always
@@ -546,8 +546,8 @@ class TabDragController : public content::WebContentsDelegate,
   // is set to kMovedMouseRight | kMovedMouseLeft.
   int mouse_move_direction_;
 
-  // Last location used.
-  gfx::Point last_screen_point_;
+  // Last location used in screen coordinates.
+  gfx::Point last_point_in_screen_;
 
   // The following are needed when detaching into a browser
   // (|detach_into_browser_| is true).

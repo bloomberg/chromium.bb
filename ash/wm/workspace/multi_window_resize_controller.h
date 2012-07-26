@@ -122,10 +122,10 @@ class ASH_EXPORT MultiWindowResizeController :
   bool IsShowing() const;
 
   // Initiates a resize.
-  void StartResize(const gfx::Point& screen_location);
+  void StartResize(const gfx::Point& location_in_screen);
 
   // Resizes to the new location.
-  void Resize(const gfx::Point& screen_location, int event_flags);
+  void Resize(const gfx::Point& location_in_screen, int event_flags);
 
   // Completes the resize.
   void CompleteResize(int event_flags);
@@ -134,15 +134,16 @@ class ASH_EXPORT MultiWindowResizeController :
   void CancelResize();
 
   // Returns the bounds for the resize widget.
-  gfx::Rect CalculateResizeWidgetBounds(const gfx::Point& location) const;
+  gfx::Rect CalculateResizeWidgetBounds(
+      const gfx::Point& location_in_parent) const;
 
-  // Returns true if |screen_location| is over the resize windows (or the resize
-  // widget itself).
-  bool IsOverWindows(const gfx::Point& screen_location) const;
+  // Returns true if |location_in_screen| is over the resize windows
+  // (or the resize widget itself).
+  bool IsOverWindows(const gfx::Point& location_in_screen) const;
 
-  // Returns true if |screen_location| is over |window|.
+  // Returns true if |location_in_screen| is over |window|.
   bool IsOverWindow(aura::Window* window,
-                    const gfx::Point& screen_location,
+                    const gfx::Point& location_in_screen,
                     int component) const;
 
   // Windows and direction to resize.
@@ -159,11 +160,11 @@ class ASH_EXPORT MultiWindowResizeController :
   // If non-null we're in a resize loop.
   scoped_ptr<WorkspaceWindowResizer> window_resizer_;
 
-  // Mouse coordinate passed to Show().
-  gfx::Point show_location_;
+  // Mouse coordinate passed to Show() in container's coodinates.
+  gfx::Point show_location_in_parent_;
 
-  // Bounds the widget was last shown at.
-  gfx::Rect show_bounds_;
+  // Bounds the widget was last shown at in screen coordinates.
+  gfx::Rect show_bounds_in_screen_;
 
   // Size of the grid.
   int grid_size_;

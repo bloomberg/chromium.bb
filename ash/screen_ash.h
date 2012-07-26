@@ -7,9 +7,11 @@
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
-#include "ui/gfx/insets.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/screen_impl.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace ash {
 

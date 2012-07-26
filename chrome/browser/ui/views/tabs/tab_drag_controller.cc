@@ -393,13 +393,13 @@ void TabDragController::Init(
   DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
   source_tabstrip_ = source_tabstrip;
   source_tab_offset_ = source_tab_offset;
-  start_screen_point_ = gfx::Point(source_tab_offset, mouse_offset.y());
-  views::View::ConvertPointToScreen(source_tab, &start_screen_point_);
+  start_point_in_screen_ = gfx::Point(source_tab_offset, mouse_offset.y());
+  views::View::ConvertPointToScreen(source_tab, &start_point_in_screen_);
   mouse_offset_ = mouse_offset;
   detach_behavior_ = detach_behavior;
   move_behavior_ = move_behavior;
-  last_screen_point_ = start_screen_point_;
-  last_move_screen_loc_ = start_screen_point_.x();
+  last_point_in_screen_ = start_point_in_screen_;
+  last_move_screen_loc_ = start_point_in_screen_.x();
   initial_tab_positions_ = source_tabstrip->GetTabXCoordinates();
   if (detach_into_browser_)
     GetModel(source_tabstrip_)->AddObserver(this);
@@ -439,7 +439,7 @@ void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
   move_behavior_ = behavior;
 }
 
-void TabDragController::Drag(const gfx::Point& screen_point) {
+void TabDragController::Drag(const gfx::Point& point_in_screen) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Windows coordinates are 16 bit values. When we hide the frame we move it to
   // the max x/y coordinate. If the distance between the hidden frame and the
@@ -448,9 +448,9 @@ void TabDragController::Drag(const gfx::Point& screen_point) {
   // ignore the coordinates and use the actual cursor position.
   // NOTE: this works for touch too as dragging with touch updates the mouse
   // position.
-  gfx::Point real_screen_point(GetCursorScreenPoint());
+  gfx::Point real_point_in_screen(GetCursorScreenPoint());
 #else
-  gfx::Point real_screen_point(screen_point);
+  gfx::Point real_point_in_screen(point_in_screen);
 #endif
   bring_to_front_timer_.Stop();
   move_stacked_timer_.Stop();
@@ -459,7 +459,7 @@ void TabDragController::Drag(const gfx::Point& screen_point) {
     return;
 
   if (!started_drag_) {
-    if (!CanStartDrag(real_screen_point))
+    if (!CanStartDrag(real_point_in_screen))
       return;  // User hasn't dragged far enough yet.
 
     started_drag_ = true;
@@ -472,7 +472,7 @@ void TabDragController::Drag(const gfx::Point& screen_point) {
     }
   }
 
-  ContinueDragging(real_screen_point);
+  ContinueDragging(real_point_in_screen);
 }
 
 void TabDragController::EndDrag(bool canceled) {
@@ -668,9 +668,9 @@ gfx::Point TabDragController::GetWindowCreatePoint(
                     create_point.y() - window_create_point_.y());
 }
 
-void TabDragController::UpdateDockInfo(const gfx::Point& screen_point) {
+void TabDragController::UpdateDockInfo(const gfx::Point& point_in_screen) {
   // Update the DockInfo for the current mouse coordinates.
-  DockInfo dock_info = GetDockInfoAtPoint(screen_point);
+  DockInfo dock_info = GetDockInfoAtPoint(point_in_screen);
   if (!dock_info.equals(dock_info_)) {
     // DockInfo for current position differs.
     if (dock_info_.type() != DockInfo::NONE &&
@@ -710,59 +710,59 @@ void TabDragController::RestoreFocus() {
   old_focused_view_ = NULL;
 }
 
-bool TabDragController::CanStartDrag(const gfx::Point& screen_point) const {
+bool TabDragController::CanStartDrag(const gfx::Point& point_in_screen) const {
   // Determine if the mouse has moved beyond a minimum elasticity distance in
   // any direction from the starting point.
   static const int kMinimumDragDistance = 10;
-  int x_offset = abs(screen_point.x() - start_screen_point_.x());
-  int y_offset = abs(screen_point.y() - start_screen_point_.y());
+  int x_offset = abs(point_in_screen.x() - start_point_in_screen_.x());
+  int y_offset = abs(point_in_screen.y() - start_point_in_screen_.y());
   return sqrt(pow(static_cast<float>(x_offset), 2) +
               pow(static_cast<float>(y_offset), 2)) > kMinimumDragDistance;
 }
 
-void TabDragController::ContinueDragging(const gfx::Point& screen_point) {
+void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
   DCHECK(!detach_into_browser_ || attached_tabstrip_);
 
   TabStrip* target_tabstrip = detach_behavior_ == DETACHABLE ?
-      GetTabStripForPoint(screen_point) : source_tabstrip_;
+      GetTabStripForPoint(point_in_screen) : source_tabstrip_;
   bool tab_strip_changed = (target_tabstrip != attached_tabstrip_);
 
   if (attached_tabstrip_) {
-    int move_delta = screen_point.x() - last_screen_point_.x();
+    int move_delta = point_in_screen.x() - last_point_in_screen_.x();
     if (move_delta > 0)
       mouse_move_direction_ |= kMovedMouseRight;
     else if (move_delta < 0)
       mouse_move_direction_ |= kMovedMouseLeft;
   }
-  last_screen_point_ = screen_point;
+  last_point_in_screen_ = point_in_screen;
 
   if (tab_strip_changed) {
     if (detach_into_browser_ &&
-        DragBrowserToNewTabStrip(target_tabstrip, screen_point) ==
+        DragBrowserToNewTabStrip(target_tabstrip, point_in_screen) ==
         DRAG_BROWSER_RESULT_STOP) {
       return;
     } else if (!detach_into_browser_) {
       if (attached_tabstrip_)
         Detach(RELEASE_CAPTURE);
       if (target_tabstrip)
-        Attach(target_tabstrip, screen_point);
+        Attach(target_tabstrip, point_in_screen);
     }
   }
   if (view_.get() || is_dragging_window_) {
     static_cast<base::Timer*>(&bring_to_front_timer_)->Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kBringToFrontDelay),
         base::Bind(&TabDragController::BringWindowUnderPointToFront,
-                   base::Unretained(this), screen_point));
+                   base::Unretained(this), point_in_screen));
   }
 
-  UpdateDockInfo(screen_point);
+  UpdateDockInfo(point_in_screen);
 
   if (!is_dragging_window_) {
     if (attached_tabstrip_) {
       if (move_only()) {
-        DragActiveTabStacked(screen_point);
+        DragActiveTabStacked(point_in_screen);
       } else {
-        MoveAttached(screen_point);
+        MoveAttached(point_in_screen);
         if (tab_strip_changed) {
           // Move the corresponding window to the front. We do this after the
           // move as on windows activate triggers a synchronous paint.
@@ -770,7 +770,7 @@ void TabDragController::ContinueDragging(const gfx::Point& screen_point) {
         }
       }
     } else {
-      MoveDetached(screen_point);
+      MoveDetached(point_in_screen);
     }
   }
 }
@@ -778,9 +778,9 @@ void TabDragController::ContinueDragging(const gfx::Point& screen_point) {
 TabDragController::DragBrowserResultType
 TabDragController::DragBrowserToNewTabStrip(
     TabStrip* target_tabstrip,
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   if (!target_tabstrip) {
-    DetachIntoNewBrowserAndRunMoveLoop(screen_point);
+    DetachIntoNewBrowserAndRunMoveLoop(point_in_screen);
     return DRAG_BROWSER_RESULT_STOP;
   }
   if (is_dragging_window_) {
@@ -819,9 +819,9 @@ TabDragController::DragBrowserToNewTabStrip(
 #if defined(USE_ASH)
     is_dragging_window_ = false;
     Detach(DONT_RELEASE_CAPTURE);
-    Attach(target_tabstrip, screen_point);
+    Attach(target_tabstrip, point_in_screen);
     // Move the tabs into position.
-    MoveAttached(screen_point);
+    MoveAttached(point_in_screen);
     attached_tabstrip_->GetWidget()->Activate();
 #else
     tab_strip_to_attach_to_after_exit_ = target_tabstrip;
@@ -832,46 +832,48 @@ TabDragController::DragBrowserToNewTabStrip(
     return DRAG_BROWSER_RESULT_STOP;
   }
   Detach(DONT_RELEASE_CAPTURE);
-  Attach(target_tabstrip, screen_point);
+  Attach(target_tabstrip, point_in_screen);
   return DRAG_BROWSER_RESULT_CONTINUE;
 }
 
 void TabDragController::DragActiveTabStacked(
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   if (attached_tabstrip_->tab_count() !=
       static_cast<int>(initial_tab_positions_.size()))
     return;  // TODO: should cancel drag if this happens.
 
-  int delta = screen_point.x() - start_screen_point_.x();
+  int delta = point_in_screen.x() - start_point_in_screen_.x();
   attached_tabstrip_->DragActiveTab(initial_tab_positions_, delta);
 }
 
 void TabDragController::MoveAttachedToNextStackedIndex(
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   int index = attached_tabstrip_->touch_layout_->active_index();
   if (index + 1 >= attached_tabstrip_->tab_count())
     return;
 
   GetModel(attached_tabstrip_)->MoveSelectedTabsTo(index + 1);
-  StartMoveStackedTimerIfNecessary(screen_point, kMoveAttachedSubsequentDelay);
+  StartMoveStackedTimerIfNecessary(point_in_screen,
+                                   kMoveAttachedSubsequentDelay);
 }
 
 void TabDragController::MoveAttachedToPreviousStackedIndex(
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   int index = attached_tabstrip_->touch_layout_->active_index();
   if (index <= attached_tabstrip_->GetMiniTabCount())
     return;
 
   GetModel(attached_tabstrip_)->MoveSelectedTabsTo(index - 1);
-  StartMoveStackedTimerIfNecessary(screen_point, kMoveAttachedSubsequentDelay);
+  StartMoveStackedTimerIfNecessary(point_in_screen,
+                                   kMoveAttachedSubsequentDelay);
 }
 
-void TabDragController::MoveAttached(const gfx::Point& screen_point) {
+void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   DCHECK(attached_tabstrip_);
   DCHECK(!view_.get());
   DCHECK(!is_dragging_window_);
 
-  gfx::Point dragged_view_point = GetAttachedDragPoint(screen_point);
+  gfx::Point dragged_view_point = GetAttachedDragPoint(point_in_screen);
 
   // Determine the horizontal move threshold. This is dependent on the width
   // of tabs. The smaller the tabs compared to the standard size, the smaller
@@ -893,7 +895,7 @@ void TabDragController::MoveAttached(const gfx::Point& screen_point) {
   // Update the model, moving the WebContents from one index to another. Do this
   // only if we have moved a minimum distance since the last reorder (to prevent
   // jitter) or if this the first move and the tabs are not consecutive.
-  if ((abs(screen_point.x() - last_move_screen_loc_) > threshold ||
+  if ((abs(point_in_screen.x() - last_move_screen_loc_) > threshold ||
         (initial_move_ && !AreTabsConsecutive()))) {
     TabStripModel* attached_model = GetModel(attached_tabstrip_);
     gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_point);
@@ -917,7 +919,7 @@ void TabDragController::MoveAttached(const gfx::Point& screen_point) {
     // last_move_screen_loc_.
     if (index_of_last_item !=
         attached_model->GetIndexOfTabContents(last_contents)) {
-      last_move_screen_loc_ = screen_point.x();
+      last_move_screen_loc_ = point_in_screen.x();
     }
   }
 
@@ -927,22 +929,22 @@ void TabDragController::MoveAttached(const gfx::Point& screen_point) {
         initial_move_);
   }
 
-  StartMoveStackedTimerIfNecessary(screen_point, kMoveAttachedInitialDelay);
+  StartMoveStackedTimerIfNecessary(point_in_screen, kMoveAttachedInitialDelay);
 
   initial_move_ = false;
 }
 
-void TabDragController::MoveDetached(const gfx::Point& screen_point) {
+void TabDragController::MoveDetached(const gfx::Point& point_in_screen) {
   DCHECK(!attached_tabstrip_);
   DCHECK(view_.get());
   DCHECK(!is_dragging_window_);
 
   // Move the View. There are no changes to the model if we're detached.
-  view_->MoveTo(screen_point);
+  view_->MoveTo(point_in_screen);
 }
 
 void TabDragController::StartMoveStackedTimerIfNecessary(
-    const gfx::Point& screen_point,
+    const gfx::Point& point_in_screen,
     int delay_ms) {
   DCHECK(attached_tabstrip_);
 
@@ -950,7 +952,7 @@ void TabDragController::StartMoveStackedTimerIfNecessary(
   if (!touch_layout)
     return;
 
-  gfx::Point dragged_view_point = GetAttachedDragPoint(screen_point);
+  gfx::Point dragged_view_point = GetAttachedDragPoint(point_in_screen);
   gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_point);
   int index = touch_layout->active_index();
   if (ShouldDragToNextStackedTab(bounds, index)) {
@@ -958,20 +960,20 @@ void TabDragController::StartMoveStackedTimerIfNecessary(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(delay_ms),
         base::Bind(&TabDragController::MoveAttachedToNextStackedIndex,
-                   base::Unretained(this), screen_point));
+                   base::Unretained(this), point_in_screen));
   } else if (ShouldDragToPreviousStackedTab(bounds, index)) {
     static_cast<base::Timer*>(&move_stacked_timer_)->Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(delay_ms),
         base::Bind(&TabDragController::MoveAttachedToPreviousStackedIndex,
-                   base::Unretained(this), screen_point));
+                   base::Unretained(this), point_in_screen));
   }
 }
 
 TabDragController::DetachPosition TabDragController::GetDetachPosition(
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   DCHECK(attached_tabstrip_);
-  gfx::Point attached_point(screen_point);
+  gfx::Point attached_point(point_in_screen);
   views::View::ConvertPointToView(NULL, attached_tabstrip_, &attached_point);
   if (attached_point.x() < 0)
     return DETACH_BEFORE;
@@ -980,14 +982,15 @@ TabDragController::DetachPosition TabDragController::GetDetachPosition(
   return DETACH_ABOVE_OR_BELOW;
 }
 
-DockInfo TabDragController::GetDockInfoAtPoint(const gfx::Point& screen_point) {
+DockInfo TabDragController::GetDockInfoAtPoint(
+    const gfx::Point& point_in_screen) {
   // TODO: add support for dock info when |detach_into_browser_| is true.
   if (attached_tabstrip_ || detach_into_browser_) {
     // If the mouse is over a tab strip, don't offer a dock position.
     return DockInfo();
   }
 
-  if (dock_info_.IsValidForPoint(screen_point)) {
+  if (dock_info_.IsValidForPoint(point_in_screen)) {
     // It's possible any given screen coordinate has multiple docking
     // positions. Check the current info first to avoid having the docking
     // position bounce around.
@@ -996,13 +999,13 @@ DockInfo TabDragController::GetDockInfoAtPoint(const gfx::Point& screen_point) {
 
   gfx::NativeView dragged_view = view_->GetWidget()->GetNativeView();
   dock_windows_.insert(dragged_view);
-  DockInfo info = DockInfo::GetDockInfoAtPoint(screen_point, dock_windows_);
+  DockInfo info = DockInfo::GetDockInfoAtPoint(point_in_screen, dock_windows_);
   dock_windows_.erase(dragged_view);
   return info;
 }
 
 TabStrip* TabDragController::GetTabStripForPoint(
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   gfx::NativeView dragged_view = NULL;
   if (view_.get())
     dragged_view = view_->GetWidget()->GetNativeView();
@@ -1011,11 +1014,11 @@ TabStrip* TabDragController::GetTabStripForPoint(
   if (dragged_view)
     dock_windows_.insert(dragged_view);
   gfx::NativeWindow local_window =
-      DockInfo::GetLocalProcessWindowAtPoint(screen_point, dock_windows_);
+      DockInfo::GetLocalProcessWindowAtPoint(point_in_screen, dock_windows_);
   if (dragged_view)
     dock_windows_.erase(dragged_view);
   TabStrip* tab_strip = GetTabStripForWindow(local_window);
-  if (tab_strip && DoesTabStripContain(tab_strip, screen_point))
+  if (tab_strip && DoesTabStripContain(tab_strip, point_in_screen))
     return tab_strip;
   return is_dragging_window_ ? attached_tabstrip_ : NULL;
 }
@@ -1042,25 +1045,25 @@ TabStrip* TabDragController::GetTabStripForWindow(gfx::NativeWindow window) {
 
 bool TabDragController::DoesTabStripContain(
     TabStrip* tabstrip,
-    const gfx::Point& screen_point) const {
+    const gfx::Point& point_in_screen) const {
   static const int kVerticalDetachMagnetism = 15;
   // Make sure the specified screen point is actually within the bounds of the
   // specified tabstrip...
   gfx::Rect tabstrip_bounds = GetViewScreenBounds(tabstrip);
-  if (screen_point.x() < tabstrip_bounds.right() &&
-      screen_point.x() >= tabstrip_bounds.x()) {
+  if (point_in_screen.x() < tabstrip_bounds.right() &&
+      point_in_screen.x() >= tabstrip_bounds.x()) {
     // TODO(beng): make this be relative to the start position of the mouse
     // for the source TabStrip.
     int upper_threshold = tabstrip_bounds.bottom() + kVerticalDetachMagnetism;
     int lower_threshold = tabstrip_bounds.y() - kVerticalDetachMagnetism;
-    return screen_point.y() >= lower_threshold &&
-        screen_point.y() <= upper_threshold;
+    return point_in_screen.y() >= lower_threshold &&
+        point_in_screen.y() <= upper_threshold;
   }
   return false;
 }
 
 void TabDragController::Attach(TabStrip* attached_tabstrip,
-                               const gfx::Point& screen_point) {
+                               const gfx::Point& point_in_screen) {
   DCHECK(!attached_tabstrip_);  // We should already have detached by the time
                                 // we get here.
 
@@ -1092,13 +1095,13 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
     // user moves the tab immediately after attaching it.
-    last_move_screen_loc_ = screen_point.x();
+    last_move_screen_loc_ = point_in_screen.x();
 
     // Figure out where to insert the tab based on the bounds of the dragged
     // representation and the ideal bounds of the other Tabs already in the
     // strip. ("ideal bounds" are stable even if the Tabs' actual bounds are
     // changing due to animation).
-    gfx::Point tab_strip_point(screen_point);
+    gfx::Point tab_strip_point(point_in_screen);
     views::View::ConvertPointToView(NULL, attached_tabstrip_, &tab_strip_point);
     tab_strip_point.set_x(
         attached_tabstrip_->GetMirroredXInView(tab_strip_point.x()));
@@ -1231,7 +1234,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
 }
 
 void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   if (GetModel(attached_tabstrip_)->count() ==
       static_cast<int>(drag_data_.size())) {
     // All the tabs in a browser are being dragged but all the tabs weren't
@@ -1244,7 +1247,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   // Create a new browser to house the dragged tabs and have the OS run a move
   // loop.
 
-  gfx::Point attached_point = GetAttachedDragPoint(screen_point);
+  gfx::Point attached_point = GetAttachedDragPoint(point_in_screen);
 
   // Calculate the bounds for the tabs from the attached_tab_strip. We do this
   // so that the tabs don't change size when detached.
@@ -1252,7 +1255,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
       CalculateBoundsForDraggedTabs(attached_point.x());
 
   Browser* browser = CreateBrowserForDrag(
-      attached_tabstrip_, screen_point, &drag_bounds);
+      attached_tabstrip_, point_in_screen, &drag_bounds);
   Detach(DONT_RELEASE_CAPTURE);
   BrowserView* dragged_browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
@@ -1301,11 +1304,11 @@ void TabDragController::RunMoveLoop() {
   if (end_run_loop_behavior_ == END_RUN_LOOP_CONTINUE_DRAGGING) {
     end_run_loop_behavior_ = END_RUN_LOOP_STOP_DRAGGING;
     if (tab_strip_to_attach_to_after_exit_) {
-      gfx::Point screen_point(GetCursorScreenPoint());
+      gfx::Point point_in_screen(GetCursorScreenPoint());
       Detach(DONT_RELEASE_CAPTURE);
-      Attach(tab_strip_to_attach_to_after_exit_, screen_point);
+      Attach(tab_strip_to_attach_to_after_exit_, point_in_screen);
       // Move the tabs into position.
-      MoveAttached(screen_point);
+      MoveAttached(point_in_screen);
       attached_tabstrip_->GetWidget()->Activate();
       tab_strip_to_attach_to_after_exit_ = NULL;
     }
@@ -1453,10 +1456,10 @@ gfx::Rect TabDragController::GetDraggedViewTabStripBounds(
 }
 
 gfx::Point TabDragController::GetAttachedDragPoint(
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   DCHECK(attached_tabstrip_);  // The tab must be attached.
 
-  gfx::Point tab_loc(screen_point);
+  gfx::Point tab_loc(point_in_screen);
   views::View::ConvertPointToView(NULL, attached_tabstrip_, &tab_loc);
   int x =
       attached_tabstrip_->GetMirroredXInView(tab_loc.x()) - mouse_offset_.x();
@@ -1694,7 +1697,7 @@ void TabDragController::CompleteDrag() {
     // Compel the model to construct a new window for the detached WebContents.
     views::Widget* widget = source_tabstrip_->GetWidget();
     gfx::Rect window_bounds(widget->GetRestoredBounds());
-    window_bounds.set_origin(GetWindowCreatePoint(last_screen_point_));
+    window_bounds.set_origin(GetWindowCreatePoint(last_point_in_screen_));
     // When modifying the following if statement, please make sure not to
     // introduce issue listed in http://crbug.com/6223 comment #11.
     bool rtl_ui = base::i18n::IsRTL();
@@ -1823,7 +1826,7 @@ void TabDragController::DockDisplayerDestroyed(
 }
 
 void TabDragController::BringWindowUnderPointToFront(
-    const gfx::Point& screen_point) {
+    const gfx::Point& point_in_screen) {
   // If we're going to dock to another window, bring it to the front.
   gfx::NativeWindow window = dock_info_.window();
   if (!window) {
@@ -1836,7 +1839,7 @@ void TabDragController::BringWindowUnderPointToFront(
         dragged_view->GetWidget()->GetNativeView();
     dock_windows_.insert(dragged_native_view);
     window =
-        DockInfo::GetLocalProcessWindowAtPoint(screen_point, dock_windows_);
+        DockInfo::GetLocalProcessWindowAtPoint(point_in_screen, dock_windows_);
     dock_windows_.erase(dragged_native_view);
   }
   if (window) {
@@ -1878,24 +1881,24 @@ bool TabDragController::AreTabsConsecutive() {
 
 Browser* TabDragController::CreateBrowserForDrag(
     TabStrip* source,
-    const gfx::Point& screen_point,
+    const gfx::Point& point_in_screen,
     std::vector<gfx::Rect>* drag_bounds) {
   Browser* browser = new Browser(
       Browser::CreateParams(drag_data_[0].contents->profile()));
   gfx::Point center(0, source->height() / 2);
   views::View::ConvertPointToWidget(source, &center);
   gfx::Rect new_bounds(source->GetWidget()->GetWindowBoundsInScreen());
-  new_bounds.set_y(screen_point.y() - center.y());
-  switch (GetDetachPosition(screen_point)) {
+  new_bounds.set_y(point_in_screen.y() - center.y());
+  switch (GetDetachPosition(point_in_screen)) {
     case DETACH_BEFORE:
-      new_bounds.set_x(screen_point.x() - center.x());
+      new_bounds.set_x(point_in_screen.x() - center.x());
       new_bounds.Offset(-mouse_offset_.x(), 0);
       break;
 
     case DETACH_AFTER: {
       gfx::Point right_edge(source->width(), 0);
       views::View::ConvertPointToWidget(source, &right_edge);
-      new_bounds.set_x(screen_point.x() - right_edge.x());
+      new_bounds.set_x(point_in_screen.x() - right_edge.x());
       new_bounds.Offset(drag_bounds->back().right() - mouse_offset_.x(), 0);
       int delta = (*drag_bounds)[0].x();
       for (size_t i = 0; i < drag_bounds->size(); ++i)

@@ -34,9 +34,10 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
 
  protected:
   // Overridden from ToplevelWindowEventFilter:
-  virtual WindowResizer* CreateWindowResizer(aura::Window* window,
-                                             const gfx::Point& point,
-                                             int window_component) OVERRIDE;
+  virtual WindowResizer* CreateWindowResizer(
+      aura::Window* window,
+      const gfx::Point& point_in_parent,
+      int window_component) OVERRIDE;
 
  private:
   friend class WorkspaceEventFilterTestHelper;

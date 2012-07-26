@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 
 #include "ash/shell.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -25,9 +26,8 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
 
   if (window->layer()->type() == ui::LAYER_TEXTURED) {
     gfx::Point window_point(screen_point);
-    aura::Window::ConvertPointToWindow(ash::Shell::GetPrimaryRootWindow(),
-                                       window,
-                                       &window_point);
+    aura::client::GetScreenPositionClient(window->GetRootWindow())->
+        ConvertPointFromScreen(window, &window_point);
     return gfx::Rect(window->bounds().size()).Contains(window_point) ?
         window : NULL;
   }
@@ -56,7 +56,7 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeView>& ignore) {
   return GetLocalProcessWindowAtPointImpl(
-      screen_point, ignore, ash::Shell::GetPrimaryRootWindow());
+      screen_point, ignore, ash::Shell::GetRootWindowAt(screen_point));
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {

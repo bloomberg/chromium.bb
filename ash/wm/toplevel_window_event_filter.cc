@@ -80,10 +80,10 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       if ((event->flags() &
            (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK)) == 0 &&
           WindowResizer::GetBoundsChangeForWindowComponent(component)) {
-        gfx::Point parent_location(
+        gfx::Point location_in_parent(
             ConvertPointToParent(target, event->location()));
         window_resizer_.reset(
-            CreateWindowResizer(target, parent_location, component));
+            CreateWindowResizer(target, location_in_parent, component));
       } else {
         window_resizer_.reset();
       }
@@ -136,10 +136,10 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
         return ui::GESTURE_STATUS_UNKNOWN;
       }
       in_gesture_resize_ = true;
-      gfx::Point parent_location(
+      gfx::Point location_in_parent(
           ConvertPointToParent(target, event->location()));
       window_resizer_.reset(
-          CreateWindowResizer(target, parent_location, component));
+          CreateWindowResizer(target, location_in_parent, component));
       break;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
@@ -209,7 +209,7 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
         GetLastTouchPointForTarget(source, &drag_location);
     DCHECK(has_point);
   } else {
-    drag_location = gfx::Screen::GetCursorScreenPoint();
+    drag_location = root_window->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToWindow(
         root_window, source->parent(), &drag_location);
   }
@@ -241,11 +241,12 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
 // static
 WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
     aura::Window* window,
-    const gfx::Point& point,
+    const gfx::Point& point_in_parent,
     int window_component) {
   if (!wm::IsWindowNormal(window))
     return NULL;  // Don't allow resizing/dragging maximized/fullscreen windows.
-  return DefaultWindowResizer::Create(window, point, window_component);
+  return DefaultWindowResizer::Create(
+      window, point_in_parent, window_component);
 }
 
 void ToplevelWindowEventFilter::CompleteDrag(DragCompletionStatus status,

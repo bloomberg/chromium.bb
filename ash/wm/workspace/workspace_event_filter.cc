@@ -117,7 +117,7 @@ void WorkspaceEventFilter::OnWindowDestroyed(aura::Window* window) {
 
 WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
     aura::Window* window,
-    const gfx::Point& point,
+    const gfx::Point& point_in_parent,
     int window_component) {
   // Allow dragging maximized windows if it's not tracked by workspace. This is
   // set by tab dragging code.
@@ -126,7 +126,7 @@ WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
     return NULL;
   }
   return WorkspaceWindowResizer::Create(
-      window, point, window_component,
+      window, point_in_parent, window_component,
       std::vector<aura::Window*>());
 }
 

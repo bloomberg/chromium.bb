@@ -57,7 +57,7 @@ class ASH_EXPORT ToplevelWindowEventFilter :
  protected:
   // Creates a new WindowResizer.
   virtual WindowResizer* CreateWindowResizer(aura::Window* window,
-                                             const gfx::Point& point,
+                                             const gfx::Point& point_in_parent,
                                              int window_component);
 
  private:
