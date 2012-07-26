@@ -158,10 +158,11 @@ class HGenerator(object):
     for prop in self._cpp_type_generator.ExpandParams(props):
       if prop.description:
         c.Comment(prop.description)
-      c.Append('%s %s;' % (
+      (c.Append('%s %s;' % (
           self._cpp_type_generator.GetType(prop, wrap_optional=True),
           prop.unix_name))
-      c.Append()
+        .Append()
+      )
     return c
 
   def _GenerateType(self, type_):

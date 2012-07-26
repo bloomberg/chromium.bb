@@ -17,6 +17,7 @@
           'choices.json',
           'crossref.json',
           'enums.json',
+          'functions_as_parameters.json',
           'functions_on_types.json',
           'objects.json',
           'simple_api.json',

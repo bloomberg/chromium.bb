@@ -212,6 +212,8 @@ class Property(object):
         # self.properties will already have some value from |_AddProperties|.
         self.properties.update(type_.properties)
         self.functions = type_.functions
+      elif json_type == 'function':
+        self.type_ = PropertyType.FUNCTION
       elif json_type == 'binary':
         self.type_ = PropertyType.BINARY
       else:
@@ -293,6 +295,7 @@ class PropertyType(object):
   REF = _Info(False, "REF")
   CHOICES = _Info(False, "CHOICES")
   OBJECT = _Info(False, "OBJECT")
+  FUNCTION = _Info(False, "FUNCTION")
   BINARY = _Info(False, "BINARY")
   ANY = _Info(False, "ANY")
   ADDITIONAL_PROPERTIES = _Info(False, "ADDITIONAL_PROPERTIES")
@@ -350,16 +353,6 @@ def _AddProperties(model, json, from_json=False, from_client=False):
   """
   model.properties = {}
   for name, property_json in json.get('properties', {}).items():
-    # TODO(calamity): support functions (callbacks) as properties.  The model
-    # doesn't support it yet because the h/cc generators don't -- this is
-    # because we'd need to hook it into a base::Callback or something.
-    #
-    # However, pragmatically it's not necessary to support them anyway, since
-    # the instances of functions-on-properties in the extension APIs are all
-    # handled in pure Javascript on the render process (and .: never reach
-    # C++ let alone the browser).
-    if property_json.get('type') == 'function':
-      continue
     model.properties[name] = Property(
         model,
         name,

@@ -152,6 +152,7 @@ class CCGenerator(object):
             t == PropertyType.CHOICES or
             t == PropertyType.ENUM or
             t == PropertyType.OBJECT or
+            t == PropertyType.FUNCTION or
             t == PropertyType.REF or
             t == PropertyType.STRING):
         # TODO(miket): It would be nice to initialize CHOICES and ENUM, but we
@@ -316,6 +317,12 @@ class CCGenerator(object):
       return '%s.DeepCopy()' % self._any_helper.GetValue(prop, var)
     elif prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
       return '%s.DeepCopy()' % var
+    elif prop.type_ == PropertyType.FUNCTION:
+      if prop.optional:
+        vardot = var + '->'
+      else:
+        vardot = var + '.'
+      return '%sDeepCopy()' % vardot
     elif prop.type_ == PropertyType.ENUM:
       return 'CreateEnumValue(%s).release()' % var
     elif prop.type_ == PropertyType.BINARY:
@@ -469,6 +476,9 @@ class CCGenerator(object):
               'if (!%(ctype)s::Populate(*dictionary, &%(dst)s->%(name)s))')
           .Append('  return %(failure_value)s;')
         )
+    elif prop.type_ == PropertyType.FUNCTION:
+      if prop.optional:
+        c.Append('%(dst)s->%(name)s.reset(new base::DictionaryValue());')
     elif prop.type_ == PropertyType.ANY:
       if prop.optional:
         c.Append('%(dst)s->%(name)s.reset(new ' + any_helper.ANY_CLASS + '());')

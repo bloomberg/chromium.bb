@@ -55,6 +55,7 @@ def GetValueType(type_):
       PropertyType.DOUBLE: 'Value::TYPE_DOUBLE',
       PropertyType.ENUM: 'Value::TYPE_STRING',
       PropertyType.OBJECT: 'Value::TYPE_DICTIONARY',
+      PropertyType.FUNCTION: 'Value::TYPE_DICTIONARY',
       PropertyType.ARRAY: 'Value::TYPE_LIST',
       PropertyType.BINARY: 'Value::TYPE_BINARY',
   }[type_]

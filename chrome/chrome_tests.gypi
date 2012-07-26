@@ -2039,6 +2039,7 @@
         '../tools/json_schema_compiler/test/choices_unittest.cc',
         '../tools/json_schema_compiler/test/crossref_unittest.cc',
         '../tools/json_schema_compiler/test/enums_unittest.cc',
+        '../tools/json_schema_compiler/test/functions_as_parameters_unittest.cc',
         '../tools/json_schema_compiler/test/functions_on_types_unittest.cc',
         '../tools/json_schema_compiler/test/idl_schemas_unittest.cc',
         '../tools/json_schema_compiler/test/objects_unittest.cc',

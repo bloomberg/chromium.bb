@@ -152,6 +152,11 @@ class CppTypeGenerator(object):
       cpp_type = any_helper.ANY_CLASS
     elif prop.type_ == PropertyType.OBJECT:
       cpp_type = cpp_util.Classname(prop.name)
+    elif prop.type_ == PropertyType.FUNCTION:
+      # Functions come into the json schema compiler as empty objects. We can
+      # record these as empty DictionaryValue's so that we know if the function
+      # was passed in or not.
+      cpp_type = 'base::DictionaryValue'
     elif prop.type_ == PropertyType.ARRAY:
       item_type = prop.item_type
       if item_type.type_ == PropertyType.REF:
