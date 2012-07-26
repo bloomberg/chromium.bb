@@ -122,7 +122,7 @@ class DownloadsHistoryDataCollector {
     // Cannot complete immediately because the history backend runs on a
     // separate thread, so we can assume that the RunMessageLoop below will
     // be exited by the Quit in OnQueryDownloadsComplete.
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   bool GetDownloadsHistoryEntry(DownloadPersistentStoreInfo* result) {
@@ -1034,7 +1034,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
       &download_assempted));
   ASSERT_TRUE(download_assempted);
   observer.WaitForObservation(
-      base::Bind(&ui_test_utils::RunMessageLoop),
+      base::Bind(&content::RunMessageLoop),
       base::Bind(&MessageLoop::Quit,
                  base::Unretained(MessageLoopForUI::current())));
 

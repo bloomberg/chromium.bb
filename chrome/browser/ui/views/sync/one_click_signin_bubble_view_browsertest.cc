@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, DISABLED_OkButton) {
 
   // View should no longer be showing.  The message loop will exit once the
   // fade animation of the bubble is done.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
 
   // View should no longer be showing.  The message loop will exit once the
   // fade animation of the bubble is done.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_FALSE(on_start_sync_called_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
   listener->LinkClicked(view->advanced_link_, 0);
 
   // View should no longer be showing and a new tab should be opened.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
 
   // View should no longer be showing.  The message loop will exit once the
   // fade animation of the bubble is done.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
 
   // View should no longer be showing.  The message loop will exit once the
   // fade animation of the bubble is done.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_FALSE(on_start_sync_called_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }

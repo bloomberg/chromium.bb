@@ -134,7 +134,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
     // Run message loop until a quit message is sent from
     // OnQueryDownloadEntriesComplete().
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   void OnQueryDownloadEntriesComplete(

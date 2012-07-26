@@ -314,8 +314,7 @@ class WorkerTest : public content::ContentBrowserTest {
           BrowserThread::IO, FROM_HERE,
           base::Bind(&CountWorkerProcesses, &cur_process_count));
 
-      base::RunLoop run_loop;
-      content::RunThisRunLoop(&run_loop);
+      content::RunMessageLoop();
       if (cur_process_count == count)
         return true;
 

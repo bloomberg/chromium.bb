@@ -205,7 +205,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   params.disposition = CURRENT_TAB;
   chrome::Navigate(&params);
   navigation_observer.WaitForObservation(
-      base::Bind(&ui_test_utils::RunMessageLoop),
+      base::Bind(&content::RunMessageLoop),
       base::Bind(&MessageLoop::Quit,
                  base::Unretained(MessageLoopForUI::current())));
 }
@@ -217,7 +217,7 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
       browser()->tab_strip_model(), this);
   chrome::Print(browser());
   tabstrip_observer.WaitForObservation(
-      base::Bind(&ui_test_utils::RunMessageLoop),
+      base::Bind(&content::RunMessageLoop),
       base::Bind(&MessageLoop::Quit,
                  base::Unretained(MessageLoopForUI::current())));
 

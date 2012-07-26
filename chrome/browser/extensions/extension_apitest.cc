@@ -51,7 +51,7 @@ bool ExtensionApiTest::ResultCatcher::GetNextResult() {
   // empty.
   if (results_.empty()) {
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     waiting_ = false;
   }
 

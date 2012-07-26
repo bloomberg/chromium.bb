@@ -107,7 +107,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
     installer->InstallCrx(PackExtension(ext_path));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
 
     EXPECT_TRUE(mock_install_prompt->did_succeed());
     return installer;

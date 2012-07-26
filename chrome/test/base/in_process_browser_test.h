@@ -48,9 +48,9 @@ class RuleBasedHostResolverProc;
 // . Your test method is invoked on the ui thread. If you need to block until
 //   state changes you'll need to run the message loop from your test method.
 //   For example, if you need to wait till a find bar has completely been shown
-//   you'll need to invoke ui_test_utils::RunMessageLoop. When the message bar
-//   is shown, invoke MessageLoop::current()->Quit() to return control back to
-//   your test method.
+//   you'll need to invoke content::RunMessageLoop. When the message bar is
+//   shown, invoke MessageLoop::current()->Quit() to return control back to your
+//   test method.
 // . If you subclass and override SetUp, be sure and invoke
 //   InProcessBrowserTest::SetUp. (But see also SetUpOnMainThread,
 //   SetUpInProcessBrowserTestFixture and other related hook methods for a

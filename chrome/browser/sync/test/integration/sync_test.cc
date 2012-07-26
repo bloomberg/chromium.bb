@@ -568,7 +568,7 @@ bool SyncTest::IsTestServerRunning() {
                         net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->SetRequestContext(g_browser_process->system_request_context());
   fetcher->Start();
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   return delegate.running();
 }
 

@@ -31,7 +31,7 @@ class TemplateURLServiceLoader : public content::NotificationObserver {
     registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                    content::Source<TemplateURLService>(model));
     model_->Load();
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   virtual void Observe(int type,

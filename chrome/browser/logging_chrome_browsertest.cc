@@ -94,6 +94,6 @@ IN_PROC_BROWSER_TEST_F(RendererCrashTest, FLAKY_Crash) {
                  content::NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUICrashURL), CURRENT_TAB, 0);
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   ASSERT_TRUE(saw_crash_);
 }

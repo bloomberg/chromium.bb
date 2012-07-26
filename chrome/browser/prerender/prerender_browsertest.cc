@@ -268,7 +268,7 @@ class TestPrerenderContents : public PrerenderContents {
   void WaitForPendingPrerenders(size_t expected_pending_prerenders) {
     if (pending_prerenders().size() < expected_pending_prerenders) {
       expected_pending_prerenders_ = expected_pending_prerenders;
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
       expected_pending_prerenders_ = 0;
     }
 
@@ -910,7 +910,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         loader_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
         false));
 
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     // Now that we've run the prerender until it stopped loading, we can now
     // also make sure the launcher has finished loading.
     loader_nav_observer.Wait();
@@ -1011,7 +1011,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
     if (prerender_contents->quit_message_loop_on_destruction()) {
     // Run message loop until the prerender contents is destroyed.
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     } else {
       // We don't expect to pick up a running prerender, so instead
       // observe one navigation.
@@ -1702,7 +1702,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
           content::Referrer(),
           content::PAGE_TRANSITION_TYPED,
           std::string());
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
@@ -2134,7 +2134,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearHistory) {
       FROM_HERE,
       base::Bind(&ClearBrowsingData, current_browser(),
                  BrowsingDataRemover::REMOVE_HISTORY));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   // Make sure prerender history was cleared.
   EXPECT_EQ(0, GetHistoryLength());
@@ -2152,7 +2152,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ClearBrowsingData, current_browser(),
                  BrowsingDataRemover::REMOVE_CACHE));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   // Make sure prerender history was not cleared.  Not a vital behavior, but
   // used to compare with PrerenderClearHistory test.
@@ -2167,7 +2167,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_TRUE(GetPrerenderContents() == NULL);
 }
 

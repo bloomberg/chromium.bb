@@ -522,7 +522,7 @@ class TestSBClient
         BrowserThread::IO, FROM_HERE,
         base::Bind(&TestSBClient::CheckDownloadUrlOnIOThread,
                    this, url_chain));
-    ui_test_utils::RunMessageLoop();  // Will stop in OnDownloadUrlCheckResult.
+    content::RunMessageLoop();  // Will stop in OnDownloadUrlCheckResult.
   }
 
   void CheckDownloadHash(const std::string& full_hash) {
@@ -530,7 +530,7 @@ class TestSBClient
         BrowserThread::IO, FROM_HERE,
         base::Bind(&TestSBClient::CheckDownloadHashOnIOThread,
                    this, full_hash));
-    ui_test_utils::RunMessageLoop();  // Will stop in OnDownloadHashCheckResult.
+    content::RunMessageLoop();  // Will stop in OnDownloadHashCheckResult.
   }
 
  private:

@@ -105,13 +105,13 @@ bool WebUITestHandler::WaitForResult() {
 
   // Either sync test completion or the testDone() will cause message loop
   // to quit.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   // Run a second message loop when not |run_test_done_| so that the sync test
   // completes, or |run_test_succeeded_| but not |test_done_| so async tests
   // complete.
   if (!run_test_done_ || (run_test_succeeded_ && !test_done_)) {
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   is_waiting_ = false;

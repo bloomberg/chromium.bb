@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents),
       gdata::GetDownloadDataCallback());
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   EXPECT_EQ(gdata::HTTP_SUCCESS, result);
   FilePath expected_filepath = gdata_test_server_.document_root().Append(
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
       gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents),
       gdata::GetDownloadDataCallback());
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   EXPECT_EQ(gdata::HTTP_NOT_FOUND, result);
   // Do not verify the not found message.
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
       std::string(),  // search string
       std::string(),  // directory resource ID
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   EXPECT_EQ(gdata::HTTP_SUCCESS, result);
   ASSERT_TRUE(result_data);
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
       std::string(),  // search string
       std::string(),  // directory resource ID
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   EXPECT_EQ(gdata::GDATA_PARSE_ERROR, result);
   EXPECT_FALSE(result_data);

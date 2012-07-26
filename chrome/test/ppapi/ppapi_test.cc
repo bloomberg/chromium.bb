@@ -73,7 +73,7 @@ PPAPITestBase::TestFinishObserver::TestFinishObserver(
 bool PPAPITestBase::TestFinishObserver::WaitForFinish() {
   if (!finished_) {
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     waiting_ = false;
   }
   return finished_;

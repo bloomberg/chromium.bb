@@ -76,7 +76,7 @@ void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
           base::Bind(
               &GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded,
               base::Unretained(this))));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(

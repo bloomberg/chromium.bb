@@ -42,12 +42,12 @@ class FaviconChangeObserver : public BookmarkModelObserver {
   }
   void WaitForGetFavicon() {
     wait_for_load_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     ASSERT_TRUE(node_->is_favicon_loaded());
   }
   void WaitForSetFavicon() {
     wait_for_load_ = false;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {}
   virtual void BookmarkNodeMoved(BookmarkModel* model,

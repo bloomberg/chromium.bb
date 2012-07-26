@@ -85,7 +85,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
         extensions::UnpackedInstaller::Create(service));
     installer->set_prompt_for_plugins(false);
     installer->Load(path);
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   // Find the loaded extension by its path. See crbug.com/59531 for why
@@ -327,7 +327,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
     installer->InstallCrx(crx_path);
 
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   size_t num_after = service->extensions()->size();
@@ -423,7 +423,7 @@ bool ExtensionBrowserTest::WaitForExtensionViewsToLoad() {
     if (!(*iter)->IsLoading()) {
       ++iter;
     } else {
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
 
       // Test activity may have modified the set of extension processes during
       // message processing, so re-start the iteration to catch added/removed

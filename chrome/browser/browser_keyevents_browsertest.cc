@@ -99,7 +99,7 @@ class TestFinishObserver : public content::NotificationObserver {
   bool WaitForFinish() {
     if (!finished_) {
       waiting_ = true;
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
       waiting_ = false;
     }
     return finished_;

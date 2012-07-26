@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
           "files/extensions/convert_web_app/application.html"));
 
   if (!installed_extension_)
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
 
   EXPECT_TRUE(installed_extension_);
   EXPECT_TRUE(installed_extension_->is_hosted_app());

@@ -27,7 +27,7 @@ bool ExtensionTestMessageListener::WaitUntilSatisfied()  {
   if (satisfied_)
     return true;
   waiting_ = true;
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   return satisfied_;
 }
 

@@ -18,6 +18,11 @@
 
 namespace content {
 
+// Turns on nestable tasks, runs the message loop, then resets nestable tasks
+// to what they were originally. Prefer this over MessageLoop::Run for in
+// process browser tests that need to block until a condition is met.
+void RunMessageLoop();
+
 // Variant of RunMessageLoop that takes RunLoop.
 void RunThisRunLoop(base::RunLoop* run_loop);
 

@@ -193,7 +193,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
         return true;
     }
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     bool success = !waiting_;
     if (waiting_) {
       // Print the events that were caught since the last WaitFor() call to help

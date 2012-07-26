@@ -336,7 +336,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
       if (seen_)
         return;
       running_ = true;
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
     }
 
     void Notify() {

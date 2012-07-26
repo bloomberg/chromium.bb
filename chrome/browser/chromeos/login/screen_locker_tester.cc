@@ -73,7 +73,7 @@ LoginAttemptObserver::~LoginAttemptObserver() {
 void LoginAttemptObserver::WaitForAttempt() {
   if (!login_attempted_) {
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     waiting_ = false;
   }
   ASSERT_TRUE(login_attempted_);

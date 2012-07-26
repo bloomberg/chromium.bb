@@ -62,7 +62,7 @@ class IFrameLoader : public content::NotificationObserver {
         url.spec().c_str());
     chrome::GetActiveWebContents(browser)->GetRenderViewHost()->
         ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(script));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
 
     EXPECT_EQ(base::StringPrintf("\"%d\"", iframe_id), javascript_response_);
     registrar_.RemoveAll();
@@ -142,7 +142,7 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
         "window.domAutomationController.send(geoStart());";
     render_view_host->ExecuteJavascriptInWebFrame(WideToUTF16Hack(iframe_xpath),
                                                   UTF8ToUTF16(script));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     registrar_.RemoveAll();
     LOG(WARNING) << "got geolocation watch" << javascript_response_;
     EXPECT_NE("\"0\"", javascript_response_);

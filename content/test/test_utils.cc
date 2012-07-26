@@ -38,6 +38,11 @@ static void DeferredQuitRunLoop(const base::Closure& quit_task,
 
 namespace content {
 
+void RunMessageLoop() {
+  base::RunLoop run_loop;
+  RunThisRunLoop(&run_loop);
+}
+
 void RunThisRunLoop(base::RunLoop* run_loop) {
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
 

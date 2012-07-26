@@ -70,7 +70,7 @@ void ReloadLocaleResources(const std::string& new_locale) {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&ReloadLocaleResourcesOnIOThread, base::ConstRef(new_locale)),
       MessageLoop::QuitClosure());
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 }  // namespace

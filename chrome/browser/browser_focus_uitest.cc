@@ -177,7 +177,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
         FROM_HERE,
         base::Bind(&CheckFocus, browser(), vid, timeout),
         base::TimeDelta::FromMilliseconds(100));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     return IsViewFocused(vid);
   }
 
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
       FROM_HERE,
       MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(kActionDelayMs));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 #endif  // defined(OS_POSIX)
 
   ASSERT_TRUE(IsViewFocused(location_bar_focus_view_id_));
@@ -637,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           MessageLoop::QuitClosure(),
                                           base::TimeDelta::FromSeconds(1));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   chrome::FocusLocationBar(browser());
 
@@ -762,7 +762,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           MessageLoop::QuitClosure(),
                                           base::TimeDelta::FromSeconds(1));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   // The interstitial should have focus now.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));

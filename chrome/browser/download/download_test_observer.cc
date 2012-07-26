@@ -71,7 +71,7 @@ void DownloadTestObserver::Init() {
 void DownloadTestObserver::WaitForFinished() {
   if (!IsFinished()) {
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     waiting_ = false;
   }
 }
@@ -269,7 +269,7 @@ DownloadTestFlushObserver::DownloadTestFlushObserver(
 void DownloadTestFlushObserver::WaitForFlush() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   download_manager_->AddObserver(this);
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 void DownloadTestFlushObserver::ModelChanged(DownloadManager* manager) {
@@ -377,7 +377,7 @@ void DownloadTestItemCreationObserver::WaitForDownloadItemCreation() {
 
   if (called_back_count_ == 0) {
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     waiting_ = false;
   }
 }

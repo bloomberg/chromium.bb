@@ -159,7 +159,7 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
       FROM_HERE,
       base::Bind(&ViewEventTestBase::DoTestOnMessageLoop, this));
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 gfx::Size ViewEventTestBase::GetPreferredSize() {

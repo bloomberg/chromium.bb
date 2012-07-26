@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, BasicTest) {
   InitPageCycler();
   page_cycler()->Run();
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   ASSERT_FALSE(file_util::PathExists(errors_file()));
   ASSERT_TRUE(file_util::PathExists(stats_file()));
 }
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, UnvisitableURL) {
   InitPageCycler();
   page_cycler()->Run();
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   ASSERT_TRUE(file_util::PathExists(errors_file()));
   ASSERT_TRUE(file_util::PathExists(stats_file()));
 
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, InvalidURL) {
   InitPageCycler();
   page_cycler()->Run();
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   ASSERT_TRUE(file_util::PathExists(errors_file()));
   ASSERT_TRUE(file_util::PathExists(stats_file()));
 
@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
   InitPageCycler();
   page_cycler()->Run();
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   ASSERT_TRUE(file_util::PathExists(errors_file()));
   ASSERT_TRUE(file_util::PathExists(stats_file()));
 
@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_PlaybackMode) {
 
   page_cycler()->Run();
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   ASSERT_TRUE(file_util::PathExists(stats_file()));
   ASSERT_FALSE(file_util::PathExists(errors_file()));
 }
@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_URLNotInCache) {
   InitPageCycler(new_urls_file, errors_file(), stats_file());
   page_cycler()->Run();
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   ASSERT_TRUE(file_util::PathExists(errors_file()));
   ASSERT_TRUE(file_util::PathExists(stats_file()));
 

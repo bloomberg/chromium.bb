@@ -384,7 +384,7 @@ class SafeBrowsingServiceTestHelper
         base::Bind(&SafeBrowsingServiceTestHelper::ForceUpdateInIOThread,
                    this));
     // Will continue after OnForceUpdateDone().
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
   void ForceUpdateInIOThread() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -403,7 +403,7 @@ class SafeBrowsingServiceTestHelper
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         base::Bind(&SafeBrowsingServiceTestHelper::CheckUrlOnIOThread,
                    this, url));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
   void CheckUrlOnIOThread(const GURL& url) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -453,7 +453,7 @@ class SafeBrowsingServiceTestHelper
                    this),
         wait_time);
     // Will continue after OnWaitForStatusUpdateDone().
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   void WaitTillServerReady(const char* host, int port) {
@@ -533,7 +533,7 @@ class SafeBrowsingServiceTestHelper
     url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     url_fetcher_->SetRequestContext(request_context_);
     url_fetcher_->Start();
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     return response_status_;
   }
 

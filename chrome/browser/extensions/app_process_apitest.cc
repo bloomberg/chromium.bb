@@ -495,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromExtension) {
 
   // Wait for app tab to be created and loaded.
   test_navigation_observer.WaitForObservation(
-      base::Bind(&ui_test_utils::RunMessageLoop),
+      base::Bind(&content::RunMessageLoop),
       base::Bind(&MessageLoop::Quit,
                  base::Unretained(MessageLoopForUI::current())));
 

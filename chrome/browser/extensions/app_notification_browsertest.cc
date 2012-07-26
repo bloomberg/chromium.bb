@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(AppNotificationTest, SaveClientId) {
           browser()->profile(), app, extension_misc::LAUNCH_TAB,
           NEW_FOREGROUND_TAB));
   if (!interceptor.was_called())
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   EXPECT_TRUE(interceptor.was_called());
 
   ExtensionService* service = browser()->profile()->GetExtensionService();

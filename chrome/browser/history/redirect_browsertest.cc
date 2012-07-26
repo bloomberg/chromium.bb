@@ -49,7 +49,7 @@ class RedirectTest : public InProcessBrowserTest {
         url, &consumer_,
         base::Bind(&RedirectTest::OnRedirectQueryComplete,
                    base::Unretained(this), &rv));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     return rv;
   }
 

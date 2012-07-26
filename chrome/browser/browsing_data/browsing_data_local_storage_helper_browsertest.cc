@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
       base::Bind(&StopTestOnCallback::Callback,
                  base::Unretained(&stop_test_on_callback)));
   // Blocks until StopTestOnCallback::Callback is notified.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {

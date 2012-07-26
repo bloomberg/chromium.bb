@@ -69,7 +69,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
       return;
 
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   bool received_failure() const { return received_failure_; }

@@ -42,7 +42,7 @@ class ServiceProcessControlBrowserTest
             this));
 
     // Then run the message loop to keep things running.
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   // Send a Cloud Print status request and wait for a reply from the service.
@@ -50,7 +50,7 @@ class ServiceProcessControlBrowserTest
     ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
         base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback,
                    base::Unretained(this)));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   void CloudPrintInfoCallback(
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
                     MessageLoop::QuitClosure());
   }
   // Then run the message loop to keep things running.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_EQ(0, launch_count);
   // And then shutdown the service process.
   EXPECT_TRUE(process->Shutdown());
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
     process->Launch(task, task);
   }
   // Then run the message loop to keep things running.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_EQ(0, launch_count);
   // And then shutdown the service process.
   EXPECT_TRUE(process->Shutdown());

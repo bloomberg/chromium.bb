@@ -55,7 +55,7 @@ class ProvisionalLoadWaiter : public content::WebContentsObserver {
       return;
 
     waiting_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   void DidFailProvisionalLoad(
@@ -177,7 +177,7 @@ class SSLUITest : public InProcessBrowserTest {
           FROM_HERE,
           MessageLoop::QuitClosure(),
           base::TimeDelta::FromMilliseconds(timeout_ms));
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
     }
 
     bool actuallyLoadedContent = false;
@@ -1019,7 +1019,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
       break;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
   ASSERT_EQ(1, GetConstrainedWindowCount());
 

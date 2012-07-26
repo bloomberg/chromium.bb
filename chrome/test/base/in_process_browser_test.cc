@@ -379,7 +379,7 @@ void InProcessBrowserTest::QuitBrowsers() {
   // shut down properly.
   MessageLoopForUI::current()->PostTask(FROM_HERE,
                                         base::Bind(&browser::AttemptExit));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
 #if defined(OS_MACOSX)
   // browser::AttemptExit() will attempt to close all browsers by deleting

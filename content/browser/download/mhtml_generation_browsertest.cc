@@ -58,8 +58,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
       path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this));
 
   // Block until the MHTML is generated.
-  base::RunLoop run_loop;
-  RunThisRunLoop(&run_loop);
+  content::RunMessageLoop();
 
   EXPECT_TRUE(mhtml_generated());
   EXPECT_GT(file_size(), 0);

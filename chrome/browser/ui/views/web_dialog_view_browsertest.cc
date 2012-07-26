@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_height(300);
 
   view->MoveContents(web_contents, set_bounds);
-  ui_test_utils::RunMessageLoop();  // TestWebDialogView will quit.
+  content::RunMessageLoop();  // TestWebDialogView will quit.
   actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_height(250);
 
   view->MoveContents(web_contents, set_bounds);
-  ui_test_utils::RunMessageLoop();  // TestWebDialogView will quit.
+  content::RunMessageLoop();  // TestWebDialogView will quit.
   actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_size(min_size);
 
   view->MoveContents(web_contents, set_bounds);
-  ui_test_utils::RunMessageLoop();  // TestWebDialogView will quit.
+  content::RunMessageLoop();  // TestWebDialogView will quit.
   actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_height(0);
 
   view->MoveContents(web_contents, set_bounds);
-  ui_test_utils::RunMessageLoop();  // TestWebDialogView will quit.
+  content::RunMessageLoop();  // TestWebDialogView will quit.
   actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_LT(0, actual_bounds.width());
   EXPECT_LT(0, actual_bounds.height());

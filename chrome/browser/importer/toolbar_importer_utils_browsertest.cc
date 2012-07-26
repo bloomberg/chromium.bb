@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarImporterUtilsTest, NoCrash) {
                  base::Unretained(this)),
       browser()->profile());
   if (!did_run_) {
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
   ASSERT_TRUE(did_run_);
 }

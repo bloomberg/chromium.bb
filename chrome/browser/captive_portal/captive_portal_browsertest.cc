@@ -199,7 +199,7 @@ void URLRequestTimeoutOnDemandJob::WaitForJobs(int num_jobs) {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&URLRequestTimeoutOnDemandJob::WaitForJobsOnIOThread,
                  num_jobs));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 // static
@@ -519,7 +519,7 @@ void MultiNavigationObserver::WaitForNavigations(
   if (num_navigations_ < num_navigations_to_wait_for) {
     num_navigations_to_wait_for_ = num_navigations_to_wait_for;
     waiting_for_navigation_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     EXPECT_FALSE(waiting_for_navigation_);
   }
   EXPECT_EQ(num_navigations_, num_navigations_to_wait_for);
@@ -610,7 +610,7 @@ void FailLoadsAfterLoginObserver::WaitForNavigations() {
   if (tabs_needing_navigation_.size() !=
           tabs_navigated_to_final_destination_.size()) {
     waiting_for_navigation_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     EXPECT_FALSE(waiting_for_navigation_);
   }
   EXPECT_EQ(tabs_needing_navigation_.size(),
@@ -705,7 +705,7 @@ void CaptivePortalObserver::WaitForResults(int num_results_to_wait_for) {
   if (num_results_received_ < num_results_to_wait_for) {
     num_results_to_wait_for_ = num_results_to_wait_for;
     waiting_for_result_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     EXPECT_FALSE(waiting_for_result_);
   }
   EXPECT_EQ(num_results_received_, num_results_to_wait_for);

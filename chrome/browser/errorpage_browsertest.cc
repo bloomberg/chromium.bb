@@ -103,7 +103,7 @@ class ErrorPageTest : public InProcessBrowserTest {
       FAIL();
     }
     test_navigation_observer.WaitForObservation(
-        base::Bind(&ui_test_utils::RunMessageLoop),
+        base::Bind(&content::RunMessageLoop),
         base::Bind(&MessageLoop::Quit,
                    base::Unretained(MessageLoopForUI::current())));
 

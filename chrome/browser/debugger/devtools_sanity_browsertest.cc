@@ -56,7 +56,7 @@ class BrowserClosedObserver : public content::NotificationObserver {
   explicit BrowserClosedObserver(Browser* browser) {
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                    content::Source<Browser>(browser));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   virtual void Observe(int type,
@@ -204,7 +204,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(4));
       extensions::UnpackedInstaller::Create(service)->Load(path);
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
       timeout.Cancel();
     }
     size_t num_after = service->extensions()->size();
@@ -236,7 +236,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
       if (!(*iter)->IsLoading())
         ++iter;
       else
-        ui_test_utils::RunMessageLoop();
+        content::RunMessageLoop();
     }
 
     timeout.Cancel();
@@ -352,7 +352,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&TerminateWorkerOnIOThread, worker_data));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   static void WaitForFirstSharedWorkerOnIOThread(
@@ -376,7 +376,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&WaitForFirstSharedWorkerOnIOThread, worker_data));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     return worker_data;
   }
 

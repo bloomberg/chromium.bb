@@ -148,21 +148,16 @@ void RunAllPendingMessageAndSendQuit(content::BrowserThread::ID thread_id,
                                      const base::Closure& quit_task) {
   MessageLoop::current()->PostTask(FROM_HERE,
                                    MessageLoop::QuitWhenIdleClosure());
-  RunMessageLoop();
+  content::RunMessageLoop();
   content::BrowserThread::PostTask(thread_id, FROM_HERE, quit_task);
 }
 
 }  // namespace
 
-void RunMessageLoop() {
-  base::RunLoop run_loop;
-  content::RunThisRunLoop(&run_loop);
-}
-
 void RunAllPendingInMessageLoop() {
   MessageLoop::current()->PostTask(FROM_HERE,
                                    MessageLoop::QuitWhenIdleClosure());
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id) {
@@ -381,7 +376,7 @@ void RegisterAndWait(content::NotificationObserver* observer,
                      const content::NotificationSource& source) {
   content::NotificationRegistrar registrar;
   registrar.Add(observer, type, source);
-  RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 void WaitForBookmarkModelToLoad(BookmarkModel* model) {

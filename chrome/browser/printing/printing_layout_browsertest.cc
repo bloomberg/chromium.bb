@@ -67,7 +67,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
 
     TabContents* tab = chrome::GetActiveTabContents(browser());
     tab->print_view_manager()->PrintNow();
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     registrar_.RemoveAll();
   }
 

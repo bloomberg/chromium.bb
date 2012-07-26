@@ -81,11 +81,6 @@ enum BrowserTestWaitFlags {
                       BROWSER_TEST_WAIT_FOR_NAVIGATION
 };
 
-// Turns on nestable tasks, runs the message loop, then resets nestable tasks
-// to what they were originally. Prefer this over MessageLoop::Run for in
-// process browser tests that need to block until a condition is met.
-void RunMessageLoop();
-
 // Turns on nestable tasks, runs all pending tasks in the message loop,
 // then resets nestable tasks to what they were originally. Prefer this
 // over MessageLoop::RunAllPending for in process browser tests to run

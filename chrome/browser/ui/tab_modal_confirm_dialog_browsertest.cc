@@ -93,5 +93,5 @@ IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Quit) {
   EXPECT_CALL(*delegate_, OnCanceled());
   MessageLoopForUI::current()->PostTask(FROM_HERE,
                                         base::Bind(&browser::AttemptExit));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }

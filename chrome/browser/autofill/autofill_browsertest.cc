@@ -82,7 +82,7 @@ class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
   void Wait() {
     if (!personal_data_changed_) {
       has_run_message_loop_ = true;
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
     }
   }
 

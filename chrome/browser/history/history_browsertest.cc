@@ -67,7 +67,7 @@ class HistoryEnumerator : public HistoryService::URLEnumerator {
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&HistoryService::IterateURLs, history, this));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   virtual void OnURL(const GURL& url) {
@@ -129,7 +129,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
                             FROM_HERE,
                             base::Bind(&HistoryService::ScheduleDBTask,
                                        history, task, &request_consumer));
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   void ExpectEmptyHistory() {

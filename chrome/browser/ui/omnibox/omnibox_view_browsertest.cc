@@ -231,7 +231,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
         content::NotificationService::AllSources());
 
     while (!HasFailure() && browser->tab_count() != expected_tab_count)
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
 
     ASSERT_EQ(expected_tab_count, browser->tab_count());
   }
@@ -257,7 +257,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
                   content::Source<AutocompleteController>(controller));
 
     while (!HasFailure() && !controller->done())
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
 
     ASSERT_TRUE(controller->done());
   }
@@ -273,7 +273,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
       registrar.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                     content::Source<TemplateURLService>(model));
       model->Load();
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
     }
 
     ASSERT_TRUE(model->loaded());
@@ -307,7 +307,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
       content::NotificationRegistrar registrar;
       registrar.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
                     content::Source<Profile>(profile));
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
     }
 
     BookmarkModel* bookmark_model = profile->GetBookmarkModel();
@@ -317,7 +317,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
       content::NotificationRegistrar registrar;
       registrar.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                     content::Source<Profile>(profile));
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
     }
 
     GURL url(entry.url);
@@ -335,7 +335,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
       content::NotificationRegistrar registrar;
       registrar.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                     content::Source<Profile>(profile));
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
       // We don't want to return until all observers have processed this
       // notification, because some (e.g. the in-memory history database) may do
       // something important.  Since we don't know where in the observer list we

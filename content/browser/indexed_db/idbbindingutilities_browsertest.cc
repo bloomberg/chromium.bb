@@ -242,19 +242,19 @@ class IDBKeyPathHelper : public UtilityProcessHostClient {
 // This test fixture runs in the UI thread. However, most of the work done by
 // UtilityProcessHost (and wrapped by IDBKeyPathHelper above) happens on the IO
 // thread. This fixture delegates to IDBKeyPathHelper and blocks via
-// "ui_test_utils::RunMessageLoop()", until IDBKeyPathHelper posts a quit
+// "content::RunMessageLoop()", until IDBKeyPathHelper posts a quit
 // message the MessageLoop.
 class ScopedIDBKeyPathHelper {
  public:
   ScopedIDBKeyPathHelper() {
     key_path_helper_ = new IDBKeyPathHelper();
     key_path_helper_->CreateUtilityProcess();
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   ~ScopedIDBKeyPathHelper() {
     key_path_helper_->DestroyUtilityProcess();
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   void SetExpectedKeys(int id,
@@ -274,14 +274,14 @@ class ScopedIDBKeyPathHelper {
       const IndexedDBKeyPath& key_path) {
     key_path_helper_->CheckValuesForKeyPath(id, serialized_script_values,
                                             key_path);
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   void CheckInjectValue(const IndexedDBKey& key,
                         const SerializedScriptValue& value,
                         const IndexedDBKeyPath& key_path) {
     key_path_helper_->CheckInjectValue(key, value, key_path);
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
  private:

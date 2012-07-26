@@ -66,7 +66,7 @@ void TaskManagerBrowserTestUtil::WaitForResourceChange(int target_count) {
     return;
   }
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   model->RemoveObserver(&observer);
 }
 

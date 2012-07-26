@@ -88,7 +88,7 @@ void GetLogins(PasswordStore* store, std::vector<PasswordForm>& matches) {
   matcher_form.signon_realm = kFakeSignonRealm;
   PasswordStoreConsumerHelper consumer(&matches);
   store->GetLogins(matcher_form, &consumer);
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 void RemoveLogin(PasswordStore* store, const PasswordForm& form) {

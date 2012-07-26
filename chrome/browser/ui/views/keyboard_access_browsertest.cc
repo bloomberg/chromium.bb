@@ -52,7 +52,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   }
 
   void Wait() {
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
  private:

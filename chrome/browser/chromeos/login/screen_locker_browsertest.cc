@@ -61,7 +61,7 @@ class Waiter : public content::NotificationObserver {
         tester(chromeos::ScreenLocker::GetTester());
     while (tester->IsLocked() != locker_state ||
            browser_->window()->IsFullscreen() != fullscreen) {
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
     }
     // Make sure all pending tasks are executed.
     ui_test_utils::RunAllPendingInMessageLoop();

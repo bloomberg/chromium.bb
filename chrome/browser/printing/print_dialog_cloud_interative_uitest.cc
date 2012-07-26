@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
 
   TestController::GetInstance()->set_use_delegate(true);
 
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   ASSERT_TRUE(TestController::GetInstance()->result());
 

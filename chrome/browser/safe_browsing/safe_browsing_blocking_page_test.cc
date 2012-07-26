@@ -140,7 +140,7 @@ class FakeMalwareDetails : public MalwareDetails {
     // sleep(1) in malware_dom_details it triggers :).
     waiting_ = true;
     LOG(INFO) << "Waiting for dom details.";
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
     EXPECT_TRUE(got_dom_);
   }
 
@@ -205,7 +205,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
 
   void WaitForDelete() {
     wait_for_delete_ = true;
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
  private:
@@ -329,7 +329,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
 
   void AssertReportSent() {
     // When a report is scheduled in the IO thread we should get notified.
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
 
     FakeSafeBrowsingService* service =
         static_cast<FakeSafeBrowsingService*>(

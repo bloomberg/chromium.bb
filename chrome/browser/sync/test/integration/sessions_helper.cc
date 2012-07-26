@@ -139,7 +139,7 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(
             test()->GetProfile(index))->GetSessionModelAssociator()->
             BlockUntilLocalChangeForTest(TestTimeouts::action_max_timeout());
-        ui_test_utils::RunMessageLoop();
+        content::RunMessageLoop();
       }
     }
   }

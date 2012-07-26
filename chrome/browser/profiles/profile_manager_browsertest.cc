@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 
   ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
 

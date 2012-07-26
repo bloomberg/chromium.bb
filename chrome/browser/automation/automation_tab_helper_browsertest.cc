@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest, FormSubmission) {
   ExpectClientRedirectAndBreak(&mock_observer, &mock_notification_observer);
 
   ASSERT_NO_FATAL_FAILURE(RunTestCaseInJavaScript(1, false));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
   ExpectClientRedirectAndBreak(&mock_observer, &mock_notification_observer);
 
   ASSERT_NO_FATAL_FAILURE(RunTestCaseInJavaScript(3, false));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
   ExpectClientRedirectAndBreak(&mock_observer, &mock_notification_observer);
 
   ASSERT_NO_FATAL_FAILURE(RunTestCaseInJavaScript(4, false));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,

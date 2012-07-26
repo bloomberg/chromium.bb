@@ -58,7 +58,7 @@ void ClickOnView(const Browser* browser, ViewID vid) {
       ui_controls::LEFT,
       ui_controls::DOWN | ui_controls::UP,
       MessageLoop::QuitClosure());
-  RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 void HideNativeWindow(gfx::NativeWindow window) {

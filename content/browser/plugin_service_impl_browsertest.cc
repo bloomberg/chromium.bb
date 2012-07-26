@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToPlugin) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&OpenChannel, &mock_client));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
 }
 
 // A strict mock that fails if any of the methods are called. They shouldn't be
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(PluginServiceTest, CancelOpenChannelToPluginService) {
       browser()->profile()->GetResourceContext());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(OpenChannelAndThenCancel, &mock_client));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_TRUE(mock_client.get_resource_context_called());
 }
 
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&OpenChannel, &mock_client));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_TRUE(mock_client.get_resource_context_called());
   EXPECT_TRUE(mock_client.set_plugin_info_called());
   EXPECT_TRUE(mock_client.on_found_plugin_process_host_called());
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&OpenChannel, &mock_client));
-  ui_test_utils::RunMessageLoop();
+  content::RunMessageLoop();
   EXPECT_TRUE(mock_client.get_resource_context_called());
   EXPECT_TRUE(mock_client.set_plugin_info_called());
   EXPECT_TRUE(mock_client.on_found_plugin_process_host_called());

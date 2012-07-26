@@ -224,7 +224,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
   // message loop until they do.
   if (!response_delegate.HasResponse()) {
     response_delegate.set_should_post_quit(true);
-    ui_test_utils::RunMessageLoop();
+    content::RunMessageLoop();
   }
 
   EXPECT_TRUE(response_delegate.HasResponse());

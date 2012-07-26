@@ -143,7 +143,7 @@ class WebIntentPickerMock : public WebIntentPicker,
   void Wait() {
     if (!pending_async_completed_) {
       message_loop_started_ = true;
-      ui_test_utils::RunMessageLoop();
+      content::RunMessageLoop();
       pending_async_completed_ = false;
     }
   }
