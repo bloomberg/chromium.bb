@@ -772,6 +772,8 @@ RenderThreadImpl::GetGpuVDAContext3D() {
             this, WebKit::WebGraphicsContext3D::Attributes(),
             GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D")));
   }
+  if (!gpu_vda_context3d_.get())
+    return base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>();
   return gpu_vda_context3d_->AsWeakPtr();
 }
 
