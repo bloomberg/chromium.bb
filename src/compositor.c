@@ -3336,7 +3336,7 @@ load_module(const char *name, const char *entrypoint, void **handle)
 		snprintf(path, sizeof path, "%s", name);
 
 	weston_log("Loading module '%s'\n", path);
-	module = dlopen(path, RTLD_LAZY);
+	module = dlopen(path, RTLD_NOW);
 	if (!module) {
 		weston_log("Failed to load module: %s\n", dlerror());
 		return NULL;
