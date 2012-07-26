@@ -208,6 +208,10 @@ UI_EXPORT base::NativeEvent CreateNoopEvent();
 
 #if defined(OS_WIN)
 UI_EXPORT int GetModifiersFromACCEL(const ACCEL& accel);
+
+// Returns true if |message| identifies a mouse event that was generated as the
+// result of a touch event.
+UI_EXPORT bool IsMouseEventFromTouch(UINT message);
 #endif
 
 }  // namespace ui

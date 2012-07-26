@@ -58,9 +58,6 @@
 
 #pragma comment(lib, "dwmapi.lib")
 
-// From msdn:
-#define MOUSEEVENTF_FROMTOUCH 0xFF515700
-
 using ui::ViewProp;
 
 namespace views {
@@ -1631,14 +1628,8 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
   MSG msg = { hwnd(), message, w_param, l_param, 0,
               { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
   MouseEvent event(msg);
-  // Only button up/down have MOUSEEVENTF_FROMTOUCH set.
-  if (!touch_ids_.empty() ||
-      ((message == WM_LBUTTONDOWN || message == WM_LBUTTONUP ||
-        message == WM_RBUTTONDOWN || message == WM_RBUTTONUP) &&
-       (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
-       MOUSEEVENTF_FROMTOUCH)) {
+  if (!touch_ids_.empty() || ui::IsMouseEventFromTouch(message))
     event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
-  }
 
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
     if (tooltip_manager_.get())

@@ -66,9 +66,6 @@
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
-// From MSDN.
-#define MOUSEEVENTF_FROMTOUCH 0xFF515700
-
 using base::TimeDelta;
 using base::TimeTicks;
 using ui::ViewProp;
@@ -1872,15 +1869,6 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnMouseEvent");
   handled = TRUE;
 
-  // Windows sends (fake) mouse messages for touch events.  Ignore these since
-  // we're processing WM_TOUCH elsewhere.
-  if (touch_events_enabled_ && (message == WM_MOUSEMOVE ||
-      message == WM_LBUTTONDOWN || message == WM_LBUTTONUP ||
-      message == WM_RBUTTONDOWN || message == WM_RBUTTONUP) &&
-      (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
-      MOUSEEVENTF_FROMTOUCH)
-    return 0;
-
   if (message == WM_MOUSELEAVE)
     ignore_mouse_movement_ = true;
 
@@ -2934,9 +2922,13 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
     last_mouse_position_.unlocked_global.SetPoint(event.globalX, event.globalY);
   }
 
-  // Send the event to the renderer before changing mouse capture, so that the
-  // capturelost event arrives after mouseup.
-  render_widget_host_->ForwardMouseEvent(event);
+  // Windows sends (fake) mouse messages for touch events. Don't send these to
+  // the render widget.
+  if (!touch_events_enabled_ || !ui::IsMouseEventFromTouch(message)) {
+    // Send the event to the renderer before changing mouse capture, so that
+    // the capturelost event arrives after mouseup.
+    render_widget_host_->ForwardMouseEvent(event);
+  }
 
   switch (event.type) {
     case WebInputEvent::MouseMove:

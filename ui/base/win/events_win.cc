@@ -14,6 +14,9 @@
 
 namespace {
 
+// From MSDN.
+#define MOUSEEVENTF_FROMTOUCH 0xFF515700
+
 // Get the native mouse key state from the native event message type.
 int GetNativeMouseKey(const base::NativeEvent& native_event) {
   switch (native_event.message) {
@@ -310,6 +313,15 @@ int GetModifiersFromACCEL(const ACCEL& accel) {
   if (accel.fVirt & FALT)
     modifiers |= ui::EF_ALT_DOWN;
   return modifiers;
+}
+
+// Windows emulates mouse messages for touch events.
+bool IsMouseEventFromTouch(UINT message) {
+  return (message == WM_MOUSEMOVE ||
+      message == WM_LBUTTONDOWN || message == WM_LBUTTONUP ||
+      message == WM_RBUTTONDOWN || message == WM_RBUTTONUP) &&
+      (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
+      MOUSEEVENTF_FROMTOUCH;
 }
 
 }  // namespace ui
