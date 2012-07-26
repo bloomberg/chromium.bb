@@ -92,7 +92,7 @@ MACROENTRY
         /* xorl will leave eflags in a known state, so no info leaks */
         popl    %ecx
 .endif
-        movl    0x30(%ecx), %edx /* new_eip */
+        movl    0x30(%ecx), %edx /* new_prog_ctr */
         movl    0x14(%ecx), %ebp /* frame_ptr.ptr_32.ptr */
         movl    0x8(%ecx), %edi /* edi */
         movl    0x4(%ecx), %esi /* esi */

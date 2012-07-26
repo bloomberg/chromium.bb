@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -72,5 +72,5 @@ void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
   sig_ctx->r12       = 0;
   sig_ctx->stack_ptr = th_ctx->stack_ptr;
   sig_ctx->lr        = 0;
-  sig_ctx->prog_ctr  = th_ctx->new_eip;
+  sig_ctx->prog_ctr  = th_ctx->new_prog_ctr;
 }

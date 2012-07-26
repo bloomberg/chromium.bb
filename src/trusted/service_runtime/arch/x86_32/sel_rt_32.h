@@ -98,9 +98,9 @@ struct NaClThreadContext {
   uint16_t    ds, es, fs, gs;
   /*          28  2a  2c  2e */
   /*
-   * spring_addr, sys_ret and new_eip are not a part of the thread's
-   * register set, but are needed by NaClSwitch. By including them
-   * here, the two use the same interface.
+   * spring_addr, sys_ret and new_prog_ctr are not a part of the
+   * thread's register set, but are needed by NaClSwitch.  By
+   * including them here, the two use the same interface.
    */
   nacl_reg_t  new_prog_ctr;
   /*          30 */

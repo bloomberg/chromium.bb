@@ -32,7 +32,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 
   nap = natp->nap;
   context = &natp->user;
-  context->new_eip = new_prog_ctr;
+  context->new_prog_ctr = new_prog_ctr;
 
   /*
    * At startup this is not the return value, but the first argument.
@@ -63,7 +63,7 @@ NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
 
   nap = natp->nap;
   context = &natp->user;
-  context->new_eip = new_prog_ctr;
+  context->new_prog_ctr = new_prog_ctr;
   context->sysret = natp->sysret;
 
   NaClSwitch(context);
