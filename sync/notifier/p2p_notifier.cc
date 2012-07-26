@@ -271,6 +271,11 @@ void P2PNotifier::SendNotificationDataForTest(
 void P2PNotifier::SendNotificationData(
     const P2PNotificationData& notification_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (notification_data.GetChangedTypes().Empty()) {
+    DVLOG(1) << "Not sending XMPP notification with no changed types: "
+             << notification_data.ToString();
+    return;
+  }
   notifier::Notification notification;
   notification.channel = kSyncP2PNotificationChannel;
   notification.data = notification_data.ToString();
