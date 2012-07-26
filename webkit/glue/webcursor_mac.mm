@@ -18,6 +18,19 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "ui/base/resource/resource_bundle.h"
 
+
+#if defined(MAC_OS_X_VERSION_10_7) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+// The 10.7 SDK no longer has QuickDraw headers.
+// http://developer.apple.com/legacy/mac/library/documentation/Carbon/reference/QuickDraw_Ref/QuickDraw_Ref.pdf
+typedef short Bits16[16];
+struct Cursor {
+  Bits16 data;
+  Bits16 mask;
+  Point hotSpot;
+};
+#endif  // 10.7+ SDK
+
 using WebKit::WebCursorInfo;
 using WebKit::WebImage;
 using WebKit::WebSize;

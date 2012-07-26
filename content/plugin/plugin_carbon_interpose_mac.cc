@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,17 @@
 #include "webkit/plugins/npapi/carbon_plugin_window_tracker_mac.h"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
+#if defined(MAC_OS_X_VERSION_10_7) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+// QuickdrawAPI.h is no longer included in the 10.7 SDK, but the symbols are
+// still exported by QD.framework (a subframework of ApplicationServices).
+// http://developer.apple.com/legacy/mac/library/documentation/Carbon/reference/QuickDraw_Ref/QuickDraw_Ref.pdf
+extern "C" {
+Boolean PtInRect(Point pt, const Rect* r);
+void SetCursor(const Cursor* crsr);
+}
+#endif  // 10.7+ SDK
 
 // Returns true if the given window is modal.
 static bool IsModalWindow(WindowRef window) {

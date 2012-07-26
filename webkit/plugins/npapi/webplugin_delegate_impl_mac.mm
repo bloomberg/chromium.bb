@@ -43,6 +43,19 @@ using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 
+#if defined(MAC_OS_X_VERSION_10_7) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+#ifndef NP_NO_CARBON
+// QuickdrawAPI.h is no longer included in the 10.7 SDK, but the symbols are
+// still exported by QD.framework (a subframework of ApplicationServices).
+// http://developer.apple.com/legacy/mac/library/documentation/Carbon/reference/QuickDraw_Ref/QuickDraw_Ref.pdf
+extern "C" {
+void SetRect(Rect* r, short left, short top, short right, short bottom);
+void OffsetRect(Rect* r, short dh, short dv);
+}
+#endif  // NP_NO_CARBON
+#endif  // 10.7+ SDK
+
 // Important implementation notes: The Mac definition of NPAPI, particularly
 // the distinction between windowed and windowless modes, differs from the
 // Windows and Linux definitions.  Most of those differences are

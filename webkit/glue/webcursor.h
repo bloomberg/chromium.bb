@@ -26,7 +26,7 @@ typedef struct _GdkCursor GdkCursor;
 class NSCursor;
 #endif
 typedef UInt32 ThemeCursor;
-struct Cursor;
+typedef struct Cursor Cursor;
 #endif
 
 class Pickle;

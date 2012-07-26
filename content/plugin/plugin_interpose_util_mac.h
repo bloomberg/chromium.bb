@@ -9,6 +9,8 @@
 
 #import "base/basictypes.h"
 
+typedef struct Cursor Cursor;
+
 // This is really a WebPluginDelegateImpl, but that class is private to the
 // framework, and these functions are called from a dylib.
 typedef void* OpaquePluginRef;
