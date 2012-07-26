@@ -62,7 +62,7 @@
   [bezier lineToPoint:NSMakePoint(arrowStart.x + info_bubble::kBubbleArrowWidth,
                                   arrowStart.y)];
   [bezier closePath];
-  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] set];
+  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.96] set];
   [bezier fill];
 }
 

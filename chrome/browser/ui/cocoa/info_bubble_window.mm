@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -24,25 +23,6 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 const NSTimeInterval kMinimumTimeInterval =
     std::numeric_limits<NSTimeInterval>::min();
 }  // namespace
-
-// Forward declare private window server functions used to style the window.
-extern "C" {
-typedef int CGSConnection;
-typedef int CGSWindow;
-typedef void* CGSWindowFilterRef;
-
-CGSConnection _CGSDefaultConnection();
-CGError CGSNewCIFilterByName(CGSConnection cid,
-                             CFStringRef filterName,
-                             CGSWindowFilterRef *outFilter);
-CGError CGSAddWindowFilter(CGSConnection cid,
-                           CGSWindow wid,
-                           CGSWindowFilterRef filter,
-                           int flags);
-CGError CGSReleaseCIFilter(CGSConnection cid, CGSWindowFilterRef filter);
-CGError CGSSetCIFilterValuesFromDictionary(
-    CGSConnection cid, CGSWindowFilterRef filter, CFDictionaryRef filterValues);
-}  // extern "C"
 
 @interface InfoBubbleWindow (Private)
 - (void)appIsTerminating;
@@ -115,7 +95,6 @@ class AppNotificationBridge : public content::NotificationObserver {
 
 @synthesize delayOnClose = delayOnClose_;
 @synthesize canBecomeKeyWindow = canBecomeKeyWindow_;
-@synthesize hasBlurredBackground = hasBlurredBackground_;
 
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
@@ -131,7 +110,6 @@ class AppNotificationBridge : public content::NotificationObserver {
     [self setHasShadow:YES];
     delayOnClose_ = YES;
     canBecomeKeyWindow_ = YES;
-    hasBlurredBackground_ = YES;
     notificationBridge_.reset(new AppNotificationBridge(self));
 
     // Start invisible. Will be made visible when ordered front.
@@ -223,25 +201,6 @@ class AppNotificationBridge : public content::NotificationObserver {
     NSPoint newOrigin = frame.origin;
     newOrigin.y += kOrderInSlideOffset;
     [self setFrameOrigin:newOrigin];
-
-    // Add a gaussian blur to the window.
-    if (hasBlurredBackground_) {
-      CGSConnection cgsConnection = _CGSDefaultConnection();
-      CGSWindowFilterRef filter;
-      if (CGSNewCIFilterByName(cgsConnection, CFSTR("CIGaussianBlur"),
-                               &filter) == kCGErrorSuccess) {
-        NSDictionary* blurOptions =
-            [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.5]
-                                        forKey:@"inputRadius"];
-
-        if (CGSSetCIFilterValuesFromDictionary(cgsConnection, filter,
-                base::mac::NSToCFCast(blurOptions)) == kCGErrorSuccess) {
-          CGSAddWindowFilter(cgsConnection, [self windowNumber], filter, 1);
-        }
-
-        CGSReleaseCIFilter(cgsConnection, filter);
-      }
-    }
 
     // Apply animations to show and move self.
     [NSAnimationContext beginGrouping];
