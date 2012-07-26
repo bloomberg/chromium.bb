@@ -945,10 +945,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
           New &amp;incognito window
         </message>
-        <message name="IDS_PIN_TO_START_SCREEN" desc="The text label of the Pin to start screen menu item">
+        <message name="IDS_METRO_PIN_TO_START_SCREEN" desc="The text label of the Pin to start screen menu item">
           Pin to Start Screen
         </message>
-        <message name="IDS_UNPIN_FROM_START_SCREEN" desc="The text label of the unpin from start screen menu item">
+        <message name="IDS_METRO_UNPIN_FROM_START_SCREEN" desc="The text label of the unpin from start screen menu item">
           Unpin from Start Screen
         </message>
         <message name="IDS_EDIT2" desc="The text label before the cut/copy/paste buttons in the merged menu">
@@ -1037,10 +1037,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of the New incognito window menu item">
           New &amp;Incognito Window
         </message>
-        <message name="IDS_PIN_TO_START_SCREEN" desc="In Title Case: The text label of the Pin to start screen menu item">
+        <message name="IDS_METRO_PIN_TO_START_SCREEN" desc="In Title Case: The text label of the Pin to start screen menu item">
           Pin to Start Screen
         </message>
-        <message name="IDS_UNPIN_FROM_START_SCREEN" desc="In Title Case: The text label of the Unpin from start screen menu item">
+        <message name="IDS_METRO_UNPIN_FROM_START_SCREEN" desc="In Title Case: The text label of the Unpin from start screen menu item">
           Unpin from Start Screen
         </message>
         <message name="IDS_UNDO" desc="In Title Case: The text label of the Undo menu item">
@@ -6392,6 +6392,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_HOME" desc="The tooltip for the home button">
         Open the home page
       </message>
+      <message name="IDS_TOOLTIP_METRO_PIN" desc="The tooltip for the pin button">
+        Pin this page to the start menu
+      </message>
+      <message name="IDS_TOOLTIP_METRO_PINNED" desc="The tooltip for the pin button when the page is pinned">
+        Unpin this page from the start menu
+      </message>
       <message name="IDS_TOOLTIP_RELOAD" desc="The tooltip for reload button">
         Reload this page
       </message>
@@ -6447,6 +6453,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the location bar edit field.">
         Address
+      </message>
+      <message name="IDS_ACCNAME_METRO_PIN" desc="The accessible name for the pin button.">
+        Pin
       </message>
       <message name="IDS_ACCNAME_STAR" desc="The accessible name for the bookmark button.">
         Bookmark

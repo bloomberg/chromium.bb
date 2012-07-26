@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/metro_pin_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
@@ -74,6 +75,10 @@
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/label.h"
+
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
@@ -182,6 +187,7 @@ LocationBarView::LocationBarView(Profile* profile,
       star_view_(NULL),
       action_box_button_view_(NULL),
       chrome_to_mobile_view_(NULL),
+      metro_pin_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
@@ -230,7 +236,6 @@ void LocationBarView::Init(views::View* popup_parent_view) {
 
   location_icon_view_ = new LocationIconView(this);
   AddChildView(location_icon_view_);
-  location_icon_view_->SetVisible(true);
   location_icon_view_->set_drag_controller(this);
 
   ev_bubble_view_ =
@@ -281,7 +286,15 @@ void LocationBarView::Init(views::View* popup_parent_view) {
     // hidden in popups and in the app launcher.
     star_view_ = new StarView(command_updater_);
     AddChildView(star_view_);
-    star_view_->SetVisible(true);
+
+    // Add the metro pin view, if this is windows and we are running in Metro
+    // mode.
+#if defined(OS_WIN)
+    if (base::win::IsMetroProcess()) {
+      metro_pin_view_ = new MetroPinView(command_updater_);
+      AddChildView(metro_pin_view_);
+    }
+#endif
 
     // Also disable Chrome To Mobile for off-the-record and non-synced profiles,
     // or if the feature is disabled by a command line flag or chrome://flags.
@@ -501,6 +514,11 @@ void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
   chrome::ShowBookmarkBubbleView(star_view_, profile_, url, newly_bookmarked);
 }
 
+void LocationBarView::SetMetroPinnedState(bool is_pinned) {
+  if (metro_pin_view_)
+    metro_pin_view_->SetIsPinned(is_pinned);
+}
+
 void LocationBarView::SetZoomIconTooltipPercent(int zoom_percent) {
   zoom_view_->SetZoomIconTooltipPercent(zoom_percent);
 }
@@ -655,6 +673,9 @@ void LocationBarView::Layout() {
 
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
+  if (metro_pin_view_ && metro_pin_view_->visible())
+    entry_width -= metro_pin_view_->GetPreferredSize().width() +
+                   GetItemPadding();
   if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible()) {
     entry_width -= chrome_to_mobile_view_->GetPreferredSize().width() +
         GetItemPadding();
@@ -741,6 +762,14 @@ void LocationBarView::Layout() {
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
     offset -= GetItemPadding() - star_view_->GetBuiltInHorizontalPadding();
+  }
+
+  if (metro_pin_view_ && metro_pin_view_->visible()) {
+    offset += metro_pin_view_->GetBuiltInHorizontalPadding();
+    int pin_width = metro_pin_view_->GetPreferredSize().width();
+    offset -= pin_width;
+    metro_pin_view_->SetBounds(offset, location_y, pin_width, location_height);
+    offset -= GetItemPadding() - metro_pin_view_->GetBuiltInHorizontalPadding();
   }
 
   if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible()) {
@@ -1126,6 +1155,8 @@ void LocationBarView::RefreshPageActionViews() {
 
     page_action_views_.resize(page_actions_.size());
     View* right_anchor = chrome_to_mobile_view_;
+    if (!right_anchor)
+      right_anchor = metro_pin_view_;
     if (!right_anchor)
       right_anchor = star_view_;
     if (!right_anchor)

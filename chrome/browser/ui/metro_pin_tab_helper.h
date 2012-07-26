@@ -7,13 +7,19 @@
 
 #include "content/public/browser/web_contents_observer.h"
 
+class MetroPinnedStateObserver;
+
 // Per-tab class to help manage metro pinning.
 class MetroPinTabHelper : public content::WebContentsObserver {
  public:
-  explicit MetroPinTabHelper(content::WebContents* tab_contents);
+  explicit MetroPinTabHelper(content::WebContents* web_contents);
   virtual ~MetroPinTabHelper();
 
   bool is_pinned() const { return is_pinned_; }
+
+  void set_observer(MetroPinnedStateObserver* observer) {
+    observer_ = observer;
+  }
 
   void TogglePinnedToStartScreen();
 
@@ -26,8 +32,14 @@ class MetroPinTabHelper : public content::WebContentsObserver {
   // Queries the metro driver about the pinned state of the current URL.
   void UpdatePinnedStateForCurrentURL();
 
+  // Update the pinned state and notify the delegate.
+  void SetIsPinned(bool is_pinned);
+
   // Whether the current URL is pinned to the metro start screen.
   bool is_pinned_;
+
+  // The observer that we inform when the |is_pinned_| state changes.
+  MetroPinnedStateObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MetroPinTabHelper);
 };

@@ -351,7 +351,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_BOOKMARK_PAGE:
       BookmarkCurrentPage(browser_);
       break;
-    case IDC_PIN_TO_START_SCREEN:
+    case IDC_METRO_PIN_TO_START_SCREEN:
       TogglePagePinnedToStartScreen(browser_);
       break;
     case IDC_BOOKMARK_ALL_TABS:
@@ -930,7 +930,7 @@ void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
                                         CanBookmarkCurrentPage(browser_));
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
                                         CanBookmarkAllTabs(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_PIN_TO_START_SCREEN,
+  command_updater_.UpdateCommandEnabled(IDC_METRO_PIN_TO_START_SCREEN,
                                         true);
 }
 

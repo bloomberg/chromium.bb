@@ -242,7 +242,7 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
          command_id == IDC_VIEW_BACKGROUND_PAGES ||
          command_id == IDC_UPGRADE_DIALOG ||
          command_id == IDC_SHOW_SYNC_SETUP ||
-         command_id == IDC_PIN_TO_START_SCREEN;
+         command_id == IDC_METRO_PIN_TO_START_SCREEN;
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -284,11 +284,11 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_PRE_SYNCED_LABEL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
     }
-    case IDC_PIN_TO_START_SCREEN: {
-      int string_id = IDS_PIN_TO_START_SCREEN;
+    case IDC_METRO_PIN_TO_START_SCREEN: {
+      int string_id = IDS_METRO_PIN_TO_START_SCREEN;
       TabContents* tab_contents = chrome::GetActiveTabContents(browser_);
       if (tab_contents && tab_contents->metro_pin_tab_helper()->is_pinned()) {
-        string_id = IDS_UNPIN_FROM_START_SCREEN;
+        string_id = IDS_METRO_UNPIN_FROM_START_SCREEN;
       }
       return l10n_util::GetStringUTF16(string_id);
     }
@@ -384,11 +384,11 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
       return false;
     loaded_modules->AcknowledgeConflictNotification();
     return true;
-  } else if (command_id == IDC_PIN_TO_START_SCREEN) {
+  } else if (command_id == IDC_METRO_PIN_TO_START_SCREEN) {
     return base::win::IsMetroProcess();
 #else
   if (command_id == IDC_VIEW_INCOMPATIBILITIES ||
-      command_id == IDC_PIN_TO_START_SCREEN) {
+      command_id == IDC_METRO_PIN_TO_START_SCREEN) {
     return false;
 #endif
   } else if (command_id == IDC_UPGRADE_DIALOG) {
@@ -461,7 +461,8 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 #endif
 
-  AddItemWithStringId(IDC_PIN_TO_START_SCREEN, IDS_PIN_TO_START_SCREEN);
+  AddItemWithStringId(IDC_METRO_PIN_TO_START_SCREEN,
+                      IDS_METRO_PIN_TO_START_SCREEN);
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());

@@ -42,6 +42,7 @@ class GURL;
 class InstantController;
 class KeywordHintView;
 class LocationIconView;
+class MetroPinView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
@@ -208,6 +209,9 @@ class LocationBarView : public LocationBar,
 
   // Shows the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_bookmarked);
+
+  // Toggles the metro pin on or off.
+  void SetMetroPinnedState(bool is_pinned);
 
   // Shows the Chrome To Mobile bubble.
   void ShowChromeToMobileBubble();
@@ -525,6 +529,9 @@ class LocationBarView : public LocationBar,
 
   // The Chrome To Mobile page action icon view.
   ChromeToMobileView* chrome_to_mobile_view_;
+
+  // The button to pin the page to the Metro start screen.
+  MetroPinView* metro_pin_view_;
 
   // The mode that dictates how the bar shows.
   Mode mode_;

@@ -497,6 +497,10 @@
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE" file="panel_restore.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_C" file="panel_restore_click.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_H" file="panel_restore_hover.png" />
+      <if expr="is_win">
+        <structure type="chrome_scaled_image" name="IDR_METRO_PIN" file="metro_pin.png" />
+        <structure type="chrome_scaled_image" name="IDR_METRO_PINNED" file="metro_pinned.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_PLUGIN" file="plugin.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="prerender_succeed_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER_FAIL_ICON" file="prerender_fail_icon.png" />
