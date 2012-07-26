@@ -192,7 +192,7 @@ deps = {
   # When roll to another webgl conformance tests revision, please goto
   # chrome/test/gpu and run generate_webgl_conformance_test_list.py.
   "src/third_party/webgl_conformance":
-    "/trunk/deps/third_party/webgl/sdk/tests@138171",
+    "/trunk/deps/third_party/webgl/sdk/tests@148561",
 
   # We run these layout tests as UI tests. Since many of the buildbots that
   # run layout tests do NOT have access to the LayoutTest directory, we need
@@ -470,7 +470,7 @@ deps_os = {
       "@1f74e4e7ad3ca4163b4578fc30da26a165dd55e7",
 
     "src/third_party/aosp":
-      "/trunk/deps/third_party/aosp@122156",
+      "/trunk/deps/third_party/aosp@148330",
   },
 }
 
