@@ -49,6 +49,10 @@ class WebContents;
 // Generate a URL for a file path including a query string.
 GURL GetFileUrlWithQuery(const FilePath& path, const std::string& query_string);
 
+// Waits for a load stop for the specified |web_contents|'s controller, if the
+// tab is currently web_contents.  Otherwise returns immediately.
+void WaitForLoadStop(WebContents* web_contents);
+
 // Simulates clicking at the center of the given tab asynchronously.
 void SimulateMouseClick(WebContents* web_contents);
 

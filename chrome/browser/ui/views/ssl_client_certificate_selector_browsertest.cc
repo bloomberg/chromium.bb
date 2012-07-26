@@ -13,6 +13,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/base/x509_certificate.h"
@@ -61,7 +62,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     io_loop_finished_event_.Wait();
 
-    ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+    content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
     selector_ = new SSLClientCertificateSelector(
         chrome::GetActiveTabContents(browser()),
         auth_requestor_->http_network_session_,
@@ -150,8 +151,8 @@ class SSLClientCertificateSelectorMultiTabTest
     ASSERT_TRUE(NULL != chrome::GetWebContentsAt(browser(), 0));
     ASSERT_TRUE(NULL != chrome::GetWebContentsAt(browser(), 1));
     ASSERT_TRUE(NULL != chrome::GetWebContentsAt(browser(), 2));
-    ui_test_utils::WaitForLoadStop(chrome::GetWebContentsAt(browser(), 1));
-    ui_test_utils::WaitForLoadStop(chrome::GetWebContentsAt(browser(), 2));
+    content::WaitForLoadStop(chrome::GetWebContentsAt(browser(), 1));
+    content::WaitForLoadStop(chrome::GetWebContentsAt(browser(), 2));
 
     selector_1_ = new SSLClientCertificateSelector(
         chrome::GetTabContentsAt(browser(), 1),

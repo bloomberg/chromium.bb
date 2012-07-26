@@ -103,10 +103,6 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title);
 // race hazard. Use WindowedNotificationObserver instead.
 void WaitForNewTab(Browser* browser);
 
-// Waits for a load stop for the specified |tab|'s controller, if the tab is
-// currently loading.  Otherwise returns immediately.
-void WaitForLoadStop(content::WebContents* tab);
-
 // Opens |url| in an incognito browser window with the incognito profile of
 // |profile|, blocking until the navigation finishes. This will create a new
 // browser if a browser with the incognito profile does not exist. Returns the

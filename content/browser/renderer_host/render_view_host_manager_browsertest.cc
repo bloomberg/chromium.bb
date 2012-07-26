@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ("/files/navigate_opener.html",
             chrome::GetActiveWebContents(browser())->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
             chrome::GetActiveWebContents(browser())->GetURL().path());
 
   // Wait for the cross-site transition in the new tab to finish.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       chrome::GetActiveWebContents(browser()));
   EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->
@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
             chrome::GetActiveWebContents(browser())->GetURL().path());
 
   // Wait for the cross-site transition in the new tab to finish.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       chrome::GetActiveWebContents(browser()));
   EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the cross-site transition in the new tab to finish.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ("/files/title2.html",
             chrome::GetActiveWebContents(browser())->GetURL().path());
 
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the current tab to finish.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ("/files/navigate_opener.html",
             chrome::GetActiveWebContents(browser())->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
@@ -490,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Wait for the navigation in the new tab to finish, if it hasn't, then
   // send it to post_message.html on a different site.
   content::WebContents* foo_contents = chrome::GetActiveWebContents(browser());
-  ui_test_utils::WaitForLoadStop(foo_contents);
+  content::WaitForLoadStop(foo_contents);
   EXPECT_EQ("/files/navigate_opener.html", foo_contents->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
   ui_test_utils::NavigateToURL(browser(),
@@ -513,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Wait for the navigation in the new tab to finish, if it hasn't, then
   // send it to post_message.html on the original site.
   content::WebContents* new_contents = chrome::GetActiveWebContents(browser());
-  ui_test_utils::WaitForLoadStop(new_contents);
+  content::WaitForLoadStop(new_contents);
   EXPECT_EQ("/files/title2.html", new_contents->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
   ui_test_utils::NavigateToURL(
@@ -627,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ("/files/navigate_opener.html",
             chrome::GetActiveWebContents(browser())->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
@@ -711,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ("/files/navigate_opener.html",
             chrome::GetActiveWebContents(browser())->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
@@ -797,7 +797,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the current tab to finish.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
@@ -974,7 +974,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+  content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ("/files/navigate_opener.html",
             chrome::GetActiveWebContents(browser())->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());

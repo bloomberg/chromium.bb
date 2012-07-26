@@ -159,6 +159,18 @@ GURL GetFileUrlWithQuery(const FilePath& path,
   return url;
 }
 
+void WaitForLoadStop(WebContents* web_contents) {
+    WindowedNotificationObserver load_stop_observer(
+    NOTIFICATION_LOAD_STOP,
+    Source<NavigationController>(&web_contents->GetController()));
+  // In many cases, the load may have finished before we get here.  Only wait if
+  // the tab still has a pending navigation.
+  if (!web_contents->IsLoading())
+    return;
+  load_stop_observer.Wait();
+}
+
+
 void SimulateMouseClick(WebContents* web_contents) {
   int x = web_contents->GetView()->GetContainerSize().width() / 2;
   int y = web_contents->GetView()->GetContainerSize().height() / 2;

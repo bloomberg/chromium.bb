@@ -212,17 +212,6 @@ void WaitForNewTab(Browser* browser) {
   observer.Wait();
 }
 
-void WaitForLoadStop(WebContents* tab) {
-  content::WindowedNotificationObserver load_stop_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&tab->GetController()));
-  // In many cases, the load may have finished before we get here.  Only wait if
-  // the tab still has a pending navigation.
-  if (!tab->IsLoading())
-    return;
-  load_stop_observer.Wait();
-}
-
 Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
   if (new_browser == NULL) {
@@ -269,7 +258,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     WindowOpenDisposition disposition,
     int browser_test_flags) {
   if (disposition == CURRENT_TAB && chrome::GetActiveWebContents(browser))
-    WaitForLoadStop(chrome::GetActiveWebContents(browser));
+      content::WaitForLoadStop(chrome::GetActiveWebContents(browser));
   NavigationController* controller =
       chrome::GetActiveWebContents(browser) ?
       &chrome::GetActiveWebContents(browser)->GetController() : NULL;

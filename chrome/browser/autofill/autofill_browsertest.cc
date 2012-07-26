@@ -624,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
   LOG(WARNING) << "Reloading the page.";
   WebContents* tab = chrome::GetActiveWebContents(browser());
   tab->GetController().Reload(false);
-  ui_test_utils::WaitForLoadStop(tab);
+  content::WaitForLoadStop(tab);
 
   // Invoke Autofill.
   LOG(WARNING) << "Trying to fill the form.";

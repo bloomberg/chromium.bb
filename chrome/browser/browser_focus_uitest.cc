@@ -841,26 +841,26 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
 
   // Open the history tab, focus should be on the tab contents.
   chrome::ShowHistory(browser());
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
       chrome::GetActiveWebContents(browser())));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
   // Open the new tab, focus should be on the location bar.
   chrome::NewTab(browser());
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
       chrome::GetActiveWebContents(browser())));
   EXPECT_TRUE(IsViewFocused(location_bar_focus_view_id_));
 
   // Open the download tab, focus should be on the tab contents.
   chrome::ShowDownloads(browser());
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
       chrome::GetActiveWebContents(browser())));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
   // Open about:blank, focus should be on the location bar.
   chrome::AddSelectedTabWithURL(browser(), GURL(chrome::kAboutBlankURL),
                                 content::PAGE_TRANSITION_LINK);
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
       chrome::GetActiveWebContents(browser())));
   EXPECT_TRUE(IsViewFocused(location_bar_focus_view_id_));
 }

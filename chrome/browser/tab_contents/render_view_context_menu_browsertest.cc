@@ -21,6 +21,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/test/browser_test_utils.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -130,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   // be added.
   tab_observer.Wait();
   tab = tab_observer.GetTab();
-  ui_test_utils::WaitForLoadStop(tab);
+  content::WaitForLoadStop(tab);
 
   // Verify that it's the correct tab.
   EXPECT_EQ(GURL("about:blank"), tab->GetURL());

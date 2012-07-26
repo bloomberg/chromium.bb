@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_launcher.h"
 #include "net/base/mock_host_resolver.h"
@@ -334,7 +335,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   if (!BrowserList::empty()) {
     browser_ = *BrowserList::begin();
-    ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser_));
+    content::WaitForLoadStop(chrome::GetActiveWebContents(browser_));
   }
 
   // Pump any pending events that were created as a result of creating a

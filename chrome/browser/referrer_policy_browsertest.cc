@@ -164,7 +164,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
       tab_added_observer.Wait();
       tab = tab_added_observer.GetTab();
       EXPECT_TRUE(tab);
-      ui_test_utils::WaitForLoadStop(tab);
+      content::WaitForLoadStop(tab);
       EXPECT_EQ(expected_title, tab->GetTitle());
     } else {
       EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());

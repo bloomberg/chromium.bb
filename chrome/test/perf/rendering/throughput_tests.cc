@@ -28,6 +28,7 @@
 #include "chrome/test/perf/perf_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/gpu/gpu_test_config.h"
 #include "googleurl/src/gurl.h"
@@ -326,7 +327,7 @@ class ThroughputTest : public BrowserPerfTest {
     LOG(INFO) << gurl_.possibly_invalid_spec();
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), gurl_, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
-    ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+    content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
 
     // Let the test spin up.
     LOG(INFO) << "Spinning up test...";

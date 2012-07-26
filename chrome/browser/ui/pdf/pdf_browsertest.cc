@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
       // nested message loop for the JS call.
       if (last_count != load_stop_notification_count())
         continue;
-      ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+      content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
     }
   }
 }

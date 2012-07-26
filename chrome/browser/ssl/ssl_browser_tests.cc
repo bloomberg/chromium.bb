@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   GURL url = https_server_expired_.GetURL("files/ssl/google.htm");
   TabContents* tab2 = chrome::AddSelectedTabWithURL(
       browser(), url, content::PAGE_TRANSITION_TYPED);
-  ui_test_utils::WaitForLoadStop(tab2->web_contents());
+  content::WaitForLoadStop(tab2->web_contents());
 
   // Verify our assumption that there was no prior navigation.
   EXPECT_FALSE(chrome::CanGoBack(browser()));

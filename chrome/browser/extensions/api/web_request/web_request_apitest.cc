@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -101,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
       << message_;
 
   WebContents* tab = chrome::GetActiveWebContents(browser());
-  ui_test_utils::WaitForLoadStop(tab);
+  content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
 

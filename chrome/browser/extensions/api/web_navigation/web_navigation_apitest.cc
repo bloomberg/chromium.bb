@@ -15,6 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -172,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
       RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
 
   WebContents* tab = chrome::GetActiveWebContents(browser());
-  ui_test_utils::WaitForLoadStop(tab);
+  content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
 
@@ -210,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationRequestOpenTab) {
       << message_;
 
   WebContents* tab = chrome::GetActiveWebContents(browser());
-  ui_test_utils::WaitForLoadStop(tab);
+  content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
 
@@ -247,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlank) {
       << message_;
 
   WebContents* tab = chrome::GetActiveWebContents(browser());
-  ui_test_utils::WaitForLoadStop(tab);
+  content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
 
