@@ -489,8 +489,6 @@ def CheckChangeOnCommit(input_api, output_api):
 
   results.extend(input_api.canned_checks.CheckChangeHasBugField(
       input_api, output_api))
-  results.extend(input_api.canned_checks.CheckChangeHasTestField(
-      input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasDescription(
       input_api, output_api))
   results.extend(_CheckSubversionConfig(input_api, output_api))
