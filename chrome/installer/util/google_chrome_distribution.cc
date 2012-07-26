@@ -280,6 +280,7 @@ bool LaunchSetupAsConsoleUser(const FilePath& setup_path,
   base::LaunchOptions options;
   options.as_user = user_token;
   options.inherit_handles = true;
+  options.empty_desktop_name = true;
   VLOG(1) << __FUNCTION__ << " launching " << cmd_line.GetCommandLineString();
   bool launched = base::LaunchProcess(cmd_line, options, NULL);
   ::CloseHandle(user_token);
