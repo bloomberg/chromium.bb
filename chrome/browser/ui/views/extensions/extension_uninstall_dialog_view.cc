@@ -46,7 +46,7 @@ gfx::NativeWindow GetParent(Browser* browser) {
     return app_list;
 #endif
 
-  if (browser->window())
+  if (browser && browser->window())
     return browser->window()->GetNativeWindow();
 
   return NULL;
@@ -131,7 +131,7 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 
 void ExtensionUninstallDialogViews::Show() {
   gfx::NativeWindow parent = GetParent(browser_);
-  if (!parent) {
+  if (browser_ && !parent) {
     delegate_->ExtensionUninstallCanceled();
     return;
   }
