@@ -28,13 +28,3 @@ libplatform = env.NaClSdkLibrary('libplatform',
                                  LIBS=['pthread', 'gio'])
 env.AddLibraryToSdk(libplatform)
 
-headers = [
-    'nacl_check.h',
-    'nacl_log.h',
-    'nacl_threads.h',
-    'refcount_base.h',
-    ]
-
-header_install = env.AddHeaderToSdk(headers)
-
-env.Requires(libplatform, header_install)
