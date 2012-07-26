@@ -35,37 +35,3 @@
 // Requires rebaselining after skia roll
 BUGCR138159 : platform/chromium/virtual/gpu/fast/canvas/canvas-text-alignment.html = IMAGE
 BUGCR138159 : platform/chromium/virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html = IMAGE
-
-// Requires rebaselining after updating widget appearance
-BUGCR125773 LINUX : compositing/overflow/theme-affects-visual-overflow.html = IMAGE
-BUGCR125773 LINUX : css1/box_properties/acid_test.html = IMAGE
-BUGCR125773 LINUX : css2.1/t09-c5526c-display-00-e.html = IMAGE
-BUGCR125773 LINUX : css3/selectors3/html/css3-modsel-25.html = IMAGE
-BUGCR125773 LINUX : css3/selectors3/html/css3-modsel-70.html = IMAGE
-BUGCR125773 LINUX : css3/selectors3/xhtml/css3-modsel-25.xml = IMAGE
-BUGCR125773 LINUX : css3/selectors3/xhtml/css3-modsel-70.xml = IMAGE
-BUGCR125773 LINUX : css3/selectors3/xml/css3-modsel-25.xml = IMAGE
-BUGCR125773 LINUX : css3/selectors3/xml/css3-modsel-70.xml = IMAGE
-BUGCR125773 LINUX : fast/block/basic/011.html = IMAGE
-BUGCR125773 LINUX : fast/block/margin-collapse/103.html = IMAGE
-BUGCR125773 LINUX : fast/css/non-standard-checkbox-size.html = IMAGE
-BUGCR125773 LINUX : fast/forms/001.html = IMAGE
-BUGCR125773 LINUX : fast/forms/basic-inputs.html = IMAGE
-BUGCR125773 LINUX : fast/forms/box-shadow-override.html = IMAGE
-BUGCR125773 LINUX : fast/forms/file/file-input-disabled.html = IMAGE
-BUGCR125773 LINUX : fast/forms/form-element-geometry.html = IMAGE
-BUGCR125773 LINUX : fast/forms/formmove.html = IMAGE
-BUGCR125773 LINUX : fast/forms/formmove2.html = IMAGE
-BUGCR125773 LINUX : fast/forms/indeterminate.html = IMAGE
-BUGCR125773 LINUX : fast/forms/input-appearance-height.html = IMAGE
-BUGCR125773 LINUX : fast/forms/input-value.html = IMAGE
-BUGCR125773 LINUX : fast/inline/positionedLifetime.html = IMAGE
-BUGCR125773 LINUX : fast/parser/bad-xml-slash.html = IMAGE
-BUGCR125773 LINUX : fast/replaced/replaced-breaking.html = IMAGE
-BUGCR125773 LINUX : fast/replaced/width100percent-checkbox.html = IMAGE
-BUGCR125773 LINUX : fast/text/textIteratorNilRenderer.html = IMAGE
-BUGCR125773 LINUX : fast/text/whitespace/normal-after-nowrap-breaking.html = IMAGE
-BUGCR125773 LINUX : tables/mozilla/bugs/bug1318.html = IMAGE
-BUGCR125773 LINUX : tables/mozilla/bugs/bug4527.html = IMAGE
-BUGCR125773 LINUX : tables/mozilla_expected_failures/core/captions1.html = IMAGE
-BUGCR125773 LINUX : tables/mozilla_expected_failures/core/captions2.html = IMAGE
