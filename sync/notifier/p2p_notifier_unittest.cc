@@ -8,7 +8,6 @@
 
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,14 +27,15 @@ class P2PNotifierTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(fake_push_client_),
             NOTIFY_OTHERS),
         next_sent_notification_to_reflect_(0) {
+    p2p_notifier_.AddObserver(&mock_observer_);
   }
 
   virtual ~P2PNotifierTest() {
-    p2p_notifier_.UpdateRegisteredIds(&mock_observer_, ObjectIdSet());
+    p2p_notifier_.RemoveObserver(&mock_observer_);
   }
 
   ModelTypePayloadMap MakePayloadMap(ModelTypeSet types) {
-    return ModelTypePayloadMapFromEnumSet(types, std::string());
+    return ModelTypePayloadMapFromEnumSet(types, "");
   }
 
   // Simulate receiving all the notifications we sent out since last
@@ -142,13 +142,10 @@ TEST_F(P2PNotifierTest, P2PNotificationDataNonDefault) {
 TEST_F(P2PNotifierTest, NotificationsBasic) {
   ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES);
 
-  p2p_notifier_.UpdateRegisteredIds(&mock_observer_,
-                                    ModelTypeSetToObjectIdSet(enabled_types));
-
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypePayloadMapToObjectIdPayloadMap(MakePayloadMap(enabled_types)),
-      REMOTE_NOTIFICATION));
+  EXPECT_CALL(mock_observer_,
+              OnIncomingNotification(MakePayloadMap(enabled_types),
+                                     REMOTE_NOTIFICATION));
 
   p2p_notifier_.SetUniqueId("sender");
 
@@ -165,6 +162,8 @@ TEST_F(P2PNotifierTest, NotificationsBasic) {
   }
   EXPECT_EQ(kEmail, fake_push_client_->email());
   EXPECT_EQ(kToken, fake_push_client_->token());
+
+  p2p_notifier_.UpdateEnabledTypes(enabled_types);
 
   ReflectSentNotifications();
   fake_push_client_->EnableNotifications();
@@ -187,21 +186,17 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   ModelTypeSet changed_types(THEMES, APPS);
   ModelTypeSet expected_types(THEMES);
 
-  p2p_notifier_.UpdateRegisteredIds(&mock_observer_,
-                                    ModelTypeSetToObjectIdSet(enabled_types));
-
   const ModelTypePayloadMap& expected_payload_map =
       MakePayloadMap(expected_types);
 
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
-              OnIncomingNotification(
-                  ModelTypePayloadMapToObjectIdPayloadMap(
-                      MakePayloadMap(enabled_types)),
-                  REMOTE_NOTIFICATION));
+              OnIncomingNotification(MakePayloadMap(enabled_types),
+                                     REMOTE_NOTIFICATION));
 
   p2p_notifier_.SetUniqueId("sender");
   p2p_notifier_.UpdateCredentials("foo@bar.com", "fake_token");
+  p2p_notifier_.UpdateEnabledTypes(enabled_types);
 
   ReflectSentNotifications();
   fake_push_client_->EnableNotifications();
@@ -216,9 +211,8 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypePayloadMapToObjectIdPayloadMap(expected_payload_map),
-      REMOTE_NOTIFICATION));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(expected_payload_map,
+                                                     REMOTE_NOTIFICATION));
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_SELF, changed_types));
 
@@ -246,9 +240,8 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypePayloadMapToObjectIdPayloadMap(expected_payload_map),
-      REMOTE_NOTIFICATION));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(expected_payload_map,
+                                                     REMOTE_NOTIFICATION));
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_OTHERS, changed_types));
 
@@ -263,9 +256,8 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypePayloadMapToObjectIdPayloadMap(expected_payload_map),
-      REMOTE_NOTIFICATION));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(expected_payload_map,
+                                                     REMOTE_NOTIFICATION));
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_ALL, changed_types));
 
@@ -273,9 +265,8 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypePayloadMapToObjectIdPayloadMap(expected_payload_map),
-      REMOTE_NOTIFICATION));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(expected_payload_map,
+                                                     REMOTE_NOTIFICATION));
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_ALL, changed_types));
 

@@ -8,6 +8,7 @@
 #ifndef SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
 #define SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -20,8 +21,8 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/chrome_system_resources.h"
 #include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/notifications_disabled_reason.h"
-#include "sync/notifier/object_id_payload_map.h"
 #include "sync/notifier/state_writer.h"
 
 namespace buzz {
@@ -35,6 +36,10 @@ class PushClient;
 namespace syncer {
 
 class RegistrationManager;
+
+typedef std::map<invalidation::ObjectId,
+                 std::string,
+                 ObjectIdLessThan> ObjectIdPayloadMap;
 
 // ChromeInvalidationClient is not thread-safe and lives on the sync
 // thread.

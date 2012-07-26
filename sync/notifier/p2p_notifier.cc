@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/internal_api/public/base/model_type_payload_map.h"
-#include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/sync_notifier_observer.h"
 
 namespace syncer {
@@ -157,16 +156,14 @@ P2PNotifier::~P2PNotifier() {
   push_client_->RemoveObserver(this);
 }
 
-void P2PNotifier::UpdateRegisteredIds(SyncNotifierObserver* handler,
-                                      const ObjectIdSet& ids) {
-  const ModelTypeSet enabled_types = ObjectIdSetToModelTypeSet(
-      helper_.UpdateRegisteredIds(handler, ids));
-  const ModelTypeSet new_enabled_types =
-      Difference(enabled_types, enabled_types_);
-  const P2PNotificationData notification_data(
-      unique_id_, NOTIFY_SELF, new_enabled_types);
-  SendNotificationData(notification_data);
-  enabled_types_ = enabled_types;
+void P2PNotifier::AddObserver(SyncNotifierObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observer_list_.AddObserver(observer);
+}
+
+void P2PNotifier::RemoveObserver(SyncNotifierObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observer_list_.RemoveObserver(observer);
 }
 
 void P2PNotifier::SetUniqueId(const std::string& unique_id) {
@@ -196,6 +193,16 @@ void P2PNotifier::UpdateCredentials(
   logged_in_ = true;
 }
 
+void P2PNotifier::UpdateEnabledTypes(ModelTypeSet enabled_types) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const ModelTypeSet new_enabled_types =
+      Difference(enabled_types, enabled_types_);
+  enabled_types_ = enabled_types;
+  const P2PNotificationData notification_data(
+      unique_id_, NOTIFY_SELF, new_enabled_types);
+  SendNotificationData(notification_data);
+}
+
 void P2PNotifier::SendNotification(ModelTypeSet changed_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const P2PNotificationData notification_data(
@@ -207,7 +214,9 @@ void P2PNotifier::OnNotificationsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool just_turned_on = (notifications_enabled_ == false);
   notifications_enabled_ = true;
-  helper_.EmitOnNotificationsEnabled();
+  FOR_EACH_OBSERVER(
+      SyncNotifierObserver, observer_list_,
+      OnNotificationsEnabled());
   if (just_turned_on) {
     const P2PNotificationData notification_data(
         unique_id_, NOTIFY_SELF, enabled_types_);
@@ -218,7 +227,9 @@ void P2PNotifier::OnNotificationsEnabled() {
 void P2PNotifier::OnNotificationsDisabled(
     notifier::NotificationsDisabledReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  helper_.EmitOnNotificationsDisabled(FromNotifierReason(reason));
+  FOR_EACH_OBSERVER(
+      SyncNotifierObserver, observer_list_,
+      OnNotificationsDisabled(FromNotifierReason(reason)));
 }
 
 void P2PNotifier::OnIncomingNotification(
@@ -255,11 +266,10 @@ void P2PNotifier::OnIncomingNotification(
     DVLOG(1) << "No enabled and changed types -- not emitting notification";
     return;
   }
-  const ModelTypePayloadMap& type_payloads = ModelTypePayloadMapFromEnumSet(
-      notification_data.GetChangedTypes(), std::string());
-  helper_.DispatchInvalidationsToHandlers(
-      ModelTypePayloadMapToObjectIdPayloadMap(type_payloads),
-      REMOTE_NOTIFICATION);
+  const ModelTypePayloadMap& type_payloads =
+      ModelTypePayloadMapFromEnumSet(types_to_notify, std::string());
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
+                    OnIncomingNotification(type_payloads, REMOTE_NOTIFICATION));
 }
 
 void P2PNotifier::SendNotificationDataForTest(

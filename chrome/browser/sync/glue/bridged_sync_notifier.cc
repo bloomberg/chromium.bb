@@ -18,12 +18,18 @@ BridgedSyncNotifier::BridgedSyncNotifier(
 BridgedSyncNotifier::~BridgedSyncNotifier() {
 }
 
-void BridgedSyncNotifier::UpdateRegisteredIds(
-    syncer::SyncNotifierObserver* handler,
-    const syncer::ObjectIdSet& ids) {
+void BridgedSyncNotifier::AddObserver(
+    syncer::SyncNotifierObserver* observer) {
   if (delegate_.get())
-   delegate_->UpdateRegisteredIds(handler, ids);
-  bridge_->UpdateRegisteredIds(handler, ids);
+   delegate_->AddObserver(observer);
+  bridge_->AddObserver(observer);
+}
+
+void BridgedSyncNotifier::RemoveObserver(
+    syncer::SyncNotifierObserver* observer) {
+  bridge_->RemoveObserver(observer);
+  if (delegate_.get())
+    delegate_->RemoveObserver(observer);
 }
 
 void BridgedSyncNotifier::SetUniqueId(const std::string& unique_id) {
@@ -40,6 +46,12 @@ void BridgedSyncNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   if (delegate_.get())
     delegate_->UpdateCredentials(email, token);
+}
+
+void BridgedSyncNotifier::UpdateEnabledTypes(
+    syncer::ModelTypeSet enabled_types) {
+  if (delegate_.get())
+    delegate_->UpdateEnabledTypes(enabled_types);
 }
 
 void BridgedSyncNotifier::SendNotification(
