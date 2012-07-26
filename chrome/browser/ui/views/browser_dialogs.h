@@ -60,9 +60,6 @@ void ShowPageInfoBubble(views::View* anchor_view,
                         bool show_history,
                         content::PageNavigator* navigator);
 
-// Shows the about dialog. See AboutChromeView.
-void ShowAboutChromeView(gfx::NativeWindow parent, Browser* browser);
-
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);
 

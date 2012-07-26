@@ -217,9 +217,6 @@ class BrowserWindow : public BaseWindow {
   // Shows or hides the bookmark bar depending on its current visibility.
   virtual void ToggleBookmarkBar() = 0;
 
-  // Shows the About Chrome dialog box.
-  virtual void ShowAboutChromeDialog() = 0;
-
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;
 

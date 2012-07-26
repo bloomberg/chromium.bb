@@ -1111,10 +1111,6 @@ void BrowserView::ToggleBookmarkBar() {
   bookmark_utils::ToggleWhenVisible(browser_->profile());
 }
 
-void BrowserView::ShowAboutChromeDialog() {
-  chrome::ShowAboutChromeView(GetWidget()->GetNativeWindow(), browser_.get());
-}
-
 void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::Show(GetWidget()->GetNativeWindow());
 }

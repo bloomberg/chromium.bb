@@ -1054,10 +1054,6 @@ void BrowserWindowGtk::ToggleBookmarkBar() {
   bookmark_utils::ToggleWhenVisible(browser_->profile());
 }
 
-void BrowserWindowGtk::ShowAboutChromeDialog() {
-  // Do nothing here, we show a WebUI page instead of a native one.
-}
-
 void BrowserWindowGtk::ShowUpdateChromeDialog() {
   UpdateRecommendedDialog::Show(window_);
 }

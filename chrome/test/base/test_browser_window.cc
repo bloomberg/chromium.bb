@@ -98,10 +98,6 @@ bool TestBrowserWindow::IsPanel() const {
   return false;
 }
 
-void TestBrowserWindow::ShowAboutChromeDialog() {
-  return;
-}
-
 bool TestBrowserWindow::IsDownloadShelfVisible() const {
   return false;
 }

@@ -3471,8 +3471,6 @@
         'browser/ui/unload_controller.h',
         'browser/ui/user_data_dir_dialog.h',
         'browser/ui/view_ids.h',
-        'browser/ui/views/about_chrome_view.cc',
-        'browser/ui/views/about_chrome_view.h',
         'browser/ui/views/about_ipc_dialog.cc',
         'browser/ui/views/about_ipc_dialog.h',
         'browser/ui/views/accelerator_table.cc',

@@ -293,7 +293,6 @@ class BrowserView : public BrowserWindow,
   virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
   virtual void ToggleBookmarkBar() OVERRIDE;
-  virtual void ShowAboutChromeDialog() OVERRIDE;
   virtual void ShowUpdateChromeDialog() OVERRIDE;
   virtual void ShowTaskManager() OVERRIDE;
   virtual void ShowBackgroundPages() OVERRIDE;

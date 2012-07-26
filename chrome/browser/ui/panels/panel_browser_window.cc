@@ -289,10 +289,6 @@ void PanelBrowserWindow::ToggleBookmarkBar() {
   NOTIMPLEMENTED();
 }
 
-void PanelBrowserWindow::ShowAboutChromeDialog() {
-  NOTIMPLEMENTED();
-}
-
 void PanelBrowserWindow::ShowUpdateChromeDialog() {
   NOTIMPLEMENTED();
 }
