@@ -581,8 +581,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
   // Since Chrome is localized to more languages than the OS, tell Cocoa which
   // menu is the Help so it can add the search item to it.
-  if (helpMenu_ && [NSApp respondsToSelector:@selector(setHelpMenu:)])
-    [NSApp setHelpMenu:helpMenu_];
+  [NSApp setHelpMenu:helpMenu_];
 
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
