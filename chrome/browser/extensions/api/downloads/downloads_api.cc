@@ -330,10 +330,10 @@ DownloadItem* GetActiveItem(Profile* profile, bool include_incognito, int id) {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
   GetManagers(profile, include_incognito, &manager, &incognito_manager);
-  DownloadItem* download_item = manager->GetActiveDownloadItem(id);
+  DownloadItem* download_item = manager->GetDownload(id);
   if (!download_item && incognito_manager)
-    download_item = incognito_manager->GetActiveDownloadItem(id);
-  return download_item;
+    download_item = incognito_manager->GetDownload(id);
+  return download_item && download_item->IsInProgress() ? download_item : NULL;
 }
 
 enum DownloadsFunctionName {
@@ -454,9 +454,9 @@ void RunDownloadQuery(
   GetManagers(profile, include_incognito, &manager, &incognito_manager);
   DownloadQuery::DownloadVector all_items;
   if (query_in.id.get()) {
-    DownloadItem* item = manager->GetDownloadItem(*query_in.id.get());
+    DownloadItem* item = manager->GetDownload(*query_in.id.get());
     if (!item && incognito_manager)
-      item = incognito_manager->GetDownloadItem(*query_in.id.get());
+      item = incognito_manager->GetDownload(*query_in.id.get());
     if (item)
       all_items.push_back(item);
   } else {
@@ -595,7 +595,7 @@ bool DownloadsPauseFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item = GetActiveItem(
       profile(), include_incognito(), params->download_id);
-  if ((download_item == NULL) || !download_item->IsInProgress()) {
+  if (download_item == NULL) {
     // This could be due to an invalid download ID, or it could be due to the
     // download not being currently active.
     error_ = download_extension_errors::kInvalidOperationError;
@@ -752,9 +752,9 @@ bool DownloadsGetFileIconFunction::RunImpl() {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
   GetManagers(profile(), include_incognito(), &manager, &incognito_manager);
-  DownloadItem* download_item = manager->GetDownloadItem(params->download_id);
+  DownloadItem* download_item = manager->GetDownload(params->download_id);
   if (!download_item && incognito_manager)
-    download_item = incognito_manager->GetDownloadItem(params->download_id);
+    download_item = incognito_manager->GetDownload(params->download_id);
   if (!download_item) {
     // The DownloadItem is is added to history when the path is determined. If
     // the download is not in history, then we don't have a path / final
@@ -890,58 +890,22 @@ void ExtensionDownloadsEventRouter::OnDownloadOpened(DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void ExtensionDownloadsEventRouter::ModelChanged(DownloadManager* manager) {
+void ExtensionDownloadsEventRouter::OnDownloadCreated(
+    DownloadManager* manager, DownloadItem* download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(manager_ == manager);
-  typedef std::set<int> DownloadIdSet;
+  if (download_item->IsTemporary()) return;
 
-  // Get all the download items.
-  DownloadManager::DownloadVector current_vec;
-  manager_->SearchDownloads(string16(), &current_vec);
-
-  // Populate set<>s of download item identifiers so that we can find
-  // differences between the old and the new set of download items.
-  DownloadIdSet current_set, prev_set;
-  for (ItemMap::const_iterator iter = downloads_.begin();
-       iter != downloads_.end(); ++iter) {
-    prev_set.insert(iter->first);
-  }
-  ItemMap current_map;
-  for (DownloadManager::DownloadVector::const_iterator iter =
-       current_vec.begin();
-       iter != current_vec.end(); ++iter) {
-    DownloadItem* item = *iter;
-    int item_id = item->GetId();
-    CHECK(item_id >= 0);
-    DCHECK(current_map.find(item_id) == current_map.end());
-    current_set.insert(item_id);
-    current_map[item_id] = item;
-  }
-  DownloadIdSet new_set;  // current_set - prev_set;
-  std::set_difference(current_set.begin(), current_set.end(),
-                      prev_set.begin(), prev_set.end(),
-                      std::insert_iterator<DownloadIdSet>(
-                        new_set, new_set.begin()));
-
-  // For each download that was not in the old set of downloads but is in the
-  // new set of downloads, fire an onCreated event, register as an Observer of
-  // the item, store a json representation of the item so that we can easily
-  // find changes in that json representation, and make an OnChangedStat.
-  for (DownloadIdSet::const_iterator iter = new_set.begin();
-       iter != new_set.end(); ++iter) {
-    scoped_ptr<base::DictionaryValue> item(
-        DownloadItemToJSON(current_map[*iter]));
-    DispatchEvent(extensions::event_names::kOnDownloadCreated,
-                  item->DeepCopy());
-    DCHECK(item_jsons_.find(*iter) == item_jsons_.end());
-    on_changed_stats_[*iter] = new OnChangedStat();
-    current_map[*iter]->AddObserver(this);
-    item_jsons_[*iter] = item.release();
-  }
-  downloads_.swap(current_map);
-
-  // Dispatching onErased is handled in OnDownloadUpdated when an item
-  // transitions to the REMOVING state.
+  download_item->AddObserver(this);
+  scoped_ptr<base::DictionaryValue> json_item(
+      DownloadItemToJSON(download_item));
+  DispatchEvent(extensions::event_names::kOnDownloadCreated,
+                json_item->DeepCopy());
+  int32 download_id = download_item->GetId();
+  DCHECK(item_jsons_.find(download_id) == item_jsons_.end());
+  on_changed_stats_[download_id] = new OnChangedStat();
+  item_jsons_[download_id] = json_item.release();
+  downloads_[download_id] = download_item;
 }
 
 void ExtensionDownloadsEventRouter::ManagerGoingDown(

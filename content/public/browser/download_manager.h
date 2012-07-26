@@ -79,9 +79,20 @@ class CONTENT_EXPORT DownloadManager
   // to the DownloadManager's collection of downloads.
   class CONTENT_EXPORT Observer {
    public:
+    // A DownloadItem was created.  Unlike ModelChanged, this item may be
+    // visible before the filename is determined; in this case the return value
+    // of GetTargetFileName() will be null.  This method may be called an
+    // arbitrary number of times, e.g. when loading history on startup.  As a
+    // result, consumers should avoid doing large amounts of work in
+    // OnDownloadCreated().  TODO(<whoever>): When we've fully specified the
+    // possible states of the DownloadItem in download_item.h and removed
+    // ModelChanged, we should remove the caveat above.
+    virtual void OnDownloadCreated(
+        DownloadManager* manager, DownloadItem* item) {}
+
     // New or deleted download, observers should query us for the current set
     // of downloads.
-    virtual void ModelChanged(DownloadManager* manager) = 0;
+    virtual void ModelChanged(DownloadManager* manager) {}
 
     // Called when the DownloadManager is being destroyed to prevent Observers
     // from calling back to a stale pointer.

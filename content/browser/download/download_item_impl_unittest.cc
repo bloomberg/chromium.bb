@@ -299,8 +299,8 @@ TEST_F(DownloadItemTest, NotificationAfterOnTargetPathDetermined) {
   DownloadItemImpl* safe_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver safe_observer(safe_item);
 
-  // Calling OnTargetPathDetermined does not trigger notification if danger type
-  // is NOT_DANGEROUS.
+  // Calling OnTargetPathDetermined triggers notification regardless of danger
+  // type.
   safe_item->OnTargetPathDetermined(
       FilePath(kDummyPath), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
@@ -315,7 +315,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnTargetPathDetermined) {
   dangerous_item->OnTargetPathDetermined(
       FilePath(kDummyPath), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
-  EXPECT_TRUE(dangerous_observer.CheckUpdated());
+  EXPECT_FALSE(dangerous_observer.CheckUpdated());
 }
 
 TEST_F(DownloadItemTest, NotificationAfterOnTargetPathSelected) {
@@ -342,7 +342,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   EXPECT_TRUE(safe_observer.CheckUpdated());
   safe_item->OnContentCheckCompleted(
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  EXPECT_FALSE(safe_observer.CheckUpdated());
+  EXPECT_TRUE(safe_observer.CheckUpdated());
 
   // Setting to unsafe url or unsafe file should trigger a notification.
   DownloadItemImpl* unsafeurl_item =

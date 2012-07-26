@@ -604,7 +604,6 @@ void DownloadItemImpl::SetDangerType(content::DownloadDangerType danger_type) {
         net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
         base::Bind(&download_net_logs::ItemCheckedCallback,
                    GetDangerType(), GetSafetyState()));
-    UpdateObservers();
   }
 }
 
@@ -871,7 +870,6 @@ void DownloadItemImpl::OnTargetPathDetermined(
     const FilePath& target_path,
     TargetDisposition disposition,
     content::DownloadDangerType danger_type) {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   target_path_ = target_path;
   target_disposition_ = disposition;
@@ -886,10 +884,10 @@ void DownloadItemImpl::OnTargetPathSelected(const FilePath& target_path) {
 
 void DownloadItemImpl::OnContentCheckCompleted(
     content::DownloadDangerType danger_type) {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(AllDataSaved());
   SetDangerType(danger_type);
+  UpdateObservers();
 }
 
 void DownloadItemImpl::OnIntermediatePathDetermined(

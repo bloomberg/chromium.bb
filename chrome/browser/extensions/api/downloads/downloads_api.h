@@ -219,8 +219,12 @@ class ExtensionDownloadsEventRouter : public content::DownloadManager::Observer,
       Profile* profile, content::DownloadManager* manager);
   virtual ~ExtensionDownloadsEventRouter();
 
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
+  // content::DownloadManager::Observer
+  virtual void OnDownloadCreated(content::DownloadManager* manager,
+                                 content::DownloadItem* download_item) OVERRIDE;
   virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
+
+  // content::DownloadItem::Observer
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 

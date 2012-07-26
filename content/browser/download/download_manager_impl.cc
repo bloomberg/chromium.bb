@@ -534,6 +534,7 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
   downloads_[download->GetId()] = download;
   DCHECK(!ContainsKey(active_downloads_, download->GetId()));
   active_downloads_[download->GetId()] = download;
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
 
   return bound_net_log;
 }
@@ -562,6 +563,10 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
   DCHECK(!SavePageExternalData::Get(download));
   new SavePageExternalData(download);
   DCHECK(SavePageExternalData::Get(download));
+
+  // TODO(benjhayden): Fire OnDownloadCreated for SavePackage downloads when
+  // we're comfortable with the user interacting with them.
+  // FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
 
   // Will notify the observer in the callback.
   if (delegate_)
@@ -947,6 +952,7 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
         this, GetNextId(), entries->at(i), bound_net_log);
     DCHECK(!ContainsKey(downloads_, download->GetId()));
     downloads_[download->GetId()] = download;
+    FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
              << " download = " << download->DebugString(true);
   }
