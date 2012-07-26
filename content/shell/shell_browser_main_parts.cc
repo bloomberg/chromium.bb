@@ -12,6 +12,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_devtools_delegate.h"
@@ -27,8 +28,10 @@
 namespace content {
 
 static GURL GetStartupURL() {
-  const CommandLine::StringVector& args =
-      CommandLine::ForCurrentProcess()->GetArgs();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kContentBrowserTest))
+    return GURL(chrome::kAboutBlankURL);
+  const CommandLine::StringVector& args = command_line->GetArgs();
   if (args.empty())
     return GURL("http://www.google.com/");
 
