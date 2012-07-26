@@ -127,8 +127,6 @@ function bb_baseline_setup {
 
   # Should be called only after envsetup is done.
   bb_run_gclient_hooks
-
-  python build/android/device_status_check.py
 }
 
 
@@ -251,6 +249,7 @@ function bb_run_tests_emulator {
 
 # Run tests on an actual device.  (Better have one plugged in!)
 function bb_run_tests {
+  python build/android/device_status_check.py
   echo "@@@BUILD_STEP Run Tests on actual hardware@@@"
   build/android/run_tests.py --xvfb --verbose
 }
