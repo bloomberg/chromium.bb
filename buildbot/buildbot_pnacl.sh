@@ -562,23 +562,6 @@ mode-buildbot-arm-hw-try() {
   mode-buildbot-arm-hw
 }
 
-# hackish step to generate pexe for bitcode stability archiving
-# Note, we generate the pexes on x86-32 but test them on all archs in
-# buildbot/buildbot_pnacl_toolchain_tests.sh
-tc-generate-and-archive-pexes() {
-  local build_dir="scons-out/nacl_irt_test-x86-32-pnacl-pexe-clang"
-  local tarball="archived_pexes.tar.bz2"
-  rm -rf ${build_dir}
-  scons-stage-irt "x86-32" \
-              "-j8 pnacl_generate_pexe=1 \
-               do_not_run_tests=1 translate_in_build_step=0 " \
-              "small_tests_irt medium_tests_irt large_tests_irt"
-  prune-scons-out
-  tar cfj ${tarball} --directory ${build_dir} .
-  ls -l ${tarball}
-  ${UP_DOWN_LOAD} UploadArchivedPexesScons ${BUILDBOT_GOT_REVISION} ${tarball}
-}
-
 # These are also suitable for local TC sanity testing
 tc-tests-large() {
   local is_try=$1
@@ -594,10 +577,6 @@ tc-tests-large() {
               "${SCONS_TC_TESTS}"
   scons-stage-noirt "x86-64" "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
               "${SCONS_TC_TESTS}"
-
-  if ! ${is_try} ; then
-    tc-generate-and-archive-pexes
-  fi
 
   # we run the browser tests last since they tend to be flaky
   # and will terminate the testing unless  FAIL_FAST=false

@@ -184,14 +184,6 @@ DownloadArchivedPexes() {
   curl -L ${URL_PREFIX_RAW}/${BASE_ARM_TOOLCHAIN}/${rev}/${label} -o ${tarball}
 }
 
-UploadArchivedPexesScons() {
-    UploadArchivedPexes $1 "scons" $2
-}
-
-DownloadArchivedPexesScons() {
-    DownloadArchivedPexes $1 "scons" $2
-}
-
 UploadArchivedPexesTranslator() {
     UploadArchivedPexes $1 "translator" $2
 }
