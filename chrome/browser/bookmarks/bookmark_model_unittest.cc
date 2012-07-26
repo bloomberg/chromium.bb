@@ -1069,7 +1069,8 @@ TEST_F(BookmarkModelTestWithProfile2, RemoveNotification) {
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.
-  profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->DeleteURL(url);
+  HistoryServiceFactory::GetForProfile(
+      profile_.get(), Profile::EXPLICIT_ACCESS)->DeleteURL(url);
 }
 
 TEST_F(BookmarkModelTest, Sort) {
