@@ -12,6 +12,7 @@
 #endif
 
 #include <asm/unistd.h>
+#include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/audit.h>
@@ -146,6 +147,18 @@ bool IsFileSystemSyscall(int sysno) {
   }
 }
 
+bool IsAcceleratedVideoDecodeEnabled() {
+  // Accelerated video decode is currently enabled on Chrome OS,
+  // but not on Linux: crbug.com/137247.
+  bool is_enabled = IsChromeOS();
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  is_enabled = is_enabled &&
+      !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
+
+  return is_enabled;
+}
+
 static const char kDriRcPath[] = "/etc/drirc";
 
 // TODO(jorgelo): limited to /etc/drirc for now, extend this to cover
@@ -270,10 +283,20 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
     case __NR_fchmod:
       return EPERM;  // ATI binary driver.
     case __NR_open:
-      // Hook open() in the GPU process to allow opening /etc/drirc,
-      // needed by Mesa.
-      // The hook needs dup(), lseek(), and close() to be allowed.
-      return playground2::Sandbox::ErrorCode(GpuOpenSIGSYS_Handler, NULL);
+      // Accelerated video decode is enabled by default only on Chrome OS.
+      if (IsAcceleratedVideoDecodeEnabled()) {
+        // Accelerated video decode needs to open /dev/dri/card0, and
+        // dup()'ing an already open file descriptor does not work.
+        // Allow open() even though it severely weakens the sandbox,
+        // to test the sandboxing mechanism in general.
+        // TODO(jorgelo): remove this once we solve the libva issue.
+        return playground2::Sandbox::SB_ALLOWED;
+      } else {
+        // Hook open() in the GPU process to allow opening /etc/drirc,
+        // needed by Mesa.
+        // The hook needs dup(), lseek(), and close() to be allowed.
+        return playground2::Sandbox::ErrorCode(GpuOpenSIGSYS_Handler, NULL);
+      }
     default:
       if (IsGettimeSyscall(sysno) ||
           IsKillSyscall(sysno)) { // GPU watchdog.
@@ -341,7 +364,6 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
       return ENOTTY;  // Flash Access.
     case __NR_socket:
       return EACCES;
-
     default:
       if (IsGettimeSyscall(sysno) ||
           IsKillSyscall(sysno)) {
@@ -390,8 +412,17 @@ playground2::Sandbox::ErrorCode AllowAllPolicy(int sysno) {
 // Warms up/preloads resources needed by the policies.
 void WarmupPolicy(playground2::Sandbox::EvaluateSyscall policy) {
 #if defined(__x86_64__)
-  if (policy == GpuProcessPolicy_x86_64)
+  if (policy == GpuProcessPolicy_x86_64) {
     OpenWithCache(kDriRcPath, O_RDONLY);
+    // Accelerated video decode dlopen()'s this shared object
+    // inside the sandbox, so preload it now.
+    // TODO(jorgelo): generalize this to other platforms.
+    if (IsAcceleratedVideoDecodeEnabled()) {
+      const char kI965DrvVideoPath_64[] =
+          "/usr/lib64/va/drivers/i965_drv_video.so";
+      dlopen(kI965DrvVideoPath_64, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    }
+  }
 #endif
 }
 

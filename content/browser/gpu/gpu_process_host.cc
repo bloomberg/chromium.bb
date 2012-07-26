@@ -782,6 +782,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kDisableGpuVsync,
     switches::kDisableGpuWatchdog,
     switches::kDisableImageTransportSurface,
+    switches::kDisableAcceleratedVideoDecode,
     switches::kDisableLogging,
     switches::kEnableGPUServiceLogging,
     switches::kEnableLogging,
