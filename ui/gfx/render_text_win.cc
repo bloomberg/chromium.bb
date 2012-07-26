@@ -241,7 +241,10 @@ bool IsUnicodeBidiControlCharacter(char16 c) {
 namespace internal {
 
 TextRun::TextRun()
-  : strike(false),
+  : foreground(0),
+    font_style(0),
+    strike(false),
+    diagonal_strike(false),
     underline(false),
     width(0),
     preceding_run_widths(0),

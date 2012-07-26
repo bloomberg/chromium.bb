@@ -24,7 +24,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeControlWin, public:
 
-NativeControlWin::NativeControlWin() {
+NativeControlWin::NativeControlWin() : original_wndproc_(NULL) {
 }
 
 NativeControlWin::~NativeControlWin() {

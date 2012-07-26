@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/npapi/webplugin_ime_win.h"
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -33,6 +34,7 @@ WebPluginIMEWin::WebPluginIMEWin()
       support_ime_messages_(false),
       status_updated_(false),
       input_type_(1) {
+  memset(result_clauses_, 0, sizeof(result_clauses_));
 }
 
 WebPluginIMEWin::~WebPluginIMEWin() {

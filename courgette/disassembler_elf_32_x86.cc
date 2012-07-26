@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,13 @@
 namespace courgette {
 
 DisassemblerElf32X86::DisassemblerElf32X86(const void* start, size_t length)
-  : Disassembler(start, length) {
+  : Disassembler(start, length),
+    header_(NULL),
+    section_header_table_(NULL),
+    section_header_table_size_(0),
+    program_header_table_(NULL),
+    program_header_table_size_(0),
+    default_string_section_(NULL) {
 }
 
 bool DisassemblerElf32X86::ParseHeader() {

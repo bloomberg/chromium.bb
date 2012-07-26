@@ -49,6 +49,8 @@ class FileDownloader {
         file_io_trusted_interface_(NULL),
         url_loader_trusted_interface_(NULL),
         open_time_(-1),
+        mode_(DOWNLOAD_TO_FILE),
+        url_scheme_(SCHEME_OTHER),
         data_stream_callback_source_(NULL) {}
   ~FileDownloader() {}
 

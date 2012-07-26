@@ -75,7 +75,7 @@ class FormatEtcEnumerator : public IEnumFORMATETC {
  private:
   // This can only be called from |CloneFromOther|, since it initializes the
   // contents_ from the other enumerator's contents.
-  FormatEtcEnumerator() : ref_count_(0) {
+  FormatEtcEnumerator() : cursor_(0), ref_count_(0) {
   }
 
   // Clone a new FormatEtc from another instance of this enumeration.

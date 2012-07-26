@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,9 @@ namespace courgette {
 class PatcherX86_32 : public TransformationPatcher {
  public:
   explicit PatcherX86_32(const Region& region)
-      : ensemble_region_(region) {
+      : ensemble_region_(region),
+        base_offset_(0),
+        base_length_(0) {
   }
 
   Status Init(SourceStream* parameter_stream) {
