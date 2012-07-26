@@ -120,6 +120,15 @@ class CheckoutBase(object):
     """Commits the patch upstream, while impersonating 'user'."""
     raise NotImplementedError()
 
+  def revisions(self, rev1, rev2):
+    """Returns the count of revisions from rev1 to rev2, e.g. len(]rev1, rev2]).
+
+    If rev2 is None, it means 'HEAD'.
+
+    Returns None if there is no link between the two.
+    """
+    raise NotImplementedError()
+
 
 class RawCheckout(CheckoutBase):
   """Used to apply a patch locally without any intent to commit it.
@@ -181,6 +190,9 @@ class RawCheckout(CheckoutBase):
   def commit(self, commit_message, user):
     """Stubbed out."""
     raise NotImplementedError('RawCheckout can\'t commit')
+
+  def revisions(self, _rev1, _rev2):
+    return None
 
 
 class SvnConfig(object):
@@ -425,6 +437,21 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
       self._last_seen_revision = revision
     return revision
 
+  def revisions(self, rev1, rev2):
+    """Returns the number of actual commits, not just the difference between
+    numbers.
+    """
+    rev2 = rev2 or 'HEAD'
+    # Revision range is inclusive and ordering doesn't matter, they'll appear in
+    # the order specified.
+    try:
+      out = self._check_output_svn(
+          ['log', '-q', self.svn_url, '-r', '%s:%s' % (rev1, rev2)])
+    except subprocess.CalledProcessError:
+      return None
+    # Ignore the '----' lines.
+    return len([l for l in out.splitlines() if l.startswith('r')]) - 1
+
 
 class GitCheckoutBase(CheckoutBase):
   """Base class for git checkout. Not to be used as-is."""
@@ -565,6 +592,30 @@ class GitCheckoutBase(CheckoutBase):
         break
     return branches, active
 
+  def revisions(self, rev1, rev2):
+    """Returns the number of actual commits between both hash."""
+    self._fetch_remote()
+
+    rev2 = rev2 or '%s/%s' % (self.remote, self.remote_branch)
+    # Revision range is ]rev1, rev2] and ordering matters.
+    try:
+      out = self._check_output_git(
+          ['log', '--format="%H"' , '%s..%s' % (rev1, rev2)])
+    except subprocess.CalledProcessError:
+      return None
+    return len(out.splitlines())
+
+  def _fetch_remote(self):
+    """Fetches the remote without rebasing."""
+    raise NotImplementedError()
+
+
+class GitCheckout(GitCheckoutBase):
+  """Git checkout implementation."""
+  def _fetch_remote(self):
+    # git fetch is always verbose even with -q -q so redirect its output.
+    self._check_output_git(['fetch', self.remote, self.remote_branch])
+
 
 class ReadOnlyCheckout(object):
   """Converts a checkout into a read-only one."""
@@ -588,6 +639,9 @@ class ReadOnlyCheckout(object):
     logging.info('Would have committed for %s with message: %s' % (
         user, message))
     return 'FAKE'
+
+  def revisions(self, rev1, rev2):
+    return self.checkout.revisions(rev1, rev2)
 
   @property
   def project_name(self):
