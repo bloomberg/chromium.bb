@@ -65,6 +65,11 @@ fun:*base*subtle*NoBarrier_Load*
 # Keep some mangling so we don't match NoBarrier_AtomicIncrement
 fun:*base*subtle23Barrier_AtomicIncrement*
 
+# MD5 computations are very slow due since sums are computed by
+# repeatedly calling tiny functions and is unlikely to race with
+# anything.
+src:*base/md5*
+
 # Don't instrument tcmalloc
 src:*/tcmalloc/*
 
