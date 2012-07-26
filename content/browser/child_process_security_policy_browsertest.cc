@@ -7,48 +7,42 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::WebContents;
-
 class ChildProcessSecurityPolicyInProcessBrowserTest
-    : public InProcessBrowserTest {
+    : public content::ContentBrowserTest {
  public:
   virtual void SetUp() {
     EXPECT_EQ(
       ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size(),
           0U);
-    InProcessBrowserTest::SetUp();
+    ContentBrowserTest::SetUp();
   }
 
   virtual void TearDown() {
     EXPECT_EQ(
       ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size(),
           0U);
-    InProcessBrowserTest::TearDown();
+    ContentBrowserTest::TearDown();
   }
 };
 
 IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
-  const FilePath kTestDir(FILE_PATH_LITERAL("google"));
-  const FilePath kTestFile(FILE_PATH_LITERAL("google.html"));
-  GURL url(ui_test_utils::GetTestUrl(kTestDir, kTestFile));
+  GURL url = content::GetTestUrl("", "simple_page.html");
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  content::NavigateToURL(shell(), url);
   EXPECT_EQ(
       ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size(),
           1U);
 
-  WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
-  ASSERT_TRUE(web_contents != NULL);
+  content::WebContents* web_contents = shell()->web_contents();
   base::KillProcess(web_contents->GetRenderProcessHost()->GetHandle(),
                     content::RESULT_CODE_KILLED, true);
 

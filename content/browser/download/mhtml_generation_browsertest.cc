@@ -4,21 +4,19 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/run_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::WebContents;
+namespace content {
 
-namespace {
-
-class MHTMLGenerationTest : public InProcessBrowserTest {
+class MHTMLGenerationTest : public ContentBrowserTest {
  public:
   MHTMLGenerationTest() : mhtml_generated_(false), file_size_(0) {}
 
@@ -31,7 +29,7 @@ class MHTMLGenerationTest : public InProcessBrowserTest {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    InProcessBrowserTest::SetUp();
+    ContentBrowserTest::SetUp();
   }
 
   bool mhtml_generated() const { return mhtml_generated_; }
@@ -54,16 +52,14 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   FilePath path(temp_dir_.path());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
-  ui_test_utils::NavigateToURL(browser(),
-      test_server()->GetURL("files/google/google.html"));
+  NavigateToURL(shell(), test_server()->GetURL("files/simple_page.html"));
 
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
-  web_contents->GenerateMHTML(path,
-                              base::Bind(&MHTMLGenerationTest::MHTMLGenerated,
-                                         this));
+  shell()->web_contents()->GenerateMHTML(
+      path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this));
 
   // Block until the MHTML is generated.
-  ui_test_utils::RunMessageLoop();
+  base::RunLoop run_loop;
+  RunThisRunLoop(&run_loop);
 
   EXPECT_TRUE(mhtml_generated());
   EXPECT_GT(file_size(), 0);
@@ -74,4 +70,4 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   EXPECT_GT(file_size, 100);
 }
 
-}  // namespace
+}  // namespace content

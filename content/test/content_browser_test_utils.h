@@ -38,6 +38,12 @@ GURL GetTestUrl(const char* dir, const char* file);
 // navigation finishes.
 void NavigateToURL(Shell* window, const GURL& url);
 
+// Navigates the selected tab of |window| to |url|, blocking until the given
+// number of navigations finishes.
+void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
+                                                const GURL& url,
+                                                int number_of_navigations);
+
 // Wait until an application modal dialog is requested.
 void WaitForAppModalDialog(Shell* window);
 

@@ -7,45 +7,40 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/thread_test_helper.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
+#include "net/test/test_server.h"
 #include "webkit/quota/quota_manager.h"
 
-using content::BrowserThread;
 using quota::QuotaManager;
+
+namespace content {
 
 // This browser test is aimed towards exercising the FileAPI bindings and
 // the actual implementation that lives in the browser side.
-class FileSystemBrowserTest : public InProcessBrowserTest {
+class FileSystemBrowserTest : public ContentBrowserTest {
  public:
   FileSystemBrowserTest() {}
-
-  GURL testUrl(const FilePath& file_path) {
-    const FilePath kTestDir(FILE_PATH_LITERAL("fileapi"));
-    return ui_test_utils::GetTestUrl(kTestDir, file_path);
-  }
 
   void SimpleTest(const GURL& test_url, bool incognito = false) {
     // The test page will perform tests on FileAPI, then navigate to either
     // a #pass or #fail ref.
-    Browser* the_browser = incognito ? CreateIncognitoBrowser() : browser();
+    Shell* the_browser = incognito ? CreateOffTheRecordBrowser() : shell();
 
     LOG(INFO) << "Navigating to URL and blocking.";
-    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-        the_browser, test_url, 2);
+    NavigateToURLBlockUntilNavigationsComplete(the_browser, test_url, 2);
     LOG(INFO) << "Navigation done.";
-    std::string result =
-        chrome::GetActiveWebContents(the_browser)->GetURL().ref();
+    std::string result = the_browser->web_contents()->GetURL().ref();
     if (result != "pass") {
       std::string js_result;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-          chrome::GetActiveWebContents(the_browser)->GetRenderViewHost(), L"",
+      ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+          the_browser->web_contents()->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;
     }
@@ -60,7 +55,8 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
         kInitialQuotaKilobytes * 1024 * QuotaManager::kPerHostTemporaryPortion;
     SetTempQuota(
         kTemporaryStorageQuotaMaxSize,
-        content::BrowserContext::GetQuotaManager(browser()->profile()));
+        BrowserContext::GetQuotaManager(
+            shell()->web_contents()->GetBrowserContext()));
   }
 
   static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
@@ -82,13 +78,15 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemBrowserTest, RequestTest) {
-  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("request_test.html"))));
+  SimpleTest(GetTestUrl("fileapi", "request_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemBrowserTest, CreateTest) {
-  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("create_test.html"))));
+  SimpleTest(GetTestUrl("fileapi", "create_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemBrowserTestWithLowQuota, QuotaTest) {
-  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("quota_test.html"))));
+  SimpleTest(GetTestUrl("fileapi", "quota_test.html"));
 }
+
+}  // namespace content

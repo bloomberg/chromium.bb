@@ -12,6 +12,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
@@ -31,12 +32,15 @@ GURL GetTestUrl(const char* dir, const char* file) {
   return net::FilePathToFileURL(GetTestFilePath(dir, file));
 }
 
-void NavigateToURL(Shell* window, const GURL& url) {
+void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
+                                                const GURL& url,
+                                                int number_of_navigations) {
+  WaitForLoadStop(window->web_contents());
   NavigationController* controller = &window->web_contents()->GetController();
   TestNavigationObserver same_tab_observer(
       Source<NavigationController>(controller),
       NULL,
-      1);
+      number_of_navigations);
 
   window->LoadURL(url);
 
@@ -44,6 +48,10 @@ void NavigateToURL(Shell* window, const GURL& url) {
   same_tab_observer.WaitForObservation(
       base::Bind(&RunThisRunLoop, base::Unretained(&run_loop)),
       GetQuitTaskForRunLoop(&run_loop));
+}
+
+void NavigateToURL(Shell* window, const GURL& url) {
+  NavigateToURLBlockUntilNavigationsComplete(window, url, 1);
 }
 
 void WaitForAppModalDialog(Shell* window) {

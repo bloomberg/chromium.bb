@@ -552,6 +552,11 @@
       'sources': [
         'browser/appcache/appcache_browsertest.cc',
         'browser/audio_browsertest.cc',
+        'browser/child_process_security_policy_browsertest.cc',
+        'browser/device_orientation/device_orientation_browsertest.cc',
+        'browser/dom_storage/dom_storage_browsertest.cc',
+        'browser/download/mhtml_generation_browsertest.cc',
+        'browser/fileapi/file_system_browsertest.cc',
         'browser/in_process_webkit/indexed_db_layout_browsertest.cc',
         'browser/media_browsertest.cc',
         'browser/plugin_browsertest.cc',

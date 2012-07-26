@@ -101,7 +101,7 @@ class PluginTest : public ContentBrowserTest {
   }
 
   void NavigateAway() {
-    GURL url = GetTestUrl(".", "simple_page.html");
+    GURL url = GetTestUrl("", "simple_page.html");
     LoadAndWait(url);
   }
 
