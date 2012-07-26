@@ -42,7 +42,7 @@ class WorkerLayoutTest : public InProcessBrowserLayoutTest {
 
 // Crashy, http://crbug.com/35965.
 // Flaky, http://crbug.com/36555.
-IN_PROC_BROWSER_TEST_F(WorkerLayoutTest, DISABLED_WorkerClonePort) {
+IN_PROC_BROWSER_TEST_F(WorkerLayoutTest, WorkerClonePort) {
   RunLayoutTest("worker-cloneport.html");
 }
 
@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
 // Flaky, http://crbug.com/69881.
 // Sometimes triggers
 //     Check failed: message_ports_[message_port_id].queued_messages.empty().
-IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
+IN_PROC_BROWSER_TEST_F(WorkerTest, MultipleTabsQueuedSharedWorker) {
   // Tests to make sure that only one instance of queued shared workers are
   // started up even when those instances are on multiple tabs.
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
 }
 
 // Flaky: http://crbug.com/48148
-IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
+IN_PROC_BROWSER_TEST_F(WorkerTest, QueuedSharedWorkerStartedFromOtherTab) {
   // Tests to make sure that queued shared workers are started up when
   // an instance is launched from another tab.
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
