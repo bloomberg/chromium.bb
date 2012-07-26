@@ -563,6 +563,8 @@ bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,
   // using.  This code assumes a visual mode where a pixel is
   // represented using a 32-bit unsigned int, with a byte per component.
   SkBitmap bitmap = skia::GetTopDevice(*output)->accessBitmap(true);
+  SkAutoLockPixels alp(bitmap);
+
   for (int y = 0; y < height; y++) {
     const uint32* src_row = reinterpret_cast<uint32*>(
         &image->data[image->bytes_per_line * y]);
