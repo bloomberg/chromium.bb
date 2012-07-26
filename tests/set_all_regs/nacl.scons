@@ -1,0 +1,39 @@
+# -*- python -*-
+# Copyright 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+if env.Bit('bitcode'):
+  # We use inline assembly, which does not work in pexes.
+  if env.Bit('pnacl_generate_pexe'):
+    Return()
+  env.AddBiasForPNaCl()
+  env.PNaClForceNative()
+  # Our inline assembly works with ARM but not x86 PNaCl/Clang.
+  if not env.Bit('target_arm'):
+    Return()
+
+test_guest = env.ComponentProgram(
+    'setregs_test_guest', ['setregs_test_guest.c'],
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+test_host = trusted_env.ComponentProgram(
+    'setregs_test_host', ['setregs_test_host.c'], EXTRA_LIBS=['sel'])
+
+# NaClSwitchAllRegs() does not work under x86-64 Valgrind because
+# Valgrind does not implement the 'iretq' instruction or 'mov'
+# instructions that read the %cs or %ss registers.
+is_broken = ((env.IsRunningUnderValgrind() and env.Bit('build_x86_64')) or
+             not env.Bit('nacl_static_link'))
+
+node = env.CommandTest('set_all_regs_test.out',
+                       env.AddBootstrap(test_host, [test_guest]))
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                       'run_set_all_regs_test',
+                       is_broken=is_broken)

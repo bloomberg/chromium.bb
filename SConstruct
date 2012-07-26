@@ -3519,6 +3519,7 @@ nonvariant_tests = ExtendFileList([
     # See also the comment in "buildbot/buildbot_standard.py"
     'tests/pnacl_shared_lib_test/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
+    'tests/set_all_regs/nacl.scons',
     'tests/signal_handler_single_step/nacl.scons',
     'tests/thread_suspension/nacl.scons',
     'tests/trusted_crash/crash_in_syscall/nacl.scons',

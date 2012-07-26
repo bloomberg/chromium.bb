@@ -35,12 +35,12 @@ void *gs_segment_read_only_test(void *unused_thread_arg) {
 
 void *gs_segment_size_test(void *unused_thread_arg) {
   /*
-   * Check that the %gs segment is 8 bytes in size by attempting to
+   * Check that the %gs segment is 16 bytes in size by attempting to
    * read 1 byte beyond the end.
    */
   uint32_t dummy;
   fprintf(stderr, "** intended_exit_status=untrusted_sigsegv_or_equivalent\n");
-  __asm__ volatile("movl %%gs:(8-3), %0" : "=r"(dummy));
+  __asm__ volatile("movl %%gs:(16-3), %0" : "=r"(dummy));
   /* Should not reach here. */
   _exit(1);
 }

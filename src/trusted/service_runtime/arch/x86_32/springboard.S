@@ -24,9 +24,20 @@
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard):
         hlt  /* one byte */
+        /* Restore state from struct NaClThreadContext. */
         /* syscall return value, if any, from trusted stack */
         mov     0x34(%ecx), %eax /* sysret */
         lss     0x1c(%ecx), %esp /* stack_ptr.ptr_32.ptr */
         movw    0x28(%ecx), %ds /* ds */
         jmp     *%edx
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_end):
+
+
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_all_regs):
+        hlt  /* one byte */
+        /* Restore state from struct NaClSwitchAllRegsState. */
+        lss     0(%ecx), %esp /* stack_ptr */
+        movw    0x10(%ecx), %ds /* ds */
+        movl    %gs:0xc, %ecx /* new_ecx from NaClTlsSegment */
+        jmp     *%gs:8 /* new_prog_ctr from NaClTlsSegment */
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_all_regs_end):

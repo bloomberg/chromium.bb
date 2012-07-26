@@ -161,6 +161,7 @@
                 'arch/arm/sel_ldr_arm.c',
                 'arch/arm/sel_addrspace_arm.c',
                 'arch/arm/nacl_switch.S',
+                'arch/arm/nacl_switch_all_regs_arm.S',
                 'arch/arm/nacl_syscall.S',
                 'arch/arm/tramp_arm.S',
                 'linux/nacl_signal_arm.c',

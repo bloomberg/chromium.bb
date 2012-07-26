@@ -38,6 +38,8 @@
       'sources': [
         'nacl_app_32.c',
         'nacl_switch_32.S',
+        'nacl_switch_all_regs_32.c',
+        'nacl_switch_all_regs_asm_32.S',
         'nacl_switch_to_app_32.c',
         'nacl_syscall_32.S',
         'nacl_tls_32.c',

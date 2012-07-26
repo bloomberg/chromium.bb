@@ -30,6 +30,13 @@ void NaClTlsFini() {
 
 
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
+  /*
+   * Initialize these so that untrusted code cannot read uninitialized
+   * values from the %gs segment.
+   */
+  natp->tls_values.new_prog_ctr = 0;
+  natp->tls_values.new_ecx = 0;
+
   return (uint32_t) NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
                                                 /* read_exec_only= */ 1,
                                                 &natp->tls_values,

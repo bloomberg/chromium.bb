@@ -183,23 +183,34 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
       NACL_TRAMPOLINE_SIZE);
 }
 
-void NaClLoadSpringboard(struct NaClApp  *nap) {
-  /*
-   * patch in springboard.S code into space in place of
-   * the last syscall in the trampoline region.
-   */
-  struct NaClPatchInfo  patch_info;
-
-  nap->springboard_addr = NACL_TRAMPOLINE_END - nap->bundle_size;
+/*
+ * Patch springboard.S code into untrusted address space in place of
+ * one of the last syscalls in the trampoline region.
+ */
+static uintptr_t LoadSpringboard(struct NaClApp *nap,
+                                 char *template_start, char *template_end,
+                                 int bundle_number) {
+  struct NaClPatchInfo patch_info;
+  uintptr_t springboard_addr = (NACL_TRAMPOLINE_END
+                                - nap->bundle_size * bundle_number);
 
   NaClPatchInfoCtor(&patch_info);
 
-  patch_info.dst = nap->mem_start + nap->springboard_addr;
-  patch_info.src = (uintptr_t) &NaCl_springboard;
-  patch_info.nbytes = ((uintptr_t) &NaCl_springboard_end
-                       - (uintptr_t) &NaCl_springboard);
+  patch_info.dst = nap->mem_start + springboard_addr;
+  patch_info.src = (uintptr_t) template_start;
+  patch_info.nbytes = template_end - template_start;
+  DCHECK(patch_info.nbytes <= (size_t) nap->bundle_size);
 
   NaClApplyPatchToMemory(&patch_info);
 
-  nap->springboard_addr += NACL_HALT_LEN; /* skip the hlt */
+  return springboard_addr + NACL_HALT_LEN; /* skip the hlt */
+}
+
+void NaClLoadSpringboard(struct NaClApp  *nap) {
+  nap->springboard_addr =
+      LoadSpringboard(nap, &NaCl_springboard, &NaCl_springboard_end, 1);
+
+  nap->springboard_all_regs_addr =
+      LoadSpringboard(nap, &NaCl_springboard_all_regs,
+                      &NaCl_springboard_all_regs_end, 2);
 }

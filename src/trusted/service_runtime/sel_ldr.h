@@ -189,11 +189,14 @@ struct NaClApp {
 
   /* common to both ELF executables and relocatable load images */
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   uintptr_t                 springboard_addr;
+  uintptr_t                 springboard_all_regs_addr;
   /*
    * springboard code addr for context switching into app sandbox, relative
    * to mem_start
    */
+#endif
 
   /*
    * The socket at which the app should be accepting connections.  The

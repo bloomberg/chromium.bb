@@ -18,8 +18,7 @@
 EXTERN_C_BEGIN
 
 struct NaClAppThread;
-
-struct NaclThreadContext;
+struct NaClSignalContext;
 
 void NaClInitSwitchToApp(struct NaClApp *nap);
 
@@ -44,6 +43,9 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 
 NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
                               nacl_reg_t           new_prog_ctr);
+
+NORETURN void NaClSwitchAllRegs(struct NaClAppThread     *natp,
+                                struct NaClSignalContext *regs);
 
 EXTERN_C_END
 
