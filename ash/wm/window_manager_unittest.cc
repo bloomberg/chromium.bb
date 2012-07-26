@@ -7,10 +7,10 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/activation_controller.h"
+#include "ash/wm/cursor_manager.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/activation_delegate.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
@@ -574,8 +574,8 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 
   aura::shared::CompoundEventFilter* env_filter =
       Shell::GetInstance()->env_filter();
-  aura::CursorManager* cursor_manager =
-      aura::Env::GetInstance()->cursor_manager();
+  ash::CursorManager* cursor_manager =
+      ash::Shell::GetInstance()->cursor_manager();
 
   aura::MouseEvent mouse_moved(
       ui::ET_MOUSE_MOVED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);

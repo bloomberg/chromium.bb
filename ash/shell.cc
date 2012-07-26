@@ -71,7 +71,6 @@
 #include "grit/ui_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
@@ -205,7 +204,7 @@ Shell::~Shell() {
   if (active_root_window_)
     active_root_window_->GetFocusManager()->SetFocusedWindow(NULL, NULL);
 
-  aura::Env::GetInstance()->cursor_manager()->set_delegate(NULL);
+  cursor_manager_.set_delegate(NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
   RemoveEnvEventFilter(user_activity_detector_.get());
@@ -371,8 +370,7 @@ void Shell::Init() {
   // Pass ownership of the filter to the Env.
   aura::Env::GetInstance()->SetEventFilter(env_filter_);
 
-  aura::Env::GetInstance()->cursor_manager()->set_delegate(this);
-
+  cursor_manager_.set_delegate(this);
 
   focus_manager_.reset(new aura::FocusManager);
   activation_controller_.reset(
@@ -497,7 +495,7 @@ void Shell::Init() {
   display_controller_->InitSecondaryDisplays();
 
   if (initially_hide_cursor_)
-    aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
+    cursor_manager_.ShowCursor(false);
 }
 
 void Shell::AddEnvEventFilter(aura::EventFilter* filter) {
@@ -707,6 +705,7 @@ void Shell::InitRootWindowController(
   aura::client::SetCaptureClient(root_window, capture_controller_.get());
   aura::client::SetScreenPositionClient(root_window,
                                         screen_position_controller_.get());
+  aura::client::SetCursorClient(root_window, &cursor_manager_);
   aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
 
   if (nested_dispatcher_controller_.get()) {

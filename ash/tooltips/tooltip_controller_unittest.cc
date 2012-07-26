@@ -5,9 +5,9 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/tooltips/tooltip_controller.h"
+#include "ash/wm/cursor_manager.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/tooltip_client.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -259,12 +259,12 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
   EXPECT_TRUE(IsTooltipVisible());
 
   // Hide the cursor and check again.
-  aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
+  ash::Shell::GetInstance()->cursor_manager()->ShowCursor(false);
   FireTooltipTimer();
   EXPECT_FALSE(IsTooltipVisible());
 
   // Show the cursor and re-check.
-  aura::Env::GetInstance()->cursor_manager()->ShowCursor(true);
+  ash::Shell::GetInstance()->cursor_manager()->ShowCursor(true);
   FireTooltipTimer();
   EXPECT_TRUE(IsTooltipVisible());
 }

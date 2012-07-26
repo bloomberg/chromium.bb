@@ -232,6 +232,8 @@
         'wm/base_layout_manager.h',
         'wm/capture_controller.cc',
         'wm/capture_controller.h',
+        'wm/cursor_manager.cc',
+        'wm/cursor_manager.h',
         'wm/custom_frame_view_ash.cc',
         'wm/custom_frame_view_ash.h',
         'wm/default_window_resizer.cc',

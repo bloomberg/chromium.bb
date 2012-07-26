@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/cursor_manager.h"
+#include "ash/wm/cursor_manager.h"
 
+#include "ash/wm/cursor_delegate.h"
 #include "base/logging.h"
-#include "ui/aura/cursor_delegate.h"
 #include "ui/aura/env.h"
 
-namespace aura {
+namespace ash {
 
 CursorManager::CursorManager()
     : delegate_(NULL),
@@ -55,4 +55,8 @@ void CursorManager::ShowCursor(bool show) {
     delegate_->ShowCursor(show);
 }
 
-}  // namespace aura
+bool CursorManager::IsCursorVisible() const {
+  return cursor_visible_;
+}
+
+}  // namespace ash

@@ -68,7 +68,8 @@ class AURA_EXPORT CompoundEventFilter : public aura::EventFilter {
 
   // Sets the visibility of the cursor if the event is not synthesized and
   // |update_cursor_visibility_| is true.
-  void SetVisibilityOnEvent(aura::LocatedEvent* event, bool show);
+  void SetVisibilityOnEvent(aura::Window* target, aura::LocatedEvent* event,
+                            bool show);
 
   // Additional event filters that pre-handles events.
   ObserverList<aura::EventFilter, true> filters_;

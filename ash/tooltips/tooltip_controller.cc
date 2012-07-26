@@ -8,12 +8,12 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/wm/cursor_manager.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/string_split.h"
 #include "base/time.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -403,7 +403,7 @@ void TooltipController::TooltipShownTimerFired() {
 
 void TooltipController::UpdateIfRequired() {
   if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress() ||
-      !aura::Env::GetInstance()->cursor_manager()->cursor_visible()) {
+      !ash::Shell::GetInstance()->cursor_manager()->cursor_visible()) {
     GetTooltip()->Hide();
     return;
   }

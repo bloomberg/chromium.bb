@@ -9,12 +9,10 @@
 #include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/gfx/point.h"
 
 namespace aura {
-class CursorManager;
 class EnvObserver;
 class EventFilter;
 class DisplayManager;
@@ -78,8 +76,6 @@ class AURA_EXPORT Env {
   EventFilter* event_filter() { return event_filter_.get(); }
   void SetEventFilter(EventFilter* event_filter);
 
-  CursorManager* cursor_manager() { return &cursor_manager_; }
-
   // Returns the native event dispatcher. The result should only be passed to
   // base::RunLoop(dispatcher), or used to dispatch an event by
   // |Dispatch(const NativeEvent&)| on it. It must never be stored.
@@ -109,7 +105,6 @@ class AURA_EXPORT Env {
   client::StackingClient* stacking_client_;
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<EventFilter> event_filter_;
-  CursorManager cursor_manager_;
 
 #if defined(USE_X11)
   scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/display_manager.h"

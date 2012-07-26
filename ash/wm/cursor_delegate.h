@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CURSOR_DELEGATE_H_
-#define UI_AURA_CURSOR_DELEGATE_H_
+#ifndef ASH_WM_CURSOR_DELEGATE_H_
+#define ASH_WM_CURSOR_DELEGATE_H_
 
-#include "ui/aura/aura_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace aura {
+namespace ash {
 
 // This interface is implmented by a platform specific object that changes
 // the cursor's image and visibility.
-class AURA_EXPORT CursorDelegate {
+class ASH_EXPORT CursorDelegate {
  public:
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
   virtual void ShowCursor(bool visible) = 0;
@@ -23,4 +23,4 @@ class AURA_EXPORT CursorDelegate {
 
 }  // namespace aura
 
-#endif  // UI_AURA_CURSOR_DELEGATE_H_
+#endif  // ASH_WM_CURSOR_DELEGATE_H_

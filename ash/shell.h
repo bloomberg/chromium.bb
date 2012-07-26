@@ -10,13 +10,14 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
+#include "ash/wm/cursor_delegate.h"
+#include "ash/wm/cursor_manager.h"
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/aura/cursor_delegate.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"
 
@@ -109,7 +110,7 @@ class WorkspaceController;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell : aura::CursorDelegate {
+class ASH_EXPORT Shell : ash::CursorDelegate {
  public:
   typedef std::vector<aura::RootWindow*> RootWindowList;
   typedef std::vector<internal::RootWindowController*> RootWindowControllerList;
@@ -285,6 +286,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   internal::DisplayController* display_controller() {
     return display_controller_.get();
   }
+  CursorManager* cursor_manager() { return &cursor_manager_; }
 
   ShellDelegate* delegate() { return delegate_.get(); }
 
@@ -466,6 +468,8 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
 #endif  // defined(OS_CHROMEOS)
+
+  CursorManager cursor_manager_;
 
   // The shelf for managing the launcher and the status widget in non-compact
   // mode. Shell does not own the shelf. Instead, it is owned by container of

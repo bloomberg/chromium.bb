@@ -5,8 +5,8 @@
 #include "ash/wm/default_window_resizer.h"
 
 #include "ash/shell.h"
+#include "ash/wm/cursor_manager.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -20,7 +20,7 @@
 namespace ash {
 
 DefaultWindowResizer::~DefaultWindowResizer() {
-  aura::Env::GetInstance()->cursor_manager()->UnlockCursor();
+  ash::Shell::GetInstance()->cursor_manager()->UnlockCursor();
 }
 
 // static
@@ -76,7 +76,7 @@ DefaultWindowResizer::DefaultWindowResizer(const Details& details)
     : details_(details),
       did_move_or_resize_(false) {
   DCHECK(details_.is_resizable);
-  aura::Env::GetInstance()->cursor_manager()->LockCursor();
+  ash::Shell::GetInstance()->cursor_manager()->LockCursor();
 }
 
 }  // namespace aura

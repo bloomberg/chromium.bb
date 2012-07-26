@@ -5,7 +5,8 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 
 #include "ash/display/display_controller.h"
-#include "ui/aura/cursor_manager.h"
+#include "ash/shell.h"
+#include "ash/wm/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -31,7 +32,7 @@ bool MouseCursorEventFilter::PreHandleKeyEvent(aura::Window* target,
 bool MouseCursorEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                  aura::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_MOVED ||
-      aura::Env::GetInstance()->cursor_manager()->is_cursor_locked())
+      ash::Shell::GetInstance()->cursor_manager()->is_cursor_locked())
     return false;
   aura::RootWindow* current_root = target->GetRootWindow();
   gfx::Point location_in_root(event->location());

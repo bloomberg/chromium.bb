@@ -20,7 +20,7 @@
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ui/aura/root_window.h"
 #endif
@@ -123,7 +123,7 @@ ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
   return manager->CreateDialogHost(url);
 }
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 void ExtensionDialog::InitWindowFullscreen() {
   aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
   gfx::Rect screen_rect =

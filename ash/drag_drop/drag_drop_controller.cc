@@ -6,11 +6,11 @@
 
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
+#include "ash/wm/cursor_manager.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -128,7 +128,7 @@ void DragDropController::DragUpdate(aura::Window* target,
         cursor = ui::kCursorAlias;
       else if (op & ui::DragDropTypes::DRAG_MOVE)
         cursor = ui::kCursorMove;
-      aura::Env::GetInstance()->cursor_manager()->SetCursor(cursor);
+      ash::Shell::GetInstance()->cursor_manager()->SetCursor(cursor);
     }
   }
 
@@ -141,7 +141,7 @@ void DragDropController::DragUpdate(aura::Window* target,
 
 void DragDropController::Drop(aura::Window* target,
                               const aura::LocatedEvent& event) {
-  aura::Env::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
+  ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
 
   // We must guarantee that a target gets a OnDragEntered before Drop. WebKit
@@ -170,7 +170,7 @@ void DragDropController::Drop(aura::Window* target,
 }
 
 void DragDropController::DragCancel() {
-  aura::Env::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
+  ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
 
   // |drag_window_| can be NULL if we have just started the drag and have not
   // received any DragUpdates, or, if the |drag_window_| gets destroyed during

@@ -28,10 +28,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -744,7 +744,10 @@ bool RenderWidgetHostViewAura::LockMouse() {
 
   mouse_locked_ = true;
   window_->SetCapture();
-  aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window);
+  if (cursor_client)
+    cursor_client->ShowCursor(false);
   synthetic_move_sent_ = true;
   window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
   if (aura::client::GetTooltipClient(root_window))
@@ -761,7 +764,10 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 
   window_->ReleaseCapture();
   window_->MoveCursorTo(unlocked_mouse_position_);
-  aura::Env::GetInstance()->cursor_manager()->ShowCursor(true);
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window);
+  if (cursor_client)
+    cursor_client->ShowCursor(true);
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
 

@@ -6,8 +6,8 @@
 
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
+#include "ui/aura/desktop/desktop_cursor_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -134,8 +134,6 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
     // will probably be SetBounds()ed soon.
     bounds.set_size(gfx::Size(100, 100));
   }
-  // TODO(erg): Implement aura::CursorManager::Delegate to control
-  // cursor's shape and visibility.
 
   aura::FocusManager* focus_manager = NULL;
   aura::DesktopActivationClient* activation_client = NULL;
@@ -165,6 +163,9 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
 
   capture_client_.reset(
       new aura::shared::RootWindowCaptureClient(root_window_.get()));
+
+  cursor_client_.reset(new aura::DesktopCursorClient(root_window_.get()));
+  aura::client::SetCursorClient(root_window_.get(), cursor_client_.get());
 
 #if defined(USE_X11)
   x11_window_event_filter_.reset(

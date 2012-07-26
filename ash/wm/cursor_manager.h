@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CURSOR_MANAGER_H_
-#define UI_AURA_CURSOR_MANAGER_H_
+#ifndef ASH_WM_CURSOR_MANAGER_H_
+#define ASH_WM_CURSOR_MANAGER_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace aura {
+namespace ash {
 class CursorDelegate;
 
 // This class controls the visibility and the type of the cursor.
 // The cursor type can be locked so that the type stays the same
 // until it's unlocked.
-class AURA_EXPORT CursorManager {
+class CursorManager : public aura::client::CursorClient {
  public:
   CursorManager();
   ~CursorManager();
@@ -28,11 +30,12 @@ class AURA_EXPORT CursorManager {
 
   bool is_cursor_locked() const { return cursor_lock_count_ > 0; }
 
-  void SetCursor(gfx::NativeCursor);
-
   // Shows or hides the cursor.
-  void ShowCursor(bool show);
   bool cursor_visible() const { return cursor_visible_; }
+
+  virtual void SetCursor(gfx::NativeCursor) OVERRIDE;
+  virtual void ShowCursor(bool show) OVERRIDE;
+  virtual bool IsCursorVisible() const OVERRIDE;
 
  private:
   CursorDelegate* delegate_;

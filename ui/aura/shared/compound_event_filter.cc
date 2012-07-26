@@ -5,7 +5,7 @@
 #include "ui/aura/shared/compound_event_filter.h"
 
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/cursor_manager.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
@@ -103,7 +103,7 @@ bool CompoundEventFilter::PreHandleMouseEvent(aura::Window* target,
   if (event->type() == ui::ET_MOUSE_MOVED ||
       event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSEWHEEL) {
-    SetVisibilityOnEvent(event, true);
+    SetVisibilityOnEvent(target, event, true);
     UpdateCursor(target, event);
   }
 
@@ -145,7 +145,7 @@ ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
       event->details().touch_points() == 1 &&
       target->GetRootWindow() &&
       GetActiveWindow(target) != target) {
-    SetVisibilityOnEvent(event, false);
+    SetVisibilityOnEvent(target, event, false);
     target->GetFocusManager()->SetFocusedWindow(
         FindFocusableWindowFor(target), event);
   }
@@ -157,14 +157,19 @@ ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
 // CompoundEventFilter, private:
 
 void CompoundEventFilter::UpdateCursor(aura::Window* target,
-                                  aura::MouseEvent* event) {
-  gfx::NativeCursor cursor = target->GetCursor(event->location());
-  if (event->flags() & ui::EF_IS_NON_CLIENT) {
-    int window_component =
-        target->delegate()->GetNonClientComponent(event->location());
-    cursor = CursorForWindowComponent(window_component);
+                                       aura::MouseEvent* event) {
+  aura::client::CursorClient* client =
+      aura::client::GetCursorClient(target->GetRootWindow());
+  if (client) {
+    gfx::NativeCursor cursor = target->GetCursor(event->location());
+    if (event->flags() & ui::EF_IS_NON_CLIENT) {
+      int window_component =
+          target->delegate()->GetNonClientComponent(event->location());
+      cursor = CursorForWindowComponent(window_component);
+    }
+
+    client->SetCursor(cursor);
   }
-  Env::GetInstance()->cursor_manager()->SetCursor(cursor);
 }
 
 bool CompoundEventFilter::FilterKeyEvent(aura::Window* target,
@@ -206,10 +211,15 @@ ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
   return status;
 }
 
-void CompoundEventFilter::SetVisibilityOnEvent(aura::LocatedEvent* event,
-                                          bool show) {
-  if (update_cursor_visibility_ && !(event->flags() & ui::EF_IS_SYNTHESIZED))
-    Env::GetInstance()->cursor_manager()->ShowCursor(show);
+void CompoundEventFilter::SetVisibilityOnEvent(aura::Window* target,
+                                               aura::LocatedEvent* event,
+                                               bool show) {
+  if (update_cursor_visibility_ && !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
+    aura::client::CursorClient* client =
+        aura::client::GetCursorClient(target->GetRootWindow());
+    if (client)
+      client->ShowCursor(show);
+  }
 }
 
 }  // namespace shared

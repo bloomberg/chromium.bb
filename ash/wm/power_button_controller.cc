@@ -7,11 +7,11 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/cursor_manager.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
@@ -311,9 +311,9 @@ void PowerButtonController::OnAppTerminating() {
   // can really hope for is that we'll have time to clear the screen.
   if (!shutting_down_) {
     shutting_down_ = true;
-    ash::Shell::GetInstance()->env_filter()->
-        set_update_cursor_visibility(false);
-    aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
+    Shell* shell = ash::Shell::GetInstance();
+    shell->env_filter()->set_update_cursor_visibility(false);
+    shell->cursor_manager()->ShowCursor(false);
     ShowBackgroundLayer();
     StartAnimation(ALL_CONTAINERS, ANIMATION_HIDE);
   }
@@ -536,8 +536,9 @@ void PowerButtonController::StartShutdownAnimationAndRequestShutdown() {
   DCHECK(!shutting_down_);
   shutting_down_ = true;
 
-  ash::Shell::GetInstance()->env_filter()->set_update_cursor_visibility(false);
-  aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
+  Shell* shell = ash::Shell::GetInstance();
+  shell->env_filter()->set_update_cursor_visibility(false);
+  shell->cursor_manager()->ShowCursor(false);
 
   ShowBackgroundLayer();
   if (login_status_ != user::LOGGED_IN_NONE) {
