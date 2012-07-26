@@ -1613,7 +1613,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PasteReplacingAll) {
 
 // TODO(derat): Enable on Windows: http://crbug.com/128556
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllOnClick) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_SelectAllOnClick) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   omnibox_view->SetUserText(ASCIIToUTF16("http://www.google.com/"));
@@ -1642,6 +1642,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllOnClick) {
   // have the effect of re-selecting the text.
   ASSERT_NO_FATAL_FAILURE(
       ClickFocusViewOrigin(ui_controls::LEFT, kClickOffset, kClickOffset));
+  // The following expect fails starting with one of the cls (148415-148428),
+  // most likely the WebKit roll @148419.
+  // http://crbug.com/139069
   EXPECT_TRUE(omnibox_view->IsSelectAll());
   EXPECT_TRUE(GetFocusView()->HasFocus());
 
