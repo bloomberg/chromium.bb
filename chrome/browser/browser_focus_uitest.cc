@@ -916,7 +916,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
 
   // Open a regular page, crash, reload.
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
-  ui_test_utils::CrashTab(chrome::GetActiveWebContents(browser()));
+  content::CrashTab(chrome::GetActiveWebContents(browser()));
   {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,

@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
   OpenDevToolsWindow(kDebuggerTestPage);
 
-  ui_test_utils::CrashTab(GetInspectedTab());
+  content::CrashTab(GetInspectedTab());
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(

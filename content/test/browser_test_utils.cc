@@ -15,6 +15,7 @@
 #include "net/base/net_util.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -170,6 +171,14 @@ void WaitForLoadStop(WebContents* web_contents) {
   load_stop_observer.Wait();
 }
 
+void CrashTab(WebContents* web_contents) {
+  RenderProcessHost* rph = web_contents->GetRenderProcessHost();
+  WindowedNotificationObserver observer(
+      NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      Source<RenderProcessHost>(rph));
+  base::KillProcess(rph->GetHandle(), 0, false);
+  observer.Wait();
+}
 
 void SimulateMouseClick(WebContents* web_contents) {
   int x = web_contents->GetView()->GetContainerSize().width() / 2;

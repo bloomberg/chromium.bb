@@ -25,6 +25,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test_utils.h"
 
 using extensions::Extension;
 using performance_monitor::Event;
@@ -401,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
 // case when hand-testing). This code can be traced to MSDN functions in
 // base::GetTerminationStatus(), so there's not much we can do.
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, KilledByOSEvent) {
-  ui_test_utils::CrashTab(chrome::GetActiveWebContents(browser()));
+  content::CrashTab(chrome::GetActiveWebContents(browser()));
 
   std::vector<linked_ptr<Event> > events = GetEvents();
 

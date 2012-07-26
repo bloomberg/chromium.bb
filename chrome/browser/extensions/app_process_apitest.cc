@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
   ASSERT_TRUE(is_installed);
 
   // Crash the tab and reload it, chrome.app.isInstalled should still be true.
-  ui_test_utils::CrashTab(chrome::GetActiveWebContents(browser()));
+  content::CrashTab(chrome::GetActiveWebContents(browser()));
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(

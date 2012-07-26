@@ -360,15 +360,6 @@ AppModalDialog* WaitForAppModalDialog() {
   return content::Source<AppModalDialog>(observer.source()).ptr();
 }
 
-void CrashTab(WebContents* tab) {
-  content::RenderProcessHost* rph = tab->GetRenderProcessHost();
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      content::Source<content::RenderProcessHost>(rph));
-  base::KillProcess(rph->GetHandle(), 0, false);
-  observer.Wait();
-}
-
 int FindInPage(TabContents* tab_contents, const string16& search_string,
                bool forward, bool match_case, int* ordinal) {
   tab_contents->

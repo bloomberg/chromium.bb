@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ValueSizeTest) {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
   SimpleTest(GetTestURL(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
-  ui_test_utils::CrashTab(chrome::GetActiveWebContents(browser()));
+  content::CrashTab(chrome::GetActiveWebContents(browser()));
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 

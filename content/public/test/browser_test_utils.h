@@ -53,6 +53,9 @@ GURL GetFileUrlWithQuery(const FilePath& path, const std::string& query_string);
 // tab is currently web_contents.  Otherwise returns immediately.
 void WaitForLoadStop(WebContents* web_contents);
 
+// Causes the specified web_contents to crash. Blocks until it is crashed.
+void CrashTab(WebContents* web_contents);
+
 // Simulates clicking at the center of the given tab asynchronously.
 void SimulateMouseClick(WebContents* web_contents);
 
