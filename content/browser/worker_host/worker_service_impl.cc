@@ -62,6 +62,17 @@ void WorkerServiceImpl::OnWorkerMessageFilterClosing(
     }
   }
 
+  for (WorkerProcessHost::Instances::iterator i =
+           pending_shared_workers_.begin();
+       i != pending_shared_workers_.end(); ) {
+     i->RemoveFilters(filter);
+     if (i->NumFilters() == 0) {
+      i = pending_shared_workers_.erase(i);
+    } else {
+      ++i;
+    }
+  }
+
   // Also, see if that process had any pending shared workers.
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
