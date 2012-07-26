@@ -38,7 +38,8 @@ void SelectFileDialog::Listener::FileSelectedWithExtraInfo(
     const ui::SelectedFileInfo& file,
     int index,
     void* params) {
-  FileSelected(file.path, index, params);
+  // Most of the dialogs need actual local path, so default to it.
+  FileSelected(file.local_path, index, params);
 }
 
 void SelectFileDialog::Listener::MultiFilesSelectedWithExtraInfo(
@@ -46,7 +47,7 @@ void SelectFileDialog::Listener::MultiFilesSelectedWithExtraInfo(
     void* params) {
   std::vector<FilePath> file_paths;
   for (size_t i = 0; i < files.size(); ++i)
-    file_paths.push_back(files[i].path);
+    file_paths.push_back(files[i].local_path);
 
   MultiFilesSelected(file_paths, params);
 }

@@ -85,6 +85,7 @@ class Point;
 }
 
 namespace ui {
+struct SelectedFileInfo;
 class WebDialogDelegate;
 }
 
@@ -665,6 +666,10 @@ class Browser : public TabStripModelObserver,
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;
+  virtual void FileSelectedWithExtraInfo(
+      const ui::SelectedFileInfo& file_info,
+      int index,
+      void* params) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

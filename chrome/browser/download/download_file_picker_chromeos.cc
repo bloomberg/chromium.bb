@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "ui/base/dialogs/selected_file_info.h"
 
 using content::DownloadItem;
 using content::DownloadManager;
@@ -45,7 +46,17 @@ void DownloadFilePickerChromeOS::InitSuggestedPath(DownloadItem* item) {
 void DownloadFilePickerChromeOS::FileSelected(const FilePath& selected_path,
                                               int index,
                                               void* params) {
-  FilePath path = selected_path;
+  FileSelectedWithExtraInfo(
+      ui::SelectedFileInfo(selected_path, selected_path),
+      index,
+      params);
+}
+
+void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
+    const ui::SelectedFileInfo& file_info,
+    int index,
+    void* params) {
+  FilePath path = file_info.file_path;
   file_util::NormalizeFileNameEncoding(&path);
 
   RecordFileSelected(path);

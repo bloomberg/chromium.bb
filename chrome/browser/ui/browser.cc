@@ -185,6 +185,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/animation/animation.h"
+#include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/point.h"
 #include "webkit/glue/web_intent_data.h"
@@ -1739,7 +1740,16 @@ void Browser::OnZoomChanged(TabContents* source,
 // Browser, SelectFileDialog::Listener implementation:
 
 void Browser::FileSelected(const FilePath& path, int index, void* params) {
-  profile_->set_last_selected_directory(path.DirName());
+  FileSelectedWithExtraInfo(ui::SelectedFileInfo(path, path), index, params);
+}
+
+void Browser::FileSelectedWithExtraInfo(
+    const ui::SelectedFileInfo& file_info,
+    int index,
+    void* params) {
+  profile_->set_last_selected_directory(file_info.file_path.DirName());
+
+  const FilePath& path = file_info.local_path;
   GURL file_url = net::FilePathToFileURL(path);
 
 #if defined(OS_CHROMEOS)

@@ -8,10 +8,13 @@ namespace ui {
 
 SelectedFileInfo::SelectedFileInfo() {}
 
-SelectedFileInfo::SelectedFileInfo(const FilePath& in_path,
-                                   const FilePath::StringType& in_display_name)
-    : path(in_path),
-      display_name(in_display_name) {
+SelectedFileInfo::SelectedFileInfo(const FilePath& in_file_path,
+                                   const FilePath& in_local_path)
+    : file_path(in_file_path),
+      local_path(in_local_path) {
+  if (local_path.empty())
+    local_path = file_path;
+  display_name = in_file_path.BaseName().value();
 }
 
 SelectedFileInfo::~SelectedFileInfo() {}

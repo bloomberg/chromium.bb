@@ -67,14 +67,13 @@ void NotifyRenderViewHost(RenderViewHost* render_view_host,
   render_view_host->FilesSelectedInChooser(files, permissions);
 }
 
-// Converts a list of FilePaths to a list of SelectedFileInfo, with the
-// display name field left empty.
-std::vector<ui::SelectedFileInfo> ConvertToSelectedFileInfoList(
+// Converts a list of FilePaths to a list of ui::SelectedFileInfo.
+std::vector<ui::SelectedFileInfo> FilePathListToSelectedFileInfoList(
     const std::vector<FilePath>& paths) {
   std::vector<ui::SelectedFileInfo> selected_files;
   for (size_t i = 0; i < paths.size(); ++i) {
     selected_files.push_back(
-        ui::SelectedFileInfo(paths[i], FilePath::StringType()));
+        ui::SelectedFileInfo(paths[i], paths[i]));
   }
   return selected_files;
 }
@@ -118,9 +117,7 @@ FileSelectHelper::~FileSelectHelper() {
 
 void FileSelectHelper::FileSelected(const FilePath& path,
                                     int index, void* params) {
-  FileSelectedWithExtraInfo(
-      ui::SelectedFileInfo(path, FilePath::StringType()),
-      index, params);
+  FileSelectedWithExtraInfo(ui::SelectedFileInfo(path, path), index, params);
 }
 
 void FileSelectHelper::FileSelectedWithExtraInfo(
@@ -130,9 +127,9 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
   if (!render_view_host_)
     return;
 
-  const FilePath& path = file.path;
-  profile_->set_last_selected_directory(path.DirName());
+  profile_->set_last_selected_directory(file.file_path.DirName());
 
+  const FilePath& path = file.local_path;
   if (dialog_type_ == SelectFileDialog::SELECT_FOLDER) {
     StartNewEnumeration(path, kFileSelectEnumerationId, render_view_host_);
     return;
@@ -149,7 +146,8 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
 void FileSelectHelper::MultiFilesSelected(const std::vector<FilePath>& files,
                                           void* params) {
   std::vector<ui::SelectedFileInfo> selected_files =
-      ConvertToSelectedFileInfoList(files);
+      FilePathListToSelectedFileInfoList(files);
+
   MultiFilesSelectedWithExtraInfo(selected_files, params);
 }
 
@@ -157,7 +155,7 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
     const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
   if (!files.empty())
-    profile_->set_last_selected_directory(files[0].path.DirName());
+    profile_->set_last_selected_directory(files[0].file_path.DirName());
   if (!render_view_host_)
     return;
 
@@ -228,7 +226,7 @@ void FileSelectHelper::OnListDone(int id, int error) {
   }
 
   std::vector<ui::SelectedFileInfo> selected_files =
-      ConvertToSelectedFileInfoList(entry->results_);
+      FilePathListToSelectedFileInfoList(entry->results_);
 
   if (id == kFileSelectEnumerationId)
     NotifyRenderViewHost(entry->rvh_, selected_files, dialog_type_);

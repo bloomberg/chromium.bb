@@ -7,6 +7,10 @@
 
 #include "chrome/browser/download/download_file_picker.h"
 
+namespace ui {
+struct SelectedFileInfo;
+}
+
 class DownloadFilePickerChromeOS : public DownloadFilePicker {
  public:
   DownloadFilePickerChromeOS();
@@ -17,6 +21,10 @@ class DownloadFilePickerChromeOS : public DownloadFilePicker {
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;
+  virtual void FileSelectedWithExtraInfo(
+      const ui::SelectedFileInfo& file_info,
+      int index,
+      void* params) OVERRIDE;
 
   // DownloadFilePicker implementation.
   // This looks up the gdata path instead of the temporary local path.

@@ -4662,7 +4662,7 @@ void RenderViewImpl::OnFileChooserResponse(
       files.size());
   for (size_t i = 0; i < files.size(); ++i) {
     WebFileChooserCompletion::SelectedFileInfo selected_file;
-    selected_file.path = webkit_glue::FilePathToWebString(files[i].path);
+    selected_file.path = webkit_glue::FilePathToWebString(files[i].local_path);
     selected_file.displayName = webkit_glue::FilePathStringToWebString(
         files[i].display_name);
     selected_files[i] = selected_file;

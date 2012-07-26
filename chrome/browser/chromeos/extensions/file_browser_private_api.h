@@ -26,12 +26,12 @@ namespace fileapi {
 class FileSystemContext;
 }
 
-namespace ui {
-struct SelectedFileInfo;
-}
-
 namespace gdata {
 struct SearchResultInfo;
+}
+
+namespace ui {
+struct SelectedFileInfo;
 }
 
 // Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.

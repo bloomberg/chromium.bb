@@ -45,7 +45,9 @@ class MockSelectFileDialogListener : public SelectFileDialog::Listener {
   void* params() const { return params_; }
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params) {
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE {
     file_selected_ = true;
     path_ = path;
     params_ = params;
@@ -53,11 +55,11 @@ class MockSelectFileDialogListener : public SelectFileDialog::Listener {
   virtual void FileSelectedWithExtraInfo(
       const ui::SelectedFileInfo& selected_file_info,
       int index,
-      void* params) {
-    FileSelected(selected_file_info.path, index, params);
+      void* params) OVERRIDE {
+    FileSelected(selected_file_info.local_path, index, params);
   }
   virtual void MultiFilesSelected(
-      const std::vector<FilePath>& files, void* params) {}
+      const std::vector<FilePath>& files, void* params) OVERRIDE {}
   virtual void FileSelectionCanceled(void* params) {
     canceled_ = true;
     params_ = params;

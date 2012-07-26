@@ -15,9 +15,16 @@ namespace ui {
 
 // Struct used for passing selected file info to WebKit.
 struct UI_EXPORT SelectedFileInfo {
-  // The real path to the selected file. This can be a snapshot file with a
-  // human unreadable name like /blah/.d41d8cd98f00b204e9800998ecf8427e.
-  FilePath path;
+  // Selected file's user friendly path as seen in the UI.
+  FilePath file_path;
+
+  // The actual local path to the selected file. This can be a snapshot file
+  // with a human unreadable name like /blah/.d41d8cd98f00b204e9800998ecf8427e.
+  // |real_path| can differ from |file_path| for drive files (e.g.
+  // /drive_cache/temporary/d41d8cd98f00b204e9800998ecf8427e vs.
+  // /special/drive/foo.txt).
+  // If not set, defaults to |file_path|.
+  FilePath local_path;
 
   // This field is optional. The display name contains only the base name
   // portion of a file name (ex. no path separators), and used for displaying
@@ -26,8 +33,8 @@ struct UI_EXPORT SelectedFileInfo {
   FilePath::StringType display_name;
 
   SelectedFileInfo();
-  SelectedFileInfo(const FilePath& in_path,
-                   const FilePath::StringType& in_display_name);
+  SelectedFileInfo(const FilePath& in_file_path,
+                   const FilePath& in_local_path);
   ~SelectedFileInfo();
 };
 

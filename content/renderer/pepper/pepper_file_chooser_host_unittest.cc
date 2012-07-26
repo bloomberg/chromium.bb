@@ -127,7 +127,7 @@ TEST_F(PepperFileChooserHostTest, Show) {
   // path separator so we include both a Unix and a Windows one.
   ui::SelectedFileInfo selected_info;
   selected_info.display_name = FILE_PATH_LITERAL("Hello, world");
-  selected_info.path = FilePath(FILE_PATH_LITERAL("myp\\ath/foo"));
+  selected_info.local_path = FilePath(FILE_PATH_LITERAL("myp\\ath/foo"));
   std::vector<ui::SelectedFileInfo> selected_info_vector;
   selected_info_vector.push_back(selected_info);
   ViewMsg_RunFileChooserResponse response(view_impl->routing_id(),

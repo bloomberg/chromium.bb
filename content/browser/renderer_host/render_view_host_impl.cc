@@ -798,7 +798,7 @@ void RenderViewHostImpl::FilesSelectedInChooser(
   for (size_t i = 0; i < files.size(); ++i) {
     const ui::SelectedFileInfo& file = files[i];
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-        GetProcess()->GetID(), file.path, permissions);
+        GetProcess()->GetID(), file.local_path, permissions);
   }
   Send(new ViewMsg_RunFileChooserResponse(GetRoutingID(), files));
 }

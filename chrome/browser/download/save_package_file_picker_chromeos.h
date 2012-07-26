@@ -14,6 +14,10 @@ namespace gdata {
 class GDataFileSystem;
 }
 
+namespace ui {
+struct SelectedFileInfo;
+}
+
 // Handles showing a dialog to the user to ask for the filename to save a page
 // on ChromeOS.
 class SavePackageFilePickerChromeOS : public SelectFileDialog::Listener,
@@ -32,9 +36,13 @@ class SavePackageFilePickerChromeOS : public SelectFileDialog::Listener,
   virtual ~SavePackageFilePickerChromeOS();
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const FilePath& selected_path,
                             int unused_index,
                             void* unused_params) OVERRIDE;
+  virtual void FileSelectedWithExtraInfo(
+      const ui::SelectedFileInfo& selected_file_info,
+      int unused_index,
+      void* unused_params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   content::SavePackagePathPickedCallback callback_;

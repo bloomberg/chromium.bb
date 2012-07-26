@@ -859,7 +859,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
   size_t len = file_urls.size();
   selected_files.reserve(len);
   for (size_t i = 0; i < len; ++i) {
-    FilePath real_path;
+    FilePath local_path;
     const GURL& file_url = file_urls[i];
 
     // If "localPath" parameter is set, use it as the real path.
@@ -881,7 +881,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
             const std::string unescaped_value =
                 net::UnescapeURLComponent(parameters[i].second,
                                           kUnescapeRuleForQueryParameters);
-            real_path = FilePath::FromUTF8Unsafe(unescaped_value);
+            local_path = FilePath::FromUTF8Unsafe(unescaped_value);
             break;
           }
         }
@@ -902,29 +902,24 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
       continue;
     }
 
-    FilePath::StringType display_name;
     FilePath root = provider->GetFileSystemRootPathOnFileThread(
         origin_url,
         fileapi::kFileSystemTypeExternal,
         FilePath(virtual_path),
         false);
+    FilePath file_path;
     if (!root.empty()) {
-      // If we haven't got the real path from "localPath", use it as the
-      // real path.  Otherwise, use it as the display name.
-      if (real_path.empty())
-        real_path = root.Append(virtual_path);
-      else
-        display_name = virtual_path.BaseName().value();
+      file_path = root.Append(virtual_path);
     } else {
       LOG(WARNING) << "GetLocalPathsOnFileThread failed "
                    << file_url.spec();
     }
 
-    if (!real_path.empty()) {
-      DVLOG(1) << "Selected: real path: " << real_path.value()
-               << " display name: " << display_name;
+    if (!file_path.empty()) {
+      DVLOG(1) << "Selected: file path: " << file_path.value()
+               << " local path: " << local_path.value();
       selected_files.push_back(
-          ui::SelectedFileInfo(real_path, display_name));
+          ui::SelectedFileInfo(file_path, local_path));
     }
   }
 
@@ -1006,7 +1001,7 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
        iter != files.end();
        ++iter) {
     bool handled = file_manager_util::ExecuteBuiltinHandler(
-        GetCurrentBrowser(), iter->path, internal_task_id);
+        GetCurrentBrowser(), iter->file_path, internal_task_id);
     if (!handled && files.size() == 1)
       success = false;
   }
@@ -1156,8 +1151,9 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  const FilePath& source_path = files[0].path;
-  const FilePath::StringType& display_name = files[0].display_name;
+  const FilePath& source_path = files[0].local_path;
+  const FilePath::StringType& display_name =
+      files[0].file_path.BaseName().value();
   // Check if the source path is under GData cache directory.
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
@@ -1222,7 +1218,7 @@ void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
     SendResponse(false);
     return;
   }
-  DiskMountManager::GetInstance()->UnmountPath(files[0].path.value());
+  DiskMountManager::GetInstance()->UnmountPath(files[0].local_path.value());
   SendResponse(true);
 }
 
@@ -1288,7 +1284,7 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  if (files[0].path == gdata::util::GetGDataMountPointPath()) {
+  if (files[0].file_path == gdata::util::GetGDataMountPointPath()) {
     gdata::GDataSystemService* system_service =
         gdata::GDataSystemServiceFactory::GetForProfile(profile_);
 
@@ -1305,7 +1301,7 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
         base::Bind(
             &GetSizeStatsFunction::CallGetSizeStatsOnFileThread,
             this,
-            files[0].path.value()));
+            files[0].file_path.value()));
   }
 }
 
@@ -1391,7 +1387,8 @@ void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  DiskMountManager::GetInstance()->FormatMountedDevice(files[0].path.value());
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      files[0].file_path.value());
   SendResponse(true);
 }
 
@@ -1437,7 +1434,7 @@ void GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread(
   results_.reset();
 
   const DiskMountManager::Disk* volume = GetVolumeAsDisk(
-      files[0].path.value());
+      files[0].file_path.value());
   if (volume) {
     DictionaryValue* volume_info =
         CreateValueFromDisk(profile_, volume);
@@ -2006,7 +2003,7 @@ void GetFileLocationsFunction::GetLocalPathsResponseOnUIThread(
 
   ListValue* locations = new ListValue;
   for (size_t i = 0; i < files.size(); ++i) {
-    if (gdata::util::IsUnderGDataMountPoint(files[i].path)) {
+    if (gdata::util::IsUnderGDataMountPoint(files[i].file_path)) {
       locations->Append(Value::CreateStringValue("drive"));
     } else {
       locations->Append(Value::CreateStringValue("local"));
@@ -2050,8 +2047,8 @@ void GetGDataFilesFunction::GetLocalPathsResponseOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < files.size(); ++i) {
-    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].path));
-    FilePath gdata_path = gdata::util::ExtractGDataPath(files[i].path);
+    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].file_path));
+    FilePath gdata_path = gdata::util::ExtractGDataPath(files[i].file_path);
     remaining_gdata_paths_.push(gdata_path);
   }
 
@@ -2180,8 +2177,8 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
 
   scoped_ptr<ListValue> responses(new ListValue());
   for (size_t i = 0; i < files.size(); ++i) {
-    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].path));
-    FilePath file_path = gdata::util::ExtractGDataPath(files[i].path);
+    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].file_path));
+    FilePath file_path = gdata::util::ExtractGDataPath(files[i].file_path);
     scoped_ptr<DictionaryValue> result(new DictionaryValue());
     result->SetBoolean(
         "canceled",
@@ -2238,8 +2235,8 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  FilePath source_file = files[0].path;
-  FilePath destination_file = files[1].path;
+  FilePath source_file = files[0].file_path;
+  FilePath destination_file = files[1].file_path;
 
   bool source_file_under_gdata =
       gdata::util::IsUnderGDataMountPoint(source_file);

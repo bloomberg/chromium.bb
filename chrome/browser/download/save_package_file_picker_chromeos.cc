@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/dialogs/selected_file_info.h"
 
 namespace {
 
@@ -66,14 +67,24 @@ SavePackageFilePickerChromeOS::~SavePackageFilePickerChromeOS() {
 }
 
 void SavePackageFilePickerChromeOS::FileSelected(
-    const FilePath& selected_path_const,
+    const FilePath& selected_path,
+    int unused_index,
+    void* unused_params) {
+  FileSelectedWithExtraInfo(
+      ui::SelectedFileInfo(selected_path, selected_path),
+      unused_index,
+      unused_params);
+}
+
+void SavePackageFilePickerChromeOS::FileSelectedWithExtraInfo(
+    const ui::SelectedFileInfo& selected_file_info,
     int unused_index,
     void* unused_params) {
   if (!web_contents()) {
     delete this;
     return;
   }
-  FilePath selected_path = selected_path_const;
+  FilePath selected_path = selected_file_info.file_path;
   file_util::NormalizeFileNameEncoding(&selected_path);
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
