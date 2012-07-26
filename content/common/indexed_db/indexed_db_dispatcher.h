@@ -37,6 +37,7 @@ class WebIDBTransaction;
 
 namespace content {
 class IndexedDBKey;
+class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class SerializedScriptValue;
 }
@@ -242,6 +243,12 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int32 thread_id,
       int32 response_id,
       const content::SerializedScriptValue& value);
+  void OnSuccessSerializedScriptValueWithKey(
+      int32 thread_id,
+      int32 response_id,
+      const content::SerializedScriptValue& value,
+      const content::IndexedDBKey& primary_key,
+      const content::IndexedDBKeyPath& key_path);
   void OnError(int32 thread_id,
                int32 response_id,
                int code,

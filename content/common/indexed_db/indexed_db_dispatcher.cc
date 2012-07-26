@@ -22,6 +22,7 @@
 
 using base::ThreadLocalPointer;
 using content::IndexedDBKey;
+using content::IndexedDBKeyPath;
 using content::IndexedDBKeyRange;
 using content::SerializedScriptValue;
 using WebKit::WebDOMStringList;
@@ -99,6 +100,8 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessStringList)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
                         OnSuccessSerializedScriptValue)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessSerializedScriptValueWithKey,
+                        OnSuccessSerializedScriptValueWithKey)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksError, OnError)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksBlocked, OnBlocked)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksAbort, OnAbort)
@@ -602,6 +605,19 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
   if (!callbacks)
     return;
   callbacks->onSuccess(value);
+  pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnSuccessSerializedScriptValueWithKey(
+    int32 thread_id, int32 response_id,
+    const SerializedScriptValue& value,
+    const IndexedDBKey& primary_key,
+    const IndexedDBKeyPath& key_path) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
+  callbacks->onSuccess(value, primary_key, key_path);
   pending_callbacks_.Remove(response_id);
 }
 
