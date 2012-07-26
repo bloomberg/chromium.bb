@@ -42,7 +42,7 @@ WIN_CC?=cl.exe
 WIN_CXX?=cl.exe
 WIN_LINK?=link.exe
 WIN_LIB?=lib.exe
-WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include -D WIN32 -D _WIN32
+WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include /I$(NACL_SDK_ROOT)/include/win -D WIN32 -D _WIN32
 WIN_LDFLAGS=/LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host
 """
 

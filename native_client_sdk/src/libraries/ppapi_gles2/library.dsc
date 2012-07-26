@@ -7,7 +7,6 @@
       'TYPE' : 'lib',
       'SOURCES' : [
         'gl2ext_ppapi.c',
-        'gl2ext_ppapi.h',
         'gles2.c'
       ],
     }

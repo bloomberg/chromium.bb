@@ -4,10 +4,13 @@
     {
       'NAME' : 'pthread',
       'TYPE' : 'lib',
-      'SOURCES' : [
-        'pthread.c',
-        'pthread.h'
-      ],
+      'SOURCES' : ['pthread.c'],
+    }
+  ],
+  'HEADERS': [
+    {
+      'FILES': ['pthread.h'],
+      'DEST': 'include/win',
     }
   ],
   'DEST': 'src',

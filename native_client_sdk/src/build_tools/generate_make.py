@@ -63,7 +63,7 @@ def SetVar(varname, values):
   return out
 
 
-def GenerateCopyList(desc):
+def GenerateSourceCopyList(desc):
   sources = []
   # Add sources for each target
   for target in desc['TARGETS']:
@@ -271,6 +271,10 @@ DSC_FORMAT = {
         'LDFLAGS': (list, '', False),
         'LIBS' : (list, '', False)
     }, True),
+    'HEADERS': (list, {
+        'FILES': (list, '', True),
+        'DEST': (str, '', True),
+    }, False),
     'SEARCH': (list, '', False),
     'POST': (str, '', False),
     'PRE': (str, '', False),
@@ -451,6 +455,17 @@ def LoadProject(filename, toolchains):
   return desc
 
 
+def FindAndCopyFiles(src_files, root, search_dirs, dst_dir):
+  buildbot_common.MakeDir(dst_dir)
+  for src_name in src_files:
+    src_file = FindFile(src_name, root, search_dirs)
+    if not src_file:
+      ErrorMsgFunc('Failed to find: ' + src_name)
+      return None
+    dst_file = os.path.join(dst_dir, src_name)
+    buildbot_common.CopyFile(src_file, dst_file)
+
+
 def ProcessProject(srcroot, dstroot, desc, toolchains):
   name = desc['NAME']
   out_dir = os.path.join(dstroot, desc['DEST'], name)
@@ -458,14 +473,14 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
   srcdirs = desc.get('SEARCH', ['.', '..'])
 
   # Copy sources to example directory
-  sources = GenerateCopyList(desc)
-  for src_name in sources:
-    src_file = FindFile(src_name, srcroot, srcdirs)
-    if not src_file:
-      ErrorMsgFunc('Failed to find: ' + src_name)
-      return None
-    dst_file = os.path.join(out_dir, src_name)
-    buildbot_common.CopyFile(src_file, dst_file)
+  sources = GenerateSourceCopyList(desc)
+  FindAndCopyFiles(sources, srcroot, srcdirs, out_dir)
+
+  # Copy public headers to the include directory.
+  for headers_set in desc.get('HEADERS', []):
+    headers = headers_set['FILES']
+    header_out_dir = os.path.join(dstroot, headers_set['DEST'])
+    FindAndCopyFiles(headers, srcroot, srcdirs, header_out_dir)
 
   if IsNexe(desc):
     template=os.path.join(SCRIPT_DIR, 'template.mk')

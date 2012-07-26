@@ -749,6 +749,7 @@ def main(args):
 
   if options.only_examples:
     BuildStepCopyExamples(pepperdir, toolchains)
+    BuildStepBuildLibraries(pepperdir, platform)
     BuildStepBuildExamples(pepperdir, platform)
     if options.test_examples:
       BuildStepTestExamples(pepperdir, platform, pepper_ver)
