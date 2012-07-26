@@ -1025,6 +1025,7 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
   localized_strings->SetString("js_engine", "V8");
   localized_strings->SetString("js_version", v8::V8::GetVersion());
 
+#if !defined(OS_ANDROID)
   // Obtain the version of the first enabled Flash plugin.
   std::vector<webkit::WebPluginInfo> info_array;
   PluginService::GetInstance()->GetPluginInfoArray(
@@ -1042,6 +1043,7 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
   }
   localized_strings->SetString("flash_plugin", "Flash");
   localized_strings->SetString("flash_version", flash_version);
+#endif
   localized_strings->SetString("company",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMPANY_NAME));
   localized_strings->SetString("copyright",

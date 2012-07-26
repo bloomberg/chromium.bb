@@ -7,64 +7,15 @@ about:version template page
 <html id="t" i18n-values="dir:textdirection;">
   <head>
     <title i18n-content="title"></title>
-    <style>
-      body {
-        font-family:Helvetica,Arial,sans-serif;
-        background-color:white;
-        color: black;
-        margin: 0px;
-      }
-      #outer {
-        margin-top: 10px;
-        margin-left: auto;
-        margin-right: auto;
-        width: 800px;
-      }
-      #inner {
-        padding-top: 10px;
-        width: 550px;
-      }
-      .label {
-        -webkit-padding-end: 5px;
-        font-size: 0.9em;
-        font-weight: bold;
-        text-align: end;
-        white-space: nowrap;
-      }
-      .label:after {
-        content: ":";
-      }
-      #logo {
-        text-align: right;
-        float: right;
-        width: 180px;
-        margin-left: 40px;
-      }
-      #logo-img {
-        /* TODO: Remove once http://crbug.com/135179 is fixed */
-        content: url('chrome://theme/IDR_PRODUCT_LOGO');
-      }
-      #company {
-        text-align: right;
-        font-size: 0.7em;
-      }
-      #copyright {
-        text-align: right;
-        font-size: 0.7em;
-      }
-      #name {
-      }
-      #useragent {
-        font-family: monospace;
-      }
-      .version {
-        font-family: monospace;
-        padding-left: 5px;
-        max-width: 430px;
-      }
-    </style>
-  <script src="chrome://version/version.js"></script>
-  <script src="chrome://version/strings.js"></script>
+<if expr="pp_ifdef('android')">
+    <meta name="viewport" content="width=device-width"/>
+</if>
+    <link rel="stylesheet" href="shared/css/about_version.css">
+<if expr="pp_ifdef('android')">
+    <link rel="stylesheet" href="about_version_android.css">
+</if>
+    <script src="chrome://version/version.js"></script>
+    <script src="chrome://version/strings.js"></script>
   </head>
 
   <body>
@@ -94,9 +45,11 @@ about:version template page
         <tr><td class="label" valign="top">JavaScript</td>
           <td class="version" id="js_engine"><span i18n-content="js_engine"></span> <span i18n-content="js_version"></span></td>
         </tr>
+<if expr="not pp_ifdef('android')">
         <tr><td class="label" valign="top" i18n-content="flash_plugin"></td>
             <td class="version" id="flash_version" i18n-content="flash_version"></td>
         </tr>
+</if>
         <tr><td class="label" valign="top" i18n-content="user_agent_name"></td>
             <td class="version" id="useragent" i18n-content="useragent"></td>
         </tr>
