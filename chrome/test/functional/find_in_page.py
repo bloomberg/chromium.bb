@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -238,7 +238,7 @@ class FindMatchTests(pyauto.PyUITest):
     if properties['branding'] != 'Google Chrome':
       return
     # Search in pdf file over file://.
-    file_url = self.GetFileURLForDataPath('plugin', 'Embed.pdf')
+    file_url = self.GetFileURLForContentDataPath('plugin', 'Embed.pdf')
     self._VerifySearchInPDFURL(file_url, 'adobe', 8)
 
     # Search in pdf file over http://.
