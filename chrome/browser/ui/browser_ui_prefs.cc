@@ -30,13 +30,6 @@ void RegisterBrowserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
   prefs->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
-  prefs->RegisterBooleanPref(prefs::kPrintPreviewDisabled,
-#if defined(GOOGLE_CHROME_BUILD)
-                             false
-#else
-                             true
-#endif
-                             );
 }
 
 void RegisterBrowserUserPrefs(PrefService* prefs) {

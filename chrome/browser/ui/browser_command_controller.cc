@@ -85,7 +85,6 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
     local_pref_registrar_.Init(local_state);
-    local_pref_registrar_.Add(prefs::kPrintingEnabled, this);
     local_pref_registrar_.Add(prefs::kAllowFileSelectionDialogs, this);
     local_pref_registrar_.Add(prefs::kInManagedMode, this);
   }
@@ -95,6 +94,7 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
   profile_pref_registrar_.Add(prefs::kEditBookmarksEnabled, this);
   profile_pref_registrar_.Add(prefs::kShowBookmarkBar, this);
   profile_pref_registrar_.Add(prefs::kIncognitoModeAvailability, this);
+  profile_pref_registrar_.Add(prefs::kPrintingEnabled, this);
 
   InitCommandState();
 

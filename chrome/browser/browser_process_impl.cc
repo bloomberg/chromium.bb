@@ -708,10 +708,6 @@ void BrowserProcessImpl::CreateLocalState() {
 
   pref_change_registrar_.Init(local_state_.get());
 
-#if defined(ENABLE_PRINTING)
-  print_job_manager_->InitOnUIThread(local_state_.get());
-#endif
-
   // Initialize the notification for the default browser setting policy.
   local_state_->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
                                     false);

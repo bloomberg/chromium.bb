@@ -5,14 +5,16 @@
 #include <vector>
 
 #include "base/memory/ref_counted_memory.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
-#include "chrome/browser/printing/print_preview_unit_test_base.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -32,14 +34,16 @@ size_t GetConstrainedWindowCount(TabContents* tab) {
 
 }  // namespace
 
-class PrintPreviewUIUnitTest : public PrintPreviewUnitTestBase {
+class PrintPreviewUIUnitTest : public BrowserWithTestWindowTest {
  public:
   PrintPreviewUIUnitTest() {}
   virtual ~PrintPreviewUIUnitTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
-    PrintPreviewUnitTestBase::SetUp();
+    BrowserWithTestWindowTest::SetUp();
+
+    profile()->GetPrefs()->SetBoolean(prefs::kPrintPreviewDisabled, false);
 
     chrome::NewTab(browser());
   }

@@ -1020,6 +1020,12 @@ const char kProfileName[] = "profile.name";
 // mode is on, recommending high-contrast extensions and themes.
 const char kInvertNotificationShown[] = "invert_notification_version_2_shown";
 
+// Boolean controlling whether printing is enabled.
+const char kPrintingEnabled[] = "printing.enabled";
+
+// Boolean controlling whether print preview is disabled.
+const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
@@ -1679,16 +1685,10 @@ const char kGeolocationAccessToken[] = "geolocation.access_token";
 const char kRemoteAccessHostFirewallTraversal[] =
     "remote_access.host_firewall_traversal";
 
-// Boolean controlling whether printing is enabled.
-const char kPrintingEnabled[] = "printing.enabled";
-
-// Boolean controlling whether print preview is disabled.
-const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 
 // The last used printer and its settings.
 const char kPrintPreviewStickySettings[] =
     "printing.print_preview_sticky_settings";
-
 // The root URL of the cloud print service.
 const char kCloudPrintServiceURL[] = "cloud_print.service_url";
 

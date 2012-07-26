@@ -45,7 +45,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
@@ -168,10 +167,6 @@ void RegisterLocalState(PrefService* local_state) {
   FlagsUI::RegisterPrefs(local_state);
   ManagedMode::RegisterPrefs(local_state);
   UpgradeDetector::RegisterPrefs(local_state);
-#endif
-
-#if defined(ENABLE_PRINTING)
-  printing::PrintJobManager::RegisterPrefs(local_state);
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -16,6 +16,8 @@
 
 class FilePath;
 struct PrintHostMsg_ScriptedPrint_Params;
+class Profile;
+class ProfileIOData;
 
 namespace base {
 class DictionaryValue;
@@ -34,7 +36,7 @@ class PrintJobManager;
 // renderer process on the IPC thread.
 class PrintingMessageFilter : public content::BrowserMessageFilter {
  public:
-  explicit PrintingMessageFilter(int render_process_id);
+  PrintingMessageFilter(int render_process_id, Profile* profile);
 
   // content::BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
@@ -110,6 +112,8 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
                         bool* cancel);
 
   printing::PrintJobManager* print_job_manager_;
+
+  ProfileIOData* profile_io_data_;
 
   int render_process_id_;
 

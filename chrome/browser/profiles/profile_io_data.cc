@@ -197,6 +197,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       proxy_config_service);
   params->profile = profile;
   profile_params_.reset(params.release());
+#if defined(ENABLE_PRINTING)
+  printing_enabled_.Init(prefs::kPrintingEnabled, pref_service, NULL);
+  printing_enabled_.MoveToThread(BrowserThread::IO);
+#endif
 
   // The URLBlacklistManager has to be created on the UI thread to register
   // observers of |pref_service|, and it also has to clean up on
@@ -567,6 +571,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_metrics_.Destroy();
 #endif
   safe_browsing_enabled_.Destroy();
+  printing_enabled_.Destroy();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url_blacklist_manager_.get())

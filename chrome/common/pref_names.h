@@ -363,6 +363,9 @@ extern const char kProfileName[];
 
 extern const char kInvertNotificationShown[];
 
+extern const char kPrintingEnabled[];
+extern const char kPrintPreviewDisabled[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSLVersionMin[];
@@ -612,10 +615,7 @@ extern const char kGeolocationEnabled[];
 
 extern const char kRemoteAccessHostFirewallTraversal[];
 
-extern const char kPrintingEnabled[];
-extern const char kPrintPreviewDisabled[];
 extern const char kPrintPreviewStickySettings[];
-
 extern const char kCloudPrintServiceURL[];
 extern const char kCloudPrintSigninURL[];
 extern const char kCloudPrintDialogWidth[];

@@ -104,6 +104,10 @@ class ProfileIOData {
     return &safe_browsing_enabled_;
   }
 
+  BooleanPrefMember* printing_enabled() const {
+    return &printing_enabled_;
+  }
+
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
   }
@@ -310,6 +314,7 @@ class ProfileIOData {
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember safe_browsing_enabled_;
+  mutable BooleanPrefMember printing_enabled_;
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;
 

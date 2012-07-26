@@ -449,7 +449,7 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       id, profile, profile->GetRequestContextForRenderProcess(id)));
   host->GetChannel()->AddFilter(new PluginInfoMessageFilter(id, profile));
 #if defined(ENABLE_PRINTING)
-  host->GetChannel()->AddFilter(new PrintingMessageFilter(id));
+  host->GetChannel()->AddFilter(new PrintingMessageFilter(id, profile));
 #endif
   host->GetChannel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(id, profile));
@@ -793,13 +793,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(
             switches::kDisableClientSidePhishingDetection);
       }
-    }
-    {
-      PrefService* local_state = g_browser_process->local_state();
-      if (local_state &&
-          !local_state->GetBoolean(prefs::kPrintPreviewDisabled)) {
+
+      if (!prefs->GetBoolean(prefs::kPrintPreviewDisabled))
         command_line->AppendSwitch(switches::kRendererPrintPreview);
-      }
     }
 
     // Please keep this in alphabetical order.

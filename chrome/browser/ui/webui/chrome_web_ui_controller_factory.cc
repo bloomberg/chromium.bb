@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/history/history_types.h"
@@ -256,10 +255,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 #if defined(ENABLE_PRINTING)
   if (url.host() == chrome::kChromeUIPrintHost &&
-      !g_browser_process->local_state()->GetBoolean(
-          prefs::kPrintPreviewDisabled)) {
+      !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled))
     return &NewWebUI<PrintPreviewUI>;
-  }
 #endif
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)

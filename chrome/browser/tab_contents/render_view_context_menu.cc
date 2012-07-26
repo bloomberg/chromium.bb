@@ -1334,13 +1334,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_PRINT:
-      if (g_browser_process->local_state() &&
-          !g_browser_process->local_state()->GetBoolean(
-              prefs::kPrintingEnabled)) {
-        return false;
-      }
-      return params_.media_type == WebContextMenuData::MediaTypeNone ||
-             params_.media_flags & WebContextMenuData::MediaCanPrint;
+      return profile_->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
+          (params_.media_type == WebContextMenuData::MediaTypeNone ||
+           params_.media_flags & WebContextMenuData::MediaCanPrint);
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
@@ -1703,8 +1699,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
             TabContents::FromWebContents(source_web_contents_);
         if (!tab_contents)
           break;
-        if (g_browser_process->local_state()->GetBoolean(
-                prefs::kPrintPreviewDisabled)) {
+        if (profile_->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
           tab_contents->print_view_manager()->PrintNow();
         } else {
           tab_contents->print_view_manager()->PrintPreviewNow();

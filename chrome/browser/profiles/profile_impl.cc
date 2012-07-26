@@ -222,6 +222,18 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kHomePage,
                             std::string(),
                             PrefService::SYNCABLE_PREF);
+#if defined(ENABLE_PRINTING)
+  prefs->RegisterBooleanPref(prefs::kPrintingEnabled,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+#endif
+  prefs->RegisterBooleanPref(prefs::kPrintPreviewDisabled,
+#if defined(GOOGLE_CHROME_BUILD)
+                             false,
+#else
+                             true,
+#endif
+                             PrefService::UNSYNCABLE_PREF);
 
   // Initialize the cache prefs.
   prefs->RegisterFilePathPref(prefs::kDiskCacheDir,

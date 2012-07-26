@@ -664,8 +664,8 @@ void ShowChromeToMobileBubble(Browser* browser) {
 }
 
 void Print(Browser* browser) {
-  if (g_browser_process->local_state()->GetBoolean(
-          prefs::kPrintPreviewDisabled)) {
+  if (browser->profile()->GetPrefs()->GetBoolean(
+      prefs::kPrintPreviewDisabled)) {
     GetActiveTabContents(browser)->print_view_manager()->PrintNow();
   } else {
     GetActiveTabContents(browser)->print_view_manager()->
@@ -674,15 +674,11 @@ void Print(Browser* browser) {
 }
 
 bool CanPrint(const Browser* browser) {
-  // LocalState can be NULL in tests.
-  if (g_browser_process->local_state() &&
-      !g_browser_process->local_state()->GetBoolean(prefs::kPrintingEnabled)) {
-    return false;
-  }
-
+  // Do not print when printing is disabled via pref or policy.
   // Do not print when a constrained window is showing. It's confusing.
   // Do not print if instant extended API is enabled and mode is NTP.
-  return !(HasConstrainedWindow(browser) ||
+  return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
+      !(HasConstrainedWindow(browser) ||
       GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_PRINT ||
       IsNTPModeForInstantExtendedAPI(browser));
 }
@@ -693,14 +689,10 @@ void AdvancedPrint(Browser* browser) {
 }
 
 bool CanAdvancedPrint(const Browser* browser) {
-  // LocalState can be NULL in tests.
-  if (g_browser_process->local_state() &&
-      !g_browser_process->local_state()->GetBoolean(prefs::kPrintingEnabled)) {
-    return false;
-  }
-
-  // It is always possible to advanced print when print preview is visible.
-  return PrintPreviewShowing(browser) || CanPrint(browser);
+  // If printing is not disabled via pref or policy, it is always possible to
+  // advanced print when the print preview is visible.
+  return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
+      (PrintPreviewShowing(browser) || CanPrint(browser));
 }
 
 void PrintToDestination(Browser* browser) {
