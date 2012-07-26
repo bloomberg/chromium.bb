@@ -14,21 +14,21 @@ except ImportError:
   PYGMENTS_IMPORTED = False
 
 class PygmentsHighlighter(object):
+  def __init__(self):
+    if not PYGMENTS_IMPORTED:
+      raise ImportError('Pygments not installed')
+
   """Highlighter that uses the python pygments library to highlight code.
   """
   def GetCSS(self, style):
-    if PYGMENTS_IMPORTED:
-      formatter = HtmlFormatter(linenos=True,
-          style=pygments.styles.get_style_by_name(style))
-      return formatter.get_style_defs('.highlight')
+    formatter = HtmlFormatter(linenos=True,
+        style=pygments.styles.get_style_by_name(style))
+    return formatter.get_style_defs('.highlight')
 
   def GetCodeElement(self, code, style):
-    if PYGMENTS_IMPORTED:
-      formatter = HtmlFormatter(linenos=True,
-              style=pygments.styles.get_style_by_name(style))
-      return pygments.highlight(code, CppLexer(), formatter)
-    else:
-      return '<pre>Pygments highlighter not installed</pre>'
+    formatter = HtmlFormatter(linenos=True,
+            style=pygments.styles.get_style_by_name(style))
+    return pygments.highlight(code, CppLexer(), formatter)
 
   def DisplayName(self):
     return 'pygments' + ('' if PYGMENTS_IMPORTED else ' (not installed)')

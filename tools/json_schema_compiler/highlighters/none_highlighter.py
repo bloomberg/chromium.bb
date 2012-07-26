@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import cgi
+
 class NoneHighlighter(object):
   """Highlighter that just wraps code in a <pre>.
   """
@@ -9,7 +11,7 @@ class NoneHighlighter(object):
     return ''
 
   def GetCodeElement(self, code, style):
-    return '<pre>' + code + '</pre>'
+    return '<pre>' + cgi.escape(code) + '</pre>'
 
   def DisplayName(self):
     return 'none'

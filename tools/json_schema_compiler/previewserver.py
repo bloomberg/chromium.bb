@@ -321,12 +321,19 @@ if __name__ == '__main__':
     print('')
     print('  http://localhost:%d/chrome/common/extensions/api' % opts.port)
     print('')
-    server = PreviewHTTPServer(('', int(opts.port)), CompilerHandler,
-      {
-        'pygments': pygments_highlighter.PygmentsHighlighter(),
-        'hilite': hilite_me_highlighter.HiliteMeHighlighter(),
-        'none': none_highlighter.NoneHighlighter(),
-      })
+
+    highlighters = {
+      'hilite': hilite_me_highlighter.HiliteMeHighlighter(),
+      'none': none_highlighter.NoneHighlighter()
+    }
+    try:
+      highlighters['pygments'] = pygments_highlighter.PygmentsHighlighter()
+    except ImportError as e:
+      pass
+
+    server = PreviewHTTPServer(('', int(opts.port)),
+                               CompilerHandler,
+                               highlighters)
     server.serve_forever()
   except KeyboardInterrupt:
     server.socket.close()
