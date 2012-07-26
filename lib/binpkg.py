@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -13,9 +13,9 @@ import tempfile
 import time
 import urllib2
 
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 
-GSUTIL_BIN = '/b/build/third_party/gsutil/gsutil'
 TWO_WEEKS = 60 * 60 * 24 * 7 * 2
 
 class PackageIndex(object):
@@ -297,7 +297,7 @@ def GrabRemotePackageIndex(binhost_url):
         return None
       raise
   elif binhost_url.startswith('gs://'):
-    cmd = [GSUTIL_BIN, 'cat', url]
+    cmd = [constants.GSUTIL_BIN, 'cat', url]
     try:
       output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
                                          print_cmd=False).output

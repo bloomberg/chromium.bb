@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -327,6 +327,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                                         self.manifest_dir, sync=False)
         version = os.path.splitext(os.path.basename(manifest))[0]
         self.PublishManifest(new_manifest, version)
+        self.SetInFlight(version)
         self.current_version = version
         return self.GetLocalManifest(version)
       except cros_build_lib.RunCommandError as e:
@@ -336,7 +337,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
-  def GetLatestCandidate(self, retries=manifest_version.NUM_RETRIES):
+  def GetLatestCandidate(self):
     """Gets and syncs to the next candiate manifest.
       Args:
         retries: Number of retries for updating the status
@@ -363,31 +364,15 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     version_to_build = self._RunLambdaWithTimeout(_AttemptToGetLatestCandidate,
                                                   use_long_timeout=True)
     if version_to_build:
-      last_error = None
-      for attempt in range(0, retries + 1):
-        try:
-          if attempt > 0:
-            self.RefreshManifestCheckout()
-          logging.info('Starting build spec: %s', version_to_build)
-          commit_message = 'Automatic: Start %s %s' % (self.build_name,
-                                                       version_to_build)
-          cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
-                                          self.manifest_dir, sync=False)
-          self.SetInFlight(version_to_build)
-          self.PushSpecChanges(commit_message)
-          self.current_version = version_to_build
+      logging.info('Starting build spec: %s', version_to_build)
+      self.SetInFlight(version_to_build)
+      self.current_version = version_to_build
 
-          # Actually perform the sync.
-          manifest = self.GetLocalManifest(version_to_build)
-          self.cros_source.Sync(manifest)
-          self._GenerateBlameListSinceLKGM()
-          return manifest
-        except cros_build_lib.RunCommandError as e:
-          err_msg = 'Failed to set LKGM Candidate inflight. error: %s' % e
-          logging.error(err_msg)
-          last_error = err_msg
-      else:
-        raise manifest_version.GenerateBuildSpecException(last_error)
+      # Actually perform the sync.
+      manifest = self.GetLocalManifest(version_to_build)
+      self.cros_source.Sync(manifest)
+      self._GenerateBlameListSinceLKGM()
+      return manifest
     else:
       return None
 

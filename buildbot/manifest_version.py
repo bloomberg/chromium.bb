@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,6 +20,8 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
+MANIFEST_VERSIONS_URL = 'gs://chromeos-manifest-versions'
+BUILD_STATUS_URL = '%s/builder-status' % MANIFEST_VERSIONS_URL
 PUSH_BRANCH = 'temp_auto_checkin_branch'
 NUM_RETRIES = 20
 
@@ -102,11 +104,11 @@ def _RemoveDirs(dir_name):
     shutil.rmtree(dir_name)
 
 
-def CreateSymlink(src_file, dest_file, remove_file=None):
+def CreateSymlink(src_file, dest_file):
   """Creates a relative symlink from src to dest with optional removal of file.
 
   More robust symlink creation that creates a relative symlink from src_file to
-  dest_file.  Also if remove_file is set, removes symlink there.
+  dest_file.
 
   This is useful for multiple calls of CreateSymlink where you are using
   the dest_file location to store information about the status of the src_file.
@@ -114,7 +116,6 @@ def CreateSymlink(src_file, dest_file, remove_file=None):
   Args:
     src_file: source for the symlink
     dest_file: destination for the symlink
-    remove_file: symlink that needs to be deleted for clearing the old state
   """
   dest_dir = os.path.dirname(dest_file)
   osutils.SafeUnlink(dest_file)
@@ -123,10 +124,6 @@ def CreateSymlink(src_file, dest_file, remove_file=None):
   rel_src_file = os.path.relpath(src_file, dest_dir)
   logging.debug('Linking %s to %s', rel_src_file, dest_file)
   os.symlink(rel_src_file, dest_file)
-
-  if remove_file:
-    logging.debug('REMOVE: Removing  %s', remove_file)
-    osutils.SafeUnlink(remove_file)
 
 
 class VersionInfo(object):
@@ -313,7 +310,6 @@ class BuilderStatus():
     # Various status builds can be in.
   STATUS_FAILED = 'fail'
   STATUS_PASSED = 'pass'
-  STATUS_INFLIGHT = 'inflight'
   STATUS_COMPLETED = [STATUS_PASSED, STATUS_FAILED]
   MESSAGE_FILE_SUFFIX = '_message.pck'
 
@@ -333,7 +329,10 @@ class BuilderStatus():
 
   def Inflight(self):
     """Returns True if the Builder is still inflight."""
-    return self.status == BuilderStatus.STATUS_INFLIGHT
+    # TODO(davidjames): Update this function to check Google Storage so that
+    # we can detect the situation where the builder is started, but not
+    # completed.
+    return self.status not in BuilderStatus.STATUS_COMPLETED
 
   def Completed(self):
     """Returns True if the Builder has completed."""
@@ -374,7 +373,6 @@ class BuildSpecsManager(object):
     self.all_specs_dir = None
     self.pass_dir = None
     self.fail_dir = None
-    self.inflight_dir = None
 
     # Path to specs for builder.  Requires passing %(builder)s.
     self.specs_for_builder = None
@@ -437,8 +435,6 @@ class BuildSpecsManager(object):
                                  BuilderStatus.STATUS_PASSED, dir_pfx)
     self.fail_dir = os.path.join(specs_for_build,
                                  BuilderStatus.STATUS_FAILED, dir_pfx)
-    self.inflight_dir = os.path.join(specs_for_build,
-                                     BuilderStatus.STATUS_INFLIGHT, dir_pfx)
 
     # Calculate latest build that passed or failed.
     dirs = (self.pass_dir, self.fail_dir)
@@ -505,7 +501,6 @@ class BuildSpecsManager(object):
     shutil.copyfile(manifest, spec_file)
 
     # Actually push the manifest.
-    self.SetInFlight(version)
     self.PushSpecChanges(commit_message)
 
   def DidLastBuildSucceed(self):
@@ -566,8 +561,6 @@ class BuildSpecsManager(object):
                              dir_pfx, xml_name)
     fail_file = os.path.join(specs_for_build, BuilderStatus.STATUS_FAILED,
                              dir_pfx, xml_name)
-    inflight_file = os.path.join(specs_for_build, BuilderStatus.STATUS_INFLIGHT,
-                                 dir_pfx, xml_name)
 
     status = None
     message = None
@@ -576,8 +569,6 @@ class BuildSpecsManager(object):
     elif os.path.lexists(fail_file):
       message = self._GetAdditionalStatusMessage(fail_file)
       status = BuilderStatus.STATUS_FAILED
-    elif os.path.lexists(inflight_file):
-      status = BuilderStatus.STATUS_INFLIGHT
 
     return BuilderStatus(status=status, message=message)
 
@@ -640,18 +631,16 @@ class BuildSpecsManager(object):
         if not self.force and self.HasCheckoutBeenBuilt():
           return None
 
-        cros_build_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir,
-                                        sync=False)
-        if not self.latest_unprocessed:
+        if self.latest_unprocessed:
+          version = self.latest_unprocessed
+        else:
+          cros_build_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir,
+                                          sync=False)
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
           self.PublishManifest(new_manifest, version)
-        else:
-          version = self.latest_unprocessed
-          self.SetInFlight(version)
-          self.PushSpecChanges('Automatic: Start %s %s' % (self.build_name,
-                                                           version))
 
+        self.SetInFlight(version)
         self.current_version = version
         return self.GetLocalManifest(version)
       except cros_build_lib.RunCommandError as e:
@@ -665,20 +654,32 @@ class BuildSpecsManager(object):
       raise GenerateBuildSpecException(last_error)
 
   def SetInFlight(self, version):
-    """Marks the buildspec as inflight by creating a symlink in inflight dir."""
-    dest_file = '%s.xml' % os.path.join(self.inflight_dir, version)
-    src_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
-    logging.debug('Setting build in flight  %s: %s', src_file, dest_file)
-    CreateSymlink(src_file, dest_file)
+    """Marks the buildspec as inflight in Google Storage."""
+    # Create the inflight file, if it is not already present. Because we
+    # pass in the fail_if_already_exists HTTP header, Google Storage will
+    # return the PreconditionFailed error message if the file already exists.
+    fail_if_already_exists = 'x-goog-if-sequence-number-match: 0'
+    inflight_suffix = '%s/inflight/%s' % (version, self.build_name)
+    cmd = [constants.GSUTIL_BIN, '-h', fail_if_already_exists, 'cp',
+           '/dev/null', '%s/%s' % (BUILD_STATUS_URL, inflight_suffix)]
+
+    if self.dry_run:
+      logging.info('Would have run: %s', ' '.join(cmd))
+    else:
+      try:
+        cros_build_lib.RunCommandWithRetries(3, cmd, redirect_stdout=True,
+                                             combine_stdout_stderr=True)
+      except cros_build_lib.RunCommandError as e:
+        if 'code=PreconditionFailed' in e.result.output:
+          raise GenerateBuildSpecException('Builder already inflight')
+        raise GenerateBuildSpecException(e)
 
   def _SetFailed(self, failure_message=None):
     """Marks the buildspec as failed by creating a symlink in fail dir."""
     dest_file = '%s.xml' % os.path.join(self.fail_dir, self.current_version)
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
-    remove_file = '%s.xml' % os.path.join(self.inflight_dir,
-                                          self.current_version)
     logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
-    CreateSymlink(src_file, dest_file, remove_file)
+    CreateSymlink(src_file, dest_file)
     if failure_message:
       self._SetAdditionalStatusMessage(dest_file, failure_message)
 
@@ -686,10 +687,8 @@ class BuildSpecsManager(object):
     """Marks the buildspec as passed by creating a symlink in passed dir."""
     dest_file = '%s.xml' % os.path.join(self.pass_dir, self.current_version)
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
-    remove_file = '%s.xml' % os.path.join(self.inflight_dir,
-                                          self.current_version)
     logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
-    CreateSymlink(src_file, dest_file, remove_file)
+    CreateSymlink(src_file, dest_file)
 
   def PushSpecChanges(self, commit_message):
     """Pushes any changes you have in the manifest directory."""

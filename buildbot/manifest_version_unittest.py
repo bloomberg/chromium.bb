@@ -57,15 +57,9 @@ class HelperMethodsTest(unittest.TestCase):
     destfile1 = tempfile.mktemp(dir=os.path.join(self.tmpdir, 'other_dir1'))
     destfile2 = tempfile.mktemp(dir=os.path.join(self.tmpdir, 'other_dir2'))
 
-    manifest_version.CreateSymlink(srcfile, destfile1, remove_file=None)
+    manifest_version.CreateSymlink(srcfile, destfile1)
     self.assertTrue(os.path.lexists(destfile1),
                     'Unable to create symlink to %s' % destfile1)
-
-    manifest_version.CreateSymlink(srcfile, destfile2, remove_file=destfile1)
-    self.assertTrue(os.path.lexists(destfile2),
-                    'Unable to create symlink to %s' % destfile2)
-    self.assertFalse(os.path.lexists(destfile1),
-                    'Unable to remove symlink %s' % destfile1)
 
   def testRemoveDirs(self):
     """Tests if _RemoveDirs works with a recursive directory structure."""

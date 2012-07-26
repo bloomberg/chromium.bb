@@ -281,14 +281,10 @@ class LKGMManagerTest(mox.MoxTestBase):
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
-                                    sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
-    lkgm_manager.LKGMManager.PushSpecChanges(
-        mox.StrContains(most_recent_candidate.VersionString()))
     repository.RepoRepository.Sync(
         self._GetPathToManifest(most_recent_candidate))
 
@@ -316,23 +312,10 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
-                                    sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
-                                    sync=False)
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
-    result = cros_build_lib.CommandResult(cmd=['git', 'push'], returncode=2)
-    lkgm_manager.LKGMManager.PushSpecChanges(
-        mox.StrContains(most_recent_candidate.VersionString())).AndRaise(
-        cros_build_lib.RunCommandError('Failed to run command', result))
-
-    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
-    lkgm_manager.LKGMManager.PushSpecChanges(
-        mox.StrContains(most_recent_candidate.VersionString()))
     repository.RepoRepository.Sync(
         self._GetPathToManifest(most_recent_candidate))
 
