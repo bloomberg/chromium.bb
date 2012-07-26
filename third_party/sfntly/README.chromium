@@ -3,6 +3,8 @@ URL: http://code.google.com/p/sfntly/
 Version: unknown
 Revision: 111
 Security Critical: yes
+License: Apache 2.0
+License File: COPYING.txt
 
 Description:
 sfntly is a C++ library for using, editing, and creating sfnt container based

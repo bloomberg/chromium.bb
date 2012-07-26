@@ -3,6 +3,7 @@ Short Name: snappy
 URL: http://code.google.com/p/snappy/
 Version: r63
 License: New BSD
+License File: src/COPYING
 Security Critical: yes
 
 Description:

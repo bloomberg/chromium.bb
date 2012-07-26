@@ -1,7 +1,8 @@
 Name: Python Mox
 Short Name: pymox
 URL: http://pymox.googlecode.com/svn/trunk
-License File: COPYING
+License: Apache 2.0
+License File: src/COPYING
 Security Critical: no
 Version: NA
 Revision: r70
