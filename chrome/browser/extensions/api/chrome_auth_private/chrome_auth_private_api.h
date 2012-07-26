@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CHROME_AUTH_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_CHROME_AUTH_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_CHROME_AUTH_PRIVATE_CHROME_AUTH_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_CHROME_AUTH_PRIVATE_CHROME_AUTH_PRIVATE_API_H_
 
 #include <string>
 #include "chrome/browser/extensions/extension_function.h"
+
+namespace extensions {
 
 class SetCloudPrintCredentialsFunction : public AsyncExtensionFunction {
  public:
@@ -26,5 +28,6 @@ class SetCloudPrintCredentialsFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CHROME_AUTH_PRIVATE_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_CHROME_AUTH_PRIVATE_CHROME_AUTH_PRIVATE_API_H_

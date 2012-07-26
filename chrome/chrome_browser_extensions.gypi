@@ -545,6 +545,8 @@
         }],
         ['enable_extensions==1', {
           'sources': [
+            'browser/extensions/api/chrome_auth_private/chrome_auth_private_api.cc',
+            'browser/extensions/api/chrome_auth_private/chrome_auth_private_api.h',
             'browser/extensions/api/page_capture/page_capture_api.cc',
             'browser/extensions/api/page_capture/page_capture_api.h',
             'browser/extensions/api/debugger/debugger_api.cc',
@@ -565,8 +567,6 @@
             'browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h',
             'browser/extensions/api/webstore_private/webstore_private_api.cc',
             'browser/extensions/api/webstore_private/webstore_private_api.h',
-            'browser/extensions/extension_chrome_auth_private_api.cc',
-            'browser/extensions/extension_chrome_auth_private_api.h',
             'browser/extensions/extension_font_settings_api.cc',
             'browser/extensions/extension_font_settings_api.h',
             'browser/extensions/extension_i18n_api.cc',

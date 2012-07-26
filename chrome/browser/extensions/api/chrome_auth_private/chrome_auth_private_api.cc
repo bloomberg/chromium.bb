@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
+#include "chrome/browser/extensions/api/chrome_auth_private/chrome_auth_private_api.h"
 
 #include <string>
 #include "base/values.h"
@@ -16,6 +16,8 @@ namespace {
 bool test_mode = false;
 
 }  // namespace
+
+namespace extensions {
 
 SetCloudPrintCredentialsFunction::SetCloudPrintCredentialsFunction() {
 }
@@ -47,3 +49,5 @@ bool SetCloudPrintCredentialsFunction::RunImpl() {
 void SetCloudPrintCredentialsFunction::SetTestMode(bool test_mode_enabled) {
   test_mode = test_mode_enabled;
 }
+
+}  // namespace extensions

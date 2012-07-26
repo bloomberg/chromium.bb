@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/stringprintf.h"
+#include "chrome/browser/extensions/api/chrome_auth_private/chrome_auth_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -51,10 +51,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionChromeAuthPrivateApiTest,
   // Run this as a hosted app. Since we have overridden the cloud print service
   // URL in the command line, this URL should match the web extent for our
   // cloud print component app and it should work.
-  SetCloudPrintCredentialsFunction::SetTestMode(true);
+  extensions::SetCloudPrintCredentialsFunction::SetTestMode(true);
   GURL page_url = GetTestServerURL(
       "enable_chrome_connector/cloud_print_success_tests.html");
   ASSERT_TRUE(RunPageTest(page_url.spec()));
-  SetCloudPrintCredentialsFunction::SetTestMode(false);
+  extensions::SetCloudPrintCredentialsFunction::SetTestMode(false);
 }
 #endif  // !defined(OS_CHROMEOS)
