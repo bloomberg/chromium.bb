@@ -407,14 +407,6 @@ bool AppNotifyChannelSetup::ParseCWSChannelServiceResponse(
   if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
     return false;
 
-  Value* channel_id_value;
   DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
-  if (!dict->Get("id", &channel_id_value))
-    return false;
-  if (channel_id_value->GetType() != base::Value::TYPE_STRING)
-    return false;
-
-  StringValue* channel_id = static_cast<StringValue*>(channel_id_value);
-  channel_id->GetAsString(result);
-  return true;
+  return dict->GetString("id", result);
 }
