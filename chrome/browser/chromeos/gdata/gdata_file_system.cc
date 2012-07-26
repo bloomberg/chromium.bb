@@ -315,6 +315,19 @@ void SaveFeedOnBlockingPoolForDebugging(
   }
 }
 
+// Gets the file size of |local_file|.
+void GetLocalFileSizeOnBlockingPool(const FilePath& local_file,
+                                    GDataFileError* error,
+                                    int64* file_size) {
+  DCHECK(error);
+  DCHECK(file_size);
+
+  *file_size = 0;
+  *error = file_util::GetFileSize(local_file, file_size) ?
+      GDATA_FILE_OK :
+      GDATA_FILE_ERROR_NOT_FOUND;
+}
+
 // Gets the file size and the content type of |local_file|.
 void GetLocalFileInfoOnBlockingPool(
     const FilePath& local_file,
@@ -2502,17 +2515,55 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFile(
     return;
   }
 
+  // Gets the size of the cache file. Since the file is locally modified, the
+  // file size information stored in GDataEntry is not correct.
+  GDataFileError* get_size_error = new GDataFileError(GDATA_FILE_ERROR_FAILED);
+  int64* file_size = new int64(-1);
+  PostBlockingPoolSequencedTaskAndReply(
+      FROM_HERE,
+      blocking_task_runner_,
+      base::Bind(&GetLocalFileSizeOnBlockingPool,
+                 cache_file_path,
+                 get_size_error,
+                 file_size),
+      base::Bind(&GDataFileSystem::OnGetFileSizeCompleteForUpdateFile,
+                 ui_weak_ptr_,
+                 callback,
+                 resource_id,
+                 md5,
+                 cache_file_path,
+                 base::Owned(get_size_error),
+                 base::Owned(file_size)));
+}
+
+void GDataFileSystem::OnGetFileSizeCompleteForUpdateFile(
+    const FileOperationCallback& callback,
+    const std::string& resource_id,
+    const std::string& md5,
+    const FilePath& cache_file_path,
+    GDataFileError* error,
+    int64* file_size) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (*error != GDATA_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(*error);
+    return;
+  }
+
   directory_service_->GetEntryByResourceIdAsync(resource_id,
       base::Bind(&GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry,
           ui_weak_ptr_,
           callback,
           md5,
+          *file_size,
           cache_file_path));
 }
 
 void GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry(
     const FileOperationCallback& callback,
     const std::string& md5,
+    int64 file_size,
     const FilePath& cache_file_path,
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2528,7 +2579,7 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry(
       file->upload_url(),
       file->GetFilePath(),
       cache_file_path,
-      file->file_info().size,
+      file_size,
       file->content_mime_type(),
       base::Bind(&GDataFileSystem::OnUpdatedFileUploaded,
                  ui_weak_ptr_,

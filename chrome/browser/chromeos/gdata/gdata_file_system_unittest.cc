@@ -2296,6 +2296,12 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   ASSERT_FALSE(file_util::PathExists(original_cache_file_path));
   ASSERT_TRUE(file_util::PathExists(dirty_cache_file_path));
 
+  // Modify the cached file.
+  const std::string kDummyCacheContent("modification to the cache");
+  ASSERT_TRUE(file_util::WriteFile(dirty_cache_file_path,
+                                   kDummyCacheContent.c_str(),
+                                   kDummyCacheContent.size()));
+
   // Commit the dirty bit. The cache file name remains the same
   // but a symlink will be created at:
   // GCache/v1/outgoing/<kResourceId>
@@ -2343,7 +2349,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
       GURL("https://file_link_resumable_edit_media/"),
       kFilePath,
       dirty_cache_file_path,
-      892721,  // The size is written in the root_feed.json.
+      kDummyCacheContent.size(),  // The size after modification must be used.
       "audio/mpeg",
       _))  // callback
       .WillOnce(MockUploadExistingFile(
