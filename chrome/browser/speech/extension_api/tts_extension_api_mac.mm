@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/singleton.h"
 #include "base/sys_string_conversions.h"

@@ -14,7 +14,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#import "base/mac/cocoa_protocols.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"

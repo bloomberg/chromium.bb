@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 
 #include "base/mac/bundle_locations.h"
-#import "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"

@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
-#import "base/mac/cocoa_protocols.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"

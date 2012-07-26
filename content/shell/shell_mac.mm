@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#import "base/mac/cocoa_protocols.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"

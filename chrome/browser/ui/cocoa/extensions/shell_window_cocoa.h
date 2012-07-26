@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "ui/gfx/rect.h"

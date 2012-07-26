@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/mac/cocoa_protocols.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 
 @class CrTrackingArea;

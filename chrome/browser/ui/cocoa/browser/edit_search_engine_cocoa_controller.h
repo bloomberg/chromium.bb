@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 

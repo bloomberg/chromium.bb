@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/cocoa/table_row_nsimage_cache.h"

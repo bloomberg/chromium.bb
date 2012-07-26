@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#import "base/mac/cocoa_protocols.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "content/public/browser/browser_thread.h"

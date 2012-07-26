@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 

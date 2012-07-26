@@ -16,7 +16,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
