@@ -1832,6 +1832,9 @@ cursor behaviour.
 @item mode
 The liblouis translation mode that should be used for this test
 (optional). If not defined defaults to 0.
+@item outputUniBrl
+For a forward translation test, the output should be in unicode braille.
+For a backward translation test, the input is in unicode braille.
 @item testmode
 The optional testmode field can have three values: "translate" (default if undeclaired), "backtranslate" or "hyphenate".
 Declares what tests should be performed on the test data.

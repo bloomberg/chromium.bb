@@ -6,14 +6,8 @@ file, with a bit of extra info.
 * 2.5
 ** Document the changes to LOUIS_TABLEPATH
 ** Extend and document the scripting language
-** remove runHarness.py, put inplace nosetests (p2/3) and runharnessV2
-   [mh] most of the work done, 
-   - configure.ac does not check for nose now. Instead it is done with
-     a try except in the python script
-** [mh, ha] harness data braille field should be unicode braille, not ascii braille+liblouis extended braille.
-   Harness updated to include functionality, harness files regenerated easely using Attilas harness generator.
-** [mh] Document the test harness with its use of json
-   Should enclude unicode braille info.
+** configure.ac does not check for nose now. Instead it is done with
+   a try except in the python script. Need to be added to configure.ac so that debian packages can automatically pick up dependancies.
 
 * near term
 ** [mh] (google issue 9) bindings should provide variable to pick up table location at runtime.

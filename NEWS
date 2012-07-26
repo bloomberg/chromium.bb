@@ -34,7 +34,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      input position, for repeated, etc.
 
 ** Improved the documentation
-   - Document the test harness
+   - Document the test harness (json format, fields, flags).
    - Document the use of Valgrind to find memory leaks
    - Improve the documentation on the display opcode
 
