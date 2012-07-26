@@ -176,6 +176,8 @@ bool PrinterJobHandler::OnJobCompleted(JobStatusUpdater* updater) {
 }
 
 void PrinterJobHandler::OnAuthError() {
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&PrinterJobHandler::Stop, this));
   if (delegate_)
     delegate_->OnAuthError();
 }
