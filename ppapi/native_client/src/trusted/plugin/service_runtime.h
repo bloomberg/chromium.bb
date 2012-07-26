@@ -219,7 +219,8 @@ class ServiceRuntime {
   // describing the error.
   bool Start(nacl::DescWrapper* nacl_file_desc,
              ErrorInfo* error_info,
-             const nacl::string& url);
+             const nacl::string& url,
+             pp::CompletionCallback crash_cb);
 
   // Starts the application channel to the nexe.
   SrpcClient* SetupAppChannel();

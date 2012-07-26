@@ -588,6 +588,8 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
+  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
+                 " starting reverse service\n"));
   reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
     error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
@@ -624,7 +626,8 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
 }
 
 bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
-                           ErrorInfo* error_info, const nacl::string& url) {
+                           ErrorInfo* error_info, const nacl::string& url,
+                           pp::CompletionCallback crash_cb) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
 
@@ -655,7 +658,22 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
 
   subprocess_.reset(tmp_subprocess.release());
   if (!InitCommunication(nacl_desc, error_info)) {
-    subprocess_.reset(NULL);
+    // On a load failure the service runtime does not crash itself to
+    // avoid a race where the no-more-senders error on the reverse
+    // channel esrvice thread might cause the crash-detection logic to
+    // kick in before the start_module RPC reply has been received. So
+    // we induce a service runtime crash here. We do not release
+    // subprocess_ since it's needed to collect crash log output after
+    // the error is reported.
+    Log(LOG_FATAL, "reap logs");
+    if (NULL == reverse_service_) {
+      // No crash detector thread.
+      PLUGIN_PRINTF(("scheduling to get crash log\n"));
+      pp::Module::Get()->core()->CallOnMainThread(0, crash_cb, PP_OK);
+      PLUGIN_PRINTF(("should fire soon\n"));
+    } else {
+      PLUGIN_PRINTF(("Reverse service thread will pick up crash log\n"));
+    }
     return false;
   }
 

@@ -614,7 +614,8 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
   bool service_runtime_started =
       new_service_runtime->Start(wrapper,
                                  error_info,
-                                 manifest_base_url());
+                                 manifest_base_url(),
+                                 crash_cb);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
                  service_runtime_started));
   if (!service_runtime_started) {
@@ -1146,7 +1147,7 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
   NaClLog(4, "Leaving NexeFileDidOpenContinuation\n");
 }
 
-static void LogLineToConsole(Plugin* plugin, nacl::string one_line) {
+static void LogLineToConsole(Plugin* plugin, const nacl::string& one_line) {
   PLUGIN_PRINTF(("LogLineToConsole: %s\n",
                  one_line.c_str()));
   plugin->AddToConsole(one_line);
@@ -1192,18 +1193,26 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
   if (nexe_error_reported()) {
     PLUGIN_PRINTF(("Plugin::NexeDidCrash: error already reported;"
                    " suppressing\n"));
-    return;
-  }
-
-  if (nacl_ready_state() == DONE) {
-    ReportDeadNexe();
   } else {
-    ErrorInfo error_info;
-    error_info.SetReport(ERROR_START_PROXY_CRASH,  // Not quite right.
-                         "Nexe crashed during startup");
-    ReportLoadError(error_info);
+    if (nacl_ready_state() == DONE) {
+      ReportDeadNexe();
+    } else {
+      ErrorInfo error_info;
+      // The error is not quite right.  In particular, the crash
+      // reported by this path could be due to NaCl application
+      // crashes that occur after the pepper proxy has started.
+      error_info.SetReport(ERROR_START_PROXY_CRASH,
+                           "Nexe crashed during startup");
+      ReportLoadError(error_info);
+    }
   }
 
+  // In all cases, try to grab the crash log.  The first error
+  // reported may have come from the start_module RPC reply indicating
+  // a validation error or something similar, which wouldn't grab the
+  // crash log.  In the event that this is called twice, the second
+  // invocation will just be a no-op, since all the crash log will
+  // have been received and we'll just get an EOF indication.
   CopyCrashLogToJsConsole();
 }
 
