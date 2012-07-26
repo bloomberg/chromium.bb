@@ -10,3 +10,7 @@ JingleSessionTest.Connect
 JingleSessionTest.TestUdpChannel
 JingleSessionTest.TestTcpChannel
 JingleSessionTest.TestSpeed
+
+# Issue 139136: JingleSessionTest.TestStreamChannel did not complete
+# crbug.com/139136
+JingleSessionTest.TestStreamChannel
