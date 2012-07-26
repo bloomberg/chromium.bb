@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -30,19 +30,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
         .text
-        .globl IDENTIFIER(NaCl_trampoline_code)
-HIDDEN(NaCl_trampoline_code)
-IDENTIFIER(NaCl_trampoline_code):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_code):
         mov $0xdeadbeefcafebabe, %rax
-        .globl IDENTIFIER(NaCl_trampoline_call_target)
-HIDDEN(NaCl_trampoline_call_target)
-IDENTIFIER(NaCl_trampoline_call_target):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_call_target):
         call *%rax
         /* call IDENTIFIER(NaClSyscallSeg) */
         hlt
-        .globl IDENTIFIER(NaCl_trampoline_code_end)
-HIDDEN(NaCl_trampoline_code_end)
-IDENTIFIER(NaCl_trampoline_code_end):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_code_end):
 
         /*
          * NaClDispatchThunk to NaClDispatchThunkEnd below is a code template
@@ -60,15 +54,9 @@ IDENTIFIER(NaCl_trampoline_code_end):
          * how the thunk is generated.
          */
         .text
-        .globl IDENTIFIER(NaClDispatchThunk)
-HIDDEN(NaClDispatchThunk)
-IDENTIFIER(NaClDispatchThunk):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClDispatchThunk):
         mov $0xdeadbeefcafebabe, %rax
-        .globl IDENTIFIER(NaClDispatchThunk_jmp_target)
-HIDDEN(NaClDispatchThunk_jmp_target)
-IDENTIFIER(NaClDispatchThunk_jmp_target):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClDispatchThunk_jmp_target):
         jmp *%rax
         /* jmp IDENTIFIER(NaClSyscallSeg) */
-        .globl IDENTIFIER(NaClDispatchThunkEnd)
-HIDDEN(NaClDispatchThunkEnd)
-IDENTIFIER(NaClDispatchThunkEnd):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClDispatchThunkEnd):

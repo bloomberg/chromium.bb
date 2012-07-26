@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -47,9 +47,7 @@
          * are still using a stack in untrusted memory, and we need to
          * figure out the per-thread secure stack first.
          */
-.globl  IDENTIFIER(NaClSyscallSeg)
-        HIDDEN(NaClSyscallSeg)
-IDENTIFIER(NaClSyscallSeg):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         cld
         xor     %eax, %eax
         movw    %gs, %ax

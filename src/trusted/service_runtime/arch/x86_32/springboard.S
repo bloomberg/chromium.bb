@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -22,15 +22,11 @@
  * to do an upcall into NaCl application.
  */
 
-.globl  IDENTIFIER(NaCl_springboard)
-        HIDDEN(NaCl_springboard)
-IDENTIFIER(NaCl_springboard):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard):
         hlt  /* one byte */
         /* syscall return value, if any, from trusted stack */
         mov     0x34(%ecx), %eax /* sysret */
         lss     0x1c(%ecx), %esp /* stack_ptr.ptr_32.ptr */
         movw    0x28(%ecx), %ds /* ds */
         jmp     *%edx
-.globl  IDENTIFIER(NaCl_springboard_end)
-        HIDDEN(NaCl_springboard_end)
-IDENTIFIER(NaCl_springboard_end):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_end):

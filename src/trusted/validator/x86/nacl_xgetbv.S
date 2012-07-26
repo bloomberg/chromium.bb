@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14,9 +14,7 @@
 
         .text
 
-.globl IDENTIFIER(NaClXGETBV)
-        HIDDEN(NaClXGETBV)
-IDENTIFIER(NaClXGETBV):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClXGETBV):
 #if NACL_BUILD_SUBARCH == 32
         movl 4(%esp), %ecx
 #elif !NACL_WINDOWS

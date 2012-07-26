@@ -110,9 +110,7 @@ ENDMACRO
  * using MS Studio (NACL_WINDOWS).
  */
         .text
-        .globl  IDENTIFIER(NaClSyscallSeg)
-        HIDDEN(NaClSyscallSeg)
-IDENTIFIER(NaClSyscallSeg):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         cld
 
         /*
@@ -215,9 +213,7 @@ IDENTIFIER(NaClSyscallSeg):
          * 0x00 -0x18 rdi
          */
 
-        .globl  IDENTIFIER(NaClGetTlsFastPath)
-        HIDDEN(NaClGetTlsFastPath)
-IDENTIFIER(NaClGetTlsFastPath):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClGetTlsFastPath):
         get_tls
         leaq    IDENTIFIER(nacl_tls)(%rip), %rdx
         leaq    (%rdx,%rax,4), %rdx

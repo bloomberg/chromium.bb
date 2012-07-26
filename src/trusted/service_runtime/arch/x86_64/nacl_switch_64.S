@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -29,19 +29,13 @@
 #if NACL_OSX || defined(__clang__)
 # define MACRO(name)    .macro name
 # define ENDMACRO       .endmacro
-# define MACROENTRY     \
-        .globl IDENTIFIER($0)   ; \
-        HIDDEN($0)              ; \
-        IDENTIFIER($0):
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER($0):
 # define MACROARG1      $0
 # define MACROARG2      $1
 #else
 # define MACRO(name)    .macro name arg1, arg2=0
 # define ENDMACRO       .endm
-# define MACROENTRY     \
-        .globl IDENTIFIER(\arg1); \
-        HIDDEN(\arg1)           ; \
-        IDENTIFIER(\arg1):
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER(\arg1):
 # define MACROARG1      \arg1
 # define MACROARG2      \arg2
 #endif
