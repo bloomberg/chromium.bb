@@ -31,8 +31,24 @@ protected:
   }
 };
 
-// Marking test TryChromeDialogBrowserTest.ToastCrasher DISABLED since its
-// breaking the win_rel CQ bot. crbug.com/127396
-IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTest, DISABLED_ToastCrasher) {}
+// Note to Sheriffs: This test (as you can read about above) simply causes
+// Chrome to shutdown early, and, as such, has proven to be pretty good at
+// finding problems related to shutdown. Sheriff, before marking this test as
+// disabled, please consider that this test is meant to catch when people
+// introduce changes that crash Chrome during shutdown and disabling this test
+// and moving on removes a safeguard meant to avoid an even bigger thorny mess
+// to untangle much later down the line. Disabling the test also means that the
+// people who get blamed are not the ones that introduced the crash (in other
+// words, don't shoot the messenger). So, please help us avoid additional
+// shutdown crashes from creeping in, by doing the following:
+// Run chrome.exe --try-chrome-again=10001. This is all that the test does and
+// should be enough to trigger the failure. If it is a crash (most likely) then
+// look at the callstack and see if any of the components have been touched
+// recently. Look at recent changes to startup, such as any change to
+// ChromeBrowserMainParts, specifically PreCreateThreadsImpl and see if someone
+// has been reordering code blocks for startup. Try reverting any suspicious
+// changes to see if it affects the test. History shows that waiting until later
+// only makes the problem worse.
+IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTest, ToastCrasher) {}
 
 #endif  // defined(OS_WIN)
