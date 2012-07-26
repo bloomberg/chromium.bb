@@ -284,7 +284,11 @@ void TestingAutomationProvider::CancelOOBEUpdate(DictionaryValue* args,
                                                  IPC::Message* reply_message) {
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && wizard_controller->IsOobeCompleted()) {
-    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+    // Update already finished.
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->SetString("next_screen",
+                            WizardController::kLoginScreenName);
+    AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
     return;
   }
   if (!wizard_controller || wizard_controller->current_screen()->GetName() !=

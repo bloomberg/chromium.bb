@@ -1441,7 +1441,6 @@ class TestingAutomationProvider : public AutomationProvider,
   // Example:
   //    input: none
   //    output: { "next_screen": "login" }
-  //    output: none (if update was not running)
   void CancelOOBEUpdate(base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
