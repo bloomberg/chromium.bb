@@ -328,6 +328,10 @@
           "output": "dör-gés-sze-rű"
         }, 
         {
+          "input": "dörzszörej", 
+          "output": "dörzs-zö-rej"
+        }, 
+        {
           "input": "dragonyosszázad", 
           "output": "dra-go-nyos-szá-zad"
         }, 
@@ -2402,6 +2406,14 @@
         {
           "input": "spanyolmeggyen", 
           "output": "spa-nyol-meggyen"
+        }, 
+        {
+          "input": "stílusszerű", 
+          "output": "stí-lus-sze-rű"
+        }, 
+        {
+          "input": "stílusszerkesztő", 
+          "output": "stí-lus-szer-kesz-tő"
         }, 
         {
           "input": "sugárzásszerű", 

@@ -819,6 +819,7 @@ begword tíz 2345-34-126
 partword lemez 123-15-134-15-126	For example lemezstúdió word
 always mézser 134-16-126-234-15-1235	For example mézser word
 always rézsut 1235-16-345-136-2345	For example rézsut word
+partword dörzször 145-12345-1235-345-126-12345-1235	For example dörzszörej word
 
 #Historical person names related exceptions
 always táncsics 2345-4-1345-146-24-146	Táncsics Mihály is a historical person for 1848. march 15 hungarian revolution

@@ -327,6 +327,10 @@
           "output": "dörgésszerű "
         }, 
         {
+          "input": "⠙⠟⠗⠜⠣⠟⠗⠑⠚", 
+          "output": "dörzszörej"
+        }, 
+        {
           "input": "⠙⠗⠁⠛⠕⠫⠕⠎⠱⠈⠣⠁⠙ ", 
           "output": "dragonyosszázad "
         }, 
@@ -3473,6 +3477,10 @@
         {
           "input": "dörgésszerű ", 
           "output": "⠙⠟⠗⠛⠡⠎⠱⠑⠗⠾ "
+        }, 
+        {
+          "input": "dörzszörej", 
+          "output": "⠙⠟⠗⠜⠣⠟⠗⠑⠚"
         }, 
         {
           "input": "dragonyosszázad ", 

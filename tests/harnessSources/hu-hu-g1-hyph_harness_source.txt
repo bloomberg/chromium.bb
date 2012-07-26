@@ -241,6 +241,9 @@ testmode: hyphenate
 dörgésszerű
 
 testmode: hyphenate
+dörzszörej
+
+testmode: hyphenate
 dragonyosszázad
 
 testmode: hyphenate
@@ -1796,6 +1799,12 @@ sorscsapásszerű
 
 testmode: hyphenate
 spanyolmeggyen
+
+testmode: hyphenate
+stílusszerű
+
+testmode: hyphenate
+stílusszerkesztő
 
 testmode: hyphenate
 sugárzásszerű

@@ -400,6 +400,11 @@ dörgésszerű
 testmode: backtranslate
 dörgésszerű 
 
+dörzszörej
+
+testmode: backtranslate
+dörzszörej
+
 dragonyosszázad 
 
 testmode: backtranslate
