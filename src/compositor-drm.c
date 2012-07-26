@@ -99,6 +99,7 @@ struct drm_fb {
 struct drm_output {
 	struct weston_output   base;
 
+	char *name;
 	uint32_t crtc_id;
 	uint32_t connector_id;
 	drmModeCrtcPtr original_crtc;
@@ -1241,6 +1242,24 @@ drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
 	drmModeFreeConnector(connector);
 }
 
+static const char *connector_type_names[] = {
+	"None",
+	"VGA",
+	"DVI",
+	"DVI",
+	"DVI",
+	"Composite",
+	"TV",
+	"LVDS",
+	"CTV",
+	"DIN",
+	"DP",
+	"HDMI",
+	"HDMI",
+	"TV",
+	"eDP",
+};
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -1254,6 +1273,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	drmModeModeInfo crtc_mode;
 	drmModeCrtc *crtc;
 	int i, ret;
+	char name[32];
+	const char *type_name;
 
 	encoder = drmModeGetEncoder(ec->drm.fd, connector->encoders[0]);
 	if (encoder == NULL) {
@@ -1283,6 +1304,13 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.make = "unknown";
 	output->base.model = "unknown";
 	wl_list_init(&output->base.mode_list);
+
+	if (connector->connector_type < ARRAY_LENGTH(connector_type_names))
+		type_name = connector_type_names[connector->connector_type];
+	else
+		type_name = "UNKNOWN";
+	snprintf(name, 32, "%s%d", type_name, connector->connector_type_id);
+	output->name = strdup(name);
 
 	output->crtc_id = resources->crtcs[i];
 	ec->crtc_allocator |= (1 << output->crtc_id);
@@ -1389,8 +1417,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.set_dpms = drm_set_dpms;
 	output->base.switch_mode = drm_output_switch_mode;
 
-	weston_log("kms connector %d, crtc %d\n",
-		   output->connector_id, output->crtc_id);
+	weston_log("Output %s, (connector %d, crtc %d)\n",
+		   output->name, output->connector_id, output->crtc_id);
 	wl_list_for_each(m, &output->base.mode_list, link)
 		weston_log_continue("  mode %dx%d@%.1f%s%s%s\n",
 				    m->width, m->height, m->refresh / 1000.0,
