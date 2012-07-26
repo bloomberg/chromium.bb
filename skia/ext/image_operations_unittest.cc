@@ -507,7 +507,7 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
     { skia::ImageOperations::RESIZE_HAMMING1, "HAMMING1", 0.0f },
     { skia::ImageOperations::RESIZE_LANCZOS2, "LANCZOS2", 0.0f },
     { skia::ImageOperations::RESIZE_LANCZOS3, "LANCZOS3", 0.0f },
-#if defined(OS_POSIX) && !defined(GTV) && !defined(OS_MACOSX)
+#if defined(OS_LINUX) && !defined(GTV)
     // SUBPIXEL has slightly worse performance than the other filters:
     //   6.324  Bottom left/right corners
     //   5.099  Top left/right corners
