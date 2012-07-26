@@ -30,7 +30,7 @@ namespace content {
 static GURL GetStartupURL() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kContentBrowserTest))
-    return GURL(chrome::kAboutBlankURL);
+    return GURL();
   const CommandLine::StringVector& args = command_line->GetArgs();
   if (args.empty())
     return GURL("http://www.google.com/");

@@ -5,36 +5,35 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_browser_thread.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
-using content::RenderViewHostImpl;
-using content::WebContents;
+namespace content {
 
-class RenderViewHostTest : public InProcessBrowserTest {
+class RenderViewHostTest : public ContentBrowserTest {
  public:
   RenderViewHostTest() {}
 };
 
-
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
                        ExecuteJavascriptAndGetValue) {
   ASSERT_TRUE(test_server()->Start());
-  GURL empty_url(test_server()->GetURL("files/empty.html"));
-  ui_test_utils::NavigateToURL(browser(), empty_url);
+  GURL empty_url(test_server()->GetURL("files/simple_page.html"));
+  NavigateToURL(shell(), empty_url);
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost());
+      shell()->web_contents()->GetRenderViewHost());
 
   {
     scoped_ptr<Value> value(
@@ -206,11 +205,10 @@ class RenderViewHostTestWebContentsObserver
 
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
   ASSERT_TRUE(test_server()->Start());
-  RenderViewHostTestWebContentsObserver observer(
-      chrome::GetActiveWebContents(browser()));
+  RenderViewHostTestWebContentsObserver observer(shell()->web_contents());
 
-  GURL test_url = test_server()->GetURL("files/simple.html");
-  ui_test_utils::NavigateToURL(browser(), test_url);
+  GURL test_url = test_server()->GetURL("files/simple_page.html");
+  NavigateToURL(shell(), test_url);
 
   EXPECT_EQ(test_server()->host_port_pair().ToString(),
             observer.observed_socket_address().ToString());
@@ -219,18 +217,19 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
 
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
   ASSERT_TRUE(test_server()->Start());
-  RenderViewHostTestWebContentsObserver observer(
-      chrome::GetActiveWebContents(browser()));
+  RenderViewHostTestWebContentsObserver observer(shell()->web_contents());
 
   // Base URL is not set if it is the same as the URL.
-  GURL test_url = test_server()->GetURL("files/simple.html");
-  ui_test_utils::NavigateToURL(browser(), test_url);
+  GURL test_url = test_server()->GetURL("files/simple_page.tml");
+  NavigateToURL(shell(), test_url);
   EXPECT_TRUE(observer.base_url().is_empty());
   EXPECT_EQ(1, observer.navigation_count());
 
   // But should be set to the original page when reading MHTML.
   test_url = net::FilePathToFileURL(test_server()->document_root().Append(
       FILE_PATH_LITERAL("google.mht")));
-  ui_test_utils::NavigateToURL(browser(), test_url);
+  NavigateToURL(shell(), test_url);
   EXPECT_EQ("http://www.google.com/", observer.base_url().spec());
 }
+
+}  // namespace content

@@ -3040,17 +3040,11 @@
         '../content/browser/accessibility/dump_accessibility_tree_helper.h',
         '../content/browser/accessibility/dump_accessibility_tree_helper_mac.mm',
         '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
-        '../content/browser/in_process_webkit/indexed_db_browsertest.cc',
-        '../content/browser/indexed_db/idbbindingutilities_browsertest.cc',
-        '../content/browser/plugin_data_remover_impl_browsertest.cc',
-        '../content/browser/plugin_service_impl_browsertest.cc',
         '../content/browser/renderer_host/render_process_host_browsertest.cc',
-        '../content/browser/renderer_host/render_view_host_browsertest.cc',
         '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_browsertest.cc',
         '../content/browser/session_history_browsertest.cc',
         '../content/browser/speech/speech_recognition_browsertest.cc',
-        '../content/browser/webkit_browsertest.cc',
       ],
       'rules': [
         {

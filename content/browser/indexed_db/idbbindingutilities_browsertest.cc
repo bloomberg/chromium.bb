@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/common/indexed_db/indexed_db_key.h"
@@ -13,6 +12,8 @@
 #include "content/common/utility_messages.h"
 #include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/common/serialized_script_value.h"
+#include "content/public/test/test_utils.h"
+#include "content/test/content_browser_test.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -20,14 +21,10 @@
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/web_io_operators.h"
 
-using content::BrowserThread;
-using content::IndexedDBKey;
-using content::IndexedDBKeyPath;
-using content::UtilityProcessHost;
-using content::UtilityProcessHostClient;
-using content::SerializedScriptValue;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebIDBKeyPath;
+
+namespace content {
 
 // Enables calling WebKit::shutdown no matter where a "return" happens.
 class ScopedShutdownWebKit {
@@ -45,7 +42,7 @@ class ScopedShutdownWebKit {
 
 // Sanity test, check the function call directly outside the sandbox.
 TEST(IDBKeyPathWithoutSandbox, Value) {
-  content::WebKitPlatformSupportImpl webkit_platform_support;
+  WebKitPlatformSupportImpl webkit_platform_support;
   WebKit::initialize(&webkit_platform_support);
   ScopedShutdownWebKit shutdown_webkit;
 
@@ -242,19 +239,19 @@ class IDBKeyPathHelper : public UtilityProcessHostClient {
 // This test fixture runs in the UI thread. However, most of the work done by
 // UtilityProcessHost (and wrapped by IDBKeyPathHelper above) happens on the IO
 // thread. This fixture delegates to IDBKeyPathHelper and blocks via
-// "content::RunMessageLoop()", until IDBKeyPathHelper posts a quit
+// "RunMessageLoop()", until IDBKeyPathHelper posts a quit
 // message the MessageLoop.
 class ScopedIDBKeyPathHelper {
  public:
   ScopedIDBKeyPathHelper() {
     key_path_helper_ = new IDBKeyPathHelper();
     key_path_helper_->CreateUtilityProcess();
-    content::RunMessageLoop();
+    RunMessageLoop();
   }
 
   ~ScopedIDBKeyPathHelper() {
     key_path_helper_->DestroyUtilityProcess();
-    content::RunMessageLoop();
+    RunMessageLoop();
   }
 
   void SetExpectedKeys(int id,
@@ -274,14 +271,14 @@ class ScopedIDBKeyPathHelper {
       const IndexedDBKeyPath& key_path) {
     key_path_helper_->CheckValuesForKeyPath(id, serialized_script_values,
                                             key_path);
-    content::RunMessageLoop();
+    RunMessageLoop();
   }
 
   void CheckInjectValue(const IndexedDBKey& key,
                         const SerializedScriptValue& value,
                         const IndexedDBKeyPath& key_path) {
     key_path_helper_->CheckInjectValue(key, value, key_path);
-    content::RunMessageLoop();
+    RunMessageLoop();
   }
 
  private:
@@ -289,7 +286,7 @@ class ScopedIDBKeyPathHelper {
 };
 
 // Cases:
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathExtract) {
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, IDBKeyPathExtract) {
   ScopedIDBKeyPathHelper scoped_helper;
   const int kId = 7;
   std::vector<IndexedDBKey> expected_keys;
@@ -333,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathExtract) {
       kId, serialized_values, key_path);
 }
 
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathPropertyNotAvailable) {
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, IDBKeyPathPropertyNotAvailable) {
   ScopedIDBKeyPathHelper scoped_helper;
   const int kId = 7;
   std::vector<IndexedDBKey> expected_keys;
@@ -360,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathPropertyNotAvailable) {
   scoped_helper.CheckValuesForKeyPath(kId, serialized_values, key_path);
 }
 
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, IDBKeyPathMultipleCalls) {
   ScopedIDBKeyPathHelper scoped_helper;
   const int kId = 7;
   std::vector<IndexedDBKey> expected_keys;
@@ -398,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
   scoped_helper.CheckValuesForKeyPath(kId + 1, serialized_values, key_path);
 }
 
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, InjectIDBKey) {
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, InjectIDBKey) {
   // {foo: 'zoo'}
   const char16 initial_data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   SerializedScriptValue value(
@@ -439,3 +436,5 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, InjectIDBKey) {
   key_path.SetString(UTF8ToUTF16("bar.baz"));
   scoped_helper.CheckInjectValue(key, value, key_path);
 }
+
+}  // namespace content

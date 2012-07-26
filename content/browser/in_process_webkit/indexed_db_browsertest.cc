@@ -11,55 +11,46 @@
 #include "base/scoped_temp_dir.h"
 #include "base/test/thread_test_helper.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "net/base/net_util.h"
 #include "webkit/database/database_util.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
 using quota::QuotaManager;
 using webkit_database::DatabaseUtil;
 
+namespace content {
+
 // This browser test is aimed towards exercising the IndexedDB bindings and
 // the actual implementation that lives in the browser side (in_process_webkit).
-class IndexedDBBrowserTest : public InProcessBrowserTest {
+class IndexedDBBrowserTest : public ContentBrowserTest {
  public:
   IndexedDBBrowserTest() {}
-
-  GURL GetTestURL(const FilePath& file_path) {
-    FilePath dir;
-    PathService::Get(content::DIR_TEST_DATA, &dir);
-    return net::FilePathToFileURL(
-        dir.Append(FILE_PATH_LITERAL("indexeddb")).Append(file_path));
-  }
 
   void SimpleTest(const GURL& test_url, bool incognito = false) {
     // The test page will perform tests on IndexedDB, then navigate to either
     // a #pass or #fail ref.
-    Browser* the_browser = incognito ? CreateIncognitoBrowser() : browser();
+    Shell* the_browser = incognito ? CreateOffTheRecordBrowser() : shell();
 
     LOG(INFO) << "Navigating to URL and blocking.";
-    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-        the_browser, test_url, 2);
+    NavigateToURLBlockUntilNavigationsComplete(the_browser, test_url, 2);
     LOG(INFO) << "Navigation done.";
-    std::string result =
-        chrome::GetActiveWebContents(the_browser)->GetURL().ref();
+    std::string result = the_browser->web_contents()->GetURL().ref();
     if (result != "pass") {
       std::string js_result;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-          chrome::GetActiveWebContents(the_browser)->GetRenderViewHost(), L"",
+      ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+          the_browser->web_contents()->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;
     }
@@ -67,78 +58,76 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTestIncognito) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("cursor_test.html"))),
+  SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"),
              true /* incognito */);
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorPrefetch) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("cursor_prefetch.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "cursor_prefetch.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("index_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "index_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "key_path_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
-  SimpleTest(GetTestURL(FilePath(
-      FILE_PATH_LITERAL("transaction_get_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "transaction_get_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyTypesTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("key_types_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "key_types_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ObjectStoreTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("object_store_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "object_store_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("database_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "database_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "transaction_test.html"));
 }
 
 // Appears flaky/slow, see: http://crbug.com/120298
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ValueSizeTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("value_size_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "value_size_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
-  SimpleTest(GetTestURL(FilePath(
-      FILE_PATH_LITERAL("transaction_run_forever.html"))));
-  content::CrashTab(chrome::GetActiveWebContents(browser()));
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "transaction_run_forever.html"));
+  CrashTab(shell()->web_contents());
+  SimpleTest(GetTestUrl("indexeddb", "transaction_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug84933Test) {
-  const GURL url = GetTestURL(FilePath(FILE_PATH_LITERAL("bug_84933.html")));
+  const GURL url = GetTestUrl("indexeddb", "bug_84933.html");
 
   // Just navigate to the URL. Test will crash if it fails.
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug106883Test) {
-  const GURL url = GetTestURL(FilePath(FILE_PATH_LITERAL("bug_106883.html")));
+  const GURL url = GetTestUrl("indexeddb", "bug_106883.html");
 
   // Just navigate to the URL. Test will crash if it fails.
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug109187Test) {
-  const GURL url = GetTestURL(FilePath(FILE_PATH_LITERAL("bug_109187.html")));
+  const GURL url = GetTestUrl("indexeddb", "bug_109187.html");
 
   // Just navigate to the URL. Test will crash if it fails.
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
 }
 
 class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
@@ -149,7 +138,8 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
         * 1024 * QuotaManager::kPerHostTemporaryPortion;
     SetTempQuota(
         kTemporaryStorageQuotaMaxSize,
-        content::BrowserContext::GetQuotaManager(browser()->profile()));
+        BrowserContext::GetQuotaManager(
+            shell()->web_contents()->GetBrowserContext()));
   }
 
   static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
@@ -172,7 +162,7 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTest) {
-  SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("quota_test.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "quota_test.html"));
 }
 
 class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
@@ -184,6 +174,7 @@ class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
                        DatabaseCallbacksTest) {
-  SimpleTest(
-      GetTestURL(FilePath(FILE_PATH_LITERAL("database_callbacks_first.html"))));
+  SimpleTest(GetTestUrl("indexeddb", "database_callbacks_first.html"));
 }
+
+}  // namespace content
