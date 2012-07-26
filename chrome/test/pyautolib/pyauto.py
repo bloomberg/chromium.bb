@@ -4603,6 +4603,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
+    # Go to the 'Add user' screen for login to work.
+    self.ExecuteJavascriptInOOBEWebUI(
+              'Oobe.showSigninUI();'
+              'window.domAutomationController.send("ok");')
     self._GetResultFromJSONRequest({'command': 'AddLoginEventObserver'},
                                    windex=None)
     cmd_dict = {
