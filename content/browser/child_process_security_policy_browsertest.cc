@@ -34,7 +34,11 @@ class ChildProcessSecurityPolicyInProcessBrowserTest
   }
 };
 
+#if !defined(NDEBUG) && defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, DISABLED_NoLeak) {
+#else
 IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
+#endif
   GURL url = content::GetTestUrl("", "simple_page.html");
 
   content::NavigateToURL(shell(), url);
