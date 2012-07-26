@@ -49,11 +49,12 @@ class ASH_EXPORT WorkspaceManager {
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
-  // Returns true if |window| should be managed by the WorkspaceManager.
-  bool IsManagedWindow(aura::Window* window) const;
+  // Returns true if |window| should be managed by the WorkspaceManager. Use
+  // Contains() to test if the Window is currently managed by WorkspaceManager.
+  static bool ShouldManageWindow(aura::Window* window);
 
-  // Returns true if the |window| is managed by the WorkspaceManager.
-  bool IsManagingWindow(aura::Window* window) const;
+  // Returns true if |window| has been added to this WorkspaceManager.
+  bool Contains(aura::Window* window) const;
 
   // Returns true if in maximized or fullscreen mode.
   bool IsInMaximizedMode() const;

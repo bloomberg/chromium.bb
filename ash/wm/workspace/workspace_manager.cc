@@ -66,14 +66,15 @@ WorkspaceManager::~WorkspaceManager() {
   STLDeleteElements(&copy_to_delete);
 }
 
-bool WorkspaceManager::IsManagedWindow(aura::Window* window) const {
+// static
+bool WorkspaceManager::ShouldManageWindow(aura::Window* window) {
   return window->type() == aura::client::WINDOW_TYPE_NORMAL &&
          !window->transient_parent() &&
          ash::GetTrackedByWorkspace(window) &&
          !ash::GetPersistsAcrossAllWorkspaces(window);
 }
 
-bool WorkspaceManager::IsManagingWindow(aura::Window* window) const {
+bool WorkspaceManager::Contains(aura::Window* window) const {
   return FindBy(window) != NULL;
 }
 
@@ -83,7 +84,7 @@ bool WorkspaceManager::IsInMaximizedMode() const {
 }
 
 void WorkspaceManager::AddWindow(aura::Window* window) {
-  DCHECK(IsManagedWindow(window));
+  DCHECK(ShouldManageWindow(window));
 
   Workspace* current_workspace = FindBy(window);
   if (current_workspace) {
@@ -169,7 +170,7 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
 }
 
 void WorkspaceManager::ShowStateChanged(aura::Window* window) {
-  if (!IsManagedWindow(window) || !FindBy(window))
+  if (!ShouldManageWindow(window) || !FindBy(window))
     return;
 
   Workspace::Type old_type = FindBy(window)->type();
@@ -298,7 +299,7 @@ void WorkspaceManager::SetWindowBounds(aura::Window* window,
 }
 
 void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {
-  DCHECK(IsManagedWindow(window));
+  DCHECK(ShouldManageWindow(window));
   Workspace* current_workspace = FindBy(window);
   DCHECK(current_workspace);
   Workspace* new_workspace = NULL;

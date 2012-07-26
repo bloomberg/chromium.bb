@@ -98,7 +98,7 @@ TEST_F(WorkspaceManagerTest, AddNormalWindowWhenEmpty) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
 
-  ASSERT_TRUE(manager_->IsManagedWindow(w1.get()));
+  ASSERT_TRUE(manager_->ShouldManageWindow(w1.get()));
   EXPECT_FALSE(FindBy(w1.get()));
 
   EXPECT_TRUE(GetRestoreBoundsInScreen(w1.get()) == NULL);
@@ -125,7 +125,7 @@ TEST_F(WorkspaceManagerTest, SingleMaximizeWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
 
-  ASSERT_TRUE(manager_->IsManagedWindow(w1.get()));
+  ASSERT_TRUE(manager_->ShouldManageWindow(w1.get()));
 
   w1->Show();
 
@@ -292,7 +292,7 @@ TEST_F(WorkspaceManagerTest, ChangeBoundsOfNormalWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->Show();
 
-  EXPECT_TRUE(manager_->IsManagedWindow(w1.get()));
+  EXPECT_TRUE(manager_->ShouldManageWindow(w1.get()));
   // Setting the bounds should go through since the window is in the normal
   // workspace.
   w1->SetBounds(gfx::Rect(0, 0, 200, 500));
@@ -606,7 +606,7 @@ TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
   w2->Show();
 
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
-  ASSERT_FALSE(manager_->IsManagedWindow(w2.get()));
+  ASSERT_FALSE(manager_->ShouldManageWindow(w2.get()));
   EXPECT_EQ(WorkspaceManager::WINDOW_STATE_FULL_SCREEN,
             manager_->GetWindowState());
 
@@ -642,7 +642,7 @@ TEST_F(WorkspaceManagerTest,
   // Even though auto-hide behavior is NEVER full-screen windows cause the shelf
   // to hide.
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
-  ASSERT_FALSE(manager_->IsManagedWindow(w2.get()));
+  ASSERT_FALSE(manager_->ShouldManageWindow(w2.get()));
   EXPECT_EQ(WorkspaceManager::WINDOW_STATE_FULL_SCREEN,
             manager_->GetWindowState());
 

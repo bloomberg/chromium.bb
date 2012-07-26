@@ -38,7 +38,7 @@ void WorkspaceLayoutManager::OnWindowResized() {
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   BaseLayoutManager::OnWindowAddedToLayout(child);
-  if (!workspace_manager_->IsManagedWindow(child)) {
+  if (!workspace_manager_->ShouldManageWindow(child)) {
     if (child->IsVisible())
       workspace_manager_->UpdateShelfVisibility();
     return;
@@ -62,7 +62,7 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
-  if (!workspace_manager_->IsManagedWindow(child)) {
+  if (!workspace_manager_->ShouldManageWindow(child)) {
     workspace_manager_->UpdateShelfVisibility();
     return;
   }
@@ -98,12 +98,12 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 void WorkspaceLayoutManager::ShowStateChanged(
     aura::Window* window,
     ui::WindowShowState last_show_state) {
-  if (workspace_manager_->IsManagedWindow(window)) {
+  if (workspace_manager_->ShouldManageWindow(window)) {
     if (wm::IsWindowMinimized(window)) {
       workspace_manager_->RemoveWindow(window);
     } else if ((window->TargetVisibility() ||
                 last_show_state == ui::SHOW_STATE_MINIMIZED) &&
-               !workspace_manager_->IsManagingWindow(window)) {
+               !workspace_manager_->Contains(window)) {
       workspace_manager_->AddWindow(window);
     }
   } else {
