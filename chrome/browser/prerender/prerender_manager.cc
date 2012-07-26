@@ -462,8 +462,8 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
       PrerenderContents* dummy_replacement_prerender_contents =
           CreatePrerenderContents(entry->prerender_url(), entry->referrer(),
                                   entry->origin(), entry->experiment_id());
-      dummy_replacement_prerender_contents->MakeIntoDummyReplacementOf(entry);
       DCHECK(dummy_replacement_prerender_contents);
+      dummy_replacement_prerender_contents->MakeIntoDummyReplacementOf(entry);
 
       dummy_replacement_prerender_contents->set_match_complete_status(
           PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING);
