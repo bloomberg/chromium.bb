@@ -66,7 +66,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.2",
+  "version": "2.3",
   "entries": [
     {
       "id": 1,
@@ -115,7 +115,7 @@
     {
       "id": 5,
       "description": "ATI/AMD cards with older or third-party drivers in Linux are crash-prone.",
-      "cr_bugs": [71381, 76428, 73910, 101225],
+      "cr_bugs": [71381, 76428, 73910, 101225, 136240],
       "os": {
         "type": "linux"
       },
@@ -129,7 +129,7 @@
           "driver_version": {
             "op": ">=",
             "style": "lexical",
-            "number": "8.92"
+            "number": "8.98"
           }
         }
       ],
@@ -420,7 +420,7 @@
     {
       "id": 27,
       "description": "ATI/AMD cards with older drivers in Linux are crash-prone.",
-      "cr_bugs": [95934, 94973],
+      "cr_bugs": [95934, 94973, 136240],
       "os": {
         "type": "linux"
       },
@@ -437,7 +437,7 @@
           "driver_version": {
             "op": ">=",
             "style": "lexical",
-            "number": "8.92"
+            "number": "8.98"
           }
         }
       ],
