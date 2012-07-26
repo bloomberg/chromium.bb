@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ui/app_list/app_list_view.h"
 #include "ui/app_list/icon_cache.h"
@@ -199,7 +200,21 @@ void AppListController::ScheduleAnimation() {
   layer->SetBounds(target_bounds);
 }
 
-void AppListController::ProcessLocatedEvent(const aura::LocatedEvent& event) {
+void AppListController::ProcessLocatedEvent(aura::Window* target,
+                                            const aura::LocatedEvent& event) {
+  // If the event happened on a menu, then the event should not close the app
+  // list.
+  if (target) {
+    RootWindowController* root_controller =
+        GetRootWindowController(target->GetRootWindow());
+    if (root_controller) {
+      aura::Window* menu_container = root_controller->GetContainer(
+          ash::internal::kShellWindowId_MenuContainer);
+      if (menu_container->Contains(target))
+        return;
+    }
+  }
+
   if (view_ && is_visible_) {
     views::Widget* widget = view_->GetWidget();
     if (!widget->GetNativeView()->GetBoundsInRootWindow().Contains(
@@ -225,7 +240,7 @@ bool AppListController::PreHandleKeyEvent(aura::Window* target,
 bool AppListController::PreHandleMouseEvent(aura::Window* target,
                                             aura::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
-    ProcessLocatedEvent(*event);
+    ProcessLocatedEvent(target, *event);
   return false;
 }
 
@@ -239,7 +254,7 @@ ui::GestureStatus AppListController::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP)
-    ProcessLocatedEvent(*event);
+    ProcessLocatedEvent(target, *event);
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

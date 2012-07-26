@@ -67,7 +67,8 @@ class AppListController : public aura::EventFilter,
   // Starts show/hide animation.
   void ScheduleAnimation();
 
-  void ProcessLocatedEvent(const aura::LocatedEvent& event);
+  void ProcessLocatedEvent(aura::Window* target,
+                           const aura::LocatedEvent& event);
 
   // Makes app list bubble update its bounds.
   void UpdateBounds();
