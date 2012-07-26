@@ -49,6 +49,11 @@ void ContentBrowserTest::SetUp() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kContentBrowserTest);
 
+#if defined(OS_LINUX)
+  // http://crbug.com/139209
+  command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
+#endif
+
   SetUpCommandLine(command_line);
 
 #if defined(OS_MACOSX)

@@ -118,7 +118,7 @@ const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
 
 // Do not launch the GPU process shortly after browser process launch. Instead
 // launch it when it is first needed.
-const char kDisableGpuProcessPrelaunch[]    = "diasable-gpu-process-prelaunch";
+const char kDisableGpuProcessPrelaunch[]    = "disable-gpu-process-prelaunch";
 
 // Disable the GPU process sandbox.
 const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
