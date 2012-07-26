@@ -357,6 +357,23 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
 
   std::set<const EventListener*> listeners(
       listeners_.GetEventListeners(*event));
+
+  // We dispatch events for lazy background pages first because attempting to do
+  // so will cause those that are being suspended to cancel that suspension.
+  // As canceling a suspension entails sending an event to the affected
+  // background page, and as that event needs to be delivered before we dispatch
+  // the event we are dispatching here, we dispatch to the lazy listeners here
+  // first.
+  for (std::set<const EventListener*>::iterator it = listeners.begin();
+       it != listeners.end(); it++) {
+    const EventListener* listener = *it;
+    if (restrict_to_extension_id.empty() ||
+        restrict_to_extension_id == listener->extension_id) {
+      if (!listener->process)
+        DispatchLazyEvent(listener->extension_id, event);
+    }
+  }
+
   for (std::set<const EventListener*>::iterator it = listeners.begin();
        it != listeners.end(); it++) {
     const EventListener* listener = *it;
@@ -365,8 +382,6 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
       if (listener->process) {
         DispatchEventToProcess(listener->extension_id, listener->process,
                                event);
-      } else {
-        DispatchLazyEvent(listener->extension_id, event);
       }
     }
   }

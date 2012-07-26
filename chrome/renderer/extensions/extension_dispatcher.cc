@@ -110,6 +110,7 @@ static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
 static const char kEventDispatchFunction[] = "Event.dispatchJSON";
 static const char kOnUnloadEvent[] = "runtime.onSuspend";
+static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
 class ChromeHiddenNativeHandler : public NativeHandler {
  public:
@@ -325,6 +326,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldUnload, OnShouldUnload)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Unload, OnUnload)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_CancelUnload, OnCancelUnload)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -999,6 +1001,14 @@ void ExtensionDispatcher::OnUnload(const std::string& extension_id) {
       extension_id, kEventDispatchFunction, args, NULL, GURL());
 
   RenderThread::Get()->Send(new ExtensionHostMsg_UnloadAck(extension_id));
+}
+
+void ExtensionDispatcher::OnCancelUnload(const std::string& extension_id) {
+  ListValue args;
+  args.Set(0, Value::CreateStringValue(kOnSuspendCanceledEvent));
+  args.Set(1, Value::CreateStringValue("[]"));
+  v8_context_set_.DispatchChromeHiddenMethod(
+      extension_id, kEventDispatchFunction, args, NULL, GURL());
 }
 
 Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(

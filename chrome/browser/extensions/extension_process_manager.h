@@ -132,6 +132,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   void OnNetworkRequestStarted(content::RenderViewHost* render_view_host);
   void OnNetworkRequestDone(content::RenderViewHost* render_view_host);
 
+  // Prevents |extension|'s background page from being closed and sends the
+  // onSuspendCanceled() event to it.
+  void CancelSuspend(const extensions::Extension* extension);
+
  protected:
   explicit ExtensionProcessManager(Profile* profile);
 
@@ -185,7 +189,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   void OnLazyBackgroundPageIdle(const std::string& extension_id,
                                 int sequence_id);
   void OnLazyBackgroundPageActive(const std::string& extension_id);
-  void CloseLazyBackgroundPageNow(const std::string& extension_id);
+  void CloseLazyBackgroundPageNow(const std::string& extension_id,
+                                  int sequence_id);
 
   // Updates a potentially-registered RenderViewHost once it has been
   // associated with a WebContents. This allows us to gather information that

@@ -173,6 +173,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
       bool other_webrequest);
   void OnShouldUnload(const std::string& extension_id, int sequence_id);
   void OnUnload(const std::string& extension_id);
+  void OnCancelUnload(const std::string& extension_id);
 
   // Update the list of active extensions that will be reported when we crash.
   void UpdateActiveExtensions();

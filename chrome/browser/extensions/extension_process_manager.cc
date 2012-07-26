@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
@@ -111,9 +112,9 @@ struct ExtensionProcessManager::BackgroundPageData {
   int close_sequence_id;
 
   // True if the page responded to the ShouldUnload message and is currently
-  // dispatching the unload event. We use this to ignore any activity
-  // generated during the unload event that would otherwise keep the
-  // extension alive.
+  // dispatching the unload event. During this time any events that arrive will
+  // cancel the unload process and an onSuspendCanceled event will be dispatched
+  // to the page.
   bool is_closing;
 
   // Keeps track of when this page was last unloaded. Used for perf metrics.
@@ -441,6 +442,7 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
 
   return count;
 }
+
 void ExtensionProcessManager::IncrementLazyKeepaliveCountForView(
     RenderViewHost* render_view_host) {
   WebContents* web_contents =
@@ -491,19 +493,24 @@ void ExtensionProcessManager::OnShouldUnloadAck(
 }
 
 void ExtensionProcessManager::OnUnloadAck(const std::string& extension_id) {
+  background_page_data_[extension_id].is_closing = true;
+  int sequence_id = background_page_data_[extension_id].close_sequence_id;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ExtensionProcessManager::CloseLazyBackgroundPageNow,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id),
+                 weak_ptr_factory_.GetWeakPtr(), extension_id, sequence_id),
       event_page_unloading_time_);
 }
 
 void ExtensionProcessManager::CloseLazyBackgroundPageNow(
-    const std::string& extension_id) {
-  background_page_data_[extension_id].is_closing = true;
+    const std::string& extension_id, int sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host)
-    CloseBackgroundHost(host);
+  if (host &&
+      sequence_id == background_page_data_[extension_id].close_sequence_id) {
+    ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
+    if (host)
+      CloseBackgroundHost(host);
+  }
 }
 
 void ExtensionProcessManager::OnNetworkRequestStarted(
@@ -520,6 +527,22 @@ void ExtensionProcessManager::OnNetworkRequestDone(
       GetExtensionID(render_view_host));
   if (host && host->render_view_host() == render_view_host)
     DecrementLazyKeepaliveCount(host->extension());
+}
+
+void ExtensionProcessManager::CancelSuspend(const Extension* extension) {
+  bool& is_closing = background_page_data_[extension->id()].is_closing;
+  ExtensionHost* host = GetBackgroundHostForExtension(extension->id());
+  if (host && is_closing) {
+    is_closing = false;
+    host->render_view_host()->Send(
+        new ExtensionMsg_CancelUnload(extension->id()));
+    // This increment / decrement is to simulate an instantaneous event. This
+    // has the effect of invalidating close_sequence_id, preventing any in
+    // progress closes from completing and starting a new close process if
+    // necessary.
+    IncrementLazyKeepaliveCount(extension);
+    DecrementLazyKeepaliveCount(extension);
+  }
 }
 
 void ExtensionProcessManager::Observe(

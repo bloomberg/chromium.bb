@@ -48,9 +48,10 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
          ExtensionSystem::Get(profile)->process_manager();
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
-    if (!background_host || !background_host->did_stop_loading() ||
-        pm->IsBackgroundHostClosing(extension->id()))
+    if (!background_host || !background_host->did_stop_loading())
       return true;
+    if (pm->IsBackgroundHostClosing(extension->id()))
+      pm->CancelSuspend(extension);
   }
 
   return false;

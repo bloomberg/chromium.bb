@@ -287,6 +287,10 @@ IPC_MESSAGE_CONTROL2(ExtensionMsg_ShouldUnload,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_Unload,
                      std::string /* extension_id */)
 
+// The browser changed its mind about unloading this extension.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_CancelUnload,
+                     std::string /* extension_id */)
+
 // Send to renderer once the installation mentioned on
 // ExtensionHostMsg_InlineWebstoreInstall is complete.
 IPC_MESSAGE_ROUTED3(ExtensionMsg_InlineWebstoreInstallResponse,
