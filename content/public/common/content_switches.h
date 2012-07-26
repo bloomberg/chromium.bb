@@ -202,7 +202,8 @@ extern const char kDefaultTileWidth[];
 extern const char kDefaultTileHeight[];
 extern const char kMaxUntiledLayerWidth[];
 extern const char kMaxUntiledLayerHeight[];
-CONTENT_EXPORT extern const char kFixedPositionCreatesStackingContext[];
+CONTENT_EXPORT extern const char kEnableFixedPositionCreatesStackingContext[];
+CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];
 
 extern const char kEnableVisualWordMovement[];
 

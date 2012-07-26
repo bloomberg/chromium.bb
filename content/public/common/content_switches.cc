@@ -686,6 +686,9 @@ const char kDefaultTileHeight[]             = "default-tile-height";
 const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
 const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
 
-const char kFixedPositionCreatesStackingContext[]
-    = "fixed-position-creates-stacking-context";
+const char kEnableFixedPositionCreatesStackingContext[]
+    = "enable-fixed-position-creates-stacking-context";
+const char kDisableFixedPositionCreatesStackingContext[]
+    = "disable-fixed-position-creates-stacking-context";
+
 }  // namespace switches

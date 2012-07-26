@@ -106,6 +106,14 @@ const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
     switches::kOmniboxInlineHistoryQuickProviderProhibited }
 };
 
+const Experiment::Choice kFixedPositionCreatesStackingContextChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableFixedPositionCreatesStackingContext, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableFixedPositionCreatesStackingContext, ""}
+};
+
 const Experiment::Choice kForceCompositingModeChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -304,7 +312,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME,
     IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kFixedPositionCreatesStackingContext)
+    MULTI_VALUE_TYPE(kFixedPositionCreatesStackingContextChoices)
   },
   // TODO(dspringer): When NaCl is on by default, remove this flag entry.
   {
