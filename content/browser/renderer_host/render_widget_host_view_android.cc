@@ -240,9 +240,10 @@ void RenderWidgetHostViewAndroid::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
-      const gfx::Size& size,
-      const base::Callback<void(bool)>& callback,
-      skia::PlatformCanvas* output) {
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    const base::Callback<void(bool)>& callback,
+    skia::PlatformCanvas* output) {
   NOTIMPLEMENTED();
   callback.Run(false);
 }

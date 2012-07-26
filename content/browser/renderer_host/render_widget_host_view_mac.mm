@@ -817,19 +817,27 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
 }
 
 void RenderWidgetHostViewMac::CopyFromCompositingSurface(
-    const gfx::Size& size,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
     const base::Callback<void(bool)>& callback,
     skia::PlatformCanvas* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+  // TODO(mazda): Support copying a partial rectangle from the compositing
+  // surface with |src_subrect| (http://crbug.com/118571).
+  if (!src_subrect.IsEmpty()) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
   if (!compositing_iosurface_.get() ||
       !compositing_iosurface_->HasIOSurface())
     return;
 
-  if (!output->initialize(size.width(), size.height(), true))
+  if (!output->initialize(dst_size.width(), dst_size.height(), true))
     return;
 
   const bool result = compositing_iosurface_->CopyTo(
-      size, output->getTopDevice()->accessBitmap(true).getPixels());
+      dst_size, output->getTopDevice()->accessBitmap(true).getPixels());
   scoped_callback_runner.Release();
   callback.Run(result);
 }

@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 
 namespace gfx {
+class Rect;
 class Size;
 }
 
@@ -27,12 +28,13 @@ class GLHelper {
 
   WebKit::WebGraphicsContext3D* context() const;
 
-  // Copies the contents of |src_texture| with the size of |src_size| into
-  // |out|. The contents is transformed so that it fits in |dst_size|.
-  // |callback| is invoked with the copy result when the copy operation has
-  //  completed.
+  // Copies the block of pixels specified with |src_subrect| from |src_texture|,
+  // scales it to |dst_size|, and writes it into |out|.
+  // |src_size| is the size of |src_texture|. |callback| is invoked with the
+  // copy result when the copy operation has completed.
   void CopyTextureTo(WebKit::WebGLId src_texture,
                      const gfx::Size& src_size,
+                     const gfx::Rect& src_subrect,
                      const gfx::Size& dst_size,
                      unsigned char* out,
                      const base::Callback<void(bool)>& callback);

@@ -83,7 +83,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void CopyFromCompositingSurface(
-      const gfx::Size& size,
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
       const base::Callback<void(bool)>& callback,
       skia::PlatformCanvas* output) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;

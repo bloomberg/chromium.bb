@@ -1030,23 +1030,26 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
                              depth);
 }
 
-// NOTE: |output| is initialized with the size of the view and |size| is
-// ignored on GTK.
+// NOTE: |output| is initialized with the size of |src_subrect|, and |dst_size|
+// is ignored on GTK.
 void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
-    const gfx::Size& /* size */,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& /* dst_size */,
     const base::Callback<void(bool)>& callback,
     skia::PlatformCanvas* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
 
   const gfx::Rect bounds = GetViewBounds();
   XImage* image = XGetImage(ui::GetXDisplay(), ui::GetX11RootWindow(),
-                            bounds.x(), bounds.y(),
-                            bounds.width(), bounds.height(),
+                            bounds.x() + src_subrect.x(),
+                            bounds.y() + src_subrect.y(),
+                            src_subrect.width(),
+                            src_subrect.height(),
                             AllPlanes, ZPixmap);
   if (!image)
     return;
 
-  if (!output->initialize(bounds.width(), bounds.height(), true)) {
+  if (!output->initialize(src_subrect.width(), src_subrect.height(), true)) {
     XFree(image);
     return;
   }

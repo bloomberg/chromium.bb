@@ -144,12 +144,15 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
 
   // Copies the contents of the compositing surface into the given
   // (uninitialized) PlatformCanvas if any.
+  // The rectangle region specified with |src_subrect| is copied from the
+  // contents, scaled to |dst_size|, and written to |output|.
   // |callback| is invoked with true on success, false otherwise. |output| can
   // be initialized even on failure.
   // NOTE: |callback| is called asynchronously on Aura and synchronously on the
   // other platforms.
   virtual void CopyFromCompositingSurface(
-      const gfx::Size& size,
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
       const base::Callback<void(bool)>& callback,
       skia::PlatformCanvas* output) = 0;
 

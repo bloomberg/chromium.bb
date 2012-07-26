@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -254,6 +255,7 @@ class GLHelper::CopyTextureToImpl {
 
   void CopyTextureTo(WebGLId src_texture,
                      const gfx::Size& src_size,
+                     const gfx::Rect& src_subrect,
                      const gfx::Size& dst_size,
                      unsigned char* out,
                      const base::Callback<void(bool)>& callback);
@@ -295,10 +297,13 @@ class GLHelper::CopyTextureToImpl {
     ~Request() {}
   };
 
-  // Returns the id of a framebuffer that
+  // Copies the block of pixels specified with |src_subrect| from |src_texture|,
+  // scales it to |dst_size|, writes it into a texture, and returns its ID.
+  // |src_size| is the size of |src_texture|.
   WebGLId ScaleTexture(WebGLId src_texture,
-                               const gfx::Size& src_size,
-                               const gfx::Size& dst_size);
+                       const gfx::Size& src_size,
+                       const gfx::Rect& src_subrect,
+                       const gfx::Size& dst_size);
 
   // Deletes the context for GLHelperThread.
   void DeleteContextForThread();
@@ -335,6 +340,8 @@ class GLHelper::CopyTextureToImpl {
   WebKit::WGC3Dint texcoord_location_;
   // The location of the source texture in the program.
   WebKit::WGC3Dint texture_location_;
+  // The location of the texture coordinate of the sub-rectangle in the program.
+  WebKit::WGC3Dint src_subrect_location_;
   std::queue<scoped_refptr<Request> > request_queue_;
 };
 
@@ -349,9 +356,10 @@ const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyVertexShader[] =
     "attribute vec2 a_position;"
     "attribute vec2 a_texcoord;"
     "varying vec2 v_texcoord;"
+    "uniform vec4 src_subrect;"
     "void main() {"
     "  gl_Position = vec4(a_position, 0.0, 1.0);"
-    "  v_texcoord = a_texcoord;"
+    "  v_texcoord = src_subrect.xy + a_texcoord * src_subrect.zw;"
     "}";
 
 const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyFragmentShader[] =
@@ -393,11 +401,13 @@ void GLHelper::CopyTextureToImpl::InitProgram() {
   position_location_ = context_->getAttribLocation(program_, "a_position");
   texcoord_location_ = context_->getAttribLocation(program_, "a_texcoord");
   texture_location_ = context_->getUniformLocation(program_, "s_texture");
+  src_subrect_location_ = context_->getUniformLocation(program_, "src_subrect");
 }
 
 WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
     WebGLId src_texture,
     const gfx::Size& src_size,
+    const gfx::Rect& src_subrect,
     const gfx::Size& dst_size) {
   WebGLId dst_texture = context_->createTexture();
   {
@@ -450,6 +460,15 @@ WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
 
     context_->uniform1i(texture_location_, 0);
 
+    // Convert |src_subrect| to texture coordinates.
+    GLfloat src_subrect_texcoord[] = {
+      static_cast<float>(src_subrect.x()) / src_size.width(),
+      static_cast<float>(src_subrect.y()) / src_size.height(),
+      static_cast<float>(src_subrect.width()) / src_size.width(),
+      static_cast<float>(src_subrect.height()) / src_size.height(),
+    };
+    context_->uniform4fv(src_subrect_location_, 1, src_subrect_texcoord);
+
     // Conduct texture mapping by drawing a quad composed of two triangles.
     context_->drawArrays(GL_TRIANGLE_STRIP, 0, 4);
   }
@@ -470,6 +489,7 @@ void GLHelper::CopyTextureToImpl::DeleteContextForThread() {
 void GLHelper::CopyTextureToImpl::CopyTextureTo(
     WebGLId src_texture,
     const gfx::Size& src_size,
+    const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
     const base::Callback<void(bool)>& callback) {
@@ -478,7 +498,7 @@ void GLHelper::CopyTextureToImpl::CopyTextureTo(
     return;
   }
 
-  WebGLId texture = ScaleTexture(src_texture, src_size, dst_size);
+  WebGLId texture = ScaleTexture(src_texture, src_size, src_subrect, dst_size);
   context_->flush();
   scoped_refptr<Request> request =
       new Request(this, texture, dst_size, out, callback);
@@ -626,6 +646,7 @@ WebGraphicsContext3D* GLHelper::context() const {
 
 void GLHelper::CopyTextureTo(WebGLId src_texture,
                              const gfx::Size& src_size,
+                             const gfx::Rect& src_subrect,
                              const gfx::Size& dst_size,
                              unsigned char* out,
                              const base::Callback<void(bool)>& callback) {
@@ -637,6 +658,7 @@ void GLHelper::CopyTextureTo(WebGLId src_texture,
 
   copy_texture_to_impl_->CopyTextureTo(src_texture,
                                        src_size,
+                                       src_subrect,
                                        dst_size,
                                        out,
                                        callback);

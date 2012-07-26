@@ -496,16 +496,23 @@ void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostImpl::CopyFromBackingStore(
-    const gfx::Rect& src_rect,
-    const gfx::Size& accelerated_dest_size,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& accelerated_dst_size,
     const base::Callback<void(bool)>& callback,
     skia::PlatformCanvas* output) {
   if (view_ && is_accelerated_compositing_active_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
-    // TODO(mazda): Support partial copy with |src_rect|
-    // (http://crbug.com/118571).
-    view_->CopyFromCompositingSurface(accelerated_dest_size,
+#if defined(USE_AURA) || defined(LINUX)
+    gfx::Rect copy_rect = src_subrect.IsEmpty() ?
+        gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
+#else
+    // Just passes an empty rect to CopyFromCompositingSurface on non-Aura Win
+    // and Mac because copying a partial rectangle is not supported.
+    gfx::Rect copy_rect;
+#endif
+    view_->CopyFromCompositingSurface(copy_rect,
+                                      accelerated_dst_size,
                                       callback,
                                       output);
     return;
@@ -519,10 +526,8 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
 
   TRACE_EVENT0("browser",
       "RenderWidgetHostImpl::CopyFromBackingStore::FromBackingStore");
-  const gfx::Size backing_store_size = backing_store->size();
-  gfx::Rect copy_rect = src_rect.IsEmpty() ?
-      gfx::Rect(0, 0, backing_store_size.width(), backing_store_size.height()) :
-      src_rect;
+  gfx::Rect copy_rect = src_subrect.IsEmpty() ?
+      gfx::Rect(backing_store->size()) : src_subrect;
   // When the result size is equal to the backing store size, copy from the
   // backing store directly to the output canvas.
   bool result = backing_store->CopyFromBackingStore(copy_rect, output);

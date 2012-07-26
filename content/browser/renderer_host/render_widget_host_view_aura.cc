@@ -446,7 +446,8 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
-    const gfx::Size& size,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
     const base::Callback<void(bool)>& callback,
     skia::PlatformCanvas* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
@@ -462,9 +463,9 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   ui::Texture* container = it->second;
   DCHECK(container);
 
-  gfx::Size size_in_pixel = ConvertSizeToPixel(this, size);
+  gfx::Size dst_size_in_pixel = ConvertSizeToPixel(this, dst_size);
   if (!output->initialize(
-      size_in_pixel.width(), size_in_pixel.height(), true))
+      dst_size_in_pixel.width(), dst_size_in_pixel.height(), true))
     return;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -475,9 +476,11 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   unsigned char* addr = static_cast<unsigned char*>(
       output->getTopDevice()->accessBitmap(true).getPixels());
   scoped_callback_runner.Release();
+  gfx::Rect src_subrect_in_pixel = ConvertRectToPixel(this, src_subrect);
   gl_helper->CopyTextureTo(container->texture_id(),
                            container->size(),
-                           size_in_pixel,
+                           src_subrect_in_pixel,
+                           dst_size_in_pixel,
                            addr,
                            callback);
 }
