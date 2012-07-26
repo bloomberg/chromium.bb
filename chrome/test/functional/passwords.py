@@ -253,7 +253,8 @@ class PasswordTest(pyauto.PyUITest):
     self.NavigateToURL('chrome://version')
     self.assertTrue(self.WaitForInfobarCount(0))
     # To make sure user is navigated to Version page.
-    self.assertEqual('About Version', self.GetActiveTabTitle())
+    self.assertTrue(self.WaitUntil(self.GetActiveTabTitle,
+        expect_retval='About Version'))
     test_utils.AssertInfobarTypeDoesNotAppear(self, self.INFOBAR_TYPE)
 
   def testInfoBarDisappearByReload(self):
