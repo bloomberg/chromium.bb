@@ -131,11 +131,11 @@ const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
   switch (type) {
     case CONTENT_SETTINGS_TYPE_IMAGES:
       resource_id = use_blocked ? IDR_BLOCKED_IMAGES
-                                : IDR_INFO;
+                                : IDR_ALLOWED_IMAGES;
       break;
     case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
       resource_id = use_blocked ? IDR_BLOCKED_JAVASCRIPT
-                                : IDR_INFO;
+                                : IDR_ALLOWED_JAVASCRIPT;
       break;
     case CONTENT_SETTINGS_TYPE_COOKIES:
       resource_id = use_blocked ? IDR_BLOCKED_COOKIES
@@ -143,21 +143,30 @@ const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
       break;
     case CONTENT_SETTINGS_TYPE_POPUPS:
       resource_id = use_blocked ? IDR_BLOCKED_POPUPS
-                                : IDR_INFO;
+                                : IDR_ALLOWED_POPUPS;
       break;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       resource_id = use_blocked ? IDR_BLOCKED_PLUGINS
-                                : IDR_EXTENSIONS_FAVICON;
+                                : IDR_ALLOWED_PLUGINS;
       break;
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       resource_id = use_blocked ? IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON
                                 : IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON;
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      resource_id = use_blocked ? IDR_BLOCKED_NOTIFICATION
+                                : IDR_ALLOWED_NOTIFICATION;
+      break;
     case CONTENT_SETTINGS_TYPE_FULLSCREEN:
+      resource_id = IDR_ALLOWED_FULLSCREEN;
+      break;
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
+      resource_id = use_blocked ? IDR_BLOCKED_MOUSE_CURSOR
+                                : IDR_ALLOWED_MOUSE_CURSOR;
+      break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      resource_id = IDR_INFO;
+      resource_id = use_blocked ? IDR_BLOCKED_MEDIA
+                                : IDR_ASK_MEDIA;
       break;
     default:
       NOTREACHED();
