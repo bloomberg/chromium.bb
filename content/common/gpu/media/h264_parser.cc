@@ -654,9 +654,14 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
 }
 
 static void FillDefaultSeqScalingLists(H264SPS* sps) {
-  // Assumes ints in arrays.
-  memset(sps->scaling_list4x4, 16, sizeof(sps->scaling_list4x4));
-  memset(sps->scaling_list8x8, 16, sizeof(sps->scaling_list8x8));
+  for (int i = 0; i < 6; ++i)
+    for (int j = 0; j < kH264ScalingList4x4Length; ++j)
+      sps->scaling_list4x4[i][j] = 16;
+
+  for (int i = 0; i < 6; ++i)
+    for (int j = 0; j < kH264ScalingList8x8Length; ++j)
+      sps->scaling_list8x8[i][j] = 16;
+
 }
 
 H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
@@ -686,11 +691,6 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
     if (sps->chroma_format_idc == 3)
       READ_BOOL_OR_RETURN(&sps->separate_colour_plane_flag);
 
-    if (sps->separate_colour_plane_flag)
-      sps->chroma_array_type = 0;
-    else
-      sps->chroma_array_type = sps->chroma_format_idc;
-
     READ_UE_OR_RETURN(&sps->bit_depth_luma_minus8);
     TRUE_OR_RETURN(sps->bit_depth_luma_minus8 < 7);
 
@@ -708,7 +708,15 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
     } else {
       FillDefaultSeqScalingLists(sps.get());
     }
+  } else {
+    sps->chroma_format_idc = 1;
+    FillDefaultSeqScalingLists(sps.get());
   }
+
+  if (sps->separate_colour_plane_flag)
+    sps->chroma_array_type = 0;
+  else
+    sps->chroma_array_type = sps->chroma_format_idc;
 
   READ_UE_OR_RETURN(&sps->log2_max_frame_num_minus4);
   TRUE_OR_RETURN(sps->log2_max_frame_num_minus4 < 13);
@@ -807,6 +815,7 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
 
   READ_SE_OR_RETURN(&pps->chroma_qp_index_offset);
   IN_RANGE_OR_RETURN(pps->chroma_qp_index_offset, -12, 12);
+  pps->second_chroma_qp_index_offset = pps->chroma_qp_index_offset;
 
   READ_BOOL_OR_RETURN(&pps->deblocking_filter_control_present_flag);
   READ_BOOL_OR_RETURN(&pps->constrained_intra_pred_flag);
