@@ -88,9 +88,10 @@ bool LoadHighestPriorityKey(const string16& key_path,
       string16 path(kKeyPaths[k].path);
       if (!key_path.empty())
         path += kPathSep + key_path;
-      key->Open(kHives[h].hive, path.c_str(), KEY_READ);
-      if (!key->Valid())
+      if (key->Open(kHives[h].hive, path.c_str(), KEY_READ) != ERROR_SUCCESS ||
+          !key->Valid()) {
         continue;
+      }
       if (value_name.empty() || key->HasValue(value_name.c_str())) {
         *level = kKeyPaths[k].level;
         *scope = kHives[h].scope;

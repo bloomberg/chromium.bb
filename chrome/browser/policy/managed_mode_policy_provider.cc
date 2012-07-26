@@ -43,6 +43,8 @@ const base::Value* ManagedModePolicyProvider::GetPolicy(
     const std::string& key) const {
   base::DictionaryValue* dict = GetCachedPolicy();
   base::Value* value = NULL;
+
+  // Returns NULL if the key doesn't exist.
   dict->GetWithoutPathExpansion(key, &value);
   return value;
 }

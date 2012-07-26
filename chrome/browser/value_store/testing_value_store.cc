@@ -98,8 +98,8 @@ ValueStore::WriteResult TestingValueStore::Set(
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
     Value* old_value = NULL;
-    storage_.GetWithoutPathExpansion(it.key(), &old_value);
-    if (!old_value || !old_value->Equals(&it.value())) {
+    if (!storage_.GetWithoutPathExpansion(it.key(), &old_value) ||
+        !old_value->Equals(&it.value())) {
       changes->push_back(
           ValueStoreChange(
               it.key(),
