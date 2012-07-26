@@ -51,6 +51,7 @@ bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
                int recursion);
 
 void WriteValue(Message* m, const Value* value, int recursion) {
+  bool result;
   if (recursion > kMaxRecursionDepth) {
     LOG(WARNING) << "Max recursion depth hit in WriteValue.";
     return;
@@ -63,25 +64,29 @@ void WriteValue(Message* m, const Value* value, int recursion) {
     break;
     case Value::TYPE_BOOLEAN: {
       bool val;
-      value->GetAsBoolean(&val);
+      result = value->GetAsBoolean(&val);
+      DCHECK(result);
       WriteParam(m, val);
       break;
     }
     case Value::TYPE_INTEGER: {
       int val;
-      value->GetAsInteger(&val);
+      result = value->GetAsInteger(&val);
+      DCHECK(result);
       WriteParam(m, val);
       break;
     }
     case Value::TYPE_DOUBLE: {
       double val;
-      value->GetAsDouble(&val);
+      result = value->GetAsDouble(&val);
+      DCHECK(result);
       WriteParam(m, val);
       break;
     }
     case Value::TYPE_STRING: {
       std::string val;
-      value->GetAsString(&val);
+      result = value->GetAsString(&val);
+      DCHECK(result);
       WriteParam(m, val);
       break;
     }
