@@ -6,32 +6,15 @@ about:memory template page
 <html id="t">
 <head>
   <title>About Memory</title>
+<if expr="pp_ifdef('android')">
+  <meta name="viewport" content="width=device-width"/>
+</if>
   <link rel="stylesheet" href="shared/css/about_memory.css">
-<style>
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-div#header select {
-  font-family: Arial, Helvetica, sans-serif;
-}
-div.otherbrowsers {
-  font-family: Arial, Helvetica, sans-serif;
-}
-table.list#browserComparison tr:not([class*='firstRow']) > *:nth-child(1),
-table.list#browserComparison tr:not([class*='firstRow']) > *:nth-child(4),
-table.list#browserComparison tr.firstRow th:nth-child(1) {
-  border-right: 1px solid #b5c6de;
-}
-table.list#memoryDetails tr:not([class*='firstRow']) > *:nth-child(2),
-table.list#memoryDetails tr:not([class*='firstRow']) > *:nth-child(5),
-table.list#memoryDetails tr.firstRow th:nth-child(2) {
-  border-right: 1px solid #b5c6de;
-}
-</style>
-<script src="chrome://memory-redirect/memory.js"></script>
-<script src="chrome://memory-redirect/strings.js"></script>
+  <link rel="stylesheet" href="about_memory_linux.css">
+  <script src="chrome://memory-redirect/memory.js"></script>
+  <script src="chrome://memory-redirect/strings.js"></script>
 </head>
-<body>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
     <div id='header'>
       <h1>
         About memory
@@ -46,13 +29,7 @@ table.list#memoryDetails tr.firstRow th:nth-child(2) {
         Summary
         <div class='help'>
           <div>
-            <p>
-                Summary of memory used by currently active browsers.
-                For browsers which use multiple processes, memory reflects
-                aggregate memory used across all browser processes.<p>
-                For Chromium, processes used to to display diagnostics
-                information (such as this "about:memory") are excluded.
-            </p>
+            <p class='summary-desc' i18n-values=".innerHTML:summary_desc"></p>
           </div>
         </div>
       </h2>
@@ -221,6 +198,8 @@ table.list#memoryDetails tr.firstRow th:nth-child(2) {
       <div class="otherbrowsers">(The memory usage of our renderer processes is slightly less accurate when they are sandboxed.)</div>
 
     </div>
+    <script src="chrome://resources/js/i18n_template.js"></script>
+    <script src="chrome://resources/js/i18n_process.js"></script>
     <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
 </html>

@@ -79,8 +79,13 @@ const bool kShowHelpMenuItemIcon = false;
 const bool kShowSyncSetupMenuItem = true;
 const bool kShowUpgradeMenuItem = true;
 const bool kSizeTabButtonToTopOfTabStrip = false;
+#if defined(OS_ANDROID)
+const bool kSyncAutoStarts = true;
+const bool kShowOtherBrowsersInAboutMemory = false;
+#else
 const bool kSyncAutoStarts = false;
 const bool kShowOtherBrowsersInAboutMemory = true;
+#endif
 const bool kAlwaysOpenIncognitoWindow = false;
 #endif
 

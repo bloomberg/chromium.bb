@@ -1239,6 +1239,10 @@ void AboutMemoryHandler::OnDetailsAvailable() {
 
   root.SetBoolean("show_other_browsers",
       browser_defaults::kShowOtherBrowsersInAboutMemory);
+  root.SetString("summary_desc",
+                 l10n_util::GetStringUTF16(IDS_MEMORY_USAGE_SUMMARY_DESC));
+
+  ChromeWebUIDataSource::SetFontAndTextDirection(&root);
 
   std::string data;
   jstemplate_builder::AppendJsonJS(&root, &data);

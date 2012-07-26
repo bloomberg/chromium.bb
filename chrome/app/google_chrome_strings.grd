@@ -565,6 +565,22 @@ Google Chrome is unable to recover your settings.
          Google Chrome is no longer updating because your operating system is obsolete.
       </message>
 
+      <!-- about:memory -->
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_MEMORY_USAGE_SUMMARY_DESC" desc="Describes the browser summary table in the about memory page, which shows memory usage for Google Chrome and any other active browsers." translateable="false">
+Summary of memory used by currently active browsers. For browsers which use multiple processes, memory reflects aggregate memory used across all browser processes.
+
+For Google Chrome, processes used to display diagnostics information (such as this "about:memory") are excluded.
+        </message>
+      </if>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_MEMORY_USAGE_SUMMARY_DESC" desc="Describes the browser summary table in the about memory page, which shows memory usage for Google Chrome." translateable="false">
+Summary of memory used by Google Chrome. Since Google Chrome uses multiple processes, memory reflects aggregate memory used across all browser processes.
+
+For Google Chrome, processes used to display diagnostics information (such as this "about:memory") are excluded.
+        </message>
+      </if>
+
       <!-- About Chrome page -->
       <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded Google Chrome">
