@@ -24,6 +24,12 @@ class VIEWS_EXPORT TabbedPane : public View {
 
   TabbedPaneListener* listener() const { return listener_; }
   void set_listener(TabbedPaneListener* listener) { listener_ = listener; }
+#if defined(OS_WIN) && !defined(USE_AURA)
+  bool use_native_win_control() { return use_native_win_control_; }
+  void set_use_native_win_control(bool use_native_win_control) {
+    use_native_win_control_ = use_native_win_control;
+  }
+#endif
 
   // Returns the number of tabs.
   int GetTabCount();
@@ -85,6 +91,10 @@ class VIEWS_EXPORT TabbedPane : public View {
   virtual void OnFocus() OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  bool use_native_win_control_;
+#endif
 
   // Our listener. Not owned. Notified when tab selection changes.
   TabbedPaneListener* listener_;

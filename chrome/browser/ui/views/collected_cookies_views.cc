@@ -45,6 +45,12 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+// TODO(markusheintz): This should be removed once the native Windows tabbed
+// pane is not used anymore (http://crbug.com/138059)
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "ui/views/controls/tabbed_pane/native_tabbed_pane_win.h"
+#endif
+
 namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
@@ -297,6 +303,10 @@ void CollectedCookiesViews::Init() {
 
   layout->StartRow(0, single_column_layout_id);
   views::TabbedPane* tabbed_pane = new views::TabbedPane();
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // "set_use_native_win_control" must be called before the first tab is added.
+  tabbed_pane->set_use_native_win_control(true);
+#endif
   layout->AddView(tabbed_pane);
   // NOTE: the panes need to be added after the tabbed_pane has been added to
   // its parent.

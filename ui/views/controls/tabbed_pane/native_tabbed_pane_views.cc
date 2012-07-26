@@ -408,13 +408,4 @@ void NativeTabbedPaneViews::InitializeTabs() {
     content_view_->AddChildView(Tab::GetContents(tab_strip_->child_at(i)));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeTabbedPaneWrapper, public:
-
-// static
-NativeTabbedPaneWrapper* NativeTabbedPaneWrapper::CreateNativeWrapper(
-    TabbedPane* tabbed_pane) {
-  return new NativeTabbedPaneViews(tabbed_pane);
-}
-
 }  // namespace views

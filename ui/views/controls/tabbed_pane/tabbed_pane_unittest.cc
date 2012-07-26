@@ -40,6 +40,7 @@ class TabbedPaneTest : public ViewsTestBase,
   virtual void SetUp() OVERRIDE {
     ViewsTestBase::SetUp();
     tabbed_pane_ = new TabbedPane();
+    tabbed_pane_->set_use_native_win_control(true);
     window_ = Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 100, 100));
     window_->Show();
   }

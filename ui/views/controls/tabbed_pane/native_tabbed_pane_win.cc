@@ -395,13 +395,4 @@ void NativeTabbedPaneWin::ResizeContents() {
   content_window_->SetBounds(gfx::Rect(content_bounds));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeTabbedPaneWrapper, public:
-
-// static
-NativeTabbedPaneWrapper* NativeTabbedPaneWrapper::CreateNativeWrapper(
-    TabbedPane* tabbed_pane) {
-  return new NativeTabbedPaneWin(tabbed_pane);
-}
-
 }  // namespace views

@@ -8,16 +8,41 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/controls/tabbed_pane/native_tabbed_pane_views.h"
 #include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/widget/widget.h"
+
+// TODO(markusheintz): This should be removed once the native Windows tabbed
+// pane is not used anymore (http://crbug.com/138059).
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "ui/views/controls/tabbed_pane/native_tabbed_pane_win.h"
+#endif
+
+namespace {
+
+views::NativeTabbedPaneWrapper* CreateNativeWrapper(
+    views::TabbedPane* tabbed_pane) {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  if (tabbed_pane->use_native_win_control())
+    return new views::NativeTabbedPaneWin(tabbed_pane);
+#endif
+  return new views::NativeTabbedPaneViews(tabbed_pane);
+}
+
+}  // namespace
 
 namespace views {
 
 // static
 const char TabbedPane::kViewClassName[] = "views/TabbedPane";
 
-TabbedPane::TabbedPane() : native_tabbed_pane_(NULL), listener_(NULL) {
+TabbedPane::TabbedPane()
+  : native_tabbed_pane_(NULL),
+#if defined(OS_WIN) && !defined(USE_AURA)
+    use_native_win_control_(false),
+#endif
+    listener_(NULL) {
   set_focusable(true);
 }
 
@@ -86,7 +111,7 @@ void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && !native_tabbed_pane_) {
     // The native wrapper's lifetime will be managed by the view hierarchy after
     // we call AddChildView.
-    native_tabbed_pane_ = NativeTabbedPaneWrapper::CreateNativeWrapper(this);
+    native_tabbed_pane_ = CreateNativeWrapper(this);
     AddChildView(native_tabbed_pane_->GetView());
     LoadAccelerators();
   }

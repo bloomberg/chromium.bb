@@ -176,6 +176,7 @@ class TestTabbedPane : public TabbedPane {
 TEST_F(FocusManagerTest, FAILS_FocusNativeControls) {
   TestTextfield* textfield = new TestTextfield();
   TestTabbedPane* tabbed_pane = new TestTabbedPane();
+  tabbed_pane->set_use_native_win_control(true);
   TestTextfield* textfield2 = new TestTextfield();
 
   GetContentsView()->AddChildView(textfield);
@@ -201,7 +202,9 @@ TEST_F(FocusManagerTest, ContainsView) {
   View* view = new View();
   scoped_ptr<View> detached_view(new View());
   TabbedPane* tabbed_pane = new TabbedPane();
+  tabbed_pane->set_use_native_win_control(true);
   TabbedPane* nested_tabbed_pane = new TabbedPane();
+  nested_tabbed_pane->set_use_native_win_control(true);
   NativeTextButton* tab_button = new NativeTextButton(
       NULL, ASCIIToUTF16("tab button"));
 
@@ -625,6 +628,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
 TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   // Setup views hierarchy.
   TabbedPane* tabbed_pane = new TabbedPane();
+  tabbed_pane->set_use_native_win_control(true);
   GetContentsView()->AddChildView(tabbed_pane);
 
   NativeButtonDtorTracked* button = new NativeButtonDtorTracked(
