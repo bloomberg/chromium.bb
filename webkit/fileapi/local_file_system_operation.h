@@ -130,14 +130,12 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   friend class FileSystemQuotaTest;
   friend class LocalFileSystemTestOriginHelper;
 
-  explicit LocalFileSystemOperation(FileSystemContext* file_system_context);
+  LocalFileSystemOperation(
+      FileSystemContext* file_system_context,
+      scoped_ptr<FileSystemOperationContext> operation_context);
 
   FileSystemContext* file_system_context() const {
-    return operation_context_.file_system_context();
-  }
-
-  FileSystemOperationContext* file_system_operation_context() {
-    return &operation_context_;
+    return operation_context_->file_system_context();
   }
 
   // The unit tests that need to specify and control the lifetime of the
@@ -240,7 +238,7 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   // Returns false if there's another inflight pending operation.
   bool SetPendingOperationType(OperationType type);
 
-  FileSystemOperationContext operation_context_;
+  scoped_ptr<FileSystemOperationContext> operation_context_;
   FileSystemFileUtil* src_util_;  // Not owned.
   FileSystemFileUtil* dest_util_;  // Not owned.
 

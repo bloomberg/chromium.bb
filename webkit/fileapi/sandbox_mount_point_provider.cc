@@ -435,7 +435,9 @@ FileSystemOperationInterface*
 SandboxMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context) const {
-  return new LocalFileSystemOperation(context);
+  scoped_ptr<FileSystemOperationContext> operation_context(
+      new FileSystemOperationContext(context));
+  return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 
 webkit_blob::FileStreamReader*

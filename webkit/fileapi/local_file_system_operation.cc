@@ -174,7 +174,7 @@ void LocalFileSystemOperation::DirectoryExists(const FileSystemURL& url,
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      &operation_context_, src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidDirectoryExists,
                  base::Owned(this), callback));
 }
@@ -191,7 +191,7 @@ void LocalFileSystemOperation::FileExists(const FileSystemURL& url,
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      &operation_context_, src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidFileExists,
                  base::Owned(this), callback));
 }
@@ -208,7 +208,7 @@ void LocalFileSystemOperation::GetMetadata(
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      &operation_context_, src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidGetMetadata,
                  base::Owned(this), callback));
 }
@@ -225,7 +225,7 @@ void LocalFileSystemOperation::ReadDirectory(
   }
 
   FileSystemFileUtilProxy::ReadDirectory(
-      &operation_context_, src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidReadDirectory,
                  base::Owned(this), callback));
 }
@@ -246,7 +246,7 @@ void LocalFileSystemOperation::Remove(const FileSystemURL& url,
       file_system_context(), url.origin(), url.type()));
 
   FileSystemFileUtilProxy::Delete(
-      &operation_context_, src_util_, url, recursive,
+      operation_context_.get(), src_util_, url, recursive,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -325,7 +325,7 @@ void LocalFileSystemOperation::TouchFile(const FileSystemURL& url,
   }
 
   FileSystemFileUtilProxy::Touch(
-      &operation_context_, src_util_, url,
+      operation_context_.get(), src_util_, url,
       last_access_time, last_modified_time,
       base::Bind(&LocalFileSystemOperation::DidTouchFile,
                  base::Owned(this), callback));
@@ -429,7 +429,7 @@ void LocalFileSystemOperation::SyncGetPlatformPath(const FileSystemURL& url,
     return;
   }
 
-  src_util_->GetLocalFilePath(&operation_context_, url, platform_path);
+  src_util_->GetLocalFilePath(operation_context_.get(), url, platform_path);
 
   delete this;
 }
@@ -447,19 +447,21 @@ void LocalFileSystemOperation::CreateSnapshotFile(
   }
 
   FileSystemFileUtilProxy::CreateSnapshotFile(
-      &operation_context_, src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidCreateSnapshotFile,
                  base::Owned(this), callback));
 }
 
 LocalFileSystemOperation::LocalFileSystemOperation(
-    FileSystemContext* file_system_context)
-    : operation_context_(file_system_context),
+    FileSystemContext* file_system_context,
+    scoped_ptr<FileSystemOperationContext> operation_context)
+    : operation_context_(operation_context.Pass()),
       src_util_(NULL),
       dest_util_(NULL),
       peer_handle_(base::kNullProcessHandle),
       pending_operation_(kOperationNone),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(operation_context_.get());
 }
 
 void LocalFileSystemOperation::GetUsageAndQuotaThenRunTask(
@@ -472,7 +474,7 @@ void LocalFileSystemOperation::GetUsageAndQuotaThenRunTask(
       !file_system_context()->GetQuotaUtil(url.type())) {
     // If we don't have the quota manager or the requested filesystem type
     // does not support quota, we should be able to let it go.
-    operation_context_.set_allowed_bytes_growth(kint64max);
+    operation_context_->set_allowed_bytes_growth(kint64max);
     task.Run();
     return;
   }
@@ -501,7 +503,7 @@ void LocalFileSystemOperation::DidGetUsageAndQuotaAndRunTask(
     return;
   }
 
-  operation_context_.set_allowed_bytes_growth(quota - usage);
+  operation_context_->set_allowed_bytes_growth(quota - usage);
   scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
       file_system_context(), params.url.origin(), params.url.type()));
 
@@ -513,7 +515,7 @@ void LocalFileSystemOperation::DoCreateFile(
     const StatusCallback& callback,
     bool exclusive) {
   FileSystemFileUtilProxy::EnsureFileExists(
-      &operation_context_,
+      operation_context_.get(),
       src_util_, url,
       base::Bind(
           exclusive ?
@@ -527,7 +529,7 @@ void LocalFileSystemOperation::DoCreateDirectory(
     const StatusCallback& callback,
     bool exclusive, bool recursive) {
   FileSystemFileUtilProxy::CreateDirectory(
-      &operation_context_,
+      operation_context_.get(),
       src_util_, url, exclusive, recursive,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
@@ -537,7 +539,7 @@ void LocalFileSystemOperation::DoCopy(const FileSystemURL& src_url,
                                       const FileSystemURL& dest_url,
                                       const StatusCallback& callback) {
   FileSystemFileUtilProxy::Copy(
-      &operation_context_,
+      operation_context_.get(),
       src_util_, dest_util_,
       src_url, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
@@ -548,7 +550,7 @@ void LocalFileSystemOperation::DoMove(const FileSystemURL& src_url,
                                       const FileSystemURL& dest_url,
                                       const StatusCallback& callback) {
   FileSystemFileUtilProxy::Move(
-      &operation_context_,
+      operation_context_.get(),
       src_util_, dest_util_,
       src_url, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
@@ -559,7 +561,7 @@ void LocalFileSystemOperation::DoTruncate(const FileSystemURL& url,
                                           const StatusCallback& callback,
                                           int64 length) {
   FileSystemFileUtilProxy::Truncate(
-      &operation_context_, src_util_, url, length,
+      operation_context_.get(), src_util_, url, length,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -568,7 +570,7 @@ void LocalFileSystemOperation::DoOpenFile(const FileSystemURL& url,
                                           const OpenFileCallback& callback,
                                           int file_flags) {
   FileSystemFileUtilProxy::CreateOrOpen(
-      &operation_context_, src_util_, url, file_flags,
+      operation_context_.get(), src_util_, url, file_flags,
       base::Bind(&LocalFileSystemOperation::DidOpenFile,
                  base::Owned(this), callback));
 }

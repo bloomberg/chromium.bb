@@ -173,8 +173,11 @@ LocalFileSystemTestOriginHelper::ComputeCurrentDirectoryDatabaseUsage() const {
 LocalFileSystemOperation* LocalFileSystemTestOriginHelper::NewOperation() {
   DCHECK(file_system_context_.get());
   DCHECK(file_util_);
+  scoped_ptr<FileSystemOperationContext> operation_context(
+      new FileSystemOperationContext(file_system_context_.get()));
   LocalFileSystemOperation* operation =
-    new LocalFileSystemOperation(file_system_context_.get());
+      new LocalFileSystemOperation(file_system_context_.get(),
+                                   operation_context.Pass());
   operation->set_override_file_util(file_util_);
   return operation;
 }

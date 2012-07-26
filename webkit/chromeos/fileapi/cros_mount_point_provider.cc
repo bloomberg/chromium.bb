@@ -19,6 +19,7 @@
 #include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
@@ -253,7 +254,10 @@ CrosMountPointProvider::CreateFileSystemOperation(
   if (mount_point && mount_point->location == REMOTE)
     return new chromeos::RemoteFileSystemOperation(mount_point->remote_proxy);
 
-  return new fileapi::LocalFileSystemOperation(context);
+  scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
+      new fileapi::FileSystemOperationContext(context));
+  return new fileapi::LocalFileSystemOperation(context,
+                                               operation_context.Pass());
 }
 
 webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(
