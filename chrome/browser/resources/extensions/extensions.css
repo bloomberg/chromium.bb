@@ -254,10 +254,6 @@ html[dir='rtl'] #extension-settings .trash {
   display: none;
 }
 
-.page:not(.dev-mode) #dev-controls {
-  display: none;
-}
-
 /* Managed mode */
 
 .page:not(.managed-mode) #managed-mode-banner {

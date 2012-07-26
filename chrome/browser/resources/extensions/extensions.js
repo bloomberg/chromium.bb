@@ -237,6 +237,7 @@ cr.define('extensions', function() {
     if (extensionsData.developerMode && !extensionsData.managedMode) {
       pageDiv.classList.add('dev-mode');
       $('toggle-dev-on').checked = true;
+      $('dev-controls').hidden = false;
     } else {
       pageDiv.classList.remove('dev-mode');
       $('toggle-dev-on').checked = false;
