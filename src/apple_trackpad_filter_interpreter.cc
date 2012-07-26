@@ -14,22 +14,21 @@ AppleTrackpadFilterInterpreter::AppleTrackpadFilterInterpreter(
   next_.reset(next);
 }
 
-Gesture* AppleTrackpadFilterInterpreter::SyncInterpret(
+Gesture* AppleTrackpadFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
   if (enabled_.val_) {
     for (size_t i = 0; i < hwstate->finger_cnt; i++)
       hwstate->fingers[i].pressure = hwstate->fingers[i].touch_major;
   }
-
   return next_->SyncInterpret(hwstate, timeout);
 }
 
-Gesture* AppleTrackpadFilterInterpreter::HandleTimer(stime_t now,
+Gesture* AppleTrackpadFilterInterpreter::HandleTimerImpl(stime_t now,
                                                   stime_t* timeout) {
   return next_->HandleTimer(now, timeout);
 }
 
-void AppleTrackpadFilterInterpreter::SetHardwareProperties(
+void AppleTrackpadFilterInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hwprops) {
   next_->SetHardwareProperties(hwprops);
 }

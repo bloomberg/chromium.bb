@@ -33,7 +33,7 @@ Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
   next_.reset(next);
 }
 
-Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpret(
+Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
 
   if (is_semi_mt_device_) {
@@ -58,12 +58,12 @@ Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpret(
   return next_->SyncInterpret(hwstate, timeout);
 }
 
-Gesture* Cr48ProfileSensorFilterInterpreter::HandleTimer(
+Gesture* Cr48ProfileSensorFilterInterpreter::HandleTimerImpl(
     stime_t now, stime_t* timeout) {
   return next_->HandleTimer(now, timeout);
 }
 
-void Cr48ProfileSensorFilterInterpreter::SetHardwareProperties(
+void Cr48ProfileSensorFilterInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hw_props) {
   is_semi_mt_device_ = hw_props.support_semi_mt;
   next_->SetHardwareProperties(hw_props);

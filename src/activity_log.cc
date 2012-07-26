@@ -11,6 +11,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <base/file_util.h>
+#include <base/file_path.h>
 #include <base/json/json_writer.h>
 #include <base/stringprintf.h>
 #include <base/values.h>
@@ -78,23 +80,10 @@ void ActivityLog::LogPropChange(const PropChangeEntry& prop_change) {
 }
 
 void ActivityLog::Dump(const char* filename) {
-  int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-  if (fd < 0) {
-    Err("Can't open file %s: %s", filename, strerror(errno));
-    return;
-  }
   string data = Encode();
-  for (size_t bytes_written = 0; bytes_written < data.size(); ) {
-    ssize_t rc = write(fd, data.c_str() + bytes_written,
-                       data.size() - bytes_written);
-    if (rc < 0) {
-      Err("write failed: %s", strerror(errno));
-      close(fd);
-      return;
-    }
-    bytes_written += rc;
-  }
-  close(fd);
+  std::string fn(filename);
+  FilePath fp(fn);
+  file_util::WriteFile(fp, data.c_str(), data.size());
 }
 
 ActivityLog::Entry* ActivityLog::PushBack() {
@@ -313,16 +302,8 @@ const char kSubSubEntryPadding[] = "      ";
   return ret;
 }
 
-string ActivityLog::Encode() {
-  DictionaryValue root;
-  root.Set("version", new FundamentalValue(1));
-  string gestures_version = VCSID;
-
-  // Strip tailing whitespace.
-  TrimWhitespaceASCII(gestures_version, TRIM_ALL, &gestures_version);
-  root.Set("gesturesVersion", new StringValue(gestures_version));
-  root.Set(kKeyProperties, EncodePropRegistry());
-  root.Set(kKeyHardwarePropRoot, EncodeHardwareProperties());
+DictionaryValue* ActivityLog::EncodeCommonInfo() {
+  DictionaryValue* root = new DictionaryValue;
 
   ListValue* entries = new ListValue;
   for (size_t i = 0; i < size_; ++i) {
@@ -346,12 +327,35 @@ string ActivityLog::Encode() {
     }
     Err("Unknown entry type %d", entry.type);
   }
-  root.Set(kKeyRoot, entries);
+  root->Set(kKeyRoot, entries);
+
+  return root;
+}
+
+DictionaryValue* ActivityLog::AddEncodeInfo(DictionaryValue* root) {
+  root->Set("version", new FundamentalValue(1));
+  string gestures_version = VCSID;
+
+  // Strip tailing whitespace.
+  TrimWhitespaceASCII(gestures_version, TRIM_ALL, &gestures_version);
+  root->Set("gesturesVersion", new StringValue(gestures_version));
+  root->Set(kKeyProperties, EncodePropRegistry());
+  root->Set(kKeyHardwarePropRoot, EncodeHardwareProperties());
+
+  return root;
+}
+
+string ActivityLog::Encode() {
+  DictionaryValue *root;
+  root = EncodeCommonInfo();
+  root = AddEncodeInfo(root);
+
   string out;
-  base::JSONWriter::Write(&root, true, &out);
+  base::JSONWriter::Write(root, true, &out);
   return out;
 }
 
+const char ActivityLog::kKeyNext[] = "nextLayer";
 const char ActivityLog::kKeyRoot[] = "entries";
 const char ActivityLog::kKeyType[] = "type";
 const char ActivityLog::kKeyHardwareState[] = "hardwareState";

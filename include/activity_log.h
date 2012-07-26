@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,13 +75,15 @@ class ActivityLog {
 
   // Returns a JSON string representing all the state in the buffer
   std::string Encode();
-
+  DictionaryValue* AddEncodeInfo(DictionaryValue* root);
+  DictionaryValue* EncodeCommonInfo();
   size_t size() const { return size_; }
   size_t MaxSize() const { return kBufferSize; }
   Entry* GetEntry(size_t idx) {
     return &buffer_[(head_idx_ + idx) % kBufferSize];
   }
 
+  static const char kKeyNext[];
   static const char kKeyRoot[];
   static const char kKeyType[];
   static const char kKeyHardwareState[];

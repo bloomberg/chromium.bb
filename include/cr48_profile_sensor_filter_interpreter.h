@@ -5,8 +5,8 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_CR48_PROFILE_SENSOR_FILTER_INTERPRETER_H_
@@ -58,7 +58,7 @@ typedef enum {
 // on Cr48 before they are processed by other interpreters. The tweaks mainly
 // include low-pressure filtering, hysteresis, finger position correction.
 
-class Cr48ProfileSensorFilterInterpreter : public Interpreter {
+class Cr48ProfileSensorFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest);
   FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, ClipNonLinearAreaTest);
   FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest,
@@ -77,10 +77,12 @@ class Cr48ProfileSensorFilterInterpreter : public Interpreter {
  public:
   Cr48ProfileSensorFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~Cr48ProfileSensorFilterInterpreter() {}
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
+
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                  stime_t* timeout);
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
+  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:
   // Helper function to append current HardwareState to history buffer
@@ -229,8 +231,6 @@ class Cr48ProfileSensorFilterInterpreter : public Interpreter {
   // (traditional semi-mt).  When false, kernel data is processed as
   // individual fingers in MT-B format.
   BoolProperty bounding_box_;
-
-  scoped_ptr<Interpreter> next_;
 };
 
 }  // namespace gestures
