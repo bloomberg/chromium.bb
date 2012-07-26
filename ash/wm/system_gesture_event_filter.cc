@@ -616,7 +616,7 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
         event->details().touch_points() == kSystemGesturePoints) {
       ash::AcceleratorController* accelerator =
           ash::Shell::GetInstance()->accelerator_controller();
-      if (accelerator->PerformAction(CYCLE_BACKWARD_MRU, ui::Accelerator()))
+      if (accelerator->PerformAction(CYCLE_FORWARD_MRU, ui::Accelerator()))
         return ui::GESTURE_STATUS_CONSUMED;
     }
     return ui::GESTURE_STATUS_UNKNOWN;
