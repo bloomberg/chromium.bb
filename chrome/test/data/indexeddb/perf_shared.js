@@ -49,17 +49,18 @@ function onError(e) {
   throw new Error(e);
 }
 
-var version = 2;  // The version with our object stores.
+var baseVersion = 2;  // The version with our object stores.
+var curVersion;
 
 // Valid options fields:
 //  indexName: the name of an index to create on each object store
-//  indexKeyPath: likewise
+//  indexKeyPath: the key path for that index
 //  indexIsUnique: the "unique" option for IDBIndexParameters
 //  indexIsMultiEntry: the "multiEntry" option for IDBIndexParameters
 //
 function createDatabase(
     name, objectStoreNames, handler, errorHandler, options) {
-  var openRequest = indexedDB.open(name, version);
+  var openRequest = indexedDB.open(name, baseVersion);
   openRequest.onblocked = errorHandler;
   function createObjectStores(db) {
     for (var store in objectStoreNames) {
@@ -87,20 +88,56 @@ function createDatabase(
     db.onerror = function(ev) {
       console.log("db error", arguments, openRequest.webkitErrorMessage);
       errorHandler();
-    };
-    if (db.version != version) {
+    }
+    if (db.version != baseVersion) {
       // This is the current Chrome path.
-      var setVersionRequest = db.setVersion(version);
-      setVersionRequest.onfailure = errorHandler;
+      var setVersionRequest = db.setVersion(baseVersion);
+      setVersionRequest.onerror = errorHandler;
       setVersionRequest.onsuccess = function(e) {
+        curVersion = db.version;
         assert(setVersionRequest == e.target);
         createObjectStores(db);
         var versionTransaction = setVersionRequest.result;
-        versionTransaction.oncomplete = function() {handler(db); };
+        versionTransaction.oncomplete = function() { handler(db); };
         versionTransaction.onerror = onError;
-      };
+      }
     } else {
       handler(db);
+    }
+  }
+}
+
+// You must close all database connections before calling this.
+function alterObjectStores(
+    name, objectStoreNames, func, handler, errorHandler) {
+  var version = curVersion + 1;
+  var openRequest = indexedDB.open(name, version);
+  openRequest.onblocked = errorHandler;
+  // TODO: This won't work in Firefox yet; see above in createDatabase.
+  openRequest.onsuccess = function(ev) {
+    assert(openRequest == ev.target);
+    var db = openRequest.result;
+    db.onerror = function(ev) {
+      console.log("error altering db", arguments,
+          openRequest.webkitErrorMessage);
+      errorHandler();
+    }
+    if (db.version != version) {
+      var setVersionRequest = db.setVersion(version);
+      setVersionRequest.onerror = errorHandler;
+      setVersionRequest.onsuccess =
+          function(e) {
+            curVersion = db.version;
+            assert(setVersionRequest == e.target);
+            var versionTransaction = setVersionRequest.result;
+            versionTransaction.oncomplete = function() { handler(db); };
+            versionTransaction.onerror = onError;
+            for (var store in objectStoreNames) {
+              func(versionTransaction.objectStore(objectStoreNames[store]));
+            }
+          }
+    } else {
+      errorHandler();
     }
   }
 }
@@ -136,6 +173,68 @@ function getCompletionFunc(testName, startTime, onTestComplete) {
     // TODO: Turn on actual deletion; for now it's way too slow.
     // deleteDatabase(testName, onDeleted);
     onTestComplete();
+  }
+}
+
+function getDisplayName(args) {
+  // The last arg is the completion callback the test runner tacks on.
+  return getDisplayName.caller.name + "_" +
+      Array.prototype.slice.call(args, 0, args.length - 1).join("_");
+}
+
+function getSimpleKey(i) {
+  return "key " + i;
+}
+
+function getSimpleValue(i) {
+  return "value " + i;
+}
+
+function putLinearValues(
+    transaction, objectStoreNames, numKeys, getKey, getValue) {
+  if (!getKey)
+    getKey = getSimpleKey;
+  if (!getValue)
+    getValue = getSimpleValue;
+  for (var i in objectStoreNames) {
+    var os = transaction.objectStore(objectStoreNames[i]);
+    for (var j = 0; j < numKeys; ++j) {
+      var request = os.put(getValue(j), getKey(j));
+      request.onerror = onError;
+    }
+  }
+}
+
+function getRandomValues(
+    transaction, objectStoreNames, numReads, numKeys, indexName, getKey) {
+  if (!getKey)
+    getKey = getSimpleKey;
+  for (var i in objectStoreNames) {
+    var os = transaction.objectStore(objectStoreNames[i]);
+    var source = os;
+    if (indexName)
+      source = source.index(indexName);
+    for (var j = 0; j < numReads; ++j) {
+      var rand = Math.floor(Math.random() * numKeys);
+      var request = source.get(getKey(rand));
+      request.onerror = onError;
+    }
+  }
+}
+
+function putRandomValues(
+    transaction, objectStoreNames, numPuts, numKeys, getKey, getValue) {
+  if (!getKey)
+    getKey = getSimpleKey;
+  if (!getValue)
+    getValue = getSimpleValue;
+  for (var i in objectStoreNames) {
+    var os = transaction.objectStore(objectStoreNames[i]);
+    for (var j = 0; j < numPuts; ++j) {
+      var rand = Math.floor(Math.random() * numKeys);
+      var request = os.put(getValue(rand), getKey(rand));
+      request.onerror = onError;
+    }
   }
 }
 

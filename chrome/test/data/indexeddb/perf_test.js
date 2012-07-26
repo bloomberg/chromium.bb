@@ -6,8 +6,7 @@ var overallTestStartTime = Date.now();
 
 function testCreateKeysInStores(
     numKeys, numStores, payloadLength, onTestComplete) {
-  var testName = "testCreateKeysInStores_" + numKeys + "_" + numStores + "_" +
-      payloadLength;
+  var testName = getDisplayName(arguments);
   assert(numKeys >= 0);
   assert(numStores >= 1);
   var objectStoreNames = [];
@@ -15,57 +14,39 @@ function testCreateKeysInStores(
     objectStoreNames.push("store " + i);
   }
   var value = stringOfLength(payloadLength);
+  function getValue() {
+    return value;
+  }
 
   function onCreated(db) {
     automation.setStatus("Constructing transaction.");
     var completionFunc =
         getCompletionFunc(testName, Date.now(), onTestComplete);
-    var transaction = getTransaction(db, objectStoreNames, "readwrite",
-        function() { completionFunc(); });
-    for (var i in objectStoreNames) {
-      var os = transaction.objectStore(objectStoreNames[i]);
-      assert(os);
-      for (var j = 0; j < numKeys; ++j) {
-        os.put(value, "key " + j);
-      }
-    }
+    var transaction =
+        getTransaction(db, objectStoreNames, "readwrite", completionFunc);
+    putLinearValues(transaction, objectStoreNames, numKeys, null, getValue);
   }
   automation.setStatus("Creating database.");
   createDatabase(testName, objectStoreNames, onCreated, onError);
 }
 
-function testRandomReads(numKeys, numReadsPerTransaction, numTransactions,
-    useIndex, onTestComplete) {
-  var indexText = "_bare";
+function testRandomReadsAndWrites(
+    numKeys, numReadsPerTransaction, numWritesPerTransaction, numTransactions,
+    useIndexForReads, onTestComplete) {
   var indexName;
-  if (useIndex) {
-    indexText = "_index";
+  if (useIndexForReads)
     indexName = "index";
-  }
-  var testName = "testRandomReads_" + numKeys + "_" + numReadsPerTransaction +
-      "_" + numTransactions + indexText;
+  var testName = getDisplayName(arguments);
   var numTransactionsLeft = numTransactions;
-  var storeName = "store";
-  var objectStoreNames = [storeName];
+  var objectStoreNames = ["store"];
   var numTransactionsRunning;
-
-  function getKey(i) {
-    return "key " + i;
-  }
-
-  function getValue(i) {
-    return "value " + i;
-  }
 
   function onCreated(db) {
     automation.setStatus("Setting up test database.");
     var transaction = getTransaction(db, objectStoreNames, "readwrite",
         function() { onSetupComplete(db); });
-    var os = transaction.objectStore(storeName);
-    assert(os);
-    for (var j = 0; j < numKeys; ++j) {
-      os.put(getValue(i), getKey(j));
-    }
+    putLinearValues(transaction, objectStoreNames, numKeys, null,
+        function () { return "test value"; });
   }
   var completionFunc;
   function onSetupComplete(db) {
@@ -80,11 +61,12 @@ function testRandomReads(numKeys, numReadsPerTransaction, numTransactions,
     }
     --numTransactionsLeft;
     ++numTransactionsRunning;
-    var valuesToRead = numReadsPerTransaction;
-    var transaction = getTransaction(db, objectStoreNames, "readonly",
+    var mode = "readonly";
+    if (numWritesPerTransaction)
+      mode = "readwrite";
+    var transaction = getTransaction(db, objectStoreNames, mode,
         function() {
           assert(!--numTransactionsRunning);
-          assert(!valuesToRead);
           if (numTransactionsLeft <= 0) {
             completionFunc();
           } else {
@@ -92,46 +74,83 @@ function testRandomReads(numKeys, numReadsPerTransaction, numTransactions,
           }
         });
 
-    var queryObject = transaction.objectStore(storeName);
-    if (useIndex) {
-      queryObject = queryObject.index(indexName);
-    }
-    assert(queryObject);
-    for (var i = 0; i < numReadsPerTransaction; ++i) {
-      var rand = Math.floor(Math.random() * numKeys);
-      var request = queryObject.get(getKey(rand));
-      request.onerror = onError;
-      request.onsuccess = function () {
-        assert(valuesToRead--);
-      }
-    }
+    getRandomValues(transaction, objectStoreNames, numReadsPerTransaction,
+        numKeys, indexName);
+    putRandomValues(transaction, objectStoreNames, numWritesPerTransaction,
+        numKeys);
   }
 
   automation.setStatus("Creating database.");
   var options = {};
-  if (useIndex) {
+  if (useIndexForReads) {
     options.indexName = indexName;
     options.indexKeyPath = "";
-    options.indexIsUnique = true;
+    options.indexIsUnique = false;
     options.indexIsMultiEntry = false;
   }
   createDatabase(testName, objectStoreNames, onCreated, onError, options);
 }
 
+function testCreateAndDeleteIndex(numKeys, onTestComplete) {
+  var testName = getDisplayName(arguments);
+  var objectStoreNames = ["store"];
+  function getValue(i) {
+    return { firstName: i + " first name", lastName: i + " last name" };
+  }
+
+  var startTime;
+  function onCreated(db) {
+    automation.setStatus("Initializing data.");
+    var transaction = getTransaction(db, objectStoreNames, "readwrite",
+        function() { onPopulated(db); });
+    putLinearValues(transaction, objectStoreNames, numKeys, null, getValue);
+  }
+
+  function onPopulated(db) {
+    db.close();
+    automation.setStatus("Building index.");
+    startTime = Date.now();
+    var f = function(objectStore) {
+      objectStore.createIndex("index", "firstName", {unique: true});
+    };
+    alterObjectStores(testName, objectStoreNames, f, onIndexCreated, onError);
+  }
+
+  var completionFunc;
+  function onIndexCreated(db) {
+    db.close();
+    var indexCreationCompleteTime = Date.now();
+    automation.addResult("testCreateIndex",
+        indexCreationCompleteTime - startTime);
+    completionFunc = getCompletionFunc("testDeleteIndex",
+        indexCreationCompleteTime, onTestComplete);
+    var f = function(objectStore) {
+      objectStore.deleteIndex("index");
+    };
+    automation.setStatus("Deleting index.");
+    alterObjectStores(testName, objectStoreNames, f, completionFunc, onError);
+  }
+
+  automation.setStatus("Creating database.");
+  createDatabase(testName, objectStoreNames, onCreated, onError);
+}
+
 var kUseIndex = true;
 var kDontUseIndex = false;
-
 var tests = [
   [testCreateKeysInStores, 1,     1,    1],
   [testCreateKeysInStores, 100,   1,    1],
   [testCreateKeysInStores, 1,     100,  1],
   [testCreateKeysInStores, 100,   1,    10000],
-  [testRandomReads,        1000,  5,    50, kDontUseIndex],
-  [testRandomReads,        1000,  50,   5,  kDontUseIndex],
-  [testRandomReads,        5000,  50,   5,  kDontUseIndex],
-  [testRandomReads,        1000,  5,    50, kUseIndex],
-  [testRandomReads,        1000,  50,   5,  kUseIndex],
-  [testRandomReads,        5000,  50,   5,  kUseIndex]
+  [testRandomReadsAndWrites, 1000,  5,    0,  50, kDontUseIndex],
+  [testRandomReadsAndWrites, 1000,  50,   0,  5,  kDontUseIndex],
+  [testRandomReadsAndWrites, 5000,  50,   0,  5,  kDontUseIndex],
+  [testRandomReadsAndWrites, 1000,  5,    0,  50, kUseIndex],
+  [testRandomReadsAndWrites, 1000,  50,   0,  5,  kUseIndex],
+  [testRandomReadsAndWrites, 5000,  50,   0,  5,  kUseIndex],
+  [testRandomReadsAndWrites, 1000,  5,    5,  50, kDontUseIndex],
+  [testRandomReadsAndWrites, 1000,  5,    5,  50, kUseIndex],
+  [testCreateAndDeleteIndex, 1000]
 ];
 
 var currentTest = 0;
