@@ -22,7 +22,8 @@ const ExtensionSet* TestExtensionService::disabled_extensions() const {
   return NULL;
 }
 
-PendingExtensionManager* TestExtensionService::pending_extension_manager() {
+extensions::PendingExtensionManager*
+TestExtensionService::pending_extension_manager() {
   ADD_FAILURE();
   return NULL;
 }

@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(service->disabled_extensions()->is_empty());
 
-  PendingExtensionManager* pending_extension_manager =
+  extensions::PendingExtensionManager* pending_extension_manager =
       service->pending_extension_manager();
 
   // The code that reads external_extensions.json uses this method to inform

@@ -425,7 +425,8 @@ const ExtensionSet* ExtensionService::GenerateInstalledExtensionsSet() const {
   return installed_extensions;
 }
 
-PendingExtensionManager* ExtensionService::pending_extension_manager() {
+extensions::PendingExtensionManager*
+    ExtensionService::pending_extension_manager() {
   return &pending_extension_manager_;
 }
 
@@ -554,7 +555,7 @@ bool ExtensionService::UpdateExtension(
     CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const PendingExtensionInfo* pending_extension_info =
+  const extensions::PendingExtensionInfo* pending_extension_info =
       pending_extension_manager()->GetById(id);
 
   const Extension* extension =
@@ -2103,7 +2104,7 @@ void ExtensionService::OnExtensionInstalled(
   bool initial_enable =
       !extension_prefs_->IsExtensionDisabled(id) ||
       system_->management_policy()->MustRemainEnabled(extension, NULL);
-  const PendingExtensionInfo* pending_extension_info = NULL;
+  const extensions::PendingExtensionInfo* pending_extension_info = NULL;
   if ((pending_extension_info = pending_extension_manager()->GetById(id))) {
     if (!pending_extension_info->ShouldAllowInstall(*extension)) {
       pending_extension_manager()->Remove(id);

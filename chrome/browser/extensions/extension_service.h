@@ -56,7 +56,6 @@ class ExtensionSyncData;
 class ExtensionToolbarModel;
 class HistoryExtensionEventRouter;
 class GURL;
-class PendingExtensionManager;
 class Profile;
 class Version;
 
@@ -77,14 +76,10 @@ class ExtensionManagedModeEventRouter;
 class ExtensionSyncData;
 class ExtensionSystem;
 class ExtensionUpdater;
+class PendingExtensionManager;
 class SettingsFrontend;
 class WebNavigationEventRouter;
 class WindowEventRouter;
-}
-
-namespace syncer {
-class SyncData;
-class SyncErrorFactory;
 }
 
 namespace syncer {
@@ -104,7 +99,7 @@ class ExtensionServiceInterface : public syncer::SyncableService {
   virtual ~ExtensionServiceInterface() {}
   virtual const ExtensionSet* extensions() const = 0;
   virtual const ExtensionSet* disabled_extensions() const = 0;
-  virtual PendingExtensionManager* pending_extension_manager() = 0;
+  virtual extensions::PendingExtensionManager* pending_extension_manager() = 0;
 
   // Install an update.  Return true if the install can be started.
   // Set out_crx_installer to the installer if one was started.
@@ -218,7 +213,8 @@ class ExtensionService
   const ExtensionSet* GenerateInstalledExtensionsSet() const;
 
   // Gets the object managing the set of pending extensions.
-  virtual PendingExtensionManager* pending_extension_manager() OVERRIDE;
+  virtual extensions::PendingExtensionManager*
+      pending_extension_manager() OVERRIDE;
 
   const FilePath& install_directory() const { return install_directory_; }
 
@@ -732,7 +728,7 @@ class ExtensionService
   ExtensionSet terminated_extensions_;
 
   // Hold the set of pending extensions.
-  PendingExtensionManager pending_extension_manager_;
+  extensions::PendingExtensionManager pending_extension_manager_;
 
   // The map of extension IDs to their runtime data.
   ExtensionRuntimeDataMap extension_runtime_data_;

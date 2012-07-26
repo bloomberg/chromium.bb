@@ -130,9 +130,10 @@ bool SyncExtensionHelper::IsIncognitoEnabled(
 
 bool SyncExtensionHelper::IsExtensionPendingInstallForSync(
     Profile* profile, const std::string& id) const {
-  const PendingExtensionManager* pending_extension_manager =
+  const extensions::PendingExtensionManager* pending_extension_manager =
       profile->GetExtensionService()->pending_extension_manager();
-  const PendingExtensionInfo* info = pending_extension_manager->GetById(id);
+  const extensions::PendingExtensionInfo* info =
+      pending_extension_manager->GetById(id);
   if (!info)
     return false;
   return info->is_from_sync();
@@ -146,14 +147,14 @@ void SyncExtensionHelper::InstallExtensionsPendingForSync(
 
   // We make a copy here since InstallExtension() removes the
   // extension from the extensions service's copy.
-  const PendingExtensionManager* pending_extension_manager =
+  const extensions::PendingExtensionManager* pending_extension_manager =
       profile->GetExtensionService()->pending_extension_manager();
 
   std::list<std::string> pending_crx_ids;
   pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);
 
   std::list<std::string>::const_iterator iter;
-  const PendingExtensionInfo* info = NULL;
+  const extensions::PendingExtensionInfo* info = NULL;
   for (iter = pending_crx_ids.begin(); iter != pending_crx_ids.end(); ++iter) {
     ASSERT_TRUE((info = pending_extension_manager->GetById(*iter)));
     if (!info->is_from_sync())
@@ -195,7 +196,7 @@ SyncExtensionHelper::ExtensionStateMap
                  "enabled" : "disabled");
   }
 
-  const PendingExtensionManager* pending_extension_manager =
+  const extensions::PendingExtensionManager* pending_extension_manager =
       extension_service->pending_extension_manager();
 
   std::list<std::string> pending_crx_ids;

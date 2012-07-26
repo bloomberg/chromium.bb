@@ -66,7 +66,7 @@ AppStateMap GetAppStates(Profile* profile) {
     }
   }
 
-  const PendingExtensionManager* pending_extension_manager =
+  const extensions::PendingExtensionManager* pending_extension_manager =
       extension_service->pending_extension_manager();
 
   std::list<std::string> pending_crx_ids;

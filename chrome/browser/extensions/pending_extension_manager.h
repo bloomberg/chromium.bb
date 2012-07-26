@@ -17,12 +17,14 @@ class GURL;
 class PendingExtensionManager;
 class Version;
 
+FORWARD_DECLARE_TEST(ExtensionServiceTest,
+                     UpdatePendingExtensionAlreadyInstalled);
+
 namespace extensions {
 class ExtensionUpdaterTest;
 void SetupPendingExtensionManagerForTest(
     int count, const GURL& update_url,
     PendingExtensionManager* pending_extension_manager);
-}
 
 // Class PendingExtensionManager manages the set of extensions which are
 // being installed or updated. In general, installation and updates take
@@ -73,14 +75,14 @@ class PendingExtensionManager {
   // to be fetched, installed, and activated.
   bool AddFromExternalUpdateUrl(const std::string& id,
                                 const GURL& update_url,
-                                extensions::Extension::Location location);
+                                Extension::Location location);
 
   // Add a pending extension record for an external CRX file.
   // Return true if the CRX should be installed, false if an existing
   // pending record overrides it.
   bool AddFromExternalFile(
       const std::string& id,
-      extensions::Extension::Location location,
+      Extension::Location location,
       const Version& version);
 
   // Get the list of pending IDs that should be installed from an update URL.
@@ -101,7 +103,7 @@ class PendingExtensionManager {
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       bool install_silently,
-      extensions::Extension::Location install_source);
+      Extension::Location install_source);
 
   // Add a pending extension record directly.  Used for unit tests that need
   // to set an inital state. Use friendship to allow the tests to call this
@@ -116,14 +118,16 @@ class PendingExtensionManager {
 
   PendingExtensionList pending_extension_list_;
 
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(::ExtensionServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);
-  friend class extensions::ExtensionUpdaterTest;
-  friend void extensions::SetupPendingExtensionManagerForTest(
+  friend class ExtensionUpdaterTest;
+  friend void SetupPendingExtensionManagerForTest(
       int count, const GURL& update_url,
       PendingExtensionManager* pending_extension_manager);
 
   DISALLOW_COPY_AND_ASSIGN(PendingExtensionManager);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_MANAGER_H_

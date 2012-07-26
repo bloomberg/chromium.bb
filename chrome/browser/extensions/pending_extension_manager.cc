@@ -15,16 +15,17 @@
 #include <algorithm>
 
 using content::BrowserThread;
-using extensions::Extension;
 
 namespace {
 
 // Install predicate used by AddFromExternalUpdateUrl().
-bool AlwaysInstall(const Extension& extension) {
+bool AlwaysInstall(const extensions::Extension& extension) {
   return true;
 }
 
 }  // namespace
+
+namespace extensions {
 
 PendingExtensionManager::PendingExtensionManager(
     const ExtensionServiceInterface& service)
@@ -242,3 +243,5 @@ void PendingExtensionManager::AddForTesting(
     const PendingExtensionInfo& pending_extension_info) {
   pending_extension_list_.push_back(pending_extension_info);
 }
+
+}  // namespace extensions

@@ -9,6 +9,10 @@
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
 
+FORWARD_DECLARE_TEST(ExtensionServiceTest, AddPendingExtensionFromSync);
+
+namespace extensions {
+
 // A pending extension is an extension that hasn't been installed yet
 // and is intended to be installed in the next auto-update cycle.  The
 // update URL of a pending extension may be blank, in which case a
@@ -17,7 +21,7 @@
 // PendingExtensionManager, and remove all other users.
 class PendingExtensionInfo {
  public:
-  typedef bool (*ShouldAllowInstallPredicate)(const extensions::Extension&);
+  typedef bool (*ShouldAllowInstallPredicate)(const Extension&);
 
   PendingExtensionInfo(
       const std::string& id,
@@ -26,7 +30,7 @@ class PendingExtensionInfo {
       ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       bool install_silently,
-      extensions::Extension::Location install_source);
+      Extension::Location install_source);
 
   // Required for STL container membership.  Should not be used directly.
   PendingExtensionInfo();
@@ -44,14 +48,12 @@ class PendingExtensionInfo {
   // If not, the extension is discarded. This allows creators of
   // PendingExtensionInfo objects to ensure that extensions meet some criteria
   // that can only be tested once the extension is unpacked.
-  bool ShouldAllowInstall(const extensions::Extension& extension) const {
+  bool ShouldAllowInstall(const Extension& extension) const {
     return should_allow_install_(extension);
   }
   bool is_from_sync() const { return is_from_sync_; }
   bool install_silently() const { return install_silently_; }
-  extensions::Extension::Location install_source() const {
-        return install_source_;
-  }
+  Extension::Location install_source() const { return install_source_; }
 
  private:
   std::string id_;
@@ -66,9 +68,11 @@ class PendingExtensionInfo {
 
   bool is_from_sync_;  // This update check was initiated from sync.
   bool install_silently_;
-  extensions::Extension::Location install_source_;
+  Extension::Location install_source_;
 
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, AddPendingExtensionFromSync);
+  FRIEND_TEST_ALL_PREFIXES(::ExtensionServiceTest, AddPendingExtensionFromSync);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
