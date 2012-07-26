@@ -20,7 +20,7 @@ class CursorDelegate;
 class CursorManager : public aura::client::CursorClient {
  public:
   CursorManager();
-  ~CursorManager();
+  virtual ~CursorManager();
 
   void set_delegate(CursorDelegate* delegate) { delegate_ = delegate; }
 
