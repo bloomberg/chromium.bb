@@ -13,7 +13,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/network_settings.h"
-#include "remoting/jingle_glue/chromium_socket_factory.h"
+#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
 
 namespace remoting {
 
@@ -128,7 +128,7 @@ scoped_ptr<HostPortAllocator> HostPortAllocator::Create(
   scoped_ptr<talk_base::NetworkManager> network_manager(
       new talk_base::BasicNetworkManager());
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory(
-      new remoting::ChromiumPacketSocketFactory());
+      new talk_base::BasicPacketSocketFactory());
   scoped_ptr<HostPortAllocator> result(
       new HostPortAllocator(url_context, network_manager.Pass(),
                             socket_factory.Pass()));

@@ -7,13 +7,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "jingle/glue/chrome_async_socket.h"
-#include "jingle/glue/task_pump.h"
-#include "jingle/glue/xmpp_client_socket_factory.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
-#include "net/socket/client_socket_factory.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "third_party/libjingle/source/talk/base/thread.h"
+#include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/jingle_glue/xmpp_socket_adapter.h"
+#include "third_party/libjingle/source/talk/base/asyncsocket.h"
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
 #include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
 
@@ -25,11 +22,6 @@ const char kDefaultResourceName[] = "chromoting";
 // connections that are idle for more than a minute.
 const int kKeepAliveIntervalSeconds = 50;
 
-// Read buffer size used by ChromeAsyncSocket for read and write buffers. Most
-// of XMPP messages are smaller than 4kB.
-const size_t kReadBufferSize = 4096;
-const size_t kWriteBufferSize = 4096;
-
 void DisconnectXmppClient(buzz::XmppClient* client) {
   client->Disconnect();
 }
@@ -38,12 +30,11 @@ void DisconnectXmppClient(buzz::XmppClient* client) {
 
 namespace remoting {
 
-XmppSignalStrategy::XmppSignalStrategy(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    const std::string& username,
-    const std::string& auth_token,
-    const std::string& auth_token_service)
-   : request_context_getter_(request_context_getter),
+XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
+                                       const std::string& username,
+                                       const std::string& auth_token,
+                                       const std::string& auth_token_service)
+   : thread_(jingle_thread),
      username_(username),
      auth_token_(auth_token),
      auth_token_service_(auth_token_service),
@@ -73,15 +64,9 @@ void XmppSignalStrategy::Connect() {
   settings.set_auth_token(buzz::AUTH_MECHANISM_GOOGLE_TOKEN, auth_token_);
   settings.set_server(talk_base::SocketAddress("talk.google.com", 5222));
 
-  scoped_ptr<jingle_glue::XmppClientSocketFactory> socket_factory(
-      new jingle_glue::XmppClientSocketFactory(
-          net::ClientSocketFactory::GetDefaultFactory(),
-          net::SSLConfig(), request_context_getter_, false));
-  buzz::AsyncSocket* socket = new jingle_glue::ChromeAsyncSocket(
-    socket_factory.release(), kReadBufferSize, kWriteBufferSize);
+  buzz::AsyncSocket* socket = new XmppSocketAdapter(settings, false);
 
-  task_runner_.reset(new jingle_glue::TaskPump());
-  xmpp_client_ = new buzz::XmppClient(task_runner_.get());
+  xmpp_client_ = new buzz::XmppClient(thread_->task_pump());
   xmpp_client_->Connect(settings, "", socket, CreatePreXmppAuth(settings));
   xmpp_client_->SignalStateChange.connect(
       this, &XmppSignalStrategy::OnConnectionStateChanged);

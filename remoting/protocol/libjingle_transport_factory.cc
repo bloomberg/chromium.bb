@@ -8,13 +8,12 @@
 #include "base/thread_task_runner_handle.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
-#include "jingle/glue/thread_wrapper.h"
 #include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/transport_config.h"
-#include "remoting/jingle_glue/chromium_socket_factory.h"
+#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
 #include "third_party/libjingle/source/talk/base/network.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
@@ -312,17 +311,15 @@ LibjingleTransportFactory::LibjingleTransportFactory(
     : http_port_allocator_(port_allocator.get()),
       port_allocator_(port_allocator.Pass()),
       incoming_only_(incoming_only) {
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
 }
 
 LibjingleTransportFactory::LibjingleTransportFactory()
     : network_manager_(new talk_base::BasicNetworkManager()),
-      socket_factory_(new remoting::ChromiumPacketSocketFactory()),
+      socket_factory_(new talk_base::BasicPacketSocketFactory()),
       http_port_allocator_(NULL),
       port_allocator_(new cricket::BasicPortAllocator(
           network_manager_.get(), socket_factory_.get())),
       incoming_only_(false) {
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
 }
 
 LibjingleTransportFactory::~LibjingleTransportFactory() {

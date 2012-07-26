@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "remoting/jingle_glue/jingle_thread.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -38,6 +39,8 @@ class ChromotingHostContext {
   // this API.
   virtual bool Start();
 
+  virtual JingleThread* jingle_thread();
+
   // Task runner for the thread that is used for the UI. In the NPAPI
   // plugin this corresponds to the main plugin thread.
   virtual base::SingleThreadTaskRunner* ui_task_runner();
@@ -60,6 +63,18 @@ class ChromotingHostContext {
   // Can we use some other thread instead?
   virtual base::SingleThreadTaskRunner* desktop_task_runner();
 
+  // Task runner for the thread that is used for chromium's network
+  // IO, particularly all HTTP requests (for OAuth and Relay servers).
+  // Chromium's HTTP stack cannot be used on the network_task_runner()
+  // because that thread runs libjingle's message loop, while
+  // chromium's sockets must be used on a thread with a
+  // MessageLoopForIO.
+  //
+  // TODO(sergeyu): Implement socket server for libjingle that works
+  // on a regular chromium thread and use it for network_task_runner()
+  // to avoid the need for io_task_runner().
+  virtual base::SingleThreadTaskRunner* io_task_runner();
+
   // Task runner for the thread that is used for blocking file
   // IO. This thread is used by the URLRequestContext to read proxy
   // configuration and by NatConfig to read policy configs.
@@ -72,7 +87,7 @@ class ChromotingHostContext {
   FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
 
   // A thread that hosts all network operations.
-  base::Thread network_thread_;
+  JingleThread jingle_thread_;
 
   // A thread that hosts screen capture.
   base::Thread capture_thread_;
@@ -82,6 +97,9 @@ class ChromotingHostContext {
 
   // A thread that hosts input injection.
   base::Thread desktop_thread_;
+
+  // Thread for non-blocking IO operations.
+  base::Thread io_thread_;
 
   // Thread for blocking IO operations.
   base::Thread file_thread_;

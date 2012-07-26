@@ -87,6 +87,7 @@ class MockChromotingHostContext : public ChromotingHostContext {
 
   MOCK_METHOD0(Start, bool());
   MOCK_METHOD0(Stop, void());
+  MOCK_METHOD0(jingle_thread, JingleThread*());
   MOCK_METHOD0(ui_task_runner, base::SingleThreadTaskRunner*());
   MOCK_METHOD0(capture_task_runner, base::SingleThreadTaskRunner*());
   MOCK_METHOD0(encode_task_runner, base::SingleThreadTaskRunner*());
