@@ -504,7 +504,7 @@ bool CreateBookmarkFunction::RunImpl() {
   std::string url_string;
   json->GetString(keys::kUrlKey, &url_string);  // Optional.
   GURL url(url_string);
-  if (!url.is_empty() && !url.is_valid()) {
+  if (!url_string.empty() && !url.is_valid()) {
     error_ = keys::kInvalidUrlError;
     return false;
   }

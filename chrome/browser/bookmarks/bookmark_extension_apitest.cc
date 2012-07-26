@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-// Flaky test, http://crbug.com/89762.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Bookmarks) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Bookmarks) {
   ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
 }
