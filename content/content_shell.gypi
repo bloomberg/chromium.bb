@@ -630,32 +630,6 @@
             }
           ],
         },
-        {
-          'target_name': 'content_shell_test_apk',
-          'type': 'none',
-          'dependencies': [
-            'content_shell_apk',
-          ],
-          'actions': [
-            {
-              'action_name': 'content_shell_test_generate_apk',
-              'inputs': [
-                '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
-                '<(DEPTH)/content/shell/android/javatests/AndroidManifest.xml',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/content_shell_test/ContentShellTest-debug.apk',
-              ],
-              'action': [
-                'ant',
-                '-DPRODUCT_DIR=<(ant_build_out)',
-                '-DAPP_ABI=<(android_app_abi)',
-                '-buildfile',
-                '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
-              ]
-            }
-          ],
-        },
       ],
     }],  # OS=="android"
   ]

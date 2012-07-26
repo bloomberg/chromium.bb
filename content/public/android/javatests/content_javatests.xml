@@ -1,0 +1,64 @@
+<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<project name="ContentJavaTests" default="dist" basedir=".">
+  <description>
+    building content-only instrumentation tests with ant
+  </description>
+  <!-- set global properties for this build -->
+  <property environment="env"/>
+  <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
+  <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
+  <property name="src" location="src"/>
+  <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
+  <property name="classes.dir" location="${PRODUCT_DIR}/java/${PACKAGE_NAME}"/>
+  <property name="jar.dir" location="${out.dir}"/>
+
+  <condition property="location.base"
+             value="${sdk.dir}"
+             else="${sdk.dir}/platforms/android-${sdk.version}">
+    <isset property="env.ANDROID_BUILD_TOP"/>
+  </condition>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${out.dir}"/>
+  </target>
+
+  <target name="compile" depends="init"
+          description="compile the source " >
+    <!-- Create the classes output directory -->
+    <mkdir dir="${classes.dir}"/>
+
+    <!-- Compile the java code from ${src} into ${classes.dir} -->
+    <!-- Gyp target should have compiled aidl files into java source files in
+         lib.jar (see content.gyp:common_aidl). -->
+    <javac srcdir="${src}" destdir="${classes.dir}" debug="true" includeantruntime="false">
+      <classpath>
+        <pathelement path="${location.base}/android.jar" />
+        <pathelement path="${jar.dir}/chromium_base.jar" />
+        <pathelement path="${jar.dir}/chromium_base_javatests.jar" />
+        <pathelement path="${jar.dir}/chromium_content.jar" />
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile"
+          description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${jar.dir}"/>
+
+    <!-- Put everything in ${classes.dir} into the chromium_content_tests.jar file -->
+    <jar jarfile="${jar.dir}/chromium_${PACKAGE_NAME}.jar" basedir="${classes.dir}"/>
+  </target>
+
+  <target name="clean" description="clean up" >
+    <!-- Delete the generated content -->
+    <delete dir="${classes.dir}"/>
+    <delete file="${jar.dir}/chromium_${PACKAGE_NAME}.jar"/>
+  </target>
+</project>

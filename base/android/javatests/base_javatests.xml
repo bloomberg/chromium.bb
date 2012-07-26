@@ -1,0 +1,66 @@
+<project name="BaseJavaTests" default="dist" basedir=".">
+  <description>
+    building base java tests source code with ant
+  </description>
+  <!-- Set global properties for this build -->
+  <property environment="env"/>
+  <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
+  <!-- TODO(jrg): The apk-runner's version is hardcoded to SDK version 14. These
+    two should be unified. -->
+  <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
+  <property name="src" location="src"/>
+  <property name="dist" location="dist"/>
+  <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
+  <!-- TODO(jrg): establish a standard for the intermediate java
+       directories.  Settle on a standard once ant/jar build files
+       like this are androidified -->
+  <property name="dest.dir" location="${PRODUCT_DIR}/java/base_javatests"/>
+
+  <!-- Set path depending on the type of repository. If ANDROID_BUILD_TOP is
+    set then build using the provided location. Otherwise, assume the build
+    is using the released SDK and set the path accordingly. -->
+  <condition property="location.base"
+             value="${sdk.dir}"
+             else="${sdk.dir}/platforms/android-${sdk.version}">
+    <isset property="env.ANDROID_BUILD_TOP"/>
+  </condition>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${out.dir}"/>
+    <mkdir dir="${dest.dir}"/>
+  </target>
+
+  <target name="compile" depends="init"
+          description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <!-- TODO(jrg): adapting this to a proper android antfile will
+         remove warnings like this:
+           base.xml:23: warning: 'includeantruntime' was not set,
+           defaulting to build.sysclasspath=last;
+           set to false for repeatable builds
+      -->
+    <javac srcdir="${src}" destdir="${dest.dir}" debug="true" includeantruntime="false">
+      <classpath>
+        <path location="${location.base}/android.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile"
+          description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${out.dir}"/>
+
+    <jar jarfile="${out.dir}/chromium_base_javatests.jar" basedir="${dest.dir}"/>
+  </target>
+
+  <target name="clean"
+          description="clean up" >
+    <!-- Delete the appropriate directory trees -->
+    <delete dir="${dest.dir}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>

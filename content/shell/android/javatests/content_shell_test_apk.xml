@@ -27,6 +27,7 @@
 
   <path id="out.dex.jar.input.ref">
     <fileset dir="${PRODUCT_DIR}/content_shell/java/libs"/>
+    <fileset dir="${PRODUCT_DIR}/content_shell_test/java/libs"/>
     <pathelement location="${PRODUCT_DIR}/content_shell/classes"/>
   </path>
   <property name="java.compilerargs" value="-classpath ${toString:out.dex.jar.input.ref}"/>
@@ -63,6 +64,16 @@
         </copy>
       </then>
     </if>
+
+    <!-- We also want a .jar as well as an .apk for ContentShellTest-debug
+         so that proguard can be used to list the tests by annotation. -->
+    <jar destfile="${out.dir}/${ant.project.name}-debug.jar">
+      <fileset dir="${out.dir}/classes" includes="**/*.class"/>
+      <zipfileset
+         includes="**/*.class"
+         src="${PRODUCT_DIR}/content_shell_test/java/libs/chromium_content_javatests.jar"/>
+    </jar>
+
   </target>
 
   <import file="${sdk.dir}/tools/ant/build.xml" />

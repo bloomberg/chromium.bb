@@ -762,5 +762,64 @@
         },
       ],
     }],
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'content_javatests',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            '../base/base.gyp:base_java_test_support',
+            'content_common',
+            'content_java',
+          ],
+          'variables': {
+            'package_name': 'content_javatests',
+            'java_in_dir': '../content/public/android/javatests',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'content_shell_test_apk',
+          'type': 'none',
+          'dependencies': [
+            'content_shell_apk',
+            'content_javatests',
+            '../tools/android/forwarder/forwarder.gyp:forwarder',
+          ],
+          'actions': [
+            {
+              'action_name': 'copy_base_javatests_jar',
+              'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_base_javatests.jar'],
+              'outputs': ['<(PRODUCT_DIR)/content_shell_test/java/libs/chromium_base_javatests.jar'],
+              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+            },
+            {
+              'action_name': 'copy_content_javatests_jar',
+              'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_content_javatests.jar'],
+              'outputs': ['<(PRODUCT_DIR)/content_shell_test/java/libs/chromium_content_javatests.jar'],
+              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+            },
+            {
+              'action_name': 'content_shell_test_generate_apk',
+              'inputs': [
+                '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
+                '<(DEPTH)/content/shell/android/javatests/AndroidManifest.xml',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/content_shell_test/ContentShellTest-debug.apk',
+              ],
+              'action': [
+                'ant',
+                '-DPRODUCT_DIR=<(ant_build_out)',
+                '-DAPP_ABI=<(android_app_abi)',
+                '-buildfile',
+                '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
+              ]
+            }
+          ],
+        },
+      ],
+    }],
   ],
 }
