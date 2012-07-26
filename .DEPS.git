@@ -118,7 +118,7 @@ deps = {
     'src/third_party/webdriver/pylib':
         Var('git_url') + '/external/selenium/py.git@304801aede8d4b52a30657201aefed7479c0c9dd',
     'src/third_party/webgl_conformance':
-        Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@30876f3405c5cd90e00117caba57127480c30bd6',
+        Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@76055d9480f6d780f6caa6a72485c5c4aecd6692',
     'src/third_party/webpagereplay':
         Var('git_url') + '/external/web-page-replay.git@1f4bc503e6d8f465c0785725ad2f494a7302efcd',
     'src/third_party/webrtc':
@@ -141,7 +141,7 @@ deps_os = {
     'android':
     {
         'src/third_party/aosp':
-            Var('git_url') + '/chromium/deps/aosp.git@1348f2caa089cd4f64c8cc27041cdd640f1d3e89',
+            Var('git_url') + '/chromium/deps/aosp.git@bbafe5155dff86bbba1e92b42a073ffcfcfbf28c',
         'src/third_party/freetype':
             Var('git_url') + '/git/chromium/src/third_party/freetype.git@1f74e4e7ad3ca4163b4578fc30da26a165dd55e7',
     },
