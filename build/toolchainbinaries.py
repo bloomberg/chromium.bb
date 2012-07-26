@@ -64,12 +64,16 @@ def EncodeToolchainUrl(base_url, version, flavor):
 
 
 def IsArmTrustedFlavor(flavor):
-  return 'arm' in flavor
-
+  return 'arm-trusted' in flavor
 
 def IsPnaclFlavor(flavor):
   return 'pnacl' in flavor
 
+def IsSandboxedTranslatorFlavor(flavor):
+  return 'translator' in flavor
 
-def IsNaClNewlibFlavor(flavor):
-  return flavor.endswith('_newlib') and not flavor.startswith('pnacl')
+def IsX86Flavor(flavor):
+  return not IsPnaclFlavor(flavor) and not IsArmTrustedFlavor(flavor)
+
+def IsNotNaClNewlibFlavor(flavor):
+  return not flavor.endswith('_newlib') or flavor.startswith('pnacl')

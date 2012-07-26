@@ -30,11 +30,16 @@ ARCHIVED_PEXE_SCONS_REV=9235
 # the sandboxed llc/gold builds
 ARCHIVED_PEXE_TRANSLATOR_REV=9103
 
+# This is the revision to use to test bitcode compatibility between an old
+# frontend and a new backend.
+ARCHIVED_TOOLCHAIN_REV=8144
+ARCHIVED_TOOLCHAIN_HASH=63e1510d7ec27a3fc86f1ff7dea66a47229db64f
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.sh"
 readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test-suite.sh"
+readonly DOWNLOAD_TOOLCHAINS="build/download_toolchains.py"
 
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
@@ -118,6 +123,66 @@ scons-tests-translator() {
   ${SCONS_COMMON} ${flags} translate_fast=1 ${targets} || handle-error
 }
 
+# This test is a bitcode stability test, which builds pexes for all the tests
+# using an old version of the toolchain frontend, and then translates those
+# pexes using the current version of the translator. It's simpler than using
+# archived pexes, because archived pexes for old scons tests may not match the
+# current scons tests (e.g. if the expected output changes or if a new test
+# is added). The only thing that would break this approach is if a new test
+# is added that is incompatible with the old frontend. For this case there
+# simply needs to be a mechanism to disable that test (which could be as simple
+# as using disable_tests here on the scons command line).
+# Note: If this test is manually interrupted or killed during the run, the
+# toolchain install might end up missing or replaced with the old one.
+# To fix, copy the current one from toolchains/current_tc or blow it away
+# and re-run gclient runhooks.
+archived-frontend-test() {
+  local arch=$1
+  echo "@@@BUILD_STEP archived_frontend [${arch}]\
+        rev ${ARCHIVED_TOOLCHAIN_REV}@@@"
+  # For now this script runs on linux x86-64
+  local tc_name=pnacl_linux_x86_64
+  local targets="small_tests medium_tests large_tests"
+  local flags="--mode=opt-host,nacl bitcode=1 platform=${arch} \
+               translate_in_build_step=0 -j${PNACL_CONCURRENCY} \
+               skip_trusted_tests=1"
+
+  rm -rf scons-out/nacl-${arch}*
+
+  # Get the archived frontend.
+  # If the correct cached frontend is in place, the hash will match and the
+  # download will be a no-op. Otherwise the downloader will fix it.
+  ${DOWNLOAD_TOOLCHAINS} --no-x86 --no-arm-trusted --no-pnacl-translator \
+    --pnacl-version=${ARCHIVED_TOOLCHAIN_REV} \
+    --toolchain-dir=toolchain/archived_tc \
+    --file-hash ${tc_name} ${ARCHIVED_TOOLCHAIN_HASH} || handle-error
+
+  # Save the current toolchain
+  mkdir -p toolchain/current_tc
+  rm -rf toolchain/current_tc/*
+  mv toolchain/${tc_name} toolchain/current_tc/${tc_name}
+
+  # Link the old frontend into place.
+  ln -s archived_tc/${tc_name} toolchain/${tc_name}
+
+  # Build the pexes with the old frontend
+  ${SCONS_COMMON} do_not_run_tests=1 ${flags} ${targets} || handle-error
+  # The pexes for fast translation tests are identical but scons uses a
+  # different directory.
+  cp -a scons-out/nacl-${arch}-pnacl-pexe-clang \
+    scons-out/nacl-${arch}-pnacl-fast-pexe-clang
+
+  # Put the current toolchain back in place
+  rm toolchain/${tc_name}
+  mv toolchain/current_tc/${tc_name} toolchain/${tc_name}
+  # Translate them with the new translator, and run the tests
+  ${SCONS_COMMON} ${flags} ${targets} built_elsewhere=1 || handle-error
+  echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
+        rev ${ARCHIVED_TOOLCHAIN_REV}@@@"
+  # Also test the fast-translation option
+  ${SCONS_COMMON} ${flags} translate_fast=1 built_elsewhere=1 \
+    ${targets} || handle-error
+}
 
 archived-pexe-scons-test() {
   local arch=$1
@@ -287,6 +352,8 @@ tc-test-bot() {
     archived-pexe-scons-test ${arch}
 
     archived-pexe-translator-test ${arch}
+
+    archived-frontend-test ${arch}
   done
 }
 

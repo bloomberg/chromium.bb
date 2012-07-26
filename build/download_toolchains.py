@@ -190,19 +190,30 @@ def Main(args):
            'which to download an IRT binary.  '
            'HASH gives the expected SHA1 hash of the file.')
   parser.add_option(
-      '--nacl-newlib-only', dest='nacl_newlib_only',
-      action='store_true', default=False,
+      '--nacl-newlib-only', dest='filter_out_predicates',
+      action='append_const', const=toolchainbinaries.IsNotNaClNewlibFlavor,
       help='download only the non-pnacl newlib toolchain')
   parser.add_option(
       '--save-downloads-dir', dest='save_downloads_dir',
       default=None,
       help='(optional) preserve the toolchain archives to this dir')
   parser.add_option(
-      '--no-pnacl', dest='no_pnacl', default=False, action='store_true',
+      '--no-pnacl', dest='filter_out_predicates', action='append_const',
+      const=toolchainbinaries.IsPnaclFlavor,
       help='Filter out PNaCl toolchains.')
   parser.add_option(
-      '--no-arm-trusted', dest='no_arm_trusted', default=False,
-      action='store_true', help='Filter out trusted arm toolchains.')
+      '--no-x86', dest='filter_out_predicates', action='append_const',
+      const=toolchainbinaries.IsX86Flavor,
+      help='Filter out x86 gcc toolchains.')
+  parser.add_option(
+      '--no-pnacl-translator', dest='filter_out_predicates',
+      action='append_const',
+      const=toolchainbinaries.IsSandboxedTranslatorFlavor,
+      help='Filter out PNaCl sandboxed translator.')
+  parser.add_option(
+      '--no-arm-trusted', dest='filter_out_predicates', action='append_const',
+      const=toolchainbinaries.IsArmTrustedFlavor,
+      help='Filter out trusted arm toolchains.')
 
   options, args = parser.parse_args(args)
   if args:
@@ -211,15 +222,11 @@ def Main(args):
   platform_fixed = download_utils.PlatformName()
   arch_fixed = download_utils.ArchName()
   flavors = toolchainbinaries.PLATFORM_MAPPING[platform_fixed][arch_fixed]
-  if options.no_pnacl:
-    flavors = [flavor for flavor in flavors
-               if not toolchainbinaries.IsPnaclFlavor(flavor)]
-  if options.no_arm_trusted:
-    flavors = [flavor for flavor in flavors
-               if not toolchainbinaries.IsArmTrustedFlavor(flavor)]
-  if options.nacl_newlib_only:
-    flavors = [flavor for flavor in flavors
-               if toolchainbinaries.IsNaClNewlibFlavor(flavor)]
+
+  if options.filter_out_predicates:
+    for predicate in options.filter_out_predicates:
+      flavors = [flavor for flavor in flavors if not predicate(flavor)]
+
   for flavor in flavors:
     version = VersionSelect(options, flavor)
     url = toolchainbinaries.EncodeToolchainUrl(
