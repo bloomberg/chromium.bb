@@ -285,7 +285,7 @@ class RepoRepository(object):
       self._EnsureMirroring(True)
 
     except cros_build_lib.RunCommandError, e:
-      err_msg = 'Failed to sync sources %s' % e.message
+      err_msg = e.Stringify(error=False, output=False)
       logging.error(err_msg)
       raise SrcCheckOutException(err_msg)
 

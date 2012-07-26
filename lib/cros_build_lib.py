@@ -61,17 +61,25 @@ class RunCommandError(Exception):
     Exception.__init__(self, msg)
     self.args = (msg, result)
 
-  def __str__(self):
+  def Stringify(self, error=True, output=True):
+    """Custom method for controlling what is included in stringifying this.
+
+    Args:
+      Each individual argument is the literal name of an attribute
+      on the result object; if False, that value is ignored for adding
+      to this string content.  If true, it'll be incorporated.
+    """
     items = ['return code: %s' % (self.result.returncode,)]
-    if self.result.error:
+    if error and self.result.error:
       items.append(self.result.error)
-    if self.result.output:
+    if output and self.result.output:
       items.append(self.result.output)
     items.append(self.msg)
-    out = '\n'.join(items)
-    # Python doesn't let you include non-ascii characters in error messages.
-    # To be safe, replace all non-ascii characters with xml-escaped versions.
-    return out.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
+    return '\n'.join(items)
+
+  def __str__(self):
+    # __str__ needs to return ascii, thus force a conversion to be safe.
+    return self.Stringify().decode('utf-8').encode('ascii', 'xmlcharrefreplace')
 
   def __eq__(self, other):
     return (type(self) == type(other) and
