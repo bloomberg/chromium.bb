@@ -118,6 +118,7 @@ class VideoFrameBuffer {
  public:
   VideoFrameBuffer() :
       size_(SkISize::Make(0, 0)),
+      dpi_(SkIPoint::Make(0, 0)),
       bytes_per_row_(0),
       needs_update_(true) {
   }
@@ -137,10 +138,15 @@ class VideoFrameBuffer {
         size_t buffer_size = width * height * sizeof(uint32_t);
         ptr_.reset(new uint8[buffer_size]);
       }
+      NSScreen* screen = [NSScreen mainScreen];
+      NSDictionary* attr = [screen deviceDescription];
+      NSSize resolution = [[attr objectForKey: NSDeviceResolution] sizeValue];
+      dpi_.set(resolution.width, resolution.height);
     }
   }
 
   SkISize size() const { return size_; }
+  SkIPoint dpi() const { return dpi_; }
   int bytes_per_row() const { return bytes_per_row_; }
   uint8* ptr() const { return ptr_.get(); }
 
@@ -148,6 +154,7 @@ class VideoFrameBuffer {
 
  private:
   SkISize size_;
+  SkIPoint dpi_;
   int bytes_per_row_;
   scoped_array<uint8> ptr_;
   bool needs_update_;
@@ -392,6 +399,7 @@ void VideoFrameCapturerMac::CaptureInvalidRegion(
   }
 
   data = new CaptureData(planes, current_buffer.size(), pixel_format());
+  data->set_dpi(current_buffer.dpi());
   data->mutable_dirty_region() = region;
 
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
