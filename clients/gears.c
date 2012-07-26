@@ -435,6 +435,7 @@ gears_create(struct display *display)
 
 	gettimeofday(&tv, NULL);
 	gears->last_fps = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	printf("Warning: FPS count is limited by the wayland compositor or monitor refresh rate\n");
 
 	glEnable(GL_NORMALIZE);
 
