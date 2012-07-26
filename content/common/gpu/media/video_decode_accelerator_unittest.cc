@@ -239,13 +239,13 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   // Delete the associated OMX decoder helper.
   void DeleteDecoder();
 
-  // Compute & return in |*end_pos| the end position for the next batch of
-  // fragments to ship to the decoder (based on |start_pos| &
-  // |num_fragments_per_decode_|).
-  void GetRangeForNextFragments(size_t start_pos, size_t* end_pos);
+  // Compute & return the next encoded bytes to send to the decoder (based on
+  // |start_pos| & |num_fragments_per_decode_|).
+  std::string GetBytesForNextFragments(size_t start_pos, size_t* end_pos);
   // Helpers for GetRangeForNextFragments above.
-  void GetRangeForNextNALUs(size_t start_pos, size_t* end_pos);  // For h.264.
-  void GetRangeForNextFrames(size_t start_pos, size_t* end_pos);  // For VP8.
+  void GetBytesForNextNALUs(size_t start_pos, size_t* end_pos);  // For h.264.
+  std::string GetBytesForNextFrames(
+      size_t start_pos, size_t* end_pos);  // For VP8.
 
   // Request decode of the next batch of fragments in the encoded data.
   void DecodeNextFragments();
@@ -392,11 +392,6 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
     return;
   last_frame_delivered_ticks_ = base::TimeTicks::Now();
 
-  // Because we feed the decoder a limited number of fragments at a time, we can
-  // be sure that the bitstream buffer from which a frame comes has a limited
-  // range.  Assert that.
-  CHECK_GE((picture.bitstream_buffer_id() + 1) * num_fragments_per_decode_,
-           num_decoded_frames_);
   CHECK_LE(picture.bitstream_buffer_id(), next_bitstream_buffer_id_);
   ++num_decoded_frames_;
 
@@ -505,17 +500,17 @@ void GLRenderingVDAClient::DeleteDecoder() {
     SetState(static_cast<ClientState>(i));
 }
 
-void GLRenderingVDAClient::GetRangeForNextFragments(
+std::string GLRenderingVDAClient::GetBytesForNextFragments(
     size_t start_pos, size_t* end_pos) {
   if (profile_ < media::H264PROFILE_MAX) {
-    GetRangeForNextNALUs(start_pos, end_pos);
-    return;
+    GetBytesForNextNALUs(start_pos, end_pos);
+    return encoded_data_.substr(start_pos, *end_pos - start_pos);
   }
   DCHECK_LE(profile_, media::VP8PROFILE_MAX);
-  GetRangeForNextFrames(start_pos, end_pos);
+  return GetBytesForNextFrames(start_pos, end_pos);
 }
 
-void GLRenderingVDAClient::GetRangeForNextNALUs(
+void GLRenderingVDAClient::GetBytesForNextNALUs(
     size_t start_pos, size_t* end_pos) {
   *end_pos = start_pos;
   CHECK(LookingAtNAL(encoded_data_, start_pos));
@@ -532,19 +527,22 @@ void GLRenderingVDAClient::GetRangeForNextNALUs(
   }
 }
 
-void GLRenderingVDAClient::GetRangeForNextFrames(
+std::string GLRenderingVDAClient::GetBytesForNextFrames(
     size_t start_pos, size_t* end_pos) {
   // Helpful description: http://wiki.multimedia.cx/index.php?title=IVF
-  *end_pos = start_pos;
+  std::string bytes;
   if (start_pos == 0)
-    *end_pos = 32;
+    start_pos = 32;  // Skip IVF header.
+  *end_pos = start_pos;
   for (int i = 0; i < num_fragments_per_decode_; ++i) {
     uint32 frame_size = *reinterpret_cast<uint32*>(&encoded_data_[*end_pos]);
     *end_pos += 12;  // Skip frame header.
+    bytes.append(encoded_data_.substr(*end_pos, *end_pos + frame_size));
     *end_pos += frame_size;
     if (*end_pos + 12 >= encoded_data_.size())
-      return;
+      return bytes;
   }
+  return bytes;
 }
 
 void GLRenderingVDAClient::DecodeNextFragments() {
@@ -557,20 +555,20 @@ void GLRenderingVDAClient::DecodeNextFragments() {
     }
     return;
   }
-  size_t start_pos = encoded_data_next_pos_to_decode_;
   size_t end_pos;
-  GetRangeForNextFragments(start_pos, &end_pos);
+  std::string next_fragment_bytes =
+      GetBytesForNextFragments(encoded_data_next_pos_to_decode_, &end_pos);
+  size_t next_fragment_size = next_fragment_bytes.size();
 
   // Populate the shared memory buffer w/ the fragments, duplicate its handle,
   // and hand it off to the decoder.
   base::SharedMemory shm;
-  CHECK(shm.CreateAndMapAnonymous(end_pos - start_pos))
-      << start_pos << ", " << end_pos;
-  memcpy(shm.memory(), encoded_data_.data() + start_pos, end_pos - start_pos);
+  CHECK(shm.CreateAndMapAnonymous(next_fragment_size));
+  memcpy(shm.memory(), next_fragment_bytes.data(), next_fragment_size);
   base::SharedMemoryHandle dup_handle;
   CHECK(shm.ShareToProcess(base::Process::Current().handle(), &dup_handle));
   media::BitstreamBuffer bitstream_buffer(
-      next_bitstream_buffer_id_++, dup_handle, end_pos - start_pos);
+      next_bitstream_buffer_id_++, dup_handle, next_fragment_size);
   decoder_->Decode(bitstream_buffer);
   ++outstanding_decodes_;
   encoded_data_next_pos_to_decode_ = end_pos;

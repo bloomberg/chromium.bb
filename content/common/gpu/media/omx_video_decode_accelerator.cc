@@ -475,12 +475,10 @@ void OmxVideoDecodeAccelerator::Destroy() {
 void OmxVideoDecodeAccelerator::BeginTransitionToState(
     OMX_STATETYPE new_state) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  DCHECK_NE(current_state_change_, NO_TRANSITION);
-  DCHECK_NE(current_state_change_, ERRORING);
-  if (current_state_change_ == NO_TRANSITION ||
-      current_state_change_ == ERRORING) {
+  if (new_state != OMX_StateInvalid)
+    DCHECK_NE(current_state_change_, NO_TRANSITION);
+  if (current_state_change_ == ERRORING)
     return;
-  }
   OMX_ERRORTYPE result = OMX_SendCommand(
       component_handle_, OMX_CommandStateSet, new_state, 0);
   RETURN_ON_OMX_FAILURE(result, "SendCommand(OMX_CommandStateSet) failed",
@@ -960,7 +958,8 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
       }
       return;
     case OMX_EventPortSettingsChanged:
-      if (data2 == OMX_IndexParamPortDefinition) {
+      if ((data2 == OMX_IndexParamPortDefinition) ||  // Tegra2/3
+          (data2 == 0)) {  // Exynos SEC-OMX; http://crosbug.com/p/11665
         DCHECK_EQ(data1, output_port_);
         // This event is only used for output resize; kick off handling that by
         // pausing the output port.
