@@ -557,7 +557,7 @@ def run_test_cases(executable, test_cases, jobs, timeout, no_dump):
   return int(bool(fail))
 
 
-def main():
+def main(argv):
   """CLI frontend to validate arguments."""
   def as_digit(variable, default):
     if variable.isdigit():
@@ -611,8 +611,12 @@ def main():
   group.add_option(
       '-T', '--test-case-file',
       help='File containing the exact list of test cases to run')
+  group.add_option(
+      '--gtest_filter',
+      help='Runs a single test, provideded to keep compatibility with '
+           'other tools')
   parser.add_option_group(group)
-  options, args = parser.parse_args()
+  options, args = parser.parse_args(argv)
 
   levels = [logging.ERROR, logging.INFO, logging.DEBUG]
   logging.basicConfig(
@@ -634,6 +638,18 @@ def main():
   if not os.path.isfile(executable):
     parser.error('"%s" doesn\'t exist.' % executable)
 
+  if options.gtest_filter:
+    # Override any other option.
+    # Based on UnitTestOptions::FilterMatchesTest() in
+    # http://code.google.com/p/googletest/source/browse/#svn%2Ftrunk%2Fsrc
+    if '-' in options.gtest_filter:
+      options.whitelist, options.blacklist = options.gtest_filter.split('-', 1)
+    else:
+      options.whitelist = options.gtest_filter
+      options.blacklist = ''
+    options.whitelist = [i for i in options.whitelist.split(':') if i]
+    options.blacklist = [i for i in options.blacklist.split(':') if i]
+
   # Grab the test cases.
   if options.test_case_file:
     with open(options.test_case_file, 'r') as f:
@@ -647,7 +663,7 @@ def main():
         options.shards)
 
   if not test_cases:
-    return
+    return 0
 
   return run_test_cases(
       executable,
@@ -658,4 +674,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
