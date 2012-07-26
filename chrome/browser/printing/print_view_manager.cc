@@ -18,9 +18,11 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -38,7 +40,6 @@
 
 using base::TimeDelta;
 using content::BrowserThread;
-using content::RenderViewHost;
 
 namespace {
 
@@ -62,12 +63,16 @@ PrintViewManager::PrintViewManager(TabContents* tab)
       observer_(NULL),
       cookie_(0),
       print_preview_state_(NOT_PREVIEWING),
-      scripted_print_preview_rph_(NULL) {
+      scripted_print_preview_rph_(NULL),
+      tab_content_blocked_(false) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   expecting_first_page_ = true;
 #endif
   registrar_.Add(this, chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
                  content::Source<TabContents>(tab));
+  printing_enabled_.Init(prefs::kPrintingEnabled,
+                         tab->profile()->GetPrefs(),
+                         this);
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -144,8 +149,10 @@ void PrintViewManager::PrintPreviewDone() {
   print_preview_state_ = NOT_PREVIEWING;
 }
 
-void PrintViewManager::SetScriptedPrintingBlocked(bool blocked) {
-  Send(new PrintMsg_SetScriptedPrintingBlocked(routing_id(), blocked));
+void PrintViewManager::UpdateScriptedPrintingBlocked() {
+  Send(new PrintMsg_SetScriptedPrintingBlocked(
+       routing_id(),
+       !printing_enabled_.GetValue() || tab_content_blocked_));
 }
 
 void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
@@ -320,6 +327,11 @@ void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {
   Send(reply_msg);
 }
 
+void PrintViewManager::DidStartLoading(
+    content::RenderViewHost* render_view_host) {
+  UpdateScriptedPrintingBlocked();
+}
+
 bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintViewManager, message)
@@ -345,8 +357,13 @@ void PrintViewManager::Observe(int type,
       OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
       break;
     }
+    case chrome::NOTIFICATION_PREF_CHANGED: {
+      UpdateScriptedPrintingBlocked();
+      break;
+    }
     case chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED: {
-      SetScriptedPrintingBlocked(*content::Details<const bool>(details).ptr());
+      tab_content_blocked_ = *content::Details<const bool>(details).ptr();
+      UpdateScriptedPrintingBlocked();
       break;
     }
     default: {
