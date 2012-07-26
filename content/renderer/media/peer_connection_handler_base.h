@@ -18,8 +18,8 @@
 class MediaStreamDependencyFactory;
 
 // PeerConnectionHandlerBase is the base class of a delegate for the
-// PeerConnection (JSEP or ROAP) API messages going between WebKit and native
-// PeerConnection in libjingle. ROAP PeerConnection will be removed soon.
+// PeerConnection API messages going between WebKit and native
+// PeerConnection in libjingle.
 class CONTENT_EXPORT PeerConnectionHandlerBase
     : NON_EXPORTED_BASE(public webrtc::PeerConnectionObserver) {
  public:

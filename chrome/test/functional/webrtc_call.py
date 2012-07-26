@@ -58,7 +58,7 @@ class WebRTCCallTest(pyauto.PyUITest):
     self.assertEquals('', self.CheckErrorsAndCrashes())
 
   def _SimpleWebRtcCall(self, test_page):
-    """Tests we can call and hang up with WebRTC using ROAP/JSEP.
+    """Tests we can call and hang up with WebRTC.
 
     This test exercises pretty much the whole happy-case for the WebRTC
     JavaScript API. Currently, it exercises a normal call setup using the API
@@ -66,7 +66,8 @@ class WebRTCCallTest(pyauto.PyUITest):
     still evolving.
 
     The test will load the supplied HTML file, which in turn will load different
-    javascript files depending on if we are running ROAP or JSEP.
+    javascript files depending on which version of the signaling protocol
+    we are running.
     The supplied HTML file will be loaded in two tabs and tell the web
     pages to start up WebRTC, which will acquire video and audio devices on the
     system. This will launch a dialog in Chrome which we click past using the
@@ -103,9 +104,6 @@ class WebRTCCallTest(pyauto.PyUITest):
     # Ensure we didn't miss any errors.
     self._AssertNoFailures(tab_index=0)
     self._AssertNoFailures(tab_index=1)
-
-  def testSimpleWebRtcRoapCall(self):
-    self._SimpleWebRtcCall('webrtc_roap_test.html')
 
   def testSimpleWebRtcJsepCall(self):
     self._SimpleWebRtcCall('webrtc_jsep_test.html')

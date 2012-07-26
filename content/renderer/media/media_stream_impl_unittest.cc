@@ -10,7 +10,6 @@
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_web_peer_connection_00_handler_client.h"
 #include "content/renderer/media/mock_web_peer_connection_handler_client.h"
-#include "content/renderer/media/peer_connection_handler.h"
 #include "content/renderer/media/peer_connection_handler_jsep.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -114,12 +113,6 @@ class MediaStreamImplTest : public ::testing::Test {
 };
 
 TEST_F(MediaStreamImplTest, CreatePeerConnection) {
-  // Create ROAP PeerConnection.j
-  WebKit::MockWebPeerConnectionHandlerClient client;
-  scoped_ptr<WebKit::WebPeerConnectionHandler> pc_handler(
-      ms_impl_->CreatePeerConnectionHandler(&client));
-  pc_handler.reset();
-
   // Create JSEP PeerConnection.
   WebKit::MockWebPeerConnection00HandlerClient client_jsep;
   scoped_ptr<WebKit::WebPeerConnection00Handler> pc_handler_jsep(

@@ -18,7 +18,6 @@
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/peer_connection_handler.h"
 #include "content/renderer/media/peer_connection_handler_jsep.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_module_impl.h"
@@ -44,7 +43,6 @@ const int kVideoCaptureFramePerSecond = 30;
 enum JavaScriptAPIName {
   kWebkitGetUserMedia,
   kWebkitPeerConnection,
-  kWebkitDeprecatedPeerConnection,
   kInvalidName
 };
 }  // namespace
@@ -93,22 +91,6 @@ MediaStreamImpl::MediaStreamImpl(
 
 MediaStreamImpl::~MediaStreamImpl() {
   CleanupPeerConnectionFactory();
-}
-
-WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
-    WebKit::WebPeerConnectionHandlerClient* client) {
-  // Save histogram data so we can see how much PeerConnetion is used.
-  // The histogram counts the number of calls to the JS API
-  // webKitDeprecatedPeerConnection.
-  UpdateWebRTCMethodCount(kWebkitDeprecatedPeerConnection);
-  DCHECK(CalledOnValidThread());
-  if (!EnsurePeerConnectionFactory())
-    return NULL;
-
-  PeerConnectionHandler* pc_handler = new PeerConnectionHandler(
-      client,
-      dependency_factory_.get());
-  return pc_handler;
 }
 
 WebKit::WebPeerConnection00Handler*

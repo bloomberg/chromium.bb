@@ -749,14 +749,6 @@ RenderViewImpl* RenderViewImpl::Create(
       accessibility_mode);
 }
 
-WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
-    WebPeerConnectionHandlerClient* client) {
-  EnsureMediaStreamImpl();
-  if (!media_stream_impl_)
-    return NULL;
-  return media_stream_impl_->CreatePeerConnectionHandler(client);
-}
-
 WebPeerConnection00Handler* RenderViewImpl::CreatePeerConnectionHandlerJsep(
     WebPeerConnection00HandlerClient* client) {
   EnsureMediaStreamImpl();

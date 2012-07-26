@@ -88,10 +88,6 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
       CreatePeerConnection(
           const std::string& config,
           webrtc::PeerConnectionObserver* observer) OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
-      CreateRoapPeerConnection(
-          const std::string& config,
-          webrtc::PeerConnectionObserver* observer) OVERRIDE;
   virtual talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
   virtual talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>

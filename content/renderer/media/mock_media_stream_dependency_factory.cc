@@ -280,14 +280,6 @@ MockMediaStreamDependencyFactory::CreatePeerConnection(
   return new talk_base::RefCountedObject<webrtc::MockPeerConnectionImpl>(this);
 }
 
-talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
-MockMediaStreamDependencyFactory::CreateRoapPeerConnection(
-    const std::string& config,
-    webrtc::PeerConnectionObserver* observer) {
-  DCHECK(mock_pc_factory_created_);
-  return new talk_base::RefCountedObject<webrtc::MockPeerConnectionImpl>(this);
-}
-
 talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
 MockMediaStreamDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {

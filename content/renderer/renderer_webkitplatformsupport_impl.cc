@@ -699,18 +699,6 @@ void RendererWebKitPlatformSupportImpl::GetPlugins(
 
 //------------------------------------------------------------------------------
 
-WebPeerConnectionHandler*
-RendererWebKitPlatformSupportImpl::createPeerConnectionHandler(
-    WebPeerConnectionHandlerClient* client) {
-  WebFrame* web_frame = WebFrame::frameForCurrentContext();
-  if (!web_frame)
-    return NULL;
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
-  if (!render_view)
-    return NULL;
-  return render_view->CreatePeerConnectionHandler(client);
-}
-
 WebPeerConnection00Handler*
 RendererWebKitPlatformSupportImpl::createPeerConnection00Handler(
     WebPeerConnection00HandlerClient* client) {

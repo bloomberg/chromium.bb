@@ -85,8 +85,6 @@ class CONTENT_EXPORT MediaStreamImpl
       MediaStreamDependencyFactory* dependency_factory);
   virtual ~MediaStreamImpl();
 
-  virtual WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
-      WebKit::WebPeerConnectionHandlerClient* client);
   virtual WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
       WebKit::WebPeerConnection00HandlerClient* client);
   // Stops a local MediaStream by notifying the MediaStreamDispatcher that the

@@ -310,8 +310,6 @@
         'renderer/media/media_stream_dependency_factory.cc',
         'renderer/media/media_stream_dispatcher.cc',
         'renderer/media/media_stream_impl.cc',
-        'renderer/media/peer_connection_handler.cc',
-        'renderer/media/peer_connection_handler.h',
         'renderer/media/peer_connection_handler_base.cc',
         'renderer/media/peer_connection_handler_base.h',
         'renderer/media/peer_connection_handler_jsep.cc',

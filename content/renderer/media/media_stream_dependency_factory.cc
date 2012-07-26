@@ -113,13 +113,6 @@ MediaStreamDependencyFactory::CreatePeerConnection(
   return pc_factory_->CreatePeerConnection(config, observer);
 }
 
-talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
-MediaStreamDependencyFactory::CreateRoapPeerConnection(
-    const std::string& config,
-    webrtc::PeerConnectionObserver* observer) {
-  return pc_factory_->CreateRoapPeerConnection(config, observer);
-}
-
 talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
 MediaStreamDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {

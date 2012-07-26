@@ -257,8 +257,6 @@ class RenderViewImpl : public RenderWidget,
   }
 #endif
 
-  WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
-      WebKit::WebPeerConnectionHandlerClient* client);
   WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
       WebKit::WebPeerConnection00HandlerClient* client);
 
