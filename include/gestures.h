@@ -89,6 +89,7 @@ struct FingerState {
         flags == that.flags;
   }
   bool operator!=(const FingerState& that) const { return !(*this == that); }
+  std::string String() const;
 #endif
 };
 
@@ -102,6 +103,7 @@ struct HardwareState {
   FingerState* GetFingerState(short tracking_id);
   const FingerState* GetFingerState(short tracking_id) const;
   bool SameFingersAs(const HardwareState& that) const;
+  std::string String() const;
 #endif  // __cplusplus
   stime_t timestamp;  // 64-bit Wall clock time in microseconds (10^-6 s)
   int buttons_down;  // bit field, use GESTURES_BUTTON_*

@@ -73,6 +73,18 @@ std::string HardwareProperties::String() const {
                       is_button_pad);
 }
 
+string FingerState::String() const {
+  return StringPrintf("{ %f, %f, %f, %f, %f, %f, %f, %f, %d, %d }",
+                      touch_major, touch_minor,
+                      width_major, width_minor,
+                      pressure,
+                      orientation,
+                      position_x,
+                      position_y,
+                      tracking_id,
+                      flags);
+}
+
 FingerState* HardwareState::GetFingerState(short tracking_id) {
   return const_cast<FingerState*>(
       const_cast<const HardwareState*>(this)->GetFingerState(tracking_id));
@@ -84,6 +96,24 @@ const FingerState* HardwareState::GetFingerState(short tracking_id) const {
       return &fingers[i];
   }
   return NULL;
+}
+
+string HardwareState::String() const {
+  string ret = StringPrintf("{ %f, %d, %d, %d, {",
+                            timestamp,
+                            buttons_down,
+                            finger_cnt,
+                            touch_cnt);
+  for (size_t i = 0; i < finger_cnt; i++) {
+    if (i != 0)
+      ret += ",";
+    ret += " ";
+    ret += fingers[i].String();
+  }
+  if (finger_cnt > 0)
+    ret += " ";
+  ret += "} }";
+  return ret;
 }
 
 bool HardwareState::SameFingersAs(const HardwareState& that) const {

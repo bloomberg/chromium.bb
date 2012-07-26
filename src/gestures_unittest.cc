@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,6 +275,60 @@ TEST(GesturesTest, HardwarePropertiesToStringTest) {
     EXPECT_GE(found, last_found) << "i=" << i;
     last_found = found;
   }
+}
+
+TEST(GesturesTest, HardwareStateToStringTest) {
+  FingerState fs[] = {
+    { 1.0, 2.0, 3.0, 4.5, 30.0, 11.0, 20.0, 30.0, 14, 12 },
+    { 1.5, 2.5, 3.5, 5.0, 30.5, 11.5, 20.5, 30.5, 15, 22 }
+  };
+
+  HardwareState hs[] = {
+    { 1.123, 1, 2, 2, fs },
+    { 2.123, 0, 0, 0, NULL }
+  };
+
+  const char* expected[] = {
+    "1.0",
+    "2.0",
+    "3.0",
+    "4.5",
+    "30.0",
+    "11.0",
+    "20.0",
+    "30.0",
+    "14",
+    "12",
+    "1.5",
+    "2.5",
+    "3.5",
+    "5.0",
+    "30.5",
+    "11.5",
+    "20.5",
+    "30.5",
+    "15",
+    "22",
+    "1.123",
+    "1, 2, 2"
+  };
+  const char* short_expected[] = {
+    "2.123",
+    "0, 0, 0",
+    "{}"
+  };
+  string long_str = hs[0].String();
+  string short_str = hs[1].String();
+
+  for (size_t i = 0; i < arraysize(expected); i++)
+    EXPECT_NE(static_cast<char*>(NULL), strstr(long_str.c_str(), expected[i]))
+        << " str: " << expected[i];
+  for (size_t i = 0; i < arraysize(short_expected); i++)
+    EXPECT_NE(static_cast<char*>(NULL),
+              strstr(short_str.c_str(), short_expected[i]))
+        << " str: " << short_expected[i];
+
+  return;
 }
 
 }  // namespace gestures
