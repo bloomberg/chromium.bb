@@ -288,8 +288,10 @@ def main(argv):
   else:
     bcfile = None
 
+  # Check for known bug-patterns in the bitcode file (if there is one).
   # TODO(jvoung): remove this when known bug is fixed.
-  CheckForKnownBugs(bcfile)
+  if bcfile is not None:
+    CheckForKnownBugs(bcfile)
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
