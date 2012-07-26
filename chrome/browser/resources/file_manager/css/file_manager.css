@@ -451,6 +451,7 @@ div.root-eject:hover {
 }
 
 #search-box {
+  -webkit-transition: width 600ms;
   background: -webkit-image-set(
     url('../images/files/ui/icon_search.png') 1x,
     url('../images/files/ui/2x/icon_search.png') 2x);
@@ -460,6 +461,11 @@ div.root-eject:hover {
   height: 25px;
   margin-right: 10px;
   padding-left: 22px;
+  width: 150px;
+}
+
+#search-box:focus {
+  width: 240px;
 }
 
 #search-box,
