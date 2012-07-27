@@ -160,8 +160,14 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
+#if defined(OS_LINUX)
+  // On Linux, unknown plugins require authorization.
+  PluginInstaller::SecurityStatus plugin_status =
+      PluginInstaller::SECURITY_STATUS_REQUIRES_AUTHORIZATION;
+#else
   PluginInstaller::SecurityStatus plugin_status =
       PluginInstaller::SECURITY_STATUS_UP_TO_DATE;
+#endif
   PluginInstaller* installer =
       plugin_finder->FindPluginWithIdentifier(group->identifier());
   if (installer)
