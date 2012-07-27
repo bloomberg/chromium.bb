@@ -20,6 +20,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/sync_notifier.h"
+#include "sync/notifier/sync_notifier_helper.h"
 
 namespace notifier {
 class PushClient;
@@ -81,9 +82,8 @@ class P2PNotificationData {
   ModelTypeSet changed_types_;
 };
 
-class P2PNotifier
-    : public SyncNotifier,
-      public notifier::PushClientObserver {
+class P2PNotifier : public SyncNotifier,
+                    public notifier::PushClientObserver {
  public:
   // The |send_notification_target| parameter was added to allow us to send
   // self-notifications in some cases, but not others.  The value should be
@@ -96,13 +96,12 @@ class P2PNotifier
   virtual ~P2PNotifier();
 
   // SyncNotifier implementation
-  virtual void AddObserver(SyncNotifierObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(SyncNotifierObserver* observer) OVERRIDE;
+  virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
+                                   const ObjectIdSet& ids) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) OVERRIDE;
   virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
 
   // PushClientObserver implementation.
@@ -120,7 +119,7 @@ class P2PNotifier
 
   base::ThreadChecker thread_checker_;
 
-  ObserverList<SyncNotifierObserver> observer_list_;
+  SyncNotifierHelper helper_;
 
   // The push client.
   scoped_ptr<notifier::PushClient> push_client_;

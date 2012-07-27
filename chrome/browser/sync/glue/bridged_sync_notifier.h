@@ -28,18 +28,13 @@ class BridgedSyncNotifier : public syncer::SyncNotifier {
   virtual ~BridgedSyncNotifier();
 
   // SyncNotifier implementation. Passes through all calls to the delegate.
-  // AddObserver/RemoveObserver will also register/deregister |observer| with
-  // the bridge.
-  virtual void AddObserver(
-      syncer::SyncNotifierObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      syncer::SyncNotifierObserver* observer) OVERRIDE;
+  // UpdateRegisteredIds calls will also be forwarded to the bridge.
+  virtual void UpdateRegisteredIds(syncer::SyncNotifierObserver* handler,
+                                   const syncer::ObjectIdSet& ids) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void UpdateEnabledTypes(
-      syncer::ModelTypeSet enabled_types) OVERRIDE;
   virtual void SendNotification(
       syncer::ModelTypeSet changed_types) OVERRIDE;
 

@@ -34,14 +34,10 @@ InvalidationNotifier::~InvalidationNotifier() {
   DCHECK(CalledOnValidThread());
 }
 
-void InvalidationNotifier::AddObserver(SyncNotifierObserver* observer) {
+void InvalidationNotifier::UpdateRegisteredIds(SyncNotifierObserver* handler,
+                                               const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
-  observers_.AddObserver(observer);
-}
-
-void InvalidationNotifier::RemoveObserver(SyncNotifierObserver* observer) {
-  DCHECK(CalledOnValidThread());
-  observers_.RemoveObserver(observer);
+  invalidation_client_.RegisterIds(helper_.UpdateRegisteredIds(handler, ids));
 }
 
 void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
@@ -85,22 +81,6 @@ void InvalidationNotifier::UpdateCredentials(
   invalidation_client_.UpdateCredentials(email, token);
 }
 
-void InvalidationNotifier::UpdateEnabledTypes(ModelTypeSet enabled_types) {
-  DCHECK(CalledOnValidThread());
-  CHECK(!invalidation_client_id_.empty());
-  ObjectIdSet ids;
-  for (ModelTypeSet::Iterator it = enabled_types.First(); it.Good();
-       it.Inc()) {
-    invalidation::ObjectId id;
-    if (!RealModelTypeToObjectId(it.Get(), &id)) {
-      DLOG(WARNING) << "Invalid model type " << it.Get();
-      continue;
-    }
-    ids.insert(id);
-  }
-  invalidation_client_.RegisterIds(ids);
-}
-
 void InvalidationNotifier::SendNotification(ModelTypeSet changed_types) {
   DCHECK(CalledOnValidThread());
   // Do nothing.
@@ -108,33 +88,18 @@ void InvalidationNotifier::SendNotification(ModelTypeSet changed_types) {
 
 void InvalidationNotifier::OnInvalidate(const ObjectIdPayloadMap& id_payloads) {
   DCHECK(CalledOnValidThread());
-  // TODO(dcheng): This should probably be a utility function somewhere...
-  ModelTypePayloadMap type_payloads;
-  for (ObjectIdPayloadMap::const_iterator it = id_payloads.begin();
-       it != id_payloads.end(); ++it) {
-    ModelType model_type;
-    if (!ObjectIdToRealModelType(it->first, &model_type)) {
-      DLOG(WARNING) << "Invalid object ID: " << ObjectIdToString(it->first);
-      continue;
-    }
-    type_payloads[model_type] = it->second;
-  }
-  FOR_EACH_OBSERVER(
-      SyncNotifierObserver, observers_,
-      OnIncomingNotification(type_payloads, REMOTE_NOTIFICATION));
+  helper_.DispatchInvalidationsToHandlers(id_payloads, REMOTE_NOTIFICATION);
 }
 
 void InvalidationNotifier::OnNotificationsEnabled() {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnNotificationsEnabled());
+  helper_.EmitOnNotificationsEnabled();
 }
 
 void InvalidationNotifier::OnNotificationsDisabled(
     NotificationsDisabledReason reason) {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnNotificationsDisabled(reason));
+  helper_.EmitOnNotificationsDisabled(reason);
 }
 
 }  // namespace syncer

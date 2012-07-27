@@ -60,8 +60,9 @@ TEST_F(SyncNotifierFactoryTest, Basic) {
   ASSERT_FALSE(notifier.get());
 #else
   ASSERT_TRUE(notifier.get());
-  notifier->AddObserver(&mock_observer_);
-  notifier->RemoveObserver(&mock_observer_);
+  ObjectIdSet ids = ModelTypeSetToObjectIdSet(ModelTypeSet(syncer::BOOKMARKS));
+  notifier->UpdateRegisteredIds(&mock_observer_, ids);
+  notifier->UpdateRegisteredIds(&mock_observer_, ObjectIdSet());
 #endif
 }
 
@@ -77,8 +78,9 @@ TEST_F(SyncNotifierFactoryTest, Basic_P2P) {
   ASSERT_FALSE(notifier.get());
 #else
   ASSERT_TRUE(notifier.get());
-  notifier->AddObserver(&mock_observer_);
-  notifier->RemoveObserver(&mock_observer_);
+  ObjectIdSet ids = ModelTypeSetToObjectIdSet(ModelTypeSet(syncer::BOOKMARKS));
+  notifier->UpdateRegisteredIds(&mock_observer_, ids);
+  notifier->UpdateRegisteredIds(&mock_observer_, ObjectIdSet());
 #endif
 }
 

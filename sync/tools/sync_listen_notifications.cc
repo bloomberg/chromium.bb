@@ -63,8 +63,10 @@ class NotificationPrinter : public SyncNotifierObserver {
   }
 
   virtual void OnIncomingNotification(
-      const ModelTypePayloadMap& type_payloads,
+      const ObjectIdPayloadMap& id_payloads,
       IncomingNotificationSource source) OVERRIDE {
+    const ModelTypePayloadMap& type_payloads =
+        ObjectIdPayloadMapToModelTypePayloadMap(id_payloads);
     for (ModelTypePayloadMap::const_iterator it =
              type_payloads.begin(); it != type_payloads.end(); ++it) {
       LOG(INFO) << (source == REMOTE_NOTIFICATION ? "Remote" : "Local")
@@ -233,17 +235,17 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
   scoped_ptr<SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());
   NotificationPrinter notification_printer;
-  sync_notifier->AddObserver(&notification_printer);
 
   const char kUniqueId[] = "fake_unique_id";
   sync_notifier->SetUniqueId(kUniqueId);
   sync_notifier->UpdateCredentials(email, token);
   // Listen for notifications for all known types.
-  sync_notifier->UpdateEnabledTypes(ModelTypeSet::All());
+  sync_notifier->UpdateRegisteredIds(
+      &notification_printer, ModelTypeSetToObjectIdSet(ModelTypeSet::All()));
 
   ui_loop.Run();
 
-  sync_notifier->RemoveObserver(&notification_printer);
+  sync_notifier->UpdateRegisteredIds(&notification_printer, ObjectIdSet());
   io_thread.Stop();
   return 0;
 }

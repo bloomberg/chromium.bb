@@ -44,7 +44,7 @@ class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
   FakeSyncNotifierObserver(
       const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner,
       ChromeSyncNotificationBridge* bridge,
-      const syncer::ModelTypePayloadMap& expected_payloads,
+      const syncer::ObjectIdPayloadMap& expected_payloads,
       syncer::IncomingNotificationSource expected_source)
       : sync_task_runner_(sync_task_runner),
         bridge_(bridge),
@@ -53,17 +53,23 @@ class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
         expected_payloads_(expected_payloads),
         expected_source_(expected_source) {
     DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-    bridge_->AddObserver(this);
+    // TODO(dcheng): We might want a function to go from ObjectIdPayloadMap ->
+    // ObjectIdSet to avoid this rather long incantation...
+    const syncer::ObjectIdSet& ids = syncer::ModelTypeSetToObjectIdSet(
+        syncer::ModelTypePayloadMapToEnumSet(
+            syncer::ObjectIdPayloadMapToModelTypePayloadMap(
+                expected_payloads)));
+    bridge_->UpdateRegisteredIds(this, ids);
   }
 
   virtual ~FakeSyncNotifierObserver() {
     DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-    bridge_->RemoveObserver(this);
+    bridge_->UpdateRegisteredIds(this, syncer::ObjectIdSet());
   }
 
   // SyncNotifierObserver implementation.
   virtual void OnIncomingNotification(
-      const syncer::ModelTypePayloadMap& type_payloads,
+      const syncer::ObjectIdPayloadMap& id_payloads,
       syncer::IncomingNotificationSource source) OVERRIDE {
     DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
     notification_count_++;
@@ -71,7 +77,7 @@ class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
       LOG(ERROR) << "Received notification with wrong source";
       received_improper_notification_ = true;
     }
-    if (expected_payloads_ != type_payloads) {
+    if (expected_payloads_ != id_payloads) {
       LOG(ERROR) << "Received wrong payload";
       received_improper_notification_ = true;
     }
@@ -94,7 +100,7 @@ class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
   ChromeSyncNotificationBridge* const bridge_;
   bool received_improper_notification_;
   size_t notification_count_;
-  const syncer::ModelTypePayloadMap expected_payloads_;
+  const syncer::ObjectIdPayloadMap expected_payloads_;
   const syncer::IncomingNotificationSource expected_source_;
 };
 
@@ -136,14 +142,16 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
   }
 
   void CreateObserverWithExpectations(
-      syncer::ModelTypePayloadMap expected_payloads,
+      const syncer::ModelTypePayloadMap& expected_payloads,
       syncer::IncomingNotificationSource expected_source) {
+    const syncer::ObjectIdPayloadMap& expected_id_payloads =
+        syncer::ModelTypePayloadMapToObjectIdPayloadMap(expected_payloads);
     ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(
             &ChromeSyncNotificationBridgeTest::CreateObserverOnSyncThread,
             base::Unretained(this),
-            expected_payloads,
+            expected_id_payloads,
             expected_source)));
     BlockForSyncThread();
   }
@@ -182,7 +190,7 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
   }
 
   void CreateObserverOnSyncThread(
-      syncer::ModelTypePayloadMap expected_payloads,
+      const syncer::ObjectIdPayloadMap& expected_payloads,
       syncer::IncomingNotificationSource expected_source) {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
     sync_observer_ = new FakeSyncNotifierObserver(
