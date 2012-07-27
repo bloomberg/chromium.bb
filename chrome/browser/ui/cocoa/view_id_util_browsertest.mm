@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -55,7 +56,8 @@ class ViewIDTest : public InProcessBrowserTest {
     browser()->window()->GetDownloadShelf()->Show();
 
     // Create a bookmark to test VIEW_ID_BOOKMARK_BAR_ELEMENT
-    BookmarkModel* bookmark_model = browser()->profile()->GetBookmarkModel();
+    BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(browser()->profile());
     if (bookmark_model) {
       if (!bookmark_model->IsLoaded())
         ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);

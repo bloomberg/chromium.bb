@@ -14,6 +14,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_editor.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/managed_mode.h"
@@ -1603,7 +1604,8 @@ enum {
 - (void)showBookmarkBubbleForURL:(const GURL&)url
                alreadyBookmarked:(BOOL)alreadyMarked {
   if (!bookmarkBubbleController_) {
-    BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForProfile(browser_->profile());
     const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
     bookmarkBubbleController_ =
         [[BookmarkBubbleController alloc] initWithParentWindow:[self window]

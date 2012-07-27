@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.h"
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 
 @implementation FakeAppDelegate
 
@@ -69,5 +70,5 @@ void BookmarkAppleScriptTest::SetUp() {
 }
 
 BookmarkModel& BookmarkAppleScriptTest::model() {
-  return *profile()->GetBookmarkModel();
+  return *BookmarkModelFactory::GetForProfile(profile());
 }
