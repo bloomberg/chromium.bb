@@ -7,9 +7,10 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/proto/audio.pb.h"
 
 namespace remoting {
+
+class AudioPacket;
 
 class AudioCapturer {
  public:
@@ -20,8 +21,8 @@ class AudioCapturer {
 
   static scoped_ptr<AudioCapturer> Create();
 
-  // Capturers should sample at a 44.1 kHz sampling rate, in uncompressed PCM
-  // stereo format. Capturers may choose the number of frames per packet.
+  // Capturers should sample at a 44.1 or 48 kHz sampling rate, in uncompressed
+  // PCM stereo format. Capturers may choose the number of frames per packet.
   // Returns true on success.
   virtual bool Start(const PacketCapturedCallback& callback) = 0;
   // Stops the audio capturer, and frees the OS-specific audio capture
@@ -29,6 +30,8 @@ class AudioCapturer {
   virtual void Stop() = 0;
   // Returns true if the audio capturer is running.
   virtual bool IsRunning() = 0;
+
+  static bool IsValidSampleRate(int sample_rate);
 };
 
 }  // namespace remoting
