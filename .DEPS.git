@@ -147,6 +147,8 @@ deps_os = {
     },
     'ios':
     {
+        'src/testing/iossim/third_party/class-dump':
+            Var('git_url') + '/chromium/deps/class-dump.git@8461cdd762a604887dc7f251a619d7ec1c1c930d',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@7545ca338f0bcf18dec026599098d72ce53106fe',
         'src/third_party/nss':
