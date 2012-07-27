@@ -5,21 +5,10 @@
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_FILE_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_FILE_H_
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-
-#ifdef _WIN32
-typedef HANDLE PP_FileHandle;
-static const PP_FileHandle PP_kInvalidFileHandle = NULL;
-#else
-typedef int PP_FileHandle;
-static const PP_FileHandle PP_kInvalidFileHandle = -1;
-#endif
+#include "ppapi/c/private/pp_file_handle.h"
 
 struct PP_FileInfo;
 
