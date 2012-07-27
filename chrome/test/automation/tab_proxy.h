@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,9 +158,6 @@ class TabProxy : public AutomationResourceProxy {
   bool GetCookieByName(const GURL& url,
                        const std::string& name,
                        std::string* cookies) WARN_UNUSED_RESULT;
-  bool SetCookie(const GURL& url, const std::string& value) WARN_UNUSED_RESULT;
-
-  bool GetDownloadDirectory(FilePath* download_directory) WARN_UNUSED_RESULT;
 
 #if defined(OS_WIN)
   // The functions in this block are for external tabs, hence Windows only.

@@ -275,21 +275,8 @@ class PyUITestBase {
       set_clear_profile;
   void set_clear_profile(bool clear_profile);
 
-  // Get/fetch properties
-  %feature("docstring",
-           "Get the path to download directory.") GetDownloadDirectory;
-  FilePath GetDownloadDirectory();
-
   %feature("docstring", "Get the path to profile directory.") user_data_dir;
   FilePath user_data_dir() const;
-
-  %feature("docstring", "Set download shelf visibility for the given or "
-           "first browser window.") SetDownloadShelfVisible;
-  void SetDownloadShelfVisible(bool is_visible, int window_index=0);
-
-  %feature("docstring", "Determine if the download shelf is visible in the "
-           "given or first browser window.") IsDownloadShelfVisible;
-  bool IsDownloadShelfVisible(int window_index=0);
 
   %feature("docstring", "Determine if the bookmark bar is visible. "
            "If the NTP is visible, only return true if attached "
@@ -362,19 +349,6 @@ class PyUITestBase {
   %feature("docstring", "Fetch the number of browser windows. Includes popups.")
       GetBrowserWindowCount;
   int GetBrowserWindowCount();
-
-  %feature("docstring", "Set the value of the cookie at cookie_url to value "
-           "for the given window index and tab index. "
-           "Returns True on success.") SetCookie;
-  bool SetCookie(const GURL& cookie_url, const std::string& value,
-                 int window_index=0, int tab_index=0);
-
-  %feature("docstring", "Get the value of the cookie at cookie_url for the "
-           "given window index and tab index. "
-           "Returns empty string on error or if there is no value for the "
-           "cookie.") GetCookie;
-  std::string GetCookie(const GURL& cookie_url, int window_index=0,
-                        int tab_index=0);
 
   // Misc methods
   %feature("docstring", "Get a proxy to the browser window at the given "

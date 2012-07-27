@@ -69,20 +69,11 @@ class PyUITestBase : public UITestBase {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  // Shows or hides the download shelf.
-  void SetDownloadShelfVisible(bool is_visible, int window_index = 0);
-
-  // Determines the visibility of the download shelf
-  bool IsDownloadShelfVisible(int window_index = 0);
-
   // Open the Find box
   void OpenFindInPage(int window_index = 0);
 
   // Determines the visibility of the Find box
   bool IsFindInPageVisible(int window_index = 0);
-
-  // Get the path to the downloads directory
-  FilePath GetDownloadDirectory();
 
   // AutomationProxy methods
 

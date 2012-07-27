@@ -41,10 +41,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // success.
   bool BringToFront() WARN_UNUSED_RESULT;
 
-  // Checks to see if a command is enabled or not. If the call was successful,
-  // puts the result in |enabled| and returns true.
-  bool IsMenuCommandEnabled(int id, bool* enabled) WARN_UNUSED_RESULT;
-
   // Append a new tab to the TabStrip.  The new tab is selected.
   // The new tab navigates to the given tab_url.
   // Returns true if successful.
@@ -158,14 +154,6 @@ class BrowserProxy : public AutomationResourceProxy {
   bool SetBookmarkURL(int64 id, const GURL& url) WARN_UNUSED_RESULT;
   // Finally, bookmark deletion:
   bool RemoveBookmark(int64 id) WARN_UNUSED_RESULT;
-
-  // Fills |*is_visible| with whether the browser's download shelf is currently
-  // visible. The return value indicates success. On failure, |*is_visible| is
-  // unchanged.
-  bool IsShelfVisible(bool* is_visible) WARN_UNUSED_RESULT;
-
-  // Shows or hides the download shelf.
-  bool SetShelfVisible(bool is_visible) WARN_UNUSED_RESULT;
 
   // Simulates a termination the browser session (as if the user logged off the
   // mahine).

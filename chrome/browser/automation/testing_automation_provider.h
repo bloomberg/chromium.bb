@@ -100,10 +100,6 @@ class TestingAutomationProvider : public AutomationProvider,
                 IPC::Message* reply_message);
   void GetCookies(const GURL& url, int handle, int* value_size,
                   std::string* value);
-  void SetCookie(const GURL& url,
-                 const std::string& value,
-                 int handle,
-                 int* response_value);
   void NavigateToURLBlockUntilNavigationsComplete(int handle, const GURL& url,
                                                   int number_of_navigations,
                                                   IPC::Message* reply_message);
@@ -138,13 +134,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetTabTitle(int handle, int* title_string_size, std::wstring* title);
   void GetTabIndex(int handle, int* tabstrip_index);
   void GetTabURL(int handle, bool* success, GURL* url);
-  void GetShelfVisibility(int handle, bool* visible);
   void ExecuteJavascript(int handle,
                          const std::wstring& frame_xpath,
                          const std::wstring& script,
                          IPC::Message* reply_message);
-
-  void GetDownloadDirectory(int handle, FilePath* download_directory);
 
   // If |show| is true, call Show() on the new window after creating it.
   void OpenNewBrowserWindowOfType(int type,
@@ -180,11 +173,6 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Brings the browser window to the front and activates it.
   void BringBrowserToFront(int browser_handle, bool* success);
-
-  // Checks to see if a command on the browser's CommandController is enabled.
-  void IsMenuCommandEnabled(int browser_handle,
-                            int message_num,
-                            bool* menu_item_enabled);
 
   // Responds to requests to open the FindInPage window.
   void HandleOpenFindInPageRequest(const IPC::Message& message,
@@ -239,8 +227,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void GoForwardBlockUntilNavigationsComplete(int handle,
                                               int number_of_navigations,
                                               IPC::Message* reply_message);
-
-  void SetShelfVisibility(int handle, bool visible);
 
   // Generic pattern for pyautolib
   // Uses the JSON interface for input/output.
@@ -367,6 +353,31 @@ class TestingAutomationProvider : public AutomationProvider,
   void LoadSearchEngineInfo(Browser* browser,
                             base::DictionaryValue* args,
                             IPC::Message* reply_message);
+
+  // Sets the visibility of the download shelf. Uses the JSON interface.
+  // Example:
+  //   input: { "is_visible": true,
+  //            "windex": 1,
+  //          }
+  //   output: none
+  void SetDownloadShelfVisibleJSON(base::DictionaryValue* args,
+                                   IPC::Message* reply_message);
+
+  // Gets the visibility of the download shelf. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1 }
+  //   output: { "is_visible": true }
+  void IsDownloadShelfVisibleJSON(base::DictionaryValue* args,
+                                  IPC::Message* reply_message);
+
+  // Gets the download path of the given tab. Uses the JSON interface.
+  // Example:
+  //   input: { "tab_index": 1,
+  //            "windex": 1,
+  //          }
+  //   output: { "path": "/home/foobar/Downloads" }
+  void GetDownloadDirectoryJSON(base::DictionaryValue* args,
+                                IPC::Message* reply_message);
 
   // Get search engines list.
   // Assumes that the profile's template url model is loaded.
@@ -1113,6 +1124,42 @@ class TestingAutomationProvider : public AutomationProvider,
   //          }
   //   output: none
   void SetCookieJSON(base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Gets the cookies for the given URL in the context of a given browser
+  // window. Uses the JSON interface.
+  // Example:
+  //   input: { "url": "http://www.google.com",
+  //            "tab_index": 1,
+  //            "windex": 1,
+  //          }
+  //   output: { "cookies": "foo=bar" }
+  void GetCookiesInBrowserContext(base::DictionaryValue* args,
+                                  IPC::Message* reply_message);
+
+  // Deletes the cookie with the given name for the URL in the context of a
+  // given browser window. Uses the JSON interface.
+  // Example:
+  //   input: { "url": "http://www.google.com",
+  //            "cookie_name": "my_cookie"
+  //            "tab_index": 1,
+  //            "windex": 1,
+  //          }
+  //   output: none
+  void DeleteCookieInBrowserContext(base::DictionaryValue* args,
+                                    IPC::Message* reply_message);
+
+  // Sets a cookie for the given URL in the context of a given browser window.
+  // Uses the JSON interface.
+  //
+  // Example:
+  //   input: { "url": "http://www.google.com",
+  //            "value": "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT",
+  //            "tab_index": 1,
+  //            "windex": 1,
+  //          }
+  //   output: none
+  void SetCookieInBrowserContext(base::DictionaryValue* args,
+                                 IPC::Message* reply_message);
 
   // Gets the ID for every open tab. This ID is unique per session.
   // Example:

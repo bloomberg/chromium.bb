@@ -275,21 +275,6 @@ bool TabProxy::GetCookieByName(const GURL& url,
   return true;
 }
 
-bool TabProxy::SetCookie(const GURL& url, const std::string& value) {
-  int response_value = 0;
-  return sender_->Send(new AutomationMsg_SetCookie(url, value, handle_,
-                                                   &response_value));
-}
-
-bool TabProxy::GetDownloadDirectory(FilePath* directory) {
-  DCHECK(directory);
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_DownloadDirectory(handle_,
-                                                           directory));
-}
-
 bool TabProxy::Close() {
   return Close(false);
 }

@@ -71,7 +71,7 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_GetCookies,
 // identified by the third parameter. The first parameter is the URL
 // string, and the second parameter is the cookie name and value to be set.
 // The return value is a non-negative value on success.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetCookie,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_SetCookie,
                             GURL,
                             std::string,
                             int,
@@ -156,7 +156,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DomOperation,
                                            execution */)
 
 // Is the Download Shelf visible for the specified browser?
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_ShelfVisibility,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_ShelfVisibility,
                             int /* browser_handle */,
                             bool /* is_visible */)
 
@@ -218,7 +218,7 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_DEPRECATED_SetFilteredInet,
                      bool /* enabled */)
 
 // Gets the directory that downloads will occur in for the active profile.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DownloadDirectory,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_DownloadDirectory,
                             int /* tab_handle */,
                             FilePath /* directory */)
 
@@ -466,7 +466,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_BringBrowserToFront,
 //   - int: IDC message identifier to query if enabled
 // Response:
 //   - bool: True if the command is enabled on the menu
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_IsMenuCommandEnabled,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_IsMenuCommandEnabled,
                             int,
                             int,
                             bool)
@@ -594,7 +594,7 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_SetProxyConfig,
                      std::string /* proxy_config_json_string */)
 
 // Sets Download Shelf visibility for the specified browser.
-IPC_SYNC_MESSAGE_CONTROL2_0(AutomationMsg_SetShelfVisibility,
+IPC_SYNC_MESSAGE_CONTROL2_0(AutomationMsg_DEPRECATED_SetShelfVisibility,
                             int /* browser_handle */,
                             bool /* is_visible */)
 

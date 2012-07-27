@@ -51,14 +51,6 @@ bool BrowserProxy::BringToFront() {
   return succeeded;
 }
 
-bool BrowserProxy::IsMenuCommandEnabled(int id, bool* enabled) {
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_IsMenuCommandEnabled(handle_, id,
-                                                              enabled));
-}
-
 bool BrowserProxy::AppendTab(const GURL& tab_url) {
   if (!is_valid())
     return false;
@@ -361,27 +353,6 @@ bool BrowserProxy::RemoveBookmark(int64 id) {
                                                  id,
                                                  &result));
   return result;
-}
-
-bool BrowserProxy::IsShelfVisible(bool* is_visible) {
-  if (!is_valid())
-    return false;
-
-  if (!is_visible) {
-    NOTREACHED();
-    return false;
-  }
-
-  return sender_->Send(new AutomationMsg_ShelfVisibility(handle_,
-                                                         is_visible));
-}
-
-bool BrowserProxy::SetShelfVisible(bool is_visible) {
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_SetShelfVisibility(handle_,
-                                                            is_visible));
 }
 
 bool BrowserProxy::TerminateSession() {

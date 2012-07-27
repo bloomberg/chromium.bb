@@ -1530,6 +1530,70 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def GetCookie(self, url, windex=0):
+    """Get the value of the cookie at url in context of the specified browser.
+
+    Args:
+      url: Either a GURL object or url string specifing the cookie url.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(url, GURL):
+      url = url.spec()
+    cmd_dict = {
+        'command': 'GetCookiesInBrowserContext',
+        'url': url,
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['cookies']
+
+  def DeleteCookie(self, url, cookie_name, windex=0):
+    """Delete the cookie at url with name cookie_name.
+
+    Args:
+      url: Either a GURL object or url string specifing the cookie url.
+      cookie_name: The name of the cookie to delete as a string.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(url, GURL):
+      url = url.spec()
+    cmd_dict = {
+        'command': 'DeleteCookieInBrowserContext',
+        'url': url,
+        'cookie_name': cookie_name,
+        'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def SetCookie(self, url, value, windex=0):
+    """Set the value of the cookie at url to value in the context of a browser.
+
+    Args:
+      url: Either a GURL object or url string specifing the cookie url.
+      value: A string to set as the cookie's value.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(url, GURL):
+      url = url.spec()
+    cmd_dict = {
+        'command': 'SetCookieInBrowserContext',
+        'url': url,
+        'value': value,
+        'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
   def GetInstantInfo(self):
     """Return info about the instant overlay tab.
 
@@ -1843,6 +1907,67 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     # Sending request for a char.
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def SetDownloadShelfVisible(self, is_visible, windex=0):
+    """Set download shelf visibility for the specified browser window.
+
+    Args:
+      is_visible: A boolean indicating the desired shelf visibility.
+      windex: The window index, defaults to 0 (the first window).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'SetDownloadShelfVisible',
+      'is_visible': is_visible,
+      'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def IsDownloadShelfVisible(self, windex=0):
+    """Determine whether the download shelf is visible in the given window.
+
+    Args:
+      windex: The window index, defaults to 0 (the first window).
+
+    Returns:
+      A boolean indicating the shelf visibility.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'IsDownloadShelfVisible',
+      'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['is_visible']
+
+  def GetDownloadDirectory(self, tab_index=None, windex=0):
+    """Get the path to the download directory.
+
+    Warning: Depending on the concept of an active tab is dangerous as it can
+    change during the test. Always supply a tab_index explicitly.
+
+    Args:
+      tab_index: The index of the tab to work on. Defaults to the active tab.
+      windex: The index of the browser window to work on. Defaults to 0.
+
+    Returns:
+      The path to the download directory as a FilePath object.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if tab_index is None:
+      tab_index = self.GetActiveTabIndex(windex)
+    cmd_dict = {
+      'command': 'GetDownloadDirectory',
+      'tab_index': tab_index,
+      'windex': windex,
+    }
+    return FilePath(self._GetResultFromJSONRequest(cmd_dict,
+                                                   windex=None)['path'])
 
   def WaitForAllDownloadsToComplete(self, pre_download_ids=[], windex=0,
                                     timeout=-1):
