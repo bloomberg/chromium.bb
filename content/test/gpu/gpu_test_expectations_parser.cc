@@ -37,6 +37,7 @@ enum Token {
   kConfigMac,
   kConfigLinux,
   kConfigChromeOS,
+  kConfigAndroid,
   // gpu vendor
   kConfigNVidia,
   kConfigAMD,
@@ -79,6 +80,7 @@ const TokenInfo kTokenData[] = {
   { "mac", GPUTestConfig::kOsMac },
   { "linux", GPUTestConfig::kOsLinux },
   { "chromeos", GPUTestConfig::kOsChromeOS },
+  { "android", GPUTestConfig::kOsAndroid },
   { "nvidia", 0x10DE },
   { "amd", 0x1002 },
   { "intel", 0x8086 },
@@ -234,6 +236,7 @@ bool GPUTestExpectationsParser::ParseConfig(
       case kConfigMac:
       case kConfigLinux:
       case kConfigChromeOS:
+      case kConfigAndroid:
       case kConfigNVidia:
       case kConfigAMD:
       case kConfigIntel:
@@ -281,6 +284,7 @@ bool GPUTestExpectationsParser::ParseLine(
       case kConfigMac:
       case kConfigLinux:
       case kConfigChromeOS:
+      case kConfigAndroid:
       case kConfigNVidia:
       case kConfigAMD:
       case kConfigIntel:
@@ -391,6 +395,7 @@ bool GPUTestExpectationsParser::UpdateTestConfig(
     case kConfigMac:
     case kConfigLinux:
     case kConfigChromeOS:
+    case kConfigAndroid:
       if ((config->os() & kTokenData[token].flag) != 0) {
         PushErrorMessage(kErrorMessage[kErrorEntryWithOsConflicts],
                          line_number);

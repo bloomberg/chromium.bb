@@ -89,7 +89,7 @@ TEST_F(GPUTestExpectationsParserTest, ValidUnrelatedTestEntry) {
 
 TEST_F(GPUTestExpectationsParserTest, AllModifiers) {
   const std::string text =
-      "BUG12345 XP VISTA WIN7 LEOPARD SNOWLEOPARD LION LINUX CHROMEOS "
+      "BUG12345 XP VISTA WIN7 LEOPARD SNOWLEOPARD LION LINUX CHROMEOS ANDROID "
       "NVIDIA INTEL AMD VMWARE RELEASE DEBUG : MyTest = "
       "PASS FAIL FLAKY TIMEOUT SKIP";
 
@@ -115,7 +115,7 @@ TEST_F(GPUTestExpectationsParserTest, DuplicateModifiers) {
 
 TEST_F(GPUTestExpectationsParserTest, AllModifiersLowerCase) {
   const std::string text =
-      "BUG12345 xp vista win7 leopard snowleopard lion linux chromeos "
+      "BUG12345 xp vista win7 leopard snowleopard lion linux chromeos android "
       "nvidia intel amd vmware release debug : MyTest = "
       "pass fail flaky timeout skip";
 
