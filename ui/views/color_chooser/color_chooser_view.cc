@@ -45,24 +45,62 @@ bool GetColorFromText(const string16& text, SkColor* result) {
   return true;
 }
 
+// A view that processes mouse events and gesture events using a common
+// interface.
+class LocatedEventHandlerView : public views::View {
+ public:
+  virtual ~LocatedEventHandlerView() {}
+
+ protected:
+  LocatedEventHandlerView() {}
+
+  // Handles an event (mouse or gesture) at the specified location.
+  virtual void ProcessEventAtLocation(const gfx::Point& location) = 0;
+
+  // Overridden from views::View.
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+    ProcessEventAtLocation(event.location());
+    return true;
+  }
+
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE {
+    ProcessEventAtLocation(event.location());
+    return true;
+  }
+
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE {
+    if (event.type() == ui::ET_GESTURE_TAP ||
+        event.type() == ui::ET_GESTURE_TAP_DOWN ||
+        event.IsScrollGestureEvent()) {
+      ProcessEventAtLocation(event.location());
+      return ui::GESTURE_STATUS_CONSUMED;
+    }
+    return ui::GESTURE_STATUS_UNKNOWN;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LocatedEventHandlerView);
+};
+
 }  // namespace
 
 namespace views {
 
 // The class to choose the hue of the color.  It draws a vertical bar and
 // the indicator for the currently selected hue.
-class ColorChooserView::HueView : public View {
+class ColorChooserView::HueView : public LocatedEventHandlerView {
  public:
   explicit HueView(ColorChooserView* chooser_view);
 
   void OnHueChanged(SkScalar hue);
 
  private:
+  // LocatedEventHandlerView overrides:
+  virtual void ProcessEventAtLocation(const gfx::Point& point) OVERRIDE;
+
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
 
   ColorChooserView* chooser_view_;
   int level_;
@@ -84,6 +122,14 @@ void ColorChooserView::HueView::OnHueChanged(SkScalar hue) {
     level_ = level;
     SchedulePaint();
   }
+}
+
+void ColorChooserView::HueView::ProcessEventAtLocation(
+    const gfx::Point& point) {
+  level_ = std::max(0, std::min(height() - 1, point.y()));
+  chooser_view_->OnHueChosen(SkScalarDiv(
+      SkScalarMul(SkIntToScalar(360), SkIntToScalar(height() - 1 - level_)),
+      SkIntToScalar(height() - 1)));
 }
 
 gfx::Size ColorChooserView::HueView::GetPreferredSize() {
@@ -137,22 +183,10 @@ void ColorChooserView::HueView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawPath(right_indicator_path, indicator_paint);
 }
 
-bool ColorChooserView::HueView::OnMousePressed(const MouseEvent& event) {
-  level_ = std::max(0, std::min(height() - 1, event.y()));
-  chooser_view_->OnHueChosen(SkScalarDiv(
-      SkScalarMul(SkIntToScalar(360), SkIntToScalar(height() - 1 - level_)),
-      SkIntToScalar(height() - 1)));
-  return true;
-}
-
-bool ColorChooserView::HueView::OnMouseDragged(const MouseEvent& event) {
-  return OnMousePressed(event);
-}
-
 // The class to choose the saturation and the value of the color.  It draws
 // a square area and the indicator for the currently selected saturation and
 // value.
-class ColorChooserView::SaturationValueView : public View {
+class ColorChooserView::SaturationValueView : public LocatedEventHandlerView {
  public:
   explicit SaturationValueView(ColorChooserView* chooser_view);
 
@@ -160,11 +194,12 @@ class ColorChooserView::SaturationValueView : public View {
   void OnSaturationValueChanged(SkScalar saturation, SkScalar value);
 
  private:
+  // LocatedEventHandlerView overrides:
+  virtual void ProcessEventAtLocation(const gfx::Point& point) OVERRIDE;
+
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
 
   ColorChooserView* chooser_view_;
   SkScalar hue_;
@@ -175,7 +210,8 @@ class ColorChooserView::SaturationValueView : public View {
 
 ColorChooserView::SaturationValueView::SaturationValueView(
     ColorChooserView* chooser_view)
-    : chooser_view_(chooser_view), hue_(0) {
+    : chooser_view_(chooser_view),
+      hue_(0) {
   set_focusable(false);
 }
 
@@ -199,6 +235,17 @@ void ColorChooserView::SaturationValueView::OnSaturationValueChanged(
   marker_position_.set_y(y);
   SchedulePaint();
   chooser_view_->OnSaturationValueChosen(saturation, value);
+}
+
+void ColorChooserView::SaturationValueView::ProcessEventAtLocation(
+    const gfx::Point& point) {
+  SkScalar scalar_size = SkIntToScalar(kSaturationValueSize);
+  SkScalar saturation = SkScalarDiv(SkIntToScalar(point.x()), scalar_size);
+  SkScalar value = SK_Scalar1 - SkScalarDiv(
+      SkIntToScalar(point.y()), scalar_size);
+  saturation = SkScalarPin(saturation, 0, SK_Scalar1);
+  value = SkScalarPin(value, 0, SK_Scalar1);
+  OnSaturationValueChanged(saturation, value);
 }
 
 gfx::Size ColorChooserView::SaturationValueView::GetPreferredSize() {
@@ -251,24 +298,6 @@ void ColorChooserView::SaturationValueView::OnPaint(gfx::Canvas* canvas) {
                  marker_position_.y()),
       indicator_color);
 }
-
-bool ColorChooserView::SaturationValueView::OnMousePressed(
-    const MouseEvent& event) {
-  SkScalar scalar_size = SkIntToScalar(kSaturationValueSize);
-  SkScalar saturation = SkScalarDiv(SkIntToScalar(event.x()), scalar_size);
-  SkScalar value = SK_Scalar1 - SkScalarDiv(
-      SkIntToScalar(event.y()), scalar_size);
-  saturation = SkScalarPin(saturation, 0, SK_Scalar1);
-  value = SkScalarPin(value, 0, SK_Scalar1);
-  OnSaturationValueChanged(saturation, value);
-  return true;
-}
-
-bool ColorChooserView::SaturationValueView::OnMouseDragged(
-    const MouseEvent& event) {
-  return OnMousePressed(event);
-}
-
 
 ColorChooserView::ColorChooserView(ColorChooserListener* listener,
                                    SkColor initial_color)
