@@ -7,6 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if NACL_LINUX
+# include <sys/mman.h>
+#elif NACL_OSX
+# include <mach/mach.h>
+#endif
+
 #include "gtest/gtest.h"
 
 #include "native_client/src/include/portability_io.h"
@@ -15,11 +21,11 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/mmap_test_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-
 
 class MmapTest : public testing::Test {
  protected:
@@ -80,7 +86,8 @@ void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
   int host_fd;
 #if NACL_WINDOWS
   // Open temporary file that is deleted automatically.
-  const char *temp_filename = "nacl_mmap_test_temp";
+  const char *temp_prefix = "nacl_mmap_test_temp_";
+  char *temp_filename = _tempnam("C:\\Windows\\Temp", temp_prefix);
   ASSERT_EQ(_sopen_s(&host_fd, temp_filename,
                      _O_RDWR | _O_CREAT | _O_TEMPORARY,
                      _SH_DENYNO, _S_IREAD | _S_IWRITE), 0);
@@ -114,26 +121,6 @@ void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
   ASSERT_EQ(mapping_addr, addr);
 }
 
-// TODO(mseaborn): Extend this to check mappings under Linux and Mac OS X.
-// See http://code.google.com/p/nativeclient/issues/detail?id=2824
-#if NACL_WINDOWS
-void CheckMapping(uintptr_t addr, size_t size, int state, int protect,
-                  int map_type) {
-  for (size_t offset = 0; offset < size; offset += NACL_MAP_PAGESIZE) {
-    MEMORY_BASIC_INFORMATION info;
-    void *sysaddr = (void *) (addr + offset);
-    size_t result = VirtualQuery(sysaddr, &info, sizeof(info));
-    ASSERT_EQ(result, sizeof(info));
-    ASSERT_EQ(info.BaseAddress, sysaddr);
-    ASSERT_EQ(info.AllocationBase, sysaddr);
-    ASSERT_EQ(info.RegionSize, NACL_MAP_PAGESIZE);
-    ASSERT_EQ(info.State, state);
-    ASSERT_EQ(info.Protect, protect);
-    ASSERT_EQ(info.Type, map_type);
-  }
-}
-#endif
-
 void UnmapMemory(struct NaClApp *nap, uintptr_t addr, size_t size) {
   // Create dummy NaClAppThread.
   // TODO(mseaborn): Clean up so that this is not necessary.
@@ -142,8 +129,16 @@ void UnmapMemory(struct NaClApp *nap, uintptr_t addr, size_t size) {
   thread.nap = nap;
 
   ASSERT_EQ(NaClSysMunmap(&thread, (void *) addr, size), 0);
+
+  uintptr_t sysaddr = NaClUserToSys(nap, addr);
 #if NACL_WINDOWS
-  CheckMapping(NaClUserToSys(nap, addr), size, MEM_RESERVE, 0, MEM_PRIVATE);
+  CheckMapping(sysaddr, size, MEM_RESERVE, 0, MEM_PRIVATE);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_NONE, MAP_PRIVATE);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_NONE, SM_EMPTY);
+#else
+# error Unsupported platform
 #endif
 }
 
@@ -179,9 +174,16 @@ TEST_F(MmapTest, TestUnmapShmMapping) {
   uintptr_t addr = 0x200000;
   size_t size = 0x100000;
   MapShmFd(&app, addr, size);
-#if NACL_WINDOWS
+
   uintptr_t sysaddr = NaClUserToSys(&app, addr);
+#if NACL_WINDOWS
   CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_READWRITE, MEM_MAPPED);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_SHARED);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SM_SHARED);
+#else
+# error Unsupported platform
 #endif
 
   UnmapMemory(&app, addr, size);
@@ -204,9 +206,16 @@ TEST_F(MmapTest, TestUnmapFileMapping) {
   uintptr_t addr = 0x200000;
   size_t size = 0x100000;
   MapFileFd(&app, addr, size);
-#if NACL_WINDOWS
+
   uintptr_t sysaddr = NaClUserToSys(&app, addr);
+#if NACL_WINDOWS
   CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_WRITECOPY, MEM_MAPPED);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_SHARED);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SM_PRIVATE);
+#else
+# error Unsupported platform
 #endif
 
   UnmapMemory(&app, addr, size);
@@ -236,14 +245,19 @@ TEST_F(MmapTest, TestUnmapAnonymousMemoryMapping) {
       -1, 0);
   ASSERT_EQ(mapping_addr, addr);
 
-#if NACL_WINDOWS
   uintptr_t sysaddr = NaClUserToSys(&app, addr);
+#if NACL_WINDOWS
   CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_READWRITE, MEM_PRIVATE);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SM_EMPTY);
+#else
+# error Unsupported platform
 #endif
 
   UnmapMemory(&app, addr, size);
 
   NaClAddrSpaceFree(&app);
 }
-
 #endif

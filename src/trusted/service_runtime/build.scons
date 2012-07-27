@@ -446,6 +446,19 @@ unittest_inputs = [
     'sel_ldr_test.cc',
     'thread_suspension_test.cc',
 ]
+if env.Bit('windows'):
+  unittest_inputs += [
+    'win/mmap_test_check.cc',
+  ]
+elif env.Bit('mac'):
+  unittest_inputs += [
+    'osx/mmap_test_check.cc',
+  ]
+elif env.Bit('linux'):
+  unittest_inputs += [
+    'linux/mmap_test_check.cc',
+  ]
+
 
 if (not env.CrossToolsBuild() and
     (not env.Bit('coverage_enabled') or not env.Bit('windows'))):
