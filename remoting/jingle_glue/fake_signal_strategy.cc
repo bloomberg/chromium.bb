@@ -5,10 +5,12 @@
 #include "remoting/jingle_glue/fake_signal_strategy.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
 
@@ -93,7 +95,7 @@ void FakeSignalStrategy::OnIncomingMessage(
     scoped_ptr<buzz::XmlElement> stanza) {
   pending_messages_.push(stanza.get());
   received_messages_.push_back(stanza.release());
-  MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FakeSignalStrategy::DeliverIncomingMessages,
                             weak_factory_.GetWeakPtr()));
 }

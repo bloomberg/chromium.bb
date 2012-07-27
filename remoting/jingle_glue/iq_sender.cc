@@ -8,8 +8,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -145,9 +146,8 @@ IqRequest::~IqRequest() {
 }
 
 void IqRequest::SetTimeout(base::TimeDelta timeout) {
-  base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&IqRequest::OnTimeout, AsWeakPtr()),
-      timeout);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&IqRequest::OnTimeout, AsWeakPtr()), timeout);
 }
 
 void IqRequest::CallCallback(const buzz::XmlElement* stanza) {
@@ -166,7 +166,7 @@ void IqRequest::OnResponse(const buzz::XmlElement* stanza) {
   // It's unsafe to delete signal strategy here, and the callback may
   // want to do that, so we post task to invoke the callback later.
   scoped_ptr<buzz::XmlElement> stanza_copy(new buzz::XmlElement(*stanza));
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&IqRequest::DeliverResponse, AsWeakPtr(),
                             base::Passed(&stanza_copy)));
 }
