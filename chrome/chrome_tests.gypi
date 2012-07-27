@@ -2602,7 +2602,6 @@
       'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
       'dependencies': [
         'browser',
-        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'chrome_resources.gyp:packed_extra_resources',
@@ -2616,6 +2615,7 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         '../sync/sync.gyp:test_support_syncapi_service',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -3036,7 +3036,6 @@
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
-        '../content/browser/renderer_host/render_process_host_browsertest.cc',
         '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_browsertest.cc',
       ],

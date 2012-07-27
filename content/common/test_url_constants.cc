@@ -6,9 +6,6 @@
 
 namespace content {
 
-const char kTestCacheURL[] = "about:cache";
 const char kTestNewTabURL[] = "chrome://newtab";
-const char kTestHistoryURL[] = "chrome://chrome/history/";
-const char kTestBookmarksURL[] = "chrome://bookmarks/";
 
 }  // namespace content

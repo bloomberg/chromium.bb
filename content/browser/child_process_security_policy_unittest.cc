@@ -176,12 +176,6 @@ TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
   p->GrantRequestURL(kRendererID, GURL(content::kTestNewTabURL));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL(content::kTestNewTabURL)));
 
-  p->GrantRequestURL(kRendererID, GURL(content::kTestHistoryURL));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL(content::kTestHistoryURL)));
-
-  p->GrantRequestURL(kRendererID, GURL(content::kTestBookmarksURL));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL(content::kTestBookmarksURL)));
-
   p->Remove(kRendererID);
 }
 
