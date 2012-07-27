@@ -12,7 +12,6 @@
 #include "remoting/base/constants.h"
 #include "remoting/host/host_config.h"
 #include "remoting/jingle_glue/iq_sender.h"
-#include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"

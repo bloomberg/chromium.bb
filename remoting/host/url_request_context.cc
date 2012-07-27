@@ -8,6 +8,7 @@
 #include "net/base/cert_verifier.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
+#include "net/base/transport_security_state.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
@@ -93,6 +94,7 @@ URLRequestContext::URLRequestContext(
   storage_.set_http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
   storage_.set_http_server_properties(new net::HttpServerPropertiesImpl);
+  storage_.set_transport_security_state(new net::TransportSecurityState);
 
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver();

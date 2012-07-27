@@ -217,9 +217,9 @@ class SimpleHost : public HeartbeatSender::Listener {
   }
 
   void StartHost() {
-    signal_strategy_.reset(
-        new XmppSignalStrategy(context_.jingle_thread(), xmpp_login_,
-                               xmpp_auth_token_, xmpp_auth_service_));
+    signal_strategy_.reset(new XmppSignalStrategy(
+        context_.url_request_context_getter(),
+        xmpp_login_, xmpp_auth_token_, xmpp_auth_service_));
     signaling_connector_.reset(new SignalingConnector(
         signal_strategy_.get(),
         base::Bind(&SimpleHost::OnAuthFailed, base::Unretained(this))));

@@ -10,7 +10,6 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/iq_sender.h"
-#include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/transport.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"

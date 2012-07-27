@@ -21,6 +21,14 @@
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
+namespace talk_base {
+class TaskRunner;
+}  // namespace talk_base
+
 namespace remoting {
 
 class JingleThread;
@@ -30,10 +38,11 @@ class XmppSignalStrategy : public base::NonThreadSafe,
                            public buzz::XmppStanzaHandler,
                            public sigslot::has_slots<> {
  public:
-  XmppSignalStrategy(JingleThread* thread,
-                     const std::string& username,
-                     const std::string& auth_token,
-                     const std::string& auth_token_service);
+  XmppSignalStrategy(
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      const std::string& username,
+      const std::string& auth_token,
+      const std::string& auth_token_service);
   virtual ~XmppSignalStrategy();
 
   // SignalStrategy interface.
@@ -70,12 +79,12 @@ class XmppSignalStrategy : public base::NonThreadSafe,
 
   void SendKeepAlive();
 
-  JingleThread* thread_;
-
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::string username_;
   std::string auth_token_;
   std::string auth_token_service_;
   std::string resource_name_;
+  scoped_ptr<talk_base::TaskRunner> task_runner_;
   buzz::XmppClient* xmpp_client_;
 
   State state_;

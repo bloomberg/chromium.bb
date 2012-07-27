@@ -30,7 +30,7 @@ class LibjingleTransportFactory : public TransportFactory {
       scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
       bool incoming_only);
 
-  // Creates BasicNetworkManager, BasicPacketSocketFactory and
+  // Creates BasicNetworkManager, ChromiumPacketSocketFactory and
   // BasicPortAllocator.
   LibjingleTransportFactory();
 
