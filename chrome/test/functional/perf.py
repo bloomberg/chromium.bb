@@ -55,6 +55,27 @@ import webpagereplay
 from youtube import YoutubeTestHelper
 
 
+_CHROME_BASE_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir))
+
+
+def FormatChromePath(posix_path, **kwargs):
+  """Convert a path relative to the Chromium root into an OS-specific path.
+
+  Args:
+    posix_path: a path string that may be a format().
+      Example: 'src/third_party/{module_name}/__init__.py'
+    kwargs: args for the format replacement.
+      Example: {'module_name': 'pylib'}
+
+  Returns:
+    an absolute path in the current Chromium tree with formatting applied.
+  """
+  formated_path = posix_path.format(**kwargs)
+  path_parts = formated_path.split('/')
+  return os.path.join(_CHROME_BASE_DIR, *path_parts)
+
+
 def StandardDeviation(values):
   """Returns the standard deviation of |values|."""
   avg = Mean(values)
@@ -1738,11 +1759,12 @@ class PopularSitesScrollTest(BaseScrollTest):
       A list of extra flags to pass to Chrome when it is launched.
     """
     return super(PopularSitesScrollTest,
-                 self).ExtraChromeFlags() + WebPageReplay.CHROME_FLAGS
+                 self).ExtraChromeFlags() + PageCyclerReplay.CHROME_FLAGS
 
   def _GetUrlList(self, test_name):
     """Returns list of recorded sites."""
-    with open(WebPageReplay.Path('page_sets', test_name=test_name)) as f:
+    sites_path = PageCyclerReplay.Path('page_sets', test_name=test_name)
+    with open(sites_path) as f:
       sites_text = f.read()
     js = """
       %s
@@ -1774,7 +1796,9 @@ class PopularSitesScrollTest(BaseScrollTest):
     test_name = '2012Q3'
     urls = self._GetUrlList(test_name)
     results = []
-    with WebPageReplay().GetReplayServer(test_name):
+    with PageCyclerReplay.ReplayServer(test_name) as replay_server:
+      if replay_server.is_record_mode:
+        self._num_iterations = 1
       for iteration in range(self._num_iterations):
         for url in urls:
           result = self.RunSingleInvocation(url)
@@ -2175,7 +2199,7 @@ class PageCyclerTest(BasePageCyclerTest):
     self.RunPageCyclerTest('moz2', 'Moz2File')
 
 
-class WebPageReplay(object):
+class PageCyclerReplay(object):
   """Run page cycler tests with network simulation via Web Page Replay.
 
   Web Page Replay is a proxy that can record and "replay" web pages with
@@ -2183,34 +2207,21 @@ class WebPageReplay(object):
   by hand. With WPR, tests can use "real" web content, and catch
   performance issues that may result from introducing network delays and
   bandwidth throttling.
-
-  Environment Variables:
-    WPR_RECORD: if set, puts Web Page Replay in record mode instead of replay.
-    WPR_REPLAY_DIR: path to alternate Web Page Replay source (for development).
-    WPR_ARCHIVE_PATH: path to alternate archive file (e.g. '/tmp/foo.wpr').
   """
   _PATHS = {
       'archive':    'src/data/page_cycler/webpagereplay/{test_name}.wpr',
       'page_sets':  'src/tools/page_cycler/webpagereplay/tests/{test_name}.js',
       'start_page': 'src/tools/page_cycler/webpagereplay/start.html',
       'extension':  'src/tools/page_cycler/webpagereplay/extension',
-      'replay':     'src/third_party/webpagereplay',
-      'logs':       'src/webpagereplay_logs',
       }
 
-  _BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                           '..', '..', '..', '..'))
-  CHROME_FLAGS = [
-      '--host-resolver-rules=MAP * %s' % webpagereplay.REPLAY_HOST,
-      '--testing-fixed-http-port=%s' % webpagereplay.HTTP_PORT,
-      '--testing-fixed-https-port=%s' % webpagereplay.HTTPS_PORT,
+  CHROME_FLAGS = webpagereplay.CHROME_FLAGS + [
       '--log-level=0',
       '--disable-background-networking',
       '--enable-experimental-extension-apis',
       '--enable-logging',
       '--enable-stats-table',
       '--enable-benchmarking',
-      '--ignore-certificate-errors',
       '--metrics-recording-only',
       '--activate-on-launch',
       '--no-first-run',
@@ -2219,39 +2230,12 @@ class WebPageReplay(object):
 
   @classmethod
   def Path(cls, key, **kwargs):
-    """Provide paths for tests using Web Page Replay."""
-    chromium_path = cls._PATHS[key].format(**kwargs)
-    return os.path.join(cls._BASE_DIR, *chromium_path.split('/'))
+    return FormatChromePath(cls._PATHS[key], **kwargs)
 
-  def _ArchivePath(self, test_name):
-    archive_path = self.archive_path or self.Path('archive',
-                                                  test_name=test_name)
-    if self.is_record_mode:
-      archive_dir = os.path.dirname(archive_path)
-      assert os.path.exists(archive_dir), \
-          'Archive directory does not exist: %s' % archive_dir
-    else:
-      assert os.path.exists(archive_path), \
-          'Archive file path does not exist: %s' % archive_path
-    return archive_path
-
-  def __init__(self):
-    self.archive_path = os.environ.get('WPR_ARCHIVE_PATH')
-    self.replay_dir = os.environ.get('WPR_REPLAY_DIR', self.Path('replay'))
-    self.is_record_mode = 'WPR_RECORD' in os.environ
-    if self.is_record_mode:
-      self._num_iterations = 1
-
-  def GetReplayServer(self, test_name):
-    replay_options = []
-    replay_options.append('--no-dns_forwarding')
-    if self.is_record_mode:
-      replay_options.append('--record')
-    return webpagereplay.ReplayServer(
-        self.replay_dir,
-        self._ArchivePath(test_name),
-        self.Path('logs'),
-        replay_options)
+  @classmethod
+  def ReplayServer(cls, test_name):
+    archive_path = cls.Path('archive', test_name=test_name)
+    return webpagereplay.ReplayServer(archive_path)
 
 
 class PageCyclerNetSimTest(BasePageCyclerTest):
@@ -2265,13 +2249,14 @@ class PageCyclerNetSimTest(BasePageCyclerTest):
       A list of extra flags to pass to Chrome when it is launched.
     """
     flags = super(PageCyclerNetSimTest, self).ExtraChromeFlags()
-    flags.append('--load-extension=%s' % WebPageReplay.Path('extension'))
-    flags.extend(WebPageReplay.CHROME_FLAGS)
+    flags.append('--load-extension=%s' % PageCyclerReplay.Path('extension'))
+    flags.extend(PageCyclerReplay.CHROME_FLAGS)
     return flags
 
   def StartUrl(self, test_name, iterations):
+    start_path = PageCyclerReplay.Path('start_page')
     start_url = 'file://%s?test=%s&iterations=%d' % (
-        WebPageReplay.Path('start_page'), test_name, iterations)
+        start_path, test_name, iterations)
     if self.use_auto:
       start_url += '&auto=1'
     return start_url
@@ -2283,7 +2268,9 @@ class PageCyclerNetSimTest(BasePageCyclerTest):
       test_name: name for archive (.wpr) and config (.js) files.
       description: a string description for the test
     """
-    with WebPageReplay().GetReplayServer(test_name):
+    with PageCyclerReplay.ReplayServer(test_name) as replay_server:
+      if replay_server.is_record_mode:
+        self._num_iterations = 1
       super_self = super(PageCyclerNetSimTest, self)
       super_self.RunPageCyclerTest(test_name, description)
 
