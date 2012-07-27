@@ -179,6 +179,9 @@
     'installer': {
       'filepath': 'chrome/installer/',
     },
+    'instant': {
+      'filepath': 'instant|searchbox',
+    },
     'ipc': {
       'filepath': 'ipc/ipc',
     },
@@ -462,6 +465,7 @@
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
     'installer': ['grt+watch@chromium.org'],
+    'instant': ['sreeram@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'labs': ['thakis@chromium.org'],
     'linux-sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
