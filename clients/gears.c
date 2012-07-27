@@ -358,18 +358,23 @@ resize_handler(struct widget *widget,
 	       int32_t width, int32_t height, void *data)
 {
 	struct gears *gears = data;
+	int32_t size, big, small;
 
 	/* Constrain child size to be square and at least 300x300 */
-	if (width > height)
-		height = width;
-	else
-		width = height;
-	if (width < 300) {
-		width = 300;
-		height = 300;
+	if (width < height) {
+		small = width;
+		big = height;
+	} else {
+		small = height;
+		big = width;
 	}
 
-	widget_set_size(gears->widget, width, height);
+	if (gears->fullscreen)
+		size = small;
+	else
+		size = big;
+
+	widget_set_size(gears->widget, size, size);
 }
 
 static void
