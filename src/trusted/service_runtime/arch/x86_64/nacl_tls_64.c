@@ -26,9 +26,6 @@ static int gNaClThreadIdxInUse[NACL_THREAD_MAX];  /* bool */
 static size_t const kNumThreads = NACL_ARRAY_SIZE_UNSAFE(gNaClThreadIdxInUse);
 
 static void NaClThreadStartupCheck() {
-  /* Verify that the thread context size is what we expect */
-  CHECK(sizeof(struct NaClThreadContext) == 0xa8);
-
   /*
    * really only needed for OSX -- make sure that the register
    * size does not exceed the size of a void*.

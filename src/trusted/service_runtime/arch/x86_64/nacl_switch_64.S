@@ -14,6 +14,7 @@
  * also performs a partial switch (to and fro).
  */
 
+#include "native_client/src/trusted/service_runtime/arch/x86_64/sel_rt_64.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
         /*
@@ -70,16 +71,16 @@ MACROENTRY
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
 
-        movq    0x8(%rcx), %rbx
-        movq    0x20(%rcx), %rbp
-        movq    0x60(%rcx), %r12
-        movq    0x68(%rcx), %r13
-        movq    0x70(%rcx), %r14
-        movq    0x78(%rcx), %r15
+        movq    NACL_THREAD_CONTEXT_OFFSET_RBX(%rcx), %rbx
+        movq    NACL_THREAD_CONTEXT_OFFSET_RBP(%rcx), %rbp
+        movq    NACL_THREAD_CONTEXT_OFFSET_R12(%rcx), %r12
+        movq    NACL_THREAD_CONTEXT_OFFSET_R13(%rcx), %r13
+        movq    NACL_THREAD_CONTEXT_OFFSET_R14(%rcx), %r14
+        movq    NACL_THREAD_CONTEXT_OFFSET_R15(%rcx), %r15
 
         /* there is no springboard for x86_64 */
-        movq    0x38(%rcx), %rsp  /* rsp -- switch stack */
-        movq    0x90(%rcx), %rax  /* syscall return */
+        movq    NACL_THREAD_CONTEXT_OFFSET_RSP(%rcx), %rsp
+        movq    NACL_THREAD_CONTEXT_OFFSET_SYSRET(%rcx), %rax
 
         /*
          * %rdi is the first argument in the user calling convention.
@@ -107,7 +108,7 @@ MACROENTRY
          * Clear the x87 state.  Then restore the untrusted code's control word.
          */
         fninit
-        fldcw   0xa4(%rcx)
+        fldcw   NACL_THREAD_CONTEXT_OFFSET_FCW(%rcx)
 
         /*
          * Clear the vector registers.
@@ -154,7 +155,7 @@ MACROENTRY
          * struct NaClThreadContext to untrusted code.  Knowing this
          * address would make bugs in the sandbox easier to exploit.
          */
-        movq    0x88(%rcx), %rcx
+        movq    NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR(%rcx), %rcx
         jmp     *%rcx
 ENDMACRO
 

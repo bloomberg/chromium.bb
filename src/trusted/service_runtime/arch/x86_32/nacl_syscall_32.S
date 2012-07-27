@@ -13,6 +13,7 @@
  * call handler code.
  */
 
+#include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 /*
@@ -61,38 +62,25 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 #endif
 
         /* check NaClThreadContext in sel_rt_32.h for the offsets */
-        movl    %ebx, 0x0(%edx)
-        movl    %esi, 0x4(%edx)
-        movl    %edi, 0x8(%edx)
-        movl    %ebp, 0x14(%edx)
-        movl    %esp, 0x1c(%edx)
+        movl    %ebx, NACL_THREAD_CONTEXT_OFFSET_EBX(%edx)
+        movl    %esi, NACL_THREAD_CONTEXT_OFFSET_ESI(%edx)
+        movl    %edi, NACL_THREAD_CONTEXT_OFFSET_EDI(%edx)
+        movl    %ebp, NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR(%edx)
+        movl    %esp, NACL_THREAD_CONTEXT_OFFSET_STACK_PTR(%edx)
 
         /*
          * Save the x87 FPU control word.  This is callee-saved,
          * while all other x87 state is caller-saved.  Then reload
          * the system default state to use while running trusted code.
          */
-        fnstcw  0x22(%edx)
-        fldcw   0x24(%edx)
+        fnstcw  NACL_THREAD_CONTEXT_OFFSET_FCW(%edx)
+        fldcw   NACL_THREAD_CONTEXT_OFFSET_SYS_FCW(%edx)
 
         /*
-         * we do not save the registers (below) that the user is powerless
-         * to change.  eip will be overwritten w/ the validated return
-         * address pulled from the stack for the syscall return.
-         *
-         * these segment registers are restored by NaCl_springboard for
-         * syscall return.
+         * We do not save segment registers, which untrusted code is
+         * powerless to change.
          */
 
-#if 0
-        movl    %eip, 0xc(%edx)
-        movw    %cs, 0x3c(%edx)
-        movw    %ds, 0x28(%edx)
-        movw    %es, 0x2a(%edx)
-        movw    %fs, 0x2c(%edx)
-        movw    %gs, 0x2e(%edx)
-        movw    %ss, 0x20(%edx)
-#endif
         /*
          * load only the system segments; called code do not depend on
          * any registers having particular values.  we will clear/discard
@@ -110,11 +98,12 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
          * %ebx need not be saved/restored even if -fpic were used, since
          * in that case %ebx is initialized on fn entry.
          */
-        movw    0x2a(%edx), %es
-        movw    0x2c(%edx), %fs
-        movw    0x2e(%edx), %gs
+        movw    NACL_THREAD_CONTEXT_OFFSET_ES(%edx), %es
+        movw    NACL_THREAD_CONTEXT_OFFSET_FS(%edx), %fs
+        movw    NACL_THREAD_CONTEXT_OFFSET_GS(%edx), %gs
 
-        lss     0x1c(%edx), %esp  /* sets %ss as well as %esp */
+        /* 'lss' sets %ss as well as %esp */
+        lss     NACL_THREAD_CONTEXT_OFFSET_STACK_PTR(%edx), %esp
         push    %eax
         call    IDENTIFIER(NaClSyscallCSegHook)
         /*

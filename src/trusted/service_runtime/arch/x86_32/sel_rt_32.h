@@ -11,6 +11,13 @@
 #ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__
 #define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__ 1
 
+/* This file can be #included from assembly to get the #defines. */
+#if !defined(__ASSEMBLER__)
+
+#include <stddef.h>
+
+#include "native_client/src/include/nacl_compiler_annotations.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 
 uint16_t NaClGetGlobalCs(void);
@@ -77,6 +84,10 @@ union PtrAbstraction {
   } ptr_32;
 };
 
+/*
+ * The layout of NaClThreadContext must be kept in sync with the
+ * #defines below.
+ */
 struct NaClThreadContext {
   /* ecx, edx, eax, eflags not saved */
   nacl_reg_t  ebx, esi, edi, prog_ctr; /* return addr */
@@ -111,5 +122,63 @@ struct NaClThreadContext {
   uint16_t    cs; /* spring_addr and cs must be adjacent */
   /*          3c */
 };
+
+#endif /* !defined(__ASSEMBLER__) */
+
+#define NACL_THREAD_CONTEXT_OFFSET_EBX           0x00
+#define NACL_THREAD_CONTEXT_OFFSET_ESI           0x04
+#define NACL_THREAD_CONTEXT_OFFSET_EDI           0x08
+#define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR      0x0c
+#define NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR     0x14 /* ptr_32.ptr offset */
+#define NACL_THREAD_CONTEXT_OFFSET_STACK_PTR     0x1c /* ptr_32.ptr offset */
+#define NACL_THREAD_CONTEXT_OFFSET_SS            0x20
+#define NACL_THREAD_CONTEXT_OFFSET_FCW           0x22
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0x24
+#define NACL_THREAD_CONTEXT_OFFSET_DS            0x28
+#define NACL_THREAD_CONTEXT_OFFSET_ES            0x2a
+#define NACL_THREAD_CONTEXT_OFFSET_FS            0x2c
+#define NACL_THREAD_CONTEXT_OFFSET_GS            0x2e
+#define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR  0x30
+#define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x34
+#define NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR   0x38
+#define NACL_THREAD_CONTEXT_OFFSET_CS            0x3c
+
+#if !defined(__ASSEMBLER__)
+
+/*
+ * This function exists as a function only because compile-time
+ * assertions need to be inside a function.  This function does not
+ * need to be called for the assertions to be checked.
+ */
+static INLINE void NaClThreadContextOffsetCheck(void) {
+#define NACL_CHECK_FIELD(offset_name, field) \
+    NACL_COMPILE_TIME_ASSERT(offset_name == \
+                             offsetof(struct NaClThreadContext, field))
+
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_EBX, ebx);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ESI, esi);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_EDI, edi);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_PROG_CTR, prog_ctr);
+  /*
+   * TODO(mseaborn): Enable these when 'union PtrAbstraction' is removed:
+   * NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR, frame_ptr);
+   * NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_STACK_PTR, stack_ptr);
+   */
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SS, ss);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_DS, ds);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ES, es);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FS, fs);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_GS, gs);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR, new_prog_ctr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR, spring_addr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_CS, cs);
+
+#undef NACL_CHECK_FIELD
+}
+
+#endif
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__ */

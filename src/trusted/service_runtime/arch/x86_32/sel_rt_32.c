@@ -46,6 +46,12 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
                           nacl_reg_t                tls_idx) {
+  /*
+   * We call this function so that it does not appear to be dead code,
+   * although it only contains compile-time assertions.
+   */
+  NaClThreadContextOffsetCheck();
+
   NaClLog(4, "&nap->code_seg_sel = 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) &nap->code_seg_sel);
   NaClLog(4, "&nap->data_seg_sel = 0x%08"NACL_PRIxPTR"\n",

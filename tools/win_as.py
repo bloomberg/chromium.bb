@@ -61,6 +61,7 @@ def main(argv):
       cl_env['PATH'] = os.environ['PRE_WINPY_PATH']
       p = subprocess.Popen(['cl.exe',
                             '/nologo',
+                            '/D__ASSEMBLER__',
                             '/DNACL_BUILD_ARCH=' + nacl_build_arch,
                             '/DNACL_BUILD_SUBARCH=' + str(nacl_build_subarch),
                             '/DNACL_WINDOWS=1',

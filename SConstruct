@@ -2842,7 +2842,8 @@ def MakeWindowsEnv():
       # Windows /SAFESEH linking requires either an .sxdata section be
       # present or that @feat.00 be defined as a local, absolute symbol
       # with an odd value.
-      ASCOM = '$ASPPCOM /E | $WINASM -defsym @feat.00=1 -o $TARGET',
+      ASCOM = ('$ASPPCOM /E /D__ASSEMBLER__ | '
+               '$WINASM -defsym @feat.00=1 -o $TARGET'),
       PDB = '${TARGET.base}.pdb',
       # Strict doesn't currently work for Windows since some of the system
       # libraries like wsock32 are magical.

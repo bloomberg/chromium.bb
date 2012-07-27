@@ -8,7 +8,7 @@
  * NaCl Simple/secure ELF loader (NaCl SEL).
  */
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
+#include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
 
 /*
  * Assembly code template.  This is linked into the service runtime
@@ -26,9 +26,9 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard):
         hlt  /* one byte */
         /* Restore state from struct NaClThreadContext. */
         /* syscall return value, if any, from trusted stack */
-        mov     0x34(%ecx), %eax /* sysret */
-        lss     0x1c(%ecx), %esp /* stack_ptr.ptr_32.ptr */
-        movw    0x28(%ecx), %ds /* ds */
+        mov     NACL_THREAD_CONTEXT_OFFSET_SYSRET(%ecx), %eax
+        lss     NACL_THREAD_CONTEXT_OFFSET_STACK_PTR(%ecx), %esp
+        movw    NACL_THREAD_CONTEXT_OFFSET_DS(%ecx), %ds
         jmp     *%edx
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_end):
 

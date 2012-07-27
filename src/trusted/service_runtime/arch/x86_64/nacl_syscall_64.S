@@ -25,6 +25,7 @@
  * and actually invoking the C system call handler code.
  */
 
+#include "native_client/src/trusted/service_runtime/arch/x86_64/sel_rt_64.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 /*
@@ -133,20 +134,20 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 
         get_tls
 
-        /* check NaClThreadContext in sel_rt_64.h for the offsets */
         leaq    IDENTIFIER(nacl_user)(%rip), %rdx
         leaq    (%rdx,%rax,8), %rdx
         movq    0x0(%rdx), %rdx
 
         /* only save the callee saved registers */
-        movq    %rbx, 0x8(%rdx)
-        movq    %rbp, 0x20(%rdx)
+        movq    %rbx, NACL_THREAD_CONTEXT_OFFSET_RBX(%rdx)
+        movq    %rbp, NACL_THREAD_CONTEXT_OFFSET_RBP(%rdx)
         movq    %rsp, %rbx
         addq    $0x18, %rbx      /* tramp ret */
-        movq    %rbx, 0x38(%rdx) /* get syscall args via the saved %rsp+0x30 */
-        movq    %r12, 0x60(%rdx)
-        movq    %r13, 0x68(%rdx)
-        movq    %r14, 0x70(%rdx)
+        /* We get syscall args via the saved %rsp+0x30 */
+        movq    %rbx, NACL_THREAD_CONTEXT_OFFSET_RSP(%rdx)
+        movq    %r12, NACL_THREAD_CONTEXT_OFFSET_R12(%rdx)
+        movq    %r13, NACL_THREAD_CONTEXT_OFFSET_R13(%rdx)
+        movq    %r14, NACL_THREAD_CONTEXT_OFFSET_R14(%rdx)
         /* r15 need not be saved, since it is immutable from user code */
 
         /*
@@ -154,15 +155,15 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
          * while all other x87 state is caller-saved.  Then reload
          * the system default state to use while running trusted code.
          */
-        fnstcw  0xa4(%rdx)
-        fldcw   0xa6(%rdx)
+        fnstcw  NACL_THREAD_CONTEXT_OFFSET_FCW(%rdx)
+        fldcw   NACL_THREAD_CONTEXT_OFFSET_SYS_FCW(%rdx)
 
         /* restore system registers needed to call into C code */
         leaq    IDENTIFIER(nacl_sys)(%rip), %rdx
         leaq    0x0(%rdx,%rax,8), %rdx
         movq    0x0(%rdx), %rdx
 
-        movq    0x38(%rdx), %rsp
+        movq    NACL_THREAD_CONTEXT_OFFSET_RSP(%rdx), %rsp
 #if NACL_LINUX || NACL_OSX
         movq    %rax, %rdi
 #elif NACL_WINDOWS

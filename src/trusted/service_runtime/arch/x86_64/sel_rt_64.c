@@ -33,6 +33,12 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
                           uint32_t                  tls_idx) {
+  /*
+   * We call this function so that it does not appear to be dead code,
+   * although it only contains compile-time assertions.
+   */
+  NaClThreadContextOffsetCheck();
+
   ntcp->rax = 0;
   ntcp->rbx = 0;
   ntcp->rcx = 0;

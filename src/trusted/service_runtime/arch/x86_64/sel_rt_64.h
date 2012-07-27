@@ -11,6 +11,13 @@
 #ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_64_SEL_RT_64_H__
 #define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_64_SEL_RT_64_H__ 1
 
+/* This file can be #included from assembly to get the #defines. */
+#if !defined(__ASSEMBLER__)
+
+#include <stddef.h>
+
+#include "native_client/src/include/nacl_compiler_annotations.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 
 typedef uint64_t  nacl_reg_t;  /* general purpose register type */
@@ -22,6 +29,10 @@ typedef uint64_t  nacl_reg_t;  /* general purpose register type */
 #define NACL_PRIxNACL_REG NACL_PRIx64
 #define NACL_PRIXNACL_REG NACL_PRIX64
 
+/*
+ * The layout of NaClThreadContext must be kept in sync with the
+ * #defines below.
+ */
 struct NaClThreadContext {
   nacl_reg_t  rax,  rbx,  rcx,  rdx,  rbp,  rsi,  rdi,  rsp;
   /*          0x0,  0x8, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38 */
@@ -43,7 +54,67 @@ struct NaClThreadContext {
   uint16_t    sys_fcw;
   /*          0xa6 */
 };
-/* 0xa8 */
+
+#endif /* !defined(__ASSEMBLER__) */
+
+#define NACL_THREAD_CONTEXT_OFFSET_RAX           0x00
+#define NACL_THREAD_CONTEXT_OFFSET_RBX           0x08
+#define NACL_THREAD_CONTEXT_OFFSET_RCX           0x10
+#define NACL_THREAD_CONTEXT_OFFSET_RDX           0x18
+#define NACL_THREAD_CONTEXT_OFFSET_RBP           0x20
+#define NACL_THREAD_CONTEXT_OFFSET_RSI           0x28
+#define NACL_THREAD_CONTEXT_OFFSET_RDI           0x30
+#define NACL_THREAD_CONTEXT_OFFSET_RSP           0x38
+#define NACL_THREAD_CONTEXT_OFFSET_R8            0x40
+#define NACL_THREAD_CONTEXT_OFFSET_R9            0x48
+#define NACL_THREAD_CONTEXT_OFFSET_R10           0x50
+#define NACL_THREAD_CONTEXT_OFFSET_R11           0x58
+#define NACL_THREAD_CONTEXT_OFFSET_R12           0x60
+#define NACL_THREAD_CONTEXT_OFFSET_R13           0x68
+#define NACL_THREAD_CONTEXT_OFFSET_R14           0x70
+#define NACL_THREAD_CONTEXT_OFFSET_R15           0x78
+#define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR  0x88
+#define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x90
+#define NACL_THREAD_CONTEXT_OFFSET_FCW           0xa4
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0xa6
+
+#if !defined(__ASSEMBLER__)
+
+/*
+ * This function exists as a function only because compile-time
+ * assertions need to be inside a function.  This function does not
+ * need to be called for the assertions to be checked.
+ */
+static INLINE void NaClThreadContextOffsetCheck(void) {
+#define NACL_CHECK_FIELD(offset_name, field) \
+    NACL_COMPILE_TIME_ASSERT(offset_name == \
+                             offsetof(struct NaClThreadContext, field))
+
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RAX, rax);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RBX, rbx);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RCX, rcx);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RDX, rdx);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RBP, rbp);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RSI, rsi);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RDI, rdi);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RSP, rsp);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R8, r8);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R9, r9);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R10, r10);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R11, r11);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R12, r12);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R13, r13);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R14, r14);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R15, r15);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR, new_prog_ctr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
+
+#undef NACL_CHECK_FIELD
+}
+
+#endif
 
 /*
  * Argument passing convention in AMD64, from

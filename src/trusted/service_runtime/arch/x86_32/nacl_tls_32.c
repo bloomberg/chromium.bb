@@ -13,13 +13,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-static void NaClThreadStartupCheck() {
-  CHECK(sizeof(struct NaClThreadContext) == 64);
-}
-
-
 int NaClTlsInit() {
-  NaClThreadStartupCheck();
   return NaClLdtInit();
 }
 

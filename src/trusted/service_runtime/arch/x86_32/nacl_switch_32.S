@@ -8,6 +8,7 @@
  * NaCl Secure Runtime
  */
 
+#include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 /*
@@ -92,23 +93,23 @@ MACROENTRY
         /* xorl will leave eflags in a known state, so no info leaks */
         popl    %ecx
 .endif
-        movl    0x30(%ecx), %edx /* new_prog_ctr */
-        movl    0x14(%ecx), %ebp /* frame_ptr.ptr_32.ptr */
-        movl    0x8(%ecx), %edi /* edi */
-        movl    0x4(%ecx), %esi /* esi */
-        movl    0(%ecx), %ebx /* ebx */
+        movl    NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR(%ecx), %edx
+        movl    NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR(%ecx), %ebp
+        movl    NACL_THREAD_CONTEXT_OFFSET_EDI(%ecx), %edi
+        movl    NACL_THREAD_CONTEXT_OFFSET_ESI(%ecx), %esi
+        movl    NACL_THREAD_CONTEXT_OFFSET_EBX(%ecx), %ebx
 
-        movw    0x2e(%ecx), %gs /* gs */
-        movw    0x2c(%ecx), %fs /* fs */
-        movw    0x2a(%ecx), %es /* es */
+        movw    NACL_THREAD_CONTEXT_OFFSET_GS(%ecx), %gs
+        movw    NACL_THREAD_CONTEXT_OFFSET_FS(%ecx), %fs
+        movw    NACL_THREAD_CONTEXT_OFFSET_ES(%ecx), %es
 
         /*
          * Clear the x87 state.  Then restore the untrusted code's control word.
          */
         fninit
-        fldcw   0x22(%ecx)
+        fldcw   NACL_THREAD_CONTEXT_OFFSET_FCW(%ecx)
 
-        ljmp    *0x38(%ecx) /* springboard address */
+        ljmp    *NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR(%ecx)
 ENDMACRO
 
         switcher NaClSwitchNoSSE, DO_NONE
