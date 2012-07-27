@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/udev_linux.h"
 
 namespace {
 
@@ -71,30 +72,18 @@ GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
     device_fds_[i] = -1;
   memset(mappers_, 0, sizeof(mappers_));
 
-  udev_ = udev_new();
-  CHECK(udev_);
-
-  monitor_ = udev_monitor_new_from_netlink(udev_, "udev");
-  CHECK(monitor_);
-  int ret = udev_monitor_filter_add_match_subsystem_devtype(monitor_,
-                                                            kInputSubsystem,
-                                                            NULL);
-  CHECK_EQ(0, ret);
-  ret = udev_monitor_enable_receiving(monitor_);
-  CHECK_EQ(0, ret);
-  monitor_fd_ = udev_monitor_get_fd(monitor_);
-  CHECK_GE(monitor_fd_, 0);
-  bool success = MessageLoopForIO::current()->WatchFileDescriptor(monitor_fd_,
-      true, MessageLoopForIO::WATCH_READ, &monitor_watcher_, this);
-  CHECK(success);
+  std::vector<UdevLinux::UdevMonitorFilter> filters;
+  filters.push_back(
+      content::UdevLinux::UdevMonitorFilter(kInputSubsystem, NULL));
+  udev_.reset(
+      new UdevLinux(filters,
+                    base::Bind(&GamepadPlatformDataFetcherLinux::RefreshDevice,
+                               base::Unretained(this))));
 
   EnumerateDevices();
 }
 
 GamepadPlatformDataFetcherLinux::~GamepadPlatformDataFetcherLinux() {
-  monitor_watcher_.StopWatchingFileDescriptor();
-  udev_monitor_unref(monitor_);
-  udev_unref(udev_);
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i)
     CloseFileDescriptorIfValid(device_fds_[i]);
 }
@@ -120,21 +109,6 @@ void GamepadPlatformDataFetcherLinux::GetGamepadData(WebGamepads* pads, bool) {
     else
       pads->items[i] = data_.items[i];
   }
-}
-
-void GamepadPlatformDataFetcherLinux::OnFileCanReadWithoutBlocking(int fd) {
-  // Events occur when devices attached to the system are added, removed, or
-  // change state. udev_monitor_receive_device() will return a device object
-  // representing the device which changed and what type of change occured.
-  DCHECK_EQ(monitor_fd_, fd);
-  udev_device* dev = udev_monitor_receive_device(monitor_);
-  if (!dev)
-    return;
-  RefreshDevice(dev);
-  udev_device_unref(dev);
-}
-
-void GamepadPlatformDataFetcherLinux::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
 // Used during enumeration, and monitor notifications.
@@ -223,7 +197,7 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
 }
 
 void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
-  udev_enumerate* enumerate = udev_enumerate_new(udev_);
+  udev_enumerate* enumerate = udev_enumerate_new(udev_->udev_handle());
   if (!enumerate)
     return;
   int ret = udev_enumerate_add_match_subsystem(enumerate, kInputSubsystem);
@@ -240,7 +214,7 @@ void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
     // Get the filename of the /sys entry for the device and create a
     // udev_device object (dev) representing it
     const char* path = udev_list_entry_get_name(dev_list_entry);
-    udev_device* dev = udev_device_new_from_syspath(udev_, path);
+    udev_device* dev = udev_device_new_from_syspath(udev_->udev_handle(), path);
     if (!dev)
       continue;
     RefreshDevice(dev);
