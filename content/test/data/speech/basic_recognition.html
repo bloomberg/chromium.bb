@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Speech input test</title>
+    <script type="text/javascript">
+      function onspeechresult(value) {
+        if (value == "Pictures of the moon") {
+          document.getElementById('status').innerHTML = 'PASS';
+          document.location = '#pass';
+        } else {
+          document.location = '#fail';
+        }
+      }
+    </script>
+  </head>
+  <body style="padding:0; margin:0;">
+    <input id='inputField' x-webkit-speech
+           onwebkitspeechchange="onspeechresult(this.value);"
+           onchange="onspeechresult(this.value);"
+           style="position:absolute; margin:0; padding:0; border:0; width:10px;">
+    <br>
+    <div id="status">FAIL</div>
+  </body>
+</html>
