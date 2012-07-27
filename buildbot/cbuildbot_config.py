@@ -774,7 +774,6 @@ internal_paladin.add_config('parrot-paladin',
 internal_paladin.add_config('stout-paladin',
   boards=['stout'],
   paladin_builder_name='stout paladin',
-  important=False,
 )
 
 internal_paladin.add_config('butterfly-paladin',
