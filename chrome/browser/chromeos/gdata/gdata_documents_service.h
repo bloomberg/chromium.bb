@@ -103,6 +103,14 @@ class DocumentsServiceInterface {
   // calling thread.
   virtual void GetAccountMetadata(const GetDataCallback& callback) = 0;
 
+  // Gets the About resource from the server for the current account.
+  // Upon completion, invokes |callback| with results on the calling thread.
+  // (For Drive V2 API only)
+  virtual void GetAboutResource(const GetDataCallback& callback) = 0;
+
+  // Gets the application list (For Drive V2 API only).
+  virtual void GetApplicationList(const GetDataCallback& callback) = 0;
+
   // Deletes a document identified by its 'self' |url| and |etag|.
   // Upon completion, invokes |callback| with results on the calling thread.
   virtual void DeleteDocument(const GURL& document_url,
@@ -215,6 +223,8 @@ class DocumentsService : public DocumentsServiceInterface {
                                 const GetDataCallback& callback) OVERRIDE;
 
   virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
+  virtual void GetAboutResource(const GetDataCallback& callback) OVERRIDE;
+  virtual void GetApplicationList(const GetDataCallback& callback) OVERRIDE;
   virtual void DeleteDocument(const GURL& document_url,
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void DownloadDocument(

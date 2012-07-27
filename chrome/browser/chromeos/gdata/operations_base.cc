@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
@@ -45,6 +46,9 @@ const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
 const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 
+// OAuth scope for Drive API.
+const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
+
 }  // namespace
 
 namespace gdata {
@@ -67,6 +71,8 @@ void AuthOperation::Start() {
   scopes.push_back(kDocsListScope);
   scopes.push_back(kSpreadsheetsScope);
   scopes.push_back(kUserContentScope);
+  if (gdata::util::IsDriveV2ApiEnabled())
+    scopes.push_back(kDriveAppsScope);
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
       this, g_browser_process->system_request_context()));
   NotifyStart();

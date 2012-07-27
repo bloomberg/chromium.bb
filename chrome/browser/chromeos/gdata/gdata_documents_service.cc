@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/chromeos/gdata/drive_api_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_runner.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -130,6 +132,22 @@ void DocumentsService::GetAccountMetadata(const GetDataCallback& callback) {
       new GetAccountMetadataOperation(operation_registry(),
                                       profile_,
                                       callback);
+  runner_->StartOperationWithRetry(operation);
+}
+
+void DocumentsService::GetAboutResource(const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetAboutOperation* operation =
+      new GetAboutOperation(operation_registry(), profile_, callback);
+  runner_->StartOperationWithRetry(operation);
+}
+
+void DocumentsService::GetApplicationList(const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetApplistOperation* operation =
+      new GetApplistOperation(operation_registry(), profile_, callback);
   runner_->StartOperationWithRetry(operation);
 }
 
