@@ -83,7 +83,6 @@ test_files = [
     env.File('$STAGING_DIR/nacltest.js'),
     env.File('$STAGING_DIR/debug_browser_test.nmf'),
     env.File('$STAGING_DIR/debug_browser.html'),
-    env.File('$STAGING_DIR/%s${PROGSUFFIX}' % browser_test_target),
     ]
 
 # For now, we have to force this test to always run using chrome's
@@ -112,7 +111,6 @@ env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_browser_debug_test',
                        is_broken=env.PyAutoTesterIsBroken() or is_broken)
-
 
 # This test will fail until we fix chrome issue
 # http://code.google.com/p/chromium/issues/detail?id=85070
