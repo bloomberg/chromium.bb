@@ -40,11 +40,6 @@ body {
   width: 180px;
 }
 
-#logo-img {
-  /* TODO: Remove once http://crbug.com/135179 is fixed */
-  content: url('chrome://theme/IDR_PRODUCT_LOGO');
-}
-
 #company {
   font-size: 0.7em;
   text-align: right;

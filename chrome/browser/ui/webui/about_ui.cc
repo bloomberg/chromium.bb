@@ -70,6 +70,10 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/webplugininfo.h"
 
+#if defined(ENABLE_THEMES)
+#include "chrome/browser/ui/webui/theme_source.h"
+#endif
+
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "content/public/browser/zygote_host_linux.h"
 #include "content/public/common/sandbox_linux.h"
@@ -1381,6 +1385,13 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
 AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
+
+#if defined(ENABLE_THEMES)
+  // Set up the chrome://theme/ source.
+  ThemeSource* theme = new ThemeSource(profile);
+  ChromeURLDataManager::AddDataSource(profile, theme);
+#endif
+
   ChromeURLDataManager::DataSource* source =
       new AboutUIHTMLSource(name, profile);
   if (source) {

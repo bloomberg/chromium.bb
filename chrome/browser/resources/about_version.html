@@ -21,8 +21,13 @@ about:version template page
   <body>
     <div id="outer">
       <div id="logo">
-        <!-- TODO: Revert back to src= once http://crbug.com/135179 is fixed -->
-        <img id="logo-img">
+<if expr="pp_ifdef('android')">
+        <!-- Android does not support themes. -->
+        <img src="../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo.png">
+</if>
+<if expr="not pp_ifdef('android')">
+        <img src="chrome://theme/IDR_PRODUCT_LOGO">
+</if>
         <div id="company" i18n-content="company"></div>
         <div id="copyright" i18n-content="copyright"></div>
       </div>
