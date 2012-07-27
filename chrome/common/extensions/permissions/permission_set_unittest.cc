@@ -545,7 +545,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kBrowserTag);
   skip.insert(APIPermission::kBrowsingData);
   skip.insert(APIPermission::kContextMenus);
-  skip.insert(APIPermission::kDeclarative);
   skip.insert(APIPermission::kFontSettings);
   skip.insert(APIPermission::kIdle);
   skip.insert(APIPermission::kNotification);

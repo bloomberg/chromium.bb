@@ -362,7 +362,7 @@ For other examples and for help in viewing the source code, see
                       <var><span>selectionParams</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Prompts user to select file path under which a new file will be created. When the user selects file, the file gets created or, if it already existed, truncated. The function has to be called with a user gesture.</p>
+                <p>Prompts user to select file path under which file should be saved. When the file is selected, file access permission required to use the file (read, write and create) are granted to the caller. The file will not actually get created during the functin call, so function caller must ensure its existance before using it. The function has to be invoked with a user gesture.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -383,7 +383,7 @@ For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>Parameters that will be used to create a new file.</dd>
+          <dd>Parameters that will be used while selecting the file.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -404,7 +404,7 @@ For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>Suggested name for the new file.</dd>
+          <dd>Suggested name for the file.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

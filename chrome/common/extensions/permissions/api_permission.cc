@@ -58,7 +58,6 @@ void APIPermission::RegisterAllPermissions(
       IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD,
       PermissionMessage::kClipboard },
     { kClipboardWrite, "clipboardWrite" },
-    { kDeclarative, "declarative" },
     { kDeclarativeWebRequest, "declarativeWebRequest" },
     { kDownloads, "downloads", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS,
