@@ -196,12 +196,10 @@
                 <a href="#apiReference">API reference: chrome.experimental.app</a>
                 <ol>
                   <li>
-            <a href="#global-methods">Methods</a>
+            <a href="#global-events">Events</a>
             <ol>
               <li>
-                <a href="#method-clearAllNotifications">clearAllNotifications</a>
-              </li><li>
-                <a href="#method-notify">notify</a>
+                <a href="#event-onLaunched">onLaunched</a>
               </li>
             </ol>
           </li>
@@ -224,335 +222,208 @@
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a name="global-methods"></a>
-            <h3>Methods</h3>
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a name="method-clearAllNotifications"></a> <!-- method-anchor -->
-              <h4>clearAllNotifications</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.app.clearAllNotifications</span>(<span class="optional"><span>object</span>
-                      <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Clears all previously sent notifications.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>details</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>extensionId</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>An optional id to do notifications for an app other than the calling app. This is just to allow prototyping with an extension that sends notifications on behalf of apps that don't support notifications yet; this will be removed before the API becomes stable.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>A callback when the function is complete. Any errors will be reported in <a href="extension.html#property-lastError">chrome.extension.lastError</a>.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-notify"></a> <!-- method-anchor -->
-              <h4>notify</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.app.notify</span>(<span class="null"><span>object</span>
-                      <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Creates a notification from this app.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>details</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>extensionId</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>An optional id to do notifications for an app other than the calling app. This is just to allow prototyping with an extension that sends notifications on behalf of apps that don't support notifications yet; this will be removed before the API becomes stable.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>title</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The title of the notification.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>bodyText</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The text content of the notification.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>linkUrl</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The URL for an optional link to show along with the notification. If you specify a linkUrl, you must also specify a value for linkText.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>linkText</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>If a linkUrl is provided, this is required and will be used as the linkified text. It should be relatively short.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>A callback when the function is complete. Any errors will be reported in <a href="extension.html#property-lastError">chrome.extension.lastError</a>.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div>  <!-- /apiItem -->
-          </div>  <!-- /apiGroup -->
+            <!-- /apiGroup -->
           <!-- EVENTS -->
-           <!-- /apiGroup -->
+          <div id="eventsTemplate" class="apiGroup">
+            <a name="global-events"></a>
+            <h3>Events</h3>
+            <!-- iterates over all events -->
+            <div class="apiItem">
+              <a name="event-onLaunched"></a>
+              <h4>onLaunched</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.experimental.app.</span><span>onLaunched</span><span class="subdued">.addListener</span>(function(<span>object launchData</span>) <span class="subdued">{...}</span><span></span>);
+              </div>
+              <div class="description">
+                <p>Fired when the app is launched.</p>
+                <!-- LISTENER PARAMETERS -->
+                <div>
+                  <h4>Listener parameters</h4>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>launchData</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Optional data for the launch.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>intent</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A WebIntents intent object.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>action</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The WebIntent being invoked.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>type</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The MIME type of the data.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>any</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Data associated with the intent.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>postResult</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Null callback to be compatible with WebIntents.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>postFailure</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Null callback to be compatible with WebIntents.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                </div>
+                <!-- EXTRA PARAMETERS -->
+                <!-- LISTENER RETURN VALUE -->
+                <dl>
+                </dl>
+              </div> <!-- /description -->
+               <!-- /description -->
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
           <!-- TYPES -->
            <!-- /apiGroup -->
         </div> <!-- /apiPage -->

@@ -10,6 +10,7 @@
         "name": "notify",
         "type": "function",
         "description": "Creates a notification from this app.",
+        "nodoc": true,
         "parameters": [
           {
             "type": "object",
@@ -55,6 +56,7 @@
         "name": "clearAllNotifications",
         "type": "function",
         "description": "Clears all previously sent notifications.",
+        "nodoc": true,
         "parameters": [
           {
             "type": "object",
@@ -80,7 +82,6 @@
     ],
     "events": [
       {
-        "nodoc": true,
         "name": "onLaunched",
         "type": "function",
         "description": "Fired when the app is launched.",
