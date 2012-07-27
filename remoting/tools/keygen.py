@@ -18,7 +18,8 @@ _EXE_PATHS_TO_TRY = [
   '../../xcodebuild/Debug',
   '../../xcodebuild/Release',
   '../../out/Debug',
-  '../../out/Release']
+  '../../out/Release',
+  '/usr/lib/chrome-remote-desktop']
 
 
 def locate_executable(exe_name):

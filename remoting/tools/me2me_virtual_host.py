@@ -30,6 +30,7 @@ import urllib2
 import uuid
 
 # Local modules
+sys.path.insert(0, "/usr/share/chrome-remote-desktop")
 import gaia_auth
 import keygen
 
@@ -58,7 +59,8 @@ else:
 EXE_PATHS_TO_TRY = [
     ".",
     "../../out/Debug",
-    "../../out/Release"
+    "../../out/Release",
+    "/usr/lib/chrome-remote-desktop",
 ]
 
 CONFIG_DIR = os.path.expanduser("~/.config/chrome-remote-desktop")
