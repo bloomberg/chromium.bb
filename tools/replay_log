@@ -116,10 +116,11 @@ expand_input_file() {
     # Expand to the bzip2ed file within
     zlogs="$(bzcat "$infile" | uudecode -o - | tar xvf -)"
     # take newest log and reduce to next case
-    mv "$(ls -t $zlogs | grep touchpad_activity | head -n 1)" log.gz
+    cp "$(ls -t $zlogs | grep touchpad_activity | head -n 1)" log.gz
 
     # Also expand evdev log
-    zcat "$(ls -t $zlogs | grep cmt_input_events | head -n 1)" > evlog.txt
+    zcat "$(ls -t $zlogs | grep cmt_input_events | head -n 1)" > evlog.txt \
+        || true
 
     rm -f $zlogs
     infile="log.gz"
