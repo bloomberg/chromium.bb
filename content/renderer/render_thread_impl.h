@@ -84,10 +84,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   explicit RenderThreadImpl(const std::string& channel_name);
   virtual ~RenderThreadImpl();
 
-  // Returns the routing ID of the RenderWidget containing the current script
-  // execution context (corresponding to WebFrame::frameForCurrentContext).
-  static int32 RoutingIDForCurrentContext();
-
   // When initializing WebKit, ensure that any schemes needed for the content
   // module are registered properly.  Static to allow sharing with tests.
   static void RegisterSchemes();

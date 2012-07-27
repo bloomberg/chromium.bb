@@ -879,21 +879,6 @@ int32 RenderThreadImpl::CreateViewCommandBuffer(
   return route_id;
 }
 
-int32 RenderThreadImpl::RoutingIDForCurrentContext() {
-  int32 routing_id = MSG_ROUTING_CONTROL;
-  if (v8::Context::InContext()) {
-    WebFrame* frame = WebFrame::frameForCurrentContext();
-    if (frame) {
-      RenderViewImpl* view = RenderViewImpl::FromWebView(frame->view());
-      if (view)
-        routing_id = view->routing_id();
-    }
-  } else {
-    DLOG(WARNING) << "Not called within a script context!";
-  }
-  return routing_id;
-}
-
 void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {
   suspend_webkit_shared_timer_ = false;
 }
