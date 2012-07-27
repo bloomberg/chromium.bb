@@ -233,7 +233,7 @@ void ReadyPpdDependencies(const FilePath& install_path) {
     CORE_PRINTER_DRIVER driver;
     GetCorePrinterDrivers(NULL,
                           NULL,
-                          L"{D20EA372-DD35-4950-9ED8-A6335AFE79F0}",
+                          L"{D20EA372-DD35-4950-9ED8-A6335AFE79F5}",
                           1,
                           &driver);
     GetPrinterDriverPackagePath(NULL,
