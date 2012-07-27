@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/string16.h"
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
@@ -27,7 +28,7 @@
 - (id)initWithProfile:(Profile*)profile {
   if ((self = [super init])) {
     string16 empty;
-    BookmarkModel* model = profile->GetBookmarkModel();
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     nodes_[0] = model->AddURL(bookmark_bar, 0, empty, GURL("http://0.com"));
     nodes_[1] = model->AddURL(bookmark_bar, 1, empty, GURL("http://1.com"));

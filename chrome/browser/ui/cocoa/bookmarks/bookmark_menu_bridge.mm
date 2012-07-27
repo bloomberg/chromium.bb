@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -171,7 +172,7 @@ void BookmarkMenuBridge::ObserveBookmarkModel() {
 BookmarkModel* BookmarkMenuBridge::GetBookmarkModel() {
   if (!profile_)
     return NULL;
-  return profile_->GetBookmarkModel();
+  return BookmarkModelFactory::GetForProfile(profile_);
 }
 
 Profile* BookmarkMenuBridge::GetProfile() {

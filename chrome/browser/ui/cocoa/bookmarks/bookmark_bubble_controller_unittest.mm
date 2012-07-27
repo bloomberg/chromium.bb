@@ -8,6 +8,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -79,7 +80,8 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
     }
     controller_ = [[BookmarkBubbleController alloc]
                       initWithParentWindow:test_window()
-                                     model:profile()->GetBookmarkModel()
+                                     model:BookmarkModelFactory::GetForProfile(
+                                         profile())
                                       node:node
                          alreadyBookmarked:YES];
     EXPECT_TRUE([controller_ window]);
@@ -90,7 +92,7 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
   }
 
   BookmarkModel* GetBookmarkModel() {
-    return profile()->GetBookmarkModel();
+    return BookmarkModelFactory::GetForProfile(profile());
   }
 
   bool IsWindowClosing() {
@@ -395,7 +397,7 @@ TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
   BookmarkBubbleController* controller =
       [[BookmarkBubbleController alloc]
           initWithParentWindow:test_window()
-                         model:profile()->GetBookmarkModel()
+                         model:BookmarkModelFactory::GetForProfile(profile())
                           node:node
              alreadyBookmarked:NO];  // The last param is the key difference.
   EXPECT_TRUE([controller window]);
