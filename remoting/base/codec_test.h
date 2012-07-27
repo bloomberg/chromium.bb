@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,12 @@ void TestEncoder(Encoder* encoder, bool strict);
 // If |strict| is set to true, this routine will make sure the updated rects
 // are correct.
 void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict);
+
+// Generate a frame containing a gradient, and test the encoder and decoder
+// pair.
+void TestEncoderDecoderGradient(Encoder* encoder, Decoder* decoder,
+                                double max_error_limit,
+                                double mean_error_limit);
 
 }  // namespace remoting
 

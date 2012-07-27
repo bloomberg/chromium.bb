@@ -147,6 +147,10 @@ class DecoderTester {
     }
   }
 
+  void ReceivedScopedPacket(scoped_ptr<VideoPacket> packet) {
+    ReceivedPacket(packet.get());
+  }
+
   void set_strict(bool strict) {
     strict_ = strict;
   }
@@ -158,7 +162,11 @@ class DecoderTester {
   void AddRects(const SkIRect* rects, int count) {
     SkRegion new_rects;
     new_rects.setRects(rects, count);
-    expected_region_.op(new_rects, SkRegion::kUnion_Op);
+    AddRegion(new_rects);
+  }
+
+  void AddRegion(const SkRegion& region) {
+    expected_region_.op(region, SkRegion::kUnion_Op);
   }
 
   void VerifyResults() {
@@ -184,6 +192,55 @@ class DecoderTester {
         decoded += stride;
       }
     }
+  }
+
+  // The error at each pixel is the root mean square of the errors in
+  // the R, G, and B components, each normalized to [0, 1]. This routine
+  // checks that the maximum and mean pixel errors do not exceed given limits.
+  void VerifyResultsApprox(double max_error_limit, double mean_error_limit) {
+    ASSERT_TRUE(capture_data_.get());
+
+    // Test the content of the update region.
+    EXPECT_EQ(expected_region_, update_region_);
+    double max_error = 0.0;
+    double sum_error = 0.0;
+    int error_num = 0;
+    for (SkRegion::Iterator i(update_region_); !i.done(); i.next()) {
+      const int stride = kWidth * kBytesPerPixel;
+      EXPECT_EQ(stride, capture_data_->data_planes().strides[0]);
+      const int offset =  stride * i.rect().top() +
+          kBytesPerPixel * i.rect().left();
+      const uint8* original = capture_data_->data_planes().data[0] + offset;
+      const uint8* decoded = image_data_.get() + offset;
+      for (int y = 0; y < i.rect().height(); ++y) {
+        for (int x = 0; x < i.rect().width(); ++x) {
+          double error = CalculateError(original, decoded);
+          max_error = std::max(max_error, error);
+          sum_error += error;
+          ++error_num;
+          original += 4;
+          decoded += 4;
+        }
+      }
+    }
+    EXPECT_LE(max_error, max_error_limit);
+    double mean_error = sum_error / error_num;
+    EXPECT_LE(mean_error, mean_error_limit);
+    LOG(INFO) << "Max error: " << max_error;
+    LOG(INFO) << "Mean error: " << mean_error;
+  }
+
+  double CalculateError(const uint8* original, const uint8* decoded) {
+    double error_sum_squares = 0.0;
+    for (int i = 0; i < 3; i++) {
+      double error = static_cast<double>(*original++) -
+                     static_cast<double>(*decoded++);
+      error /= 255.0;
+      error_sum_squares += error * error;
+    }
+    original++;
+    decoded++;
+    return sqrt(error_sum_squares / 3.0);
   }
 
  private:
@@ -346,6 +403,51 @@ void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
                         kTestRects + 2, 1);
   TestEncodeDecodeRects(encoder, &encoder_tester, &decoder_tester, data,
                         kTestRects + 3, 2);
+}
+
+static void FillWithGradient(uint8* memory, const SkISize& frame_size,
+                             const SkIRect& rect) {
+  for (int j = rect.top(); j < rect.bottom(); ++j) {
+    uint8* p = memory + ((j * frame_size.width()) + rect.left()) * 4;
+    for (int i = rect.left(); i < rect.right(); ++i) {
+      *p++ = static_cast<uint8>((255.0 * i) / frame_size.width());
+      *p++ = static_cast<uint8>((164.0 * j) / frame_size.height());
+      *p++ = static_cast<uint8>((82.0 * (i + j)) /
+                                   (frame_size.width() + frame_size.height()));
+      *p++ = 0;
+    }
+  }
+}
+
+void TestEncoderDecoderGradient(Encoder* encoder,
+                                Decoder* decoder,
+                                double max_error_limit,
+                                double mean_error_limit) {
+  SkIRect full_frame = SkIRect::MakeWH(kWidth, kHeight);
+  scoped_array<uint8> frame_data(new uint8[kWidth * kHeight * kBytesPerPixel]);
+  FillWithGradient(frame_data.get(), SkISize::Make(kWidth, kHeight),
+                   full_frame);
+
+  DataPlanes planes;
+  memset(planes.data, 0, sizeof(planes.data));
+  memset(planes.strides, 0, sizeof(planes.strides));
+  planes.data[0] = frame_data.get();
+  planes.strides[0] = kWidth * kBytesPerPixel;
+
+  scoped_refptr<CaptureData> capture_data =
+      new CaptureData(planes, SkISize::Make(kWidth, kHeight),
+                      media::VideoFrame::RGB32);
+  capture_data->mutable_dirty_region().op(full_frame, SkRegion::kUnion_Op);
+
+  DecoderTester decoder_tester(decoder);
+  decoder_tester.set_capture_data(capture_data);
+  decoder_tester.AddRegion(capture_data->dirty_region());
+
+  encoder->Encode(capture_data, true,
+                  base::Bind(&DecoderTester::ReceivedScopedPacket,
+                             base::Unretained(&decoder_tester)));
+
+  decoder_tester.VerifyResultsApprox(max_error_limit, mean_error_limit);
 }
 
 }  // namespace remoting
