@@ -1257,7 +1257,8 @@ def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
     remote, push_branch = remote_push_branch
 
   if sync:
-    RunGitCommand(git_repo, ['remote', 'update', remote])
+    RetryCommand(RunGitCommand, 3, git_repo, ['remote', 'update', remote],
+                 sleep=10, retry_on=(1,))
 
   RunGitCommand(git_repo, ['checkout', '-B', branch, '-t', push_branch])
 
@@ -1278,7 +1279,8 @@ def SyncPushBranch(git_repo, remote, rebase_target):
         "This is highly indicative of an internal bug.  remote %s, rebase %s"
         % (remote, rebase_target))
 
-  RunGitCommand(git_repo, ['remote', 'update', remote])
+  RetryCommand(RunGitCommand, 3, git_repo, ['remote', 'update', remote],
+               sleep=10, retry_on=(1,))
 
   try:
     RunGitCommand(git_repo, ['rebase', rebase_target])
@@ -1350,7 +1352,8 @@ def GitCleanAndCheckoutUpstream(git_repo, refresh_upstream=True):
   RunGitCommand(git_repo, ['am', '--abort'], error_code_ok=True)
   RunGitCommand(git_repo, ['rebase', '--abort'], error_code_ok=True)
   if refresh_upstream:
-    RunGitCommand(git_repo, ['remote', 'update', remote])
+    RetryCommand(RunGitCommand, 3, git_repo, ['remote', 'update', remote],
+                 sleep=10, retry_on=(1,))
   RunGitCommand(git_repo, ['clean', '-df'])
   RunGitCommand(git_repo, ['reset', '--hard', 'HEAD'])
   RunGitCommand(git_repo, ['checkout', local_upstream])
@@ -1372,20 +1375,22 @@ def GetHostDomain():
   return domain if domain else None
 
 
-def RunCommandWithRetries(max_retry, *args, **kwds):
+def RetryCommand(functor, max_retry, *args, **kwds):
   """Wrapper for RunCommand that will retry a command
 
   Arguments:
+    functor: RunCommand function to run; retries will only occur on
+      RunCommandError exceptions being thrown.
     max_retry: A positive integer representing how many times to retry
       the command before giving up.  Worst case, the command is invoked
       (max_retry + 1) times before failing.
     sleep: Optional keyword.  Multiplier for how long to sleep between
-           retries; will delay (1*sleep) the first time, then (2*sleep),
-           continuing via attempt * sleep.
+      retries; will delay (1*sleep) the first time, then (2*sleep),
+      continuing via attempt * sleep.
     retry_on: If given, it must support containment (ie, lists, sets, etc),
-              and retry will only be continued for the given exit codes,
-              failing immediately if the exit code isn't one of the allowed
-              retry codes.
+      and retry will only be continued for the given exit codes,
+      failing immediately if the exit code isn't one of the allowed
+      retry codes.
     args: Positional args passed to RunCommand; see RunCommand for specifics.
     kwds: Optional args passed to RunCommand; see RunCommand for specifics.
   Returns:
@@ -1402,7 +1407,7 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
     if attempt:
       time.sleep(sleep * attempt)
     try:
-      return RunCommand(*args, **kwds)
+      return functor(*args, **kwds)
     except TerminateRunCommandError:
       # Unfortunately, there is no right answer for this case- do we expose
       # the original error?  Or do we indicate we were told to die?
@@ -1418,6 +1423,19 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
 
   #pylint: disable=E0702
   raise exc_info[0], exc_info[1], exc_info[2]
+
+
+def RunCommandWithRetries(max_retry, *args, **kwds):
+  """Wrapper for RunCommand that will retry a command
+
+  Arguments:
+    See RetryCommand and RunCommand; This is just a wrapper around it.
+  Returns:
+    A RunCommandResult object.
+  Raises:
+    Exception:  Raises RunCommandError on error with optional error_message.
+  """
+  return RetryCommand(RunCommand, max_retry, *args, **kwds)
 
 
 def RunCommandCaptureOutput(cmd, **kwds):
