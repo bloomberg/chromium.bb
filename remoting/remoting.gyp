@@ -542,6 +542,7 @@
             'remoting_version_resources',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/elevated_controller_version.rc',
             'host/branding.cc',
             'host/branding.h',
             'host/elevated_controller.rc',
@@ -554,7 +555,6 @@
             'host/usage_stats_consent_win.cc',
             'host/verify_config_window_win.cc',
             'host/verify_config_window_win.h',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/elevated_controller_version.rc'
           ],
           'link_settings': {
             'libraries': [
@@ -588,6 +588,7 @@
             'remoting_version_resources',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host_service_version.rc',
             'base/scoped_sc_handle_win.h',
             'host/branding.cc',
             'host/branding.h',
@@ -609,7 +610,6 @@
             'host/wts_console_observer_win.h',
             'host/wts_session_process_launcher_win.cc',
             'host/wts_session_process_launcher_win.h',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host_service_version.rc'
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -881,6 +881,57 @@
     },  # end of target 'remoting_client_plugin'
 
     {
+      'target_name': 'remoting_host_event_logger',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'dependencies': [
+        'remoting_base',
+      ],
+      'sources': [
+        'host/host_event_logger.h',
+        'host/host_event_logger_posix.cc',
+        'host/host_event_logger_win.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'sources': [
+            'host/remoting_host_messages.mc',
+          ],
+          'output_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/host',
+          'include_dirs': [
+            '<(_output_dir)',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(_output_dir)',
+            ],
+          },
+          # Rule to run the message compiler.
+          'rules': [
+            {
+              'rule_name': 'message_compiler',
+              'extension': 'mc',
+              'inputs': [ ],
+              'outputs': [
+                '<(_output_dir)/remoting_host_messages.h',
+                '<(_output_dir)/remoting_host_messages.rc',
+              ],
+              'msvs_cygwin_shell': 0,
+              'action': [
+                'mc.exe',
+                '-h', '<(_output_dir)',
+                '-r', '<(_output_dir)/.',
+                '<(RULE_INPUT_PATH)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Running message compiler on <(RULE_INPUT_PATH).',
+            },
+          ],
+        }],
+      ],  # end of 'conditions'
+    },  # end of target 'remoting_host_event_logger'
+
+    {
       'target_name': 'remoting_host_plugin',
       'type': 'loadable_module',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -889,6 +940,7 @@
       'dependencies': [
         'remoting_base',
         'remoting_host',
+        'remoting_host_event_logger',
         'remoting_jingle_glue',
         '../net/net.gyp:net',
         '../third_party/npapi/npapi.gyp:npapi',
@@ -957,9 +1009,9 @@
             '<(INTERMEDIATE_DIR)',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_version.rc',
             'host/host_ui.rc',
             'host/plugin/host_plugin.def',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_version.rc'
           ],
         }],
       ],
@@ -1371,6 +1423,7 @@
         'remoting_base',
         'remoting_breakpad',
         'remoting_host',
+        'remoting_host_event_logger',
         'remoting_jingle_glue',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -1380,7 +1433,6 @@
       'sources': [
         'host/branding.cc',
         'host/branding.h',
-        'host/host_event_logger.h',
         'host/sighup_listener_mac.cc',
         'host/sighup_listener_mac.h',
         'host/remoting_me2me_host.cc',
@@ -1388,11 +1440,6 @@
         'host/usage_stats_consent_win.cc',
       ],
       'conditions': [
-        ['os_posix==1', {
-          'sources': [
-            'host/host_event_logger_posix.cc',
-          ],
-        }],
         ['OS=="mac"', {
           'mac_bundle': 1,
           'conditions': [
@@ -1426,32 +1473,9 @@
             'remoting_version_resources',
           ],
           'sources': [
-            'host/host_event_logger_win.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_me2me_host_version.rc',
             'host/host_ui.rc',
-            'host/remoting_host_messages.mc',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_me2me_host_version.rc'
-          ],
-          'include_dirs': [
-            '<(INTERMEDIATE_DIR)',
-          ],
-          # Rule to run the message compiler.
-          'rules': [
-            {
-              'rule_name': 'message_compiler',
-              'extension': 'mc',
-              'inputs': [ ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/remoting_host_messages.h',
-                '<(INTERMEDIATE_DIR)/remoting_host_messages.rc',
-              ],
-              'msvs_cygwin_shell': 0,
-              'msvs_quote_cmd': 0,
-              'action': [
-                'mc.exe -h <(INTERMEDIATE_DIR) -r <(INTERMEDIATE_DIR) <(RULE_INPUT_PATH)',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Running message compiler on <(RULE_INPUT_PATH).',
-            },
           ],
           'link_settings': {
             'libraries': [

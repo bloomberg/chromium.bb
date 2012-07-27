@@ -19,6 +19,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_config.h"
+#include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
@@ -35,6 +36,9 @@
 namespace remoting {
 
 namespace {
+
+// This is used for tagging system event logs.
+const char kApplicationName[] = "chromoting";
 
 const char* kAttrNameAccessCode = "accessCode";
 const char* kAttrNameAccessCodeLifetime = "accessCodeLifetime";
@@ -424,6 +428,7 @@ void HostNPScriptObject::OnShutdown() {
   register_request_.reset();
   log_to_server_.reset();
   signal_strategy_.reset();
+  host_event_logger_.reset();
   host_->RemoveStatusObserver(this);
   host_ = NULL;
 
@@ -579,6 +584,7 @@ void HostNPScriptObject::FinishConnectNetworkThread(
       &ChromotingHost::Shutdown, base::Unretained(host_.get()),
       base::Closure());
   it2me_host_user_interface_->Start(host_.get(), disconnect_callback);
+  host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
 
   {
     base::AutoLock auto_lock(ui_strings_lock_);
