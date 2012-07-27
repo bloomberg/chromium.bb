@@ -161,10 +161,7 @@ views::View* TrayBrightness::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayBrightness::CreateDefaultView(user::LoginStatus status) {
-  CHECK(brightness_view_ == NULL);
-  brightness_view_ = new tray::BrightnessView(current_percent_);
-  is_default_view_ = true;
-  return brightness_view_;
+  return NULL;
 }
 
 views::View* TrayBrightness::CreateDetailedView(user::LoginStatus status) {
