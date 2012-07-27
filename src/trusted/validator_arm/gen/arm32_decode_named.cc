@@ -2228,16 +2228,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store_l1(
 const NamedClassDecoder& NamedArm32DecoderState::decode_super_cop(
      const nacl_arm_dec::Instruction insn) const {
 
-  if ((insn.Bits() & 0x03F00000) == 0x00400000 /* op1(25:20) == 000100 */ &&
-      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
-    return CoprocessorOp_None_instance_;
-
-  if ((insn.Bits() & 0x03F00000) == 0x00500000 /* op1(25:20) == 000101 */ &&
-      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
-    return MoveDoubleFromCoprocessor_None_instance_;
-
   if ((insn.Bits() & 0x03E00000) == 0x00000000 /* op1(25:20) == 00000x */)
     return Undefined_None_instance_;
+
+  if ((insn.Bits() & 0x03E00000) == 0x00400000 /* op1(25:20) == 00010x */ &&
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
+    return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x03E00000) == 0x00400000 /* op1(25:20) == 00010x */ &&
       (insn.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8) == 101x */)
@@ -2246,27 +2242,27 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_super_cop(
   if ((insn.Bits() & 0x03100000) == 0x02100000 /* op1(25:20) == 10xxx1 */ &&
       (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */ &&
       (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
-    return MoveFromCoprocessor_None_instance_;
+    return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x02100000) == 0x00000000 /* op1(25:20) == 0xxxx0 */ &&
       (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */ &&
       (insn.Bits() & 0x03A00000) != 0x00000000 /* op1_repeated(25:20) == ~000x0x */)
-    return StoreCoprocessor_None_instance_;
+    return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x02100000) == 0x00100000 /* op1(25:20) == 0xxxx1 */ &&
       (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */ &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */ &&
       (insn.Bits() & 0x03A00000) != 0x00000000 /* op1_repeated(25:20) == ~000x0x */)
-    return LoadCoprocessor_None_instance_;
+    return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x02100000) == 0x00100000 /* op1(25:20) == 0xxxx1 */ &&
       (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return LoadCoprocessor_None_instance_;
+    return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x03000000) == 0x02000000 /* op1(25:20) == 10xxxx */ &&
       (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
-    return CoprocessorOp_None_instance_;
+    return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x03000000) == 0x02000000 /* op1(25:20) == 10xxxx */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* op(4:4) == 0 */ &&

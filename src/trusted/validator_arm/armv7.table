@@ -1295,36 +1295,37 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 0xxxxx     -     101x         -         ~000x0x
                    -> ext_reg_load_store
 | 0xxxx0     -     ~101x           -      ~000x0x
-                   # TODO(karl): will never be safe since coproc~=101x?
-                   = StoreCoprocessor # STC A8-372
+                   # Note: Never safe since coproc!=101x
+                   = Forbidden  # STC A8-372
 | 0xxxx1     -     ~101x        ~1111      ~000x0x
-                   # TODO(karl): will never be safe since coproc~=101x?
-                   = LoadCoprocessor  # LDC(immediate), LDC2(immediate) A8-106
+                   # Note: Never safe since coproc!=101x
+                   = Forbidden        # LDC(immediate), LDC2(immediate) A8-106
 | "          "     "            1111       -
-                   = LoadCoprocessor  # LDC(literal), LDC2(literal) # A8-108
+                   # Note: Never safe since coproc!=101x
+                   = Forbidden        # LDC(literal), LDC2(literal) # A8-108
 | 00000x     -     -            -          -
-                   = Undefined # see table, section A5.6
+                   = Undefined        # see table, section A5.6
 | 00010x     -     101x         -          -
                    -> ext_reg_transfers
 | 000100     -     ~101x        -          -
-                   # TODO(karl): will never be safe since coproc~=101x?
-                   = CoprocessorOp (v5TE) # MCRR, MCRR2 A8-188
+                   # Note: Never safe since coproc!=101x
+                   = Forbidden (v5TE) # MCRR, MCRR2 A8-188
 | 000101     -     ~101x        -          -
-                   # TODO(karl): will never be safe since coproc~=101x?
-                   = MoveDoubleFromCoprocessor (v5TE) # MRRC, MRRC2 A8-204
+                   # Note: Never safe since coproc!=101x
+                   = Forbidden (v5TE) # MRRC, MRRC2 A8-204
 | 10xxxx     0     101x         -          -
                    -> vfp_data_proc
 | "          "     ~101x        -          -
-                   # TODO(karl): will never be safe since coproc~=101x?
-                   = CoprocessorOp    # CDP, CDP2 A8-68
+                   # Note: Never safe since coproc!=101x
+                   = Forbidden        # CDP, CDP2 A8-68
 | "          1     101x         -          -
                    -> ext_reg_move
 | "          "     ~101x        -          -
-                   # TODO(karl): will never be safe since coproc~=101x?
-                   = CoprocessorOp    # MCR, MCR2 A8-186
+                   # Note: Never safe since coproc!=101x
+                   = Forbidden        # MCR, MCR2 A8-186
 | 10xxx1     1     ~101x        -          -
-                   # TODO(karl): will never be safe since coproc~=101x?
-                   = MoveFromCoprocessor  # MRC, MRC2
+                   # Note: Never safe since coproc!=101x
+                   = Forbidden        # MRC, MRC2
 | 11xxxx     -     -            -          -
                    = Forbidden        # SVC (nee SWI) A8-430
 +--
