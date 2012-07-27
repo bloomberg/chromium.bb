@@ -187,7 +187,10 @@ void GesturePoint::UpdateEnclosingRectangle(const TouchEvent& event) {
                  event.GetLocation().y() - radius,
                  radius * 2,
                  radius * 2);
-  enclosing_rect_ = enclosing_rect_.Union(rect);
+  if (IsInClickWindow(event))
+    enclosing_rect_ = enclosing_rect_.Union(rect);
+  else
+    enclosing_rect_ = rect;
 }
 
 }  // namespace ui

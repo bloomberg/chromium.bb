@@ -671,8 +671,9 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
 void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
                                                 const gfx::Point& location,
                                                 Gestures* gestures) {
-  int dx = location.x() - bounding_box_last_center_.x();
-  int dy = location.y() - bounding_box_last_center_.y();
+  gfx::Point current_center = bounding_box_.CenterPoint();
+  int dx = current_center.x() - bounding_box_last_center_.x();
+  int dy = current_center.y() - bounding_box_last_center_.y();
   if (dx == 0 && dy == 0)
     return;
   if (scroll_type_ == ST_HORIZONTAL)

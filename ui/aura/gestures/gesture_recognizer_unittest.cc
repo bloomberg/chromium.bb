@@ -716,6 +716,10 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_EQ(gfx::Point(1, 1).ToString(),
             delegate->scroll_begin_position().ToString());
 
+  // When scrolling with a single finger, the bounding box of the gesture should
+  // be empty, since it's a single point and the radius for testing is zero.
+  EXPECT_TRUE(delegate->bounding_box().IsEmpty());
+
   // Move some more to generate a few more scroll updates.
   SendScrollEvent(root_window(), 110, 211, kTouchId, delegate.get());
   EXPECT_FALSE(delegate->tap());
@@ -727,6 +731,7 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(-20, delegate->scroll_x());
   EXPECT_EQ(-19, delegate->scroll_y());
+  EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
   SendScrollEvent(root_window(), 140, 215, kTouchId, delegate.get());
   EXPECT_FALSE(delegate->tap());
@@ -738,6 +743,7 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(30, delegate->scroll_x());
   EXPECT_EQ(4, delegate->scroll_y());
+  EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
   // Release the touch. This should end the scroll.
   delegate->Reset();
@@ -753,6 +759,59 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_TRUE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->bounding_box().IsEmpty());
+}
+
+// Check that the bounding box during a scroll event is correct.
+TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
+  for (int radius = 1; radius <= 10; ++radius) {
+    ui::GestureConfiguration::set_default_radius(radius);
+    scoped_ptr<GestureEventConsumeDelegate> delegate(
+        new GestureEventConsumeDelegate());
+    const int kWindowWidth = 123;
+    const int kWindowHeight = 45;
+    const int kTouchId = 5;
+    gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+    scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+        delegate.get(), -1234, bounds, NULL));
+
+    const int kPositionX = 101;
+    const int kPositionY = 201;
+    delegate->Reset();
+    TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(kPositionX, kPositionY),
+                     kTouchId, GetTime());
+    root_window()->DispatchTouchEvent(&press);
+    EXPECT_EQ(gfx::Rect(kPositionX - radius,
+                        kPositionY - radius,
+                        radius * 2,
+                        radius * 2).ToString(),
+              delegate->bounding_box().ToString());
+
+    const int kScrollAmount = 50;
+    SendScrollEvents(root_window(), kPositionX, kPositionY, GetTime(),
+        1, 1, kTouchId, 1, kScrollAmount, delegate.get());
+    EXPECT_EQ(gfx::Point(1, 1).ToString(),
+              delegate->scroll_begin_position().ToString());
+    EXPECT_EQ(gfx::Rect(kPositionX + kScrollAmount - radius,
+                        kPositionY + kScrollAmount - radius,
+                        radius * 2,
+                        radius * 2).ToString(),
+              delegate->bounding_box().ToString());
+
+    // Release the touch. This should end the scroll.
+    delegate->Reset();
+    TouchEvent release(ui::ET_TOUCH_RELEASED,
+                       gfx::Point(kPositionX, kPositionY),
+                       kTouchId, press.time_stamp() +
+                       base::TimeDelta::FromMilliseconds(50));
+    root_window()->DispatchTouchEvent(&release);
+    EXPECT_EQ(gfx::Rect(kPositionX - radius,
+                        kPositionY - radius,
+                        radius * 2,
+                        radius * 2).ToString(),
+              delegate->bounding_box().ToString());
+  }
+  ui::GestureConfiguration::set_default_radius(0);
 }
 
 // Check Scroll End Events report correct velocities
@@ -1430,6 +1489,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_EQ(gfx::Rect(10, 10, 120, 291).ToString(),
+            delegate->bounding_box().ToString());
 
   // Move the first finger.
   delegate->Reset();
@@ -1444,6 +1505,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_TRUE(delegate->pinch_update());
+  EXPECT_EQ(gfx::Rect(10, 10, 85, 191).ToString(),
+            delegate->bounding_box().ToString());
 
   // Now move the second finger.
   delegate->Reset();
@@ -1458,6 +1521,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_TRUE(delegate->pinch_update());
+  EXPECT_EQ(gfx::Rect(55, 15, 40, 186).ToString(),
+            delegate->bounding_box().ToString());
 
   // Release the first finger. This should end pinch.
   delegate->Reset();
@@ -1472,6 +1537,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_TRUE(delegate->pinch_end());
+  EXPECT_EQ(gfx::Rect(55, 15, 46, 186).ToString(),
+            delegate->bounding_box().ToString());
 
   // Move the second finger. This should still generate a scroll.
   delegate->Reset();
@@ -1486,6 +1553,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_FALSE(delegate->pinch_update());
+  EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 }
 
 TEST_F(GestureRecognizerTest, GestureEventPinchFromScrollFromPinch) {
@@ -1562,6 +1630,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
   // Press the second finger far enough to break two finger tap. It should
   // instead cause a scroll-begin and pinch-begin.
@@ -1576,6 +1645,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_EQ(gfx::Rect(10, 10, 91, 291).ToString(),
+            delegate->bounding_box().ToString());
 
   // Move the first finger.
   delegate->Reset();
@@ -1590,6 +1661,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_TRUE(delegate->pinch_update());
+  EXPECT_EQ(gfx::Rect(10, 10, 55, 191).ToString(),
+            delegate->bounding_box().ToString());
 
   // Now move the second finger.
   delegate->Reset();
@@ -1604,6 +1677,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_TRUE(delegate->pinch_update());
+  EXPECT_EQ(gfx::Rect(55, 15, 10, 186).ToString(),
+            delegate->bounding_box().ToString());
 
   // Release the first finger. This should end pinch.
   delegate->Reset();
@@ -1618,6 +1693,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_TRUE(delegate->pinch_end());
+  EXPECT_EQ(gfx::Rect(55, 15, 46, 186).ToString(),
+            delegate->bounding_box().ToString());
 
   // Move the second finger. This should still generate a scroll.
   delegate->Reset();
@@ -1632,6 +1709,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_FALSE(delegate->pinch_update());
+  EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 }
 
 TEST_F(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
