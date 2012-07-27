@@ -26,19 +26,6 @@
   include decode_x86_32 "decoder_x86_32_instruction.rl";
 
   main := (one_instruction
-    >{
-        instruction_start = current_position;
-        SET_DISP_TYPE(DISPNONE);
-        SET_IMM_TYPE(IMMNONE);
-        SET_IMM2_TYPE(IMMNONE);
-        SET_DATA16_PREFIX(FALSE);
-        SET_LOCK_PREFIX(FALSE);
-        SET_REPNZ_PREFIX(FALSE);
-        SET_REPZ_PREFIX(FALSE);
-        SET_BRANCH_NOT_TAKEN(FALSE);
-        SET_BRANCH_TAKEN(FALSE);
-        SET_VEX_PREFIX3(0x00);
-    }
     @{
         switch (disp_type) {
           case DISPNONE: instruction.rm.offset = 0; break;
@@ -73,6 +60,17 @@
         }
         process_instruction(instruction_start, current_position+1, &instruction,
                             userdata);
+        instruction_start = current_position + 1;
+        SET_DISP_TYPE(DISPNONE);
+        SET_IMM_TYPE(IMMNONE);
+        SET_IMM2_TYPE(IMMNONE);
+        SET_DATA16_PREFIX(FALSE);
+        SET_LOCK_PREFIX(FALSE);
+        SET_REPNZ_PREFIX(FALSE);
+        SET_REPZ_PREFIX(FALSE);
+        SET_BRANCH_NOT_TAKEN(FALSE);
+        SET_BRANCH_TAKEN(FALSE);
+        SET_VEX_PREFIX3(0x00);
     })*
     $!{ process_error(current_position, userdata);
         result = 1;
@@ -149,6 +147,13 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
 
   /* Not used in ia32_mode.  */
   instruction.prefix.rex = 0;
+
+  SET_DATA16_PREFIX(FALSE);
+  SET_LOCK_PREFIX(FALSE);
+  SET_REPNZ_PREFIX(FALSE);
+  SET_REPZ_PREFIX(FALSE);
+  SET_BRANCH_NOT_TAKEN(FALSE);
+  SET_BRANCH_TAKEN(FALSE);
 
   %% write init;
   %% write exec;

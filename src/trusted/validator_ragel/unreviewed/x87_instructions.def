@@ -8,7 +8,9 @@
 ################################################################################
 # File format: see general_purpose_instructions.def
 ######## F2XM1 #################################################################
-nop, 0x90
+nop, 0x90, norex
+nop, 0x40 0x90, amd64 norex
+nop, 0x48 0x90, amd64 norex
 f2xm1, 0xd9 0xf0, CPUFeature_x87
 ######## FABS ##################################################################
 fabs, 0xd9 0xe1, CPUFeature_x87
@@ -28,7 +30,7 @@ fbstp Msb, 0xdf /6, CPUFeature_x87
 fchs, 0xd9 0xe0, CPUFeature_x87
 ######## FCLEX #################################################################
 fnclex, 0xdb 0xe2, CPUFeature_x87
-fclex, 0x9b 0xdb 0xe2, CPUFeature_x87
+fclex, fwait 0xdb 0xe2, CPUFeature_x87
 ######## FCMOVcc ###############################################################
 fcmovb r7 t7, 0xda 0xc0, CPUFeature_CMOVx87
 fcmovbe r7 t7, 0xda 0xD0, CPUFeature_CMOVx87
@@ -90,7 +92,7 @@ fild Msq, 0xdf /5, CPUFeature_x87
 fincstp, 0xd9 0xf7, CPUFeature_x87
 ######## FINIT/FNINIT ##########################################################
 fninit, 0xdb 0xe3, CPUFeature_x87
-finit, 0x9b 0xdb 0xe3, CPUFeature_x87
+finit, fwait 0xdb 0xe3, CPUFeature_x87
 ######## FIST/FISTP ############################################################
 fist Msw, 0xdf /2, CPUFeature_x87
 fist Msi, 0xdb /2, CPUFeature_x87
@@ -148,7 +150,7 @@ frndint, 0xd9 0xfc, CPUFeature_x87
 frstor Msr, 0xdd /4, CPUFeature_x87
 ######## FSAVE/FNSAVE ##########################################################
 fnsave Msr, 0xdd /6, CPUFeature_x87
-fsave Msr, 0x9b 0xdd /6, CPUFeature_x87
+fsave Msr, fwait 0xdd /6, CPUFeature_x87
 ######## FSCALE ################################################################
 fscale, 0xd9 0xfd, CPUFeature_x87
 ######## FSIN ##################################################################
@@ -167,15 +169,15 @@ fstp Msd, 0xdd /3, CPUFeature_x87
 fstp Mst, 0xdb /7, CPUFeature_x87
 ######## FSTCW/FNSTCW ##########################################################
 fnstcw Msw, 0xd9 /7
-fstcw Msw, 0x9b 0xd9 /7
+fstcw Msw, fwait 0xd9 /7
 ######## FSTENV/FNSTENV ########################################################
 fnstenv Mse, 0xd9 /6
-fstenv Mse, 0x9b 0xd9 /6
+fstenv Mse, fwait 0xd9 /6
 ######## FSTSW/FNSTSW ##########################################################
-fnstsw aw, 0xdf 0xe0, CPUFeature_x87
 fnsts Mw, 0xdd /7, CPUFeature_x87
-fstsw aw, 0x9b 0xdf 0xe0, CPUFeature_x87
-fsts Mw, 0x9b 0xdd /7, CPUFeature_x87
+fnstsw aw, 0xdf 0xe0, CPUFeature_x87
+fsts Mw, fwait 0xdd /7, CPUFeature_x87
+fstsw aw, fwait 0xdf 0xe0, CPUFeature_x87
 ######## FSUB/FSUBP/FISUB ######################################################
 # “fsub” and “fsubr” are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
@@ -214,9 +216,11 @@ fxam, 0xd9 0xe5, CPUFeature_x87
 ######## FXCH ##################################################################
 fxch r7, 0xd9 0xc8, CPUFeature_x87
 ######## FXRSTOR ###############################################################
-fxrstor Msx, 0x0f 0xae /1, nacl-forbidden CPUFeature_FXSR
+fxrstor Msx, 0x0f 0xae /1, norexw nacl-forbidden CPUFeature_FXSR
+fxrstor64 Msx, rexw 0x0f 0xae /1, amd64 nacl-forbidden CPUFeature_FXSR
 ######## FXSAVE ################################################################
-fxsave Msx, 0x0f 0xae /0, nacl-forbidden CPUFeature_FXSR
+fxsave Msx, 0x0f 0xae /0, norexw nacl-forbidden CPUFeature_FXSR
+fxsave64 Msx, rexw 0x0f 0xae /0, amd64 nacl-forbidden CPUFeature_FXSR
 ######## FXTRACT ###############################################################
 fxtract, 0xd9 0xf4, CPUFeature_x87
 ######## FYL2X #################################################################

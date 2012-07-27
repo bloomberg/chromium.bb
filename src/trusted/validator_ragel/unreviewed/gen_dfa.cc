@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <assert.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <libgen.h>
@@ -182,6 +183,8 @@ namespace {
     "condrep",
     "lock",
     "no_memory_access",
+    "norex",
+    "norexw",
     "rep",
 
     /* CPUID flags. */
@@ -1136,6 +1139,9 @@ namespace {
 "  action operand%1$d_from_opcode {\n"
 "    SET_OPERAND_NAME(%1$d, (*current_position) & 0x7);\n"
 "  }\n"
+"  action operand%1$d_from_opcode_x87 {\n"
+"    SET_OPERAND_NAME(%1$d, (*current_position) & 0x7);\n"
+"  }\n"
 "  action operand%1$d_from_is4 {\n"
 "    SET_OPERAND_NAME(%1$d, (*current_position) >> 4);\n"
 "  }\n"
@@ -1163,6 +1169,9 @@ namespace {
 "    SET_OPERAND_NAME(%1$d, ((*current_position) & 0x7) |\n"
 "                            ((GET_REX_PREFIX() & 0x01) << 3) |\n"
 "                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));\n"
+"  }\n"
+"  action operand%1$d_from_opcode_x87 {\n"
+"    SET_OPERAND_NAME(%1$d, (*current_position) & 0x7);\n"
 "  }\n"
 "  action operand%1$d_from_is4 {\n"
 "    SET_OPERAND_NAME(%1$d, (*current_position) >> 4);\n"
@@ -1256,7 +1265,7 @@ namespace {
     explicit MarkedInstruction(Instruction instruction_) :
         Instruction(instruction_),
         instruction_class(get_instruction_class(instruction_)),
-        rex { }, opcode_in_modrm(false), opcode_in_imm(false) {
+        rex { }, opcode_in_modrm(false), opcode_in_imm(false), fwait(false) {
       if (has_flag("branch_hint")) {
         optional_prefixes.insert("branch_hint");
       }
@@ -1296,9 +1305,6 @@ namespace {
                     opcode->append(saved_opcode);
                   }
                   opcode->push_back(')');
-                  if (saved_opcode == "0x97") {
-                    opcode->erase(1, 5);
-                  }
                   break;
                 case '8':
                   (*opcode) = "(";
@@ -1335,11 +1341,12 @@ namespace {
         "0xf0", "lock",
         "0xf2", "repnz",
         "0xf3", "repz",
-        "rexw"
+        "rexw", "fwait"
       };
       while (opcode_prefixes.find(*opcodes.begin()) != opcode_prefixes.end()) {
         if ((*opcodes.begin()) == "rexw") {
-          if (!rex.w && instruction_class == InstructionClass::kDefault) {
+          if (!rex.w && ((instruction_class == InstructionClass::kDefault) ||
+                         (instruction_class == InstructionClass::kData16))) {
             instruction_class = InstructionClass::kRexW;
             rex.w = true;
           } else if (!rex.w && instruction_class == InstructionClass::kSize8) {
@@ -1354,6 +1361,8 @@ namespace {
                     name.c_str());
             exit(1);
           }
+        } else if ((*opcodes.begin()) == "fwait") {
+          fwait = true;
         } else {
           required_prefixes.insert(*opcodes.begin());
         }
@@ -1366,6 +1375,8 @@ namespace {
       /* The same as kDefault, but to make 'dil'/'sil'/'bpl'/'spl' accesible
        * pure REX (hex 0x40) is allowed.  */
       kSize8,
+      /* One operand is kSize8, another is Data16.  */
+      kSize8Data16,
       /* One operand is kSize8, another is RexW.  */
       kSize8RexW,
       kData16,
@@ -1387,9 +1398,11 @@ namespace {
       bool x : 1;
       bool r : 1;
       bool w : 1;
+      bool w_is_unused : 1;
     } rex;
     bool opcode_in_modrm : 1;
     bool opcode_in_imm : 1;
+    bool fwait : 1;
 
     static InstructionClass get_instruction_class(
                                                const Instruction &instruction) {
@@ -1441,7 +1454,7 @@ namespace {
           { "sw",       InstructionClass::kUnknown                      },
           { "sx",       InstructionClass::kUnknown                      },
           { "v",        InstructionClass::kData16DefaultRexW            },
-          { "w",        InstructionClass::kUnknown                      },
+          { "w",        InstructionClass::kData16                       },
           { "x",        InstructionClass::kLSetUnset                    },
           { "y",        InstructionClass::kDefaultRexW                  },
           { "z",        InstructionClass::kData16DefaultRexW            }
@@ -1462,6 +1475,12 @@ namespace {
           } else {
             operand_class = InstructionClass::kUnknown;
           }
+        } else if (operand.size == "w") {
+          if ((operand.source == 'S')) {
+            operand_class = InstructionClass::kData16DefaultRexW;
+          } else {
+            operand_class = InstructionClass::kData16;
+          }
         } else {
           fprintf(stderr, "%s: unknown operand: '%c%s'\n",
                   short_program_name, operand.source, operand.size.c_str());
@@ -1480,6 +1499,17 @@ namespace {
                     (operand_class == InstructionClass::kDefaultRexW))) {
           instruction_class =
                           InstructionClass::kSize8Data16DefaultRexWxDefaultRexW;
+        } else if (((instruction_class == InstructionClass::kSize8) &&
+                    (operand_class == InstructionClass::kData16)) ||
+                   ((instruction_class == InstructionClass::kData16) &&
+                    (operand_class == InstructionClass::kSize8))) {
+          instruction_class = InstructionClass::kSize8Data16;
+        } else if (((instruction_class == InstructionClass::kData16) &&
+                    (operand_class == InstructionClass::kData16DefaultRexW)) ||
+                   ((instruction_class ==
+                                        InstructionClass::kData16DefaultRexW) &&
+                    (operand_class == InstructionClass::kData16))) {
+          instruction_class = InstructionClass::kData16DefaultRexW;
         } else {
           fprintf(stderr, "%s: error - incompatible modes %d & %d\n",
                   short_program_name, instruction_class, operand_class);
@@ -1512,14 +1542,18 @@ namespace {
       switch (auto saved_class = instruction_class) {
         case InstructionClass::kDefault:
         case InstructionClass::kSize8:
+          rex.w_is_unused = true;
           print_one_size_definition();
           break;
         case InstructionClass::kSize8RexW:
         case InstructionClass::kRexW:
           print_one_size_definition_rexw();
           break;
+        case InstructionClass::kSize8Data16:
+          instruction_class = kSize8;
+          /* Falltrought: the rest is as in kData16.  */
         case InstructionClass::kData16:
-          print_one_size_definition_data16();
+          print_one_size_definition();
           break;
         case InstructionClass::kDefaultRexW:
           instruction_class = InstructionClass::kDefault;
@@ -1685,6 +1719,9 @@ namespace {
 
     void print_one_size_definition_nomodrm(void) {
       print_operator_delimiter();
+      if (opcodes[0] == "(0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97)") {
+        fprintf(out_file, "((");
+      }
       print_legacy_prefixes();
       print_rex_prefix();
       print_opcode_nomodrm();
@@ -1694,6 +1731,9 @@ namespace {
       } else {
         print_opcode_recognition(false);
         print_immediate_arguments();
+      }
+      if (opcodes[0] == "(0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97)") {
+        fprintf(out_file, ") - (0x90|0x48 0x90))");
       }
       print_inst_end_actions(false);
     }
@@ -1907,6 +1947,13 @@ namespace {
     }
 
     void print_legacy_prefixes(void) {
+      if (fwait) {
+        if (ia32_mode) {
+          fprintf(out_file, "0x9b ");
+        } else {
+          fprintf(out_file, "(REX_WRXB? 0x9b | 0x9b ");
+        }
+      }
       if ((required_prefixes.size() == 1) &&
           (optional_prefixes.size() == 0)) {
         fprintf(out_file, "%s ", required_prefixes.begin()->c_str());
@@ -1957,7 +2004,7 @@ namespace {
 
     void print_rex_prefix(void) {
       /* Prefix REX is not used in ia32 mode.  */
-      if (ia32_mode) {
+      if (ia32_mode || has_flag("norex")) {
         return;
       }
       /* VEX/XOP instructions integrate REX bits and opcode bits.  They will
@@ -1967,19 +2014,19 @@ namespace {
            ((opcodes[0] == "0x8f") && (opcodes[1] != "/0")))) {
         return;
       }
-      /* Allow any bits in rex prefix for the compatibility. See
+      /* Allow any bits in  rex prefix for the compatibility. See
          http://code.google.com/p/nativeclient/issues/detail?id=2517 */
-      if (rex.w || rex.r || rex.x || rex.b) {
-        if (!rex.r && !rex.x && !rex.b) {
-          fprintf(out_file, "REXW_NONE ");
-        } else {
-          if (rex.w) {
-            fprintf(out_file, "REXW_RXB ");
-          } else {
-            fprintf(out_file, "REX_RXB? ");
-          }
-        }
+      if (rex.w) {
+        fprintf(out_file, "REXW_RXB");
+      } else if (rex.w_is_unused && ! has_flag("norexw")) {
+        fprintf(out_file, "REX_WRXB?");
+      } else {
+        fprintf(out_file, "REX_RXB?");
       }
+      if (fwait) {
+        fprintf(out_file, ")");
+      }
+      fprintf(out_file, " ");
     }
 
     void print_third_byte(const std::string& third_byte) const {
@@ -2018,12 +2065,7 @@ namespace {
           ((opcodes.size() == 2) &&
            (opcodes[1].find('/') != opcodes[1].npos))) {
         if (opcodes[0].find('/') == opcodes[0].npos) {
-          if ((instruction_class == InstructionClass::kData16) &&
-              (opcodes[0] == "(0x91|0x92|0x93|0x94|0x95|0x96|0x97)")) {
-            fprintf(out_file, "(0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97)");
-          } else {
-            fprintf(out_file, "%s", opcodes[0].c_str());
-          }
+          fprintf(out_file, "%s", opcodes[0].c_str());
         }
       } else if ((opcodes.size() >= 3) &&
                  ((opcodes[0] == "0xc4") ||
@@ -2146,7 +2188,12 @@ namespace {
              operand_it != operands.end(); ++operand_it) {
           auto &operand = *operand_it;
           if (operand.enabled && operand.source == 'r') {
-            if (enabled(Actions::kParseX87Operands) || (operand.size != "7")) {
+            if (operand.size == "7") {
+              if (enabled(Actions::kParseX87Operands)) {
+                fprintf(out_file, " @operand%zd_from_opcode_x87",
+                                                                 operand_index);
+              }
+            } else {
               fprintf(out_file, " @operand%zd_from_opcode", operand_index);
             }
           }
@@ -2437,7 +2484,7 @@ namespace {
           { { InstructionClass::kDefault,       "v"     },      "imm32" },
           { { InstructionClass::kData16,        "v"     },      "imm16" },
           { { InstructionClass::kRexW,          "v"     },      "imm64" },
-          { { InstructionClass::kDefault,       "w"     },      "imm16" },
+          { { InstructionClass::kData16,        "w"     },      "imm16" },
           { { InstructionClass::kDefault,       "z"     },      "imm32" },
           { { InstructionClass::kData16,        "z"     },      "imm16" },
           { { InstructionClass::kRexW,          "z"     },      "imm32" }
@@ -2468,7 +2515,7 @@ namespace {
              const char *> jump_sizes {
           { { InstructionClass::kDefault,       "b"     },      "rel8"  },
           { { InstructionClass::kDefault,       "d"     },      "rel32" },
-          { { InstructionClass::kDefault,       "w"     },      "rel16" },
+          { { InstructionClass::kData16,        "w"     },      "rel16" },
           { { InstructionClass::kDefault,       "z"     },      "rel32" },
           { { InstructionClass::kData16,        "z"     },      "rel16" },
           { { InstructionClass::kRexW,          "z"     },      "rel32" },

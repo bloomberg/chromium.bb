@@ -79,8 +79,11 @@ struct DecodeState {
 
 void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                         struct instruction *instruction, void *userdata) {
-  const char *instruction_name;
-  unsigned char operands_count;
+  const char *instruction_name = instruction->name;
+  unsigned char operands_count = instruction->operands_count;
+  unsigned char rex_prefix = instruction->prefix.rex;
+  enum register_name rm_index = instruction->rm.index;
+  enum register_name rm_base = instruction->rm.base;
   const uint8_t *p;
   char delimeter = ' ';
   int print_rip = FALSE;
@@ -98,23 +101,99 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
      regular instruction then we must print all them.  This convoluted
      logic is not needed when we  don't print anything so decoder does
      not include it.  */
-  if ((end == begin + 1) && (begin[0] == 0x9b)) {
+  if (((end == begin + 1) && (begin[0] == 0x9b)) ||
+      ((end == begin + 2) &&
+                           ((begin[0] & 0xf0) == 0x40) && (begin[1] == 0x9b))) {
     if (!(((struct DecodeState *)userdata)->fwait)) {
       ((struct DecodeState *)userdata)->fwait = begin;
     }
     return;
   } else if (((struct DecodeState *)userdata)->fwait) {
-    if ((begin[0] < 0xd8) || (begin[0] > 0xdf)) {
+    if (((begin[0] < 0xd8) || (begin[0] > 0xdf)) &&
+        (((begin[0] & 0xf0) != 0x40) ||
+                                      (begin[1] < 0xd8) || (begin[1] > 0xdf))) {
       while ((((struct DecodeState *)userdata)->fwait) < begin) {
-        printf("%*lx:\t                   \tfwait\n",
+        printf("%*lx:\t%02x                   \tfwait\n",
           ((struct DecodeState *)userdata)->width,
           (long)((((struct DecodeState *)userdata)->fwait++) -
-                                   (((struct DecodeState *)userdata)->offset)));
+                                    (((struct DecodeState *)userdata)->offset)),
+          *((struct DecodeState *)userdata)->fwait);
       }
     } else {
-      begin = ((struct DecodeState *)userdata)->fwait;
+      /* fwait "prefix" can only include two 0x9b bytes or one rex byte - and
+       * then only if the instruction itself have no rex prefix.  */
+      int x9b_count = 0;
+      int x40_count = !!rex_prefix;
+      for (;;) {
+        if (begin == ((struct DecodeState *)userdata)->fwait)
+          break;
+        if ((begin[-1]) == 0x9b) {
+          if (x9b_count < 2) {
+            --begin;
+            ++x9b_count;
+            if ((begin[1] & 0xf0) == 0x40) {
+              break;
+            }
+          } else {
+            break;
+          }
+        } else if ((begin[-1] & 0xf0) == 0x40) {
+          if (x40_count >= 1) {
+            break;
+          }
+          --begin;
+          ++x40_count;
+          if (!rex_prefix) {
+            rex_prefix = *begin;
+            /* Bug-to-bug compatibility, heh... */
+            if ((rex_prefix & 0x01) && (rm_base <= REG_RDI))
+              rm_base |= REG_R8;
+            if (rex_prefix & 0x02) {
+              if (rm_index <= REG_RDI)
+                rm_index |= REG_R8;
+              else if (rm_index == REG_RIZ)
+                rm_index = REG_R12;
+            }
+          }
+        }
+      }
+      if (begin != ((struct DecodeState *)userdata)->fwait) {
+        while ((((struct DecodeState *)userdata)->fwait) < begin) {
+          printf("%*lx:\t%02x                   \tfwait\n",
+            ((struct DecodeState *)userdata)->width,
+            (long)((((struct DecodeState *)userdata)->fwait++) -
+                                    (((struct DecodeState *)userdata)->offset)),
+            *((struct DecodeState *)userdata)->fwait);
+        }
+      }
     }
     ((struct DecodeState *)userdata)->fwait = FALSE;
+  }
+  /* Bug-to-bug compatibility, heh...  Sometims %fs becomes %mm4 and %gs
+   * becomes %mm5, ugh.  */
+  if (!strcmp(instruction_name, "pushq  %fs")) {
+    if (rex_prefix == 0x41) instruction_name = "pushq  %mm4", rex_prefix = 0;
+    else if ((rex_prefix & 0x01) == 0x01) instruction_name = "pushq %mm4";
+    else if (rex_prefix) instruction_name = "pushq %fs";
+    if (rex_prefix & 0x01) ++maybe_rex_bits;
+  }
+  if (!strcmp(instruction_name, "pushq  %gs")) {
+    if (rex_prefix == 0x41) instruction_name = "pushq  %mm5", rex_prefix = 0;
+    else if ((rex_prefix & 0x01) == 0x01) instruction_name = "pushq %mm5";
+    else if (rex_prefix) instruction_name = "pushq %gs";
+    if (rex_prefix & 0x01) ++maybe_rex_bits;
+  }
+  if (!strcmp(instruction_name, "popq   %fs")) {
+    if (rex_prefix == 0x41) instruction_name = "popq   %mm4", rex_prefix = 0;
+    else if ((rex_prefix & 0x01) == 0x01) instruction_name = "popq %mm4";
+    else if (rex_prefix) instruction_name = "popq %fs";
+    if (rex_prefix & 0x01) ++maybe_rex_bits;
+  }
+  if (!strcmp(instruction_name, "popq   %gs")) {
+    if (rex_prefix == 0x41) instruction_name = "popq   %mm5", rex_prefix = 0;
+    else if ((rex_prefix & 0x01) == 0x01) instruction_name = "popq %mm5";
+    else if (rex_prefix) instruction_name = "popq %gs";
+    if (rex_prefix & 0x01) ++maybe_rex_bits;
   }
   printf("%*lx:\t", ((struct DecodeState *)userdata)->width,
                     (long)(begin - (((struct DecodeState *)userdata)->offset)));
@@ -126,8 +205,6 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
   }
   printf("\t");
-  instruction_name = instruction->name;
-  operands_count = instruction->operands_count;
   /* "cmppd" has two-operand mnemonic names for "imm8" equal to 0x0, ...0x7. */
   if (!strcmp(instruction_name, "cmppd")) {
     if (instruction->imm[0] < 0x08) {
@@ -380,6 +457,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
   }
   if (operands_count > 0) {
+    char rexw_counted = FALSE;
     show_name_suffix = TRUE;
     for (i=operands_count-1; i>=0; --i) {
       if (instruction->operands[i].name == JMP_TO) {
@@ -395,6 +473,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                 show_name_suffix = FALSE;
               } else {
                 show_name_suffix = 'q';
+                rex_bits += (rex_prefix & 0x08) >> 3;
+                rexw_counted = TRUE;
               }
               break;
             case OperandSize2bit:
@@ -532,7 +612,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           if (instruction->operands[i].type == OperandControlRegister) {
             if ((*begin == 0xf0) && !(instruction->prefix.lock)) {
               print_name("lock ");
-              if (!(instruction->prefix.rex & 0x04)) {
+              if (!(rex_prefix & 0x04)) {
                 instruction->operands[i].name -= 8;
                 --rex_bits;
               }
@@ -540,16 +620,50 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           }
         }
       } else if (instruction->operands[i].name == REG_RM) {
-        if ((instruction->rm.base >= REG_R8) &&
-            (instruction->rm.base <= REG_R15)) {
+        if ((rm_base >= REG_R8) &&
+            (rm_base <= REG_R15)) {
           ++rex_bits;
-        } else if ((instruction->rm.base == NO_REG) ||
-                   (instruction->rm.base == REG_RIP)) {
-          ++maybe_rex_bits;
+        } else if ((rm_base == NO_REG) ||
+                   (rm_base == REG_RIP)) {
+          if (strcmp(instruction_name, "movabs"))
+            ++maybe_rex_bits;
         }
-        if ((instruction->rm.index >= REG_R8) &&
-            (instruction->rm.index <= REG_R15)) {
+        if ((rm_index >= REG_R8) &&
+            (rm_index <= REG_R15)) {
           ++rex_bits;
+        }
+      }
+      if ((instruction->operands[i].type == OperandSize64bit) &&
+                                                                !rexw_counted) {
+        if (strcmp(instruction_name, "callq") &&
+            strcmp(instruction_name, "cmpxchg8b") &&
+            (strcmp(instruction_name, "extractps") ||
+             instruction->operands[i].name != REG_RM) &&
+            strcmp(instruction_name, "jmpq") &&
+            strcmp(instruction_name, "monitor") &&
+            strcmp(instruction_name, "movntq") &&
+            strcmp(instruction_name, "movhpd") &&
+            strcmp(instruction_name, "movhps") &&
+            strcmp(instruction_name, "movlpd") &&
+            strcmp(instruction_name, "movlps") &&
+            strcmp(instruction_name, "movntsd") &&
+            strcmp(instruction_name, "mwait") &&
+            strcmp(instruction_name, "pop") &&
+            strcmp(instruction_name, "push")) {
+          ++rex_bits;
+          rexw_counted = TRUE;
+        }
+        if ((operands_count == 2) &&
+            ((instruction->operands[1-i].type == OperandControlRegister) ||
+             (instruction->operands[1-i].type == OperandDebugRegister))) {
+          --rex_bits;
+        }
+      }
+      if ((instruction->operands[i].type == OperandSize128bit) &&
+                                                                !rexw_counted) {
+        if (!strcmp(instruction_name, "cmpxchg16b")) {
+          ++rex_bits;
+          rexw_counted = TRUE;
         }
       }
     }
@@ -603,7 +717,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       print_name("repz ");
     }
   }
-  if (instruction->prefix.rex == 0x40) {
+  if (rex_prefix == 0x40) {
     /* First argument of "rcl"/"rcr"/"rol"/"ror"/"sar"/"shl"/"shr"
        confuses objdump: it does not show it in this case.  */
     if ((!empty_rex_prefix_ok ||
@@ -629,7 +743,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       print_name("rex ");
     }
   }
-  if ((instruction->prefix.rex & 0x08) == 0x08) {
+  if ((rex_prefix & 0x08) == 0x08) {
     /* rex.W is ignored by "in"/"out", and "pop"/"push" commands.  */
     if ((!strcmp(instruction_name, "in")) ||
         (!strcmp(instruction_name, "ins")) ||
@@ -750,24 +864,70 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
        show_name_suffix = FALSE;
     }
   }
-  i = (instruction->prefix.rex & 0x01) +
-      ((instruction->prefix.rex & 0x02) >> 1) +
-      ((instruction->prefix.rex & 0x04) >> 2);
-  if (instruction->prefix.rex &&
+  if (rex_prefix & 0x08) {
+    /* rex.W is not shown for relative jumps with rel32 operand, but are
+       shown for relative jumps with rel8 operands.  */
+    if ((instruction->operands[0].type == OperandSize32bit) &&
+        (!strcmp(instruction_name, "ja") ||
+         !strcmp(instruction_name, "jae") ||
+         !strcmp(instruction_name, "jb") ||
+         !strcmp(instruction_name, "jbe") ||
+         !strcmp(instruction_name, "je") ||
+         !strcmp(instruction_name, "jg") ||
+         !strcmp(instruction_name, "jge") ||
+         !strcmp(instruction_name, "jl") ||
+         !strcmp(instruction_name, "jle") ||
+         !strcmp(instruction_name, "jne") ||
+         !strcmp(instruction_name, "jno") ||
+         !strcmp(instruction_name, "jnp") ||
+         !strcmp(instruction_name, "jns") ||
+         !strcmp(instruction_name, "jo") ||
+         !strcmp(instruction_name, "jp") ||
+         !strcmp(instruction_name, "js"))) {
+      ++rex_bits;
+    }
+    if (!strcmp(instruction_name, "cltq") ||
+        !strcmp(instruction_name, "cqto") ||
+        !strcmp(instruction_name, "data32 cltq") ||
+        !strcmp(instruction_name, "data32 cqto") ||
+        !strcmp(instruction_name, "data32 lcallq") ||
+        !strcmp(instruction_name, "data32 ljmpq") ||
+        !strcmp(instruction_name, "data32 popfq") ||
+        !strcmp(instruction_name, "data32 pushfq") ||
+        !strcmp(instruction_name, "fxrstor64") ||
+        !strcmp(instruction_name, "fxsave64") ||
+        !strcmp(instruction_name, "iretq") ||
+        !strcmp(instruction_name, "lretq") ||
+        !strcmp(instruction_name, "sysretq") ||
+        !strcmp(instruction_name, "xrstor64") ||
+        !strcmp(instruction_name, "xsave64") ||
+        !strcmp(instruction_name, "xsaveopt64")) {
+      ++rex_bits;
+    }
+  }
+  if (!strncmp(instruction_name, "data32 ", 7)) {
+    print_name("data32 ");
+    instruction_name += 7;
+  }
+  i = (rex_prefix & 0x01) +
+      ((rex_prefix & 0x02) >> 1) +
+      ((rex_prefix & 0x04) >> 2) +
+      ((rex_prefix & 0x08) >> 3);
+  if (rex_prefix &&
       !((i == rex_bits) ||
         (maybe_rex_bits &&
-         (instruction->prefix.rex & 0x01) && (i == rex_bits + 1)))) {
+         (rex_prefix & 0x01) && (i == rex_bits + 1)))) {
     print_name("rex.");
-    if (instruction->prefix.rex & 0x08) {
+    if (rex_prefix & 0x08) {
       print_name("W");
     }
-    if (instruction->prefix.rex & 0x04) {
+    if (rex_prefix & 0x04) {
       print_name("R");
     }
-    if (instruction->prefix.rex & 0x02) {
+    if (rex_prefix & 0x02) {
       print_name("X");
     }
-    if (instruction->prefix.rex & 0x01) {
+    if (rex_prefix & 0x01) {
       print_name("B");
     }
     print_name(" ");
@@ -808,6 +968,9 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
 #undef print_name
   if ((strcmp(instruction_name, "nop") || operands_count != 0) &&
       strcmp(instruction_name, "fwait") &&
+      strcmp(instruction_name, "rex.W nop") &&
+      strcmp(instruction_name, "nopw %cs:0x0(%eax,%eax,1)") &&
+      strcmp(instruction_name, "nopw %cs:0x0(%rax,%rax,1)") &&
       strcmp(instruction_name, "nopw   %cs:0x0(%eax,%eax,1)") &&
       strcmp(instruction_name, "nopw   %cs:0x0(%rax,%rax,1)") &&
       strcmp(instruction_name, "data32 nopw %cs:0x0(%eax,%eax,1)") &&
@@ -822,18 +985,26 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                      "data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
       strcmp(instruction_name,
                      "data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
-      strcmp(instruction_name,
-              "data32 data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
-      strcmp(instruction_name,
-              "data32 data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
       strcmp(instruction_name, "pop    %fs") &&
       strcmp(instruction_name, "pop    %gs") &&
+      strcmp(instruction_name, "popq %fs") &&
+      strcmp(instruction_name, "popq %gs") &&
+      strcmp(instruction_name, "popq %mm4") &&
+      strcmp(instruction_name, "popq %mm5") &&
       strcmp(instruction_name, "popq   %fs") &&
       strcmp(instruction_name, "popq   %gs") &&
+      strcmp(instruction_name, "popq   %mm4") &&
+      strcmp(instruction_name, "popq   %mm5") &&
       strcmp(instruction_name, "push   %fs") &&
       strcmp(instruction_name, "push   %gs") &&
+      strcmp(instruction_name, "pushq %fs") &&
+      strcmp(instruction_name, "pushq %gs") &&
+      strcmp(instruction_name, "pushq %mm4") &&
+      strcmp(instruction_name, "pushq %mm5") &&
       strcmp(instruction_name, "pushq  %fs") &&
-      strcmp(instruction_name, "pushq  %gs")) {
+      strcmp(instruction_name, "pushq  %gs") &&
+      strcmp(instruction_name, "pushq  %mm4") &&
+      strcmp(instruction_name, "pushq  %mm5")) {
     while (shown_name < 6) {
       printf(" ");
       ++shown_name;
@@ -845,6 +1016,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   for (i=operands_count-1; i>=0; --i) {
     printf("%c", delimeter);
     if ((!strcmp(instruction_name, "call")) ||
+        (!strcmp(instruction_name, "data32 lcallq")) ||
+        (!strcmp(instruction_name, "data32 ljmpq")) ||
         (!strcmp(instruction_name, "jmp")) ||
         (!strcmp(instruction_name, "lcall")) ||
         (!strcmp(instruction_name, "ljmp"))) {
@@ -950,7 +1123,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       }
       break;
       case REG_RSP: switch (operand_type) {
-        case OperandSize8bit: if (instruction->prefix.rex)
+        case OperandSize8bit: if (rex_prefix)
             printf("%%spl");
           else
             printf("%%ah");
@@ -973,7 +1146,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       }
       break;
       case REG_RBP: switch (operand_type) {
-        case OperandSize8bit: if (instruction->prefix.rex)
+        case OperandSize8bit: if (rex_prefix)
             printf("%%bpl");
           else
             printf("%%ch");
@@ -996,7 +1169,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       }
       break;
       case REG_RSI: switch (operand_type) {
-        case OperandSize8bit: if (instruction->prefix.rex)
+        case OperandSize8bit: if (rex_prefix)
             printf("%%sil");
           else
             printf("%%dh");
@@ -1018,7 +1191,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       }
       break;
       case REG_RDI: switch (operand_type) {
-        case OperandSize8bit: if (instruction->prefix.rex)
+        case OperandSize8bit: if (rex_prefix)
             printf("%%dil");
           else
             printf("%%bh");
@@ -1184,12 +1357,12 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           printf("0x%"NACL_PRIx64, instruction->rm.offset);
         }
         if (((struct DecodeState *)userdata)->ia32_mode) {
-          if ((instruction->rm.base != NO_REG) ||
-              (instruction->rm.index != NO_REG) ||
+          if ((rm_base != NO_REG) ||
+              (rm_index != NO_REG) ||
               (instruction->rm.scale != 0)) {
             printf("(");
           }
-          switch (instruction->rm.base) {
+          switch (rm_base) {
             case REG_RAX: printf("%%eax"); break;
             case REG_RCX: printf("%%ecx"); break;
             case REG_RDX: printf("%%edx"); break;
@@ -1220,7 +1393,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case JMP_TO:
               assert(FALSE);
           }
-          switch (instruction->rm.index) {
+          switch (rm_index) {
             case REG_RAX: printf(",%%eax,%d",1<<instruction->rm.scale); break;
             case REG_RCX: printf(",%%ecx,%d",1<<instruction->rm.scale); break;
             case REG_RDX: printf(",%%edx,%d",1<<instruction->rm.scale); break;
@@ -1229,7 +1402,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case REG_RBP: printf(",%%ebp,%d",1<<instruction->rm.scale); break;
             case REG_RSI: printf(",%%esi,%d",1<<instruction->rm.scale); break;
             case REG_RDI: printf(",%%edi,%d",1<<instruction->rm.scale); break;
-            case REG_RIZ: if ((instruction->rm.base != REG_RSP) ||
+            case REG_RIZ: if ((rm_base != REG_RSP) ||
                               (instruction->rm.scale != 0))
                 printf(",%%eiz,%d",1<<instruction->rm.scale);
               break;
@@ -1254,18 +1427,18 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case JMP_TO:
               assert(FALSE);
           }
-          if ((instruction->rm.base != NO_REG) ||
-              (instruction->rm.index != NO_REG) ||
+          if ((rm_base != NO_REG) ||
+              (rm_index != NO_REG) ||
               (instruction->rm.scale != 0)) {
             printf(")");
           }
         } else {
-          if ((instruction->rm.base != NO_REG) ||
-              (instruction->rm.index != REG_RIZ) ||
+          if ((rm_base != NO_REG) ||
+              (rm_index != REG_RIZ) ||
               (instruction->rm.scale != 0)) {
             printf("(");
           }
-          switch (instruction->rm.base) {
+          switch (rm_base) {
             case REG_RAX: printf("%%rax"); break;
             case REG_RCX: printf("%%rcx"); break;
             case REG_RDX: printf("%%rdx"); break;
@@ -1296,7 +1469,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case JMP_TO:
               assert(FALSE);
           }
-          switch (instruction->rm.index) {
+          switch (rm_index) {
             case REG_RAX: printf(",%%rax,%d",1<<instruction->rm.scale); break;
             case REG_RCX: printf(",%%rcx,%d",1<<instruction->rm.scale); break;
             case REG_RDX: printf(",%%rdx,%d",1<<instruction->rm.scale); break;
@@ -1313,9 +1486,9 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case REG_R13: printf(",%%r13,%d",1<<instruction->rm.scale); break;
             case REG_R14: printf(",%%r14,%d",1<<instruction->rm.scale); break;
             case REG_R15: printf(",%%r15,%d",1<<instruction->rm.scale); break;
-            case REG_RIZ: if (((instruction->rm.base != NO_REG) &&
-                               (instruction->rm.base != REG_RSP) &&
-                               (instruction->rm.base != REG_R12)) ||
+            case REG_RIZ: if (((rm_base != NO_REG) &&
+                               (rm_base != REG_RSP) &&
+                               (rm_base != REG_R12)) ||
                                (instruction->rm.scale != 0))
                 printf(",%%riz,%d",1<<instruction->rm.scale);
               break;
@@ -1332,8 +1505,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case JMP_TO:
               assert(FALSE);
           }
-          if ((instruction->rm.base != NO_REG) ||
-              (instruction->rm.index != REG_RIZ) ||
+          if ((rm_base != NO_REG) ||
+              (rm_index != REG_RIZ) ||
               (instruction->rm.scale != 0)) {
             printf(")");
           }

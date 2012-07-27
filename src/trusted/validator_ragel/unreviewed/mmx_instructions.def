@@ -27,11 +27,13 @@ femms, 0xf 0x0e, CPUFeature_3DNOW
 frstor Msr, 0xdd /4, CPUFeature_x87
 ######## FSAVE/FNSAVE ##########################################################
 fnsave Msr, 0xdd /6, CPUFeature_x87
-fsave Msr, 0x9b 0xdd /6, CPUFeature_x87
+fsave Msr, fwait 0xdd /6, CPUFeature_x87
 ######## FXRSTOR ###############################################################
-fxrstor Msx, 0x0f 0xae /1, nacl-forbidden CPUFeature_FXSR
+fxrstor Msx, 0x0f 0xae /1, norexw nacl-forbidden CPUFeature_FXSR
+fxrstor64 Msx, rexw 0x0f 0xae /1, amd64 nacl-forbidden CPUFeature_FXSR
 ######## FXSAVE ################################################################
-fxsave Msx, 0x0f 0xae /0, nacl-forbidden CPUFeature_FXSR
+fxsave Msx, 0x0f 0xae /0, norexw nacl-forbidden CPUFeature_FXSR
+fxsave64 Msx, rexw 0x0f 0xae /0, amd64 nacl-forbidden CPUFeature_FXSR
 ######## MASKMOVQ ##############################################################
 maskmovq Nq Pq, 0x0f 0xf7, CPUFeature_EMMX
 ######## MOVD ##################################################################
@@ -40,8 +42,8 @@ maskmovq Nq Pq, 0x0f 0xf7, CPUFeature_EMMX
 # movd Py Ey, 0x0f 0x7e, CPUFeature_MMX
 # Objdump names 64bit version not “movd” but movq”.  We describe 32bit version
 # and 64bit separately.
-movd Ed Pq, 0x0f 0x6e, CPUFeature_MMX
-movd Pq Ed, 0x0f 0x7e, CPUFeature_MMX
+movd Ed Pq, 0x0f 0x6e, norexw CPUFeature_MMX
+movd Pq Ed, 0x0f 0x7e, norexw CPUFeature_MMX
 movq Eq Pq, rexw 0x0f 0x6e, amd64 CPUFeature_MMX
 movq Pq Eq, rexw 0x0f 0x7e, amd64 CPUFeature_MMX
 ######## MOVNTQ ################################################################
@@ -98,7 +100,13 @@ pcmpgtd Qq Pq, 0x0f 0x66, CPUFeature_MMX
 ######## PCMPGTW ###############################################################
 pcmpgtw Qq Pq, 0x0f 0x65, CPUFeature_MMX
 ######## PEXTRW ################################################################
-pextrw Ib Nq Gd, 0x0f 0xc5, CPUFeature_EMMXSSE
+# This is description according to AMD/Intel manual.
+#  pextrw Ib Nq Gd, 0x0f 0xc5, CPUFeature_EMMXSSE
+# GNU as accepts this descriotion, but objdump decodes last operand as “Gy”.
+# Technically it makes no difference: “pextrw" only sets low 16bit of the third
+# operand thus the whole operation produces precisely idential output for “Gy”
+# and “Gd” operands.  We'll use objdump's description.
+pextrw Ib Nq Gy, 0x0f 0xc5, CPUFeature_EMMXSSE
 ######## PF2ID #################################################################
 pf2id Qq Pq, 0x0f 0x0f / 0x1d, CPUFeature_3DNOW
 ######## PF2IW #################################################################
@@ -142,8 +150,14 @@ pi2fd Qq Pq, 0x0f 0x0f / 0x0d, CPUFeature_3DNOW
 ######## PI2FW #################################################################
 pi2fw Qq Pq, 0x0f 0x0f / 0x0c, CPUFeature_E3DNOW
 ######## PINSTRW ###############################################################
-pinsrw Ib Mw Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
-pinsrw Ib Rd Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
+pinsrw Ib Mw Pq, 0x0f 0xc4 /m, CPUFeature_EMMXSSE
+# This is description according to AMD/Intel manual.
+#  pinsrw Ib Rd Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
+# GNU as accepts this descriotion, but objdump decodes last operand as “Gy”.
+# Technically it makes no difference: “pinsrw" only uses low 16bit of the second
+# operand thus the whole operation produces precisely idential output for “Gy”
+# and “Gd” operands.  We'll use objdump's description.
+pinsrw Ib Ry Pq, 0x0f 0xc4 /r, CPUFeature_EMMXSSE
 ######## PMADDWD ###############################################################
 pmaddwd Qq Pq, 0x0f 0xf5, CPUFeature_MMX
 ######## PMAXSW ################################################################
@@ -155,7 +169,13 @@ pminsw Qq Pq, 0x0f 0xea, CPUFeature_EMMXSSE
 ######## PMINUB ################################################################
 pminub Qq Pq, 0x0f 0xda, CPUFeature_EMMXSSE
 ######## PMOVMSKB ##############################################################
-pmovmskb Nq Gd, 0x0f 0xd7, CPUFeature_EMMXSSE
+# This is description according to AMD/Intel manual.
+#  pmovmskb Nq Gd, 0x0f 0xd7, CPUFeature_EMMXSSE
+# GNU as accepts this descriotion, but objdump decodes last operand as “Gy”.
+# Technically it makes no difference: “pmovmskb” clears everything except least
+# significant eight bits and this operation produces precisely idential output
+# for “Gy” and “Gd” operands.  We'll use objdump's description.
+pmovmskb Nq Gy, 0x0f 0xd7, CPUFeature_EMMXSSE
 ######## PMULHRW ###############################################################
 pmulhrw Qq Pq, 0x0f 0x0f / 0xb7, CPUFeature_3DNOW
 ######## PMULHUW ###############################################################

@@ -286,14 +286,9 @@
   # Remove special instructions which are only allowed in special cases.
   normal_instruction = one_instruction - special_instruction;
 
-  main := ((normal_instruction | special_instruction) >{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-        SET_REX_PREFIX(FALSE);
-        SET_VEX_PREFIX2(0xe0);
-        SET_VEX_PREFIX3(0x00);
-        operand_states = 0;
+  main := ((normal_instruction | special_instruction)
+     >{
+       BitmapSetBit(valid_targets, current_position - data);
      }
      @{
        if (errors_detected) {
@@ -304,6 +299,11 @@
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
+       SET_REX_PREFIX(FALSE);
+       SET_VEX_PREFIX2(0xe0);
+       SET_VEX_PREFIX3(0x00);
+       operand_states = 0;
      })*
     $err{
         process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
@@ -323,8 +323,6 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   uint8_t *jump_dests = BitmapAllocate(size);
 
   const uint8_t *current_position = data;
-  /* Start of the instruction being processed.  */
-  const uint8_t *instruction_start = current_position;
 
   uint8_t rex_prefix = FALSE;
   uint8_t vex_prefix2 = 0xe0;
@@ -350,6 +348,8 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   assert(size % kBundleSize == 0);
 
   while (current_position < data + size) {
+    /* Start of the instruction being processed.  */
+    const uint8_t *instruction_start = current_position;
     const uint8_t *end_of_bundle = current_position + kBundleSize;
     int current_state;
     uint8_t restricted_register = kNoRestrictedReg;

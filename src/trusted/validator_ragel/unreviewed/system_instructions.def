@@ -30,15 +30,16 @@ invlpg Mb, 0x0f 0x01 /7
 invlpga, 0x0f 0x01 0xdf, nacl-forbidden CPUFeature_SVM
 ######## IRET/IRETD/IRETQ ######################################################
 # Note: objdump always uses name iret in all modes: 16bit, 32bit, and 64bit
-iret, 0xcf, nacl-forbidden
+iret, 0xcf, norexw nacl-forbidden
+iretq, rexw 0xcf, amd64 nacl-forbidden
 ######## LAR ###################################################################
 lar Ew Gv, 0x0f 0x02
 ######## LGDT ##################################################################
-lgdtl Ms, 0x0f 0x00 /2, ia32 nacl-forbidden
-lgdt Ms, 0x0f 0x00 /2, amd64 nacl-forbidden
+lgdtl Ms, 0x0f 0x01 /2, ia32 nacl-forbidden
+lgdt Ms, 0x0f 0x01 /2, amd64 nacl-forbidden
 ######## LIDT ##################################################################
-lidtl Ms, 0x0f 0x00 /3, ia32 nacl-forbidden
-lidt Ms, 0x0f 0x00 /3, amd64 nacl-forbidden
+lidtl Ms, 0x0f 0x01 /3, ia32 nacl-forbidden
+lidt Ms, 0x0f 0x01 /3, amd64 nacl-forbidden
 ######## LLDT ##################################################################
 lldt Ew, 0x0f 0x00 /2, nacl-forbidden
 ######## LMSW ##################################################################
@@ -99,7 +100,8 @@ sysenter, 0x0f 0x34, nacl-forbidden CPUFeature_SEP
 ######## SYSEXIT ###############################################################
 sysexit, 0x0f 0x35, nacl-forbidden CPUFeature_SEP
 ######## SYSRET ################################################################
-sysret, 0x0f 0x07, nacl-forbidden
+sysret, 0x0f 0x07, norexw nacl-forbidden
+sysretq, rexw 0x0f 0x07, amd64 nacl-forbidden
 ######## UD2 ###################################################################
 ud2, 0x0f 0x0b
 ######## VERR ##################################################################

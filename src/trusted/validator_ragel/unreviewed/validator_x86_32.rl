@@ -68,11 +68,10 @@
      0x65 0x8b (0x05|0x0d|0x015|0x1d|0x25|0x2d|0x35|0x3d)
           (0x00|0x04) 0x00 0x00 0x00);           # mov %gs:0x0/0x4,%reg
 
-  main := ((one_instruction | special_instruction) >{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     })*
+  main := ((one_instruction | special_instruction)
+     >{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
      @{
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
@@ -82,7 +81,8 @@
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-     }
+       errors_detected = 0;
+     })*
     $err{
         process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
@@ -102,18 +102,18 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
   uint8_t *jump_dests = BitmapAllocate(size);
 
   const uint8_t *current_position = data;
-  /* Start of the instruction being processed.  */
-  const uint8_t *instruction_start = current_position;
 
   int result = 0;
 
   size_t i;
 
-  uint32_t errors_detected;
+  uint32_t errors_detected = 0;
 
   assert(size % kBundleSize == 0);
 
   while (current_position < data + size) {
+    /* Start of the instruction being processed.  */
+    const uint8_t *instruction_start = current_position;
     const uint8_t *end_of_bundle = current_position + kBundleSize;
     int current_state;
 

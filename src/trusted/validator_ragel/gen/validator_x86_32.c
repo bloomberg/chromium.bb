@@ -21,11 +21,11 @@
 
 
 
-static const int x86_64_decoder_start = 246;
-static const int x86_64_decoder_first_final = 246;
+static const int x86_64_decoder_start = 247;
+static const int x86_64_decoder_first_final = 247;
 static const int x86_64_decoder_error = 0;
 
-static const int x86_64_decoder_en_main = 246;
+static const int x86_64_decoder_en_main = 247;
 
 
 
@@ -38,18 +38,18 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
   uint8_t *jump_dests = BitmapAllocate(size);
 
   const uint8_t *current_position = data;
-  /* Start of the instruction being processed.  */
-  const uint8_t *instruction_start = current_position;
 
   int result = 0;
 
   size_t i;
 
-  uint32_t errors_detected;
+  uint32_t errors_detected = 0;
 
   assert(size % kBundleSize == 0);
 
   while (current_position < data + size) {
+    /* Start of the instruction being processed.  */
+    const uint8_t *instruction_start = current_position;
     const uint8_t *end_of_bundle = current_position + kBundleSize;
     int current_state;
 
@@ -74,8 +74,9 @@ tr0:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
+	goto st247;
 tr9:
 	{
     SET_DISP_TYPE(DISP32);
@@ -90,8 +91,9 @@ tr9:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
+	goto st247;
 tr10:
 	{
     SET_DISP_TYPE(DISP8);
@@ -106,8 +108,9 @@ tr10:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
+	goto st247;
 tr11:
 	{ }
 	{
@@ -119,8 +122,9 @@ tr11:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
+	goto st247;
 tr15:
 	{ }
 	{
@@ -132,8 +136,9 @@ tr15:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
+	goto st247;
 tr21:
 	{
     SET_CPU_FEATURE(CPUFeature_3DNOW);
@@ -147,8 +152,9 @@ tr21:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
+	goto st247;
 tr29:
 	{
     SET_CPU_FEATURE(CPUFeature_TSC);
@@ -162,8 +168,9 @@ tr29:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
+	goto st247;
 tr36:
 	{
     SET_CPU_FEATURE(CPUFeature_MMX);
@@ -177,9 +184,10 @@ tr36:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr48:
+	goto st247;
+tr49:
 	{
     SET_CPU_FEATURE(CPUFeature_MON);
   }
@@ -192,9 +200,10 @@ tr48:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr49:
+	goto st247;
+tr50:
 	{
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
@@ -207,9 +216,10 @@ tr49:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr50:
+	goto st247;
+tr51:
 	{
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
@@ -222,9 +232,10 @@ tr50:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr62:
+	goto st247;
+tr63:
 	{
     SET_CPU_FEATURE(CPUFeature_E3DNOW);
   }
@@ -237,9 +248,10 @@ tr62:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr68:
+	goto st247;
+tr69:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
@@ -252,9 +264,10 @@ tr68:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr89:
+	goto st247;
+tr90:
 	{
     rel32_operand(current_position + 1, data, jump_dests, size,
                   &errors_detected);
@@ -268,9 +281,10 @@ tr89:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr92:
+	goto st247;
+tr93:
 	{
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
@@ -283,9 +297,10 @@ tr92:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr101:
+	goto st247;
+tr102:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
@@ -298,9 +313,10 @@ tr101:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr102:
+	goto st247;
+tr103:
 	{
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
@@ -313,9 +329,10 @@ tr102:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr103:
+	goto st247;
+tr110:
 	{
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
@@ -328,9 +345,10 @@ tr103:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr111:
+	goto st247;
+tr118:
 	{
     rel8_operand(current_position + 1, data, jump_dests, size,
                  &errors_detected);
@@ -344,9 +362,10 @@ tr111:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr132:
+	goto st247;
+tr139:
 	{ }
 	{
        if (errors_detected) {
@@ -357,9 +376,10 @@ tr132:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr179:
+	goto st247;
+tr186:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -372,9 +392,10 @@ tr179:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr253:
+	goto st247;
+tr260:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -387,9 +408,10 @@ tr253:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr260:
+	goto st247;
+tr267:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -402,9 +424,10 @@ tr260:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr294:
+	goto st247;
+tr301:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -417,9 +440,10 @@ tr294:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr321:
+	goto st247;
+tr328:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -432,9 +456,10 @@ tr321:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr347:
+	goto st247;
+tr354:
 	{ }
 	{
        if (errors_detected) {
@@ -445,9 +470,10 @@ tr347:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr373:
+	goto st247;
+tr380:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
@@ -460,9 +486,10 @@ tr373:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr379:
+	goto st247;
+tr386:
 	{
     SET_CPU_FEATURE(CPUFeature_CMOVx87);
   }
@@ -475,9 +502,10 @@ tr379:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr399:
+	goto st247;
+tr406:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -490,9 +518,10 @@ tr399:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr407:
+	goto st247;
+tr414:
 	{
       BitmapClearBit(valid_targets, (current_position - data) - 1);
     }
@@ -505,13 +534,12 @@ tr407:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr421:
+	goto st247;
+tr428:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	{
        if (errors_detected) {
@@ -522,13 +550,12 @@ tr421:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-tr430:
+	goto st247;
+tr437:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
@@ -542,72 +569,72 @@ tr430:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st246;
-st246:
+	goto st247;
+st247:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof246;
-case 246:
+		goto _test_eof247;
+case 247:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
 		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
 		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
 		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
 		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
-		case 255u: goto tr455;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
+		case 255u: goto tr461;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
@@ -616,7 +643,7 @@ case 246:
 					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
 						goto tr19;
 				} else
-					goto tr415;
+					goto tr422;
 			} else if ( (*( current_position)) > 19u ) {
 				if ( (*( current_position)) < 24u ) {
 					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
@@ -625,29 +652,29 @@ case 246:
 					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
 						goto tr19;
 				} else
-					goto tr415;
+					goto tr422;
 			} else
-				goto tr415;
+				goto tr422;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 54u ) {
 				if ( (*( current_position)) > 39u ) {
 					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
+						goto tr422;
 				} else if ( (*( current_position)) >= 38u )
 					goto tr19;
 			} else if ( (*( current_position)) > 55u ) {
 				if ( (*( current_position)) < 96u ) {
 					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
+						goto tr422;
 				} else if ( (*( current_position)) > 111u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
+						goto tr433;
 				} else
 					goto tr19;
 			} else
 				goto tr19;
 		} else
-			goto tr415;
+			goto tr422;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 194u ) {
 			if ( (*( current_position)) < 160u ) {
@@ -659,25 +686,25 @@ case 246:
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) < 184u ) {
 					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
+						goto tr423;
 				} else if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
+						goto tr439;
 				} else
-					goto tr417;
+					goto tr424;
 			} else
-				goto tr431;
+				goto tr438;
 		} else if ( (*( current_position)) > 195u ) {
 			if ( (*( current_position)) < 212u ) {
 				if ( (*( current_position)) > 207u ) {
 					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
 					goto tr19;
 			} else if ( (*( current_position)) > 231u ) {
 				if ( (*( current_position)) < 234u ) {
 					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
+						goto tr454;
 				} else if ( (*( current_position)) > 241u ) {
 					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
 						goto tr19;
@@ -688,8 +715,8 @@ case 246:
 		} else
 			goto tr19;
 	} else
-		goto tr415;
-	goto tr421;
+		goto tr422;
+	goto tr428;
 tr23:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
@@ -710,49 +737,17 @@ tr32:
     SET_CPU_FEATURE(CPUFeature_MMX);
   }
 	goto st1;
-tr45:
+tr46:
 	{
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st1;
-tr135:
+tr142:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
 	{
     SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
-	goto st1;
-tr144:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE3);
-  }
-	goto st1;
-tr147:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSSE3);
-  }
-	goto st1;
-tr148:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
-	goto st1;
-tr150:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE42);
   }
 	goto st1;
 tr151:
@@ -760,10 +755,42 @@ tr151:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
+    SET_CPU_FEATURE(CPUFeature_SSE3);
+  }
+	goto st1;
+tr154:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
+    SET_CPU_FEATURE(CPUFeature_SSSE3);
+  }
+	goto st1;
+tr155:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st1;
+tr157:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE42);
+  }
+	goto st1;
+tr158:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
     SET_CPU_FEATURE(CPUFeature_AES);
   }
 	goto st1;
-tr201:
+tr208:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -771,7 +798,7 @@ tr201:
     SET_CPU_FEATURE(CPUFeature_SSE42);
   }
 	goto st1;
-tr203:
+tr210:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -779,7 +806,7 @@ tr203:
     SET_CPU_FEATURE(CPUFeature_POPCNT);
   }
 	goto st1;
-tr204:
+tr211:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -787,7 +814,7 @@ tr204:
     SET_CPU_FEATURE(CPUFeature_TZCNT);
   }
 	goto st1;
-tr205:
+tr212:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -795,50 +822,34 @@ tr205:
     SET_CPU_FEATURE(CPUFeature_LZCNT);
   }
 	goto st1;
-tr252:
+tr259:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st1;
-tr319:
+tr326:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	goto st1;
-tr291:
+tr298:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st1;
-tr327:
+tr334:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA);
   }
 	goto st1;
-tr328:
+tr335:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st1;
-tr329:
+tr336:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
-  }
-	goto st1;
-tr385:
-	{
-    SET_REPNZ_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
-	goto st1;
-tr386:
-	{
-    SET_REPNZ_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE3);
   }
 	goto st1;
 tr392:
@@ -846,10 +857,26 @@ tr392:
     SET_REPNZ_PREFIX(FALSE);
   }
 	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st1;
+tr393:
+	{
+    SET_REPNZ_PREFIX(FALSE);
+  }
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE3);
+  }
+	goto st1;
+tr399:
+	{
+    SET_REPNZ_PREFIX(FALSE);
+  }
+	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st1;
-tr400:
+tr407:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -857,7 +884,7 @@ tr400:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st1;
-tr401:
+tr408:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -865,7 +892,7 @@ tr401:
     SET_CPU_FEATURE(CPUFeature_SSE3);
   }
 	goto st1;
-tr403:
+tr410:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -873,11 +900,9 @@ tr403:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st1;
-tr415:
+tr422:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st1;
 st1:
@@ -924,47 +949,47 @@ case 1:
 	} else if ( (*( current_position)) >= 64u )
 		goto st7;
 	goto tr0;
-tr69:
+tr70:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st2;
-tr51:
+tr52:
 	{
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
 	goto st2;
-tr90:
+tr91:
 	{
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
 	goto st2;
-tr93:
+tr94:
 	{
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
 	goto st2;
-tr104:
+tr111:
 	{
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
 	goto st2;
-tr254:
+tr261:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	goto st2;
-tr322:
+tr329:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	goto st2;
-tr295:
+tr302:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st2;
-tr374:
+tr381:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
@@ -1008,56 +1033,54 @@ case 2:
 		case 253u: goto st3;
 	}
 	goto tr0;
-tr70:
+tr71:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st3;
-tr52:
+tr53:
 	{
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
 	goto st3;
-tr91:
+tr92:
 	{
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
 	goto st3;
-tr94:
+tr95:
 	{
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
 	goto st3;
-tr105:
+tr112:
 	{
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
 	goto st3;
-tr255:
+tr262:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	goto st3;
-tr323:
+tr330:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	goto st3;
-tr296:
+tr303:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st3;
-tr375:
+tr382:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	goto st3;
-tr431:
+tr438:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st3;
 st3:
@@ -1080,47 +1103,47 @@ st6:
 		goto _test_eof6;
 case 6:
 	goto tr9;
-tr71:
+tr72:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st7;
-tr53:
+tr54:
 	{
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
 	goto st7;
-tr95:
+tr96:
 	{
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
 	goto st7;
-tr97:
+tr98:
 	{
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
 	goto st7;
-tr106:
+tr113:
 	{
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
 	goto st7;
-tr256:
+tr263:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	goto st7;
-tr324:
+tr331:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	goto st7;
-tr297:
+tr304:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st7;
-tr376:
+tr383:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
@@ -1130,47 +1153,47 @@ st7:
 		goto _test_eof7;
 case 7:
 	goto tr10;
-tr72:
+tr73:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st8;
-tr54:
+tr55:
 	{
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
 	goto st8;
-tr96:
+tr97:
 	{
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
 	goto st8;
-tr98:
+tr99:
 	{
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
 	goto st8;
-tr107:
+tr114:
 	{
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
 	goto st8;
-tr257:
+tr264:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	goto st8;
-tr325:
+tr332:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	goto st8;
-tr298:
+tr305:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st8;
-tr377:
+tr384:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
@@ -1180,47 +1203,47 @@ st8:
 		goto _test_eof8;
 case 8:
 	goto st7;
-tr73:
+tr74:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st9;
-tr55:
+tr56:
 	{
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
 	goto st9;
-tr99:
+tr100:
 	{
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
 	goto st9;
-tr100:
+tr101:
 	{
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
 	goto st9;
-tr108:
+tr115:
 	{
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
 	goto st9;
-tr258:
+tr265:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	goto st9;
-tr326:
+tr333:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	goto st9;
-tr299:
+tr306:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st9;
-tr378:
+tr385:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
@@ -1230,24 +1253,29 @@ st9:
 		goto _test_eof9;
 case 9:
 	goto st3;
-tr85:
+tr86:
 	{
     SET_CPU_FEATURE(CPUFeature_MMX);
   }
 	goto st10;
-tr83:
+tr104:
+	{
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
+  }
+	goto st10;
+tr84:
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
 	goto st10;
-tr84:
+tr85:
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
 	goto st10;
-tr165:
+tr172:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -1255,7 +1283,7 @@ tr165:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st10;
-tr159:
+tr166:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -1263,7 +1291,7 @@ tr159:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st10;
-tr166:
+tr173:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -1271,22 +1299,20 @@ tr166:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st10;
-tr302:
+tr309:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st10;
-tr372:
+tr379:
 	{ }
 	goto st10;
-tr396:
+tr403:
 	{ }
 	goto st10;
-tr416:
+tr423:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st10;
 st10:
@@ -1294,28 +1320,26 @@ st10:
 		goto _test_eof10;
 case 10:
 	goto tr11;
-tr215:
+tr222:
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
 	goto st11;
-tr216:
+tr223:
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
 	goto st11;
-tr264:
+tr271:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
 	goto st11;
-tr417:
+tr424:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st11;
 st11:
@@ -1348,11 +1372,9 @@ tr19:
 st0:
 ( current_state) = 0;
 	goto _out;
-tr418:
+tr425:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st15;
 st15:
@@ -1384,21 +1406,21 @@ case 15:
 		case 172u: goto st34;
 		case 174u: goto st49;
 		case 195u: goto tr41;
-		case 196u: goto tr33;
-		case 197u: goto tr42;
-		case 199u: goto st51;
+		case 196u: goto st50;
+		case 197u: goto tr43;
+		case 199u: goto st52;
 		case 212u: goto tr28;
-		case 215u: goto tr44;
-		case 218u: goto tr45;
-		case 222u: goto tr45;
-		case 224u: goto tr45;
+		case 215u: goto tr45;
+		case 218u: goto tr46;
+		case 222u: goto tr46;
+		case 224u: goto tr46;
 		case 229u: goto tr32;
-		case 231u: goto tr46;
-		case 234u: goto tr45;
-		case 238u: goto tr45;
+		case 231u: goto tr47;
+		case 234u: goto tr46;
+		case 238u: goto tr46;
 		case 244u: goto tr28;
-		case 246u: goto tr45;
-		case 247u: goto tr47;
+		case 246u: goto tr46;
+		case 247u: goto tr48;
 		case 251u: goto tr28;
 	}
 	if ( (*( current_position)) < 116u ) {
@@ -1466,7 +1488,7 @@ case 15:
 			} else if ( (*( current_position)) > 226u ) {
 				if ( (*( current_position)) < 232u ) {
 					if ( 227u <= (*( current_position)) && (*( current_position)) <= 228u )
-						goto tr45;
+						goto tr46;
 				} else if ( (*( current_position)) > 239u ) {
 					if ( 241u <= (*( current_position)) && (*( current_position)) <= 254u )
 						goto tr32;
@@ -1542,7 +1564,7 @@ case 17:
 		case 164u: goto st9;
 		case 180u: goto st9;
 		case 188u: goto st9;
-		case 208u: goto tr49;
+		case 208u: goto tr50;
 	}
 	if ( (*( current_position)) < 160u ) {
 		if ( (*( current_position)) < 48u ) {
@@ -1567,7 +1589,7 @@ case 17:
 			} else if ( (*( current_position)) >= 224u )
 				goto tr0;
 		} else
-			goto tr48;
+			goto tr49;
 	} else
 		goto st3;
 	goto tr19;
@@ -1576,23 +1598,23 @@ st18:
 		goto _test_eof18;
 case 18:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr51;
-		case 5u: goto tr52;
-		case 12u: goto tr51;
-		case 13u: goto tr52;
-		case 68u: goto tr54;
-		case 76u: goto tr54;
-		case 132u: goto tr55;
-		case 140u: goto tr55;
+		case 4u: goto tr52;
+		case 5u: goto tr53;
+		case 12u: goto tr52;
+		case 13u: goto tr53;
+		case 68u: goto tr55;
+		case 76u: goto tr55;
+		case 132u: goto tr56;
+		case 140u: goto tr56;
 	}
 	if ( (*( current_position)) < 64u ) {
 		if ( (*( current_position)) <= 15u )
-			goto tr50;
+			goto tr51;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-			goto tr52;
+			goto tr53;
 	} else
-		goto tr53;
+		goto tr54;
 	goto tr19;
 st19:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1638,13 +1660,13 @@ case 19:
 	} else if ( (*( current_position)) >= 64u )
 		goto st26;
 	goto st20;
-tr66:
+tr67:
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
 	goto st20;
-tr67:
+tr68:
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
@@ -1655,12 +1677,12 @@ st20:
 		goto _test_eof20;
 case 20:
 	switch( (*( current_position)) ) {
-		case 12u: goto tr62;
+		case 12u: goto tr63;
 		case 13u: goto tr21;
-		case 28u: goto tr62;
+		case 28u: goto tr63;
 		case 29u: goto tr21;
-		case 138u: goto tr62;
-		case 142u: goto tr62;
+		case 138u: goto tr63;
+		case 142u: goto tr63;
 		case 144u: goto tr21;
 		case 148u: goto tr21;
 		case 154u: goto tr21;
@@ -1671,7 +1693,7 @@ case 20:
 		case 174u: goto tr21;
 		case 176u: goto tr21;
 		case 180u: goto tr21;
-		case 187u: goto tr62;
+		case 187u: goto tr63;
 		case 191u: goto tr21;
 	}
 	if ( (*( current_position)) < 166u ) {
@@ -1741,12 +1763,12 @@ st25:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof25;
 case 25:
-	goto tr66;
+	goto tr67;
 st26:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof26;
 case 26:
-	goto tr67;
+	goto tr68;
 st27:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof27;
@@ -1762,45 +1784,45 @@ st29:
 		goto _test_eof29;
 case 29:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr69;
-		case 5u: goto tr70;
-		case 12u: goto tr69;
-		case 13u: goto tr70;
-		case 20u: goto tr69;
-		case 21u: goto tr70;
-		case 28u: goto tr69;
-		case 29u: goto tr70;
-		case 36u: goto tr69;
-		case 37u: goto tr70;
-		case 44u: goto tr69;
-		case 45u: goto tr70;
-		case 52u: goto tr69;
-		case 53u: goto tr70;
-		case 60u: goto tr69;
-		case 61u: goto tr70;
-		case 68u: goto tr72;
-		case 76u: goto tr72;
-		case 84u: goto tr72;
-		case 92u: goto tr72;
-		case 100u: goto tr72;
-		case 108u: goto tr72;
-		case 116u: goto tr72;
-		case 124u: goto tr72;
-		case 132u: goto tr73;
-		case 140u: goto tr73;
-		case 148u: goto tr73;
-		case 156u: goto tr73;
-		case 164u: goto tr73;
-		case 172u: goto tr73;
-		case 180u: goto tr73;
-		case 188u: goto tr73;
+		case 4u: goto tr70;
+		case 5u: goto tr71;
+		case 12u: goto tr70;
+		case 13u: goto tr71;
+		case 20u: goto tr70;
+		case 21u: goto tr71;
+		case 28u: goto tr70;
+		case 29u: goto tr71;
+		case 36u: goto tr70;
+		case 37u: goto tr71;
+		case 44u: goto tr70;
+		case 45u: goto tr71;
+		case 52u: goto tr70;
+		case 53u: goto tr71;
+		case 60u: goto tr70;
+		case 61u: goto tr71;
+		case 68u: goto tr73;
+		case 76u: goto tr73;
+		case 84u: goto tr73;
+		case 92u: goto tr73;
+		case 100u: goto tr73;
+		case 108u: goto tr73;
+		case 116u: goto tr73;
+		case 124u: goto tr73;
+		case 132u: goto tr74;
+		case 140u: goto tr74;
+		case 148u: goto tr74;
+		case 156u: goto tr74;
+		case 164u: goto tr74;
+		case 172u: goto tr74;
+		case 180u: goto tr74;
+		case 188u: goto tr74;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr70;
+			goto tr71;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr71;
-	goto tr68;
+		goto tr72;
+	goto tr69;
 tr25:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
@@ -1811,12 +1833,12 @@ tr41:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st30;
-tr46:
+tr47:
 	{
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st30;
-tr136:
+tr143:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -1824,7 +1846,7 @@ tr136:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st30;
-tr149:
+tr156:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -1832,12 +1854,12 @@ tr149:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st30;
-tr292:
+tr299:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st30;
-tr394:
+tr401:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -1845,7 +1867,7 @@ tr394:
     SET_CPU_FEATURE(CPUFeature_SSE3);
   }
 	goto st30;
-tr387:
+tr394:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -1853,7 +1875,7 @@ tr387:
     SET_CPU_FEATURE(CPUFeature_SSE4A);
   }
 	goto st30;
-tr402:
+tr409:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -1861,11 +1883,9 @@ tr402:
     SET_CPU_FEATURE(CPUFeature_SSE4A);
   }
 	goto st30;
-tr428:
+tr435:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st30;
 st30:
@@ -1989,17 +2009,17 @@ tr31:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st33;
-tr44:
+tr45:
 	{
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st33;
-tr47:
+tr48:
 	{
     SET_CPU_FEATURE(CPUFeature_EMMX);
   }
 	goto st33;
-tr139:
+tr146:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -2007,7 +2027,7 @@ tr139:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st33;
-tr143:
+tr150:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -2015,12 +2035,12 @@ tr143:
     SET_CPU_FEATURE(CPUFeature_SSE4A);
   }
 	goto st33;
-tr303:
+tr310:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st33;
-tr393:
+tr400:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -2028,7 +2048,7 @@ tr393:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st33;
-tr391:
+tr398:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -2036,7 +2056,7 @@ tr391:
     SET_CPU_FEATURE(CPUFeature_SSE4A);
   }
 	goto st33;
-tr406:
+tr413:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -2061,7 +2081,7 @@ tr33:
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st34;
-tr140:
+tr147:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -2069,7 +2089,7 @@ tr140:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st34;
-tr153:
+tr160:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -2077,7 +2097,7 @@ tr153:
     SET_CPU_FEATURE(CPUFeature_SSSE3);
   }
 	goto st34;
-tr152:
+tr159:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -2085,7 +2105,7 @@ tr152:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st34;
-tr157:
+tr164:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -2093,7 +2113,7 @@ tr157:
     SET_CPU_FEATURE(CPUFeature_SSE42);
   }
 	goto st34;
-tr158:
+tr165:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -2101,7 +2121,7 @@ tr158:
     SET_CPU_FEATURE(CPUFeature_AES);
   }
 	goto st34;
-tr156:
+tr163:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -2109,32 +2129,32 @@ tr156:
     SET_CPU_FEATURE(CPUFeature_CLMUL);
   }
 	goto st34;
-tr234:
+tr241:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st34;
-tr293:
+tr300:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st34;
-tr340:
+tr347:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st34;
-tr354:
+tr361:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
 	goto st34;
-tr336:
+tr343:
 	{
     SET_CPU_FEATURE(CPUFeature_CLMULAVX);
   }
 	goto st34;
-tr389:
+tr396:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -2142,7 +2162,7 @@ tr389:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st34;
-tr405:
+tr412:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -2150,7 +2170,7 @@ tr405:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st34;
-tr404:
+tr411:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -2158,11 +2178,9 @@ tr404:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st34;
-tr425:
+tr432:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st34;
 st34:
@@ -2209,12 +2227,9 @@ case 34:
 	} else if ( (*( current_position)) >= 64u )
 		goto st40;
 	goto st10;
-tr160:
+tr105:
 	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st35;
 tr167:
@@ -2222,10 +2237,18 @@ tr167:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st35;
+tr174:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st35;
-tr307:
+tr314:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -2269,12 +2292,9 @@ case 35:
 		case 253u: goto st36;
 	}
 	goto st10;
-tr161:
+tr106:
 	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st36;
 tr168:
@@ -2282,10 +2302,18 @@ tr168:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st36;
+tr175:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st36;
-tr308:
+tr315:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -2309,13 +2337,10 @@ st39:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof39;
 case 39:
-	goto tr83;
-tr162:
+	goto tr84;
+tr107:
 	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st40;
 tr169:
@@ -2323,10 +2348,18 @@ tr169:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st40;
+tr176:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st40;
-tr309:
+tr316:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -2335,13 +2368,10 @@ st40:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof40;
 case 40:
-	goto tr84;
-tr163:
+	goto tr85;
+tr108:
 	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st41;
 tr170:
@@ -2349,10 +2379,18 @@ tr170:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st41;
+tr177:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st41;
-tr310:
+tr317:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -2362,12 +2400,9 @@ st41:
 		goto _test_eof41;
 case 41:
 	goto st40;
-tr164:
+tr109:
 	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st42;
 tr171:
@@ -2375,10 +2410,18 @@ tr171:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st42;
+tr178:
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st42;
-tr311:
+tr318:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -2394,12 +2437,12 @@ st43:
 case 43:
 	if ( (*( current_position)) < 224u ) {
 		if ( 208u <= (*( current_position)) && (*( current_position)) <= 215u )
-			goto tr85;
+			goto tr86;
 	} else if ( (*( current_position)) > 231u ) {
 		if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-			goto tr85;
+			goto tr86;
 	} else
-		goto tr85;
+		goto tr86;
 	goto tr19;
 st44:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2407,15 +2450,13 @@ st44:
 case 44:
 	if ( (*( current_position)) > 215u ) {
 		if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-			goto tr85;
+			goto tr86;
 	} else if ( (*( current_position)) >= 208u )
-		goto tr85;
+		goto tr86;
 	goto tr19;
-tr448:
+tr454:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st45;
 st45:
@@ -2437,188 +2478,209 @@ st48:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof48;
 case 48:
-	goto tr89;
+	goto tr90;
 st49:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof49;
 case 49:
 	switch( (*( current_position)) ) {
-		case 20u: goto tr69;
-		case 21u: goto tr70;
-		case 28u: goto tr69;
-		case 29u: goto tr70;
-		case 36u: goto tr90;
-		case 37u: goto tr91;
-		case 44u: goto tr90;
-		case 45u: goto tr91;
-		case 52u: goto tr90;
-		case 53u: goto tr91;
-		case 60u: goto tr93;
-		case 61u: goto tr94;
-		case 84u: goto tr72;
-		case 92u: goto tr72;
-		case 100u: goto tr96;
-		case 108u: goto tr96;
-		case 116u: goto tr96;
-		case 124u: goto tr98;
-		case 148u: goto tr73;
-		case 156u: goto tr73;
-		case 164u: goto tr99;
-		case 172u: goto tr99;
-		case 180u: goto tr99;
-		case 188u: goto tr100;
-		case 232u: goto tr101;
-		case 240u: goto tr101;
-		case 248u: goto tr102;
+		case 20u: goto tr70;
+		case 21u: goto tr71;
+		case 28u: goto tr70;
+		case 29u: goto tr71;
+		case 36u: goto tr91;
+		case 37u: goto tr92;
+		case 44u: goto tr91;
+		case 45u: goto tr92;
+		case 52u: goto tr91;
+		case 53u: goto tr92;
+		case 60u: goto tr94;
+		case 61u: goto tr95;
+		case 84u: goto tr73;
+		case 92u: goto tr73;
+		case 100u: goto tr97;
+		case 108u: goto tr97;
+		case 116u: goto tr97;
+		case 124u: goto tr99;
+		case 148u: goto tr74;
+		case 156u: goto tr74;
+		case 164u: goto tr100;
+		case 172u: goto tr100;
+		case 180u: goto tr100;
+		case 188u: goto tr101;
+		case 232u: goto tr102;
+		case 240u: goto tr102;
+		case 248u: goto tr103;
 	}
 	if ( (*( current_position)) < 96u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( 16u <= (*( current_position)) && (*( current_position)) <= 31u )
-				goto tr68;
+				goto tr69;
 		} else if ( (*( current_position)) > 55u ) {
 			if ( (*( current_position)) > 63u ) {
 				if ( 80u <= (*( current_position)) && (*( current_position)) <= 95u )
-					goto tr71;
+					goto tr72;
 			} else if ( (*( current_position)) >= 56u )
-				goto tr92;
+				goto tr93;
 		} else
-			goto tr49;
+			goto tr50;
 	} else if ( (*( current_position)) > 119u ) {
 		if ( (*( current_position)) < 144u ) {
 			if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
-				goto tr97;
+				goto tr98;
 		} else if ( (*( current_position)) > 159u ) {
 			if ( (*( current_position)) > 183u ) {
 				if ( 184u <= (*( current_position)) && (*( current_position)) <= 191u )
-					goto tr94;
+					goto tr95;
 			} else if ( (*( current_position)) >= 160u )
-				goto tr91;
+				goto tr92;
 		} else
-			goto tr70;
+			goto tr71;
 	} else
-		goto tr95;
+		goto tr96;
 	goto tr19;
-tr42:
+st50:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof50;
+case 50:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr105;
+		case 5u: goto tr106;
+		case 12u: goto tr105;
+		case 13u: goto tr106;
+		case 20u: goto tr105;
+		case 21u: goto tr106;
+		case 28u: goto tr105;
+		case 29u: goto tr106;
+		case 36u: goto tr105;
+		case 37u: goto tr106;
+		case 44u: goto tr105;
+		case 45u: goto tr106;
+		case 52u: goto tr105;
+		case 53u: goto tr106;
+		case 60u: goto tr105;
+		case 61u: goto tr106;
+		case 68u: goto tr108;
+		case 76u: goto tr108;
+		case 84u: goto tr108;
+		case 92u: goto tr108;
+		case 100u: goto tr108;
+		case 108u: goto tr108;
+		case 116u: goto tr108;
+		case 124u: goto tr108;
+		case 132u: goto tr109;
+		case 140u: goto tr109;
+		case 148u: goto tr109;
+		case 156u: goto tr109;
+		case 164u: goto tr109;
+		case 172u: goto tr109;
+		case 180u: goto tr109;
+		case 188u: goto tr109;
+	}
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr106;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr107;
+	goto tr104;
+tr43:
 	{
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
-	goto st50;
-tr146:
+	goto st51;
+tr153:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
 	{
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
-	goto st50;
-tr306:
+	goto st51;
+tr313:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
-	goto st50;
-st50:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof50;
-case 50:
-	if ( 192u <= (*( current_position)) )
-		goto st10;
-	goto tr19;
+	goto st51;
 st51:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof51;
 case 51:
-	switch( (*( current_position)) ) {
-		case 12u: goto tr104;
-		case 13u: goto tr105;
-		case 76u: goto tr107;
-		case 140u: goto tr108;
-	}
-	if ( (*( current_position)) < 72u ) {
-		if ( 8u <= (*( current_position)) && (*( current_position)) <= 15u )
-			goto tr103;
-	} else if ( (*( current_position)) > 79u ) {
-		if ( 136u <= (*( current_position)) && (*( current_position)) <= 143u )
-			goto tr105;
-	} else
-		goto tr106;
+	if ( 192u <= (*( current_position)) )
+		goto st10;
 	goto tr19;
-tr419:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	{
-    SET_BRANCH_NOT_TAKEN(TRUE);
-  }
-	goto st52;
-tr420:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	{
-    SET_BRANCH_TAKEN(TRUE);
-  }
-	goto st52;
 st52:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof52;
 case 52:
-	if ( (*( current_position)) == 15u )
-		goto st53;
-	if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-		goto st54;
+	switch( (*( current_position)) ) {
+		case 12u: goto tr111;
+		case 13u: goto tr112;
+		case 76u: goto tr114;
+		case 140u: goto tr115;
+	}
+	if ( (*( current_position)) < 72u ) {
+		if ( 8u <= (*( current_position)) && (*( current_position)) <= 15u )
+			goto tr110;
+	} else if ( (*( current_position)) > 79u ) {
+		if ( 136u <= (*( current_position)) && (*( current_position)) <= 143u )
+			goto tr112;
+	} else
+		goto tr113;
 	goto tr19;
+tr426:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	{
+    SET_BRANCH_NOT_TAKEN(TRUE);
+  }
+	goto st53;
+tr427:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	{
+    SET_BRANCH_TAKEN(TRUE);
+  }
+	goto st53;
 st53:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof53;
 case 53:
-	if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-		goto st45;
+	if ( (*( current_position)) == 15u )
+		goto st54;
+	if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+		goto st55;
 	goto tr19;
-tr426:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st54;
 st54:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof54;
 case 54:
-	goto tr111;
-tr422:
+	if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+		goto st45;
+	goto tr19;
+tr433:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st55;
 st55:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof55;
 case 55:
-	switch( (*( current_position)) ) {
-		case 139u: goto st56;
-		case 161u: goto st57;
-	}
-	goto tr19;
+	goto tr118;
+tr429:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st56;
 st56:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof56;
 case 56:
 	switch( (*( current_position)) ) {
-		case 5u: goto st57;
-		case 13u: goto st57;
-		case 21u: goto st57;
-		case 29u: goto st57;
-		case 37u: goto st57;
-		case 45u: goto st57;
-		case 53u: goto st57;
-		case 61u: goto st57;
+		case 139u: goto st57;
+		case 161u: goto st58;
 	}
 	goto tr19;
 st57:
@@ -2626,16 +2688,24 @@ st57:
 		goto _test_eof57;
 case 57:
 	switch( (*( current_position)) ) {
-		case 0u: goto st58;
-		case 4u: goto st58;
+		case 5u: goto st58;
+		case 13u: goto st58;
+		case 21u: goto st58;
+		case 29u: goto st58;
+		case 37u: goto st58;
+		case 45u: goto st58;
+		case 53u: goto st58;
+		case 61u: goto st58;
 	}
 	goto tr19;
 st58:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof58;
 case 58:
-	if ( (*( current_position)) == 0u )
-		goto st59;
+	switch( (*( current_position)) ) {
+		case 0u: goto st59;
+		case 4u: goto st59;
+	}
 	goto tr19;
 st59:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2649,54 +2719,59 @@ st60:
 		goto _test_eof60;
 case 60:
 	if ( (*( current_position)) == 0u )
-		goto tr0;
+		goto st61;
 	goto tr19;
-tr423:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st61;
 st61:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof61;
 case 61:
+	if ( (*( current_position)) == 0u )
+		goto tr0;
+	goto tr19;
+tr430:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	{
+    SET_DATA16_PREFIX(TRUE);
+  }
+	goto st62;
+st62:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof62;
+case 62:
 	switch( (*( current_position)) ) {
 		case 1u: goto st1;
 		case 3u: goto st1;
-		case 5u: goto st62;
+		case 5u: goto st63;
 		case 9u: goto st1;
 		case 11u: goto st1;
-		case 13u: goto st62;
-		case 15u: goto st64;
+		case 13u: goto st63;
+		case 15u: goto st65;
 		case 17u: goto st1;
 		case 19u: goto st1;
-		case 21u: goto st62;
+		case 21u: goto st63;
 		case 25u: goto st1;
 		case 27u: goto st1;
-		case 29u: goto st62;
+		case 29u: goto st63;
 		case 33u: goto st1;
 		case 35u: goto st1;
-		case 37u: goto st62;
+		case 37u: goto st63;
 		case 41u: goto st1;
 		case 43u: goto st1;
-		case 45u: goto st62;
-		case 46u: goto st74;
+		case 45u: goto st63;
+		case 46u: goto st75;
 		case 49u: goto st1;
 		case 51u: goto st1;
-		case 53u: goto st62;
+		case 53u: goto st63;
 		case 57u: goto st1;
 		case 59u: goto st1;
-		case 61u: goto st62;
-		case 102u: goto st82;
-		case 104u: goto st62;
-		case 105u: goto st87;
+		case 61u: goto st63;
+		case 102u: goto st83;
+		case 104u: goto st63;
+		case 105u: goto st88;
 		case 107u: goto st34;
-		case 129u: goto st87;
+		case 129u: goto st88;
 		case 131u: goto st34;
 		case 133u: goto st1;
 		case 135u: goto st1;
@@ -2708,19 +2783,19 @@ case 61:
 		case 163u: goto st3;
 		case 165u: goto tr0;
 		case 167u: goto tr0;
-		case 169u: goto st62;
+		case 169u: goto st63;
 		case 171u: goto tr0;
 		case 173u: goto tr0;
 		case 175u: goto tr0;
-		case 193u: goto st96;
-		case 199u: goto st97;
-		case 209u: goto st98;
-		case 211u: goto st98;
-		case 240u: goto tr126;
-		case 242u: goto tr127;
-		case 243u: goto tr128;
-		case 247u: goto st110;
-		case 255u: goto st111;
+		case 193u: goto st97;
+		case 199u: goto st98;
+		case 209u: goto st99;
+		case 211u: goto st99;
+		case 240u: goto tr133;
+		case 242u: goto tr134;
+		case 243u: goto tr135;
+		case 247u: goto st111;
+		case 255u: goto st112;
 	}
 	if ( (*( current_position)) < 144u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 95u )
@@ -2728,72 +2803,64 @@ case 61:
 	} else if ( (*( current_position)) > 153u ) {
 		if ( (*( current_position)) > 157u ) {
 			if ( 184u <= (*( current_position)) && (*( current_position)) <= 191u )
-				goto st62;
+				goto st63;
 		} else if ( (*( current_position)) >= 156u )
 			goto tr0;
 	} else
 		goto tr0;
 	goto tr19;
-tr192:
+tr199:
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
-	goto st62;
-tr193:
+	goto st63;
+tr200:
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
-	goto st62;
-tr438:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st62;
-st62:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof62;
-case 62:
 	goto st63;
 st63:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof63;
 case 63:
-	goto tr132;
+	goto st64;
 st64:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof64;
 case 64:
+	goto tr139;
+st65:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof65;
+case 65:
 	switch( (*( current_position)) ) {
-		case 0u: goto st65;
-		case 1u: goto st66;
+		case 0u: goto st66;
+		case 1u: goto st67;
 		case 31u: goto st32;
-		case 43u: goto tr136;
-		case 56u: goto st67;
-		case 58u: goto st68;
-		case 80u: goto tr139;
-		case 81u: goto tr135;
-		case 112u: goto tr140;
-		case 115u: goto st72;
-		case 121u: goto tr143;
+		case 43u: goto tr143;
+		case 56u: goto st68;
+		case 58u: goto st69;
+		case 80u: goto tr146;
+		case 81u: goto tr142;
+		case 112u: goto tr147;
+		case 115u: goto st73;
+		case 121u: goto tr150;
 		case 164u: goto st34;
 		case 165u: goto st1;
 		case 172u: goto st34;
 		case 173u: goto st1;
 		case 175u: goto st1;
 		case 177u: goto st1;
-		case 182u: goto st1;
 		case 193u: goto st1;
-		case 194u: goto tr140;
-		case 196u: goto st73;
-		case 197u: goto tr146;
-		case 198u: goto tr140;
-		case 215u: goto tr139;
-		case 231u: goto tr136;
-		case 247u: goto tr139;
+		case 194u: goto tr147;
+		case 196u: goto st74;
+		case 197u: goto tr153;
+		case 198u: goto tr147;
+		case 215u: goto tr146;
+		case 231u: goto tr143;
+		case 247u: goto tr146;
 	}
 	if ( (*( current_position)) < 84u ) {
 		if ( (*( current_position)) < 20u ) {
@@ -2802,197 +2869,126 @@ case 64:
 					goto st1;
 			} else if ( (*( current_position)) > 17u ) {
 				if ( 18u <= (*( current_position)) && (*( current_position)) <= 19u )
-					goto tr136;
+					goto tr143;
 			} else
-				goto tr135;
+				goto tr142;
 		} else if ( (*( current_position)) > 21u ) {
 			if ( (*( current_position)) < 40u ) {
 				if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-					goto tr136;
+					goto tr143;
 			} else if ( (*( current_position)) > 47u ) {
 				if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
 					goto tr30;
 			} else
-				goto tr135;
+				goto tr142;
 		} else
-			goto tr135;
+			goto tr142;
 	} else if ( (*( current_position)) > 111u ) {
 		if ( (*( current_position)) < 126u ) {
 			if ( (*( current_position)) < 116u ) {
 				if ( 113u <= (*( current_position)) && (*( current_position)) <= 114u )
-					goto st71;
+					goto st72;
 			} else if ( (*( current_position)) > 118u ) {
 				if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-					goto tr144;
+					goto tr151;
 			} else
-				goto tr135;
+				goto tr142;
 		} else if ( (*( current_position)) > 127u ) {
-			if ( (*( current_position)) < 208u ) {
-				if ( 188u <= (*( current_position)) && (*( current_position)) <= 190u )
+			if ( (*( current_position)) < 188u ) {
+				if ( 182u <= (*( current_position)) && (*( current_position)) <= 183u )
 					goto st1;
-			} else if ( (*( current_position)) > 239u ) {
-				if ( 241u <= (*( current_position)) && (*( current_position)) <= 254u )
-					goto tr135;
+			} else if ( (*( current_position)) > 191u ) {
+				if ( (*( current_position)) > 239u ) {
+					if ( 241u <= (*( current_position)) && (*( current_position)) <= 254u )
+						goto tr142;
+				} else if ( (*( current_position)) >= 208u )
+					goto tr142;
 			} else
-				goto tr135;
+				goto st1;
 		} else
-			goto tr135;
+			goto tr142;
 	} else
-		goto tr135;
-	goto tr19;
-st65:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof65;
-case 65:
-	if ( 200u <= (*( current_position)) && (*( current_position)) <= 207u )
-		goto tr0;
+		goto tr142;
 	goto tr19;
 st66:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof66;
 case 66:
-	if ( 224u <= (*( current_position)) && (*( current_position)) <= 231u )
+	if ( 200u <= (*( current_position)) && (*( current_position)) <= 207u )
 		goto tr0;
 	goto tr19;
 st67:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof67;
 case 67:
-	switch( (*( current_position)) ) {
-		case 16u: goto tr148;
-		case 23u: goto tr148;
-		case 42u: goto tr149;
-		case 55u: goto tr150;
-	}
-	if ( (*( current_position)) < 32u ) {
-		if ( (*( current_position)) < 20u ) {
-			if ( (*( current_position)) <= 11u )
-				goto tr147;
-		} else if ( (*( current_position)) > 21u ) {
-			if ( 28u <= (*( current_position)) && (*( current_position)) <= 30u )
-				goto tr147;
-		} else
-			goto tr148;
-	} else if ( (*( current_position)) > 37u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( 40u <= (*( current_position)) && (*( current_position)) <= 43u )
-				goto tr148;
-		} else if ( (*( current_position)) > 53u ) {
-			if ( (*( current_position)) > 65u ) {
-				if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
-					goto tr151;
-			} else if ( (*( current_position)) >= 56u )
-				goto tr148;
-		} else
-			goto tr148;
-	} else
-		goto tr148;
+	if ( 224u <= (*( current_position)) && (*( current_position)) <= 231u )
+		goto tr0;
 	goto tr19;
 st68:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof68;
 case 68:
 	switch( (*( current_position)) ) {
-		case 15u: goto tr153;
-		case 22u: goto st70;
-		case 23u: goto tr152;
-		case 32u: goto st69;
-		case 68u: goto tr156;
-		case 223u: goto tr158;
+		case 16u: goto tr155;
+		case 23u: goto tr155;
+		case 42u: goto tr156;
+		case 55u: goto tr157;
 	}
-	if ( (*( current_position)) < 33u ) {
-		if ( (*( current_position)) > 14u ) {
-			if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
-				goto st69;
-		} else if ( (*( current_position)) >= 8u )
-			goto tr152;
-	} else if ( (*( current_position)) > 34u ) {
-		if ( (*( current_position)) > 66u ) {
-			if ( 96u <= (*( current_position)) && (*( current_position)) <= 99u )
-				goto tr157;
-		} else if ( (*( current_position)) >= 64u )
-			goto tr152;
+	if ( (*( current_position)) < 32u ) {
+		if ( (*( current_position)) < 20u ) {
+			if ( (*( current_position)) <= 11u )
+				goto tr154;
+		} else if ( (*( current_position)) > 21u ) {
+			if ( 28u <= (*( current_position)) && (*( current_position)) <= 30u )
+				goto tr154;
+		} else
+			goto tr155;
+	} else if ( (*( current_position)) > 37u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( 40u <= (*( current_position)) && (*( current_position)) <= 43u )
+				goto tr155;
+		} else if ( (*( current_position)) > 53u ) {
+			if ( (*( current_position)) > 65u ) {
+				if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
+					goto tr158;
+			} else if ( (*( current_position)) >= 56u )
+				goto tr155;
+		} else
+			goto tr155;
 	} else
-		goto tr152;
+		goto tr155;
 	goto tr19;
 st69:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof69;
 case 69:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr160;
-		case 5u: goto tr161;
-		case 12u: goto tr160;
-		case 13u: goto tr161;
-		case 20u: goto tr160;
-		case 21u: goto tr161;
-		case 28u: goto tr160;
-		case 29u: goto tr161;
-		case 36u: goto tr160;
-		case 37u: goto tr161;
-		case 44u: goto tr160;
-		case 45u: goto tr161;
-		case 52u: goto tr160;
-		case 53u: goto tr161;
-		case 60u: goto tr160;
-		case 61u: goto tr161;
+		case 15u: goto tr160;
+		case 22u: goto st71;
+		case 23u: goto tr159;
+		case 32u: goto st70;
 		case 68u: goto tr163;
-		case 76u: goto tr163;
-		case 84u: goto tr163;
-		case 92u: goto tr163;
-		case 100u: goto tr163;
-		case 108u: goto tr163;
-		case 116u: goto tr163;
-		case 124u: goto tr163;
-		case 132u: goto tr164;
-		case 140u: goto tr164;
-		case 148u: goto tr164;
-		case 156u: goto tr164;
-		case 164u: goto tr164;
-		case 172u: goto tr164;
-		case 180u: goto tr164;
-		case 188u: goto tr164;
+		case 223u: goto tr165;
 	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr161;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr162;
-	goto tr159;
+	if ( (*( current_position)) < 33u ) {
+		if ( (*( current_position)) > 14u ) {
+			if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
+				goto st70;
+		} else if ( (*( current_position)) >= 8u )
+			goto tr159;
+	} else if ( (*( current_position)) > 34u ) {
+		if ( (*( current_position)) > 66u ) {
+			if ( 96u <= (*( current_position)) && (*( current_position)) <= 99u )
+				goto tr164;
+		} else if ( (*( current_position)) >= 64u )
+			goto tr159;
+	} else
+		goto tr159;
+	goto tr19;
 st70:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof70;
 case 70:
-	if ( 192u <= (*( current_position)) )
-		goto tr159;
-	goto tr19;
-st71:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof71;
-case 71:
-	if ( (*( current_position)) < 224u ) {
-		if ( 208u <= (*( current_position)) && (*( current_position)) <= 215u )
-			goto tr165;
-	} else if ( (*( current_position)) > 231u ) {
-		if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-			goto tr165;
-	} else
-		goto tr165;
-	goto tr19;
-st72:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof72;
-case 72:
-	if ( (*( current_position)) > 223u ) {
-		if ( 240u <= (*( current_position)) )
-			goto tr165;
-	} else if ( (*( current_position)) >= 208u )
-		goto tr165;
-	goto tr19;
-st73:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof73;
-case 73:
 	switch( (*( current_position)) ) {
 		case 4u: goto tr167;
 		case 5u: goto tr168;
@@ -3033,32 +3029,99 @@ case 73:
 	} else if ( (*( current_position)) >= 64u )
 		goto tr169;
 	goto tr166;
+st71:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof71;
+case 71:
+	if ( 192u <= (*( current_position)) )
+		goto tr166;
+	goto tr19;
+st72:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof72;
+case 72:
+	if ( (*( current_position)) < 224u ) {
+		if ( 208u <= (*( current_position)) && (*( current_position)) <= 215u )
+			goto tr172;
+	} else if ( (*( current_position)) > 231u ) {
+		if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+			goto tr172;
+	} else
+		goto tr172;
+	goto tr19;
+st73:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof73;
+case 73:
+	if ( (*( current_position)) > 223u ) {
+		if ( 240u <= (*( current_position)) )
+			goto tr172;
+	} else if ( (*( current_position)) >= 208u )
+		goto tr172;
+	goto tr19;
 st74:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof74;
 case 74:
-	if ( (*( current_position)) == 15u )
-		goto st75;
-	goto tr19;
+	switch( (*( current_position)) ) {
+		case 4u: goto tr174;
+		case 5u: goto tr175;
+		case 12u: goto tr174;
+		case 13u: goto tr175;
+		case 20u: goto tr174;
+		case 21u: goto tr175;
+		case 28u: goto tr174;
+		case 29u: goto tr175;
+		case 36u: goto tr174;
+		case 37u: goto tr175;
+		case 44u: goto tr174;
+		case 45u: goto tr175;
+		case 52u: goto tr174;
+		case 53u: goto tr175;
+		case 60u: goto tr174;
+		case 61u: goto tr175;
+		case 68u: goto tr177;
+		case 76u: goto tr177;
+		case 84u: goto tr177;
+		case 92u: goto tr177;
+		case 100u: goto tr177;
+		case 108u: goto tr177;
+		case 116u: goto tr177;
+		case 124u: goto tr177;
+		case 132u: goto tr178;
+		case 140u: goto tr178;
+		case 148u: goto tr178;
+		case 156u: goto tr178;
+		case 164u: goto tr178;
+		case 172u: goto tr178;
+		case 180u: goto tr178;
+		case 188u: goto tr178;
+	}
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr175;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr176;
+	goto tr173;
 st75:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof75;
 case 75:
-	if ( (*( current_position)) == 31u )
+	if ( (*( current_position)) == 15u )
 		goto st76;
 	goto tr19;
 st76:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof76;
 case 76:
-	if ( (*( current_position)) == 132u )
+	if ( (*( current_position)) == 31u )
 		goto st77;
 	goto tr19;
 st77:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof77;
 case 77:
-	if ( (*( current_position)) == 0u )
+	if ( (*( current_position)) == 132u )
 		goto st78;
 	goto tr19;
 st78:
@@ -3087,23 +3150,21 @@ st81:
 		goto _test_eof81;
 case 81:
 	if ( (*( current_position)) == 0u )
-		goto tr179;
+		goto st82;
 	goto tr19;
 st82:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof82;
 case 82:
-	switch( (*( current_position)) ) {
-		case 46u: goto st74;
-		case 102u: goto st83;
-	}
+	if ( (*( current_position)) == 0u )
+		goto tr186;
 	goto tr19;
 st83:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof83;
 case 83:
 	switch( (*( current_position)) ) {
-		case 46u: goto st74;
+		case 46u: goto st75;
 		case 102u: goto st84;
 	}
 	goto tr19;
@@ -3112,7 +3173,7 @@ st84:
 		goto _test_eof84;
 case 84:
 	switch( (*( current_position)) ) {
-		case 46u: goto st74;
+		case 46u: goto st75;
 		case 102u: goto st85;
 	}
 	goto tr19;
@@ -3121,7 +3182,7 @@ st85:
 		goto _test_eof85;
 case 85:
 	switch( (*( current_position)) ) {
-		case 46u: goto st74;
+		case 46u: goto st75;
 		case 102u: goto st86;
 	}
 	goto tr19;
@@ -3129,97 +3190,101 @@ st86:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof86;
 case 86:
-	if ( (*( current_position)) == 46u )
-		goto st74;
+	switch( (*( current_position)) ) {
+		case 46u: goto st75;
+		case 102u: goto st87;
+	}
 	goto tr19;
 st87:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof87;
 case 87:
-	switch( (*( current_position)) ) {
-		case 4u: goto st88;
-		case 5u: goto st89;
-		case 12u: goto st88;
-		case 13u: goto st89;
-		case 20u: goto st88;
-		case 21u: goto st89;
-		case 28u: goto st88;
-		case 29u: goto st89;
-		case 36u: goto st88;
-		case 37u: goto st89;
-		case 44u: goto st88;
-		case 45u: goto st89;
-		case 52u: goto st88;
-		case 53u: goto st89;
-		case 60u: goto st88;
-		case 61u: goto st89;
-		case 68u: goto st94;
-		case 76u: goto st94;
-		case 84u: goto st94;
-		case 92u: goto st94;
-		case 100u: goto st94;
-		case 108u: goto st94;
-		case 116u: goto st94;
-		case 124u: goto st94;
-		case 132u: goto st95;
-		case 140u: goto st95;
-		case 148u: goto st95;
-		case 156u: goto st95;
-		case 164u: goto st95;
-		case 172u: goto st95;
-		case 180u: goto st95;
-		case 188u: goto st95;
-	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto st89;
-	} else if ( (*( current_position)) >= 64u )
-		goto st93;
-	goto st62;
+	if ( (*( current_position)) == 46u )
+		goto st75;
+	goto tr19;
 st88:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof88;
 case 88:
 	switch( (*( current_position)) ) {
-		case 5u: goto st89;
-		case 13u: goto st89;
-		case 21u: goto st89;
-		case 29u: goto st89;
-		case 37u: goto st89;
-		case 45u: goto st89;
-		case 53u: goto st89;
-		case 61u: goto st89;
-		case 69u: goto st89;
-		case 77u: goto st89;
-		case 85u: goto st89;
-		case 93u: goto st89;
-		case 101u: goto st89;
-		case 109u: goto st89;
-		case 117u: goto st89;
-		case 125u: goto st89;
-		case 133u: goto st89;
-		case 141u: goto st89;
-		case 149u: goto st89;
-		case 157u: goto st89;
-		case 165u: goto st89;
-		case 173u: goto st89;
-		case 181u: goto st89;
-		case 189u: goto st89;
-		case 197u: goto st89;
-		case 205u: goto st89;
-		case 213u: goto st89;
-		case 221u: goto st89;
-		case 229u: goto st89;
-		case 237u: goto st89;
-		case 245u: goto st89;
-		case 253u: goto st89;
+		case 4u: goto st89;
+		case 5u: goto st90;
+		case 12u: goto st89;
+		case 13u: goto st90;
+		case 20u: goto st89;
+		case 21u: goto st90;
+		case 28u: goto st89;
+		case 29u: goto st90;
+		case 36u: goto st89;
+		case 37u: goto st90;
+		case 44u: goto st89;
+		case 45u: goto st90;
+		case 52u: goto st89;
+		case 53u: goto st90;
+		case 60u: goto st89;
+		case 61u: goto st90;
+		case 68u: goto st95;
+		case 76u: goto st95;
+		case 84u: goto st95;
+		case 92u: goto st95;
+		case 100u: goto st95;
+		case 108u: goto st95;
+		case 116u: goto st95;
+		case 124u: goto st95;
+		case 132u: goto st96;
+		case 140u: goto st96;
+		case 148u: goto st96;
+		case 156u: goto st96;
+		case 164u: goto st96;
+		case 172u: goto st96;
+		case 180u: goto st96;
+		case 188u: goto st96;
 	}
-	goto st62;
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto st90;
+	} else if ( (*( current_position)) >= 64u )
+		goto st94;
+	goto st63;
 st89:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof89;
 case 89:
-	goto st90;
+	switch( (*( current_position)) ) {
+		case 5u: goto st90;
+		case 13u: goto st90;
+		case 21u: goto st90;
+		case 29u: goto st90;
+		case 37u: goto st90;
+		case 45u: goto st90;
+		case 53u: goto st90;
+		case 61u: goto st90;
+		case 69u: goto st90;
+		case 77u: goto st90;
+		case 85u: goto st90;
+		case 93u: goto st90;
+		case 101u: goto st90;
+		case 109u: goto st90;
+		case 117u: goto st90;
+		case 125u: goto st90;
+		case 133u: goto st90;
+		case 141u: goto st90;
+		case 149u: goto st90;
+		case 157u: goto st90;
+		case 165u: goto st90;
+		case 173u: goto st90;
+		case 181u: goto st90;
+		case 189u: goto st90;
+		case 197u: goto st90;
+		case 205u: goto st90;
+		case 213u: goto st90;
+		case 221u: goto st90;
+		case 229u: goto st90;
+		case 237u: goto st90;
+		case 245u: goto st90;
+		case 253u: goto st90;
+	}
+	goto st63;
 st90:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof90;
@@ -3234,33 +3299,36 @@ st92:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof92;
 case 92:
-	goto tr192;
+	goto st93;
 st93:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof93;
 case 93:
-	goto tr193;
+	goto tr199;
 st94:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof94;
 case 94:
-	goto st93;
+	goto tr200;
 st95:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof95;
 case 95:
-	goto st89;
-tr432:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st96;
+	goto st94;
 st96:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof96;
 case 96:
+	goto st90;
+tr439:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st97;
+st97:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof97;
+case 97:
 	switch( (*( current_position)) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -3315,39 +3383,37 @@ case 96:
 	} else
 		goto st40;
 	goto st10;
-st97:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof97;
-case 97:
-	switch( (*( current_position)) ) {
-		case 4u: goto st88;
-		case 5u: goto st89;
-		case 68u: goto st94;
-		case 132u: goto st95;
-	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 7u )
-			goto st62;
-	} else if ( (*( current_position)) > 71u ) {
-		if ( (*( current_position)) > 135u ) {
-			if ( 192u <= (*( current_position)) && (*( current_position)) <= 199u )
-				goto st62;
-		} else if ( (*( current_position)) >= 128u )
-			goto st89;
-	} else
-		goto st93;
-	goto tr19;
-tr439:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st98;
 st98:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof98;
 case 98:
+	switch( (*( current_position)) ) {
+		case 4u: goto st89;
+		case 5u: goto st90;
+		case 68u: goto st95;
+		case 132u: goto st96;
+	}
+	if ( (*( current_position)) < 64u ) {
+		if ( (*( current_position)) <= 7u )
+			goto st63;
+	} else if ( (*( current_position)) > 71u ) {
+		if ( (*( current_position)) > 135u ) {
+			if ( 192u <= (*( current_position)) && (*( current_position)) <= 199u )
+				goto st63;
+		} else if ( (*( current_position)) >= 128u )
+			goto st90;
+	} else
+		goto st94;
+	goto tr19;
+tr445:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st99;
+st99:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof99;
+case 99:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -3402,43 +3468,34 @@ case 98:
 	} else
 		goto st7;
 	goto tr0;
-tr126:
+tr133:
 	{
     SET_LOCK_PREFIX(TRUE);
   }
-	goto st99;
-tr381:
+	goto st100;
+tr388:
 	{
     SET_DATA16_PREFIX(TRUE);
   }
-	goto st99;
-st99:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof99;
-case 99:
-	switch( (*( current_position)) ) {
-		case 1u: goto st30;
-		case 9u: goto st30;
-		case 15u: goto st100;
-		case 17u: goto st30;
-		case 25u: goto st30;
-		case 33u: goto st30;
-		case 41u: goto st30;
-		case 49u: goto st30;
-		case 129u: goto st101;
-		case 131u: goto st102;
-		case 135u: goto st30;
-		case 247u: goto st103;
-		case 255u: goto st104;
-	}
-	goto tr19;
+	goto st100;
 st100:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof100;
 case 100:
 	switch( (*( current_position)) ) {
-		case 177u: goto st30;
-		case 193u: goto st30;
+		case 1u: goto st30;
+		case 9u: goto st30;
+		case 15u: goto st101;
+		case 17u: goto st30;
+		case 25u: goto st30;
+		case 33u: goto st30;
+		case 41u: goto st30;
+		case 49u: goto st30;
+		case 129u: goto st102;
+		case 131u: goto st103;
+		case 135u: goto st30;
+		case 247u: goto st104;
+		case 255u: goto st105;
 	}
 	goto tr19;
 st101:
@@ -3446,48 +3503,57 @@ st101:
 		goto _test_eof101;
 case 101:
 	switch( (*( current_position)) ) {
-		case 4u: goto st88;
-		case 5u: goto st89;
-		case 12u: goto st88;
-		case 13u: goto st89;
-		case 20u: goto st88;
-		case 21u: goto st89;
-		case 28u: goto st88;
-		case 29u: goto st89;
-		case 36u: goto st88;
-		case 37u: goto st89;
-		case 44u: goto st88;
-		case 45u: goto st89;
-		case 52u: goto st88;
-		case 53u: goto st89;
-		case 68u: goto st94;
-		case 76u: goto st94;
-		case 84u: goto st94;
-		case 92u: goto st94;
-		case 100u: goto st94;
-		case 108u: goto st94;
-		case 116u: goto st94;
-		case 132u: goto st95;
-		case 140u: goto st95;
-		case 148u: goto st95;
-		case 156u: goto st95;
-		case 164u: goto st95;
-		case 172u: goto st95;
-		case 180u: goto st95;
+		case 177u: goto st30;
+		case 193u: goto st30;
 	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 55u )
-			goto st62;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 183u )
-			goto st89;
-	} else
-		goto st93;
 	goto tr19;
 st102:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof102;
 case 102:
+	switch( (*( current_position)) ) {
+		case 4u: goto st89;
+		case 5u: goto st90;
+		case 12u: goto st89;
+		case 13u: goto st90;
+		case 20u: goto st89;
+		case 21u: goto st90;
+		case 28u: goto st89;
+		case 29u: goto st90;
+		case 36u: goto st89;
+		case 37u: goto st90;
+		case 44u: goto st89;
+		case 45u: goto st90;
+		case 52u: goto st89;
+		case 53u: goto st90;
+		case 68u: goto st95;
+		case 76u: goto st95;
+		case 84u: goto st95;
+		case 92u: goto st95;
+		case 100u: goto st95;
+		case 108u: goto st95;
+		case 116u: goto st95;
+		case 132u: goto st96;
+		case 140u: goto st96;
+		case 148u: goto st96;
+		case 156u: goto st96;
+		case 164u: goto st96;
+		case 172u: goto st96;
+		case 180u: goto st96;
+	}
+	if ( (*( current_position)) < 64u ) {
+		if ( (*( current_position)) <= 55u )
+			goto st63;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 183u )
+			goto st90;
+	} else
+		goto st94;
+	goto tr19;
+st103:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof103;
+case 103:
 	switch( (*( current_position)) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -3527,10 +3593,10 @@ case 102:
 	} else
 		goto st40;
 	goto tr19;
-st103:
+st104:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof103;
-case 103:
+		goto _test_eof104;
+case 104:
 	switch( (*( current_position)) ) {
 		case 20u: goto st2;
 		case 21u: goto st3;
@@ -3550,10 +3616,10 @@ case 103:
 	} else
 		goto st7;
 	goto tr19;
-st104:
+st105:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof104;
-case 104:
+		goto _test_eof105;
+case 105:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -3573,59 +3639,59 @@ case 104:
 	} else
 		goto st7;
 	goto tr19;
-tr127:
+tr134:
 	{
     SET_REPNZ_PREFIX(TRUE);
   }
-	goto st105;
-tr384:
+	goto st106;
+tr391:
 	{
     SET_DATA16_PREFIX(TRUE);
   }
-	goto st105;
-st105:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof105;
-case 105:
-	switch( (*( current_position)) ) {
-		case 15u: goto st106;
-		case 167u: goto tr0;
-		case 175u: goto tr0;
-	}
-	goto tr19;
+	goto st106;
 st106:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof106;
 case 106:
-	if ( (*( current_position)) == 56u )
-		goto st107;
+	switch( (*( current_position)) ) {
+		case 15u: goto st107;
+		case 167u: goto tr0;
+		case 175u: goto tr0;
+	}
 	goto tr19;
 st107:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof107;
 case 107:
-	if ( (*( current_position)) == 241u )
-		goto tr201;
+	if ( (*( current_position)) == 56u )
+		goto st108;
 	goto tr19;
-tr128:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st108;
-tr398:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st108;
 st108:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof108;
 case 108:
+	if ( (*( current_position)) == 241u )
+		goto tr208;
+	goto tr19;
+tr135:
+	{
+    SET_REPZ_PREFIX(TRUE);
+  }
+	{
+    SET_REPZ_PREFIX(TRUE);
+  }
+	goto st109;
+tr405:
+	{
+    SET_DATA16_PREFIX(TRUE);
+  }
+	goto st109;
+st109:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof109;
+case 109:
 	switch( (*( current_position)) ) {
-		case 15u: goto st109;
+		case 15u: goto st110;
 		case 165u: goto tr0;
 		case 167u: goto tr0;
 		case 171u: goto tr0;
@@ -3633,23 +3699,23 @@ case 108:
 		case 175u: goto tr0;
 	}
 	goto tr19;
-st109:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof109;
-case 109:
-	switch( (*( current_position)) ) {
-		case 184u: goto tr203;
-		case 188u: goto tr204;
-		case 189u: goto tr205;
-	}
-	goto tr19;
 st110:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof110;
 case 110:
 	switch( (*( current_position)) ) {
-		case 4u: goto st88;
-		case 5u: goto st89;
+		case 184u: goto tr210;
+		case 188u: goto tr211;
+		case 189u: goto tr212;
+	}
+	goto tr19;
+st111:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof111;
+case 111:
+	switch( (*( current_position)) ) {
+		case 4u: goto st89;
+		case 5u: goto st90;
 		case 20u: goto st2;
 		case 21u: goto st3;
 		case 28u: goto st2;
@@ -3662,14 +3728,14 @@ case 110:
 		case 53u: goto st3;
 		case 60u: goto st2;
 		case 61u: goto st3;
-		case 68u: goto st94;
+		case 68u: goto st95;
 		case 84u: goto st8;
 		case 92u: goto st8;
 		case 100u: goto st8;
 		case 108u: goto st8;
 		case 116u: goto st8;
 		case 124u: goto st8;
-		case 132u: goto st95;
+		case 132u: goto st96;
 		case 148u: goto st9;
 		case 156u: goto st9;
 		case 164u: goto st9;
@@ -3680,13 +3746,13 @@ case 110:
 	if ( (*( current_position)) < 80u ) {
 		if ( (*( current_position)) < 8u ) {
 			if ( (*( current_position)) <= 7u )
-				goto st62;
+				goto st63;
 		} else if ( (*( current_position)) > 15u ) {
 			if ( (*( current_position)) > 71u ) {
 				if ( 72u <= (*( current_position)) && (*( current_position)) <= 79u )
 					goto tr19;
 			} else if ( (*( current_position)) >= 64u )
-				goto st93;
+				goto st94;
 		} else
 			goto tr19;
 	} else if ( (*( current_position)) > 127u ) {
@@ -3695,29 +3761,27 @@ case 110:
 				if ( 136u <= (*( current_position)) && (*( current_position)) <= 143u )
 					goto tr19;
 			} else if ( (*( current_position)) >= 128u )
-				goto st89;
+				goto st90;
 		} else if ( (*( current_position)) > 191u ) {
 			if ( (*( current_position)) > 199u ) {
 				if ( 200u <= (*( current_position)) && (*( current_position)) <= 207u )
 					goto tr19;
 			} else if ( (*( current_position)) >= 192u )
-				goto st62;
+				goto st63;
 		} else
 			goto st3;
 	} else
 		goto st7;
 	goto tr0;
-tr455:
+tr461:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st111;
-st111:
+	goto st112;
+st112:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof111;
-case 111:
+		goto _test_eof112;
+case 112:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -3756,107 +3820,61 @@ case 111:
 	} else
 		goto st7;
 	goto tr19;
-tr270:
+tr277:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
-	goto st112;
-tr424:
+	goto st113;
+tr431:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st112;
-st112:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof112;
-case 112:
-	switch( (*( current_position)) ) {
-		case 4u: goto st113;
-		case 5u: goto st114;
-		case 12u: goto st113;
-		case 13u: goto st114;
-		case 20u: goto st113;
-		case 21u: goto st114;
-		case 28u: goto st113;
-		case 29u: goto st114;
-		case 36u: goto st113;
-		case 37u: goto st114;
-		case 44u: goto st113;
-		case 45u: goto st114;
-		case 52u: goto st113;
-		case 53u: goto st114;
-		case 60u: goto st113;
-		case 61u: goto st114;
-		case 68u: goto st119;
-		case 76u: goto st119;
-		case 84u: goto st119;
-		case 92u: goto st119;
-		case 100u: goto st119;
-		case 108u: goto st119;
-		case 116u: goto st119;
-		case 124u: goto st119;
-		case 132u: goto st120;
-		case 140u: goto st120;
-		case 148u: goto st120;
-		case 156u: goto st120;
-		case 164u: goto st120;
-		case 172u: goto st120;
-		case 180u: goto st120;
-		case 188u: goto st120;
-	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto st114;
-	} else if ( (*( current_position)) >= 64u )
-		goto st118;
-	goto st11;
-tr265:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
 	goto st113;
 st113:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof113;
 case 113:
 	switch( (*( current_position)) ) {
-		case 5u: goto st114;
-		case 13u: goto st114;
-		case 21u: goto st114;
-		case 29u: goto st114;
-		case 37u: goto st114;
-		case 45u: goto st114;
-		case 53u: goto st114;
-		case 61u: goto st114;
-		case 69u: goto st114;
-		case 77u: goto st114;
-		case 85u: goto st114;
-		case 93u: goto st114;
-		case 101u: goto st114;
-		case 109u: goto st114;
-		case 117u: goto st114;
-		case 125u: goto st114;
-		case 133u: goto st114;
-		case 141u: goto st114;
-		case 149u: goto st114;
-		case 157u: goto st114;
-		case 165u: goto st114;
-		case 173u: goto st114;
-		case 181u: goto st114;
-		case 189u: goto st114;
-		case 197u: goto st114;
-		case 205u: goto st114;
-		case 213u: goto st114;
-		case 221u: goto st114;
-		case 229u: goto st114;
-		case 237u: goto st114;
-		case 245u: goto st114;
-		case 253u: goto st114;
+		case 4u: goto st114;
+		case 5u: goto st115;
+		case 12u: goto st114;
+		case 13u: goto st115;
+		case 20u: goto st114;
+		case 21u: goto st115;
+		case 28u: goto st114;
+		case 29u: goto st115;
+		case 36u: goto st114;
+		case 37u: goto st115;
+		case 44u: goto st114;
+		case 45u: goto st115;
+		case 52u: goto st114;
+		case 53u: goto st115;
+		case 60u: goto st114;
+		case 61u: goto st115;
+		case 68u: goto st120;
+		case 76u: goto st120;
+		case 84u: goto st120;
+		case 92u: goto st120;
+		case 100u: goto st120;
+		case 108u: goto st120;
+		case 116u: goto st120;
+		case 124u: goto st120;
+		case 132u: goto st121;
+		case 140u: goto st121;
+		case 148u: goto st121;
+		case 156u: goto st121;
+		case 164u: goto st121;
+		case 172u: goto st121;
+		case 180u: goto st121;
+		case 188u: goto st121;
 	}
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto st115;
+	} else if ( (*( current_position)) >= 64u )
+		goto st119;
 	goto st11;
-tr266:
+tr272:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -3865,6 +3883,45 @@ st114:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof114;
 case 114:
+	switch( (*( current_position)) ) {
+		case 5u: goto st115;
+		case 13u: goto st115;
+		case 21u: goto st115;
+		case 29u: goto st115;
+		case 37u: goto st115;
+		case 45u: goto st115;
+		case 53u: goto st115;
+		case 61u: goto st115;
+		case 69u: goto st115;
+		case 77u: goto st115;
+		case 85u: goto st115;
+		case 93u: goto st115;
+		case 101u: goto st115;
+		case 109u: goto st115;
+		case 117u: goto st115;
+		case 125u: goto st115;
+		case 133u: goto st115;
+		case 141u: goto st115;
+		case 149u: goto st115;
+		case 157u: goto st115;
+		case 165u: goto st115;
+		case 173u: goto st115;
+		case 181u: goto st115;
+		case 189u: goto st115;
+		case 197u: goto st115;
+		case 205u: goto st115;
+		case 213u: goto st115;
+		case 221u: goto st115;
+		case 229u: goto st115;
+		case 237u: goto st115;
+		case 245u: goto st115;
+		case 253u: goto st115;
+	}
+	goto st11;
+tr273:
+	{
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
 	goto st115;
 st115:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -3880,18 +3937,13 @@ st117:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof117;
 case 117:
-	goto tr215;
-tr267:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
 	goto st118;
 st118:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof118;
 case 118:
-	goto tr216;
-tr268:
+	goto tr222;
+tr274:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -3900,8 +3952,8 @@ st119:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof119;
 case 119:
-	goto st118;
-tr269:
+	goto tr223;
+tr275:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -3910,18 +3962,26 @@ st120:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof120;
 case 120:
-	goto st114;
-tr427:
+	goto st119;
+tr276:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
 	goto st121;
 st121:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof121;
 case 121:
+	goto st115;
+tr434:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st122;
+st122:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof122;
+case 122:
 	switch( (*( current_position)) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -3955,14 +4015,14 @@ case 121:
 		case 172u: goto st42;
 		case 180u: goto st42;
 		case 188u: goto st42;
-		case 224u: goto st122;
-		case 225u: goto st232;
-		case 226u: goto st234;
-		case 227u: goto st236;
-		case 228u: goto st238;
-		case 229u: goto st240;
-		case 230u: goto st242;
-		case 231u: goto st244;
+		case 224u: goto st123;
+		case 225u: goto st233;
+		case 226u: goto st235;
+		case 227u: goto st237;
+		case 228u: goto st239;
+		case 229u: goto st241;
+		case 230u: goto st243;
+		case 231u: goto st245;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
@@ -3970,14 +4030,14 @@ case 121:
 	} else if ( (*( current_position)) >= 64u )
 		goto st40;
 	goto st10;
-st122:
+st123:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof122;
-case 122:
+		goto _test_eof123;
+case 123:
 	if ( (*( current_position)) == 224u )
-		goto tr225;
+		goto tr232;
 	goto tr11;
-tr225:
+tr232:
 	{ }
 	{
        if (errors_detected) {
@@ -3988,72 +4048,72 @@ tr225:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
-	goto st247;
-st247:
+	goto st248;
+st248:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof247;
-case 247:
+		goto _test_eof248;
+case 248:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
 		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
 		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
 		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
 		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
-		case 255u: goto tr456;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
+		case 255u: goto tr462;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
@@ -4062,7 +4122,7 @@ case 247:
 					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
 						goto tr19;
 				} else
-					goto tr415;
+					goto tr422;
 			} else if ( (*( current_position)) > 19u ) {
 				if ( (*( current_position)) < 24u ) {
 					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
@@ -4071,29 +4131,29 @@ case 247:
 					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
 						goto tr19;
 				} else
-					goto tr415;
+					goto tr422;
 			} else
-				goto tr415;
+				goto tr422;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 54u ) {
 				if ( (*( current_position)) > 39u ) {
 					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
+						goto tr422;
 				} else if ( (*( current_position)) >= 38u )
 					goto tr19;
 			} else if ( (*( current_position)) > 55u ) {
 				if ( (*( current_position)) < 96u ) {
 					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
+						goto tr422;
 				} else if ( (*( current_position)) > 111u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
+						goto tr433;
 				} else
 					goto tr19;
 			} else
 				goto tr19;
 		} else
-			goto tr415;
+			goto tr422;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 194u ) {
 			if ( (*( current_position)) < 160u ) {
@@ -4105,25 +4165,25 @@ case 247:
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) < 184u ) {
 					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
+						goto tr423;
 				} else if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
+						goto tr439;
 				} else
-					goto tr417;
+					goto tr424;
 			} else
-				goto tr431;
+				goto tr438;
 		} else if ( (*( current_position)) > 195u ) {
 			if ( (*( current_position)) < 212u ) {
 				if ( (*( current_position)) > 207u ) {
 					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
 					goto tr19;
 			} else if ( (*( current_position)) > 231u ) {
 				if ( (*( current_position)) < 234u ) {
 					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
+						goto tr454;
 				} else if ( (*( current_position)) > 241u ) {
 					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
 						goto tr19;
@@ -4134,27 +4194,25 @@ case 247:
 		} else
 			goto tr19;
 	} else
-		goto tr415;
-	goto tr421;
-tr429:
+		goto tr422;
+	goto tr428;
+tr436:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st123;
-st123:
+	goto st124;
+st124:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof123;
-case 123:
+		goto _test_eof124;
+case 124:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
 		case 68u: goto st8;
 		case 132u: goto st9;
-		case 232u: goto st124;
-		case 233u: goto st139;
-		case 234u: goto st147;
+		case 232u: goto st125;
+		case 233u: goto st140;
+		case 234u: goto st148;
 	}
 	if ( (*( current_position)) < 64u ) {
 		if ( (*( current_position)) <= 7u )
@@ -4168,92 +4226,48 @@ case 123:
 	} else
 		goto st7;
 	goto tr19;
-st124:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof124;
-case 124:
-	switch( (*( current_position)) ) {
-		case 64u: goto tr229;
-		case 68u: goto tr230;
-		case 72u: goto tr229;
-		case 76u: goto tr230;
-		case 80u: goto tr229;
-		case 84u: goto tr230;
-		case 88u: goto tr229;
-		case 92u: goto tr230;
-		case 96u: goto tr229;
-		case 100u: goto tr230;
-		case 104u: goto tr229;
-		case 108u: goto tr230;
-		case 112u: goto tr229;
-		case 116u: goto tr230;
-		case 120u: goto tr231;
-		case 124u: goto tr230;
-		case 192u: goto tr232;
-		case 196u: goto tr230;
-		case 200u: goto tr232;
-		case 204u: goto tr230;
-		case 208u: goto tr232;
-		case 212u: goto tr230;
-		case 216u: goto tr232;
-		case 220u: goto tr230;
-		case 224u: goto tr232;
-		case 228u: goto tr230;
-		case 232u: goto tr232;
-		case 236u: goto tr230;
-		case 240u: goto tr232;
-		case 244u: goto tr230;
-		case 248u: goto tr232;
-		case 252u: goto tr230;
-	}
-	goto tr19;
-tr229:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st125;
 st125:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof125;
 case 125:
 	switch( (*( current_position)) ) {
-		case 166u: goto tr233;
-		case 182u: goto tr233;
+		case 64u: goto tr236;
+		case 68u: goto tr237;
+		case 72u: goto tr236;
+		case 76u: goto tr237;
+		case 80u: goto tr236;
+		case 84u: goto tr237;
+		case 88u: goto tr236;
+		case 92u: goto tr237;
+		case 96u: goto tr236;
+		case 100u: goto tr237;
+		case 104u: goto tr236;
+		case 108u: goto tr237;
+		case 112u: goto tr236;
+		case 116u: goto tr237;
+		case 120u: goto tr238;
+		case 124u: goto tr237;
+		case 192u: goto tr239;
+		case 196u: goto tr237;
+		case 200u: goto tr239;
+		case 204u: goto tr237;
+		case 208u: goto tr239;
+		case 212u: goto tr237;
+		case 216u: goto tr239;
+		case 220u: goto tr237;
+		case 224u: goto tr239;
+		case 228u: goto tr237;
+		case 232u: goto tr239;
+		case 236u: goto tr237;
+		case 240u: goto tr239;
+		case 244u: goto tr237;
+		case 248u: goto tr239;
+		case 252u: goto tr237;
 	}
-	if ( (*( current_position)) < 158u ) {
-		if ( (*( current_position)) < 142u ) {
-			if ( 133u <= (*( current_position)) && (*( current_position)) <= 135u )
-				goto tr233;
-		} else if ( (*( current_position)) > 143u ) {
-			if ( 149u <= (*( current_position)) && (*( current_position)) <= 151u )
-				goto tr233;
-		} else
-			goto tr233;
-	} else if ( (*( current_position)) > 159u ) {
-		if ( (*( current_position)) < 204u ) {
-			if ( 162u <= (*( current_position)) && (*( current_position)) <= 163u )
-				goto tr233;
-		} else if ( (*( current_position)) > 207u ) {
-			if ( 236u <= (*( current_position)) && (*( current_position)) <= 239u )
-				goto tr234;
-		} else
-			goto tr234;
-	} else
-		goto tr233;
 	goto tr19;
-tr233:
+tr236:
 	{
-    SET_CPU_FEATURE(CPUFeature_XOP);
-  }
-	goto st126;
-tr338:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
-	goto st126;
-tr339:
-	{
-    SET_CPU_FEATURE(CPUFeature_FMA4);
+    SET_VEX_PREFIX3(*current_position);
   }
 	goto st126;
 st126:
@@ -4261,61 +4275,105 @@ st126:
 		goto _test_eof126;
 case 126:
 	switch( (*( current_position)) ) {
-		case 4u: goto st128;
-		case 5u: goto st129;
-		case 12u: goto st128;
-		case 13u: goto st129;
-		case 20u: goto st128;
-		case 21u: goto st129;
-		case 28u: goto st128;
-		case 29u: goto st129;
-		case 36u: goto st128;
-		case 37u: goto st129;
-		case 44u: goto st128;
-		case 45u: goto st129;
-		case 52u: goto st128;
-		case 53u: goto st129;
-		case 60u: goto st128;
-		case 61u: goto st129;
-		case 68u: goto st134;
-		case 76u: goto st134;
-		case 84u: goto st134;
-		case 92u: goto st134;
-		case 100u: goto st134;
-		case 108u: goto st134;
-		case 116u: goto st134;
-		case 124u: goto st134;
-		case 132u: goto st135;
-		case 140u: goto st135;
-		case 148u: goto st135;
-		case 156u: goto st135;
-		case 164u: goto st135;
-		case 172u: goto st135;
-		case 180u: goto st135;
-		case 188u: goto st135;
+		case 166u: goto tr240;
+		case 182u: goto tr240;
 	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto st129;
-	} else if ( (*( current_position)) >= 64u )
-		goto st133;
-	goto st127;
-tr244:
+	if ( (*( current_position)) < 158u ) {
+		if ( (*( current_position)) < 142u ) {
+			if ( 133u <= (*( current_position)) && (*( current_position)) <= 135u )
+				goto tr240;
+		} else if ( (*( current_position)) > 143u ) {
+			if ( 149u <= (*( current_position)) && (*( current_position)) <= 151u )
+				goto tr240;
+		} else
+			goto tr240;
+	} else if ( (*( current_position)) > 159u ) {
+		if ( (*( current_position)) < 204u ) {
+			if ( 162u <= (*( current_position)) && (*( current_position)) <= 163u )
+				goto tr240;
+		} else if ( (*( current_position)) > 207u ) {
+			if ( 236u <= (*( current_position)) && (*( current_position)) <= 239u )
+				goto tr241;
+		} else
+			goto tr241;
+	} else
+		goto tr240;
+	goto tr19;
+tr240:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st127;
-tr245:
+tr345:
 	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st127;
+tr346:
+	{
+    SET_CPU_FEATURE(CPUFeature_FMA4);
   }
 	goto st127;
 st127:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof127;
 case 127:
+	switch( (*( current_position)) ) {
+		case 4u: goto st129;
+		case 5u: goto st130;
+		case 12u: goto st129;
+		case 13u: goto st130;
+		case 20u: goto st129;
+		case 21u: goto st130;
+		case 28u: goto st129;
+		case 29u: goto st130;
+		case 36u: goto st129;
+		case 37u: goto st130;
+		case 44u: goto st129;
+		case 45u: goto st130;
+		case 52u: goto st129;
+		case 53u: goto st130;
+		case 60u: goto st129;
+		case 61u: goto st130;
+		case 68u: goto st135;
+		case 76u: goto st135;
+		case 84u: goto st135;
+		case 92u: goto st135;
+		case 100u: goto st135;
+		case 108u: goto st135;
+		case 116u: goto st135;
+		case 124u: goto st135;
+		case 132u: goto st136;
+		case 140u: goto st136;
+		case 148u: goto st136;
+		case 156u: goto st136;
+		case 164u: goto st136;
+		case 172u: goto st136;
+		case 180u: goto st136;
+		case 188u: goto st136;
+	}
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto st130;
+	} else if ( (*( current_position)) >= 64u )
+		goto st134;
+	goto st128;
+tr251:
+	{
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(current_position - 3);
+  }
+	goto st128;
+tr252:
+	{
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(current_position);
+  }
+	goto st128;
+st128:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof128;
+case 128:
 	switch( (*( current_position)) ) {
 		case 0u: goto tr0;
 		case 16u: goto tr0;
@@ -4327,50 +4385,45 @@ case 127:
 		case 112u: goto tr0;
 	}
 	goto tr19;
-st128:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof128;
-case 128:
-	switch( (*( current_position)) ) {
-		case 5u: goto st129;
-		case 13u: goto st129;
-		case 21u: goto st129;
-		case 29u: goto st129;
-		case 37u: goto st129;
-		case 45u: goto st129;
-		case 53u: goto st129;
-		case 61u: goto st129;
-		case 69u: goto st129;
-		case 77u: goto st129;
-		case 85u: goto st129;
-		case 93u: goto st129;
-		case 101u: goto st129;
-		case 109u: goto st129;
-		case 117u: goto st129;
-		case 125u: goto st129;
-		case 133u: goto st129;
-		case 141u: goto st129;
-		case 149u: goto st129;
-		case 157u: goto st129;
-		case 165u: goto st129;
-		case 173u: goto st129;
-		case 181u: goto st129;
-		case 189u: goto st129;
-		case 197u: goto st129;
-		case 205u: goto st129;
-		case 213u: goto st129;
-		case 221u: goto st129;
-		case 229u: goto st129;
-		case 237u: goto st129;
-		case 245u: goto st129;
-		case 253u: goto st129;
-	}
-	goto st127;
 st129:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof129;
 case 129:
-	goto st130;
+	switch( (*( current_position)) ) {
+		case 5u: goto st130;
+		case 13u: goto st130;
+		case 21u: goto st130;
+		case 29u: goto st130;
+		case 37u: goto st130;
+		case 45u: goto st130;
+		case 53u: goto st130;
+		case 61u: goto st130;
+		case 69u: goto st130;
+		case 77u: goto st130;
+		case 85u: goto st130;
+		case 93u: goto st130;
+		case 101u: goto st130;
+		case 109u: goto st130;
+		case 117u: goto st130;
+		case 125u: goto st130;
+		case 133u: goto st130;
+		case 141u: goto st130;
+		case 149u: goto st130;
+		case 157u: goto st130;
+		case 165u: goto st130;
+		case 173u: goto st130;
+		case 181u: goto st130;
+		case 189u: goto st130;
+		case 197u: goto st130;
+		case 205u: goto st130;
+		case 213u: goto st130;
+		case 221u: goto st130;
+		case 229u: goto st130;
+		case 237u: goto st130;
+		case 245u: goto st130;
+		case 253u: goto st130;
+	}
+	goto st128;
 st130:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof130;
@@ -4385,35 +4438,28 @@ st132:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof132;
 case 132:
-	goto tr244;
+	goto st133;
 st133:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof133;
 case 133:
-	goto tr245;
+	goto tr251;
 st134:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof134;
 case 134:
-	goto st133;
+	goto tr252;
 st135:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof135;
 case 135:
-	goto st129;
-tr230:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st136;
+	goto st134;
 st136:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof136;
 case 136:
-	if ( (*( current_position)) == 162u )
-		goto tr233;
-	goto tr19;
-tr231:
+	goto st130;
+tr237:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -4422,35 +4468,10 @@ st137:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof137;
 case 137:
-	switch( (*( current_position)) ) {
-		case 166u: goto tr233;
-		case 182u: goto tr233;
-	}
-	if ( (*( current_position)) < 158u ) {
-		if ( (*( current_position)) < 142u ) {
-			if ( 133u <= (*( current_position)) && (*( current_position)) <= 135u )
-				goto tr233;
-		} else if ( (*( current_position)) > 143u ) {
-			if ( 149u <= (*( current_position)) && (*( current_position)) <= 151u )
-				goto tr233;
-		} else
-			goto tr233;
-	} else if ( (*( current_position)) > 159u ) {
-		if ( (*( current_position)) < 192u ) {
-			if ( 162u <= (*( current_position)) && (*( current_position)) <= 163u )
-				goto tr233;
-		} else if ( (*( current_position)) > 195u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 236u <= (*( current_position)) && (*( current_position)) <= 239u )
-					goto tr234;
-			} else if ( (*( current_position)) >= 204u )
-				goto tr234;
-		} else
-			goto tr234;
-	} else
-		goto tr233;
+	if ( (*( current_position)) == 162u )
+		goto tr240;
 	goto tr19;
-tr232:
+tr238:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -4459,82 +4480,119 @@ st138:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof138;
 case 138:
-	if ( 162u <= (*( current_position)) && (*( current_position)) <= 163u )
-		goto tr233;
+	switch( (*( current_position)) ) {
+		case 166u: goto tr240;
+		case 182u: goto tr240;
+	}
+	if ( (*( current_position)) < 158u ) {
+		if ( (*( current_position)) < 142u ) {
+			if ( 133u <= (*( current_position)) && (*( current_position)) <= 135u )
+				goto tr240;
+		} else if ( (*( current_position)) > 143u ) {
+			if ( 149u <= (*( current_position)) && (*( current_position)) <= 151u )
+				goto tr240;
+		} else
+			goto tr240;
+	} else if ( (*( current_position)) > 159u ) {
+		if ( (*( current_position)) < 192u ) {
+			if ( 162u <= (*( current_position)) && (*( current_position)) <= 163u )
+				goto tr240;
+		} else if ( (*( current_position)) > 195u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 236u <= (*( current_position)) && (*( current_position)) <= 239u )
+					goto tr241;
+			} else if ( (*( current_position)) >= 204u )
+				goto tr241;
+		} else
+			goto tr241;
+	} else
+		goto tr240;
 	goto tr19;
+tr239:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st139;
 st139:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof139;
 case 139:
-	switch( (*( current_position)) ) {
-		case 64u: goto tr246;
-		case 72u: goto tr246;
-		case 80u: goto tr246;
-		case 88u: goto tr246;
-		case 96u: goto tr246;
-		case 104u: goto tr246;
-		case 112u: goto tr246;
-		case 120u: goto tr247;
-		case 124u: goto tr248;
-		case 192u: goto tr249;
-		case 200u: goto tr249;
-		case 208u: goto tr249;
-		case 216u: goto tr249;
-		case 224u: goto tr249;
-		case 232u: goto tr249;
-		case 240u: goto tr249;
-		case 248u: goto tr249;
-	}
+	if ( 162u <= (*( current_position)) && (*( current_position)) <= 163u )
+		goto tr240;
 	goto tr19;
-tr246:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st140;
 st140:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof140;
 case 140:
 	switch( (*( current_position)) ) {
-		case 1u: goto st141;
-		case 2u: goto st142;
+		case 64u: goto tr253;
+		case 72u: goto tr253;
+		case 80u: goto tr253;
+		case 88u: goto tr253;
+		case 96u: goto tr253;
+		case 104u: goto tr253;
+		case 112u: goto tr253;
+		case 120u: goto tr254;
+		case 124u: goto tr255;
+		case 192u: goto tr256;
+		case 200u: goto tr256;
+		case 208u: goto tr256;
+		case 216u: goto tr256;
+		case 224u: goto tr256;
+		case 232u: goto tr256;
+		case 240u: goto tr256;
+		case 248u: goto tr256;
 	}
-	if ( 144u <= (*( current_position)) && (*( current_position)) <= 155u )
-		goto tr252;
 	goto tr19;
+tr253:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st141;
 st141:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof141;
 case 141:
 	switch( (*( current_position)) ) {
-		case 12u: goto tr254;
-		case 13u: goto tr255;
-		case 20u: goto tr254;
-		case 21u: goto tr255;
-		case 28u: goto tr254;
-		case 29u: goto tr255;
-		case 36u: goto tr254;
-		case 37u: goto tr255;
-		case 44u: goto tr254;
-		case 45u: goto tr255;
-		case 52u: goto tr254;
-		case 53u: goto tr255;
-		case 60u: goto tr254;
-		case 61u: goto tr255;
-		case 76u: goto tr257;
-		case 84u: goto tr257;
-		case 92u: goto tr257;
-		case 100u: goto tr257;
-		case 108u: goto tr257;
-		case 116u: goto tr257;
-		case 124u: goto tr257;
-		case 140u: goto tr258;
-		case 148u: goto tr258;
-		case 156u: goto tr258;
-		case 164u: goto tr258;
-		case 172u: goto tr258;
-		case 180u: goto tr258;
-		case 188u: goto tr258;
+		case 1u: goto st142;
+		case 2u: goto st143;
+	}
+	if ( 144u <= (*( current_position)) && (*( current_position)) <= 155u )
+		goto tr259;
+	goto tr19;
+st142:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof142;
+case 142:
+	switch( (*( current_position)) ) {
+		case 12u: goto tr261;
+		case 13u: goto tr262;
+		case 20u: goto tr261;
+		case 21u: goto tr262;
+		case 28u: goto tr261;
+		case 29u: goto tr262;
+		case 36u: goto tr261;
+		case 37u: goto tr262;
+		case 44u: goto tr261;
+		case 45u: goto tr262;
+		case 52u: goto tr261;
+		case 53u: goto tr262;
+		case 60u: goto tr261;
+		case 61u: goto tr262;
+		case 76u: goto tr264;
+		case 84u: goto tr264;
+		case 92u: goto tr264;
+		case 100u: goto tr264;
+		case 108u: goto tr264;
+		case 116u: goto tr264;
+		case 124u: goto tr264;
+		case 140u: goto tr265;
+		case 148u: goto tr265;
+		case 156u: goto tr265;
+		case 164u: goto tr265;
+		case 172u: goto tr265;
+		case 180u: goto tr265;
+		case 188u: goto tr265;
 	}
 	if ( (*( current_position)) < 72u ) {
 		if ( (*( current_position)) > 7u ) {
@@ -4550,105 +4608,93 @@ case 141:
 			if ( 192u <= (*( current_position)) && (*( current_position)) <= 199u )
 				goto tr19;
 		} else
-			goto tr255;
+			goto tr262;
 	} else
-		goto tr256;
-	goto tr253;
-st142:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof142;
-case 142:
-	switch( (*( current_position)) ) {
-		case 12u: goto tr254;
-		case 13u: goto tr255;
-		case 52u: goto tr254;
-		case 53u: goto tr255;
-		case 76u: goto tr257;
-		case 116u: goto tr257;
-		case 140u: goto tr258;
-		case 180u: goto tr258;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( 8u <= (*( current_position)) && (*( current_position)) <= 15u )
-				goto tr253;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 72u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto tr256;
-		} else
-			goto tr253;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 136u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto tr255;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr253;
-			} else if ( (*( current_position)) >= 200u )
-				goto tr253;
-		} else
-			goto tr255;
-	} else
-		goto tr256;
-	goto tr19;
-tr247:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st143;
+		goto tr263;
+	goto tr260;
 st143:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof143;
 case 143:
 	switch( (*( current_position)) ) {
-		case 1u: goto st141;
-		case 2u: goto st142;
-		case 18u: goto st144;
-		case 203u: goto tr252;
-		case 219u: goto tr252;
+		case 12u: goto tr261;
+		case 13u: goto tr262;
+		case 52u: goto tr261;
+		case 53u: goto tr262;
+		case 76u: goto tr264;
+		case 116u: goto tr264;
+		case 140u: goto tr265;
+		case 180u: goto tr265;
 	}
-	if ( (*( current_position)) < 198u ) {
-		if ( (*( current_position)) < 144u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 131u )
-				goto tr252;
-		} else if ( (*( current_position)) > 155u ) {
-			if ( 193u <= (*( current_position)) && (*( current_position)) <= 195u )
-				goto tr252;
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( 8u <= (*( current_position)) && (*( current_position)) <= 15u )
+				goto tr260;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 72u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto tr263;
 		} else
-			goto tr252;
-	} else if ( (*( current_position)) > 199u ) {
-		if ( (*( current_position)) < 214u ) {
-			if ( 209u <= (*( current_position)) && (*( current_position)) <= 211u )
-				goto tr252;
-		} else if ( (*( current_position)) > 215u ) {
-			if ( 225u <= (*( current_position)) && (*( current_position)) <= 227u )
-				goto tr252;
+			goto tr260;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 136u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto tr262;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr260;
+			} else if ( (*( current_position)) >= 200u )
+				goto tr260;
 		} else
-			goto tr252;
+			goto tr262;
 	} else
-		goto tr252;
+		goto tr263;
 	goto tr19;
+tr254:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st144;
 st144:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof144;
 case 144:
-	if ( 192u <= (*( current_position)) && (*( current_position)) <= 207u )
-		goto tr260;
+	switch( (*( current_position)) ) {
+		case 1u: goto st142;
+		case 2u: goto st143;
+		case 18u: goto st145;
+		case 203u: goto tr259;
+		case 219u: goto tr259;
+	}
+	if ( (*( current_position)) < 198u ) {
+		if ( (*( current_position)) < 144u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 131u )
+				goto tr259;
+		} else if ( (*( current_position)) > 155u ) {
+			if ( 193u <= (*( current_position)) && (*( current_position)) <= 195u )
+				goto tr259;
+		} else
+			goto tr259;
+	} else if ( (*( current_position)) > 199u ) {
+		if ( (*( current_position)) < 214u ) {
+			if ( 209u <= (*( current_position)) && (*( current_position)) <= 211u )
+				goto tr259;
+		} else if ( (*( current_position)) > 215u ) {
+			if ( 225u <= (*( current_position)) && (*( current_position)) <= 227u )
+				goto tr259;
+		} else
+			goto tr259;
+	} else
+		goto tr259;
 	goto tr19;
-tr248:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st145;
 st145:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof145;
 case 145:
-	if ( 128u <= (*( current_position)) && (*( current_position)) <= 129u )
-		goto tr252;
+	if ( 192u <= (*( current_position)) && (*( current_position)) <= 207u )
+		goto tr267;
 	goto tr19;
-tr249:
+tr255:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -4657,344 +4703,333 @@ st146:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof146;
 case 146:
-	if ( 144u <= (*( current_position)) && (*( current_position)) <= 155u )
-		goto tr252;
+	if ( 128u <= (*( current_position)) && (*( current_position)) <= 129u )
+		goto tr259;
 	goto tr19;
+tr256:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st147;
 st147:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof147;
 case 147:
-	switch( (*( current_position)) ) {
-		case 64u: goto tr261;
-		case 72u: goto tr261;
-		case 80u: goto tr261;
-		case 88u: goto tr261;
-		case 96u: goto tr261;
-		case 104u: goto tr261;
-		case 112u: goto tr261;
-		case 120u: goto tr262;
-	}
+	if ( 144u <= (*( current_position)) && (*( current_position)) <= 155u )
+		goto tr259;
 	goto tr19;
-tr261:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st148;
 st148:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof148;
 case 148:
-	if ( (*( current_position)) == 18u )
-		goto st149;
+	switch( (*( current_position)) ) {
+		case 64u: goto tr268;
+		case 72u: goto tr268;
+		case 80u: goto tr268;
+		case 88u: goto tr268;
+		case 96u: goto tr268;
+		case 104u: goto tr268;
+		case 112u: goto tr268;
+		case 120u: goto tr269;
+	}
 	goto tr19;
+tr268:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st149;
 st149:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof149;
 case 149:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr265;
-		case 5u: goto tr266;
-		case 12u: goto tr265;
-		case 13u: goto tr266;
-		case 68u: goto tr268;
-		case 76u: goto tr268;
-		case 132u: goto tr269;
-		case 140u: goto tr269;
-	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 15u )
-			goto tr264;
-	} else if ( (*( current_position)) > 79u ) {
-		if ( (*( current_position)) > 143u ) {
-			if ( 192u <= (*( current_position)) && (*( current_position)) <= 207u )
-				goto tr264;
-		} else if ( (*( current_position)) >= 128u )
-			goto tr266;
-	} else
-		goto tr267;
+	if ( (*( current_position)) == 18u )
+		goto st150;
 	goto tr19;
-tr262:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st150;
 st150:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof150;
 case 150:
 	switch( (*( current_position)) ) {
-		case 16u: goto tr270;
-		case 18u: goto st149;
+		case 4u: goto tr272;
+		case 5u: goto tr273;
+		case 12u: goto tr272;
+		case 13u: goto tr273;
+		case 68u: goto tr275;
+		case 76u: goto tr275;
+		case 132u: goto tr276;
+		case 140u: goto tr276;
 	}
+	if ( (*( current_position)) < 64u ) {
+		if ( (*( current_position)) <= 15u )
+			goto tr271;
+	} else if ( (*( current_position)) > 79u ) {
+		if ( (*( current_position)) > 143u ) {
+			if ( 192u <= (*( current_position)) && (*( current_position)) <= 207u )
+				goto tr271;
+		} else if ( (*( current_position)) >= 128u )
+			goto tr273;
+	} else
+		goto tr274;
 	goto tr19;
-tr433:
+tr269:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
+    SET_VEX_PREFIX3(*current_position);
+  }
 	goto st151;
 st151:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof151;
 case 151:
 	switch( (*( current_position)) ) {
-		case 225u: goto st152;
-		case 226u: goto st174;
-		case 227u: goto st183;
+		case 16u: goto tr277;
+		case 18u: goto st150;
 	}
 	goto tr19;
+tr440:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st152;
 st152:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof152;
 case 152:
 	switch( (*( current_position)) ) {
-		case 65u: goto tr275;
-		case 66u: goto tr276;
-		case 67u: goto tr277;
-		case 68u: goto tr278;
-		case 69u: goto tr279;
-		case 70u: goto tr280;
-		case 71u: goto tr281;
-		case 73u: goto tr275;
-		case 74u: goto tr276;
-		case 75u: goto tr277;
-		case 76u: goto tr278;
-		case 77u: goto tr279;
-		case 78u: goto tr280;
-		case 79u: goto tr281;
-		case 81u: goto tr275;
-		case 82u: goto tr276;
-		case 83u: goto tr277;
-		case 84u: goto tr278;
-		case 85u: goto tr279;
-		case 86u: goto tr280;
-		case 87u: goto tr281;
-		case 89u: goto tr275;
-		case 90u: goto tr276;
-		case 91u: goto tr277;
-		case 92u: goto tr278;
-		case 93u: goto tr279;
-		case 94u: goto tr280;
-		case 95u: goto tr281;
-		case 97u: goto tr275;
-		case 98u: goto tr276;
-		case 99u: goto tr277;
-		case 100u: goto tr278;
-		case 101u: goto tr279;
-		case 102u: goto tr280;
-		case 103u: goto tr281;
-		case 105u: goto tr275;
-		case 106u: goto tr276;
-		case 107u: goto tr277;
-		case 108u: goto tr278;
-		case 109u: goto tr279;
-		case 110u: goto tr280;
-		case 111u: goto tr281;
-		case 113u: goto tr275;
-		case 114u: goto tr276;
-		case 115u: goto tr277;
-		case 116u: goto tr278;
-		case 117u: goto tr279;
-		case 118u: goto tr280;
-		case 119u: goto tr281;
-		case 120u: goto tr282;
-		case 121u: goto tr283;
-		case 122u: goto tr284;
-		case 123u: goto tr285;
-		case 124u: goto tr286;
-		case 125u: goto tr287;
-		case 126u: goto tr288;
-		case 127u: goto tr289;
+		case 225u: goto st153;
+		case 226u: goto st175;
+		case 227u: goto st184;
 	}
-	if ( 64u <= (*( current_position)) && (*( current_position)) <= 112u )
-		goto tr274;
 	goto tr19;
-tr274:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st153;
-tr355:
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
-  }
-	goto st153;
 st153:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof153;
 case 153:
 	switch( (*( current_position)) ) {
-		case 18u: goto st154;
-		case 22u: goto st154;
-		case 23u: goto tr292;
-		case 81u: goto tr291;
-		case 194u: goto tr293;
-		case 198u: goto tr293;
+		case 65u: goto tr282;
+		case 66u: goto tr283;
+		case 67u: goto tr284;
+		case 68u: goto tr285;
+		case 69u: goto tr286;
+		case 70u: goto tr287;
+		case 71u: goto tr288;
+		case 73u: goto tr282;
+		case 74u: goto tr283;
+		case 75u: goto tr284;
+		case 76u: goto tr285;
+		case 77u: goto tr286;
+		case 78u: goto tr287;
+		case 79u: goto tr288;
+		case 81u: goto tr282;
+		case 82u: goto tr283;
+		case 83u: goto tr284;
+		case 84u: goto tr285;
+		case 85u: goto tr286;
+		case 86u: goto tr287;
+		case 87u: goto tr288;
+		case 89u: goto tr282;
+		case 90u: goto tr283;
+		case 91u: goto tr284;
+		case 92u: goto tr285;
+		case 93u: goto tr286;
+		case 94u: goto tr287;
+		case 95u: goto tr288;
+		case 97u: goto tr282;
+		case 98u: goto tr283;
+		case 99u: goto tr284;
+		case 100u: goto tr285;
+		case 101u: goto tr286;
+		case 102u: goto tr287;
+		case 103u: goto tr288;
+		case 105u: goto tr282;
+		case 106u: goto tr283;
+		case 107u: goto tr284;
+		case 108u: goto tr285;
+		case 109u: goto tr286;
+		case 110u: goto tr287;
+		case 111u: goto tr288;
+		case 113u: goto tr282;
+		case 114u: goto tr283;
+		case 115u: goto tr284;
+		case 116u: goto tr285;
+		case 117u: goto tr286;
+		case 118u: goto tr287;
+		case 119u: goto tr288;
+		case 120u: goto tr289;
+		case 121u: goto tr290;
+		case 122u: goto tr291;
+		case 123u: goto tr292;
+		case 124u: goto tr293;
+		case 125u: goto tr294;
+		case 126u: goto tr295;
+		case 127u: goto tr296;
 	}
-	if ( (*( current_position)) < 46u ) {
-		if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
-			goto tr291;
-	} else if ( (*( current_position)) > 47u ) {
-		if ( (*( current_position)) > 89u ) {
-			if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 84u )
-			goto tr291;
-	} else
-		goto tr291;
+	if ( 64u <= (*( current_position)) && (*( current_position)) <= 112u )
+		goto tr281;
 	goto tr19;
+tr281:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st154;
+tr362:
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3((*current_position) & 0x7f);
+  }
+	goto st154;
 st154:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof154;
 case 154:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr295;
-		case 5u: goto tr296;
-		case 12u: goto tr295;
-		case 13u: goto tr296;
-		case 20u: goto tr295;
-		case 21u: goto tr296;
-		case 28u: goto tr295;
-		case 29u: goto tr296;
-		case 36u: goto tr295;
-		case 37u: goto tr296;
-		case 44u: goto tr295;
-		case 45u: goto tr296;
-		case 52u: goto tr295;
-		case 53u: goto tr296;
-		case 60u: goto tr295;
-		case 61u: goto tr296;
-		case 68u: goto tr298;
-		case 76u: goto tr298;
-		case 84u: goto tr298;
-		case 92u: goto tr298;
-		case 100u: goto tr298;
-		case 108u: goto tr298;
-		case 116u: goto tr298;
-		case 124u: goto tr298;
-		case 132u: goto tr299;
-		case 140u: goto tr299;
-		case 148u: goto tr299;
-		case 156u: goto tr299;
-		case 164u: goto tr299;
-		case 172u: goto tr299;
-		case 180u: goto tr299;
-		case 188u: goto tr299;
+		case 18u: goto st155;
+		case 22u: goto st155;
+		case 23u: goto tr299;
+		case 81u: goto tr298;
+		case 194u: goto tr300;
+		case 198u: goto tr300;
 	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr296;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr297;
-	goto tr294;
-tr275:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st155;
-tr356:
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
-  }
-	goto st155;
+	if ( (*( current_position)) < 46u ) {
+		if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
+			goto tr298;
+	} else if ( (*( current_position)) > 47u ) {
+		if ( (*( current_position)) > 89u ) {
+			if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 84u )
+			goto tr298;
+	} else
+		goto tr298;
+	goto tr19;
 st155:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof155;
 case 155:
 	switch( (*( current_position)) ) {
-		case 18u: goto tr292;
-		case 81u: goto tr291;
-		case 115u: goto st157;
-		case 194u: goto tr293;
-		case 198u: goto tr293;
+		case 4u: goto tr302;
+		case 5u: goto tr303;
+		case 12u: goto tr302;
+		case 13u: goto tr303;
+		case 20u: goto tr302;
+		case 21u: goto tr303;
+		case 28u: goto tr302;
+		case 29u: goto tr303;
+		case 36u: goto tr302;
+		case 37u: goto tr303;
+		case 44u: goto tr302;
+		case 45u: goto tr303;
+		case 52u: goto tr302;
+		case 53u: goto tr303;
+		case 60u: goto tr302;
+		case 61u: goto tr303;
+		case 68u: goto tr305;
+		case 76u: goto tr305;
+		case 84u: goto tr305;
+		case 92u: goto tr305;
+		case 100u: goto tr305;
+		case 108u: goto tr305;
+		case 116u: goto tr305;
+		case 124u: goto tr305;
+		case 132u: goto tr306;
+		case 140u: goto tr306;
+		case 148u: goto tr306;
+		case 156u: goto tr306;
+		case 164u: goto tr306;
+		case 172u: goto tr306;
+		case 180u: goto tr306;
+		case 188u: goto tr306;
+	}
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr303;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr304;
+	goto tr301;
+tr282:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st156;
+tr363:
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3((*current_position) & 0x7f);
+  }
+	goto st156;
+st156:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof156;
+case 156:
+	switch( (*( current_position)) ) {
+		case 18u: goto tr299;
+		case 81u: goto tr298;
+		case 115u: goto st158;
+		case 194u: goto tr300;
+		case 198u: goto tr300;
 	}
 	if ( (*( current_position)) < 116u ) {
 		if ( (*( current_position)) < 46u ) {
 			if ( (*( current_position)) > 21u ) {
 				if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-					goto tr292;
+					goto tr299;
 			} else if ( (*( current_position)) >= 20u )
-				goto tr291;
+				goto tr298;
 		} else if ( (*( current_position)) > 47u ) {
 			if ( (*( current_position)) < 92u ) {
 				if ( 84u <= (*( current_position)) && (*( current_position)) <= 89u )
-					goto tr291;
+					goto tr298;
 			} else if ( (*( current_position)) > 109u ) {
 				if ( 113u <= (*( current_position)) && (*( current_position)) <= 114u )
-					goto st156;
+					goto st157;
 			} else
-				goto tr291;
+				goto tr298;
 		} else
-			goto tr291;
+			goto tr298;
 	} else if ( (*( current_position)) > 118u ) {
 		if ( (*( current_position)) < 216u ) {
 			if ( (*( current_position)) > 125u ) {
 				if ( 208u <= (*( current_position)) && (*( current_position)) <= 213u )
-					goto tr291;
+					goto tr298;
 			} else if ( (*( current_position)) >= 124u )
-				goto tr291;
+				goto tr298;
 		} else if ( (*( current_position)) > 229u ) {
 			if ( (*( current_position)) < 241u ) {
 				if ( 232u <= (*( current_position)) && (*( current_position)) <= 239u )
-					goto tr291;
+					goto tr298;
 			} else if ( (*( current_position)) > 246u ) {
 				if ( 248u <= (*( current_position)) && (*( current_position)) <= 254u )
-					goto tr291;
+					goto tr298;
 			} else
-				goto tr291;
+				goto tr298;
 		} else
-			goto tr291;
+			goto tr298;
 	} else
-		goto tr291;
-	goto tr19;
-st156:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof156;
-case 156:
-	if ( (*( current_position)) < 224u ) {
-		if ( 208u <= (*( current_position)) && (*( current_position)) <= 215u )
-			goto tr302;
-	} else if ( (*( current_position)) > 231u ) {
-		if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-			goto tr302;
-	} else
-		goto tr302;
+		goto tr298;
 	goto tr19;
 st157:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof157;
 case 157:
-	if ( (*( current_position)) > 223u ) {
-		if ( 240u <= (*( current_position)) )
-			goto tr302;
-	} else if ( (*( current_position)) >= 208u )
-		goto tr302;
+	if ( (*( current_position)) < 224u ) {
+		if ( 208u <= (*( current_position)) && (*( current_position)) <= 215u )
+			goto tr309;
+	} else if ( (*( current_position)) > 231u ) {
+		if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+			goto tr309;
+	} else
+		goto tr309;
 	goto tr19;
-tr276:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st158;
 st158:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof158;
 case 158:
-	switch( (*( current_position)) ) {
-		case 42u: goto tr291;
-		case 81u: goto tr291;
-		case 83u: goto tr291;
-		case 194u: goto tr293;
-	}
-	if ( (*( current_position)) > 90u ) {
-		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-			goto tr291;
-	} else if ( (*( current_position)) >= 88u )
-		goto tr291;
+	if ( (*( current_position)) > 223u ) {
+		if ( 240u <= (*( current_position)) )
+			goto tr309;
+	} else if ( (*( current_position)) >= 208u )
+		goto tr309;
 	goto tr19;
-tr277:
+tr283:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -5004,29 +5039,20 @@ st159:
 		goto _test_eof159;
 case 159:
 	switch( (*( current_position)) ) {
-		case 42u: goto tr291;
-		case 81u: goto tr291;
-		case 194u: goto tr293;
-		case 208u: goto tr291;
+		case 42u: goto tr298;
+		case 81u: goto tr298;
+		case 83u: goto tr298;
+		case 194u: goto tr300;
 	}
-	if ( (*( current_position)) < 92u ) {
-		if ( 88u <= (*( current_position)) && (*( current_position)) <= 90u )
-			goto tr291;
-	} else if ( (*( current_position)) > 95u ) {
-		if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-			goto tr291;
-	} else
-		goto tr291;
+	if ( (*( current_position)) > 90u ) {
+		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
+			goto tr298;
+	} else if ( (*( current_position)) >= 88u )
+		goto tr298;
 	goto tr19;
-tr278:
+tr284:
 	{
     SET_VEX_PREFIX3(*current_position);
-  }
-	goto st160;
-tr359:
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
   }
 	goto st160;
 st160:
@@ -5034,25 +5060,26 @@ st160:
 		goto _test_eof160;
 case 160:
 	switch( (*( current_position)) ) {
-		case 81u: goto tr291;
-		case 194u: goto tr293;
-		case 198u: goto tr293;
+		case 42u: goto tr298;
+		case 81u: goto tr298;
+		case 194u: goto tr300;
+		case 208u: goto tr298;
 	}
-	if ( (*( current_position)) < 84u ) {
-		if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
-			goto tr291;
-	} else if ( (*( current_position)) > 89u ) {
-		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-			goto tr291;
+	if ( (*( current_position)) < 92u ) {
+		if ( 88u <= (*( current_position)) && (*( current_position)) <= 90u )
+			goto tr298;
+	} else if ( (*( current_position)) > 95u ) {
+		if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+			goto tr298;
 	} else
-		goto tr291;
+		goto tr298;
 	goto tr19;
-tr279:
+tr285:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st161;
-tr360:
+tr366:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -5063,29 +5090,25 @@ st161:
 		goto _test_eof161;
 case 161:
 	switch( (*( current_position)) ) {
-		case 81u: goto tr291;
-		case 194u: goto tr293;
-		case 198u: goto tr293;
-		case 208u: goto tr291;
+		case 81u: goto tr298;
+		case 194u: goto tr300;
+		case 198u: goto tr300;
 	}
 	if ( (*( current_position)) < 84u ) {
 		if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
-			goto tr291;
+			goto tr298;
 	} else if ( (*( current_position)) > 89u ) {
-		if ( (*( current_position)) > 95u ) {
-			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 92u )
-			goto tr291;
+		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
+			goto tr298;
 	} else
-		goto tr291;
+		goto tr298;
 	goto tr19;
-tr280:
+tr286:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st162;
-tr361:
+tr367:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -5095,15 +5118,30 @@ st162:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof162;
 case 162:
-	if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
-		goto tr303;
+	switch( (*( current_position)) ) {
+		case 81u: goto tr298;
+		case 194u: goto tr300;
+		case 198u: goto tr300;
+		case 208u: goto tr298;
+	}
+	if ( (*( current_position)) < 84u ) {
+		if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
+			goto tr298;
+	} else if ( (*( current_position)) > 89u ) {
+		if ( (*( current_position)) > 95u ) {
+			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 92u )
+			goto tr298;
+	} else
+		goto tr298;
 	goto tr19;
-tr281:
+tr287:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st163;
-tr362:
+tr368:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -5113,20 +5151,15 @@ st163:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof163;
 case 163:
-	if ( (*( current_position)) == 208u )
-		goto tr291;
-	if ( (*( current_position)) > 17u ) {
-		if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-			goto tr291;
-	} else if ( (*( current_position)) >= 16u )
-		goto tr303;
+	if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
+		goto tr310;
 	goto tr19;
-tr282:
+tr288:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st164;
-tr363:
+tr369:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -5136,200 +5169,190 @@ st164:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof164;
 case 164:
-	switch( (*( current_position)) ) {
-		case 18u: goto st154;
-		case 19u: goto tr292;
-		case 22u: goto st154;
-		case 23u: goto tr292;
-		case 43u: goto tr292;
-		case 80u: goto tr303;
-		case 119u: goto tr294;
-		case 174u: goto st165;
-		case 194u: goto tr293;
-		case 198u: goto tr293;
-	}
-	if ( (*( current_position)) < 40u ) {
-		if ( 16u <= (*( current_position)) && (*( current_position)) <= 21u )
-			goto tr291;
-	} else if ( (*( current_position)) > 41u ) {
-		if ( (*( current_position)) > 47u ) {
-			if ( 81u <= (*( current_position)) && (*( current_position)) <= 95u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 46u )
-			goto tr291;
-	} else
-		goto tr291;
+	if ( (*( current_position)) == 208u )
+		goto tr298;
+	if ( (*( current_position)) > 17u ) {
+		if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+			goto tr298;
+	} else if ( (*( current_position)) >= 16u )
+		goto tr310;
 	goto tr19;
+tr289:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st165;
+tr370:
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3((*current_position) & 0x7f);
+  }
+	goto st165;
 st165:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof165;
 case 165:
 	switch( (*( current_position)) ) {
-		case 20u: goto tr295;
-		case 21u: goto tr296;
-		case 28u: goto tr295;
-		case 29u: goto tr296;
-		case 84u: goto tr298;
-		case 92u: goto tr298;
-		case 148u: goto tr299;
-		case 156u: goto tr299;
+		case 18u: goto st155;
+		case 19u: goto tr299;
+		case 22u: goto st155;
+		case 23u: goto tr299;
+		case 43u: goto tr299;
+		case 80u: goto tr310;
+		case 119u: goto tr301;
+		case 174u: goto st166;
+		case 194u: goto tr300;
+		case 198u: goto tr300;
 	}
-	if ( (*( current_position)) < 80u ) {
-		if ( 16u <= (*( current_position)) && (*( current_position)) <= 31u )
-			goto tr294;
-	} else if ( (*( current_position)) > 95u ) {
-		if ( 144u <= (*( current_position)) && (*( current_position)) <= 159u )
-			goto tr296;
+	if ( (*( current_position)) < 40u ) {
+		if ( 16u <= (*( current_position)) && (*( current_position)) <= 21u )
+			goto tr298;
+	} else if ( (*( current_position)) > 41u ) {
+		if ( (*( current_position)) > 47u ) {
+			if ( 81u <= (*( current_position)) && (*( current_position)) <= 95u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 46u )
+			goto tr298;
 	} else
-		goto tr297;
+		goto tr298;
 	goto tr19;
-tr283:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st166;
-tr364:
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
-  }
-	goto st166;
 st166:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof166;
 case 166:
 	switch( (*( current_position)) ) {
-		case 43u: goto tr292;
-		case 80u: goto tr303;
-		case 81u: goto tr291;
-		case 112u: goto tr293;
-		case 115u: goto st157;
-		case 127u: goto tr291;
-		case 194u: goto tr293;
-		case 196u: goto st167;
-		case 197u: goto tr306;
-		case 198u: goto tr293;
-		case 215u: goto tr303;
-		case 231u: goto tr292;
-		case 247u: goto tr303;
+		case 20u: goto tr302;
+		case 21u: goto tr303;
+		case 28u: goto tr302;
+		case 29u: goto tr303;
+		case 84u: goto tr305;
+		case 92u: goto tr305;
+		case 148u: goto tr306;
+		case 156u: goto tr306;
 	}
-	if ( (*( current_position)) < 84u ) {
-		if ( (*( current_position)) < 20u ) {
-			if ( (*( current_position)) > 17u ) {
-				if ( 18u <= (*( current_position)) && (*( current_position)) <= 19u )
-					goto tr292;
-			} else if ( (*( current_position)) >= 16u )
-				goto tr291;
-		} else if ( (*( current_position)) > 21u ) {
-			if ( (*( current_position)) < 40u ) {
-				if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-					goto tr292;
-			} else if ( (*( current_position)) > 41u ) {
-				if ( 46u <= (*( current_position)) && (*( current_position)) <= 47u )
-					goto tr291;
-			} else
-				goto tr291;
-		} else
-			goto tr291;
-	} else if ( (*( current_position)) > 111u ) {
-		if ( (*( current_position)) < 124u ) {
-			if ( (*( current_position)) > 114u ) {
-				if ( 116u <= (*( current_position)) && (*( current_position)) <= 118u )
-					goto tr291;
-			} else if ( (*( current_position)) >= 113u )
-				goto st156;
-		} else if ( (*( current_position)) > 125u ) {
-			if ( (*( current_position)) < 216u ) {
-				if ( 208u <= (*( current_position)) && (*( current_position)) <= 213u )
-					goto tr291;
-			} else if ( (*( current_position)) > 239u ) {
-				if ( 241u <= (*( current_position)) && (*( current_position)) <= 254u )
-					goto tr291;
-			} else
-				goto tr291;
-		} else
-			goto tr291;
+	if ( (*( current_position)) < 80u ) {
+		if ( 16u <= (*( current_position)) && (*( current_position)) <= 31u )
+			goto tr301;
+	} else if ( (*( current_position)) > 95u ) {
+		if ( 144u <= (*( current_position)) && (*( current_position)) <= 159u )
+			goto tr303;
 	} else
-		goto tr291;
+		goto tr304;
 	goto tr19;
+tr290:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st167;
+tr371:
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3((*current_position) & 0x7f);
+  }
+	goto st167;
 st167:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof167;
 case 167:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr307;
-		case 5u: goto tr308;
-		case 12u: goto tr307;
-		case 13u: goto tr308;
-		case 20u: goto tr307;
-		case 21u: goto tr308;
-		case 28u: goto tr307;
-		case 29u: goto tr308;
-		case 36u: goto tr307;
-		case 37u: goto tr308;
-		case 44u: goto tr307;
-		case 45u: goto tr308;
-		case 52u: goto tr307;
-		case 53u: goto tr308;
-		case 60u: goto tr307;
-		case 61u: goto tr308;
-		case 68u: goto tr310;
-		case 76u: goto tr310;
-		case 84u: goto tr310;
-		case 92u: goto tr310;
-		case 100u: goto tr310;
-		case 108u: goto tr310;
-		case 116u: goto tr310;
-		case 124u: goto tr310;
-		case 132u: goto tr311;
-		case 140u: goto tr311;
-		case 148u: goto tr311;
-		case 156u: goto tr311;
-		case 164u: goto tr311;
-		case 172u: goto tr311;
-		case 180u: goto tr311;
-		case 188u: goto tr311;
+		case 43u: goto tr299;
+		case 80u: goto tr310;
+		case 81u: goto tr298;
+		case 112u: goto tr300;
+		case 115u: goto st158;
+		case 127u: goto tr298;
+		case 194u: goto tr300;
+		case 196u: goto st168;
+		case 197u: goto tr313;
+		case 198u: goto tr300;
+		case 215u: goto tr310;
+		case 231u: goto tr299;
+		case 247u: goto tr310;
 	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr308;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr309;
-	goto tr302;
-tr284:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st168;
+	if ( (*( current_position)) < 84u ) {
+		if ( (*( current_position)) < 20u ) {
+			if ( (*( current_position)) > 17u ) {
+				if ( 18u <= (*( current_position)) && (*( current_position)) <= 19u )
+					goto tr299;
+			} else if ( (*( current_position)) >= 16u )
+				goto tr298;
+		} else if ( (*( current_position)) > 21u ) {
+			if ( (*( current_position)) < 40u ) {
+				if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
+					goto tr299;
+			} else if ( (*( current_position)) > 41u ) {
+				if ( 46u <= (*( current_position)) && (*( current_position)) <= 47u )
+					goto tr298;
+			} else
+				goto tr298;
+		} else
+			goto tr298;
+	} else if ( (*( current_position)) > 111u ) {
+		if ( (*( current_position)) < 124u ) {
+			if ( (*( current_position)) > 114u ) {
+				if ( 116u <= (*( current_position)) && (*( current_position)) <= 118u )
+					goto tr298;
+			} else if ( (*( current_position)) >= 113u )
+				goto st157;
+		} else if ( (*( current_position)) > 125u ) {
+			if ( (*( current_position)) < 216u ) {
+				if ( 208u <= (*( current_position)) && (*( current_position)) <= 213u )
+					goto tr298;
+			} else if ( (*( current_position)) > 239u ) {
+				if ( 241u <= (*( current_position)) && (*( current_position)) <= 254u )
+					goto tr298;
+			} else
+				goto tr298;
+		} else
+			goto tr298;
+	} else
+		goto tr298;
+	goto tr19;
 st168:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof168;
 case 168:
 	switch( (*( current_position)) ) {
-		case 18u: goto tr291;
-		case 22u: goto tr291;
-		case 42u: goto tr291;
-		case 111u: goto tr291;
-		case 112u: goto tr293;
-		case 194u: goto tr293;
-		case 230u: goto tr291;
+		case 4u: goto tr314;
+		case 5u: goto tr315;
+		case 12u: goto tr314;
+		case 13u: goto tr315;
+		case 20u: goto tr314;
+		case 21u: goto tr315;
+		case 28u: goto tr314;
+		case 29u: goto tr315;
+		case 36u: goto tr314;
+		case 37u: goto tr315;
+		case 44u: goto tr314;
+		case 45u: goto tr315;
+		case 52u: goto tr314;
+		case 53u: goto tr315;
+		case 60u: goto tr314;
+		case 61u: goto tr315;
+		case 68u: goto tr317;
+		case 76u: goto tr317;
+		case 84u: goto tr317;
+		case 92u: goto tr317;
+		case 100u: goto tr317;
+		case 108u: goto tr317;
+		case 116u: goto tr317;
+		case 124u: goto tr317;
+		case 132u: goto tr318;
+		case 140u: goto tr318;
+		case 148u: goto tr318;
+		case 156u: goto tr318;
+		case 164u: goto tr318;
+		case 172u: goto tr318;
+		case 180u: goto tr318;
+		case 188u: goto tr318;
 	}
-	if ( (*( current_position)) < 81u ) {
-		if ( (*( current_position)) > 17u ) {
-			if ( 44u <= (*( current_position)) && (*( current_position)) <= 45u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 16u )
-			goto tr292;
-	} else if ( (*( current_position)) > 83u ) {
-		if ( (*( current_position)) > 95u ) {
-			if ( 126u <= (*( current_position)) && (*( current_position)) <= 127u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 88u )
-			goto tr291;
-	} else
-		goto tr291;
-	goto tr19;
-tr285:
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr315;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr316;
+	goto tr309;
+tr291:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -5339,39 +5362,32 @@ st169:
 		goto _test_eof169;
 case 169:
 	switch( (*( current_position)) ) {
-		case 18u: goto tr291;
-		case 42u: goto tr291;
-		case 81u: goto tr291;
-		case 112u: goto tr293;
-		case 194u: goto tr293;
-		case 208u: goto tr291;
-		case 230u: goto tr291;
-		case 240u: goto tr292;
+		case 18u: goto tr298;
+		case 22u: goto tr298;
+		case 42u: goto tr298;
+		case 111u: goto tr298;
+		case 112u: goto tr300;
+		case 194u: goto tr300;
+		case 230u: goto tr298;
 	}
-	if ( (*( current_position)) < 88u ) {
+	if ( (*( current_position)) < 81u ) {
 		if ( (*( current_position)) > 17u ) {
 			if ( 44u <= (*( current_position)) && (*( current_position)) <= 45u )
-				goto tr291;
+				goto tr298;
 		} else if ( (*( current_position)) >= 16u )
-			goto tr292;
-	} else if ( (*( current_position)) > 90u ) {
+			goto tr299;
+	} else if ( (*( current_position)) > 83u ) {
 		if ( (*( current_position)) > 95u ) {
-			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 92u )
-			goto tr291;
+			if ( 126u <= (*( current_position)) && (*( current_position)) <= 127u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 88u )
+			goto tr298;
 	} else
-		goto tr291;
+		goto tr298;
 	goto tr19;
-tr286:
+tr292:
 	{
     SET_VEX_PREFIX3(*current_position);
-  }
-	goto st170;
-tr367:
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
   }
 	goto st170;
 st170:
@@ -5379,30 +5395,36 @@ st170:
 		goto _test_eof170;
 case 170:
 	switch( (*( current_position)) ) {
-		case 43u: goto tr292;
-		case 80u: goto tr303;
-		case 119u: goto tr294;
-		case 194u: goto tr293;
-		case 198u: goto tr293;
+		case 18u: goto tr298;
+		case 42u: goto tr298;
+		case 81u: goto tr298;
+		case 112u: goto tr300;
+		case 194u: goto tr300;
+		case 208u: goto tr298;
+		case 230u: goto tr298;
+		case 240u: goto tr299;
 	}
-	if ( (*( current_position)) < 20u ) {
-		if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
-			goto tr291;
-	} else if ( (*( current_position)) > 21u ) {
-		if ( (*( current_position)) > 41u ) {
-			if ( 81u <= (*( current_position)) && (*( current_position)) <= 95u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 40u )
-			goto tr291;
+	if ( (*( current_position)) < 88u ) {
+		if ( (*( current_position)) > 17u ) {
+			if ( 44u <= (*( current_position)) && (*( current_position)) <= 45u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 16u )
+			goto tr299;
+	} else if ( (*( current_position)) > 90u ) {
+		if ( (*( current_position)) > 95u ) {
+			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 92u )
+			goto tr298;
 	} else
-		goto tr291;
+		goto tr298;
 	goto tr19;
-tr287:
+tr293:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st171;
-tr368:
+tr374:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -5413,37 +5435,30 @@ st171:
 		goto _test_eof171;
 case 171:
 	switch( (*( current_position)) ) {
-		case 43u: goto tr292;
-		case 80u: goto tr303;
-		case 81u: goto tr291;
-		case 194u: goto tr293;
-		case 198u: goto tr293;
-		case 208u: goto tr291;
-		case 214u: goto tr291;
-		case 230u: goto tr291;
-		case 231u: goto tr292;
+		case 43u: goto tr299;
+		case 80u: goto tr310;
+		case 119u: goto tr301;
+		case 194u: goto tr300;
+		case 198u: goto tr300;
 	}
-	if ( (*( current_position)) < 40u ) {
-		if ( (*( current_position)) > 17u ) {
-			if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 16u )
-			goto tr291;
-	} else if ( (*( current_position)) > 41u ) {
-		if ( (*( current_position)) > 95u ) {
-			if ( 124u <= (*( current_position)) && (*( current_position)) <= 127u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 84u )
-			goto tr291;
+	if ( (*( current_position)) < 20u ) {
+		if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
+			goto tr298;
+	} else if ( (*( current_position)) > 21u ) {
+		if ( (*( current_position)) > 41u ) {
+			if ( 81u <= (*( current_position)) && (*( current_position)) <= 95u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 40u )
+			goto tr298;
 	} else
-		goto tr291;
+		goto tr298;
 	goto tr19;
-tr288:
+tr294:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st172;
-tr369:
+tr375:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -5454,21 +5469,37 @@ st172:
 		goto _test_eof172;
 case 172:
 	switch( (*( current_position)) ) {
-		case 18u: goto tr291;
-		case 22u: goto tr291;
-		case 91u: goto tr291;
-		case 127u: goto tr291;
-		case 230u: goto tr291;
+		case 43u: goto tr299;
+		case 80u: goto tr310;
+		case 81u: goto tr298;
+		case 194u: goto tr300;
+		case 198u: goto tr300;
+		case 208u: goto tr298;
+		case 214u: goto tr298;
+		case 230u: goto tr298;
+		case 231u: goto tr299;
 	}
-	if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
-		goto tr303;
+	if ( (*( current_position)) < 40u ) {
+		if ( (*( current_position)) > 17u ) {
+			if ( 20u <= (*( current_position)) && (*( current_position)) <= 21u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 16u )
+			goto tr298;
+	} else if ( (*( current_position)) > 41u ) {
+		if ( (*( current_position)) > 95u ) {
+			if ( 124u <= (*( current_position)) && (*( current_position)) <= 127u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 84u )
+			goto tr298;
+	} else
+		goto tr298;
 	goto tr19;
-tr289:
+tr295:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st173;
-tr370:
+tr376:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -5479,145 +5510,135 @@ st173:
 		goto _test_eof173;
 case 173:
 	switch( (*( current_position)) ) {
-		case 18u: goto tr291;
-		case 208u: goto tr291;
-		case 230u: goto tr291;
-		case 240u: goto tr292;
+		case 18u: goto tr298;
+		case 22u: goto tr298;
+		case 91u: goto tr298;
+		case 127u: goto tr298;
+		case 230u: goto tr298;
 	}
-	if ( (*( current_position)) > 17u ) {
-		if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-			goto tr291;
-	} else if ( (*( current_position)) >= 16u )
-		goto tr303;
+	if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
+		goto tr310;
 	goto tr19;
+tr296:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st174;
+tr377:
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3((*current_position) & 0x7f);
+  }
+	goto st174;
 st174:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof174;
 case 174:
 	switch( (*( current_position)) ) {
-		case 64u: goto tr312;
-		case 65u: goto tr313;
-		case 69u: goto tr314;
-		case 72u: goto tr312;
-		case 73u: goto tr313;
-		case 77u: goto tr314;
-		case 80u: goto tr312;
-		case 81u: goto tr313;
-		case 85u: goto tr314;
-		case 88u: goto tr312;
-		case 89u: goto tr313;
-		case 93u: goto tr314;
-		case 96u: goto tr312;
-		case 97u: goto tr313;
-		case 101u: goto tr314;
-		case 104u: goto tr312;
-		case 105u: goto tr313;
-		case 109u: goto tr314;
-		case 112u: goto tr312;
-		case 113u: goto tr313;
-		case 117u: goto tr314;
-		case 120u: goto tr312;
-		case 121u: goto tr315;
-		case 125u: goto tr316;
-		case 193u: goto tr317;
-		case 197u: goto tr318;
-		case 201u: goto tr317;
-		case 205u: goto tr318;
-		case 209u: goto tr317;
-		case 213u: goto tr318;
-		case 217u: goto tr317;
-		case 221u: goto tr318;
-		case 225u: goto tr317;
-		case 229u: goto tr318;
-		case 233u: goto tr317;
-		case 237u: goto tr318;
-		case 241u: goto tr317;
-		case 245u: goto tr318;
-		case 249u: goto tr317;
-		case 253u: goto tr318;
+		case 18u: goto tr298;
+		case 208u: goto tr298;
+		case 230u: goto tr298;
+		case 240u: goto tr299;
 	}
+	if ( (*( current_position)) > 17u ) {
+		if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+			goto tr298;
+	} else if ( (*( current_position)) >= 16u )
+		goto tr310;
 	goto tr19;
-tr312:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st175;
 st175:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof175;
 case 175:
 	switch( (*( current_position)) ) {
-		case 242u: goto tr319;
-		case 243u: goto st176;
-		case 247u: goto tr319;
+		case 64u: goto tr319;
+		case 65u: goto tr320;
+		case 69u: goto tr321;
+		case 72u: goto tr319;
+		case 73u: goto tr320;
+		case 77u: goto tr321;
+		case 80u: goto tr319;
+		case 81u: goto tr320;
+		case 85u: goto tr321;
+		case 88u: goto tr319;
+		case 89u: goto tr320;
+		case 93u: goto tr321;
+		case 96u: goto tr319;
+		case 97u: goto tr320;
+		case 101u: goto tr321;
+		case 104u: goto tr319;
+		case 105u: goto tr320;
+		case 109u: goto tr321;
+		case 112u: goto tr319;
+		case 113u: goto tr320;
+		case 117u: goto tr321;
+		case 120u: goto tr319;
+		case 121u: goto tr322;
+		case 125u: goto tr323;
+		case 193u: goto tr324;
+		case 197u: goto tr325;
+		case 201u: goto tr324;
+		case 205u: goto tr325;
+		case 209u: goto tr324;
+		case 213u: goto tr325;
+		case 217u: goto tr324;
+		case 221u: goto tr325;
+		case 225u: goto tr324;
+		case 229u: goto tr325;
+		case 233u: goto tr324;
+		case 237u: goto tr325;
+		case 241u: goto tr324;
+		case 245u: goto tr325;
+		case 249u: goto tr324;
+		case 253u: goto tr325;
 	}
 	goto tr19;
+tr319:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st176;
 st176:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof176;
 case 176:
 	switch( (*( current_position)) ) {
-		case 12u: goto tr322;
-		case 13u: goto tr323;
-		case 20u: goto tr322;
-		case 21u: goto tr323;
-		case 28u: goto tr322;
-		case 29u: goto tr323;
-		case 76u: goto tr325;
-		case 84u: goto tr325;
-		case 92u: goto tr325;
-		case 140u: goto tr326;
-		case 148u: goto tr326;
-		case 156u: goto tr326;
+		case 242u: goto tr326;
+		case 243u: goto st177;
+		case 247u: goto tr326;
 	}
-	if ( (*( current_position)) < 72u ) {
-		if ( 8u <= (*( current_position)) && (*( current_position)) <= 31u )
-			goto tr321;
-	} else if ( (*( current_position)) > 95u ) {
-		if ( (*( current_position)) > 159u ) {
-			if ( 200u <= (*( current_position)) && (*( current_position)) <= 223u )
-				goto tr321;
-		} else if ( (*( current_position)) >= 136u )
-			goto tr323;
-	} else
-		goto tr324;
 	goto tr19;
-tr313:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st177;
 st177:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof177;
 case 177:
-	if ( (*( current_position)) == 43u )
-		goto tr291;
-	if ( (*( current_position)) < 55u ) {
-		if ( (*( current_position)) < 40u ) {
-			if ( (*( current_position)) <= 13u )
-				goto tr291;
-		} else if ( (*( current_position)) > 41u ) {
-			if ( 44u <= (*( current_position)) && (*( current_position)) <= 47u )
-				goto tr292;
-		} else
-			goto tr291;
-	} else if ( (*( current_position)) > 64u ) {
-		if ( (*( current_position)) < 166u ) {
-			if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
-				goto tr327;
-		} else if ( (*( current_position)) > 175u ) {
-			if ( (*( current_position)) > 191u ) {
-				if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
-					goto tr328;
-			} else if ( (*( current_position)) >= 182u )
-				goto tr327;
-		} else
-			goto tr327;
+	switch( (*( current_position)) ) {
+		case 12u: goto tr329;
+		case 13u: goto tr330;
+		case 20u: goto tr329;
+		case 21u: goto tr330;
+		case 28u: goto tr329;
+		case 29u: goto tr330;
+		case 76u: goto tr332;
+		case 84u: goto tr332;
+		case 92u: goto tr332;
+		case 140u: goto tr333;
+		case 148u: goto tr333;
+		case 156u: goto tr333;
+	}
+	if ( (*( current_position)) < 72u ) {
+		if ( 8u <= (*( current_position)) && (*( current_position)) <= 31u )
+			goto tr328;
+	} else if ( (*( current_position)) > 95u ) {
+		if ( (*( current_position)) > 159u ) {
+			if ( 200u <= (*( current_position)) && (*( current_position)) <= 223u )
+				goto tr328;
+		} else if ( (*( current_position)) >= 136u )
+			goto tr330;
 	} else
-		goto tr291;
+		goto tr331;
 	goto tr19;
-tr314:
+tr320:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -5626,33 +5647,33 @@ st178:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof178;
 case 178:
-	switch( (*( current_position)) ) {
-		case 154u: goto tr327;
-		case 156u: goto tr327;
-		case 158u: goto tr327;
-		case 170u: goto tr327;
-		case 172u: goto tr327;
-		case 174u: goto tr327;
-		case 186u: goto tr327;
-		case 188u: goto tr327;
-		case 190u: goto tr327;
-	}
-	if ( (*( current_position)) < 150u ) {
-		if ( (*( current_position)) > 13u ) {
+	if ( (*( current_position)) == 43u )
+		goto tr298;
+	if ( (*( current_position)) < 55u ) {
+		if ( (*( current_position)) < 40u ) {
+			if ( (*( current_position)) <= 13u )
+				goto tr298;
+		} else if ( (*( current_position)) > 41u ) {
 			if ( 44u <= (*( current_position)) && (*( current_position)) <= 47u )
-				goto tr292;
-		} else if ( (*( current_position)) >= 12u )
-			goto tr291;
-	} else if ( (*( current_position)) > 152u ) {
-		if ( (*( current_position)) > 168u ) {
-			if ( 182u <= (*( current_position)) && (*( current_position)) <= 184u )
-				goto tr327;
-		} else if ( (*( current_position)) >= 166u )
-			goto tr327;
+				goto tr299;
+		} else
+			goto tr298;
+	} else if ( (*( current_position)) > 64u ) {
+		if ( (*( current_position)) < 166u ) {
+			if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
+				goto tr334;
+		} else if ( (*( current_position)) > 175u ) {
+			if ( (*( current_position)) > 191u ) {
+				if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
+					goto tr335;
+			} else if ( (*( current_position)) >= 182u )
+				goto tr334;
+		} else
+			goto tr334;
 	} else
-		goto tr327;
+		goto tr298;
 	goto tr19;
-tr315:
+tr321:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -5662,45 +5683,32 @@ st179:
 		goto _test_eof179;
 case 179:
 	switch( (*( current_position)) ) {
-		case 19u: goto tr329;
-		case 23u: goto tr291;
-		case 24u: goto tr292;
-		case 42u: goto tr292;
+		case 154u: goto tr334;
+		case 156u: goto tr334;
+		case 158u: goto tr334;
+		case 170u: goto tr334;
+		case 172u: goto tr334;
+		case 174u: goto tr334;
+		case 186u: goto tr334;
+		case 188u: goto tr334;
+		case 190u: goto tr334;
 	}
-	if ( (*( current_position)) < 48u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) > 15u ) {
-				if ( 28u <= (*( current_position)) && (*( current_position)) <= 30u )
-					goto tr291;
-			} else
-				goto tr291;
-		} else if ( (*( current_position)) > 37u ) {
-			if ( (*( current_position)) > 43u ) {
-				if ( 44u <= (*( current_position)) && (*( current_position)) <= 47u )
-					goto tr292;
-			} else if ( (*( current_position)) >= 40u )
-				goto tr291;
-		} else
-			goto tr291;
-	} else if ( (*( current_position)) > 53u ) {
-		if ( (*( current_position)) < 166u ) {
-			if ( (*( current_position)) > 65u ) {
-				if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
-					goto tr327;
-			} else if ( (*( current_position)) >= 55u )
-				goto tr291;
-		} else if ( (*( current_position)) > 175u ) {
-			if ( (*( current_position)) > 191u ) {
-				if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
-					goto tr328;
-			} else if ( (*( current_position)) >= 182u )
-				goto tr327;
-		} else
-			goto tr327;
+	if ( (*( current_position)) < 150u ) {
+		if ( (*( current_position)) > 13u ) {
+			if ( 44u <= (*( current_position)) && (*( current_position)) <= 47u )
+				goto tr299;
+		} else if ( (*( current_position)) >= 12u )
+			goto tr298;
+	} else if ( (*( current_position)) > 152u ) {
+		if ( (*( current_position)) > 168u ) {
+			if ( 182u <= (*( current_position)) && (*( current_position)) <= 184u )
+				goto tr334;
+		} else if ( (*( current_position)) >= 166u )
+			goto tr334;
 	} else
-		goto tr291;
+		goto tr334;
 	goto tr19;
-tr316:
+tr322:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -5710,37 +5718,45 @@ st180:
 		goto _test_eof180;
 case 180:
 	switch( (*( current_position)) ) {
-		case 19u: goto tr329;
-		case 23u: goto tr291;
-		case 154u: goto tr327;
-		case 156u: goto tr327;
-		case 158u: goto tr327;
-		case 170u: goto tr327;
-		case 172u: goto tr327;
-		case 174u: goto tr327;
-		case 186u: goto tr327;
-		case 188u: goto tr327;
-		case 190u: goto tr327;
+		case 19u: goto tr336;
+		case 23u: goto tr298;
+		case 24u: goto tr299;
+		case 42u: goto tr299;
 	}
-	if ( (*( current_position)) < 44u ) {
-		if ( (*( current_position)) > 15u ) {
-			if ( 24u <= (*( current_position)) && (*( current_position)) <= 26u )
-				goto tr292;
-		} else if ( (*( current_position)) >= 12u )
-			goto tr291;
-	} else if ( (*( current_position)) > 47u ) {
-		if ( (*( current_position)) < 166u ) {
-			if ( 150u <= (*( current_position)) && (*( current_position)) <= 152u )
-				goto tr327;
-		} else if ( (*( current_position)) > 168u ) {
-			if ( 182u <= (*( current_position)) && (*( current_position)) <= 184u )
-				goto tr327;
+	if ( (*( current_position)) < 48u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) > 15u ) {
+				if ( 28u <= (*( current_position)) && (*( current_position)) <= 30u )
+					goto tr298;
+			} else
+				goto tr298;
+		} else if ( (*( current_position)) > 37u ) {
+			if ( (*( current_position)) > 43u ) {
+				if ( 44u <= (*( current_position)) && (*( current_position)) <= 47u )
+					goto tr299;
+			} else if ( (*( current_position)) >= 40u )
+				goto tr298;
 		} else
-			goto tr327;
+			goto tr298;
+	} else if ( (*( current_position)) > 53u ) {
+		if ( (*( current_position)) < 166u ) {
+			if ( (*( current_position)) > 65u ) {
+				if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
+					goto tr334;
+			} else if ( (*( current_position)) >= 55u )
+				goto tr298;
+		} else if ( (*( current_position)) > 175u ) {
+			if ( (*( current_position)) > 191u ) {
+				if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
+					goto tr335;
+			} else if ( (*( current_position)) >= 182u )
+				goto tr334;
+		} else
+			goto tr334;
 	} else
-		goto tr292;
+		goto tr298;
 	goto tr19;
-tr317:
+tr323:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -5749,16 +5765,38 @@ st181:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof181;
 case 181:
-	if ( (*( current_position)) < 166u ) {
-		if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
-			goto tr327;
-	} else if ( (*( current_position)) > 175u ) {
-		if ( 182u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr327;
+	switch( (*( current_position)) ) {
+		case 19u: goto tr336;
+		case 23u: goto tr298;
+		case 154u: goto tr334;
+		case 156u: goto tr334;
+		case 158u: goto tr334;
+		case 170u: goto tr334;
+		case 172u: goto tr334;
+		case 174u: goto tr334;
+		case 186u: goto tr334;
+		case 188u: goto tr334;
+		case 190u: goto tr334;
+	}
+	if ( (*( current_position)) < 44u ) {
+		if ( (*( current_position)) > 15u ) {
+			if ( 24u <= (*( current_position)) && (*( current_position)) <= 26u )
+				goto tr299;
+		} else if ( (*( current_position)) >= 12u )
+			goto tr298;
+	} else if ( (*( current_position)) > 47u ) {
+		if ( (*( current_position)) < 166u ) {
+			if ( 150u <= (*( current_position)) && (*( current_position)) <= 152u )
+				goto tr334;
+		} else if ( (*( current_position)) > 168u ) {
+			if ( 182u <= (*( current_position)) && (*( current_position)) <= 184u )
+				goto tr334;
+		} else
+			goto tr334;
 	} else
-		goto tr327;
+		goto tr299;
 	goto tr19;
-tr318:
+tr324:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -5767,103 +5805,86 @@ st182:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof182;
 case 182:
-	switch( (*( current_position)) ) {
-		case 154u: goto tr327;
-		case 156u: goto tr327;
-		case 158u: goto tr327;
-		case 170u: goto tr327;
-		case 172u: goto tr327;
-		case 174u: goto tr327;
-		case 186u: goto tr327;
-		case 188u: goto tr327;
-		case 190u: goto tr327;
-	}
 	if ( (*( current_position)) < 166u ) {
-		if ( 150u <= (*( current_position)) && (*( current_position)) <= 152u )
-			goto tr327;
-	} else if ( (*( current_position)) > 168u ) {
-		if ( 182u <= (*( current_position)) && (*( current_position)) <= 184u )
-			goto tr327;
+		if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
+			goto tr334;
+	} else if ( (*( current_position)) > 175u ) {
+		if ( 182u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr334;
 	} else
-		goto tr327;
+		goto tr334;
 	goto tr19;
+tr325:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st183;
 st183:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof183;
 case 183:
 	switch( (*( current_position)) ) {
-		case 65u: goto tr330;
-		case 69u: goto tr331;
-		case 73u: goto tr330;
-		case 77u: goto tr331;
-		case 81u: goto tr330;
-		case 85u: goto tr331;
-		case 89u: goto tr330;
-		case 93u: goto tr331;
-		case 97u: goto tr330;
-		case 101u: goto tr331;
-		case 105u: goto tr330;
-		case 109u: goto tr331;
-		case 113u: goto tr330;
-		case 117u: goto tr331;
-		case 121u: goto tr332;
-		case 125u: goto tr333;
-		case 193u: goto tr334;
-		case 197u: goto tr335;
-		case 201u: goto tr334;
-		case 205u: goto tr335;
-		case 209u: goto tr334;
-		case 213u: goto tr335;
-		case 217u: goto tr334;
-		case 221u: goto tr335;
-		case 225u: goto tr334;
-		case 229u: goto tr335;
-		case 233u: goto tr334;
-		case 237u: goto tr335;
-		case 241u: goto tr334;
-		case 245u: goto tr335;
-		case 249u: goto tr334;
-		case 253u: goto tr335;
+		case 154u: goto tr334;
+		case 156u: goto tr334;
+		case 158u: goto tr334;
+		case 170u: goto tr334;
+		case 172u: goto tr334;
+		case 174u: goto tr334;
+		case 186u: goto tr334;
+		case 188u: goto tr334;
+		case 190u: goto tr334;
 	}
+	if ( (*( current_position)) < 166u ) {
+		if ( 150u <= (*( current_position)) && (*( current_position)) <= 152u )
+			goto tr334;
+	} else if ( (*( current_position)) > 168u ) {
+		if ( 182u <= (*( current_position)) && (*( current_position)) <= 184u )
+			goto tr334;
+	} else
+		goto tr334;
 	goto tr19;
-tr330:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st184;
 st184:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof184;
 case 184:
 	switch( (*( current_position)) ) {
-		case 33u: goto tr293;
-		case 68u: goto tr336;
-		case 223u: goto tr340;
+		case 65u: goto tr337;
+		case 69u: goto tr338;
+		case 73u: goto tr337;
+		case 77u: goto tr338;
+		case 81u: goto tr337;
+		case 85u: goto tr338;
+		case 89u: goto tr337;
+		case 93u: goto tr338;
+		case 97u: goto tr337;
+		case 101u: goto tr338;
+		case 105u: goto tr337;
+		case 109u: goto tr338;
+		case 113u: goto tr337;
+		case 117u: goto tr338;
+		case 121u: goto tr339;
+		case 125u: goto tr340;
+		case 193u: goto tr341;
+		case 197u: goto tr342;
+		case 201u: goto tr341;
+		case 205u: goto tr342;
+		case 209u: goto tr341;
+		case 213u: goto tr342;
+		case 217u: goto tr341;
+		case 221u: goto tr342;
+		case 225u: goto tr341;
+		case 229u: goto tr342;
+		case 233u: goto tr341;
+		case 237u: goto tr342;
+		case 241u: goto tr341;
+		case 245u: goto tr342;
+		case 249u: goto tr341;
+		case 253u: goto tr342;
 	}
-	if ( (*( current_position)) < 74u ) {
-		if ( (*( current_position)) < 64u ) {
-			if ( 8u <= (*( current_position)) && (*( current_position)) <= 15u )
-				goto tr293;
-		} else if ( (*( current_position)) > 66u ) {
-			if ( 72u <= (*( current_position)) && (*( current_position)) <= 73u )
-				goto tr337;
-		} else
-			goto tr293;
-	} else if ( (*( current_position)) > 76u ) {
-		if ( (*( current_position)) < 104u ) {
-			if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-				goto tr339;
-		} else if ( (*( current_position)) > 111u ) {
-			if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
-				goto tr339;
-		} else
-			goto tr339;
-	} else
-		goto tr338;
 	goto tr19;
 tr337:
 	{
-    SET_CPU_FEATURE(CPUFeature_XOP);
+    SET_VEX_PREFIX3(*current_position);
   }
 	goto st185;
 st185:
@@ -5871,129 +5892,159 @@ st185:
 		goto _test_eof185;
 case 185:
 	switch( (*( current_position)) ) {
-		case 4u: goto st187;
-		case 5u: goto st188;
-		case 12u: goto st187;
-		case 13u: goto st188;
-		case 20u: goto st187;
-		case 21u: goto st188;
-		case 28u: goto st187;
-		case 29u: goto st188;
-		case 36u: goto st187;
-		case 37u: goto st188;
-		case 44u: goto st187;
-		case 45u: goto st188;
-		case 52u: goto st187;
-		case 53u: goto st188;
-		case 60u: goto st187;
-		case 61u: goto st188;
-		case 68u: goto st193;
-		case 76u: goto st193;
-		case 84u: goto st193;
-		case 92u: goto st193;
-		case 100u: goto st193;
-		case 108u: goto st193;
-		case 116u: goto st193;
-		case 124u: goto st193;
-		case 132u: goto st194;
-		case 140u: goto st194;
-		case 148u: goto st194;
-		case 156u: goto st194;
-		case 164u: goto st194;
-		case 172u: goto st194;
-		case 180u: goto st194;
-		case 188u: goto st194;
+		case 33u: goto tr300;
+		case 68u: goto tr343;
+		case 223u: goto tr347;
 	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto st188;
-	} else if ( (*( current_position)) >= 64u )
-		goto st192;
-	goto st186;
-tr351:
+	if ( (*( current_position)) < 74u ) {
+		if ( (*( current_position)) < 64u ) {
+			if ( 8u <= (*( current_position)) && (*( current_position)) <= 15u )
+				goto tr300;
+		} else if ( (*( current_position)) > 66u ) {
+			if ( 72u <= (*( current_position)) && (*( current_position)) <= 73u )
+				goto tr344;
+		} else
+			goto tr300;
+	} else if ( (*( current_position)) > 76u ) {
+		if ( (*( current_position)) < 104u ) {
+			if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
+				goto tr346;
+		} else if ( (*( current_position)) > 111u ) {
+			if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
+				goto tr346;
+		} else
+			goto tr346;
+	} else
+		goto tr345;
+	goto tr19;
+tr344:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
-  }
-	goto st186;
-tr352:
-	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st186;
 st186:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof186;
 case 186:
-	if ( (*( current_position)) < 48u ) {
-		if ( (*( current_position)) < 16u ) {
-			if ( (*( current_position)) <= 3u )
-				goto tr347;
-		} else if ( (*( current_position)) > 19u ) {
-			if ( 32u <= (*( current_position)) && (*( current_position)) <= 35u )
-				goto tr347;
-		} else
-			goto tr347;
-	} else if ( (*( current_position)) > 51u ) {
-		if ( (*( current_position)) < 80u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 67u )
-				goto tr347;
-		} else if ( (*( current_position)) > 83u ) {
-			if ( (*( current_position)) > 99u ) {
-				if ( 112u <= (*( current_position)) && (*( current_position)) <= 115u )
-					goto tr347;
-			} else if ( (*( current_position)) >= 96u )
-				goto tr347;
-		} else
-			goto tr347;
-	} else
-		goto tr347;
-	goto tr19;
+	switch( (*( current_position)) ) {
+		case 4u: goto st188;
+		case 5u: goto st189;
+		case 12u: goto st188;
+		case 13u: goto st189;
+		case 20u: goto st188;
+		case 21u: goto st189;
+		case 28u: goto st188;
+		case 29u: goto st189;
+		case 36u: goto st188;
+		case 37u: goto st189;
+		case 44u: goto st188;
+		case 45u: goto st189;
+		case 52u: goto st188;
+		case 53u: goto st189;
+		case 60u: goto st188;
+		case 61u: goto st189;
+		case 68u: goto st194;
+		case 76u: goto st194;
+		case 84u: goto st194;
+		case 92u: goto st194;
+		case 100u: goto st194;
+		case 108u: goto st194;
+		case 116u: goto st194;
+		case 124u: goto st194;
+		case 132u: goto st195;
+		case 140u: goto st195;
+		case 148u: goto st195;
+		case 156u: goto st195;
+		case 164u: goto st195;
+		case 172u: goto st195;
+		case 180u: goto st195;
+		case 188u: goto st195;
+	}
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto st189;
+	} else if ( (*( current_position)) >= 64u )
+		goto st193;
+	goto st187;
+tr358:
+	{
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(current_position - 3);
+  }
+	goto st187;
+tr359:
+	{
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(current_position);
+  }
+	goto st187;
 st187:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof187;
 case 187:
-	switch( (*( current_position)) ) {
-		case 5u: goto st188;
-		case 13u: goto st188;
-		case 21u: goto st188;
-		case 29u: goto st188;
-		case 37u: goto st188;
-		case 45u: goto st188;
-		case 53u: goto st188;
-		case 61u: goto st188;
-		case 69u: goto st188;
-		case 77u: goto st188;
-		case 85u: goto st188;
-		case 93u: goto st188;
-		case 101u: goto st188;
-		case 109u: goto st188;
-		case 117u: goto st188;
-		case 125u: goto st188;
-		case 133u: goto st188;
-		case 141u: goto st188;
-		case 149u: goto st188;
-		case 157u: goto st188;
-		case 165u: goto st188;
-		case 173u: goto st188;
-		case 181u: goto st188;
-		case 189u: goto st188;
-		case 197u: goto st188;
-		case 205u: goto st188;
-		case 213u: goto st188;
-		case 221u: goto st188;
-		case 229u: goto st188;
-		case 237u: goto st188;
-		case 245u: goto st188;
-		case 253u: goto st188;
-	}
-	goto st186;
+	if ( (*( current_position)) < 48u ) {
+		if ( (*( current_position)) < 16u ) {
+			if ( (*( current_position)) <= 3u )
+				goto tr354;
+		} else if ( (*( current_position)) > 19u ) {
+			if ( 32u <= (*( current_position)) && (*( current_position)) <= 35u )
+				goto tr354;
+		} else
+			goto tr354;
+	} else if ( (*( current_position)) > 51u ) {
+		if ( (*( current_position)) < 80u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 67u )
+				goto tr354;
+		} else if ( (*( current_position)) > 83u ) {
+			if ( (*( current_position)) > 99u ) {
+				if ( 112u <= (*( current_position)) && (*( current_position)) <= 115u )
+					goto tr354;
+			} else if ( (*( current_position)) >= 96u )
+				goto tr354;
+		} else
+			goto tr354;
+	} else
+		goto tr354;
+	goto tr19;
 st188:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof188;
 case 188:
-	goto st189;
+	switch( (*( current_position)) ) {
+		case 5u: goto st189;
+		case 13u: goto st189;
+		case 21u: goto st189;
+		case 29u: goto st189;
+		case 37u: goto st189;
+		case 45u: goto st189;
+		case 53u: goto st189;
+		case 61u: goto st189;
+		case 69u: goto st189;
+		case 77u: goto st189;
+		case 85u: goto st189;
+		case 93u: goto st189;
+		case 101u: goto st189;
+		case 109u: goto st189;
+		case 117u: goto st189;
+		case 125u: goto st189;
+		case 133u: goto st189;
+		case 141u: goto st189;
+		case 149u: goto st189;
+		case 157u: goto st189;
+		case 165u: goto st189;
+		case 173u: goto st189;
+		case 181u: goto st189;
+		case 189u: goto st189;
+		case 197u: goto st189;
+		case 205u: goto st189;
+		case 213u: goto st189;
+		case 221u: goto st189;
+		case 229u: goto st189;
+		case 237u: goto st189;
+		case 245u: goto st189;
+		case 253u: goto st189;
+	}
+	goto st187;
 st189:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof189;
@@ -6008,63 +6059,28 @@ st191:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof191;
 case 191:
-	goto tr351;
+	goto st192;
 st192:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof192;
 case 192:
-	goto tr352;
+	goto tr358;
 st193:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof193;
 case 193:
-	goto st192;
+	goto tr359;
 st194:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof194;
 case 194:
-	goto st188;
-tr331:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st195;
+	goto st193;
 st195:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof195;
 case 195:
-	switch( (*( current_position)) ) {
-		case 6u: goto tr293;
-		case 64u: goto tr293;
-	}
-	if ( (*( current_position)) < 92u ) {
-		if ( (*( current_position)) < 12u ) {
-			if ( 8u <= (*( current_position)) && (*( current_position)) <= 9u )
-				goto tr293;
-		} else if ( (*( current_position)) > 13u ) {
-			if ( (*( current_position)) > 73u ) {
-				if ( 74u <= (*( current_position)) && (*( current_position)) <= 75u )
-					goto tr338;
-			} else if ( (*( current_position)) >= 72u )
-				goto tr337;
-		} else
-			goto tr293;
-	} else if ( (*( current_position)) > 95u ) {
-		if ( (*( current_position)) < 108u ) {
-			if ( 104u <= (*( current_position)) && (*( current_position)) <= 105u )
-				goto tr339;
-		} else if ( (*( current_position)) > 109u ) {
-			if ( (*( current_position)) > 121u ) {
-				if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-					goto tr339;
-			} else if ( (*( current_position)) >= 120u )
-				goto tr339;
-		} else
-			goto tr339;
-	} else
-		goto tr339;
-	goto tr19;
-tr332:
+	goto st189;
+tr338:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -6074,55 +6090,95 @@ st196:
 		goto _test_eof196;
 case 196:
 	switch( (*( current_position)) ) {
-		case 22u: goto tr293;
-		case 23u: goto tr353;
-		case 29u: goto tr354;
-		case 32u: goto st167;
-		case 68u: goto tr336;
-		case 223u: goto tr340;
+		case 6u: goto tr300;
+		case 64u: goto tr300;
 	}
-	if ( (*( current_position)) < 72u ) {
-		if ( (*( current_position)) < 20u ) {
-			if ( (*( current_position)) > 5u ) {
-				if ( 8u <= (*( current_position)) && (*( current_position)) <= 15u )
-					goto tr293;
-			} else if ( (*( current_position)) >= 4u )
-				goto tr293;
-		} else if ( (*( current_position)) > 21u ) {
-			if ( (*( current_position)) > 34u ) {
-				if ( 64u <= (*( current_position)) && (*( current_position)) <= 66u )
-					goto tr293;
-			} else if ( (*( current_position)) >= 33u )
-				goto tr293;
+	if ( (*( current_position)) < 92u ) {
+		if ( (*( current_position)) < 12u ) {
+			if ( 8u <= (*( current_position)) && (*( current_position)) <= 9u )
+				goto tr300;
+		} else if ( (*( current_position)) > 13u ) {
+			if ( (*( current_position)) > 73u ) {
+				if ( 74u <= (*( current_position)) && (*( current_position)) <= 75u )
+					goto tr345;
+			} else if ( (*( current_position)) >= 72u )
+				goto tr344;
 		} else
-			goto st167;
-	} else if ( (*( current_position)) > 73u ) {
-		if ( (*( current_position)) < 96u ) {
-			if ( (*( current_position)) > 76u ) {
-				if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-					goto tr339;
-			} else if ( (*( current_position)) >= 74u )
-				goto tr338;
-		} else if ( (*( current_position)) > 99u ) {
-			if ( (*( current_position)) > 111u ) {
-				if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
-					goto tr339;
-			} else if ( (*( current_position)) >= 104u )
-				goto tr339;
+			goto tr300;
+	} else if ( (*( current_position)) > 95u ) {
+		if ( (*( current_position)) < 108u ) {
+			if ( 104u <= (*( current_position)) && (*( current_position)) <= 105u )
+				goto tr346;
+		} else if ( (*( current_position)) > 109u ) {
+			if ( (*( current_position)) > 121u ) {
+				if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+					goto tr346;
+			} else if ( (*( current_position)) >= 120u )
+				goto tr346;
 		} else
-			goto tr293;
+			goto tr346;
 	} else
-		goto tr337;
+		goto tr346;
 	goto tr19;
-tr353:
+tr339:
 	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
+    SET_VEX_PREFIX3(*current_position);
   }
 	goto st197;
 st197:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof197;
 case 197:
+	switch( (*( current_position)) ) {
+		case 22u: goto tr300;
+		case 23u: goto tr360;
+		case 29u: goto tr361;
+		case 32u: goto st168;
+		case 68u: goto tr343;
+		case 223u: goto tr347;
+	}
+	if ( (*( current_position)) < 72u ) {
+		if ( (*( current_position)) < 20u ) {
+			if ( (*( current_position)) > 5u ) {
+				if ( 8u <= (*( current_position)) && (*( current_position)) <= 15u )
+					goto tr300;
+			} else if ( (*( current_position)) >= 4u )
+				goto tr300;
+		} else if ( (*( current_position)) > 21u ) {
+			if ( (*( current_position)) > 34u ) {
+				if ( 64u <= (*( current_position)) && (*( current_position)) <= 66u )
+					goto tr300;
+			} else if ( (*( current_position)) >= 33u )
+				goto tr300;
+		} else
+			goto st168;
+	} else if ( (*( current_position)) > 73u ) {
+		if ( (*( current_position)) < 96u ) {
+			if ( (*( current_position)) > 76u ) {
+				if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
+					goto tr346;
+			} else if ( (*( current_position)) >= 74u )
+				goto tr345;
+		} else if ( (*( current_position)) > 99u ) {
+			if ( (*( current_position)) > 111u ) {
+				if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
+					goto tr346;
+			} else if ( (*( current_position)) >= 104u )
+				goto tr346;
+		} else
+			goto tr300;
+	} else
+		goto tr344;
+	goto tr19;
+tr360:
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st198;
+st198:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof198;
+case 198:
 	switch( (*( current_position)) ) {
 		case 4u: goto st35;
 		case 12u: goto st35;
@@ -6182,53 +6238,7 @@ case 197:
 	} else
 		goto st10;
 	goto st36;
-tr333:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st198;
-st198:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof198;
-case 198:
-	switch( (*( current_position)) ) {
-		case 29u: goto tr354;
-		case 64u: goto tr293;
-	}
-	if ( (*( current_position)) < 74u ) {
-		if ( (*( current_position)) < 12u ) {
-			if ( (*( current_position)) > 6u ) {
-				if ( 8u <= (*( current_position)) && (*( current_position)) <= 9u )
-					goto tr293;
-			} else if ( (*( current_position)) >= 4u )
-				goto tr293;
-		} else if ( (*( current_position)) > 13u ) {
-			if ( (*( current_position)) > 25u ) {
-				if ( 72u <= (*( current_position)) && (*( current_position)) <= 73u )
-					goto tr337;
-			} else if ( (*( current_position)) >= 24u )
-				goto tr293;
-		} else
-			goto tr293;
-	} else if ( (*( current_position)) > 75u ) {
-		if ( (*( current_position)) < 108u ) {
-			if ( (*( current_position)) > 95u ) {
-				if ( 104u <= (*( current_position)) && (*( current_position)) <= 105u )
-					goto tr339;
-			} else if ( (*( current_position)) >= 92u )
-				goto tr339;
-		} else if ( (*( current_position)) > 109u ) {
-			if ( (*( current_position)) > 121u ) {
-				if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-					goto tr339;
-			} else if ( (*( current_position)) >= 120u )
-				goto tr339;
-		} else
-			goto tr339;
-	} else
-		goto tr338;
-	goto tr19;
-tr334:
+tr340:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -6237,19 +6247,44 @@ st199:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof199;
 case 199:
-	if ( (*( current_position)) < 92u ) {
-		if ( 72u <= (*( current_position)) && (*( current_position)) <= 73u )
-			goto tr337;
-	} else if ( (*( current_position)) > 95u ) {
-		if ( (*( current_position)) > 111u ) {
-			if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
-				goto tr339;
-		} else if ( (*( current_position)) >= 104u )
-			goto tr339;
+	switch( (*( current_position)) ) {
+		case 29u: goto tr361;
+		case 64u: goto tr300;
+	}
+	if ( (*( current_position)) < 74u ) {
+		if ( (*( current_position)) < 12u ) {
+			if ( (*( current_position)) > 6u ) {
+				if ( 8u <= (*( current_position)) && (*( current_position)) <= 9u )
+					goto tr300;
+			} else if ( (*( current_position)) >= 4u )
+				goto tr300;
+		} else if ( (*( current_position)) > 13u ) {
+			if ( (*( current_position)) > 25u ) {
+				if ( 72u <= (*( current_position)) && (*( current_position)) <= 73u )
+					goto tr344;
+			} else if ( (*( current_position)) >= 24u )
+				goto tr300;
+		} else
+			goto tr300;
+	} else if ( (*( current_position)) > 75u ) {
+		if ( (*( current_position)) < 108u ) {
+			if ( (*( current_position)) > 95u ) {
+				if ( 104u <= (*( current_position)) && (*( current_position)) <= 105u )
+					goto tr346;
+			} else if ( (*( current_position)) >= 92u )
+				goto tr346;
+		} else if ( (*( current_position)) > 109u ) {
+			if ( (*( current_position)) > 121u ) {
+				if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+					goto tr346;
+			} else if ( (*( current_position)) >= 120u )
+				goto tr346;
+		} else
+			goto tr346;
 	} else
-		goto tr339;
+		goto tr345;
 	goto tr19;
-tr335:
+tr341:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -6258,119 +6293,117 @@ st200:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof200;
 case 200:
-	if ( (*( current_position)) < 104u ) {
-		if ( (*( current_position)) > 73u ) {
-			if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-				goto tr339;
-		} else if ( (*( current_position)) >= 72u )
-			goto tr337;
-	} else if ( (*( current_position)) > 105u ) {
-		if ( (*( current_position)) < 120u ) {
-			if ( 108u <= (*( current_position)) && (*( current_position)) <= 109u )
-				goto tr339;
-		} else if ( (*( current_position)) > 121u ) {
-			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-				goto tr339;
-		} else
-			goto tr339;
+	if ( (*( current_position)) < 92u ) {
+		if ( 72u <= (*( current_position)) && (*( current_position)) <= 73u )
+			goto tr344;
+	} else if ( (*( current_position)) > 95u ) {
+		if ( (*( current_position)) > 111u ) {
+			if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
+				goto tr346;
+		} else if ( (*( current_position)) >= 104u )
+			goto tr346;
 	} else
-		goto tr339;
+		goto tr346;
 	goto tr19;
-tr434:
+tr342:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
+    SET_VEX_PREFIX3(*current_position);
+  }
 	goto st201;
 st201:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof201;
 case 201:
-	switch( (*( current_position)) ) {
-		case 193u: goto tr356;
-		case 194u: goto tr357;
-		case 195u: goto tr358;
-		case 196u: goto tr359;
-		case 197u: goto tr360;
-		case 198u: goto tr361;
-		case 199u: goto tr362;
-		case 201u: goto tr356;
-		case 202u: goto tr357;
-		case 203u: goto tr358;
-		case 204u: goto tr359;
-		case 205u: goto tr360;
-		case 206u: goto tr361;
-		case 207u: goto tr362;
-		case 209u: goto tr356;
-		case 210u: goto tr357;
-		case 211u: goto tr358;
-		case 212u: goto tr359;
-		case 213u: goto tr360;
-		case 214u: goto tr361;
-		case 215u: goto tr362;
-		case 217u: goto tr356;
-		case 218u: goto tr357;
-		case 219u: goto tr358;
-		case 220u: goto tr359;
-		case 221u: goto tr360;
-		case 222u: goto tr361;
-		case 223u: goto tr362;
-		case 225u: goto tr356;
-		case 226u: goto tr357;
-		case 227u: goto tr358;
-		case 228u: goto tr359;
-		case 229u: goto tr360;
-		case 230u: goto tr361;
-		case 231u: goto tr362;
-		case 233u: goto tr356;
-		case 234u: goto tr357;
-		case 235u: goto tr358;
-		case 236u: goto tr359;
-		case 237u: goto tr360;
-		case 238u: goto tr361;
-		case 239u: goto tr362;
-		case 241u: goto tr356;
-		case 242u: goto tr357;
-		case 243u: goto tr358;
-		case 244u: goto tr359;
-		case 245u: goto tr360;
-		case 246u: goto tr361;
-		case 247u: goto tr362;
-		case 248u: goto tr363;
-		case 249u: goto tr364;
-		case 250u: goto tr365;
-		case 251u: goto tr366;
-		case 252u: goto tr367;
-		case 253u: goto tr368;
-		case 254u: goto tr369;
-		case 255u: goto tr370;
-	}
-	if ( 192u <= (*( current_position)) && (*( current_position)) <= 240u )
-		goto tr355;
+	if ( (*( current_position)) < 104u ) {
+		if ( (*( current_position)) > 73u ) {
+			if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
+				goto tr346;
+		} else if ( (*( current_position)) >= 72u )
+			goto tr344;
+	} else if ( (*( current_position)) > 105u ) {
+		if ( (*( current_position)) < 120u ) {
+			if ( 108u <= (*( current_position)) && (*( current_position)) <= 109u )
+				goto tr346;
+		} else if ( (*( current_position)) > 121u ) {
+			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+				goto tr346;
+		} else
+			goto tr346;
+	} else
+		goto tr346;
 	goto tr19;
-tr357:
+tr441:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
-  }
+       BitmapSetBit(valid_targets, current_position - data);
+     }
 	goto st202;
 st202:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof202;
 case 202:
 	switch( (*( current_position)) ) {
-		case 81u: goto tr291;
-		case 83u: goto tr291;
-		case 194u: goto tr293;
+		case 193u: goto tr363;
+		case 194u: goto tr364;
+		case 195u: goto tr365;
+		case 196u: goto tr366;
+		case 197u: goto tr367;
+		case 198u: goto tr368;
+		case 199u: goto tr369;
+		case 201u: goto tr363;
+		case 202u: goto tr364;
+		case 203u: goto tr365;
+		case 204u: goto tr366;
+		case 205u: goto tr367;
+		case 206u: goto tr368;
+		case 207u: goto tr369;
+		case 209u: goto tr363;
+		case 210u: goto tr364;
+		case 211u: goto tr365;
+		case 212u: goto tr366;
+		case 213u: goto tr367;
+		case 214u: goto tr368;
+		case 215u: goto tr369;
+		case 217u: goto tr363;
+		case 218u: goto tr364;
+		case 219u: goto tr365;
+		case 220u: goto tr366;
+		case 221u: goto tr367;
+		case 222u: goto tr368;
+		case 223u: goto tr369;
+		case 225u: goto tr363;
+		case 226u: goto tr364;
+		case 227u: goto tr365;
+		case 228u: goto tr366;
+		case 229u: goto tr367;
+		case 230u: goto tr368;
+		case 231u: goto tr369;
+		case 233u: goto tr363;
+		case 234u: goto tr364;
+		case 235u: goto tr365;
+		case 236u: goto tr366;
+		case 237u: goto tr367;
+		case 238u: goto tr368;
+		case 239u: goto tr369;
+		case 241u: goto tr363;
+		case 242u: goto tr364;
+		case 243u: goto tr365;
+		case 244u: goto tr366;
+		case 245u: goto tr367;
+		case 246u: goto tr368;
+		case 247u: goto tr369;
+		case 248u: goto tr370;
+		case 249u: goto tr371;
+		case 250u: goto tr372;
+		case 251u: goto tr373;
+		case 252u: goto tr374;
+		case 253u: goto tr375;
+		case 254u: goto tr376;
+		case 255u: goto tr377;
 	}
-	if ( (*( current_position)) > 90u ) {
-		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-			goto tr291;
-	} else if ( (*( current_position)) >= 88u )
-		goto tr291;
+	if ( 192u <= (*( current_position)) && (*( current_position)) <= 240u )
+		goto tr362;
 	goto tr19;
-tr358:
+tr364:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -6381,18 +6414,15 @@ st203:
 		goto _test_eof203;
 case 203:
 	switch( (*( current_position)) ) {
-		case 81u: goto tr291;
-		case 194u: goto tr293;
-		case 208u: goto tr291;
+		case 81u: goto tr298;
+		case 83u: goto tr298;
+		case 194u: goto tr300;
 	}
-	if ( (*( current_position)) < 92u ) {
-		if ( 88u <= (*( current_position)) && (*( current_position)) <= 90u )
-			goto tr291;
-	} else if ( (*( current_position)) > 95u ) {
-		if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-			goto tr291;
-	} else
-		goto tr291;
+	if ( (*( current_position)) > 90u ) {
+		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
+			goto tr298;
+	} else if ( (*( current_position)) >= 88u )
+		goto tr298;
 	goto tr19;
 tr365:
 	{
@@ -6405,26 +6435,20 @@ st204:
 		goto _test_eof204;
 case 204:
 	switch( (*( current_position)) ) {
-		case 18u: goto tr291;
-		case 22u: goto tr291;
-		case 111u: goto tr291;
-		case 112u: goto tr293;
-		case 194u: goto tr293;
-		case 230u: goto tr291;
+		case 81u: goto tr298;
+		case 194u: goto tr300;
+		case 208u: goto tr298;
 	}
-	if ( (*( current_position)) < 81u ) {
-		if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
-			goto tr292;
-	} else if ( (*( current_position)) > 83u ) {
-		if ( (*( current_position)) > 95u ) {
-			if ( 126u <= (*( current_position)) && (*( current_position)) <= 127u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 88u )
-			goto tr291;
+	if ( (*( current_position)) < 92u ) {
+		if ( 88u <= (*( current_position)) && (*( current_position)) <= 90u )
+			goto tr298;
+	} else if ( (*( current_position)) > 95u ) {
+		if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+			goto tr298;
 	} else
-		goto tr291;
+		goto tr298;
 	goto tr19;
-tr366:
+tr372:
 	{
     /* VEX.R is not used in ia32 mode.  */
     SET_VEX_PREFIX3((*current_position) & 0x7f);
@@ -6435,37 +6459,65 @@ st205:
 		goto _test_eof205;
 case 205:
 	switch( (*( current_position)) ) {
-		case 18u: goto tr291;
-		case 81u: goto tr291;
-		case 112u: goto tr293;
-		case 194u: goto tr293;
-		case 208u: goto tr291;
-		case 230u: goto tr291;
-		case 240u: goto tr292;
+		case 18u: goto tr298;
+		case 22u: goto tr298;
+		case 111u: goto tr298;
+		case 112u: goto tr300;
+		case 194u: goto tr300;
+		case 230u: goto tr298;
 	}
-	if ( (*( current_position)) < 88u ) {
+	if ( (*( current_position)) < 81u ) {
 		if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
-			goto tr292;
-	} else if ( (*( current_position)) > 90u ) {
+			goto tr299;
+	} else if ( (*( current_position)) > 83u ) {
 		if ( (*( current_position)) > 95u ) {
-			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-				goto tr291;
-		} else if ( (*( current_position)) >= 92u )
-			goto tr291;
+			if ( 126u <= (*( current_position)) && (*( current_position)) <= 127u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 88u )
+			goto tr298;
 	} else
-		goto tr291;
+		goto tr298;
 	goto tr19;
-tr435:
+tr373:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3((*current_position) & 0x7f);
+  }
 	goto st206;
 st206:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof206;
 case 206:
+	switch( (*( current_position)) ) {
+		case 18u: goto tr298;
+		case 81u: goto tr298;
+		case 112u: goto tr300;
+		case 194u: goto tr300;
+		case 208u: goto tr298;
+		case 230u: goto tr298;
+		case 240u: goto tr299;
+	}
+	if ( (*( current_position)) < 88u ) {
+		if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
+			goto tr299;
+	} else if ( (*( current_position)) > 90u ) {
+		if ( (*( current_position)) > 95u ) {
+			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+				goto tr298;
+		} else if ( (*( current_position)) >= 92u )
+			goto tr298;
+	} else
+		goto tr298;
+	goto tr19;
+tr442:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st207;
+st207:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof207;
+case 207:
 	switch( (*( current_position)) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -6484,22 +6536,20 @@ case 206:
 	} else
 		goto st40;
 	goto tr19;
-tr436:
+tr443:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st207;
-st207:
+	goto st208;
+st208:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof207;
-case 207:
+		goto _test_eof208;
+case 208:
 	switch( (*( current_position)) ) {
-		case 4u: goto st113;
-		case 5u: goto st114;
-		case 68u: goto st119;
-		case 132u: goto st120;
+		case 4u: goto st114;
+		case 5u: goto st115;
+		case 68u: goto st120;
+		case 132u: goto st121;
 	}
 	if ( (*( current_position)) < 64u ) {
 		if ( (*( current_position)) <= 7u )
@@ -6509,83 +6559,28 @@ case 207:
 			if ( 192u <= (*( current_position)) && (*( current_position)) <= 199u )
 				goto st11;
 		} else if ( (*( current_position)) >= 128u )
-			goto st114;
+			goto st115;
 	} else
-		goto st118;
+		goto st119;
 	goto tr19;
-tr437:
+tr444:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st208;
-st208:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof208;
-case 208:
 	goto st209;
 st209:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof209;
 case 209:
-	goto tr372;
-tr440:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
 	goto st210;
 st210:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof210;
 case 210:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr374;
-		case 5u: goto tr375;
-		case 12u: goto tr374;
-		case 13u: goto tr375;
-		case 20u: goto tr374;
-		case 21u: goto tr375;
-		case 28u: goto tr374;
-		case 29u: goto tr375;
-		case 36u: goto tr374;
-		case 37u: goto tr375;
-		case 44u: goto tr374;
-		case 45u: goto tr375;
-		case 52u: goto tr374;
-		case 53u: goto tr375;
-		case 60u: goto tr374;
-		case 61u: goto tr375;
-		case 68u: goto tr377;
-		case 76u: goto tr377;
-		case 84u: goto tr377;
-		case 92u: goto tr377;
-		case 100u: goto tr377;
-		case 108u: goto tr377;
-		case 116u: goto tr377;
-		case 124u: goto tr377;
-		case 132u: goto tr378;
-		case 140u: goto tr378;
-		case 148u: goto tr378;
-		case 156u: goto tr378;
-		case 164u: goto tr378;
-		case 172u: goto tr378;
-		case 180u: goto tr378;
-		case 188u: goto tr378;
-	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr375;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr376;
-	goto tr373;
-tr441:
+	goto tr379;
+tr446:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st211;
 st211:
@@ -6593,32 +6588,81 @@ st211:
 		goto _test_eof211;
 case 211:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr374;
-		case 5u: goto tr375;
-		case 20u: goto tr374;
-		case 21u: goto tr375;
-		case 28u: goto tr374;
-		case 29u: goto tr375;
-		case 36u: goto tr374;
-		case 37u: goto tr375;
-		case 44u: goto tr374;
-		case 45u: goto tr375;
+		case 4u: goto tr381;
+		case 5u: goto tr382;
+		case 12u: goto tr381;
+		case 13u: goto tr382;
+		case 20u: goto tr381;
+		case 21u: goto tr382;
+		case 28u: goto tr381;
+		case 29u: goto tr382;
+		case 36u: goto tr381;
+		case 37u: goto tr382;
+		case 44u: goto tr381;
+		case 45u: goto tr382;
+		case 52u: goto tr381;
+		case 53u: goto tr382;
+		case 60u: goto tr381;
+		case 61u: goto tr382;
+		case 68u: goto tr384;
+		case 76u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 100u: goto tr384;
+		case 108u: goto tr384;
+		case 116u: goto tr384;
+		case 124u: goto tr384;
+		case 132u: goto tr385;
+		case 140u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 164u: goto tr385;
+		case 172u: goto tr385;
+		case 180u: goto tr385;
+		case 188u: goto tr385;
+	}
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr382;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr383;
+	goto tr380;
+tr447:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st212;
+st212:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof212;
+case 212:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr381;
+		case 5u: goto tr382;
+		case 20u: goto tr381;
+		case 21u: goto tr382;
+		case 28u: goto tr381;
+		case 29u: goto tr382;
+		case 36u: goto tr381;
+		case 37u: goto tr382;
+		case 44u: goto tr381;
+		case 45u: goto tr382;
 		case 52u: goto st2;
 		case 53u: goto st3;
 		case 60u: goto st2;
 		case 61u: goto st3;
-		case 68u: goto tr377;
-		case 84u: goto tr377;
-		case 92u: goto tr377;
-		case 100u: goto tr377;
-		case 108u: goto tr377;
+		case 68u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 100u: goto tr384;
+		case 108u: goto tr384;
 		case 116u: goto st8;
 		case 124u: goto st8;
-		case 132u: goto tr378;
-		case 148u: goto tr378;
-		case 156u: goto tr378;
-		case 164u: goto tr378;
-		case 172u: goto tr378;
+		case 132u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 164u: goto tr385;
+		case 172u: goto tr385;
 		case 180u: goto st9;
 		case 188u: goto st9;
 		case 239u: goto tr19;
@@ -6638,14 +6682,14 @@ case 211:
 				if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
 					goto st7;
 			} else
-				goto tr376;
+				goto tr383;
 		} else
-			goto tr376;
+			goto tr383;
 	} else if ( (*( current_position)) > 135u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) > 143u ) {
 				if ( 144u <= (*( current_position)) && (*( current_position)) <= 175u )
-					goto tr375;
+					goto tr382;
 			} else if ( (*( current_position)) >= 136u )
 				goto tr19;
 		} else if ( (*( current_position)) > 191u ) {
@@ -6660,87 +6704,11 @@ case 211:
 		} else
 			goto st3;
 	} else
-		goto tr375;
-	goto tr373;
-tr442:
+		goto tr382;
+	goto tr380;
+tr448:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st212;
-st212:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof212;
-case 212:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr374;
-		case 12u: goto tr374;
-		case 20u: goto tr374;
-		case 28u: goto tr374;
-		case 36u: goto tr374;
-		case 44u: goto tr374;
-		case 52u: goto tr374;
-		case 60u: goto tr374;
-		case 68u: goto tr377;
-		case 76u: goto tr377;
-		case 84u: goto tr377;
-		case 92u: goto tr377;
-		case 100u: goto tr377;
-		case 108u: goto tr377;
-		case 116u: goto tr377;
-		case 124u: goto tr377;
-		case 132u: goto tr378;
-		case 140u: goto tr378;
-		case 148u: goto tr378;
-		case 156u: goto tr378;
-		case 164u: goto tr378;
-		case 172u: goto tr378;
-		case 180u: goto tr378;
-		case 188u: goto tr378;
-		case 233u: goto tr373;
-	}
-	if ( (*( current_position)) < 38u ) {
-		if ( (*( current_position)) < 14u ) {
-			if ( (*( current_position)) > 3u ) {
-				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
-					goto tr373;
-			} else
-				goto tr373;
-		} else if ( (*( current_position)) > 19u ) {
-			if ( (*( current_position)) > 27u ) {
-				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
-					goto tr373;
-			} else if ( (*( current_position)) >= 22u )
-				goto tr373;
-		} else
-			goto tr373;
-	} else if ( (*( current_position)) > 43u ) {
-		if ( (*( current_position)) < 62u ) {
-			if ( (*( current_position)) > 51u ) {
-				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
-					goto tr373;
-			} else if ( (*( current_position)) >= 46u )
-				goto tr373;
-		} else if ( (*( current_position)) > 63u ) {
-			if ( (*( current_position)) < 192u ) {
-				if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
-					goto tr376;
-			} else if ( (*( current_position)) > 223u ) {
-				if ( 224u <= (*( current_position)) )
-					goto tr19;
-			} else
-				goto tr379;
-		} else
-			goto tr373;
-	} else
-		goto tr373;
-	goto tr375;
-tr443:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st213;
 st213:
@@ -6748,72 +6716,71 @@ st213:
 		goto _test_eof213;
 case 213:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr374;
-		case 5u: goto tr375;
-		case 12u: goto tr374;
-		case 13u: goto tr375;
-		case 20u: goto tr374;
-		case 21u: goto tr375;
-		case 28u: goto tr374;
-		case 29u: goto tr375;
-		case 44u: goto tr374;
-		case 45u: goto tr375;
-		case 60u: goto tr374;
-		case 61u: goto tr375;
-		case 68u: goto tr377;
-		case 76u: goto tr377;
-		case 84u: goto tr377;
-		case 92u: goto tr377;
-		case 108u: goto tr377;
-		case 124u: goto tr377;
-		case 132u: goto tr378;
-		case 140u: goto tr378;
-		case 148u: goto tr378;
-		case 156u: goto tr378;
-		case 172u: goto tr378;
-		case 188u: goto tr378;
+		case 4u: goto tr381;
+		case 12u: goto tr381;
+		case 20u: goto tr381;
+		case 28u: goto tr381;
+		case 36u: goto tr381;
+		case 44u: goto tr381;
+		case 52u: goto tr381;
+		case 60u: goto tr381;
+		case 68u: goto tr384;
+		case 76u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 100u: goto tr384;
+		case 108u: goto tr384;
+		case 116u: goto tr384;
+		case 124u: goto tr384;
+		case 132u: goto tr385;
+		case 140u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 164u: goto tr385;
+		case 172u: goto tr385;
+		case 180u: goto tr385;
+		case 188u: goto tr385;
+		case 233u: goto tr380;
 	}
-	if ( (*( current_position)) < 120u ) {
-		if ( (*( current_position)) < 56u ) {
-			if ( (*( current_position)) > 31u ) {
-				if ( 40u <= (*( current_position)) && (*( current_position)) <= 47u )
-					goto tr373;
+	if ( (*( current_position)) < 38u ) {
+		if ( (*( current_position)) < 14u ) {
+			if ( (*( current_position)) > 3u ) {
+				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
+					goto tr380;
 			} else
-				goto tr373;
+				goto tr380;
+		} else if ( (*( current_position)) > 19u ) {
+			if ( (*( current_position)) > 27u ) {
+				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
+					goto tr380;
+			} else if ( (*( current_position)) >= 22u )
+				goto tr380;
+		} else
+			goto tr380;
+	} else if ( (*( current_position)) > 43u ) {
+		if ( (*( current_position)) < 62u ) {
+			if ( (*( current_position)) > 51u ) {
+				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
+					goto tr380;
+			} else if ( (*( current_position)) >= 46u )
+				goto tr380;
 		} else if ( (*( current_position)) > 63u ) {
-			if ( (*( current_position)) > 95u ) {
-				if ( 104u <= (*( current_position)) && (*( current_position)) <= 111u )
-					goto tr376;
-			} else if ( (*( current_position)) >= 64u )
-				goto tr376;
-		} else
-			goto tr373;
-	} else if ( (*( current_position)) > 127u ) {
-		if ( (*( current_position)) < 184u ) {
-			if ( (*( current_position)) > 159u ) {
-				if ( 168u <= (*( current_position)) && (*( current_position)) <= 175u )
-					goto tr375;
-			} else if ( (*( current_position)) >= 128u )
-				goto tr375;
-		} else if ( (*( current_position)) > 191u ) {
-			if ( (*( current_position)) < 226u ) {
-				if ( 192u <= (*( current_position)) && (*( current_position)) <= 223u )
-					goto tr379;
-			} else if ( (*( current_position)) > 227u ) {
-				if ( 232u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr373;
+			if ( (*( current_position)) < 192u ) {
+				if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
+					goto tr383;
+			} else if ( (*( current_position)) > 223u ) {
+				if ( 224u <= (*( current_position)) )
+					goto tr19;
 			} else
-				goto tr373;
+				goto tr386;
 		} else
-			goto tr375;
+			goto tr380;
 	} else
-		goto tr376;
-	goto tr19;
-tr444:
+		goto tr380;
+	goto tr382;
+tr449:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st214;
 st214:
@@ -6821,53 +6788,70 @@ st214:
 		goto _test_eof214;
 case 214:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr374;
-		case 5u: goto tr375;
-		case 12u: goto tr374;
-		case 13u: goto tr375;
-		case 20u: goto tr374;
-		case 21u: goto tr375;
-		case 28u: goto tr374;
-		case 29u: goto tr375;
-		case 36u: goto tr374;
-		case 37u: goto tr375;
-		case 44u: goto tr374;
-		case 45u: goto tr375;
-		case 52u: goto tr374;
-		case 53u: goto tr375;
-		case 60u: goto tr374;
-		case 61u: goto tr375;
-		case 68u: goto tr377;
-		case 76u: goto tr377;
-		case 84u: goto tr377;
-		case 92u: goto tr377;
-		case 100u: goto tr377;
-		case 108u: goto tr377;
-		case 116u: goto tr377;
-		case 124u: goto tr377;
-		case 132u: goto tr378;
-		case 140u: goto tr378;
-		case 148u: goto tr378;
-		case 156u: goto tr378;
-		case 164u: goto tr378;
-		case 172u: goto tr378;
-		case 180u: goto tr378;
-		case 188u: goto tr378;
+		case 4u: goto tr381;
+		case 5u: goto tr382;
+		case 12u: goto tr381;
+		case 13u: goto tr382;
+		case 20u: goto tr381;
+		case 21u: goto tr382;
+		case 28u: goto tr381;
+		case 29u: goto tr382;
+		case 44u: goto tr381;
+		case 45u: goto tr382;
+		case 60u: goto tr381;
+		case 61u: goto tr382;
+		case 68u: goto tr384;
+		case 76u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 108u: goto tr384;
+		case 124u: goto tr384;
+		case 132u: goto tr385;
+		case 140u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 172u: goto tr385;
+		case 188u: goto tr385;
 	}
-	if ( (*( current_position)) < 128u ) {
-		if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
-			goto tr376;
-	} else if ( (*( current_position)) > 191u ) {
-		if ( 208u <= (*( current_position)) && (*( current_position)) <= 223u )
-			goto tr19;
+	if ( (*( current_position)) < 120u ) {
+		if ( (*( current_position)) < 56u ) {
+			if ( (*( current_position)) > 31u ) {
+				if ( 40u <= (*( current_position)) && (*( current_position)) <= 47u )
+					goto tr380;
+			} else
+				goto tr380;
+		} else if ( (*( current_position)) > 63u ) {
+			if ( (*( current_position)) > 95u ) {
+				if ( 104u <= (*( current_position)) && (*( current_position)) <= 111u )
+					goto tr383;
+			} else if ( (*( current_position)) >= 64u )
+				goto tr383;
+		} else
+			goto tr380;
+	} else if ( (*( current_position)) > 127u ) {
+		if ( (*( current_position)) < 184u ) {
+			if ( (*( current_position)) > 159u ) {
+				if ( 168u <= (*( current_position)) && (*( current_position)) <= 175u )
+					goto tr382;
+			} else if ( (*( current_position)) >= 128u )
+				goto tr382;
+		} else if ( (*( current_position)) > 191u ) {
+			if ( (*( current_position)) < 226u ) {
+				if ( 192u <= (*( current_position)) && (*( current_position)) <= 223u )
+					goto tr386;
+			} else if ( (*( current_position)) > 227u ) {
+				if ( 232u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr380;
+			} else
+				goto tr380;
+		} else
+			goto tr382;
 	} else
-		goto tr375;
-	goto tr373;
-tr445:
+		goto tr383;
+	goto tr19;
+tr450:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st215;
 st215:
@@ -6875,34 +6859,86 @@ st215:
 		goto _test_eof215;
 case 215:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr374;
-		case 5u: goto tr375;
-		case 12u: goto tr374;
-		case 13u: goto tr375;
-		case 20u: goto tr374;
-		case 21u: goto tr375;
-		case 28u: goto tr374;
-		case 29u: goto tr375;
-		case 36u: goto tr374;
-		case 37u: goto tr375;
-		case 52u: goto tr374;
-		case 53u: goto tr375;
-		case 60u: goto tr374;
-		case 61u: goto tr375;
-		case 68u: goto tr377;
-		case 76u: goto tr377;
-		case 84u: goto tr377;
-		case 92u: goto tr377;
-		case 100u: goto tr377;
-		case 116u: goto tr377;
-		case 124u: goto tr377;
-		case 132u: goto tr378;
-		case 140u: goto tr378;
-		case 148u: goto tr378;
-		case 156u: goto tr378;
-		case 164u: goto tr378;
-		case 180u: goto tr378;
-		case 188u: goto tr378;
+		case 4u: goto tr381;
+		case 5u: goto tr382;
+		case 12u: goto tr381;
+		case 13u: goto tr382;
+		case 20u: goto tr381;
+		case 21u: goto tr382;
+		case 28u: goto tr381;
+		case 29u: goto tr382;
+		case 36u: goto tr381;
+		case 37u: goto tr382;
+		case 44u: goto tr381;
+		case 45u: goto tr382;
+		case 52u: goto tr381;
+		case 53u: goto tr382;
+		case 60u: goto tr381;
+		case 61u: goto tr382;
+		case 68u: goto tr384;
+		case 76u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 100u: goto tr384;
+		case 108u: goto tr384;
+		case 116u: goto tr384;
+		case 124u: goto tr384;
+		case 132u: goto tr385;
+		case 140u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 164u: goto tr385;
+		case 172u: goto tr385;
+		case 180u: goto tr385;
+		case 188u: goto tr385;
+	}
+	if ( (*( current_position)) < 128u ) {
+		if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
+			goto tr383;
+	} else if ( (*( current_position)) > 191u ) {
+		if ( 208u <= (*( current_position)) && (*( current_position)) <= 223u )
+			goto tr19;
+	} else
+		goto tr382;
+	goto tr380;
+tr451:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st216;
+st216:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof216;
+case 216:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr381;
+		case 5u: goto tr382;
+		case 12u: goto tr381;
+		case 13u: goto tr382;
+		case 20u: goto tr381;
+		case 21u: goto tr382;
+		case 28u: goto tr381;
+		case 29u: goto tr382;
+		case 36u: goto tr381;
+		case 37u: goto tr382;
+		case 52u: goto tr381;
+		case 53u: goto tr382;
+		case 60u: goto tr381;
+		case 61u: goto tr382;
+		case 68u: goto tr384;
+		case 76u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 100u: goto tr384;
+		case 116u: goto tr384;
+		case 124u: goto tr384;
+		case 132u: goto tr385;
+		case 140u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 164u: goto tr385;
+		case 180u: goto tr385;
+		case 188u: goto tr385;
 	}
 	if ( (*( current_position)) < 128u ) {
 		if ( (*( current_position)) < 64u ) {
@@ -6911,11 +6947,11 @@ case 215:
 		} else if ( (*( current_position)) > 103u ) {
 			if ( (*( current_position)) > 111u ) {
 				if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-					goto tr376;
+					goto tr383;
 			} else if ( (*( current_position)) >= 104u )
 				goto tr19;
 		} else
-			goto tr376;
+			goto tr383;
 	} else if ( (*( current_position)) > 167u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( 168u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -6927,72 +6963,13 @@ case 215:
 			} else if ( (*( current_position)) >= 200u )
 				goto tr19;
 		} else
-			goto tr375;
+			goto tr382;
 	} else
-		goto tr375;
-	goto tr373;
-tr446:
+		goto tr382;
+	goto tr380;
+tr452:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st216;
-st216:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof216;
-case 216:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr374;
-		case 5u: goto tr375;
-		case 12u: goto tr374;
-		case 13u: goto tr375;
-		case 20u: goto tr374;
-		case 21u: goto tr375;
-		case 28u: goto tr374;
-		case 29u: goto tr375;
-		case 36u: goto tr374;
-		case 37u: goto tr375;
-		case 44u: goto tr374;
-		case 45u: goto tr375;
-		case 52u: goto tr374;
-		case 53u: goto tr375;
-		case 60u: goto tr374;
-		case 61u: goto tr375;
-		case 68u: goto tr377;
-		case 76u: goto tr377;
-		case 84u: goto tr377;
-		case 92u: goto tr377;
-		case 100u: goto tr377;
-		case 108u: goto tr377;
-		case 116u: goto tr377;
-		case 124u: goto tr377;
-		case 132u: goto tr378;
-		case 140u: goto tr378;
-		case 148u: goto tr378;
-		case 156u: goto tr378;
-		case 164u: goto tr378;
-		case 172u: goto tr378;
-		case 180u: goto tr378;
-		case 188u: goto tr378;
-	}
-	if ( (*( current_position)) < 128u ) {
-		if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
-			goto tr376;
-	} else if ( (*( current_position)) > 191u ) {
-		if ( (*( current_position)) > 216u ) {
-			if ( 218u <= (*( current_position)) && (*( current_position)) <= 223u )
-				goto tr19;
-		} else if ( (*( current_position)) >= 208u )
-			goto tr19;
-	} else
-		goto tr375;
-	goto tr373;
-tr447:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	goto st217;
 st217:
@@ -7000,45 +6977,100 @@ st217:
 		goto _test_eof217;
 case 217:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr374;
-		case 5u: goto tr375;
-		case 12u: goto tr374;
-		case 13u: goto tr375;
-		case 20u: goto tr374;
-		case 21u: goto tr375;
-		case 28u: goto tr374;
-		case 29u: goto tr375;
-		case 36u: goto tr374;
-		case 37u: goto tr375;
-		case 44u: goto tr374;
-		case 45u: goto tr375;
-		case 52u: goto tr374;
-		case 53u: goto tr375;
-		case 60u: goto tr374;
-		case 61u: goto tr375;
-		case 68u: goto tr377;
-		case 76u: goto tr377;
-		case 84u: goto tr377;
-		case 92u: goto tr377;
-		case 100u: goto tr377;
-		case 108u: goto tr377;
-		case 116u: goto tr377;
-		case 124u: goto tr377;
-		case 132u: goto tr378;
-		case 140u: goto tr378;
-		case 148u: goto tr378;
-		case 156u: goto tr378;
-		case 164u: goto tr378;
-		case 172u: goto tr378;
-		case 180u: goto tr378;
-		case 188u: goto tr378;
+		case 4u: goto tr381;
+		case 5u: goto tr382;
+		case 12u: goto tr381;
+		case 13u: goto tr382;
+		case 20u: goto tr381;
+		case 21u: goto tr382;
+		case 28u: goto tr381;
+		case 29u: goto tr382;
+		case 36u: goto tr381;
+		case 37u: goto tr382;
+		case 44u: goto tr381;
+		case 45u: goto tr382;
+		case 52u: goto tr381;
+		case 53u: goto tr382;
+		case 60u: goto tr381;
+		case 61u: goto tr382;
+		case 68u: goto tr384;
+		case 76u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 100u: goto tr384;
+		case 108u: goto tr384;
+		case 116u: goto tr384;
+		case 124u: goto tr384;
+		case 132u: goto tr385;
+		case 140u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 164u: goto tr385;
+		case 172u: goto tr385;
+		case 180u: goto tr385;
+		case 188u: goto tr385;
+	}
+	if ( (*( current_position)) < 128u ) {
+		if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
+			goto tr383;
+	} else if ( (*( current_position)) > 191u ) {
+		if ( (*( current_position)) > 216u ) {
+			if ( 218u <= (*( current_position)) && (*( current_position)) <= 223u )
+				goto tr19;
+		} else if ( (*( current_position)) >= 208u )
+			goto tr19;
+	} else
+		goto tr382;
+	goto tr380;
+tr453:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st218;
+st218:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof218;
+case 218:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr381;
+		case 5u: goto tr382;
+		case 12u: goto tr381;
+		case 13u: goto tr382;
+		case 20u: goto tr381;
+		case 21u: goto tr382;
+		case 28u: goto tr381;
+		case 29u: goto tr382;
+		case 36u: goto tr381;
+		case 37u: goto tr382;
+		case 44u: goto tr381;
+		case 45u: goto tr382;
+		case 52u: goto tr381;
+		case 53u: goto tr382;
+		case 60u: goto tr381;
+		case 61u: goto tr382;
+		case 68u: goto tr384;
+		case 76u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 100u: goto tr384;
+		case 108u: goto tr384;
+		case 116u: goto tr384;
+		case 124u: goto tr384;
+		case 132u: goto tr385;
+		case 140u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 164u: goto tr385;
+		case 172u: goto tr385;
+		case 180u: goto tr385;
+		case 188u: goto tr385;
 	}
 	if ( (*( current_position)) < 192u ) {
 		if ( (*( current_position)) > 127u ) {
 			if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-				goto tr375;
+				goto tr382;
 		} else if ( (*( current_position)) >= 64u )
-			goto tr376;
+			goto tr383;
 	} else if ( (*( current_position)) > 223u ) {
 		if ( (*( current_position)) > 231u ) {
 			if ( 248u <= (*( current_position)) )
@@ -7047,27 +7079,25 @@ case 217:
 			goto tr19;
 	} else
 		goto tr19;
-	goto tr373;
-tr449:
+	goto tr380;
+tr455:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	{
     SET_LOCK_PREFIX(TRUE);
   }
-	goto st218;
-st218:
+	goto st219;
+st219:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof218;
-case 218:
+		goto _test_eof219;
+case 219:
 	switch( (*( current_position)) ) {
-		case 15u: goto st219;
-		case 102u: goto tr381;
-		case 128u: goto st102;
-		case 129u: goto st220;
-		case 131u: goto st102;
+		case 15u: goto st220;
+		case 102u: goto tr388;
+		case 128u: goto st103;
+		case 129u: goto st221;
+		case 131u: goto st103;
 	}
 	if ( (*( current_position)) < 32u ) {
 		if ( (*( current_position)) < 8u ) {
@@ -7091,86 +7121,84 @@ case 218:
 		} else if ( (*( current_position)) > 135u ) {
 			if ( (*( current_position)) > 247u ) {
 				if ( 254u <= (*( current_position)) )
-					goto st104;
+					goto st105;
 			} else if ( (*( current_position)) >= 246u )
-				goto st103;
+				goto st104;
 		} else
 			goto st30;
 	} else
-		goto st30;
-	goto tr19;
-st219:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof219;
-case 219:
-	if ( (*( current_position)) == 199u )
-		goto st51;
-	if ( (*( current_position)) > 177u ) {
-		if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-			goto st30;
-	} else if ( (*( current_position)) >= 176u )
 		goto st30;
 	goto tr19;
 st220:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof220;
 case 220:
+	if ( (*( current_position)) == 199u )
+		goto st52;
+	if ( (*( current_position)) > 177u ) {
+		if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+			goto st30;
+	} else if ( (*( current_position)) >= 176u )
+		goto st30;
+	goto tr19;
+st221:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof221;
+case 221:
 	switch( (*( current_position)) ) {
-		case 4u: goto st113;
-		case 5u: goto st114;
-		case 12u: goto st113;
-		case 13u: goto st114;
-		case 20u: goto st113;
-		case 21u: goto st114;
-		case 28u: goto st113;
-		case 29u: goto st114;
-		case 36u: goto st113;
-		case 37u: goto st114;
-		case 44u: goto st113;
-		case 45u: goto st114;
-		case 52u: goto st113;
-		case 53u: goto st114;
-		case 68u: goto st119;
-		case 76u: goto st119;
-		case 84u: goto st119;
-		case 92u: goto st119;
-		case 100u: goto st119;
-		case 108u: goto st119;
-		case 116u: goto st119;
-		case 132u: goto st120;
-		case 140u: goto st120;
-		case 148u: goto st120;
-		case 156u: goto st120;
-		case 164u: goto st120;
-		case 172u: goto st120;
-		case 180u: goto st120;
+		case 4u: goto st114;
+		case 5u: goto st115;
+		case 12u: goto st114;
+		case 13u: goto st115;
+		case 20u: goto st114;
+		case 21u: goto st115;
+		case 28u: goto st114;
+		case 29u: goto st115;
+		case 36u: goto st114;
+		case 37u: goto st115;
+		case 44u: goto st114;
+		case 45u: goto st115;
+		case 52u: goto st114;
+		case 53u: goto st115;
+		case 68u: goto st120;
+		case 76u: goto st120;
+		case 84u: goto st120;
+		case 92u: goto st120;
+		case 100u: goto st120;
+		case 108u: goto st120;
+		case 116u: goto st120;
+		case 132u: goto st121;
+		case 140u: goto st121;
+		case 148u: goto st121;
+		case 156u: goto st121;
+		case 164u: goto st121;
+		case 172u: goto st121;
+		case 180u: goto st121;
 	}
 	if ( (*( current_position)) < 64u ) {
 		if ( (*( current_position)) <= 55u )
 			goto st11;
 	} else if ( (*( current_position)) > 119u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 183u )
-			goto st114;
+			goto st115;
 	} else
-		goto st118;
+		goto st119;
 	goto tr19;
-tr450:
+tr456:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	{
     SET_REPNZ_PREFIX(TRUE);
   }
-	goto st221;
-st221:
+	goto st222;
+st222:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof221;
-case 221:
+		goto _test_eof222;
+case 222:
 	switch( (*( current_position)) ) {
-		case 15u: goto st222;
-		case 102u: goto tr384;
+		case 15u: goto st223;
+		case 102u: goto tr391;
 	}
 	if ( (*( current_position)) > 167u ) {
 		if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -7178,71 +7206,69 @@ case 221:
 	} else if ( (*( current_position)) >= 166u )
 		goto tr0;
 	goto tr19;
-st222:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof222;
-case 222:
-	switch( (*( current_position)) ) {
-		case 18u: goto tr386;
-		case 43u: goto tr387;
-		case 56u: goto st223;
-		case 81u: goto tr385;
-		case 112u: goto tr389;
-		case 120u: goto tr390;
-		case 121u: goto tr391;
-		case 194u: goto tr389;
-		case 208u: goto tr392;
-		case 214u: goto tr393;
-		case 230u: goto tr385;
-		case 240u: goto tr394;
-	}
-	if ( (*( current_position)) < 88u ) {
-		if ( (*( current_position)) > 17u ) {
-			if ( 42u <= (*( current_position)) && (*( current_position)) <= 45u )
-				goto tr385;
-		} else if ( (*( current_position)) >= 16u )
-			goto tr385;
-	} else if ( (*( current_position)) > 90u ) {
-		if ( (*( current_position)) > 95u ) {
-			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-				goto tr386;
-		} else if ( (*( current_position)) >= 92u )
-			goto tr385;
-	} else
-		goto tr385;
-	goto tr19;
 st223:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof223;
 case 223:
-	if ( 240u <= (*( current_position)) && (*( current_position)) <= 241u )
-		goto tr201;
+	switch( (*( current_position)) ) {
+		case 18u: goto tr393;
+		case 43u: goto tr394;
+		case 56u: goto st224;
+		case 81u: goto tr392;
+		case 112u: goto tr396;
+		case 120u: goto tr397;
+		case 121u: goto tr398;
+		case 194u: goto tr396;
+		case 208u: goto tr399;
+		case 214u: goto tr400;
+		case 230u: goto tr392;
+		case 240u: goto tr401;
+	}
+	if ( (*( current_position)) < 88u ) {
+		if ( (*( current_position)) > 17u ) {
+			if ( 42u <= (*( current_position)) && (*( current_position)) <= 45u )
+				goto tr392;
+		} else if ( (*( current_position)) >= 16u )
+			goto tr392;
+	} else if ( (*( current_position)) > 90u ) {
+		if ( (*( current_position)) > 95u ) {
+			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
+				goto tr393;
+		} else if ( (*( current_position)) >= 92u )
+			goto tr392;
+	} else
+		goto tr392;
 	goto tr19;
-tr390:
+st224:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof224;
+case 224:
+	if ( 240u <= (*( current_position)) && (*( current_position)) <= 241u )
+		goto tr208;
+	goto tr19;
+tr397:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{
     SET_CPU_FEATURE(CPUFeature_SSE4A);
   }
-	goto st224;
-st224:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof224;
-case 224:
-	if ( 192u <= (*( current_position)) )
-		goto st225;
-	goto tr19;
+	goto st225;
 st225:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof225;
 case 225:
-	goto tr396;
-tr451:
+	if ( 192u <= (*( current_position)) )
+		goto st226;
+	goto tr19;
+st226:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof226;
+case 226:
+	goto tr403;
+tr457:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
 	{
     SET_REPZ_PREFIX(TRUE);
@@ -7250,15 +7276,15 @@ tr451:
 	{
     SET_REPZ_PREFIX(TRUE);
   }
-	goto st226;
-st226:
+	goto st227;
+st227:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof226;
-case 226:
+		goto _test_eof227;
+case 227:
 	switch( (*( current_position)) ) {
-		case 15u: goto st227;
-		case 102u: goto tr398;
-		case 144u: goto tr399;
+		case 15u: goto st228;
+		case 102u: goto tr405;
+		case 144u: goto tr406;
 	}
 	if ( (*( current_position)) > 167u ) {
 		if ( 170u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -7266,55 +7292,53 @@ case 226:
 	} else if ( (*( current_position)) >= 164u )
 		goto tr0;
 	goto tr19;
-st227:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof227;
-case 227:
-	switch( (*( current_position)) ) {
-		case 18u: goto tr401;
-		case 22u: goto tr401;
-		case 43u: goto tr402;
-		case 111u: goto tr403;
-		case 112u: goto tr404;
-		case 184u: goto tr203;
-		case 188u: goto tr204;
-		case 189u: goto tr205;
-		case 194u: goto tr405;
-		case 214u: goto tr406;
-		case 230u: goto tr403;
-	}
-	if ( (*( current_position)) < 88u ) {
-		if ( (*( current_position)) < 42u ) {
-			if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
-				goto tr400;
-		} else if ( (*( current_position)) > 45u ) {
-			if ( 81u <= (*( current_position)) && (*( current_position)) <= 83u )
-				goto tr400;
-		} else
-			goto tr400;
-	} else if ( (*( current_position)) > 89u ) {
-		if ( (*( current_position)) < 92u ) {
-			if ( 90u <= (*( current_position)) && (*( current_position)) <= 91u )
-				goto tr403;
-		} else if ( (*( current_position)) > 95u ) {
-			if ( 126u <= (*( current_position)) && (*( current_position)) <= 127u )
-				goto tr403;
-		} else
-			goto tr400;
-	} else
-		goto tr400;
-	goto tr19;
-tr452:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st228;
 st228:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof228;
 case 228:
+	switch( (*( current_position)) ) {
+		case 18u: goto tr408;
+		case 22u: goto tr408;
+		case 43u: goto tr409;
+		case 111u: goto tr410;
+		case 112u: goto tr411;
+		case 184u: goto tr210;
+		case 188u: goto tr211;
+		case 189u: goto tr212;
+		case 194u: goto tr412;
+		case 214u: goto tr413;
+		case 230u: goto tr410;
+	}
+	if ( (*( current_position)) < 88u ) {
+		if ( (*( current_position)) < 42u ) {
+			if ( 16u <= (*( current_position)) && (*( current_position)) <= 17u )
+				goto tr407;
+		} else if ( (*( current_position)) > 45u ) {
+			if ( 81u <= (*( current_position)) && (*( current_position)) <= 83u )
+				goto tr407;
+		} else
+			goto tr407;
+	} else if ( (*( current_position)) > 89u ) {
+		if ( (*( current_position)) < 92u ) {
+			if ( 90u <= (*( current_position)) && (*( current_position)) <= 91u )
+				goto tr410;
+		} else if ( (*( current_position)) > 95u ) {
+			if ( 126u <= (*( current_position)) && (*( current_position)) <= 127u )
+				goto tr410;
+		} else
+			goto tr407;
+	} else
+		goto tr407;
+	goto tr19;
+tr458:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st229;
+st229:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof229;
+case 229:
 	switch( (*( current_position)) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -7375,20 +7399,18 @@ case 228:
 	} else
 		goto st7;
 	goto tr0;
-tr453:
+tr459:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st229;
-st229:
+	goto st230;
+st230:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof229;
-case 229:
+		goto _test_eof230;
+case 230:
 	switch( (*( current_position)) ) {
-		case 4u: goto st113;
-		case 5u: goto st114;
+		case 4u: goto st114;
+		case 5u: goto st115;
 		case 20u: goto st2;
 		case 21u: goto st3;
 		case 28u: goto st2;
@@ -7401,14 +7423,14 @@ case 229:
 		case 53u: goto st3;
 		case 60u: goto st2;
 		case 61u: goto st3;
-		case 68u: goto st119;
+		case 68u: goto st120;
 		case 84u: goto st8;
 		case 92u: goto st8;
 		case 100u: goto st8;
 		case 108u: goto st8;
 		case 116u: goto st8;
 		case 124u: goto st8;
-		case 132u: goto st120;
+		case 132u: goto st121;
 		case 148u: goto st9;
 		case 156u: goto st9;
 		case 164u: goto st9;
@@ -7425,7 +7447,7 @@ case 229:
 				if ( 72u <= (*( current_position)) && (*( current_position)) <= 79u )
 					goto tr19;
 			} else if ( (*( current_position)) >= 64u )
-				goto st118;
+				goto st119;
 		} else
 			goto tr19;
 	} else if ( (*( current_position)) > 127u ) {
@@ -7434,7 +7456,7 @@ case 229:
 				if ( 136u <= (*( current_position)) && (*( current_position)) <= 143u )
 					goto tr19;
 			} else if ( (*( current_position)) >= 128u )
-				goto st114;
+				goto st115;
 		} else if ( (*( current_position)) > 191u ) {
 			if ( (*( current_position)) > 199u ) {
 				if ( 200u <= (*( current_position)) && (*( current_position)) <= 207u )
@@ -7446,17 +7468,15 @@ case 229:
 	} else
 		goto st7;
 	goto tr0;
-tr454:
+tr460:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st230;
-st230:
+	goto st231;
+st231:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof230;
-case 230:
+		goto _test_eof231;
+case 231:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7479,234 +7499,15 @@ case 230:
 	} else
 		goto st7;
 	goto tr19;
-tr456:
+tr462:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st231;
-st231:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof231;
-case 231:
-	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 208u: goto tr407;
-		case 224u: goto tr407;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
+	goto st232;
 st232:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof232;
 case 232:
-	if ( (*( current_position)) == 224u )
-		goto tr408;
-	goto tr11;
-tr408:
-	{ }
-	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-     }
-	goto st248;
-st248:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof248;
-case 248:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
-		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
-		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
-		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
-		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
-		case 255u: goto tr457;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) > 3u ) {
-					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else if ( (*( current_position)) > 19u ) {
-				if ( (*( current_position)) < 24u ) {
-					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-						goto tr19;
-				} else if ( (*( current_position)) > 27u ) {
-					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else
-				goto tr415;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 54u ) {
-				if ( (*( current_position)) > 39u ) {
-					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
-				} else if ( (*( current_position)) >= 38u )
-					goto tr19;
-			} else if ( (*( current_position)) > 55u ) {
-				if ( (*( current_position)) < 96u ) {
-					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
-				} else if ( (*( current_position)) > 111u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr415;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 194u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 142u ) {
-					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
-						goto tr19;
-				} else if ( (*( current_position)) >= 140u )
-					goto tr19;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) < 184u ) {
-					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
-				} else if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
-				} else
-					goto tr417;
-			} else
-				goto tr431;
-		} else if ( (*( current_position)) > 195u ) {
-			if ( (*( current_position)) < 212u ) {
-				if ( (*( current_position)) > 207u ) {
-					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
-					goto tr19;
-			} else if ( (*( current_position)) > 231u ) {
-				if ( (*( current_position)) < 234u ) {
-					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
-				} else if ( (*( current_position)) > 241u ) {
-					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr415;
-	goto tr421;
-tr457:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st233;
-st233:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof233;
-case 233:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7720,8 +7521,8 @@ case 233:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 209u: goto tr407;
-		case 225u: goto tr407;
+		case 208u: goto tr414;
+		case 224u: goto tr414;
 	}
 	if ( (*( current_position)) < 112u ) {
 		if ( (*( current_position)) < 48u ) {
@@ -7747,14 +7548,14 @@ case 233:
 	} else
 		goto st7;
 	goto tr19;
-st234:
+st233:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof234;
-case 234:
+		goto _test_eof233;
+case 233:
 	if ( (*( current_position)) == 224u )
-		goto tr409;
+		goto tr415;
 	goto tr11;
-tr409:
+tr415:
 	{ }
 	{
        if (errors_detected) {
@@ -7765,6 +7566,7 @@ tr409:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       errors_detected = 0;
      }
 	goto st249;
 st249:
@@ -7772,1149 +7574,63 @@ st249:
 		goto _test_eof249;
 case 249:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
 		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
 		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
 		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
 		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
-		case 255u: goto tr458;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) > 3u ) {
-					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else if ( (*( current_position)) > 19u ) {
-				if ( (*( current_position)) < 24u ) {
-					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-						goto tr19;
-				} else if ( (*( current_position)) > 27u ) {
-					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else
-				goto tr415;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 54u ) {
-				if ( (*( current_position)) > 39u ) {
-					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
-				} else if ( (*( current_position)) >= 38u )
-					goto tr19;
-			} else if ( (*( current_position)) > 55u ) {
-				if ( (*( current_position)) < 96u ) {
-					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
-				} else if ( (*( current_position)) > 111u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr415;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 194u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 142u ) {
-					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
-						goto tr19;
-				} else if ( (*( current_position)) >= 140u )
-					goto tr19;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) < 184u ) {
-					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
-				} else if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
-				} else
-					goto tr417;
-			} else
-				goto tr431;
-		} else if ( (*( current_position)) > 195u ) {
-			if ( (*( current_position)) < 212u ) {
-				if ( (*( current_position)) > 207u ) {
-					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
-					goto tr19;
-			} else if ( (*( current_position)) > 231u ) {
-				if ( (*( current_position)) < 234u ) {
-					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
-				} else if ( (*( current_position)) > 241u ) {
-					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr415;
-	goto tr421;
-tr458:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st235;
-st235:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof235;
-case 235:
-	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 210u: goto tr407;
-		case 226u: goto tr407;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st236:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof236;
-case 236:
-	if ( (*( current_position)) == 224u )
-		goto tr410;
-	goto tr11;
-tr410:
-	{ }
-	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-     }
-	goto st250;
-st250:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof250;
-case 250:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
-		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
-		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
-		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
-		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
-		case 255u: goto tr459;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) > 3u ) {
-					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else if ( (*( current_position)) > 19u ) {
-				if ( (*( current_position)) < 24u ) {
-					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-						goto tr19;
-				} else if ( (*( current_position)) > 27u ) {
-					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else
-				goto tr415;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 54u ) {
-				if ( (*( current_position)) > 39u ) {
-					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
-				} else if ( (*( current_position)) >= 38u )
-					goto tr19;
-			} else if ( (*( current_position)) > 55u ) {
-				if ( (*( current_position)) < 96u ) {
-					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
-				} else if ( (*( current_position)) > 111u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr415;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 194u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 142u ) {
-					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
-						goto tr19;
-				} else if ( (*( current_position)) >= 140u )
-					goto tr19;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) < 184u ) {
-					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
-				} else if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
-				} else
-					goto tr417;
-			} else
-				goto tr431;
-		} else if ( (*( current_position)) > 195u ) {
-			if ( (*( current_position)) < 212u ) {
-				if ( (*( current_position)) > 207u ) {
-					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
-					goto tr19;
-			} else if ( (*( current_position)) > 231u ) {
-				if ( (*( current_position)) < 234u ) {
-					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
-				} else if ( (*( current_position)) > 241u ) {
-					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr415;
-	goto tr421;
-tr459:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st237;
-st237:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof237;
-case 237:
-	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 211u: goto tr407;
-		case 227u: goto tr407;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st238:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof238;
-case 238:
-	if ( (*( current_position)) == 224u )
-		goto tr411;
-	goto tr11;
-tr411:
-	{ }
-	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-     }
-	goto st251;
-st251:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof251;
-case 251:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
-		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
-		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
-		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
-		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
-		case 255u: goto tr460;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) > 3u ) {
-					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else if ( (*( current_position)) > 19u ) {
-				if ( (*( current_position)) < 24u ) {
-					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-						goto tr19;
-				} else if ( (*( current_position)) > 27u ) {
-					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else
-				goto tr415;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 54u ) {
-				if ( (*( current_position)) > 39u ) {
-					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
-				} else if ( (*( current_position)) >= 38u )
-					goto tr19;
-			} else if ( (*( current_position)) > 55u ) {
-				if ( (*( current_position)) < 96u ) {
-					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
-				} else if ( (*( current_position)) > 111u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr415;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 194u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 142u ) {
-					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
-						goto tr19;
-				} else if ( (*( current_position)) >= 140u )
-					goto tr19;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) < 184u ) {
-					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
-				} else if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
-				} else
-					goto tr417;
-			} else
-				goto tr431;
-		} else if ( (*( current_position)) > 195u ) {
-			if ( (*( current_position)) < 212u ) {
-				if ( (*( current_position)) > 207u ) {
-					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
-					goto tr19;
-			} else if ( (*( current_position)) > 231u ) {
-				if ( (*( current_position)) < 234u ) {
-					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
-				} else if ( (*( current_position)) > 241u ) {
-					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr415;
-	goto tr421;
-tr460:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st239;
-st239:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof239;
-case 239:
-	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 212u: goto tr407;
-		case 228u: goto tr407;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st240:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof240;
-case 240:
-	if ( (*( current_position)) == 224u )
-		goto tr412;
-	goto tr11;
-tr412:
-	{ }
-	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-     }
-	goto st252;
-st252:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof252;
-case 252:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
-		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
-		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
-		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
-		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
-		case 255u: goto tr461;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) > 3u ) {
-					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else if ( (*( current_position)) > 19u ) {
-				if ( (*( current_position)) < 24u ) {
-					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-						goto tr19;
-				} else if ( (*( current_position)) > 27u ) {
-					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else
-				goto tr415;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 54u ) {
-				if ( (*( current_position)) > 39u ) {
-					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
-				} else if ( (*( current_position)) >= 38u )
-					goto tr19;
-			} else if ( (*( current_position)) > 55u ) {
-				if ( (*( current_position)) < 96u ) {
-					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
-				} else if ( (*( current_position)) > 111u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr415;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 194u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 142u ) {
-					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
-						goto tr19;
-				} else if ( (*( current_position)) >= 140u )
-					goto tr19;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) < 184u ) {
-					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
-				} else if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
-				} else
-					goto tr417;
-			} else
-				goto tr431;
-		} else if ( (*( current_position)) > 195u ) {
-			if ( (*( current_position)) < 212u ) {
-				if ( (*( current_position)) > 207u ) {
-					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
-					goto tr19;
-			} else if ( (*( current_position)) > 231u ) {
-				if ( (*( current_position)) < 234u ) {
-					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
-				} else if ( (*( current_position)) > 241u ) {
-					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr415;
-	goto tr421;
-tr461:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st241;
-st241:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof241;
-case 241:
-	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 213u: goto tr407;
-		case 229u: goto tr407;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st242:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof242;
-case 242:
-	if ( (*( current_position)) == 224u )
-		goto tr413;
-	goto tr11;
-tr413:
-	{ }
-	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-     }
-	goto st253;
-st253:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof253;
-case 253:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
-		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
-		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
-		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
-		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
-		case 255u: goto tr462;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) > 3u ) {
-					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else if ( (*( current_position)) > 19u ) {
-				if ( (*( current_position)) < 24u ) {
-					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
-						goto tr19;
-				} else if ( (*( current_position)) > 27u ) {
-					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
-						goto tr19;
-				} else
-					goto tr415;
-			} else
-				goto tr415;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 54u ) {
-				if ( (*( current_position)) > 39u ) {
-					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
-				} else if ( (*( current_position)) >= 38u )
-					goto tr19;
-			} else if ( (*( current_position)) > 55u ) {
-				if ( (*( current_position)) < 96u ) {
-					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
-				} else if ( (*( current_position)) > 111u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr415;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 194u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 142u ) {
-					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
-						goto tr19;
-				} else if ( (*( current_position)) >= 140u )
-					goto tr19;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) < 184u ) {
-					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
-				} else if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
-				} else
-					goto tr417;
-			} else
-				goto tr431;
-		} else if ( (*( current_position)) > 195u ) {
-			if ( (*( current_position)) < 212u ) {
-				if ( (*( current_position)) > 207u ) {
-					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
-					goto tr19;
-			} else if ( (*( current_position)) > 231u ) {
-				if ( (*( current_position)) < 234u ) {
-					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
-				} else if ( (*( current_position)) > 241u ) {
-					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr415;
-	goto tr421;
-tr462:
-	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st243;
-st243:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof243;
-case 243:
-	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 214u: goto tr407;
-		case 230u: goto tr407;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st244:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof244;
-case 244:
-	if ( (*( current_position)) == 224u )
-		goto tr414;
-	goto tr11;
-tr414:
-	{ }
-	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-     }
-	goto st254;
-st254:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof254;
-case 254:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr416;
-		case 5u: goto tr417;
-		case 12u: goto tr416;
-		case 13u: goto tr417;
-		case 14u: goto tr19;
-		case 15u: goto tr418;
-		case 20u: goto tr416;
-		case 21u: goto tr417;
-		case 28u: goto tr416;
-		case 29u: goto tr417;
-		case 36u: goto tr416;
-		case 37u: goto tr417;
-		case 44u: goto tr416;
-		case 45u: goto tr417;
-		case 46u: goto tr419;
-		case 47u: goto tr19;
-		case 52u: goto tr416;
-		case 53u: goto tr417;
-		case 60u: goto tr416;
-		case 61u: goto tr417;
-		case 62u: goto tr420;
-		case 63u: goto tr19;
-		case 101u: goto tr422;
-		case 102u: goto tr423;
-		case 104u: goto tr417;
-		case 105u: goto tr424;
-		case 106u: goto tr416;
-		case 107u: goto tr425;
-		case 128u: goto tr425;
-		case 129u: goto tr424;
-		case 130u: goto tr19;
-		case 131u: goto tr427;
-		case 141u: goto tr428;
-		case 143u: goto tr429;
-		case 155u: goto tr430;
-		case 168u: goto tr416;
-		case 169u: goto tr417;
-		case 196u: goto tr433;
-		case 197u: goto tr434;
-		case 198u: goto tr435;
-		case 199u: goto tr436;
-		case 200u: goto tr437;
-		case 202u: goto tr438;
-		case 216u: goto tr440;
-		case 217u: goto tr441;
-		case 218u: goto tr442;
-		case 219u: goto tr443;
-		case 220u: goto tr444;
-		case 221u: goto tr445;
-		case 222u: goto tr446;
-		case 223u: goto tr447;
-		case 235u: goto tr426;
-		case 240u: goto tr449;
-		case 242u: goto tr450;
-		case 243u: goto tr451;
-		case 246u: goto tr452;
-		case 247u: goto tr453;
-		case 254u: goto tr454;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
 		case 255u: goto tr463;
 	}
 	if ( (*( current_position)) < 132u ) {
@@ -8924,7 +7640,7 @@ case 254:
 					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
 						goto tr19;
 				} else
-					goto tr415;
+					goto tr422;
 			} else if ( (*( current_position)) > 19u ) {
 				if ( (*( current_position)) < 24u ) {
 					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
@@ -8933,29 +7649,29 @@ case 254:
 					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
 						goto tr19;
 				} else
-					goto tr415;
+					goto tr422;
 			} else
-				goto tr415;
+				goto tr422;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 54u ) {
 				if ( (*( current_position)) > 39u ) {
 					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr415;
+						goto tr422;
 				} else if ( (*( current_position)) >= 38u )
 					goto tr19;
 			} else if ( (*( current_position)) > 55u ) {
 				if ( (*( current_position)) < 96u ) {
 					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
-						goto tr415;
+						goto tr422;
 				} else if ( (*( current_position)) > 111u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr426;
+						goto tr433;
 				} else
 					goto tr19;
 			} else
 				goto tr19;
 		} else
-			goto tr415;
+			goto tr422;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 194u ) {
 			if ( (*( current_position)) < 160u ) {
@@ -8967,25 +7683,25 @@ case 254:
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) < 184u ) {
 					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
-						goto tr416;
+						goto tr423;
 				} else if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr432;
+						goto tr439;
 				} else
-					goto tr417;
+					goto tr424;
 			} else
-				goto tr431;
+				goto tr438;
 		} else if ( (*( current_position)) > 195u ) {
 			if ( (*( current_position)) < 212u ) {
 				if ( (*( current_position)) > 207u ) {
 					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
-						goto tr439;
-				} else if ( (*( current_position)) >= 204u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
 					goto tr19;
 			} else if ( (*( current_position)) > 231u ) {
 				if ( (*( current_position)) < 234u ) {
 					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
-						goto tr448;
+						goto tr454;
 				} else if ( (*( current_position)) > 241u ) {
 					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
 						goto tr19;
@@ -8996,19 +7712,17 @@ case 254:
 		} else
 			goto tr19;
 	} else
-		goto tr415;
-	goto tr421;
+		goto tr422;
+	goto tr428;
 tr463:
 	{
-        instruction_start = current_position;
-        errors_detected = 0;
-        BitmapSetBit(valid_targets, current_position - data);
+       BitmapSetBit(valid_targets, current_position - data);
      }
-	goto st245;
-st245:
+	goto st234;
+st234:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof245;
-case 245:
+		goto _test_eof234;
+case 234:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -9022,8 +7736,1298 @@ case 245:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 215u: goto tr407;
-		case 231u: goto tr407;
+		case 209u: goto tr414;
+		case 225u: goto tr414;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st235:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof235;
+case 235:
+	if ( (*( current_position)) == 224u )
+		goto tr416;
+	goto tr11;
+tr416:
+	{ }
+	{
+       if (errors_detected) {
+         process_error(instruction_start, errors_detected, userdata);
+         result = 1;
+       }
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       instruction_start = current_position + 1;
+       errors_detected = 0;
+     }
+	goto st250;
+st250:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof250;
+case 250:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
+		case 14u: goto tr19;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
+		case 47u: goto tr19;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
+		case 63u: goto tr19;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
+		case 130u: goto tr19;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
+		case 255u: goto tr464;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) > 3u ) {
+					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else if ( (*( current_position)) > 19u ) {
+				if ( (*( current_position)) < 24u ) {
+					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
+						goto tr19;
+				} else if ( (*( current_position)) > 27u ) {
+					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else
+				goto tr422;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 54u ) {
+				if ( (*( current_position)) > 39u ) {
+					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto tr422;
+				} else if ( (*( current_position)) >= 38u )
+					goto tr19;
+			} else if ( (*( current_position)) > 55u ) {
+				if ( (*( current_position)) < 96u ) {
+					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
+						goto tr422;
+				} else if ( (*( current_position)) > 111u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto tr433;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr422;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 194u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 142u ) {
+					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
+						goto tr19;
+				} else if ( (*( current_position)) >= 140u )
+					goto tr19;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) < 184u ) {
+					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
+						goto tr423;
+				} else if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto tr439;
+				} else
+					goto tr424;
+			} else
+				goto tr438;
+		} else if ( (*( current_position)) > 195u ) {
+			if ( (*( current_position)) < 212u ) {
+				if ( (*( current_position)) > 207u ) {
+					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
+					goto tr19;
+			} else if ( (*( current_position)) > 231u ) {
+				if ( (*( current_position)) < 234u ) {
+					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
+						goto tr454;
+				} else if ( (*( current_position)) > 241u ) {
+					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr422;
+	goto tr428;
+tr464:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st236;
+st236:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof236;
+case 236:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 210u: goto tr414;
+		case 226u: goto tr414;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st237:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof237;
+case 237:
+	if ( (*( current_position)) == 224u )
+		goto tr417;
+	goto tr11;
+tr417:
+	{ }
+	{
+       if (errors_detected) {
+         process_error(instruction_start, errors_detected, userdata);
+         result = 1;
+       }
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       instruction_start = current_position + 1;
+       errors_detected = 0;
+     }
+	goto st251;
+st251:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof251;
+case 251:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
+		case 14u: goto tr19;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
+		case 47u: goto tr19;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
+		case 63u: goto tr19;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
+		case 130u: goto tr19;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
+		case 255u: goto tr465;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) > 3u ) {
+					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else if ( (*( current_position)) > 19u ) {
+				if ( (*( current_position)) < 24u ) {
+					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
+						goto tr19;
+				} else if ( (*( current_position)) > 27u ) {
+					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else
+				goto tr422;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 54u ) {
+				if ( (*( current_position)) > 39u ) {
+					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto tr422;
+				} else if ( (*( current_position)) >= 38u )
+					goto tr19;
+			} else if ( (*( current_position)) > 55u ) {
+				if ( (*( current_position)) < 96u ) {
+					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
+						goto tr422;
+				} else if ( (*( current_position)) > 111u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto tr433;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr422;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 194u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 142u ) {
+					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
+						goto tr19;
+				} else if ( (*( current_position)) >= 140u )
+					goto tr19;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) < 184u ) {
+					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
+						goto tr423;
+				} else if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto tr439;
+				} else
+					goto tr424;
+			} else
+				goto tr438;
+		} else if ( (*( current_position)) > 195u ) {
+			if ( (*( current_position)) < 212u ) {
+				if ( (*( current_position)) > 207u ) {
+					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
+					goto tr19;
+			} else if ( (*( current_position)) > 231u ) {
+				if ( (*( current_position)) < 234u ) {
+					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
+						goto tr454;
+				} else if ( (*( current_position)) > 241u ) {
+					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr422;
+	goto tr428;
+tr465:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st238;
+st238:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof238;
+case 238:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 211u: goto tr414;
+		case 227u: goto tr414;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st239:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof239;
+case 239:
+	if ( (*( current_position)) == 224u )
+		goto tr418;
+	goto tr11;
+tr418:
+	{ }
+	{
+       if (errors_detected) {
+         process_error(instruction_start, errors_detected, userdata);
+         result = 1;
+       }
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       instruction_start = current_position + 1;
+       errors_detected = 0;
+     }
+	goto st252;
+st252:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof252;
+case 252:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
+		case 14u: goto tr19;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
+		case 47u: goto tr19;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
+		case 63u: goto tr19;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
+		case 130u: goto tr19;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
+		case 255u: goto tr466;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) > 3u ) {
+					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else if ( (*( current_position)) > 19u ) {
+				if ( (*( current_position)) < 24u ) {
+					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
+						goto tr19;
+				} else if ( (*( current_position)) > 27u ) {
+					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else
+				goto tr422;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 54u ) {
+				if ( (*( current_position)) > 39u ) {
+					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto tr422;
+				} else if ( (*( current_position)) >= 38u )
+					goto tr19;
+			} else if ( (*( current_position)) > 55u ) {
+				if ( (*( current_position)) < 96u ) {
+					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
+						goto tr422;
+				} else if ( (*( current_position)) > 111u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto tr433;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr422;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 194u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 142u ) {
+					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
+						goto tr19;
+				} else if ( (*( current_position)) >= 140u )
+					goto tr19;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) < 184u ) {
+					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
+						goto tr423;
+				} else if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto tr439;
+				} else
+					goto tr424;
+			} else
+				goto tr438;
+		} else if ( (*( current_position)) > 195u ) {
+			if ( (*( current_position)) < 212u ) {
+				if ( (*( current_position)) > 207u ) {
+					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
+					goto tr19;
+			} else if ( (*( current_position)) > 231u ) {
+				if ( (*( current_position)) < 234u ) {
+					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
+						goto tr454;
+				} else if ( (*( current_position)) > 241u ) {
+					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr422;
+	goto tr428;
+tr466:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st240;
+st240:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof240;
+case 240:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 212u: goto tr414;
+		case 228u: goto tr414;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st241:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof241;
+case 241:
+	if ( (*( current_position)) == 224u )
+		goto tr419;
+	goto tr11;
+tr419:
+	{ }
+	{
+       if (errors_detected) {
+         process_error(instruction_start, errors_detected, userdata);
+         result = 1;
+       }
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       instruction_start = current_position + 1;
+       errors_detected = 0;
+     }
+	goto st253;
+st253:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof253;
+case 253:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
+		case 14u: goto tr19;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
+		case 47u: goto tr19;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
+		case 63u: goto tr19;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
+		case 130u: goto tr19;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
+		case 255u: goto tr467;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) > 3u ) {
+					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else if ( (*( current_position)) > 19u ) {
+				if ( (*( current_position)) < 24u ) {
+					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
+						goto tr19;
+				} else if ( (*( current_position)) > 27u ) {
+					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else
+				goto tr422;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 54u ) {
+				if ( (*( current_position)) > 39u ) {
+					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto tr422;
+				} else if ( (*( current_position)) >= 38u )
+					goto tr19;
+			} else if ( (*( current_position)) > 55u ) {
+				if ( (*( current_position)) < 96u ) {
+					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
+						goto tr422;
+				} else if ( (*( current_position)) > 111u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto tr433;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr422;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 194u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 142u ) {
+					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
+						goto tr19;
+				} else if ( (*( current_position)) >= 140u )
+					goto tr19;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) < 184u ) {
+					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
+						goto tr423;
+				} else if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto tr439;
+				} else
+					goto tr424;
+			} else
+				goto tr438;
+		} else if ( (*( current_position)) > 195u ) {
+			if ( (*( current_position)) < 212u ) {
+				if ( (*( current_position)) > 207u ) {
+					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
+					goto tr19;
+			} else if ( (*( current_position)) > 231u ) {
+				if ( (*( current_position)) < 234u ) {
+					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
+						goto tr454;
+				} else if ( (*( current_position)) > 241u ) {
+					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr422;
+	goto tr428;
+tr467:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st242;
+st242:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof242;
+case 242:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 213u: goto tr414;
+		case 229u: goto tr414;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st243:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof243;
+case 243:
+	if ( (*( current_position)) == 224u )
+		goto tr420;
+	goto tr11;
+tr420:
+	{ }
+	{
+       if (errors_detected) {
+         process_error(instruction_start, errors_detected, userdata);
+         result = 1;
+       }
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       instruction_start = current_position + 1;
+       errors_detected = 0;
+     }
+	goto st254;
+st254:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof254;
+case 254:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
+		case 14u: goto tr19;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
+		case 47u: goto tr19;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
+		case 63u: goto tr19;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
+		case 130u: goto tr19;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
+		case 255u: goto tr468;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) > 3u ) {
+					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else if ( (*( current_position)) > 19u ) {
+				if ( (*( current_position)) < 24u ) {
+					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
+						goto tr19;
+				} else if ( (*( current_position)) > 27u ) {
+					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else
+				goto tr422;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 54u ) {
+				if ( (*( current_position)) > 39u ) {
+					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto tr422;
+				} else if ( (*( current_position)) >= 38u )
+					goto tr19;
+			} else if ( (*( current_position)) > 55u ) {
+				if ( (*( current_position)) < 96u ) {
+					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
+						goto tr422;
+				} else if ( (*( current_position)) > 111u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto tr433;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr422;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 194u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 142u ) {
+					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
+						goto tr19;
+				} else if ( (*( current_position)) >= 140u )
+					goto tr19;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) < 184u ) {
+					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
+						goto tr423;
+				} else if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto tr439;
+				} else
+					goto tr424;
+			} else
+				goto tr438;
+		} else if ( (*( current_position)) > 195u ) {
+			if ( (*( current_position)) < 212u ) {
+				if ( (*( current_position)) > 207u ) {
+					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
+					goto tr19;
+			} else if ( (*( current_position)) > 231u ) {
+				if ( (*( current_position)) < 234u ) {
+					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
+						goto tr454;
+				} else if ( (*( current_position)) > 241u ) {
+					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr422;
+	goto tr428;
+tr468:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st244;
+st244:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof244;
+case 244:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 214u: goto tr414;
+		case 230u: goto tr414;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st245:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof245;
+case 245:
+	if ( (*( current_position)) == 224u )
+		goto tr421;
+	goto tr11;
+tr421:
+	{ }
+	{
+       if (errors_detected) {
+         process_error(instruction_start, errors_detected, userdata);
+         result = 1;
+       }
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       instruction_start = current_position + 1;
+       errors_detected = 0;
+     }
+	goto st255;
+st255:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof255;
+case 255:
+	switch( (*( current_position)) ) {
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
+		case 14u: goto tr19;
+		case 15u: goto tr425;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 46u: goto tr426;
+		case 47u: goto tr19;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 62u: goto tr427;
+		case 63u: goto tr19;
+		case 101u: goto tr429;
+		case 102u: goto tr430;
+		case 104u: goto tr424;
+		case 105u: goto tr431;
+		case 106u: goto tr423;
+		case 107u: goto tr432;
+		case 128u: goto tr432;
+		case 129u: goto tr431;
+		case 130u: goto tr19;
+		case 131u: goto tr434;
+		case 141u: goto tr435;
+		case 143u: goto tr436;
+		case 155u: goto tr437;
+		case 168u: goto tr423;
+		case 169u: goto tr424;
+		case 196u: goto tr440;
+		case 197u: goto tr441;
+		case 198u: goto tr442;
+		case 199u: goto tr443;
+		case 200u: goto tr444;
+		case 216u: goto tr446;
+		case 217u: goto tr447;
+		case 218u: goto tr448;
+		case 219u: goto tr449;
+		case 220u: goto tr450;
+		case 221u: goto tr451;
+		case 222u: goto tr452;
+		case 223u: goto tr453;
+		case 235u: goto tr433;
+		case 240u: goto tr455;
+		case 242u: goto tr456;
+		case 243u: goto tr457;
+		case 246u: goto tr458;
+		case 247u: goto tr459;
+		case 254u: goto tr460;
+		case 255u: goto tr469;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) > 3u ) {
+					if ( 6u <= (*( current_position)) && (*( current_position)) <= 7u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else if ( (*( current_position)) > 19u ) {
+				if ( (*( current_position)) < 24u ) {
+					if ( 22u <= (*( current_position)) && (*( current_position)) <= 23u )
+						goto tr19;
+				} else if ( (*( current_position)) > 27u ) {
+					if ( 30u <= (*( current_position)) && (*( current_position)) <= 31u )
+						goto tr19;
+				} else
+					goto tr422;
+			} else
+				goto tr422;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 54u ) {
+				if ( (*( current_position)) > 39u ) {
+					if ( 40u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto tr422;
+				} else if ( (*( current_position)) >= 38u )
+					goto tr19;
+			} else if ( (*( current_position)) > 55u ) {
+				if ( (*( current_position)) < 96u ) {
+					if ( 56u <= (*( current_position)) && (*( current_position)) <= 59u )
+						goto tr422;
+				} else if ( (*( current_position)) > 111u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto tr433;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr422;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 194u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 142u ) {
+					if ( 154u <= (*( current_position)) && (*( current_position)) <= 157u )
+						goto tr19;
+				} else if ( (*( current_position)) >= 140u )
+					goto tr19;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) < 184u ) {
+					if ( 176u <= (*( current_position)) && (*( current_position)) <= 183u )
+						goto tr423;
+				} else if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto tr439;
+				} else
+					goto tr424;
+			} else
+				goto tr438;
+		} else if ( (*( current_position)) > 195u ) {
+			if ( (*( current_position)) < 212u ) {
+				if ( (*( current_position)) > 207u ) {
+					if ( 208u <= (*( current_position)) && (*( current_position)) <= 211u )
+						goto tr445;
+				} else if ( (*( current_position)) >= 202u )
+					goto tr19;
+			} else if ( (*( current_position)) > 231u ) {
+				if ( (*( current_position)) < 234u ) {
+					if ( 232u <= (*( current_position)) && (*( current_position)) <= 233u )
+						goto tr454;
+				} else if ( (*( current_position)) > 241u ) {
+					if ( 250u <= (*( current_position)) && (*( current_position)) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr422;
+	goto tr428;
+tr469:
+	{
+       BitmapSetBit(valid_targets, current_position - data);
+     }
+	goto st246;
+st246:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof246;
+case 246:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 215u: goto tr414;
+		case 231u: goto tr414;
 	}
 	if ( (*( current_position)) < 112u ) {
 		if ( (*( current_position)) < 48u ) {
@@ -9050,7 +9054,7 @@ case 245:
 		goto st7;
 	goto tr19;
 	}
-	_test_eof246: ( current_state) = 246; goto _test_eof; 
+	_test_eof247: ( current_state) = 247; goto _test_eof; 
 	_test_eof1: ( current_state) = 1; goto _test_eof; 
 	_test_eof2: ( current_state) = 2; goto _test_eof; 
 	_test_eof3: ( current_state) = 3; goto _test_eof; 
@@ -9173,8 +9177,8 @@ case 245:
 	_test_eof120: ( current_state) = 120; goto _test_eof; 
 	_test_eof121: ( current_state) = 121; goto _test_eof; 
 	_test_eof122: ( current_state) = 122; goto _test_eof; 
-	_test_eof247: ( current_state) = 247; goto _test_eof; 
 	_test_eof123: ( current_state) = 123; goto _test_eof; 
+	_test_eof248: ( current_state) = 248; goto _test_eof; 
 	_test_eof124: ( current_state) = 124; goto _test_eof; 
 	_test_eof125: ( current_state) = 125; goto _test_eof; 
 	_test_eof126: ( current_state) = 126; goto _test_eof; 
@@ -9284,26 +9288,27 @@ case 245:
 	_test_eof230: ( current_state) = 230; goto _test_eof; 
 	_test_eof231: ( current_state) = 231; goto _test_eof; 
 	_test_eof232: ( current_state) = 232; goto _test_eof; 
-	_test_eof248: ( current_state) = 248; goto _test_eof; 
 	_test_eof233: ( current_state) = 233; goto _test_eof; 
-	_test_eof234: ( current_state) = 234; goto _test_eof; 
 	_test_eof249: ( current_state) = 249; goto _test_eof; 
+	_test_eof234: ( current_state) = 234; goto _test_eof; 
 	_test_eof235: ( current_state) = 235; goto _test_eof; 
-	_test_eof236: ( current_state) = 236; goto _test_eof; 
 	_test_eof250: ( current_state) = 250; goto _test_eof; 
+	_test_eof236: ( current_state) = 236; goto _test_eof; 
 	_test_eof237: ( current_state) = 237; goto _test_eof; 
-	_test_eof238: ( current_state) = 238; goto _test_eof; 
 	_test_eof251: ( current_state) = 251; goto _test_eof; 
+	_test_eof238: ( current_state) = 238; goto _test_eof; 
 	_test_eof239: ( current_state) = 239; goto _test_eof; 
-	_test_eof240: ( current_state) = 240; goto _test_eof; 
 	_test_eof252: ( current_state) = 252; goto _test_eof; 
+	_test_eof240: ( current_state) = 240; goto _test_eof; 
 	_test_eof241: ( current_state) = 241; goto _test_eof; 
-	_test_eof242: ( current_state) = 242; goto _test_eof; 
 	_test_eof253: ( current_state) = 253; goto _test_eof; 
+	_test_eof242: ( current_state) = 242; goto _test_eof; 
 	_test_eof243: ( current_state) = 243; goto _test_eof; 
-	_test_eof244: ( current_state) = 244; goto _test_eof; 
 	_test_eof254: ( current_state) = 254; goto _test_eof; 
+	_test_eof244: ( current_state) = 244; goto _test_eof; 
 	_test_eof245: ( current_state) = 245; goto _test_eof; 
+	_test_eof255: ( current_state) = 255; goto _test_eof; 
+	_test_eof246: ( current_state) = 246; goto _test_eof; 
 
 	_test_eof: {}
 	if ( ( current_position) == ( end_of_bundle) )
@@ -9554,6 +9559,7 @@ case 245:
 	case 243: 
 	case 244: 
 	case 245: 
+	case 246: 
 	{
         process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;

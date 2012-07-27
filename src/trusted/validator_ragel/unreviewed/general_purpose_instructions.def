@@ -169,6 +169,10 @@
 #       rep: prefix “rep” is allowed for the instruction (it's alias of “repz”)
 #       no_memory_access: command does not access memory in detectable way: lea,
 #         nop, prefetch* instructions…
+#       norex: “rex” prefix can not be used with this instruction (various “nop”
+#         instructions use this flag)
+#       norexw: "rex.W" can not be used with this instruction (usually used when
+#         instruction with "rex.W" have a different name: e.g. “movd”/“movq”)
 #
 #     Possible CPUID values:
 #       CPUFeature_3DNOW:     Fn8000_0001_EDX[3DNOW]
@@ -299,16 +303,19 @@ callq Eq, 0xff /2, amd64 nacl-forbidden
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-lcallw Mp, data16 0xff /3, nacl-forbidden
+lcallw Mp, data16 0xff /3, norexw nacl-forbidden
+"data32 lcallq" Mp, data16 rexw 0xff /3, amd64 nacl-forbidden
 lcall Mp, 0xff /3, ia32 nacl-forbidden
 lcallq Mp, 0xff /3, amd64 nacl-forbidden
 ######## CBW/CWDE/CDQE #########################################################
-cbtw, data16 0x98
-cwtl, 0x98
+cwtl, 0x98, norexw
+cbtw, data16 0x98, norexw
+"data32 cltq", data16 rexw 0x98, amd64
 cltq, rexw 0x98, amd64
 ######## CWD/CDQ/CQO ###########################################################
-cltd, 0x99
-cwtd, data16 0x99
+cltd, 0x99, norexw
+cwtd, data16 0x99, norexw
+"data32 cqto", data16 rexw 0x99, amd64
 cqto, rexw 0x99, amd64
 ######## CLC ###################################################################
 clc, 0xf8
@@ -346,7 +353,7 @@ cmps Y X, 0xa6, condrep nacl-amd64-forbidden
 ######## CMPXCHG ###############################################################
 cmpxchg G E, 0x0f 0xb0, lock
 ######## CMPXCHG8B/CMPXCHG16B ##################################################
-cmpxchg8b Mq, 0x0f 0xc7 /1, lock CPUFeature_CX8
+cmpxchg8b Mq, 0x0f 0xc7 /1, norexw lock CPUFeature_CX8
 cmpxchg16b Mo, rexw 0x0f 0xc7 /1, amd64 lock CPUFeature_CX16
 ######## CPUID #################################################################
 cpuid, 0x0f 0xa2
@@ -389,12 +396,12 @@ ja Jd, 0x0f 0x87, branch_hint
 jae Jb, 0x73, branch_hint
 jae Jw, data16 0x0f 0x83, branch_hint nacl-forbidden
 jae Jd, 0x0f 0x83, branch_hint
-jbe Jb, 0x76, branch_hint
-jbe Jw, data16 0x0f 0x86, branch_hint nacl-forbidden
-jbe Jd, 0x0f 0x86, branch_hint
 jb Jb, 0x72, branch_hint
 jb Jw, data16 0x0f 0x82, branch_hint nacl-forbidden
 jb Jd, 0x0f 0x82, branch_hint
+jbe Jb, 0x76, branch_hint
+jbe Jw, data16 0x0f 0x86, branch_hint nacl-forbidden
+jbe Jd, 0x0f 0x86, branch_hint
 je Jb, 0x74, branch_hint
 je Jw, data16 0x0f 0x84, branch_hint nacl-forbidden
 je Jd, 0x0f 0x84, branch_hint
@@ -404,12 +411,12 @@ jg Jd, 0x0f 0x8f, branch_hint
 jge Jb, 0x7d, branch_hint
 jge Jw, data16 0x0f 0x8d, branch_hint nacl-forbidden
 jge Jd, 0x0f 0x8d, branch_hint
-jle Jb, 0x7e, branch_hint
-jle Jw, data16 0x0f 0x8e, branch_hint nacl-forbidden
-jle Jd, 0x0f 0x8e, branch_hint
 jl Jb, 0x7c, branch_hint
 jl Jw, data16 0x0f 0x8c, branch_hint nacl-forbidden
 jl Jd, 0x0f 0x8c, branch_hint
+jle Jb, 0x7e, branch_hint
+jle Jw, data16 0x0f 0x8e, branch_hint nacl-forbidden
+jle Jd, 0x0f 0x8e, branch_hint
 jne Jb, 0x75, branch_hint
 jne Jw, data16 0x0f 0x85, branch_hint nacl-forbidden
 jne Jd, 0x0f 0x85, branch_hint
@@ -447,7 +454,8 @@ jmpq Eq, 0xff /4, amd64 nacl-forbidden
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-ljmpw Mp, data16 0xff /5, nacl-forbidden
+ljmpw Mp, data16 0xff /5, norexw nacl-forbidden
+"data32 ljmpq" Mp, data16 rexw 0xff /5, amd64 nacl-forbidden
 ljmp Mp, 0xff /5, ia32 nacl-forbidden
 ljmpq Mp, 0xff /5, amd64 nacl-forbidden
 ######## LAHF ##################################################################
@@ -519,18 +527,30 @@ movabs av Ov, 0xa3, amd64 nacl-forbidden
 # movd Py Ey, 0x0f 0x7e, CPUFeature_MMX
 # Objdump names 64bit version not “movd” but movq”.  We describe 32bit version
 # and 64bit version separately.
-movd Ed Vq, 0x66 0x0f 0x6e, CPUFeature_SSE2
-movd Vq Ed, 0x66 0x0f 0x7e, CPUFeature_SSE2
-movd Ed Pq, 0x0f 0x6e, CPUFeature_MMX
-movd Pq Ed, 0x0f 0x7e, CPUFeature_MMX
+movd Ed Vq, 0x66 0x0f 0x6e, norexw CPUFeature_SSE2
+movd Vq Ed, 0x66 0x0f 0x7e, norexw CPUFeature_SSE2
+movd Ed Pq, 0x0f 0x6e, norexw CPUFeature_MMX
+movd Pq Ed, 0x0f 0x7e, norexw CPUFeature_MMX
 movq Eq Vq, 0x66 rexw 0x0f 0x6e, amd64 CPUFeature_SSE2
 movq Vq Eq, 0x66 rexw 0x0f 0x7e, amd64 CPUFeature_SSE2
 movq Eq Pq, rexw 0x0f 0x6e, amd64 CPUFeature_MMX
 movq Pq Eq, rexw 0x0f 0x7e, amd64 CPUFeature_MMX
 ######## MOVMSKPD ##############################################################
-movmskpd Upd Gd, 0x66 0x0f 0x50, CPUFeature_SSE2
+# This is description according to AMD/Intel manual.
+#  movmskpd Upd Gd, 0x66 0x0f 0x50, CPUFeature_SSE2
+# GNU as accepts this descriotion, but objdump decodes last operand as “Gy”.
+# Technically it makes no difference: “movmskpd” clears everything except least
+# significant two bits and this operation produces precisely idential output for
+# “Gy” and “Gd” operands.  We'll use objdump's description.
+movmskpd Upd Gy, 0x66 0x0f 0x50, CPUFeature_SSE2
 ######## MOVMSKPS ##############################################################
-movmskps Ups Gd, 0x0f 0x50, CPUFeature_SSE
+# This is description according to AMD/Intel manual.
+#  movmskps Ups Gd, 0x0f 0x50, CPUFeature_SSE2
+# GNU as accepts this descriotion, but objdump decodes last operand as “Gy”.
+# Technically it makes no difference: “movmskps” clears everything except least
+# significant four bits and this operation produces precisely idential output
+# for “Gy” and “Gd” operands.  We'll use objdump's description.
+movmskps Ups Gy, 0x0f 0x50, CPUFeature_SSE
 ######## MOVNTI ################################################################
 movnti Gy My, 0x0f 0xc3, CPUFeature_SSE2
 ######## MOVS/MOVSB/MOVSW/MOVSD/MOVSQ ##########################################
@@ -542,11 +562,12 @@ movs X Y, 0xa4, rep nacl-amd64-forbidden
 # Objdump has different names for this instrustion: “movsbw”, “movsbl”, “movsbq”,
 # “movswl”, “movswq” depending on operand size.  We describe 32bit versions and
 # 64bit version separately.
-movsbw Eb Gw, data16 0x0f 0xbe
-movsbl Eb Gd, 0x0f 0xbe
-movswl Ew Gd, 0x0f 0xbf
+movsbl Eb Gd, 0x0f 0xbe, norexw
 movsbq Eb Gq, rexw 0x0f 0xbe, amd64
+movsbw Eb Gw, data16 0x0f 0xbe, norexw
+movswl Ew Gd, 0x0f 0xbf, norexw
 movswq Ew Gq, rexw 0x0f 0xbf, amd64
+movsww Ew Gw, data16 0x0f 0xbf, norexw
 ######## MOVSXD ################################################################
 movslq Ed Gv, 0x63, amd64
 ######## MOVZX #################################################################
@@ -556,17 +577,20 @@ movslq Ed Gv, 0x63, amd64
 # Objdump has different names for this instrustion: “movzbw”, “movzbl”, “movzbq”,
 # “movzwl”, “movzwq” depending on operand size.  We describe 32bit versions and
 # 64bit version separately.
-movzbw Eb Gw, data16 0x0f 0xb6
-movzbl Eb Gd, 0x0f 0xb6
-movzwl Ew Gd, 0x0f 0xb7
+movzbl Eb Gd, 0x0f 0xb6, norexw
 movzbq Eb Gq, rexw 0x0f 0xb6, amd64
+movzbw Eb Gw, data16 0x0f 0xb6, norexw
+movzwl Ew Gd, 0x0f 0xb7, norexw
 movzwq Ew Gq, rexw 0x0f 0xb7, amd64
+movzww Ew Gw, data16 0x0f 0xb7, norexw
 ######## MUL ###################################################################
 mul E, 0xf6 /4
 ######## NEG ###################################################################
 neg E, 0xf6 /3, lock
 ######## NOP ###################################################################
-nop, 0x90
+nop, 0x90, norex
+nop, 0x40 0x90, amd64 norex
+nop, 0x48 0x90, amd64 norex
 nop 'Ev, 0x0f 0x1f /0, no_memory_access
 ######## NOT ###################################################################
 not E, 0xf6 /2, lock
@@ -602,7 +626,8 @@ pop rr, 0x58
 ######## POPCNT ################################################################
 popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT
 ######## POPF/POPFD/POPFQ ######################################################
-popfw, data16 0x9d
+popfw, data16 0x9d, norexw
+"data32 popfq", data16 rexw 0x9d, amd64
 popf, 0x9d, ia32 nacl-forbidden
 popfq, 0x9d, amd64 nacl-forbidden
 ######## PREFETCH/PREFETCHW ####################################################
@@ -629,7 +654,8 @@ push =Ib, 0x6a
 "pushq  %fs", 0x0f 0xa0, amd64 nacl-forbidden
 "pushq  %gs", 0x0f 0xa8, amd64 nacl-forbidden
 ######## PUSHF/PUSHFD/PUSHFQ ###################################################
-pushfw, data16 0x9c
+pushfw, data16 0x9c, norexw
+"data32 pushfq", data16 rexw 0x9c, amd64
 pushf, 0x9c, ia32 nacl-forbidden
 pushfq, 0x9c, amd64 nacl-forbidden
 ######## RCL ###################################################################
@@ -645,8 +671,9 @@ ret =Iw, 0xc2, nacl-forbidden
 ret, 0xc3, rep ia32 nacl-forbidden
 retq, 0xc3, rep amd64 nacl-forbidden
 ######## RET (Far) #############################################################
-lret, 0xcb
-lret =Iw, 0xca
+lret, 0xcb, norexw nacl-forbidden
+lretq, rexw 0xcb, amd64 nacl-forbidden
+lret =Iw, 0xca, nacl-forbidden
 ######## ROL ###################################################################
 rol E, 0xd0 /0
 rol cb E, 0xd2 /0
