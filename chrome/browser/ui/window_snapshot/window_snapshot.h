@@ -10,10 +10,10 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
-  class Rect;
+class Rect;
 }
 
-namespace browser {
+namespace chrome {
 
 // Grabs a snapshot of the rectangle area |snapshot_bounds| with respect to the
 // top left corner of the designated window and stores a PNG representation
@@ -23,6 +23,6 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
                         std::vector<unsigned char>* png_representation,
                         const gfx::Rect& snapshot_bounds);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_WINDOW_SNAPSHOT_WINDOW_SNAPSHOT_H_

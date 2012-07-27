@@ -13,8 +13,8 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/feedback/feedback_data.h"
@@ -168,9 +168,9 @@ void ShowWebFeedbackView(Browser* browser,
   native_window = browser->window()->GetNativeWindow();
   snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
 #endif
-  bool success = browser::GrabWindowSnapshot(native_window,
-                                             last_screenshot_png,
-                                             snapshot_bounds);
+  bool success = chrome::GrabWindowSnapshot(native_window,
+                                            last_screenshot_png,
+                                            snapshot_bounds);
   FeedbackUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
 
   std::string feedback_url = std::string(chrome::kChromeUIFeedbackURL) + "?" +

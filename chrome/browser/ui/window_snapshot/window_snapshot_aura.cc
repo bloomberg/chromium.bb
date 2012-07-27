@@ -13,7 +13,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
 
-namespace browser {
+namespace chrome {
 
 bool GrabWindowSnapshot(gfx::NativeWindow window,
                         std::vector<unsigned char>* png_representation,
@@ -48,4 +48,4 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   return true;
 }
 
-}  // namespace browser
+}  // namespace chrome

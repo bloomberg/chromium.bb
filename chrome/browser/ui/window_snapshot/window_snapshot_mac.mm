@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,11 @@
 #include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/rect.h"
 
-namespace browser {
+namespace chrome {
 
 bool GrabWindowSnapshot(gfx::NativeWindow window,
-    std::vector<unsigned char>* png_representation,
-    const gfx::Rect& snapshot_bounds) {
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds) {
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   gfx::Rect screen_bounds = gfx::Rect(NSRectToCGRect([screen frame]));
   gfx::Rect window_bounds = gfx::Rect(NSRectToCGRect([window frame]));
@@ -58,4 +58,4 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   return true;
 }
 
-}  // namespace browser
+}  // namespace chrome

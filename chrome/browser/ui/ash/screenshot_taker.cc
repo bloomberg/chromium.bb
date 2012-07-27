@@ -122,7 +122,7 @@ bool GrabWindowSnapshot(aura::Window* window,
     return true;
 #endif  // OS_LINUX
 
-  return browser::GrabWindowSnapshot(window, png_data, snapshot_bounds);
+  return chrome::GrabWindowSnapshot(window, png_data, snapshot_bounds);
 }
 
 // How opaque should the layer that we flash onscreen to provide visual

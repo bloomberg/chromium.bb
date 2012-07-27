@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "testing/platform_test.h"
 #include "ui/gfx/rect.h"
 
-namespace browser {
+namespace chrome {
 namespace {
 
 typedef PlatformTest GrabWindowSnapshotTest;
@@ -30,8 +30,7 @@ TEST_F(GrabWindowSnapshotTest, TestGrabWindowSnapshot) {
   scoped_ptr<std::vector<unsigned char> > png_representation(
       new std::vector<unsigned char>);
   gfx::Rect bounds = gfx::Rect(0, 0, frame.size.width, frame.size.height);
-  EXPECT_TRUE(browser::GrabWindowSnapshot(window, png_representation.get(),
-                                          bounds));
+  EXPECT_TRUE(GrabWindowSnapshot(window, png_representation.get(), bounds));
 
   // Copy png back into NSData object so we can make sure we grabbed a png.
   scoped_nsobject<NSData> image_data(
@@ -47,4 +46,4 @@ TEST_F(GrabWindowSnapshotTest, TestGrabWindowSnapshot) {
 }
 
 }  // namespace
-}  // namespace browser
+}  // namespace chrome

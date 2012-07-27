@@ -32,9 +32,9 @@ gfx::Rect GetWindowBounds(gfx::NativeWindow window_handle) {
                    content_rect.bottom - content_rect.top);
 }
 
-} // namespace
+}  // namespace
 
-namespace browser {
+namespace chrome {
 
 bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
                         std::vector<unsigned char>* png_representation,
@@ -97,4 +97,4 @@ bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
   return true;
 }
 
-}  // namespace browser
+}  // namespace chrome
