@@ -127,7 +127,9 @@ bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
     extensions::APIPermission::ID permission) const {
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
     const std::string& id = origin.host();
-    return extensions_.GetByID(id)->HasAPIPermission(permission) &&
+    const Extension* extension = extensions_.GetByID(id);
+    CHECK(extension != NULL);
+    return extension->HasAPIPermission(permission) &&
         process_map_.Contains(id, process_id);
   }
 

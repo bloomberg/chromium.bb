@@ -50,14 +50,14 @@ const char kPnaclManifestName[] = "PNaCl";
 const char* PnaclArch() {
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(ARCH_CPU_X86_64)
-  bool x86_64 = true;
+  return "x86-64";
 #elif defined(OS_WIN)
   bool x86_64 = (base::win::OSInfo::GetInstance()->wow64_status() ==
                  base::win::OSInfo::WOW64_ENABLED);
-#else
-  bool x86_64 = false;
-#endif
   return x86_64 ? "x86-64" : "x86-32";
+#else
+  return "x86-32";
+#endif
 #elif defined(ARCH_CPU_ARMEL)
   // Eventually we'll need to distinguish arm32 vs thumb2.
   // That may need to be based on the actual nexe rather than a static

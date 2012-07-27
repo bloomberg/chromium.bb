@@ -186,8 +186,10 @@ void ExtensionDialog::Close() {
 
 void ExtensionDialog::MaybeFocusRenderView() {
   views::FocusManager* focus_manager = GetWidget()->GetFocusManager();
+  DCHECK(focus_manager != NULL);
+
   // Already there's a focused view, so no need to switch the focus.
-  if (focus_manager && focus_manager->GetFocusedView())
+  if (focus_manager->GetFocusedView())
     return;
 
   content::RenderWidgetHostView* view = host()->render_view_host()->GetView();

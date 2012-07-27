@@ -507,13 +507,9 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
     int model_index,
     TabRendererData* data,
     TabStatus tab_status) {
-  SkBitmap* app_icon = NULL;
   TabContents* tab_contents = TabContents::FromWebContents(contents);
 
-  if (app_icon)
-    data->favicon = *app_icon;
-  else
-    data->favicon = tab_contents->favicon_tab_helper()->GetFavicon();
+  data->favicon = tab_contents->favicon_tab_helper()->GetFavicon();
   data->network_state = TabContentsNetworkState(contents);
   data->title = contents->GetTitle();
   data->url = contents->GetURL();

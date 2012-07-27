@@ -372,7 +372,8 @@ void Extension::OverrideLaunchUrl(const GURL& override_url) {
     launch_web_url_ = new_url.spec();
 
     URLPattern pattern(kValidWebExtentSchemes);
-    pattern.Parse(new_url.spec());
+    URLPattern::ParseResult result = pattern.Parse(new_url.spec());
+    DCHECK_EQ(result, URLPattern::PARSE_SUCCESS);
     pattern.SetPath(pattern.path() + '*');
     extent_.AddPattern(pattern);
   }
@@ -1610,7 +1611,11 @@ bool Extension::LoadWebAccessibleResources(string16* error) {
       return false;
     }
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-    pattern.Parse(extension_url_.spec());
+    if (pattern.Parse(extension_url_.spec()) != URLPattern::PARSE_SUCCESS) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidURLPatternError, extension_url_.spec());
+      return false;
+    }
     while (relative_path[0] == '/')
       relative_path = relative_path.substr(1, relative_path.length() - 1);
     pattern.SetPath(pattern.path() + relative_path);
@@ -1637,7 +1642,11 @@ bool Extension::LoadSandboxedPages(string16* error) {
       return false;
     }
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-    pattern.Parse(extension_url_.spec());
+    if (pattern.Parse(extension_url_.spec()) != URLPattern::PARSE_SUCCESS) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidURLPatternError, extension_url_.spec());
+      return false;
+    }
     while (relative_path[0] == '/')
       relative_path = relative_path.substr(1, relative_path.length() - 1);
     pattern.SetPath(pattern.path() + relative_path);
@@ -2558,8 +2567,13 @@ bool Extension::LoadChromeURLOverrides(string16* error) {
     // For component extensions, add override URL to extent patterns.
     if (is_packaged_app() && location() == COMPONENT) {
       URLPattern pattern(URLPattern::SCHEME_CHROMEUI);
-      pattern.Parse(base::StringPrintf(kOverrideExtentUrlPatternFormat,
-                                       page.c_str()));
+      std::string url = base::StringPrintf(kOverrideExtentUrlPatternFormat,
+                                           page.c_str());
+      if (pattern.Parse(url) != URLPattern::PARSE_SUCCESS) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidURLPatternError, url);
+        return false;
+      }
       extent_.AddPattern(pattern);
     }
   }
@@ -3092,7 +3106,7 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (!LoadRequiredFeatures(error))
     return false;
 
-  // We don't ned to validate because InitExtensionID already did that.
+  // We don't need to validate because InitExtensionID already did that.
   manifest_->GetString(keys::kPublicKey, &public_key_);
 
   extension_url_ = Extension::GetBaseURLFromExtensionId(id());
