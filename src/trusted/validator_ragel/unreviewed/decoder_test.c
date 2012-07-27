@@ -115,9 +115,10 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       while ((((struct DecodeState *)userdata)->fwait) < begin) {
         printf("%*lx:\t%02x                   \tfwait\n",
           ((struct DecodeState *)userdata)->width,
-          (long)((((struct DecodeState *)userdata)->fwait++) -
+          (long)((((struct DecodeState *)userdata)->fwait) -
                                     (((struct DecodeState *)userdata)->offset)),
           *((struct DecodeState *)userdata)->fwait);
+        ++(((struct DecodeState *)userdata)->fwait);
       }
     } else {
       /* fwait "prefix" can only include two 0x9b bytes or one rex byte - and
@@ -164,6 +165,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             (long)((((struct DecodeState *)userdata)->fwait++) -
                                     (((struct DecodeState *)userdata)->offset)),
             *((struct DecodeState *)userdata)->fwait);
+            ++(((struct DecodeState *)userdata)->fwait);
         }
       }
     }
