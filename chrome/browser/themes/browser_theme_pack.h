@@ -65,7 +65,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // operation should be relatively fast, as it should be an mmap() and some
   // pointer swizzling. Returns NULL on any error attempting to read |path|.
   static scoped_refptr<BrowserThemePack> BuildFromDataPack(
-      FilePath path, const std::string& expected_id);
+      const FilePath& path, const std::string& expected_id);
 
   // Builds a data pack on disk at |path| for future quick loading by
   // BuildFromDataPack(). Often (but not always) called from the file thread;

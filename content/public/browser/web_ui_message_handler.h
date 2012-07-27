@@ -42,7 +42,7 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // Adds "url" and "title" keys on incoming dictionary, setting title
   // as the url as a fallback on empty title.
   static void SetURLAndTitle(base::DictionaryValue* dictionary,
-                             string16 title,
+                             const string16& title,
                              const GURL& gurl);
 
   // Extract an integer value from a list Value.

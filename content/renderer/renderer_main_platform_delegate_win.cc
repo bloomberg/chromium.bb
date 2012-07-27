@@ -65,7 +65,7 @@ void EnableThemeSupportForRenderer(bool no_sandbox) {
 }
 
 // Windows-only skia sandbox support
-void SkiaPreCacheFont(LOGFONT logfont) {
+void SkiaPreCacheFont(const LOGFONT& logfont) {
   content::RenderThread* render_thread = content::RenderThread::Get();
   if (render_thread) {
     render_thread->PreCacheFont(logfont);

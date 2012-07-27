@@ -9,7 +9,7 @@
 
 #include "SkPreConfig.h"
 
-typedef void (*SkiaEnsureTypefaceAccessible)(LOGFONT font);
+typedef void (*SkiaEnsureTypefaceAccessible)(const LOGFONT& font);
 
 SK_API void SetSkiaEnsureTypefaceAccessible(SkiaEnsureTypefaceAccessible func);
 

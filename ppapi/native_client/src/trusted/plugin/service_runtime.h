@@ -225,7 +225,7 @@ class ServiceRuntime {
   // Starts the application channel to the nexe.
   SrpcClient* SetupAppChannel();
 
-  bool Log(int severity, nacl::string msg);
+  bool Log(int severity, const nacl::string& msg);
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 

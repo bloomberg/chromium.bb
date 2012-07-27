@@ -76,7 +76,7 @@ bool IsStandardScheme(const std::string& scheme) {
       url_parse::Component(0, static_cast<int>(scheme.length())));
 }
 
-bool IsValidPortForScheme(const std::string scheme, const std::string& port) {
+bool IsValidPortForScheme(const std::string& scheme, const std::string& port) {
   if (port == "*")
     return true;
 

@@ -64,7 +64,7 @@ bool IsPathRelative(const std::wstring &path) {
 }
 
 // Converts a relative path to an absolute path.
-bool ConvertToAbsolutePath(const std::wstring child_current_directory,
+bool ConvertToAbsolutePath(const std::wstring& child_current_directory,
                            bool use_env_path, std::wstring *path) {
   wchar_t file_buffer[MAX_PATH];
   wchar_t *file_part = NULL;

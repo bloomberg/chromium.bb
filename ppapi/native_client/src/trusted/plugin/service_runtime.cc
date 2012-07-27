@@ -699,7 +699,7 @@ SrpcClient* ServiceRuntime::SetupAppChannel() {
   }
 }
 
-bool ServiceRuntime::Log(int severity, nacl::string msg) {
+bool ServiceRuntime::Log(int severity, const nacl::string& msg) {
   NaClSrpcResultCodes rpc_result =
       NaClSrpcInvokeBySignature(&command_channel_,
                                 "log:is:",

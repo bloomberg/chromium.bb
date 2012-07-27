@@ -276,7 +276,7 @@ void EmitHexDump(const char *buf, size_t buf_len, size_t total_len,
   out->append("</pre>");
 }
 
-GURL DecodeBase64URL(const std::string base64) {
+GURL DecodeBase64URL(const std::string& base64) {
   std::string url;
   base::Base64Decode(base64, &url);
   return GURL(url);

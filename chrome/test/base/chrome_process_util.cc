@@ -40,7 +40,7 @@ class ChildProcessFilter : public base::ProcessFilter {
   explicit ChildProcessFilter(base::ProcessId parent_pid)
       : parent_pids_(&parent_pid, (&parent_pid) + 1) {}
 
-  explicit ChildProcessFilter(std::vector<base::ProcessId> parent_pids)
+  explicit ChildProcessFilter(const std::vector<base::ProcessId>& parent_pids)
       : parent_pids_(parent_pids.begin(), parent_pids.end()) {}
 
   virtual bool Includes(const base::ProcessEntry& entry) const {
