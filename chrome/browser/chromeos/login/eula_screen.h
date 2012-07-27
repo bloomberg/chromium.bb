@@ -31,7 +31,6 @@ class EulaScreen : public WizardScreen,
   virtual std::string GetName() const OVERRIDE;
 
   // EulaScreenActor::Delegate implementation:
-  virtual bool IsTpmEnabled() const OVERRIDE;
   virtual GURL GetOemEulaUrl() const OVERRIDE;
   virtual void OnExit(bool accepted, bool is_usage_stats_checked) OVERRIDE;
   virtual void InitiatePasswordFetch() OVERRIDE;

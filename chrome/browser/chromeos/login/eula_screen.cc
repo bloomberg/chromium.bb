@@ -47,10 +47,6 @@ std::string EulaScreen::GetName() const {
   return WizardController::kEulaScreenName;
 }
 
-bool EulaScreen::IsTpmEnabled() const {
-  return chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->TpmIsEnabled();
-}
-
 GURL EulaScreen::GetOemEulaUrl() const {
   const StartupCustomizationDocument* customization =
       StartupCustomizationDocument::GetInstance();
