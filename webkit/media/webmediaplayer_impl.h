@@ -208,6 +208,8 @@ class WebMediaPlayerImpl
                             unsigned length);
   virtual bool sourceAbort(const WebKit::WebString& id);
   virtual void sourceEndOfStream(EndOfStreamStatus status);
+  virtual bool sourceTimestampOffset(
+      const WebKit::WebString& id, double offset);
 
   virtual MediaKeyException generateKeyRequest(
       const WebKit::WebString& key_system,

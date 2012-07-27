@@ -653,6 +653,11 @@ WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
                            new_codecs));
 }
 
+bool WebMediaPlayerImpl::sourceTimestampOffset(
+    const WebKit::WebString& id, double offset) {
+  return proxy_->DemuxerSetTimestampOffset(id.utf8().data(), offset);
+}
+
 bool WebMediaPlayerImpl::sourceRemoveId(const WebKit::WebString& id) {
   DCHECK(!id.isEmpty());
   proxy_->DemuxerRemoveId(id.utf8().data());
