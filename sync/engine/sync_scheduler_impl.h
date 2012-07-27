@@ -99,8 +99,12 @@ class SyncSchedulerImpl : public SyncScheduler {
       // a sync.  The source is inferable from |session.source()|.
       NUDGE,
       // Typically used for fetching updates for a subset of the enabled types
-      // during initial sync or reconfiguration.
+      // during initial sync or reconfiguration.  We don't run all steps of
+      // the sync cycle for these (e.g. CleanupDisabledTypes is skipped).
       CONFIGURATION,
+      // The user disabled some types and we have to clean up the data
+      // for those.
+      CLEANUP_DISABLED_TYPES,
     };
     SyncSessionJob();
     SyncSessionJob(SyncSessionJobPurpose purpose, base::TimeTicks start,
@@ -215,6 +219,10 @@ class SyncSchedulerImpl : public SyncScheduler {
   // Called after the Syncer has performed the sync represented by |job|, to
   // reset our state.
   void FinishSyncSessionJob(const SyncSessionJob& job);
+
+  // Record important state that might be needed in future syncs, such as which
+  // data types may require cleanup.
+  void UpdateCarryoverSessionState(const SyncSessionJob& old_job);
 
   // Helper to FinishSyncSessionJob to schedule the next sync operation.
   void ScheduleNextSync(const SyncSessionJob& old_job);

@@ -132,6 +132,7 @@ const char* SyncSchedulerImpl::SyncSessionJob::GetPurposeString(
     ENUM_CASE(POLL);
     ENUM_CASE(NUDGE);
     ENUM_CASE(CONFIGURATION);
+    ENUM_CASE(CLEANUP_DISABLED_TYPES);
   }
   NOTREACHED();
   return "";
@@ -353,6 +354,17 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
                        &restricted_workers);
   session_context_->set_routing_info(params.routing_info);
 
+  // We rely on this not failing, so don't need to worry about checking for
+  // success. In addition, this will be removed as part of crbug.com/131433.
+  SyncSessionJob cleanup_job(
+      SyncSessionJob::CLEANUP_DISABLED_TYPES,
+      TimeTicks::Now(),
+      make_linked_ptr(CreateSyncSession(SyncSourceInfo())),
+      false,
+      ConfigurationParams(),
+      FROM_HERE);
+  DoSyncSessionJob(cleanup_job);
+
   if (params.keystore_key_status == ConfigurationParams::KEYSTORE_KEY_NEEDED) {
     // TODO(zea): implement in such a way that we can handle failures and the
     // subsequent retrys the scheduler might perform. See crbug.com/129665.
@@ -399,6 +411,7 @@ SyncSchedulerImpl::DecideWhileInWaitInterval(
     const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(wait_interval_.get());
+  DCHECK_NE(job.purpose, SyncSessionJob::CLEANUP_DISABLED_TYPES);
 
   SDVLOG(2) << "DecideWhileInWaitInterval with WaitInterval mode "
             << WaitInterval::GetModeString(wait_interval_->mode)
@@ -431,6 +444,8 @@ SyncSchedulerImpl::DecideWhileInWaitInterval(
 SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
     const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  if (job.purpose == SyncSessionJob::CLEANUP_DISABLED_TYPES)
+    return CONTINUE;
 
   // See if our type is throttled.
   ModelTypeSet throttled_types =
@@ -524,6 +539,8 @@ bool SyncSchedulerImpl::ShouldRunJob(const SyncSessionJob& job) {
 
 void SyncSchedulerImpl::SaveJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  // TODO(sync): Should we also check that job.purpose !=
+  // CLEANUP_DISABLED_TYPES?  (See http://crbug.com/90868.)
   if (job.purpose == SyncSessionJob::NUDGE) {
     SDVLOG(2) << "Saving a nudge job";
     InitOrCoalescePendingJob(job);
@@ -680,6 +697,10 @@ void SyncSchedulerImpl::SetSyncerStepsForPurpose(
       *start = SYNCER_BEGIN;
       *end = SYNCER_END;
       return;
+    case SyncSessionJob::CLEANUP_DISABLED_TYPES:
+      *start = CLEANUP_DISABLED_TYPES;
+      *end = CLEANUP_DISABLED_TYPES;
+      return;
     default:
       NOTREACHED();
       *start = SYNCER_END;
@@ -784,6 +805,27 @@ void SyncSchedulerImpl::DoSyncSessionJob(const SyncSessionJob& job) {
   FinishSyncSessionJob(job);
 }
 
+void SyncSchedulerImpl::UpdateCarryoverSessionState(
+    const SyncSessionJob& old_job) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  if (old_job.purpose == SyncSessionJob::CONFIGURATION) {
+    // Whatever types were part of a configuration task will have had updates
+    // downloaded.  For that reason, we make sure they get recorded in the
+    // event that they get disabled at a later time.
+    ModelSafeRoutingInfo r(session_context_->previous_session_routing_info());
+    if (!r.empty()) {
+      ModelSafeRoutingInfo temp_r;
+      ModelSafeRoutingInfo old_info(old_job.session->routing_info());
+      std::set_union(r.begin(), r.end(), old_info.begin(), old_info.end(),
+          std::insert_iterator<ModelSafeRoutingInfo>(temp_r, temp_r.begin()));
+      session_context_->set_previous_session_routing_info(temp_r);
+    }
+  } else {
+    session_context_->set_previous_session_routing_info(
+        old_job.session->routing_info());
+  }
+}
+
 void SyncSchedulerImpl::FinishSyncSessionJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   // Update timing information for how often datatypes are triggering nudges.
@@ -813,6 +855,7 @@ void SyncSchedulerImpl::FinishSyncSessionJob(const SyncSessionJob& job) {
   ServerConnectionManager* scm = session_context_->connection_manager();
   UpdateServerConnectionManagerStatus(scm->server_status());
 
+  UpdateCarryoverSessionState(job);
   if (IsSyncingCurrentlySilenced()) {
     SDVLOG(2) << "We are currently throttled; not scheduling the next sync.";
     // TODO(sync): Investigate whether we need to check job.purpose

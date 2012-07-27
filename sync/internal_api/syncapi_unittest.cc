@@ -759,7 +759,7 @@ class SyncManagerTest : public testing::Test,
                        base::MessageLoopProxy::current(),
                        scoped_ptr<HttpPostProviderFactory>(
                            new TestHttpPostProviderFactory()),
-                       ModelSafeRoutingInfo(), workers,
+                       routing_info, workers,
                        &extensions_activity_monitor_, this,
                        credentials,
                        scoped_ptr<SyncNotifier>(sync_notifier_mock_),
@@ -917,22 +917,6 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.OnIncomingNotification(
         ModelTypePayloadMapToObjectIdPayloadMap(model_types_with_payloads),
         REMOTE_NOTIFICATION);
-  }
-
-  void SetProgressMarkerForType(ModelType type, bool set) {
-    if (set) {
-      sync_pb::DataTypeProgressMarker marker;
-      marker.set_token("token");
-      marker.set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
-      sync_manager_.directory()->SetDownloadProgress(type, marker);
-    } else {
-      sync_pb::DataTypeProgressMarker marker;
-      sync_manager_.directory()->SetDownloadProgress(type, marker);
-    }
-  }
-
-  void SetInitialSyncEndedForType(ModelType type, bool value) {
-    sync_manager_.directory()->set_initial_sync_ended_for_type(type, value);
   }
 
  private:
@@ -2518,24 +2502,18 @@ class MockSyncScheduler : public FakeSyncScheduler {
 
 class ComponentsFactory : public TestInternalComponentsFactory {
  public:
-  ComponentsFactory(SyncScheduler* scheduler_to_use,
-                    sessions::SyncSessionContext** session_context)
+  ComponentsFactory(SyncScheduler* scheduler_to_use)
       : TestInternalComponentsFactory(
             TestInternalComponentsFactory::IN_MEMORY),
-        scheduler_to_use_(scheduler_to_use),
-        session_context_(session_context) {}
+        scheduler_to_use_(scheduler_to_use) {}
   virtual ~ComponentsFactory() {}
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       sessions::SyncSessionContext* context) OVERRIDE {
-    *session_context_ = context;
     return scheduler_to_use_.Pass();
   }
-
- private:
   scoped_ptr<SyncScheduler> scheduler_to_use_;
-  sessions::SyncSessionContext** session_context_;
 };
 
 class SyncManagerTestWithMockScheduler : public SyncManagerTest {
@@ -2543,41 +2521,23 @@ class SyncManagerTestWithMockScheduler : public SyncManagerTest {
   SyncManagerTestWithMockScheduler() : scheduler_(NULL) {}
   virtual InternalComponentsFactory* GetFactory() OVERRIDE {
     scheduler_ = new MockSyncScheduler();
-    return new ComponentsFactory(scheduler_, &session_context_);
+    return new ComponentsFactory(scheduler_);
   }
-
-  MockSyncScheduler* scheduler() { return scheduler_; }
-  sessions::SyncSessionContext* session_context() {
-      return session_context_;
-  }
-
- private:
   MockSyncScheduler* scheduler_;
-  sessions::SyncSessionContext* session_context_;
 };
 
 // Test that the configuration params are properly created and sent to
-// ScheduleConfigure. No callback should be invoked. Any disabled datatypes
-// should be purged.
+// ScheduleConfigure. No callback should be invoked.
 TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
   ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
   ModelTypeSet types_to_download(BOOKMARKS, PREFERENCES);
   ModelSafeRoutingInfo new_routing_info;
   GetModelSafeRoutingInfo(&new_routing_info);
-  ModelTypeSet enabled_types = GetRoutingInfoTypes(new_routing_info);
-  ModelTypeSet disabled_types = Difference(ModelTypeSet::All(), enabled_types);
 
   ConfigurationParams params;
-  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler(), ScheduleConfiguration(_)).
+  EXPECT_CALL(*scheduler_, Start(SyncScheduler::CONFIGURATION_MODE));
+  EXPECT_CALL(*scheduler_, ScheduleConfiguration(_)).
       WillOnce(DoAll(SaveArg<0>(&params), Return(true)));
-
-  // Set data for all types.
-  for (ModelTypeSet::Iterator iter = ModelTypeSet::All().First(); iter.Good();
-       iter.Inc()) {
-    SetProgressMarkerForType(iter.Get(), true);
-    SetInitialSyncEndedForType(iter.Get(), true);
-  }
 
   CallbackCounter ready_task_counter, retry_task_counter;
   sync_manager_.ConfigureSyncer(
@@ -2594,70 +2554,6 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
             params.source);
   EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
   EXPECT_EQ(new_routing_info, params.routing_info);
-
-  // Verify all the disabled types were purged.
-  EXPECT_TRUE(sync_manager_.InitialSyncEndedTypes().Equals(
-      enabled_types));
-  EXPECT_TRUE(sync_manager_.GetTypesWithEmptyProgressMarkerToken(
-      ModelTypeSet::All()).Equals(disabled_types));
-}
-
-// Test that on a reconfiguration (configuration where the session context
-// already has routing info), only those recently disabled types are purged.
-TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
-  ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
-  ModelTypeSet types_to_download(BOOKMARKS, PREFERENCES);
-  ModelTypeSet disabled_types = ModelTypeSet(THEMES, SESSIONS);
-  ModelSafeRoutingInfo old_routing_info;
-  ModelSafeRoutingInfo new_routing_info;
-  GetModelSafeRoutingInfo(&old_routing_info);
-  new_routing_info = old_routing_info;
-  new_routing_info.erase(THEMES);
-  new_routing_info.erase(SESSIONS);
-  ModelTypeSet enabled_types = GetRoutingInfoTypes(new_routing_info);
-
-  ConfigurationParams params;
-  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler(), ScheduleConfiguration(_)).
-      WillOnce(DoAll(SaveArg<0>(&params), Return(true)));
-
-  // Set data for all types except those recently disabled (so we can verify
-  // only those recently disabled are purged) .
-  for (ModelTypeSet::Iterator iter = ModelTypeSet::All().First(); iter.Good();
-       iter.Inc()) {
-    if (!disabled_types.Has(iter.Get())) {
-      SetProgressMarkerForType(iter.Get(), true);
-      SetInitialSyncEndedForType(iter.Get(), true);
-    } else {
-      SetProgressMarkerForType(iter.Get(), false);
-      SetInitialSyncEndedForType(iter.Get(), false);
-    }
-  }
-
-  // Set the context to have the old routing info.
-  session_context()->set_routing_info(old_routing_info);
-
-  CallbackCounter ready_task_counter, retry_task_counter;
-  sync_manager_.ConfigureSyncer(
-      reason,
-      types_to_download,
-      new_routing_info,
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)),
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&retry_task_counter)));
-  EXPECT_EQ(0, ready_task_counter.times_called());
-  EXPECT_EQ(0, retry_task_counter.times_called());
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
-            params.source);
-  EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
-  EXPECT_EQ(new_routing_info, params.routing_info);
-
-  // Verify only the recently disabled types were purged.
-  EXPECT_TRUE(sync_manager_.InitialSyncEndedTypes().Equals(
-      Difference(ModelTypeSet::All(), disabled_types)));
-  EXPECT_TRUE(sync_manager_.GetTypesWithEmptyProgressMarkerToken(
-      ModelTypeSet::All()).Equals(disabled_types));
 }
 
 // Test that the retry callback is invoked on configuration failure.
@@ -2668,8 +2564,8 @@ TEST_F(SyncManagerTestWithMockScheduler, ConfigurationRetry) {
   GetModelSafeRoutingInfo(&new_routing_info);
 
   ConfigurationParams params;
-  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler(), ScheduleConfiguration(_)).
+  EXPECT_CALL(*scheduler_, Start(SyncScheduler::CONFIGURATION_MODE));
+  EXPECT_CALL(*scheduler_, ScheduleConfiguration(_)).
       WillOnce(DoAll(SaveArg<0>(&params), Return(false)));
 
   CallbackCounter ready_task_counter, retry_task_counter;
@@ -2729,46 +2625,6 @@ TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {
   EXPECT_TRUE(partial_types.Has(NIGORI));
   EXPECT_TRUE(partial_types.Has(BOOKMARKS));
   EXPECT_FALSE(partial_types.Has(PREFERENCES));
-}
-
-// Test CleanipDisabledTypes properly purges all disabled types as specified
-// by the previous and current enabled params. Enabled partial types should not
-// be purged.
-TEST_F(SyncManagerTest, PurgeDisabledTypes) {
-  ModelSafeRoutingInfo routing_info;
-  GetModelSafeRoutingInfo(&routing_info);
-  ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
-  ModelTypeSet disabled_types = Difference(ModelTypeSet::All(), enabled_types);
-  ModelTypeSet partial_enabled_types(PASSWORDS);
-
-  // Set data for all non-partial types.
-  for (ModelTypeSet::Iterator iter = ModelTypeSet::All().First(); iter.Good();
-       iter.Inc()) {
-    SetProgressMarkerForType(iter.Get(), true);
-    if (!partial_enabled_types.Has(iter.Get()))
-      SetInitialSyncEndedForType(iter.Get(), true);
-  }
-
-  // Verify all the enabled types remain after cleanup, and all the disabled
-  // types were purged.
-  sync_manager_.PurgeDisabledTypes(ModelTypeSet::All(), enabled_types);
-  EXPECT_TRUE(enabled_types.Equals(
-      Union(sync_manager_.InitialSyncEndedTypes(), partial_enabled_types)));
-  EXPECT_TRUE(disabled_types.Equals(
-      sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));
-
-  // Disable some more types.
-  disabled_types.Put(BOOKMARKS);
-  disabled_types.Put(PREFERENCES);
-  ModelTypeSet new_enabled_types =
-      Difference(ModelTypeSet::All(), disabled_types);
-
-  // Verify only the non-disabled types remain after cleanup.
-  sync_manager_.PurgeDisabledTypes(enabled_types, new_enabled_types);
-  EXPECT_TRUE(new_enabled_types.Equals(
-      Union(sync_manager_.InitialSyncEndedTypes(), partial_enabled_types)));
-  EXPECT_TRUE(disabled_types.Equals(
-      sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));
 }
 
 }  // namespace

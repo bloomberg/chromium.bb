@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "sync/engine/apply_updates_command.h"
 #include "sync/engine/build_commit_command.h"
+#include "sync/engine/cleanup_disabled_types_command.h"
 #include "sync/engine/commit.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/download_updates_command.h"
@@ -52,6 +53,7 @@ const char* SyncerStepToString(const SyncerStep step)
 {
   switch (step) {
     ENUM_CASE(SYNCER_BEGIN);
+    ENUM_CASE(CLEANUP_DISABLED_TYPES);
     ENUM_CASE(DOWNLOAD_UPDATES);
     ENUM_CASE(PROCESS_CLIENT_COMMAND);
     ENUM_CASE(VERIFY_UPDATES);
@@ -104,8 +106,14 @@ void Syncer::SyncShare(sessions::SyncSession* session,
             PruneUnthrottledTypes(base::TimeTicks::Now());
         session->SendEventNotification(SyncEngineEvent::SYNC_CYCLE_BEGIN);
 
+        next_step = CLEANUP_DISABLED_TYPES;
+        break;
+      case CLEANUP_DISABLED_TYPES: {
+        CleanupDisabledTypesCommand cleanup;
+        cleanup.Execute(session);
         next_step = DOWNLOAD_UPDATES;
         break;
+      }
       case DOWNLOAD_UPDATES: {
         // TODO(akalin): We may want to propagate this switch up
         // eventually.
