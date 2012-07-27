@@ -291,7 +291,10 @@ def main(argv):
   # Check for known bug-patterns in the bitcode file (if there is one).
   # TODO(jvoung): remove this when known bug is fixed.
   if bcfile is not None:
-    CheckForKnownBugs(bcfile)
+    # Checking requires llvm-dis, which is not available to the pure
+    # translator backend.
+    if env.getbool('HAS_FRONTEND'):
+      CheckForKnownBugs(bcfile)
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)

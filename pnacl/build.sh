@@ -3243,7 +3243,8 @@ driver-install() {
   driver-install-python "${destdir}" "pnacl-*.py" "wrapper-*.py"
 
   # Tell the driver the library mode
-  echo "LIBMODE=${libmode}" > "${destdir}"/driver.conf
+  echo """LIBMODE=${libmode}
+HAS_FRONTEND=1""" > "${destdir}"/driver.conf
 
   # Install readelf and size
   cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-readelf" \
@@ -3268,7 +3269,8 @@ driver-install-translator() {
   driver-install-python "${destdir}" pnacl-translate.py pnacl-nativeld.py
 
   # Translator is newlib
-  echo "LIBMODE=newlib" > "${destdir}"/driver.conf
+  echo """LIBMODE=newlib
+HAS_FRONTEND=0""" > "${destdir}"/driver.conf
 }
 
 ######################################################################

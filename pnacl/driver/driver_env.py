@@ -69,6 +69,9 @@ INITIAL_ENV = {
   'RECURSE'     : '0',    # In a recursive driver call
   'SAVE_TEMPS'  : '0',    # Do not clean up temporary files
   'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch. (main switch)
+  'HAS_FRONTEND': '',     # Set by ReadConfig().  '1' if the driver install
+                          # has support for front-end bitcode tools, or '0'
+                          # if it only has the backend translator.
 
   'FORCE_INTERMEDIATE_S': '0',
   'USE_EMULATOR'        : '0',
