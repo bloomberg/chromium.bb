@@ -318,6 +318,8 @@
     'browser/download/drag_download_file.h',
     'browser/download/drag_download_util.cc',
     'browser/download/drag_download_util.h',
+    'browser/download/file_metadata_linux.cc',
+    'browser/download/file_metadata_linux.h',
     'browser/download/mhtml_generation_manager.cc',
     'browser/download/mhtml_generation_manager.h',
     'browser/download/save_file.cc',

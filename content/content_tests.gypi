@@ -253,6 +253,7 @@
         'browser/download/download_id_unittest.cc',
         'browser/download/download_item_impl_unittest.cc',
         'browser/download/download_manager_impl_unittest.cc',
+        'browser/download/file_metadata_unittest_linux.cc',
         'browser/download/save_package_unittest.cc',
         'browser/gamepad/gamepad_provider_unittest.cc',
         'browser/geolocation/device_data_provider_unittest.cc',
