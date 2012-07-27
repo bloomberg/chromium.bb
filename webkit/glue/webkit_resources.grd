@@ -54,6 +54,9 @@
       <include name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_HOVER" file="resources\mediaplayer_fullscreen_hover.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DOWN" file="resources\mediaplayer_fullscreen_down.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DISABLED" file="resources\mediaplayer_fullscreen_disabled.png" type="BINDATA" />
+      <if expr="pp_ifdef('android')">
+        <include name="IDR_MEDIAPLAYER_OVERLAY_PLAY_BUTTON" file="resources\mediaplayer_overlay_play.png" type="BINDATA" />
+      </if>
       <if expr="is_macosx">
         <include name="IDR_OVERHANG_PATTERN" file="resources\overhang_pattern.png" type="BINDATA" />
       </if>
