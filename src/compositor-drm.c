@@ -1261,6 +1261,33 @@ static const char *connector_type_names[] = {
 };
 
 static int
+find_crtc_for_connector(struct drm_compositor *ec,
+			drmModeRes *resources, drmModeConnector *connector)
+{
+	drmModeEncoder *encoder;
+	uint32_t possible_crtcs;
+	int i, j;
+
+	for (j = 0; j < connector->count_encoders; j++) {
+		encoder = drmModeGetEncoder(ec->drm.fd, connector->encoders[j]);
+		if (encoder == NULL) {
+			weston_log("Failed to get encoder.\n");
+			return -1;
+		}
+		possible_crtcs = encoder->possible_crtcs;
+		drmModeFreeEncoder(encoder);
+
+		for (i = 0; i < resources->count_crtcs; i++) {
+			if (possible_crtcs & (1 << i) &&
+			    !(ec->crtc_allocator & (1 << resources->crtcs[i])))
+				return i;
+		}
+	}
+
+	return -1;
+}
+
+static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
 			    drmModeConnector *connector,
@@ -1276,28 +1303,15 @@ create_output_for_connector(struct drm_compositor *ec,
 	char name[32];
 	const char *type_name;
 
-	encoder = drmModeGetEncoder(ec->drm.fd, connector->encoders[0]);
-	if (encoder == NULL) {
-		weston_log("No encoder for connector.\n");
-		return -1;
-	}
-
-	for (i = 0; i < resources->count_crtcs; i++) {
-		if (encoder->possible_crtcs & (1 << i) &&
-		    !(ec->crtc_allocator & (1 << resources->crtcs[i])))
-			break;
-	}
-	if (i == resources->count_crtcs) {
-		weston_log("No usable crtc for encoder.\n");
-		drmModeFreeEncoder(encoder);
+	i = find_crtc_for_connector(ec, resources, connector);
+	if (i < 0) {
+		weston_log("No usable crtc/encoder pair for connector.\n");
 		return -1;
 	}
 
 	output = malloc(sizeof *output);
-	if (output == NULL) {
-		drmModeFreeEncoder(encoder);
+	if (output == NULL)
 		return -1;
-	}
 
 	memset(output, 0, sizeof *output);
 	output->base.subpixel = drm_subpixel_to_wayland(connector->subpixel);
@@ -1318,7 +1332,6 @@ create_output_for_connector(struct drm_compositor *ec,
 	ec->connector_allocator |= (1 << output->connector_id);
 
 	output->original_crtc = drmModeGetCrtc(ec->drm.fd, output->crtc_id);
-	drmModeFreeEncoder(encoder);
 
 	/* Get the current mode on the crtc that's currently driving
 	 * this connector. */
