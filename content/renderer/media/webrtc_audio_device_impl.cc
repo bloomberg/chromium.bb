@@ -423,7 +423,8 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   // TODO(henrika): it could be possible to allow one of the directions (input
   // or output) to use a non-supported rate. As an example: if only the
-  // output rate is OK, we could finalize Init() and only set up an AudioDevice.
+  // output rate is OK, we could finalize Init() and only set up an
+  // AudioOutputDevice.
 
   // Ask the browser for the default audio output hardware sample-rate.
   // This request is based on a synchronous IPC message.

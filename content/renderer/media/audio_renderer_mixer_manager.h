@@ -29,8 +29,8 @@ namespace content {
 // TODO(dalecurtis): Right now we require AudioParameters to be an exact match
 // when we should be able to ignore bits per channel since we're only dealing
 // with floats.  However, bits per channel is currently used to interleave the
-// audio data by AudioDevice::AudioThreadCallback::Process for consumption via
-// the shared memory.  See http://crbug.com/114700.
+// audio data by AudioOutputDevice::AudioThreadCallback::Process for consumption
+// via the shared memory.  See http://crbug.com/114700.
 class CONTENT_EXPORT AudioRendererMixerManager {
  public:
   // Construct an instance using the given audio hardware configuration.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_input_device.h"
+#include "media/audio/audio_input_device.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -11,13 +11,18 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_util.h"
 
+namespace media {
+
+AudioInputDevice::CaptureCallback::~CaptureCallback() {}
+AudioInputDevice::CaptureEventHandler::~CaptureEventHandler() {}
+
 // Takes care of invoking the capture callback on the audio thread.
 // An instance of this class is created for each capture stream in
 // OnLowLatencyCreated().
 class AudioInputDevice::AudioThreadCallback
     : public AudioDeviceThread::Callback {
  public:
-  AudioThreadCallback(const media::AudioParameters& audio_parameters,
+  AudioThreadCallback(const AudioParameters& audio_parameters,
                       base::SharedMemoryHandle memory,
                       int memory_length,
                       CaptureCallback* capture_callback);
@@ -34,7 +39,7 @@ class AudioInputDevice::AudioThreadCallback
 };
 
 AudioInputDevice::AudioInputDevice(
-    media::AudioInputIPC* ipc,
+    AudioInputIPC* ipc,
     const scoped_refptr<base::MessageLoopProxy>& io_loop)
     : ScopedLoopObserver(io_loop),
       callback_(NULL),
@@ -47,7 +52,7 @@ AudioInputDevice::AudioInputDevice(
   CHECK(ipc_);
 }
 
-void AudioInputDevice::Initialize(const media::AudioParameters& params,
+void AudioInputDevice::Initialize(const AudioParameters& params,
                                   CaptureCallback* callback,
                                   CaptureEventHandler* event_handler) {
   DCHECK(!callback_);
@@ -137,7 +142,7 @@ void AudioInputDevice::OnVolume(double volume) {
 }
 
 void AudioInputDevice::OnStateChanged(
-    media::AudioInputIPCDelegate::State state) {
+    AudioInputIPCDelegate::State state) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
@@ -145,7 +150,7 @@ void AudioInputDevice::OnStateChanged(
     return;
 
   switch (state) {
-    case media::AudioInputIPCDelegate::kStopped:
+    case AudioInputIPCDelegate::kStopped:
       // TODO(xians): Should we just call ShutDownOnIOThread here instead?
       ipc_->RemoveDelegate(stream_id_);
 
@@ -158,10 +163,10 @@ void AudioInputDevice::OnStateChanged(
       stream_id_ = 0;
       pending_device_ready_ = false;
       break;
-    case media::AudioInputIPCDelegate::kRecording:
+    case AudioInputIPCDelegate::kRecording:
       NOTIMPLEMENTED();
       break;
-    case media::AudioInputIPCDelegate::kError:
+    case AudioInputIPCDelegate::kError:
       DLOG(WARNING) << "AudioInputDevice::OnStateChanged(kError)";
       // Don't dereference the callback object if the audio thread
       // is stopped or stopping.  That could mean that the callback
@@ -225,7 +230,7 @@ void AudioInputDevice::InitializeOnIOThread() {
   // and create the stream when getting a OnDeviceReady() callback.
   if (!session_id_) {
     ipc_->CreateStream(stream_id_, audio_parameters_,
-        media::AudioManagerBase::kDefaultDeviceId, agc_is_enabled_);
+        AudioManagerBase::kDefaultDeviceId, agc_is_enabled_);
   } else {
     ipc_->StartDevice(stream_id_, session_id_);
     pending_device_ready_ = true;
@@ -294,7 +299,7 @@ void AudioInputDevice::WillDestroyCurrentMessageLoop() {
 
 // AudioInputDevice::AudioThreadCallback
 AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
-    const media::AudioParameters& audio_parameters,
+    const AudioParameters& audio_parameters,
     base::SharedMemoryHandle memory,
     int memory_length,
     CaptureCallback* capture_callback)
@@ -313,10 +318,10 @@ void AudioInputDevice::AudioThreadCallback::Process(int pending_data) {
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.
-  media::AudioInputBuffer* buffer =
-      reinterpret_cast<media::AudioInputBuffer*>(shared_memory_.memory());
+  AudioInputBuffer* buffer =
+      reinterpret_cast<AudioInputBuffer*>(shared_memory_.memory());
   DCHECK_EQ(buffer->params.size,
-            memory_length_ - sizeof(media::AudioInputBufferParameters));
+            memory_length_ - sizeof(AudioInputBufferParameters));
   double volume = buffer->params.volume;
 
   int audio_delay_milliseconds = pending_data / bytes_per_ms_;
@@ -328,12 +333,12 @@ void AudioInputDevice::AudioThreadCallback::Process(int pending_data) {
   // with nominal range -1.0 -> +1.0.
   for (int channel_index = 0; channel_index < audio_parameters_.channels();
        ++channel_index) {
-    media::DeinterleaveAudioChannel(memory,
-                                    audio_data_[channel_index],
-                                    audio_parameters_.channels(),
-                                    channel_index,
-                                    bytes_per_sample,
-                                    number_of_frames);
+    DeinterleaveAudioChannel(memory,
+                             audio_data_[channel_index],
+                             audio_parameters_.channels(),
+                             channel_index,
+                             bytes_per_sample,
+                             number_of_frames);
   }
 
   // Deliver captured data to the client in floating point format
@@ -341,3 +346,5 @@ void AudioInputDevice::AudioThreadCallback::Process(int pending_data) {
   capture_callback_->Capture(audio_data_, number_of_frames,
                              audio_delay_milliseconds, volume);
 }
+
+}  // namespace media

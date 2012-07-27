@@ -83,7 +83,7 @@ void RenderAudioSourceProvider::provideInput(
   } else {
     // Provide silence if the source is not running.
     for (size_t i = 0; i < audio_data.size(); ++i)
-      memset(audio_data[i], 0, sizeof(float) * number_of_frames);
+      memset(audio_data[i], 0, sizeof(audio_data[0]) * number_of_frames);
   }
 }
 

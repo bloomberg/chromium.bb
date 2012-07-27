@@ -25,6 +25,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_hardware.h"
+#include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/render_process.h"

@@ -15,7 +15,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/audio_input_device.h"
+#include "media/audio/audio_input_device.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/webrtc/modules/audio_device/main/interface/audio_device.h"
 
@@ -63,7 +63,8 @@
 //    implements the RecordedDataIsAvailable() and NeedMorePlayData() callbacks.
 //
 //  Init()
-//    Creates and initializes the AudioDevice and AudioInputDevice objects.
+//    Creates and initializes the AudioOutputDevice and AudioInputDevice
+//    objects.
 //
 //  SetAGC(true)
 //    Enables the adaptive analog mode of the AGC which ensures that a
@@ -73,7 +74,7 @@
 // Media example:
 //
 // When the underlying audio layer wants data samples to be played out, the
-// AudioDevice::RenderCallback() will be called, which in turn uses the
+// AudioOutputDevice::RenderCallback() will be called, which in turn uses the
 // registered webrtc::AudioTransport callback and gets the data to be played
 // out from the webrtc::VoiceEngine.
 //
@@ -203,9 +204,9 @@
 //
 class CONTENT_EXPORT WebRtcAudioDeviceImpl
     : NON_EXPORTED_BASE(public webrtc::AudioDeviceModule),
-      public media::AudioRendererSink::RenderCallback,
-      public AudioInputDevice::CaptureCallback,
-      public AudioInputDevice::CaptureEventHandler {
+      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
+      NON_EXPORTED_BASE(public media::AudioInputDevice::CaptureCallback),
+      NON_EXPORTED_BASE(public media::AudioInputDevice::CaptureEventHandler) {
  public:
   // Methods called on main render thread.
   WebRtcAudioDeviceImpl();
@@ -403,7 +404,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   scoped_refptr<base::MessageLoopProxy> render_loop_;
 
   // Provides access to the native audio input layer in the browser process.
-  scoped_refptr<AudioInputDevice> audio_input_device_;
+  scoped_refptr<media::AudioInputDevice> audio_input_device_;
 
   // Provides access to the native audio output layer in the browser process.
   scoped_refptr<media::AudioRendererSink> audio_output_device_;

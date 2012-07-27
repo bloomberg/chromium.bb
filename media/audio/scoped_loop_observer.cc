@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/scoped_loop_observer.h"
+#include "media/audio/scoped_loop_observer.h"
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
+
+namespace media {
 
 ScopedLoopObserver::ScopedLoopObserver(
     const scoped_refptr<base::MessageLoopProxy>& loop)
@@ -41,3 +43,5 @@ void ScopedLoopObserver::ObserveLoopDestruction(bool enable,
   if (done)
     done->Signal();
 }
+
+}  // namespace media.

@@ -332,7 +332,6 @@
         'renderer/android/phone_number_detector_unittest.cc',
         'renderer/gpu/input_event_filter_unittest.cc',
         'renderer/hyphenator/hyphenator_unittest.cc',
-        'renderer/media/audio_device_unittest.cc',
         'renderer/media/audio_message_filter_unittest.cc',
         'renderer/media/audio_renderer_mixer_manager_unittest.cc',
         'renderer/media/capture_video_decoder_unittest.cc',

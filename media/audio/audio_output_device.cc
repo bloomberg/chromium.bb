@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_device.h"
+#include "media/audio/audio_output_device.h"
 
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
@@ -11,15 +11,15 @@
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_util.h"
 
-using media::AudioRendererSink;
+namespace media {
 
 // Takes care of invoking the render callback on the audio thread.
 // An instance of this class is created for each capture stream in
 // OnStreamCreated().
-class AudioDevice::AudioThreadCallback
+class AudioOutputDevice::AudioThreadCallback
     : public AudioDeviceThread::Callback {
  public:
-  AudioThreadCallback(const media::AudioParameters& audio_parameters,
+  AudioThreadCallback(const AudioParameters& audio_parameters,
                       base::SharedMemoryHandle memory,
                       int memory_length,
                       AudioRendererSink::RenderCallback* render_callback);
@@ -35,8 +35,8 @@ class AudioDevice::AudioThreadCallback
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
 
-AudioDevice::AudioDevice(
-    media::AudioOutputIPC* ipc,
+AudioOutputDevice::AudioOutputDevice(
+    AudioOutputIPC* ipc,
     const scoped_refptr<base::MessageLoopProxy>& io_loop)
     : ScopedLoopObserver(io_loop),
       callback_(NULL),
@@ -47,10 +47,10 @@ AudioDevice::AudioDevice(
   CHECK(ipc_);
 }
 
-void AudioDevice::Initialize(const media::AudioParameters& params,
+void AudioOutputDevice::Initialize(const AudioParameters& params,
                              RenderCallback* callback) {
   CHECK_EQ(0, stream_id_) <<
-      "AudioDevice::Initialize() must be called before Start()";
+      "AudioOutputDevice::Initialize() must be called before Start()";
 
   CHECK(!callback_);  // Calling Initialize() twice?
 
@@ -58,52 +58,52 @@ void AudioDevice::Initialize(const media::AudioParameters& params,
   callback_ = callback;
 }
 
-AudioDevice::~AudioDevice() {
+AudioOutputDevice::~AudioOutputDevice() {
   // The current design requires that the user calls Stop() before deleting
   // this class.
   CHECK_EQ(0, stream_id_);
 }
 
-void AudioDevice::Start() {
+void AudioOutputDevice::Start() {
   DCHECK(callback_) << "Initialize hasn't been called";
   message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioDevice::CreateStreamOnIOThread, this,
+      base::Bind(&AudioOutputDevice::CreateStreamOnIOThread, this,
                  audio_parameters_));
 }
 
-void AudioDevice::Stop() {
+void AudioOutputDevice::Stop() {
   {
     base::AutoLock auto_lock(audio_thread_lock_);
     audio_thread_.Stop(MessageLoop::current());
   }
 
   message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioDevice::ShutDownOnIOThread, this));
+      base::Bind(&AudioOutputDevice::ShutDownOnIOThread, this));
 }
 
-void AudioDevice::Play() {
+void AudioOutputDevice::Play() {
   message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioDevice::PlayOnIOThread, this));
+      base::Bind(&AudioOutputDevice::PlayOnIOThread, this));
 }
 
-void AudioDevice::Pause(bool flush) {
+void AudioOutputDevice::Pause(bool flush) {
   message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioDevice::PauseOnIOThread, this, flush));
+      base::Bind(&AudioOutputDevice::PauseOnIOThread, this, flush));
 }
 
-bool AudioDevice::SetVolume(double volume) {
+bool AudioOutputDevice::SetVolume(double volume) {
   if (volume < 0 || volume > 1.0)
     return false;
 
   if (!message_loop()->PostTask(FROM_HERE,
-          base::Bind(&AudioDevice::SetVolumeOnIOThread, this, volume))) {
+          base::Bind(&AudioOutputDevice::SetVolumeOnIOThread, this, volume))) {
     return false;
   }
 
   return true;
 }
 
-void AudioDevice::CreateStreamOnIOThread(const media::AudioParameters& params) {
+void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   // Make sure we don't create the stream more than once.
   DCHECK_EQ(0, stream_id_);
@@ -114,7 +114,7 @@ void AudioDevice::CreateStreamOnIOThread(const media::AudioParameters& params) {
   ipc_->CreateStream(stream_id_, params);
 }
 
-void AudioDevice::PlayOnIOThread() {
+void AudioOutputDevice::PlayOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_ && is_started_)
     ipc_->PlayStream(stream_id_);
@@ -122,7 +122,7 @@ void AudioDevice::PlayOnIOThread() {
     play_on_start_ = true;
 }
 
-void AudioDevice::PauseOnIOThread(bool flush) {
+void AudioOutputDevice::PauseOnIOThread(bool flush) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_ && is_started_) {
     ipc_->PauseStream(stream_id_);
@@ -135,7 +135,7 @@ void AudioDevice::PauseOnIOThread(bool flush) {
   }
 }
 
-void AudioDevice::ShutDownOnIOThread() {
+void AudioOutputDevice::ShutDownOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   // Make sure we don't call shutdown more than once.
@@ -159,21 +159,21 @@ void AudioDevice::ShutDownOnIOThread() {
   audio_callback_.reset();
 }
 
-void AudioDevice::SetVolumeOnIOThread(double volume) {
+void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_)
     ipc_->SetVolume(stream_id_, volume);
 }
 
-void AudioDevice::OnStateChanged(media::AudioOutputIPCDelegate::State state) {
+void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegate::State state) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
   if (!stream_id_)
     return;
 
-  if (state == media::AudioOutputIPCDelegate::kError) {
-    DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
+  if (state == AudioOutputIPCDelegate::kError) {
+    DLOG(WARNING) << "AudioOutputDevice::OnStateChanged(kError)";
     // Don't dereference the callback object if the audio thread
     // is stopped or stopping.  That could mean that the callback
     // object has been deleted.
@@ -185,7 +185,7 @@ void AudioDevice::OnStateChanged(media::AudioOutputIPCDelegate::State state) {
   }
 }
 
-void AudioDevice::OnStreamCreated(
+void AudioOutputDevice::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     int length) {
@@ -202,16 +202,17 @@ void AudioDevice::OnStreamCreated(
   // We should only get this callback if stream_id_ is valid.  If it is not,
   // the IPC layer should have closed the shared memory and socket handles
   // for us and not invoked the callback.  The basic assertion is that when
-  // stream_id_ is 0 the AudioDevice instance is not registered as a delegate
-  // and hence it should not receive callbacks.
+  // stream_id_ is 0 the AudioOutputDevice instance is not registered as a
+  // delegate and hence it should not receive callbacks.
   DCHECK(stream_id_);
 
   base::AutoLock auto_lock(audio_thread_lock_);
 
   DCHECK(audio_thread_.IsStopped());
-  audio_callback_.reset(new AudioDevice::AudioThreadCallback(audio_parameters_,
-      handle, length, callback_));
-  audio_thread_.Start(audio_callback_.get(), socket_handle, "AudioDevice");
+  audio_callback_.reset(new AudioOutputDevice::AudioThreadCallback(
+      audio_parameters_, handle, length, callback_));
+  audio_thread_.Start(audio_callback_.get(), socket_handle,
+      "AudioOutputDevice");
 
   // We handle the case where Play() and/or Pause() may have been called
   // multiple times before OnStreamCreated() gets called.
@@ -220,38 +221,38 @@ void AudioDevice::OnStreamCreated(
     PlayOnIOThread();
 }
 
-void AudioDevice::OnIPCClosed() {
+void AudioOutputDevice::OnIPCClosed() {
   ipc_ = NULL;
 }
 
-void AudioDevice::WillDestroyCurrentMessageLoop() {
+void AudioOutputDevice::WillDestroyCurrentMessageLoop() {
   LOG(ERROR) << "IO loop going away before the audio device has been stopped";
   ShutDownOnIOThread();
 }
 
-// AudioDevice::AudioThreadCallback
+// AudioOutputDevice::AudioThreadCallback
 
-AudioDevice::AudioThreadCallback::AudioThreadCallback(
-    const media::AudioParameters& audio_parameters,
+AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
+    const AudioParameters& audio_parameters,
     base::SharedMemoryHandle memory,
     int memory_length,
-    media::AudioRendererSink::RenderCallback* render_callback)
+    AudioRendererSink::RenderCallback* render_callback)
     : AudioDeviceThread::Callback(audio_parameters, memory, memory_length),
       render_callback_(render_callback) {
 }
 
-AudioDevice::AudioThreadCallback::~AudioThreadCallback() {
+AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
 }
 
-void AudioDevice::AudioThreadCallback::MapSharedMemory() {
-  shared_memory_.Map(media::TotalSharedMemorySizeInBytes(memory_length_));
+void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
+  shared_memory_.Map(TotalSharedMemorySizeInBytes(memory_length_));
 }
 
 // Called whenever we receive notifications about pending data.
-void AudioDevice::AudioThreadCallback::Process(int pending_data) {
-  if (pending_data == media::AudioOutputController::kPauseMark) {
+void AudioOutputDevice::AudioThreadCallback::Process(int pending_data) {
+  if (pending_data == AudioOutputController::kPauseMark) {
     memset(shared_memory_.memory(), 0, memory_length_);
-    media::SetActualDataSizeInBytes(&shared_memory_, memory_length_, 0);
+    SetActualDataSizeInBytes(&shared_memory_, memory_length_, 0);
     return;
   }
 
@@ -259,7 +260,7 @@ void AudioDevice::AudioThreadCallback::Process(int pending_data) {
   // into milliseconds.
   int audio_delay_milliseconds = pending_data / bytes_per_ms_;
 
-  TRACE_EVENT0("audio", "AudioDevice::FireRenderCallback");
+  TRACE_EVENT0("audio", "AudioOutputDevice::FireRenderCallback");
 
   // Update the audio-delay measurement then ask client to render audio.
   size_t num_frames = render_callback_->Render(audio_data_,
@@ -268,10 +269,12 @@ void AudioDevice::AudioThreadCallback::Process(int pending_data) {
   // Interleave, scale, and clip to int.
   // TODO(crogers/vrk): Figure out a way to avoid the float -> int -> float
   // conversions that happen in the <audio> and WebRTC scenarios.
-  media::InterleaveFloatToInt(audio_data_, shared_memory_.memory(),
+  InterleaveFloatToInt(audio_data_, shared_memory_.memory(),
       num_frames, audio_parameters_.bits_per_sample() / 8);
 
   // Let the host know we are done.
-  media::SetActualDataSizeInBytes(&shared_memory_, memory_length_,
+  SetActualDataSizeInBytes(&shared_memory_, memory_length_,
       num_frames * audio_parameters_.GetBytesPerFrame());
 }
+
+}  // namespace media.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_SCOPED_LOOP_OBSERVER_H_
-#define CONTENT_RENDERER_MEDIA_SCOPED_LOOP_OBSERVER_H_
+#ifndef MEDIA_AUDIO_SCOPED_LOOP_OBSERVER_H_
+#define MEDIA_AUDIO_SCOPED_LOOP_OBSERVER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -13,7 +13,9 @@ namespace base {
 class WaitableEvent;
 }
 
-// A common base class for AudioDevice and AudioInputDevice that manages
+namespace media {
+
+// A common base class for AudioOutputDevice and AudioInputDevice that manages
 // a message loop pointer and monitors it for destruction. If the object goes
 // out of scope before the message loop, the object will automatically remove
 // itself from the message loop's list of destruction observers.
@@ -43,4 +45,6 @@ class ScopedLoopObserver
   DISALLOW_COPY_AND_ASSIGN(ScopedLoopObserver);
 };
 
-#endif  // CONTENT_RENDERER_MEDIA_SCOPED_LOOP_OBSERVER_H_
+}  // namespace media.
+
+#endif  // MEDIA_AUDIO_SCOPED_LOOP_OBSERVER_H_

@@ -7,17 +7,17 @@
 //
 // Relationship of classes.
 //
-//  AudioOutputController                AudioDevice
+//  AudioOutputController                AudioOutputDevice
 //           ^                                ^
 //           |                                |
 //           v               IPC              v
-//    AudioRendererHost  <---------> AudioMessageFilter
+//    AudioRendererHost  <---------> AudioOutputIPC (AudioMessageFilter)
 //
 // Transportation of audio samples from the render to the browser process
 // is done by using shared memory in combination with a sync socket pair
-// to generate a low latency transport. The AudioDevice user registers an
-// AudioDevice::RenderCallback at construction and will be polled by the
-// AudioDevice for audio to be played out by the underlying audio layers.
+// to generate a low latency transport. The AudioOutputDevice user registers an
+// AudioOutputDevice::RenderCallback at construction and will be polled by the
+// AudioOutputDevice for audio to be played out by the underlying audio layers.
 //
 // State sequences.
 //
@@ -33,7 +33,7 @@
 // (note that Play() / Pause() sequences before OnStreamCreated are
 //  deferred until OnStreamCreated, with the last valid state being used)
 //
-// AudioDevice::Render => audio transport on audio thread =>
+// AudioOutputDevice::Render => audio transport on audio thread =>
 //                               |
 // Stop --> ShutDownOnIOThread -------->  CloseStream -> Close
 //
@@ -53,41 +53,32 @@
 //    memory.
 //
 // Implementation notes:
-//
-// - Start() is asynchronous/non-blocking.
-// - Stop() is asynchronous/non-blocking.
-// - Play() is asynchronous/non-blocking.
-// - Pause() is asynchronous/non-blocking.
 // - The user must call Stop() before deleting the class instance.
 
-#ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
-#define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
+#ifndef MEDIA_AUDIO_AUDIO_OUTPUT_DEVICE_H_
+#define MEDIA_AUDIO_AUDIO_OUTPUT_DEVICE_H_
 
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/audio_device_thread.h"
-#include "content/renderer/media/scoped_loop_observer.h"
+#include "media/base/media_export.h"
+#include "media/audio/audio_device_thread.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
+#include "media/audio/scoped_loop_observer.h"
 #include "media/base/audio_renderer_sink.h"
 
 namespace media {
-class AudioParameters;
-}
 
-class CONTENT_EXPORT AudioDevice
-    : NON_EXPORTED_BASE(public media::AudioRendererSink),
-      public media::AudioOutputIPCDelegate,
+class MEDIA_EXPORT AudioOutputDevice
+    : NON_EXPORTED_BASE(public AudioRendererSink),
+      public AudioOutputIPCDelegate,
       NON_EXPORTED_BASE(public ScopedLoopObserver) {
  public:
-  // Methods called on main render thread -------------------------------------
-
   // AudioRendererSink implementation.
-  virtual void Initialize(const media::AudioParameters& params,
+  virtual void Initialize(const AudioParameters& params,
                           RenderCallback* callback) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
@@ -97,32 +88,31 @@ class CONTENT_EXPORT AudioDevice
 
   // Methods called on IO thread ----------------------------------------------
   // AudioOutputIPCDelegate methods.
-  virtual void OnStateChanged(
-      media::AudioOutputIPCDelegate::State state) OVERRIDE;
+  virtual void OnStateChanged(AudioOutputIPCDelegate::State state) OVERRIDE;
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
                                int length) OVERRIDE;
   virtual void OnIPCClosed() OVERRIDE;
 
-  // Creates an uninitialized AudioDevice. Clients must call Initialize()
+  // Creates an uninitialized AudioOutputDevice. Clients must call Initialize()
   // before using.
   // TODO(tommi): When all dependencies on |content| have been removed
-  // from AudioDevice, move this class over to media/audio.
-  AudioDevice(media::AudioOutputIPC* ipc,
-              const scoped_refptr<base::MessageLoopProxy>& io_loop);
+  // from AudioOutputDevice, move this class over to media/audio.
+  AudioOutputDevice(AudioOutputIPC* ipc,
+                    const scoped_refptr<base::MessageLoopProxy>& io_loop);
 
  protected:
   // Magic required by ref_counted.h to avoid any code deleting the object
   // accidentally while there are references to it.
-  friend class base::RefCountedThreadSafe<AudioDevice>;
-  virtual ~AudioDevice();
+  friend class base::RefCountedThreadSafe<AudioOutputDevice>;
+  virtual ~AudioOutputDevice();
 
  private:
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
-  void CreateStreamOnIOThread(const media::AudioParameters& params);
+  void CreateStreamOnIOThread(const AudioParameters& params);
   void PlayOnIOThread();
   void PauseOnIOThread(bool flush);
   void ShutDownOnIOThread();
@@ -132,13 +122,13 @@ class CONTENT_EXPORT AudioDevice
   // If the IO loop dies before we do, we shut down the audio thread from here.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-  media::AudioParameters audio_parameters_;
+  AudioParameters audio_parameters_;
 
   RenderCallback* callback_;
 
   // A pointer to the IPC layer that takes care of sending requests over to
   // the AudioRendererHost.
-  media::AudioOutputIPC* ipc_;
+  AudioOutputIPC* ipc_;
 
   // Our stream ID on the message filter. Only accessed on the IO thread.
   // Must only be modified on the IO thread.
@@ -160,10 +150,12 @@ class CONTENT_EXPORT AudioDevice
   // guard to control stopping and starting the audio thread.
   base::Lock audio_thread_lock_;
   AudioDeviceThread audio_thread_;
-  scoped_ptr<AudioDevice::AudioThreadCallback> audio_callback_;
+  scoped_ptr<AudioOutputDevice::AudioThreadCallback> audio_callback_;
 
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDevice);
+  DISALLOW_COPY_AND_ASSIGN(AudioOutputDevice);
 };
 
-#endif  // CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
+}  // namespace media
+
+#endif  // MEDIA_AUDIO_AUDIO_OUTPUT_DEVICE_H_
+

@@ -10,7 +10,7 @@
 #include "media/audio/audio_output_ipc.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
-namespace media{
+namespace media {
 class AudioParameters;
 }
 

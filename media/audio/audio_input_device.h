@@ -11,7 +11,7 @@
 //           ^                                  ^
 //           |                                  |
 //           v                  IPC             v
-// AudioInputRendererHost  <---------> media::AudioInputIPCDelegate
+// AudioInputRendererHost  <---------> AudioInputIPCDelegate
 //           ^                       (impl in AudioInputMessageFilter)
 //           |
 //           v
@@ -58,8 +58,8 @@
 // Implementation notes:
 // - The user must call Stop() before deleting the class instance.
 
-#ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
-#define CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
+#ifndef MEDIA_AUDIO_AUDIO_INPUT_DEVICE_H_
+#define MEDIA_AUDIO_AUDIO_INPUT_DEVICE_H_
 
 #include <string>
 #include <vector>
@@ -68,23 +68,25 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/audio_device_thread.h"
-#include "content/renderer/media/audio_input_message_filter.h"
-#include "content/renderer/media/scoped_loop_observer.h"
+#include "media/audio/audio_device_thread.h"
+#include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_parameters.h"
+#include "media/audio/scoped_loop_observer.h"
+#include "media/base/media_export.h"
 
-// TODO(henrika): This class is based on the AudioDevice class and it has
+namespace media {
+
+// TODO(henrika): This class is based on the AudioOutputDevice class and it has
 // many components in common. Investigate potential for re-factoring.
 // TODO(henrika): Add support for event handling (e.g. OnStateChanged,
 // OnCaptureStopped etc.) and ensure that we can deliver these notifications
 // to any clients using this class.
-class CONTENT_EXPORT AudioInputDevice
-    : NON_EXPORTED_BASE(public media::AudioInputIPCDelegate),
+class MEDIA_EXPORT AudioInputDevice
+    : NON_EXPORTED_BASE(public AudioInputIPCDelegate),
       NON_EXPORTED_BASE(public ScopedLoopObserver),
       public base::RefCountedThreadSafe<AudioInputDevice> {
  public:
-  class CONTENT_EXPORT CaptureCallback {
+  class MEDIA_EXPORT CaptureCallback {
    public:
     virtual void Capture(const std::vector<float*>& audio_data,
                          int number_of_frames,
@@ -92,10 +94,10 @@ class CONTENT_EXPORT AudioInputDevice
                          double volume) = 0;
     virtual void OnCaptureError() = 0;
    protected:
-    virtual ~CaptureCallback() {}
+    virtual ~CaptureCallback();
   };
 
-  class CONTENT_EXPORT CaptureEventHandler {
+  class MEDIA_EXPORT CaptureEventHandler {
    public:
     // Notification to the client that the device with the specific |device_id|
     // has been started.
@@ -106,15 +108,15 @@ class CONTENT_EXPORT AudioInputDevice
     virtual void OnDeviceStopped() = 0;
 
    protected:
-    virtual ~CaptureEventHandler() {}
+    virtual ~CaptureEventHandler();
   };
 
-  AudioInputDevice(media::AudioInputIPC* ipc,
+  AudioInputDevice(AudioInputIPC* ipc,
                    const scoped_refptr<base::MessageLoopProxy>& io_loop);
 
   // Initializes the AudioInputDevice.  This method must be called before
   // any other methods can be used.
-  void Initialize(const media::AudioParameters& params,
+  void Initialize(const AudioParameters& params,
                   CaptureCallback* callback,
                   CaptureEventHandler* event_handler);
 
@@ -141,13 +143,13 @@ class CONTENT_EXPORT AudioInputDevice
 
  protected:
   // Methods called on IO thread ----------------------------------------------
-  // media::AudioInputIPCDelegate implementation.
+  // AudioInputIPCDelegate implementation.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
                                int length) OVERRIDE;
   virtual void OnVolume(double volume) OVERRIDE;
   virtual void OnStateChanged(
-      media::AudioInputIPCDelegate::State state) OVERRIDE;
+      AudioInputIPCDelegate::State state) OVERRIDE;
   virtual void OnDeviceReady(const std::string& device_id) OVERRIDE;
   virtual void OnIPCClosed() OVERRIDE;
 
@@ -170,12 +172,12 @@ class CONTENT_EXPORT AudioInputDevice
   // If the IO loop dies before we do, we shut down the audio thread from here.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-  media::AudioParameters audio_parameters_;
+  AudioParameters audio_parameters_;
 
   CaptureCallback* callback_;
   CaptureEventHandler* event_handler_;
 
-  media::AudioInputIPC* ipc_;
+  AudioInputIPC* ipc_;
 
   // Our stream ID on the message filter. Only modified on the IO thread.
   int stream_id_;
@@ -204,4 +206,6 @@ class CONTENT_EXPORT AudioInputDevice
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputDevice);
 };
 
-#endif  // CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
+}  // namespace media
+
+#endif  // MEDIA_AUDIO_AUDIO_INPUT_DEVICE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_THREAD_H_
-#define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_THREAD_H_
+#ifndef MEDIA_AUDIO_AUDIO_DEVICE_THREAD_H_
+#define MEDIA_AUDIO_AUDIO_DEVICE_THREAD_H_
 
 #include <vector>
 
@@ -12,10 +12,12 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 #include "media/audio/audio_parameters.h"
 
 class MessageLoop;
+
+namespace media {
 
 // Data transfer between browser and render process uses a combination
 // of sync sockets and shared memory. To read from the socket and render
@@ -24,16 +26,16 @@ class MessageLoop;
 // audio thread via the AudioDeviceThread::Callback interface/class.
 // For more details see the documentation in audio_device.h.
 //
-// TODO(tommi): Multiple Audio[Input]Device instances should be able to share
-// the same thread instead of spinning one per instance.
-class CONTENT_EXPORT AudioDeviceThread {
+// TODO(tommi): Multiple audio input/output device instances should be able to
+// share the same thread instead of spinning one per instance.
+class MEDIA_EXPORT AudioDeviceThread {
  public:
-  // This is the callback interface/base class that Audio[Input]Device
-  // implements to render input/output data. The callback happens on the
-  // AudioDevice thread.
+  // This is the callback interface/base class that Audio[Output|Input]Device
+  // implements to render input/output data. The callbacks run on the
+  // thread owned by AudioDeviceThread.
   class Callback {
    public:
-    Callback(const media::AudioParameters& audio_parameters,
+    Callback(const AudioParameters& audio_parameters,
              base::SharedMemoryHandle memory,
              int memory_length);
     virtual ~Callback();
@@ -52,7 +54,7 @@ class CONTENT_EXPORT AudioDeviceThread {
     // Protected so that derived classes can access directly.
     // The variables are 'const' since values are calculated/set in the
     // constructor and must never change.
-    const media::AudioParameters audio_parameters_;
+    const AudioParameters audio_parameters_;
     const int samples_per_ms_;
     const int bytes_per_ms_;
 
@@ -104,4 +106,6 @@ class CONTENT_EXPORT AudioDeviceThread {
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceThread);
 };
 
-#endif  // CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_THREAD_H_
+}  // namespace media.
+
+#endif  // MEDIA_AUDIO_AUDIO_DEVICE_THREAD_H_

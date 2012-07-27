@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_device_thread.h"
+#include "media/audio/audio_device_thread.h"
+
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -12,6 +14,8 @@
 #include "media/audio/audio_util.h"
 
 using base::PlatformThread;
+
+namespace media {
 
 // The actual worker thread implementation.  It's very bare bones and much
 // simpler than SimpleThread (no synchronization in Start, etc) and supports
@@ -170,7 +174,7 @@ void AudioDeviceThread::Thread::Run() {
 // AudioDeviceThread::Callback implementation
 
 AudioDeviceThread::Callback::Callback(
-    const media::AudioParameters& audio_parameters,
+    const AudioParameters& audio_parameters,
     base::SharedMemoryHandle memory, int memory_length)
     : audio_parameters_(audio_parameters),
       samples_per_ms_(audio_parameters.sample_rate() / 1000),
@@ -200,3 +204,5 @@ void AudioDeviceThread::Callback::InitializeOnAudioThread() {
     audio_data_.push_back(channel_data);
   }
 }
+
+}  // namespace media.

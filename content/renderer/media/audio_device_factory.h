@@ -9,28 +9,26 @@
 #include "content/common/content_export.h"
 
 namespace media {
+class AudioInputDevice;
 class AudioRendererSink;
 }
-
-class AudioInputDevice;
 
 namespace content {
 
 // A factory for creating AudioRendererSinks. There is a global factory
 // function that can be installed for the purposes of testing to provide
 // a specialized AudioRendererSink class.
-// This class uses the same pattern as content::RenderViewHostFactory.
 class CONTENT_EXPORT AudioDeviceFactory {
  public:
   // Creates an AudioRendererSink using the currently registered factory,
   // or the default one if no factory is registered. Ownership of the returned
   // pointer will be passed to the caller.
- static media::AudioRendererSink* NewOutputDevice();
+  static media::AudioRendererSink* NewOutputDevice();
 
- // TODO(henrika): Update AudioInputDevice to inherit from an interface
- // similar to AudioRendererSink, but for input.  Same for the callback
- // interfaces.
- static AudioInputDevice* NewInputDevice();
+  // TODO(henrika): Update AudioInputDevice to inherit from an interface
+  // similar to AudioRendererSink, but for input.  Same for the callback
+  // interfaces.
+  static media::AudioInputDevice* NewInputDevice();
 
  protected:
   AudioDeviceFactory();
@@ -41,7 +39,7 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // If the return value of either of these function is NULL, we fall back
   // on the default implementation.
   virtual media::AudioRendererSink* CreateOutputDevice() = 0;
-  virtual AudioInputDevice* CreateInputDevice() = 0;
+  virtual media::AudioInputDevice* CreateInputDevice() = 0;
 
  private:
   // The current globally registered factory. This is NULL when we should

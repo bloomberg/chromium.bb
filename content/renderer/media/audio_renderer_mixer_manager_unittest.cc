@@ -34,7 +34,7 @@ class MockAudioRenderSinkFactory : public AudioDeviceFactory {
     return sink;
   }
 
-  virtual AudioInputDevice* CreateInputDevice() OVERRIDE {
+  virtual media::AudioInputDevice* CreateInputDevice() OVERRIDE {
     ADD_FAILURE();
     return NULL;
   }
@@ -45,8 +45,8 @@ class MockAudioRenderSinkFactory : public AudioDeviceFactory {
 class AudioRendererMixerManagerTest : public testing::Test {
  public:
   AudioRendererMixerManagerTest() {
-    // We don't want to deal with instantiating a real AudioDevice since it's
-    // not important to our testing, so use a mock AudioDeviceFactory.
+    // We don't want to deal with instantiating a real AudioOutputDevice since
+    // it's not important to our testing, so use a mock AudioDeviceFactory.
     mock_sink_factory_.reset(new MockAudioRenderSinkFactory());
     manager_.reset(new AudioRendererMixerManager(kSampleRate, kBufferSize));
   }
