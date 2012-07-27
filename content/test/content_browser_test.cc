@@ -120,6 +120,11 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   pool.Recycle();
 #endif
 
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->FastShutdownIfPossible();
+  }
+
   Shell::CloseAllWindows();
 }
 
