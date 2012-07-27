@@ -145,7 +145,7 @@ class DecoderTester {
 // from doing further checks for the given instruction.
 #define NC_EXPECT_NE_PRECOND(a, b) \
   { EXPECT_NE(a, b) << InstContents(); \
-    NC_PRECOND((a) == (b)); \
+    NC_PRECOND((a) != (b)); \
   }
 
 // Helper macro for testing if an (error) precondition a == b is met
@@ -154,7 +154,7 @@ class DecoderTester {
 // from doing further checks for the given instruction.
 #define NC_EXPECT_EQ_PRECOND(a, b) \
   { EXPECT_EQ(a, b) << InstContents(); \
-    NC_PRECOND((a) != (b)); \
+    NC_PRECOND((a) == (b)); \
   }
 
 // Helper macro for testing if an (error) precondition c is false

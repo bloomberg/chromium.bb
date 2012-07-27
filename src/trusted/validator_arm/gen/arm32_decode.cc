@@ -1092,14 +1092,14 @@ const ClassDecoder& Arm32DecoderState::decode_media(
   if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
       (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */ &&
       (insn.Bits() & 0x0FE00070) == 0x07A00050 /* $pattern(31:0) == xxxx0111101xxxxxxxxxxxxxx101xxxx */) {
-    return Defs12To15RdRnNotPc_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
       (insn.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0) == ~1111 */ &&
       (insn.Bits() & 0x0FE00070) == 0x07C00010 /* $pattern(31:0) == xxxx0111110xxxxxxxxxxxxxx001xxxx */) {
-    return Defs12To15_instance_;
+    return Defs12To15CondsDontCare_instance_;
   }
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
@@ -1112,7 +1112,7 @@ const ClassDecoder& Arm32DecoderState::decode_media(
   if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20) == 1111x */ &&
       (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */ &&
       (insn.Bits() & 0x0FE00070) == 0x07E00050 /* $pattern(31:0) == xxxx0111111xxxxxxxxxxxxxx101xxxx */) {
-    return Defs12To15RdRnNotPc_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */) {

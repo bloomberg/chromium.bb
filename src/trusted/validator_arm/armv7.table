@@ -190,7 +190,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                      => Defs12To15
 # Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
 # Hence, parse restriction does not apply (See Sub_Rule_216_P428 in manual).
-                                     SubRule_213_A1_P422
+                                     Sub_Rule_213_A1_P422
                                      cccc0000010unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0011x      -         -        = Binary3RegisterImmedShiftedOp
@@ -887,7 +887,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                         # is Ra (not Rd as column name suggests).
                                         NotRaIsPcAndRegsNotPc (v6)
 | 1101x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
-                                        => Defs12To15RdRnNotPc
+                                        => Defs12To15CondsDontCareRdRnNotPc
                                         Sbfx_Rule_154_A1_P308
                                         cccc0111101wwwwwddddlllll101nnnn (v6T2)
 | 1110x      x00      -         1111  = Unary1RegisterBitRange
@@ -896,12 +896,13 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                         # alternative for bic).
                                         Bfc_17_A1_P46
                                         cccc0111110mmmmmddddlllll0011111 (v6T2)
-| "          x00      -         ~1111 = Binary2RegisterBitRange => Defs12To15
+| "          x00      -         ~1111 = Binary2RegisterBitRange
+                                        => Defs12To15CondsDontCare
                                         Bfi_Rule_18_A1_P48
                                         cccc0111110mmmmmddddlllll001nnnn
                                         NotRnIsPc (v6T2)
 | 1111x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
-                                        => Defs12To15RdRnNotPc
+                                        => Defs12To15CondsDontCareRdRnNotPc
                                         Ubfx_Rule_236_A1_P466
                                         cccc0111111mmmmmddddlllll101nnnn (v6T2)
 | 11111      111      -         -     = Roadblock  # Permanently Undefined

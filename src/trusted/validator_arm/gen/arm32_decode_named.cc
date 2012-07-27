@@ -339,7 +339,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
 
   if ((insn.Bits() & 0x01E00000) == 0x00400000 /* op1(24:20) == 0010x */ &&
       (insn.Bits() & 0x0FE00010) == 0x00400000 /* $pattern(31:0) == xxxx0000010xxxxxxxxxxxxxxxx0xxxx */)
-    return Binary3RegisterImmedShiftedOp_SubRule_213_A1_P422_instance_;
+    return Binary3RegisterImmedShiftedOp_Sub_Rule_213_A1_P422_instance_;
 
   if ((insn.Bits() & 0x01E00000) == 0x00600000 /* op1(24:20) == 0011x */ &&
       (insn.Bits() & 0x0FE00010) == 0x00600000 /* $pattern(31:0) == xxxx0000011xxxxxxxxxxxxxxxx0xxxx */)
