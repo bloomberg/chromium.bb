@@ -78,6 +78,7 @@ Layer::Layer(LayerType type)
       background_blur_radius_(0),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
+      layer_grayscale_(0.0f),
       layer_inverted_(false),
       layer_mask_(NULL),
       layer_mask_back_link_(NULL),
@@ -288,16 +289,19 @@ void Layer::SetLayerFilters() {
     filters.append(WebKit::WebFilterOperation::createSaturateFilter(
         layer_saturation_));
   }
-  if (layer_brightness_) {
-    filters.append(WebKit::WebFilterOperation::createBrightnessFilter(
-        layer_brightness_));
-  }
   if (layer_grayscale_) {
     filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(
         layer_grayscale_));
   }
   if (layer_inverted_)
     filters.append(WebKit::WebFilterOperation::createInvertFilter(1.0));
+  // Brightness goes last, because the resulting colors neeed clamping, which
+  // cause further color matrix filters to be applied separately. In this order,
+  // they all can be combined in a single pass.
+  if (layer_brightness_) {
+    filters.append(WebKit::WebFilterOperation::createBrightnessFilter(
+        layer_brightness_));
+  }
 
   web_layer_.setFilters(filters);
 }
