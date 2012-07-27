@@ -3,13 +3,18 @@ include_rules = [
   "+crypto",
   "+gpu",
   "+jni",
-  "+native_client",
   "+net",
   "+printing",
   "+sql",
   # Browser, renderer, common and tests access V8 for various purposes.
   "-v8",
   "+v8/include",
+
+  # Limit what we include from nacl.
+  "-native_client",
+  "+native_client/src/trusted/service_runtime/osx",
+  "+native_client/src/trusted/service_runtime/win",
+  "+native_client/src/shared/imc",
 
   # The subdirectories in chrome/ will manually allow their own include
   # directories in chrome/ so we disallow all of them.

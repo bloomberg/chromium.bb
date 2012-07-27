@@ -495,7 +495,6 @@ skip_child_includes = [
   "chrome_frame",
   "delegate_execute",
   "metro_driver",
-  "native_client",
   "native_client_sdk",
   "o3d",
   "pdf",

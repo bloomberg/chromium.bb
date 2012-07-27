@@ -1,0 +1,13 @@
+include_rules = [
+  "+native_client/src/include",
+  "+native_client/src/shared/platform",
+
+  # TODO(bradnelson): Eliminate these as they are actually incorrectly rooted
+  # internal references.
+  "+native_client/src/shared/ppapi_proxy",
+  "+native_client/tests/ppapi_geturl",
+  "+native_client/tests/ppapi_test_lib",
+  "+srpcgen",
+  "+trusted/srpcgen",
+  "+untrusted/srpcgen",
+]
