@@ -4,31 +4,34 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class SessionHistoryTest : public InProcessBrowserTest {
+namespace content {
+
+class SessionHistoryTest : public ContentBrowserTest {
  protected:
   SessionHistoryTest() {}
 
   virtual void SetUpOnMainThread() {
     ASSERT_TRUE(test_server()->Start());
+    NavigateToURL(shell(), GURL(chrome::kAboutBlankURL));
   }
 
   // Simulate clicking a link.  Only works on the frames.html testserver page.
   void ClickLink(std::string node_id) {
     GURL url("javascript:clickLink('" + node_id + "')");
-    ui_test_utils::NavigateToURL(browser(), url);
+    NavigateToURL(shell(), url);
   }
 
   // Simulate filling in form data.  Only works on the frames.html page with
@@ -38,28 +41,28 @@ class SessionHistoryTest : public InProcessBrowserTest {
     // This will return immediately, but since the JS executes synchronously
     // on the renderer, it will complete before the next navigate message is
     // processed.
-    ui_test_utils::NavigateToURLWithDisposition(browser(), url, CURRENT_TAB, 0);
+    NavigateToURL(shell(), url);
   }
 
   // Simulate submitting a form.  Only works on the frames.html page with
   // subframe = form.html, and on form.html itself.
   void SubmitForm(std::string node_id) {
     GURL url("javascript:submitForm('" + node_id + "')");
-    ui_test_utils::NavigateToURL(browser(), url);
+    NavigateToURL(shell(), url);
   }
 
   // Navigate session history using history.go(distance).
   void JavascriptGo(std::string distance) {
     GURL url("javascript:history.go('" + distance + "')");
-    ui_test_utils::NavigateToURL(browser(), url);
+    NavigateToURL(shell(), url);
   }
 
   std::string GetTabTitle() {
-    return UTF16ToASCII(chrome::GetActiveWebContents(browser())->GetTitle());
+    return UTF16ToASCII(shell()->web_contents()->GetTitle());
   }
 
   GURL GetTabURL() {
-    return chrome::GetActiveWebContents(browser())->GetURL();
+    return shell()->web_contents()->GetURL();
   }
 
   GURL GetURL(const std::string file) {
@@ -69,25 +72,32 @@ class SessionHistoryTest : public InProcessBrowserTest {
   void NavigateAndCheckTitle(const char* filename,
                              const std::string& expected_title) {
     string16 expected_title16(ASCIIToUTF16(expected_title));
-    content::TitleWatcher title_watcher(
-        chrome::GetActiveWebContents(browser()), expected_title16);
-    ui_test_utils::NavigateToURL(browser(), GetURL(filename));
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
+    NavigateToURL(shell(), GetURL(filename));
     ASSERT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
   }
 
+  bool CanGoBack() {
+    return shell()->web_contents()->GetController().CanGoBack();
+  }
+
+  bool CanGoForward() {
+    return shell()->web_contents()->GetController().CanGoForward();
+  }
+
   void GoBack() {
-    content::WindowedNotificationObserver load_stop_observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
-    chrome::GoBack(browser(), CURRENT_TAB);
+    WindowedNotificationObserver load_stop_observer(
+        NOTIFICATION_LOAD_STOP,
+        NotificationService::AllSources());
+    shell()->web_contents()->GetController().GoBack();
     load_stop_observer.Wait();
   }
 
   void GoForward() {
-    content::WindowedNotificationObserver load_stop_observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
-    chrome::GoForward(browser(), CURRENT_TAB);
+    WindowedNotificationObserver load_stop_observer(
+        NOTIFICATION_LOAD_STOP,
+        NotificationService::AllSources());
+    shell()->web_contents()->GetController().GoForward();
     load_stop_observer.Wait();
   }
 };
@@ -95,9 +105,7 @@ class SessionHistoryTest : public InProcessBrowserTest {
 // If this flakes, use http://crbug.com/61619 on windows and
 // http://crbug.com/102094 on mac.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
-  // about:blank should be loaded first.
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
-  EXPECT_EQ("about:blank", GetTabTitle());
+  ASSERT_FALSE(CanGoBack());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("bot1.html", "bot1"));
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("bot2.html", "bot2"));
@@ -121,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
 
   // history is [blank, bot1, *bot3]
 
-  ASSERT_FALSE(chrome::CanGoForward(browser()));
+  ASSERT_FALSE(CanGoForward());
   EXPECT_EQ("bot3", GetTabTitle());
 
   GoBack();
@@ -130,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
   GoBack();
   EXPECT_EQ("about:blank", GetTabTitle());
 
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
+  ASSERT_FALSE(CanGoBack());
   EXPECT_EQ("about:blank", GetTabTitle());
 
   GoForward();
@@ -143,11 +151,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
 // Test that back/forward works when navigating in subframes.
 // If this flakes, use http://crbug.com/48833
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
-  // about:blank should be loaded first.
-  GURL home(chrome::kAboutBlankURL);
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
-  EXPECT_EQ("about:blank", GetTabTitle());
-  EXPECT_EQ(GURL(chrome::kAboutBlankURL), GetTabURL());
+  ASSERT_FALSE(CanGoBack());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("frames.html", "bot1"));
 
@@ -172,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
 
   GoBack();
   EXPECT_EQ("about:blank", GetTabTitle());
-  EXPECT_EQ(home, GetTabURL());
+  EXPECT_EQ(GURL(chrome::kAboutBlankURL), GetTabURL());
 
   GoForward();
   EXPECT_EQ("bot1", GetTabTitle());
@@ -188,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
 
   // history is [blank, bot1, bot2, *bot1]
 
-  ASSERT_FALSE(chrome::CanGoForward(browser()));
+  ASSERT_FALSE(CanGoForward());
   EXPECT_EQ("bot1", GetTabTitle());
   EXPECT_EQ(frames, GetTabURL());
 
@@ -204,9 +208,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
 // Test that back/forward preserves POST data and document state in subframes.
 // If this flakes use http://crbug.com/61619
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameFormBackForward) {
-  // about:blank should be loaded first.
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
-  EXPECT_EQ("about:blank", GetTabTitle());
+  ASSERT_FALSE(CanGoBack());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("frames.html", "bot1"));
 
@@ -259,9 +261,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameFormBackForward) {
 // across frames (ie, from frame -> nonframe).
 // Hangs, see http://crbug.com/45058.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, CrossFrameFormBackForward) {
-  // about:blank should be loaded first.
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
-  EXPECT_EQ("about:blank", GetTabTitle());
+  ASSERT_FALSE(CanGoBack());
 
   GURL frames(GetURL("frames.html"));
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("frames.html", "bot1"));
@@ -297,9 +297,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, CrossFrameFormBackForward) {
 // navigations. Bug 730379.
 // If this flakes use http://crbug.com/61619.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FragmentBackForward) {
-  // about:blank should be loaded first.
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
-  EXPECT_EQ("about:blank", GetTabTitle());
+  ASSERT_FALSE(CanGoBack());
 
   GURL fragment(GetURL("fragment.html"));
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("fragment.html", "fragment"));
@@ -326,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FragmentBackForward) {
 
   // history is [blank, fragment, fragment#a, bot3]
 
-  ASSERT_FALSE(chrome::CanGoForward(browser()));
+  ASSERT_FALSE(CanGoForward());
   EXPECT_EQ(GetURL("bot3.html"), GetTabURL());
 
   GoBack();
@@ -345,9 +343,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FragmentBackForward) {
 // TODO(brettw) bug 50648: fix flakyness. This test seems like it was failing
 // about 1/4 of the time on Vista by failing to execute JavascriptGo (see bug).
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
-  // about:blank should be loaded first.
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
-  EXPECT_EQ("about:blank", GetTabTitle());
+  ASSERT_FALSE(CanGoBack());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("bot1.html", "bot1"));
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("bot2.html", "bot2"));
@@ -375,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   JavascriptGo("-3");
   EXPECT_EQ("about:blank", GetTabTitle());
 
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
+  ASSERT_FALSE(CanGoBack());
   EXPECT_EQ("about:blank", GetTabTitle());
 
   JavascriptGo("1");
@@ -385,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
 
   // history is [blank, bot1, *bot3]
 
-  ASSERT_FALSE(chrome::CanGoForward(browser()));
+  ASSERT_FALSE(CanGoForward());
   EXPECT_EQ("bot3", GetTabTitle());
 
   JavascriptGo("-1");
@@ -394,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   JavascriptGo("-1");
   EXPECT_EQ("about:blank", GetTabTitle());
 
-  ASSERT_FALSE(chrome::CanGoBack(browser()));
+  ASSERT_FALSE(CanGoBack());
   EXPECT_EQ("about:blank", GetTabTitle());
 
   JavascriptGo("1");
@@ -423,8 +419,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle(
       "location_redirect.html", "Default Title"));
 
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("javascript:void(frames[0].navigate())"));
+  NavigateToURL(shell(), GURL("javascript:void(frames[0].navigate())"));
   EXPECT_EQ("foo", GetTabTitle());
 
   GoBack();
@@ -434,23 +429,23 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
 // http://code.google.com/p/chromium/issues/detail?id=56267
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   int length;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
+      shell()->web_contents()->GetRenderViewHost(),
       L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(1, length);
 
-  ui_test_utils::NavigateToURL(browser(), GetURL("title1.html"));
+  NavigateToURL(shell(), GetURL("title1.html"));
 
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
+      shell()->web_contents()->GetRenderViewHost(),
       L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(2, length);
 
   // Now test that history.length is updated when the navigation is committed.
-  ui_test_utils::NavigateToURL(browser(), GetURL("record_length.html"));
+  NavigateToURL(shell(), GetURL("record_length.html"));
 
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
+      shell()->web_contents()->GetRenderViewHost(),
       L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(3, length);
 
@@ -458,10 +453,12 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   GoBack();
 
   // Ensure history.length is properly truncated.
-  ui_test_utils::NavigateToURL(browser(), GetURL("title2.html"));
+  NavigateToURL(shell(), GetURL("title2.html"));
 
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
+      shell()->web_contents()->GetRenderViewHost(),
       L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(2, length);
 }
+
+}  // namespace content

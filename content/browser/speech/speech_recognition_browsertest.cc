@@ -6,13 +6,10 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -20,9 +17,15 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/url_constants.h"
+#include "content/public/test/test_utils.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 using content::SpeechRecognitionEventListener;
@@ -181,25 +184,20 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
   base::WaitableEvent recognition_started_event_;
 };
 
-class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
+class SpeechRecognitionBrowserTest : public content::ContentBrowserTest {
  public:
-  // InProcessBrowserTest methods
+  // ContentBrowserTest methods
   virtual void SetUpCommandLine(CommandLine* command_line) {
     EXPECT_TRUE(!command_line->HasSwitch(switches::kDisableSpeechInput));
   }
 
-  GURL testUrl(const FilePath::CharType* filename) {
-    const FilePath kTestDir(FILE_PATH_LITERAL("speech"));
-    return ui_test_utils::GetTestUrl(kTestDir, FilePath(filename));
-  }
-
  protected:
-  void LoadAndStartSpeechRecognitionTest(const FilePath::CharType* filename) {
+  void LoadAndStartSpeechRecognitionTest(const char* filename) {
     // The test page calculates the speech button's coordinate in the page on
     // load & sets that coordinate in the URL fragment. We send mouse down & up
     // events at that coordinate to trigger speech recognition.
-    GURL test_url = testUrl(filename);
-    ui_test_utils::NavigateToURL(browser(), test_url);
+    GURL test_url = content::GetTestUrl("speech", filename);
+    content::NavigateToURL(shell(), test_url);
 
     WebKit::WebMouseEvent mouse_event;
     mouse_event.type = WebKit::WebInputEvent::MouseDown;
@@ -207,7 +205,7 @@ class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
     mouse_event.x = 0;
     mouse_event.y = 0;
     mouse_event.clickCount = 1;
-    WebContents* web_contents = chrome::GetActiveWebContents(browser());
+    WebContents* web_contents = shell()->web_contents();
 
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -224,16 +222,16 @@ class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
       observer.Wait();
   }
 
-  void RunSpeechRecognitionTest(const FilePath::CharType* filename) {
+  void RunSpeechRecognitionTest(const char* filename) {
     // The fake speech input manager would receive the speech input
     // request and return the test string as recognition result. The test page
     // then sets the URL fragment as 'pass' if it received the expected string.
     LoadAndStartSpeechRecognitionTest(filename);
 
-    EXPECT_EQ("pass", chrome::GetActiveWebContents(browser())->GetURL().ref());
+    EXPECT_EQ("pass", shell()->web_contents()->GetURL().ref());
   }
 
-  // InProcessBrowserTest methods.
+  // ContentBrowserTest methods.
   virtual void SetUpInProcessBrowserTestFixture() {
     fake_speech_recognition_manager_.set_should_send_fake_response(true);
     speech_recognition_manager_ = &fake_speech_recognition_manager_;
@@ -268,12 +266,12 @@ content::SpeechRecognitionManager*
 // a renderer crashes, we get a call to
 // SpeechRecognitionManager::CancelAllRequestsWithDelegate.
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, TestBasicRecognition) {
-  RunSpeechRecognitionTest(FILE_PATH_LITERAL("basic_recognition.html"));
+  RunSpeechRecognitionTest("basic_recognition.html");
   EXPECT_TRUE(fake_speech_recognition_manager_.grammar().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, GrammarAttribute) {
-  RunSpeechRecognitionTest(FILE_PATH_LITERAL("grammar_attribute.html"));
+  RunSpeechRecognitionTest("grammar_attribute.html");
   EXPECT_EQ("http://example.com/grammar.xml",
             fake_speech_recognition_manager_.grammar());
 }
@@ -285,13 +283,11 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, TestCancelAll) {
   // test page JavaScript in this case.
   fake_speech_recognition_manager_.set_should_send_fake_response(false);
 
-  LoadAndStartSpeechRecognitionTest(
-      FILE_PATH_LITERAL("basic_recognition.html"));
+  LoadAndStartSpeechRecognitionTest("basic_recognition.html");
 
   // Make the renderer crash. This should trigger
   // InputTagSpeechDispatcherHost to cancel all pending sessions.
-  GURL test_url("about:crash");
-  ui_test_utils::NavigateToURL(browser(), test_url);
+  content::NavigateToURL(shell(), GURL(chrome::kChromeUICrashURL));
 
   EXPECT_TRUE(fake_speech_recognition_manager_.did_cancel_all());
 }

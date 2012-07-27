@@ -16,6 +16,7 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
+#include "content/shell/shell_content_renderer_client.h"
 #include "content/shell/shell_main_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "content/test/test_content_client.h"
@@ -55,6 +56,15 @@ void ContentBrowserTest::SetUp() {
 #endif
 
   SetUpCommandLine(command_line);
+
+  // Single-process mode is not set in BrowserMain, so process it explicitly,
+  // and set up renderer.
+  if (command_line->HasSwitch(switches::kSingleProcess)) {
+    RenderProcessHost::set_run_renderer_in_process(true);
+    single_process_renderer_client_.reset(new ShellContentRendererClient);
+    content::GetContentClient()->set_renderer_for_testing(
+        single_process_renderer_client_.get());
+  }
 
 #if defined(OS_MACOSX)
   // See InProcessBrowserTest::PrepareTestCommandLine().

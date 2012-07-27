@@ -12,6 +12,7 @@
 class GURL;
 
 namespace content {
+class ContentRendererClient;
 class Shell;
 class ShellMainDelegate;
 
@@ -41,6 +42,9 @@ class ContentBrowserTest : public BrowserTestBase {
   scoped_ptr<content::ShellMainDelegate> shell_main_delegate_;
 
   Shell* shell_;
+
+  // ContentRendererClient when running in single-process mode.
+  scoped_ptr<ContentRendererClient> single_process_renderer_client_;
 };
 
 }  // namespace content
