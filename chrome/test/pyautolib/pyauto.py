@@ -1966,8 +1966,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'tab_index': tab_index,
       'windex': windex,
     }
-    return FilePath(self._GetResultFromJSONRequest(cmd_dict,
-                                                   windex=None)['path'])
+    return FilePath(str(self._GetResultFromJSONRequest(cmd_dict,
+                                                       windex=None)['path']))
 
   def WaitForAllDownloadsToComplete(self, pre_download_ids=[], windex=0,
                                     timeout=-1):
