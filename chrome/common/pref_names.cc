@@ -314,6 +314,11 @@ const char kPasswordGenerationEnabled[] = "password_generation.enabled";
 const char kAutologinEnabled[] = "autologin.enabled";
 const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
 
+// List to keep track of emails for which the user has rejected one-click
+// sign-in.
+const char kReverseAutologinRejectedEmailList[] =
+    "reverse_autologin.rejected_email_list";
+
 // Boolean that is true when SafeBrowsing is enabled.
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 

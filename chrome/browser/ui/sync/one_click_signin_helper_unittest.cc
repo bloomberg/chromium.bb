@@ -2,23 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::Mock;
+using ::testing::Return;
+using ::testing::ReturnRef;
+using ::testing::Values;
+
 namespace {
+
+class SigninManagerMock : public FakeSigninManager {
+ public:
+  SigninManagerMock() {}
+  MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
+};
 
 class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
  public:
@@ -34,9 +53,12 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
   content::WebContents* CreateMockWebContents(bool use_incognito,
                                               const std::string& username);
 
+  void AddEmailToOneClickRejectedList(const std::string& email);
   void EnableOneClick(bool enable);
 
   void AllowSigninCookies(bool enable);
+
+  SigninManagerMock* signin_manager_;
 
  private:
   // Members to fake that we are on the UI thread.
@@ -55,41 +77,9 @@ void OneClickSigninHelperTest::SetUp() {
   // as needed.
 }
 
-class OneClickTestProfileSyncService : public TestProfileSyncService {
- public:
-  virtual ~OneClickTestProfileSyncService() {}
-
-  // Helper routine to be used in conjunction with
-  // ProfileKeyedServiceFactory::SetTestingFactory().
-  static ProfileKeyedService* Build(Profile* profile) {
-    return new OneClickTestProfileSyncService(profile);
-  }
-
-  // Need to control this for certain tests.
-  virtual bool FirstSetupInProgress() const OVERRIDE {
-    return first_setup_in_progress_;
-  }
-
-  // Controls return value of FirstSetupInProgress. Because some bits
-  // of UI depend on that value, it's useful to control it separately
-  // from the internal work and components that are triggered (such as
-  // ReconfigureDataTypeManager) to facilitate unit tests.
-  void set_first_setup_in_progress(bool in_progress) {
-    first_setup_in_progress_ = in_progress;
-  }
-
- private:
-  explicit OneClickTestProfileSyncService(Profile* profile)
-      : TestProfileSyncService(NULL,
-                               profile,
-                               NULL,
-                               ProfileSyncService::MANUAL_START,
-                               false,  // synchronous_backend_init
-                               base::Closure()),
-        first_setup_in_progress_(false) {}
-
-  bool first_setup_in_progress_;
-};
+static ProfileKeyedService* BuildSigninManagerMock(Profile* profile) {
+  return new SigninManagerMock();
+}
 
 content::WebContents* OneClickSigninHelperTest::CreateMockWebContents(
     bool use_incognito,
@@ -98,13 +88,15 @@ content::WebContents* OneClickSigninHelperTest::CreateMockWebContents(
   browser_context_.reset(testing_profile);
 
   testing_profile->set_incognito(use_incognito);
-  SigninManager* signin_manager = static_cast<SigninManager*>(
+  signin_manager_ = static_cast<SigninManagerMock*>(
       SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          testing_profile, FakeSigninManager::Build));
+          testing_profile, BuildSigninManagerMock));
+
   if (!username.empty()) {
-    signin_manager->StartSignIn(username, std::string(), std::string(),
+    signin_manager_->StartSignIn(username, std::string(), std::string(),
                                 std::string());
   }
+
   return CreateTestWebContents();
 }
 
@@ -112,6 +104,15 @@ void OneClickSigninHelperTest::EnableOneClick(bool enable) {
   PrefService* pref_service = Profile::FromBrowserContext(
       browser_context_.get())->GetPrefs();
   pref_service->SetBoolean(prefs::kReverseAutologinEnabled, enable);
+}
+
+void OneClickSigninHelperTest::AddEmailToOneClickRejectedList(
+    const std::string& email) {
+  PrefService* pref_service = Profile::FromBrowserContext(
+      browser_context_.get())->GetPrefs();
+  ListPrefUpdate updater(pref_service,
+                         prefs::kReverseAutologinRejectedEmailList);
+  updater->AppendIfNotPresent(Value::CreateStringValue(email));
 }
 
 void OneClickSigninHelperTest::AllowSigninCookies(bool enable) {
@@ -122,60 +123,95 @@ void OneClickSigninHelperTest::AllowSigninCookies(bool enable) {
       enable ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
-} // namespace
+}  // namespace
 
 TEST_F(OneClickSigninHelperTest, CanOfferNoContents) {
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(NULL, true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(NULL, false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(NULL, "user@gmail.com", true));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(NULL, "", false));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOffer) {
   content::WebContents* web_contents = CreateMockWebContents(false, "");
 
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+        WillRepeatedly(Return(true));
+
   EnableOneClick(true);
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents, true));
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents, false));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents, "user@gmail.com",
+                                             true));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents, "", false));
 
   EnableOneClick(false);
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, false));
-}
-
-TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
-  content::WebContents* web_contents = CreateMockWebContents(false, "");
-
-  // Invoke OneClickTestProfileSyncService factory function and grab result.
-  OneClickTestProfileSyncService* sync =
-      static_cast<OneClickTestProfileSyncService*>(
-          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              static_cast<Profile*>(browser_context()),
-              OneClickTestProfileSyncService::Build));
-
-  sync->set_first_setup_in_progress(true);
-
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, true));
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents, false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, "user@gmail.com",
+                                              true));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, "", false));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
   content::WebContents* web_contents = CreateMockWebContents(false,
                                                              "foo@gmail.com");
 
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, true));
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents, false));
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+      WillRepeatedly(Return(true));
+
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents,
+                                              "foo@gmail.com",
+                                              true));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents,
+                                              "user@gmail.com",
+                                              true));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents,
+                                             "",
+                                             false));
+}
+
+TEST_F(OneClickSigninHelperTest, CanOfferUsernameNotAllowed) {
+  content::WebContents* web_contents = CreateMockWebContents(false,
+                                                             "foo@gmail.com");
+
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+      WillRepeatedly(Return(false));
+
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents,
+                                              "foo@gmail.com",
+                                              true));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents,
+                                             "",
+                                             false));
+}
+
+TEST_F(OneClickSigninHelperTest, CanOfferWithRejectedEmail) {
+  content::WebContents* web_contents = CreateMockWebContents(false, "");
+
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+        WillRepeatedly(Return(true));
+
+  AddEmailToOneClickRejectedList("foo@gmail.com");
+  AddEmailToOneClickRejectedList("user@gmail.com");
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, "foo@gmail.com",
+                                              true));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, "user@gmail.com",
+                                              true));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents, "john@gmail.com",
+                                              true));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferIncognito) {
   content::WebContents* web_contents = CreateMockWebContents(true, "");
 
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, "user@gmail.com",
+                                              true));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, "", false));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
   content::WebContents* web_contents = CreateMockWebContents(false, "");
   AllowSigninCookies(false);
 
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, false));
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+        WillRepeatedly(Return(true));
+
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, "user@gmail.com",
+                                              true));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, "", false));
 }

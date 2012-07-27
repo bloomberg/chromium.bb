@@ -170,7 +170,7 @@ TabContents::TabContents(WebContents* contents)
   // one-click signin helper attached does not cause problems if the profile
   // happens to be already connected.
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-  if (OneClickSigninHelper::CanOffer(contents, false))
+  if (OneClickSigninHelper::CanOffer(contents, "", false))
       one_click_signin_helper_.reset(new OneClickSigninHelper(contents));
 #endif
 }

@@ -104,6 +104,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void SubmitPassed();
   void SubmitFailed();
 
+  // Return the username associated with the credentials.
+  const string16& associated_username() const {
+    return pending_credentials_.username_value;
+  }
+
   // Returns the realm URL for the form managed my this manager.
   const std::string& realm() const {
     return pending_credentials_.signon_realm;

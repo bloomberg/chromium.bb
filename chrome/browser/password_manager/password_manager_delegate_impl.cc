@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
@@ -139,8 +140,12 @@ void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
   // For now, one-click signin is fully implemented only on windows.
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   GURL realm(form_to_save->realm());
-  if (realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) &&
-      OneClickSigninHelper::CanOffer(tab_contents_->web_contents(), true)) {
+  // TODO(mathp): Checking only against associated_username() causes a bug
+  // referenced here: crbug.com/133275
+  if ((realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
+      realm == GURL("https://www.google.com/")) &&
+      OneClickSigninHelper::CanOffer(tab_contents_->web_contents(),
+          UTF16ToUTF8(form_to_save->associated_username()), true)) {
     return;
   }
 #endif

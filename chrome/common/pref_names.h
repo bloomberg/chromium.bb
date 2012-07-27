@@ -139,6 +139,7 @@ extern const char kPasswordManagerAllowShowPasswords[];
 extern const char kPasswordGenerationEnabled[];
 extern const char kAutologinEnabled[];
 extern const char kReverseAutologinEnabled[];
+extern const char kReverseAutologinRejectedEmailList[];
 extern const char kSafeBrowsingEnabled[];
 extern const char kSafeBrowsingReportingEnabled[];
 extern const char kSafeBrowsingProceedAnywayDisabled[];
