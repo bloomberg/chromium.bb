@@ -295,8 +295,11 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
     else:
       command = [cmd[0].replace('/', '\\')]
     # Fix the paths
-    # If the argument starts with a slash, it's probably a command line switch
-    arguments = [i.startswith('/') and i or _FixPath(i) for i in cmd[1:]]
+    # TODO(quote): This is a really ugly heuristic, and will miss path fixing
+    #              for arguments like "--arg=path" or "/opt:path".
+    # If the argument starts with a slash or dash, it's probably a command line
+    # switch
+    arguments = [i if (i[:1] in "/-") else _FixPath(i) for i in cmd[1:]]
     arguments = [i.replace('$(InputDir)','%INPUTDIR%') for i in arguments]
     if quote_cmd:
       # Support a mode for using cmd directly.
