@@ -329,8 +329,17 @@ static void NaClDefBinarySseInsts(struct NaClSymbolTable* st) {
   NaClDefine("   f30f7f:     Movdqu $Wdq, $Vdq",   NACLi_SSE2,    st, Move);
   NaClDefIter("  f20fb8+@i:  Invalid", 0, 7,       NACLi_INVALID, st, Other);
   NaClDefine("   f30fb8:     Popcnt $Gv, $Ev",     NACLi_POPCNT,  st, Move);
-  NaClDefIter("  f30fb9+@i:  Invalid", 0, 3,       NACLi_INVALID, st, Other);
-  NaClDefine("   f30fbd:     Lzcnt $Gv, $Ev",      NACLi_LZCNT,   st, Move);
+  NaClDefIter("  f30fb9+@i:  Invalid", 0, 2,       NACLi_INVALID, st, Other);
+  /* tzcnt is treated as a bsf on machines that don't have tzcnt.
+   * Hence, even though its conditional on NACLi_LZCNT, we act
+   * like it can be used on all processors.
+   */
+  NaClDefine("   f30fbc:     Tzcnt $Gv, $Ev",      NACLi_386,     st, Move);
+  /* lzcnt is treated as a bsr on machines that don't have lzcnt.
+   * Hence, even though its conditional on NACLi_LZCNT, we act
+   * like it can be used on all processors.
+   */
+  NaClDefine("   f30fbd:     Lzcnt $Gv, $Ev",      NACLi_386,     st, Move);
   NaClDefIter("  f30fbe+@i:  Invalid", 0, 1,       NACLi_INVALID, st, Other);
   NaClDefine("     0fc2:     Cmpps $Vps, $Wps, $Ib",
                                                    NACLi_SSE,     st, Nary);

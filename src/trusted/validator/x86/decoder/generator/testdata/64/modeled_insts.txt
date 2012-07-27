@@ -3762,9 +3762,12 @@ Target: x86-64 bit mode
   --- bb ---
   f3 0f bb                    INVALID OpcodeAllowsRep NaClIllegal
   --- bc ---
-  f3 0f bc                    INVALID OpcodeAllowsRep NaClIllegal
+  f3 0f bc                    386 OpcodeUsesModRm OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
+    Tzcnt $Gv, $Ev
+      G_Operand               OpSet
+      E_Operand               OpUse
   --- bd ---
-  f3 0f bd                    LZCNT OpcodeUsesModRm OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
+  f3 0f bd                    386 OpcodeUsesModRm OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Lzcnt $Gv, $Ev
       G_Operand               OpSet
       E_Operand               OpUse

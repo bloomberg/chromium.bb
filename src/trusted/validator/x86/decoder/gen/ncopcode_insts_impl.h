@@ -603,6 +603,7 @@ static const char* const g_NaClMnemonicName[NaClMnemonicEnumSize + 1] = {
   "Sysexit",
   "Sysret",
   "Test",
+  "Tzcnt",
   "Ucomisd",
   "Ucomiss",
   "Ud2",

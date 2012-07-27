@@ -1,0 +1,2 @@
+# Test if we recognize tzcnt as a bsf with REP prefix.
+f3 0f bc c3
