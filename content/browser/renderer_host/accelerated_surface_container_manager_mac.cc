@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 
+#include <OpenGL/gl.h>
+
 #include "base/logging.h"
 #include "content/browser/renderer_host/accelerated_surface_container_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
