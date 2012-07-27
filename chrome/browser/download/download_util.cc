@@ -166,12 +166,17 @@ bool DownloadPathIsDangerous(const FilePath& download_path) {
   }
 #endif
 
+#if defined(OS_ANDROID)
+  // Android does not have a desktop dir.
+  return false;
+#else
   FilePath desktop_dir;
   if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_dir)) {
     NOTREACHED();
     return false;
   }
   return (download_path == desktop_dir);
+#endif
 }
 
 // Download progress painting --------------------------------------------------
