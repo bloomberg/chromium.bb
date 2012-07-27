@@ -90,10 +90,14 @@
       <Directory Id="ProgramFilesFolder">
         <?ifdef OfficialBuild ?>
           <Directory Id="program_files_google" Name="Google">
-            <Directory Id="binaries" Name="Chrome Remote Desktop"/>
+            <Directory Id="chromoting" Name="Chrome Remote Desktop">
+              <Directory Id="binaries" Name="$(var.Version)"/>
+            </Directory>
           </Directory>
         <?else?>
-          <Directory Id="binaries" Name="Chromoting"/>
+          <Directory Id="chromoting" Name="Chromoting">
+            <Directory Id="binaries" Name="$(var.Version)"/>
+          </Directory>
         <?endif?>
       </Directory>
       <Directory Id="CommonAppDataFolder">
