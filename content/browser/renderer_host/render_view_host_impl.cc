@@ -1038,10 +1038,12 @@ void RenderViewHostImpl::OnMsgRunModal(int opener_id, IPC::Message* reply_msg) {
 
   RenderViewHostImpl* opener =
       RenderViewHostImpl::FromID(GetProcess()->GetID(), run_modal_opener_id_);
-  opener->StopHangMonitorTimeout();
-  // The ack for the mouse down won't come until the dialog closes, so fake it
-  // so that we don't get a timeout.
-  opener->decrement_in_flight_event_count();
+  if (opener) {
+    opener->StopHangMonitorTimeout();
+    // The ack for the mouse down won't come until the dialog closes, so fake it
+    // so that we don't get a timeout.
+    opener->decrement_in_flight_event_count();
+  }
 
   // TODO(darin): Bug 1107929: Need to inform our delegate to show this view in
   // an app-modal fashion.
