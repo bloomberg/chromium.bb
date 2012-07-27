@@ -165,7 +165,7 @@ deps_os = {
         'src/third_party/nss':
             Var('git_url') + '/chromium/deps/nss.git@f32dd411617e86bbb2b4c7fb54063de209f9901a',
         'src/third_party/pdfsqueeze':
-            Var('git_url') + '/external/pdfsqueeze.git@a2470ff9fcc9d399a1c0ac58e8b1df6f46143801',
+            Var('git_url') + '/external/pdfsqueeze.git@5936b871e6a087b7e50d4cbcb122378d8a07499f',
         'src/third_party/swig/mac':
             Var('git_url') + '/chromium/deps/swig/mac.git@1b182eef16df2b506f1d710b34df65d55c1ac44e',
     },
