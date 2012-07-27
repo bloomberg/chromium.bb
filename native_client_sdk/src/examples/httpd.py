@@ -67,6 +67,8 @@ class QuittableHTTPServer(SocketServer.ThreadingMixIn,
     self.is_running = True
     self.timeout = timeout
     while self.is_running:
+      sys.stderr.flush()
+      sys.stdout.flush()
       self.handle_request()
 
   def shutdown(self):
