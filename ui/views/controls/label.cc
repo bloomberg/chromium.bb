@@ -55,7 +55,6 @@ void Label::SetFont(const gfx::Font& font) {
 
 void Label::SetText(const string16& text) {
   text_ = text;
-  url_ = GURL();
   text_size_valid_ = false;
   is_email_ = false;
   PreferredSizeChanged();
@@ -65,16 +64,6 @@ void Label::SetText(const string16& text) {
 void Label::SetEmail(const string16& email) {
   SetText(email);
   is_email_ = true;
-}
-
-void Label::SetURL(const GURL& url) {
-  DCHECK(url.is_valid());
-  url_ = url;
-  text_ = UTF8ToUTF16(url_.spec());
-  text_size_valid_ = false;
-  is_email_ = false;
-  PreferredSizeChanged();
-  SchedulePaint();
 }
 
 void Label::SetAutoColorReadabilityEnabled(bool enabled) {
@@ -494,24 +483,7 @@ void Label::CalculateDrawStringParams(string16* paint_text,
                                       int* flags) const {
   DCHECK(paint_text && text_bounds && flags);
 
-  if (!url_.is_empty()) {
-    // TODO(jungshik) : Figure out how to get 'intl.accept_languages'
-    // preference and use it when calling ElideUrl.
-    *paint_text =
-        ui::ElideUrl(url_, font_, GetAvailableRect().width(), std::string());
-
-    // An URLs is always treated as an LTR text and therefore we should
-    // explicitly mark it as such if the locale is RTL so that URLs containing
-    // Hebrew or Arabic characters are displayed correctly.
-    //
-    // Note that we don't check the View's UI layout setting in order to
-    // determine whether or not to insert the special Unicode formatting
-    // characters. We use the locale settings because an URL is always treated
-    // as an LTR string, even if its containing view does not use an RTL UI
-    // layout.
-    *paint_text = base::i18n::GetDisplayStringInLTRDirectionality(
-        *paint_text);
-  } else if (is_email_) {
+  if (is_email_) {
     *paint_text = ui::ElideEmail(text_, font_, GetAvailableRect().width());
   } else if (elide_in_middle_) {
     *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),

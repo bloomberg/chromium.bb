@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
 #include "ui/views/view.h"
@@ -64,9 +63,6 @@ class VIEWS_EXPORT Label : public View {
 
   // Sets the label text to |email|.  Emails have a custom eliding algorithm.
   void SetEmail(const string16& email);
-
-  // Sets URL Value - text_ is set to spec().
-  void SetURL(const GURL& url);
 
   // Returns the font used by this label.
   gfx::Font font() const { return font_; }
@@ -258,7 +254,6 @@ class VIEWS_EXPORT Label : public View {
                                  int* flags) const;
 
   string16 text_;
-  GURL url_;
   gfx::Font font_;
   SkColor requested_enabled_color_;
   SkColor actual_enabled_color_;

@@ -47,14 +47,6 @@ TEST(LabelTest, TextProperty) {
   EXPECT_EQ(test_text, label.text());
 }
 
-TEST(LabelTest, UrlProperty) {
-  Label label;
-  std::string my_url("http://www.orkut.com/some/Random/path");
-  GURL url(my_url);
-  label.SetURL(url);
-  EXPECT_EQ(UTF8ToUTF16(my_url), label.text());
-}
-
 TEST(LabelTest, ColorProperty) {
   Label label;
   SkColor color = SkColorSetARGB(20, 40, 10, 5);
