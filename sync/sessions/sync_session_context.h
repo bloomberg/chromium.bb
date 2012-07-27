@@ -110,14 +110,6 @@ class SyncSessionContext {
   }
   int32 max_commit_batch_size() const { return max_commit_batch_size_; }
 
-  const ModelSafeRoutingInfo& previous_session_routing_info() const {
-    return previous_session_routing_info_;
-  }
-
-  void set_previous_session_routing_info(const ModelSafeRoutingInfo& info) {
-    previous_session_routing_info_ = info;
-  }
-
   void NotifyListeners(const SyncEngineEvent& event) {
     FOR_EACH_OBSERVER(SyncEngineEventListener, listeners_,
                       OnSyncEngineEvent(event));
@@ -162,10 +154,6 @@ class SyncSessionContext {
 
   // The server limits the number of items a client can commit in one batch.
   int max_commit_batch_size_;
-
-  // Some routing info history to help us clean up types that get disabled
-  // by the user.
-  ModelSafeRoutingInfo previous_session_routing_info_;
 
   ThrottledDataTypeTracker* throttled_data_type_tracker_;
 

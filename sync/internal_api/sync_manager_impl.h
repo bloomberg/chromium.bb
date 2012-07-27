@@ -180,6 +180,7 @@ class SyncManagerImpl : public SyncManager,
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnNotificationStateChange);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnIncomingNotification);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, PurgeDisabledTypes);
 
   struct NotificationInfo {
     NotificationInfo();
@@ -226,6 +227,11 @@ class SyncManagerImpl : public SyncManager,
   // and the sync DB is open. True if successful, false if something
   // went wrong.
   bool SignIn(const SyncCredentials& credentials);
+
+  // Purge those types from |previously_enabled_types| that are no longer
+  // enabled in |currently_enabled_types|.
+  bool PurgeDisabledTypes(ModelTypeSet previously_enabled_types,
+                          ModelTypeSet currently_enabled_types);
 
   void RequestNudgeForDataTypes(
       const tracked_objects::Location& nudge_location,
