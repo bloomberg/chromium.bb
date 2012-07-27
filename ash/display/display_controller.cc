@@ -12,6 +12,7 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -120,72 +121,40 @@ void DisplayController::SetSecondaryDisplayLayout(
 }
 
 bool DisplayController::WarpMouseCursorIfNecessary(
-    aura::Window* current_root,
-    const gfx::Point& location_in_root) {
+    aura::RootWindow* current_root,
+    const gfx::Point& point_in_root) {
   if (root_windows_.size() < 2)
     return false;
-  // Only 1 external display is supported in extended desktop mode.
-  DCHECK_EQ(2U, root_windows_.size());
 
-  bool in_primary = current_root == root_windows_[0];
-
-  std::map<int, aura::RootWindow*>::iterator iter = root_windows_.begin();
-  aura::RootWindow* alternate_root = iter->second != current_root ?
-      iter->second : (++iter)->second;
-  gfx::Rect alternate_bounds = alternate_root->bounds();
-  gfx::Point alternate_point;
-
-  // TODO(oshima): This is temporary code until the virtual screen
-  // coordinate is fully implemented.
-  gfx::Rect display_area(ScreenAsh::ConvertRectFromScreen(
-      current_root,
-      gfx::Screen::GetDisplayNearestWindow(current_root).bounds()));
-
-  if (location_in_root.x() <= display_area.x()) {
-    if (location_in_root.y() < alternate_bounds.height() &&
-        ((in_primary && secondary_display_layout_ == LEFT) ||
-         (!in_primary && secondary_display_layout_ == RIGHT))) {
-      alternate_point = gfx::Point(
-          alternate_bounds.right() - (location_in_root.x() - display_area.x()),
-          location_in_root.y());
-    } else {
-      alternate_root = NULL;
-    }
-  } else if (location_in_root.x() >= display_area.right() - 1) {
-    if (location_in_root.y() < alternate_bounds.height() &&
-        ((in_primary && secondary_display_layout_ == RIGHT) ||
-         (!in_primary && secondary_display_layout_ == LEFT))) {
-      alternate_point = gfx::Point(location_in_root.x() - display_area.right(),
-                                   location_in_root.y());
-    } else {
-      alternate_root = NULL;
-    }
-  } else if (location_in_root.y() < display_area.y()) {
-    if (location_in_root.x() < alternate_bounds.width() &&
-        ((in_primary && secondary_display_layout_ == TOP) ||
-         (!in_primary && secondary_display_layout_ == BOTTOM))) {
-      alternate_point = gfx::Point(
-          location_in_root.x(),
-          alternate_bounds.bottom() -
-          (location_in_root.y() - display_area.y()));
-    } else {
-      alternate_root = NULL;
-    }
-  } else if (location_in_root.y() >= display_area.bottom() - 1) {
-    if (location_in_root.x() < alternate_bounds.width() &&
-        ((in_primary && secondary_display_layout_ == BOTTOM) ||
-         (!in_primary && secondary_display_layout_ == TOP))) {
-      alternate_point = gfx::Point(
-          location_in_root.x(), location_in_root.y() - display_area.bottom());
-    } else {
-      alternate_root = NULL;
-    }
+  gfx::Rect root_bounds = current_root->bounds();
+  int offset_x = 0;
+  int offset_y = 0;
+  if (point_in_root.x() <= root_bounds.x()) {
+    offset_x = -1;
+  } else if (point_in_root.x() >= root_bounds.right() - 1) {
+    offset_x = 1;
+  } else if (point_in_root.y() <= root_bounds.y()) {
+    offset_y = -1;
+  } else if (point_in_root.y() >= root_bounds.bottom() - 1) {
+    offset_y = 1;
   } else {
-    alternate_root = NULL;
+    return false;
   }
-  if (alternate_root) {
-    DCHECK_NE(alternate_root, current_root);
-    alternate_root->MoveCursorTo(alternate_point);
+
+  gfx::Point point_in_screen(point_in_root);
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(current_root);
+  screen_position_client->ConvertPointToScreen(current_root,
+                                               &point_in_screen);
+  point_in_screen.Offset(offset_x, offset_y);
+  aura::RootWindow* dst_root = Shell::GetRootWindowAt(point_in_screen);
+  gfx::Point point_in_dst_root(point_in_screen);
+
+  screen_position_client->ConvertPointFromScreen(dst_root,
+                                                 &point_in_dst_root);
+  if (dst_root->bounds().Contains(point_in_dst_root)) {
+    DCHECK_NE(dst_root, current_root);
+    dst_root->MoveCursorTo(point_in_dst_root);
     return true;
   }
   return false;
