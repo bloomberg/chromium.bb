@@ -135,6 +135,9 @@ const GdkColor kHintTextColor = GDK_COLOR_RGB(0x75, 0x75, 0x75);
 // Size of the rounding of the "Search site for:" box.
 const int kCornerSize = 3;
 
+// Default page tool animation time (open and close).
+const int kPageToolAnimationTime = 150;
+
 // The time, in ms, that the content setting label is fully displayed, for the
 // cases where we animate it into and out of view.
 const int kContentSettingImageDisplayTime = 3200;
@@ -144,12 +147,8 @@ const int kContentSettingImageAnimationTime = 150;
 // Color of border of content setting area (icon/label).
 const GdkColor kContentSettingBorderColor = GDK_COLOR_RGB(0xe9, 0xb9, 0x66);
 // Colors for the background gradient.
-const double kContentSettingTopColor[] = { 0xff / 255.0,
-                                           0xf8 / 255.0,
-                                           0xd4 / 255.0 };
-const double kContentSettingBottomColor[] = { 0xff / 255.0,
-                                              0xe6 / 255.0,
-                                              0xaf / 255.0 };
+const GdkColor kContentSettingTopColor = GDK_COLOR_RGB(0xff, 0xf8, 0xd4);
+const GdkColor kContentSettingBottomColor = GDK_COLOR_RGB(0xff, 0xe6, 0xaf);
 
 // If widget is visible, increment the int pointed to by count.
 // Suitible for use with gtk_container_foreach.
@@ -157,6 +156,153 @@ void CountVisibleWidgets(GtkWidget* widget, gpointer count) {
   if (gtk_widget_get_visible(widget))
     *static_cast<int*>(count) += 1;
 }
+
+class ContentSettingImageViewGtk : public LocationBarViewGtk::PageToolViewGtk,
+                                   public BubbleDelegateGtk {
+ public:
+  ContentSettingImageViewGtk(ContentSettingsType content_type,
+                             const LocationBarViewGtk* parent);
+  virtual ~ContentSettingImageViewGtk();
+
+  // PageToolViewGtk
+  virtual void Update(TabContents* tab_contents) OVERRIDE;
+
+  // ui::AnimationDelegate
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+
+ private:
+  // PageToolViewGtk
+  virtual GdkColor button_border_color() const OVERRIDE;
+  virtual GdkColor gradient_top_color() const OVERRIDE;
+  virtual GdkColor gradient_bottom_color() const OVERRIDE;
+  virtual void OnClick(GtkWidget* sender) OVERRIDE;
+
+  // BubbleDelegateGtk
+  virtual void BubbleClosing(BubbleGtk* bubble,
+                             bool closed_by_escape) OVERRIDE;
+
+  scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
+
+  // The currently shown bubble if any.
+  ContentSettingBubbleGtk* content_setting_bubble_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingImageViewGtk);
+};
+
+ContentSettingImageViewGtk::ContentSettingImageViewGtk(
+    ContentSettingsType content_type,
+    const LocationBarViewGtk* parent)
+    : PageToolViewGtk(parent),
+      content_setting_image_model_(
+          ContentSettingImageModel::CreateContentSettingImageModel(
+              content_type)),
+      content_setting_bubble_(NULL) {
+  animation_.SetSlideDuration(kContentSettingImageAnimationTime);
+}
+
+ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
+  if (content_setting_bubble_)
+    content_setting_bubble_->Close();
+}
+
+void ContentSettingImageViewGtk::Update(
+    TabContents* tab_contents) {
+  if (tab_contents) {
+    content_setting_image_model_->UpdateFromWebContents(
+        tab_contents->web_contents());
+  }
+  if (!content_setting_image_model_->is_visible()) {
+    gtk_widget_hide(widget());
+    return;
+  }
+
+  gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
+      GtkThemeService::GetFrom(parent_->browser()->profile())->GetImageNamed(
+          content_setting_image_model_->get_icon())->ToGdkPixbuf());
+
+  gtk_widget_set_tooltip_text(widget(),
+      content_setting_image_model_->get_tooltip().c_str());
+  gtk_widget_show_all(widget());
+
+  if (!tab_contents)
+    return;
+
+  TabSpecificContentSettings* content_settings =
+      tab_contents->content_settings();
+  if (!content_settings || content_settings->IsBlockageIndicated(
+      content_setting_image_model_->get_content_settings_type()))
+    return;
+
+  // The content blockage was not yet indicated to the user. Start indication
+  // animation and clear "not yet shown" flag.
+  content_settings->SetBlockageHasBeenIndicated(
+      content_setting_image_model_->get_content_settings_type());
+
+  int label_string_id =
+      content_setting_image_model_->explanatory_string_id();
+  // If there's no string for the content type, we don't animate.
+  if (!label_string_id)
+    return;
+
+  gtk_label_set_text(GTK_LABEL(label_.get()),
+      l10n_util::GetStringUTF8(label_string_id).c_str());
+  StartAnimating();
+}
+
+void ContentSettingImageViewGtk::AnimationEnded(
+    const ui::Animation* animation) {
+  if (animation_.IsShowing()) {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ContentSettingImageViewGtk::CloseAnimation,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kContentSettingImageDisplayTime));
+  } else {
+    gtk_widget_hide(label_.get());
+    gtk_util::StopActingAsRoundedWindow(event_box_.get());
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
+  }
+}
+
+GdkColor ContentSettingImageViewGtk::
+    button_border_color() const {
+  return kContentSettingBorderColor;
+}
+
+GdkColor ContentSettingImageViewGtk::
+    gradient_top_color() const {
+  return kContentSettingTopColor;
+}
+
+GdkColor ContentSettingImageViewGtk::
+    gradient_bottom_color() const {
+  return kContentSettingBottomColor;
+}
+
+void ContentSettingImageViewGtk::OnClick(
+    GtkWidget* sender) {
+  TabContents* tab_contents = parent_->GetTabContents();
+  if (!tab_contents)
+    return;
+  Profile* profile = parent_->browser()->profile();
+  content_setting_bubble_ = new ContentSettingBubbleGtk(
+      sender, this,
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          parent_->browser()->content_setting_bubble_model_delegate(),
+          tab_contents,
+          profile,
+          content_setting_image_model_->get_content_settings_type()),
+      profile, tab_contents->web_contents());
+  return;
+}
+
+void ContentSettingImageViewGtk::BubbleClosing(
+    BubbleGtk* bubble,
+    bool closed_by_escape) {
+  content_setting_bubble_ = NULL;
+}
+
+
 
 }  // namespace
 
@@ -709,13 +855,12 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdateContentSettingsIcons() {
-  WebContents* web_contents = GetWebContents();
   bool any_visible = false;
-  for (ScopedVector<ContentSettingImageViewGtk>::iterator i(
+  for (ScopedVector<PageToolViewGtk>::iterator i(
            content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->UpdateFromWebContents(
-        toolbar_model_->input_in_progress() ? NULL : web_contents);
+    (*i)->Update(
+        toolbar_model_->input_in_progress() ? NULL : GetTabContents());
     any_visible = (*i)->IsVisible() || any_visible;
   }
 
@@ -1413,20 +1558,16 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LocationBarViewGtk::ContentSettingImageViewGtk
-LocationBarViewGtk::ContentSettingImageViewGtk::ContentSettingImageViewGtk(
-    ContentSettingsType content_type,
+// LocationBarViewGtk::PageToolViewGtk
+
+LocationBarViewGtk::PageToolViewGtk::PageToolViewGtk(
     const LocationBarViewGtk* parent)
-    : content_setting_image_model_(
-          ContentSettingImageModel::CreateContentSettingImageModel(
-              content_type)),
-      alignment_(gtk_alignment_new(0, 0, 1, 1)),
+    : alignment_(gtk_alignment_new(0, 0, 1, 1)),
       event_box_(gtk_event_box_new()),
       hbox_(gtk_hbox_new(FALSE, kInnerPadding)),
       image_(gtk_image_new()),
       label_(gtk_label_new(NULL)),
       parent_(parent),
-      content_setting_bubble_(NULL),
       animation_(this),
       weak_factory_(this) {
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_.get()), 1, 1, 0, 0);
@@ -1450,70 +1591,31 @@ LocationBarViewGtk::ContentSettingImageViewGtk::ContentSettingImageViewGtk(
   gtk_container_add(GTK_CONTAINER(event_box_.get()), hbox_);
   gtk_widget_hide(widget());
 
-  animation_.SetSlideDuration(kContentSettingImageAnimationTime);
+  animation_.SetSlideDuration(kPageToolAnimationTime);
 }
 
-LocationBarViewGtk::ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
+LocationBarViewGtk::PageToolViewGtk::~PageToolViewGtk() {
   image_.Destroy();
   label_.Destroy();
   event_box_.Destroy();
   alignment_.Destroy();
-
-  if (content_setting_bubble_)
-    content_setting_bubble_->Close();
 }
 
-bool LocationBarViewGtk::ContentSettingImageViewGtk::IsVisible() {
+GtkWidget* LocationBarViewGtk::PageToolViewGtk::widget() {
+  return alignment_.get();
+}
+
+bool LocationBarViewGtk::PageToolViewGtk::IsVisible() {
   return gtk_widget_get_visible(widget());
 }
 
-void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromWebContents(
-    WebContents* web_contents) {
-  content_setting_image_model_->UpdateFromWebContents(web_contents);
-  if (!content_setting_image_model_->is_visible()) {
-    gtk_widget_hide(widget());
-    return;
-  }
-
-  gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
-      GtkThemeService::GetFrom(parent_->browser()->profile())->GetImageNamed(
-          content_setting_image_model_->get_icon())->ToGdkPixbuf());
-
-  gtk_widget_set_tooltip_text(widget(),
-      content_setting_image_model_->get_tooltip().c_str());
-  gtk_widget_show_all(widget());
-
-  TabSpecificContentSettings* content_settings = NULL;
-  if (web_contents) {
-    content_settings =
-        TabContents::FromWebContents(web_contents)->content_settings();
-  }
-  if (!content_settings || content_settings->IsBlockageIndicated(
-      content_setting_image_model_->get_content_settings_type()))
-    return;
-
-  // The content blockage was not yet indicated to the user. Start indication
-  // animation and clear "not yet shown" flag.
-  content_settings->SetBlockageHasBeenIndicated(
-      content_setting_image_model_->get_content_settings_type());
-
-  int label_string_id =
-      content_setting_image_model_->explanatory_string_id();
-  // If there's no string for the content type, we don't animate.
-  if (!label_string_id)
-    return;
-
-  gtk_label_set_text(GTK_LABEL(label_.get()),
-      l10n_util::GetStringUTF8(label_string_id).c_str());
-  StartAnimating();
-}
-
-void LocationBarViewGtk::ContentSettingImageViewGtk::StartAnimating() {
+void LocationBarViewGtk::PageToolViewGtk::StartAnimating() {
   if (animation_.IsShowing() || animation_.IsClosing())
     return;
 
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), TRUE);
-  gtk_util::ActAsRoundedWindow(event_box_.get(), kContentSettingBorderColor,
+  GdkColor border_color = button_border_color();
+  gtk_util::ActAsRoundedWindow(event_box_.get(), border_color,
                                kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
 
@@ -1525,11 +1627,11 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::StartAnimating() {
   animation_.Show();
 }
 
-void LocationBarViewGtk::ContentSettingImageViewGtk::CloseAnimation() {
+void LocationBarViewGtk::PageToolViewGtk::CloseAnimation() {
   animation_.Hide();
 }
 
-void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationProgressed(
+void LocationBarViewGtk::PageToolViewGtk::AnimationProgressed(
     const ui::Animation* animation) {
   gtk_widget_set_size_request(
       label_.get(),
@@ -1537,46 +1639,23 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationProgressed(
       -1);
 }
 
-void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationEnded(
-    const ui::Animation* animation) {
-  if (animation_.IsShowing()) {
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ContentSettingImageViewGtk::CloseAnimation,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kContentSettingImageDisplayTime));
-  } else {
-    gtk_widget_hide(label_.get());
-    gtk_util::StopActingAsRoundedWindow(event_box_.get());
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
-  }
-}
-
-void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationCanceled(
+void LocationBarViewGtk::PageToolViewGtk::AnimationEnded(
     const ui::Animation* animation) {
 }
 
-gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
+void LocationBarViewGtk::PageToolViewGtk::AnimationCanceled(
+    const ui::Animation* animation) {
+}
+
+gboolean LocationBarViewGtk::PageToolViewGtk::OnButtonPressed(
     GtkWidget* sender, GdkEvent* event) {
-  TabContents* tab_contents = parent_->GetTabContents();
-  if (!tab_contents)
-    return TRUE;
-  Profile* profile = parent_->browser()->profile();
-  content_setting_bubble_ = new ContentSettingBubbleGtk(
-      sender, this,
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          parent_->browser()->content_setting_bubble_model_delegate(),
-          tab_contents,
-          profile,
-          content_setting_image_model_->get_content_settings_type()),
-      profile, tab_contents->web_contents());
+  OnClick(sender);
   return TRUE;
 }
 
-gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnExpose(
+gboolean LocationBarViewGtk::PageToolViewGtk::OnExpose(
     GtkWidget* sender, GdkEventExpose* event) {
-  TRACE_EVENT0("ui::gtk",
-               "LocationBarViewGtk::ContentSettingImageViewGtk::OnExpose");
+  TRACE_EVENT0("ui::gtk", "LocationBarViewGtk::PageToolViewGtk::OnExpose");
 
   if (!(animation_.IsShowing() || animation_.IsClosing()))
     return FALSE;
@@ -1591,26 +1670,25 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnExpose(
 
   cairo_pattern_t* pattern = cairo_pattern_create_linear(0, 0, 0, height);
 
-  cairo_pattern_add_color_stop_rgb(pattern, 0.0,
-                                   kContentSettingTopColor[0],
-                                   kContentSettingTopColor[1],
-                                   kContentSettingTopColor[2]);
-  cairo_pattern_add_color_stop_rgb(pattern, 1.0,
-                                   kContentSettingBottomColor[0],
-                                   kContentSettingBottomColor[1],
-                                   kContentSettingBottomColor[2]);
+  const GdkColor top_color = gradient_top_color();
+  const GdkColor bottom_color = gradient_bottom_color();
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 0.0,
+      top_color.red/255.0,
+      top_color.blue/255.0,
+      top_color.green/255.0);
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 1.0,
+      bottom_color.red/255.0,
+      bottom_color.blue/255.0,
+      bottom_color.green/255.0);
+
   cairo_set_source(cr, pattern);
   cairo_paint(cr);
   cairo_pattern_destroy(pattern);
   cairo_destroy(cr);
 
   return FALSE;
-}
-
-void LocationBarViewGtk::ContentSettingImageViewGtk::BubbleClosing(
-    BubbleGtk* bubble,
-    bool closed_by_escape) {
-  content_setting_bubble_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

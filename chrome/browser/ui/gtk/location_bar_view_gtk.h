@@ -168,56 +168,52 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Edit background color.
   static const GdkColor kBackgroundColor;
 
- private:
-  class ContentSettingImageViewGtk : public BubbleDelegateGtk,
-                                     public ui::AnimationDelegate {
+  // Superclass for content settings icons shown at the left side of the
+  // location bar.
+  class PageToolViewGtk : public ui::AnimationDelegate {
    public:
-    ContentSettingImageViewGtk(ContentSettingsType content_type,
-                               const LocationBarViewGtk* parent);
-    virtual ~ContentSettingImageViewGtk();
+    explicit PageToolViewGtk(const LocationBarViewGtk* parent);
+    virtual ~PageToolViewGtk();
 
-    GtkWidget* widget() { return alignment_.get(); }
+    GtkWidget* widget();
 
     bool IsVisible();
-    void UpdateFromWebContents(content::WebContents* web_contents);
+    virtual void Update(TabContents* tab_contents) = 0;
 
     // Overridden from ui::AnimationDelegate:
     virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
     virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
     virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
-   private:
+   protected:
+    // Theme constants for solid background elements.
+    virtual GdkColor button_border_color() const = 0;
+    virtual GdkColor gradient_top_color() const = 0;
+    virtual GdkColor gradient_bottom_color() const = 0;
+
+    // Delegate for ButtonPressed message.
+    virtual void OnClick(GtkWidget* sender) = 0;
+
     // Start the process of showing the label.
     void StartAnimating();
 
     // Slide the label shut.
     void CloseAnimation();
 
-    CHROMEGTK_CALLBACK_1(ContentSettingImageViewGtk, gboolean, OnButtonPressed,
-                         GdkEvent*);
-    CHROMEGTK_CALLBACK_1(ContentSettingImageViewGtk, gboolean, OnExpose,
-                         GdkEventExpose*);
+    CHROMEGTK_CALLBACK_1(PageToolViewGtk, gboolean, OnButtonPressed, GdkEvent*);
+    CHROMEGTK_CALLBACK_1(PageToolViewGtk, gboolean, OnExpose, GdkEventExpose*);
 
-    // BubbleDelegateGtk overrides:
-    virtual void BubbleClosing(BubbleGtk* bubble,
-                               bool closed_by_escape) OVERRIDE;
-
-    scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
-
-    // The widgets for this content settings view.
+    // The widgets for this view.
     ui::OwnedWidgetGtk alignment_;
     ui::OwnedWidgetGtk event_box_;
     GtkWidget* hbox_;
     ui::OwnedWidgetGtk image_;
 
-    // Explanatory text ("popup blocked").
+    // Explanatory text (e.g. "popup blocked").
     ui::OwnedWidgetGtk label_;
 
     // The owning LocationBarViewGtk.
     const LocationBarViewGtk* parent_;
-
-    // The currently shown bubble if any.
-    ContentSettingBubbleGtk* content_setting_bubble_;
 
     // When we show explanatory text, we slide it in/out.
     ui::SlideAnimation animation_;
@@ -225,11 +221,13 @@ class LocationBarViewGtk : public OmniboxEditController,
     // The label's default requisition (cached so we can animate accordingly).
     GtkRequisition label_req_;
 
-    base::WeakPtrFactory<ContentSettingImageViewGtk> weak_factory_;
+    base::WeakPtrFactory<PageToolViewGtk> weak_factory_;
 
-    DISALLOW_COPY_AND_ASSIGN(ContentSettingImageViewGtk);
+   private:
+    DISALLOW_COPY_AND_ASSIGN(PageToolViewGtk);
   };
 
+ private:
   class PageActionViewGtk :
        public ImageLoadingTracker::Observer,
        public content::NotificationObserver,
@@ -462,7 +460,7 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   // Content setting icons.
   ui::OwnedWidgetGtk content_setting_hbox_;
-  ScopedVector<ContentSettingImageViewGtk> content_setting_views_;
+  ScopedVector<PageToolViewGtk> content_setting_views_;
 
   // Extension page actions.
   std::vector<ExtensionAction*> page_actions_;
