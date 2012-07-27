@@ -10,8 +10,6 @@
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/browser/intents/api_key.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -39,17 +37,6 @@ const char kMaxSuggestions[] = "15";
 // URL for CWS intents API.
 const char kCWSIntentServiceURL[] =
   "https://www.googleapis.com/chromewebstore/v1.1b/items/intent";
-
-// Determines if a string is a candidate for localization.
-bool ShouldLocalize(const std::string& value) {
-  std::string::size_type index = 0;
-  index = value.find(extensions::MessageBundle::kMessageBegin);
-   if (index == std::string::npos)
-     return false;
-
-  index = value.find(extensions::MessageBundle::kMessageEnd, index);
-  return (index != std::string::npos);
-}
 
 // Parses a JSON |response| from the CWS into a list of suggested extensions,
 // stored in |intents|. |intents| must not be NULL.
@@ -104,38 +91,6 @@ void ParseResponse(const std::string& response,
     if (!item->GetString("icon_url", &url_string))
       continue;
     info.icon_url = GURL(url_string);
-
-    // Need to parse CWS reply, since it is not pre-l10n'd.
-    ListValue* all_locales = NULL;
-    if (ShouldLocalize(UTF16ToUTF8(info.name)) &&
-        item->GetList("locale_data", &all_locales)) {
-      std::map<std::string, std::string> localized_title;
-
-      for (ListValue::const_iterator locale_iter(all_locales->begin());
-           locale_iter != all_locales->end(); ++locale_iter) {
-        DictionaryValue* locale = static_cast<DictionaryValue*>(*locale_iter);
-
-        std::string locale_id, title;
-        if (!locale->GetString("locale_string", &locale_id) ||
-            !locale->GetString("title", &title))
-          continue;
-
-        localized_title[locale_id] = title;
-      }
-
-      std::vector<std::string> valid_locales;
-      extension_l10n_util::GetAllFallbackLocales(
-          extension_l10n_util::CurrentLocaleOrDefault(),
-          "all",
-          &valid_locales);
-      for (std::vector<std::string>::iterator iter = valid_locales.begin();
-          iter != valid_locales.end(); ++iter) {
-        if (localized_title.count(*iter)) {
-            info.name = UTF8ToUTF16(localized_title[*iter]);
-            break;
-        }
-      }
-    }
 
     intents->push_back(info);
   }

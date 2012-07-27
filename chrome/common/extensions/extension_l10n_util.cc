@@ -237,15 +237,6 @@ void GetAllLocales(std::set<std::string>* all_locales) {
   }
 }
 
-void GetAllFallbackLocales(const std::string& application_locale,
-                           const std::string& default_locale,
-                           std::vector<std::string>* all_fallback_locales) {
-  DCHECK(all_fallback_locales);
-  if (!application_locale.empty() && application_locale != default_locale)
-    l10n_util::GetParentLocales(application_locale, all_fallback_locales);
-  all_fallback_locales->push_back(default_locale);
-}
-
 bool GetValidLocales(const FilePath& locale_path,
                      std::set<std::string>* valid_locales,
                      std::string* error) {
@@ -307,9 +298,11 @@ extensions::MessageBundle* LoadMessageCatalogs(
     const std::string& application_locale,
     const std::set<std::string>& valid_locales,
     std::string* error) {
+  // Order locales to load as current_locale, first_parent, ..., default_locale.
   std::vector<std::string> all_fallback_locales;
-  GetAllFallbackLocales(application_locale, default_locale,
-      &all_fallback_locales);
+  if (!application_locale.empty() && application_locale != default_locale)
+    l10n_util::GetParentLocales(application_locale, &all_fallback_locales);
+  all_fallback_locales.push_back(default_locale);
 
   std::vector<linked_ptr<DictionaryValue> > catalogs;
   for (size_t i = 0; i < all_fallback_locales.size(); ++i) {

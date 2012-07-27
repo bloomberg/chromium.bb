@@ -617,14 +617,4 @@ TEST(ExtensionL10nUtil, ShouldRelocalizeManifestDifferentCurrentLocale) {
   EXPECT_TRUE(extension_l10n_util::ShouldRelocalizeManifest(info));
 }
 
-TEST(ExtensionL10nUtil, GetAllFallbackLocales) {
-  std::vector<std::string> fallback_locales;
-  extension_l10n_util::GetAllFallbackLocales("en_US", "all", &fallback_locales);
-  ASSERT_EQ(3U, fallback_locales.size());
-
-  CHECK_EQ("en_US", fallback_locales[0]);
-  CHECK_EQ("en", fallback_locales[1]);
-  CHECK_EQ("all", fallback_locales[2]);
-}
-
 }  // namespace
