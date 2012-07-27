@@ -68,6 +68,13 @@ std::string CurrentLocaleOrDefault();
 // proper fallback.
 void GetAllLocales(std::set<std::string>* all_locales);
 
+// Provides a vector of all fallback locales for message localization.
+// The vector is ordered by priority of locale - |application_locale|,
+// first_parent, ..., |default_locale|.
+void GetAllFallbackLocales(const std::string& application_locale,
+                           const std::string& default_locale,
+                           std::vector<std::string>* all_fallback_locales);
+
 // Adds valid locales to the extension.
 // 1. Do nothing if _locales directory is missing (not an error).
 // 2. Get list of Chrome locales.
