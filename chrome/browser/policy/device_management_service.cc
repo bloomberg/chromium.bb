@@ -314,6 +314,8 @@ void DeviceManagementRequestJobImpl::HandleResponse(
     const net::ResponseCookies& cookies,
     const std::string& data) {
   if (status.status() != net::URLRequestStatus::SUCCESS) {
+    LOG(WARNING) << "DMServer request failed, status: " << status.status()
+                 << ", error: " << status.error();
     ReportError(DM_STATUS_REQUEST_FAILED);
     return;
   }
