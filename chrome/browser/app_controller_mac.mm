@@ -1295,18 +1295,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
 //---------------------------------------------------------------------------
 
-namespace browser {
-
-void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
-  if (Browser* browser = ActivateBrowser(profile)) {
-    chrome::ShowInstantConfirmDialog(browser);
-  } else {
-    chrome::OpenInstantConfirmDialogWindow(profile);
-  }
-}
-
-}  // namespace browser
-
 namespace app_controller_mac {
 
 bool IsOpeningNewWindow() {
