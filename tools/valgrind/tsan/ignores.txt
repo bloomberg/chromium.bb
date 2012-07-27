@@ -47,6 +47,11 @@ fun:*_M_is_shared*
 fun:*_M_set_leaked*
 fun:*_M_set_sharable*
 
+# Comparison of std::strings sometimes takes a lot of time but we don't really
+# need precise stack traces there.
+fun_hist:_ZStltIcSt11char_traitsIcESaIcEEbRKSbIT_T0_T1_ES8_
+fun_hist:_ZNKSs7compareERKSs
+
 # Don't instrument intercepts
 src:*ts_valgrind_intercepts.c
 
