@@ -878,7 +878,9 @@ void BrowserClosedNotificationObserver::Observe(
     return;
   }
 
-  content::Details<bool> close_app(details);
+  int browser_count = static_cast<int>(BrowserList::size());
+  // We get the notification before the browser is removed from the BrowserList.
+  bool app_closing = browser_count == 1;
 
   if (use_json_interface_) {
     AutomationJSONReply(automation_,
@@ -889,7 +891,7 @@ void BrowserClosedNotificationObserver::Observe(
                                                            true);
     } else {
       AutomationMsg_CloseBrowser::WriteReplyParams(reply_message_.get(), true,
-                                                   *(close_app.ptr()));
+                                                   app_closing);
     }
     automation_->Send(reply_message_.release());
   }

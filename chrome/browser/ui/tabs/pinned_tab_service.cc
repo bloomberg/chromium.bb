@@ -11,7 +11,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
-static bool IsLastNormalBrowser(Browser* browser) {
+namespace {
+
+bool IsOnlyNormalBrowser(Browser* browser) {
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
     if (*i != browser && (*i)->is_type_tabbed() &&
@@ -22,9 +24,11 @@ static bool IsLastNormalBrowser(Browser* browser) {
   return true;
 }
 
+}  // namespace
+
 PinnedTabService::PinnedTabService(Profile* profile)
     : profile_(profile),
-      got_exiting_(false),
+      save_pinned_tabs_(true),
       has_normal_browser_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -32,14 +36,30 @@ PinnedTabService::PinnedTabService(Profile* profile)
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_ADDED,
+                 content::NotificationService::AllSources());
 }
 
 void PinnedTabService::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  if (got_exiting_)
-    return;
-
+  // Saving of tabs happens when saving is enabled, and when either the user
+  // exits the application or closes the last browser window.
+  // Saving is disabled when the user exits the application to prevent the
+  // pin state of all the open browsers being overwritten by the state of the
+  // last browser window to close.
+  // Saving is re-enabled when a browser window or tab is opened again.
+  // Note, cancelling a shutdown (via onbeforeunload) will not re-enable pinned
+  // tab saving immediately, to prevent the following situation:
+  //   * two windows are open, one with pinned tabs
+  //   * user exits
+  //   * pinned tabs are saved
+  //   * window with pinned tabs is closed
+  //   * other window blocks close with onbeforeunload
+  //   * user saves work, etc. then closes the window
+  //   * pinned tabs are saved, without the window with the pinned tabs,
+  //     over-writing the correct state.
+  // Saving is re-enabled if a new tab or window is opened.
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = content::Source<Browser>(source).ptr();
@@ -47,15 +67,20 @@ void PinnedTabService::Observe(int type,
           browser->profile() == profile_) {
         has_normal_browser_ = true;
       }
+      save_pinned_tabs_ = true;
+      break;
+    }
+
+    case chrome::NOTIFICATION_TAB_ADDED: {
+      save_pinned_tabs_ = true;
       break;
     }
 
     case chrome::NOTIFICATION_BROWSER_CLOSING: {
       Browser* browser = content::Source<Browser>(source).ptr();
-      if (has_normal_browser_ && browser->profile() == profile_) {
-        if (*(content::Details<bool>(details)).ptr()) {
-          GotExit();
-        } else if (IsLastNormalBrowser(browser)) {
+      if (has_normal_browser_ && save_pinned_tabs_ &&
+          browser->profile() == profile_) {
+        if (IsOnlyNormalBrowser(browser)) {
           has_normal_browser_ = false;
           PinnedTabCodec::WritePinnedTabs(profile_);
         }
@@ -64,18 +89,14 @@ void PinnedTabService::Observe(int type,
     }
 
     case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
-      if (has_normal_browser_)
-        GotExit();
+      if (has_normal_browser_ && save_pinned_tabs_) {
+        PinnedTabCodec::WritePinnedTabs(profile_);
+        save_pinned_tabs_ = false;
+      }
       break;
     }
 
     default:
       NOTREACHED();
   }
-}
-
-void PinnedTabService::GotExit() {
-  DCHECK(!got_exiting_);
-  got_exiting_ = true;
-  PinnedTabCodec::WritePinnedTabs(profile_);
 }

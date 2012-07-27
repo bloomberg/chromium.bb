@@ -70,28 +70,10 @@ void BrowserListImpl::AddBrowser(Browser* browser) {
 void BrowserListImpl::RemoveBrowser(Browser* browser) {
   RemoveBrowserFrom(browser, &last_active_browsers_);
 
-  // Many UI tests rely on closing the last browser window quitting the
-  // application.
-  // Mac: Closing all windows does not indicate quitting the application. Lie
-  // for now and ignore behavior outside of unit tests.
-  // ChromeOS: Force closing last window to close app with flag.
-  // TODO(andybons | pkotwicz): Fix the UI tests to Do The Right Thing.
-#if defined(OS_CHROMEOS)
-  bool closing_app;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableZeroBrowsersOpenForTests))
-    closing_app = (browsers_.size() == 1);
-  else
-    closing_app = (browsers_.size() == 1 &&
-        browser_shutdown::IsTryingToQuit());
-#else
-  bool closing_app = (browsers_.size() == 1);
-#endif  // OS_CHROMEOS
-
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser),
-      content::Details<bool>(&closing_app));
+      content::NotificationService::NoDetails());
 
   RemoveBrowserFrom(browser, &browsers_);
 
