@@ -10,7 +10,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -21,6 +24,7 @@
 
 Profile::Profile()
     : restored_last_session_(false),
+      sent_destroyed_notification_(false),
       accessibility_pause_level_(0) {
 }
 
@@ -116,4 +120,14 @@ bool Profile::IsGuestSession() {
 bool Profile::IsSyncAccessible() {
   browser_sync::SyncPrefs prefs(GetPrefs());
   return ProfileSyncService::IsSyncEnabled() && !prefs.IsManaged();
+}
+
+void Profile::MaybeSendDestroyedNotification() {
+  if (!sent_destroyed_notification_) {
+    sent_destroyed_notification_ = true;
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_DESTROYED,
+        content::Source<Profile>(this),
+        content::NotificationService::NoDetails());
+  }
 }

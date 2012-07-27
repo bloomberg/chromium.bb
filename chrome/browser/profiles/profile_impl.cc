@@ -473,10 +473,8 @@ void ProfileImpl::set_last_selected_directory(const FilePath& path) {
 }
 
 ProfileImpl::~ProfileImpl() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_DESTROYED,
-      content::Source<Profile>(this),
-      content::NotificationService::NoDetails());
+  MaybeSendDestroyedNotification();
+
   bool prefs_loaded = prefs_->GetInitializationStatus() !=
       PrefService::INITIALIZATION_STATUS_WAITING;
 

@@ -151,8 +151,12 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  content::Source<Profile>(profile));
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::Source<Profile>(profile));
+  if (profile->IsOffTheRecord()) {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                   content::Source<Profile>(original_profile));
+  }
   registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
                  content::Source<content::BrowserContext>(profile));
   registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
@@ -610,7 +614,7 @@ void ExtensionProcessManager::Observe(
       break;
     }
 
-    case content::NOTIFICATION_APP_TERMINATING: {
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       // Close background hosts when the last browser is closed so that they
       // have time to shutdown various objects on different threads. Our
       // destructor is called too late in the shutdown sequence.

@@ -390,6 +390,11 @@ class Profile : public content::BrowserContext {
   // disabled or controlled by configuration management.
   bool IsSyncAccessible();
 
+  // Send NOTIFICATION_PROFILE_DESTROYED for this Profile, if it has not
+  // already been sent. It is necessary because most Profiles are destroyed by
+  // ProfileDestroyer, but in tests, some are not.
+  void MaybeSendDestroyedNotification();
+
   // Creates an OffTheRecordProfile which points to this Profile.
   Profile* CreateOffTheRecordProfile();
 
@@ -408,6 +413,10 @@ class Profile : public content::BrowserContext {
 
  private:
   bool restored_last_session_;
+
+  // Used to prevent the notification that this Profile is destroyed from
+  // being sent twice.
+  bool sent_destroyed_notification_;
 
   // Accessibility events will only be propagated when the pause
   // level is zero.  PauseAccessibilityEvents and ResumeAccessibilityEvents

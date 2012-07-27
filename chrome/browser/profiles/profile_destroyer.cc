@@ -24,6 +24,8 @@ std::vector<ProfileDestroyer*>* ProfileDestroyer::pending_destroyers_ = NULL;
 // static
 void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   DCHECK(profile);
+  profile->MaybeSendDestroyedNotification();
+
   std::vector<content::RenderProcessHost*> hosts;
   // Testing profiles can simply be deleted directly. Some tests don't setup
   // RenderProcessHost correctly and don't necessary run on the UI thread
@@ -85,7 +87,7 @@ ProfileDestroyer::ProfileDestroyer(
   pending_destroyers_->push_back(this);
   for (size_t i = 0; i < hosts.size(); ++i) {
     registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::Source<content::RenderProcessHost>(hosts[i]));
+                   content::Source<content::RenderProcessHost>(hosts[i]));
     // For each of the notifications, we bump up our reference count.
     // It will go back to 0 and free us when all hosts are terminated.
     ++num_hosts_;
@@ -126,6 +128,8 @@ void ProfileDestroyer::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                    source);
   DCHECK(num_hosts_ > 0);
   --num_hosts_;
   if (num_hosts_ == 0) {

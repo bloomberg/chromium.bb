@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -47,6 +46,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/transport_security_state.h"
@@ -114,9 +114,7 @@ void OffTheRecordProfileImpl::Init() {
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
-  content::NotificationService::current()->Notify(
-    chrome::NOTIFICATION_PROFILE_DESTROYED, content::Source<Profile>(this),
-    content::NotificationService::NoDetails());
+  MaybeSendDestroyedNotification();
 
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
     io_data_.GetResourceContextNoInit());
