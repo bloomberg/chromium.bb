@@ -7,6 +7,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -53,6 +55,42 @@ void OneClickSigninHelperTest::SetUp() {
   // as needed.
 }
 
+class OneClickTestProfileSyncService : public TestProfileSyncService {
+ public:
+  virtual ~OneClickTestProfileSyncService() {}
+
+  // Helper routine to be used in conjunction with
+  // ProfileKeyedServiceFactory::SetTestingFactory().
+  static ProfileKeyedService* Build(Profile* profile) {
+    return new OneClickTestProfileSyncService(profile);
+  }
+
+  // Need to control this for certain tests.
+  virtual bool FirstSetupInProgress() const OVERRIDE {
+    return first_setup_in_progress_;
+  }
+
+  // Controls return value of FirstSetupInProgress. Because some bits
+  // of UI depend on that value, it's useful to control it separately
+  // from the internal work and components that are triggered (such as
+  // ReconfigureDataTypeManager) to facilitate unit tests.
+  void set_first_setup_in_progress(bool in_progress) {
+    first_setup_in_progress_ = in_progress;
+  }
+
+ private:
+  explicit OneClickTestProfileSyncService(Profile* profile)
+      : TestProfileSyncService(NULL,
+                               profile,
+                               NULL,
+                               ProfileSyncService::MANUAL_START,
+                               false,  // synchronous_backend_init
+                               base::Closure()),
+        first_setup_in_progress_(false) {}
+
+  bool first_setup_in_progress_;
+};
+
 content::WebContents* OneClickSigninHelperTest::CreateMockWebContents(
     bool use_incognito,
     const std::string& username) {
@@ -67,7 +105,6 @@ content::WebContents* OneClickSigninHelperTest::CreateMockWebContents(
     signin_manager->StartSignIn(username, std::string(), std::string(),
                                 std::string());
   }
-
   return CreateTestWebContents();
 }
 
@@ -102,6 +139,22 @@ TEST_F(OneClickSigninHelperTest, CanOffer) {
   EnableOneClick(false);
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, true));
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, false));
+}
+
+TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
+  content::WebContents* web_contents = CreateMockWebContents(false, "");
+
+  // Invoke OneClickTestProfileSyncService factory function and grab result.
+  OneClickTestProfileSyncService* sync =
+      static_cast<OneClickTestProfileSyncService*>(
+          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              static_cast<Profile*>(browser_context()),
+              OneClickTestProfileSyncService::Build));
+
+  sync->set_first_setup_in_progress(true);
+
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents, true));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents, false));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {

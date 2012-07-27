@@ -124,6 +124,4 @@ class TestProfileSyncService : public ProfileSyncService {
   bool use_real_database_;
 };
 
-
-
 #endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
