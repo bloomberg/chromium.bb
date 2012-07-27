@@ -22,10 +22,11 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
   users. Additionally, any persistent information previously accumulated should
   be cleared when a user first logs in after enabling the policy."""
 
+  _usernames = ('alice@example.com', 'bob@example.com')
+
   def _SetEphemeralUsersEnabled(self, enabled):
     """Sets the ephemeral users device policy.
 
-    TODO(bartfab): Ensure Login still works after crosbug.com/20709 is fixed.
     The show_user_names policy is set to False to ensure that even if the local
     state is not being automatically cleared, the login screen never shows user
     pods. This is required by the Login browser automation call.
@@ -82,6 +83,7 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
                      msg='Did not expect any vault to be mounted.')
 
   def Login(self, user_index):
+    """Convenience method to login to the usr at the given index."""
     self.assertFalse(self.GetLoginInfo()['is_logged_in'],
                      msg='Expected to be logged out.')
     policy_base.PolicyTestBase.Login(self,
@@ -89,39 +91,6 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
                                      'dummy_password')
     self.assertTrue(self.GetLoginInfo()['is_logged_in'],
                     msg='Expected to be logged in.')
-
-  def ExtraChromeFlags(self):
-    """Sets up Chrome to skip OOBE.
-
-    TODO(bartfab): Ensure OOBE is still skipped when crosbug.com/20709 is fixed.
-    Disabling automatic clearing of the local state has the curious side effect
-    of removing a flag that disables OOBE. This method adds back the flag.
-    """
-    flags = policy_base.PolicyTestBase.ExtraChromeFlags(self)
-    flags.append('--login-screen=login')
-    return flags
-
-  def setUp(self):
-    policy_base.PolicyTestBase.setUp(self)
-    # TODO(bartfab): Remove this after crosbug.com/20709 is fixed.
-    # Try to disable automatic clearing of the local state.
-    self.TryToDisableLocalStateAutoClearingOnChromeOS()
-    self._local_state_auto_clearing = \
-        self.IsLocalStateAutoClearingEnabledOnChromeOS()
-    if not self._local_state_auto_clearing:
-      # Prevent the inherited Logout() method from cleaning up /home/chronos
-      # as this also clears the local state.
-      self.set_clear_profile(False)
-
-    self._usernames = ('alice@example.com', 'bob@example.com')
-
-  def tearDown(self):
-    # TODO(bartfab): Remove this after crosbug.com/20709 is fixed.
-    # Try to re-enable automatic clearing of the local state and /home/chronos.
-    if not self._local_state_auto_clearing:
-      self.TryToEnableLocalStateAutoClearingOnChromeOS()
-      self.set_clear_profile(True)
-    policy_base.PolicyTestBase.tearDown(self)
 
   def testEnablingBeforeSession(self):
     """Checks that a new session can be made ephemeral."""
@@ -163,17 +132,12 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
     self.WaitForLoginFormReload()
 
     self.Login(user_index=0)
-    # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
-    if self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsEmpty()
     self._AssertVaultMounted(user_index=0, ephemeral=True)
     self._SetEphemeralUsersEnabled(False)
     self._AssertVaultMounted(user_index=0, ephemeral=True)
     self.Logout()
 
-    # TODO(bartfab): Make this unconditional when crosbug.com/20709 is fixed.
-    if not self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsEmpty()
+    self._AssertLocalStatePrefsEmpty()
     self._AssertNoVaultMounted()
     self._AssertVaultDirectoryDoesNotExist(user_index=0)
 
@@ -184,22 +148,12 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
     self.WaitForLoginFormReload()
 
     self.Login(user_index=0)
-    # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
-    if self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[0])
     self.Logout()
-    # TODO(bartfab): Make this unconditional when crosbug.com/20709 is fixed.
-    if not self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[0])
+    self._AssertLocalStatePrefsSet(user_indexes=[0])
 
     self.Login(user_index=1)
-    # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
-    if self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[1])
     self.Logout()
-    # TODO(bartfab): Make this unconditional when crosbug.com/20709 is fixed.
-    if not self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[0, 1])
+    self._AssertLocalStatePrefsSet(user_indexes=[0, 1])
 
     self._AssertVaultDirectoryExists(user_index=0)
     self._AssertVaultDirectoryExists(user_index=1)
@@ -207,9 +161,6 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
     self._SetEphemeralUsersEnabled(True)
 
     self.Login(user_index=0)
-    # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
-    if self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsEmpty()
     self._AssertVaultMounted(user_index=0, ephemeral=True)
     self.Logout()
 
