@@ -289,15 +289,27 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
 IPC_MESSAGE_CONTROL1(PpapiMsg_SetNetworkState,
                      bool /* online */)
 
+// Requests a list of sites that have data stored from the plugin. The plugin
+// process will respond with PpapiHostMsg_GetSitesWithDataResult. This is used
+// for Flash.
+IPC_MESSAGE_CONTROL2(PpapiMsg_GetSitesWithData,
+                     uint32 /* request_id */,
+                     FilePath /* plugin_data_path */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_GetSitesWithDataResult,
+                     uint32 /* request_id */,
+                     std::vector<std::string> /* sites */)
+
 // Instructs the plugin to clear data for the given site & time. The plugin
 // process will respond with PpapiHostMsg_ClearSiteDataResult. This is used
 // for Flash.
-IPC_MESSAGE_CONTROL4(PpapiMsg_ClearSiteData,
+IPC_MESSAGE_CONTROL5(PpapiMsg_ClearSiteData,
+                     uint32 /* request_id */,
                      FilePath /* plugin_data_path */,
                      std::string /* site */,
                      uint64 /* flags */,
                      uint64 /* max_age */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_ClearSiteDataResult,
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_ClearSiteDataResult,
+                     uint32 /* request_id */,
                      bool /* success */)
 
 IPC_MESSAGE_CONTROL2(PpapiMsg_DeauthorizeContentLicenses,

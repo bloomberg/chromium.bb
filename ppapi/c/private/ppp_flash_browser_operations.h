@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_flash_browser_operations.idl,
- *   modified Fri Jun 15 17:00:18 2012.
+ *   modified Wed Jul 25 16:53:17 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_FLASH_BROWSER_OPERATIONS_H_
@@ -18,8 +18,10 @@
     "PPP_Flash_BrowserOperations;1.0"
 #define PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_2 \
     "PPP_Flash_BrowserOperations;1.2"
+#define PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_3 \
+    "PPP_Flash_BrowserOperations;1.3"
 #define PPP_FLASH_BROWSEROPERATIONS_INTERFACE \
-    PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_2
+    PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_3
 
 /**
  * @file
@@ -82,23 +84,22 @@ typedef void (*PPB_Flash_BrowserOperations_GetSettingsCallback)(
 /**
  * This interface allows the browser to request the plugin do things.
  */
-struct PPP_Flash_BrowserOperations_1_2 {
+struct PPP_Flash_BrowserOperations_1_3 {
   /**
    * This function allows the plugin to implement the "Clear site data" feature.
    *
-   * @plugin_data_path String containing the directory where the plugin data is
+   * @param[in] plugin_data_path String containing the directory where the
+   * plugin data is
    * stored. On UTF16 systems (Windows), this will be encoded as UTF-8. It will
    * be an absolute path and will not have a directory separator (slash) at the
    * end.
-   *
-   * @arg site String specifying which site to clear the data for. This will
-   * be null to clear data for all sites.
-   *
-   * @arg flags Currently always 0 in Chrome to clear all data. This may be
-   * extended in the future to clear only specific types of data.
-   *
-   * @arg max_age The maximum age in seconds to clear data for. This allows the
-   * plugin to implement "clear past hour" and "clear past data", etc.
+   * @param[in] site String specifying which site to clear the data for. This
+   * will be null to clear data for all sites.
+   * @param[in] flags Currently always 0 in Chrome to clear all data. This may
+   * be extended in the future to clear only specific types of data.
+   * @param[in] max_age The maximum age in seconds to clear data for. This
+   * allows the plugin to implement "clear past hour" and "clear past data",
+   * etc.
    *
    * @return PP_TRUE on success, PP_FALSE on failure.
    *
@@ -173,15 +174,57 @@ struct PPP_Flash_BrowserOperations_1_2 {
       PP_Flash_BrowserOperations_SettingType setting_type,
       uint32_t site_count,
       const struct PP_Flash_BrowserOperations_SiteSetting sites[]);
+  /**
+   * Returns a list of sites that have stored data, for use with the
+   * "Clear site data" feature.
+   *
+   * @param[in] plugin_data_path String containing the directory where the
+   * plugin data is stored.
+   * @param[out] sites A NULL-terminated array of sites that have stored data.
+   * Use FreeSiteList on the the array when done.
+   *
+   * See also the NPP_GetSitesWithData function in NPAPI:
+   * https://wiki.mozilla.org/NPAPI:ClearSiteData
+   */
+  void (*GetSitesWithData)(const char* plugin_data_path, char** sites[]);
+  /**
+   * Frees the list of sites returned by GetSitesWithData.
+   *
+   * @param[in] sites A NULL-terminated array of strings.
+   */
+  void (*FreeSiteList)(char* sites[]);
 };
 
-typedef struct PPP_Flash_BrowserOperations_1_2 PPP_Flash_BrowserOperations;
+typedef struct PPP_Flash_BrowserOperations_1_3 PPP_Flash_BrowserOperations;
 
 struct PPP_Flash_BrowserOperations_1_0 {
   PP_Bool (*ClearSiteData)(const char* plugin_data_path,
                            const char* site,
                            uint64_t flags,
                            uint64_t max_age);
+};
+
+struct PPP_Flash_BrowserOperations_1_2 {
+  PP_Bool (*ClearSiteData)(const char* plugin_data_path,
+                           const char* site,
+                           uint64_t flags,
+                           uint64_t max_age);
+  PP_Bool (*DeauthorizeContentLicenses)(const char* plugin_data_path);
+  void (*GetPermissionSettings)(
+      const char* plugin_data_path,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      PPB_Flash_BrowserOperations_GetSettingsCallback callback,
+      void* user_data);
+  PP_Bool (*SetDefaultPermission)(
+      const char* plugin_data_path,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      PP_Flash_BrowserOperations_Permission permission,
+      PP_Bool clear_site_specific);
+  PP_Bool (*SetSitePermission)(
+      const char* plugin_data_path,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      uint32_t site_count,
+      const struct PP_Flash_BrowserOperations_SiteSetting sites[]);
 };
 /**
  * @}

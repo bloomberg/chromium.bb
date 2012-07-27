@@ -77,6 +77,7 @@ BrokerProcessDispatcher::BrokerProcessDispatcher(
     PP_ConnectInstance_Func connect_instance)
     : ppapi::proxy::BrokerSideDispatcher(connect_instance),
       get_plugin_interface_(get_plugin_interface),
+      flash_browser_operations_1_3_(NULL),
       flash_browser_operations_1_2_(NULL),
       flash_browser_operations_1_0_(NULL) {
   ChildProcess::current()->AddRefProcess();
@@ -89,6 +90,10 @@ BrokerProcessDispatcher::BrokerProcessDispatcher(
     flash_browser_operations_1_2_ =
         static_cast<const PPP_Flash_BrowserOperations_1_2*>(
             get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_2));
+
+    flash_browser_operations_1_3_ =
+        static_cast<const PPP_Flash_BrowserOperations_1_3*>(
+            get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_3));
   }
 }
 
@@ -108,6 +113,7 @@ BrokerProcessDispatcher::~BrokerProcessDispatcher() {
 
 bool BrokerProcessDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(BrokerProcessDispatcher, msg)
+    IPC_MESSAGE_HANDLER(PpapiMsg_GetSitesWithData, OnMsgGetSitesWithData)
     IPC_MESSAGE_HANDLER(PpapiMsg_ClearSiteData, OnMsgClearSiteData)
     IPC_MESSAGE_HANDLER(PpapiMsg_DeauthorizeContentLicenses,
                         OnMsgDeauthorizeContentLicenses)
@@ -130,13 +136,22 @@ void BrokerProcessDispatcher::OnGetPermissionSettingsCompleted(
       request_id, success, default_permission, sites));
 }
 
+void BrokerProcessDispatcher::OnMsgGetSitesWithData(
+    uint32 request_id,
+    const FilePath& plugin_data_path) {
+  std::vector<std::string> sites;
+  GetSitesWithData(plugin_data_path, &sites);
+  Send(new PpapiHostMsg_GetSitesWithDataResult(request_id, sites));
+}
+
 void BrokerProcessDispatcher::OnMsgClearSiteData(
+    uint32 request_id,
     const FilePath& plugin_data_path,
     const std::string& site,
     uint64 flags,
     uint64 max_age) {
   Send(new PpapiHostMsg_ClearSiteDataResult(
-      ClearSiteData(plugin_data_path, site, flags, max_age)));
+      request_id, ClearSiteData(plugin_data_path, site, flags, max_age)));
 }
 
 void BrokerProcessDispatcher::OnMsgDeauthorizeContentLicenses(
@@ -150,19 +165,30 @@ void BrokerProcessDispatcher::OnMsgGetPermissionSettings(
     uint32 request_id,
     const FilePath& plugin_data_path,
     PP_Flash_BrowserOperations_SettingType setting_type) {
-  if (!flash_browser_operations_1_2_) {
-    OnGetPermissionSettingsCompleted(
-        request_id, false, PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT,
-        ppapi::FlashSiteSettings());
+  if (flash_browser_operations_1_3_) {
+    std::string data_str = ConvertPluginDataPath(plugin_data_path);
+    // The GetPermissionSettingsContext object will be deleted in
+    // GetPermissionSettingsCallback().
+    flash_browser_operations_1_3_->GetPermissionSettings(
+        data_str.c_str(), setting_type, &GetPermissionSettingsCallback,
+        new GetPermissionSettingsContext(AsWeakPtr(), request_id));
     return;
   }
 
-  std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  // The GetPermissionSettingsContext object will be deleted in
-  // GetPermissionSettingsCallback().
-  flash_browser_operations_1_2_->GetPermissionSettings(
-      data_str.c_str(), setting_type, &GetPermissionSettingsCallback,
-      new GetPermissionSettingsContext(AsWeakPtr(), request_id));
+  if (flash_browser_operations_1_2_) {
+    std::string data_str = ConvertPluginDataPath(plugin_data_path);
+    // The GetPermissionSettingsContext object will be deleted in
+    // GetPermissionSettingsCallback().
+    flash_browser_operations_1_2_->GetPermissionSettings(
+        data_str.c_str(), setting_type, &GetPermissionSettingsCallback,
+        new GetPermissionSettingsContext(AsWeakPtr(), request_id));
+    return;
+  }
+
+  OnGetPermissionSettingsCompleted(
+      request_id, false, PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT,
+      ppapi::FlashSiteSettings());
+  return;
 }
 
 void BrokerProcessDispatcher::OnMsgSetDefaultPermission(
@@ -186,19 +212,42 @@ void BrokerProcessDispatcher::OnMsgSetSitePermission(
       request_id, SetSitePermission(plugin_data_path, setting_type, sites)));
 }
 
+void BrokerProcessDispatcher::GetSitesWithData(
+    const FilePath& plugin_data_path,
+    std::vector<std::string>* site_vector) {
+  std::string data_str = ConvertPluginDataPath(plugin_data_path);
+  if (flash_browser_operations_1_3_) {
+    char** sites = NULL;
+    flash_browser_operations_1_3_->GetSitesWithData(data_str.c_str(), &sites);
+    if (!sites)
+      return;
+
+    for (size_t i = 0; sites[i]; ++i)
+      site_vector->push_back(sites[i]);
+
+    flash_browser_operations_1_3_->FreeSiteList(sites);
+  }
+}
+
 bool BrokerProcessDispatcher::ClearSiteData(const FilePath& plugin_data_path,
                                             const std::string& site,
                                             uint64 flags,
                                             uint64 max_age) {
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  if (flash_browser_operations_1_2_) {
-    flash_browser_operations_1_2_->ClearSiteData(
+  if (flash_browser_operations_1_3_) {
+    flash_browser_operations_1_3_->ClearSiteData(
         data_str.c_str(), site.empty() ? NULL : site.c_str(), flags, max_age);
     return true;
   }
 
   // TODO(viettrungluu): Remove this (and the 1.0 interface) sometime after M21
   // goes to Stable.
+  if (flash_browser_operations_1_2_) {
+    flash_browser_operations_1_2_->ClearSiteData(
+        data_str.c_str(), site.empty() ? NULL : site.c_str(), flags, max_age);
+    return true;
+  }
+
   if (flash_browser_operations_1_0_) {
     flash_browser_operations_1_0_->ClearSiteData(
         data_str.c_str(), site.empty() ? NULL : site.c_str(), flags, max_age);
@@ -210,12 +259,19 @@ bool BrokerProcessDispatcher::ClearSiteData(const FilePath& plugin_data_path,
 
 bool BrokerProcessDispatcher::DeauthorizeContentLicenses(
     const FilePath& plugin_data_path) {
-  if (!flash_browser_operations_1_2_)
-    return false;
+  if (flash_browser_operations_1_3_) {
+    std::string data_str = ConvertPluginDataPath(plugin_data_path);
+    return PP_ToBool(flash_browser_operations_1_3_->DeauthorizeContentLicenses(
+        data_str.c_str()));
+  }
 
-  std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  return PP_ToBool(flash_browser_operations_1_2_->DeauthorizeContentLicenses(
-      data_str.c_str()));
+  if (flash_browser_operations_1_2_) {
+    std::string data_str = ConvertPluginDataPath(plugin_data_path);
+    return PP_ToBool(flash_browser_operations_1_2_->DeauthorizeContentLicenses(
+        data_str.c_str()));
+  }
+
+  return false;
 }
 
 bool BrokerProcessDispatcher::SetDefaultPermission(
@@ -223,22 +279,27 @@ bool BrokerProcessDispatcher::SetDefaultPermission(
     PP_Flash_BrowserOperations_SettingType setting_type,
     PP_Flash_BrowserOperations_Permission permission,
     bool clear_site_specific) {
-  if (!flash_browser_operations_1_2_)
-    return false;
+  if (flash_browser_operations_1_3_) {
+    std::string data_str = ConvertPluginDataPath(plugin_data_path);
+    return PP_ToBool(flash_browser_operations_1_3_->SetDefaultPermission(
+        data_str.c_str(), setting_type, permission,
+        PP_FromBool(clear_site_specific)));
+  }
 
-  std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  return PP_ToBool(flash_browser_operations_1_2_->SetDefaultPermission(
-      data_str.c_str(), setting_type, permission,
-      PP_FromBool(clear_site_specific)));
+  if (flash_browser_operations_1_2_) {
+    std::string data_str = ConvertPluginDataPath(plugin_data_path);
+    return PP_ToBool(flash_browser_operations_1_2_->SetDefaultPermission(
+        data_str.c_str(), setting_type, permission,
+        PP_FromBool(clear_site_specific)));
+  }
+
+  return false;
 }
 
 bool BrokerProcessDispatcher::SetSitePermission(
     const FilePath& plugin_data_path,
     PP_Flash_BrowserOperations_SettingType setting_type,
     const ppapi::FlashSiteSettings& sites) {
-  if (!flash_browser_operations_1_2_)
-    return false;
-
   if (sites.empty())
     return true;
 
@@ -251,8 +312,19 @@ bool BrokerProcessDispatcher::SetSitePermission(
     site_array[i].permission = sites[i].permission;
   }
 
-  PP_Bool result = flash_browser_operations_1_2_->SetSitePermission(
-      data_str.c_str(), setting_type, sites.size(), site_array.get());
+  if (flash_browser_operations_1_3_) {
+    PP_Bool result = flash_browser_operations_1_3_->SetSitePermission(
+        data_str.c_str(), setting_type, sites.size(), site_array.get());
 
-  return PP_ToBool(result);
+    return PP_ToBool(result);
+  }
+
+  if (flash_browser_operations_1_2_) {
+    PP_Bool result = flash_browser_operations_1_2_->SetSitePermission(
+        data_str.c_str(), setting_type, sites.size(), site_array.get());
+
+    return PP_ToBool(result);
+  }
+
+  return false;
 }

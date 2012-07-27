@@ -32,7 +32,10 @@ class BrokerProcessDispatcher
       const ppapi::FlashSiteSettings& sites);
 
  private:
-  void OnMsgClearSiteData(const FilePath& plugin_data_path,
+  void OnMsgGetSitesWithData(uint32 request_id,
+                             const FilePath& plugin_data_path);
+  void OnMsgClearSiteData(uint32 request_id,
+                          const FilePath& plugin_data_path,
                           const std::string& site,
                           uint64 flags,
                           uint64 max_age);
@@ -54,11 +57,16 @@ class BrokerProcessDispatcher
       PP_Flash_BrowserOperations_SettingType setting_type,
       const ppapi::FlashSiteSettings& sites);
 
+  // Returns a list of sites that have data stored.
+  void GetSitesWithData(const FilePath& plugin_data_path,
+                        std::vector<std::string>* sites);
+
   // Requests that the plugin clear data, returning true on success.
   bool ClearSiteData(const FilePath& plugin_data_path,
                      const std::string& site,
                      uint64 flags,
                      uint64 max_age);
+
   bool DeauthorizeContentLicenses(const FilePath& plugin_data_path);
   bool SetDefaultPermission(const FilePath& plugin_data_path,
                             PP_Flash_BrowserOperations_SettingType setting_type,
@@ -70,6 +78,7 @@ class BrokerProcessDispatcher
 
   PP_GetInterface_Func get_plugin_interface_;
 
+  const PPP_Flash_BrowserOperations_1_3* flash_browser_operations_1_3_;
   const PPP_Flash_BrowserOperations_1_2* flash_browser_operations_1_2_;
   const PPP_Flash_BrowserOperations_1_0* flash_browser_operations_1_0_;
 

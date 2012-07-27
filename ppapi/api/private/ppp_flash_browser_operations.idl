@@ -9,7 +9,8 @@
 
 label Chrome {
   M20 = 1.0,
-  M21 = 1.2
+  M21 = 1.2,
+  M22 = 1.3
 };
 
 [assert_size(4)]
@@ -46,29 +47,28 @@ interface PPP_Flash_BrowserOperations {
   /**
    * This function allows the plugin to implement the "Clear site data" feature.
    *
-   * @plugin_data_path String containing the directory where the plugin data is
+   * @param[in] plugin_data_path String containing the directory where the
+   * plugin data is
    * stored. On UTF16 systems (Windows), this will be encoded as UTF-8. It will
    * be an absolute path and will not have a directory separator (slash) at the
    * end.
-   *
-   * @arg site String specifying which site to clear the data for. This will
-   * be null to clear data for all sites.
-   *
-   * @arg flags Currently always 0 in Chrome to clear all data. This may be
-   * extended in the future to clear only specific types of data.
-   *
-   * @arg max_age The maximum age in seconds to clear data for. This allows the
-   * plugin to implement "clear past hour" and "clear past data", etc.
+   * @param[in] site String specifying which site to clear the data for. This
+   * will be null to clear data for all sites.
+   * @param[in] flags Currently always 0 in Chrome to clear all data. This may
+   * be extended in the future to clear only specific types of data.
+   * @param[in] max_age The maximum age in seconds to clear data for. This
+   * allows the plugin to implement "clear past hour" and "clear past data",
+   * etc.
    *
    * @return PP_TRUE on success, PP_FALSE on failure.
    *
    * See also the NPP_ClearSiteData function in NPAPI.
    * https://wiki.mozilla.org/NPAPI:ClearSiteData
    */
-  PP_Bool ClearSiteData(str_t plugin_data_path,
-                        str_t site,
-                        uint64_t flags,
-                        uint64_t max_age);
+  PP_Bool ClearSiteData([in] str_t plugin_data_path,
+                        [in] str_t site,
+                        [in] uint64_t flags,
+                        [in] uint64_t max_age);
 
   /**
    * Requests the plugin to deauthorize content licenses. It prevents Flash from
@@ -141,4 +141,28 @@ interface PPP_Flash_BrowserOperations {
       [in] PP_Flash_BrowserOperations_SettingType setting_type,
       [in] uint32_t site_count,
       [in, size_is(site_count)] PP_Flash_BrowserOperations_SiteSetting[] sites);
+
+  /**
+   * Returns a list of sites that have stored data, for use with the
+   * "Clear site data" feature.
+   *
+   * @param[in] plugin_data_path String containing the directory where the
+   * plugin data is stored.
+   * @param[out] sites A NULL-terminated array of sites that have stored data.
+   * Use FreeSiteList on the the array when done.
+   *
+   * See also the NPP_GetSitesWithData function in NPAPI:
+   * https://wiki.mozilla.org/NPAPI:ClearSiteData
+   */
+  [version=1.3]
+  void GetSitesWithData([in] str_t plugin_data_path,
+                        [out] str_t[] sites);
+
+  /**
+   * Frees the list of sites returned by GetSitesWithData.
+   *
+   * @param[in] sites A NULL-terminated array of strings.
+   */
+  [version=1.3]
+  void FreeSiteList([inout] str_t[] sites);
 };

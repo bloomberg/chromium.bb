@@ -177,7 +177,7 @@ class PluginDataRemoverImpl::Context
       IPC_MESSAGE_HANDLER(PluginHostMsg_ClearSiteDataResult,
                           OnClearSiteDataResult)
       IPC_MESSAGE_HANDLER(PpapiHostMsg_ClearSiteDataResult,
-                          OnClearSiteDataResult)
+                          OnPpapiClearSiteDataResult)
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP()
 
@@ -232,7 +232,7 @@ class PluginDataRemoverImpl::Context
 #else
       FilePath plugin_data_path = profile_path.Append(FilePath(plugin_name_));
 #endif
-      msg = new PpapiMsg_ClearSiteData(plugin_data_path, std::string(),
+      msg = new PpapiMsg_ClearSiteData(0u, plugin_data_path, std::string(),
                                        kClearAllData, max_age);
     } else {
       msg = new PluginMsg_ClearSiteData(std::string(), kClearAllData, max_age);
@@ -244,7 +244,14 @@ class PluginDataRemoverImpl::Context
     }
   }
 
-  // Handles the *HostMsg_ClearSiteDataResult message.
+  // Handles the PpapiHostMsg_ClearSiteDataResult message by delegating to the
+  // PluginHostMsg_ClearSiteDataResult handler.
+  void OnPpapiClearSiteDataResult(uint32 request_id, bool success) {
+    DCHECK_EQ(0u, request_id);
+    OnClearSiteDataResult(success);
+  }
+
+  // Handles the PluginHostMsg_ClearSiteDataResult message.
   void OnClearSiteDataResult(bool success) {
     LOG_IF(ERROR, !success) << "ClearSiteData returned error";
     UMA_HISTOGRAM_TIMES("ClearPluginData.time",
