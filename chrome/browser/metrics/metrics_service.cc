@@ -179,6 +179,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -1863,7 +1864,7 @@ bool MetricsService::CanLogNotification(
   // We simply don't log anything to UMA if there is a single incognito
   // session visible. The problem is that we always notify using the orginal
   // profile in order to simplify notification processing.
-  return !BrowserList::IsOffTheRecordSessionActive();
+  return !browser::IsOffTheRecordSessionActive();
 }
 
 void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {

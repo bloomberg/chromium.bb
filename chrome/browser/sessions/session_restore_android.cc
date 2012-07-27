@@ -13,7 +13,7 @@ void SessionRestore::RestoreForeignSessionTab(
     content::WebContents* source_web_contents,
     const SessionTab& session_tab,
     WindowOpenDisposition disposition) {
-  NOTIMPLEMENTED() << "TODO(yfriedman): Upstream this.";
+  NOTIMPLEMENTED() << "TODO(yfriedman, dtrainor): Upstream this.";
 }
 
 // static

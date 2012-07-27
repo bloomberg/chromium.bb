@@ -2270,6 +2270,7 @@
         'browser/sync/glue/synced_session_tracker.cc',
         'browser/sync/glue/synced_session_tracker.h',
         'browser/sync/glue/synced_window_delegate.h',
+        'browser/sync/glue/synced_window_delegate_android.h',
         'browser/sync/glue/synced_window_delegate_android.cc',
         'browser/sync/glue/theme_change_processor.cc',
         'browser/sync/glue/theme_change_processor.h',
@@ -2399,6 +2400,10 @@
         'browser/ui/android/ssl_client_certificate_selector.cc',
         'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.cc',
         'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.h',
+        'browser/ui/android/tab_model/tab_model.cc',
+        'browser/ui/android/tab_model/tab_model.h',
+        'browser/ui/android/tab_model/tab_model_list.cc',
+        'browser/ui/android/tab_model/tab_model_list.h',
         'browser/ui/android/tab_restore_service_delegate_android.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.h',
@@ -2471,6 +2476,9 @@
         'browser/ui/browser_mac.h',
         'browser/ui/browser_navigator.cc',
         'browser/ui/browser_navigator.h',
+        'browser/ui/browser_otr_state_android.cc',
+        'browser/ui/browser_otr_state.cc',
+        'browser/ui/browser_otr_state.h',
         'browser/ui/browser_ui_prefs.cc',
         'browser/ui/browser_ui_prefs.h',
         'browser/ui/browser_tab_restore_service_delegate.cc',
@@ -4882,10 +4890,6 @@
           'dependencies': [
             'chrome_browser_jni_headers',
           ],
-          'sources': [
-            'browser/sync/glue/synced_window_delegate_registry.cc',
-            'browser/sync/glue/synced_window_delegate_registry.h',
-          ],
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',
             # Bookmark export/import are handled via the BookmarkColumns
@@ -4926,6 +4930,7 @@
             'browser/ui/browser_finder.cc',
             'browser/ui/browser_list.cc',
             'browser/ui/browser_navigator.cc',
+            'browser/ui/browser_otr_state.cc',
             'browser/ui/browser_tab_restore_service_delegate.cc',
             'browser/ui/browser_tabstrip.cc',
             'browser/ui/browser_tabstrip.h',
