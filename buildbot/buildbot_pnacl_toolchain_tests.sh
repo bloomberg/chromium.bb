@@ -111,10 +111,14 @@ scons-tests-translator() {
   local targets="small_tests medium_tests large_tests"
 
   echo "@@@BUILD_STEP scons-sb-translator [${platform}] [${targets}]@@@"
-  ${SCONS_COMMON} ${flags} ${targets} || handle-error
+  ${SCONS_COMMON} ${flags} ${targets} translate_in_build_step=0 \
+    do_not_run_tests=1 || handle-error
+  ${SCONS_COMMON} ${flags} ${targets} -j1 || handle-error
 
   echo "@@@BUILD_STEP scons-sb-translator [fast] [${platform}] [${targets}]@@@"
-  ${SCONS_COMMON} ${flags} translate_fast=1 ${targets} || handle-error
+  ${SCONS_COMMON} ${flags} translate_fast=1 translate_in_build_step=0 \
+    do_not_run_tests=1 ${targets} || handle-error
+  ${SCONS_COMMON} ${flags} translate_fast=1 -j1 ${targets} || handle-error
 }
 
 # This test is a bitcode stability test, which builds pexes for all the tests
