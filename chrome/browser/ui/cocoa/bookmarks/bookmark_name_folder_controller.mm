@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,15 +70,10 @@
 
 - (void)awakeFromNib {
   [nameField_ setStringValue:initialName_.get()];
+  [[nameField_ cell] setUsesSingleLineMode:YES];
 
-  // Check if NSTextFieldCell supports the method. This check is in place as
-  // only 10.6 and greater support the setUsesSingleLineMode method.
-  // TODO(kushi.p): Remove this when the project hits a 10.6+ only state.
-  NSTextFieldCell* nameFieldCell_ = [nameField_ cell];
-  if ([nameFieldCell_
-          respondsToSelector:@selector(setUsesSingleLineMode:)]) {
-    [nameFieldCell_ setUsesSingleLineMode:YES];
-  }
+  [okButton_ setTitle:l10n_util::GetNSStringWithFixup(node_ ? IDS_SAVE :
+                                                              IDS_ADD)];
 }
 
 - (void)runAsModalSheet {
