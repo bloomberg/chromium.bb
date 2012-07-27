@@ -988,7 +988,7 @@ void RootWindow::SynthesizeMouseMoveEvent() {
   synthesize_mouse_move_ = false;
 #if !defined(OS_WIN)
   // Temporarily disabled for windows. See crbug.com/112222.
-  gfx::Point3f point(Env::GetInstance()->last_mouse_location());
+  gfx::Point3f point(GetLastMouseLocationInRoot());
   ui::Transform transform = layer()->transform();
   float scale = ui::GetDeviceScaleFactor(layer());
   transform.ConcatScale(scale, scale);
