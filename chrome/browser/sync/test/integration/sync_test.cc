@@ -335,7 +335,7 @@ bool SyncTest::SetupSync() {
   // This value must be updated whenever new permanent items are added (although
   // this should handle new datatype-specific top level folders).
   number_of_default_sync_items_ = GetClient(0)->GetNumEntries() -
-                                  GetClient(0)->GetNumDatatypes() - 7;
+                                  GetClient(0)->GetNumDatatypes() - 6;
   DVLOG(1) << "Setting " << number_of_default_sync_items_ << " as default "
            << " number of entries.";
 

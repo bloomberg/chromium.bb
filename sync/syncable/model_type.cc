@@ -453,7 +453,7 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       *notification_type = kNigoriNotificationType;
       return true;
     case APP_SETTINGS:
-      *notification_type = kAppNotificationType;
+      *notification_type = kAppSettingNotificationType;
       return true;
     case APPS:
       *notification_type = kAppNotificationType;
