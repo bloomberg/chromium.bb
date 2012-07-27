@@ -5,6 +5,7 @@
 #ifndef UI_BASE_LINUX_UI_H_
 #define UI_BASE_LINUX_UI_H_
 
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -16,6 +17,7 @@ class Image;
 }
 
 namespace ui {
+class SelectFilePolicy;
 
 // Adapter class with targets to render like different toolkits. Set by any
 // project that wants to do linux desktop native rendering.
@@ -42,6 +44,11 @@ class UI_EXPORT LinuxUI {
   virtual bool UseNativeTheme() const = 0;
   virtual gfx::Image* GetThemeImageNamed(int id) const = 0;
   virtual bool GetColor(int id, SkColor* color) const = 0;
+
+  // Returns a native file selection dialog.
+  virtual SelectFileDialog* CreateSelectFileDialog(
+      SelectFileDialog::Listener* listener,
+      SelectFilePolicy* policy) const = 0;
 };
 
 }  // namespace ui

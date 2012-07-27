@@ -4,18 +4,26 @@
 //
 // This file implements common select dialog functionality between GTK and KDE.
 
-#ifndef CHROME_BROWSER_UI_GTK_SELECT_FILE_DIALOG_IMPL_H_
-#define CHROME_BROWSER_UI_GTK_SELECT_FILE_DIALOG_IMPL_H_
+#ifndef CHROME_BROWSER_UI_LIBGTK2UI_SELECT_FILE_DIALOG_IMPL_H_
+#define CHROME_BROWSER_UI_LIBGTK2UI_SELECT_FILE_DIALOG_IMPL_H_
 
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/nix/xdg_util.h"
-#include "chrome/browser/ui/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_policy.h"
+#include "ui/aura/window.h"
+
+namespace libgtk2ui {
 
 // Shared implementation SelectFileDialog used by SelectFileDialogImplGTK
-class SelectFileDialogImpl : public SelectFileDialog {
+class SelectFileDialogImpl : public ui::SelectFileDialog {
  public:
+  // Main factory method which returns correct type.
+  static ui::SelectFileDialog* Create(Listener* listener,
+                                      ui::SelectFilePolicy* policy);
+
   // Factory method for creating a GTK-styled SelectFileDialogImpl
   static SelectFileDialogImpl* NewSelectFileDialogImplGTK(
       Listener* listener,
@@ -64,7 +72,7 @@ class SelectFileDialogImpl : public SelectFileDialog {
   size_t file_type_index_;
 
   // The set of all parent windows for which we are currently running dialogs.
-  std::set<GtkWindow*> parents_;
+  std::set<aura::Window*> parents_;
 
   // The type of dialog we are showing the user.
   Type type_;
@@ -77,4 +85,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_SELECT_FILE_DIALOG_IMPL_H_
+}  // namespace libgtk2ui
+
+#endif  // CHROME_BROWSER_UI_LIBGTK2UI_SELECT_FILE_DIALOG_IMPL_H_

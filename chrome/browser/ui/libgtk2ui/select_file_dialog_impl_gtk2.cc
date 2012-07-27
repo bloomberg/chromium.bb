@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <map>
 #include <set>
 #include <vector>
+
+// Xlib defines RootWindow
+#undef RootWindow
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -15,15 +20,43 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-//#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
-#include "chrome/browser/ui/select_file_dialog.h"
-#include "grit/generated_resources.h"
-//#include "ui/base/gtk/gtk_signal.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
+#include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
+#include "grit/ui_strings.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window_observer.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+const char kAuraTransientParent[] = "aura-transient-parent";
+
+// Set |dialog| as transient for |parent|, which will keep it on top and center
+// it above |parent|.
+void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
+  gtk_widget_realize(dialog);
+  GdkWindow* gdk_window = gtk_widget_get_window(dialog);
+
+  // TODO(erg): Check to make sure we're using X11 if wayland or some other
+  // display server ever happens. Otherwise, this will crash.
+  XSetTransientForHint(GDK_WINDOW_XDISPLAY(gdk_window),
+                       GDK_WINDOW_XID(gdk_window),
+                       parent->GetRootWindow()->GetAcceleratedWidget());
+
+  // We also set the |parent| as a property of |dialog|, so that we can unlink
+  // the two later.
+  g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, parent);
+}
+
+}  // namespace
+
+namespace libgtk2ui {
 
 // Implementation of SelectFileDialog that shows a Gtk common dialog for
 // choosing a file or folder. This acts as a modal dialog.
-class SelectFileDialogImplGTK : public SelectFileDialogImpl {
+class SelectFileDialogImplGTK : public SelectFileDialogImpl,
+                                public aura::WindowObserver {
  public:
   explicit SelectFileDialogImplGTK(Listener* listener,
                                    ui::SelectFilePolicy* policy);
@@ -44,6 +77,9 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl {
 
  private:
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
+
+  // Overridden from aura::WindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // Add the filters from |file_types_| to |chooser|.
   void AddFilters(GtkFileChooser* chooser);
@@ -153,6 +189,14 @@ bool SelectFileDialogImplGTK::HasMultipleFileTypeChoicesImpl() {
   return file_types_.extensions.size() > 1;
 }
 
+void SelectFileDialogImplGTK::OnWindowDestroying(aura::Window* window) {
+  std::set<aura::Window*>::iterator iter = parents_.find(window);
+  if (iter != parents_.end()) {
+    (*iter)->RemoveObserver(this);
+    parents_.erase(iter);
+  }
+}
+
 // We ignore |default_extension|.
 void SelectFileDialogImplGTK::SelectFileImpl(
     Type type,
@@ -167,8 +211,10 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   // |owning_window| can be null when user right-clicks on a downloadable item
   // and chooses 'Open Link in New Tab' when 'Ask where to save each file
   // before downloading.' preference is turned on. (http://crbug.com/29213)
-  if (owning_window)
+  if (owning_window) {
+    owning_window->AddObserver(this);
     parents_.insert(owning_window);
+  }
 
   std::string title_string = UTF16ToUTF8(title);
 
@@ -211,10 +257,8 @@ void SelectFileDialogImplGTK::SelectFileImpl(
 
   params_map_[dialog] = params;
 
-  // Set window-to-parent modality by adding the dialog to the same window
-  // group as the parent.
-  gtk_window_group_add_window(gtk_window_get_group(owning_window),
-                              GTK_WINDOW(dialog));
+  // TODO(erg): Figure out how to fake GTK window-to-parent modality without
+  // having the parent be a real GtkWindow.
   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
 
   gtk_widget_show_all(dialog);
@@ -310,11 +354,12 @@ GtkWidget* SelectFileDialogImplGTK::CreateFileOpenHelper(
     const FilePath& default_path,
     gfx::NativeWindow parent) {
   GtkWidget* dialog =
-      gtk_file_chooser_dialog_new(title.c_str(), parent,
+      gtk_file_chooser_dialog_new(title.c_str(), NULL,
                                   GTK_FILE_CHOOSER_ACTION_OPEN,
                                   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                   GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                                   NULL);
+  SetGtkTransientForAura(dialog, parent);
   AddFilters(GTK_FILE_CHOOSER(dialog));
 
   if (!default_path.empty()) {
@@ -342,11 +387,12 @@ GtkWidget* SelectFileDialogImplGTK::CreateSelectFolderDialog(
         l10n_util::GetStringUTF8(IDS_SELECT_FOLDER_DIALOG_TITLE);
 
   GtkWidget* dialog =
-      gtk_file_chooser_dialog_new(title_string.c_str(), parent,
+      gtk_file_chooser_dialog_new(title_string.c_str(), NULL,
                                   GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                                   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                   GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                                   NULL);
+  SetGtkTransientForAura(dialog, parent);
 
   if (!default_path.empty()) {
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
@@ -395,11 +441,12 @@ GtkWidget* SelectFileDialogImplGTK::CreateSaveAsDialog(const std::string& title,
         l10n_util::GetStringUTF8(IDS_SAVE_AS_DIALOG_TITLE);
 
   GtkWidget* dialog =
-      gtk_file_chooser_dialog_new(title_string.c_str(), parent,
+      gtk_file_chooser_dialog_new(title_string.c_str(), NULL,
                                   GTK_FILE_CHOOSER_ACTION_SAVE,
                                   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                   GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
                                   NULL);
+  SetGtkTransientForAura(dialog, parent);
 
   AddFilters(GTK_FILE_CHOOSER(dialog));
   if (!default_path.empty()) {
@@ -438,14 +485,17 @@ void SelectFileDialogImplGTK::FileDialogDestroyed(GtkWidget* dialog) {
   // windows got destroyed, or 2) when the parent tab has been opened by
   // 'Open Link in New Tab' context menu on a downloadable item and
   // the tab has no content (see the comment in SelectFile as well).
-  GtkWindow* parent = gtk_window_get_transient_for(GTK_WINDOW(dialog));
+  aura::Window* parent = reinterpret_cast<aura::Window*>(
+      g_object_get_data(G_OBJECT(dialog), kAuraTransientParent));
   if (!parent)
     return;
-  std::set<GtkWindow*>::iterator iter = parents_.find(parent);
-  if (iter != parents_.end())
+  std::set<aura::Window*>::iterator iter = parents_.find(parent);
+  if (iter != parents_.end()) {
+    (*iter)->RemoveObserver(this);
     parents_.erase(iter);
-  else
+  } else {
     NOTREACHED();
+  }
 }
 
 bool SelectFileDialogImplGTK::IsCancelResponse(gint response_id) {
@@ -546,3 +596,5 @@ void SelectFileDialogImplGTK::OnUpdatePreview(GtkWidget* chooser) {
   gtk_file_chooser_set_preview_widget_active(GTK_FILE_CHOOSER(chooser),
                                              pixbuf ? TRUE : FALSE);
 }
+
+}  // namespace libgtk2ui

@@ -13,6 +13,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
+#include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
 #include "chrome/browser/ui/libgtk2ui/skia_utils_gtk2.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -328,6 +329,12 @@ bool Gtk2UI::GetColor(int id, SkColor* color) const {
   }
 
   return false;
+}
+
+ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
+    ui::SelectFileDialog::Listener* listener,
+    ui::SelectFilePolicy* policy) const {
+  return SelectFileDialogImpl::Create(listener, policy);
 }
 
 void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,

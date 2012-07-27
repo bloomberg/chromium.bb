@@ -12,6 +12,7 @@
 #include "ui/base/dialogs/select_file_dialog_factory.h"
 #include "ui/base/dialogs/select_file_policy.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/linux_ui.h"
 
 #if defined(OS_WIN)
 #include "ui/base/dialogs/select_file_dialog_win.h"
@@ -67,9 +68,12 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener,
       return dialog;
   }
 
-  // TODO(erg): Proxy to LinuxUI here.
+#if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
+  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  if (linux_ui)
+    return linux_ui->CreateSelectFileDialog(listener, policy);
+#endif
 
-  // TODO(erg): Add other OSs one by one here.
 #if defined(OS_WIN) && !defined(USE_AURA)
   // TODO(port): The windows people need this to work in aura, too.
   return CreateWinSelectFileDialog(listener, policy);

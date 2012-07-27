@@ -15,11 +15,11 @@
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-//#include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
+#include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
 
-// TODO(erg): Move all of this into WorkerPool.
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
@@ -37,6 +37,8 @@ std::string GetTitle(const std::string& title, int message_id) {
 const char kKdialogBinary[] = "kdialog";
 
 }  // namespace
+
+namespace libgtk2ui {
 
 // Implementation of SelectFileDialog that shows a KDE common dialog for
 // choosing a file or folder. This acts as a modal dialog.
@@ -271,11 +273,14 @@ void SelectFileDialogImplKDE::CallKDialogOutput(const KDialogParams& params) {
   base::GetAppOutputWithExitCode(command_line, &output, &exit_code);
   if (!output.empty())
     output.erase(output.size() - 1);
+
   // Now the dialog is no longer showing. We can erase its parent from the
   // parent set.
-  std::set<GtkWindow*>::iterator iter = parents_.find(params.parent);
-  if (iter != parents_.end())
-    parents_.erase(iter);
+  // TODO(erg): FIX THIS.
+  // std::set<GtkWindow*>::iterator iter = parents_.find(params.parent);
+  // if (iter != parents_.end())
+  //   parents_.erase(iter);
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(params.callback, this, output, exit_code,
@@ -465,3 +470,5 @@ void SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse(
   }
   MultiFilesSelected(filenames_fp, params);
 }
+
+}  // namespace libgtk2ui
