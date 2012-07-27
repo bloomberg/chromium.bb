@@ -146,12 +146,29 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/shell',
           ],
         }],  # OS=="android"
+        ['os_posix==1 and use_aura==1 and linux_use_tcmalloc==1', {
+          'dependencies': [
+            # This is needed by content/app/content_main_runner.cc
+            '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
         ['use_aura==1', {
+          'dependencies': [
+            '../ui/aura/aura.gyp:aura',
+            '../ui/base/strings/ui_strings.gyp:ui_strings',
+            '../ui/views/views.gyp:views',
+            '../ui/ui.gyp:ui_resources',
+          ],
           'sources/': [
             ['exclude', 'shell/shell_gtk.cc'],
             ['exclude', 'shell/shell_win.cc'],
           ],
         }],  # use_aura==1
+        ['chromeos==1', {
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos',
+           ],
+        }], # chromeos==1
         ['inside_chromium_build==0 or component!="shared_library"', {
           'dependencies': [
             '<(webkit_src_dir)/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
@@ -230,7 +247,9 @@
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings/app_locale_settings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
