@@ -21,9 +21,7 @@ class Extension;
 
 // Handles storing and retrieving of web intents services in the web database.
 // The registry provides filtering logic to retrieve specific types of services.
-class WebIntentsRegistry
-    : public WebDataServiceConsumer,
-      public ProfileKeyedService {
+class WebIntentsRegistry : public ProfileKeyedService {
  public:
   typedef std::vector<webkit_glue::WebIntentServiceData> IntentServiceList;
 
@@ -47,11 +45,11 @@ class WebIntentsRegistry
   void UnregisterIntentService(
       const webkit_glue::WebIntentServiceData& service);
 
-  // Requests all services matching |action| and |mimetype|.
-  // |mimetype| can contain wildcards, i.e. "image/*" or "*".
+  // Requests all services matching |action| and |type|.
+  // |type| can contain wildcards, i.e. "image/*" or "*".
   // |callback| must not be null.
   void GetIntentServices(const string16& action,
-                         const string16& mimetype,
+                         const string16& type,
                          const QueryCallback& callback);
 
   // Requests all services.
@@ -66,14 +64,14 @@ class WebIntentsRegistry
       const webkit_glue::WebIntentServiceData& service,
       const base::Callback<void(bool)>& callback);
 
-  // Requests all extension services matching |action|, |mimetype| and
+  // Requests all extension services matching |action|, |type| and
   // |extension_id|.
-  // |mimetype| must conform to definition as outlined for GetIntentServices.
+  // |type| must conform to definition as outlined for GetIntentServices.
   // |callback| must not be null.
   void GetIntentServicesForExtensionFilter(const string16& action,
-                                              const string16& mimetype,
-                                              const std::string& extension_id,
-                                              const QueryCallback& callback);
+                                           const string16& type,
+                                           const std::string& extension_id,
+                                           const QueryCallback& callback);
 
   // Record the given default service entry.
   virtual void RegisterDefaultIntentService(
@@ -88,9 +86,9 @@ class WebIntentsRegistry
   // parameters.
   // |callback| must not be null.
   void GetDefaultIntentService(const string16& action,
-                                  const string16& type,
-                                  const GURL& invoking_url,
-                                  const DefaultQueryCallback& callback);
+                               const string16& type,
+                               const GURL& invoking_url,
+                               const DefaultQueryCallback& callback);
 
  protected:
   // Make sure that only WebIntentsRegistryFactory can create an instance of
@@ -110,30 +108,34 @@ class WebIntentsRegistry
   void CollapseIntents(IntentServiceList* services);
 
  private:
-   const extensions::Extension* ExtensionForURL(const std::string& url);
+  struct IntentsQuery;
+  typedef std::vector<IntentsQuery*> QueryVector;
 
-   struct IntentsQuery;
+  // Handles services loaded
+  void OnWebIntentsResultReceived(
+      IntentsQuery* query,
+      const WDTypedResult* result);
 
-  // Maps web data requests to intents queries.
-  // Allows OnWebDataServiceRequestDone to forward to appropriate consumer.
-  typedef base::hash_map<WebDataService::Handle, IntentsQuery*> QueryMap;
-
-  // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle h,
-      const WDTypedResult* result) OVERRIDE;
-
-  // Delegate for defaults requests from OnWebDataServiceRequestDone.
-  virtual void OnWebDataServiceDefaultsRequestDone(
-      WebDataService::Handle h,
+  // Handles default services loaded
+  void OnWebIntentsDefaultsResultReceived(
+      IntentsQuery* query,
       const WDTypedResult* result);
 
   // Implementation of GetIntentServicesForExtensionFilter.
   void DoGetIntentServicesForExtensionFilter(scoped_ptr<IntentsQuery> query,
                                              const std::string& extension_id);
 
+  const extensions::Extension* ExtensionForURL(const std::string& url);
+
+  // Adds a query to the list of pending queries.
+  void TrackQuery(IntentsQuery* query);
+
+  // Takes ownership of a query. This removes a query from the list
+  // of pending queries.
+  void ReleaseQuery(IntentsQuery* query);
+
   // Map for all in-flight web data requests/intent queries.
-  QueryMap queries_;
+  QueryVector pending_queries_;
 
   // Local reference to Web Data Service.
   scoped_refptr<WebDataService> wds_;
