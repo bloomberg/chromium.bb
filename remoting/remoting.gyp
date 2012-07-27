@@ -488,6 +488,18 @@
     ['OS=="win"', {
       'targets': [
         {
+          'target_name': 'remoting_breakpad_tester',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'sources': [
+            'tools/breakpad_tester_win.cc',
+          ],
+        },  # end of target 'remoting_breakpad_tester'
+
+        {
           'target_name': 'remoting_elevated_controller',
           'type': 'static_library',
           'sources': [
