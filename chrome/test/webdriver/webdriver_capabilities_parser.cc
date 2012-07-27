@@ -72,7 +72,7 @@ Error* CapabilitiesParser::Parse() {
     { "loggingPrefs", &CapabilitiesParser::ParseLoggingPrefs }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(name_and_parser); ++i) {
-    Value* value;
+    const Value* value;
     if (dict_->Get(name_and_parser[i].name, &value)) {
       Error* error = (this->*name_and_parser[i].parser)(value);
       if (error)
@@ -84,11 +84,11 @@ Error* CapabilitiesParser::Parse() {
   const char kOptionsKey[] = "chromeOptions";
   const DictionaryValue* options = dict_;
   bool legacy_options = true;
-  Value* options_value;
+  const Value* options_value;
   if (dict_->Get(kOptionsKey, &options_value)) {
     legacy_options = false;
     if (options_value->IsType(Value::TYPE_DICTIONARY)) {
-      options = static_cast<DictionaryValue*>(options_value);
+      options = static_cast<const DictionaryValue*>(options_value);
     } else {
       return CreateBadInputError(
           kOptionsKey, Value::TYPE_DICTIONARY, options_value);
@@ -132,7 +132,7 @@ Error* CapabilitiesParser::Parse() {
                          "Unrecognized chrome capability: " +  *key_iter);
       continue;
     }
-    Value* option = NULL;
+    const Value* option = NULL;
     options->GetWithoutPathExpansion(*key_iter, &option);
     Error* error = (this->*parser_map[*key_iter])(option);
     if (error) {
@@ -238,7 +238,7 @@ Error* CapabilitiesParser::ParseLoggingPrefs(const base::Value* option) {
     if (!LogType::FromString(*key_iter, &log_type))
       continue;
 
-    Value* level_value;
+    const Value* level_value;
     logging_prefs->Get(*key_iter, &level_value);
     std::string level_name;
     if (!level_value->GetAsString(&level_name)) {
@@ -310,7 +310,7 @@ Error* CapabilitiesParser::ParseProxy(const base::Value* option) {
   proxy_type_parser_map["direct"] = NULL;
   proxy_type_parser_map["system"] = NULL;
 
-  Value* proxy_type_value;
+  const Value* proxy_type_value;
   if (!options->Get("proxyType", &proxy_type_value))
     return new Error(kBadRequest, "Missing 'proxyType' capability.");
 
@@ -374,7 +374,7 @@ Error* CapabilitiesParser::ParseProxyServers(
   proxy_servers_options.insert(kSslProxy);
 
   Error* error = NULL;
-  Value* option = NULL;
+  const Value* option = NULL;
   bool has_manual_settings = false;
   if (options->Get(kNoProxy, &option) && !option->IsType(Value::TYPE_NULL)) {
     error = ParseNoProxy(option);

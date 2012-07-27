@@ -62,7 +62,7 @@ bool ParseServerResponse(const std::string& response_body,
     return false;
   }
   const DictionaryValue* response_object =
-      static_cast<DictionaryValue*>(response_value.get());
+      static_cast<const DictionaryValue*>(response_value.get());
 
   // Get the status.
   int status;
@@ -90,7 +90,7 @@ bool ParseServerResponse(const std::string& response_body,
   }
 
   // Get the hypotheses.
-  Value* hypotheses_value = NULL;
+  const Value* hypotheses_value = NULL;
   if (!response_object->Get(kHypothesesString, &hypotheses_value)) {
     VLOG(1) << "ParseServerResponse: Missing hypotheses attribute.";
     return false;
@@ -103,7 +103,8 @@ bool ParseServerResponse(const std::string& response_body,
     return false;
   }
 
-  const ListValue* hypotheses_list = static_cast<ListValue*>(hypotheses_value);
+  const ListValue* hypotheses_list =
+      static_cast<const ListValue*>(hypotheses_value);
 
   // For now we support only single shot recognition, so we are giving only a
   // final result, consisting of one fragment (with one or more hypotheses).

@@ -166,14 +166,14 @@ bool ExtensionOmniboxSuggestion::Populate(const base::DictionaryValue& value,
   description_styles.clear();
   if (value.HasKey(kSuggestionDescriptionStyles)) {
     // This version comes from the extension.
-    ListValue* styles = NULL;
+    const ListValue* styles = NULL;
     if (!value.GetList(kSuggestionDescriptionStyles, &styles) ||
         !ReadStylesFromValue(*styles)) {
       return false;
     }
   } else if (value.HasKey(kSuggestionDescriptionStylesRaw)) {
     // This version comes from ToValue(), which we use to persist to disk.
-    ListValue* styles = NULL;
+    const ListValue* styles = NULL;
     if (!value.GetList(kSuggestionDescriptionStylesRaw, &styles) ||
         styles->empty()) {
       return false;

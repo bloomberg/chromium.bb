@@ -263,11 +263,11 @@ base::Value::Type GetDefaultFor(DWORD reg_type) {
 }
 
 // Returns the entry with key |name| in |dictionary| (can be NULL), or NULL.
-base::DictionaryValue* GetEntry(const base::DictionaryValue* dictionary,
+const base::DictionaryValue* GetEntry(const base::DictionaryValue* dictionary,
                                 const std::string& name) {
   if (!dictionary)
     return NULL;
-  base::DictionaryValue* entry = NULL;
+  const base::DictionaryValue* entry = NULL;
   dictionary->GetDictionary(name, &entry);
   return entry;
 }
@@ -275,10 +275,10 @@ base::DictionaryValue* GetEntry(const base::DictionaryValue* dictionary,
 // Returns the schema for property |name| given the |schema| of an object.
 // Returns the "additionalProperties" schema if no specific schema for
 // |name| is present. Returns NULL if no schema is found.
-base::DictionaryValue* GetSchemaFor(const base::DictionaryValue* schema,
+const base::DictionaryValue* GetSchemaFor(const base::DictionaryValue* schema,
                                     const std::string& name) {
-  base::DictionaryValue* properties = GetEntry(schema, kProperties);
-  base::DictionaryValue* sub_schema = GetEntry(properties, name);
+  const base::DictionaryValue* properties = GetEntry(schema, kProperties);
+  const base::DictionaryValue* sub_schema = GetEntry(properties, name);
   if (sub_schema)
     return sub_schema;
   // "additionalProperties" can be a boolean, but that case is ignored.
@@ -470,7 +470,7 @@ base::DictionaryValue* ReadComponentDictionaryValue(
       continue;
     }
 
-    base::DictionaryValue* sub_schema = GetSchemaFor(schema, name);
+    const base::DictionaryValue* sub_schema = GetSchemaFor(schema, name);
     base::Value::Type type = GetType(sub_schema, base::Value::TYPE_DICTIONARY);
     base::Value* value = NULL;
     const string16 sub_path = path + kPathSep + name16;

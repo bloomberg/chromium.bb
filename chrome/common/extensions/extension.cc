@@ -598,7 +598,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
   }
 
   // matches (required)
-  ListValue* matches = NULL;
+  const ListValue* matches = NULL;
   if (!content_script->GetList(keys::kMatches, &matches)) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidMatches,
@@ -650,7 +650,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
 
   // exclude_matches
   if (content_script->HasKey(keys::kExcludeMatches)) {  // optional
-    ListValue* exclude_matches = NULL;
+    const ListValue* exclude_matches = NULL;
     if (!content_script->GetList(keys::kExcludeMatches, &exclude_matches)) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidExcludeMatches,
@@ -697,7 +697,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
   }
 
   // js and css keys
-  ListValue* js = NULL;
+  const ListValue* js = NULL;
   if (content_script->HasKey(keys::kJs) &&
       !content_script->GetList(keys::kJs, &js)) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
@@ -706,7 +706,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     return false;
   }
 
-  ListValue* css = NULL;
+  const ListValue* css = NULL;
   if (content_script->HasKey(keys::kCss) &&
       !content_script->GetList(keys::kCss, &css)) {
     *error = ExtensionErrorUtils::
@@ -774,7 +774,7 @@ bool Extension::LoadGlobsHelper(
   if (!content_script->HasKey(globs_property_name))
     return true;  // they are optional
 
-  ListValue* list = NULL;
+  const ListValue* list = NULL;
   if (!content_script->GetList(globs_property_name, &list)) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidGlobList,
@@ -812,7 +812,7 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
                        action_type != ExtensionAction::TYPE_PAGE);
 
   if (manifest_version_ == 1) {
-    ListValue* icons = NULL;
+    const ListValue* icons = NULL;
     if (extension_action->HasKey(keys::kPageActionIcons) &&
         extension_action->GetList(keys::kPageActionIcons, &icons)) {
       for (ListValue::const_iterator iter = icons->begin();
@@ -883,7 +883,7 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
   }
 
   if (popup_key) {
-    DictionaryValue* popup = NULL;
+    const DictionaryValue* popup = NULL;
     std::string url_str;
 
     if (extension_action->GetString(popup_key, &url_str)) {
@@ -1907,7 +1907,7 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
 
   service.action = UTF8ToUTF16(action_name);
 
-  ListValue* mime_types = NULL;
+  const ListValue* mime_types = NULL;
   if (!intent_service.HasKey(keys::kIntentType) ||
       !intent_service.GetList(keys::kIntentType, &mime_types) ||
       mime_types->GetSize() == 0) {
@@ -2444,7 +2444,7 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
   result->set_title(title);
 
   // Initialize access permissions (optional).
-  ListValue* access_list_value = NULL;
+  const ListValue* access_list_value = NULL;
   if (file_browser_handler->HasKey(keys::kFileAccessList)) {
     if (!file_browser_handler->GetList(keys::kFileAccessList,
                                        &access_list_value) ||
@@ -2470,7 +2470,7 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
   // Initialize file filters (mandatory, unless "create" access is specified,
   // in which case is ignored).
   if (!result->HasCreateAccessPermission()) {
-    ListValue* list_value = NULL;
+    const ListValue* list_value = NULL;
     if (!file_browser_handler->HasKey(keys::kFileFilters) ||
         !file_browser_handler->GetList(keys::kFileFilters, &list_value) ||
         list_value->empty()) {
@@ -2802,7 +2802,7 @@ bool Extension::LoadThemeFeatures(string16* error) {
 
 bool Extension::LoadThemeImages(const DictionaryValue* theme_value,
                                 string16* error) {
-  DictionaryValue* images_value = NULL;
+  const DictionaryValue* images_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
     // Validate that the images are all strings
     for (DictionaryValue::key_iterator iter = images_value->begin_keys();
@@ -2820,12 +2820,12 @@ bool Extension::LoadThemeImages(const DictionaryValue* theme_value,
 
 bool Extension::LoadThemeColors(const DictionaryValue* theme_value,
                                 string16* error) {
-  DictionaryValue* colors_value = NULL;
+  const DictionaryValue* colors_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
     // Validate that the colors are RGB or RGBA lists
     for (DictionaryValue::key_iterator iter = colors_value->begin_keys();
          iter != colors_value->end_keys(); ++iter) {
-      ListValue* color_list = NULL;
+      const ListValue* color_list = NULL;
       double alpha = 0.0;
       int color = 0;
       // The color must be a list
@@ -2851,12 +2851,12 @@ bool Extension::LoadThemeColors(const DictionaryValue* theme_value,
 
 bool Extension::LoadThemeTints(const DictionaryValue* theme_value,
                                string16* error) {
-  DictionaryValue* tints_value = NULL;
+  const DictionaryValue* tints_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeTints, &tints_value)) {
     // Validate that the tints are all reals.
     for (DictionaryValue::key_iterator iter = tints_value->begin_keys();
          iter != tints_value->end_keys(); ++iter) {
-      ListValue* tint_list = NULL;
+      const ListValue* tint_list = NULL;
       double v = 0.0;
       if (!tints_value->GetListWithoutPathExpansion(*iter, &tint_list) ||
           tint_list->GetSize() != 3 ||
@@ -2874,7 +2874,7 @@ bool Extension::LoadThemeTints(const DictionaryValue* theme_value,
 
 bool Extension::LoadThemeDisplayProperties(const DictionaryValue* theme_value,
                                            string16* error) {
-  DictionaryValue* display_properties_value = NULL;
+  const DictionaryValue* display_properties_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeDisplayProperties,
                                  &display_properties_value)) {
     theme_display_properties_.reset(

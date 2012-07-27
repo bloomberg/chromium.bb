@@ -420,7 +420,7 @@ static void GetDictionaryFromList(const DictionaryValue* schema,
                                   const std::string& list_name,
                                   const int list_index,
                                   DictionaryValue** out) {
-  ListValue* list;
+  const ListValue* list;
   EXPECT_TRUE(schema->GetList(list_name, &list));
   EXPECT_TRUE(list->GetDictionary(list_index, out));
 }

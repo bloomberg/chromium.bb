@@ -837,7 +837,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
           // TODO(avayvod): Reading image path as a string is here for
           // backward compatibility.
           std::string image_path;
-          base::DictionaryValue* image_properties;
+          const base::DictionaryValue* image_properties;
           if (prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
             int image_id = User::kInvalidImageIndex;
             if (IsDefaultImagePath(image_path, &image_id)) {
@@ -1153,7 +1153,7 @@ void UserManagerImpl::GetUserWallpaperProperties(const std::string& username,
   if (!username.empty()) {
     const DictionaryValue* user_wallpapers = g_browser_process->local_state()->
         GetDictionary(UserManager::kUserWallpapersProperties);
-    base::DictionaryValue* wallpaper_properties;
+    const base::DictionaryValue* wallpaper_properties;
     if (user_wallpapers->GetDictionaryWithoutPathExpansion(
         username,
         &wallpaper_properties)) {

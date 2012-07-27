@@ -39,7 +39,7 @@ std::vector<GURL> GetNamedList(const char* name,
   std::vector<GURL> list;
   if (!prefs)
     return list;
-  ListValue* value_list = NULL;
+  const ListValue* value_list = NULL;
   if (!prefs->GetList(name, &value_list))
     return list;
   for (size_t i = 0; i < value_list->GetSize(); ++i) {

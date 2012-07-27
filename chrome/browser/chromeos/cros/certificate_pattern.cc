@@ -316,8 +316,8 @@ DictionaryValue* CertificatePattern::CreateAsDictionary() const {
 }
 
 bool CertificatePattern::CopyFromDictionary(const DictionaryValue &dict) {
-  DictionaryValue* child_dict = NULL;
-  ListValue* child_list = NULL;
+  const DictionaryValue* child_dict = NULL;
+  const ListValue* child_list = NULL;
   Clear();
 
   // All of these are optional.

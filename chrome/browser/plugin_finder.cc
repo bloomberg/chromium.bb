@@ -83,7 +83,7 @@ PluginInstaller* PluginFinder::FindPlugin(const std::string& mime_type,
     bool success = plugin->GetString("lang", &language_str);
     if (language_str != language)
       continue;
-    ListValue* mime_types = NULL;
+    const ListValue* mime_types = NULL;
     plugin->GetList("mime_types", &mime_types);
     DCHECK(success);
     for (ListValue::const_iterator mime_type_it = mime_types->begin();
@@ -135,7 +135,7 @@ PluginInstaller* PluginFinder::CreateInstaller(
                                                    display_url,
                                                    GURL(url),
                                                    GURL(help_url));
-  ListValue* versions = NULL;
+  const ListValue* versions = NULL;
   if (plugin_dict->GetList("versions", &versions)) {
     for (ListValue::const_iterator it = versions->begin();
          it != versions->end(); ++it) {

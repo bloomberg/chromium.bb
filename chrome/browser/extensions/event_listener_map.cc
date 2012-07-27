@@ -169,7 +169,7 @@ void EventListenerMap::LoadFilteredLazyListeners(
   for (DictionaryValue::key_iterator it = filtered.begin_keys();
        it != filtered.end_keys(); ++it) {
     // We skip entries if they are malformed.
-    ListValue* filter_list = NULL;
+    const ListValue* filter_list = NULL;
     if (!filtered.GetListWithoutPathExpansion(*it, &filter_list))
       continue;
     for (size_t i = 0; i < filter_list->GetSize(); i++) {

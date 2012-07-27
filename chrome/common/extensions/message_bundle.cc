@@ -134,7 +134,7 @@ bool MessageBundle::GetMessageValue(const std::string& key,
                                     std::string* value,
                                     std::string* error) const {
   // Get the top level tree for given key (name part).
-  DictionaryValue* name_tree;
+  const DictionaryValue* name_tree;
   if (!catalog.GetDictionaryWithoutPathExpansion(key, &name_tree)) {
     *error = base::StringPrintf("Not a valid tree for key %s.", key.c_str());
     return false;
@@ -166,7 +166,7 @@ bool MessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
   if (!name_tree.HasKey(kPlaceholdersKey))
     return true;
 
-  DictionaryValue* placeholders_tree;
+  const DictionaryValue* placeholders_tree;
   if (!name_tree.GetDictionary(kPlaceholdersKey, &placeholders_tree)) {
     *error = base::StringPrintf("Not a valid \"%s\" element for key %s.",
                                 kPlaceholdersKey, name_key.c_str());
@@ -175,7 +175,7 @@ bool MessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
 
   for (DictionaryValue::key_iterator key_it = placeholders_tree->begin_keys();
        key_it != placeholders_tree->end_keys(); ++key_it) {
-    DictionaryValue* placeholder;
+    const DictionaryValue* placeholder;
     const std::string& content_key(*key_it);
     if (!IsValidName(content_key))
       return BadKeyMessage(content_key, error);

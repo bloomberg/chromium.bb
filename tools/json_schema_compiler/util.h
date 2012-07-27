@@ -67,7 +67,7 @@ bool PopulateArrayFromDictionary(
     const base::DictionaryValue& from,
     const std::string& name,
     std::vector<T>* out) {
-  base::ListValue* list = NULL;
+  const base::ListValue* list = NULL;
   if (!from.GetListWithoutPathExpansion(name, &list))
     return false;
 
@@ -102,16 +102,16 @@ bool PopulateOptionalArrayFromDictionary(
     const base::DictionaryValue& from,
     const std::string& name,
     scoped_ptr<std::vector<T> >* out) {
-  base::ListValue* list = NULL;
+  const base::ListValue* list = NULL;
   {
-    base::Value* maybe_list = NULL;
+    const base::Value* maybe_list = NULL;
     // Since |name| is optional, its absence is acceptable. However, anything
     // other than a ListValue is not.
     if (!from.GetWithoutPathExpansion(name, &maybe_list))
       return true;
     if (!maybe_list->IsType(base::Value::TYPE_LIST))
       return false;
-    list = static_cast<base::ListValue*>(maybe_list);
+    list = static_cast<const base::ListValue*>(maybe_list);
   }
 
   return PopulateOptionalArrayFromList(*list, out);

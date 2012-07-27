@@ -434,7 +434,7 @@ PrintSystemCUPS::PrintSystemCUPS(const DictionaryValue* print_system_settings)
 
 void PrintSystemCUPS::InitPrintBackends(
     const DictionaryValue* print_system_settings) {
-  ListValue* url_list;
+  const ListValue* url_list;
   if (print_system_settings &&
       print_system_settings->GetList(kCUPSPrintServerURLs, &url_list)) {
     for (size_t i = 0; i < url_list->GetSize(); i++) {

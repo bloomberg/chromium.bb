@@ -219,7 +219,7 @@ MenuItem* MenuItem::Populate(const std::string& extension_id,
   if (!value.GetBoolean(kEnabledKey, &enabled))
     return NULL;
   ContextList contexts;
-  Value* contexts_value = NULL;
+  const Value* contexts_value = NULL;
   if (!value.Get(kContextsKey, &contexts_value))
     return NULL;
   if (!contexts.Populate(*contexts_value))
@@ -248,7 +248,7 @@ bool MenuItem::PopulateURLPatterns(const DictionaryValue& properties,
                                    const char* target_url_patterns_key,
                                    std::string* error) {
   if (properties.HasKey(document_url_patterns_key)) {
-    ListValue* list = NULL;
+    const ListValue* list = NULL;
     if (!properties.GetList(document_url_patterns_key, &list))
       return false;
     if (!document_url_patterns_.Populate(
@@ -257,7 +257,7 @@ bool MenuItem::PopulateURLPatterns(const DictionaryValue& properties,
     }
   }
   if (properties.HasKey(target_url_patterns_key)) {
-    ListValue* list = NULL;
+    const ListValue* list = NULL;
     if (!properties.GetList(target_url_patterns_key, &list))
       return false;
     if (!target_url_patterns_.Populate(

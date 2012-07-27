@@ -25,7 +25,7 @@ class ExtensionOverrideTest : public ExtensionApiTest {
         browser()->profile()->GetPrefs()->GetDictionary(
             ExtensionWebUI::kExtensionURLOverrides);
 
-    ListValue* values = NULL;
+    const ListValue* values = NULL;
     if (!overrides->GetList("history", &values))
       return false;
 

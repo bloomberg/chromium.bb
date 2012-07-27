@@ -431,7 +431,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
   ExtensionService* extensions_service = profile->GetExtensionService();
   DCHECK(extensions_service);
 
-  DictionaryValue* dict;
+  const DictionaryValue* dict;
   if (!contents->GetDictionaryWithoutPathExpansion(extension_id, &dict) ||
       dict == NULL)
     return;

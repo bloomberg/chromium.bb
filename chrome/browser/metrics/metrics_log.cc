@@ -819,7 +819,7 @@ void MetricsLog::WriteAllProfilesMetrics(
        i != all_profiles_metrics.end_keys(); ++i) {
     const std::string& key_name = *i;
     if (key_name.compare(0, profile_prefix.size(), profile_prefix) == 0) {
-      DictionaryValue* profile;
+      const DictionaryValue* profile;
       if (all_profiles_metrics.GetDictionaryWithoutPathExpansion(key_name,
                                                                  &profile))
         WriteProfileMetrics(key_name.substr(profile_prefix.size()), *profile);
@@ -833,7 +833,7 @@ void MetricsLog::WriteProfileMetrics(const std::string& profileidhash,
   WriteAttribute("profileidhash", profileidhash);
   for (DictionaryValue::key_iterator i = profile_metrics.begin_keys();
        i != profile_metrics.end_keys(); ++i) {
-    Value* value;
+    const Value* value;
     if (profile_metrics.GetWithoutPathExpansion(*i, &value)) {
       DCHECK(*i != "id");
       switch (value->GetType()) {

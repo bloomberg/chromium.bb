@@ -299,7 +299,7 @@ GoogleChromeDistribution::GoogleChromeDistribution()
 // see the comment in google_chrome_distribution_dummy.cc
 #ifndef _WIN64
 bool GoogleChromeDistribution::BuildUninstallMetricsString(
-    DictionaryValue* uninstall_metrics_dict, string16* metrics) {
+    const DictionaryValue* uninstall_metrics_dict, string16* metrics) {
   DCHECK(NULL != metrics);
   bool has_values = false;
 
@@ -348,7 +348,7 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
     return false;
   }
 
-  DictionaryValue* uninstall_metrics_dict;
+  const DictionaryValue* uninstall_metrics_dict;
   if (!root.HasKey(installer::kUninstallMetricsName) ||
       !root.GetDictionary(installer::kUninstallMetricsName,
                           &uninstall_metrics_dict)) {

@@ -253,7 +253,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
   } else {
     // The "new" format has "version" and "servers" keys. The properties for a
     // given server is in http_server_properties_dict["servers"][server].
-    base::DictionaryValue* servers_dict_temp = NULL;
+    const base::DictionaryValue* servers_dict_temp = NULL;
     if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
         "servers", &servers_dict_temp)) {
       DVLOG(1) << "Malformed http_server_properties for servers";
@@ -282,7 +282,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       continue;
     }
 
-    base::DictionaryValue* server_pref_dict = NULL;
+    const base::DictionaryValue* server_pref_dict = NULL;
     if (!servers_dict->GetDictionaryWithoutPathExpansion(
         server_str, &server_pref_dict)) {
       DVLOG(1) << "Malformed http_server_properties server: " << server_str;
@@ -300,7 +300,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
     // Get SpdySettings.
     DCHECK(!ContainsKey(*spdy_settings_map, server));
     if (version == kVersionNumber) {
-      base::DictionaryValue* spdy_settings_dict = NULL;
+      const base::DictionaryValue* spdy_settings_dict = NULL;
       if (server_pref_dict->GetDictionaryWithoutPathExpansion(
           "settings", &spdy_settings_dict)) {
         net::SettingsMap settings_map;
@@ -341,7 +341,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
 
     // Get alternate_protocol server.
     DCHECK(!ContainsKey(*alternate_protocol_map, server));
-    base::DictionaryValue* port_alternate_protocol_dict = NULL;
+    const base::DictionaryValue* port_alternate_protocol_dict = NULL;
     if (!server_pref_dict->GetDictionaryWithoutPathExpansion(
         "alternate_protocol", &port_alternate_protocol_dict)) {
       continue;

@@ -696,7 +696,7 @@ void DocumentEntry::FillRemainingFields() {
 DocumentEntry* DocumentEntry::ExtractAndParse(
     const base::Value& value) {
   const base::DictionaryValue* as_dict = NULL;
-  base::DictionaryValue* entry_dict = NULL;
+  const base::DictionaryValue* entry_dict = NULL;
   if (value.GetAsDictionary(&as_dict) &&
       as_dict->GetDictionary(kEntryField, &entry_dict)) {
     return DocumentEntry::CreateFrom(*entry_dict);
@@ -859,7 +859,7 @@ bool DocumentFeed::Parse(const base::Value& value) {
 scoped_ptr<DocumentFeed> DocumentFeed::ExtractAndParse(
     const base::Value& value) {
   const base::DictionaryValue* as_dict = NULL;
-  base::DictionaryValue* feed_dict = NULL;
+  const base::DictionaryValue* feed_dict = NULL;
   if (value.GetAsDictionary(&as_dict) &&
       as_dict->GetDictionary(kFeedField, &feed_dict)) {
     return DocumentFeed::CreateFrom(*feed_dict);
@@ -1007,7 +1007,7 @@ scoped_ptr<AccountMetadataFeed> AccountMetadataFeed::CreateFrom(
     const base::Value& value) {
   scoped_ptr<AccountMetadataFeed> feed(new AccountMetadataFeed());
   const base::DictionaryValue* dictionary = NULL;
-  base::Value* entry = NULL;
+  const base::Value* entry = NULL;
   if (!value.GetAsDictionary(&dictionary) ||
       !dictionary->Get(kEntryField, &entry) ||
       !feed->Parse(*entry)) {

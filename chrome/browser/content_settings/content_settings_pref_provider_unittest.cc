@@ -42,7 +42,7 @@ void ExpectObsoleteGeolocationSetting(
     const GURL& secondary_origin,
     ContentSetting expected_setting) {
 
-  DictionaryValue* one_origin_settings;
+  const DictionaryValue* one_origin_settings;
   ASSERT_TRUE(geo_settings_dictionary.GetDictionaryWithoutPathExpansion(
       std::string(primary_origin.spec()), &one_origin_settings));
   int setting_value;

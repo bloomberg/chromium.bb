@@ -170,7 +170,7 @@ ui::Accelerator CommandService::FindShortcutForCommand(
       profile_->GetPrefs()->GetDictionary(prefs::kExtensionKeybindings);
   for (DictionaryValue::key_iterator it = bindings->begin_keys();
        it != bindings->end_keys(); ++it) {
-    DictionaryValue* item = NULL;
+    const DictionaryValue* item = NULL;
     bindings->GetDictionary(*it, &item);
 
     std::string extension;

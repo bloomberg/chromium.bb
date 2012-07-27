@@ -1110,7 +1110,7 @@ void Automation::GetGeolocation(scoped_ptr<DictionaryValue>* geolocation,
   }
 }
 
-void Automation::OverrideGeolocation(DictionaryValue* geolocation,
+void Automation::OverrideGeolocation(const DictionaryValue* geolocation,
                                      Error** error) {
   *error = CheckGeolocationSupported();
   if (*error)

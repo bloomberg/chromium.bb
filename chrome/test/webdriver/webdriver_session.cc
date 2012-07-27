@@ -576,6 +576,9 @@ Error* Session::DeleteCookie(const std::string& url,
   return error;
 }
 
+// Note that when this is called from CookieCommand::ExecutePost then
+// |cookie_dict| is destroyed as soon as the caller finishes. Therefore
+// it is essential that RunSessionTask executes synchronously.
 Error* Session::SetCookie(const std::string& url,
                           DictionaryValue* cookie_dict) {
   Error* error = NULL;
@@ -1364,7 +1367,8 @@ Error* Session::RemoveStorageItem(StorageType type,
       CreateDirectValueParser(value));
 }
 
-Error* Session::GetGeolocation(scoped_ptr<base::DictionaryValue>* geolocation) {
+Error* Session::GetGeolocation(
+    scoped_ptr<base::DictionaryValue>* geolocation) {
   Error* error = NULL;
   RunSessionTask(base::Bind(
       &Automation::GetGeolocation,
@@ -1374,7 +1378,7 @@ Error* Session::GetGeolocation(scoped_ptr<base::DictionaryValue>* geolocation) {
   return error;
 }
 
-Error* Session::OverrideGeolocation(base::DictionaryValue* geolocation) {
+Error* Session::OverrideGeolocation(const base::DictionaryValue* geolocation) {
   Error* error = NULL;
   RunSessionTask(base::Bind(
       &Automation::OverrideGeolocation,
@@ -1431,6 +1435,7 @@ void Session::RunSessionTask(const base::Closure& task) {
       base::Unretained(this),
       task,
       &done_event));
+  // See SetCookie for why it is essential that we wait here.
   done_event.Wait();
 }
 

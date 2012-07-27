@@ -165,7 +165,7 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
 
 int GetPageCountFromSettingsDictionary(const DictionaryValue& settings) {
   int count = 0;
-  ListValue* page_range_array;
+  const ListValue* page_range_array;
   if (settings.GetList(printing::kSettingPageRange, &page_range_array)) {
     for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
       DictionaryValue* dict;

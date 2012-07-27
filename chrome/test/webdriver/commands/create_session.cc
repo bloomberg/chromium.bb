@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ CreateSession::~CreateSession() {}
 bool CreateSession::DoesPost() { return true; }
 
 void CreateSession::ExecutePost(Response* const response) {
-  DictionaryValue* dict;
+  const DictionaryValue* dict;
   if (!GetDictionaryParameter("desiredCapabilities", &dict)) {
     response->SetError(new Error(
         kBadRequest, "Missing or invalid 'desiredCapabilities'"));

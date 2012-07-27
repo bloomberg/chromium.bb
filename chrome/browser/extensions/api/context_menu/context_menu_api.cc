@@ -59,7 +59,7 @@ bool ExtensionContextMenuFunction::ParseContexts(
     const DictionaryValue& properties,
     const char* key,
     MenuItem::ContextList* result) {
-  ListValue* list = NULL;
+  const ListValue* list = NULL;
   if (!properties.GetList(key, &list)) {
     return true;
   }
@@ -157,7 +157,7 @@ bool ExtensionContextMenuFunction::GetParent(const DictionaryValue& properties,
   if (!properties.HasKey(kParentIdKey))
     return true;
   MenuItem::Id parent_id(profile()->IsOffTheRecord(), extension_id());
-  Value* parent_id_value = NULL;
+  const Value* parent_id_value = NULL;
   if (properties.Get(kParentIdKey, &parent_id_value) &&
       !ParseID(parent_id_value, &parent_id))
     return false;

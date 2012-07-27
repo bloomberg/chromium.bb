@@ -175,7 +175,7 @@ bool FromHeaderDictionary(const DictionaryValue* header_value,
       return false;
     }
   } else if (header_value->HasKey(keys::kHeaderBinaryValueKey)) {
-    ListValue* list = NULL;
+    const ListValue* list = NULL;
     if (!header_value->GetList(keys::kHeaderBinaryValueKey, &list) ||
         !helpers::CharListToString(list, value)) {
       return false;
@@ -350,7 +350,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
   for (DictionaryValue::key_iterator key = value.begin_keys();
        key != value.end_keys(); ++key) {
     if (*key == "urls") {
-      ListValue* urls_value = NULL;
+      const ListValue* urls_value = NULL;
       if (!value.GetList("urls", &urls_value))
         return false;
       for (size_t i = 0; i < urls_value->GetSize(); ++i) {
@@ -368,7 +368,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         urls.AddPattern(pattern);
       }
     } else if (*key == "types") {
-      ListValue* types_value = NULL;
+      const ListValue* types_value = NULL;
       if (!value.GetList("types", &types_value))
         return false;
       for (size_t i = 0; i < types_value->GetSize(); ++i) {

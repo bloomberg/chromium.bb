@@ -122,7 +122,7 @@ void PrintJobWorker::UpdatePrintSettings(
     const DictionaryValue* const new_settings) {
   // Create new PageRanges based on |new_settings|.
   PageRanges new_ranges;
-  ListValue* page_range_array;
+  const ListValue* page_range_array;
   if (new_settings->GetList(kSettingPageRange, &page_range_array)) {
     for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
       DictionaryValue* dict;

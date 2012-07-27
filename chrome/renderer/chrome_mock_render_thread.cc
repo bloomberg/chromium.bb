@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,7 +163,7 @@ void ChromeMockRenderThread::OnUpdatePrintSettings(
 
   // Just return the default settings.
   if (printer_.get()) {
-    ListValue* page_range_array;
+    const ListValue* page_range_array;
     printing::PageRanges new_ranges;
     if (job_settings.GetList(printing::kSettingPageRange, &page_range_array)) {
       for (size_t index = 0; index < page_range_array->GetSize(); ++index) {

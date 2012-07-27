@@ -192,7 +192,7 @@ int BrowsingDataExtensionFunction::ParseOriginSetMask(
   // UNPROTECTED_WEB if the developer doesn't specify anything.
   int mask = BrowsingDataHelper::UNPROTECTED_WEB;
 
-  DictionaryValue* d = NULL;
+  const DictionaryValue* d = NULL;
   if (options.HasKey(extension_browsing_data_api_constants::kOriginTypesKey)) {
     EXTENSION_FUNCTION_VALIDATE(options.GetDictionary(
         extension_browsing_data_api_constants::kOriginTypesKey, &d));

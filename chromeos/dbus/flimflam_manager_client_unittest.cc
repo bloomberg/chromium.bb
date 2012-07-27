@@ -66,7 +66,7 @@ void ExpectDictionaryValueArgument(
         NOTREACHED();
     }
     ASSERT_TRUE(value.get());
-    base::Value* expected_value = NULL;
+    const base::Value* expected_value = NULL;
     EXPECT_TRUE(expected_dictionary->GetWithoutPathExpansion(key,
                                                              &expected_value));
     EXPECT_TRUE(value->Equals(expected_value));

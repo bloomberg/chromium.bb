@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ class WebElementCommand : public WebDriverCommand {
 class ElementAttributeCommand : public WebElementCommand {
  public:
   ElementAttributeCommand(const std::vector<std::string>& path_segments,
-                          base::DictionaryValue* parameters);
+                          const base::DictionaryValue* parameters);
   virtual ~ElementAttributeCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -62,7 +62,7 @@ class ElementAttributeCommand : public WebElementCommand {
 class ElementClearCommand : public WebElementCommand {
  public:
   ElementClearCommand(const std::vector<std::string>& path_segments,
-                      base::DictionaryValue* parameters);
+                      const base::DictionaryValue* parameters);
   virtual ~ElementClearCommand();
 
   virtual bool DoesPost() OVERRIDE;
@@ -77,7 +77,7 @@ class ElementClearCommand : public WebElementCommand {
 class ElementCssCommand : public WebElementCommand {
  public:
   ElementCssCommand(const std::vector<std::string>& path_segments,
-                    base::DictionaryValue* parameters);
+                    const base::DictionaryValue* parameters);
   virtual ~ElementCssCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -92,7 +92,7 @@ class ElementCssCommand : public WebElementCommand {
 class ElementDisplayedCommand : public WebElementCommand {
  public:
   ElementDisplayedCommand(const std::vector<std::string>& path_segments,
-                          base::DictionaryValue* parameters);
+                          const base::DictionaryValue* parameters);
   virtual ~ElementDisplayedCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -107,7 +107,7 @@ class ElementDisplayedCommand : public WebElementCommand {
 class ElementEnabledCommand : public WebElementCommand {
  public:
   ElementEnabledCommand(const std::vector<std::string>& path_segments,
-                        base::DictionaryValue* parameters);
+                        const base::DictionaryValue* parameters);
   virtual ~ElementEnabledCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -122,7 +122,7 @@ class ElementEnabledCommand : public WebElementCommand {
 class ElementEqualsCommand : public WebElementCommand {
  public:
   ElementEqualsCommand(const std::vector<std::string>& path_segments,
-                       base::DictionaryValue* parameters);
+                       const base::DictionaryValue* parameters);
   virtual ~ElementEqualsCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -137,7 +137,7 @@ class ElementEqualsCommand : public WebElementCommand {
 class ElementLocationCommand : public WebElementCommand {
  public:
   ElementLocationCommand(const std::vector<std::string>& path_segments,
-                         base::DictionaryValue* parameters);
+                         const base::DictionaryValue* parameters);
   virtual ~ElementLocationCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -153,7 +153,7 @@ class ElementLocationCommand : public WebElementCommand {
 class ElementLocationInViewCommand : public WebElementCommand {
  public:
   ElementLocationInViewCommand(const std::vector<std::string>& path_segments,
-                               base::DictionaryValue* parameters);
+                               const base::DictionaryValue* parameters);
   virtual ~ElementLocationInViewCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -168,7 +168,7 @@ class ElementLocationInViewCommand : public WebElementCommand {
 class ElementNameCommand : public WebElementCommand {
  public:
   ElementNameCommand(const std::vector<std::string>& path_segments,
-                     base::DictionaryValue* parameters);
+                     const base::DictionaryValue* parameters);
   virtual ~ElementNameCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -184,7 +184,7 @@ class ElementNameCommand : public WebElementCommand {
 class ElementSelectedCommand : public WebElementCommand {
  public:
   ElementSelectedCommand(const std::vector<std::string>& path_segments,
-                         base::DictionaryValue* parameters);
+                         const base::DictionaryValue* parameters);
   virtual ~ElementSelectedCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -201,7 +201,7 @@ class ElementSelectedCommand : public WebElementCommand {
 class ElementSizeCommand : public WebElementCommand {
  public:
   ElementSizeCommand(const std::vector<std::string>& path_segments,
-                     base::DictionaryValue* parameters);
+                     const base::DictionaryValue* parameters);
   virtual ~ElementSizeCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -216,7 +216,7 @@ class ElementSizeCommand : public WebElementCommand {
 class ElementSubmitCommand : public WebElementCommand {
  public:
   ElementSubmitCommand(const std::vector<std::string>& path_segments,
-                       base::DictionaryValue* parameters);
+                       const base::DictionaryValue* parameters);
   virtual ~ElementSubmitCommand();
 
   virtual bool DoesPost() OVERRIDE;
@@ -231,7 +231,7 @@ class ElementSubmitCommand : public WebElementCommand {
 class ElementToggleCommand : public WebElementCommand {
  public:
   ElementToggleCommand(const std::vector<std::string>& path_segments,
-                       base::DictionaryValue* parameters);
+                       const base::DictionaryValue* parameters);
   virtual ~ElementToggleCommand();
 
   virtual bool DoesPost() OVERRIDE;
@@ -247,7 +247,7 @@ class ElementToggleCommand : public WebElementCommand {
 class ElementValueCommand : public WebElementCommand {
  public:
   ElementValueCommand(const std::vector<std::string>& path_segments,
-                      base::DictionaryValue* parameters);
+                      const base::DictionaryValue* parameters);
   virtual ~ElementValueCommand();
 
   virtual bool DoesGet() OVERRIDE;
@@ -271,7 +271,7 @@ class ElementValueCommand : public WebElementCommand {
 class ElementTextCommand : public WebElementCommand {
  public:
   ElementTextCommand(const std::vector<std::string>& path_segments,
-                     base::DictionaryValue* parameters);
+                     const base::DictionaryValue* parameters);
   virtual ~ElementTextCommand();
 
   virtual bool DoesGet() OVERRIDE;

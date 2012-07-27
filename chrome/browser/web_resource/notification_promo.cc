@@ -214,7 +214,7 @@ NotificationPromo::NotificationPromo(Profile* profile)
 NotificationPromo::~NotificationPromo() {}
 
 void NotificationPromo::InitFromJson(const DictionaryValue& json) {
-  ListValue* promo_list = NULL;
+  const ListValue* promo_list = NULL;
 #if !defined(OS_ANDROID)
   if (!json.GetList(promo_type_, &promo_list))
     return;
@@ -409,7 +409,7 @@ void NotificationPromo::InitFromPrefs() {
   if (!promo_dict)
     return;
 
-  base::ListValue* promo_list(NULL);
+  const base::ListValue* promo_list(NULL);
   promo_dict->GetList(promo_type_, &promo_list);
   if (!promo_list)
     return;

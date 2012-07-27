@@ -38,7 +38,7 @@ bool NetworkDeviceParser::UpdateDeviceFromInfo(const DictionaryValue& info,
   for (DictionaryValue::key_iterator iter = info.begin_keys();
        iter != info.end_keys(); ++iter) {
     const std::string& key = *iter;
-    base::Value* value;
+    const base::Value* value;
     bool result = info.GetWithoutPathExpansion(key, &value);
     DCHECK(result);
     if (result)
@@ -112,7 +112,7 @@ bool NetworkParser::UpdateNetworkFromInfo(const DictionaryValue& info,
   for (DictionaryValue::key_iterator iter = info.begin_keys();
        iter != info.end_keys(); ++iter) {
     const std::string& key = *iter;
-    base::Value* value;
+    const base::Value* value;
     bool res = info.GetWithoutPathExpansion(key, &value);
     DCHECK(res);
     if (res)  // Use network's parser to update status

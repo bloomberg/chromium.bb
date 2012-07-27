@@ -165,7 +165,7 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
 }
 
 bool GoogleChromeDistribution::BuildUninstallMetricsString(
-    DictionaryValue* uninstall_metrics_dict, string16* metrics) {
+    const DictionaryValue* uninstall_metrics_dict, string16* metrics) {
   NOTREACHED();
   return false;
 }

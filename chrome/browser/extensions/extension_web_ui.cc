@@ -224,7 +224,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
   const DictionaryValue* overrides =
       profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
   std::string page = url->host();
-  ListValue* url_list;
+  const ListValue* url_list;
   if (!overrides || !overrides->GetList(page, &url_list))
     return false;
 
@@ -297,7 +297,7 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
   // chrome://bookmarks/#1 for display in the omnibox.
   for (DictionaryValue::key_iterator it = overrides->begin_keys(),
        end = overrides->end_keys(); it != end; ++it) {
-    ListValue* url_list;
+    const ListValue* url_list;
     if (!overrides->GetList(*it, &url_list))
       continue;
 

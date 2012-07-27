@@ -621,7 +621,7 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
     if (key == onc::kRecommended)
       continue;
 
-    base::Value* inner_value = NULL;
+    const base::Value* inner_value = NULL;
     dict->GetWithoutPathExpansion(key, &inner_value);
     CHECK(inner_value != NULL);
     int field_index;

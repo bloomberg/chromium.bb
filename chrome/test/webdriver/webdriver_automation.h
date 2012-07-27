@@ -254,7 +254,7 @@ class Automation {
                       Error** error);
 
   // Overrides the current geolocation.
-  void OverrideGeolocation(base::DictionaryValue* geolocation,
+  void OverrideGeolocation(const base::DictionaryValue* geolocation,
                            Error** error);
 
  private:

@@ -933,7 +933,7 @@ bool SendSetPreferenceJSONRequest(
 
 bool SendOverrideGeolocationJSONRequest(
     AutomationMessageSender* sender,
-    base::DictionaryValue* geolocation,
+    const base::DictionaryValue* geolocation,
     Error* error) {
   scoped_ptr<DictionaryValue> dict(geolocation->DeepCopy());
   dict->SetString("command", "OverrideGeoposition");

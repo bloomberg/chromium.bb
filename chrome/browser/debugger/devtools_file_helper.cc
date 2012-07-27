@@ -137,7 +137,7 @@ void DevToolsFileHelper::Save(const std::string& url,
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsEditedFiles);
   FilePath initial_path;
 
-  Value* path_value;
+  const Value* path_value;
   if (file_map->Get(base::MD5String(url), &path_value))
     base::GetValueAsFilePath(*path_value, &initial_path);
 

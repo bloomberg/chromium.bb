@@ -214,7 +214,7 @@ class CCGenerator(object):
     """
     c = Code()
     value_var = prop.unix_name + '_value'
-    c.Append('base::Value* %(value_var)s = NULL;')
+    c.Append('const base::Value* %(value_var)s = NULL;')
     if prop.optional:
       (c.Sblock(
           'if (%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s)) {'
@@ -460,7 +460,7 @@ class CCGenerator(object):
         )
     elif self._IsObjectOrObjectRef(prop):
       if prop.optional:
-        (c.Append('base::DictionaryValue* dictionary = NULL;')
+        (c.Append('const base::DictionaryValue* dictionary = NULL;')
           .Append('if (!%(value_var)s->GetAsDictionary(&dictionary))')
           .Append('  return %(failure_value)s;')
           .Append('scoped_ptr<%(ctype)s> temp(new %(ctype)s());')
@@ -469,7 +469,7 @@ class CCGenerator(object):
           .Append('%(dst)s->%(name)s = temp.Pass();')
         )
       else:
-        (c.Append('base::DictionaryValue* dictionary = NULL;')
+        (c.Append('const base::DictionaryValue* dictionary = NULL;')
           .Append('if (!%(value_var)s->GetAsDictionary(&dictionary))')
           .Append('  return %(failure_value)s;')
           .Append(
@@ -485,7 +485,7 @@ class CCGenerator(object):
       c.Append(self._any_helper.Init(prop, value_var, dst) + ';')
     elif self._IsArrayOrArrayRef(prop):
       # util_cc_helper deals with optional and required arrays
-      (c.Append('base::ListValue* list = NULL;')
+      (c.Append('const base::ListValue* list = NULL;')
         .Append('if (!%(value_var)s->GetAsList(&list))')
         .Append('  return %(failure_value)s;'))
       if prop.item_type.type_ == PropertyType.ENUM:
@@ -523,8 +523,8 @@ class CCGenerator(object):
     elif prop.type_ == PropertyType.BINARY:
       (c.Append('if (!%(value_var)s->IsType(%(value_type)s))')
         .Append('  return %(failure_value)s;')
-        .Append('base::BinaryValue* binary_value =')
-        .Append('    static_cast<base::BinaryValue*>(%(value_var)s);')
+        .Append('const base::BinaryValue* binary_value =')
+        .Append('    static_cast<const base::BinaryValue*>(%(value_var)s);')
        )
       if prop.optional:
         (c.Append('%(dst)s->%(name)s.reset(')
@@ -564,7 +564,7 @@ class CCGenerator(object):
         c.Append('%(dst)s->%(name)s.reset(new std::vector<' + (
           self._cpp_type_generator.GetType(prop.item_type) + '>);'))
         accessor = '->'
-      c.Sblock('for (ListValue::iterator it = list->begin(); '
+      c.Sblock('for (ListValue::const_iterator it = list->begin(); '
                 'it != list->end(); ++it) {')
       self._GenerateStringToEnumConversion(c, prop.item_type,
                                            '(*it)', 'enum_temp')

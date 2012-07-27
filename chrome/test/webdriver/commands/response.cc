@@ -43,7 +43,7 @@ void Response::SetStatus(ErrorCode status) {
 }
 
 const Value* Response::GetValue() const {
-  Value* out = NULL;
+  const Value* out = NULL;
   data_.Get(kValueKey, &out);
   return out;
 }

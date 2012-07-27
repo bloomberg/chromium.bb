@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ void ExecuteCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  ListValue* args;
+  const ListValue* args;
   if (!GetListParameter("args", &args)) {
     response->SetError(new Error(
         kBadRequest, "No script arguments specified"));

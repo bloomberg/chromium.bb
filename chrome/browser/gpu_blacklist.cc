@@ -903,7 +903,7 @@ bool GpuBlacklist::LoadGpuBlacklist(
   if (!version_->IsValid())
     return false;
 
-  ListValue* list = NULL;
+  const ListValue* list = NULL;
   if (!parsed_json.GetList("entries", &list))
     return false;
 
@@ -1118,4 +1118,3 @@ GpuBlacklist::NumericOp GpuBlacklist::StringToNumericOp(
     return kBetween;
   return kUnknown;
 }
-

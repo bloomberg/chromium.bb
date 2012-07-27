@@ -32,7 +32,7 @@ bool GetBooleanOrDefault(const base::DictionaryValue* dict, const char* key,
   if (!dict->HasKey(key)) {
     return default_if_value_missing;
   }
-  base::Value* value;
+  const base::Value* value;
   if (dict->Get(key, &value) && value->IsType(base::Value::TYPE_BOOLEAN)) {
     bool bool_value;
     CHECK(value->GetAsBoolean(&bool_value));

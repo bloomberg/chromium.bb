@@ -293,7 +293,7 @@ bool GetAsDouble(const DictionaryValue& object,
                  const std::string& property_name,
                  double* out) {
   DCHECK(out);
-  Value* value = NULL;
+  const Value* value = NULL;
   if (!object.Get(property_name, &value))
     return false;
   int value_as_int;
@@ -340,7 +340,7 @@ bool ParseServerResponse(const std::string& response_body,
       static_cast<DictionaryValue*>(response_value.get());
 
   // Check the status code.
-  Value* status_value = NULL;
+  const Value* status_value = NULL;
   if (!response_object->Get(kStatusString, &status_value)) {
     VLOG(1) << "ParseServerResponse() : Missing status attribute.";
     // The status attribute is required.
@@ -354,7 +354,8 @@ bool ParseServerResponse(const std::string& response_body,
     // The status attribute is required to be a string.
     return false;
   }
-  StringValue* status_object = static_cast<StringValue*>(status_value);
+  const StringValue* status_object =
+      static_cast<const StringValue*>(status_value);
 
   std::string status;
   if (!status_object->GetAsString(&status)) {
@@ -372,7 +373,7 @@ bool ParseServerResponse(const std::string& response_body,
   response_object->GetString(kAccessTokenString, access_token);
 
   // Get the location
-  Value* location_value = NULL;
+  const Value* location_value = NULL;
   if (!response_object->Get(kLocationString, &location_value)) {
     VLOG(1) << "ParseServerResponse() : Missing location attribute.";
     // GLS returns a response with no location property to represent
@@ -391,8 +392,8 @@ bool ParseServerResponse(const std::string& response_body,
     }
     return true;  // Successfully parsed response containing no fix.
   }
-  DictionaryValue* location_object =
-      static_cast<DictionaryValue*>(location_value);
+  const DictionaryValue* location_object =
+      static_cast<const DictionaryValue*>(location_value);
 
   // latitude and longitude fields are always required.
   double latitude, longitude;

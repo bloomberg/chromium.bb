@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,11 +95,11 @@ class Command {
   // Provides the command parameter with the given |key| as a Dictionary.
   // Returns false if there is no such parameter, or if it is not a Dictionary.
   bool GetDictionaryParameter(const std::string& key,
-                              DictionaryValue** out) const;
+                              const DictionaryValue** out) const;
 
   // Provides the command parameter with the given |key| as a list. Returns
   // false if there is no such parameter, or if it is not a list.
-  bool GetListParameter(const std::string& key, ListValue** out) const;
+  bool GetListParameter(const std::string& key, const ListValue** out) const;
 
   const std::vector<std::string> path_segments_;
   const scoped_ptr<const DictionaryValue> parameters_;

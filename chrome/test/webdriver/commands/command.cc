@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ bool Command::HasParameter(const std::string& key) const {
 }
 
 bool Command::IsNullParameter(const std::string& key) const {
-  Value* value;
+  const Value* value;
   return parameters_.get() &&
          parameters_->Get(key, &value) &&
          value->IsType(Value::TYPE_NULL);
@@ -76,12 +76,12 @@ bool Command::GetDoubleParameter(const std::string& key, double* out) const {
 }
 
 bool Command::GetDictionaryParameter(const std::string& key,
-                                     DictionaryValue** out) const {
+                                     const DictionaryValue** out) const {
   return parameters_.get() != NULL && parameters_->GetDictionary(key, out);
 }
 
 bool Command::GetListParameter(const std::string& key,
-                               ListValue** out) const {
+                               const ListValue** out) const {
   return parameters_.get() != NULL && parameters_->GetList(key, out);
 }
 

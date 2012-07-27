@@ -192,7 +192,7 @@ namespace {
 // path.
 bool ValueHasSpecifics(const DictionaryValue& value,
                        const std::string& path) {
-  ListValue* entities_list = NULL;
+  const ListValue* entities_list = NULL;
   DictionaryValue* entry_dictionary = NULL;
   DictionaryValue* specifics_dictionary = NULL;
 

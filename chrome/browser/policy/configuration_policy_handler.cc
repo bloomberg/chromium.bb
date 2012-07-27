@@ -920,7 +920,7 @@ const Value* ProxyPolicyHandler::GetProxyPolicyValue(
   if (!value || !value->GetAsDictionary(&settings))
     return NULL;
 
-  Value* policy_value = NULL;
+  const Value* policy_value = NULL;
   std::string tmp;
   if (!settings->Get(policy_name, &policy_value) ||
       policy_value->IsType(Value::TYPE_NULL) ||

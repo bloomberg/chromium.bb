@@ -52,7 +52,7 @@ bool WebElementCommand::Init(Response* const response) {
 
 ElementAttributeCommand::ElementAttributeCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementAttributeCommand::~ElementAttributeCommand() {}
@@ -84,7 +84,7 @@ void ElementAttributeCommand::ExecuteGet(Response* const response) {
 
 ElementClearCommand::ElementClearCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementClearCommand::~ElementClearCommand() {}
@@ -113,7 +113,7 @@ void ElementClearCommand::ExecutePost(Response* const response) {
 
 ElementCssCommand::ElementCssCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementCssCommand::~ElementCssCommand() {}
@@ -151,7 +151,7 @@ void ElementCssCommand::ExecuteGet(Response* const response) {
 
 ElementDisplayedCommand::ElementDisplayedCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementDisplayedCommand::~ElementDisplayedCommand() {}
@@ -176,7 +176,7 @@ void ElementDisplayedCommand::ExecuteGet(Response* const response) {
 
 ElementEnabledCommand::ElementEnabledCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementEnabledCommand::~ElementEnabledCommand() {}
@@ -206,7 +206,7 @@ void ElementEnabledCommand::ExecuteGet(Response* const response) {
 
 ElementEqualsCommand::ElementEqualsCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementEqualsCommand::~ElementEqualsCommand() {}
@@ -244,7 +244,7 @@ void ElementEqualsCommand::ExecuteGet(Response* const response) {
 
 ElementLocationCommand::ElementLocationCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementLocationCommand::~ElementLocationCommand() {}
@@ -274,7 +274,7 @@ void ElementLocationCommand::ExecuteGet(Response* const response) {
 
 ElementLocationInViewCommand::ElementLocationInViewCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementLocationInViewCommand::~ElementLocationInViewCommand() {}
@@ -300,7 +300,7 @@ void ElementLocationInViewCommand::ExecuteGet(Response* const response) {
 
 ElementNameCommand::ElementNameCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementNameCommand::~ElementNameCommand() {}
@@ -324,7 +324,7 @@ void ElementNameCommand::ExecuteGet(Response* const response) {
 
 ElementSelectedCommand::ElementSelectedCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementSelectedCommand::~ElementSelectedCommand() {}
@@ -361,7 +361,7 @@ void ElementSelectedCommand::ExecutePost(Response* const response) {
 
 ElementSizeCommand::ElementSizeCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementSizeCommand::~ElementSizeCommand() {}
@@ -388,7 +388,7 @@ void ElementSizeCommand::ExecuteGet(Response* const response) {
 
 ElementSubmitCommand::ElementSubmitCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementSubmitCommand::~ElementSubmitCommand() {}
@@ -417,7 +417,7 @@ void ElementSubmitCommand::ExecutePost(Response* const response) {
 
 ElementToggleCommand::ElementToggleCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementToggleCommand::~ElementToggleCommand() {}
@@ -447,7 +447,7 @@ void ElementToggleCommand::ExecutePost(Response* const response) {
 
 ElementValueCommand::ElementValueCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementValueCommand::~ElementValueCommand() {}
@@ -531,7 +531,7 @@ Error* ElementValueCommand::HasAttributeWithLowerCaseValueASCII(
 }
 
 Error* ElementValueCommand::DragAndDropFilePaths() const {
-  ListValue* path_list;
+  const ListValue* path_list;
   if (!GetListParameter("value", &path_list))
     return new Error(kBadRequest, "Missing or invalid 'value' parameter");
 
@@ -579,7 +579,7 @@ Error* ElementValueCommand::DragAndDropFilePaths() const {
 }
 
 Error* ElementValueCommand::SendKeys() const {
-  ListValue* key_list;
+  const ListValue* key_list;
   if (!GetListParameter("value", &key_list)) {
     return new Error(kBadRequest, "Missing or invalid 'value' parameter");
   }
@@ -597,7 +597,7 @@ Error* ElementValueCommand::SendKeys() const {
 
 ElementTextCommand::ElementTextCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    const DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementTextCommand::~ElementTextCommand() {}

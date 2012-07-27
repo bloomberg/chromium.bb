@@ -33,13 +33,13 @@ TEST(PluginFinderTest, JsonSyntax) {
       EXPECT_TRUE(plugin->GetBoolean("displayurl", &dummy_bool));
     if (plugin->HasKey("requires_authorization"))
       EXPECT_TRUE(plugin->GetBoolean("requires_authorization", &dummy_bool));
-    ListValue* mime_types = NULL;
+    const ListValue* mime_types = NULL;
     ASSERT_TRUE(plugin->GetList("mime_types", &mime_types));
     for (ListValue::const_iterator mime_type_it = mime_types->begin();
          mime_type_it != mime_types->end(); ++mime_type_it) {
       EXPECT_TRUE((*mime_type_it)->GetAsString(&dummy_str));
     }
-    ListValue* versions = NULL;
+    const ListValue* versions = NULL;
     if (!plugin->GetList("versions", &versions))
       continue;
 

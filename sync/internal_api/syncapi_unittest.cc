@@ -584,7 +584,7 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value,
     ExpectInt64Value(node.GetFirstChildId(), value, "firstChildId");
     {
       scoped_ptr<DictionaryValue> expected_entry(node.GetEntry()->ToValue());
-      Value* entry = NULL;
+      const Value* entry = NULL;
       EXPECT_TRUE(value.Get("entry", &entry));
       EXPECT_TRUE(Value::Equals(entry, expected_entry.get()));
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ class BackgroundContentsServiceTest : public testing::Test {
   std::string GetPrefURLForApp(Profile* profile, const string16& appid) {
     const DictionaryValue* pref = GetPrefs(profile);
     EXPECT_TRUE(pref->HasKey(UTF16ToUTF8(appid)));
-    DictionaryValue* value;
+    const DictionaryValue* value;
     pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &value);
     std::string url;
     value->GetString("url", &url);

@@ -526,7 +526,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.
   // This is used to decide if an extension is blacklisted.
-  static bool IsBlacklistBitSet(base::DictionaryValue* ext);
+  static bool IsBlacklistBitSet(const base::DictionaryValue* ext);
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.

@@ -713,7 +713,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 
   const DictionaryValue* all_settings_dictionary =
       prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
-  DictionaryValue* result = NULL;
+  const DictionaryValue* result = NULL;
   EXPECT_FALSE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       "[*.]\xC4\x87ira.com,*", &result));
   EXPECT_TRUE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(

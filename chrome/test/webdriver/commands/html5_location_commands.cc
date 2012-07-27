@@ -37,7 +37,7 @@ void HTML5LocationCommand::ExecuteGet(Response* const response) {
 }
 
 void HTML5LocationCommand::ExecutePost(Response* const response) {
-  base::DictionaryValue* geolocation;
+  const base::DictionaryValue* geolocation;
   if (!GetDictionaryParameter("location", &geolocation)) {
     response->SetError(new Error(
         kBadRequest, "Missing or invalid 'location'"));

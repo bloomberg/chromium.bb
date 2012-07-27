@@ -292,7 +292,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
     // Folder.
     std::string last_modified_date;
-    Value* child_values;
+    const Value* child_values;
     if (!value.GetString(BookmarkCodec::kDateModifiedKey,
                          &last_modified_date) ||
         !value.Get(BookmarkCodec::kChildrenKey, &child_values) ||
@@ -331,7 +331,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     }
 
     // Write the children.
-    ListValue* children = static_cast<ListValue*>(child_values);
+    const ListValue* children = static_cast<const ListValue*>(child_values);
     for (size_t i = 0; i < children->GetSize(); ++i) {
       Value* child_value;
       if (!children->Get(i, &child_value) ||
@@ -339,7 +339,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
         NOTREACHED();
         return false;
       }
-      if (!WriteNode(*static_cast<DictionaryValue*>(child_value),
+      if (!WriteNode(*static_cast<const DictionaryValue*>(child_value),
                      BookmarkNode::FOLDER)) {
         return false;
       }

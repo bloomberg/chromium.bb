@@ -46,7 +46,7 @@ NetworkUIData::NetworkUIData(const DictionaryValue& dict) {
   } else {
     onc_source_ = ONC_SOURCE_NONE;
   }
-  DictionaryValue* cert_dict = NULL;
+  const DictionaryValue* cert_dict = NULL;
   if (dict.GetDictionary(kKeyCertificatePattern, &cert_dict) && cert_dict)
     certificate_pattern_.CopyFromDictionary(*cert_dict);
   std::string type_string;
@@ -142,12 +142,12 @@ void NetworkPropertyUIData::ParseOncProperty(
   }
   recommended_property_key += "Recommended";
 
-  base::ListValue* recommended_keys = NULL;
+  const base::ListValue* recommended_keys = NULL;
   if (onc->GetList(recommended_property_key, &recommended_keys)) {
     base::StringValue basename_value(property_basename);
     if (recommended_keys->Find(basename_value) != recommended_keys->end()) {
       controller_ = CONTROLLER_USER;
-      base::Value* default_value = NULL;
+      const base::Value* default_value = NULL;
       if (onc->Get(property_key, &default_value))
         default_value_.reset(default_value->DeepCopy());
     }

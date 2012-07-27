@@ -377,7 +377,7 @@ class Session {
   Error* GetGeolocation(scoped_ptr<base::DictionaryValue>* geolocation);
 
   // Overrides the current geolocation.
-  Error* OverrideGeolocation(base::DictionaryValue* geolocation);
+  Error* OverrideGeolocation(const base::DictionaryValue* geolocation);
 
   const std::string& id() const;
 

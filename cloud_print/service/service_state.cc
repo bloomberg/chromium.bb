@@ -103,7 +103,7 @@ bool ServiceState::FromString(const std::string& json) {
   if (!data->GetAsDictionary(&services))
     return false;
 
-  base::DictionaryValue* cloud_print = NULL;
+  const base::DictionaryValue* cloud_print = NULL;
   if (!services->GetDictionary(kCloudPrintJsonName, &cloud_print))
     return false;
 
@@ -208,4 +208,3 @@ bool ServiceState::Configure(const std::string& email,
   xmpp_auth_token_ = LoginToGoogle("chromiumsync", email_, password);
   return IsValid();
 }
-

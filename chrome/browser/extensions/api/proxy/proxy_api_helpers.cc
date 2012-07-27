@@ -80,7 +80,7 @@ bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
                                       bool* out,
                                       std::string* error,
                                       bool* bad_message){
-  DictionaryValue* pac_dict = NULL;
+  const DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
     return true;
@@ -101,7 +101,7 @@ bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
                                 std::string* out,
                                 std::string* error,
                                 bool* bad_message) {
-  DictionaryValue* pac_dict = NULL;
+  const DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
     return true;
@@ -127,7 +127,7 @@ bool GetPacDataFromExtensionPref(const DictionaryValue* proxy_config,
                                  std::string* out,
                                  std::string* error,
                                  bool* bad_message) {
-  DictionaryValue* pac_dict = NULL;
+  const DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
     return true;
@@ -193,7 +193,7 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
                                           std::string* out,
                                           std::string* error,
                                           bool* bad_message) {
-  DictionaryValue* proxy_rules = NULL;
+  const DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigRules, &proxy_rules);
   if (!proxy_rules)
     return true;
@@ -208,7 +208,7 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
   // singleProxy that will supersede per-URL proxies, but it's worth it to keep
   // the code simple and extensible.
   for (size_t i = 0; i <= keys::SCHEME_MAX; ++i) {
-    DictionaryValue* proxy_dict = NULL;
+    const DictionaryValue* proxy_dict = NULL;
     has_proxy[i] = proxy_rules->GetDictionary(keys::field_name[i],
                                               &proxy_dict);
     if (has_proxy[i]) {
@@ -256,7 +256,7 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
   return true;
 }
 
-bool JoinUrlList(ListValue* list,
+bool JoinUrlList(const ListValue* list,
                  const std::string& joiner,
                  std::string* out,
                  std::string* error,
@@ -288,7 +288,7 @@ bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
                                     std::string *out,
                                     std::string* error,
                                     bool* bad_message) {
-  DictionaryValue* proxy_rules = NULL;
+  const DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigRules, &proxy_rules);
   if (!proxy_rules)
     return true;
@@ -297,7 +297,7 @@ bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
     *out = "";
     return true;
   }
-  ListValue* bypass_list = NULL;
+  const ListValue* bypass_list = NULL;
   if (!proxy_rules->GetList(keys::kProxyConfigBypassList, &bypass_list)) {
     LOG(ERROR) << "'rules.bypassList' could not be parsed.";
     *bad_message = true;

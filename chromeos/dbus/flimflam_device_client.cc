@@ -367,7 +367,7 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
  private:
   void PassStubDevicePrperties(const dbus::ObjectPath& device_path,
                                const DictionaryValueCallback& callback) const {
-    base::DictionaryValue* device_properties = NULL;
+    const base::DictionaryValue* device_properties = NULL;
     if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
       base::DictionaryValue empty_dictionary;
       callback.Run(DBUS_METHOD_CALL_FAILURE, empty_dictionary);

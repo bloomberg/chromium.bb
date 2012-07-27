@@ -371,7 +371,7 @@ void NetworkSmsHandler::ManagerPropertiesCallback(
     LOG(ERROR) << "NetworkSmsHandler: Failed to get manager properties.";
     return;
   }
-  base::Value* value;
+  const base::Value* value;
   if (!properties.GetWithoutPathExpansion(flimflam::kDevicesProperty, &value) ||
       value->GetType() != base::Value::TYPE_LIST) {
     LOG(ERROR) << "NetworkSmsHandler: No list value for: "

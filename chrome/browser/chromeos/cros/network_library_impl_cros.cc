@@ -726,7 +726,7 @@ void NetworkLibraryImplCros::NetworkManagerUpdate(
   for (DictionaryValue::key_iterator iter = properties->begin_keys();
        iter != properties->end_keys(); ++iter) {
     const std::string& key = *iter;
-    Value* value;
+    const Value* value;
     bool res = properties->GetWithoutPathExpansion(key, &value);
     CHECK(res);
     if (!NetworkManagerStatusChanged(key, value)) {
@@ -997,7 +997,7 @@ void NetworkLibraryImplCros::UpdateProfile(
     return;
   }
   VLOG(1) << "UpdateProfile for path: " << profile_path;
-  ListValue* profile_entries(NULL);
+  const ListValue* profile_entries(NULL);
   properties->GetList(flimflam::kEntriesProperty, &profile_entries);
   if (!profile_entries) {
     LOG(ERROR) << "'Entries' property is missing.";

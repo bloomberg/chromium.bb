@@ -551,7 +551,7 @@ bool NativeNetworkDeviceParser::ParseSimLockStateFromDictionary(
   std::string state_string;
   // Since RetriesLeft is sent as a uint32, which may overflow int32 range, from
   // Flimflam, it may be stored as an integer or a double in DictionaryValue.
-  base::Value* retries_value = NULL;
+  const base::Value* retries_value = NULL;
   if (!info.GetString(flimflam::kSIMLockTypeProperty, &state_string) ||
       !info.GetBoolean(flimflam::kSIMLockEnabledProperty, out_enabled) ||
       !info.Get(flimflam::kSIMLockRetriesLeftProperty, &retries_value) ||
@@ -1289,7 +1289,7 @@ bool NativeVirtualNetworkParser::ParseValue(PropertyIndex index,
       for (DictionaryValue::key_iterator iter = dict.begin_keys();
            iter != dict.end_keys(); ++iter) {
         const std::string& key = *iter;
-        base::Value* provider_value;
+        const base::Value* provider_value;
         bool res = dict.GetWithoutPathExpansion(key, &provider_value);
         DCHECK(res);
         if (res) {

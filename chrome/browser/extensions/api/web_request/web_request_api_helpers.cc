@@ -117,7 +117,7 @@ ListValue* StringToCharList(const std::string& s) {
   return result;
 }
 
-bool CharListToString(ListValue* list, std::string* out) {
+bool CharListToString(const ListValue* list, std::string* out) {
   if (!list)
     return false;
   const size_t list_length = list->GetSize();

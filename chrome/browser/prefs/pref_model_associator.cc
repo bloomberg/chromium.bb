@@ -254,7 +254,7 @@ Value* PrefModelAssociator::MergeDictionaryValues(
 
   for (DictionaryValue::key_iterator key = from_dict_value.begin_keys();
        key != from_dict_value.end_keys(); ++key) {
-    Value* from_value;
+    const Value* from_value;
     bool success = from_dict_value.GetWithoutPathExpansion(*key, &from_value);
     DCHECK(success);
 

@@ -153,7 +153,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
 
   for (DictionaryValue::key_iterator iter = val->begin_keys();
        iter != val->end_keys(); ++iter) {
-    Value* child = NULL;
+    const Value* child = NULL;
     CHECK(val->GetWithoutPathExpansion(*iter, &child));
 
     const std::string& key = *iter;

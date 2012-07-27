@@ -50,8 +50,8 @@ bool IsUnprivileged(const DictionaryValue* dict) {
 // children with an { "unprivileged": true } property.
 bool HasUnprivilegedChild(const DictionaryValue* name_space_node,
                           const std::string& child_kind) {
-  ListValue* child_list = NULL;
-  DictionaryValue* child_dict = NULL;
+  const ListValue* child_list = NULL;
+  const DictionaryValue* child_dict = NULL;
 
   if (name_space_node->GetList(child_kind, &child_list)) {
     for (size_t i = 0; i < child_list->GetSize(); ++i) {
@@ -119,7 +119,7 @@ const DictionaryValue* GetSchemaChild(const DictionaryValue* schema_node,
                                       const std::string& child_name) {
   DictionaryValue* child_node = NULL;
   for (size_t i = 0; i < arraysize(kChildKinds); ++i) {
-    ListValue* list_node = NULL;
+    const ListValue* list_node = NULL;
     if (!schema_node->GetList(kChildKinds[i], &list_node))
       continue;
     child_node = FindListItem(list_node, "name", child_name);
@@ -798,7 +798,7 @@ void ExtensionAPI::GetMissingDependencies(
   const DictionaryValue* schema = GetSchema(feature_name);
   CHECK(schema) << "Schema for " << feature_name << " not found";
 
-  ListValue* dependencies = NULL;
+  const ListValue* dependencies = NULL;
   if (!schema->GetList("dependencies", &dependencies))
     return;
 

@@ -561,7 +561,7 @@ void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
       // Copy the legacy content settings for the current |key| from the
       // obsolete pref prefs::kContentSettingsPatterns to the pref
       // prefs::kContentSettingsPatternPairs.
-      DictionaryValue* dictionary = NULL;
+      const DictionaryValue* dictionary = NULL;
       bool found = patterns_dictionary->GetDictionaryWithoutPathExpansion(
           key, &dictionary);
       DCHECK(found);
@@ -599,7 +599,7 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
     GURL primary_url(primary_key);
     DCHECK(primary_url.is_valid());
 
-    DictionaryValue* requesting_origin_settings = NULL;
+    const DictionaryValue* requesting_origin_settings = NULL;
     // The method GetDictionaryWithoutPathExpansion() returns false if the
     // value for the given key is not a |DictionaryValue|. If the value for the
     // |primary_key| is not a |DictionaryValue| then the location settings for
@@ -620,7 +620,7 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
         continue;
       }
 
-      base::Value* value = NULL;
+      const base::Value* value = NULL;
       bool found = requesting_origin_settings->GetWithoutPathExpansion(
           secondary_key, &value);
       DCHECK(found);

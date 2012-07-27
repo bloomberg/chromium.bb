@@ -55,7 +55,7 @@ void CheckChangeRecordValue(
     if (record.extra.get()) {
       expected_extra_value.reset(record.extra->ToValue());
     }
-    base::Value* extra_value = NULL;
+    const base::Value* extra_value = NULL;
     EXPECT_EQ(record.extra.get() != NULL,
               value.Get("extra", &extra_value));
     EXPECT_TRUE(Value::Equals(extra_value, expected_extra_value.get()));

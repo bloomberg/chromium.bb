@@ -92,7 +92,7 @@ static base::LazyInstance<Channel> g_channel = LAZY_INSTANCE_INITIALIZER;
 void ParseSet(const DictionaryValue* value,
               const std::string& property,
               std::set<std::string>* set) {
-  ListValue* list_value = NULL;
+  const ListValue* list_value = NULL;
   if (!value->GetList(property, &list_value))
     return;
 

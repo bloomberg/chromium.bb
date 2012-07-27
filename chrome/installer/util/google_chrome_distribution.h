@@ -133,7 +133,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // Returns true if at least one uninstall metric was found in
   // uninstall_metrics_dict, false otherwise.
   virtual bool BuildUninstallMetricsString(
-      base::DictionaryValue* uninstall_metrics_dict, string16* metrics);
+      const base::DictionaryValue* uninstall_metrics_dict, string16* metrics);
 
   // The product ID for Google Update.
   string16 product_guid_;

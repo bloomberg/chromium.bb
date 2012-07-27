@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,25 +134,27 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   if (!d_value.GetInteger(kVersionKey, &version) || version != kCurrentVersion)
     return false;  // Unknown version.
 
-  Value* checksum_value;
+  const Value* checksum_value;
   if (d_value.Get(kChecksumKey, &checksum_value)) {
     if (checksum_value->GetType() != Value::TYPE_STRING)
       return false;
-    StringValue* checksum_value_str = static_cast<StringValue*>(checksum_value);
+    const StringValue* checksum_value_str =
+        static_cast<const StringValue*>(checksum_value);
     if (!checksum_value_str->GetAsString(&stored_checksum_))
       return false;
   }
 
-  Value* roots;
+  const Value* roots;
   if (!d_value.Get(kRootsKey, &roots))
     return false;  // No roots.
 
   if (roots->GetType() != Value::TYPE_DICTIONARY)
     return false;  // Invalid type for roots.
 
-  DictionaryValue* roots_d_value = static_cast<DictionaryValue*>(roots);
-  Value* root_folder_value;
-  Value* other_folder_value;
+  const DictionaryValue* roots_d_value =
+      static_cast<const DictionaryValue*>(roots);
+  const Value* root_folder_value;
+  const Value* other_folder_value;
   if (!roots_d_value->Get(kRootFolderNameKey, &root_folder_value) ||
       root_folder_value->GetType() != Value::TYPE_DICTIONARY ||
       !roots_d_value->Get(kOtherBookmarkFolderNameKey, &other_folder_value) ||
@@ -160,18 +162,18 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
     return false;  // Invalid type for root folder and/or other
                    // folder.
   }
-  DecodeNode(*static_cast<DictionaryValue*>(root_folder_value), NULL,
+  DecodeNode(*static_cast<const DictionaryValue*>(root_folder_value), NULL,
              bb_node);
-  DecodeNode(*static_cast<DictionaryValue*>(other_folder_value), NULL,
+  DecodeNode(*static_cast<const DictionaryValue*>(other_folder_value), NULL,
              other_folder_node);
 
   // Fail silently if we can't deserialize mobile bookmarks. We can't require
   // them to exist in order to be backwards-compatible with older versions of
   // chrome.
-  Value* mobile_folder_value;
+  const Value* mobile_folder_value;
   if (roots_d_value->Get(kMobileBookmarkFolderNameKey, &mobile_folder_value) &&
       mobile_folder_value->GetType() == Value::TYPE_DICTIONARY) {
-    DecodeNode(*static_cast<DictionaryValue*>(mobile_folder_value), NULL,
+    DecodeNode(*static_cast<const DictionaryValue*>(mobile_folder_value), NULL,
                mobile_folder_node);
   } else {
     // If we didn't find the mobile folder, we're almost guaranteed to have a
@@ -287,7 +289,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     if (!value.GetString(kDateModifiedKey, &last_modified_date))
       last_modified_date = base::Int64ToString(Time::Now().ToInternalValue());
 
-    Value* child_values;
+    const Value* child_values;
     if (!value.Get(kChildrenKey, &child_values))
       return false;
 
@@ -311,7 +313,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
 
     UpdateChecksumWithFolderNode(id_string, title);
 
-    if (!DecodeChildren(*static_cast<ListValue*>(child_values), node))
+    if (!DecodeChildren(*static_cast<const ListValue*>(child_values), node))
       return false;
   }
 

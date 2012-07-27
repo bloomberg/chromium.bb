@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,15 +48,16 @@ void CookieCommand::ExecuteGet(Response* const response) {
 }
 
 void CookieCommand::ExecutePost(Response* const response) {
-  DictionaryValue* cookie_dict;
+  const DictionaryValue* cookie_dict;
   if (!GetDictionaryParameter("cookie", &cookie_dict)) {
     response->SetError(new Error(
         kBadRequest, "Missing or invalid |cookie| parameter"));
     return;
   }
+  scoped_ptr<DictionaryValue> cookie_dict_copy(cookie_dict->DeepCopy());
 
   std::string domain;
-  if (cookie_dict->GetString("domain", &domain)) {
+  if (cookie_dict_copy->GetString("domain", &domain)) {
     std::vector<std::string> split_domain;
     base::SplitString(domain, ':', &split_domain);
     if (split_domain.size() > 2) {
@@ -65,14 +66,14 @@ void CookieCommand::ExecutePost(Response* const response) {
       return;
     } else if (split_domain.size() == 2) {
       // Remove the port number.
-      cookie_dict->SetString("domain", split_domain[0]);
+      cookie_dict_copy->SetString("domain", split_domain[0]);
     }
   }
 
   std::string url;
   Error* error = session_->GetURL(&url);
   if (!error)
-    error = session_->SetCookie(url, cookie_dict);
+    error = session_->SetCookie(url, cookie_dict_copy.get());
   if (error) {
     response->SetError(error);
     return;

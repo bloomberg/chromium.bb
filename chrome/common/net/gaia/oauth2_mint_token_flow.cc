@@ -227,11 +227,11 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
   CHECK(dict);
   CHECK(issue_advice);
 
-  base::DictionaryValue* consent_dict = NULL;
+  const base::DictionaryValue* consent_dict = NULL;
   if (!dict->GetDictionary(kConsentKey, &consent_dict))
     return false;
 
-  base::ListValue* scopes_list = NULL;
+  const base::ListValue* scopes_list = NULL;
   if (!consent_dict->GetList(kScopesKey, &scopes_list))
     return false;
 

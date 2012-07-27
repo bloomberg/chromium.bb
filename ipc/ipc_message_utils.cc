@@ -103,7 +103,7 @@ void WriteValue(Message* m, const Value* value, int recursion) {
 
       for (DictionaryValue::key_iterator it = dict->begin_keys();
            it != dict->end_keys(); ++it) {
-        Value* subval;
+        const Value* subval;
         if (dict->GetWithoutPathExpansion(*it, &subval)) {
           WriteParam(m, *it);
           WriteValue(m, subval, recursion + 1);
