@@ -8,12 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/threading/thread_restrictions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/images/SkImageEncoder.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/images/SkImageEncoder.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
@@ -40,7 +40,7 @@ bool test_compositor_enabled = false;
 
 ui::ContextFactory* g_context_factory = NULL;
 
-}  // anonymous namespace
+}  // namespace
 
 namespace ui {
 

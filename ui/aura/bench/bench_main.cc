@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/string_split.h"
 #include "base/time.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
@@ -28,7 +29,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
@@ -279,7 +279,7 @@ class SoftwareScrollBench : public BenchCompositorObserver {
   DISALLOW_COPY_AND_ASSIGN(SoftwareScrollBench);
 };
 
-}  // anonymous namespace
+}  // namespace
 
 int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);

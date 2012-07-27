@@ -5,6 +5,7 @@
 #import "ui/base/keycodes/keyboard_code_conversion_mac.h"
 
 #include <algorithm>
+
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
@@ -447,7 +448,7 @@ KeyboardCode KeyboardCodeFromKeyCode(unsigned short keyCode) {
   return kKeyboardCodes[keyCode];
 }
 
-}  // anonymous namespace
+}  // namespace
 
 int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                 NSUInteger flags,

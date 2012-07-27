@@ -12,7 +12,7 @@ namespace {
 static const base::TimeDelta kDefaultTransitionDuration =
     base::TimeDelta::FromMilliseconds(200);
 
-} // namespace;
+}  // namespace
 
 namespace ui {
 
@@ -71,4 +71,3 @@ ScopedLayerAnimationSettings::GetPreemptionStrategy() const {
 }
 
 }  // namespace ui
-

@@ -28,7 +28,7 @@
 //
 //    // Use this to define a non exported property that is primitive,
 //    // or a pointer you don't want to automatically deleted, and is used
-//    // only in a specific file. This will define the property in anonymous
+//    // only in a specific file. This will define the property in an unnamed
 //    // namespace which cannot be accessed from another file.
 //    DEFINE_LOCAL_WINDOW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
 //

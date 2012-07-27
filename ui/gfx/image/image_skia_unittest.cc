@@ -4,12 +4,12 @@
 
 #include "ui/gfx/image/image_skia.h"
 
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/size.h"
-#include "ui/base/layout.h"
 
 namespace gfx {
 
@@ -65,9 +65,7 @@ class NullSource: public ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(NullSource);
 };
 
-}  // namespace;
-
-typedef testing::Test ImageSkiaTest;
+}  // namespace
 
 TEST(ImageSkiaTest, FixedSource) {
   ImageSkiaRep image(Size(100, 200), ui::SCALE_FACTOR_100P);

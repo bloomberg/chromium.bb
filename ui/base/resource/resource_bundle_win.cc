@@ -33,7 +33,7 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
   return FilePath(ASCIIToUTF16(pak_name));
 }
 
-}  // end anonymous namespace
+}  // namespace
 
 void ResourceBundle::LoadCommonResources() {
   // As a convenience, add the current resource module as a data packs.

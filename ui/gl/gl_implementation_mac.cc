@@ -16,7 +16,7 @@ namespace gfx {
 namespace {
 const char kOpenGLFrameworkPath[] =
     "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL";
-}  // namespace anonymous
+}  // namespace
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationDesktopGL);

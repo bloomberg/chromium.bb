@@ -188,7 +188,7 @@ int AdjustPlatformSpecificFlags(const string16& text, int flags) {
   return flags;
 }
 
-}  // anonymous namespace
+}  // namespace
 
 namespace gfx {
 

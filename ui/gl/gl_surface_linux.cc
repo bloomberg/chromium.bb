@@ -20,7 +20,7 @@ namespace gfx {
 
 namespace {
 Display* g_osmesa_display;
-}  // namespace anonymous
+}  // namespace
 
 // This OSMesa GL surface can use XLib to swap the contents of the buffer to a
 // view.

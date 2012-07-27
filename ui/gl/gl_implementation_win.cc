@@ -51,7 +51,7 @@ bool LoadD3DXLibrary(const FilePath& module_path,
   return true;
 }
 
-}  // namespace anonymous
+}  // namespace
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationEGLGLES2);

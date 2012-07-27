@@ -8,16 +8,14 @@
 
 namespace {
 
-typedef testing::Test ScreenTest;
-
-TEST_F(ScreenTest, GetPrimaryDisplaySize) {
+TEST(ScreenTest, GetPrimaryDisplaySize) {
   // We aren't actually testing that it's correct, just that it's sane.
   const gfx::Size size = gfx::Screen::GetPrimaryDisplay().size();
   EXPECT_GE(size.width(), 1);
   EXPECT_GE(size.height(), 1);
 }
 
-TEST_F(ScreenTest, GetNumDisplays) {
+TEST(ScreenTest, GetNumDisplays) {
   // We aren't actually testing that it's correct, just that it's sane.
   EXPECT_GE(gfx::Screen::GetNumDisplays(), 1);
 }

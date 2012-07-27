@@ -30,7 +30,7 @@ class ScopedPtrXFree {
   }
 };
 
-}  // namespace anonymous
+}  // namespace
 
 GLContextGLX::GLContextGLX(GLShareGroup* share_group)
   : GLContext(share_group),

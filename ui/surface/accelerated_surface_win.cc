@@ -158,7 +158,7 @@ bool CreateTemporarySurface(IDirect3DDevice9* device,
   return SUCCEEDED(hr);
 }
 
-}  // namespace anonymous
+}  // namespace
 
 // A PresentThread is a thread that is dedicated to presenting surfaces to a
 // window. It owns a Direct3D device and a Direct3D query for this purpose.

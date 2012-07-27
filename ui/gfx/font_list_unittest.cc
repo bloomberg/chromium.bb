@@ -29,16 +29,14 @@ std::string FontToString(const gfx::Font& font) {
 
 namespace gfx {
 
-typedef testing::Test FontListTest;
-
-TEST_F(FontListTest, FontDescString_FromDescString) {
+TEST(FontListTest, FontDescString_FromDescString) {
   // Test init from font name style size string.
   FontList font_list = FontList("Droid Sans serif, Sans serif, 10px");
   const std::string& font_str = font_list.GetFontDescriptionString();
   EXPECT_EQ("Droid Sans serif, Sans serif, 10px", font_str);
 }
 
-TEST_F(FontListTest, FontDescString_FromFont) {
+TEST(FontListTest, FontDescString_FromFont) {
   // Test init from Font.
   Font font("Arial", 8);
   FontList font_list = FontList(font);
@@ -46,7 +44,7 @@ TEST_F(FontListTest, FontDescString_FromFont) {
   EXPECT_EQ("Arial,8px", font_str);
 }
 
-TEST_F(FontListTest, FontDescString_FromFontWithNonNormalStyle) {
+TEST(FontListTest, FontDescString_FromFontWithNonNormalStyle) {
   // Test init from Font with non-normal style.
   Font font("Arial", 8);
   FontList font_list = FontList(font.DeriveFont(2, Font::BOLD));
@@ -56,7 +54,7 @@ TEST_F(FontListTest, FontDescString_FromFontWithNonNormalStyle) {
   EXPECT_EQ("Arial,Italic 6px", font_list.GetFontDescriptionString());
 }
 
-TEST_F(FontListTest, FontDescString_FromFontVector) {
+TEST(FontListTest, FontDescString_FromFontVector) {
   // Test init from Font vector.
   Font font("Arial", 8);
   Font font_1("Sans serif", 10);
@@ -68,7 +66,7 @@ TEST_F(FontListTest, FontDescString_FromFontVector) {
   EXPECT_EQ("Arial,Sans serif,Bold 8px", font_str);
 }
 
-TEST_F(FontListTest, Fonts_FromDescString) {
+TEST(FontListTest, Fonts_FromDescString) {
   // Test init from font name size string.
   FontList font_list = FontList("serif,Sans serif, 13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
@@ -77,7 +75,7 @@ TEST_F(FontListTest, Fonts_FromDescString) {
   EXPECT_EQ("Sans serif|13", FontToString(fonts[1]));
 }
 
-TEST_F(FontListTest, Fonts_FromDescStringInFlexibleFormat) {
+TEST(FontListTest, Fonts_FromDescStringInFlexibleFormat) {
   // Test init from font name size string with flexible format.
   FontList font_list = FontList("  serif   ,   Sans serif ,   13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
@@ -86,7 +84,7 @@ TEST_F(FontListTest, Fonts_FromDescStringInFlexibleFormat) {
   EXPECT_EQ("Sans serif|13", FontToString(fonts[1]));
 }
 
-TEST_F(FontListTest, Fonts_FromDescStringWithStyleInFlexibleFormat) {
+TEST(FontListTest, Fonts_FromDescStringWithStyleInFlexibleFormat) {
   // Test init from font name style size string with flexible format.
   FontList font_list = FontList("  serif  ,  Sans serif ,  Bold   "
                                 "  Italic   13px");
@@ -96,7 +94,7 @@ TEST_F(FontListTest, Fonts_FromDescStringWithStyleInFlexibleFormat) {
   EXPECT_EQ("Sans serif|13|bold|italic", FontToString(fonts[1]));
 }
 
-TEST_F(FontListTest, Fonts_FromFont) {
+TEST(FontListTest, Fonts_FromFont) {
   // Test init from Font.
   Font font("Arial", 8);
   FontList font_list = FontList(font);
@@ -105,7 +103,7 @@ TEST_F(FontListTest, Fonts_FromFont) {
   EXPECT_EQ("Arial|8", FontToString(fonts[0]));
 }
 
-TEST_F(FontListTest, Fonts_FromFontWithNonNormalStyle) {
+TEST(FontListTest, Fonts_FromFontWithNonNormalStyle) {
   // Test init from Font with non-normal style.
   Font font("Arial", 8);
   FontList font_list = FontList(font.DeriveFont(2, Font::BOLD));
@@ -119,7 +117,7 @@ TEST_F(FontListTest, Fonts_FromFontWithNonNormalStyle) {
   EXPECT_EQ("Arial|6|italic", FontToString(fonts[0]));
 }
 
-TEST_F(FontListTest, Fonts_FromFontVector) {
+TEST(FontListTest, Fonts_FromFontVector) {
   // Test init from Font vector.
   Font font("Arial", 8);
   Font font_1("Sans serif", 10);
@@ -133,7 +131,7 @@ TEST_F(FontListTest, Fonts_FromFontVector) {
   EXPECT_EQ("Sans serif|8|bold", FontToString(fonts[1]));
 }
 
-TEST_F(FontListTest, Fonts_DescStringWithStyleInFlexibleFormat_RoundTrip) {
+TEST(FontListTest, Fonts_DescStringWithStyleInFlexibleFormat_RoundTrip) {
   // Test round trip from font description string to font vector to
   // font description string.
   FontList font_list = FontList("  serif  ,  Sans serif ,  Bold   "
@@ -146,7 +144,7 @@ TEST_F(FontListTest, Fonts_DescStringWithStyleInFlexibleFormat_RoundTrip) {
   EXPECT_EQ("serif,Sans serif,Bold Italic 13px", desc_str);
 }
 
-TEST_F(FontListTest, Fonts_FontVector_RoundTrip) {
+TEST(FontListTest, Fonts_FontVector_RoundTrip) {
   // Test round trip from font vector to font description string to font vector.
   Font font("Arial", 8);
   Font font_1("Sans serif", 10);
@@ -164,7 +162,7 @@ TEST_F(FontListTest, Fonts_FontVector_RoundTrip) {
   EXPECT_EQ("Sans serif|8|bold", FontToString(round_trip_fonts[1]));
 }
 
-TEST_F(FontListTest, FontDescString_GetStyle) {
+TEST(FontListTest, FontDescString_GetStyle) {
   FontList font_list = FontList("Arial,Sans serif, 8px");
   EXPECT_EQ(Font::NORMAL, font_list.GetFontStyle());
 
@@ -178,7 +176,7 @@ TEST_F(FontListTest, FontDescString_GetStyle) {
   EXPECT_EQ(Font::BOLD | Font::ITALIC, font_list.GetFontStyle());
 }
 
-TEST_F(FontListTest, Fonts_GetStyle) {
+TEST(FontListTest, Fonts_GetStyle) {
   std::vector<Font> fonts;
   fonts.push_back(gfx::Font("Arial", 8));
   fonts.push_back(gfx::Font("Sans serif", 8));
@@ -190,7 +188,7 @@ TEST_F(FontListTest, Fonts_GetStyle) {
   EXPECT_EQ(Font::ITALIC | Font::BOLD, font_list.GetFontStyle());
 }
 
-TEST_F(FontListTest, FontDescString_DeriveFontList) {
+TEST(FontListTest, FontDescString_DeriveFontList) {
   FontList font_list = FontList("Arial,Sans serif, 8px");
 
   FontList derived = font_list.DeriveFontList(Font::BOLD | Font::ITALIC);
@@ -198,7 +196,7 @@ TEST_F(FontListTest, FontDescString_DeriveFontList) {
             derived.GetFontDescriptionString());
 }
 
-TEST_F(FontListTest, Fonts_DeriveFontList) {
+TEST(FontListTest, Fonts_DeriveFontList) {
   std::vector<Font> fonts;
   fonts.push_back(gfx::Font("Arial", 8));
   fonts.push_back(gfx::Font("Sans serif", 8));
@@ -212,7 +210,7 @@ TEST_F(FontListTest, Fonts_DeriveFontList) {
   EXPECT_EQ("Sans serif|8|bold|italic", FontToString(derived_fonts[1]));
 }
 
-TEST_F(FontListTest, FontDescString_DeriveFontListWithSize) {
+TEST(FontListTest, FontDescString_DeriveFontListWithSize) {
   FontList font_list = FontList("Arial,Sans serif,Bold Italic  8px");
 
   FontList derived = font_list.DeriveFontListWithSize(10);
@@ -220,7 +218,7 @@ TEST_F(FontListTest, FontDescString_DeriveFontListWithSize) {
             derived.GetFontDescriptionString());
 }
 
-TEST_F(FontListTest, Fonts_DeriveFontListWithSize) {
+TEST(FontListTest, Fonts_DeriveFontListWithSize) {
   std::vector<Font> fonts;
   fonts.push_back(gfx::Font("Arial", 8));
   fonts.push_back(gfx::Font("Sans serif", 8));

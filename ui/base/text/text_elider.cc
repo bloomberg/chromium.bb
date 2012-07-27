@@ -5,7 +5,7 @@
 // This file implements utility functions for eliding and formatting UI text.
 //
 // Note that several of the functions declared in text_elider.h are implemented
-// in this file using helper classes in the anonymous namespace.
+// in this file using helper classes in an unnamed namespace.
 
 #include "ui/base/text/text_elider.h"
 

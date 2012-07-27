@@ -209,7 +209,7 @@ void EventQueueWatcher(const base::Closure& task) {
 // when firing keyboard and mouse click events.
 NSPoint g_mouse_location = { 0, 0 };
 
-}  // anonymous namespace
+}  // namespace
 
 namespace ui_controls {
 

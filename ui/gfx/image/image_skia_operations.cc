@@ -286,7 +286,7 @@ class DropShadowSource : public ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(DropShadowSource);
 };
 
-}  // namespace;
+}  // namespace
 
 // static
 ImageSkia ImageSkiaOperations::CreateBlendedImage(const ImageSkia& first,

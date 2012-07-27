@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/win/hwnd_subclass.h"
+
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/window_impl.h"
-#include "ui/base/win/hwnd_subclass.h"
 
 namespace ui {
-
-typedef testing::Test HWNDSubclassTest;
 
 namespace {
 
@@ -68,7 +67,7 @@ class TestMessageFilter : public HWNDMessageFilter {
 
 }  // namespace
 
-TEST_F(HWNDSubclassTest, Filtering) {
+TEST(HWNDSubclassTest, Filtering) {
   TestWindow window;
   window.Init(NULL, gfx::Rect(0, 0, 100, 100));
   EXPECT_TRUE(window.hwnd() != NULL);
@@ -97,7 +96,7 @@ TEST_F(HWNDSubclassTest, Filtering) {
   }
 }
 
-TEST_F(HWNDSubclassTest, FilteringMultipleFilters) {
+TEST(HWNDSubclassTest, FilteringMultipleFilters) {
   TestWindow window;
   window.Init(NULL, gfx::Rect(0, 0, 100, 100));
   EXPECT_TRUE(window.hwnd() != NULL);
@@ -131,7 +130,7 @@ TEST_F(HWNDSubclassTest, FilteringMultipleFilters) {
   }
 }
 
-TEST_F(HWNDSubclassTest, RemoveFilter) {
+TEST(HWNDSubclassTest, RemoveFilter) {
   TestWindow window;
   window.Init(NULL, gfx::Rect(0, 0, 100, 100));
   EXPECT_TRUE(window.hwnd() != NULL);

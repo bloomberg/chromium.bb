@@ -38,7 +38,7 @@ base::NativeLibrary LoadLibrary(const char* filename) {
   return LoadLibrary(FilePath(filename));
 }
 
-}  // namespace anonymous
+}  // namespace
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationEGLGLES2);

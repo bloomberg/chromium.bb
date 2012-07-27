@@ -37,7 +37,7 @@ Display* g_display;
 const char* g_glx_extensions = NULL;
 bool g_glx_create_context_robustness_supported = false;
 
-}  // namespace anonymous
+}  // namespace
 
 GLSurfaceGLX::GLSurfaceGLX() {}
 
