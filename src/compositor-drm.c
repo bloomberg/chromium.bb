@@ -815,6 +815,7 @@ drm_output_destroy(struct weston_output *output_base)
 	weston_output_destroy(&output->base);
 	wl_list_remove(&output->base.link);
 
+	free(output->name);
 	free(output);
 }
 
@@ -1456,6 +1457,7 @@ err_free:
 	drmModeFreeCrtc(output->original_crtc);
 	ec->crtc_allocator &= ~(1 << output->crtc_id);
 	ec->connector_allocator &= ~(1 << output->connector_id);
+	free(output->name);
 	free(output);
 
 	return -1;
