@@ -45,6 +45,7 @@ struct display {
 	struct wl_shell *shell;
 	struct wl_seat *seat;
 	struct wl_pointer *pointer;
+	struct wl_keyboard *keyboard;
 	struct {
 		EGLDisplay dpy;
 		EGLContext ctx;
@@ -54,11 +55,13 @@ struct display {
 	struct window *window;
 };
 
+struct geometry {
+	int width, height;
+};
+
 struct window {
 	struct display *display;
-	struct {
-		int width, height;
-	} geometry;
+	struct geometry geometry, window_size, fullscreen_size;
 	struct {
 		GLuint fbo;
 		GLuint color_rbo;
@@ -179,8 +182,6 @@ init_gl(struct window *window)
 	GLuint program;
 	GLint status;
 
-	glViewport(0, 0, window->geometry.width, window->geometry.height);
-
 	frag = create_shader(window, frag_shader_text, GL_FRAGMENT_SHADER);
 	vert = create_shader(window, vert_shader_text, GL_VERTEX_SHADER);
 
@@ -224,9 +225,16 @@ handle_configure(void *data, struct wl_shell_surface *shell_surface,
 {
 	struct window *window = data;
 
+	if (window->native)
+		wl_egl_window_resize(window->native, width, height, 0, 0);
+
 	window->geometry.width = width;
 	window->geometry.height = height;
-	window->configured = 1;
+
+	if (window->fullscreen)
+		window->fullscreen_size = window->geometry;
+	else
+		window->window_size = window->geometry;
 }
 
 static void
@@ -241,6 +249,48 @@ static const struct wl_shell_surface_listener shell_surface_listener = {
 };
 
 static void
+redraw(void *data, struct wl_callback *callback, uint32_t time);
+
+static void
+configure_callback(void *data, struct wl_callback *callback, uint32_t  time)
+{
+	struct window *window = data;
+
+	wl_callback_destroy(callback);
+
+	window->configured = 1;
+	redraw(data, NULL, time);
+}
+
+static struct wl_callback_listener configure_callback_listener = {
+	configure_callback,
+};
+
+static void
+toggle_fullscreen(struct window *window, int fullscreen)
+{
+	struct wl_callback *callback;
+
+	window->fullscreen = fullscreen;
+	window->configured = 0;
+
+	if (fullscreen) {
+		wl_shell_surface_set_fullscreen(window->shell_surface,
+						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+						0, NULL);
+	} else {
+		wl_shell_surface_set_toplevel(window->shell_surface);
+		handle_configure(window, window->shell_surface, 0,
+				 window->window_size.width,
+				 window->window_size.height);
+	}
+
+	callback = wl_display_sync(window->display->display);
+	wl_callback_add_listener(callback, &configure_callback_listener,
+				 window);
+}
+
+static void
 create_surface(struct window *window)
 {
 	struct display *display = window->display;
@@ -253,22 +303,10 @@ create_surface(struct window *window)
 	wl_shell_surface_add_listener(window->shell_surface,
 				      &shell_surface_listener, window);
 
-	if (window->fullscreen) {
-		window->configured = 0;
-		wl_shell_surface_set_fullscreen(window->shell_surface,
-						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-						0, NULL);
-
-		while (!window->configured)
-			wl_display_iterate(display->display, display->mask);
-	}
-	else
-		wl_shell_surface_set_toplevel(window->shell_surface);
-
 	window->native =
 		wl_egl_window_create(window->surface,
-				     window->geometry.width,
-				     window->geometry.height);
+				     window->window_size.width,
+				     window->window_size.height);
 	window->egl_surface =
 		eglCreateWindowSurface(display->egl.dpy,
 				       display->egl.conf,
@@ -277,6 +315,8 @@ create_surface(struct window *window)
 	ret = eglMakeCurrent(window->display->egl.dpy, window->egl_surface,
 			     window->egl_surface, window->display->egl.ctx);
 	assert(ret == EGL_TRUE);
+
+	toggle_fullscreen(window, window->fullscreen);
 }
 
 static void
@@ -317,6 +357,12 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	static const int32_t speed_div = 5;
 	static uint32_t start_time = 0;
 
+	if (callback)
+		wl_callback_destroy(callback);
+
+	if (!window->configured)
+		return;
+
 	if (start_time == 0)
 		start_time = time;
 
@@ -325,6 +371,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	rotation[0][2] =  sin(angle);
 	rotation[2][0] = -sin(angle);
 	rotation[2][2] =  cos(angle);
+
+	glViewport(0, 0, window->geometry.width, window->geometry.height);
 
 	glUniformMatrix4fv(window->gl.rotation_uniform, 1, GL_FALSE,
 			   (GLfloat *) rotation);
@@ -343,8 +391,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	glDisableVertexAttribArray(window->gl.col);
 
 	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
-	if (callback)
-		wl_callback_destroy(callback);
 
 	window->callback = wl_surface_frame(window->surface);
 	wl_callback_add_listener(window->callback, &frame_listener, window);
@@ -404,6 +450,52 @@ static const struct wl_pointer_listener pointer_listener = {
 };
 
 static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+		       uint32_t format, int fd, uint32_t size)
+{
+}
+
+static void
+keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+		      uint32_t serial, struct wl_surface *surface,
+		      struct wl_array *keys)
+{
+}
+
+static void
+keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+		      uint32_t serial, struct wl_surface *surface)
+{
+}
+
+static void
+keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+		    uint32_t serial, uint32_t time, uint32_t key,
+		    uint32_t state)
+{
+	struct display *d = data;
+
+	if (key == KEY_F11 && state)
+		toggle_fullscreen(d->window, d->window->fullscreen ^ 1);
+}
+
+static void
+keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+			  uint32_t serial, uint32_t mods_depressed,
+			  uint32_t mods_latched, uint32_t mods_locked,
+			  uint32_t group)
+{
+}
+
+static const struct wl_keyboard_listener keyboard_listener = {
+	keyboard_handle_keymap,
+	keyboard_handle_enter,
+	keyboard_handle_leave,
+	keyboard_handle_key,
+	keyboard_handle_modifiers,
+};
+
+static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
 			 enum wl_seat_capability caps)
 {
@@ -415,6 +507,14 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && d->pointer) {
 		wl_pointer_destroy(d->pointer);
 		d->pointer = NULL;
+	}
+
+	if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !d->keyboard) {
+		d->keyboard = wl_seat_get_keyboard(seat);
+		wl_keyboard_add_listener(d->keyboard, &keyboard_listener, d);
+	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && d->keyboard) {
+		wl_keyboard_destroy(d->keyboard);
+		d->keyboard = NULL;
 	}
 }
 
@@ -467,8 +567,8 @@ main(int argc, char **argv)
 
 	window.display = &display;
 	display.window = &window;
-	window.geometry.width  = 250;
-	window.geometry.height = 250;
+	window.window_size.width  = 250;
+	window.window_size.height = 250;
 
 	alpha_size = 1;
 	for (i = 1; i < argc; i++) {
@@ -498,8 +598,6 @@ main(int argc, char **argv)
 	sigemptyset(&sigint.sa_mask);
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
-
-	redraw(&window, NULL, 0);
 
 	while (running)
 		wl_display_iterate(display.display, display.mask);
