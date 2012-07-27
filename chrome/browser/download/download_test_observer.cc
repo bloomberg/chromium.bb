@@ -8,6 +8,9 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,6 +19,8 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+
+namespace {
 
 // These functions take scoped_refptr's to DownloadManager because they
 // are posted to message queues, and hence may execute arbitrarily after
@@ -40,17 +45,16 @@ void DenyDangerousDownload(scoped_refptr<DownloadManager> download_manager,
   download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
 }
 
+}  // namespace
+
 DownloadTestObserver::DownloadTestObserver(
     DownloadManager* download_manager,
     size_t wait_count,
-    bool finish_on_select_file,
     DangerousDownloadAction dangerous_download_action)
     : download_manager_(download_manager),
       wait_count_(wait_count),
       finished_downloads_at_construction_(0),
       waiting_(false),
-      finish_on_select_file_(finish_on_select_file),
-      select_file_dialog_seen_(false),
       dangerous_download_action_(dangerous_download_action) {
 }
 
@@ -77,10 +81,8 @@ void DownloadTestObserver::WaitForFinished() {
 }
 
 bool DownloadTestObserver::IsFinished() const {
-  if (finished_downloads_.size() - finished_downloads_at_construction_ >=
-      wait_count_)
-    return true;
-  return (finish_on_select_file_ && select_file_dialog_seen_);
+  return (finished_downloads_.size() - finished_downloads_at_construction_ >=
+          wait_count_);
 }
 
 void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
@@ -171,13 +173,6 @@ void DownloadTestObserver::ModelChanged(DownloadManager* manager) {
   }
 }
 
-void DownloadTestObserver::SelectFileDialogDisplayed(
-    DownloadManager* manager, int32 /* id */) {
-  DCHECK_EQ(manager, download_manager_);
-  select_file_dialog_seen_ = true;
-  SignalIfFinished();
-}
-
 size_t DownloadTestObserver::NumDangerousDownloadsSeen() const {
   return dangerous_downloads_seen_.size();
 }
@@ -215,11 +210,9 @@ void DownloadTestObserver::SignalIfFinished() {
 DownloadTestObserverTerminal::DownloadTestObserverTerminal(
     content::DownloadManager* download_manager,
     size_t wait_count,
-    bool finish_on_select_file,
     DangerousDownloadAction dangerous_download_action)
         : DownloadTestObserver(download_manager,
                                wait_count,
-                               finish_on_select_file,
                                dangerous_download_action) {
   // You can't rely on overriden virtual functions in a base class constructor;
   // the virtual function table hasn't been set up yet.  So, we have to do any
@@ -239,11 +232,9 @@ bool DownloadTestObserverTerminal::IsDownloadInFinalState(
 
 DownloadTestObserverInProgress::DownloadTestObserverInProgress(
     content::DownloadManager* download_manager,
-    size_t wait_count,
-    bool finish_on_select_file)
+    size_t wait_count)
         : DownloadTestObserver(download_manager,
                                wait_count,
-                               finish_on_select_file,
                                ON_DANGEROUS_DOWNLOAD_ACCEPT) {
   // You can't override virtual functions in a base class constructor; the
   // virtual function table hasn't been set up yet.  So, we have to do any
@@ -401,3 +392,63 @@ const content::DownloadUrlParameters::OnStartedCallback
       &DownloadTestItemCreationObserver::DownloadItemCreationCallback, this);
 }
 
+namespace internal {
+
+// Test ChromeDownloadManagerDelegate that controls whether how file chooser
+// dialogs are handled. By default, file chooser dialogs are disabled.
+class MockFileChooserDownloadManagerDelegate
+    : public ChromeDownloadManagerDelegate {
+ public:
+  explicit MockFileChooserDownloadManagerDelegate(Profile* profile)
+      : ChromeDownloadManagerDelegate(profile),
+        file_chooser_enabled_(false),
+        file_chooser_displayed_(false) {}
+
+  void EnableFileChooser(bool enable) {
+    file_chooser_enabled_ = enable;
+  }
+
+  bool TestAndResetDidShowFileChooser() {
+    bool did_show = file_chooser_displayed_;
+    file_chooser_displayed_ = false;
+    return did_show;
+  }
+
+ private:
+  virtual ~MockFileChooserDownloadManagerDelegate() {}
+
+  virtual void ChooseDownloadPath(DownloadItem* item,
+                                  const FilePath& suggested_path,
+                                  const FileSelectedCallback&
+                                      callback) OVERRIDE {
+    file_chooser_displayed_ = true;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   (file_chooser_enabled_ ? suggested_path : FilePath())));
+  }
+
+  bool file_chooser_enabled_;
+  bool file_chooser_displayed_;
+};
+
+}  // namespace internal
+
+DownloadTestFileChooserObserver::DownloadTestFileChooserObserver(
+    Profile* profile) {
+  test_delegate_ =
+      new internal::MockFileChooserDownloadManagerDelegate(profile);
+  DownloadServiceFactory::GetForProfile(profile)->
+      SetDownloadManagerDelegateForTesting(test_delegate_.get());
+}
+
+DownloadTestFileChooserObserver::~DownloadTestFileChooserObserver() {
+}
+
+void DownloadTestFileChooserObserver::EnableFileChooser(bool enable) {
+  test_delegate_->EnableFileChooser(enable);
+}
+
+bool DownloadTestFileChooserObserver::TestAndResetDidShowFileChooser() {
+  return test_delegate_->TestAndResetDidShowFileChooser();
+}

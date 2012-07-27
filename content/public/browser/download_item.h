@@ -27,7 +27,6 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/common/page_transition_types.h"
 
-class DownloadFileManager;
 class FilePath;
 class GURL;
 struct DownloadCreateInfo;
@@ -221,30 +220,10 @@ class CONTENT_EXPORT DownloadItem {
   // Get the target disposition.
   virtual TargetDisposition GetTargetDisposition() const = 0;
 
-  // Called when the target path has been determined. |target_path| is the
-  // suggested target path. |disposition| indicates how the target path should
-  // be used (see TargetDisposition). |danger_type| is the danger level of
-  // |target_path| as determined by the caller. If |disposition| is
-  // TARGET_DISPOSITION_PROMPT, then OnTargetPathSelected() should be called
-  // subsequently with the user's selected target path.
-  virtual void OnTargetPathDetermined(
-      const FilePath& target_path,
-      TargetDisposition disposition,
-      content::DownloadDangerType danger_type) = 0;
-
-  // This method should be called if and only if OnTargetPathDetermined() was
-  // called previously with disposition set to TARGET_DISPOSITION_PROMPT.
-  // |target_path| is the path that the user selected after being prompted for a
-  // target path.
-  virtual void OnTargetPathSelected(const FilePath& target_path) = 0;
-
   // Called if a check of the download contents was performed and the results of
   // the test are available. This should only be called after AllDataSaved() is
   // true.
   virtual void OnContentCheckCompleted(DownloadDangerType danger_type) = 0;
-
-  virtual void OnIntermediatePathDetermined(DownloadFileManager* file_manager,
-                                            const FilePath& path) = 0;
 
   virtual bool IsPersisted() const = 0;
 
@@ -282,7 +261,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual FilePath GetTargetName() const = 0;
   virtual const FilePath& GetForcedFilePath() const = 0;
   virtual bool HasUserGesture() const = 0;
-  virtual content::PageTransition GetTransitionType() const = 0;
+  virtual PageTransition GetTransitionType() const = 0;
   virtual bool IsOtr() const = 0;
   virtual bool IsTemporary() const = 0;
   virtual void SetIsTemporary(bool temporary) = 0;

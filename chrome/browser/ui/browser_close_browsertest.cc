@@ -119,8 +119,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
         BrowserContext::GetDownloadManager(browser->profile());
     scoped_ptr<DownloadTestObserver> observer(
         new DownloadTestObserverInProgress(download_manager,
-                                           num_downloads,
-                                           true));  // Bail on select file.
+                                           num_downloads));
 
     // Set of that number of downloads.
     size_t count_downloads = num_downloads;
@@ -239,6 +238,8 @@ class BrowserCloseTest : public InProcessBrowserTest {
     EXPECT_TRUE(second_profile_);
     if (!second_profile_) return false;
 
+    DownloadTestFileChooserObserver(first_profile_) .EnableFileChooser(false);
+    DownloadTestFileChooserObserver(second_profile_).EnableFileChooser(false);
     return true;
   }
 
@@ -276,6 +277,10 @@ class BrowserCloseTest : public InProcessBrowserTest {
     Profile* first_profile_incognito = first_profile_->GetOffTheRecordProfile();
     Profile* second_profile_incognito =
         second_profile_->GetOffTheRecordProfile();
+    DownloadTestFileChooserObserver(first_profile_incognito)
+        .EnableFileChooser(false);
+    DownloadTestFileChooserObserver(second_profile_incognito)
+        .EnableFileChooser(false);
 
     // For simplicty of coding, we create a window on each profile so that
     // we can easily create downloads, then we destroy or create windows

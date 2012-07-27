@@ -154,19 +154,9 @@ DownloadId ChromeDownloadManagerDelegate::GetNextId() {
       GetDelegate()->GetNextId();
 }
 
-bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
-  // We create a download item and store it in our download map, and inform the
-  // history system of a new download. Since this method can be called while the
-  // history service thread is still reading the persistent state, we do not
-  // insert the new DownloadItem into 'history_downloads_' or inform our
-  // observers at this point. OnCreateDownloadEntryComplete() handles that
-  // finalization of the the download creation as a callback from the history
-  // thread.
-  DownloadItem* download =
-      download_manager_->GetActiveDownloadItem(download_id);
-  if (!download)
-    return false;
-
+bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
+    DownloadItem* download,
+    const content::DownloadTargetCallback& callback) {
 #if defined(ENABLE_SAFE_BROWSING)
   DownloadProtectionService* service = GetDownloadProtectionService();
   if (service) {
@@ -177,15 +167,20 @@ bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
         base::Bind(
             &ChromeDownloadManagerDelegate::CheckDownloadUrlDone,
             this,
-            download->GetId()));
-    return false;
+            download->GetId(),
+            callback));
+    return true;
   }
 #endif
-  CheckDownloadUrlDone(download_id, DownloadProtectionService::SAFE);
-  return false;
+  CheckDownloadUrlDone(download->GetId(), callback,
+                       DownloadProtectionService::SAFE);
+  return true;
 }
 
-void ChromeDownloadManagerDelegate::ChooseDownloadPath(DownloadItem* item) {
+void ChromeDownloadManagerDelegate::ChooseDownloadPath(
+    DownloadItem* item,
+    const FilePath& suggested_path,
+    const FileSelectedCallback& file_selected_callback) {
   // Deletes itself.
   DownloadFilePicker* file_picker =
 #if defined(OS_CHROMEOS)
@@ -193,20 +188,22 @@ void ChromeDownloadManagerDelegate::ChooseDownloadPath(DownloadItem* item) {
 #else
       new DownloadFilePicker();
 #endif
-  file_picker->Init(download_manager_, item);
+  file_picker->Init(download_manager_, item, suggested_path,
+                    file_selected_callback);
 }
 
 FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(
-    const DownloadItem& download) {
+    const FilePath& target_path,
+    content::DownloadDangerType danger_type) {
   // If the download is not dangerous, just append .crdownload to the target
   // path.
-  if (download.GetDangerType() == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
-    return download_util::GetCrDownloadPath(download.GetTargetFilePath());
+  if (danger_type == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
+    return download_util::GetCrDownloadPath(target_path);
 
   // If the download is potentially dangerous we create a filename of the form
   // 'Unconfirmed <random>.crdownload'.
   FilePath::StringType file_name;
-  FilePath dir = download.GetTargetFilePath().DirName();
+  FilePath dir = target_path.DirName();
 #if defined(OS_WIN)
   string16 unconfirmed_prefix =
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
@@ -497,6 +494,10 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
 #endif
 }
 
+void ChromeDownloadManagerDelegate::ClearLastDownloadPath() {
+  last_download_path_.clear();
+}
+
 DownloadProtectionService*
     ChromeDownloadManagerDelegate::GetDownloadProtectionService() {
 #if defined(ENABLE_SAFE_BROWSING)
@@ -549,7 +550,7 @@ void ChromeDownloadManagerDelegate::GetReservedPath(
     const FilePath& target_path,
     const FilePath& default_download_path,
     bool should_uniquify_path,
-    const DownloadPathReservationTracker::ReservedPathCallback callback) {
+    const DownloadPathReservationTracker::ReservedPathCallback& callback) {
   DownloadPathReservationTracker::GetReservedPath(
       download, target_path, default_download_path, should_uniquify_path,
       callback);
@@ -557,6 +558,7 @@ void ChromeDownloadManagerDelegate::GetReservedPath(
 
 void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
     int32 download_id,
+    const content::DownloadTargetCallback& callback,
     DownloadProtectionService::DownloadCheckResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download =
@@ -573,7 +575,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
   download_history_->CheckVisitedReferrerBefore(
       download_id, download->GetReferrerUrl(),
       base::Bind(&ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone,
-                 base::Unretained(this), download_id, danger_type));
+                 base::Unretained(this), download_id, callback, danger_type));
 }
 
 void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
@@ -631,6 +633,7 @@ void ChromeDownloadManagerDelegate::Observe(
 
 void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     int32 download_id,
+    const content::DownloadTargetCallback& callback,
     content::DownloadDangerType danger_type,
     bool visited_referrer_before) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -672,8 +675,8 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     // 1) using the default download directory.
     // 2) prompting the user.
     FilePath target_directory;
-    if (should_prompt && !download_manager_->LastDownloadPath().empty())
-      target_directory = download_manager_->LastDownloadPath();
+    if (should_prompt && !last_download_path_.empty())
+      target_directory = last_download_path_;
     else
       target_directory = download_prefs_->DownloadPath();
     suggested_path = target_directory.Append(generated_name);
@@ -716,19 +719,23 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
       profile_, suggested_path, download,
       base::Bind(
           &ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback,
-          this, download->GetId(), should_prompt, is_forced_path, danger_type));
+          this, download->GetId(), callback, should_prompt, is_forced_path,
+          danger_type));
 #else
   GetReservedPath(
       *download, suggested_path, download_prefs_->DownloadPath(),
       !is_forced_path,
       base::Bind(&ChromeDownloadManagerDelegate::OnPathReservationAvailable,
-                 this, download->GetId(), should_prompt, danger_type));
+                 this, download->GetId(), callback, should_prompt,
+                 danger_type));
 #endif
 }
 
 #if defined (OS_CHROMEOS)
+// TODO(asanka): Merge this logic with the logic in DownloadFilePickerChromeOS.
 void ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback(
     int32 download_id,
+    const content::DownloadTargetCallback& callback,
     bool should_prompt,
     bool is_forced_path,
     content::DownloadDangerType danger_type,
@@ -743,30 +750,67 @@ void ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback(
       *download, suggested_path, download_prefs_->DownloadPath(),
       !is_forced_path,
       base::Bind(&ChromeDownloadManagerDelegate::OnPathReservationAvailable,
-                 this, download->GetId(), should_prompt, danger_type));
+                 this, download->GetId(), callback, should_prompt,
+                 danger_type));
 }
 #endif
 
 void ChromeDownloadManagerDelegate::OnPathReservationAvailable(
     int32 download_id,
+    const content::DownloadTargetCallback& callback,
     bool should_prompt,
     content::DownloadDangerType danger_type,
-    const FilePath& target_path,
-    bool target_path_verified) {
+    const FilePath& reserved_path,
+    bool reserved_path_verified) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download =
       download_manager_->GetActiveDownloadItem(download_id);
   if (!download)
     return;
-  DownloadItem::TargetDisposition disposition;
-  // If the target path could not be verified then the path was non-existant,
-  // non writeable or could not be uniquified. Prompt the user.
-  if (should_prompt || !target_path_verified)
-    disposition = DownloadItem::TARGET_DISPOSITION_PROMPT;
-  else
-    disposition = DownloadItem::TARGET_DISPOSITION_OVERWRITE;
-  download->OnTargetPathDetermined(target_path, disposition, danger_type);
-  download_manager_->RestartDownload(download_id);
+  if (should_prompt || !reserved_path_verified) {
+    // If the target path could not be verified then the path was non-existant,
+    // non writeable or could not be uniquified. Prompt the user.
+    ChooseDownloadPath(
+        download, reserved_path,
+        base::Bind(&ChromeDownloadManagerDelegate::OnTargetPathDetermined,
+                   this, download_id, callback,
+                   DownloadItem::TARGET_DISPOSITION_PROMPT, danger_type));
+  } else {
+    OnTargetPathDetermined(download_id, callback,
+                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                           danger_type, reserved_path);
+  }
+}
+
+void ChromeDownloadManagerDelegate::OnTargetPathDetermined(
+    int32 download_id,
+    const content::DownloadTargetCallback& callback,
+    DownloadItem::TargetDisposition disposition,
+    content::DownloadDangerType danger_type,
+    const FilePath& target_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FilePath intermediate_path;
+  DownloadItem* download =
+      download_manager_->GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
+
+  // If |target_path| is empty, then that means that the user wants to cancel
+  // the download.
+  if (!target_path.empty()) {
+    intermediate_path = GetIntermediatePath(target_path, danger_type);
+
+    // Retain the last directory. Exclude temporary downloads since the path
+    // likely points at the location of a temporary file.
+    // TODO(asanka): This logic is a hack. DownloadFilePicker should give us a
+    //               directory to persist. Or perhaps, if the GData path
+    //               substitution logic is moved here, then we would have a
+    //               persistable path after the DownloadFilePicker is done.
+    if (disposition == DownloadItem::TARGET_DISPOSITION_PROMPT &&
+        !download->IsTemporary())
+      last_download_path_ = target_path.DirName();
+  }
+  callback.Run(target_path, disposition, danger_type, intermediate_path);
 }
 
 void ChromeDownloadManagerDelegate::OnItemAddedToPersistentStore(

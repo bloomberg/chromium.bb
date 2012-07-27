@@ -35,8 +35,6 @@ class DownloadStatusUpdater
   // Methods inherited from content::DownloadManager::Observer.
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
   virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
-  virtual void SelectFileDialogDisplayed(
-      content::DownloadManager* manager, int32 id) OVERRIDE;
 
   // Methods inherited from content::DownloadItem::Observer.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;

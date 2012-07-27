@@ -72,10 +72,6 @@ void DownloadStatusUpdater::ManagerGoingDown(
   // notification (in the !IN_PROGRESS conditional branch in UpdateItem).
 }
 
-void DownloadStatusUpdater::SelectFileDialogDisplayed(
-    content::DownloadManager* manager, int32 id) {
-}
-
 // Methods inherited from content::DownloadItem::Observer.
 void DownloadStatusUpdater::OnDownloadUpdated(
     content::DownloadItem* download) {

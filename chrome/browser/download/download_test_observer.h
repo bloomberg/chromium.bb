@@ -15,6 +15,12 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "net/base/net_errors.h"
 
+namespace internal {
+class MockFileChooserDownloadManagerDelegate;
+}
+
+class Profile;
+
 // Detects changes to the downloads after construction.
 // Finishes when one of the following happens:
 //   - A specified number of downloads change to a terminal state (defined
@@ -39,19 +45,12 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
 
   // Create an object that will be considered finished when |wait_count|
   // download items have entered a terminal state.
-  // If |finish_on_select_file| is true, the object will also be
-  // considered finished if the DownloadManager raises a
-  // SelectFileDialogDisplayed() notification.
   DownloadTestObserver(
       content::DownloadManager* download_manager,
       size_t wait_count,
-      bool finish_on_select_file,
       DangerousDownloadAction dangerous_download_action);
 
   virtual ~DownloadTestObserver();
-
-  // State accessors.
-  bool select_file_dialog_seen() const { return select_file_dialog_seen_; }
 
   // Wait for the requested number of downloads to enter a terminal state.
   void WaitForFinished();
@@ -65,9 +64,6 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
 
   // content::DownloadManager::Observer
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
-
-  virtual void SelectFileDialogDisplayed(
-      content::DownloadManager* manager, int32 id) OVERRIDE;
 
   size_t NumDangerousDownloadsSeen() const;
 
@@ -131,13 +127,6 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
   // all downloads completing.
   bool waiting_;
 
-  // True if we should transition the DownloadTestObserver to finished if
-  // the select file dialog comes up.
-  bool finish_on_select_file_;
-
-  // True if we've seen the select file dialog.
-  bool select_file_dialog_seen_;
-
   // Action to take if a dangerous download is encountered.
   DangerousDownloadAction dangerous_download_action_;
 
@@ -157,7 +146,6 @@ class DownloadTestObserverTerminal : public DownloadTestObserver {
   DownloadTestObserverTerminal(
       content::DownloadManager* download_manager,
       size_t wait_count,
-      bool finish_on_select_file,
       DangerousDownloadAction dangerous_download_action);
 
   virtual ~DownloadTestObserverTerminal();
@@ -182,8 +170,7 @@ class DownloadTestObserverInProgress : public DownloadTestObserver {
   // SelectFileDialogDisplayed() notification.
   DownloadTestObserverInProgress(
       content::DownloadManager* download_manager,
-      size_t wait_count,
-      bool finish_on_select_file);
+      size_t wait_count);
 
   virtual ~DownloadTestObserverInProgress();
 
@@ -277,6 +264,32 @@ class DownloadTestItemCreationObserver
   bool waiting_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestItemCreationObserver);
+};
+
+// Observes and overrides file chooser activity for a profile. By default, once
+// attached to a profile, this class overrides the default file chooser by
+// replacing the ChromeDownloadManagerDelegate associated with |profile|.
+// NOTE: Again, this overrides the ChromeDownloadManagerDelegate for |profile|.
+class DownloadTestFileChooserObserver {
+ public:
+  // Attaches to |profile|. By default file chooser dialogs will be disabled
+  // once attached. Call EnableFileChooser() to re-enable.
+  explicit DownloadTestFileChooserObserver(Profile* profile);
+  ~DownloadTestFileChooserObserver();
+
+  // Sets whether the file chooser dialog is enabled. If |enable| is false, any
+  // attempt to display a file chooser dialog will cause the download to be
+  // canceled. Otherwise, attempting to display a file chooser dialog will
+  // result in the download continuing with the suggested path.
+  void EnableFileChooser(bool enable);
+
+  // Returns true if a file chooser dialog was displayed since the last time
+  // this method was called.
+  bool TestAndResetDidShowFileChooser();
+
+ private:
+  scoped_refptr<internal::MockFileChooserDownloadManagerDelegate>
+      test_delegate_;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_OBSERVER_H_

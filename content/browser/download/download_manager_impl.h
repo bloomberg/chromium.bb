@@ -86,11 +86,6 @@ class CONTENT_EXPORT DownloadManagerImpl
                                             int64 db_handle) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
-  virtual FilePath LastDownloadPath() OVERRIDE;
-  virtual void ClearLastDownloadPath() OVERRIDE;
-  virtual void FileSelected(const FilePath& path, int32 download_id) OVERRIDE;
-  virtual void FileSelectionCanceled(int32 download_id) OVERRIDE;
-  virtual void RestartDownload(int32 download_id) OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
   virtual content::DownloadItem* GetDownloadItem(int id) OVERRIDE;
   virtual content::DownloadItem* GetDownload(int id) OVERRIDE;
@@ -138,11 +133,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // and then notifies this update to the file's observer.
   void OnFileRemovalDetected(int32 download_id);
 
-  // Called back after a target path for the file to be downloaded to has been
-  // determined, either automatically based on the suggested file name, or by
-  // the user in a Save As dialog box.
-  void OnTargetPathAvailable(DownloadItemImpl* download);
-
   // Removes |download| from the active and in progress maps.
   // Called when the download is cancelled or has an error.
   // Does nothing if the download is not in the history DB.
@@ -167,6 +157,16 @@ class CONTENT_EXPORT DownloadManagerImpl
   void OnDownloadFileCreated(
       int32 download_id, content::DownloadInterruptReason reason);
 
+  // Called when the delegate has completed determining the download target.
+  // Arguments following |download_id| are as per
+  // content::DownloadTargetCallback.
+  void OnDownloadTargetDetermined(
+      int32 download_id,
+      const FilePath& target_path,
+      content::DownloadItem::TargetDisposition disposition,
+      content::DownloadDangerType danger_type,
+      const FilePath& intermediate_path);
+
   // Called when a download entry is committed to the persistent store.
   void OnDownloadItemAddedToPersistentStore(DownloadItemImpl* item);
 
@@ -175,6 +175,7 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Overridden from DownloadItemImplDelegate
   // (Note that |GetBrowserContext| are present in both interfaces.)
+  virtual DownloadFileManager* GetDownloadFileManager() OVERRIDE;
   virtual bool ShouldOpenDownload(DownloadItemImpl* item) OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item) OVERRIDE;
@@ -229,10 +230,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Non-owning pointer for handling file writing on the download_thread_.
   DownloadFileManager* file_manager_;
-
-  // The user's last choice for download directory. This is only used when the
-  // user wants us to prompt for a save location for each download.
-  FilePath last_download_path_;
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   content::DownloadManagerDelegate* delegate_;

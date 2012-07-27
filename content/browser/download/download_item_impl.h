@@ -61,6 +61,17 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
   // Implementation functions (not part of the DownloadItem interface).
 
+  // Called when the target path has been determined. |target_path| is the
+  // suggested target path. |disposition| indicates how the target path should
+  // be used (see TargetDisposition). |danger_type| is the danger level of
+  // |target_path| as determined by the caller. |intermediate_path| is the path
+  // to use to store the download until OnDownloadCompleting() is called.
+  virtual void OnDownloadTargetDetermined(
+      const FilePath& target_path,
+      TargetDisposition disposition,
+      content::DownloadDangerType danger_type,
+      const FilePath& intermediate_path);
+
   // Indicate that an error has occurred on the download.
   virtual void Interrupt(content::DownloadInterruptReason reason);
 
@@ -76,7 +87,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // call those functions from
   // DownloadManager::FileSelectionCancelled() without doing some
   // rewrites of the DownloadManager queues.
-  virtual void OffThreadCancel(DownloadFileManager* file_manager);
+  virtual void OffThreadCancel();
 
   // Called when the downloaded file is removed.
   virtual void OnDownloadedFileRemoved();
@@ -84,7 +95,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // Called when the download is ready to complete.
   // This may perform final rename if necessary and will eventually call
   // DownloadItem::Completed().
-  virtual void OnDownloadCompleting(DownloadFileManager* file_manager);
+  virtual void OnDownloadCompleting();
 
   // Called periodically from the download thread, or from the UI thread
   // for saving packages.
@@ -133,15 +144,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual const FilePath& GetFullPath() const OVERRIDE;
   virtual const FilePath& GetTargetFilePath() const OVERRIDE;
   virtual TargetDisposition GetTargetDisposition() const OVERRIDE;
-  virtual void OnTargetPathDetermined(
-      const FilePath& target_path,
-      TargetDisposition disposition,
-      content::DownloadDangerType danger_type) OVERRIDE;
-  virtual void OnTargetPathSelected(const FilePath& target_path) OVERRIDE;
   virtual void OnContentCheckCompleted(
       content::DownloadDangerType danger_type) OVERRIDE;
-  virtual void OnIntermediatePathDetermined(DownloadFileManager* file_manager,
-                                            const FilePath& path) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual const std::vector<GURL>& GetUrlChain() const OVERRIDE;
   virtual const GURL& GetOriginalUrl() const OVERRIDE;
@@ -231,8 +235,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   void SetFullPath(const FilePath& new_path);
 
   // Callback invoked when the download has been renamed to its final name.
-  void OnDownloadRenamedToFinalName(DownloadFileManager* file_manager,
-                                    content::DownloadInterruptReason reason,
+  void OnDownloadRenamedToFinalName(content::DownloadInterruptReason reason,
                                     const FilePath& full_path);
 
   // Callback invoked when the download has been renamed to its intermediate

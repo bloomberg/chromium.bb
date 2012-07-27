@@ -13,13 +13,10 @@ DownloadId DownloadManagerDelegate::GetNextId() {
   return DownloadId::Invalid();
 }
 
-bool DownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
-  return true;
-}
-
-FilePath DownloadManagerDelegate::GetIntermediatePath(
-    const DownloadItem& item) {
-  return item.GetTargetFilePath();
+bool DownloadManagerDelegate::DetermineDownloadTarget(
+    DownloadItem* item,
+    const DownloadTargetCallback& callback) {
+  return false;
 }
 
 WebContents* DownloadManagerDelegate::

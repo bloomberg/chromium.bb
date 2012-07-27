@@ -699,7 +699,7 @@ void DownloadItemImpl::TogglePause() {
   UpdateObservers();
 }
 
-void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
+void DownloadItemImpl::OnDownloadCompleting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(20) << __FUNCTION__ << "()"
@@ -707,31 +707,28 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
            << " " << DebugString(true);
   DCHECK(!GetTargetName().empty());
   DCHECK_NE(DANGEROUS, GetSafetyState());
-  DCHECK(file_manager);
 
   if (NeedsRename()) {
     DownloadFileManager::RenameCompletionCallback callback =
         base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Unretained(file_manager));
+                   weak_ptr_factory_.GetWeakPtr());
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::RenameDownloadFile,
-                   file_manager, GetGlobalId(), GetTargetFilePath(),
-                   true, callback));
+                   delegate_->GetDownloadFileManager(), GetGlobalId(),
+                   GetTargetFilePath(), true, callback));
   } else {
     // Complete the download and release the DownloadFile.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::CompleteDownload,
-                   file_manager, GetGlobalId(),
+                   delegate_->GetDownloadFileManager(), GetGlobalId(),
                    base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
                               weak_ptr_factory_.GetWeakPtr())));
   }
 }
 
 void DownloadItemImpl::OnDownloadRenamedToFinalName(
-    DownloadFileManager* file_manager,
     content::DownloadInterruptReason reason,
     const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -757,7 +754,7 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::CompleteDownload,
-                 file_manager, GetGlobalId(),
+                 delegate_->GetDownloadFileManager(), GetGlobalId(),
                  base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
                             weak_ptr_factory_.GetWeakPtr())));
 }
@@ -866,20 +863,43 @@ DownloadItem::TargetDisposition DownloadItemImpl::GetTargetDisposition() const {
   return target_disposition_;
 }
 
-void DownloadItemImpl::OnTargetPathDetermined(
+void DownloadItemImpl::OnDownloadTargetDetermined(
     const FilePath& target_path,
     TargetDisposition disposition,
-    content::DownloadDangerType danger_type) {
+    content::DownloadDangerType danger_type,
+    const FilePath& intermediate_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If the |target_path| is empty, then we consider this download to be
+  // canceled.
+  if (target_path.empty()) {
+    Cancel(true);
+    return;
+  }
+
   target_path_ = target_path;
   target_disposition_ = disposition;
   SetDangerType(danger_type);
-}
+  // TODO(asanka): SetDangerType() doesn't need to send a notification here.
 
-void DownloadItemImpl::OnTargetPathSelected(const FilePath& target_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(TARGET_DISPOSITION_PROMPT, target_disposition_);
-  target_path_ = target_path;
+  // We want the intermediate and target paths to refer to the same directory so
+  // that they are both on the same device and subject to same
+  // space/permission/availability constraints.
+  DCHECK(intermediate_path.DirName() == target_path.DirName());
+
+  // Rename to intermediate name.
+  // TODO(asanka): Skip this rename if AllDataSaved() is true. This avoids a
+  //               spurious rename when we can just rename to the final
+  //               filename. Unnecessary renames may cause bugs like
+  //               http://crbug.com/74187.
+  DownloadFileManager::RenameCompletionCallback callback =
+      base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
+                 weak_ptr_factory_.GetWeakPtr());
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::RenameDownloadFile,
+                 delegate_->GetDownloadFileManager(), GetGlobalId(),
+                 intermediate_path, false, callback));
 }
 
 void DownloadItemImpl::OnContentCheckCompleted(
@@ -888,19 +908,6 @@ void DownloadItemImpl::OnContentCheckCompleted(
   DCHECK(AllDataSaved());
   SetDangerType(danger_type);
   UpdateObservers();
-}
-
-void DownloadItemImpl::OnIntermediatePathDetermined(
-    DownloadFileManager* file_manager,
-    const FilePath& intermediate_path) {
-  DownloadFileManager::RenameCompletionCallback callback =
-      base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
-                 weak_ptr_factory_.GetWeakPtr());
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::RenameDownloadFile,
-                 file_manager, GetGlobalId(), intermediate_path,
-                 false, callback));
 }
 
 const FilePath& DownloadItemImpl::GetFullPath() const {
@@ -922,14 +929,14 @@ FilePath DownloadItemImpl::GetUserVerifiedFilePath() const {
       GetTargetFilePath() : GetFullPath();
 }
 
-void DownloadItemImpl::OffThreadCancel(DownloadFileManager* file_manager) {
+void DownloadItemImpl::OffThreadCancel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   request_handle_->CancelRequest();
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::CancelDownload,
-                 file_manager, download_id_));
+                 delegate_->GetDownloadFileManager(), download_id_));
 }
 
 void DownloadItemImpl::Init(bool active,

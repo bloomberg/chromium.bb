@@ -277,6 +277,9 @@ class DownloadExtensionTest : public ExtensionApiTest {
         prefs::kPromptForDownload, false);
     GetOnRecordManager()->RemoveAllDownloads();
     events_listener_.reset(new DownloadsEventsListener());
+    // Disable file chooser for current profile.
+    DownloadTestFileChooserObserver observer(current_browser()->profile());
+    observer.EnableFileChooser(false);
   }
 
   void GoOnTheRecord() { current_browser_ = browser(); }
@@ -285,6 +288,9 @@ class DownloadExtensionTest : public ExtensionApiTest {
     if (!incognito_browser_) {
       incognito_browser_ = CreateIncognitoBrowser();
       GetOffRecordManager()->RemoveAllDownloads();
+      // Disable file chooser for incognito profile.
+      DownloadTestFileChooserObserver observer(incognito_browser_->profile());
+      observer.EnableFileChooser(false);
     }
     current_browser_ = incognito_browser_;
   }
@@ -393,8 +399,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
       observer->WaitForFinished();
       EXPECT_EQ(
           1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
-      // We don't expect a select file dialog.
-      ASSERT_FALSE(observer->select_file_dialog_seen());
     }
     GetCurrentManager()->GetAllDownloads(FilePath(), items);
     ASSERT_EQ(count, items->size());
@@ -416,9 +420,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
-    // We don't expect a select file dialog.
-    if (observer->select_file_dialog_seen())
-      return NULL;
 
     DownloadManager::DownloadVector items;
     manager->GetAllDownloads(FilePath(), &items);
@@ -448,14 +449,14 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   DownloadTestObserver* CreateDownloadObserver(size_t download_count) {
     return new DownloadTestObserverTerminal(
-        GetCurrentManager(), download_count, true,
+        GetCurrentManager(), download_count,
         DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   }
 
   DownloadTestObserver* CreateInProgressDownloadObserver(
       size_t download_count) {
     return new DownloadTestObserverInProgress(
-        GetCurrentManager(), download_count, true);
+        GetCurrentManager(), download_count);
   }
 
   bool RunFunction(UIThreadExtensionFunction* function,

@@ -44,6 +44,10 @@ content::BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
   return NULL;
 }
 
+DownloadFileManager* DownloadItemImplDelegate::GetDownloadFileManager() {
+  return NULL;
+}
+
 void DownloadItemImplDelegate::DownloadStopped(DownloadItemImpl* download) {}
 
 void DownloadItemImplDelegate::DownloadCompleted(DownloadItemImpl* download) {}

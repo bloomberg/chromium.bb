@@ -48,6 +48,11 @@ class ChromeDownloadManagerDelegate
       public content::DownloadManagerDelegate,
       public content::NotificationObserver {
  public:
+  // Callback type used with ChooseDownloadPath(). The callback should be
+  // invoked with the user-selected path as the argument. If the file selection
+  // was canceled, the argument should be the empty path.
+  typedef base::Callback<void(const FilePath&)> FileSelectedCallback;
+
   explicit ChromeDownloadManagerDelegate(Profile* profile);
 
   void SetDownloadManager(content::DownloadManager* dm);
@@ -56,12 +61,12 @@ class ChromeDownloadManagerDelegate
   // disable SafeBrowsing checks for |item|.
   static void DisableSafeBrowsing(content::DownloadItem* item);
 
+  // content::DownloadManagerDelegate
   virtual void Shutdown() OVERRIDE;
   virtual content::DownloadId GetNextId() OVERRIDE;
-  virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
-  virtual void ChooseDownloadPath(content::DownloadItem* item) OVERRIDE;
-  virtual FilePath GetIntermediatePath(
-      const content::DownloadItem& item) OVERRIDE;
+  virtual bool DetermineDownloadTarget(
+      content::DownloadItem* item,
+      const content::DownloadTargetCallback& callback) OVERRIDE;
   virtual content::WebContents*
       GetAlternativeWebContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
@@ -92,6 +97,10 @@ class ChromeDownloadManagerDelegate
       bool can_save_as_complete,
       const content::SavePackagePathPickedCallback& callback) OVERRIDE;
 
+  // Clears the last directory chosen by the user in response to a file chooser
+  // prompt. Called when clearing recent history.
+  void ClearLastDownloadPath();
+
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
   DownloadHistory* download_history() { return download_history_.get(); }
 
@@ -120,7 +129,16 @@ class ChromeDownloadManagerDelegate
       const FilePath& target_path,
       const FilePath& default_download_path,
       bool should_uniquify_path,
-      const DownloadPathReservationTracker::ReservedPathCallback callback);
+      const DownloadPathReservationTracker::ReservedPathCallback& callback);
+
+  // Displays the file chooser dialog to prompt the user for the download
+  // location for |item|. |suggested_path| will be used as the initial download
+  // path. Once a location is available |callback| will be invoked with the
+  // selected full path. If the user cancels the dialog, then an empty FilePath
+  // will be passed into |callback|. Protected virtual for testing.
+  virtual void ChooseDownloadPath(content::DownloadItem* item,
+                                  const FilePath& suggested_path,
+                                  const FileSelectedCallback& callback);
 
   // So that test classes that inherit from this for override purposes
   // can call back into the DownloadManager.
@@ -137,6 +155,7 @@ class ChromeDownloadManagerDelegate
   // Callback function after url is checked with safebrowsing service.
   void CheckDownloadUrlDone(
       int32 download_id,
+      const content::DownloadTargetCallback& callback,
       safe_browsing::DownloadProtectionService::DownloadCheckResult result);
 
   // Callback function after the DownloadProtectionService completes.
@@ -150,9 +169,11 @@ class ChromeDownloadManagerDelegate
   // download. Invokes |DownloadPathReservationTracker::GetReservedPath| to get
   // a reserved path for the download. The path is then passed into
   // OnPathReservationAvailable().
-  void CheckVisitedReferrerBeforeDone(int32 download_id,
-                                      content::DownloadDangerType danger_type,
-                                      bool visited_referrer_before);
+  void CheckVisitedReferrerBeforeDone(
+      int32 download_id,
+      const content::DownloadTargetCallback& callback,
+      content::DownloadDangerType danger_type,
+      bool visited_referrer_before);
 
 #if defined (OS_CHROMEOS)
   // GDataDownloadObserver::SubstituteGDataDownloadPath callback. Calls
@@ -161,21 +182,36 @@ class ChromeDownloadManagerDelegate
   // OnPathReservationAvailable().
   void SubstituteGDataDownloadPathCallback(
       int32 download_id,
+      const content::DownloadTargetCallback& callback,
       bool should_prompt,
       bool is_forced_path,
       content::DownloadDangerType danger_type,
       const FilePath& unverified_path);
 #endif
 
+  // Determine the intermediate path to use for |target_path|. |danger_type|
+  // specifies the danger level of the download.
+  FilePath GetIntermediatePath(const FilePath& target_path,
+                               content::DownloadDangerType danger_type);
+
   // Called on the UI thread once a reserved path is available. Updates the
   // download identified by |download_id| with the |target_path|, target
   // disposition and |danger_type|.
   void OnPathReservationAvailable(
       int32 download_id,
+      const content::DownloadTargetCallback& callback,
       bool should_prompt,
       content::DownloadDangerType danger_type,
-      const FilePath& target_path,
-      bool target_path_verified);
+      const FilePath& reserved_path,
+      bool reserved_path_verified);
+
+  // Called on the UI thread once the final target path is available.
+  void OnTargetPathDetermined(
+      int32 download_id,
+      const content::DownloadTargetCallback& callback,
+      content::DownloadItem::TargetDisposition disposition,
+      content::DownloadDangerType danger_type,
+      const FilePath& target_path);
 
   // Callback from history system.
   void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
@@ -219,6 +255,10 @@ class ChromeDownloadManagerDelegate
   // off-record profiles, so ExtensionSystem cannot own the EDER.
   scoped_ptr<ExtensionDownloadsEventRouter> extension_event_router_;
 #endif
+
+  // The directory most recently chosen by the user in response to a Save As
+  // dialog for a regular download.
+  FilePath last_download_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };

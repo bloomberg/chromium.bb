@@ -28,7 +28,8 @@ class DownloadFilePickerChromeOS : public DownloadFilePicker {
 
   // DownloadFilePicker implementation.
   // This looks up the gdata path instead of the temporary local path.
-  virtual void InitSuggestedPath(content::DownloadItem* item) OVERRIDE;
+  virtual void InitSuggestedPath(content::DownloadItem* item,
+                                 const FilePath& suggested_path) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFilePickerChromeOS);
 };

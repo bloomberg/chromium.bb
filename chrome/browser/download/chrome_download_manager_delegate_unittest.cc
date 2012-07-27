@@ -37,6 +37,8 @@ using ::testing::ReturnRefOfCopy;
 using ::testing::WithArg;
 using ::testing::_;
 
+namespace {
+
 // Google Mock action that posts a task to the current message loop that invokes
 // the first argument of the mocked method as a callback. Said argument must be
 // a base::Callback<void(ParamType)>. |result| must be of |ParamType| and is
@@ -60,8 +62,6 @@ ACTION_P(ScheduleCallback, result) {
 MATCHER_P(InfoMatchingURL, url, "DownloadInfo matching URL " + url.spec()) {
   return url == arg.download_url_chain.front();
 }
-
-namespace {
 
 // Used with DownloadTestCase. Indicates the type of test case. The expectations
 // for the test is set based on the type.
@@ -90,25 +90,34 @@ struct DownloadTestCase {
   // Type of test.
   TestCaseType                test_type;
 
-  // The |danger_type| value is used to determine the behavior of
-  // DownloadProtectionService::IsSupportedDownload(), GetUrlCheckResult() and
-  // well as set expectations for GetDangerType() as necessary for flagging the
-  // download with as a dangerous download of type |danger_type|.
+  // The |danger_type| is the expected danger type for the download as
+  // determined by CDMD. This value is also used to determine the behavior of
+  // DownloadProtectionService::IsSupportedDownload(), CDMD::CheckDownloadUrl()
+  // as necessary for flagging the download with as a dangerous download of type
+  // |danger_type|.
   content::DownloadDangerType danger_type;
 
-  // Value of GetURL()
+  // Value of DownloadItem::GetURL()
   const char*                 url;
 
-  // Value of GetMimeType()
+  // Value of DownloadItem::GetMimeType()
   const char*                 mime_type;
 
   // Should be non-empty if |test_type| == FORCED. Value of GetForcedFilePath().
   const FilePath::CharType*   forced_file_path;
 
   // Expected final download path. Specified relative to the test download path.
+  // If the user is presented with a file chooser, this path will also be the
+  // response sent back from the file chooser.
   const FilePath::CharType*   expected_target_path;
 
-  // Expected target disposition.
+  // The path to expect as the suggested path if the user will be prompted for a
+  // download path.
+  const FilePath::CharType*   expected_prompt_path;
+
+  // Expected target disposition. If this is TARGET_DISPOSITION_PROMPT, then the
+  // test run will expect ChromeDownloadManagerDelegate to prompt the user for a
+  // download location.
   DownloadItem::TargetDisposition expected_disposition;
 
   // Type of intermediate path to expect.
@@ -146,6 +155,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     download_protection_service_->SetEnabled(true);
 #endif
   }
+
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService() OVERRIDE {
 #if defined(ENABLE_SAFE_BROWSING)
@@ -154,6 +164,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     return NULL;
 #endif
   }
+
   virtual bool IsDangerousFile(const DownloadItem& download,
                                const FilePath& suggested_path,
                                bool visited_referrer_before) OVERRIDE {
@@ -167,17 +178,25 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     return suggested_path.MatchesExtension(FILE_PATH_LITERAL(".jar")) ||
         suggested_path.MatchesExtension(FILE_PATH_LITERAL(".exe"));
   }
+
   virtual void GetReservedPath(
       content::DownloadItem& download,
       const FilePath& target_path,
       const FilePath& default_download_path,
       bool should_uniquify_path,
-      const DownloadPathReservationTracker::ReservedPathCallback callback) {
+      const DownloadPathReservationTracker::ReservedPathCallback& callback)
+      OVERRIDE {
     // Pretend the path reservation succeeded without any change to
     // |target_path|.
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback, target_path, true));
   }
+
+  // During tests, we want to mock the behavior of this method.
+  MOCK_METHOD3(ChooseDownloadPath,
+               void(content::DownloadItem*,
+                    const FilePath&,
+                    const FileSelectedCallback&));
 
 #if defined(ENABLE_SAFE_BROWSING)
   // A TestDownloadProtectionService* is convenient for setting up mocks.
@@ -235,18 +254,20 @@ class ChromeDownloadManagerDelegateTest : public ::testing::Test {
   // Set the kPromptForDownload user preference to |prompt|.
   void SetPromptForDownload(bool prompt);
 
-  // Verifies that the intermediate path in |intermediate| is the path that is
-  // expected for |target| given the intermediate path type in |expectation|.
-  void VerifyIntermediatePath(TestCaseExpectIntermediate expectation,
-                              const FilePath& target,
-                              const FilePath& intermediate);
-
   const FilePath& default_download_path() const;
   TestChromeDownloadManagerDelegate* delegate();
   content::MockDownloadManager* download_manager();
   DownloadPrefs* download_prefs();
 
  private:
+  // Verifies that |target_path|, |disposition|, |danger_type| and
+  // |intermediate_path| matches the expectations of |test_case|.
+  void DownloadTargetVerifier(const DownloadTestCase* test_case,
+                              const FilePath& target_path,
+                              DownloadItem::TargetDisposition disposition,
+                              content::DownloadDangerType danger_type,
+                              const FilePath& intermediate_path);
+
   MessageLoopForUI message_loop_;
   TestingPrefService* pref_service_;
   ScopedTempDir test_download_dir_;
@@ -365,57 +386,36 @@ void ChromeDownloadManagerDelegateTest::RunTestCaseWithDownloadItem(
             test_case.danger_type);
 #endif // !ENABLE_SAFE_BROWSING
 
-  // Expectations for filename determination results.
-  FilePath expected_target_path(
-      GetPathInDownloadDir(test_case.expected_target_path));
-  {
-    ::testing::Sequence s1, s2, s3;
-    DownloadItem::TargetDisposition initial_disposition =
-        (test_case.test_type == SAVE_AS) ?
-            DownloadItem::TARGET_DISPOSITION_PROMPT :
-            DownloadItem::TARGET_DISPOSITION_OVERWRITE;
-    EXPECT_CALL(*item, GetTargetFilePath())
-        .InSequence(s1)
-        .WillRepeatedly(ReturnRefOfCopy(FilePath()));
-    EXPECT_CALL(*item, GetTargetDisposition())
-        .InSequence(s2)
-        .WillRepeatedly(Return(initial_disposition));
-    EXPECT_CALL(*item, GetDangerType())
-        .InSequence(s3)
-        .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
-    EXPECT_CALL(*item, OnTargetPathDetermined(expected_target_path,
-                                              test_case.expected_disposition,
-                                              test_case.danger_type))
-        .InSequence(s1, s2, s3);
-    EXPECT_CALL(*item, GetTargetFilePath())
-        .InSequence(s1)
-        .WillRepeatedly(ReturnRef(expected_target_path));
-    EXPECT_CALL(*item, GetTargetDisposition())
-        .InSequence(s2)
-        .WillRepeatedly(Return(test_case.expected_disposition));
-    EXPECT_CALL(*item, GetDangerType())
-        .InSequence(s3)
-        .WillRepeatedly(Return(test_case.danger_type));
+  DownloadItem::TargetDisposition initial_disposition =
+      (test_case.test_type == SAVE_AS) ?
+          DownloadItem::TARGET_DISPOSITION_PROMPT :
+          DownloadItem::TARGET_DISPOSITION_OVERWRITE;
+  EXPECT_CALL(*item, GetTargetFilePath())
+      .WillRepeatedly(ReturnRefOfCopy(FilePath()));
+  EXPECT_CALL(*item, GetTargetDisposition())
+      .WillRepeatedly(Return(initial_disposition));
+  EXPECT_CALL(*item, GetDangerType())
+      .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+
+  if (test_case.expected_disposition ==
+      DownloadItem::TARGET_DISPOSITION_PROMPT) {
+    FilePath expected_prompt_path = GetPathInDownloadDir(
+        test_case.expected_prompt_path);
+    FilePath expected_target_path = GetPathInDownloadDir(
+        test_case.expected_target_path);
+    EXPECT_CALL(*delegate_,
+                ChooseDownloadPath(item, expected_prompt_path, _))
+        .WillOnce(WithArg<2>(ScheduleCallback(expected_target_path)));
   }
 
-  // RestartDownload() should be called at this point.
-  EXPECT_CALL(*download_manager_, RestartDownload(item->GetId()));
-  EXPECT_CALL(*download_manager_, LastDownloadPath())
-      .WillRepeatedly(Return(FilePath()));
-
   // Kick off the test.
-  EXPECT_FALSE(delegate_->ShouldStartDownload(item->GetId()));
+  base::WeakPtrFactory<ChromeDownloadManagerDelegateTest> factory(this);
+  EXPECT_TRUE(delegate_->DetermineDownloadTarget(
+      item,
+      base::Bind(&ChromeDownloadManagerDelegateTest::DownloadTargetVerifier,
+                 factory.GetWeakPtr(), base::Unretained(&test_case))));
   message_loop_.RunAllPending();
-
-  // Now query the intermediate path.
-  EXPECT_CALL(*item, GetDangerType())
-      .WillOnce(Return(test_case.danger_type));
-  bool ok_to_overwrite = false;
-  FilePath intermediate_path = delegate_->GetIntermediatePath(*item);
-  EXPECT_FALSE(ok_to_overwrite);
-  VerifyIntermediatePath(test_case.expected_intermediate,
-                         GetPathInDownloadDir(test_case.expected_target_path),
-                         intermediate_path);
+  VerifyAndClearExpectations();
 }
 
 void ChromeDownloadManagerDelegateTest::RunTestCases(
@@ -443,24 +443,32 @@ void ChromeDownloadManagerDelegateTest::SetPromptForDownload(bool prompt) {
   pref_service_->SetBoolean(prefs::kPromptForDownload, prompt);
 }
 
-void ChromeDownloadManagerDelegateTest::VerifyIntermediatePath(
-    TestCaseExpectIntermediate expectation,
-    const FilePath& target,
-    const FilePath& intermediate) {
-  if (expectation == EXPECT_CRDOWNLOAD) {
-    EXPECT_EQ(download_util::GetCrDownloadPath(target).value(),
-              intermediate.value());
+void ChromeDownloadManagerDelegateTest::DownloadTargetVerifier(
+    const DownloadTestCase* test_case,
+    const FilePath& target_path,
+    DownloadItem::TargetDisposition disposition,
+    content::DownloadDangerType danger_type,
+    const FilePath& intermediate_path) {
+  FilePath expected_target_path(
+      GetPathInDownloadDir(test_case->expected_target_path));
+  EXPECT_EQ(expected_target_path.value(), target_path.value());
+  EXPECT_EQ(test_case->expected_disposition, disposition);
+  EXPECT_EQ(test_case->danger_type, danger_type);
+
+  if (test_case->expected_intermediate == EXPECT_CRDOWNLOAD) {
+    EXPECT_EQ(download_util::GetCrDownloadPath(target_path).value(),
+              intermediate_path.value());
   } else {
     // The paths (in English) look like: /path/Unconfirmed xxx.crdownload.
     // Of this, we only check that the path is:
     // 1. Not "/path/target.crdownload",
     // 2. Points to the same directory as the target.
     // 3. Has extension ".crdownload".
-    EXPECT_NE(download_util::GetCrDownloadPath(target).value(),
-              intermediate.value());
-    EXPECT_EQ(target.DirName().value(),
-              intermediate.DirName().value());
-    EXPECT_TRUE(intermediate.MatchesExtension(
+    EXPECT_NE(download_util::GetCrDownloadPath(target_path).value(),
+              intermediate_path.value());
+    EXPECT_EQ(target_path.DirName().value(),
+              intermediate_path.DirName().value());
+    EXPECT_TRUE(intermediate_path.MatchesExtension(
         FILE_PATH_LITERAL(".crdownload")));
   }
 }
@@ -486,13 +494,6 @@ DownloadPrefs* ChromeDownloadManagerDelegateTest::download_prefs() {
 
 }  // namespace
 
-TEST_F(ChromeDownloadManagerDelegateTest, ShouldStartDownload_Invalid) {
-  // Invalid download ID shouldn't do anything.
-  EXPECT_CALL(*download_manager(), GetActiveDownloadItem(-1))
-      .WillOnce(Return(reinterpret_cast<DownloadItem*>(NULL)));
-  EXPECT_FALSE(delegate()->ShouldStartDownload(-1));
-}
-
 TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
   const DownloadTestCase kBasicTestCases[] = {
     {
@@ -503,6 +504,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.txt"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_CRDOWNLOAD
@@ -515,6 +517,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       "http://example.com/foo.txt", "text/plain",
       FILE_PATH_LITERAL(""),
 
+      FILE_PATH_LITERAL("foo.txt"),
       FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
@@ -529,6 +532,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.exe"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -542,6 +546,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL("forced-foo.txt"),
 
       FILE_PATH_LITERAL("forced-foo.txt"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_CRDOWNLOAD
@@ -559,6 +564,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL("forced-foo.exe"),
 
       FILE_PATH_LITERAL("forced-foo.exe"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -571,6 +577,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       "http://example.com/foo.exe", "",
       FILE_PATH_LITERAL(""),
 
+      FILE_PATH_LITERAL("foo.exe"),
       FILE_PATH_LITERAL("foo.exe"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
@@ -595,6 +602,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.txt"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -607,6 +615,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       "http://phishing.example.com/foo.txt", "",
       FILE_PATH_LITERAL(""),
 
+      FILE_PATH_LITERAL("foo.txt"),
       FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
@@ -621,6 +630,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL("forced-foo.txt"),
 
       FILE_PATH_LITERAL("forced-foo.txt"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -635,6 +645,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.jar"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -647,6 +658,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       "http://phishing.example.com/foo.jar", "",
       FILE_PATH_LITERAL(""),
 
+      FILE_PATH_LITERAL("foo.jar"),
       FILE_PATH_LITERAL("foo.jar"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
@@ -661,6 +673,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL("forced-foo.jar"),
 
       FILE_PATH_LITERAL("forced-foo.jar"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -685,6 +698,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.txt"),
+      FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
       EXPECT_CRDOWNLOAD
@@ -700,6 +714,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.crx"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_CRDOWNLOAD
@@ -714,6 +729,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.user.js"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_CRDOWNLOAD
@@ -728,6 +744,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.dummy"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_CRDOWNLOAD
@@ -745,6 +762,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       "http://example.com/foo.exe", "",
       FILE_PATH_LITERAL(""),
 
+      FILE_PATH_LITERAL("foo.exe"),
       FILE_PATH_LITERAL("foo.exe"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
@@ -770,6 +788,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ManagedPath) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.txt"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_CRDOWNLOAD
@@ -783,6 +802,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ManagedPath) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.txt"),
+      FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_CRDOWNLOAD
@@ -792,6 +812,69 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ManagedPath) {
   SetManagedDownloadPath(default_download_path());
   ASSERT_TRUE(download_prefs()->IsDownloadPathManaged());
   RunTestCases(kManagedPathTestCases, arraysize(kManagedPathTestCases));
+}
+
+// Test whether the last saved directory is saved if the user was presented with
+// a file chooser.
+TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
+  const DownloadTestCase kLastSavePathTestCases[] = {
+    {
+      // Initially the last saved directory is the user's default download path.
+
+      // 0: Start a Save As download. Then respond to the file chooser with
+      //    foo/bar.txt as the target directory. This should cause the foo/
+      //    directory to be remembered as the last used save directory.
+      SAVE_AS,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      "http://example.com/foo.txt", "text/plain",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("foo/bar.txt"),
+      FILE_PATH_LITERAL("foo.txt"),
+      DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+      EXPECT_CRDOWNLOAD
+    },
+
+    {
+      // 1: Start another Save As download. This time the suggested path should
+      //    be in the foo/ directory.
+      SAVE_AS,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      "http://example.com/foo.txt", "text/plain",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("bar/foo.txt"),
+      FILE_PATH_LITERAL("foo/foo.txt"),
+      DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+      EXPECT_CRDOWNLOAD
+    },
+
+    {
+      // 2: Start an automatic download. This should be saved to the user's
+      //    default download directory and not the last used Save As directory.
+      AUTOMATIC,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      "http://example.com/foo.txt", "text/plain",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("foo.txt"),
+      FILE_PATH_LITERAL(""),
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+      EXPECT_CRDOWNLOAD
+    },
+  };
+
+  RunTestCases(kLastSavePathTestCases, arraysize(kLastSavePathTestCases));
+
+  // Now clear the last download path.
+  delegate()->ClearLastDownloadPath();
+
+  // Run the first test case again. Since the last download path was cleared,
+  // this test case should behave identically to the first time it was run.
+  RunTestCases(kLastSavePathTestCases, 1);
 }
 
 // TODO(asanka): Add more tests.

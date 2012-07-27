@@ -35,15 +35,14 @@ void ShellDownloadManagerDelegate::SetDownloadManager(
   download_manager_ = download_manager;
 }
 
-bool ShellDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
-  DownloadItem* download =
-      download_manager_->GetActiveDownloadItem(download_id);
-
+bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
+    DownloadItem* download,
+    const DownloadTargetCallback& callback) {
   if (!download->GetForcedFilePath().empty()) {
-    download->OnTargetPathDetermined(
-        download->GetForcedFilePath(),
-        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-        DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+    callback.Run(download->GetForcedFilePath(),
+                 DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                 DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                 download->GetForcedFilePath());
     return true;
   }
 
@@ -60,12 +59,13 @@ bool ShellDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
       FROM_HERE,
       base::Bind(
           &ShellDownloadManagerDelegate::GenerateFilename,
-          this, download_id, generated_name));
+          this, download->GetId(), callback, generated_name));
   return false;
 }
 
 void ShellDownloadManagerDelegate::GenerateFilename(
     int32 download_id,
+    const DownloadTargetCallback& callback,
     const FilePath& generated_name) {
   FilePath suggested_path = download_manager_->GetBrowserContext()->GetPath().
       Append(FILE_PATH_LITERAL("Downloads"));
@@ -77,29 +77,21 @@ void ShellDownloadManagerDelegate::GenerateFilename(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &ShellDownloadManagerDelegate::RestartDownload,
-          this, download_id, suggested_path));
+          &ShellDownloadManagerDelegate::ChooseDownloadPath,
+          this, download_id, callback, suggested_path));
 }
 
-void ShellDownloadManagerDelegate::RestartDownload(
+void ShellDownloadManagerDelegate::ChooseDownloadPath(
     int32 download_id,
+    const DownloadTargetCallback& callback,
     const FilePath& suggested_path) {
-  DownloadItem* download =
+  DownloadItem* item =
       download_manager_->GetActiveDownloadItem(download_id);
-  if (!download)
+  if (!item)
     return;
 
-  // Since we have no download UI, show the user a dialog always.
-  download->OnTargetPathDetermined(suggested_path,
-                                   DownloadItem::TARGET_DISPOSITION_PROMPT,
-                                   DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  download_manager_->RestartDownload(download_id);
-}
-
-void ShellDownloadManagerDelegate::ChooseDownloadPath(DownloadItem* item) {
   FilePath result;
 #if defined(OS_WIN) && !defined(USE_AURA)
-  const FilePath suggested_path(item->GetTargetFilePath());
   std::wstring file_part = FilePath(suggested_path).BaseName().value();
   wchar_t file_name[MAX_PATH];
   base::wcslcpy(file_name, file_part.c_str(), arraysize(file_name));
@@ -124,11 +116,8 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(DownloadItem* item) {
   NOTIMPLEMENTED();
 #endif
 
-  if (result.empty()) {
-    download_manager_->FileSelectionCanceled(item->GetId());
-  } else {
-    download_manager_->FileSelected(result, item->GetId());
-  }
+  callback.Run(result, DownloadItem::TARGET_DISPOSITION_PROMPT,
+               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, result);
 }
 
 }  // namespace content

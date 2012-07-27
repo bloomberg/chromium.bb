@@ -17,7 +17,6 @@ class Profile;
 
 namespace content {
 class DownloadManager;
-class DownloadManagerDelegate;
 }
 
 // Owning class for ChromeDownloadManagerDelegate.
@@ -32,7 +31,7 @@ class DownloadService : public ProfileKeyedService {
   void OnManagerCreated(const OnManagerCreatedCallback& cb);
 
   // Get the download manager delegate, creating it if it doesn't already exist.
-  content::DownloadManagerDelegate* GetDownloadManagerDelegate();
+  ChromeDownloadManagerDelegate* GetDownloadManagerDelegate();
 
   // Has a download manager been created?
   bool HasCreatedDownloadManager();

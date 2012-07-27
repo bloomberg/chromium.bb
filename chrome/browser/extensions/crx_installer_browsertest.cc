@@ -192,7 +192,6 @@ IN_PROC_BROWSER_TEST_F(
     return;
 
   const int kNumDownloadsExpected = 1;
-  const bool kExpectFileSelectDialog = false;
 
   LOG(ERROR) << "PackAndInstallExtension: Packing extension";
   FilePath crx_path = PackExtension(
@@ -212,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(
   LOG(ERROR) << "PackAndInstallExtension: Setting observer";
   scoped_ptr<DownloadTestObserver> observer(
       new DownloadTestObserverTerminal(
-          download_manager, kNumDownloadsExpected, kExpectFileSelectDialog,
+          download_manager, kNumDownloadsExpected,
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   LOG(ERROR) << "PackAndInstallExtension: Navigating to URL";
   ui_test_utils::NavigateToURLWithDisposition(browser(), url, CURRENT_TAB,

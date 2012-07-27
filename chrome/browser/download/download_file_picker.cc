@@ -58,11 +58,15 @@ FilePickerResult ComparePaths(const FilePath& suggested_path,
 DownloadFilePicker::DownloadFilePicker() : download_id_(0) {
 }
 
-void DownloadFilePicker::Init(DownloadManager* download_manager,
-                              DownloadItem* item) {
+void DownloadFilePicker::Init(
+    DownloadManager* download_manager,
+    DownloadItem* item,
+    const FilePath& suggested_path,
+    const ChromeDownloadManagerDelegate::FileSelectedCallback& callback) {
   download_manager_ = download_manager;
   download_id_ = item->GetId();
-  InitSuggestedPath(item);
+  file_selected_callback_ = callback;
+  InitSuggestedPath(item, suggested_path);
 
   DCHECK(download_manager_);
   WebContents* web_contents = item->GetWebContents();
@@ -93,8 +97,14 @@ void DownloadFilePicker::Init(DownloadManager* download_manager,
 DownloadFilePicker::~DownloadFilePicker() {
 }
 
-void DownloadFilePicker::InitSuggestedPath(DownloadItem* item) {
-  set_suggested_path(item->GetTargetFilePath());
+void DownloadFilePicker::InitSuggestedPath(DownloadItem* item,
+                                           const FilePath& suggested_path) {
+  set_suggested_path(suggested_path);
+}
+
+void DownloadFilePicker::OnFileSelected(const FilePath& path) {
+  file_selected_callback_.Run(path);
+  delete this;
 }
 
 void DownloadFilePicker::RecordFileSelected(const FilePath& path) {
@@ -106,15 +116,12 @@ void DownloadFilePicker::FileSelected(const FilePath& path,
                                       int index,
                                       void* params) {
   RecordFileSelected(path);
-
-  if (download_manager_)
-    download_manager_->FileSelected(path, download_id_);
-  delete this;
+  OnFileSelected(path);
+  // Deletes |this|
 }
 
 void DownloadFilePicker::FileSelectionCanceled(void* params) {
   RecordFilePickerResult(download_manager_, FILE_PICKER_CANCEL);
-  if (download_manager_)
-    download_manager_->FileSelectionCanceled(download_id_);
-  delete this;
+  OnFileSelected(FilePath());
+  // Deletes |this|
 }

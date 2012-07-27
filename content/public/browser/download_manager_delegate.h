@@ -11,12 +11,13 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_danger_type.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/save_page_type.h"
 
 namespace content {
 
 class DownloadId;
-class DownloadItem;
 class WebContents;
 
 // Called by SavePackage when it creates a DownloadItem.
@@ -28,9 +29,21 @@ typedef base::Callback<void(DownloadItem*)>
 // in response to this operation, the SavePackageDownloadCreatedCallback will be
 // non-null.
 typedef base::Callback<void(const FilePath&,
-                            content::SavePageType,
+                            SavePageType,
                             const SavePackageDownloadCreatedCallback&)>
     SavePackagePathPickedCallback;
+
+// Called with the results of DetermineDownloadTarget(). If the delegate decides
+// to cancel the download, then |target_path| should be set to an empty path. If
+// |target_path| is non-empty, then |intermediate_path| is required to be
+// non-empty and specify the path to the intermediate file (which could be the
+// same as |target_path|). Both |target_path| and |intermediate_path| are
+// expected to in the same directory.
+typedef base::Callback<void(
+    const FilePath& target_path,
+    DownloadItem::TargetDisposition disposition,
+    DownloadDangerType danger_type,
+    const FilePath& intermediate_path)> DownloadTargetCallback;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManagerDelegate {
@@ -41,23 +54,21 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Returns a new DownloadId.
   virtual DownloadId GetNextId();
 
-  // Notifies the delegate that a download is starting. The delegate can return
-  // false to delay the start of the download, in which case it should call
-  // DownloadManager::RestartDownload when it's ready.
-  virtual bool ShouldStartDownload(int32 download_id);
-
-  // Asks the user for the path for a download. The delegate calls
-  // DownloadManager::FileSelected or DownloadManager::FileSelectionCanceled to
-  // give the answer.
-  virtual void ChooseDownloadPath(DownloadItem* item) {}
-
-  // Allows the embedder to set an intermediate name for the download until it's
-  // complete. The return value is the intermediate path to use. If the embedder
-  // doesn't want to set an intermediate path, it should return
-  // item.GetTargetFilePath(). If there's already a file at the returned path,
-  // it will not be overwritten. Instead the path will be uniquified by adding a
-  // suffix to the filename.
-  virtual FilePath GetIntermediatePath(const DownloadItem& item);
+  // Called to notify the delegate that a new download |item| requires a
+  // download target to be determined. The delegate should return |true| if it
+  // will determine the target information and will invoke |callback|. The
+  // callback may be invoked directly (synchronously). If this function returns
+  // |false|, the download manager will continue the download using a default
+  // target path.
+  //
+  // The state of the |item| shouldn't be modified during the process of
+  // filename determination save for external data (GetExternalData() /
+  // SetExternalData()).
+  //
+  // If the download should be canceled, |callback| should be invoked with an
+  // empty |target_path| argument.
+  virtual bool DetermineDownloadTarget(DownloadItem* item,
+                                       const DownloadTargetCallback& callback);
 
   // Called when the download system wants to alert a WebContents that a
   // download has started, but the TabConetnts has gone away. This lets an

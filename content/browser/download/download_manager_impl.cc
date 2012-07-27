@@ -244,6 +244,10 @@ DownloadId DownloadManagerImpl::GetNextId() {
   return id;
 }
 
+DownloadFileManager* DownloadManagerImpl::GetDownloadFileManager() {
+  return file_manager_;
+}
+
 bool DownloadManagerImpl::ShouldOpenDownload(DownloadItemImpl* item) {
   if (!delegate_)
     return true;
@@ -331,6 +335,7 @@ void DownloadManagerImpl::Shutdown() {
   file_manager_ = NULL;
   if (delegate_)
     delegate_->Shutdown();
+  delegate_ = NULL;
 }
 
 void DownloadManagerImpl::GetTemporaryDownloads(
@@ -438,8 +443,39 @@ void DownloadManagerImpl::OnDownloadFileCreated(
     // persistence we should replace this comment with a "return;".
   }
 
-  if (!delegate_ || delegate_->ShouldStartDownload(download_id))
-    RestartDownload(download_id);
+  DownloadMap::iterator download_iter = active_downloads_.find(download_id);
+  if (download_iter == active_downloads_.end())
+    return;
+
+  DownloadItemImpl* download = download_iter->second;
+  content::DownloadTargetCallback callback =
+      base::Bind(&DownloadManagerImpl::OnDownloadTargetDetermined,
+                 this, download_id);
+  if (!delegate_ || !delegate_->DetermineDownloadTarget(download, callback)) {
+    FilePath target_path = download->GetForcedFilePath();
+    // TODO(asanka): Determine a useful path if |target_path| is empty.
+    callback.Run(target_path,
+                 DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                 content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                 target_path);
+  }
+}
+
+void DownloadManagerImpl::OnDownloadTargetDetermined(
+    int32 download_id,
+    const FilePath& target_path,
+    DownloadItem::TargetDisposition disposition,
+    content::DownloadDangerType danger_type,
+    const FilePath& intermediate_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DownloadMap::iterator download_iter = active_downloads_.find(download_id);
+  if (download_iter != active_downloads_.end()) {
+    // Once DownloadItem::OnDownloadTargetDetermined() is called, we expect a
+    // DownloadRenamedToIntermediateName() callback. This is necessary for the
+    // download to proceed.
+    download_iter->second->OnDownloadTargetDetermined(
+        target_path, disposition, danger_type, intermediate_path);
+  }
 }
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
@@ -482,38 +518,8 @@ void DownloadManagerImpl::OnFileRemovalDetected(int32 download_id) {
     downloads_[download_id]->OnDownloadedFileRemoved();
 }
 
-void DownloadManagerImpl::RestartDownload(int32 download_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!ContainsKey(active_downloads_, download_id))
-    return;
-  DownloadItemImpl* download = active_downloads_[download_id];
-
-  VLOG(20) << __FUNCTION__ << "()"
-           << " download = " << download->DebugString(true);
-
-  if (download->GetTargetDisposition() ==
-      DownloadItem::TARGET_DISPOSITION_PROMPT) {
-    // We must ask the user for the place to put the download.
-    if (delegate_) {
-      delegate_->ChooseDownloadPath(download);
-      FOR_EACH_OBSERVER(Observer, observers_,
-                        SelectFileDialogDisplayed(this, download_id));
-    } else {
-      FileSelectionCanceled(download_id);
-    }
-  } else {
-    // No prompting for download, just continue with the current target path.
-    OnTargetPathAvailable(download);
-  }
-}
-
 content::BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
   return browser_context_;
-}
-
-FilePath DownloadManagerImpl::LastDownloadPath() {
-  return last_download_path_;
 }
 
 net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
@@ -573,36 +579,6 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
     delegate_->AddItemToPersistentStore(download);
 
   return download;
-}
-
-// The target path for the download item is now valid. We proceed with the
-// determination of an intermediate path.
-void DownloadManagerImpl::OnTargetPathAvailable(DownloadItemImpl* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(download);
-  DCHECK(ContainsKey(downloads_, download->GetId()));
-  DCHECK(ContainsKey(active_downloads_, download->GetId()));
-
-  VLOG(20) << __FUNCTION__ << "()"
-           << " download = " << download->DebugString(true);
-
-  // Rename to intermediate name.
-  // TODO(asanka): Skip this rename if download->AllDataSaved() is true. This
-  //               avoids a spurious rename when we can just rename to the final
-  //               filename. Unnecessary renames may cause bugs like
-  //               http://crbug.com/74187.
-  FilePath intermediate_path;
-  if (delegate_)
-    intermediate_path = delegate_->GetIntermediatePath(*download);
-  else
-    intermediate_path = download->GetTargetFilePath();
-
-  // We want the intermediate and target paths to refer to the same directory so
-  // that they are both on the same device and subject to same
-  // space/permission/availability constraints.
-  DCHECK(intermediate_path.DirName() ==
-         download->GetTargetFilePath().DirName());
-  download->OnIntermediatePathDetermined(file_manager_, intermediate_path);
 }
 
 void DownloadManagerImpl::UpdateDownload(int32 download_id,
@@ -733,7 +709,7 @@ void DownloadManagerImpl::MaybeCompleteDownload(
 
   if (delegate_)
     delegate_->UpdateItemInPersistentStore(download);
-  download->OnDownloadCompleting(file_manager_);
+  download->OnDownloadCompleting();
 }
 
 void DownloadManagerImpl::MaybeCompleteDownloadById(int download_id) {
@@ -769,7 +745,7 @@ void DownloadManagerImpl::DownloadStopped(DownloadItemImpl* download) {
   AssertStateConsistent(download);
 
   DCHECK(file_manager_);
-  download->OffThreadCancel(file_manager_);
+  download->OffThreadCancel();
 }
 
 void DownloadManagerImpl::OnDownloadInterrupted(
@@ -898,43 +874,6 @@ void DownloadManagerImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DownloadManagerImpl::FileSelected(const FilePath& path,
-                                       int32 download_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!path.empty());
-
-  if (!ContainsKey(active_downloads_, download_id))
-    return;
-  DownloadItemImpl* download = active_downloads_[download_id];
-
-  VLOG(20) << __FUNCTION__ << "()" << " path = \"" << path.value() << "\""
-           << " download = " << download->DebugString(true);
-
-  // Retain the last directory. Exclude temporary downloads since the path
-  // likely points at the location of a temporary file.
-  if (!download->IsTemporary())
-    last_download_path_ = path.DirName();
-
-  // Make sure the initial file name is set only once.
-  download->OnTargetPathSelected(path);
-  OnTargetPathAvailable(download);
-}
-
-void DownloadManagerImpl::FileSelectionCanceled(int32 download_id) {
-  // The user didn't pick a place to save the file, so need to cancel the
-  // download that's already in progress to the temporary location.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!ContainsKey(active_downloads_, download_id))
-    return;
-  DownloadItemImpl* download = active_downloads_[download_id];
-
-  VLOG(20) << __FUNCTION__ << "()"
-           << " download = " << download->DebugString(true);
-
-  download->Cancel(true);
-}
-
 // Operations posted to us from the history service ----------------------------
 
 // The history service has retrieved all download entries. 'entries' contains
@@ -1055,11 +994,6 @@ int DownloadManagerImpl::InProgressCount() const {
   return count;
 }
 
-// Clears the last download path, used to initialize "save as" dialogs.
-void DownloadManagerImpl::ClearLastDownloadPath() {
-  last_download_path_ = FilePath();
-}
-
 void DownloadManagerImpl::NotifyModelChanged() {
   FOR_EACH_OBSERVER(Observer, observers_, ModelChanged(this));
 }
@@ -1166,10 +1100,16 @@ void DownloadManagerImpl::DownloadOpened(DownloadItemImpl* download) {
 void DownloadManagerImpl::DownloadRenamedToIntermediateName(
     DownloadItemImpl* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // If the rename failed, we receive an OnDownloadInterrupted() call before we
-  // receive the DownloadRenamedToIntermediateName() call.
-  if (delegate_)
+  // download->GetFullPath() is only expected to be meaningful after this
+  // callback is received. Therefore we can now add the download to a persistent
+  // store. If the rename failed, we receive an OnDownloadInterrupted() call
+  // before we receive the DownloadRenamedToIntermediateName() call.
+  if (delegate_) {
     delegate_->AddItemToPersistentStore(download);
+  } else {
+    OnItemAddedToPersistentStore(download->GetId(),
+                                 DownloadItem::kUninitializedHandle);
+  }
 }
 
 void DownloadManagerImpl::DownloadRenamedToFinalName(

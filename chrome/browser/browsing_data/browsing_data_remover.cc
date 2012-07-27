@@ -17,6 +17,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -295,7 +296,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(profile_);
     download_manager->RemoveDownloadsBetween(delete_begin_, delete_end_);
-    download_manager->ClearLastDownloadPath();
+    DownloadService* download_service =
+        DownloadServiceFactory::GetForProfile(profile_);
+    ChromeDownloadManagerDelegate* download_manager_delegate =
+        download_service->GetDownloadManagerDelegate();
+    download_manager_delegate->ClearLastDownloadPath();
   }
 
   // We ignore the REMOVE_COOKIES request if UNPROTECTED_WEB is not set,

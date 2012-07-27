@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "content/common/content_export.h"
 
+class DownloadFileManager;
 class DownloadItemImpl;
 
 namespace content {
@@ -46,6 +47,9 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
 
   // For contextual issues like language and prefs.
   virtual content::BrowserContext* GetBrowserContext() const;
+
+  // Get the DownloadFileManager to use for this download.
+  virtual DownloadFileManager* GetDownloadFileManager();
 
   // Handle any delegate portions of a state change operation on the
   // DownloadItem.

@@ -35,8 +35,14 @@ void DownloadService::OnManagerCreated(
   }
 }
 
-DownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
-  DCHECK(!download_manager_created_);
+ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
+  DownloadManager* manager = BrowserContext::GetDownloadManager(profile_);
+  // If we've already created the delegate, just return it.
+  if (download_manager_created_) {
+    DCHECK(static_cast<DownloadManagerDelegate*>(manager_delegate_.get()) ==
+           manager->GetDelegate());
+    return manager_delegate_.get();
+  }
   download_manager_created_ = true;
 
   // In case the delegate has already been set by
@@ -44,18 +50,17 @@ DownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
   if (!manager_delegate_.get())
     manager_delegate_ = new ChromeDownloadManagerDelegate(profile_);
 
-  DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
-  manager_delegate_->SetDownloadManager(dm);
+  manager_delegate_->SetDownloadManager(manager);
 
   // Include this download manager in the set monitored by the
   // global status updater.
-  g_browser_process->download_status_updater()->AddManager(dm);
+  g_browser_process->download_status_updater()->AddManager(manager);
 
   download_manager_created_ = true;
-  for (std::vector<OnManagerCreatedCallback>::iterator cb
-        = on_manager_created_callbacks_.begin();
-        cb != on_manager_created_callbacks_.end(); ++cb) {
-    cb->Run(dm);
+  for (std::vector<OnManagerCreatedCallback>::iterator cb =
+           on_manager_created_callbacks_.begin();
+       cb != on_manager_created_callbacks_.end(); ++cb) {
+    cb->Run(manager);
   }
   on_manager_created_callbacks_.clear();
 
@@ -91,11 +96,16 @@ int DownloadService::DownloadCountAllProfiles() {
 
 void DownloadService::SetDownloadManagerDelegateForTesting(
     ChromeDownloadManagerDelegate* new_delegate) {
+  // Set the new delegate first so that if BrowserContext::GetDownloadManager()
+  // causes a new download manager to be created, we won't create a redundant
+  // ChromeDownloadManagerDelegate().
+  manager_delegate_ = new_delegate;
   // Guarantee everything is properly initialized.
   DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
-  dm->SetDelegate(new_delegate);
-  new_delegate->SetDownloadManager(dm);
-  manager_delegate_ = new_delegate;
+  if (dm->GetDelegate() != new_delegate) {
+    dm->SetDelegate(new_delegate);
+    new_delegate->SetDownloadManager(dm);
+  }
 }
 
 void DownloadService::Shutdown() {

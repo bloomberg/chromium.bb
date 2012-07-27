@@ -34,6 +34,9 @@ DownloadId::Domain kValidDownloadItemIdDomain = "valid DownloadId::Domain";
 namespace {
 class MockDelegate : public DownloadItemImplDelegate {
  public:
+  MockDelegate(DownloadFileManager* file_manager)
+      : file_manager_(file_manager) {
+  }
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath& path));
   MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItemImpl* download));
   MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl* download));
@@ -47,6 +50,11 @@ class MockDelegate : public DownloadItemImplDelegate {
                void(DownloadItemImpl* download));
   MOCK_METHOD1(DownloadRenamedToFinalName, void(DownloadItemImpl* download));
   MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItemImpl* download));
+  virtual DownloadFileManager* GetDownloadFileManager() OVERRIDE {
+    return file_manager_;
+  }
+ private:
+  DownloadFileManager* file_manager_;
 };
 
 class MockRequestHandle : public DownloadRequestHandleInterface {
@@ -147,7 +155,9 @@ class DownloadItemTest : public testing::Test {
 
   DownloadItemTest()
       : ui_thread_(BrowserThread::UI, &loop_),
-        file_thread_(BrowserThread::FILE, &loop_) {
+        file_thread_(BrowserThread::FILE, &loop_),
+        file_manager_(new MockDownloadFileManager),
+        delegate_(file_manager_.get()) {
   }
 
   ~DownloadItemTest() {
@@ -202,10 +212,15 @@ class DownloadItemTest : public testing::Test {
     return &delegate_;
   }
 
+  MockDownloadFileManager* mock_file_manager() {
+    return file_manager_.get();
+  }
+
  private:
   MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;    // UI thread
   content::TestBrowserThread file_thread_;  // FILE thread
+  scoped_refptr<MockDownloadFileManager> file_manager_;
   testing::NiceMock<MockDelegate> delegate_;
   std::set<DownloadItem*> allocated_downloads_;
 };
@@ -225,7 +240,7 @@ const FilePath::CharType kDummyPath[] = FILE_PATH_LITERAL("/testpath");
 //  void OpenDownload();
 //  void ShowDownloadInShell();
 //  void CompleteDelayedDownload();
-//  void OnDownloadCompleting(DownloadFileManager* file_manager);
+//  void OnDownloadCompleting();
 //  set_* mutators
 
 TEST_F(DownloadItemTest, NotificationAfterUpdate) {
@@ -295,49 +310,11 @@ TEST_F(DownloadItemTest, NotificationAfterRemove) {
   ASSERT_TRUE(observer.CheckUpdated());
 }
 
-TEST_F(DownloadItemTest, NotificationAfterOnTargetPathDetermined) {
-  DownloadItemImpl* safe_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
-  MockObserver safe_observer(safe_item);
-
-  // Calling OnTargetPathDetermined triggers notification regardless of danger
-  // type.
-  safe_item->OnTargetPathDetermined(
-      FilePath(kDummyPath), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  EXPECT_FALSE(safe_observer.CheckUpdated());
-
-  DownloadItemImpl* dangerous_item =
-      CreateDownloadItem(DownloadItem::IN_PROGRESS);
-  MockObserver dangerous_observer(dangerous_item);
-
-  // Calling OnTargetPathDetermined does trigger notification if danger type
-  // anything other than NOT_DANGEROUS.
-  dangerous_item->OnTargetPathDetermined(
-      FilePath(kDummyPath), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
-  EXPECT_FALSE(dangerous_observer.CheckUpdated());
-}
-
-TEST_F(DownloadItemTest, NotificationAfterOnTargetPathSelected) {
-  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
-  MockObserver observer(item);
-
-  item->OnTargetPathDetermined(
-      FilePath(kDummyPath), DownloadItem::TARGET_DISPOSITION_PROMPT,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  item->OnTargetPathSelected(FilePath(kDummyPath));
-  EXPECT_FALSE(observer.CheckUpdated());
-}
-
 TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   // Setting to NOT_DANGEROUS does not trigger a notification.
   DownloadItemImpl* safe_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver safe_observer(safe_item);
 
-  safe_item->OnTargetPathDetermined(
-      FilePath(kDummyPath), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  EXPECT_FALSE(safe_observer.CheckUpdated());
   safe_item->OnAllDataSaved(1, "");
   EXPECT_TRUE(safe_observer.CheckUpdated());
   safe_item->OnContentCheckCompleted(
@@ -349,10 +326,6 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
       CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver unsafeurl_observer(unsafeurl_item);
 
-  unsafeurl_item->OnTargetPathDetermined(
-      FilePath(kDummyPath), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  EXPECT_FALSE(unsafeurl_observer.CheckUpdated());
   unsafeurl_item->OnAllDataSaved(1, "");
   EXPECT_TRUE(unsafeurl_observer.CheckUpdated());
   unsafeurl_item->OnContentCheckCompleted(
@@ -366,10 +339,6 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
       CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver unsafefile_observer(unsafefile_item);
 
-  unsafefile_item->OnTargetPathDetermined(
-      FilePath(kDummyPath), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  EXPECT_FALSE(unsafefile_observer.CheckUpdated());
   unsafefile_item->OnAllDataSaved(1, "");
   EXPECT_TRUE(unsafefile_observer.CheckUpdated());
   unsafefile_item->OnContentCheckCompleted(
@@ -380,23 +349,27 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   EXPECT_TRUE(unsafefile_observer.CheckUpdated());
 }
 
-// DownloadItemImpl::OnIntermediatePathDetermined will schedule a task to run
+// DownloadItemImpl::OnDownloadTargetDetermined will schedule a task to run
 // DownloadFileManager::RenameDownloadFile(). Once the rename
 // completes, DownloadItemImpl receives a notification with the new file
 // name. Check that observers are updated when the new filename is available and
 // not before.
-TEST_F(DownloadItemTest, NotificationAfterOnIntermediatePathDetermined) {
+TEST_F(DownloadItemTest, NotificationAfterOnDownloadTargetDetermined) {
   DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
-  FilePath intermediate_path(kDummyPath);
-  FilePath new_intermediate_path(intermediate_path.AppendASCII("foo"));
-  scoped_refptr<MockDownloadFileManager> file_manager(
-      new MockDownloadFileManager);
-  EXPECT_CALL(*file_manager.get(),
+  FilePath target_path(kDummyPath);
+  FilePath intermediate_path(target_path.InsertBeforeExtensionASCII("x"));
+  FilePath new_intermediate_path(target_path.InsertBeforeExtensionASCII("y"));
+  EXPECT_CALL(*mock_file_manager(),
               RenameDownloadFile(_,intermediate_path,false,_))
       .WillOnce(ScheduleRenameCallback(new_intermediate_path));
 
-  item->OnIntermediatePathDetermined(file_manager.get(), intermediate_path);
+  // Currently, a notification would be generated if the danger type is anything
+  // other than NOT_DANGEROUS.
+  item->OnDownloadTargetDetermined(target_path,
+                                   DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                                   content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                                   intermediate_path);
   EXPECT_FALSE(observer.CheckUpdated());
   RunAllPendingInMessageLoops();
   EXPECT_TRUE(observer.CheckUpdated());
@@ -416,9 +389,18 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
 
 TEST_F(DownloadItemTest, DisplayName) {
   DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
-  item->OnTargetPathDetermined(FilePath(kDummyPath).AppendASCII("foo.bar"),
-                               DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                               content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  FilePath target_path(FilePath(kDummyPath).AppendASCII("foo.bar"));
+  FilePath intermediate_path(target_path.InsertBeforeExtensionASCII("x"));
+  EXPECT_EQ(FILE_PATH_LITERAL(""),
+            item->GetFileNameToReportUser().value());
+  EXPECT_CALL(*mock_file_manager(),
+              RenameDownloadFile(_,_,false,_))
+      .WillOnce(ScheduleRenameCallback(intermediate_path));
+  item->OnDownloadTargetDetermined(target_path,
+                                   DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                                   content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                                   intermediate_path);
+  RunAllPendingInMessageLoops();
   EXPECT_EQ(FILE_PATH_LITERAL("foo.bar"),
             item->GetFileNameToReportUser().value());
   item->SetDisplayName(FilePath(FILE_PATH_LITERAL("new.name")));
@@ -500,12 +482,10 @@ TEST_F(DownloadItemTest, ExternalData) {
 // rename.
 TEST_F(DownloadItemTest, CallbackAfterRename) {
   DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
-  FilePath intermediate_path(kDummyPath);
-  FilePath new_intermediate_path(intermediate_path.AppendASCII("foo"));
-  FilePath final_path(intermediate_path.AppendASCII("bar"));
-  scoped_refptr<MockDownloadFileManager> file_manager(
-      new MockDownloadFileManager);
-  EXPECT_CALL(*file_manager.get(),
+  FilePath final_path(FilePath(kDummyPath).AppendASCII("foo.bar"));
+  FilePath intermediate_path(final_path.InsertBeforeExtensionASCII("x"));
+  FilePath new_intermediate_path(final_path.InsertBeforeExtensionASCII("y"));
+  EXPECT_CALL(*mock_file_manager(),
               RenameDownloadFile(item->GetGlobalId(),
                                  intermediate_path, false, _))
       .WillOnce(ScheduleRenameCallback(new_intermediate_path));
@@ -517,21 +497,21 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
                   AllOf(item,
                         Property(&DownloadItem::GetFullPath,
                                  new_intermediate_path))));
-  item->OnTargetPathDetermined(final_path,
-                               DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                               content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  item->OnIntermediatePathDetermined(file_manager.get(), intermediate_path);
+  item->OnDownloadTargetDetermined(final_path,
+                                   DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                                   content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                                   intermediate_path);
   RunAllPendingInMessageLoops();
   // All the callbacks should have happened by now.
-  ::testing::Mock::VerifyAndClearExpectations(file_manager.get());
+  ::testing::Mock::VerifyAndClearExpectations(mock_file_manager());
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());
 
   item->OnAllDataSaved(10, "");
-  EXPECT_CALL(*file_manager.get(),
+  EXPECT_CALL(*mock_file_manager(),
               RenameDownloadFile(item->GetGlobalId(),
-                                           final_path, true, _))
+                                 final_path, true, _))
       .WillOnce(ScheduleRenameCallback(final_path));
-  EXPECT_CALL(*file_manager.get(),
+  EXPECT_CALL(*mock_file_manager(),
               CompleteDownload(item->GetGlobalId(), _))
       .WillOnce(ScheduleCompleteCallback());
   // DownloadItemImpl should invoke this callback on the delegate after the
@@ -546,9 +526,9 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   EXPECT_CALL(*mock_delegate(), DownloadCompleted(item));
   EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item))
       .WillOnce(Return(true));
-  item->OnDownloadCompleting(file_manager.get());
+  item->OnDownloadCompleting();
   RunAllPendingInMessageLoops();
-  ::testing::Mock::VerifyAndClearExpectations(file_manager.get());
+  ::testing::Mock::VerifyAndClearExpectations(mock_file_manager());
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());
 }
 

@@ -21,8 +21,9 @@ class ShellDownloadManagerDelegate
 
   void SetDownloadManager(DownloadManager* manager);
 
-  virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
-  virtual void ChooseDownloadPath(DownloadItem* item) OVERRIDE;
+  virtual bool DetermineDownloadTarget(
+      DownloadItem* download,
+      const DownloadTargetCallback& callback) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<ShellDownloadManagerDelegate>;
@@ -30,9 +31,11 @@ class ShellDownloadManagerDelegate
   virtual ~ShellDownloadManagerDelegate();
 
   void GenerateFilename(int32 download_id,
+                        const DownloadTargetCallback& callback,
                         const FilePath& generated_name);
-  void RestartDownload(int32 download_id,
-                       const FilePath& suggested_path);
+  void ChooseDownloadPath(int32 download_id,
+                          const DownloadTargetCallback& callback,
+                          const FilePath& suggested_path);
 
   DownloadManager* download_manager_;
 

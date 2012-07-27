@@ -15,31 +15,21 @@
 using content::DownloadItem;
 using content::DownloadManager;
 
-namespace {
-
-// Call FileSelected on |download_manager|.
-void FileSelectedHelper(DownloadManager* download_manager,
-                        int32 download_id,
-                        const FilePath& file_path) {
-  download_manager->FileSelected(file_path, download_id);
-}
-
-}  // namespace
-
 DownloadFilePickerChromeOS::DownloadFilePickerChromeOS() {
 }
 
 DownloadFilePickerChromeOS::~DownloadFilePickerChromeOS() {
 }
 
-void DownloadFilePickerChromeOS::InitSuggestedPath(DownloadItem* item) {
-  // For GData downloads, suggested path is the virtual gdata path instead of
-  // the temporary local one.
+void DownloadFilePickerChromeOS::InitSuggestedPath(DownloadItem* item,
+                                                   const FilePath& path) {
+  // For GData downloads, |path| is the virtual gdata path instead of the
+  // temporary local one.
   if (gdata::GDataDownloadObserver::IsGDataDownload(item)) {
     set_suggested_path(gdata::util::GetSpecialRemoteRootPath().Append(
         gdata::GDataDownloadObserver::GetGDataPath(item)));
   } else {
-    DownloadFilePicker::InitSuggestedPath(item);
+    DownloadFilePicker::InitSuggestedPath(item, path);
   }
 }
 
@@ -59,6 +49,8 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
   FilePath path = file_info.file_path;
   file_util::NormalizeFileNameEncoding(&path);
 
+  // Need to do this before we substitute with a temporary path. Otherwise we
+  // won't be able to detect path changes.
   RecordFileSelected(path);
 
   if (download_manager_) {
@@ -66,7 +58,10 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
         download_manager_->GetActiveDownloadItem(download_id_);
     gdata::GDataDownloadObserver::SubstituteGDataDownloadPath(
         NULL, path, download,
-        base::Bind(&FileSelectedHelper, download_manager_, download_id_));
+        base::Bind(&DownloadFilePickerChromeOS::OnFileSelected,
+                   base::Unretained(this)));
+  } else {
+    OnFileSelected(FilePath());
   }
-  delete this;
+  // The OnFileSelected() call deletes |this|
 }
