@@ -1533,8 +1533,8 @@ static const struct OpInfo kDecodeF30FXXOp[NCDTABLESIZE] = {
   /* b9 */  { NACLi_INVALID, 0, 1, 0 },	/* reserved */
   /* ba */  { NACLi_INVALID, 0, 2, 0 },	/* reserved */
   /* bb */  { NACLi_INVALID, 0, 1, 0 },	/* reserved */
-  /* bc */  { NACLi_INVALID, 0, 1, 0 },	/* reserved */
-  /* bd */  { NACLi_LZCNT, 1, 1, 0 },	/* lzcnt $Gv, $Ev */
+  /* bc */  { NACLi_386, 1, 1, 0 },	/* tzcnt $Gv, $Ev */
+  /* bd */  { NACLi_386, 1, 1, 0 },	/* lzcnt $Gv, $Ev */
   /* be */  { NACLi_INVALID, 1, 1, 0 },	/* reserved */
   /* bf */  { NACLi_INVALID, 0, 1, 0 },	/* reserved */
   /* c0 */  { NACLi_UNDEFINED, 0, 1, 0 },	/* undefined */

@@ -1417,7 +1417,7 @@ static const char *kDisasmF30FXXOp[NCDTABLESIZE] = {
   /* b9 */  "reserved",
   /* ba */  "reserved",
   /* bb */  "reserved",
-  /* bc */  "reserved",
+  /* bc */  "tzcnt $Gv, $Ev",
   /* bd */  "lzcnt $Gv, $Ev",
   /* be */  "reserved",
   /* bf */  "reserved",

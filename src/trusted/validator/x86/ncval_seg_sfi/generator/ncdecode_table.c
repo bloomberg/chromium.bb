@@ -2168,12 +2168,19 @@ static void BuildMetaTables() {
   EncodeOpF20F(0xbb, 0, IMM_NONE, NACLi_INVALID, "reserved");
 
   EncodeOp0F(0xbc, 1, IMM_NONE, NACLi_386, "bsf $Gv, $Ev");
-  EncodeOpF30F(0xbc, 0, IMM_NONE, NACLi_INVALID, "reserved");
+  /* tzcnt is treated as a bsf on machines that don't have tzcnt.
+   * Hence, even though its conditional on NACLi_LZCNT, we act
+   * like it can be used on all processors.
+   */
+  EncodeOpF30F(0xbc, 1, IMM_NONE, NACLi_386, "tzcnt $Gv, $Ev");
   EncodeOpF20F(0xbc, 0, IMM_NONE, NACLi_INVALID, "reserved");
 
   EncodeOp0F(0xbd, 1, IMM_NONE, NACLi_386, "bsr $Gv, $Ev");
-  /* lzcnt is treated as a bsr on machines that don't have lzcnt */
-  EncodeOpF30F(0xbd, 1, IMM_NONE, NACLi_LZCNT, "lzcnt $Gv, $Ev");
+  /* lzcnt is treated as a bsr on machines that don't have lzcnt.
+   * Hence, even though its conditional on NACLi_LZCNT, we act
+   * like it can be used on all processors.
+   */
+  EncodeOpF30F(0xbd, 1, IMM_NONE, NACLi_386, "lzcnt $Gv, $Ev");
   EncodeOpF20F(0xbd, 0, IMM_NONE, NACLi_INVALID, "reserved");
 
   EncodeOp0F(0xbe, 1, IMM_NONE, NACLi_386, "movsx $Gv, $Eb");
