@@ -60,7 +60,7 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   chrome::MediaFileSystemRegistry* media_fs_registry =
       MediaFileSystemRegistry::GetInstance();
   const std::vector<MediaFileSystemRegistry::MediaFSIDAndPath> filesystems =
-      media_fs_registry->GetMediaFileSystems(rph);
+      media_fs_registry->GetMediaFileSystems(rph, *GetExtension());
 
   const int child_id = rph->GetID();
   base::ListValue* list = new base::ListValue();

@@ -8,9 +8,12 @@
 
 #include <set>
 
+#include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -28,6 +31,22 @@ using content::BrowserThread;
 using content::RenderProcessHost;
 using fileapi::IsolatedContext;
 
+namespace {
+
+bool IsGalleryPermittedForExtension(const extensions::Extension& extension,
+                                    SystemMonitor::MediaDeviceType type,
+                                    const FilePath::StringType& location) {
+  if (extension.HasAPIPermission(
+        extensions::APIPermission::kMediaGalleriesAllGalleries)) {
+    return true;
+  }
+  // TODO(vandebo) Check with prefs for permission to this gallery.
+  return false;
+}
+
+}  // namespace
+
+
 /******************
  * Public methods
  ******************/
@@ -39,7 +58,8 @@ MediaFileSystemRegistry* MediaFileSystemRegistry::GetInstance() {
 
 std::vector<MediaFileSystemRegistry::MediaFSIDAndPath>
 MediaFileSystemRegistry::GetMediaFileSystems(
-    const content::RenderProcessHost* rph) {
+    const content::RenderProcessHost* rph,
+    const extensions::Extension& extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<MediaFSIDAndPath> results;
@@ -51,7 +71,10 @@ MediaFileSystemRegistry::GetMediaFileSystems(
     // file system mappings.
     RegisterForRPHGoneNotifications(rph);
     FilePath pictures_path;
-    if (PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path)) {
+    // TODO(vandebo) file system galleries need a unique id as well.
+    if (PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path) &&
+        IsGalleryPermittedForExtension(extension, SystemMonitor::TYPE_PATH,
+                                       pictures_path.value())) {
       std::string fsid = RegisterPathAsFileSystem(pictures_path);
       child_it->second.insert(std::make_pair(pictures_path, fsid));
     }
@@ -62,7 +85,9 @@ MediaFileSystemRegistry::GetMediaFileSystems(
   const std::vector<SystemMonitor::MediaDeviceInfo> media_devices =
       monitor->GetAttachedMediaDevices();
   for (size_t i = 0; i < media_devices.size(); ++i) {
-    if (media_devices[i].type == SystemMonitor::TYPE_PATH) {
+    if (media_devices[i].type == SystemMonitor::TYPE_PATH &&
+        IsGalleryPermittedForExtension(extension, media_devices[i].type,
+                                       media_devices[i].location)) {
       FilePath path(media_devices[i].location);
       device_id_map_.insert(std::make_pair(media_devices[i].unique_id, path));
       const std::string fsid = RegisterPathAsFileSystem(path);

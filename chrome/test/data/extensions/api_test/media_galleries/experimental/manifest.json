@@ -3,10 +3,8 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "end-to-end browser test for chrome.experimental.mediaGalleries API",
-  "app": {
-    "background": {
-      "scripts": ["test.js"]
-    }
+  "background": {
+    "scripts": ["test.js"]
   },
-  "permissions": ["experimental", "mediaGalleriesRead"]
+  "permissions": ["experimental"]
 }
