@@ -13,10 +13,10 @@ def _MakeBranchDict(branch):
   return {
     'showWarning': branch != 'stable',
     'branches': [
-      { 'name': 'Stable', 'path': EXTENSIONS_URL + '/stable' },
-      { 'name': 'Dev',    'path': EXTENSIONS_URL + '/dev' },
-      { 'name': 'Beta',   'path': EXTENSIONS_URL + '/beta' },
-      { 'name': 'Trunk',  'path': EXTENSIONS_URL + '/trunk' }
+      { 'name': 'Stable', 'path': 'stable' },
+      { 'name': 'Dev',    'path': 'dev' },
+      { 'name': 'Beta',   'path': 'beta' },
+      { 'name': 'Trunk',  'path': 'trunk' }
     ],
     'current': branch
   }

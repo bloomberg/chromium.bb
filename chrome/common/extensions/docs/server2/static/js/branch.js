@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Redirects to the same page on a different branch.
- *
- * @param {String} The path to redirect to.
- */
 (function() {
-  function redirectToBranch(value) {
+  function redirectToBranch() {
+    var value = event.target.value;
     if (!value)
       return;
-    var path = window.location.pathname.split('/')
-    window.location = value + '/' + path[path.length - 1];
+    var current_branch = window.bootstrap.branchInfo.current;
+    var path = window.location.pathname.split('/');
+    var index = path.indexOf(current_branch);
+    if (index != -1)
+      path[index] = value;
+    else
+      path.splice(path.length - 1, 0, value);
+    window.location = path.join('/');
   }
 
-  window.redirectToBranch = redirectToBranch;
+  document.getElementById('branchChooser').addEventListener(
+      'change',
+      redirectToBranch);
 })()

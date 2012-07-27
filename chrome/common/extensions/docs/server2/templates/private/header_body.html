@@ -1,7 +1,7 @@
 {{?branchInfo.showWarning}}
 <div id="branchWarning" class="displayModeWarning">
   <span>WARNING: this is the {{branchInfo.current}} documentation. It may not work with the stable release of Chrome.</span>
-  <select id="branchChooser" onchange="redirectToBranch(this.value)">
+  <select id="branchChooser">
     <option value="">Choose a different version...</option>
     {{#branchInfo.branches}}
     <option value="{{path}}">{{name}}</option>
