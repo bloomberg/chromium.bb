@@ -14,7 +14,6 @@
 using content::BrowserThread;
 
 namespace events {
-const char kExperimentalSocketOnEvent[] = "experimental.socket.onEvent";
 const char kExperimentalUsbOnEvent[] = "experimental.usb.onEvent";
 };
 
@@ -50,38 +49,6 @@ ApiResourceEventNotifier::ApiResourceEventNotifier(
       src_url_(src_url) {
 }
 
-void ApiResourceEventNotifier::OnConnectComplete(int result_code) {
-  SendEventWithResultCode(events::kExperimentalSocketOnEvent,
-                          API_RESOURCE_EVENT_CONNECT_COMPLETE, result_code);
-}
-
-void ApiResourceEventNotifier::OnDataRead(int result_code,
-                                          base::ListValue* data,
-                                          const std::string& address,
-                                          int port) {
-  // Do we have a destination for this event? There will be one if a source id
-  // was injected by the request handler for the resource's create method in
-  // schema_generated_bindings.js, which will in turn be the case if the caller
-  // of the create method provided an onEvent closure.
-  if (src_id_ < 0) {
-    delete data;
-    return;
-  }
-
-  DictionaryValue* event = CreateApiResourceEvent(
-      API_RESOURCE_EVENT_DATA_READ);
-  event->SetInteger(kResultCodeKey, result_code);
-  event->Set(kDataKey, data);
-  event->SetString(kAddressKey, address);
-  event->SetInteger(kPortKey, port);
-  DispatchEvent(events::kExperimentalSocketOnEvent, event);
-}
-
-void ApiResourceEventNotifier::OnWriteComplete(int result_code) {
-  SendEventWithResultCode(events::kExperimentalSocketOnEvent,
-                          API_RESOURCE_EVENT_WRITE_COMPLETE, result_code);
-}
-
 void ApiResourceEventNotifier::OnTransferComplete(UsbTransferStatus status,
                                                   const std::string& error,
                                                   base::BinaryValue* data) {
@@ -105,12 +72,6 @@ void ApiResourceEventNotifier::OnTransferComplete(UsbTransferStatus status,
 std::string ApiResourceEventNotifier::ApiResourceEventTypeToString(
     ApiResourceEventType event_type) {
   switch (event_type) {
-    case API_RESOURCE_EVENT_CONNECT_COMPLETE:
-      return kEventTypeConnectComplete;
-    case API_RESOURCE_EVENT_DATA_READ:
-      return kEventTypeDataRead;
-    case API_RESOURCE_EVENT_WRITE_COMPLETE:
-      return kEventTypeWriteComplete;
     case API_RESOURCE_EVENT_TRANSFER_COMPLETE:
       return kEventTypeTransferComplete;
   }

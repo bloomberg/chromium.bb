@@ -252,6 +252,7 @@
   "beff6ecd9677dea0a7c648c5042165b48bb66f09": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.PROCESSES.ONUPDATED CHROME.EXPERIMENTAL.PROCESSES.ONUPDATEDWITHMEMORY CHROME.EXPERIMENTAL.PROCESSES.TERMINATE",
   "3e8e226d87e431296bb110b4f6eb7eec2ca7a826": "PROXY EXTENSION API SAMPLE SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS CHROME.I18N.GETMESSAGE CHROME.PROXY.ONPROXYERROR",
   "56a8d2ac24ca7bba78fd88ad57f43fc13c784497": "SAMPLE - OAUTH CONTACTS USES OAUTH TO CONNECT TO GOOGLES CONTACTS SERVICE AND DISPLAY A LIST OF YOUR CONTACTS. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
+  "3c6dfba67f6a7480d931b5a4a646c151ad1a049b": "SANDBOXED FRAME  BACKGROUND_PAGE BROWSER_ACTION NOTIFICATIONS CHROME.BROWSERACTION.ONCLICKED",
   "38f6e1e17756ede38b1364c7114a738ca717dcbb": "SANDWICHBAR SHOWS AN INFOBAR ON PAGES WHICH CONTAIN THE WORD SANDWICH BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.INFOBARS.SHOW",
   "fc89b35755483af30b66cd72cefa34a43a3e8312": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.PROCESSES.GETPROCESSIDFORTAB CHROME.TABS.GET CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
   "a491a2faa1fe79cb49b2fe9ed2720f4723c14184": "SPEAK SELECTION SPEAKS THE CURRENT SELECTION OUT LOUD. <ALL_URLS> BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS TTS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
@@ -339,6 +340,8 @@
         <a href="javascript:void(0);" onclick="setFilter('chrome.runtime', this)">chrome.runtime</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.scriptBadge', this)">chrome.scriptBadge</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.socket', this)">chrome.socket</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.storage', this)">chrome.storage</a><span>, </span>
       </span><span>
@@ -3243,6 +3246,48 @@
   </div>
   <div>
     <a href="../examples/extensions/oauth_contacts.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+  </div>
+</div><div class="sample" id="3c6dfba67f6a7480d931b5a4a646c151ad1a049b">
+  <img class="icon" src="../images/sample-default-icon.png">
+  <h2 class="name">
+    <a href="#3c6dfba67f6a7480d931b5a4a646c151ad1a049b">Sandboxed Frame</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+    </span><span>
+      <strong>browser_action</strong>
+      <span> and</span>
+    </span><span>
+      <strong>notifications</strong>
+    </span>
+  </p>
+  <p></p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="../examples/howto/sandbox/eventpage.html">eventpage.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="../examples/howto/sandbox/eventpage.js">eventpage.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="../examples/howto/sandbox/handlebars-1.0.0.beta.6.js">handlebars-1.0.0.beta.6.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="../examples/howto/sandbox/manifest.json">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="../examples/howto/sandbox/sandbox.html">sandbox.html</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a href="../examples/howto/sandbox.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
   </div>
 </div><div class="sample" id="38f6e1e17756ede38b1364c7114a738ca717dcbb">

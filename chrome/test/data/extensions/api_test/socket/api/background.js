@@ -10,7 +10,7 @@
 const request = "0100000005320000005hello";
 var expectedResponsePattern = /0100000005320000005.{11}/;
 
-const socket = chrome.experimental.socket;
+const socket = chrome.socket;
 var address;
 var bytesWritten = 0;
 var dataAsString;

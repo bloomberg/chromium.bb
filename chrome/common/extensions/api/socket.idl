@@ -4,7 +4,7 @@
 
 // File-level comment to appease parser. Eventually this will not be necessary.
 
-namespace experimental.socket {
+namespace socket {
   enum SocketType {
     tcp,
     udp
@@ -12,9 +12,6 @@ namespace experimental.socket {
 
   // The socket options.
   dictionary CreateOptions {
-    // The schema generator does not support dictionaries without any fields.
-    // Ignore this field.
-    [nodoc] long? dummyValue;
   };
 
   dictionary CreateInfo {

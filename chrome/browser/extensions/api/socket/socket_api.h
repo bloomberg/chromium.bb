@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
-#include "chrome/common/extensions/api/experimental_socket.h"
+#include "chrome/common/extensions/api/socket.h"
 #include "net/base/address_list.h"
 #include "net/base/host_resolver.h"
 
@@ -63,7 +63,7 @@ class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
 
 class SocketCreateFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.create")
 
   SocketCreateFunction();
 
@@ -81,7 +81,7 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
     kSocketTypeUDP
   };
 
-  scoped_ptr<api::experimental_socket::Create::Params> params_;
+  scoped_ptr<api::socket::Create::Params> params_;
   SocketType socket_type_;
   int src_id_;
   ApiResourceEventNotifier* event_notifier_;
@@ -89,7 +89,7 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
 
 class SocketDestroyFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.destroy")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.destroy")
 
  protected:
   virtual ~SocketDestroyFunction() {}
@@ -104,7 +104,7 @@ class SocketDestroyFunction : public SocketAsyncApiFunction {
 
 class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.connect")
 
   SocketConnectFunction();
 
@@ -129,7 +129,7 @@ class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
 
 class SocketDisconnectFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.disconnect")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.disconnect")
 
  protected:
   virtual ~SocketDisconnectFunction() {}
@@ -144,7 +144,7 @@ class SocketDisconnectFunction : public SocketAsyncApiFunction {
 
 class SocketBindFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.bind")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.bind")
 
  protected:
   virtual ~SocketBindFunction() {}
@@ -161,7 +161,7 @@ class SocketBindFunction : public SocketAsyncApiFunction {
 
 class SocketReadFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.read")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.read")
 
   SocketReadFunction();
 
@@ -174,12 +174,12 @@ class SocketReadFunction : public SocketAsyncApiFunction {
   void OnCompleted(int result, scoped_refptr<net::IOBuffer> io_buffer);
 
  private:
-  scoped_ptr<api::experimental_socket::Read::Params> params_;
+  scoped_ptr<api::socket::Read::Params> params_;
 };
 
 class SocketWriteFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.write")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.write")
 
   SocketWriteFunction();
 
@@ -199,7 +199,7 @@ class SocketWriteFunction : public SocketAsyncApiFunction {
 
 class SocketRecvFromFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.recvFrom")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.recvFrom")
 
   SocketRecvFromFunction();
 
@@ -215,12 +215,12 @@ class SocketRecvFromFunction : public SocketAsyncApiFunction {
                    int port);
 
  private:
-  scoped_ptr<api::experimental_socket::RecvFrom::Params> params_;
+  scoped_ptr<api::socket::RecvFrom::Params> params_;
 };
 
 class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.sendTo")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.sendTo")
 
   SocketSendToFunction();
 
@@ -247,7 +247,7 @@ class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
 
 class SocketSetKeepAliveFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.setKeepAlive")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.setKeepAlive")
 
   SocketSetKeepAliveFunction();
 
@@ -259,12 +259,12 @@ class SocketSetKeepAliveFunction : public SocketAsyncApiFunction {
   virtual void Work() OVERRIDE;
 
  private:
-  scoped_ptr<api::experimental_socket::SetKeepAlive::Params> params_;
+  scoped_ptr<api::socket::SetKeepAlive::Params> params_;
 };
 
 class SocketSetNoDelayFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.setNoDelay")
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.setNoDelay")
 
   SocketSetNoDelayFunction();
 
@@ -276,7 +276,7 @@ class SocketSetNoDelayFunction : public SocketAsyncApiFunction {
   virtual void Work() OVERRIDE;
 
  private:
-  scoped_ptr<api::experimental_socket::SetNoDelay::Params> params_;
+  scoped_ptr<api::socket::SetNoDelay::Params> params_;
 };
 
 }  // namespace extensions

@@ -23,9 +23,6 @@ namespace extensions {
 class EventRouter;
 
 enum ApiResourceEventType {
-  API_RESOURCE_EVENT_CONNECT_COMPLETE,
-  API_RESOURCE_EVENT_DATA_READ,
-  API_RESOURCE_EVENT_WRITE_COMPLETE,
   API_RESOURCE_EVENT_TRANSFER_COMPLETE,
 };
 
@@ -40,16 +37,6 @@ class ApiResourceEventNotifier
                            Profile* profile,
                            const std::string& src_extension_id, int src_id,
                            const GURL& src_url);
-
-  virtual void OnConnectComplete(int result_code);
-
-  // Takes ownership of data.
-  virtual void OnDataRead(int result_code,
-                          base::ListValue* data,
-                          const std::string& address,
-                          int port);
-
-  virtual void OnWriteComplete(int result_code);
 
   virtual void OnTransferComplete(UsbTransferStatus status,
                                   const std::string& error,

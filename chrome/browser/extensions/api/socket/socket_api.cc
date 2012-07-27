@@ -100,7 +100,7 @@ SocketCreateFunction::SocketCreateFunction()
 SocketCreateFunction::~SocketCreateFunction() {}
 
 bool SocketCreateFunction::Prepare() {
-  params_ = api::experimental_socket::Create::Params::Create(*args_);
+  params_ = api::socket::Create::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   if (params_->type == kTCPOption) {
@@ -227,7 +227,7 @@ SocketReadFunction::SocketReadFunction()
 SocketReadFunction::~SocketReadFunction() {}
 
 bool SocketReadFunction::Prepare() {
-  params_ = api::experimental_socket::Read::Params::Create(*args_);
+  params_ = api::socket::Read::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -308,7 +308,7 @@ SocketRecvFromFunction::SocketRecvFromFunction()
 SocketRecvFromFunction::~SocketRecvFromFunction() {}
 
 bool SocketRecvFromFunction::Prepare() {
-  params_ = api::experimental_socket::RecvFrom::Params::Create(*args_);
+  params_ = api::socket::RecvFrom::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -408,7 +408,7 @@ SocketSetKeepAliveFunction::SocketSetKeepAliveFunction()
 SocketSetKeepAliveFunction::~SocketSetKeepAliveFunction() {}
 
 bool SocketSetKeepAliveFunction::Prepare() {
-  params_ = api::experimental_socket::SetKeepAlive::Params::Create(*args_);
+  params_ = api::socket::SetKeepAlive::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -434,7 +434,7 @@ SocketSetNoDelayFunction::SocketSetNoDelayFunction()
 SocketSetNoDelayFunction::~SocketSetNoDelayFunction() {}
 
 bool SocketSetNoDelayFunction::Prepare() {
-  params_ = api::experimental_socket::SetNoDelay::Params::Create(*args_);
+  params_ = api::socket::SetNoDelay::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
