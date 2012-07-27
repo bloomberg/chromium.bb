@@ -855,6 +855,29 @@ class GDataFileSystem : public GDataFileSystemInterface,
     GDataFileError error,
     scoped_ptr<GDataEntryProto> entry_proto);
 
+  // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
+  // local dirty cache for the entry, and if there is, replace the
+  // PlatformFileInfo part of the |entry_proto| with the locally modified info.
+  void CheckLocalModificationAndRun(scoped_ptr<GDataEntryProto> entry_proto,
+                                    const GetEntryInfoCallback& callback);
+  void CheckLocalModificationAndRunAfterGetCacheEntry(
+      scoped_ptr<GDataEntryProto> entry_proto,
+      const GetEntryInfoCallback& callback,
+      bool success,
+      const GDataCacheEntry& cache_entry);
+  void CheckLocalModificationAndRunAfterGetCacheFile(
+      scoped_ptr<GDataEntryProto> entry_proto,
+      const GetEntryInfoCallback& callback,
+      GDataFileError error,
+      const std::string& resource_id,
+      const std::string& md5,
+      const FilePath& local_cache_path);
+  void CheckLocalModificationAndRunAfterGetFileInfo(
+      scoped_ptr<GDataEntryProto> entry_proto,
+      const GetEntryInfoCallback& callback,
+      base::PlatformFileInfo* file_info,
+      bool* get_file_info_result);
+
   // All members should be accessed only on UI thread. Do not post tasks to
   // other threads with base::Unretained(this).
   scoped_ptr<GDataDirectoryService> directory_service_;

@@ -355,7 +355,7 @@ class GDataFileSystemTest : public testing::Test {
         file_path,
         base::Bind(&CallbackHelper::GetEntryInfoCallback,
                    callback_helper_.get()));
-    message_loop_.RunAllPending();
+    test_util::RunBlockingPoolTask();
 
     return callback_helper_->entry_proto_.Pass();
   }
@@ -367,7 +367,7 @@ class GDataFileSystemTest : public testing::Test {
         file_path,
         base::Bind(&CallbackHelper::ReadDirectoryCallback,
                    callback_helper_.get()));
-    message_loop_.RunAllPending();
+    test_util::RunBlockingPoolTask();
 
     return callback_helper_->directory_entries_.Pass();
   }
@@ -1388,7 +1388,7 @@ TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
                  callback_helper_.get());
 
   file_system_->Copy(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();  // Wait to get our result
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
@@ -1417,7 +1417,7 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
                  callback_helper_.get());
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
   EXPECT_TRUE(EntryExists(src_file_path));
@@ -1453,7 +1453,7 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
                  callback_helper_.get());
 
   file_system_->Copy(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_ERROR_NOT_A_DIRECTORY,
             callback_helper_->last_error_);
 
@@ -1492,7 +1492,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
@@ -1541,7 +1541,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
@@ -1592,7 +1592,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
@@ -1667,7 +1667,7 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
       Eq(FilePath(FILE_PATH_LITERAL("drive/New Folder 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
@@ -1691,7 +1691,7 @@ TEST_F(GDataFileSystemTest, MoveNotExistingFile) {
                  callback_helper_.get());
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();  // Wait to get our result
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
@@ -1720,7 +1720,7 @@ TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
                  callback_helper_.get());
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
 
@@ -1756,7 +1756,7 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
                  callback_helper_.get());
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_ERROR_NOT_A_DIRECTORY,
             callback_helper_->last_error_);
 
@@ -1915,7 +1915,7 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
       true,  // is_recursive
       base::Bind(&CallbackHelper::FileOperationCallback,
                  callback_helper_.get()));
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   // TODO(gspencer): Uncomment this when we get a blob that
   // works that can be returned from the mock.
   // EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
@@ -2452,7 +2452,7 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_));
 
   file_system_->GetAvailableSpace(callback);
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GG_LONGLONG(6789012345), callback_helper_->quota_bytes_used_);
   EXPECT_EQ(GG_LONGLONG(9876543210), callback_helper_->quota_bytes_total_);
 }
@@ -2469,7 +2469,7 @@ TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
               OnDirectoryChanged(Eq(FilePath(kGDataRootDirectory)))).Times(1);
 
   file_system_->RequestDirectoryRefresh(FilePath(kGDataRootDirectory));
-  message_loop_.RunAllPending();
+  test_util::RunBlockingPoolTask();
 }
 
 TEST_F(GDataFileSystemTest, OpenAndCloseFile) {

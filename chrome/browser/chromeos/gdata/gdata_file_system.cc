@@ -605,6 +605,17 @@ void PostBlockingPoolSequencedTaskAndReply(
   DCHECK(posted);
 }
 
+// Helper function for binding |path| to GetEntryInfoWithFilePathCallback and
+// create GetEntryInfoCallback.
+void RunGetEntryInfoWithFilePathCallback(
+    const GetEntryInfoWithFilePathCallback& callback,
+    const FilePath& path,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  if (!callback.is_null())
+    callback.Run(error, path, entry_proto.Pass());
+}
+
 }  // namespace
 
 // GDataFileSystem::GetDocumentsParams struct implementation.
@@ -907,7 +918,10 @@ void GDataFileSystem::GetEntryInfoByEntryOnUIThread(
   if (entry) {
     scoped_ptr<GDataEntryProto> entry_proto(new GDataEntryProto);
     entry->ToProtoFull(entry_proto.get());
-    callback.Run(GDATA_FILE_OK, entry->GetFilePath(), entry_proto.Pass());
+    CheckLocalModificationAndRun(
+        entry_proto.Pass(),
+        base::Bind(&RunGetEntryInfoWithFilePathCallback,
+                   callback, entry->GetFilePath()));
   } else {
     callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
                  FilePath(),
@@ -2261,8 +2275,7 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
   scoped_ptr<GDataEntryProto> entry_proto(new GDataEntryProto);
   entry->ToProtoFull(entry_proto.get());
 
-  if (!callback.is_null())
-    callback.Run(GDATA_FILE_OK, entry_proto.Pass());
+  CheckLocalModificationAndRun(entry_proto.Pass(), callback);
 }
 
 void GDataFileSystem::ReadDirectoryByPath(
@@ -4166,6 +4179,110 @@ void GDataFileSystem::OnCloseFileFinished(
   // Then invokes the user-supplied callback function.
   if (!callback.is_null())
     callback.Run(result);
+}
+
+void GDataFileSystem::CheckLocalModificationAndRun(
+    scoped_ptr<GDataEntryProto> entry_proto,
+    const GetEntryInfoCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(entry_proto.get());
+
+  // For entries that will never be cached, use the original entry info as is.
+  if (!entry_proto->has_file_specific_info() ||
+      entry_proto->file_specific_info().is_hosted_document()) {
+    if (!callback.is_null())
+      callback.Run(GDATA_FILE_OK, entry_proto.Pass());
+    return;
+  }
+
+  // Checks if the file is cached and modified locally.
+  const std::string resource_id = entry_proto->resource_id();
+  const std::string md5 = entry_proto->file_specific_info().file_md5();
+  cache_->GetCacheEntryOnUIThread(
+      resource_id,
+      md5,
+      base::Bind(
+          &GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry,
+          ui_weak_ptr_, base::Passed(&entry_proto), callback));
+}
+
+void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
+    scoped_ptr<GDataEntryProto> entry_proto,
+    const GetEntryInfoCallback& callback,
+    bool success,
+    const GDataCacheEntry& cache_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // When no dirty cache is found, use the original entry info as is.
+  if (!success || !cache_entry.is_dirty()) {
+    if (!callback.is_null())
+      callback.Run(GDATA_FILE_OK, entry_proto.Pass());
+    return;
+  }
+
+  // Gets the cache file path.
+  const std::string& resource_id = entry_proto->resource_id();
+  const std::string& md5 = entry_proto->file_specific_info().file_md5();
+  cache_->GetFileOnUIThread(
+      resource_id,
+      md5,
+      base::Bind(
+          &GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheFile,
+          ui_weak_ptr_, base::Passed(&entry_proto), callback));
+}
+
+void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
+    scoped_ptr<GDataEntryProto> entry_proto,
+    const GetEntryInfoCallback& callback,
+    GDataFileError error,
+    const std::string& resource_id,
+    const std::string& md5,
+    const FilePath& local_cache_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // When no dirty cache is found, use the original entry info as is.
+  if (error != GDATA_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(GDATA_FILE_OK, entry_proto.Pass());
+    return;
+  }
+
+  // If the cache is dirty, obtain the file info from the cache file itself.
+  base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
+  bool* get_file_info_result = new bool(false);
+  PostBlockingPoolSequencedTaskAndReply(
+      FROM_HERE,
+      blocking_task_runner_,
+      base::Bind(&GetFileInfoOnBlockingPool,
+                 local_cache_path,
+                 base::Unretained(file_info),
+                 base::Unretained(get_file_info_result)),
+      base::Bind(&GDataFileSystem::CheckLocalModificationAndRunAfterGetFileInfo,
+                 ui_weak_ptr_,
+                 base::Passed(&entry_proto),
+                 callback,
+                 base::Owned(file_info),
+                 base::Owned(get_file_info_result)));
+}
+
+void GDataFileSystem::CheckLocalModificationAndRunAfterGetFileInfo(
+    scoped_ptr<GDataEntryProto> entry_proto,
+    const GetEntryInfoCallback& callback,
+    base::PlatformFileInfo* file_info,
+    bool* get_file_info_result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!*get_file_info_result) {
+    if (!callback.is_null())
+      callback.Run(GDATA_FILE_ERROR_NOT_FOUND, scoped_ptr<GDataEntryProto>());
+    return;
+  }
+
+  PlatformFileInfoProto entry_file_info;
+  GDataEntry::ConvertPlatformFileInfoToProto(*file_info, &entry_file_info);
+  *entry_proto->mutable_file_info() = entry_file_info;
+  if (!callback.is_null())
+    callback.Run(GDATA_FILE_OK, entry_proto.Pass());
 }
 
 }  // namespace gdata
