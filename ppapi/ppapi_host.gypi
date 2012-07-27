@@ -22,6 +22,8 @@
         'host/dispatch_host_message.h',
         'host/host_factory.h',
         'host/host_message_context.h',
+        'host/instance_message_filter.cc',
+        'host/instance_message_filter.h',
         'host/ppapi_host.cc',
         'host/ppapi_host.h',
         'host/ppapi_host_export.h',

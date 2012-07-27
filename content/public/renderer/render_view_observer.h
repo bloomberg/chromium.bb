@@ -14,6 +14,12 @@
 
 class RenderViewImpl;
 
+namespace ppapi {
+namespace host {
+class PpapiHost;
+}
+}
+
 namespace WebKit {
 class WebDataSource;
 class WebFrame;
@@ -77,6 +83,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) {}
+  virtual void DidCreatePepperPlugin(ppapi::host::PpapiHost* host) {}
 
   // These match incoming IPCs.
   virtual void ContextMenuAction(unsigned id) {}

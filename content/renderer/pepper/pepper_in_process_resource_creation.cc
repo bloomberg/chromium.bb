@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
+#include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/host/ppapi_host.h"
@@ -32,6 +33,8 @@ class PepperInProcessResourceCreation::PluginToHostRouter
                      IPC::Sender* host_to_plugin_sender,
                      const ppapi::PpapiPermissions& perms);
   virtual ~PluginToHostRouter() {}
+
+  ppapi::host::PpapiHost& host() { return host_; }
 
   // Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -146,6 +149,7 @@ PepperInProcessResourceCreation::PepperInProcessResourceCreation(
           new PluginToHostRouter(render_view, &instance_state_,
                                  host_to_plugin_router_.get(),
                                  perms)) {
+  render_view->PpapiPluginCreated(&plugin_to_host_router_->host());
 }
 
 PepperInProcessResourceCreation::~PepperInProcessResourceCreation() {

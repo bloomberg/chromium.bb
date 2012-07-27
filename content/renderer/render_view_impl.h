@@ -329,6 +329,9 @@ class RenderViewImpl : public RenderWidget,
   // Informs the render view that a PPAPI plugin has changed selection.
   void PpapiPluginSelectionChanged();
 
+  // Notification that a PPAPI plugin has been created.
+  void PpapiPluginCreated(ppapi::host::PpapiHost* host);
+
   // Retrieves the current caret position if a PPAPI plugin has focus.
   bool GetPpapiPluginCaretBounds(gfx::Rect* rect);
 

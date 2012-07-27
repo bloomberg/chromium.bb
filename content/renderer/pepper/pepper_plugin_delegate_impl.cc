@@ -111,7 +111,8 @@ class HostDispatcherWrapper
                         const ppapi::PpapiPermissions& perms)
       : module_(module),
         instance_state_(module),
-        host_factory_(rv, perms, &instance_state_) {
+        host_factory_(rv, perms, &instance_state_),
+        render_view_(rv) {
   }
   virtual ~HostDispatcherWrapper() {}
 
@@ -147,6 +148,7 @@ class HostDispatcherWrapper
     }
     dispatcher_->channel()->SetRestrictDispatchChannelGroup(
         content::kRendererRestrictDispatchGroup_Pepper);
+    render_view_->PpapiPluginCreated(host_.get());
     return true;
   }
 
@@ -166,6 +168,7 @@ class HostDispatcherWrapper
   PepperInstanceStateAccessorImpl instance_state_;
   ContentRendererPepperHostFactory host_factory_;
 
+  RenderViewImpl* render_view_;
   scoped_ptr<ppapi::host::PpapiHost> host_;
 
   scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;

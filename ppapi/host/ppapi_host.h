@@ -9,6 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
+#include "base/memory/scoped_vector.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/c/pp_instance.h"
@@ -26,6 +29,7 @@ class ResourceMessageReplyParams;
 namespace host {
 
 class HostFactory;
+class InstanceMessageFilter;
 class ResourceHost;
 
 // The host provides routing and tracking for resource message calls that
@@ -53,7 +57,13 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   void SendReply(const proxy::ResourceMessageReplyParams& params,
                  const IPC::Message& msg);
 
+  // Adds the given message filter to the host. The PpapiHost will take
+  // ownership of the pointer.
+  void AddInstanceMessageFilter(scoped_ptr<InstanceMessageFilter> filter);
+
  private:
+  friend class InstanceMessageFilter;
+
   // Message handlers.
   void OnHostMsgResourceCall(const proxy::ResourceMessageCallParams& params,
                              const IPC::Message& nested_msg);
@@ -72,6 +82,12 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   HostFactory* host_factory_;
 
   PpapiPermissions permissions_;
+
+  // Filters for instance messages. Note that since we don't support deleting
+  // these dynamically we don't need to worry about modifications during
+  // iteration. If we add that capability, this should be replaced with an
+  // ObserverList.
+  ScopedVector<InstanceMessageFilter> instance_message_filters_;
 
   typedef std::map<PP_Resource, linked_ptr<ResourceHost> > ResourceMap;
   ResourceMap resources_;

@@ -5307,6 +5307,11 @@ void RenderViewImpl::PpapiPluginSelectionChanged() {
   SyncSelectionIfRequired();
 }
 
+void RenderViewImpl::PpapiPluginCreated(ppapi::host::PpapiHost* host) {
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidCreatePepperPlugin(host));
+}
+
 void RenderViewImpl::OnImeSetComposition(
     const string16& text,
     const std::vector<WebKit::WebCompositionUnderline>& underlines,
