@@ -253,14 +253,14 @@ class TestGitCl(TestCase):
   def test_no_reviewer(self):
     self._run_reviewer_test(
         [],
-        'desc\n\nBUG=\nTEST=\n',
-        '# Blah blah comment.\ndesc\n\nBUG=\nTEST=\n',
-        'desc\n\nBUG=\nTEST=\n',
+        'desc\n\nBUG=\n',
+        '# Blah blah comment.\ndesc\n\nBUG=\n',
+        'desc\n\nBUG=\n',
         [])
 
   def test_reviewers_cmd_line(self):
     # Reviewer is passed as-is
-    description = 'desc\n\nR=foo@example.com\nBUG=\nTEST=\n'
+    description = 'desc\n\nR=foo@example.com\nBUG=\n'
     self._run_reviewer_test(
         ['-r' 'foo@example.com'],
         description,
@@ -274,7 +274,7 @@ class TestGitCl(TestCase):
     description = 'Foo Bar\nTBR=reviewer@example.com\n'
     self._run_reviewer_test(
         ['-r' 'foo@example.com'],
-        'desc\n\nR=foo@example.com\nBUG=\nTEST=\n',
+        'desc\n\nR=foo@example.com\nBUG=\n',
         description.strip('\n'),
         description,
         ['--reviewers', 'reviewer@example.com'])
@@ -285,7 +285,7 @@ class TestGitCl(TestCase):
         'Foo Bar\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n')
     self._run_reviewer_test(
         [],
-        'desc\n\nBUG=\nTEST=\n',
+        'desc\n\nBUG=\n',
         description,
         description,
         ['--reviewers', 'reviewer@example.com,another@example.com'])
@@ -295,7 +295,7 @@ class TestGitCl(TestCase):
     description = 'Foo Bar\nR=reviewer@example.com\n'
     self._run_reviewer_test(
         ['--send-mail'],
-        'desc\n\nBUG=\nTEST=\n',
+        'desc\n\nBUG=\n',
         description.strip('\n'),
         description,
         ['--reviewers', 'reviewer@example.com', '--send_mail'])
@@ -390,13 +390,13 @@ class TestGitCl(TestCase):
   def test_gerrit_no_reviewer(self):
     self._run_gerrit_reviewer_test(
         [],
-        'desc\n\nBUG=\nTEST=\n',
+        'desc\n\nBUG=\n',
         [])
 
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_reviewer_test(
         ['-r', 'foo@example.com'],
-        'desc\n\nBUG=\nTEST=\n',
+        'desc\n\nBUG=\n',
         ['foo@example.com'])
 
   def test_gerrit_reviewer_multiple(self):

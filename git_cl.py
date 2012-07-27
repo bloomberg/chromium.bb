@@ -683,8 +683,6 @@ class ChangeDescription(object):
       content += '\nR=' + self.reviewers
     if '\nBUG=' not in self.description:
       content += '\nBUG='
-    if '\nTEST=' not in self.description:
-      content += '\nTEST='
     content = content.rstrip('\n') + '\n'
     content = gclient_utils.RunEditor(content, True)
     if not content:
