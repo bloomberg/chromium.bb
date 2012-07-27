@@ -701,7 +701,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(0, profile()->reset_event_count());
 
   // Simulate the tab becoming active.
-  rvh_tester()->SimulateWasRestored();
+  rvh_tester()->SimulateWasShown();
 
   // We should now have 3 add events, still no reset events.
   EXPECT_EQ(1, profile()->add_event_count());
@@ -721,7 +721,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(0, profile()->reset_event_count());
 
   // Activate the tab.
-  rvh_tester()->SimulateWasRestored();
+  rvh_tester()->SimulateWasShown();
 
   // We should have only one more reset event.
   EXPECT_EQ(1, profile()->add_event_count());

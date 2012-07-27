@@ -97,10 +97,10 @@ class RenderViewHostTester {
   // navigation without making any network requests.
   virtual void SimulateSwapOutACK() = 0;
 
-  // Makes the WasHidden/WasRestored calls to the RenderWidget that
+  // Makes the WasHidden/WasShown calls to the RenderWidget that
   // tell it it has been hidden or restored from having been hidden.
   virtual void SimulateWasHidden() = 0;
-  virtual void SimulateWasRestored() = 0;
+  virtual void SimulateWasShown() = 0;
 };
 
 // You can instantiate only one class like this at a time.  During its

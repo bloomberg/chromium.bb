@@ -65,7 +65,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
       RenderWidgetHostView* reference_host_view) = 0;
 
   // Notifies the View that it has become visible.
-  virtual void WasRestored() = 0;
+  virtual void WasShown() = 0;
 
   // Notifies the View that it has been hidden.
   virtual void WasHidden() = 0;

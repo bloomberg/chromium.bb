@@ -103,7 +103,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                    PageTransition transition,
                                    int64 source_frame_id) {}
 
-  virtual void WasRestored() {}
+  virtual void WasShown() {}
 
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) {}

@@ -38,7 +38,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual void InitAsFullscreen(
       RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
-  virtual void WasRestored() OVERRIDE;
+  virtual void WasShown() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;

@@ -154,7 +154,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   void WasHidden();
-  void WasRestored();
+  void WasShown();
   bool IsHidden() const { return is_hidden_; }
 
   // Returns true if the RenderWidget is hidden.

@@ -1439,7 +1439,7 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
     // anything other than user selecting a Tab.
     // See TabContentsViewViews::OnWindowPosChanged for reference on how it
     // should be implemented.
-    devtools_contents->web_contents()->WasRestored();
+    devtools_contents->web_contents()->WasShown();
   }
 
   bool should_show = old_devtools == NULL && devtools_contents != NULL;

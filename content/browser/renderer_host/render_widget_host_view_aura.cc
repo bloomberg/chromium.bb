@@ -274,10 +274,10 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
   return host_;
 }
 
-void RenderWidgetHostViewAura::WasRestored() {
+void RenderWidgetHostViewAura::WasShown() {
   if (!host_->IsHidden())
     return;
-  host_->WasRestored();
+  host_->WasShown();
 
   if (!current_surface_ && host_->is_accelerated_compositing_active() &&
       !released_front_lock_.get()) {

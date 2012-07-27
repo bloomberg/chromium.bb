@@ -5206,8 +5206,8 @@ void RenderViewImpl::OnWasHidden() {
 #endif  // OS_MACOSX
 }
 
-void RenderViewImpl::OnWasRestored(bool needs_repainting) {
-  RenderWidget::OnWasRestored(needs_repainting);
+void RenderViewImpl::OnWasShown(bool needs_repainting) {
+  RenderWidget::OnWasShown(needs_repainting);
 
   if (webview()) {
     webview()->settings()->setMinimumTimerInterval(

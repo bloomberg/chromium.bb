@@ -235,7 +235,7 @@ class CONTENT_EXPORT RenderWidget
                         bool is_fullscreen);
   void OnChangeResizeRect(const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
-  virtual void OnWasRestored(bool needs_repainting);
+  virtual void OnWasShown(bool needs_repainting);
   virtual void OnWasSwappedOut();
   void OnUpdateRectAck();
   void OnCreateVideoAck(int32 video_id);

@@ -748,7 +748,7 @@ class RenderViewImpl : public RenderWidget,
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) OVERRIDE;
   virtual void OnSetFocus(bool enable) OVERRIDE;
   virtual void OnWasHidden() OVERRIDE;
-  virtual void OnWasRestored(bool needs_repainting) OVERRIDE;
+  virtual void OnWasShown(bool needs_repainting) OVERRIDE;
   virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
   virtual void OnImeSetComposition(
       const string16& text,

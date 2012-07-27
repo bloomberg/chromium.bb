@@ -53,11 +53,11 @@ RenderWidgetHostViewAndroid::GetRenderWidgetHost() const {
   return host_;
 }
 
-void RenderWidgetHostViewAndroid::WasRestored() {
+void RenderWidgetHostViewAndroid::WasShown() {
   if (!is_hidden_)
     return;
   is_hidden_ = false;
-  host_->WasRestored();
+  host_->WasShown();
 }
 
 void RenderWidgetHostViewAndroid::WasHidden() {

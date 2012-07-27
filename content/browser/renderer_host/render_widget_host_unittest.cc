@@ -624,15 +624,15 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
 
   // Now unhide.
   process_->sink().ClearMessages();
-  host_->WasRestored();
+  host_->WasShown();
   EXPECT_FALSE(host_->is_hidden_);
 
   // It should have sent out a restored message with a request to paint.
   const IPC::Message* restored = process_->sink().GetUniqueMessageMatching(
-      ViewMsg_WasRestored::ID);
+      ViewMsg_WasShown::ID);
   ASSERT_TRUE(restored);
   Tuple1<bool> needs_repaint;
-  ViewMsg_WasRestored::Read(restored, &needs_repaint);
+  ViewMsg_WasShown::Read(restored, &needs_repaint);
   EXPECT_TRUE(needs_repaint.a);
 }
 

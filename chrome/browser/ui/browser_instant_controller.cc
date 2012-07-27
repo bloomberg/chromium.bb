@@ -91,13 +91,13 @@ void BrowserInstantController::ShowInstant(TabContents* preview_contents) {
   // TODO(beng): investigate if we can avoid this and instead rely on the
   //             visibility of the WebContentsView
   chrome::GetActiveWebContents(browser_)->WasHidden();
-  preview_contents->web_contents()->WasRestored();
+  preview_contents->web_contents()->WasShown();
 }
 
 void BrowserInstantController::HideInstant() {
   browser_->window()->HideInstant();
   if (chrome::GetActiveWebContents(browser_))
-    chrome::GetActiveWebContents(browser_)->WasRestored();
+    chrome::GetActiveWebContents(browser_)->WasShown();
   if (instant_->GetPreviewContents())
     instant_->GetPreviewContents()->web_contents()->WasHidden();
 }

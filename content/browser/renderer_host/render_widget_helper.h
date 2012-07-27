@@ -80,12 +80,12 @@ class SessionStorageNamespace;
 //   This causes the corresponding RenderWidget to stop sending BackingStore
 //   messages. The RenderWidgetHost also discards its backingstore when it is
 //   hidden, which helps free up memory.  As a result, when a RenderWidgetHost
-//   is restored, it can be momentarily be without a backingstore.  (Restoring a
-//   RenderWidgetHost results in a WasRestored message being sent to the
+//   is restored, it can be momentarily be without a backingstore.  (Restoring
+//   a RenderWidgetHost results in a WasShown message being sent to the
 //   RenderWidget, which triggers a full BackingStore message.)  This can lead
 //   to an observed rendering glitch as the WebContentsImpl will just have to
-//   fill white overtop the RenderWidgetHost until the RenderWidgetHost receives
-//   a BackingStore message to refresh its backingstore.
+//   fill white overtop the RenderWidgetHost until the RenderWidgetHost
+//   receives a BackingStore message to refresh its backingstore.
 //
 //   To avoid this 'white flash', the RenderWidgetHost again makes use of the
 //   RenderWidgetHelper's WaitForBackingStoreMsg method.  When the

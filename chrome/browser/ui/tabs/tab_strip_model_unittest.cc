@@ -153,7 +153,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SwitchTabTo(WebContents* contents) {
-    // contents()->WasRestored();
+    // contents()->WasShown();
   }
 
   // Sets the id of the specified contents.

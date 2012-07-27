@@ -390,7 +390,7 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
   // The WebContents was shown by a means other than the user selecting a
   // Tab, e.g. the window was minimized then restored.
   if (window_pos->flags & SWP_SHOWWINDOW)
-    web_contents_->WasRestored();
+    web_contents_->WasShown();
 
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv) {

@@ -190,11 +190,11 @@ class WebContents : public PageNavigator {
   // change. See InvalidateType enum.
   virtual void NotifyNavigationStateChanged(unsigned changed_flags) = 0;
 
-  // Get the last time that the WebContents was made visible with WasRestored()
+  // Get the last time that the WebContents was made visible with WasShown()
   virtual base::TimeTicks GetLastSelectedTime() const = 0;
 
   // Invoked when the WebContents becomes shown/hidden.
-  virtual void WasRestored() = 0;
+  virtual void WasShown() = 0;
   virtual void WasHidden() = 0;
 
   // Returns true if the before unload and unload listeners need to be

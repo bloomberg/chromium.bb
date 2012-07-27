@@ -686,7 +686,7 @@ RenderWidgetHost* RenderWidgetHostViewWin::GetRenderWidgetHost() const {
   return render_widget_host_;
 }
 
-void RenderWidgetHostViewWin::WasRestored() {
+void RenderWidgetHostViewWin::WasShown() {
   if (!is_hidden_)
     return;
 
@@ -697,7 +697,7 @@ void RenderWidgetHostViewWin::WasRestored() {
   // |render_widget_host_| may be NULL if the WebContentsImpl is in the process
   // of closing.
   if (render_widget_host_)
-    render_widget_host_->WasRestored();
+    render_widget_host_->WasShown();
 }
 
 void RenderWidgetHostViewWin::WasHidden() {
@@ -963,7 +963,7 @@ bool RenderWidgetHostViewWin::IsSurfaceAvailableForCopy() const {
 
 void RenderWidgetHostViewWin::Show() {
   ShowWindow(SW_SHOW);
-  WasRestored();
+  WasShown();
 }
 
 void RenderWidgetHostViewWin::Hide() {

@@ -694,14 +694,14 @@ RenderWidgetHost* RenderWidgetHostViewGtk::GetRenderWidgetHost() const {
   return host_;
 }
 
-void RenderWidgetHostViewGtk::WasRestored() {
+void RenderWidgetHostViewGtk::WasShown() {
   if (!is_hidden_)
     return;
 
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = base::TimeTicks::Now();
   is_hidden_ = false;
-  host_->WasRestored();
+  host_->WasShown();
 }
 
 void RenderWidgetHostViewGtk::WasHidden() {

@@ -364,7 +364,7 @@ void RenderWidgetHostImpl::WasHidden() {
       Details<bool>(&is_visible));
 }
 
-void RenderWidgetHostImpl::WasRestored() {
+void RenderWidgetHostImpl::WasShown() {
   // When we create the widget, it is created as *not* hidden.
   if (!is_hidden_)
     return;
@@ -383,7 +383,7 @@ void RenderWidgetHostImpl::WasRestored() {
   } else {
     needs_repainting = false;
   }
-  Send(new ViewMsg_WasRestored(routing_id_, needs_repainting));
+  Send(new ViewMsg_WasShown(routing_id_, needs_repainting));
 
   process_->WidgetRestored();
 
@@ -404,9 +404,9 @@ void RenderWidgetHostImpl::WasRestored() {
   // By invoking WasResized the renderer is updated as necessary. WasResized
   // does nothing if the sizes are already in sync.
   //
-  // TODO: ideally ViewMsg_WasRestored would take a size. This way, the renderer
+  // TODO: ideally ViewMsg_WasShown would take a size. This way, the renderer
   // could handle both the restore and resize at once. This isn't that big a
-  // deal as RenderWidget::WasRestored delays updating, so that the resize from
+  // deal as RenderWidget::WasShown delays updating, so that the resize from
   // WasResized is usually processed before the renderer is painted.
   WasResized();
 }
@@ -606,7 +606,7 @@ BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
                "height", base::IntToString(view_size.height()));
 
   // We should not be asked to paint while we are hidden.  If we are hidden,
-  // then it means that our consumer failed to call WasRestored. If we're not
+  // then it means that our consumer failed to call WasShown. If we're not
   // force creating the backing store, it's OK since we can feel free to give
   // out our cached one if we have it.
   DCHECK(!is_hidden_ || !force_create) <<

@@ -74,7 +74,7 @@ class RenderWidgetHostViewAura
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
       RenderWidgetHostView* reference_host_view) OVERRIDE;
-  virtual void WasRestored() OVERRIDE;
+  virtual void WasShown() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;

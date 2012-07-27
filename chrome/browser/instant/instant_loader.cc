@@ -1152,7 +1152,7 @@ void InstantLoader::CreatePreviewContents(TabContents* tab_contents) {
 
   // TODO(beng): investigate if we can avoid this and instead rely on the
   //             visibility of the WebContentsView
-  preview_contents_->web_contents()->WasRestored();
+  preview_contents_->web_contents()->WasShown();
 }
 
 void InstantLoader::LoadInstantURL(const TemplateURL* template_url,

@@ -26,7 +26,7 @@ class CoreTabHelper : public content::WebContentsObserver {
 
  private:
   // content::WebContentsObserver overrides:
-  virtual void WasRestored() OVERRIDE;
+  virtual void WasShown() OVERRIDE;
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   CoreTabHelperDelegate* delegate_;

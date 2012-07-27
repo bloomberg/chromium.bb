@@ -77,7 +77,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
                            const gfx::Rect& pos) OVERRIDE {}
   virtual void InitAsFullscreen(
       RenderWidgetHostView* reference_host_view) OVERRIDE {}
-  virtual void WasRestored() OVERRIDE {}
+  virtual void WasShown() OVERRIDE {}
   virtual void WasHidden() OVERRIDE {}
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE {}
@@ -234,7 +234,7 @@ class TestRenderViewHost
   virtual void SetContentsMimeType(const std::string& mime_type) OVERRIDE;
   virtual void SimulateSwapOutACK() OVERRIDE;
   virtual void SimulateWasHidden() OVERRIDE;
-  virtual void SimulateWasRestored() OVERRIDE;
+  virtual void SimulateWasShown() OVERRIDE;
 
   void TestOnMsgStartDragging(const WebDropData& drop_data);
 

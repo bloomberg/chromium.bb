@@ -307,8 +307,8 @@ void TestRenderViewHost::SimulateWasHidden() {
   WasHidden();
 }
 
-void TestRenderViewHost::SimulateWasRestored() {
-  WasRestored();
+void TestRenderViewHost::SimulateWasShown() {
+  WasShown();
 }
 
 void TestRenderViewHost::TestOnMsgStartDragging(

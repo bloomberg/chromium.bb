@@ -936,12 +936,12 @@ base::TimeTicks WebContentsImpl::GetLastSelectedTime() const {
   return last_selected_time_;
 }
 
-void WebContentsImpl::WasRestored() {
+void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
   RenderWidgetHostViewPort* rwhv =
       RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
   if (rwhv) {
-    rwhv->WasRestored();
+    rwhv->WasShown();
 #if defined(OS_MACOSX)
     rwhv->SetActive(true);
 #endif
@@ -949,7 +949,7 @@ void WebContentsImpl::WasRestored() {
 
   last_selected_time_ = base::TimeTicks::Now();
 
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasRestored());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasShown());
 
   // The resize rect might have changed while this was inactive -- send the new
   // one to make sure it's up to date.

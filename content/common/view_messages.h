@@ -547,7 +547,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   //     Indicates that this is a response to a ViewMsg_Resize message.
   //
   //   ViewHostMsg_UpdateRect_Flags::IS_RESTORE_ACK
-  //     Indicates that this is a response to a ViewMsg_WasRestored message.
+  //     Indicates that this is a response to a ViewMsg_WasShown message.
   //
   //   ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK
   //     Indicates that this is a response to a ViewMsg_Repaint message.
@@ -846,7 +846,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
 // is true.  In that case, the generated ViewHostMsg_PaintRect message will
 // have the IS_RESTORE_ACK flag set.  If needs_repainting is false, then this
 // message does not trigger a message in response.
-IPC_MESSAGE_ROUTED1(ViewMsg_WasRestored,
+IPC_MESSAGE_ROUTED1(ViewMsg_WasShown,
                     bool /* needs_repainting */)
 
 // Sent to inform the view that it was swapped out.  This allows the process to
