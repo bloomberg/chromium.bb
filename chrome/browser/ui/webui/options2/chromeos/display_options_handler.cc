@@ -12,6 +12,9 @@
 #include "base/json/json_value_converter.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -116,10 +119,9 @@ void DisplayOptionsHandler::SendDisplayInfo() {
     displays.Set(i, js_display);
   }
 
-  DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
-  base::FundamentalValue layout(static_cast<int>(
-      display_controller->secondary_display_layout()));
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  base::FundamentalValue layout(
+      pref_service->GetInteger(prefs::kSecondaryDisplayLayout));
 
   web_ui()->CallJavascriptFunction(
       "options.DisplayOptions.setDisplayInfo",
@@ -152,8 +154,8 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
   DCHECK_LE(DisplayController::TOP, layout);
   DCHECK_GE(DisplayController::LEFT, layout);
 
-  ash::Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
-      static_cast<DisplayController::SecondaryDisplayLayout>(layout));
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  pref_service->SetInteger(prefs::kSecondaryDisplayLayout, layout);
   SendDisplayInfo();
 }
 

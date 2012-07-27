@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include "ash/display/display_controller.h"
+#include "ash/shell.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -46,6 +48,8 @@ bool IsLumpy() {
 }
 
 }  // namespace
+
+using ash::internal::DisplayController;
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
@@ -242,6 +246,11 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              false,
                              PrefService::SYNCABLE_PREF);
 
+  // Secondary display layout.
+  prefs->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
+                             static_cast<int>(DisplayController::RIGHT),
+                             PrefService::UNSYNCABLE_PREF);
+
   // Mobile plan notifications default to on.
   prefs->RegisterBooleanPref(prefs::kShowPlanNotifications,
                              true,
@@ -348,6 +357,8 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
 
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
+
+  secondary_display_layout_.Init(prefs::kSecondaryDisplayLayout, prefs, this);
 
   enable_drm_.Init(prefs::kEnableCrosDRM, prefs, this);
 }
@@ -564,6 +575,16 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
     system::power_manager_settings::EnableScreenLock(
         enable_screen_lock_.GetValue());
+  }
+
+  if (!pref_name || *pref_name == prefs::kSecondaryDisplayLayout) {
+    int layout = secondary_display_layout_.GetValue();
+    if (static_cast<int>(DisplayController::TOP) <= layout &&
+        layout <= static_cast<int>(DisplayController::LEFT)) {
+      ash::Shell::GetInstance()->display_controller()->
+          SetSecondaryDisplayLayout(
+              static_cast<DisplayController::SecondaryDisplayLayout>(layout));
+    }
   }
 
   // Init or update protected content (DRM) support.

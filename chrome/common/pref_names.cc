@@ -723,6 +723,14 @@ const char kOAuth1Secret[] = "settings.account.oauth1_secret";
 
 // A boolean pref that enables the (private) pepper GetID() call.
 const char kEnableCrosDRM[] = "settings.privacy.drm_enabled";
+
+// An enumeration that specifies the layout of the secondary display.
+//  0 - The secondary display is at the top of the primary display.
+//  1 - The secondary display is at the right of the primary display.
+//  2 - The secondary display is at the bottom of the primary display.
+//  3 - The secondary display is at the left of the primary display.
+// TODO(mukai,oshima): update the format of the multi-display settings.
+const char kSecondaryDisplayLayout[] = "settings.display.secondary_layout";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.
