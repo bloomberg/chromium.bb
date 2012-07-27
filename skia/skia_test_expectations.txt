@@ -231,7 +231,6 @@ BUGCR131189 WIN : fast/forms/option-text-clip.html = IMAGE
 BUGCR131189 WIN : fast/forms/placeholder-position.html = IMAGE
 BUGCR131189 WIN : fast/forms/placeholder-pseudo-style.html = IMAGE
 BUGCR131189 WIN : fast/forms/plaintext-mode-2.html = IMAGE
-BUGCR131189 WIN : fast/forms/range/input-appearance-range.html = IMAGE
 BUGCR131189 WIN : fast/forms/search-cancel-button-style-sharing.html = IMAGE
 BUGCR131189 WIN : fast/forms/search-display-none-cancel-button.html = IMAGE
 BUGCR131189 WIN : fast/forms/search-rtl.html = IMAGE
