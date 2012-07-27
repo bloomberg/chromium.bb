@@ -9,16 +9,42 @@
   </head>
   <body>
     <h1>Drive Internals</h1>
-    <h2>Authentication Status</h2>
+    <div>
+      <a href="#auth-status-section">Authentication Status</a> |
+      <a href="#gcache-contents-section">GCache Contents</a> |
+      <a href="#file-system-contents-section">File System Contents</a> |
+      <a href="#cache-contents-section">Cache Contents</a>
+    </div>
+
+    <h2 id='auth-status-contents-section'>Authentication Status</h2>
     <ul>
       <li>Has refresh token: <span id='has-refresh-token'></span></li>
       <li>Has access token: <span id='has-access-token'></span></li>
     </ul>
-    <h2>GCache Contents</h2>
+
+    <h2 id='gcache-contents-section'>GCache Contents</h2>
     <table>
-      <tbody id='gcache-contents'></tbody>
+      <tbody id='gcache-contents'>
+        <tr><th>Path</th><th>Size</th><th>Last Modified</th></tr>
+      </tbody>
     </table>
-    <h2>File System Contents</h2>
+
+    <h2 id='file-system-contents-section'>File System Contents</h2>
     <div id='file-system-contents'></div>
+
+    <h2 id='cache-contents-section'>Cache Contents</h2>
+    <table>
+      <tbody id='cache-contents'>
+        <tr>
+          <th>Resource ID</th>
+          <th>MD5</th>
+          <th>Present</th>
+          <th>Pinned</th>
+          <th>Dirty</th>
+          <th>Mounted</th>
+          <th>Persistent</th>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>

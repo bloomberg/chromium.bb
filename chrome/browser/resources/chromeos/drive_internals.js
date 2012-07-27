@@ -18,13 +18,6 @@ function updateAuthStatus(authStatus) {
  */
 function updateGCacheContents(gcacheContents) {
   var tbody = $('gcache-contents');
-  // Add a header row.
-  var tr = document.createElement('tr');
-  tr.appendChild(createElementFromText('th', 'Path'));
-  tr.appendChild(createElementFromText('th', 'Size'));
-  tr.appendChild(createElementFromText('th', 'Last Modified'));
-  tbody.appendChild(tr);
-
   for (var i = 0; i < gcacheContents.length; i++) {
     var entry = gcacheContents[i];
     var tr = document.createElement('tr');
@@ -52,6 +45,24 @@ function updateGCacheContents(gcacheContents) {
 function updateFileSystemContents(directoryContentsAsText) {
   var div = $('file-system-contents');
   div.appendChild(createElementFromText('pre', directoryContentsAsText));
+}
+
+/**
+ * Updates the Cache Contents section.
+ * @param {Object} cacheEntry Dictionary describing a cache entry.
+ * The function is called from the C++ side repeatedly.
+ */
+function updateCacheContents(cacheEntry) {
+  var tr = document.createElement('tr');
+  tr.appendChild(createElementFromText('td', cacheEntry.resource_id));
+  tr.appendChild(createElementFromText('td', cacheEntry.md5));
+  tr.appendChild(createElementFromText('td', cacheEntry.is_present));
+  tr.appendChild(createElementFromText('td', cacheEntry.is_pinned));
+  tr.appendChild(createElementFromText('td', cacheEntry.is_dirty));
+  tr.appendChild(createElementFromText('td', cacheEntry.is_mounted));
+  tr.appendChild(createElementFromText('td', cacheEntry.is_persistent));
+
+  $('cache-contents').appendChild(tr);
 }
 
 /**

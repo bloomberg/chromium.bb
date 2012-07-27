@@ -141,7 +141,8 @@ std::string FormatEntry(const FilePath& path,
 class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
  public:
   DriveInternalsWebUIHandler()
-      : weak_ptr_factory_(this) {
+      : num_pending_reads_(0),
+        weak_ptr_factory_(this) {
   }
 
   virtual ~DriveInternalsWebUIHandler() {
@@ -166,6 +167,17 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                              bool hide_hosted_documents,
                              scoped_ptr<gdata::GDataEntryProtoVector> entries);
 
+  // Called when GetResourceIdsOfAllFilesOnUIThread() is complete.
+  void OnGetResourceIdsOfAllFiles(
+      const std::vector<std::string>& resource_ids);
+
+  // Called when GetCacheEntryOnUIThread() is complete.
+  void OnGetCacheEntry(const std::string& resource_id,
+                       bool success,
+                       const gdata::GDataCacheEntry& cache_entry);
+
+  // The number of pending ReadDirectoryByPath() calls.
+  int num_pending_reads_;
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
 };
@@ -225,6 +237,7 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
 
   // Start rendering the file system tree as text.
   const FilePath root_path = FilePath(gdata::kGDataRootDirectory);
+  ++num_pending_reads_;
   system_service->file_system()->ReadDirectoryByPath(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
@@ -237,32 +250,77 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     gdata::GDataFileError error,
     bool hide_hosted_documents,
     scoped_ptr<gdata::GDataEntryProtoVector> entries) {
-  if (error != gdata::GDATA_FILE_OK)
-    return;
-  DCHECK(entries.get());
+  --num_pending_reads_;
+  if (error == gdata::GDATA_FILE_OK) {
+    DCHECK(entries.get());
 
-  std::string file_system_as_text;
-  for (size_t i = 0; i < entries->size(); ++i) {
-    const gdata::GDataEntryProto& entry = (*entries)[i];
-    const FilePath current_path = parent_path.Append(
-        FilePath::FromUTF8Unsafe(entry.base_name()));
+    std::string file_system_as_text;
+    for (size_t i = 0; i < entries->size(); ++i) {
+      const gdata::GDataEntryProto& entry = (*entries)[i];
+      const FilePath current_path = parent_path.Append(
+          FilePath::FromUTF8Unsafe(entry.base_name()));
 
-    file_system_as_text.append(FormatEntry(current_path, entry) + "\n");
+      file_system_as_text.append(FormatEntry(current_path, entry) + "\n");
 
-    if (entry.file_info().is_directory()) {
-      GetSystemService()->file_system()->ReadDirectoryByPath(
-          current_path,
-          base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     current_path));
+      if (entry.file_info().is_directory()) {
+        ++num_pending_reads_;
+        GetSystemService()->file_system()->ReadDirectoryByPath(
+            current_path,
+            base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       current_path));
+      }
     }
+
+    // There may be pending ReadDirectoryByPath() calls, but we can update
+    // the page with what we have now. This results in progressive
+    // updates, which is good for a large file system.
+    const base::StringValue value(file_system_as_text);
+    web_ui()->CallJavascriptFunction("updateFileSystemContents", value);
   }
 
-  // There may be pending ReadDirectoryByPath() calls, but we can update
-  // the page with what we have now. This results in progressive
-  // updates, which is good for a large file system.
-  const base::StringValue value(file_system_as_text);
-  web_ui()->CallJavascriptFunction("updateFileSystemContents", value);
+  // Start updating the cache contents section once all directories are
+  // processed.
+  if (num_pending_reads_ == 0) {
+    GetSystemService()->cache()->GetResourceIdsOfAllFilesOnUIThread(
+        base::Bind(&DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles(
+    const std::vector<std::string>& resource_ids) {
+  for (size_t i = 0; i < resource_ids.size(); ++i) {
+    const std::string& resource_id = resource_ids[i];
+    GetSystemService()->cache()->GetCacheEntryOnUIThread(
+        resource_id,
+        "",  // Don't check MD5.
+        base::Bind(&DriveInternalsWebUIHandler::OnGetCacheEntry,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   resource_id));
+  }
+}
+
+void DriveInternalsWebUIHandler::OnGetCacheEntry(
+    const std::string& resource_id,
+    bool success,
+    const gdata::GDataCacheEntry& cache_entry) {
+  if (!success) {
+    LOG(ERROR) << "Failed to get cache entry: " << resource_id;
+    return;
+  }
+
+  // Convert |cache_entry| into a dictionary.
+  base::DictionaryValue value;
+  value.SetString("resource_id", resource_id);
+  value.SetString("md5", cache_entry.md5());
+  value.SetBoolean("is_present", cache_entry.is_present());
+  value.SetBoolean("is_pinned", cache_entry.is_pinned());
+  value.SetBoolean("is_dirty", cache_entry.is_dirty());
+  value.SetBoolean("is_mounted", cache_entry.is_mounted());
+  value.SetBoolean("is_persistent", cache_entry.is_persistent());
+
+  web_ui()->CallJavascriptFunction("updateCacheContents", value);
 }
 
 }  // namespace
