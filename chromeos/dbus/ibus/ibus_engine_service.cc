@@ -213,6 +213,14 @@ class IBusEngineServiceImpl : public IBusEngineService {
     exported_object_->SendSignal(&signal);
   }
 
+  virtual void CommitText(const std::string& text) OVERRIDE {
+    dbus::Signal signal(ibus::engine::kServiceInterface,
+                        ibus::engine::kCommitTextSignal);
+    dbus::MessageWriter writer(&signal);
+    ibus::AppendStringAsIBusText(text, &writer);
+    exported_object_->SendSignal(&signal);
+  }
+
  private:
   // Handles FocusIn method call from ibus-daemon.
   void FocusIn(dbus::MethodCall* method_call,
@@ -355,8 +363,18 @@ class IBusEngineServiceImpl : public IBusEngineService {
       return;
     }
     DCHECK(engine_handler_.get());
-    bool consume = engine_handler_->ProcessKeyEvent(keysym, keycode, state);
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    engine_handler_->ProcessKeyEvent(
+        keysym, keycode, state,
+        base::Bind(&IBusEngineServiceImpl::KeyEventDone,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Unretained(
+                       dbus::Response::FromMethodCall(method_call)),
+                   response_sender));
+  }
+
+  void KeyEventDone(dbus::Response* response,
+                    const dbus::ExportedObject::ResponseSender& response_sender,
+                    bool consume) {
     dbus::MessageWriter writer(response);
     writer.AppendBool(consume);
     response_sender.Run(response);
@@ -464,6 +482,8 @@ class IBusEngineServiceStubImpl : public IBusEngineService {
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
                                uint32 state) OVERRIDE {}
   virtual void RequireSurroundingText() OVERRIDE {}
+  virtual void CommitText(const std::string& text) OVERRIDE {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(IBusEngineServiceStubImpl);
 };

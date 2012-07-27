@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_IBUS_MOCK_IBUS_ENGINE_SERVICE_H_
 #define CHROMEOS_DBUS_IBUS_MOCK_IBUS_ENGINE_SERVICE_H_
 
+#include <string>
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
 
 namespace chromeos {
@@ -30,6 +31,7 @@ class MockIBusEngineService : public IBusEngineService {
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
                                uint32 state) OVERRIDE;
   virtual void RequireSurroundingText() OVERRIDE;
+  virtual void CommitText(const std::string& text) OVERRIDE;
 };
 
 }  // namespace chromeos

@@ -55,12 +55,13 @@ const char kProcessKeyEventMethod[] = "ProcessKeyEvent";
 const char kCandidateClickedMethod[] = "CandidateClicked";
 const char kSetSurroundingTextMethod[] = "SetSurroundingText";
 const char kRegisterPropertiesSignal[] = "RegisterProperties";
-const char kUpdatePreeditSignal[] = "UpdatePreedit";
+const char kUpdatePreeditSignal[] = "UpdatePreeditText";
 const char kUpdateAuxiliaryTextSignal[] = "UpdateAuxiliaryText";
 const char kUpdateLookupTableSignal[] = "UpdateLookupTable";
 const char kUpdatePropertySignal[] = "UpdateProperty";
 const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
 const char kRequireSurroundingTextSignal[] = "RequireSurroundingText";
+const char kCommitTextSignal[] = "CommitText";
 }  // namespace engine
 
 }  // namespace ibus

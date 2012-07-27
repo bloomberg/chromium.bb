@@ -30,6 +30,8 @@ typedef ScopedVector<IBusProperty> IBusPropertyList;
 // A interface to handle the engine client method call.
 class CHROMEOS_EXPORT IBusEngineHandlerInterface {
  public:
+  typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
+
   // Following capability mask is introduced from
   // http://ibus.googlecode.com/svn/docs/ibus-1.4/ibus-ibustypes.html#IBusCapabilite
   // TODO(nona): Move to ibus_contants and merge one in ui/base/ime/*
@@ -87,11 +89,13 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
   // Called when the key event is received. The |keycode| is raw layout
   // independent keycode. The |keysym| is result of XLookupString function
   // which translate |keycode| to keyboard layout dependent symbol value.
+  // Actual implementation must call |callback| after key event handling.
   // For example: key press event for 'd' key on us layout and dvorak layout.
   //                  keyval keycode state
   //      us layout :  0x64   0x20    0x00
   //  dvorak layout :  0x65   0x20    0x00
-  virtual bool ProcessKeyEvent(uint32 keysym, uint32 keycode, uint32 state) = 0;
+  virtual void ProcessKeyEvent(uint32 keysym, uint32 keycode, uint32 state,
+                               const KeyEventDoneCallback& callback) = 0;
 
   // Called when the candidate in lookup table is clicked. The |index| is 0
   // based candidate index in lookup table. The |state| is same value as
@@ -149,6 +153,8 @@ class CHROMEOS_EXPORT IBusEngineService {
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;
   // Emits RequireSurroundingText signal.
   virtual void RequireSurroundingText() = 0;
+  // Emits CommitText signal.
+  virtual void CommitText(const std::string& text) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

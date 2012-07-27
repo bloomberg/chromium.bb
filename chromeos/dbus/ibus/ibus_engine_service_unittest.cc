@@ -41,8 +41,11 @@ class MockIBusEngineHandler : public IBusEngineHandlerInterface {
   MOCK_METHOD1(PropertyHide, void(const std::string& property_name));
   MOCK_METHOD1(SetCapability, void(IBusCapability capability));
   MOCK_METHOD0(Reset, void());
-  MOCK_METHOD3(ProcessKeyEvent, bool(uint32 keysym, uint32 keycode,
-                                     uint32 state));
+  MOCK_METHOD4(ProcessKeyEvent, void(
+      uint32 keysym,
+      uint32 keycode,
+      uint32 state,
+      const KeyEventDoneCallback& callback));
   MOCK_METHOD3(CandidateClicked, void(uint32 index, IBusMouseButton button,
                                       uint32 state));
   MOCK_METHOD3(SetSurroundingText, void(const std::string& text,
@@ -133,6 +136,51 @@ class RegisterPropertiesExpectation {
   const ibus::IBusPropertyList& property_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterPropertiesExpectation);
+};
+
+// Used for mocking ProcessKeyEventHandler.
+class ProcessKeyEventHandler {
+ public:
+  explicit ProcessKeyEventHandler(bool expected_value)
+      : expected_value_(expected_value) {
+  }
+
+  void ProcessKeyEvent(
+      uint32 keysym,
+      uint32 keycode,
+      uint32 state,
+      const IBusEngineHandlerInterface::KeyEventDoneCallback& callback) {
+    callback.Run(expected_value_);
+  }
+
+ private:
+  bool expected_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessKeyEventHandler);
+};
+
+// Used for mocking asynchronous ProcessKeyEventHandler.
+class DelayProcessKeyEventHandler {
+ public:
+  DelayProcessKeyEventHandler(bool expected_value,
+                              MessageLoop* message_loop)
+      : expected_value_(expected_value),
+        message_loop_(message_loop) {
+  }
+
+  void ProcessKeyEvent(
+      uint32 keysym,
+      uint32 keycode,
+      uint32 state,
+      const IBusEngineHandlerInterface::KeyEventDoneCallback& callback) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(callback, expected_value_));
+  }
+
+ private:
+  bool expected_value_;
+  MessageLoop* message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayProcessKeyEventHandler);
 };
 
 // Used for UpdatePreedit signal message evaluation.
@@ -705,8 +753,10 @@ TEST_F(IBusEngineServiceTest, ProcessKeyEventTest) {
   const uint32 kState = 0x00;
   const bool kResult = true;
 
-  EXPECT_CALL(*engine_handler_, ProcessKeyEvent(kKeySym, kKeyCode, kState))
-      .WillOnce(Return(kResult));
+  ProcessKeyEventHandler handler(kResult);
+  EXPECT_CALL(*engine_handler_, ProcessKeyEvent(kKeySym, kKeyCode, kState, _))
+      .WillOnce(Invoke(&handler,
+                       &ProcessKeyEventHandler::ProcessKeyEvent));
   MockResponseSender response_sender;
   BoolResponseExpectation response_expectation(kSerialNo, kResult);
   EXPECT_CALL(response_sender, Run(_))
@@ -729,6 +779,45 @@ TEST_F(IBusEngineServiceTest, ProcessKeyEventTest) {
       &method_call,
       base::Bind(&MockResponseSender::Run,
                  base::Unretained(&response_sender)));
+}
+
+TEST_F(IBusEngineServiceTest, DelayProcessKeyEventTest) {
+  // Set expectations.
+  const uint32 kSerialNo = 1;
+  const uint32 kKeySym = 0x64;
+  const uint32 kKeyCode = 0x20;
+  const uint32 kState = 0x00;
+  const bool kResult = true;
+
+  DelayProcessKeyEventHandler handler(kResult, &message_loop_);
+  EXPECT_CALL(*engine_handler_, ProcessKeyEvent(kKeySym, kKeyCode, kState, _))
+      .WillOnce(Invoke(&handler,
+                       &DelayProcessKeyEventHandler::ProcessKeyEvent));
+  MockResponseSender response_sender;
+  BoolResponseExpectation response_expectation(kSerialNo, kResult);
+  EXPECT_CALL(response_sender, Run(_))
+      .WillOnce(Invoke(&response_expectation,
+                       &BoolResponseExpectation::Evaluate));
+
+  // Create method call;
+  dbus::MethodCall method_call(ibus::engine::kServiceInterface,
+                               ibus::engine::kProcessKeyEventMethod);
+  method_call.SetSerial(kSerialNo);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendUint32(kKeySym);
+  writer.AppendUint32(kKeyCode);
+  writer.AppendUint32(kState);
+
+  // Call exported function.
+  EXPECT_NE(method_callback_map_.find(ibus::engine::kProcessKeyEventMethod),
+            method_callback_map_.end());
+  method_callback_map_[ibus::engine::kProcessKeyEventMethod].Run(
+      &method_call,
+      base::Bind(&MockResponseSender::Run,
+                 base::Unretained(&response_sender)));
+
+  // Call KeyEventDone callback.
+  message_loop_.RunAllPending();
 }
 
 TEST_F(IBusEngineServiceTest, CandidateClickedTest) {
