@@ -34,9 +34,8 @@ namespace content {
 
 void *vaapi_handle = dlopen("libva.so", RTLD_NOW);
 void *vaapi_x11_handle = dlopen("libva-x11.so", RTLD_NOW);
-void *vaapi_glx_handle = dlopen("libva-glx.so", RTLD_NOW);
 
-typedef VADisplay (*VaapiGetDisplayGLX)(Display *dpy);
+typedef VADisplay (*VaapiGetDisplay)(Display *dpy);
 typedef int (*VaapiDisplayIsValid)(VADisplay dpy);
 typedef VAStatus (*VaapiInitialize)(VADisplay dpy,
                                     int *major_version,
@@ -109,7 +108,7 @@ typedef const char* (*VaapiErrorStr)(VAStatus error_status);
     Vaapi##name VAAPI_##name =                                    \
         reinterpret_cast<Vaapi##name>(dlsym((handle), "va"#name))
 
-VAAPI_DLSYM(GetDisplayGLX, vaapi_glx_handle);
+VAAPI_DLSYM(GetDisplay, vaapi_x11_handle);
 VAAPI_DLSYM(DisplayIsValid, vaapi_handle);
 VAAPI_DLSYM(Initialize, vaapi_handle);
 VAAPI_DLSYM(Terminate, vaapi_handle);
@@ -130,7 +129,7 @@ VAAPI_DLSYM(DestroyBuffer, vaapi_handle);
 VAAPI_DLSYM(ErrorStr, vaapi_handle);
 
 static bool AreVaapiFunctionPointersInitialized() {
-  return VAAPI_GetDisplayGLX &&
+  return VAAPI_GetDisplay &&
       VAAPI_DisplayIsValid &&
       VAAPI_Initialize &&
       VAAPI_Terminate &&
@@ -419,10 +418,8 @@ void VaapiH264Decoder::Destroy() {
         DestroyVASurfaces();
       va_res = VAAPI_DestroyConfig(va_display_, va_config_id_);
       VA_LOG_ON_ERROR(va_res, "vaDestroyConfig failed");
-      // TODO(fischman,posciak): call vaTerminate when we figure out why it
-      // crashes.
-      // va_res = VAAPI_Terminate(va_display_);
-      // VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
+       va_res = VAAPI_Terminate(va_display_);
+       VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
       // fallthrough
     case kUninitialized:
       break;
@@ -509,7 +506,7 @@ bool VaapiH264Decoder::Initialize(
     return false;
   }
 
-  va_display_ = VAAPI_GetDisplayGLX(x_display_);
+  va_display_ = VAAPI_GetDisplay(x_display_);
   if (!VAAPI_DisplayIsValid(va_display_)) {
     DVLOG(1) << "Could not get a valid VA display";
     return false;
