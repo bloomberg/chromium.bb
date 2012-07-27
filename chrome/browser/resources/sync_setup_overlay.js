@@ -64,6 +64,10 @@ cr.define('options', function() {
       $('confirm-everything-ok').onclick = function() {
         self.sendConfiguration_();
       };
+      $('timeout-ok').onclick = function() {
+        chrome.send('CloseTimeout');
+        self.closeOverlay_();
+      };
       $('stop-syncing-ok').onclick = function() {
         chrome.send('SyncSetupStopSyncing');
         self.closeOverlay_();
@@ -416,6 +420,11 @@ cr.define('options', function() {
       this.setThrobbersVisible_(true);
     },
 
+    showTimeoutPage_: function() {
+      this.resetPage_('sync-setup-timeout');
+      $('sync-setup-timeout').hidden = false;
+    },
+
     showSyncEverythingPage_: function() {
       $('confirm-sync-preferences').hidden = false;
       $('customize-sync-preferences').hidden = true;
@@ -544,6 +553,8 @@ cr.define('options', function() {
         this.showConfigure_(args);
       else if (page == 'spinner')
         this.showSpinner_();
+      else if (page == 'timeout')
+        this.showTimeoutPage_();
     },
 
     /**

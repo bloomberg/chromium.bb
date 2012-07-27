@@ -285,6 +285,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 
   static OptionsStringResource resources[] = {
     { "syncSetupConfigureTitle", IDS_SYNC_SETUP_CONFIGURE_TITLE },
+    { "syncSetupTimeoutTitle", IDS_SYNC_SETUP_TIME_OUT_TITLE },
+    { "syncSetupTimeoutContent", IDS_SYNC_SETUP_TIME_OUT_CONTENT },
     { "cannotBeBlank", IDS_SYNC_CANNOT_BE_BLANK },
     { "emailLabel", IDS_SYNC_LOGIN_EMAIL_NEW_LINE },
     { "passwordLabel", IDS_SYNC_LOGIN_PASSWORD_NEW_LINE },
@@ -487,6 +489,9 @@ void SyncSetupHandler::RegisterMessages() {
       "SyncSetupDoSignOutOnAuthError",
       base::Bind(&SyncSetupHandler::HandleDoSignOutOnAuthError,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("CloseTimeout",
+      base::Bind(&SyncSetupHandler::HandleCloseTimeout,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("SyncSetupStopSyncing",
       base::Bind(&SyncSetupHandler::HandleStopSyncing,
                  base::Unretained(this)));
@@ -590,6 +595,29 @@ bool SyncSetupHandler::PrepareSyncSetup() {
 void SyncSetupHandler::DisplaySpinner() {
   configuring_sync_ = true;
   StringValue page("spinner");
+  DictionaryValue args;
+
+  const int kTimeoutSec = 30;
+  DCHECK(!backend_start_timer_.get());
+  backend_start_timer_.reset(new base::OneShotTimer<SyncSetupHandler>());
+  backend_start_timer_->Start(FROM_HERE,
+                              base::TimeDelta::FromSeconds(kTimeoutSec),
+                              this, &SyncSetupHandler::DisplayTimeout);
+
+  web_ui()->CallJavascriptFunction(
+      "SyncSetupOverlay.showSyncSetupPage", page, args);
+}
+
+// TODO(kochi): Handle error conditions other than timeout.
+// http://crbug.com/128692
+void SyncSetupHandler::DisplayTimeout() {
+  // Stop a timer to handle timeout in waiting for checking network connection.
+  backend_start_timer_.reset();
+
+  // Do not listen to signin events.
+  signin_tracker_.reset();
+
+  StringValue page("timeout");
   DictionaryValue args;
   web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page, args);
@@ -717,6 +745,9 @@ void SyncSetupHandler::GaiaCredentialsValid() {
 }
 
 void SyncSetupHandler::SigninFailed(const GoogleServiceAuthError& error) {
+  // Stop a timer to handle timeout in waiting for checking network connection.
+  backend_start_timer_.reset();
+
   last_signin_error_ = error;
   // Got a failed signin - this is either just a typical auth error, or a
   // sync error (treat sync errors as "fatal errors" - i.e. non-auth errors).
@@ -741,6 +772,9 @@ ProfileSyncService* SyncSetupHandler::GetSyncService() const {
 
 void SyncSetupHandler::SigninSuccess() {
   DCHECK(GetSyncService()->sync_initialized());
+  // Stop a timer to handle timeout in waiting for checking network connection.
+  backend_start_timer_.reset();
+
   // If we have signed in while sync is already setup, it must be due to some
   // kind of re-authentication flow. In that case, just close the signin dialog
   // rather than forcing the user to go through sync configuration.
@@ -900,6 +934,10 @@ void SyncSetupHandler::HandleStopSyncing(const ListValue* args) {
   }
 }
 
+void SyncSetupHandler::HandleCloseTimeout(const ListValue* args) {
+  CloseSyncSetup();
+}
+
 void SyncSetupHandler::CloseSyncSetup() {
   // TODO(atwilson): Move UMA tracking of signin events out of sync module.
   ProfileSyncService* sync_service = GetSyncService();
@@ -943,6 +981,9 @@ void SyncSetupHandler::CloseSyncSetup() {
 
   configuring_sync_ = false;
   signin_tracker_.reset();
+
+  // Stop a timer to handle timeout in waiting for checking network connection.
+  backend_start_timer_.reset();
 }
 
 void SyncSetupHandler::OpenSyncSetup(bool force_login) {
@@ -1012,6 +1053,9 @@ LoginUIService* SyncSetupHandler::GetLoginUIService() const {
 }
 
 void SyncSetupHandler::CloseOverlay() {
+  // Stop a timer to handle timeout in waiting for sync setup.
+  backend_start_timer_.reset();
+
   CloseSyncSetup();
   web_ui()->CallJavascriptFunction("OptionsPage.closeOverlay");
 }

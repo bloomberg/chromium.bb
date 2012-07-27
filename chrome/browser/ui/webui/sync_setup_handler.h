@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/timer.h"
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -109,6 +110,7 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   void HandleShowSetupUIWithoutLogin(const base::ListValue* args);
   void HandleDoSignOutOnAuthError(const base::ListValue* args);
   void HandleStopSyncing(const base::ListValue* args);
+  void HandleCloseTimeout(const base::ListValue* args);
 
   // Helper routine that gets the Profile associated with this object (virtual
   // so tests can override).
@@ -141,7 +143,10 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // is running in the background.
   void DisplaySpinner();
 
-  // Returns true if this is the active login object.
+  // Displays an error dialog which shows timeout of starting the sync backend.
+  void DisplayTimeout();
+
+  // Returns true if this object is the active login object.
   bool IsActiveLogin() const;
 
   // Initiates a login via the signin manager.
@@ -191,6 +196,10 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // When setup starts with login UI, retry login if signing in failed.
   // When setup starts without login UI, do not retry login and fail.
   bool retry_on_signin_failure_;
+
+  // The OneShotTimer object used to timeout of starting the sync backend
+  // service.
+  scoped_ptr<base::OneShotTimer<SyncSetupHandler> > backend_start_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };

@@ -11956,6 +11956,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
         OK, sync everything
       </message>
 
+      <!-- Notify network connection goes time out -->
+      <message name="IDS_SYNC_SETUP_TIME_OUT_TITLE" desc="The title of the 'Timeout' page for sync settings.">
+        Failed to start up the sync backend
+      </message>
+      <message name="IDS_SYNC_SETUP_TIME_OUT_CONTENT" desc="Text explaining what to do if sync times out.">
+        Please make sure your network connection is working and if the problem persists, please sign out and sign in again to refresh your credentials.
+      </message>
+
       <!-- Choose data types dialog strings -->
       <message name="IDS_CUSTOMIZE_SYNC_DESCRIPTION" desc="The first line of the Customize Sync dialog, explaining what this box does.">
         Sync the following items automatically:

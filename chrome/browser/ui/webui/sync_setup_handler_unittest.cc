@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -421,6 +422,8 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
   scoped_ptr<Profile> profile_;
   ProfileSyncServiceMock* mock_pss_;
   GoogleServiceAuthError error_;
+  // MessageLoop instance is required to work with OneShotTimer.
+  MessageLoop message_loop_;
   SigninManagerMock* mock_signin_;
   TestWebUI web_ui_;
   scoped_ptr<TestingSyncSetupHandler> handler_;
