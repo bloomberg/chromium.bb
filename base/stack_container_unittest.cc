@@ -134,10 +134,5 @@ TEST(StackContainer, BufferAlignment) {
 #endif
 }
 
-#ifdef COMPILER_MSVC
-// Make sure all the class compiles correctly.
-// TODO(pinkerton): i'm not sure why this doesn't compile on GCC, but
-// it doesn't.
-template StackVector<int, 2>;
-template StackVector<scoped_refptr<Dummy>, 2>;
-#endif
+template class StackVector<int, 2>;
+template class StackVector<scoped_refptr<Dummy>, 2>;
