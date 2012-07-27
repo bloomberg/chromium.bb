@@ -27,6 +27,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -142,6 +143,7 @@ TabContents::TabContents(WebContents* contents)
   webnavigation_observer_.reset(
       new extensions::WebNavigationTabObserver(contents));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
+  navigation_metrics_recorder_.reset(new NavigationMetricsRecorder(contents));
   pdf_tab_observer_.reset(new PDFTabObserver(this));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));

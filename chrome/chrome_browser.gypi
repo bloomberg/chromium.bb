@@ -2322,6 +2322,8 @@
         'browser/tab_contents/language_state.h',
         'browser/tab_contents/link_infobar_delegate.cc',
         'browser/tab_contents/link_infobar_delegate.h',
+        'browser/tab_contents/navigation_metrics_recorder.cc',
+        'browser/tab_contents/navigation_metrics_recorder.h',
         'browser/tab_contents/simple_alert_infobar_delegate.cc',
         'browser/tab_contents/simple_alert_infobar_delegate.h',
         'browser/tab_contents/render_view_context_menu.cc',

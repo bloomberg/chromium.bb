@@ -28,6 +28,7 @@ class HistoryTabHelper;
 class HungPluginTabHelper;
 class InfoBarTabHelper;
 class MetroPinTabHelper;
+class NavigationMetricsRecorder;
 class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
@@ -317,6 +318,7 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<AlternateErrorPageTabObserver> alternate_error_page_tab_observer_;
   scoped_ptr<extensions::WebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
+  scoped_ptr<NavigationMetricsRecorder> navigation_metrics_recorder_;
   scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   scoped_ptr<OneClickSigninHelper> one_click_signin_helper_;
