@@ -44,6 +44,17 @@ function updateGCacheContents(gcacheContents) {
 }
 
 /**
+ * Updates the File System Contents section. The function is called from the
+ * C++ side repeatedly with contents of a directory.
+ * @param {string} directoryContentsAsText Pre-formatted string representation
+ * of contents a directory in the file system.
+ */
+function updateFileSystemContents(directoryContentsAsText) {
+  var div = $('file-system-contents');
+  div.appendChild(createElementFromText('pre', directoryContentsAsText));
+}
+
+/**
  * Creates an element named |elementName| containing the content |text|.
  * @param {string} elementName Name of the new element to be created.
  * @param {string} text Text to be contained in the new element.
