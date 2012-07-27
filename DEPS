@@ -27,7 +27,7 @@ vars = {
 
   "lcov_rev": "54822",
   "python_26_rev": "53573",
-  "tools_rev": "9016",
+  "tools_rev": "9286",
 
   # These are URL prefixes rather than revision numbers, so keep them separate.
   "chromium_trunk": "http://src.chromium.org/svn/trunk",

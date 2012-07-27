@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Setup for PyAuto NaCl tests.
 This file was copied from src/chrome/test/functional/pyauto_functional.py
@@ -38,7 +38,7 @@ def _LocatePyAutoDir():
   src_root = os.path.join(os.path.dirname(__file__),
                           os.pardir, os.pardir, os.pardir)
   _UpdatePythonPath(os.path.join(src_root, 'chrome/test/pyautolib'))
-  _UpdatePythonPath(os.path.join(src_root, 'third_party/pylib'))
+  _UpdatePythonPath(os.path.join(src_root, 'third_party'))
 
   # argv[1] is assumed to be the path to the pyautolib files downloaded from
   # the chrome continuous builder. It is removed because pyauto consumes the

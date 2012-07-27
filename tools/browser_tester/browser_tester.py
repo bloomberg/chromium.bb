@@ -14,7 +14,7 @@ import urllib
 
 # Allow the import of third party modules
 script_dir = os.path.dirname(__file__)
-sys.path.append(os.path.join(script_dir, '../../../third_party/pylib/'))
+sys.path.append(os.path.join(script_dir, '../../../third_party/'))
 sys.path.append(os.path.join(script_dir, '../../../tools/valgrind/'))
 
 import browsertester.browserlauncher
