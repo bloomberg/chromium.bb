@@ -27,6 +27,13 @@ const int kReceiveBufferSize = 65536;
 // reached under normal conditions.
 const int kMaxSendBufferSize = 256 * 1024;
 
+// Defines set of transient errors. These errors are ignored when we get them
+// from sendto() calls.
+bool IsTransientError(int error) {
+  return error == net::ERR_ADDRESS_UNREACHABLE ||
+      error == net::ERR_ADDRESS_INVALID;
+}
+
 class UdpPacketSocket : public talk_base::AsyncPacketSocket {
  public:
   UdpPacketSocket();
@@ -264,8 +271,7 @@ void UdpPacketSocket::OnSendCompleted(int result) {
   send_pending_ = false;
 
   if (result < 0) {
-    // Treat all errors except ERR_ADDRESS_UNREACHABLE as fatal.
-    if (result != net::ERR_ADDRESS_UNREACHABLE) {
+    if (!IsTransientError(result)) {
       LOG(ERROR) << "Send failed on a UDP socket: " << result;
       error_ = EINVAL;
       return;
