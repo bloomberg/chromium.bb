@@ -99,10 +99,15 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
   FilePath login_db_file_path = profile->GetPath();
   login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
   LoginDatabase* login_db = new LoginDatabase();
-  if (!login_db->Init(login_db_file_path)) {
-    LOG(ERROR) << "Could not initialize login database.";
-    delete login_db;
-    return NULL;
+  {
+    // TODO(paivanof@gmail.com): execution of login_db->Init() should go
+    // to DB thread. http://crbug.com/138903
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    if (!login_db->Init(login_db_file_path)) {
+      LOG(ERROR) << "Could not initialize login database.";
+      delete login_db;
+      return NULL;
+    }
   }
 #if defined(OS_WIN)
   ps = new PasswordStoreWin(
