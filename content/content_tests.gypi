@@ -683,9 +683,6 @@
             ],
             'conditions': [
               ['target_arch=="arm"', {
-                # TODO(fischman): remove this name override when autotest config
-                # is ready.
-                'target_name': 'omx_video_decode_accelerator_unittest',
                 'include_dirs': [
                   '<(DEPTH)/third_party/openmax/il',
                 ],
