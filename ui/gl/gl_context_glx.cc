@@ -244,7 +244,7 @@ std::string GLContextGLX::GetExtensions() {
   return GLContext::GetExtensions();
 }
 
-bool GLContextGLX::WasAllocatedUsingARBRobustness() {
+bool GLContextGLX::WasAllocatedUsingRobustnessExtension() {
   return GLSurfaceGLX::IsCreateContextRobustnessSupported();
 }
 

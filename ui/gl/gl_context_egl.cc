@@ -9,8 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "third_party/angle/include/EGL/egl.h"
+#include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gl/egl_util.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_egl.h"
 
 // This header must come after the above third-party include, as
 // it brings in #defines that cause conflicts.
@@ -40,15 +41,33 @@ bool GLContextEGL::Initialize(
     EGL_CONTEXT_CLIENT_VERSION, 2,
     EGL_NONE
   };
+  static const EGLint kContextRobustnessAttributes[] = {
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT,
+    EGL_LOSE_CONTEXT_ON_RESET_EXT,
+    EGL_NONE
+  };
 
   display_ = compatible_surface->GetDisplay();
   config_ = compatible_surface->GetConfig();
+
+  const EGLint* context_attributes = NULL;
+  if (GLSurfaceEGL::IsCreateContextRobustnessSupported()) {
+    DVLOG(1) << "EGL_EXT_create_context_robustness supported.";
+    context_attributes = kContextRobustnessAttributes;
+  } else {
+    // At some point we should require the presence of the robustness
+    // extension and remove this code path.
+    DVLOG(1) << "EGL_EXT_create_context_robustness NOT supported.";
+    context_attributes = kContextAttributes;
+  }
 
   context_ = eglCreateContext(
       display_,
       config_,
       share_group() ? share_group()->GetHandle() : NULL,
-      kContextAttributes);
+      context_attributes);
+
   if (!context_) {
     LOG(ERROR) << "eglCreateContext failed with error "
                << GetLastEGLErrorString();
@@ -153,6 +172,10 @@ std::string GLContextEGL::GetExtensions() {
     return GLContext::GetExtensions();
 
   return GLContext::GetExtensions() + " " + extensions;
+}
+
+bool GLContextEGL::WasAllocatedUsingRobustnessExtension() {
+  return GLSurfaceEGL::IsCreateContextRobustnessSupported();
 }
 
 GLContextEGL::~GLContextEGL() {

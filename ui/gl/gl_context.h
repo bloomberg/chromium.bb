@@ -70,7 +70,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   static GLContext* GetCurrent();
 
-  virtual bool WasAllocatedUsingARBRobustness();
+  virtual bool WasAllocatedUsingRobustnessExtension();
 
  protected:
   virtual ~GLContext();

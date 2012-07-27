@@ -78,17 +78,7 @@ const char* GLSurfaceGLX::GetGLXExtensions() {
 
 // static
 bool GLSurfaceGLX::HasGLXExtension(const char* name) {
-  DCHECK(name);
-  const char* c_extensions = GetGLXExtensions();
-  if (!c_extensions)
-    return false;
-  std::string extensions(c_extensions);
-  extensions += " ";
-
-  std::string delimited_name(name);
-  delimited_name += " ";
-
-  return extensions.find(delimited_name) != std::string::npos;
+  return ExtensionsContain(GetGLXExtensions(), name);
 }
 
 // static

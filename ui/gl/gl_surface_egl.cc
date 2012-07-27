@@ -26,12 +26,17 @@ extern "C" {
 namespace gfx {
 
 namespace {
+
 EGLConfig g_config;
 EGLDisplay g_display;
 EGLNativeDisplayType g_native_display;
 EGLConfig g_software_config;
 EGLDisplay g_software_display;
 EGLNativeDisplayType g_software_native_display;
+
+const char* g_egl_extensions = NULL;
+bool g_egl_create_context_robustness_supported = false;
+
 }
 
 GLSurfaceEGL::GLSurfaceEGL() : software_(false) {}
@@ -96,6 +101,10 @@ bool GLSurfaceEGL::InitializeOneOff() {
     return false;
   }
 
+  g_egl_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
+  g_egl_create_context_robustness_supported =
+      HasEGLExtension("EGL_EXT_create_context_robustness");
+
   initialized = true;
 
 #if defined(USE_X11) || defined(OS_ANDROID)
@@ -152,6 +161,18 @@ EGLDisplay GLSurfaceEGL::GetSoftwareDisplay() {
 
 EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
   return g_native_display;
+}
+
+const char* GLSurfaceEGL::GetEGLExtensions() {
+  return g_egl_extensions;
+}
+
+bool GLSurfaceEGL::HasEGLExtension(const char* name) {
+  return ExtensionsContain(GetEGLExtensions(), name);
+}
+
+bool GLSurfaceEGL::IsCreateContextRobustnessSupported() {
+  return g_egl_create_context_robustness_supported;
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() {}

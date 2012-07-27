@@ -119,6 +119,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   static bool InitializeOneOffInternal();
   static void SetCurrent(GLSurface* surface);
 
+  static bool ExtensionsContain(const char* extensions, const char* name);
+
  private:
   friend class base::RefCounted<GLSurface>;
   friend class GLContext;

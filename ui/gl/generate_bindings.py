@@ -290,7 +290,8 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, '
                'GLenum attachment, GLenum pname, GLint* params', },
 { 'return_type': 'GLenum',
-  'names': ['glGetGraphicsResetStatusARB'],
+  'names': ['glGetGraphicsResetStatusARB',
+            'glGetGraphicsResetStatusEXT'],
   'arguments': 'void', },
 { 'return_type': 'void',
   'names': ['glGetIntegerv'],

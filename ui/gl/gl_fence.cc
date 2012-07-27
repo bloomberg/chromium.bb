@@ -93,12 +93,12 @@ GLFence* GLFence::Create() {
 
 // static
 bool GLFence::IsContextLost() {
-  if (!gfx::g_GL_ARB_robustness)
+  if (!gfx::g_GL_ARB_robustness && !gfx::g_GL_EXT_robustness)
     return false;
 
   if (!gfx::GLContext::GetCurrent() ||
       !gfx::GLContext::GetCurrent()->
-          WasAllocatedUsingARBRobustness())
+          WasAllocatedUsingRobustnessExtension())
     return false;
 
   GLenum status = glGetGraphicsResetStatusARB();

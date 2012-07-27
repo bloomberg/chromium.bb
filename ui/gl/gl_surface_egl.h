@@ -41,6 +41,13 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static EGLDisplay GetSoftwareDisplay();
   static EGLNativeDisplayType GetNativeDisplay();
 
+  // These aren't particularly tied to surfaces, but since we already
+  // have the static InitializeOneOff here, it's easiest to reuse its
+  // initialization guards.
+  static const char* GetEGLExtensions();
+  static bool HasEGLExtension(const char* name);
+  static bool IsCreateContextRobustnessSupported();
+
  protected:
   virtual ~GLSurfaceEGL();
 

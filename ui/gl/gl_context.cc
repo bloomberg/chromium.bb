@@ -81,7 +81,7 @@ void GLContext::SetCurrent(GLContext* context, GLSurface* surface) {
   GLSurface::SetCurrent(surface);
 }
 
-bool GLContext::WasAllocatedUsingARBRobustness() {
+bool GLContext::WasAllocatedUsingRobustnessExtension() {
   return false;
 }
 

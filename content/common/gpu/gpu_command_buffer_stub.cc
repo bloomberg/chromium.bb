@@ -279,14 +279,15 @@ void GpuCommandBufferStub::Destroy() {
     delayed_echos_.pop_front();
   }
 
+  bool have_context = false;
   if (decoder_.get())
-    decoder_->MakeCurrent();
+    have_context = decoder_->MakeCurrent();
   FOR_EACH_OBSERVER(DestructionObserver,
                     destruction_observers_,
                     OnWillDestroyStub(this));
 
   if (decoder_.get()) {
-    decoder_->Destroy(true);
+    decoder_->Destroy(have_context);
     decoder_.reset();
   }
 

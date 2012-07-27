@@ -1542,7 +1542,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   int frame_number_;
 
-  bool has_arb_robustness_;
+  bool has_robustness_extension_;
   GLenum reset_status_;
 
   bool needs_mac_nvidia_driver_workaround_;
@@ -1963,7 +1963,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       feature_info_(group_->feature_info()),
       tex_image_2d_failed_(false),
       frame_number_(0),
-      has_arb_robustness_(false),
+      has_robustness_extension_(false),
       reset_status_(GL_NO_ERROR),
       needs_mac_nvidia_driver_workaround_(false),
       needs_glsl_built_in_function_emulation_(false),
@@ -2250,7 +2250,9 @@ bool GLES2DecoderImpl::Initialize(
     glEnable(GL_POINT_SPRITE);
   }
 
-  has_arb_robustness_ = context->HasExtension("GL_ARB_robustness");
+  has_robustness_extension_ =
+      context->HasExtension("GL_ARB_robustness") ||
+      context->HasExtension("GL_EXT_robustness");
 
   if (!feature_info_->feature_flags().disable_workarounds) {
 #if defined(OS_MACOSX)
@@ -8532,13 +8534,15 @@ error::ContextLostReason GLES2DecoderImpl::GetContextLostReason() {
 }
 
 bool GLES2DecoderImpl::WasContextLost() {
-  if (context_->WasAllocatedUsingARBRobustness() && has_arb_robustness_) {
-    GLenum status = glGetGraphicsResetStatusARB();
+  if (context_->WasAllocatedUsingRobustnessExtension()) {
+    GLenum status = GL_NO_ERROR;
+    if (has_robustness_extension_)
+      status = glGetGraphicsResetStatusARB();
     if (status != GL_NO_ERROR) {
       // The graphics card was reset. Signal a lost context to the application.
       reset_status_ = status;
       LOG(ERROR) << (surface_->IsOffscreen() ? "Offscreen" : "Onscreen")
-                 << " context lost via ARB_robustness. Reset status = 0x"
+                 << " context lost via ARB/EXT_robustness. Reset status = 0x"
                  << std::hex << status << std::dec;
       return true;
     }

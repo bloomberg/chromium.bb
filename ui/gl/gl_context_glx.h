@@ -33,7 +33,7 @@ class GL_EXPORT GLContextGLX : public GLContext {
   virtual void* GetHandle() OVERRIDE;
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
-  virtual bool WasAllocatedUsingARBRobustness() OVERRIDE;
+  virtual bool WasAllocatedUsingRobustnessExtension() OVERRIDE;
 
  protected:
   virtual ~GLContextGLX();

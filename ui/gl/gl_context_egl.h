@@ -33,6 +33,7 @@ class GLContextEGL : public GLContext {
   virtual void* GetHandle() OVERRIDE;
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
+  virtual bool WasAllocatedUsingRobustnessExtension() OVERRIDE;
 
  protected:
   virtual ~GLContextEGL();

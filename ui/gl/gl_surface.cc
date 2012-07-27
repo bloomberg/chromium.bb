@@ -160,6 +160,19 @@ void GLSurface::SetCurrent(GLSurface* surface) {
   current_surface_.Pointer()->Set(surface);
 }
 
+bool GLSurface::ExtensionsContain(const char* c_extensions, const char* name) {
+  DCHECK(name);
+  if (!c_extensions)
+    return false;
+  std::string extensions(c_extensions);
+  extensions += " ";
+
+  std::string delimited_name(name);
+  delimited_name += " ";
+
+  return extensions.find(delimited_name) != std::string::npos;
+}
+
 GLSurfaceAdapter::GLSurfaceAdapter(GLSurface* surface) : surface_(surface) {}
 
 bool GLSurfaceAdapter::Initialize() {
