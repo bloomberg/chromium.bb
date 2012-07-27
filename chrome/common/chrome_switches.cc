@@ -134,10 +134,6 @@ const char kAutomationReinitializeOnChannelError[] =
 // existing BrowserWindow Panels.
 const char kBrowserlessPanels[] = "browserless-panels";
 
-// This enables automatic captive portal checking on certain network errors.
-// If a captive portal is detected, a login tab will be opened.
-const char kCaptivePortalDetection[]        = "enable-captive-portal-detection";
-
 // How often (in seconds) to check for updates. Should only be used for testing
 // purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";

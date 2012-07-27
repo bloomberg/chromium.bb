@@ -13,7 +13,6 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/load_flags.h"
@@ -94,6 +93,8 @@ void RecordRepeatHistograms(Result result,
 }
 
 }  // namespace
+
+bool CaptivePortalService::is_disabled_for_testing_ = false;
 
 class CaptivePortalService::RecheckBackoffEntry : public net::BackoffEntry {
  public:
@@ -326,9 +327,8 @@ void CaptivePortalService::ResetBackoffEntry(Result result) {
 
 void CaptivePortalService::UpdateEnabledState() {
   bool enabled_before = enabled_;
-  enabled_ = resolve_errors_with_web_service_.GetValue() &&
-             CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kCaptivePortalDetection);
+  enabled_ = !is_disabled_for_testing_ &&
+             resolve_errors_with_web_service_.GetValue();
   if (enabled_before == enabled_)
     return;
 

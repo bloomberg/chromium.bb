@@ -76,6 +76,13 @@ class CaptivePortalService : public ProfileKeyedService,
   // checks return INTERNET_CONNECTED.
   bool enabled() const { return enabled_; }
 
+  // Used to disable captive portal detection so it doesn't interfere with
+  // tests.  Should be called before the service is created.
+  static void set_is_disabled_for_testing(bool is_disabled_for_testing) {
+    is_disabled_for_testing_ = is_disabled_for_testing;
+  }
+  static bool is_disabled_for_testing() { return is_disabled_for_testing_; }
+
  private:
   friend class CaptivePortalServiceTest;
   friend class CaptivePortalBrowserTest;
@@ -210,6 +217,8 @@ class CaptivePortalService : public ProfileKeyedService,
   BooleanPrefMember resolve_errors_with_web_service_;
 
   base::OneShotTimer<CaptivePortalService> check_captive_portal_timer_;
+
+  static bool is_disabled_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalService);
 };

@@ -761,7 +761,6 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   CaptivePortalBrowserTest();
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
 
@@ -898,6 +897,11 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
       base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   URLRequestMockCaptivePortalJobFactory::AddUrlHandlers();
 
+  // Double-check that the captive portal service isn't enabled by default for
+  // browser tests.
+  EXPECT_TRUE(CaptivePortalService::is_disabled_for_testing());
+
+  CaptivePortalService::set_is_disabled_for_testing(false);
   EnableCaptivePortalDetection(browser()->profile(), true);
 
   // Set the captive portal service to use URLRequestMockCaptivePortalJob's
@@ -909,11 +913,6 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
 void CaptivePortalBrowserTest::CleanUpOnMainThread() {
   // No test should have a captive portal check pending on quit.
   EXPECT_FALSE(CheckPending(browser()));
-}
-
-void CaptivePortalBrowserTest::SetUpCommandLine(
-    CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kCaptivePortalDetection);
 }
 
 void CaptivePortalBrowserTest::EnableCaptivePortalDetection(

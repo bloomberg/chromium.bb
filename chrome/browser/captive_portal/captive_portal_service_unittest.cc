@@ -132,15 +132,21 @@ class CaptivePortalObserver : public content::NotificationObserver {
 
 class CaptivePortalServiceTest : public testing::Test {
  public:
-  CaptivePortalServiceTest() {}
+  CaptivePortalServiceTest()
+      : was_service_disabled_for_testing_(
+            CaptivePortalService::is_disabled_for_testing()) {
+  }
 
-  virtual ~CaptivePortalServiceTest() {}
+  virtual ~CaptivePortalServiceTest() {
+    CaptivePortalService::set_is_disabled_for_testing(
+        was_service_disabled_for_testing_);
+  }
 
-  void Initialize(bool enable_on_command_line) {
-    if (enable_on_command_line) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kCaptivePortalDetection);
-    }
+  // |enable_service| is whether or not the captive portal service itself
+  // should be disabled.  This is different from enabling the captive portal
+  // detection preference.
+  void Initialize(bool enable_service) {
+    CaptivePortalService::set_is_disabled_for_testing(!enable_service);
 
     profile_.reset(new TestingProfile());
     service_.reset(new TestCaptivePortalService(profile_.get()));
@@ -161,11 +167,11 @@ class CaptivePortalServiceTest : public testing::Test {
     // captive portal test in a row that ends up with the same result.
     set_num_errors_to_ignore(0);
 
-    EnableCaptivePortalDetection(true);
+    EnableCaptivePortalDetectionPreference(true);
   }
 
   // Sets the captive portal checking preference.
-  void EnableCaptivePortalDetection(bool enabled) {
+  void EnableCaptivePortalDetectionPreference(bool enabled) {
     profile()->GetPrefs()->SetBoolean(prefs::kAlternateErrorPagesEnabled,
                                       enabled);
   }
@@ -323,6 +329,10 @@ class CaptivePortalServiceTest : public testing::Test {
   TestCaptivePortalService* service() { return service_.get(); }
 
  private:
+  // Stores the initial value of CaptivePortalService::is_disabled_for_tests
+  // so it can be restored after the test.
+  const bool was_service_disabled_for_testing_;
+
   MessageLoop message_loop_;
 
   // Note that the construction order of these matters.
@@ -435,13 +445,13 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabled) {
 
   set_initial_backoff_portal(base::TimeDelta::FromSeconds(100));
 
-  EnableCaptivePortalDetection(false);
+  EnableCaptivePortalDetectionPreference(false);
 
   RunDisabledTest(0);
   for (int i = 0; i < 6; ++i)
     RunDisabledTest(100);
 
-  EnableCaptivePortalDetection(true);
+  EnableCaptivePortalDetectionPreference(true);
 
   RunTest(RESULT_BEHIND_CAPTIVE_PORTAL, net::OK, 200, 0, NULL);
 }
@@ -460,7 +470,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhileRunning) {
   EXPECT_TRUE(FetchingURL());
   EXPECT_FALSE(TimerRunning());
 
-  EnableCaptivePortalDetection(false);
+  EnableCaptivePortalDetectionPreference(false);
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
   EXPECT_EQ(0, observer.num_results_received());
@@ -488,7 +498,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhilePending) {
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
 
-  EnableCaptivePortalDetection(false);
+  EnableCaptivePortalDetectionPreference(false);
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
   EXPECT_EQ(0, observer.num_results_received());
@@ -507,7 +517,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhilePending) {
 TEST_F(CaptivePortalServiceTest, CaptivePortalPrefEnabledWhilePending) {
   Initialize(true);
 
-  EnableCaptivePortalDetection(false);
+  EnableCaptivePortalDetectionPreference(false);
   RunDisabledTest(0);
 
   CaptivePortalObserver observer(profile(), service());
@@ -517,7 +527,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefEnabledWhilePending) {
 
   net::TestURLFetcherFactory factory;
 
-  EnableCaptivePortalDetection(true);
+  EnableCaptivePortalDetectionPreference(true);
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
 
@@ -535,8 +545,8 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefEnabledWhilePending) {
   EXPECT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL, observer.captive_portal_result());
 }
 
-// Checks that disabling with a command line flag works as expected.
-TEST_F(CaptivePortalServiceTest, CaptivePortalDisabledAtCommandLine) {
+// Checks that disabling for browser tests works as expected.
+TEST_F(CaptivePortalServiceTest, CaptivePortalDisableForTests) {
   Initialize(false);
   RunDisabledTest(0);
 }
