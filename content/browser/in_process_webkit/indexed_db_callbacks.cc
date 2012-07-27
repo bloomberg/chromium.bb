@@ -27,9 +27,30 @@ void IndexedDBCallbacksBase::onError(const WebKit::WebIDBDatabaseError& error) {
       thread_id_, response_id_, error.code(), error.message()));
 }
 
+void IndexedDBCallbacksBase::onBlocked(long long old_version) {
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksIntBlocked(
+      thread_id_, response_id_, old_version));
+}
+
 void IndexedDBCallbacksBase::onBlocked() {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksBlocked(thread_id_,
                                                            response_id_));
+}
+
+template<>
+void IndexedDBCallbacks<WebKit::WebIDBDatabase>::onUpgradeNeeded(
+    long long old_version,
+    WebKit::WebIDBTransaction* transaction,
+    WebKit::WebIDBDatabase* database) {
+  int32 transaction_id = dispatcher_host()->Add(transaction, thread_id(),
+                                                origin_url_);
+  int32 database_id = dispatcher_host()->Add(database, thread_id(),
+                                             origin_url_);
+  database_id_ = database_id;
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksUpgradeNeeded(
+          thread_id(), response_id(), transaction_id, database_id,
+          old_version));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(

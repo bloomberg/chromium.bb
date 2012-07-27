@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,15 @@ IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
 }
 
 IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
+}
+
+void IndexedDBDatabaseCallbacks::onVersionChange(long long old_version,
+                                                 long long new_version) {
+  dispatcher_host_->Send(
+      new IndexedDBMsg_DatabaseCallbacksIntVersionChange(thread_id_,
+                                                         database_id_,
+                                                         old_version,
+                                                         new_version));
 }
 
 void IndexedDBDatabaseCallbacks::onVersionChange(

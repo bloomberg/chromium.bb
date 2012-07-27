@@ -29,6 +29,7 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
 
   virtual void open(
       const WebKit::WebString& name,
+      long long version,
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,

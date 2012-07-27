@@ -242,6 +242,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   // created) if this origin is already over quota.
   Context()->GetIDBFactory()->open(
       params.name,
+      params.version,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.thread_id,
                                              params.response_id, origin_url),
       origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path));
@@ -276,6 +277,7 @@ ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   ObjectType* return_object = map->Lookup(return_object_id);
   if (!return_object) {
+    NOTREACHED() << "Uh oh, couldn't find object with id " << return_object_id;
     content::RecordAction(UserMetricsAction("BadMessageTerminate_IDBMF"));
     BadMessageReceived();
   }
@@ -1143,6 +1145,8 @@ void IndexedDBDispatcherHost::
 
 void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(
     int32 object_id) {
+  // TODO(dgrogan): This doesn't seem to be happening with some version change
+  // transactions. Possibly introduced with integer version support.
   transaction_size_map_.erase(object_id);
   transaction_url_map_.erase(object_id);
   parent_->DestroyObject(&map_, object_id);

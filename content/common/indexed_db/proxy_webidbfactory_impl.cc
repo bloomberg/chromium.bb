@@ -35,6 +35,7 @@ void RendererWebIDBFactoryImpl::getDatabaseNames(
 
 void RendererWebIDBFactoryImpl::open(
     const WebString& name,
+    long long version,
     WebIDBCallbacks* callbacks,
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
@@ -44,7 +45,7 @@ void RendererWebIDBFactoryImpl::open(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBFactoryOpen(
-      name, callbacks, origin.databaseIdentifier(), web_frame);
+      name, version, callbacks, origin.databaseIdentifier(), web_frame);
 }
 
 void RendererWebIDBFactoryImpl::deleteDatabase(

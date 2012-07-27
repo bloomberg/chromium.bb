@@ -38,6 +38,9 @@ RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
   // any such pointers.
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseDestroyed(
       idb_database_id_));
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  dispatcher->DatabaseDestroyed(idb_database_id_);
 }
 
 WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {

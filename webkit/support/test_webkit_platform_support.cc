@@ -353,11 +353,12 @@ class TestWebIDBFactory : public WebKit::WebIDBFactory {
   }
 
   virtual void open(const WebString& name,
+                    long long version,
                     WebKit::WebIDBCallbacks* callbacks,
                     const WebKit::WebSecurityOrigin& origin,
                     WebKit::WebFrame* frame,
                     const WebString& dataDir) {
-    factory_->open(name, callbacks, origin, frame,
+    factory_->open(name, version, callbacks, origin, frame,
                    dataDir.isEmpty() ? data_dir_ : dataDir);
   }
 

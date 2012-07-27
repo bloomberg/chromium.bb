@@ -42,6 +42,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   IPC_STRUCT_MEMBER(string16, origin)
   // The name of the database.
   IPC_STRUCT_MEMBER(string16, name)
+  // The requested version of the database.
+  IPC_STRUCT_MEMBER(int64, version)
 IPC_STRUCT_END()
 
 // Used to delete an indexed database.
@@ -245,6 +247,16 @@ IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksError,
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksBlocked,
                      int32 /* thread_id */,
                      int32 /* response_id */)
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksIntBlocked,
+                     int32 /* thread_id */,
+                     int32 /* response_id */,
+                     int64 /* existing_version */)
+IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksUpgradeNeeded,
+                     int32, /* thread_id */
+                     int32, /* response_id */
+                     int32, /* transaction_id */
+                     int32, /* database_id */
+                     int64) /* old_version */
 
 // IDBTransactionCallback message handlers.
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_TransactionCallbacksAbort,
@@ -258,6 +270,12 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksVersionChange,
                      int32, /* thread_id */
                      int32, /* database_id */
                      string16) /* new_version */
+
+IPC_MESSAGE_CONTROL4(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
+                     int32, /* thread_id */
+                     int32, /* database_id */
+                     int64, /* old_version */
+                     int64) /* new_version */
 
 // Indexed DB messages sent from the renderer to the browser.
 
