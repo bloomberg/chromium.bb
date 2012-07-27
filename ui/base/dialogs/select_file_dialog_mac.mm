@@ -48,8 +48,9 @@ class SelectFileDialogImpl;
 
 - (id)initWithSelectFileDialogImpl:(SelectFileDialogImpl*)s;
 - (void)endedPanel:(NSSavePanel*)panel
-        withReturn:(int)returnCode
-           context:(void*)context;
+         didCancel:(bool)did_cancel
+              type:(ui::SelectFileDialog::Type)type
+      parentWindow:(NSWindow*)parentWindow;
 
 // NSSavePanel delegate method
 - (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename;
@@ -76,11 +77,6 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
                        int index);
 
   bool ShouldEnableFilename(NSSavePanel* dialog, NSString* filename);
-
-  struct SheetContext {
-    Type type;
-    NSWindow* owning_window;
-  };
 
  protected:
   // SelectFileDialog implementation.
@@ -151,7 +147,7 @@ void SelectFileDialogImpl::FileWasSelected(NSSavePanel* dialog,
   if (!listener_)
     return;
 
-  if (was_cancelled) {
+  if (was_cancelled || files.empty()) {
     listener_->FileSelectionCanceled(params);
   } else {
     if (is_multi) {
@@ -254,28 +250,13 @@ void SelectFileDialogImpl::SelectFileImpl(
       file_types ? file_types->extensions.size() > 1 : true;
 
   if (!default_extension.empty())
-    [dialog setRequiredFileType:base::SysUTF8ToNSString(default_extension)];
+    [dialog setAllowedFileTypes:@[base::SysUTF8ToNSString(default_extension)]];
 
   params_map_[dialog] = params;
   type_map_[dialog] = type;
 
-  SheetContext* context = new SheetContext;
-
-  // |context| should never be NULL, but we are seeing indications otherwise.
-  // This CHECK is here to confirm if we are actually getting NULL
-  // |context|s. http://crbug.com/58959
-  CHECK(context);
-  context->type = type;
-  context->owning_window = owning_window;
-
   if (type == SELECT_SAVEAS_FILE) {
     [dialog setCanSelectHiddenExtension:YES];
-    [dialog beginSheetForDirectory:default_dir
-                              file:default_filename
-                    modalForWindow:owning_window
-                     modalDelegate:bridge_.get()
-                    didEndSelector:@selector(endedPanel:withReturn:context:)
-                       contextInfo:context];
   } else {
     NSOpenPanel* open_dialog = (NSOpenPanel*)dialog;
 
@@ -296,14 +277,19 @@ void SelectFileDialogImpl::SelectFileImpl(
     }
 
     [open_dialog setDelegate:bridge_.get()];
-    [open_dialog beginSheetForDirectory:default_dir
-                                   file:default_filename
-                                  types:allowed_file_types
-                         modalForWindow:owning_window
-                          modalDelegate:bridge_.get()
-                        didEndSelector:@selector(endedPanel:withReturn:context:)
-                            contextInfo:context];
+    [open_dialog setAllowedFileTypes:allowed_file_types];
   }
+  if (default_dir)
+    [dialog setDirectoryURL:[NSURL fileURLWithPath:default_dir]];
+  if (default_filename)
+    [dialog setNameFieldStringValue:default_filename];
+  [dialog beginSheetModalForWindow:owning_window
+                 completionHandler:^(NSInteger result) {
+    [bridge_.get() endedPanel:dialog
+                    didCancel:result != NSFileHandlingPanelOKButton
+                         type:type
+                 parentWindow:owning_window];
+  }];
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
@@ -374,28 +360,15 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
 }
 
 - (void)endedPanel:(NSSavePanel*)panel
-        withReturn:(int)returnCode
-           context:(void*)context {
-  // |context| should never be NULL, but we are seeing indications otherwise.
-  // This CHECK is here to confirm if we are actually getting NULL
-  // |context|s. http://crbug.com/58959
-  CHECK(context);
-
+         didCancel:(bool)did_cancel
+              type:(ui::SelectFileDialog::Type)type
+      parentWindow:(NSWindow*)parentWindow {
   int index = 0;
-  SelectFileDialogImpl::SheetContext* context_struct =
-      (SelectFileDialogImpl::SheetContext*)context;
-
-  ui::SelectFileDialog::Type type = context_struct->type;
-  NSWindow* parentWindow = context_struct->owning_window;
-  delete context_struct;
-
-  bool isMulti = type == ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
-
   std::vector<FilePath> paths;
-  bool did_cancel = returnCode == NSCancelButton;
   if (!did_cancel) {
     if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE) {
-      paths.push_back(FilePath(base::SysNSStringToUTF8([panel filename])));
+      if ([[panel URL] isFileURL])
+        paths.push_back(FilePath(base::SysNSStringToUTF8([[panel URL] path])));
 
       NSView* accessoryView = [panel accessoryView];
       if (accessoryView) {
@@ -409,12 +382,14 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
       }
     } else {
       CHECK([panel isKindOfClass:[NSOpenPanel class]]);
-      NSArray* filenames = [static_cast<NSOpenPanel*>(panel) filenames];
-      for (NSString* filename in filenames)
-        paths.push_back(FilePath(base::SysNSStringToUTF8(filename)));
+      NSArray* urls = [static_cast<NSOpenPanel*>(panel) URLs];
+      for (NSURL* url in urls)
+        if ([url isFileURL])
+          paths.push_back(FilePath(base::SysNSStringToUTF8([url path])));
     }
   }
 
+  bool isMulti = type == ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
   selectFileDialogImpl_->FileWasSelected(panel,
                                          parentWindow,
                                          did_cancel,
