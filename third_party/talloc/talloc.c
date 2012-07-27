@@ -1594,7 +1594,8 @@ char *talloc_strdup(const void *t, const char *p)
 }
 
 #ifndef HAVE_STRNLEN
-static size_t strnlen(const char* s, size_t n)
+#define strnlen rep_strnlen
+static size_t rep_strnlen(const char* s, size_t n)
 {
 	if (unlikely(!s)) return 0;
 	int i = 0;
