@@ -235,8 +235,8 @@ class TestPrerenderContents : public PrerenderContents {
   virtual void AddPendingPrerender(
       base::WeakPtr<PrerenderHandle> weak_prerender_handle,
       const GURL& url,
-                                   const content::Referrer& referrer,
-                                   const gfx::Size& size) OVERRIDE {
+      const content::Referrer& referrer,
+      const gfx::Size& size) OVERRIDE {
     PrerenderContents::AddPendingPrerender(
         weak_prerender_handle, url, referrer, size);
     if (expected_pending_prerenders_ > 0 &&
@@ -1524,12 +1524,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileC =
       "files/prerender/prerender_infinite_c_multiple.html";
 
-  // We need to set the final status to expect here before starting any
-  // prerenders. We set them on a queue so whichever we see first is expected to
-  // be evicted, and the second should stick around until we exit.
+  // This test is conceptually simplest if concurrency is at two, since we
+  // don't have to worry about which of kHtmlFileB or kHtmlFileC gets evicted.
+  GetPrerenderManager()->mutable_config().max_concurrency = 2;
+
   std::deque<FinalStatus> expected_final_status_queue;
   expected_final_status_queue.push_back(FINAL_STATUS_USED);
-  expected_final_status_queue.push_back(FINAL_STATUS_EVICTED);
+  expected_final_status_queue.push_back(FINAL_STATUS_APP_TERMINATING);
   expected_final_status_queue.push_back(FINAL_STATUS_APP_TERMINATING);
 
   PrerenderTestURL(kHtmlFileA, expected_final_status_queue, 1);
@@ -1549,8 +1550,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoopMultiple) {
   // active entry.
   bool url_b_is_active_prerender = UrlIsInPrerenderManager(kHtmlFileB);
   bool url_c_is_active_prerender = UrlIsInPrerenderManager(kHtmlFileC);
-  EXPECT_TRUE((url_b_is_active_prerender || url_c_is_active_prerender) &&
-              !(url_b_is_active_prerender && url_c_is_active_prerender));
+  EXPECT_TRUE(url_b_is_active_prerender && url_c_is_active_prerender);
   EXPECT_FALSE(UrlIsPending(kHtmlFileB));
   EXPECT_FALSE(UrlIsPending(kHtmlFileC));
 }

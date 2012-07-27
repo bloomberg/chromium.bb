@@ -7,7 +7,7 @@
 namespace prerender {
 
 Config::Config() : max_bytes(100 * 1024 * 1024),
-                   max_elements(1),
+                   max_concurrency(1),
                    rate_limit_enabled(true),
                    max_age(base::TimeDelta::FromSeconds(30)),
                    https_allowed(true),

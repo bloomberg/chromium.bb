@@ -78,6 +78,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP,
     PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP,
     PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP,
+    PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP,
     PRERENDER_MODE_MAX
   };
 
@@ -176,6 +177,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool ActuallyPrerendering();
   static bool IsControlGroup();
   static bool IsNoUseGroup();
+  static size_t GetMaxConcurrency();
 
   // Query the list of current prerender pages to see if the given web contents
   // is prerendering a page.
@@ -312,6 +314,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   struct NavigationRecord;
 
   typedef base::hash_map<content::WebContents*, bool> WouldBePrerenderedMap;
+
+  // Time interval before a new prerender is allowed.
+  static const int kMinTimeBetweenPrerendersMs = 500;
 
   // Time window for which we record old navigations, in milliseconds.
   static const int kNavigationRecordWindowMs = 5000;

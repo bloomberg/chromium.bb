@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -74,6 +75,7 @@ const gfx::Size kSize(640, 480);
 
 class UnitTestPrerenderManager : public PrerenderManager {
  public:
+  using PrerenderManager::kMinTimeBetweenPrerendersMs;
   using PrerenderManager::kNavigationRecordWindowMs;
   using PrerenderManager::GetMaxAge;
 
@@ -386,67 +388,50 @@ TEST_F(PrerenderTest, ExpireTest) {
   ASSERT_EQ(null, prerender_manager()->FindEntry(url));
 }
 
-// LRU Test.  Make sure that if we prerender more than one request, that
+// LRU Test. Make sure that if we prerender more requests than we support, that
 // the oldest one will be dropped.
 TEST_F(PrerenderTest, DropOldestRequestTest) {
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url,
-          FINAL_STATUS_EVICTED);
+  std::vector<int> concurrencies_to_test;
+  concurrencies_to_test.push_back(
+      prerender_manager()->config().max_concurrency);
+  concurrencies_to_test.push_back(1);
+  concurrencies_to_test.push_back(2);
+
   DummyPrerenderContents* null = NULL;
-  EXPECT_TRUE(AddSimplePrerender(url));
-  EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  GURL url_to_evict("http://www.google.com/evictme");
 
-  GURL url1("http://news.google.com/");
-  DummyPrerenderContents* prerender_contents1 =
-      prerender_manager()->CreateNextPrerenderContents(
-          url1,
-          FINAL_STATUS_USED);
-  EXPECT_TRUE(AddSimplePrerender(url1));
-  EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
-  EXPECT_TRUE(prerender_contents1->prerendering_has_started());
+  for (std::vector<int>::const_iterator i = concurrencies_to_test.begin();
+       i != concurrencies_to_test.end();
+       ++i) {
+    const int max_concurrency = *i;
+    prerender_manager()->mutable_config().max_concurrency = max_concurrency;
 
-  ASSERT_EQ(null, prerender_manager()->FindEntry(url));
-  ASSERT_EQ(prerender_contents1, prerender_manager()->FindAndUseEntry(url1));
-}
+    DummyPrerenderContents* prerender_contents_to_evict =
+        prerender_manager()->CreateNextPrerenderContents(
+            url_to_evict, FINAL_STATUS_EVICTED);
+    EXPECT_TRUE(AddSimplePrerender(url_to_evict));
+    EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
+    EXPECT_TRUE(prerender_contents_to_evict->prerendering_has_started());
 
-// Two element prerender test.  Ensure that the LRU operates correctly if we
-// permit 2 elements to be kept prerendered.
-TEST_F(PrerenderTest, TwoElementPrerenderTest) {
-  prerender_manager()->mutable_config().max_elements = 2;
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url,
-          FINAL_STATUS_EVICTED);
-  DummyPrerenderContents* null = NULL;
-  EXPECT_TRUE(AddSimplePrerender(url));
-  EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+    std::vector<GURL> urls;
+    std::vector<PrerenderContents*> prerender_contentses;
 
-  GURL url1("http://news.google.com/");
-  DummyPrerenderContents* prerender_contents1 =
-      prerender_manager()->CreateNextPrerenderContents(
-          url1,
-          FINAL_STATUS_USED);
-  EXPECT_TRUE(AddSimplePrerender(url1));
-  EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
-  EXPECT_TRUE(prerender_contents1->prerendering_has_started());
+    for (int j = 0; j < max_concurrency; ++j) {
+      urls.push_back(GURL(base::StringPrintf("http://google.com/use#%d", j)));
+      prerender_contentses.push_back(
+          prerender_manager()->CreateNextPrerenderContents(urls.back(),
+                                                           FINAL_STATUS_USED));
+      EXPECT_TRUE(AddSimplePrerender(urls.back()));
+      EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
+      EXPECT_TRUE(prerender_contentses.back()->prerendering_has_started());
+    }
 
-  GURL url2("http://images.google.com/");
-  DummyPrerenderContents* prerender_contents2 =
-      prerender_manager()->CreateNextPrerenderContents(
-          url2,
-          FINAL_STATUS_USED);
-  EXPECT_TRUE(AddSimplePrerender(url2));
-  EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
-  EXPECT_TRUE(prerender_contents2->prerendering_has_started());
-
-  ASSERT_EQ(null, prerender_manager()->FindEntry(url));
-  ASSERT_EQ(prerender_contents1, prerender_manager()->FindAndUseEntry(url1));
-  ASSERT_EQ(prerender_contents2, prerender_manager()->FindAndUseEntry(url2));
+    ASSERT_EQ(null, prerender_manager()->FindEntry(url_to_evict));
+    for (int j = 0; j < max_concurrency; ++j) {
+      ASSERT_EQ(prerender_contentses[j],
+                prerender_manager()->FindAndUseEntry(urls[j]));
+    }
+  }
 }
 
 TEST_F(PrerenderTest, AliasURLTest) {
@@ -511,6 +496,10 @@ TEST_F(PrerenderTest, RateLimitInWindowTest) {
 
 // Ensure that we don't ignore prerender requests outside the rate limit.
 TEST_F(PrerenderTest, RateLimitOutsideWindowTest) {
+  // Setting concurrency to one lets us force eviction by adding only one more
+  // prerender.
+  prerender_manager()->mutable_config().max_concurrency = 1;
+
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
@@ -523,7 +512,8 @@ TEST_F(PrerenderTest, RateLimitOutsideWindowTest) {
 
   prerender_manager()->set_rate_limit_enabled(true);
   prerender_manager()->AdvanceTimeTicks(
-      base::TimeDelta::FromMilliseconds(2000));
+      base::TimeDelta::FromMilliseconds(
+          UnitTestPrerenderManager::kMinTimeBetweenPrerendersMs + 500));
 
   GURL url1("http://news.google.com/");
   DummyPrerenderContents* rate_limit_prerender_contents =

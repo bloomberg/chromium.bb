@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_CONFIG_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_CONFIG_H_
 
+#include <string>
+
 #include "base/time.h"
 #include "ui/gfx/rect.h"
 
@@ -17,7 +19,7 @@ struct Config {
   size_t max_bytes;
 
   // Number of simultaneous prendered pages allowed.
-  unsigned int max_elements;
+  size_t max_concurrency;
 
   // Is rate limiting enabled?
   bool rate_limit_enabled;
@@ -42,3 +44,4 @@ struct Config {
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_CONFIG_H_
+
