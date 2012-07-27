@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "content/common/gpu/gl_scoped_binders.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -20,40 +21,6 @@
 using gpu::gles2::ContextGroup;
 using gpu::gles2::TextureManager;
 typedef TextureManager::TextureInfo TextureInfo;
-
-namespace {
-
-class ScopedFrameBufferBinder {
- public:
-  explicit ScopedFrameBufferBinder(unsigned int fbo) {
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &old_fbo_);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, fbo);
-  }
-
-  ~ScopedFrameBufferBinder() {
-    glBindFramebufferEXT(GL_FRAMEBUFFER, old_fbo_);
-  }
-
- private:
-  int old_fbo_;
-};
-
-class ScopedTextureBinder {
- public:
-  explicit ScopedTextureBinder(unsigned int id) {
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_id_);
-    glBindTexture(GL_TEXTURE_2D, id);
-  }
-
-  ~ScopedTextureBinder() {
-    glBindTexture(GL_TEXTURE_2D, old_id_);
-  }
-
- private:
-  int old_id_;
-};
-
-}  // anonymous namespace
 
 TextureImageTransportSurface::Texture::Texture()
     : client_id(0),
@@ -310,13 +277,13 @@ bool TextureImageTransportSurface::PostSubBuffer(
     std::vector<gfx::Rect> regions_to_copy;
     GetRegionsToCopy(previous_damage_rect_, new_damage_rect, &regions_to_copy);
 
-    ScopedFrameBufferBinder fbo_binder(fbo_id_);
+    content::ScopedFrameBufferBinder fbo_binder(fbo_id_);
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
         front_texture_service_id,
         0);
-    ScopedTextureBinder texture_binder(back_texture_service_id);
+    content::ScopedTextureBinder texture_binder(back_texture_service_id);
 
     for (size_t i = 0; i < regions_to_copy.size(); ++i) {
       const gfx::Rect& region_to_copy = regions_to_copy[i];
@@ -442,7 +409,7 @@ void TextureImageTransportSurface::ReleaseTexture(int id) {
   info->SetServiceId(0);
 
   {
-    ScopedFrameBufferBinder fbo_binder(fbo_id_);
+    content::ScopedFrameBufferBinder fbo_binder(fbo_id_);
     glDeleteTextures(1, &service_id);
   }
   glFlush();
@@ -485,7 +452,7 @@ void TextureImageTransportSurface::CreateBackTexture(const gfx::Size& size) {
   }
 
   {
-    ScopedTextureBinder texture_binder(service_id);
+    content::ScopedTextureBinder texture_binder(service_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -512,7 +479,7 @@ void TextureImageTransportSurface::AttachBackTextureToFBO() {
   TextureInfo* info = textures_[back()].info;
   DCHECK(info);
 
-  ScopedFrameBufferBinder fbo_binder(fbo_id_);
+  content::ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
       GL_COLOR_ATTACHMENT0,
       GL_TEXTURE_2D,

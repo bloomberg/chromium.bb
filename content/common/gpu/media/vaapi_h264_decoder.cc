@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "content/common/gpu/gl_scoped_binders.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
 #include "third_party/libva/va/va.h"
 #include "third_party/libva/va/va_x11.h"
@@ -255,14 +256,14 @@ VaapiH264Decoder::DecodeSurface::DecodeSurface(
   if (!make_context_current_.Run())
     return;
 
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, texture_id_);
+  content::ScopedTextureBinder texture_binder(texture_id_);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   XWindowAttributes win_attr;
   int screen = DefaultScreen(x_display_);
   XGetWindowAttributes(x_display_, RootWindow(x_display_, screen), &win_attr);
+  //TODO(posciak): pass the depth required by libva, not the RootWindow's depth
   x_pixmap_ = XCreatePixmap(x_display_, RootWindow(x_display_, screen),
                             width_, height_, win_attr.depth);
   if (!x_pixmap_) {
@@ -283,7 +284,6 @@ VaapiH264Decoder::DecodeSurface::DecodeSurface(
     return;
   }
 
-  glBindTexture(GL_TEXTURE_2D, texture_id_);
   glXBindTexImageEXT(x_display_, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
 
   available_ = true;
@@ -293,7 +293,7 @@ VaapiH264Decoder::DecodeSurface::~DecodeSurface() {
   // Unbind surface from texture and deallocate resources.
   if (glx_pixmap_ && make_context_current_.Run()) {
     glXReleaseTexImageEXT(x_display_, glx_pixmap_, GLX_FRONT_LEFT_EXT);
-    glXDestroyGLXPixmap(x_display_, glx_pixmap_);
+    glXDestroyPixmap(x_display_, glx_pixmap_);
   }
 
   if (x_pixmap_)
