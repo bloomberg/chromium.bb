@@ -175,7 +175,7 @@ void SkiaUtilsMacTest::ShapeHelper(int width, int height,
   TestImageRep([[image representations] lastObject], isred);
 }
 
-TEST_F(SkiaUtilsMacTest, FAILS_BitmapToNSImage_RedSquare64x64) {
+TEST_F(SkiaUtilsMacTest, BitmapToNSImage_RedSquare64x64) {
   ShapeHelper(64, 64, true, true);
 }
 
@@ -183,11 +183,11 @@ TEST_F(SkiaUtilsMacTest, BitmapToNSImage_BlueRectangle199x19) {
   ShapeHelper(199, 19, false, true);
 }
 
-TEST_F(SkiaUtilsMacTest, FAILS_BitmapToNSImage_BlueRectangle444) {
+TEST_F(SkiaUtilsMacTest, BitmapToNSImage_BlueRectangle444) {
   ShapeHelper(200, 200, false, false);
 }
 
-TEST_F(SkiaUtilsMacTest, FAILS_BitmapToNSBitmapImageRep_BlueRectangle20x30) {
+TEST_F(SkiaUtilsMacTest, BitmapToNSBitmapImageRep_BlueRectangle20x30) {
   int width = 20;
   int height = 30;
 
