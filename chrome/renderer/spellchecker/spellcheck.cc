@@ -350,7 +350,7 @@ void SpellCheck::InitializeHunspell() {
 }
 
 void SpellCheck::AddWordToHunspell(const std::string& word) {
-  if (!word.empty() && word.length() < MAXWORDUTF8LEN)
+  if (!word.empty() && word.length() < MAXWORDLEN)
     hunspell_->add(word.c_str());
 }
 
@@ -386,7 +386,7 @@ bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
   } else {
     std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
     // Hunspell shouldn't let us exceed its max, but check just in case
-    if (word_to_check_utf8.length() < MAXWORDUTF8LEN) {
+    if (word_to_check_utf8.length() < MAXWORDLEN) {
       if (hunspell_.get()) {
         // |hunspell_->spell| returns 0 if the word is spelled correctly and
         // non-zero otherwsie.
