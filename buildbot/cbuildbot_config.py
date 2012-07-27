@@ -779,7 +779,6 @@ internal_paladin.add_config('stout-paladin',
 internal_paladin.add_config('butterfly-paladin',
   boards=['butterfly'],
   paladin_builder_name='butterfly paladin',
-  important=False,
 )
 
 # TODO(sosa): Test configs for unified paladin builds.
