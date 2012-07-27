@@ -149,9 +149,9 @@
           'caption': '''Configure the home page URL''',
           'desc': '''Configures the default home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
 
-          The home page type can either be set to a URL you specify here or set to the New Tab Page.
+          The home page is the page opened by the Home button. The pages that open on startup are controlled by the RestoreOnStartup policies.
 
-          If you select the New Tab Page, then this policy is ignored.
+          The home page type can either be set to a URL you specify here or set to the New Tab Page. If you select the New Tab Page, then this policy is ignored.
 
           If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.
 
@@ -1115,7 +1115,7 @@
 
           Starting in Chrome 21, it is more difficult to install extensions, apps, and user scripts from outside the Chrome Web Store. Previously, users could click on a link to a *.crx file, and Chrome would offer to install the file after a few warnings. After Chrome 21, such files must be downloaded and dragged onto the Chrome settings page. This setting allows specific URLs to have the old, easier installation flow.
 
-          Each item in this list is an extension-style match pattern (see http://code.google.com/chrome/extensions/match_patterns.html). Users will be able to easily install items from any URL that matches an item in this list.
+          Each item in this list is an extension-style match pattern (see http://code.google.com/chrome/extensions/match_patterns.html). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
 
           ExtensionInstallBlacklist takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.''',
           'label': '''URL patterns to allow extension, app, and user script installs from''',
