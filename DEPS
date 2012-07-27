@@ -412,6 +412,10 @@ deps_os = {
 
     "src/third_party/nss":
       "/trunk/deps/third_party/nss@" + Var("nss_revision"),
+
+    # class-dump utility to generate header files for undocumented SDKs
+    "src/testing/iossim/third_party/class-dump":
+      "/trunk/deps/third_party/class-dump@147231",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
