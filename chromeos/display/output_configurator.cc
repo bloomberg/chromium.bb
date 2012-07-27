@@ -659,22 +659,32 @@ State OutputConfigurator::InferCurrentState(Display* display,
   return state;
 }
 
-bool OutputConfigurator::CycleDisplayMode() {
+bool OutputConfigurator::CycleDisplayMode(bool extended_desktop_enabled) {
   VLOG(1) << "CycleDisplayMode";
   bool did_change = false;
+
   if (is_running_on_chrome_os_) {
     // Rules:
     // - if there are 0 or 1 displays, do nothing and return false.
     // - use y-coord of CRTCs to determine if we are mirror, primary-first, or
     // secondary-first.  The cycle order is:
     //   mirror->primary->secondary->mirror.
+    // Note: If the extended desktop is enabled, the cycle order becomes,
+    // mirror->extended->mirror
     State new_state = STATE_INVALID;
     switch (output_state_) {
       case STATE_DUAL_MIRROR:
         new_state = STATE_DUAL_PRIMARY_ONLY;
         break;
       case STATE_DUAL_PRIMARY_ONLY:
-        new_state = STATE_DUAL_SECONDARY_ONLY;
+        if (extended_desktop_enabled) {
+          if (mirror_supported_)
+            new_state = STATE_DUAL_MIRROR;
+          else
+            new_state = STATE_INVALID;
+        } else {
+          new_state = STATE_DUAL_SECONDARY_ONLY;
+        }
         break;
       case STATE_DUAL_SECONDARY_ONLY:
         new_state = mirror_supported_ ?

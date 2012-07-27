@@ -65,7 +65,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Called when the user hits ctrl-F4 to request a display mode change.
   // This method should only return false if it was called in a single-head or
   // headless mode.
-  bool CycleDisplayMode();
+  bool CycleDisplayMode(bool extended_desktop_enabled);
 
   // Called when powerd notifies us that some set of displays should be turned
   // on or off.  This requires enabling or disabling the CRTC associated with
