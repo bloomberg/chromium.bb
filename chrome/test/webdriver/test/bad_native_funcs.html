@@ -1,0 +1,42 @@
+<html>
+<script>
+  // JavaScript built-in types aren't enumerable.
+  var arrayFuncs = [
+      'concat',
+      'every',
+      'filter',
+      'forEach',
+      'indexOf',
+      'join',
+      'lastIndexOf',
+      'length',
+      'map',
+      'pop',
+      'push',
+      'reduce',
+      'reduceRight',
+      'reverse',
+      'shift',
+      'slice',
+      'some',
+      'sort',
+      'splice',
+      'unshift'];
+  for (var prop in arrayFuncs) {
+    Array.prototype[prop] = function() {
+      throw new Error('Array.prototype.' + prop + ' should not be called');
+    }
+  }
+  JSON.stringify = function() {
+    throw new Error('JSON.stringify should not be called');
+  }
+  JSON.parse = function() {
+    throw new Error('JSON.parse should not be called');
+  }
+</script>
+<body>
+<div>
+  Tests that no native functions are called by ChromeDriver.
+</div>
+</body>
+</html>

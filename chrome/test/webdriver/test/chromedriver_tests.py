@@ -1146,3 +1146,12 @@ class ExtensionTest(ChromeDriverTest):
     WebDriverWait(driver, 10).until(is_page_action_visible)
     ext.click_page_action()
     self._testExtensionView(driver, ext.get_popup_handle(), ext)
+
+class BadJSTest(ChromeDriverTest):
+  """Tests that ensure sites with hacky JS don't break ChromeDriver."""
+
+  def testFindElementDoesNotUseNativeFuncs(self):
+    driver = self.GetNewDriver()
+    driver.get(self.GetTestDataUrl() + '/bad_native_funcs.html')
+    # This will throw an exception if any native funcs are used.
+    driver.find_element_by_tag_name('body').find_elements_by_tag_name('div')
