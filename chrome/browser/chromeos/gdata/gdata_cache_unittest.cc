@@ -98,6 +98,21 @@ class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
   MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
 };
 
+// Copies results from GetResourceIdsOfBacklogCallback.
+void OnGetResourceIdsOfBacklog(std::vector<std::string>* out_to_fetch,
+                               std::vector<std::string>* out_to_upload,
+                               const std::vector<std::string>& to_fetch,
+                               const std::vector<std::string>& to_upload) {
+  *out_to_fetch = to_fetch;
+  *out_to_upload = to_upload;
+}
+
+// Copies results from GetResourceIdsCallback.
+void OnGetResourceIds(std::vector<std::string>* out_resource_ids,
+                      const std::vector<std::string>& resource_ids) {
+  *out_resource_ids = resource_ids;
+}
+
 }  // namespace
 
 class GDataCacheTest : public testing::Test {
@@ -1393,6 +1408,57 @@ TEST_F(GDataCacheTest, MountUnmount) {
   num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, GDATA_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
+}
+
+TEST_F(GDataCacheTest, GetResourceIdsOfBacklogOnUIThread) {
+  PrepareForInitCacheTest();
+
+  std::vector<std::string> to_fetch;
+  std::vector<std::string> to_upload;
+  cache_->GetResourceIdsOfBacklogOnUIThread(
+      base::Bind(&OnGetResourceIdsOfBacklog, &to_fetch, &to_upload));
+  test_util::RunBlockingPoolTask();
+
+  sort(to_fetch.begin(), to_fetch.end());
+  ASSERT_EQ(1U, to_fetch.size());
+  EXPECT_EQ("pinned:non-existent", to_fetch[0]);
+
+  sort(to_upload.begin(), to_upload.end());
+  ASSERT_EQ(2U, to_upload.size());
+  EXPECT_EQ("dirty:existing", to_upload[0]);
+  EXPECT_EQ("dirty_and_pinned:existing", to_upload[1]);
+}
+
+TEST_F(GDataCacheTest, GetResourceIdsOfExistingPinnedFilesOnUIThread) {
+  PrepareForInitCacheTest();
+
+  std::vector<std::string> resource_ids;
+  cache_->GetResourceIdsOfExistingPinnedFilesOnUIThread(
+      base::Bind(&OnGetResourceIds, &resource_ids));
+  test_util::RunBlockingPoolTask();
+
+  sort(resource_ids.begin(), resource_ids.end());
+  ASSERT_EQ(2U, resource_ids.size());
+  EXPECT_EQ("dirty_and_pinned:existing", resource_ids[0]);
+  EXPECT_EQ("pinned:existing", resource_ids[1]);
+}
+
+TEST_F(GDataCacheTest, GetResourceIdsOfAllFilesOnUIThread) {
+  PrepareForInitCacheTest();
+
+  std::vector<std::string> resource_ids;
+  cache_->GetResourceIdsOfAllFilesOnUIThread(
+      base::Bind(&OnGetResourceIds, &resource_ids));
+  test_util::RunBlockingPoolTask();
+
+  sort(resource_ids.begin(), resource_ids.end());
+  ASSERT_EQ(6U, resource_ids.size());
+  EXPECT_EQ("dirty:existing", resource_ids[0]);
+  EXPECT_EQ("dirty_and_pinned:existing", resource_ids[1]);
+  EXPECT_EQ("pinned:existing", resource_ids[2]);
+  EXPECT_EQ("pinned:non-existent", resource_ids[3]);
+  EXPECT_EQ("tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?", resource_ids[4]);
+  EXPECT_EQ("tmp:resource_id", resource_ids[5]);
 }
 
 }   // namespace gdata

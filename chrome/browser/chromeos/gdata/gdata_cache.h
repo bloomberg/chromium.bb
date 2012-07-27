@@ -168,10 +168,17 @@ class GDataCache {
   void GetResourceIdsOfBacklogOnUIThread(
       const GetResourceIdsOfBacklogCallback& callback);
 
-  // Gets the resource IDs of all pinned files, including pinned dirty files.
+  // Gets the resource IDs of all exsiting (i.e. cached locally) pinned
+  // files, including pinned dirty files.
   //
   // Must be called on UI thread. |callback| is run on UI thread.
   void GetResourceIdsOfExistingPinnedFilesOnUIThread(
+      const GetResourceIdsCallback& callback);
+
+  // Gets the resource IDs of all files in the cache.
+  //
+  // Must be called on UI thread. |callback| is run on UI thread.
+  void GetResourceIdsOfAllFilesOnUIThread(
       const GetResourceIdsCallback& callback);
 
   // Frees up disk space to store the given number of bytes, while keeping
@@ -329,6 +336,10 @@ class GDataCache {
 
   // Used to implement GetResourceIdsOfExistingPinnedFilesOnUIThread.
   void GetResourceIdsOfExistingPinnedFiles(
+      std::vector<std::string>* resource_ids);
+
+  // Used to implement GetResourceIdsOfAllFilesOnUIThread.
+  void GetResourceIdsOfAllFiles(
       std::vector<std::string>* resource_ids);
 
   // Used to implement GetFileOnUIThread.

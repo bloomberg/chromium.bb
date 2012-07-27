@@ -228,6 +228,15 @@ void CollectExistingPinnedFile(std::vector<std::string>* resource_ids,
     resource_ids->push_back(resource_id);
 }
 
+// Appends |resource_id| ID to |resource_ids| unconditionally.
+void CollectAnyFile(std::vector<std::string>* resource_ids,
+                    const std::string& resource_id,
+                    const GDataCacheEntry& /* cache_entry */) {
+  DCHECK(resource_ids);
+
+  resource_ids->push_back(resource_id);
+}
+
 // Runs callback with pointers dereferenced.
 // Used to implement SetMountedStateOnUIThread.
 void RunSetMountedStateCallback(const SetMountedStateCallback& callback,
@@ -426,6 +435,21 @@ void GDataCache::GetResourceIdsOfExistingPinnedFilesOnUIThread(
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::GetResourceIdsOfExistingPinnedFiles,
+                 base::Unretained(this),
+                 resource_ids),
+      base::Bind(&RunGetResourceIdsCallback,
+                 callback,
+                 base::Owned(resource_ids)));
+}
+
+void GDataCache::GetResourceIdsOfAllFilesOnUIThread(
+    const GetResourceIdsCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  std::vector<std::string>* resource_ids = new std::vector<std::string>;
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GDataCache::GetResourceIdsOfAllFiles,
                  base::Unretained(this),
                  resource_ids),
       base::Bind(&RunGetResourceIdsCallback,
@@ -739,6 +763,14 @@ void GDataCache::GetResourceIdsOfExistingPinnedFiles(
   DCHECK(resource_ids);
 
   metadata_->Iterate(base::Bind(&CollectExistingPinnedFile, resource_ids));
+}
+
+void GDataCache::GetResourceIdsOfAllFiles(
+    std::vector<std::string>* resource_ids) {
+  AssertOnSequencedWorkerPool();
+  DCHECK(resource_ids);
+
+  metadata_->Iterate(base::Bind(&CollectAnyFile, resource_ids));
 }
 
 void GDataCache::GetFile(const std::string& resource_id,
