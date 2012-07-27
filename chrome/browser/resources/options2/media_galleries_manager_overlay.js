@@ -12,15 +12,15 @@ cr.define('options', function() {
    * @constructor
    * @extends {OptionsPage}
    */
-  function MediaGalleryManager() {
+  function MediaGalleriesManager() {
     OptionsPage.call(this, 'manageGalleries',
                      loadTimeData.getString('manageMediaGalleriesTabTitle'),
                      'manage-media-galleries-overlay');
   }
 
-  cr.addSingletonGetter(MediaGalleryManager);
+  cr.addSingletonGetter(MediaGalleriesManager);
 
-  MediaGalleryManager.prototype = {
+  MediaGalleriesManager.prototype = {
     __proto__: OptionsPage.prototype,
 
     /**
@@ -30,7 +30,7 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       this.availableGalleriesList_ = $('available-galleries-list');
-      options.MediaGalleryList.decorate(this.availableGalleriesList_);
+      options.MediaGalleriesList.decorate(this.availableGalleriesList_);
 
       $('new-media-gallery').addEventListener('click', function() {
         chrome.send('addNewGallery');
@@ -61,7 +61,7 @@ cr.define('options', function() {
     setAvailableMediaGalleries_: function(galleries) {
       $('available-galleries-list').dataModel = new ArrayDataModel(galleries);
       // TODO(estade): show this section by default.
-      $('media-gallery-section').hidden = false;
+      $('media-galleries-section').hidden = false;
     },
   },
 
@@ -69,14 +69,14 @@ cr.define('options', function() {
   [
     'setAvailableMediaGalleries',
   ].forEach(function(name) {
-    MediaGalleryManager[name] = function() {
-      var instance = MediaGalleryManager.getInstance();
+    MediaGalleriesManager[name] = function() {
+      var instance = MediaGalleriesManager.getInstance();
       return instance[name + '_'].apply(instance, arguments);
     };
   });
 
   // Export
   return {
-    MediaGalleryManager: MediaGalleryManager
+    MediaGalleriesManager: MediaGalleriesManager
   };
 });

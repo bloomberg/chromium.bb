@@ -20,7 +20,7 @@ var HomePageOverlay = options.HomePageOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var LanguageOptions = options.LanguageOptions;
-var MediaGalleryManager = options.MediaGalleryManager;
+var MediaGalleriesManager = options.MediaGalleriesManager;
 var OptionsFocusManager = options.OptionsFocusManager;
 var OptionsPage = options.OptionsPage;
 var PasswordManager = options.PasswordManager;
@@ -104,7 +104,7 @@ function load() {
                               [$('language-button')]);
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
-  OptionsPage.registerOverlay(MediaGalleryManager.getInstance(),
+  OptionsPage.registerOverlay(MediaGalleriesManager.getInstance(),
                               ContentSettings.getInstance(),
                               [$('manage-galleries-button')]);
   OptionsPage.registerOverlay(PasswordManager.getInstance(),

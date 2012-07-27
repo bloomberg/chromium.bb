@@ -22,7 +22,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
-#include "chrome/browser/media_gallery/media_gallery_registry_factory.h"
+#include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugin_prefs_factory.h"
@@ -225,7 +225,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   ManagedModePolicyProviderFactory::GetInstance();
 #endif
-  MediaGalleryRegistryFactory::GetInstance();
+  MediaGalleriesPreferencesFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();

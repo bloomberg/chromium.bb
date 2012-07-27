@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERY_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERY_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERIES_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERIES_HANDLER_H_
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/select_file_dialog.h"
@@ -13,11 +13,11 @@
 namespace options2 {
 
 // Handles messages related to adding or removing media galleries.
-class MediaGalleryHandler : public OptionsPageUIHandler,
-                            public SelectFileDialog::Listener {
+class MediaGalleriesHandler : public OptionsPageUIHandler,
+                              public SelectFileDialog::Listener {
  public:
-  MediaGalleryHandler();
-  virtual ~MediaGalleryHandler();
+  MediaGalleriesHandler();
+  virtual ~MediaGalleriesHandler();
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(base::DictionaryValue* values) OVERRIDE;
@@ -46,9 +46,9 @@ class MediaGalleryHandler : public OptionsPageUIHandler,
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaGalleryHandler);
+  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesHandler);
 };
 
 }  // namespace options2
 
-#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERY_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERIES_HANDLER_H_

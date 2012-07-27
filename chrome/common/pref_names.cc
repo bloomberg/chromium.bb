@@ -1941,12 +1941,12 @@ const char kComponentUpdaterState[] = "component_updater.state";
 const char kWebIntentsEnabled[] = "webintents.enabled";
 
 // The next media gallery ID to assign.
-const char kMediaGalleryUniqueId[] = "media_gallery.gallery_id";
+const char kMediaGalleriesUniqueId[] = "media_galleries.gallery_id";
 
 // A list of dictionaries, where each dictionary represents a known media
 // gallery.
-const char kMediaGalleryRememberedGalleries[] =
-    "media_gallery.remembered_galleries";
+const char kMediaGalleriesRememberedGalleries[] =
+    "media_galleries.remembered_galleries";
 
 #if defined(USE_AURA)
 // String value corresponding to ash::Shell::ShelfAlignment.

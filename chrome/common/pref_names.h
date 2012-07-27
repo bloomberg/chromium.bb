@@ -717,8 +717,8 @@ extern const char kComponentUpdaterState[];
 
 extern const char kWebIntentsEnabled[];
 
-extern const char kMediaGalleryUniqueId[];
-extern const char kMediaGalleryRememberedGalleries[];
+extern const char kMediaGalleriesUniqueId[];
+extern const char kMediaGalleriesRememberedGalleries[];
 
 #if defined(USE_AURA)
 extern const char kShelfAlignment[];

@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/webui/options2/import_data_handler.h"
 #include "chrome/browser/ui/webui/options2/language_options_handler.h"
 #include "chrome/browser/ui/webui/options2/manage_profile_handler.h"
-#include "chrome/browser/ui/webui/options2/media_gallery_handler.h"
+#include "chrome/browser/ui/webui/options2/media_galleries_handler.h"
 #include "chrome/browser/ui/webui/options2/options_sync_setup_handler.h"
 #include "chrome/browser/ui/webui/options2/password_manager_handler.h"
 #include "chrome/browser/ui/webui/options2/search_engine_manager_handler.h"
@@ -235,7 +235,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new HomePageOverlayHandler());
-  AddOptionsPageUIHandler(localized_strings, new MediaGalleryHandler());
+  AddOptionsPageUIHandler(localized_strings, new MediaGalleriesHandler());
   AddOptionsPageUIHandler(localized_strings, new WebIntentsSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,

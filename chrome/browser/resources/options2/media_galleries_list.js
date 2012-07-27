@@ -10,15 +10,15 @@ cr.define('options', function() {
    * @constructor
    * @extends {DeletableItem}
    */
-  function MediaGalleryListItem(galleryInfo) {
+  function MediaGalleriesListItem(galleryInfo) {
     var el = cr.doc.createElement('div');
     el.galleryInfo_ = galleryInfo;
-    el.__proto__ = MediaGalleryListItem.prototype;
+    el.__proto__ = MediaGalleriesListItem.prototype;
     el.decorate();
     return el;
   }
 
-  MediaGalleryListItem.prototype = {
+  MediaGalleriesListItem.prototype = {
     __proto__: DeletableItem.prototype,
 
     decorate: function() {
@@ -31,9 +31,9 @@ cr.define('options', function() {
     },
   };
 
-  var MediaGalleryList = cr.ui.define('list');
+  var MediaGalleriesList = cr.ui.define('list');
 
-  MediaGalleryList.prototype = {
+  MediaGalleriesList.prototype = {
     __proto__: DeletableItemList.prototype,
 
     /** @inheritDoc */
@@ -44,7 +44,7 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     createItem: function(galleryInfo) {
-      return new MediaGalleryListItem(galleryInfo);
+      return new MediaGalleriesListItem(galleryInfo);
     },
 
     /** @inheritDoc */
@@ -54,6 +54,6 @@ cr.define('options', function() {
   };
 
   return {
-    MediaGalleryList: MediaGalleryList
+    MediaGalleriesList: MediaGalleriesList
   };
 });

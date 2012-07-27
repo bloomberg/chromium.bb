@@ -83,8 +83,8 @@
 <include src="language_list.js"></include>
 <include src="language_options.js"></include>
 <include src="manage_profile_overlay.js"></include>
-<include src="media_gallery_list.js"></include>
-<include src="media_gallery_manager_overlay.js"></include>
+<include src="media_galleries_list.js"></include>
+<include src="media_galleries_manager_overlay.js"></include>
 <include src="options_focus_manager.js"></include>
 <include src="password_manager.js"></include>
 <include src="password_manager_list.js"></include>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_gallery/media_gallery_registry.h"
+#include "chrome/browser/media_gallery/media_galleries_preferences.h"
 
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
@@ -16,13 +16,13 @@
 
 namespace {
 
-const char kMediaGalleryIdKey[] = "id";
-const char kMediaGalleryPathKey[] = "path";
-const char kMediaGalleryDisplayNameKey[] = "displayName";
+const char kMediaGalleriesIdKey[] = "id";
+const char kMediaGalleriesPathKey[] = "path";
+const char kMediaGalleriesDisplayNameKey[] = "displayName";
 
 bool GetId(const DictionaryValue* dict, uint64* value) {
   std::string string_id;
-  if (!dict->GetString(kMediaGalleryIdKey, &string_id) ||
+  if (!dict->GetString(kMediaGalleriesIdKey, &string_id) ||
       !base::StringToUint64(string_id, value)) {
     return false;
   }
@@ -36,8 +36,8 @@ bool PopulateGalleryFromDictionary(const DictionaryValue* dict,
   FilePath::StringType path;
   string16 display_name;
   if (!GetId(dict, &id) ||
-      !dict->GetString(kMediaGalleryPathKey, &path) ||
-      !dict->GetString(kMediaGalleryDisplayNameKey, &display_name)) {
+      !dict->GetString(kMediaGalleriesPathKey, &path) ||
+      !dict->GetString(kMediaGalleriesDisplayNameKey, &display_name)) {
     return false;
   }
 
@@ -49,10 +49,10 @@ bool PopulateGalleryFromDictionary(const DictionaryValue* dict,
 
 DictionaryValue* CreateGalleryDictionary(const MediaGallery& gallery) {
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(kMediaGalleryIdKey, base::Uint64ToString(gallery.id));
-  dict->SetString(kMediaGalleryPathKey, gallery.path.value());
+  dict->SetString(kMediaGalleriesIdKey, base::Uint64ToString(gallery.id));
+  dict->SetString(kMediaGalleriesPathKey, gallery.path.value());
   // TODO(estade): save |path| and |identifier|.
-  dict->SetString(kMediaGalleryDisplayNameKey, gallery.display_name);
+  dict->SetString(kMediaGalleriesDisplayNameKey, gallery.display_name);
   return dict;
 }
 
@@ -61,20 +61,20 @@ DictionaryValue* CreateGalleryDictionary(const MediaGallery& gallery) {
 MediaGallery::MediaGallery() : id(0) {}
 MediaGallery::~MediaGallery() {}
 
-MediaGalleryRegistry::MediaGalleryRegistry(Profile* profile)
+MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : profile_(profile) {
   DCHECK(UserInteractionIsEnabled());
   InitFromPrefs();
 }
 
-MediaGalleryRegistry::~MediaGalleryRegistry() {}
+MediaGalleriesPreferences::~MediaGalleriesPreferences() {}
 
-void MediaGalleryRegistry::InitFromPrefs() {
+void MediaGalleriesPreferences::InitFromPrefs() {
   remembered_galleries_.clear();
 
   PrefService* prefs = profile_->GetPrefs();
   const ListValue* list = prefs->GetList(
-      prefs::kMediaGalleryRememberedGalleries);
+      prefs::kMediaGalleriesRememberedGalleries);
 
   for (ListValue::const_iterator it = list->begin(); it != list->end(); it++) {
     const DictionaryValue* dict = NULL;
@@ -87,27 +87,27 @@ void MediaGalleryRegistry::InitFromPrefs() {
   }
 }
 
-void MediaGalleryRegistry::AddGalleryByPath(const FilePath& path) {
+void MediaGalleriesPreferences::AddGalleryByPath(const FilePath& path) {
   PrefService* prefs = profile_->GetPrefs();
 
   MediaGallery gallery;
-  gallery.id = prefs->GetUint64(prefs::kMediaGalleryUniqueId);
-  prefs->SetUint64(prefs::kMediaGalleryUniqueId, gallery.id + 1);
+  gallery.id = prefs->GetUint64(prefs::kMediaGalleriesUniqueId);
+  prefs->SetUint64(prefs::kMediaGalleriesUniqueId, gallery.id + 1);
   gallery.display_name = path.BaseName().LossyDisplayName();
   // TODO(estade): make this relative to base_path.
   gallery.path = path;
   // TODO(estade): populate the rest of the fields.
 
-  ListPrefUpdate update(prefs, prefs::kMediaGalleryRememberedGalleries);
+  ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
   ListValue* list = update.Get();
   list->Append(CreateGalleryDictionary(gallery));
 
   remembered_galleries_.push_back(gallery);
 }
 
-void MediaGalleryRegistry::ForgetGalleryById(uint64 id) {
+void MediaGalleriesPreferences::ForgetGalleryById(uint64 id) {
   PrefService* prefs = profile_->GetPrefs();
-  ListPrefUpdate update(prefs, prefs::kMediaGalleryRememberedGalleries);
+  ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
   ListValue* list = update.Get();
 
   for (ListValue::iterator iter = list->begin(); iter != list->end(); ++iter) {
@@ -122,23 +122,23 @@ void MediaGalleryRegistry::ForgetGalleryById(uint64 id) {
   }
 }
 
-void MediaGalleryRegistry::Shutdown() {
+void MediaGalleriesPreferences::Shutdown() {
   profile_ = NULL;
 }
 
 // static
-bool MediaGalleryRegistry::UserInteractionIsEnabled() {
+bool MediaGalleriesPreferences::UserInteractionIsEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMediaGalleryUI);
 }
 
 // static
-void MediaGalleryRegistry::RegisterUserPrefs(PrefService* prefs) {
+void MediaGalleriesPreferences::RegisterUserPrefs(PrefService* prefs) {
   if (!UserInteractionIsEnabled())
     return;
 
-  prefs->RegisterListPref(prefs::kMediaGalleryRememberedGalleries,
+  prefs->RegisterListPref(prefs::kMediaGalleriesRememberedGalleries,
                           PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterUint64Pref(prefs::kMediaGalleryUniqueId, 0,
+  prefs->RegisterUint64Pref(prefs::kMediaGalleriesUniqueId, 0,
                             PrefService::UNSYNCABLE_PREF);
 }
