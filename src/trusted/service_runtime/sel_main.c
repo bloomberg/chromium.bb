@@ -178,7 +178,7 @@ int main(int  argc,
   char                          *nacl_file = NULL;
   char                          *blob_library_file = NULL;
   int                           rpc_supplies_nexe = 0;
-  int                           export_addr_to = -2;
+  int                           export_addr_to = -1;
 
   struct NaClApp                *nap = &state;
 
@@ -621,29 +621,34 @@ int main(int  argc,
   /*
    * If export_addr_to is set to a non-negative integer, we create a
    * bound socket and socket address pair and bind the former to
-   * descriptor 3 and the latter to descriptor 4.  The socket address
-   * is written out to the export_addr_to descriptor.
+   * descriptor NACL_SERVICE_PORT_DESCRIPTOR (3 [see sel_ldr.h]) and
+   * the latter to descriptor NACL_SERVICE_ADDRESS_DESCRIPTOR (4).
+   * The socket address is sent to the export_addr_to descriptor.
    *
    * The service runtime also accepts a connection on the bound socket
    * and spawns a secure command channel thread to service it.
-   *
-   * If export_addr_to is -1, we only create the bound socket and
-   * socket address pair, and we do not export to an IMC socket.  This
-   * use case is typically only used in testing, where we only "dump"
-   * the socket address to stdout or similar channel.
    */
-  if (-2 < export_addr_to) {
+  if (0 <= export_addr_to) {
     NaClCreateServiceSocket(nap);
-    if (0 <= export_addr_to) {
-      NaClSetUpBootstrapChannel(nap, (NaClHandle) export_addr_to);
-      /*
-       * NB: spawns a thread that uses the command channel.  we do
-       * this after NaClAppLoadFile so that NaClApp object is more
-       * fully populated.  Hereafter any changes to nap should be done
-       * while holding locks.
-       */
-      NaClSecureCommandChannel(nap);
-    }
+    /*
+     * LOG_FATAL errors that occur before NaClSetUpBootstrapChannel will
+     * not be reported via the crash log mechanism (for Chromium
+     * embedding of NaCl, shown in the JavaScript console).
+     *
+     * Some errors, such as due to NaClRunSelQualificationTests, do not
+     * trigger a LOG_FATAL but instead set module_load_status to be sent
+     * in the start_module RPC reply.  Log messages associated with such
+     * errors would be seen, since NaClSetUpBootstrapChannel will get
+     * called.
+     */
+    NaClSetUpBootstrapChannel(nap, (NaClHandle) export_addr_to);
+    /*
+     * NB: spawns a thread that uses the command channel.  we do
+     * this after NaClAppLoadFile so that NaClApp object is more
+     * fully populated.  Hereafter any changes to nap should be done
+     * while holding locks.
+     */
+    NaClSecureCommandChannel(nap);
   }
 
   /*

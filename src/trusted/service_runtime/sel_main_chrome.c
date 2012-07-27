@@ -250,6 +250,17 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   NaClGdbHook(&state);
 
   NaClCreateServiceSocket(nap);
+  /*
+   * LOG_FATAL errors that occur before NaClSetUpBootstrapChannel will
+   * not be reported via the crash log mechanism (for Chromium
+   * embedding of NaCl, shown in the JavaScript console).
+   *
+   * Some errors, such as due to NaClRunSelQualificationTests, do not
+   * trigger a LOG_FATAL but instead set module_load_status to be sent
+   * in the start_module RPC reply.  Log messages associated with such
+   * errors would be seen, since NaClSetUpBootstrapChannel will get
+   * called.
+   */
   NaClSetUpBootstrapChannel(nap, args->imc_bootstrap_handle);
 
   NACL_FI_FATAL("BeforeSecureCommandChannel");
