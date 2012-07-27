@@ -503,12 +503,12 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
   if (view_ && is_accelerated_compositing_active_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
-#if defined(USE_AURA) || defined(OS_LINUX)
+#if defined(USE_AURA) || defined(OS_LINUX) || defined(OS_MACOSX)
     gfx::Rect copy_rect = src_subrect.IsEmpty() ?
         gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
 #else
     // Just passes an empty rect to CopyFromCompositingSurface on non-Aura Win
-    // and Mac because copying a partial rectangle is not supported.
+    // because copying a partial rectangle is not supported.
     gfx::Rect copy_rect;
 #endif
     view_->CopyFromCompositingSurface(copy_rect,

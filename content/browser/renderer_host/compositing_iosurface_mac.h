@@ -15,6 +15,10 @@
 
 class IOSurfaceSupport;
 
+namespace gfx {
+class Rect;
+}
+
 namespace content {
 
 // This class manages an OpenGL context and IOSurface for the accelerated
@@ -35,10 +39,14 @@ class CompositingIOSurfaceMac {
   void DrawIOSurface(NSView* view, float scale_factor);
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
-  // into |out|. The image data is transformed so that it fits in |dst_size|.
+  // into |out|. The copied region is specified with |src_pixel_subrect| and
+  // the data is transformed so that it fits in |dst_pixel_size|.
+  // |src_pixel_subrect| and |dst_pixel_size| are not in DIP but in pixel.
   // Caller must ensure that |out| is allocated with the size no less than
-  // |4 * dst_size.width() * dst_size.height()| bytes.
-  bool CopyTo(const gfx::Size& dst_size, void* out);
+  // |4 * dst_pixel_size.width() * dst_pixel_size.height()| bytes.
+  bool CopyTo(const gfx::Rect& src_pixel_subrect,
+              const gfx::Size& dst_pixel_size,
+              void* out);
 
   // Unref the IOSurface and delete the associated GL texture. If the GPU
   // process is no longer referencing it, this will delete the IOSurface.
@@ -65,7 +73,6 @@ class CompositingIOSurfaceMac {
   // Vertex structure for use in glDraw calls.
   struct SurfaceVertex {
     SurfaceVertex() : x_(0.0f), y_(0.0f), tx_(0.0f), ty_(0.0f) { }
-    // Currently the texture coords are always the same as vertex coords.
     void set(float x, float y, float tx, float ty) {
       x_ = x;
       y_ = y;
@@ -75,6 +82,10 @@ class CompositingIOSurfaceMac {
     void set_position(float x, float y) {
       x_ = x;
       y_ = y;
+    }
+    void set_texcoord(float tx, float ty) {
+      tx_ = tx;
+      ty_ = ty;
     }
     float x_;
     float y_;
@@ -101,6 +112,14 @@ class CompositingIOSurfaceMac {
       verts_[1].set_position(x1, y2);
       verts_[2].set_position(x2, y2);
       verts_[3].set_position(x2, y1);
+    }
+    void set_texcoord_rect(float tx1, float ty1, float tx2, float ty2) {
+      // Texture coordinates are flipped vertically so they can be drawn on
+      // a projection with a flipped y-axis (origin is top left).
+      verts_[0].set_texcoord(tx1, ty2);
+      verts_[1].set_texcoord(tx1, ty1);
+      verts_[2].set_texcoord(tx2, ty1);
+      verts_[3].set_texcoord(tx2, ty2);
     }
     SurfaceVertex verts_[4];
   };
