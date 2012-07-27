@@ -2353,6 +2353,8 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     suite = 'nacl_glibc'
   else:
     suite = 'nacl_newlib'
+  if env.Bit('bitcode'):
+    suite = 'p' + suite
 
   script_flags = ['--name', '%s.${GetTestName(TARGET)}' % suite,
                   '--report', name,
