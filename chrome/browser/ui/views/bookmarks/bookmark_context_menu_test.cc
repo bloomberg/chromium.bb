@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
@@ -60,7 +61,7 @@ class BookmarkContextMenuTest : public testing::Test {
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
 
-    model_ = profile_->GetBookmarkModel();
+    model_ = BookmarkModelFactory::GetForProfile(profile_.get());
 
     AddTestData();
   }

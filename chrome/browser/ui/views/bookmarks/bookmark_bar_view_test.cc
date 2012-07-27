@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -179,7 +180,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     browser_.reset(
         chrome::CreateBrowserWithTestWindowForProfile(profile_.get()));
 
-    model_ = profile_->GetBookmarkModel();
+    model_ = BookmarkModelFactory::GetForProfile(profile_.get());
     model_->ClearStore();
 
     bb_view_.reset(new BookmarkBarView(browser_.get(), NULL));

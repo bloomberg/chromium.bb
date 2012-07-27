@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -750,7 +751,8 @@ WrenchMenu::WrenchMenu(Browser* browser)
 
 WrenchMenu::~WrenchMenu() {
   if (bookmark_menu_delegate_.get()) {
-    BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(
+        browser_->profile());
     if (model)
       model->RemoveObserver(this);
   }
@@ -777,7 +779,8 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
       views::MenuRunner::MENU_DELETED)
     return;
   if (bookmark_menu_delegate_.get()) {
-    BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(
+        browser_->profile());
     if (model)
       model->RemoveObserver(this);
   }
@@ -1089,7 +1092,8 @@ void WrenchMenu::CreateBookmarkMenu() {
   if (bookmark_menu_delegate_.get())
     return;  // Already created the menu.
 
-  BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(
+      browser_->profile());
   if (!model->IsLoaded())
     return;
 

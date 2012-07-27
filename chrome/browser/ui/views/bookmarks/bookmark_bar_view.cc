@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
@@ -1090,7 +1091,7 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
   }
   Profile* profile = browser_->profile();
   bool close_on_remove =
-      (parent == profile->GetBookmarkModel()->other_node()) &&
+      (parent == BookmarkModelFactory::GetForProfile(profile)->other_node()) &&
       (parent->child_count() == 1);
   context_menu_.reset(new BookmarkContextMenu(GetWidget(), browser_, profile,
     chrome::GetActiveWebContents(browser_), parent, nodes, close_on_remove));
@@ -1162,7 +1163,7 @@ void BookmarkBarView::Init() {
   registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN, ns_source);
   registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN, ns_source);
 
-  model_ = profile->GetBookmarkModel();
+  model_ = BookmarkModelFactory::GetForProfile(profile);
   if (model_) {
     model_->AddObserver(this);
     if (model_->IsLoaded())

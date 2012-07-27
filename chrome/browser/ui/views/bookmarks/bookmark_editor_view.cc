@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -288,7 +289,7 @@ void BookmarkEditorView::ShowContextMenuForView(views::View* source,
 }
 
 void BookmarkEditorView::Init() {
-  bb_model_ = profile_->GetBookmarkModel();
+  bb_model_ = BookmarkModelFactory::GetForProfile(profile_);
   DCHECK(bb_model_);
   bb_model_->AddObserver(this);
 

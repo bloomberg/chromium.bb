@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -303,7 +304,7 @@ BookmarkContextMenuControllerViews::BookmarkContextMenuControllerViews(
       navigator_(navigator),
       parent_(parent),
       selection_(selection),
-      model_(profile->GetBookmarkModel()) {
+      model_(BookmarkModelFactory::GetForProfile(profile)) {
   DCHECK(profile_);
   DCHECK(model_->IsLoaded());
   model_->AddObserver(this);

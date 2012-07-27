@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -110,7 +111,7 @@ BookmarkBubbleView::~BookmarkBubbleView() {
   if (apply_edits_) {
     ApplyEdits();
   } else if (remove_bookmark_) {
-    BookmarkModel* model = profile_->GetBookmarkModel();
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
     const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
     if (node)
       model->Remove(node->parent(), node->parent()->GetIndexOf(node));
@@ -252,8 +253,9 @@ BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
       url_(url),
       newly_bookmarked_(newly_bookmarked),
       parent_model_(
-          profile_->GetBookmarkModel(),
-          profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url)),
+          BookmarkModelFactory::GetForProfile(profile_),
+          BookmarkModelFactory::GetForProfile(profile_)->
+              GetMostRecentlyAddedNodeForURL(url)),
       remove_link_(NULL),
       edit_button_(NULL),
       close_button_(NULL),
@@ -264,7 +266,8 @@ BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
 }
 
 string16 BookmarkBubbleView::GetTitle() {
-  BookmarkModel* bookmark_model= profile_->GetBookmarkModel();
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(profile_);
   const BookmarkNode* node =
       bookmark_model->GetMostRecentlyAddedNodeForURL(url_);
   if (node)
@@ -307,8 +310,8 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
 }
 
 void BookmarkBubbleView::ShowEditor() {
-  const BookmarkNode* node =
-      profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
+  const BookmarkNode* node = BookmarkModelFactory::GetForProfile(
+      profile_)->GetMostRecentlyAddedNodeForURL(url_);
   views::Widget* parent = anchor_widget();
   DCHECK(parent);
 
@@ -326,7 +329,7 @@ void BookmarkBubbleView::ApplyEdits() {
   // Set this to make sure we don't attempt to apply edits again.
   apply_edits_ = false;
 
-  BookmarkModel* model = profile_->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
   if (node) {
     const string16 new_title = title_tf_->text();

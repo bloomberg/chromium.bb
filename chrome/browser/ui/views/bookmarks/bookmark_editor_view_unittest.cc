@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_editor_view.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,7 +33,7 @@ class BookmarkEditorViewTest : public testing::Test {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
 
-    model_ = profile_->GetBookmarkModel();
+    model_ = BookmarkModelFactory::GetForProfile(profile_.get());
     profile_->BlockUntilBookmarkModelLoaded();
 
     AddTestData();
@@ -170,7 +171,7 @@ TEST_F(BookmarkEditorViewTest, EditTitleKeepsPosition) {
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
 
   const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->bookmark_bar_node();
+      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
   ASSERT_EQ(ASCIIToUTF16("new_a"), bb_node->GetChild(0)->GetTitle());
   // The URL shouldn't have changed.
   ASSERT_TRUE(GURL(base_path() + "a") == bb_node->GetChild(0)->url());
@@ -189,7 +190,7 @@ TEST_F(BookmarkEditorViewTest, EditURLKeepsPosition) {
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
 
   const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->bookmark_bar_node();
+      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
   ASSERT_EQ(ASCIIToUTF16("a"), bb_node->GetChild(0)->GetTitle());
   // The URL should have changed.
   ASSERT_TRUE(GURL(base_path() + "new_a") == bb_node->GetChild(0)->url());
@@ -204,7 +205,8 @@ TEST_F(BookmarkEditorViewTest, ChangeParent) {
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(1));
 
-  const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
+  const BookmarkNode* other_node =
+      BookmarkModelFactory::GetForProfile(profile_.get())->other_node();
   ASSERT_EQ(ASCIIToUTF16("a"), other_node->GetChild(2)->GetTitle());
   ASSERT_TRUE(GURL(base_path() + "a") == other_node->GetChild(2)->url());
 }
@@ -221,7 +223,8 @@ TEST_F(BookmarkEditorViewTest, ChangeParentAndURL) {
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(1));
 
-  const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
+  const BookmarkNode* other_node =
+      BookmarkModelFactory::GetForProfile(profile_.get())->other_node();
   ASSERT_EQ(ASCIIToUTF16("a"), other_node->GetChild(2)->GetTitle());
   ASSERT_TRUE(GURL(base_path() + "new_a") == other_node->GetChild(2)->url());
   ASSERT_TRUE(node_time == other_node->GetChild(2)->date_added());
@@ -245,7 +248,7 @@ TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
   ApplyEdits(f2);
 
   const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->bookmark_bar_node();
+      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
   const BookmarkNode* mf2 = bb_node->GetChild(1);
 
   // F2 in the model should have two children now: F21 and the node edited.
@@ -274,7 +277,7 @@ TEST_F(BookmarkEditorViewTest, NewURL) {
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
 
   const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->bookmark_bar_node();
+      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
   ASSERT_EQ(4, bb_node->child_count());
 
   const BookmarkNode* new_node = bb_node->GetChild(3);
@@ -295,7 +298,8 @@ TEST_F(BookmarkEditorViewTest, ChangeURLNoTree) {
 
   ApplyEdits(NULL);
 
-  const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
+  const BookmarkNode* other_node =
+      BookmarkModelFactory::GetForProfile(profile_.get())->other_node();
   ASSERT_EQ(2, other_node->child_count());
 
   const BookmarkNode* new_node = other_node->GetChild(0);
@@ -315,7 +319,8 @@ TEST_F(BookmarkEditorViewTest, ChangeTitleNoTree) {
 
   ApplyEdits(NULL);
 
-  const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
+  const BookmarkNode* other_node =
+      BookmarkModelFactory::GetForProfile(profile_.get())->other_node();
   ASSERT_EQ(2, other_node->child_count());
 
   const BookmarkNode* new_node = other_node->GetChild(0);
