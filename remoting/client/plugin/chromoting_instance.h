@@ -185,7 +185,7 @@ class ChromotingInstance :
   bool initialized_;
 
   PepperPluginThreadDelegate plugin_thread_delegate_;
-  scoped_refptr<PluginMessageLoopProxy> plugin_message_loop_;
+  scoped_refptr<PluginThreadTaskRunner> plugin_task_runner_;
   ClientContext context_;
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<PepperView> view_;

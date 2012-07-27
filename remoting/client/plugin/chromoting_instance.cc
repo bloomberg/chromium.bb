@@ -152,9 +152,9 @@ bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
       initialized_(false),
-      plugin_message_loop_(
-          new PluginMessageLoopProxy(&plugin_thread_delegate_)),
-      context_(plugin_message_loop_),
+      plugin_task_runner_(
+          new PluginThreadTaskRunner(&plugin_thread_delegate_)),
+      context_(plugin_task_runner_),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
@@ -171,7 +171,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 }
 
 ChromotingInstance::~ChromotingInstance() {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   // Unregister this instance so that debug log messages will no longer be sent
   // to it. This will stop all logging in all Chromoting instances.
@@ -191,7 +191,7 @@ ChromotingInstance::~ChromotingInstance() {
   context_.Stop();
 
   // Ensure that nothing touches the plugin thread delegate after this point.
-  plugin_message_loop_->Detach();
+  plugin_task_runner_->Detach();
 }
 
 bool ChromotingInstance::Init(uint32_t argc,
@@ -223,7 +223,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   // RectangleUpdateDecoder runs on a separate thread so for now we wrap
   // PepperView with a ref-counted proxy object.
   scoped_refptr<FrameConsumerProxy> consumer_proxy =
-      new FrameConsumerProxy(plugin_message_loop_);
+      new FrameConsumerProxy(plugin_task_runner_);
   rectangle_decoder_ = new RectangleUpdateDecoder(
       context_.decode_task_runner(), consumer_proxy);
   view_.reset(new PepperView(this, &context_, rectangle_decoder_.get()));
@@ -342,7 +342,7 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
 }
 
 void ChromotingInstance::DidChangeView(const pp::View& view) {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   view_->SetView(view);
 
@@ -352,7 +352,7 @@ void ChromotingInstance::DidChangeView(const pp::View& view) {
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   if (!IsConnected())
     return false;
@@ -465,7 +465,7 @@ void ChromotingInstance::OnFirstFrameReceived() {
 }
 
 void ChromotingInstance::Connect(const ClientConfig& config) {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
 
@@ -501,7 +501,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // Setup the XMPP Proxy.
   xmpp_proxy_ = new PepperXmppProxy(
       base::Bind(&ChromotingInstance::SendOutgoingIq, AsWeakPtr()),
-      plugin_message_loop_, context_.main_task_runner());
+      plugin_task_runner_, context_.main_task_runner());
 
   scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
       PepperPortAllocator::Create(this));
@@ -512,13 +512,13 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   client_->Start(xmpp_proxy_, transport_factory.Pass());
 
   // Start timer that periodically sends perf stats.
-  plugin_message_loop_->PostDelayedTask(
+  plugin_task_runner_->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 }
 
 void ChromotingInstance::Disconnect() {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   // PepperView must be destroyed before the client.
   view_.reset();
@@ -630,7 +630,7 @@ void ChromotingInstance::SendPerfStats() {
     return;
   }
 
-  plugin_message_loop_->PostDelayedTask(
+  plugin_task_runner_->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 
@@ -668,7 +668,7 @@ void ChromotingInstance::RegisterLoggingInstance() {
   // If multiple plugins are run, then the last one registered will handle all
   // logging for all instances.
   g_logging_instance.Get() = weak_factory_.GetWeakPtr();
-  g_logging_task_runner.Get() = plugin_message_loop_;
+  g_logging_task_runner.Get() = plugin_task_runner_;
   g_has_logging_instance = true;
 }
 
@@ -735,7 +735,7 @@ bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
 }
 
 void ChromotingInstance::ProcessLogToUI(const std::string& message) {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   // This flag (which is set only here) is used to prevent LogToUI from posting
   // new tasks while we're in the middle of servicing a LOG call. This can

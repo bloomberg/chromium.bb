@@ -79,14 +79,14 @@ const int kMaxWorkerPoolThreads = 2;
 HostNPScriptObject::HostNPScriptObject(
     NPP plugin,
     NPObject* parent,
-    PluginMessageLoopProxy::Delegate* plugin_thread_delegate)
+    PluginThreadTaskRunner::Delegate* plugin_thread_delegate)
     : plugin_(plugin),
       parent_(parent),
       am_currently_logging_(false),
       state_(kDisconnected),
       np_thread_id_(base::PlatformThread::CurrentId()),
       plugin_task_runner_(
-          new PluginMessageLoopProxy(plugin_thread_delegate)),
+          new PluginThreadTaskRunner(plugin_thread_delegate)),
       failed_login_attempts_(0),
       disconnected_event_(true, false),
       nat_traversal_enabled_(false),

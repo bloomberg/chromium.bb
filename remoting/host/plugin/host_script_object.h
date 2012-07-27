@@ -18,7 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "remoting/base/plugin_message_loop_proxy.h"
+#include "remoting/base/plugin_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
@@ -51,7 +51,7 @@ class PolicyWatcher;
 class HostNPScriptObject : public HostStatusObserver {
  public:
   HostNPScriptObject(NPP plugin, NPObject* parent,
-                     PluginMessageLoopProxy::Delegate* plugin_thread_delegate);
+                     PluginThreadTaskRunner::Delegate* plugin_thread_delegate);
   virtual ~HostNPScriptObject();
 
   bool Init();
@@ -302,7 +302,7 @@ class HostNPScriptObject : public HostStatusObserver {
   ScopedRefNPObject on_nat_traversal_policy_changed_func_;
   ScopedRefNPObject on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;
-  scoped_refptr<PluginMessageLoopProxy> plugin_task_runner_;
+  scoped_refptr<PluginThreadTaskRunner> plugin_task_runner_;
 
   scoped_ptr<ChromotingHostContext> host_context_;
   HostKeyPair host_key_pair_;

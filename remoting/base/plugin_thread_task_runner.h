@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_PLUGIN_MESSAGE_LOOP_H_
-#define REMOTING_BASE_PLUGIN_MESSAGE_LOOP_H_
+#ifndef REMOTING_BASE_PLUGIN_THREAD_TASK_RUNNER_H_
+#define REMOTING_BASE_PLUGIN_THREAD_TASK_RUNNER_H_
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 
 namespace remoting {
 
-// MessageLoopProxy for plugin main threads.
-class PluginMessageLoopProxy : public base::MessageLoopProxy {
+// SingleThreadTaskRunner for plugin main threads.
+class PluginThreadTaskRunner : public base::SingleThreadTaskRunner {
  public:
   class Delegate {
    public:
@@ -26,11 +26,11 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
   };
 
   // Caller keeps ownership of delegate.
-  PluginMessageLoopProxy(Delegate* delegate);
+  PluginThreadTaskRunner(Delegate* delegate);
 
   void Detach();
 
-  // base::MessageLoopProxy implementation.
+  // base::SingleThreadTaskRunner interface.
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
@@ -43,7 +43,7 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
 
  protected:
-  virtual ~PluginMessageLoopProxy();
+  virtual ~PluginThreadTaskRunner();
 
  private:
   static void TaskSpringboard(void* data);
@@ -56,9 +56,9 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
   base::Lock lock_;
   Delegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(PluginMessageLoopProxy);
+  DISALLOW_COPY_AND_ASSIGN(PluginThreadTaskRunner);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_PLUGIN_MESSAGE_LOOP_H_
+#endif  // REMOTING_BASE_PLUGIN_THREAD_TASK_RUNNER_H_

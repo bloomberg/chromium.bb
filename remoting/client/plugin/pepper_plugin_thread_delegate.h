@@ -5,7 +5,7 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_PLUGIN_THREAD_DELEGATE_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_PLUGIN_THREAD_DELEGATE_H_
 
-#include "remoting/base/plugin_message_loop_proxy.h"
+#include "remoting/base/plugin_thread_task_runner.h"
 
 // Macro useful for writing cross-platform function pointers.
 #if defined(OS_WIN) && !defined(CDECL)
@@ -20,7 +20,7 @@ class Core;
 
 namespace remoting {
 
-class PepperPluginThreadDelegate : public PluginMessageLoopProxy::Delegate {
+class PepperPluginThreadDelegate : public PluginThreadTaskRunner::Delegate {
  public:
   PepperPluginThreadDelegate();
   virtual ~PepperPluginThreadDelegate();

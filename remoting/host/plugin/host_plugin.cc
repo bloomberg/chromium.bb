@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/stringize_macros.h"
 #include "net/socket/ssl_server_socket.h"
-#include "remoting/base/plugin_message_loop_proxy.h"
+#include "remoting/base/plugin_thread_task_runner.h"
 #include "remoting/host/plugin/constants.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
@@ -57,7 +57,7 @@ base::AtExitManager* g_at_exit_manager = NULL;
 // NPAPI plugin implementation for remoting host.
 // Documentation for most of the calls in this class can be found here:
 // https://developer.mozilla.org/en/Gecko_Plugin_API_Reference/Scripting_plugins
-class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
+class HostNPPlugin : public remoting::PluginThreadTaskRunner::Delegate {
  public:
   // |mode| is the display mode of plug-in. Values:
   // NP_EMBED: (1) Instance was created by an EMBED tag and shares the browser
@@ -148,7 +148,7 @@ class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
     return scriptable_object_;
   }
 
-  // PluginMessageLoopProxy::Delegate implementation.
+  // PluginThreadTaskRunner::Delegate implementation.
   virtual bool RunOnPluginThread(
       base::TimeDelta delay, void(function)(void*), void* data) OVERRIDE {
     if (delay == base::TimeDelta()) {
