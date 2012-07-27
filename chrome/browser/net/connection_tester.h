@@ -13,6 +13,7 @@
 #include "net/base/completion_callback.h"
 
 namespace net {
+class NetLog;
 class URLRequestContext;
 }  // namespace net
 
@@ -128,7 +129,8 @@ class ConnectionTester {
   // |delegate| is owned by the caller, and must remain valid for the lifetime
   // of ConnectionTester.
   ConnectionTester(Delegate* delegate,
-                   net::URLRequestContext* proxy_request_context);
+                   net::URLRequestContext* proxy_request_context,
+                   net::NetLog* net_log);
 
   // Note that destruction cancels any in-progress tests.
   ~ConnectionTester();
@@ -175,6 +177,8 @@ class ConnectionTester {
   ExperimentList remaining_experiments_;
 
   net::URLRequestContext* const proxy_request_context_;
+
+  net::NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionTester);
 };

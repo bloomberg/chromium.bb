@@ -148,7 +148,9 @@ class ConnectionTesterTest : public PlatformTest {
 TEST_F(ConnectionTesterTest, RunAllTests) {
   ASSERT_TRUE(test_server_.Start());
 
-  ConnectionTester tester(&test_delegate_, proxy_script_fetcher_context_.get());
+  ConnectionTester tester(&test_delegate_,
+                          proxy_script_fetcher_context_.get(),
+                          NULL);
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?
@@ -174,7 +176,8 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
 
   scoped_ptr<ConnectionTester> tester(
       new ConnectionTester(&test_delegate_,
-                           proxy_script_fetcher_context_.get()));
+                           proxy_script_fetcher_context_.get(),
+                           NULL));
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?

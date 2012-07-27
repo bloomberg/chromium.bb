@@ -1081,7 +1081,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
   GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(url_str), std::string()));
 
   connection_tester_.reset(new ConnectionTester(
-      this, io_thread_->globals()->proxy_script_fetcher_context.get()));
+      this,
+      io_thread_->globals()->proxy_script_fetcher_context.get(),
+      net_log()));
   connection_tester_->RunAllTests(url);
 }
 

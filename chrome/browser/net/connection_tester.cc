@@ -83,7 +83,8 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
   }
 
   int Init(const ConnectionTester::Experiment& experiment,
-           scoped_ptr<net::ProxyConfigService>* proxy_config_service) {
+           scoped_ptr<net::ProxyConfigService>* proxy_config_service,
+           net::NetLog* net_log) {
     int rv;
 
     // Create a custom HostResolver for this experiment.
@@ -116,9 +117,10 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     session_params.host_resolver = host_resolver();
     session_params.cert_verifier = cert_verifier();
     session_params.proxy_service = proxy_service();
+    session_params.ssl_config_service = ssl_config_service();
     session_params.http_auth_handler_factory = http_auth_handler_factory();
     session_params.http_server_properties = http_server_properties();
-    session_params.ssl_config_service = ssl_config_service();
+    session_params.net_log = net_log;
     scoped_refptr<net::HttpNetworkSession> network_session(
         new net::HttpNetworkSession(session_params));
     storage_.set_http_transaction_factory(new net::HttpCache(
@@ -288,8 +290,9 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
  public:
   // |tester| must remain alive throughout the TestRunner's lifetime.
   // |tester| will be notified of completion.
-  explicit TestRunner(ConnectionTester* tester)
+  TestRunner(ConnectionTester* tester, net::NetLog* net_log)
       : tester_(tester),
+        net_log_(net_log),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
   // Finish running |experiment| once a ProxyConfigService has been created.
@@ -323,6 +326,7 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
   ConnectionTester* tester_;
   scoped_ptr<ExperimentURLRequestContext> request_context_;
   scoped_ptr<net::URLRequest> request_;
+  net::NetLog* net_log_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 
@@ -389,7 +393,9 @@ void ConnectionTester::TestRunner::ProxyConfigServiceCreated(
     scoped_ptr<net::ProxyConfigService>* proxy_config_service,
     int status) {
   if (status == net::OK)
-    status = request_context_->Init(experiment, proxy_config_service);
+    status = request_context_->Init(experiment,
+                                    proxy_config_service,
+                                    net_log_);
   if (status != net::OK) {
     tester_->OnExperimentCompleted(status);
     return;
@@ -422,8 +428,11 @@ void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
 
 ConnectionTester::ConnectionTester(
     Delegate* delegate,
-    net::URLRequestContext* proxy_request_context)
-    : delegate_(delegate), proxy_request_context_(proxy_request_context) {
+    net::URLRequestContext* proxy_request_context,
+    net::NetLog* net_log)
+    : delegate_(delegate),
+      proxy_request_context_(proxy_request_context),
+      net_log_(net_log) {
   DCHECK(delegate);
   DCHECK(proxy_request_context);
 }
@@ -503,7 +512,7 @@ void ConnectionTester::StartNextExperiment() {
 
   delegate_->OnStartConnectionTestExperiment(current_experiment());
 
-  current_test_runner_.reset(new TestRunner(this));
+  current_test_runner_.reset(new TestRunner(this, net_log_));
   current_test_runner_->Run(current_experiment());
 }
 
