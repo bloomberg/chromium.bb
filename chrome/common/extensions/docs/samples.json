@@ -2329,6 +2329,34 @@
     },
     {
       "api_calls": [
+        "chrome.browserAction.onClicked"
+      ],
+      "crx_path": null,
+      "description": "",
+      "features": [
+        "background_page",
+        "browser_action",
+        "notifications"
+      ],
+      "icon": null,
+      "id": "3c6dfba67f6a7480d931b5a4a646c151ad1a049b",
+      "name": "Sandboxed Frame",
+      "packaged_app": false,
+      "path": "examples/howto/sandbox/",
+      "protocols": [],
+      "search_string": "SANDBOXED FRAME  BACKGROUND_PAGE BROWSER_ACTION NOTIFICATIONS CHROME.BROWSERACTION.ONCLICKED",
+      "source_files": [
+        "eventpage.html",
+        "eventpage.js",
+        "handlebars-1.0.0.beta.6.js",
+        "manifest.json",
+        "sandbox.html"
+      ],
+      "source_hash": "5e3132df5468ab2cbec3f21fced28b492bc26ca9",
+      "zip_path": "examples/howto/sandbox.zip"
+    },
+    {
+      "api_calls": [
         "chrome.experimental.infobars.show"
       ],
       "crx_path": null,
