@@ -72,16 +72,15 @@ class MockClientSocket : public net::StreamSocket {
 
 // Break up |data| into a bunch of chunked MockReads/Writes and push
 // them onto |ops|.
+template <net::MockReadWriteType type>
 void AddChunkedOps(base::StringPiece data, size_t chunk_size, net::IoMode mode,
-                   std::vector<net::MockRead>* ops) {
+                   std::vector<net::MockReadWrite<type> >* ops) {
   DCHECK_GT(chunk_size, 0U);
   size_t offset = 0;
   while (offset < data.size()) {
     size_t bounded_chunk_size = std::min(data.size() - offset, chunk_size);
-    // We take advantage of the fact that MockWrite is typedefed to
-    // MockRead.
-    ops->push_back(net::MockRead(mode, data.data() + offset,
-                                 bounded_chunk_size));
+    ops->push_back(net::MockReadWrite<type>(mode, data.data() + offset,
+                                            bounded_chunk_size));
     offset += bounded_chunk_size;
   }
 }
