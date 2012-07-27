@@ -28,7 +28,7 @@ extern NORETURN void NaClSwitchSSE(struct NaClThreadContext *context);
 extern NORETURN void NaClSwitchNoSSE(struct NaClThreadContext *context);
 extern NORETURN void NaClSwitchSavingStackPtr(
     struct NaClThreadContext *user_context,
-    struct NaClThreadContext *sys_context,
+    uintptr_t *trusted_stack_ptr_addr,
     void (*NaClSwitch)(struct NaClThreadContext *context));
 #if NACL_OSX
 /* Same as NaClSwitchNoSSE but context in %ecx */

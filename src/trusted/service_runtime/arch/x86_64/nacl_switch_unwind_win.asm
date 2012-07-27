@@ -1,4 +1,4 @@
-; Copyright (c) 2011 The Native Client Authors. All rights reserved.
+; Copyright (c) 2012 The Native Client Authors. All rights reserved.
 ; Use of this source code is governed by a BSD-style license that can be
 ; found in the LICENSE file.
 
@@ -24,8 +24,8 @@ _TEXT SEGMENT
 ; http://code.google.com/p/nativeclient/issues/detail?id=2237
 ; http://code.google.com/p/nativeclient/issues/detail?id=2414
 
-; Arg 1 (rcx):  user_context (&nap->user), passed on to NaClSwitch()
-; Arg 2 (rdx):  sys_context (&nap->sys), for writing rsp to
+; Arg 1 (rcx):  user_context (&natp->user), passed on to NaClSwitch()
+; Arg 2 (rdx):  address of natp->sys.rsp, for saving the trusted stack pointer
 ; Arg 3 (r8):  address of CPUID-specific NaClSwitch() function
 NaClSwitchSavingStackPtr PROC FRAME
         ; Save all callee-saved registers.  This is necessary in case
@@ -49,7 +49,7 @@ NaClSwitchSavingStackPtr PROC FRAME
         ; return address is pushed by the 'call' instruction.
         mov   r12, rsp
         sub   r12, 8
-        mov   [rdx + 38h], r12
+        mov   [rdx], r12
 
         call  r8
         hlt

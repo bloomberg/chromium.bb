@@ -89,7 +89,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 
 #if NACL_WINDOWS
   /* This sets up a stack containing a return address that has unwind info. */
-  NaClSwitchSavingStackPtr(context, &natp->sys, NaClSwitch);
+  NaClSwitchSavingStackPtr(context, &natp->sys.rsp, NaClSwitch);
 #else
   NaClSwitch(context);
 #endif
