@@ -1738,6 +1738,7 @@
         'protocol/connection_tester.cc',
         'protocol/connection_tester.h',
         'protocol/connection_to_client_unittest.cc',
+        'protocol/content_description_unittest.cc',
         'protocol/fake_authenticator.cc',
         'protocol/fake_authenticator.h',
         'protocol/fake_session.cc',

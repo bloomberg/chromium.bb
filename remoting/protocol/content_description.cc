@@ -235,9 +235,9 @@ bool ContentDescription::ParseChannelConfigs(
   const XmlElement* child = element->FirstNamed(tag);
   while (child) {
     ChannelConfig channel_config;
-    if (!ParseChannelConfig(child, codec_required, &channel_config))
-      return false;
-    configs->push_back(channel_config);
+    if (ParseChannelConfig(child, codec_required, &channel_config)) {
+      configs->push_back(channel_config);
+    }
     child = child->NextNamed(tag);
   }
   if (optional && configs->empty()) {
@@ -251,39 +251,32 @@ bool ContentDescription::ParseChannelConfigs(
 }
 
 // static
-ContentDescription* ContentDescription::ParseXml(
+scoped_ptr<ContentDescription> ContentDescription::ParseXml(
     const XmlElement* element) {
-  if (element->Name() == QName(kChromotingXmlNamespace, kDescriptionTag)) {
-    scoped_ptr<CandidateSessionConfig> config(
-        CandidateSessionConfig::CreateEmpty());
-    const XmlElement* child = NULL;
-
-    if (!ParseChannelConfigs(element, kControlTag, false, false,
-                             config->mutable_control_configs())) {
-      return NULL;
-    }
-    if (!ParseChannelConfigs(element, kEventTag, false, false,
-                             config->mutable_event_configs())) {
-      return NULL;
-    }
-    if (!ParseChannelConfigs(element, kVideoTag, true, false,
-                             config->mutable_video_configs())) {
-      return NULL;
-    }
-    if (!ParseChannelConfigs(element, kAudioTag, true, true,
-                             config->mutable_audio_configs())) {
-      return NULL;
-    }
-
-    scoped_ptr<XmlElement> authenticator_message;
-    child = Authenticator::FindAuthenticatorMessage(element);
-    if (child)
-      authenticator_message.reset(new XmlElement(*child));
-
-    return new ContentDescription(config.Pass(), authenticator_message.Pass());
+  if (element->Name() != QName(kChromotingXmlNamespace, kDescriptionTag)) {
+    LOG(ERROR) << "Invalid description: " << element->Str();
+    return scoped_ptr<ContentDescription>();
   }
-  LOG(ERROR) << "Invalid description: " << element->Str();
-  return NULL;
+  scoped_ptr<CandidateSessionConfig> config(
+      CandidateSessionConfig::CreateEmpty());
+  if (!ParseChannelConfigs(element, kControlTag, false, false,
+                           config->mutable_control_configs()) ||
+      !ParseChannelConfigs(element, kEventTag, false, false,
+                           config->mutable_event_configs()) ||
+      !ParseChannelConfigs(element, kVideoTag, true, false,
+                           config->mutable_video_configs()) ||
+      !ParseChannelConfigs(element, kAudioTag, true, true,
+                           config->mutable_audio_configs())) {
+    return scoped_ptr<ContentDescription>();
+  }
+
+  scoped_ptr<XmlElement> authenticator_message;
+  const XmlElement* child = Authenticator::FindAuthenticatorMessage(element);
+  if (child)
+    authenticator_message.reset(new XmlElement(*child));
+
+  return scoped_ptr<ContentDescription>(
+      new ContentDescription(config.Pass(), authenticator_message.Pass()));
 }
 
 }  // namespace protocol

@@ -259,7 +259,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
       return false;
     }
 
-    description.reset(ContentDescription::ParseXml(description_tag));
+    description = ContentDescription::ParseXml(description_tag);
     if (!description.get()) {
       *error = "Failed to parse content description";
       return false;

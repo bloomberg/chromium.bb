@@ -44,7 +44,8 @@ class ContentDescription : public cricket::ContentDescription {
 
   buzz::XmlElement* ToXml() const;
 
-  static ContentDescription* ParseXml(const buzz::XmlElement* element);
+  static scoped_ptr<ContentDescription> ParseXml(
+      const buzz::XmlElement* element);
 
  private:
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
