@@ -9,6 +9,7 @@
 
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 /*
  * This is used by both untrusted and trusted code so we use
@@ -18,6 +19,7 @@ struct SuspendTestShm {
   volatile uint32_t var;
   volatile uint32_t should_exit;  /* Boolean */
   uint32_t continue_after_suspension_func;
+  struct NaClSignalContext expected_regs;
 };
 
 

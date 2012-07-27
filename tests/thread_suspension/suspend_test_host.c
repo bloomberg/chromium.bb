@@ -6,6 +6,7 @@
 
 #include "native_client/tests/thread_suspension/suspend_test.h"
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -261,48 +262,59 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
   CHECK(natp->suspended_registers != NULL);
   NaClAppThreadGetSuspendedRegisters(natp, &regs);
 
+#define CHECK_REG(regname) \
+    ASSERT_EQ(regs.regname, test_shm->expected_regs.regname)
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  CHECK(regs.eax == test_shm->var);
-  CHECK(regs.ebx == regs.prog_ctr + 0x2000);
-  CHECK(regs.ecx == regs.stack_ptr + 0x1000);
-  CHECK(regs.edx == 0x10000001);
-  CHECK(regs.ebp == 0x20000002);
-  CHECK(regs.esi == 0x30000003);
-  CHECK(regs.edi == 0x40000004);
+  CHECK_REG(eax);
+  CHECK_REG(ecx);
+  CHECK_REG(edx);
+  CHECK_REG(ebx);
+  CHECK_REG(stack_ptr);
+  CHECK_REG(ebp);
+  CHECK_REG(esi);
+  CHECK_REG(edi);
+  CHECK_REG(prog_ctr);
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  CHECK(regs.rax == test_shm->var);
-  CHECK(regs.rbx == regs.prog_ctr + 0x2000);
-  CHECK(regs.rcx == regs.stack_ptr + 0x1000);
-  CHECK(regs.rbp == regs.r15 + 0x10000001);
-  CHECK(regs.rdx == 0x2000000000000002);
-  CHECK(regs.rsi == 0x3000000000000003);
-  CHECK(regs.rdi == 0x4000000000000004);
-  CHECK(regs.r8 == 0x8000000000000008);
-  CHECK(regs.r9 == 0x9000000000000009);
-  CHECK(regs.r10 == 0xa00000000000000a);
-  CHECK(regs.r11 == 0xb00000000000000b);
-  CHECK(regs.r12 == 0xc00000000000000c);
-  CHECK(regs.r13 == 0xd00000000000000d);
-  CHECK(regs.r14 == 0xe00000000000000e);
+  CHECK_REG(rax);
+  CHECK_REG(rbx);
+  CHECK_REG(rcx);
+  CHECK_REG(rdx);
+  CHECK_REG(rsi);
+  CHECK_REG(rdi);
+  CHECK_REG(rbp);
+  CHECK_REG(stack_ptr);
+  CHECK_REG(r8);
+  CHECK_REG(r9);
+  CHECK_REG(r10);
+  CHECK_REG(r11);
+  CHECK_REG(r12);
+  CHECK_REG(r13);
+  CHECK_REG(r14);
+  CHECK_REG(r15);
+  CHECK_REG(prog_ctr);
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  CHECK(regs.r0 == test_shm->var);
-  CHECK(regs.r1 == regs.prog_ctr + 0x2000);
-  CHECK(regs.r2 == regs.stack_ptr + 0x1000);
-  CHECK(regs.r3 == 0x30000003);
-  CHECK(regs.r4 == 0x40000004);
-  CHECK(regs.r5 == 0x50000005);
-  CHECK(regs.r6 == 0x60000006);
-  CHECK(regs.r7 == 0x70000007);
-  CHECK(regs.r8 == 0x80000008);
-  /* r9 is reserved for TLS and is read-only. */
-  CHECK(regs.r9 == natp->user.r9);
-  CHECK(regs.r10 == 0xa000000a);
-  CHECK(regs.r11 == 0xb000000b);
-  CHECK(regs.r12 == 0xc000000c);
-  CHECK(regs.lr == 0xe000000e);
+  CHECK_REG(r0);
+  CHECK_REG(r1);
+  CHECK_REG(r2);
+  CHECK_REG(r3);
+  CHECK_REG(r4);
+  CHECK_REG(r5);
+  CHECK_REG(r6);
+  CHECK_REG(r7);
+  CHECK_REG(r8);
+  CHECK_REG(r9);
+  CHECK_REG(r10);
+  CHECK_REG(r11);
+  CHECK_REG(r12);
+  CHECK_REG(stack_ptr);
+  CHECK_REG(lr);
+  CHECK_REG(prog_ctr);
 #else
 # error Unsupported architecture
 #endif
+
+#undef CHECK_REG
 
   /*
    * Test that we can also modify the registers of a suspended thread.
