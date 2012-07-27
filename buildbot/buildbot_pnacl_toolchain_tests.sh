@@ -26,8 +26,8 @@ ARCHIVED_PEXE_TRANSLATOR_REV=9103
 
 # The frontend from this rev will generate pexes for the archived frontend
 # test
-ARCHIVED_TOOLCHAIN_REV=8144
-ARCHIVED_TOOLCHAIN_HASH=63e1510d7ec27a3fc86f1ff7dea66a47229db64f
+ARCHIVED_TOOLCHAIN_REV=8851
+ARCHIVED_TOOLCHAIN_HASH=c002ed9127700b33a6920bbbdbf3e9920ab2f899
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
