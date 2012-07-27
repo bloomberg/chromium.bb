@@ -23,6 +23,7 @@ class AudioHandler {
   class VolumeObserver {
    public:
     virtual void OnVolumeChanged() = 0;
+    virtual void OnMuteToggled() = 0;
    protected:
     VolumeObserver() {}
     virtual ~VolumeObserver() {}

@@ -11,6 +11,10 @@
 
 typedef unsigned int SkColor;
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace ui {
 class SlideAnimation;
 }
@@ -65,6 +69,9 @@ class VIEWS_EXPORT Slider : public View,
 
   void set_focus_border_color(SkColor color) { focus_border_color_ = color; }
 
+  // Update UI based on control on/off state.
+  void UpdateState(bool control_on);
+
  private:
   void SetValueInternal(float value, SliderChangeReason reason);
 
@@ -98,6 +105,12 @@ class VIEWS_EXPORT Slider : public View,
   string16 accessible_name_;
   bool accessibility_events_enabled_;
   SkColor focus_border_color_;
+
+  const int* bar_active_images_;
+  const int* bar_disabled_images_;
+  const gfx::ImageSkia* thumb_;
+  const gfx::ImageSkia* images_[4];
+  int bar_height_;
 
   DISALLOW_COPY_AND_ASSIGN(Slider);
 };

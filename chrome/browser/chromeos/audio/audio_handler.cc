@@ -114,7 +114,7 @@ bool AudioHandler::IsMuted() {
 void AudioHandler::SetMuted(bool mute) {
   mixer_->SetMuted(mute);
   prefs_->SetInteger(prefs::kAudioMute, mute ? kPrefMuteOn : kPrefMuteOff);
-  FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnVolumeChanged());
+  FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnMuteToggled());
 }
 
 void AudioHandler::AddVolumeObserver(VolumeObserver* observer) {

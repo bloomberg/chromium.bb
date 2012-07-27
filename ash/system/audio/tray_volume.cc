@@ -63,8 +63,8 @@ class VolumeButton : public views::ToggleImageButton {
     float level = delegate->GetVolumeLevel();
     int image_index = delegate->IsAudioMuted() ?
         0 : (level == 1.0 ?
-             kVolumeLevels : std::ceil(level * (kVolumeLevels - 1)));
-
+             kVolumeLevels :
+             std::max(1, int(std::ceil(level * (kVolumeLevels - 1)))));
     if (image_index != image_index_) {
       gfx::Rect region(0, image_index * kVolumeImageHeight,
                        kVolumeImageWidth, kVolumeImageHeight);
@@ -110,6 +110,26 @@ class MuteButton : public ash::internal::TrayBarButtonWithTitle {
   DISALLOW_COPY_AND_ASSIGN(MuteButton);
 };
 
+class VolumeSlider : public views::Slider {
+ public:
+  explicit VolumeSlider(views::SliderListener* listener)
+      : views::Slider(listener, views::Slider::HORIZONTAL) {
+    set_focus_border_color(kFocusBorderColor);
+    SetValue(ash::Shell::GetInstance()->tray_delegate()->GetVolumeLevel());
+    SetAccessibleName(
+            ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+                IDS_ASH_STATUS_TRAY_VOLUME));
+    Update();
+  }
+  virtual ~VolumeSlider() {}
+
+  void Update() {
+    UpdateState(!ash::Shell::GetInstance()->tray_delegate()->IsAudioMuted());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(VolumeSlider);
+};
+
 class VolumeView : public views::View,
                    public views::ButtonListener,
                    public views::SliderListener {
@@ -124,19 +144,17 @@ class VolumeView : public views::View,
     mute_ = new MuteButton(this);
     AddChildView(mute_);
 
-    ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
-    slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
-    slider_->set_focus_border_color(kFocusBorderColor);
-    slider_->SetValue(
-        delegate->IsAudioMuted() ? 0.0 : delegate->GetVolumeLevel());
-    slider_->SetAccessibleName(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_VOLUME));
+    slider_ = new VolumeSlider(this);
     AddChildView(slider_);
   }
 
   virtual ~VolumeView() {}
+
+  void Update() {
+    icon_->Update();
+    mute_->Update();
+    slider_->Update();
+  }
 
   void SetVolumeLevel(float percent) {
     // The change in volume will be reflected via accessibility system events,
@@ -146,8 +164,7 @@ class VolumeView : public views::View,
     // It is possible that the volume was (un)muted, but the actual volume level
     // did not change. In that case, setting the value of the slider won't
     // trigger an update. So explicitly trigger an update.
-    icon_->Update();
-    mute_->Update();
+    Update();
     slider_->set_enable_accessibility_events(true);
   }
 
@@ -182,7 +199,7 @@ class VolumeView : public views::View,
 
   VolumeButton* icon_;
   MuteButton* mute_;
-  views::Slider* slider_;
+  VolumeSlider* slider_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeView);
 };
@@ -201,7 +218,7 @@ TrayVolume::~TrayVolume() {
 bool TrayVolume::GetInitialVisibility() {
   ash::SystemTrayDelegate* delegate =
       ash::Shell::GetInstance()->tray_delegate();
-  return delegate->GetVolumeLevel() == 0.0 || delegate->IsAudioMuted();
+  return delegate->IsAudioMuted();
 }
 
 views::View* TrayVolume::CreateDefaultView(user::LoginStatus status) {
@@ -238,6 +255,14 @@ void TrayVolume::OnVolumeChanged(float percent) {
     return;
   }
   PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
+}
+
+void TrayVolume::OnMuteToggled() {
+  if (tray_view())
+      tray_view()->SetVisible(GetInitialVisibility());
+
+  if (volume_view_)
+    volume_view_->Update();
 }
 
 }  // namespace internal

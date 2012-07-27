@@ -14,6 +14,7 @@ class ASH_EXPORT AudioObserver {
   virtual ~AudioObserver() {}
 
   virtual void OnVolumeChanged(float percent) = 0;
+  virtual void OnMuteToggled() = 0;
 };
 
 }  // namespace ash

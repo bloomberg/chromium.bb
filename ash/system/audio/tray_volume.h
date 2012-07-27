@@ -33,6 +33,7 @@ class TrayVolume : public TrayImageItem,
 
   // Overridden from AudioObserver.
   virtual void OnVolumeChanged(float percent) OVERRIDE;
+  virtual void OnMuteToggled() OVERRIDE;
 
   tray::VolumeView* volume_view_;
 

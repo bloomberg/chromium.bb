@@ -944,6 +944,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     tray_->audio_observer()->OnVolumeChanged(level);
   }
 
+  // Overridden from AudioHandler::VolumeObserver.
+  virtual void OnMuteToggled() OVERRIDE {
+    tray_->audio_observer()->OnMuteToggled();
+  }
+
   // Overridden from PowerManagerClient::Observer.
   virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE {
     tray_->brightness_observer()->

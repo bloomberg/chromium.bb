@@ -153,12 +153,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="ash/status_update_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="ash/status_volume_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="ash/status_volume_mute.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_CENTER" file="ash/slider_center_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_LEFT" file="ash/slider_left_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_ACTIVE_RIGHT" file="ash/slider_right_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_CENTER" file="ash/slider_center_disabled.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_LEFT" file="ash/slider_left_disabled.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BAR_BUTTON_DISABLED_RIGHT" file="ash/slider_right_disabled.png" />        
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WEB_NOTIFICATON" file="ash/statusbar_notifications.png" />        
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="ash/status_wifi_disabled.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="ash/status_wifi_disabled_h.png" />
@@ -335,6 +329,17 @@
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_P" file="maximize_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_MENU_ARROW" file="menu_arrow.png" />
         <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="menu_check.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_LEFT" file="slider_left_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_RIGHT" file="slider_right_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_CENTER" file="slider_center_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_LEFT" file="slider_left_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_RIGHT" file="slider_right_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_CENTER" file="slider_center_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_PRESSED_LEFT" file="slider_left_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_PRESSED_RIGHT" file="slider_right_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_PRESSED_CENTER" file="slider_center_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_THUMB" file="slider_thumb.png" />
+        <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_THUMB" file="slider_thumb_disabled.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW" file="menu_droparrow.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
