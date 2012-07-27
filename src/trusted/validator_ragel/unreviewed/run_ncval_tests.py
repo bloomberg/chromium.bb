@@ -258,7 +258,6 @@ class TestRunner:
       if not re_match:
         continue
       offsets.append(int(re_match.group(1), 16))
-    assert(len(offsets) < 2)
     if len(offsets) == 0:
       return (True, None)
     return (True, offsets[0])
