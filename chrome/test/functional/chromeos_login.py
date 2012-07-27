@@ -10,6 +10,7 @@ import sys
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import pyauto_errors
+import test_utils
 
 
 sys.path.append('/usr/local')  # To make autotest libs importable.
@@ -220,6 +221,33 @@ class ChromeosLogin(pyauto.PyUITest):
     self.Logout()
     self.testGoodLogin()  # Re-login with same account.
     _VerifyProfile()
+
+  def testGuestCrosh(self):
+    """Verify we can use crosh in guest mode."""
+    self.LoginAsGuest()
+    login_info = self.GetLoginInfo()
+    self.assertTrue(login_info['is_logged_in'], msg='Not logged in at all.')
+    self.assertTrue(login_info['is_guest'], msg='Not logged in as guest.')
+    for _ in range(self.GetBrowserWindowCount()):
+      self.CloseBrowserWindow(0)
+    test_utils.OpenCroshVerification(self)
+
+    # Verify crosh prompt.
+    self.WaitForHtermText(text='crosh> ',
+        msg='Could not find "crosh> " prompt')
+    self.assertTrue(
+        self.GetHtermRowsText(start=0, end=2).endswith('crosh> '),
+        msg='Could not find "crosh> " prompt')
+
+    # Run a crosh command.
+    self.SendKeysToHterm('help\\n')
+    self.WaitForHtermText(text='help_advanced',
+        msg='Could not find "help_advanced" in help output.')
+
+    # Exit crosh and close tab.
+    self.SendKeysToHterm('exit\\n')
+    self.WaitForHtermText(text='command crosh completed with exit code 0',
+        msg='Could not exit crosh.')
 
 
 if __name__ == '__main__':

@@ -7,6 +7,7 @@ import os
 
 import pyauto_functional  # must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class CroshTest(pyauto.PyUITest):
@@ -20,12 +21,7 @@ class CroshTest(pyauto.PyUITest):
 
   def testBasic(self):
     """Verify crosh basic flow."""
-    self.assertEqual(0, self.GetBrowserWindowCount())
-    self.OpenCrosh()
-    self.assertEqual(1, self.GetBrowserWindowCount())
-    self.assertEqual(1, self.GetTabCount(),
-        msg='Could not open crosh')
-    self.assertEqual('crosh', self.GetActiveTabTitle())
+    test_utils.OpenCroshVerification(self)
 
     # Verify crosh prompt.
     self.WaitForHtermText(text='crosh> ',
@@ -43,6 +39,24 @@ class CroshTest(pyauto.PyUITest):
     self.SendKeysToHterm('exit\\n')
     self.WaitForHtermText(text='command crosh completed with exit code 0',
         msg='Could not exit crosh.')
+
+  def testAddBookmark(self):
+    """Test crosh URL can be bookmarked"""
+    test_utils.OpenCroshVerification(self)
+
+    # Add bookmark.
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    name = 'crosh'
+    url = self.GetActiveTabURL()
+    count = bookmarks.NodeCount()
+    self.AddBookmarkURL(bar_id, 0, name, url.spec())
+    bookmarks = self.GetBookmarkModel()
+    node = bookmarks.BookmarkBar()['children'][0]
+    self.assertEqual(count + 1, bookmarks.NodeCount())
+    self.assertEqual(node['type'], 'url')
+    self.assertEqual(node['name'], name)
+    self.assertEqual(url.spec(), node['url'])
 
 
 if __name__ == '__main__':

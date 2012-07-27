@@ -364,7 +364,7 @@ def LoginToDevice(test, test_account='test_google_account'):
 
   If no test account is specified, we use test_google_account as the default.
   You can choose test accounts from -
-  chrome/test/data/pyauto_private/private_tests_info.txt 
+  chrome/test/data/pyauto_private/private_tests_info.txt
 
   Args:
     test_account: The account used to login to the Chromeos device.
@@ -434,3 +434,15 @@ def AssertInfobarTypeDoesNotAppear(test, infobar_type, windex=0, tab_index=0):
           test, infobar_type, windex, tab_index) is not None, timeout=20),
       msg=('Infobar type for %s appeared when it should be hidden.'
            % infobar_type))
+
+def OpenCroshVerification(self):
+  """This test opens crosh.
+
+  This function assumes that no browser windows are open.
+  """
+  self.assertEqual(0, self.GetBrowserWindowCount())
+  self.OpenCrosh()
+  self.assertEqual(1, self.GetBrowserWindowCount())
+  self.assertEqual(1, self.GetTabCount(),
+      msg='Could not open crosh')
+  self.assertEqual('crosh', self.GetActiveTabTitle())
