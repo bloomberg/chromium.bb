@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "content/common/gpu/gpu_surface_lookup.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -22,8 +23,12 @@
 // Note: The ID can exist before the actual native handle for the surface is
 // created, for example to allow giving a reference to it to a renderer, so that
 // it is unamibiguously identified.
-class GpuSurfaceTracker {
+class GpuSurfaceTracker : public GpuSurfaceLookup {
  public:
+  // GpuSurfaceLookup implementation:
+  // Returns the native widget associated with a given surface_id.
+  virtual gfx::AcceleratedWidget GetNativeWidget(int surface_id) OVERRIDE;
+
   // Gets the global instance of the surface tracker.
   static GpuSurfaceTracker* Get() { return GetInstance(); }
 
@@ -78,7 +83,7 @@ class GpuSurfaceTracker {
   friend struct DefaultSingletonTraits<GpuSurfaceTracker>;
 
   GpuSurfaceTracker();
-  ~GpuSurfaceTracker();
+  virtual ~GpuSurfaceTracker();
 
   base::Lock lock_;
   SurfaceMap surface_map_;

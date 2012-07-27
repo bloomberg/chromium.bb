@@ -8,9 +8,11 @@
 
 GpuSurfaceTracker::GpuSurfaceTracker()
     : next_surface_id_(1) {
+  GpuSurfaceLookup::InitInstance(this);
 }
 
 GpuSurfaceTracker::~GpuSurfaceTracker() {
+  GpuSurfaceLookup::InitInstance(NULL);
 }
 
 GpuSurfaceTracker* GpuSurfaceTracker::GetInstance() {
@@ -93,4 +95,12 @@ gfx::PluginWindowHandle GpuSurfaceTracker::GetSurfaceWindowHandle(
   if (it == surface_map_.end())
     return gfx::kNullPluginWindow;
   return it->second.handle.handle;
+}
+
+gfx::AcceleratedWidget GpuSurfaceTracker::GetNativeWidget(int surface_id) {
+  base::AutoLock lock(lock_);
+  SurfaceMap::iterator it = surface_map_.find(surface_id);
+  if (it == surface_map_.end())
+    return gfx::kNullAcceleratedWidget;
+  return it->second.native_widget;
 }
