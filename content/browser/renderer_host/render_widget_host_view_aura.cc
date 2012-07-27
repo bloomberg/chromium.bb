@@ -711,6 +711,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
             params_in_pixel.height,
         params_in_pixel.width,
         params_in_pixel.height));
+
+    // Damage may not have been DIP aligned, so inflate damage to compensate
+    // for any round-off error.
+    rect_to_paint.Inset(-1, -1);
+    rect_to_paint.Intersect(window_->bounds());
+
     window_->SchedulePaintInRect(rect_to_paint);
 
     if (!resize_locks_.empty()) {
