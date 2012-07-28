@@ -510,7 +510,13 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
       AsWeakPtr(),
       callback);
   pending_thumbnail_tasks_.push_back(callback);
-  gfx::Rect src_subrect_in_pixel = ConvertRectToPixel(this, src_subrect);
+
+  // Convert |src_subrect| from the views coordinate (upper-left origin) into
+  // the OpenGL coordinate (lower-left origin).
+  gfx::Rect src_subrect_in_gl = src_subrect;
+  src_subrect_in_gl.set_y(GetViewBounds().height() - src_subrect.bottom());
+
+  gfx::Rect src_subrect_in_pixel = ConvertRectToPixel(this, src_subrect_in_gl);
   gl_helper->CopyTextureTo(container->texture_id(),
                            container->size(),
                            src_subrect_in_pixel,

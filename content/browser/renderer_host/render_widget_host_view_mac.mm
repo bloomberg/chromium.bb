@@ -832,10 +832,14 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
       dst_pixel_size.width(), dst_pixel_size.height(), true))
     return;
 
-  gfx::Rect src_pixel_subrect(src_subrect.origin().Scale(scale),
-                              src_subrect.size().Scale(scale));
+  // Convert |src_subrect| from the views coordinate (upper-left origin) into
+  // the OpenGL coordinate (lower-left origin).
+  gfx::Rect src_gl_subrect = src_subrect;
+  src_gl_subrect.set_y(GetViewBounds().height() - src_subrect.bottom());
+
+  gfx::Rect src_pixel_gl_subrect = src_gl_subrect.Scale(scale);
   const bool result = compositing_iosurface_->CopyTo(
-      src_pixel_subrect,
+      src_pixel_gl_subrect,
       dst_pixel_size,
       output->getTopDevice()->accessBitmap(true).getPixels());
   scoped_callback_runner.Release();
