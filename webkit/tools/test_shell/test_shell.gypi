@@ -331,6 +331,8 @@
       ],
     },
     {
+      # TODO(tony): This should be moved to webkit_glue.gypi or
+      # webkit_tests.gypi and named something like test_mock_plugin_list.
       'target_name': 'test_shell_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -350,7 +352,6 @@
       'dependencies': [
         '../build/temp_gyp/googleurl.gyp:googleurl',
         'test_shell_common',
-        'test_shell_test_support',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/net/net.gyp:net_test_support',
@@ -379,10 +380,6 @@
         '../../mocks/mock_webframeclient.h',
         '../../mocks/mock_weburlloader.cc',
         '../../mocks/mock_weburlloader.h',
-        '../../plugins/npapi/plugin_group_unittest.cc',
-        '../../plugins/npapi/plugin_lib_unittest.cc',
-        '../../plugins/npapi/plugin_list_unittest.cc',
-        '../../plugins/npapi/webplugin_impl_unittest.cc',
         '../../plugins/ppapi/host_var_tracker_unittest.cc',
         '../../plugins/ppapi/mock_plugin_delegate.cc',
         '../../plugins/ppapi/mock_plugin_delegate.h',

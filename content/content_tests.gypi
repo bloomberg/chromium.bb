@@ -232,6 +232,7 @@
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
         '../webkit/support/webkit_support.gyp:webkit_media',
+        '../webkit/webkit.gyp:test_shell_test_support',
       ],
       'include_dirs': [
         '..',
@@ -415,6 +416,10 @@
         '../webkit/media/test_response_generator.h',
         '../webkit/mocks/mock_weburlloader.cc',
         '../webkit/mocks/mock_weburlloader.h',
+        '../webkit/plugins/npapi/plugin_group_unittest.cc',
+        '../webkit/plugins/npapi/plugin_lib_unittest.cc',
+        '../webkit/plugins/npapi/plugin_list_unittest.cc',
+        '../webkit/plugins/npapi/webplugin_impl_unittest.cc',
         '../webkit/quota/mock_quota_manager.cc',
         '../webkit/quota/mock_quota_manager.h',
         '../webkit/quota/mock_quota_manager_unittest.cc',
