@@ -18,6 +18,10 @@
 
 class PresentThread;
 
+namespace gfx {
+class Rect;
+}
+
 class SURFACE_EXPORT AcceleratedPresenter
     : public base::RefCountedThreadSafe<AcceleratedPresenter> {
  public:
@@ -52,7 +56,9 @@ class SURFACE_EXPORT AcceleratedPresenter
 
   // The public member functions are called on the main thread.
   bool Present(HDC dc);
-  bool CopyTo(const gfx::Size& size, void* buf);
+  bool CopyTo(const gfx::Rect& src_subrect,
+              const gfx::Size& dst_size,
+              void* buf);
   void Invalidate();
 
  private:
@@ -115,11 +121,14 @@ class SURFACE_EXPORT AcceleratedSurface {
   // Synchronously present a frame with no acknowledgement.
   bool Present(HDC dc);
 
-  // Copies the surface data to |buf|. The image data is transformed so that it
-  // fits in |size|.
+  // Copies the surface data to |buf|. The copied region is specified with
+  // |src_subrect| and the image data is transformed so that it fits in
+  // |dst_size|.
   // Caller must ensure that |buf| is allocated with the size no less than
-  // |4 * size.width() * size.height()| bytes.
-  bool CopyTo(const gfx::Size& size, void* buf);
+  // |4 * dst_size.width() * dst_size.height()| bytes.
+  bool CopyTo(const gfx::Rect& src_subrect,
+              const gfx::Size& dst_size,
+              void* buf);
 
   // Temporarily release resources until a new surface is asynchronously
   // presented. Present will not be able to represent the last surface after

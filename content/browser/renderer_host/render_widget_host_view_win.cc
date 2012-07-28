@@ -1199,13 +1199,6 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurface(
     const base::Callback<void(bool)>& callback,
     skia::PlatformCanvas* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
-  // TODO(mazda): Support copying a partial rectangle from the compositing
-  // surface with |src_subrect| (http://crbug.com/118571).
-  if (!src_subrect.IsEmpty()) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
   if (!accelerated_surface_.get())
     return;
 
@@ -1216,7 +1209,9 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurface(
     return;
 
   const bool result = accelerated_surface_->CopyTo(
-      dst_size, output->getTopDevice()->accessBitmap(true).getPixels());
+      src_subrect,
+      dst_size,
+      output->getTopDevice()->accessBitmap(true).getPixels());
   scoped_callback_runner.Release();
   callback.Run(result);
 }
