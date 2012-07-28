@@ -30,6 +30,7 @@
         'safe_browsing_report_proto',
         'feedback_proto',
         'gdata_proto',
+        'contacts_proto',
         'variations_seed_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
@@ -451,8 +452,6 @@
         'browser/chromeos/choose_mobile_network_dialog.h',
         'browser/chromeos/chrome_browser_main_chromeos.cc',
         'browser/chromeos/chrome_browser_main_chromeos.h',
-        'browser/chromeos/contacts/contact.cc',
-        'browser/chromeos/contacts/contact.h',
         'browser/chromeos/cros/burn_library.cc',
         'browser/chromeos/cros/burn_library.h',
         'browser/chromeos/cros/cellular_data_plan.cc',
@@ -5443,6 +5442,17 @@
       'variables': {
         'proto_in_dir': 'browser/chromeos/gdata',
         'proto_out_dir': 'chrome/browser/chromeos/gdata',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for contacts-related protocol buffers.
+      'target_name': 'contacts_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/chromeos/contacts/contact.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/chromeos/contacts',
+        'proto_out_dir': 'chrome/browser/chromeos/contacts',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

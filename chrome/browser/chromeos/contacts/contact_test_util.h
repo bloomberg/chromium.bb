@@ -8,11 +8,13 @@
 #include <string>
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/chromeos/contacts/contact.h"
+#include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "ui/gfx/size.h"
 
 namespace contacts {
 namespace test {
+
+typedef std::vector<const Contact*> ContactPointers;
 
 // Returns a string containing the information stored in |contact|.  The same
 // string will be returned for functionally-equivalent contacts (e.g. ones
@@ -27,9 +29,6 @@ std::string ContactsToString(const ScopedVector<Contact>& contacts);
 // Convenience wrapper for ContactsToString().  Takes |num_contacts|
 // const Contact* arguments.
 std::string VarContactsToString(int num_contacts, ...);
-
-// Copies |source|'s data to |dest|.
-void CopyContact(const Contact& source, Contact* dest);
 
 // Saves copies of all contacts in |source| to |dest|.
 void CopyContacts(const ContactPointers& source,
@@ -49,21 +48,21 @@ void InitContact(const std::string& provider_id,
 
 // Adds an email address to |contact|.
 void AddEmailAddress(const std::string& address,
-                     Contact::AddressType::Relation relation,
+                     Contact_AddressType_Relation relation,
                      const std::string& label,
                      bool primary,
                      Contact* contact);
 
 // Adds a phone number to |contact|.
 void AddPhoneNumber(const std::string& number,
-                    Contact::AddressType::Relation relation,
+                    Contact_AddressType_Relation relation,
                     const std::string& label,
                     bool primary,
                     Contact* contact);
 
 // Adds a postal address to |contact|.
 void AddPostalAddress(const std::string& address,
-                      Contact::AddressType::Relation relation,
+                      Contact_AddressType_Relation relation,
                       const std::string& label,
                       bool primary,
                       Contact* contact);
@@ -71,8 +70,8 @@ void AddPostalAddress(const std::string& address,
 // Adds an IM address to |contact|.
 void AddInstantMessagingAddress(
     const std::string& address,
-    Contact::InstantMessagingAddress::Protocol protocol,
-    Contact::AddressType::Relation relation,
+    Contact_InstantMessagingAddress_Protocol protocol,
+    Contact_AddressType_Relation relation,
     const std::string& label,
     bool primary,
     Contact* contact);
