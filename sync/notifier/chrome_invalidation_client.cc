@@ -103,7 +103,10 @@ void ChromeInvalidationClient::UpdateCredentials(
 void ChromeInvalidationClient::RegisterIds(const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
   registered_ids_ = ids;
-  if (GetState() == NO_NOTIFICATION_ERROR && registration_manager_.get()) {
+  // |ticl_state_| can go to NO_NOTIFICATION_ERROR even without a
+  // working XMPP connection (as observed by us), so check it instead
+  // of GetState() (see http://crbug.com/139424).
+  if (ticl_state_ == NO_NOTIFICATION_ERROR && registration_manager_.get()) {
     registration_manager_->SetRegisteredIds(registered_ids_);
   }
   // TODO(akalin): Clear invalidation versions for unregistered types.
