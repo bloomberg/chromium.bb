@@ -59,6 +59,8 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
         logging.warning('Could not update manifest-versions checkout.')
       else:
         reinitialize = False
+  else:
+    logging.info('No manifest-versions checkout exists at %s', manifest_dir)
 
   if reinitialize:
     logging.info('Cloning fresh manifest-versions checkout.')
