@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,8 +61,7 @@ void _update_loop(Simulator* sim);
 class Simulator {
  public:
   Simulator(int seconds_per_test, const FilePath& output_path)
-     : running_(false),
-       current_sim_(NULL),
+     : current_sim_(NULL),
        output_path_(output_path),
        seconds_per_test_(seconds_per_test),
        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
@@ -341,7 +340,6 @@ class Simulator {
   }
 
   // Simulation task list for this execution
-  bool running_;
   RenderModelSimulator* current_sim_;
   queue<SimulationSpecification> sims_remaining_;
   queue<SimulationSpecification> sims_completed_;
