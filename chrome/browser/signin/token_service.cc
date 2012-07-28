@@ -347,6 +347,11 @@ void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
 void TokenService::LoadTokensIntoMemory(
     const std::map<std::string, std::string>& db_tokens,
     std::map<std::string, std::string>* in_memory_tokens) {
+  // Ensure that there are no active fetchers at the time we first load
+  // tokens from the DB into memory.
+  for (size_t i = 0; i < arraysize(kServices); ++i) {
+    DCHECK(NULL == fetchers_[i].get());
+  }
 
   for (size_t i = 0; i < arraysize(kServices); i++) {
     LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens, kServices[i]);
@@ -369,10 +374,10 @@ void TokenService::LoadTokensIntoMemory(
       sid = db_tokens.find(GaiaConstants::kGaiaSid)->second;
 
     if (!lsid.empty() && !sid.empty()) {
-      UpdateCredentials(GaiaAuthConsumer::ClientLoginResult(sid,
-                                                            lsid,
-                                                            std::string(),
-                                                            std::string()));
+      credentials_ = GaiaAuthConsumer::ClientLoginResult(sid,
+                                                         lsid,
+                                                         std::string(),
+                                                         std::string());
     }
   }
 }
