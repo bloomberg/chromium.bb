@@ -38,6 +38,7 @@ cr.define('cr.ui', function() {
                                           this.handleDocClick_.bind(this));
       this.ownerDocument.addEventListener('keydown',
                                           this.handleDocKeyDown_.bind(this));
+      window.addEventListener('blur', this.handleWindowBlur_.bind(this));
       this.addEventListener('webkitTransitionEnd',
                             this.handleTransitionEnd_.bind(this));
     },
@@ -213,6 +214,15 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleDocKeyDown_: function(e) {
+      if (!this.hidden)
+        this.hide();
+    },
+
+    /**
+     * Handler of window blur event.
+     * @private
+     */
+    handleWindowBlur_: function(e) {
       if (!this.hidden)
         this.hide();
     }
