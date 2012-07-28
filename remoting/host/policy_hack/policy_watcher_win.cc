@@ -151,6 +151,7 @@ class PolicyWatcherWin :
         policy->SetBoolean(policy_name, bool_value);
       }
     }
+    // TODO(simonmorris): Read policies whose names are in kStringPolicyNames.
 
     return policy;
   }

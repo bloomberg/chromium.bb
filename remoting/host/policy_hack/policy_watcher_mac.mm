@@ -56,6 +56,7 @@ class PolicyWatcherMac : public PolicyWatcher {
           policy.SetBoolean(policy_name, allowed);
         }
       }
+      // TODO(simonmorris): Read policies whose names are in kStringPolicyNames.
     }
 
     // Set policy. Policy must be set (even if it is empty) so that the

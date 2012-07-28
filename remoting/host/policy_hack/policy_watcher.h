@@ -49,6 +49,9 @@ class PolicyWatcher {
   // The name of the NAT traversal policy.
   static const char kNatPolicyName[];
 
+  // The name of the host domain policy.
+  static const char kHostDomainPolicyName[];
+
  protected:
   virtual void StartWatchingInternal() = 0;
   virtual void StopWatchingInternal() = 0;
@@ -69,6 +72,10 @@ class PolicyWatcher {
   // The names of policies with boolean values.
   static const char* const kBooleanPolicyNames[];
   static const int kBooleanPolicyNamesNum;
+
+  // The names of policies with string values.
+  static const char* const kStringPolicyNames[];
+  static const int kStringPolicyNamesNum;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
