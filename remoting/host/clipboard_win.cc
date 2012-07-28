@@ -160,7 +160,7 @@ void ClipboardWin::Start(
   }
 
   if (!RegisterWindowClass()) {
-    LOG(FATAL) << "Couldn't register clipboard window class.";
+    LOG(ERROR) << "Couldn't register clipboard window class.";
     return;
   }
   hwnd_ = ::CreateWindow(kWindowClassName,
@@ -171,7 +171,7 @@ void ClipboardWin::Start(
                          base::GetModuleFromAddress(&WndProc),
                          this);
   if (!hwnd_) {
-    LOG(FATAL) << "Couldn't create clipboard window.";
+    LOG(ERROR) << "Couldn't create clipboard window.";
     return;
   }
 
