@@ -280,7 +280,6 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     gtk_box_pack_start(GTK_BOX(oauth_issues_container), oauth_issues_header,
                        FALSE, FALSE, 0);
 
-    // TODO(estade): display the issue details under zippies.
     for (size_t i = 0; i < prompt.GetOAuthIssueCount(); ++i) {
       GtkWidget* issue_advice_widget =
           CreateWidgetForIssueAdvice(prompt.GetOAuthIssue(i), pixel_width);

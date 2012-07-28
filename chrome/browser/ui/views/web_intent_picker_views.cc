@@ -1177,7 +1177,6 @@ void WebIntentPickerViews::ResetContents() {
   action_label_->SetText(action_text_);
   contents_->Layout();
   SizeToContents();
-
 }
 
 void WebIntentPickerViews::SizeToContents() {
