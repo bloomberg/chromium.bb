@@ -35,8 +35,6 @@ class LoginTestBase : public CrosInProcessBrowserTest {
     cros_mock_->InitMockCryptohomeLibrary();
     mock_cryptohome_library_ = cros_mock_->mock_cryptohome_library();
     mock_network_library_ = cros_mock_->mock_network_library();
-    EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
-        .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))

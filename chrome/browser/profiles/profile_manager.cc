@@ -58,8 +58,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
@@ -162,6 +162,18 @@ void OnOpenWindowForNewProfile(Profile* profile,
         false);
   }
 }
+
+#if defined(OS_CHROMEOS)
+void CheckCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
+                              bool is_mounted) {
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+    LOG(ERROR) << "IsMounted call failed.";
+    return;
+  }
+  if (!is_mounted)
+    LOG(ERROR) << "Cryptohome is not mounted.";
+}
+#endif
 
 } // namespace
 
@@ -526,8 +538,8 @@ void ProfileManager::Observe(
       // TODO(davemoore) Once we have better api this check should ensure that
       // our profile directory is the one that's mounted, and that it's mounted
       // as the current user.
-      CHECK(chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->IsMounted())
-          << "The cryptohome was not mounted at login.";
+      chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(
+          base::Bind(&CheckCryptohomeIsMounted));
 
       // Confirm that we hadn't loaded the new profile previously.
       FilePath default_profile_dir =

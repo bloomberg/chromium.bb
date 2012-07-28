@@ -21,7 +21,6 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
  public:
   MockCryptohomeLibrary();
   virtual ~MockCryptohomeLibrary();
-  MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD0(GetSystemSalt, std::string(void));
 
   MOCK_METHOD0(TpmIsReady, bool(void));

@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/cros_mock.h"
-#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -37,6 +36,7 @@ namespace chromeos {
 
 using ::testing::AnyNumber;
 using ::testing::AnyOf;
+using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnNull;
@@ -97,8 +97,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
 class ExistingUserControllerTest : public CrosInProcessBrowserTest {
  protected:
   ExistingUserControllerTest()
-      : mock_cryptohome_library_(NULL),
-        mock_network_library_(NULL),
+      : mock_network_library_(NULL),
         mock_login_display_(NULL),
         mock_login_display_host_(NULL),
         testing_profile_(NULL) {
@@ -125,12 +124,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         .Times(1);
     EXPECT_CALL(*mock_session_manager_client, RetrieveDevicePolicy(_))
         .Times(AnyNumber());
-
-    cros_mock_->InitMockCryptohomeLibrary();
-    mock_cryptohome_library_ = cros_mock_->mock_cryptohome_library();
-    EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(true));
 
     mock_login_utils_ = new MockLoginUtils();
     LoginUtils::Set(mock_login_utils_);
@@ -208,7 +201,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   scoped_ptr<ExistingUserController> existing_user_controller_;
 
   // These mocks are owned by CrosLibrary class.
-  MockCryptohomeLibrary* mock_cryptohome_library_;
   MockNetworkLibrary* mock_network_library_;
 
   MockLoginDisplay* mock_login_display_;

@@ -31,8 +31,7 @@ void CryptohomeWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   CryptohomeLibrary* cryptohome_library =
       CrosLibrary::Get()->GetCryptohomeLibrary();
 
-  base::FundamentalValue is_mounted(cryptohome_library->IsMounted());
-  SetCryptohomeProperty("is-mounted", is_mounted);
+  cryptohome_client->IsMounted(GetCryptohomeBoolCallback("is-mounted"));
   cryptohome_client->TpmIsReady(GetCryptohomeBoolCallback("tpm-is-ready"));
   base::FundamentalValue tpm_is_enabled(cryptohome_library->TpmIsEnabled());
   SetCryptohomeProperty("tpm-is-enabled", tpm_is_enabled);

@@ -60,8 +60,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   virtual void ResetAsyncCallStatusHandler() = 0;
 
   // Calls IsMounted method and returns true when the call succeeds.
-  // This method blocks until the call returns.
-  virtual bool IsMounted(bool* is_mounted) = 0;
+  virtual void IsMounted(const BoolMethodCallback& callback) = 0;
 
   // Calls Unmount method and returns true when the call succeeds.
   // This method blocks until the call returns.

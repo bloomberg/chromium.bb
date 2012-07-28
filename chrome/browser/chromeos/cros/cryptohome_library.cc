@@ -29,12 +29,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   virtual ~CryptohomeLibraryImpl() {
   }
 
-  virtual bool IsMounted() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(&result);
-    return result;
-  }
-
   virtual bool TpmIsEnabled() OVERRIDE {
     bool result = false;
     DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsEnabledAndBlock(
@@ -142,10 +136,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   CryptohomeLibraryStubImpl()
     : locked_(false) {}
   virtual ~CryptohomeLibraryStubImpl() {}
-
-  virtual bool IsMounted() OVERRIDE {
-    return true;
-  }
 
   virtual bool TpmIsEnabled() OVERRIDE {
     return true;

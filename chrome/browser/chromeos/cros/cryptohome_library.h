@@ -16,9 +16,6 @@ class CryptohomeLibrary {
   CryptohomeLibrary();
   virtual ~CryptohomeLibrary();
 
-  // Asks cryptohomed if a drive is currently mounted.
-  virtual bool IsMounted() = 0;
-
   // Wrappers of the functions for working with Tpm.
 
   // Returns whether Tpm is presented and enabled.

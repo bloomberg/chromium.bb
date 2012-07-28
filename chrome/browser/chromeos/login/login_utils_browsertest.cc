@@ -167,8 +167,6 @@ class LoginUtilsTest : public testing::Test,
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*cryptohome_, TpmIsEnabled())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*cryptohome_, IsMounted())
-        .WillRepeatedly(Return(true));
     EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttributeOwned, kTrue))
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttributeOwner,
