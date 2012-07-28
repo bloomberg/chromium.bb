@@ -7,6 +7,7 @@
 #include "native_client/tests/thread_suspension/suspend_test.h"
 
 #include <assert.h>
+#include <setjmp.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -19,6 +20,8 @@
 
 
 typedef int (*TYPE_nacl_test_syscall_1)(struct SuspendTestShm *test_shm);
+
+__thread jmp_buf return_jmp_buf;
 
 
 static void MutatorThread(struct SuspendTestShm *test_shm) {
@@ -91,6 +94,103 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
 #else
 # error Unsupported architecture
 #endif
+  assert(!"Should not reach here");
+}
+
+static void ContinueAfterSyscall(void) {
+  longjmp(return_jmp_buf, 1);
+}
+
+static void UnsetNonCalleeSavedRegisters(struct NaClSignalContext *regs) {
+#if defined(__i386__)
+  regs->eax = 0;
+  regs->ecx = 0;
+  regs->edx = 0;
+#elif defined(__x86_64__)
+  regs->rax = 0;
+  regs->rcx = 0;
+  regs->rdx = 0;
+  regs->rsi = 0;
+  regs->rdi = 0;
+  regs->r8 = 0;
+  regs->r9 = 0;
+  regs->r10 = 0;
+  regs->r11 = 0;
+#elif defined(__arm__)
+  regs->r0 = 0;
+  regs->r1 = 0;
+  regs->r2 = 0;
+  regs->r3 = 0;
+  regs->r12 = 0;
+  regs->lr = 0;
+#else
+# error Unsupported architecture
+#endif
+}
+
+/* Set registers to known values and enter a NaCl syscall. */
+static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
+  struct NaClSignalContext call_regs;
+  char stack[0x10000];
+
+  RegsFillTestValues(&call_regs);
+  call_regs.stack_ptr = (uintptr_t) stack + sizeof(stack);
+  call_regs.prog_ctr = (uintptr_t) ContinueAfterSyscall;
+  RegsApplySandboxConstraints(&call_regs);
+
+  /*
+   * call_regs are the registers we set on entry to the syscall.
+   * expected_regs are the registers that should be reported by
+   * NaClAppThreadGetSuspendedRegisters().  Since not all registers
+   * are saved when entering a syscall, expected_regs will be the same
+   * as call_regs but with various registers zeroed out.
+   */
+  test_shm->expected_regs = call_regs;
+  UnsetNonCalleeSavedRegisters(&test_shm->expected_regs);
+
+  uintptr_t syscall_addr = (uintptr_t) NACL_SYSCALL(test_syscall_1);
+  if (!setjmp(return_jmp_buf)) {
+#if defined(__i386__)
+    test_shm->expected_regs.stack_ptr -= 4;  /* Account for argument */
+    call_regs.eax = syscall_addr;
+    call_regs.ecx = (uintptr_t) test_shm;  /* Scratch register */
+    ASM_WITH_REGS(
+        &call_regs,
+        "push %%ecx\n"  /* Push syscall argument */
+        "push $ContinueAfterSyscall\n"  /* Push return address */
+        "nacljmp %%eax\n");
+#elif defined(__x86_64__)
+    call_regs.rax = syscall_addr;
+    call_regs.rdi = (uintptr_t) test_shm;  /* Set syscall argument */
+    ASM_WITH_REGS(
+        &call_regs,
+        "push $ContinueAfterSyscall\n"  /* Push return address */
+        "nacljmp %%eax, %%r15\n");
+#elif defined(__arm__)
+    /*
+     * We adjust for the 4 arguments that tramp_arm.S pushes on the
+     * stack and arm/nacl_switch.S pops off the stack.
+     *
+     * TODO(mseaborn): We should change the TCB and remove this
+     * adjustment, because it is wrong for
+     * NaClAppThreadGetSuspendedRegisters() to report register state
+     * that is different from what untrusted code will be resumed
+     * with.
+     */
+    test_shm->expected_regs.stack_ptr -= 16;
+
+    call_regs.r0 = (uintptr_t) test_shm;  /* Set syscall argument */
+    call_regs.r1 = syscall_addr;  /* Scratch register */
+    call_regs.lr = (uintptr_t) ContinueAfterSyscall;
+    ASM_WITH_REGS(
+        &call_regs,
+        "bic r1, r1, #0xf000000f\n"
+        "bx r1\n");
+#else
+# error Unsupported architecture
+#endif
+    assert(!"Should not reach here");
+  }
 }
 
 #if defined(__i386__)
@@ -202,6 +302,8 @@ int main(int argc, char **argv) {
     SyscallInvokerThread(test_shm);
   } else if (strcmp(test_type, "RegisterSetterThread") == 0) {
     RegisterSetterThread(test_shm);
+  } else if (strcmp(test_type, "SyscallRegisterSetterThread") == 0) {
+    SyscallRegisterSetterThread(test_shm);
   } else {
     fprintf(stderr, "Unknown test type: %s\n", test_type);
     return 1;

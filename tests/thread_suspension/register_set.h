@@ -29,7 +29,7 @@
         "movl 0x1c(%%eax), %%edi\n" \
         "movl 0x00(%%eax), %%eax\n" \
         asm_code \
-        : : "r"(regs))
+        : : "r"(regs) : "memory")
 
 #elif defined(__x86_64__)
 
@@ -53,7 +53,7 @@
         "movq 0x70(%%rbp), %%r14\n" \
         "naclrestbp 0x30(%%rbp), %%r15\n" \
         asm_code \
-        : : "r"(regs))
+        : : "r"(regs) : "memory")
 
 #elif defined(__arm__)
 
@@ -98,7 +98,7 @@
         "bic sp, sp, #0xc0000000\n" \
         ".p2align 4\n"  /* Align for whatever comes after */ \
         asm_code \
-        : : "r"(regs))
+        : : "r"(regs) : "memory")
 
 #else
 # error Unsupported architecture

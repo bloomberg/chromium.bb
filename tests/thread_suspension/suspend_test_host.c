@@ -167,7 +167,6 @@ static void TrySuspendingSyscall(struct NaClApp *nap) {
   uint32_t snapshot;
   struct SuspendTestShm *test_shm;
 
-  NaClAddSyscall(NACL_sys_test_syscall_1, SuspendTestSyscall);
   test_shm = StartGuestWithSharedMemory(nap, "SyscallReturnThread");
 
   /* Wait for the syscall to be entered and stop. */
@@ -230,41 +229,11 @@ static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap) {
   CHECK(NaClWaitForMainThreadToExit(nap) == 0);
 }
 
-static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
-  struct SuspendTestShm *test_shm;
-  struct NaClAppThread *natp;
-  struct NaClSignalContext regs;
+static void AssertRegistersEqual(const struct NaClSignalContext *actual,
+                                 const struct NaClSignalContext *expected) {
+#define CHECK_REG(regname) ASSERT_EQ(actual->regname, expected->regname)
 
-  test_shm = StartGuestWithSharedMemory(nap, "RegisterSetterThread");
-  /*
-   * Wait for the guest program to reach untrusted code and set
-   * registers to known test values.
-   */
-  while (test_shm->var == 0) { /* do nothing */ }
-
-  /*
-   * Check that registers are not saved unless this is requested.
-   * Currently this must come before calling
-   * NaClUntrustedThreadsSuspendAll() with save_registers=1.
-   */
-  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
-  natp = GetOnlyThread(nap);
-  CHECK(natp->suspended_registers == NULL);
-  NaClUntrustedThreadsResumeAll(nap);
-
-  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
-  /*
-   * The previous natp is valid only while holding nap->threads_mu,
-   * which NaClUntrustedThreadsSuspendAll() claims for us.  Re-get
-   * natp in case the thread exited.
-   */
-  natp = GetOnlyThread(nap);
-  CHECK(natp->suspended_registers != NULL);
-  NaClAppThreadGetSuspendedRegisters(natp, &regs);
-
-#define CHECK_REG(regname) \
-    ASSERT_EQ(regs.regname, test_shm->expected_regs.regname)
-
+  /* Note that we don't check x86 flags yet. */
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   CHECK_REG(eax);
   CHECK_REG(ecx);
@@ -315,6 +284,41 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
 #endif
 
 #undef CHECK_REG
+}
+
+static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
+  struct SuspendTestShm *test_shm;
+  struct NaClAppThread *natp;
+  struct NaClSignalContext regs;
+
+  test_shm = StartGuestWithSharedMemory(nap, "RegisterSetterThread");
+  /*
+   * Wait for the guest program to reach untrusted code and set
+   * registers to known test values.
+   */
+  while (test_shm->var == 0) { /* do nothing */ }
+
+  /*
+   * Check that registers are not saved unless this is requested.
+   * Currently this must come before calling
+   * NaClUntrustedThreadsSuspendAll() with save_registers=1.
+   */
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
+  natp = GetOnlyThread(nap);
+  CHECK(natp->suspended_registers == NULL);
+  NaClUntrustedThreadsResumeAll(nap);
+
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
+  /*
+   * The previous natp is valid only while holding nap->threads_mu,
+   * which NaClUntrustedThreadsSuspendAll() claims for us.  Re-get
+   * natp in case the thread exited.
+   */
+  natp = GetOnlyThread(nap);
+  CHECK(natp->suspended_registers != NULL);
+  NaClAppThreadGetSuspendedRegisters(natp, &regs);
+
+  AssertRegistersEqual(&regs, &test_shm->expected_regs);
 
   /*
    * Test that we can also modify the registers of a suspended thread.
@@ -382,6 +386,33 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
   }
 }
 
+static void TestGettingRegisterSnapshotInSyscall(struct NaClApp *nap) {
+  struct SuspendTestShm *test_shm;
+  struct NaClAppThread *natp;
+  struct NaClSignalContext regs;
+
+  test_shm = StartGuestWithSharedMemory(nap, "SyscallRegisterSetterThread");
+  /* Wait for the syscall to be entered and stop. */
+  while (test_shm->var == 0) { /* do nothing */ }
+
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
+  natp = GetOnlyThread(nap);
+  NaClAppThreadGetSuspendedRegisters(natp, &regs);
+  NaClUntrustedThreadsResumeAll(nap);
+  test_shm->should_exit = 1;
+  CHECK(NaClWaitForMainThreadToExit(nap) == 0);
+
+  /*
+   * TODO(mseaborn): prog_ctr is not reported correctly yet.  We get
+   * the return address of the *previous* syscall instead of the
+   * current syscall.  For now, ignore this by copying the value
+   * across.
+   */
+  regs.prog_ctr = test_shm->expected_regs.prog_ctr;
+
+  AssertRegistersEqual(&regs, &test_shm->expected_regs);
+}
+
 int main(int argc, char **argv) {
   struct NaClApp app;
   struct GioMemoryFileSnapshot gio_file;
@@ -409,6 +440,8 @@ int main(int argc, char **argv) {
   NaClAppInitialDescriptorHookup(&app);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
+  NaClAddSyscall(NACL_sys_test_syscall_1, SuspendTestSyscall);
+
   /*
    * We reuse the same sandbox for both tests.
    *
@@ -427,6 +460,13 @@ int main(int argc, char **argv) {
   printf("Running TrySuspendingSyscallInvokerThread...\n");
   TrySuspendingSyscallInvokerThread(&app);
 
+  printf("Running TestGettingRegisterSnapshotInSyscall...\n");
+  TestGettingRegisterSnapshotInSyscall(&app);
+
+  /*
+   * Currently, on Mac OS X, this must come last, since we don't let
+   * the thread exit.  See the TODO(mseaborn) for Mac above.
+   */
   printf("Running TestGettingRegisterSnapshot...\n");
   TestGettingRegisterSnapshot(&app);
 
