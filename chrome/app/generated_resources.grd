@@ -7159,7 +7159,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Machine identifiers may be used to uniquely identify you for the purposes of authorizing access to protected content.
         </message>
         <message name="IDS_PROTECTED_CONTENT_ENABLE" desc="The label of the checkbox for enabling protected content.">
-          Run protected content
+          Run protected content (computer restart may be required)
         </message>
       </if>
 
