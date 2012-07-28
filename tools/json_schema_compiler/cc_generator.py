@@ -88,7 +88,7 @@ class CCGenerator(object):
       )
     for event in self._namespace.events.values():
       (c.Concat(self._GenerateCreateCallbackArguments(
-          cpp_util.Classname(event.name), event))
+          cpp_util.Classname(event.name), event, generate_to_json=True))
         .Append()
       )
     (c.Concat(self._cpp_type_generator.GetNamespaceEnd())
@@ -689,7 +689,10 @@ class CCGenerator(object):
     )
     return c
 
-  def _GenerateCreateCallbackArguments(self, function_scope, callback):
+  def _GenerateCreateCallbackArguments(self,
+                                       function_scope,
+                                       callback,
+                                       generate_to_json=False):
     """Generate all functions to create Value parameters for a callback.
 
     E.g for function "Bar", generate Bar::Results::Create
@@ -698,6 +701,7 @@ class CCGenerator(object):
     function_scope: the function scope path, e.g. Foo::Bar for the function
     Foo::Bar::Baz().
     callback: the Function object we are creating callback arguments for.
+    generate_to_json: Generate a ToJson method.
     """
     c = Code()
     params = callback.params
@@ -724,9 +728,22 @@ class CCGenerator(object):
 
       c.Append('return create_results.Pass();')
       c.Eblock('}')
+      if generate_to_json:
+        c.Append()
+        (c.Sblock('std::string %(function_scope)s::'
+                  'ToJson(%(declaration_list)s) {')
+          .Append('scoped_ptr<base::ListValue> create_results = '
+                  '%(function_scope)s::Create(%(param_list)s);')
+          .Append('std::string json;')
+          .Append('base::JSONWriter::Write(create_results.get(), &json);')
+          .Append('return json;')
+        )
+        c.Eblock('}')
+
       c.Substitute({
           'function_scope': function_scope,
-          'declaration_list': ', '.join(declaration_list)
+          'declaration_list': ', '.join(declaration_list),
+          'param_list': ', '.join(param.unix_name for param in param_list)
       })
 
     return c

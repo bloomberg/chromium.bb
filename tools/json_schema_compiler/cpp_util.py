@@ -65,7 +65,7 @@ def GetParameterDeclaration(param, type_):
   type.
   """
   if param.type_ in (PropertyType.REF, PropertyType.OBJECT, PropertyType.ARRAY,
-      PropertyType.STRING):
+      PropertyType.STRING, PropertyType.ANY):
     arg = '%(type)s& %(name)s'
   else:
     arg = '%(type)s %(name)s'

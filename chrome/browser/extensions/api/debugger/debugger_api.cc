@@ -254,10 +254,7 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
     Debuggee debuggee;
     debuggee.tab_id = tab_id_;
 
-    scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee));
-    std::string json_args;
-    base::JSONWriter::Write(args.get(), &json_args);
-
+    std::string json_args = OnDetach::ToJson(debuggee);
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, keys::kOnDetach, json_args, profile, GURL());
   }
@@ -310,9 +307,7 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     if (dictionary->GetDictionary("params", &params_value))
       params.additional_properties.Swap(params_value);
 
-    scoped_ptr<ListValue> args(OnEvent::Create(debuggee, method_name, params));
-    std::string json_args;
-    base::JSONWriter::Write(args.get(), &json_args);
+    std::string json_args = OnEvent::ToJson(debuggee, method_name, params);
 
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, keys::kOnEvent, json_args, profile, GURL());

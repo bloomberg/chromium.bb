@@ -230,7 +230,8 @@ class HGenerator(object):
     """
     c = Code()
     (c.Sblock('namespace %s {' % cpp_util.Classname(event.name))
-        .Concat(self._GenerateCreateCallbackArguments(event))
+        .Concat(self._GenerateCreateCallbackArguments(event,
+                                                      generate_to_json=True))
       .Eblock('};')
     )
     return c
@@ -324,7 +325,7 @@ class HGenerator(object):
               cpp_util.Classname(prop.name)))
     return c
 
-  def _GenerateCreateCallbackArguments(self, function):
+  def _GenerateCreateCallbackArguments(self, function, generate_to_json=False):
     """Generates functions for passing paramaters to a callback.
     """
     c = Code()
@@ -341,6 +342,8 @@ class HGenerator(object):
             param, self._cpp_type_generator.GetType(param)))
       c.Append('scoped_ptr<base::ListValue> Create(%s);' %
                ', '.join(declaration_list))
+      if generate_to_json:
+        c.Append('std::string ToJson(%s);' % ', '.join(declaration_list))
     return c
 
   def _GenerateFunctionResults(self, callback):

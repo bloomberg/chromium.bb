@@ -4,6 +4,7 @@
 
 #include "tools/json_schema_compiler/test/objects.h"
 
+#include "base/json/json_writer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace test::api::objects;
@@ -67,4 +68,9 @@ TEST(JsonSchemaCompilerObjectsTest, OnObjectFiredCreate) {
   DictionaryValue* result = NULL;
   ASSERT_TRUE(results->GetDictionary(0, &result));
   ASSERT_TRUE(result->Equals(&expected));
+
+  std::string json1 = OnObjectFired::ToJson(object);
+  std::string json2;
+  base::JSONWriter::Write(results.get(), &json2);
+  ASSERT_EQ(json1, json2);
 }

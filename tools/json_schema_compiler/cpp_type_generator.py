@@ -222,6 +222,8 @@ class CppTypeGenerator(object):
                       self._cpp_namespaces[dependency])
          for dependency in self._NamespaceTypeDependencies().keys()]):
       c.Append('#include "%s"' % header)
+    if self._namespace.events:
+      c.Append('#include "base/json/json_writer.h"')
     return c
 
   def _ResolveTypeNamespace(self, ref_type):
