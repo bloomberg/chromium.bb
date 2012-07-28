@@ -419,7 +419,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
       if len(builders_completed) < len(builders_array):
         logging.info('Still waiting for the following builds to complete: %r',
-                     (set(builders_array) - builders_completed))
+                     sorted(set(builders_array).difference(builders_completed)))
         return None
       else:
         return 'Builds completed.'
