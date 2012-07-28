@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop_proxy.h"
+#include "base/task_runner.h"
 
 namespace webkit_blob {
 
@@ -31,8 +31,8 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::Get(
 // static
 scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
     const FilePath& path, FinalReleasePolicy policy,
-    base::MessageLoopProxy* file_thread) {
-  DCHECK(file_thread);
+    base::TaskRunner* file_task_runner) {
+  DCHECK(file_task_runner);
   typedef std::pair<ShareableFileMap::iterator, bool> InsertResult;
 
   // Required for VS2010: http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
@@ -44,7 +44,7 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
 
   // Wasn't in the map, create a new reference and store the pointer.
   scoped_refptr<ShareableFileReference> reference(
-      new ShareableFileReference(path, policy, file_thread));
+      new ShareableFileReference(path, policy, file_task_runner));
   result.first->second = reference.get();
   return reference;
 }
@@ -56,8 +56,10 @@ void ShareableFileReference::AddFinalReleaseCallback(
 
 ShareableFileReference::ShareableFileReference(
     const FilePath& path, FinalReleasePolicy policy,
-    base::MessageLoopProxy* file_thread)
-    : path_(path), final_release_policy_(policy), file_thread_(file_thread) {
+    base::TaskRunner* file_task_runner)
+    : path_(path),
+      final_release_policy_(policy),
+      file_task_runner_(file_task_runner) {
   DCHECK(g_file_map.Get().find(path_)->second == NULL);
 }
 
@@ -69,7 +71,7 @@ ShareableFileReference::~ShareableFileReference() {
     final_release_callbacks_[i].Run(path_);
 
   if (final_release_policy_ == DELETE_ON_FINAL_RELEASE) {
-    base::FileUtilProxy::Delete(file_thread_, path_, false /* recursive */,
+    base::FileUtilProxy::Delete(file_task_runner_, path_, false /* recursive */,
                                 base::FileUtilProxy::StatusCallback());
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "webkit/blob/blob_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class TaskRunner;
 }
 
 namespace webkit_blob {
@@ -42,7 +42,7 @@ class BLOB_EXPORT ShareableFileReference
   static scoped_refptr<ShareableFileReference> GetOrCreate(
       const FilePath& path,
       FinalReleasePolicy policy,
-      base::MessageLoopProxy* file_thread);
+      base::TaskRunner* file_task_runner);
 
   // The full file path.
   const FilePath& path() const { return path_; }
@@ -60,12 +60,12 @@ class BLOB_EXPORT ShareableFileReference
   ShareableFileReference(
       const FilePath& path,
       FinalReleasePolicy policy,
-      base::MessageLoopProxy* file_thread);
+      base::TaskRunner* file_task_runner);
   ~ShareableFileReference();
 
   const FilePath path_;
   const FinalReleasePolicy final_release_policy_;
-  const scoped_refptr<base::MessageLoopProxy> file_thread_;
+  const scoped_refptr<base::TaskRunner> file_task_runner_;
   std::vector<FinalReleaseCallback> final_release_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ShareableFileReference);
