@@ -2564,37 +2564,6 @@
       ],
     },
     {
-      'target_name': 'unit_tests_run',
-      'type': 'none',
-      'dependencies': [
-        'unit_tests',
-      ],
-      'includes': [
-        'unit_tests.isolate',
-      ],
-      'actions': [
-        {
-          'action_name': 'isolate',
-          'inputs': [
-            '<@(isolate_dependency_tracked)',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/unit_tests.results',
-          ],
-          'action': [
-            'python',
-            '../tools/isolate/isolate.py',
-            '<(test_isolation_mode)',
-            '--outdir', '<(test_isolation_outdir)',
-            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-            '--variable', 'OS', '<(OS)',
-            '--result', '<@(_outputs)',
-            '--isolate', 'unit_tests.isolate',
-          ],
-        },
-      ],
-    },
-    {
       # Executable that runs each browser test in a new process.
       'target_name': 'browser_tests',
       'type': 'executable',
@@ -3313,37 +3282,6 @@
         }],
       ],  # conditions
     },  # target browser_tests
-    {
-      'target_name': 'browser_tests_run',
-      'type': 'none',
-      'dependencies': [
-        'browser_tests',
-      ],
-      'includes': [
-        'browser_tests.isolate',
-      ],
-      'actions': [
-        {
-          'action_name': 'isolate',
-          'inputs': [
-            '<@(isolate_dependency_tracked)',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/browser_tests.results',
-          ],
-          'action': [
-            'python',
-            '../tools/isolate/isolate.py',
-            '<(test_isolation_mode)',
-            '--outdir', '<(test_isolation_outdir)',
-            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-            '--variable', 'OS', '<(OS)',
-            '--result', '<@(_outputs)',
-            '--isolate', 'browser_tests.isolate',
-          ],
-        },
-      ],
-    },
     {
       # Executable that runs each perf browser test in a new process.
       'target_name': 'performance_browser_tests',
@@ -4627,6 +4565,72 @@
              ],
           },
           'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'unit_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'unit_tests',
+          ],
+          'includes': [
+            'unit_tests.isolate',
+          ],
+          'actions': [
+            {
+              'action_name': 'isolate',
+              'inputs': [
+                '<@(isolate_dependency_tracked)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/unit_tests.results',
+              ],
+              'action': [
+                'python',
+                '../tools/isolate/isolate.py',
+                '<(test_isolation_mode)',
+                '--outdir', '<(test_isolation_outdir)',
+                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+                '--variable', 'OS', '<(OS)',
+                '--result', '<@(_outputs)',
+                '--isolate', 'unit_tests.isolate',
+              ],
+            },
+          ],
+        },
+        {
+          'target_name': 'browser_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'browser_tests',
+          ],
+          'includes': [
+            'browser_tests.isolate',
+          ],
+          'actions': [
+            {
+              'action_name': 'isolate',
+              'inputs': [
+                '<@(isolate_dependency_tracked)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/browser_tests.results',
+              ],
+              'action': [
+                'python',
+                '../tools/isolate/isolate.py',
+                '<(test_isolation_mode)',
+                '--outdir', '<(test_isolation_outdir)',
+                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+                '--variable', 'OS', '<(OS)',
+                '--result', '<@(_outputs)',
+                '--isolate', 'browser_tests.isolate',
+              ],
+            },
+          ],
         },
       ],
     }],
