@@ -173,7 +173,8 @@ void BlobStorageController::ResolveBlobReferencesInUploadData(
     net::UploadData* upload_data) {
   DCHECK(upload_data);
 
-  std::vector<net::UploadData::Element>* uploads = upload_data->elements();
+  std::vector<net::UploadData::Element>* uploads =
+      upload_data->elements_mutable();
   std::vector<net::UploadData::Element>::iterator iter;
   for (iter = uploads->begin(); iter != uploads->end();) {
     if (iter->type() != net::UploadData::TYPE_BLOB) {

@@ -44,7 +44,7 @@ class CannedResponseInterceptor : public net::URLRequest::Interceptor {
   virtual net::URLRequestJob* MaybeIntercept(
       net::URLRequest* request) OVERRIDE {
     em::DeviceManagementRequest dm_request;
-    net::UploadData* upload = request->get_upload();
+    net::UploadData* upload = request->get_upload_mutable();
     if (request->url().GetOrigin() == service_url_.GetOrigin() &&
         request->url().path() == service_url_.path() &&
         upload != NULL &&
