@@ -91,7 +91,6 @@ class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
       MessageLoopForUI::current()->Quit();
       has_run_message_loop_ = false;
     }
-
     personal_data_changed_ = true;
   }
 
