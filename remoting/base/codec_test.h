@@ -14,11 +14,6 @@ namespace remoting {
 class Decoder;
 class Encoder;
 
-// Prepare testing data for encoding. Memory created is written to |memory|.
-// Returns randomly generated data in CaptureData.
-scoped_refptr<CaptureData> PrepareEncodeData(media::VideoFrame::Format format,
-                                             uint8** memory);
-
 // Generate test data and test the encoder for a regular encoding sequence.
 // This will test encoder test and the sequence of messages sent.
 //
@@ -35,6 +30,8 @@ void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict);
 // Generate a frame containing a gradient, and test the encoder and decoder
 // pair.
 void TestEncoderDecoderGradient(Encoder* encoder, Decoder* decoder,
+                                const SkISize& screen_size,
+                                const SkISize& view_size,
                                 double max_error_limit,
                                 double mean_error_limit);
 
