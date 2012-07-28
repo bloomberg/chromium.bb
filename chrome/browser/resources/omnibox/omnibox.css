@@ -40,3 +40,8 @@ p {
 .table-header {
   white-space: nowrap;
 }
+
+.additional-info-property,
+.additional-info-value {
+  white-space: nowrap;
+}

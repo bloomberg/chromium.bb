@@ -936,5 +936,9 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
                                            ACMatchClassification::NONE,
                                            &match.description_class);
 
+  match.RecordAdditionalInfo("typed count", info.typed_count());
+  match.RecordAdditionalInfo("visit count", info.visit_count());
+  match.RecordAdditionalInfo("last visit", info.last_visit());
+
   return match;
 }

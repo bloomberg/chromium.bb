@@ -4,9 +4,14 @@
 
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/string16.h"
+#include "base/stringprintf.h"
+#include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -75,7 +80,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       from_previous(match.from_previous),
       search_terms_args(match.search_terms_args.get() ?
           new TemplateURLRef::SearchTermsArgs(*match.search_terms_args) :
-          NULL) {
+          NULL),
+      additional_info(match.additional_info) {
 }
 
 AutocompleteMatch::~AutocompleteMatch() {
@@ -108,6 +114,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   from_previous = match.from_previous;
   search_terms_args.reset(match.search_terms_args.get() ?
       new TemplateURLRef::SearchTermsArgs(*match.search_terms_args) : NULL);
+  additional_info = match.additional_info;
   return *this;
 }
 
@@ -317,6 +324,24 @@ TemplateURL* AutocompleteMatch::GetTemplateURL(Profile* profile) const {
   return keyword.empty() ? NULL :
       TemplateURLServiceFactory::GetForProfile(profile)->
           GetTemplateURLForKeyword(keyword);
+}
+
+void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
+                                             const std::string& value) {
+  DCHECK(property.size());
+  DCHECK(value.size());
+  additional_info[property] = value;
+}
+
+void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
+                                             int value) {
+  RecordAdditionalInfo(property, StringPrintf("%d", value));
+}
+
+void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
+                                             const base::Time& value) {
+  RecordAdditionalInfo(property,
+                       UTF16ToUTF8(base::TimeFormatShortDateAndTime(value)));
 }
 
 #ifndef NDEBUG

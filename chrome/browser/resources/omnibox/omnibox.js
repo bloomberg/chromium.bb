@@ -63,13 +63,17 @@ cr.define('omniboxDebug', function() {
    *     result record that we lookup.
    * @param {boolean} displayAlways whether the property should be displayed
    *     regardless of whether we're in detailed more.
+   * @param {string} tooltip a description of the property that will be
+   *     presented as a tooltip when the mouse is hovered over the column title.
    * @constructor
    */
-  function PresentationInfoRecord(header, url, propertyName, displayAlways) {
+  function PresentationInfoRecord(header, url, propertyName, displayAlways,
+                                  tooltip) {
     this.header = header;
     this.urlLabelForHeader = url;
     this.propertyName = propertyName;
     this.displayAlways = displayAlways;
+    this.tooltip = tooltip;
   }
 
   /**
@@ -81,32 +85,50 @@ cr.define('omniboxDebug', function() {
    * @const
    */
   var PROPERTY_OUTPUT_ORDER = [
-    new PresentationInfoRecord('Provider', '', 'provider_name', true),
-    new PresentationInfoRecord('Type', '', 'type', true),
-    new PresentationInfoRecord('Relevance', '', 'relevance', true),
-    new PresentationInfoRecord('Contents', '', 'contents', true),
-    new PresentationInfoRecord('Starred', '', 'starred', false),
+    new PresentationInfoRecord('Provider', '', 'provider_name', true,
+        'The AutocompleteProvider suggesting this result.'),
+    new PresentationInfoRecord('Type', '', 'type', true,
+        'The type of the result.'),
+    new PresentationInfoRecord('Relevance', '', 'relevance', true,
+        'The result score. Higher is more relevant.'),
+    new PresentationInfoRecord('Contents', '', 'contents', true,
+        'The text that is presented identifying the result.'),
+    new PresentationInfoRecord('Starred', '', 'starred', false,
+        'A green checkmark indicates that the result has been bookmarked.'),
     new PresentationInfoRecord(
-        'Is History What You Typed Match', '',
-        'is_history_what_you_typed_match', false),
-    new PresentationInfoRecord('Description', '', 'description', false),
-    new PresentationInfoRecord('URL', '', 'destination_url', true),
-    new PresentationInfoRecord('Fill Into Edit', '', 'fill_into_edit', false),
+        'HWYT', '', 'is_history_what_you_typed_match', false,
+        'A green checkmark indicates that the result is an History What You ' +
+        'Typed Match'),
+    new PresentationInfoRecord('Description', '', 'description', false,
+        'The page title of the result.'),
+    new PresentationInfoRecord('URL', '', 'destination_url', true,
+        'The URL for the result.'),
+    new PresentationInfoRecord('Fill Into Edit', '', 'fill_into_edit', false,
+        'The text shown in the omnibox when the result is selected.'),
     new PresentationInfoRecord(
-        'Inline Autocomplete Offset', '', 'inline_autocomplete_offset', false),
-    new PresentationInfoRecord('Deletable', '', 'deletable', false),
-    new PresentationInfoRecord('From Previous', '', 'from_previous', false),
+        'IAO', '', 'inline_autocomplete_offset', false,
+        'The Inline Autocomplete Offset.'),
+    new PresentationInfoRecord('Del', '', 'deletable', false,
+        'A green checkmark indicates that the results can be deleted from ' +
+        'the visit history.'),
+    new PresentationInfoRecord('Prev', '', 'from_previous', false, ''),
     new PresentationInfoRecord(
-        'Transition Type',
+        'Tran',
         'http://code.google.com/codesearch#OAMlx_jo-ck/src/content/public/' +
         'common/page_transition_types.h&exact_package=chromium&l=24',
-        'transition', false),
+        'transition', false,
+        'How the user got to the result.'),
     new PresentationInfoRecord(
-        'Is This Provider Done', '', 'provider_done', false),
+        'Done', '', 'provider_done', false,
+        'A green checkmark indicates that the provider is done looking for ' +
+        'more results.'),
     new PresentationInfoRecord(
-        'Template URL', '', 'template_url', false),
+        'Template URL', '', 'template_url', false, ''),
     new PresentationInfoRecord(
-        'Associated Keyword', '', 'associated_keyword', false)
+        'Associated Keyword', '', 'associated_keyword', false, ''),
+    new PresentationInfoRecord(
+        'Additional Info', '', 'additional_info', false,
+        'Provider-specific information about the result.')
   ];
 
   /**
@@ -131,6 +153,7 @@ cr.define('omniboxDebug', function() {
           // Output header text without a URL.
           headerCell.textContent = PROPERTY_OUTPUT_ORDER[i].header;
           headerCell.className = 'table-header';
+          headerCell.title = PROPERTY_OUTPUT_ORDER[i].tooltip;
         }
         row.appendChild(headerCell);
       }
@@ -150,7 +173,30 @@ cr.define('omniboxDebug', function() {
                                                   propertyName) {
     var cell = document.createElement('td');
     if (propertyName in autocompleteSuggestion) {
-      if (typeof autocompleteSuggestion[propertyName] == 'boolean') {
+      if (propertyName == 'additional_info') {
+        // |additional_info| embeds a two-column table of provider-specific data
+        // within this cell.
+        var additionalInfoTable = document.createElement('table');
+        for (var additionalInfoKey in autocompleteSuggestion[propertyName]) {
+          var additionalInfoRow = document.createElement('tr');
+
+          // Set the title (name of property) cell text.
+          var propertyCell = document.createElement('td');
+          propertyCell.textContent = additionalInfoKey + ':';
+          propertyCell.className = 'additional-info-property';
+          additionalInfoRow.appendChild(propertyCell);
+
+          // Set the value of the property cell text.
+          var valueCell = document.createElement('td');
+          valueCell.textContent =
+              autocompleteSuggestion[propertyName][additionalInfoKey];
+          valueCell.className = 'additional-info-value';
+          additionalInfoRow.appendChild(valueCell);
+
+          additionalInfoTable.appendChild(additionalInfoRow);
+        }
+        cell.appendChild(additionalInfoTable);
+      } else if (typeof autocompleteSuggestion[propertyName] == 'boolean') {
         // If this is a boolean, display a checkmark or an X instead of
         // the strings true or false.
         if (autocompleteSuggestion[propertyName]) {
