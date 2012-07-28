@@ -19,6 +19,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
 namespace {
 
 using std::istringstream;
@@ -92,17 +93,14 @@ class FileMetadataLinuxTest : public testing::Test {
 
     // Check if the attributes are set on the file
     vector<string>::const_iterator pos = find(attr_names.begin(),
-        attr_names.end(), content::kSourceURLAttrName);
+        attr_names.end(), kSourceURLAttrName);
     EXPECT_NE(pos, attr_names.end());
-    pos = find(attr_names.begin(), attr_names.end(),
-        content::kReferrerURLAttrName);
+    pos = find(attr_names.begin(), attr_names.end(), kReferrerURLAttrName);
     EXPECT_NE(pos, attr_names.end());
 
     // Check if the attribute values are set correctly
-    CheckExtendedAttributeValue(content::kSourceURLAttrName,
-                                source_url().spec());
-    CheckExtendedAttributeValue(content::kReferrerURLAttrName,
-                                referrer_url().spec());
+    CheckExtendedAttributeValue(kSourceURLAttrName, source_url().spec());
+    CheckExtendedAttributeValue(kReferrerURLAttrName, referrer_url().spec());
   }
 
  private:
@@ -115,15 +113,15 @@ class FileMetadataLinuxTest : public testing::Test {
 
 TEST_F(FileMetadataLinuxTest, CheckMetadataSetCorrectly) {
   if (!is_xattr_supported()) return;
-  content::AddOriginMetadataToFile(test_file(), source_url(), referrer_url());
+  AddOriginMetadataToFile(test_file(), source_url(), referrer_url());
   VerifyAttributesAreSetCorrectly();
 }
 
 TEST_F(FileMetadataLinuxTest, SetMetadataMultipleTimes) {
   if (!is_xattr_supported()) return;
-  content::AddOriginMetadataToFile(test_file(),
-      GURL("http://www.dummy.com"), GURL("http://www.dummy.com"));
-  content::AddOriginMetadataToFile(test_file(), source_url(), referrer_url());
+  GURL dummy_url("http://www.dummy.com");
+  AddOriginMetadataToFile(test_file(), dummy_url, dummy_url);
+  AddOriginMetadataToFile(test_file(), source_url(), referrer_url());
   VerifyAttributesAreSetCorrectly();
 }
 
@@ -131,35 +129,35 @@ TEST_F(FileMetadataLinuxTest, InvalidSourceURLTest) {
   if (!is_xattr_supported()) return;
   GURL invalid_url;
   vector<string> attr_names;
-  content::AddOriginMetadataToFile(test_file(), invalid_url, referrer_url());
+  AddOriginMetadataToFile(test_file(), invalid_url, referrer_url());
   GetExtendedAttributeNames(&attr_names);
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
-      content::kSourceURLAttrName));
-  CheckExtendedAttributeValue(content::kReferrerURLAttrName,
-                              referrer_url().spec());
+      kSourceURLAttrName));
+  CheckExtendedAttributeValue(kReferrerURLAttrName, referrer_url().spec());
 }
 
 TEST_F(FileMetadataLinuxTest, InvalidReferrerURLTest) {
   if (!is_xattr_supported()) return;
   GURL invalid_url;
   vector<string> attr_names;
-  content::AddOriginMetadataToFile(test_file(), source_url(), invalid_url);
+  AddOriginMetadataToFile(test_file(), source_url(), invalid_url);
   GetExtendedAttributeNames(&attr_names);
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
-      content::kReferrerURLAttrName));
-  CheckExtendedAttributeValue(content::kSourceURLAttrName, source_url().spec());
+      kReferrerURLAttrName));
+  CheckExtendedAttributeValue(kSourceURLAttrName, source_url().spec());
 }
 
 TEST_F(FileMetadataLinuxTest, InvalidURLsTest) {
   if (!is_xattr_supported()) return;
   GURL invalid_url;
   vector<string> attr_names;
-  content::AddOriginMetadataToFile(test_file(), invalid_url, invalid_url);
+  AddOriginMetadataToFile(test_file(), invalid_url, invalid_url);
   GetExtendedAttributeNames(&attr_names);
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
-      content::kSourceURLAttrName));
+      kSourceURLAttrName));
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
-      content::kReferrerURLAttrName));
+      kReferrerURLAttrName));
 }
 
 }  // namespace
+}  // namespace content

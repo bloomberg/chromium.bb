@@ -26,7 +26,7 @@
 
 #include "content/browser/safe_util_win.h"
 #elif defined(OS_MACOSX)
-#include "content/browser/file_metadata_mac.h"
+#include "content/browser/download/file_metadata_mac.h"
 #elif defined(OS_LINUX)
 #include "content/browser/download/file_metadata_linux.h"
 #endif
@@ -468,10 +468,8 @@ void BaseFile::AnnotateWithSourceInformation() {
   win_util::SetInternetZoneIdentifier(full_path_,
                                       UTF8ToWide(source_url_.spec()));
 #elif defined(OS_MACOSX)
-  file_metadata::AddQuarantineMetadataToFile(full_path_, source_url_,
-                                             referrer_url_);
-  file_metadata::AddOriginMetadataToFile(full_path_, source_url_,
-                                         referrer_url_);
+  content::AddQuarantineMetadataToFile(full_path_, source_url_, referrer_url_);
+  content::AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
 #elif defined(OS_LINUX)
   content::AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
 #endif

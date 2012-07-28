@@ -40,4 +40,4 @@ void AddOriginMetadataToFile(const FilePath& file, const GURL& source,
   }
 }
 
-}  // namespace file_metadata
+}  // namespace content

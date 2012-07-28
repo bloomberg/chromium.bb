@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/file_metadata_mac.h"
+#include "content/browser/download/file_metadata_mac.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <Foundation/Foundation.h>
@@ -14,7 +14,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "googleurl/src/gurl.h"
 
-namespace file_metadata {
+namespace content {
 
 // As of Mac OS X 10.4 ("Tiger"), files can be tagged with metadata describing
 // various attributes.  Metadata is integrated with the system's Spotlight
@@ -165,4 +165,4 @@ void AddQuarantineMetadataToFile(const FilePath& file, const GURL& source,
   }
 }
 
-}  // namespace file_metadata
+}  // namespace content

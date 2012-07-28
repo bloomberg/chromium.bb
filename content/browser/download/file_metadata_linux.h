@@ -26,6 +26,6 @@ CONTENT_EXPORT void AddOriginMetadataToFile(const FilePath& file,
                                             const GURL& source,
                                             const GURL& referrer);
 
-}  // namespace file_metadata
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_FILE_METADATA_LINUX_H_
