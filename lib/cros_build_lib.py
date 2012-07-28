@@ -896,7 +896,7 @@ class ManifestCheckout(Manifest):
     if result is None:
       data = self.projects[project]
       self._content_merging[project] = result = _GitRepoIsContentMerging(
-          data['local_path'], data['remote'])
+          data['local_path'], data['push_remote'])
     return result
 
   def FindProjectFromPath(self, path):
