@@ -9,11 +9,17 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/android/content_view_client.h"
+#include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContentViewCore_jni.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
 #include "webkit/glue/webmenuitem.h"
 
 using base::android::AttachCurrentThread;
@@ -23,6 +29,8 @@ using base::android::GetClass;
 using base::android::HasField;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using WebKit::WebInputEvent;
+using WebKit::WebInputEventFactory;
 
 // Describes the type and enabled state of a select popup item.
 // Keep in sync with the value defined in SelectPopupDialog.java
@@ -96,6 +104,14 @@ void ContentViewCoreImpl::InitJNI(JNIEnv* env, jobject obj) {
   java_object_->obj = env->NewWeakGlobalRef(obj);
 }
 
+RenderWidgetHostViewAndroid*
+    ContentViewCoreImpl::GetRenderWidgetHostViewAndroid() {
+  RenderWidgetHostView* rwhv = NULL;
+  if (web_contents_)
+    rwhv = web_contents_->GetRenderWidgetHostView();
+  return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
+}
+
 // ----------------------------------------------------------------------------
 // Methods called from Java via JNI
 // ----------------------------------------------------------------------------
@@ -143,6 +159,103 @@ jdouble ContentViewCoreImpl::GetLoadProgress(JNIEnv* env, jobject obj) const {
 
 jboolean ContentViewCoreImpl::IsIncognito(JNIEnv* env, jobject obj) {
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
+}
+
+jboolean ContentViewCoreImpl::TouchEvent(JNIEnv* env,
+                                         jobject obj,
+                                         jlong time_ms,
+                                         jint type,
+                                         jobjectArray pts) {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv) {
+    using WebKit::WebTouchEvent;
+    WebKit::WebTouchEvent event;
+    TouchPoint::BuildWebTouchEvent(env, type, time_ms, pts, event);
+    rwhv->TouchEvent(event);
+    return true;
+  }
+  return false;
+}
+
+void ContentViewCoreImpl::SendGestureEvent(WebInputEvent::Type type,
+                                           long time_ms, int x, int y,
+                                           float dx, float dy,
+                                           bool link_preview_tap) {
+  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
+      type, time_ms / 1000.0, x, y, dx, dy, 0);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->GestureEvent(event);
+}
+
+void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
+                                      jint x, jint y) {
+  SendGestureEvent(
+      WebInputEvent::GestureScrollBegin, time_ms, x, y, 0, 0, false);
+}
+
+void ContentViewCoreImpl::ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms) {
+  SendGestureEvent(WebInputEvent::GestureScrollEnd, time_ms, 0, 0, 0, 0, false);
+}
+
+void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
+                                   jint dx, jint dy) {
+  SendGestureEvent(
+      WebInputEvent::GestureScrollUpdate, time_ms, 0, 0, -dx, -dy, false);
+}
+
+void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
+                                     jint x, jint y, jint vx, jint vy) {
+  SendGestureEvent(
+      WebInputEvent::GestureFlingStart, time_ms, x, y, vx, vy, false);
+}
+
+void ContentViewCoreImpl::FlingCancel(JNIEnv* env, jobject obj, jlong time_ms) {
+  SendGestureEvent(
+      WebInputEvent::GestureFlingCancel, time_ms, 0, 0, 0, 0, false);
+}
+
+void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
+                                    jint x, jint y, jboolean link_preview_tap) {
+  SendGestureEvent(
+      WebInputEvent::GestureTap, time_ms, x, y, 0, 0, link_preview_tap);
+}
+
+void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
+                                         jlong time_ms,
+                                         jint x, jint y) {
+  SendGestureEvent(WebInputEvent::GestureTapDown, time_ms, x, y, 0, 0, false);
+}
+
+void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
+                                    jint x, jint y) {
+  SendGestureEvent(WebInputEvent::GestureDoubleTap, time_ms, x, y, 0, 0, false);
+}
+
+void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
+                                    jint x, jint y, jboolean link_preview_tap) {
+  SendGestureEvent(
+      WebInputEvent::GestureLongPress, time_ms, x, y, 0, 0, link_preview_tap);
+}
+
+void ContentViewCoreImpl::PinchBegin(JNIEnv* env, jobject obj, jlong time_ms,
+                                     jint x, jint y) {
+  SendGestureEvent(
+      WebInputEvent::GesturePinchBegin, time_ms, x, y, 0, 0, false);
+}
+
+void ContentViewCoreImpl::PinchEnd(JNIEnv* env, jobject obj, jlong time_ms) {
+  SendGestureEvent(WebInputEvent::GesturePinchEnd, time_ms, 0, 0, 0, 0, false);
+}
+
+void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
+                                  jint anchor_x, jint anchor_y, jfloat delta) {
+  SendGestureEvent(WebInputEvent::GesturePinchUpdate,
+                   time_ms,
+                   anchor_x,
+                   anchor_y,
+                   delta,
+                   delta,
+                   false);
 }
 
 jboolean ContentViewCoreImpl::CanGoBack(JNIEnv* env, jobject obj) {
@@ -296,6 +409,22 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   Java_ContentViewCore_showSelectPopup(env, java_object_->View(env).obj(),
                                        items_array.obj(), enabled_array.obj(),
                                        multiple, selected_array.obj());
+}
+
+void ContentViewCoreImpl::ConfirmTouchEvent(bool handled) {
+  // TODO(yusufo): Upstream changes for http://crbug/139386 to match upstream
+  // to downstream.
+  JNIEnv* env = AttachCurrentThread();
+  Java_ContentViewCore_confirmTouchEvent(env,
+                                         java_object_->View(env).obj(),
+                                         handled);
+}
+
+void ContentViewCoreImpl::DidSetNeedTouchEvents(bool need_touch_events) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_ContentViewCore_didSetNeedTouchEvents(env,
+                                             java_object_->View(env).obj(),
+                                             need_touch_events);
 }
 
 bool ContentViewCoreImpl::HasFocus() {

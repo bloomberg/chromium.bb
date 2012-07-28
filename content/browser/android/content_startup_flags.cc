@@ -50,7 +50,7 @@ void SetContentCommandLineFlags(int max_render_process_count,
 
   CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
 
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
+
   // TODO(yfriedman): Upstream this when bringing up rendering code and
   // rendering modes. b/6668088
   // Set subflags for the --graphics-mode=XYZ omnibus flag.
@@ -73,11 +73,11 @@ void SetContentCommandLineFlags(int max_render_process_count,
     SetCommandLineSwitch(switches::kEnableCompositingForFixedPosition);
     SetCommandLineSwitch(switches::kEnableThreadedCompositing);
     // Per tile painting saves memory in background tabs (http://b/5669228).
-    SetCommandLineSwitch(switches::kEnablePerTilePainting);
+    // ...but it now fails an SkAssert(), so disable it. b/6819634
+    // SetCommandLineSwitch(switches::kEnablePerTilePainting);
   } else {
     LOG(FATAL) << "Invalid --graphics-mode flag: " << graphics_mode;
   }
-#endif
 
   if (parsed_command_line->HasSwitch(switches::kRendererProcessLimit)) {
     std::string limit = parsed_command_line->GetSwitchValueASCII(

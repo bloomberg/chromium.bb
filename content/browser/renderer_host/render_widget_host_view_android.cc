@@ -330,6 +330,18 @@ void RenderWidgetHostViewAndroid::UnlockMouse() {
   NOTIMPLEMENTED();
 }
 
+void RenderWidgetHostViewAndroid::TouchEvent(
+    const WebKit::WebTouchEvent& event) {
+  if (host_)
+    host_->ForwardTouchEvent(event);
+}
+
+void RenderWidgetHostViewAndroid::GestureEvent(
+    const WebKit::WebGestureEvent& event) {
+  if (host_)
+    host_->ForwardGestureEvent(event);
+}
+
 void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
   content_view_core_ = content_view_core;
@@ -338,6 +350,12 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
         host_->surface_id(), content_view_core_ ?
             GetCompositingSurface() : gfx::GLSurfaceHandle());
   }
+}
+
+void RenderWidgetHostViewAndroid::DidSetNeedTouchEvents(
+    bool need_touch_events) {
+  if (content_view_core_)
+    content_view_core_->DidSetNeedTouchEvents(need_touch_events);
 }
 
 // static

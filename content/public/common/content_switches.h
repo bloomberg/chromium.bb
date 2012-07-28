@@ -90,6 +90,7 @@ extern const char kDisableXSSAuditor[];
 CONTENT_EXPORT extern const char kDomAutomationController[];
 CONTENT_EXPORT extern const char kEnableAcceleratedPainting[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
+extern const char kEnableAcceleratedPlugins[];
 extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 extern const char kEnableCssRegions[];
@@ -210,6 +211,10 @@ extern const char kEnableVisualWordMovement[];
 
 #if defined(OS_ANDROID)
 extern const char kUseMobileUserAgent[];
+extern const char kGraphicsMode[];
+// Not actual flags, just values: for example, --graphics-mode=compositor
+extern const char kGraphicsModeValueBasic[];
+extern const char kGraphicsModeValueCompositor[];
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

@@ -289,18 +289,18 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * Start pinch zoom. You must call {@link #pinchEnd} to stop.
      */
     void pinchBegin(long timeMs, int x, int y) {
-        mContentViewCore.pinchBegin(timeMs, x, y);
+        mContentViewCore.getContentViewGestureHandler().pinchBegin(timeMs, x, y);
     }
 
     /**
      * Stop pinch zoom.
      */
     void pinchEnd(long timeMs) {
-        mContentViewCore.pinchEnd(timeMs);
+        mContentViewCore.getContentViewGestureHandler().pinchEnd(timeMs);
     }
 
     void setIgnoreSingleTap(boolean value) {
-        mContentViewCore.setIgnoreSingleTap(value);
+        mContentViewCore.getContentViewGestureHandler().setIgnoreSingleTap(value);
     }
 
     /**
@@ -316,7 +316,7 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      *            coordinate.
      */
     void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
-        mContentViewCore.pinchBy(timeMs, anchorX, anchorY, delta);
+        mContentViewCore.getContentViewGestureHandler().pinchBy(timeMs, anchorX, anchorY, delta);
     }
 
     /**
@@ -347,6 +347,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         super.onScrollChanged(l, t, oldl, oldt);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mContentViewCore.onTouchEvent(event);
+    }
     // End FrameLayout overrides.
 
     @Override

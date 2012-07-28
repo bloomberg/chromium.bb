@@ -102,8 +102,12 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
+  virtual void DidSetNeedTouchEvents(bool need_touch_events) OVERRIDE;
 
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
+
+  void TouchEvent(const WebKit::WebTouchEvent& event);
+  void GestureEvent(const WebKit::WebGestureEvent& event);
 
  private:
   // The model object.

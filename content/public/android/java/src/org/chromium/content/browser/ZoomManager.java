@@ -55,14 +55,14 @@ class ZoomManager {
         public boolean onScaleBegin(ScaleGestureDetector detector) {
             if (ignoreDetectorEvents()) return false;
             mPinchEventSent = false;
-            mContentViewCore.setIgnoreSingleTap(true);
+            mContentViewCore.getContentViewGestureHandler().setIgnoreSingleTap(true);
             return true;
         }
 
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
             if (!mPinchEventSent || !mContentViewCore.isAlive()) return;
-            mContentViewCore.pinchEnd(detector.getEventTime());
+            mContentViewCore.getContentViewGestureHandler().pinchEnd(detector.getEventTime());
             mPinchEventSent = false;
         }
 
@@ -76,11 +76,11 @@ class ZoomManager {
             // that pinchBy() is called without any pinchBegin().
             // To solve this problem, we call pinchBegin() here if it is never called.
             if (!mPinchEventSent) {
-                mContentViewCore.pinchBegin(detector.getEventTime(),
+                mContentViewCore.getContentViewGestureHandler().pinchBegin(detector.getEventTime(),
                         (int) detector.getFocusX(), (int) detector.getFocusY());
                 mPinchEventSent = true;
             }
-            mContentViewCore.pinchBy(
+            mContentViewCore.getContentViewGestureHandler().pinchBy(
                     detector.getEventTime(), (int) detector.getFocusX(), (int) detector.getFocusY(),
                     detector.getScaleFactor());
             return true;

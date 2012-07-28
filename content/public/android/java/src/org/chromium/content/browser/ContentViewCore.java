@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -17,14 +18,19 @@ import android.webkit.DownloadListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
+import org.chromium.content.browser.ContentViewGestureHandler;
+import org.chromium.content.browser.TouchPoint;
+import org.chromium.content.browser.ZoomManager;
 import org.chromium.content.common.TraceEvent;
+
+import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 
 /**
  * Contains all the major functionality necessary to manage the lifecycle of a ContentView without
  * being tied to the view system.
  */
 @JNINamespace("content")
-public class ContentViewCore {
+public class ContentViewCore implements MotionEventDelegate {
     private static final String TAG = ContentViewCore.class.getName();
 
     // The following constants match the ones in chrome/common/page_transition_types.h.
@@ -51,6 +57,10 @@ public class ContentViewCore {
     // Used to avoid enabling zooming in / out in WebView zoom controls
     // if resulting zooming will produce little visible difference.
     private static float WEBVIEW_ZOOM_CONTROLS_EPSILON = 0.007f;
+
+    // To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
+    // should be allowed to upload per 100ms.
+    private static int MAX_NUM_UPLOAD_TILES = 12;
 
     /**
      * Interface that consumers of {@link ContentViewCore} must implement to allow the proper
@@ -123,6 +133,7 @@ public class ContentViewCore {
     // Native pointer to C++ ContentView object which will be set by nativeInit()
     private int mNativeContentViewCore = 0;
 
+    private ContentViewGestureHandler mContentViewGestureHandler;
     private ZoomManager mZoomManager;
 
     // Cached page scale factor from native
@@ -223,7 +234,6 @@ public class ContentViewCore {
 
         mPersonality = personality;
         mContentSettings = new ContentSettings(this, mNativeContentViewCore);
-        mContainerView.setWillNotDraw(false);
         mContainerView.setFocusable(true);
         mContainerView.setFocusableInTouchMode(true);
         if (mContainerView.getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
@@ -231,7 +241,10 @@ public class ContentViewCore {
             mContainerView.setVerticalScrollBarEnabled(false);
         }
         mContainerView.setClickable(true);
-        initGestureDetectors(context);
+
+        mZoomManager = new ZoomManager(context, this);
+        mZoomManager.updateMultiTouchSupport();
+        mContentViewGestureHandler = new ContentViewGestureHandler(context, this, mZoomManager);
 
         Log.i(TAG, "mNativeContentView=0x"+ Integer.toHexString(mNativeContentViewCore));
     }
@@ -459,43 +472,93 @@ public class ContentViewCore {
         if (mNativeContentViewCore != 0) nativeClearHistory(mNativeContentViewCore);
     }
 
+    // End FrameLayout overrides.
+
+
     /**
-     * Start pinch zoom. You must call {@link #pinchEnd} to stop.
+     * @see View#onTouchEvent(MotionEvent)
      */
-    void pinchBegin(long timeMs, int x, int y) {
+    public boolean onTouchEvent(MotionEvent event) {
+        return mContentViewGestureHandler.onTouchEvent(event);
+    }
+
+    /**
+     * @return ContentViewGestureHandler for all MotionEvent and gesture related calls.
+     */
+    ContentViewGestureHandler getContentViewGestureHandler() {
+        return mContentViewGestureHandler;
+    }
+
+    @Override
+    public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {
         if (mNativeContentViewCore != 0) {
-            // TODO(tedchoc): Pass pinch begin to native.
+            return nativeTouchEvent(mNativeContentViewCore, timeMs, action, pts);
         }
+        return false;
     }
 
-    /**
-     * Stop pinch zoom.
-     */
-    void pinchEnd(long timeMs) {
-        if (mNativeContentViewCore != 0) {
-            // TODO(tedchoc): Pass pinch end to native.
-        }
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void didSetNeedTouchEvents(boolean needTouchEvents) {
+        mContentViewGestureHandler.didSetNeedTouchEvents(needTouchEvents);
     }
 
-    void setIgnoreSingleTap(boolean value) {
-        mIgnoreSingleTap = value;
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void confirmTouchEvent(boolean handled) {
+        mContentViewGestureHandler.confirmTouchEvent(handled);
     }
 
-    /**
-     * Modify the ContentView magnification level. The effect of calling this
-     * method is exactly as after "pinch zoom".
-     *
-     * @param timeMs The event time in milliseconds.
-     * @param delta The ratio of the new magnification level over the current
-     *            magnification level.
-     * @param anchorX The magnification anchor (X) in the current view
-     *            coordinate.
-     * @param anchorY The magnification anchor (Y) in the current view
-     *            coordinate.
-     */
-    void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
-        if (mNativeContentViewCore != 0) {
-            // TODO(tedchoc): Pass pinch by to native.
+    @Override
+    public boolean sendGesture(int type, long timeMs, int x, int y, Bundle b) {
+        if (mNativeContentViewCore == 0) return false;
+
+        switch (type) {
+            case ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE:
+                nativeShowPressState(mNativeContentViewCore, timeMs, x, y);
+                return true;
+            case ContentViewGestureHandler.GESTURE_DOUBLE_TAP:
+                nativeDoubleTap(mNativeContentViewCore, timeMs, x, y);
+                return true;
+            case ContentViewGestureHandler.GESTURE_SINGLE_TAP_UP:
+                nativeSingleTap(mNativeContentViewCore, timeMs, x, y, false);
+                return true;
+            case ContentViewGestureHandler.GESTURE_SINGLE_TAP_CONFIRMED:
+                handleTapOrPress(timeMs, x, y, false,
+                        b.getBoolean(ContentViewGestureHandler.SHOW_PRESS, false));
+                return true;
+            case ContentViewGestureHandler.GESTURE_LONG_PRESS:
+                handleTapOrPress(timeMs, x, y, true, false);
+                return true;
+            case ContentViewGestureHandler.GESTURE_SCROLL_START:
+                nativeScrollBegin(mNativeContentViewCore, timeMs, x, y);
+                return true;
+            case ContentViewGestureHandler.GESTURE_SCROLL_BY:
+                nativeScrollBy(mNativeContentViewCore, timeMs, x, y);
+                return true;
+            case ContentViewGestureHandler.GESTURE_SCROLL_END:
+                nativeScrollEnd(mNativeContentViewCore, timeMs);
+                return true;
+            case ContentViewGestureHandler.GESTURE_FLING_START:
+                nativeFlingStart(mNativeContentViewCore, timeMs, x, y,
+                        clampFlingVelocityX(b.getInt(ContentViewGestureHandler.VELOCITY_X, 0)),
+                        clampFlingVelocityY(b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0)));
+                return true;
+            case ContentViewGestureHandler.GESTURE_FLING_CANCEL:
+                nativeFlingCancel(mNativeContentViewCore, timeMs);
+                return true;
+            case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
+                nativePinchBegin(mNativeContentViewCore, timeMs, x, y);
+                return true;
+            case ContentViewGestureHandler.GESTURE_PINCH_BY:
+                nativePinchBy(mNativeContentViewCore, timeMs, x, y,
+                        b.getFloat(ContentViewGestureHandler.DELTA, 0));
+                return true;
+            case ContentViewGestureHandler.GESTURE_PINCH_END:
+                nativePinchEnd(mNativeContentViewCore, timeMs);
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -533,6 +596,13 @@ public class ContentViewCore {
         return mContentSettings;
     }
 
+    @Override
+    public boolean didUIStealScroll(float x, float y) {
+        // TODO(yusufo): Stubbed out for now. Upstream when computeHorizontalScrollOffset is
+        // available.
+        return false;
+    }
+
     private void hidePopupDialog() {
         SelectPopupDialog.hide(this);
     }
@@ -554,14 +624,22 @@ public class ContentViewCore {
         }
     }
 
-    private void initGestureDetectors(final Context context) {
-        try {
-            TraceEvent.begin();
-            // TODO(tedchoc): Upstream the rest of the initialization.
-            mZoomManager = new ZoomManager(context, this);
-            mZoomManager.updateMultiTouchSupport();
-        } finally {
-            TraceEvent.end();
+    private void handleTapOrPress(
+            long timeMs, int x, int y, boolean isLongPress, boolean showPress) {
+        //TODO(yusufo):Upstream the rest of the bits about handlerControllers.
+        if (!mContainerView.isFocused()) mContainerView.requestFocus();
+
+        if (isLongPress) {
+            if (mNativeContentViewCore != 0) {
+                nativeLongPress(mNativeContentViewCore, timeMs, x, y, false);
+            }
+        } else {
+            if (!showPress && mNativeContentViewCore != 0) {
+                nativeShowPressState(mNativeContentViewCore, timeMs, x, y);
+            }
+            if (mNativeContentViewCore != 0) {
+                nativeSingleTap(mNativeContentViewCore, timeMs, x, y, false);
+            }
         }
     }
 
@@ -576,6 +654,32 @@ public class ContentViewCore {
     void selectPopupMenuItems(int[] indices) {
         if (mNativeContentViewCore != 0) {
             nativeSelectPopupMenuItems(mNativeContentViewCore, indices);
+        }
+    }
+
+    /*
+     * To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
+     * allowed to be uploaded per 100ms. Calculation is limited to one direction. We assume the
+     * tile size is 256x256. The precise distance / velocity should be calculated based on the
+     * logic in Scroller.java. As it is almost linear for the first 100ms, we use a simple math.
+     */
+    private int clampFlingVelocityX(int velocity) {
+        int cols = MAX_NUM_UPLOAD_TILES / (int) (Math.ceil((float) getHeight() / 256) + 1);
+        int maxVelocity = cols > 0 ? cols * 2560 : 1000;
+        if (Math.abs(velocity) > maxVelocity) {
+            return velocity > 0 ? maxVelocity : -maxVelocity;
+        } else {
+            return velocity;
+        }
+    }
+
+    private int clampFlingVelocityY(int velocity) {
+        int rows = MAX_NUM_UPLOAD_TILES / (int) (Math.ceil((float) getWidth() / 256) + 1);
+        int maxVelocity = rows > 0 ? rows * 2560 : 1000;
+        if (Math.abs(velocity) > maxVelocity) {
+            return velocity > 0 ? maxVelocity : -maxVelocity;
+        } else {
+            return velocity;
         }
     }
 
@@ -698,9 +802,9 @@ public class ContentViewCore {
         int y = getHeight() / 2;
         float delta = 1.25f;
 
-        pinchBegin(timeMs, x, y);
-        pinchBy(timeMs, x, y, delta);
-        pinchEnd(timeMs);
+        getContentViewGestureHandler().pinchBegin(timeMs, x, y);
+        getContentViewGestureHandler().pinchBy(timeMs, x, y, delta);
+        getContentViewGestureHandler().pinchEnd(timeMs);
 
         return true;
     }
@@ -727,14 +831,17 @@ public class ContentViewCore {
         int y = getHeight() / 2;
         float delta = 0.8f;
 
-        pinchBegin(timeMs, x, y);
-        pinchBy(timeMs, x, y, delta);
-        pinchEnd(timeMs);
+        getContentViewGestureHandler().pinchBegin(timeMs, x, y);
+        getContentViewGestureHandler().pinchBy(timeMs, x, y, delta);
+        getContentViewGestureHandler().pinchEnd(timeMs);
 
         return true;
     }
 
-    // Invokes the graphical zoom picker widget for this ContentView.
+    /**
+     * Invokes the graphical zoom picker widget for this ContentView.
+     */
+    @Override
     public void invokeZoomPicker() {
         if (mContentSettings.supportZoom()) {
             mZoomManager.invokeZoomPicker();
@@ -783,6 +890,40 @@ public class ContentViewCore {
 
     // Returns true if the native side crashed so that java side can draw a sad tab.
     private native boolean nativeCrashed(int nativeContentViewCoreImpl);
+
+    private native boolean nativeTouchEvent(int nativeContentViewCoreImpl,
+            long timeMs, int action,
+            TouchPoint[] pts);
+
+    private native void nativeScrollBegin(int nativeContentViewCoreImpl, long timeMs, int x, int y);
+
+    private native void nativeScrollEnd(int nativeContentViewCoreImpl, long timeMs);
+
+    private native void nativeScrollBy(
+            int nativeContentViewCoreImpl, long timeMs, int deltaX, int deltaY);
+
+    private native void nativeFlingStart(
+            int nativeContentViewCoreImpl, long timeMs, int x, int y, int vx, int vy);
+
+    private native void nativeFlingCancel(int nativeContentViewCoreImpl, long timeMs);
+
+    private native void nativeSingleTap(
+            int nativeContentViewCoreImpl, long timeMs, int x, int y, boolean linkPreviewTap);
+
+    private native void nativeShowPressState(
+            int nativeContentViewCoreImpl, long timeMs, int x, int y);
+
+    private native void nativeDoubleTap(int nativeContentViewCoreImpl, long timeMs, int x, int y);
+
+    private native void nativeLongPress(int nativeContentViewCoreImpl, long timeMs, int x, int y,
+            boolean linkPreviewTap);
+
+    private native void nativePinchBegin(int nativeContentViewCoreImpl, long timeMs, int x, int y);
+
+    private native void nativePinchEnd(int nativeContentViewCoreImpl, long timeMs);
+
+    private native void nativePinchBy(int nativeContentViewCoreImpl, long timeMs,
+            int anchorX, int anchorY, float deltaScale);
 
     private native boolean nativeCanGoBack(int nativeContentViewCoreImpl);
 

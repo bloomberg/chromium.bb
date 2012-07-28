@@ -17,10 +17,10 @@ class TouchPoint {
 
     // Type of motion event to send to the native side. The values originate from their
     // webkit WebInputEvent counterparts, and are set via initializeConstants().
-    private static int TOUCH_EVENT_TYPE_START;
-    private static int TOUCH_EVENT_TYPE_MOVE;
-    private static int TOUCH_EVENT_TYPE_END;
-    private static int TOUCH_EVENT_TYPE_CANCEL;
+    static int TOUCH_EVENT_TYPE_START;
+    static int TOUCH_EVENT_TYPE_MOVE;
+    static int TOUCH_EVENT_TYPE_END;
+    static int TOUCH_EVENT_TYPE_CANCEL;
 
     // Type of motion event to send to the native side. The values originate from their
     // webkit WebTouchPoint counterparts, and are set via initializeConstants().
