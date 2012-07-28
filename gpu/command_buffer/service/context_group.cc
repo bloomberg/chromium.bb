@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
@@ -27,8 +28,10 @@ namespace gles2 {
 
 ContextGroup::ContextGroup(
     MailboxManager* mailbox_manager,
+    MemoryTracker* memory_tracker,
     bool bind_generates_resource)
     : mailbox_manager_(mailbox_manager ? mailbox_manager : new MailboxManager),
+      memory_tracker_(memory_tracker),
       num_contexts_(0),
       enforce_gl_minimums_(CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnforceGLMinimums)),
@@ -90,10 +93,11 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
 
-  buffer_manager_.reset(new BufferManager());
+  buffer_manager_.reset(new BufferManager(memory_tracker_));
   framebuffer_manager_.reset(new FramebufferManager());
-  renderbuffer_manager_.reset(new RenderbufferManager(
-      max_renderbuffer_size, max_samples));
+  renderbuffer_manager_.reset(new RenderbufferManager(memory_tracker_,
+                                                      max_renderbuffer_size,
+                                                      max_samples));
   shader_manager_.reset(new ShaderManager());
   program_manager_.reset(new ProgramManager(program_cache_));
 
@@ -150,7 +154,8 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
     }
   }
 #endif
-  texture_manager_.reset(new TextureManager(feature_info_.get(),
+  texture_manager_.reset(new TextureManager(memory_tracker_,
+                                            feature_info_.get(),
                                             max_texture_size,
                                             max_cube_map_texture_size));
 
@@ -240,6 +245,10 @@ void ContextGroup::Destroy(bool have_context) {
   if (shader_manager_ != NULL) {
     shader_manager_->Destroy(have_context);
     shader_manager_.reset();
+  }
+
+  if (memory_tracker_.get()) {
+    memory_tracker_.release();
   }
 }
 

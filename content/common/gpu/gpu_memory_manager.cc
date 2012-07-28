@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
@@ -70,7 +71,8 @@ GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
       manage_immediate_scheduled_(false),
       max_surfaces_with_frontbuffer_soft_limit_(
           max_surfaces_with_frontbuffer_soft_limit),
-      peak_assigned_allocation_sum_(0) {
+      bytes_allocated_current_(0),
+      bytes_allocated_historical_max_(0) {
 }
 
 GpuMemoryManager::~GpuMemoryManager() {
@@ -113,6 +115,29 @@ void GpuMemoryManager::ScheduleManage(bool immediate) {
 size_t GpuMemoryManager::GetAvailableGpuMemory() const {
   // TODO(mmocny): Implement this with real system figures.
   return kMaximumAllocationForTabs;
+}
+
+void GpuMemoryManager::TrackMemoryAllocatedChange(size_t old_size,
+                                                  size_t new_size)
+{
+  if (new_size < old_size) {
+    size_t delta = old_size - new_size;
+    DCHECK(bytes_allocated_current_ >= delta);
+    bytes_allocated_current_ -= delta;
+  }
+  else {
+    size_t delta = new_size - old_size;
+    bytes_allocated_current_ += delta;
+    if (bytes_allocated_current_ > bytes_allocated_historical_max_) {
+      bytes_allocated_historical_max_ = bytes_allocated_current_;
+    }
+  }
+  if (new_size != old_size) {
+    TRACE_COUNTER_ID1("GpuMemoryManager",
+                      "GpuMemoryUsage",
+                      this,
+                      bytes_allocated_current_);
+  }
 }
 
 // The current Manage algorithm simply classifies contexts (stubs) into
@@ -278,9 +303,6 @@ void GpuMemoryManager::Manage() {
       ++it) {
     assigned_allocation_sum += it->second.allocation.gpu_resource_size_in_bytes;
   }
-
-  if (assigned_allocation_sum > peak_assigned_allocation_sum_)
-    peak_assigned_allocation_sum_ = assigned_allocation_sum;
 }
 
 #endif

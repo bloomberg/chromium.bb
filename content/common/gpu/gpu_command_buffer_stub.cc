@@ -23,6 +23,7 @@
 #include "content/public/common/content_client.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "net/disk_cache/hash.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
@@ -32,6 +33,23 @@
 #endif
 
 namespace {
+
+// The GpuCommandBufferMemoryTracker class provides a bridge between the
+// ContextGroup's memory type managers and the GpuMemoryManager class.
+class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
+ public:
+  GpuCommandBufferMemoryTracker(GpuMemoryManager* gpu_memory_manager)
+    : gpu_memory_manager_(gpu_memory_manager) {}
+  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) {
+    gpu_memory_manager_->TrackMemoryAllocatedChange(old_size, new_size);
+  }
+
+ private:
+  ~GpuCommandBufferMemoryTracker() {}
+  GpuMemoryManager* gpu_memory_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
+};
 
 // FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
 // url_hash matches.
@@ -103,7 +121,11 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
-    context_group_ = new gpu::gles2::ContextGroup(mailbox_manager, true);
+    context_group_ = new gpu::gles2::ContextGroup(
+      mailbox_manager,
+      new GpuCommandBufferMemoryTracker(
+        channel->gpu_channel_manager()->gpu_memory_manager()),
+      true);
   }
   if (surface_id != 0)
     surface_state_.reset(new GpuCommandBufferStubBase::SurfaceState(

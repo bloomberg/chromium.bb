@@ -29,7 +29,8 @@ class TextureManagerTest : public testing::Test {
 
   TextureManagerTest()
       : feature_info_(new FeatureInfo()),
-        manager_(feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize) {
+        manager_(
+          NULL, feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize) {
   }
 
   ~TextureManagerTest() {
@@ -127,7 +128,7 @@ TEST_F(TextureManagerTest, TextureUsageExt) {
   TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
                                                   "GL_ANGLE_texture_usage");
   TextureManager manager(
-      feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.Initialize();
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
@@ -148,7 +149,7 @@ TEST_F(TextureManagerTest, Destroy) {
   const GLuint kService1Id = 11;
   TestHelper::SetupTextureManagerInitExpectations(gl_.get(), "");
   TextureManager manager(
-      feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.Initialize();
   // Check we can create texture.
   manager.CreateTextureInfo(kClient1Id, kService1Id);
@@ -170,7 +171,7 @@ TEST_F(TextureManagerTest, DestroyUnowned) {
   const GLuint kService1Id = 11;
   TestHelper::SetupTextureManagerInitExpectations(gl_.get(), "");
   TextureManager manager(
-      feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.Initialize();
   // Check we can create texture.
   TextureManager::TextureInfo* created_info =
@@ -278,7 +279,7 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
   FeatureInfo::Ref feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
-     feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+     NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   // Check NPOT width on level 0
   EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 0, 5, 2, 1));
   // Check NPOT height on level 0
@@ -301,7 +302,8 @@ class TextureInfoTest : public testing::Test {
 
   TextureInfoTest()
       : feature_info_(new FeatureInfo()),
-        manager_(feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize) {
+        manager_(
+          NULL, feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize) {
   }
   ~TextureInfoTest() {
     info_ = NULL;
@@ -478,7 +480,7 @@ TEST_F(TextureInfoTest, NPOT2DNPOTOK) {
   FeatureInfo::Ref feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
-      feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTextureInfo(kClient1Id, kService1Id);
   TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info_ != NULL);
@@ -673,7 +675,7 @@ TEST_F(TextureInfoTest, FloatNotLinear) {
   FeatureInfo::Ref feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
-      feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTextureInfo(kClient1Id, kService1Id);
   TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);
@@ -695,7 +697,7 @@ TEST_F(TextureInfoTest, FloatLinear) {
   FeatureInfo::Ref feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
-      feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTextureInfo(kClient1Id, kService1Id);
   TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);
@@ -713,7 +715,7 @@ TEST_F(TextureInfoTest, HalfFloatNotLinear) {
   FeatureInfo::Ref feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
-      feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTextureInfo(kClient1Id, kService1Id);
   TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);
@@ -735,7 +737,7 @@ TEST_F(TextureInfoTest, HalfFloatLinear) {
   FeatureInfo::Ref feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
-      feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTextureInfo(kClient1Id, kService1Id);
   TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);
@@ -753,7 +755,7 @@ TEST_F(TextureInfoTest, EGLImageExternal) {
   FeatureInfo::Ref feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
-      feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTextureInfo(kClient1Id, kService1Id);
   TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);
@@ -769,7 +771,7 @@ TEST_F(TextureInfoTest, DepthTexture) {
   FeatureInfo::Ref feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
-      feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTextureInfo(kClient1Id, kService1Id);
   TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);

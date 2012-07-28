@@ -15,6 +15,9 @@
 namespace gpu {
 namespace gles2 {
 
+class MemoryTracker;
+class MemoryTypeTracker;
+
 // This class keeps track of the renderbuffers and whether or not they have
 // been cleared.
 class GPU_EXPORT RenderbufferManager {
@@ -124,7 +127,9 @@ class GPU_EXPORT RenderbufferManager {
     GLsizei height_;
   };
 
-  RenderbufferManager(GLint max_renderbuffer_size, GLint max_samples);
+  RenderbufferManager(MemoryTracker* memory_tracker,
+                      GLint max_renderbuffer_size,
+                      GLint max_samples);
   ~RenderbufferManager();
 
   GLint max_renderbuffer_size() const {
@@ -169,6 +174,8 @@ class GPU_EXPORT RenderbufferManager {
 
   void StartTracking(RenderbufferInfo* renderbuffer);
   void StopTracking(RenderbufferInfo* renderbuffer);
+
+  scoped_ptr<MemoryTypeTracker> renderbuffer_memory_tracker_;
 
   GLint max_renderbuffer_size_;
   GLint max_samples_;

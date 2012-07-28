@@ -16,7 +16,7 @@ class RenderbufferManagerTest : public testing::Test {
   static const GLint kMaxSamples = 4;
 
   RenderbufferManagerTest()
-      : manager_(kMaxSize, kMaxSamples) {
+      : manager_(NULL, kMaxSize, kMaxSamples) {
   }
   ~RenderbufferManagerTest() {
     manager_.Destroy(false);

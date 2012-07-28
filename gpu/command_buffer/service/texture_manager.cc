@@ -4,11 +4,11 @@
 
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "base/bits.h"
-#include "base/debug/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/texture_definition.h"
 
 namespace gpu {
@@ -589,10 +589,15 @@ bool TextureManager::TextureInfo::ClearLevel(
 }
 
 TextureManager::TextureManager(
+    MemoryTracker* memory_tracker,
     FeatureInfo* feature_info,
     GLint max_texture_size,
     GLint max_cube_map_texture_size)
-    : feature_info_(feature_info),
+    : texture_memory_tracker_(new MemoryTypeTracker(
+        memory_tracker,
+        "TextureManager",
+        "TextureMemory")),
+      feature_info_(feature_info),
       max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
       max_levels_(ComputeMipMapCount(max_texture_size,
@@ -606,7 +611,6 @@ TextureManager::TextureManager(
       num_uncleared_mips_(0),
       texture_info_count_(0),
       mem_represented_(0),
-      last_reported_mem_represented_(1),
       have_context_(true) {
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
     black_texture_ids_[ii] = 0;
@@ -614,11 +618,7 @@ TextureManager::TextureManager(
 }
 
 void TextureManager::UpdateMemRepresented() {
-  if (mem_represented_ != last_reported_mem_represented_) {
-    last_reported_mem_represented_ = mem_represented_;
-    TRACE_COUNTER_ID1(
-        "TextureManager", "TextureMemory", this, mem_represented_);
-  }
+  texture_memory_tracker_->UpdateMemRepresented(mem_represented_);
 }
 
 bool TextureManager::Initialize() {

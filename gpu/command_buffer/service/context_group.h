@@ -32,6 +32,7 @@ class RenderbufferManager;
 class ProgramManager;
 class ShaderManager;
 class TextureManager;
+class MemoryTracker;
 struct DisallowedFeatures;
 
 // A Context Group helps manage multiple GLES2Decoders that share
@@ -42,6 +43,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   ContextGroup(
       MailboxManager* mailbox_manager,
+      MemoryTracker* memory_tracker,
       bool bind_generates_resource);
 
   // This should only be called by GLES2Decoder. This must be paired with a
@@ -55,6 +57,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   MailboxManager* mailbox_manager() const {
     return mailbox_manager_.get();
+  }
+
+  MemoryTracker* memory_tracker() const {
+    return memory_tracker_.get();
   }
 
   bool bind_generates_resource() {
@@ -143,6 +149,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32* v);
 
   scoped_refptr<MailboxManager> mailbox_manager_;
+  scoped_refptr<MemoryTracker> memory_tracker_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
 
   // Whether or not this context is initialized.

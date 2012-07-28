@@ -11,7 +11,7 @@ namespace gles2 {
 
 class BufferManagerTest : public testing::Test {
  public:
-  BufferManagerTest() {
+  BufferManagerTest() : manager_(NULL) {
   }
   ~BufferManagerTest() {
     manager_.Destroy(false);

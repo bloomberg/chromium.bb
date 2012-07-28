@@ -7,13 +7,20 @@
 #include "base/debug/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 
 namespace gpu {
 namespace gles2 {
 
 RenderbufferManager::RenderbufferManager(
-    GLint max_renderbuffer_size, GLint max_samples)
-    : max_renderbuffer_size_(max_renderbuffer_size),
+    MemoryTracker* memory_tracker,
+    GLint max_renderbuffer_size,
+    GLint max_samples)
+    : renderbuffer_memory_tracker_(new MemoryTypeTracker(
+        memory_tracker,
+        "RenderbufferManager",
+        "RenderbufferMemory")),
+      max_renderbuffer_size_(max_renderbuffer_size),
       max_samples_(max_samples),
       num_uncleared_renderbuffers_(0),
       mem_represented_(0),
@@ -48,8 +55,7 @@ RenderbufferManager::RenderbufferInfo::~RenderbufferInfo() {
 }
 
 void RenderbufferManager::UpdateMemRepresented() {
-  TRACE_COUNTER_ID1(
-      "RenderbufferManager", "RenderbufferMemory", this, mem_represented_);
+  renderbuffer_memory_tracker_->UpdateMemRepresented(mem_represented_);
 }
 
 void RenderbufferManager::Destroy(bool have_context) {

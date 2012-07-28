@@ -17,6 +17,9 @@
 namespace gpu {
 namespace gles2 {
 
+class MemoryTracker;
+class MemoryTypeTracker;
+
 // This class keeps track of the buffers and their sizes so we can do
 // bounds checking.
 //
@@ -155,7 +158,7 @@ class GPU_EXPORT BufferManager {
     RangeToMaxValueMap range_set_;
   };
 
-  BufferManager();
+  BufferManager(MemoryTracker* memory_tracker);
   ~BufferManager();
 
   // Must call before destruction.
@@ -193,6 +196,8 @@ class GPU_EXPORT BufferManager {
   void StartTracking(BufferInfo* info);
   void StopTracking(BufferInfo* info);
 
+  scoped_ptr<MemoryTypeTracker> buffer_memory_tracker_;
+
   // Info for each buffer in the system.
   typedef base::hash_map<GLuint, BufferInfo::Ref> BufferInfoMap;
   BufferInfoMap buffer_infos_;
@@ -201,7 +206,6 @@ class GPU_EXPORT BufferManager {
   bool allow_buffers_on_multiple_targets_;
 
   size_t mem_represented_;
-  size_t last_reported_mem_represented_;
 
   // Counts the number of BufferInfo allocated with 'this' as its manager.
   // Allows to check no BufferInfo will outlive this.

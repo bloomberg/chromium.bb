@@ -93,11 +93,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   // other internal but non GpuMemoryManager managed sources, etc.
   size_t GetAvailableGpuMemory() const;
 
-  // GetPeakAssignedAllocationSum() will return the historical max value for the
-  // sum of all assigned client allocations (ie, peak system memory allocation).
-  size_t peak_assigned_allocation_sum() const {
-    return peak_assigned_allocation_sum_;
-  }
+  // Track a change in memory allocated by any context
+  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size);
+
 
  private:
   friend class GpuMemoryManagerTest;
@@ -117,7 +115,10 @@ class CONTENT_EXPORT GpuMemoryManager :
   size_t max_surfaces_with_frontbuffer_soft_limit_;
 
   StubMemoryStatMap stub_memory_stats_for_last_manage_;
-  size_t peak_assigned_allocation_sum_;
+
+  // The current total memory usage, and historical maximum memory usage
+  size_t bytes_allocated_current_;
+  size_t bytes_allocated_historical_max_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
 };
