@@ -565,7 +565,7 @@ internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
 
 chrome_pfq = internal_chromium_pfq.derive(
   official,
-  important=False, # for now...
+  important=True,
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=False,
   useflags=official['useflags'] + ['pgo_generate'],
@@ -578,6 +578,7 @@ chrome_pfq = internal_chromium_pfq.derive(
 
 chrome_pfq.add_config('alex-chrome-pfq',
   boards=['x86-alex'],
+  hw_tests_critical=False,
 )
 
 chrome_pfq.add_config('lumpy-chrome-pfq',
@@ -586,6 +587,7 @@ chrome_pfq.add_config('lumpy-chrome-pfq',
   # ignore target pkgs built on parent/other boards.  Setup_board packages
   # are OK, since we aren't profiling them.
   usepkg_build_packages=False,
+  hw_tests_critical=False,
 )
 
 chromium_pfq_info = chromium_pfq.derive(
