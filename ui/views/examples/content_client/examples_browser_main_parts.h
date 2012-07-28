@@ -16,13 +16,13 @@ class StackingClient;
 }
 
 namespace content {
-
 class ShellBrowserContext;
 struct MainFunctionParams;
 }
 
 namespace views {
 class ViewsDelegate;
+
 namespace examples {
 
 class ExamplesBrowserMainParts : public content::BrowserMainParts {
@@ -43,7 +43,7 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
  private:
   scoped_ptr<content::ShellBrowserContext> browser_context_;
 
-  scoped_ptr<views::ViewsDelegate> views_delegate_;
+  scoped_ptr<ViewsDelegate> views_delegate_;
 #if defined(USE_AURA)
   scoped_ptr<aura::client::StackingClient> stacking_client_;
 #endif

@@ -14,6 +14,9 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
+namespace views {
+namespace examples {
+
 namespace {
 
 // Number of columns in the view layout.
@@ -73,7 +76,7 @@ const char* kVerticalAlignments[] = {
 };
 
 // Toggles bit |flag| on |flags| based on state of |checkbox|.
-void SetFlagFromCheckbox(views::Checkbox* checkbox, int* flags, int flag) {
+void SetFlagFromCheckbox(Checkbox* checkbox, int* flags, int flag) {
   if (checkbox->checked())
     *flags |= flag;
   else
@@ -81,9 +84,6 @@ void SetFlagFromCheckbox(views::Checkbox* checkbox, int* flags, int flag) {
 }
 
 }  // namespace
-
-namespace views {
-namespace examples {
 
 // TextExample's content view, which is responsible for drawing a string with
 // the specified style.
@@ -202,7 +202,7 @@ Combobox* TextExample::AddCombobox(GridLayout* layout,
 
 void TextExample::CreateExampleView(View* container) {
   text_view_ = new TextExampleView;
-  text_view_->set_border(views::Border::CreateSolidBorder(1, SK_ColorGRAY));
+  text_view_->set_border(Border::CreateSolidBorder(1, SK_ColorGRAY));
 
   GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);

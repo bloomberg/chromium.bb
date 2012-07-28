@@ -32,15 +32,17 @@ namespace views {
 namespace examples {
 
 namespace {
-class ExamplesViewsDelegate : public views::TestViewsDelegate {
+
+class ExamplesViewsDelegate : public TestViewsDelegate {
  public:
 #if defined(USE_AURA)
-  virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
-      views::NativeWidgetAura* native_widget) OVERRIDE {
-    return new views::DesktopNativeWidgetHelperAura(native_widget);
+  virtual NativeWidgetHelperAura* CreateNativeWidgetHelper(
+      NativeWidgetAura* native_widget) OVERRIDE {
+    return new DesktopNativeWidgetHelperAura(native_widget);
   }
 #endif
 };
+
 }  // namespace
 
 ExamplesBrowserMainParts::ExamplesBrowserMainParts(
@@ -60,8 +62,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
 #endif
   views_delegate_.reset(new ExamplesViewsDelegate);
 
-  views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE,
-                                      browser_context_.get());
+  ShowExamplesWindow(QUIT_ON_CLOSE, browser_context_.get());
 }
 
 void ExamplesBrowserMainParts::PostMainMessageLoopRun() {
@@ -76,7 +77,7 @@ void ExamplesBrowserMainParts::PostMainMessageLoopRun() {
 bool ExamplesBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // xxx: Hax here because this kills event handling.
 #if !defined(USE_AURA)
-  views::AcceleratorHandler accelerator_handler;
+  AcceleratorHandler accelerator_handler;
   base::RunLoop run_loop(&accelerator_handler);
 #else
   base::RunLoop run_loop;
