@@ -47,47 +47,6 @@ struct MapEntry {
 
 typedef std::map<AccessibilityNodeData::Role, NSString*> RoleMap;
 
-struct AttributeToMethodNameEntry {
-  NSString* attribute;
-  NSString* methodName;
-};
-
-const AttributeToMethodNameEntry attributeToMethodNameContainer[] = {
-  { NSAccessibilityChildrenAttribute, @"children" },
-  { NSAccessibilityColumnsAttribute, @"columns" },
-  { NSAccessibilityDescriptionAttribute, @"description" },
-  { NSAccessibilityEnabledAttribute, @"enabled" },
-  { NSAccessibilityFocusedAttribute, @"focused" },
-  { NSAccessibilityHelpAttribute, @"help" },
-  { NSAccessibilityMaxValueAttribute, @"maxValue" },
-  { NSAccessibilityMinValueAttribute, @"minValue" },
-  { NSAccessibilityNumberOfCharactersAttribute, @"numberOfCharacters" },
-  { NSAccessibilityParentAttribute, @"parent" },
-  { NSAccessibilityPositionAttribute, @"position" },
-  { NSAccessibilityRoleAttribute, @"role" },
-  { NSAccessibilityRoleDescriptionAttribute, @"roleDescription" },
-  { NSAccessibilityRowsAttribute, @"rows" },
-  { NSAccessibilitySizeAttribute, @"size" },
-  { NSAccessibilitySubroleAttribute, @"subrole" },
-  { NSAccessibilityTabsAttribute, @"tabs" },
-  { NSAccessibilityTitleAttribute, @"title" },
-  { NSAccessibilityTitleUIElementAttribute, @"titleUIElement" },
-  { NSAccessibilityTopLevelUIElementAttribute, @"window" },
-  { NSAccessibilityURLAttribute, @"url" },
-  { NSAccessibilityValueAttribute, @"value" },
-  { NSAccessibilityVisibleCharacterRangeAttribute, @"visibleCharacterRange" },
-  { NSAccessibilityWindowAttribute, @"window" },
-  { @"AXAccessKey", @"accessKey" },
-  { @"AXARIAAtomic", @"ariaAtomic" },
-  { @"AXARIABusy", @"ariaBusy" },
-  { @"AXARIALive", @"ariaLive" },
-  { @"AXARIARelevant", @"ariaRelevant" },
-  { @"AXLoaded", @"loaded" },
-  { @"AXLoadingProgress", @"loadingProgress" },
-  { @"AXRequired", @"required" },
-  { @"AXVisited", @"visited" },
-};
-
 // GetState checks the bitmask used in AccessibilityNodeData to check
 // if the given state was set on the accessibility object.
 bool GetState(BrowserAccessibility* accessibility, int state) {
@@ -287,6 +246,45 @@ NSDictionary* attributeToMethodNameMap = nil;
 @implementation BrowserAccessibilityCocoa
 
 + (void)initialize {
+  const struct {
+    NSString* attribute;
+    NSString* methodName;
+  } attributeToMethodNameContainer[] = {
+    { NSAccessibilityChildrenAttribute, @"children" },
+    { NSAccessibilityColumnsAttribute, @"columns" },
+    { NSAccessibilityDescriptionAttribute, @"description" },
+    { NSAccessibilityEnabledAttribute, @"enabled" },
+    { NSAccessibilityFocusedAttribute, @"focused" },
+    { NSAccessibilityHelpAttribute, @"help" },
+    { NSAccessibilityMaxValueAttribute, @"maxValue" },
+    { NSAccessibilityMinValueAttribute, @"minValue" },
+    { NSAccessibilityNumberOfCharactersAttribute, @"numberOfCharacters" },
+    { NSAccessibilityParentAttribute, @"parent" },
+    { NSAccessibilityPositionAttribute, @"position" },
+    { NSAccessibilityRoleAttribute, @"role" },
+    { NSAccessibilityRoleDescriptionAttribute, @"roleDescription" },
+    { NSAccessibilityRowsAttribute, @"rows" },
+    { NSAccessibilitySizeAttribute, @"size" },
+    { NSAccessibilitySubroleAttribute, @"subrole" },
+    { NSAccessibilityTabsAttribute, @"tabs" },
+    { NSAccessibilityTitleAttribute, @"title" },
+    { NSAccessibilityTitleUIElementAttribute, @"titleUIElement" },
+    { NSAccessibilityTopLevelUIElementAttribute, @"window" },
+    { NSAccessibilityURLAttribute, @"url" },
+    { NSAccessibilityValueAttribute, @"value" },
+    { NSAccessibilityVisibleCharacterRangeAttribute, @"visibleCharacterRange" },
+    { NSAccessibilityWindowAttribute, @"window" },
+    { @"AXAccessKey", @"accessKey" },
+    { @"AXARIAAtomic", @"ariaAtomic" },
+    { @"AXARIABusy", @"ariaBusy" },
+    { @"AXARIALive", @"ariaLive" },
+    { @"AXARIARelevant", @"ariaRelevant" },
+    { @"AXLoaded", @"loaded" },
+    { @"AXLoadingProgress", @"loadingProgress" },
+    { @"AXRequired", @"required" },
+    { @"AXVisited", @"visited" },
+  };
+
   NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
   const size_t numAttributes = sizeof(attributeToMethodNameContainer) /
                                sizeof(attributeToMethodNameContainer[0]);
