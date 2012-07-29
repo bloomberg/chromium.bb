@@ -385,14 +385,7 @@ static int r6_surface_init(struct radeon_surface_manager *surf_man,
     /* tiling mode */
     mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
 
-    /* always enable z & stencil together */
-    if (surf->flags & RADEON_SURF_ZBUFFER) {
-        surf->flags |= RADEON_SURF_SBUFFER;
-    }
-    if (surf->flags & RADEON_SURF_SBUFFER) {
-        surf->flags |= RADEON_SURF_ZBUFFER;
-    }
-    if (surf->flags & RADEON_SURF_ZBUFFER) {
+    if (surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) {
         /* zbuffer only support 1D or 2D tiled surface */
         switch (mode) {
         case RADEON_SURF_MODE_1D:
