@@ -62,25 +62,25 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
 
   MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
       gfx::Point(15, 15), 0);
-  root_window()->DispatchMouseEvent(&mouse);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
   TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
-  root_window()->DispatchTouchEvent(&press);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1,
                   GetTime());
-  root_window()->DispatchTouchEvent(&move);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 1, GetTime());
-  root_window()->DispatchTouchEvent(&release);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
-  root_window()->DispatchMouseEvent(&mouse);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 }
 

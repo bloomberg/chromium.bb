@@ -92,6 +92,7 @@
         'display_manager.cc',
         'display_manager.h',
         'root_window_host.h',
+        'root_window_host_delegate.h',
         'root_window_host_linux.cc',
         'root_window_host_linux.h',
         'root_window_host_mac.h',

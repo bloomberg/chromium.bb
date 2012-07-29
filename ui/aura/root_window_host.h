@@ -20,6 +20,7 @@ class Size;
 namespace aura {
 
 class RootWindow;
+class RootWindowHostDelegate;
 
 // RootWindowHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
@@ -29,21 +30,19 @@ class RootWindowHost {
   virtual ~RootWindowHost() {}
 
   // Creates a new RootWindowHost. The caller owns the returned value.
-  static RootWindowHost* Create(const gfx::Rect& bounds);
+  static RootWindowHost* Create(RootWindowHostDelegate* delegate,
+                                const gfx::Rect& bounds);
 
   // Returns the actual size of the screen.
   // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
   static gfx::Size GetNativeScreenSize();
 
+  virtual RootWindow* GetRootWindow() = 0;
+
   // Returns the RootWindowHost for the specified accelerated widget, or NULL if
   // there is none associated.
   static RootWindowHost* GetForAcceleratedWidget(
       gfx::AcceleratedWidget accelerated_widget);
-
-  // Sets the RootWindow this RootWindowHost is hosting. RootWindowHost does not
-  // own the RootWindow.
-  virtual void SetRootWindow(RootWindow* root_window) = 0;
-  virtual RootWindow* GetRootWindow() = 0;
 
   // Returns the accelerated widget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;

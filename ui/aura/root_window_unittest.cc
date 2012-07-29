@@ -112,7 +112,7 @@ class EventCountFilter : public EventFilter {
 
 typedef test::AuraTestBase RootWindowTest;
 
-TEST_F(RootWindowTest, DispatchMouseEvent) {
+TEST_F(RootWindowTest, OnHostMouseEvent) {
   // Create two non-overlapping windows so we don't have to worry about which
   // is on top.
   scoped_ptr<NonClientDelegate> delegate1(new NonClientDelegate());
@@ -130,7 +130,7 @@ TEST_F(RootWindowTest, DispatchMouseEvent) {
   gfx::Point point(101, 201);
   MouseEvent event1(
       ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON);
-  root_window()->DispatchMouseEvent(&event1);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&event1);
 
   // Event was tested for non-client area for the target window.
   EXPECT_EQ(1, delegate1->non_client_count());
@@ -160,7 +160,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_LEFT_MOUSE_BUTTON));
-  root_window()->DispatchMouseEvent(event.get());
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
 
   // Additionally press the right.
@@ -169,7 +169,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
-  root_window()->DispatchMouseEvent(event.get());
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
 
   // Release the left button.
@@ -178,7 +178,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_RIGHT_MOUSE_BUTTON));
-  root_window()->DispatchMouseEvent(event.get());
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
 
   // Release the right button.  We should ignore the Shift-is-down flag.
@@ -187,7 +187,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_SHIFT_DOWN));
-  root_window()->DispatchMouseEvent(event.get());
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
 
   // Press the middle button.
@@ -196,7 +196,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_MIDDLE_MOUSE_BUTTON));
-  root_window()->DispatchMouseEvent(event.get());
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
 }
 
@@ -334,11 +334,13 @@ TEST_F(RootWindowTest, IgnoreUnknownKeys) {
   root_window()->SetEventFilter(filter);  // passes ownership
 
   KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
-  EXPECT_FALSE(root_window()->DispatchKeyEvent(&unknown_event));
+  EXPECT_FALSE(root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(
+      &unknown_event));
   EXPECT_EQ(0, filter->num_key_events());
 
   KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
-  EXPECT_TRUE(root_window()->DispatchKeyEvent(&known_event));
+  EXPECT_TRUE(root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(
+      &known_event));
   EXPECT_EQ(1, filter->num_key_events());
 }
 
@@ -462,7 +464,8 @@ TEST_F(RootWindowTest, HoldMouseMove) {
 
   MouseEvent mouse_move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                               gfx::Point(0, 0), 0);
-  root_window()->DispatchMouseEvent(&mouse_move_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_move_event);
   // Discard MOUSE_ENTER.
   filter->events().clear();
 
@@ -471,14 +474,16 @@ TEST_F(RootWindowTest, HoldMouseMove) {
   // Check that we don't immediately dispatch the MOUSE_DRAGGED event.
   MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0),
                               gfx::Point(0, 0), 0);
-  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_dragged_event);
   EXPECT_TRUE(filter->events().empty());
 
   // Check that we do dispatch the held MOUSE_DRAGGED event before another type
   // of event.
   MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
                                  gfx::Point(0, 0), 0);
-  root_window()->DispatchMouseEvent(&mouse_pressed_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
   filter->events().clear();
@@ -486,17 +491,21 @@ TEST_F(RootWindowTest, HoldMouseMove) {
   // Check that we coalesce held MOUSE_DRAGGED events.
   MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
                                   gfx::Point(1, 1), 0);
-  root_window()->DispatchMouseEvent(&mouse_dragged_event);
-  root_window()->DispatchMouseEvent(&mouse_dragged_event2);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_dragged_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_dragged_event2);
   EXPECT_TRUE(filter->events().empty());
-  root_window()->DispatchMouseEvent(&mouse_pressed_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
   filter->events().clear();
 
   // Check that on ReleaseMouseMoves, held events are not dispatched
   // immediately, but posted instead.
-  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_dragged_event);
   root_window()->ReleaseMouseMoves();
   EXPECT_TRUE(filter->events().empty());
   RunAllPendingInMessageLoop();
@@ -507,9 +516,11 @@ TEST_F(RootWindowTest, HoldMouseMove) {
   // the Check that on ReleaseMouseMoves, held events are not dispatched
   // immediately, but posted instead.
   root_window()->HoldMouseMoves();
-  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_dragged_event);
   root_window()->ReleaseMouseMoves();
-  root_window()->DispatchMouseEvent(&mouse_pressed_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
   filter->events().clear();
@@ -519,9 +530,11 @@ TEST_F(RootWindowTest, HoldMouseMove) {
   // Check that if the other message is another MOUSE_DRAGGED, we still coalesce
   // them.
   root_window()->HoldMouseMoves();
-  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_dragged_event);
   root_window()->ReleaseMouseMoves();
-  root_window()->DispatchMouseEvent(&mouse_dragged_event2);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+      &mouse_dragged_event2);
   EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
   filter->events().clear();
   RunAllPendingInMessageLoop();

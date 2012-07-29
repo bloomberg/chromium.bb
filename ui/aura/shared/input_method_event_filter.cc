@@ -82,7 +82,7 @@ void InputMethodEventFilter::DispatchKeyEventPostIME(
   DCHECK(event.message != WM_CHAR);
 #endif
   aura::TranslatedKeyEvent aura_event(event, false /* is_char */);
-  target_root_window_->DispatchKeyEvent(&aura_event);
+  target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(&aura_event);
 }
 
 void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
@@ -91,7 +91,7 @@ void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
     int flags) {
   aura::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
                                       flags);
-  target_root_window_->DispatchKeyEvent(&aura_event);
+  target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(&aura_event);
 }
 
 }  // namespace shared

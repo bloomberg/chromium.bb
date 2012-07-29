@@ -17,11 +17,11 @@ namespace aura {
 
 class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
  public:
-  explicit RootWindowHostWin(const gfx::Rect& bounds);
+  RootWindowHostWin(RootWindowHostDelegate* delegate,
+                    const gfx::Rect& bounds);
   virtual ~RootWindowHostWin();
 
   // RootWindowHost:
-  virtual void SetRootWindow(RootWindow* root_window) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -74,7 +74,7 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   void OnPaint(HDC dc);
   void OnSize(UINT param, const CSize& size);
 
-  RootWindow* root_window_;
+  RootWindowHostDelegate* delegate_;
 
   bool fullscreen_;
   bool has_capture_;

@@ -215,7 +215,8 @@ void EventGenerator::Dispatch(Event& event) {
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED:
-      root_window_->DispatchKeyEvent(static_cast<KeyEvent*>(&event));
+      root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(
+          static_cast<KeyEvent*>(&event));
       break;
     case ui::ET_MOUSE_PRESSED:
     case ui::ET_MOUSE_DRAGGED:
@@ -224,14 +225,16 @@ void EventGenerator::Dispatch(Event& event) {
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
     case ui::ET_MOUSEWHEEL:
-      root_window_->DispatchMouseEvent(static_cast<MouseEvent*>(&event));
+      root_window_->AsRootWindowHostDelegate()->OnHostMouseEvent(
+          static_cast<MouseEvent*>(&event));
       break;
     case ui::ET_TOUCH_RELEASED:
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_TOUCH_MOVED:
     case ui::ET_TOUCH_STATIONARY:
     case ui::ET_TOUCH_CANCELLED:
-      root_window_->DispatchTouchEvent(static_cast<TouchEvent*>(&event));
+      root_window_->AsRootWindowHostDelegate()->OnHostTouchEvent(
+          static_cast<TouchEvent*>(&event));
       break;
     default:
       NOTIMPLEMENTED();

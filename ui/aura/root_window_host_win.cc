@@ -107,8 +107,9 @@ const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
 }  // namespace
 
 // static
-RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
-  return new RootWindowHostWin(bounds);
+RootWindowHost* RootWindowHost::Create(RootWindowHostDelegate* delegate,
+                                       const gfx::Rect& bounds) {
+  return new RootWindowHostWin(delegate, bounds);
 }
 
 // static
@@ -124,8 +125,9 @@ gfx::Size RootWindowHost::GetNativeScreenSize() {
                    GetSystemMetrics(SM_CYSCREEN));
 }
 
-RootWindowHostWin::RootWindowHostWin(const gfx::Rect& bounds)
-    : root_window_(NULL),
+RootWindowHostWin::RootWindowHostWin(RootWindowHostDelegate* delegate,
+                                     const gfx::Rect& bounds)
+    : delegate_(delegate),
       fullscreen_(false),
       has_capture_(false),
       saved_window_style_(0),
@@ -139,12 +141,8 @@ RootWindowHostWin::~RootWindowHostWin() {
   DestroyWindow(hwnd());
 }
 
-void RootWindowHostWin::SetRootWindow(RootWindow* root_window) {
-  root_window_ = root_window;
-}
-
 RootWindow* RootWindowHostWin::GetRootWindow() {
-  return root_window_;
+  return delegate_->AsRootWindow();
 }
 
 gfx::AcceleratedWidget RootWindowHostWin::GetAcceleratedWidget() {
@@ -312,7 +310,7 @@ LRESULT RootWindowHostWin::OnKeyEvent(UINT message,
                                       LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
   KeyEvent keyev(msg, message == WM_CHAR);
-  SetMsgHandled(root_window_->DispatchKeyEvent(&keyev));
+  SetMsgHandled(delegate_->OnHostKeyEvent(&keyev));
   return 0;
 }
 
@@ -324,7 +322,7 @@ LRESULT RootWindowHostWin::OnMouseRange(UINT message,
   MouseEvent event(msg);
   bool handled = false;
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
-    handled = root_window_->DispatchMouseEvent(&event);
+    handled = delegate_->OnHostMouseEvent(&event);
   SetMsgHandled(handled);
   return 0;
 }
@@ -334,15 +332,13 @@ LRESULT RootWindowHostWin::OnCaptureChanged(UINT message,
                                             LPARAM l_param) {
   if (has_capture_) {
     has_capture_ = false;
-    Window* capture_window = client::GetCaptureWindow(root_window_);
-    if (capture_window && capture_window->GetRootWindow() == root_window_)
-      capture_window->ReleaseCapture();
+    delegate_->OnHostLostCapture();
   }
   return 0;
 }
 
 void RootWindowHostWin::OnPaint(HDC dc) {
-  root_window_->Draw();
+  delegate_->OnHostPaint();
   ValidateRect(hwnd(), NULL);
 }
 
@@ -350,7 +346,7 @@ void RootWindowHostWin::OnSize(UINT param, const CSize& size) {
   // Minimizing resizes the window to 0x0 which causes our layout to go all
   // screwy, so we just ignore it.
   if (param != SIZE_MINIMIZED)
-    root_window_->OnHostResized(gfx::Size(size.cx, size.cy));
+    delegate_->OnHostResized(gfx::Size(size.cx, size.cy));
 }
 
 }  // namespace aura

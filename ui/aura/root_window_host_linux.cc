@@ -473,8 +473,9 @@ class RootWindowHostLinux::ImageCursors {
   DISALLOW_COPY_AND_ASSIGN(ImageCursors);
 };
 
-RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
-    : root_window_(NULL),
+RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
+                                         const gfx::Rect& bounds)
+    : delegate_(delegate),
       xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
@@ -581,23 +582,23 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
 
   switch (xev->type) {
     case Expose:
-      root_window_->ScheduleFullDraw();
+      delegate_->AsRootWindow()->ScheduleFullDraw();
       break;
     case KeyPress: {
       KeyEvent keydown_event(xev, false);
-      root_window_->DispatchKeyEvent(&keydown_event);
+      delegate_->OnHostKeyEvent(&keydown_event);
       break;
     }
     case KeyRelease: {
       KeyEvent keyup_event(xev, false);
-      root_window_->DispatchKeyEvent(&keyup_event);
+      delegate_->OnHostKeyEvent(&keyup_event);
       break;
     }
     case ButtonPress: {
       if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
           static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
         client::UserActionClient* gesture_client =
-            client::GetUserActionClient(root_window_);
+            client::GetUserActionClient(delegate_->AsRootWindow());
         if (gesture_client) {
           gesture_client->OnUserAction(
               static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
@@ -609,15 +610,12 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
     }  // fallthrough
     case ButtonRelease: {
       MouseEvent mouseev(xev);
-      root_window_->DispatchMouseEvent(&mouseev);
+      delegate_->OnHostMouseEvent(&mouseev);
       break;
     }
     case FocusOut:
-      if (xev->xfocus.mode != NotifyGrab) {
-        Window* capture_window = client::GetCaptureWindow(root_window_);
-        if (capture_window && capture_window->GetRootWindow() == root_window_)
-          capture_window->ReleaseCapture();
-      }
+      if (xev->xfocus.mode != NotifyGrab)
+        delegate_->OnHostLostCapture();
       break;
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
@@ -638,7 +636,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         ConfineCursorToRootWindow();
       }
       if (size_changed)
-        root_window_->OnHostResized(bounds.size());
+        delegate_->OnHostResized(bounds.size());
       break;
     }
     case GenericEvent: {
@@ -655,7 +653,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         case ui::ET_TOUCH_RELEASED:
         case ui::ET_TOUCH_MOVED: {
           TouchEvent touchev(xev);
-          root_window_->DispatchTouchEvent(&touchev);
+          delegate_->OnHostTouchEvent(&touchev);
           break;
         }
         case ui::ET_MOUSE_MOVED:
@@ -677,7 +675,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
             int button = xievent->detail;
             if (button == kBackMouseButton || button == kForwardMouseButton) {
               client::UserActionClient* gesture_client =
-                  client::GetUserActionClient(root_window_);
+                  client::GetUserActionClient(delegate_->AsRootWindow());
               if (gesture_client) {
                 bool reverse_direction =
                     ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
@@ -691,14 +689,14 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
             }
           }
           MouseEvent mouseev(xev);
-          root_window_->DispatchMouseEvent(&mouseev);
+          delegate_->OnHostMouseEvent(&mouseev);
           break;
         }
         case ui::ET_SCROLL_FLING_START:
         case ui::ET_SCROLL_FLING_CANCEL:
         case ui::ET_SCROLL: {
           ScrollEvent scrollev(xev);
-          root_window_->DispatchScrollEvent(&scrollev);
+          delegate_->OnHostScrollEvent(&scrollev);
           break;
         }
         case ui::ET_UNKNOWN:
@@ -723,7 +721,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
       if (message_type == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
         // We have received a close message from the window manager.
-        root_window_->OnRootWindowHostClosed();
+        delegate_->AsRootWindow()->OnRootWindowHostClosed();
       } else if (message_type == atom_cache_.GetAtom("_NET_WM_PING")) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = x_root_window_;
@@ -741,7 +739,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         case MappingModifier:
         case MappingKeyboard:
           XRefreshKeyboardMapping(&xev->xmapping);
-          root_window_->OnKeyboardMappingChanged();
+          delegate_->AsRootWindow()->OnKeyboardMappingChanged();
           break;
         case MappingPointer:
           ui::UpdateButtonMap();
@@ -771,21 +769,15 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       }
 
       MouseEvent mouseev(xev);
-      root_window_->DispatchMouseEvent(&mouseev);
+      delegate_->OnHostMouseEvent(&mouseev);
       break;
     }
   }
   return true;
 }
 
-void RootWindowHostLinux::SetRootWindow(RootWindow* root_window) {
-  root_window_ = root_window;
-  // The device scale factor is now accessible, so load cursors now.
-  image_cursors_->Reload(root_window_->layer()->device_scale_factor());
-}
-
 RootWindow* RootWindowHostLinux::GetRootWindow() {
-  return root_window_;
+  return delegate_->AsRootWindow();
 }
 
 gfx::AcceleratedWidget RootWindowHostLinux::GetAcceleratedWidget() {
@@ -793,6 +785,9 @@ gfx::AcceleratedWidget RootWindowHostLinux::GetAcceleratedWidget() {
 }
 
 void RootWindowHostLinux::Show() {
+  // The device scale factor is now accessible, so load cursors now.
+  image_cursors_->Reload(delegate_->GetDeviceScaleFactor());
+
   // Before we map the window, set size hints. Otherwise, some window managers
   // will ignore toplevel XMoveWindow commands.
   XSizeHints size_hints;
@@ -815,9 +810,9 @@ gfx::Rect RootWindowHostLinux::GetBounds() const {
 void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
-  float current_scale = root_window_->compositor()->device_scale_factor();
-  float new_scale =
-      gfx::Screen::GetDisplayNearestWindow(root_window_).device_scale_factor();
+  float current_scale = delegate_->GetDeviceScaleFactor();
+  float new_scale = gfx::Screen::GetDisplayNearestWindow(
+      delegate_->AsRootWindow()).device_scale_factor();
   bool size_changed = bounds_.size() != bounds.size() ||
       current_scale != new_scale;
 
@@ -833,10 +828,12 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
   bounds_ = bounds;
-  if (size_changed)
-    root_window_->OnHostResized(bounds.size());
-  else
-    root_window_->SchedulePaintInRect(root_window_->bounds());
+  if (size_changed) {
+    delegate_->OnHostResized(bounds.size());
+  } else {
+    delegate_->AsRootWindow()->SchedulePaintInRect(
+        delegate_->AsRootWindow()->bounds());
+  }
 }
 
 gfx::Point RootWindowHostLinux::GetLocationOnNativeScreen() const {
@@ -1019,7 +1016,7 @@ void RootWindowHostLinux::PostNativeEvent(
       xevent.xmotion.time = CurrentTime;
 
       gfx::Point point(xevent.xmotion.x, xevent.xmotion.y);
-      root_window_->ConvertPointToNativeScreen(&point);
+      delegate_->AsRootWindow()->ConvertPointToNativeScreen(&point);
       xevent.xmotion.x_root = point.x();
       xevent.xmotion.y_root = point.y();
     }
@@ -1052,8 +1049,9 @@ void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
 }
 
 // static
-RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
-  return new RootWindowHostLinux(bounds);
+RootWindowHost* RootWindowHost::Create(RootWindowHostDelegate* delegate,
+                                       const gfx::Rect& bounds) {
+  return new RootWindowHostLinux(delegate, bounds);
 }
 
 // static

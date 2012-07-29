@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"
+#include "ui/aura/root_window_host_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events.h"
@@ -78,7 +79,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public Window,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver,
-                               public aura::client::CaptureDelegate {
+                               public aura::client::CaptureDelegate,
+                               public aura::RootWindowHostDelegate {
  public:
   explicit RootWindow(const gfx::Rect& initial_bounds);
   virtual ~RootWindow();
@@ -106,6 +108,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Shows the root window host.
   void ShowRootWindow();
+
+  RootWindowHostDelegate* AsRootWindowHostDelegate();
 
   // Sets the size of the root window.
   void SetHostSize(const gfx::Size& size_in_pixel);
@@ -138,25 +142,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Draw the whole screen.
   void ScheduleFullDraw();
 
-  // Handles a mouse event. Returns true if handled.
-  bool DispatchMouseEvent(MouseEvent* event);
-
-  // Handles a key event. Returns true if handled.
-  bool DispatchKeyEvent(KeyEvent* event);
-
-  // Handles a scroll event. Returns true if handled.
-  bool DispatchScrollEvent(ScrollEvent* event);
-
-  // Handles a touch event. Returns true if handled.
-  bool DispatchTouchEvent(TouchEvent* event);
-
   // Handles a gesture event. Returns true if handled. Unlike the other
   // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture
   // events are dispatched from GestureRecognizer instead of RootWindowHost.
   bool DispatchGestureEvent(GestureEvent* event);
-
-  // Called when the host changes size.
-  void OnHostResized(const gfx::Size& size_in_pixel);
 
   // Invoked when |window| is being destroyed.
   void OnWindowDestroying(Window* window);
@@ -319,6 +308,17 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
       ui::LayerAnimationSequence* animation) OVERRIDE;
   virtual void OnLayerAnimationAborted(
       ui::LayerAnimationSequence* animation) OVERRIDE;
+
+  // Overridden from aura::RootWindowHostDelegate:
+  virtual bool OnHostKeyEvent(KeyEvent* event) OVERRIDE;
+  virtual bool OnHostMouseEvent(MouseEvent* event) OVERRIDE;
+  virtual bool OnHostScrollEvent(ScrollEvent* event) OVERRIDE;
+  virtual bool OnHostTouchEvent(TouchEvent* event) OVERRIDE;
+  virtual void OnHostLostCapture() OVERRIDE;
+  virtual void OnHostPaint() OVERRIDE;
+  virtual void OnHostResized(const gfx::Size& size) OVERRIDE;
+  virtual float GetDeviceScaleFactor() OVERRIDE;
+  virtual RootWindow* AsRootWindow() OVERRIDE;
 
   // We hold and aggregate mouse drags as a way of throttling resizes when
   // HoldMouseMoves() is called. The following methods are used to dispatch held

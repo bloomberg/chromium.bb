@@ -147,7 +147,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   // A touch outside the root window will be associated with the root window
   aura::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(-10, -10), kTouchId,
       base::Time::NowFromSystemTime() - base::Time());
-  root_window->DispatchTouchEvent(&press);
+  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
 
   aura::GestureEvent* event = CreateGesture(
       ui::ET_GESTURE_TAP, 0, 0, 0, 0, kTouchId);
@@ -205,7 +205,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
                             gfx::Point(-10, ypos + ypos_half),
                             kTouchId,
                             base::Time::NowFromSystemTime() - base::Time());
-    root_window->DispatchTouchEvent(&press1);
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
 
     aura::GestureEvent* event1 = CreateGesture(
         ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos,
@@ -274,7 +274,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
     aura::TouchEvent release1(ui::ET_TOUCH_RELEASED,
                               gfx::Point(2 * xpos, ypos + ypos_half), kTouchId,
                               base::Time::NowFromSystemTime() - base::Time());
-    root_window->DispatchTouchEvent(&release1);
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
   }
 }
 
@@ -321,7 +321,7 @@ TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
                            gfx::Point(-10, ypos + ypos_half),
                            kTouchId,
                            base::Time::NowFromSystemTime() - base::Time());
-    root_window->DispatchTouchEvent(&press);
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
 
     aura::GestureEvent* event1 = CreateGesture(
         ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos,
@@ -371,7 +371,7 @@ TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
     aura::TouchEvent release(ui::ET_TOUCH_RELEASED,
                              gfx::Point(2 * xpos, ypos + ypos_half), kTouchId,
                              base::Time::NowFromSystemTime() - base::Time());
-    root_window->DispatchTouchEvent(&release);
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
 
     // Remove the launcher items again.
     TestLauncherDelegate::instance()->OnWillRemoveWindow(window1.get());
@@ -402,7 +402,7 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   // Send touch event to first window.
   aura::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), kTouchId,
       base::Time::NowFromSystemTime() - base::Time());
-  root_window->DispatchTouchEvent(&press);
+  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_TRUE(window1->HasCapture());
 
   base::OneShotTimer<internal::LongPressAffordanceAnimation>* timer =

@@ -25,7 +25,8 @@ namespace aura {
 class RootWindowHostLinux : public RootWindowHost,
                             public MessageLoop::Dispatcher {
  public:
-  explicit RootWindowHostLinux(const gfx::Rect& bounds);
+  RootWindowHostLinux(RootWindowHostDelegate* delegate,
+                      const gfx::Rect& bounds);
   virtual ~RootWindowHostLinux();
 
   // Overridden from Dispatcher overrides:
@@ -33,7 +34,6 @@ class RootWindowHostLinux : public RootWindowHost,
 
  private:
   // RootWindowHost Overrides.
-  virtual void SetRootWindow(RootWindow* root_window) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -65,7 +65,7 @@ class RootWindowHostLinux : public RootWindowHost,
   // |current_cursor_|.
   void SetCursorInternal(gfx::NativeCursor cursor);
 
-  RootWindow* root_window_;
+  RootWindowHostDelegate* delegate_;
 
   // The display and the native X window hosting the root window.
   Display* xdisplay_;
