@@ -2816,9 +2816,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // flip the coordinate system and then convert it into screen coordinates for
   // return.
   NSRect viewFrame = [self frame];
-  rect.origin.y = NSHeight(viewFrame) - rect.origin.y;
-  rect.origin.y -= rect.size.height;
-  rect = [self convertRectToBase:rect];
+  rect.origin.y = NSHeight(viewFrame) - NSMaxY(rect);
+  rect = [self convertRect:rect toView:nil];
   rect.origin = [[self window] convertBaseToScreen:rect.origin];
   return rect;
 }
