@@ -604,7 +604,11 @@ static int eg_surface_init_1d(struct radeon_surface_manager *surf_man,
         }
     }
 
-    if (surf->flags & RADEON_SURF_SBUFFER) {
+    /* The depth and stencil buffers are in separate resources on evergreen.
+     * We allocate them in one buffer next to each other to simplify
+     * communication between the DDX and the Mesa driver. */
+    if ((surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) ==
+	(RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) {
         surf->stencil_offset = ALIGN(surf->bo_size, surf->bo_alignment);
         surf->bo_size = surf->stencil_offset + surf->bo_size / 4;
     }
@@ -656,7 +660,8 @@ static int eg_surface_init_2d(struct radeon_surface_manager *surf_man,
         }
     }
 
-    if (surf->flags & RADEON_SURF_SBUFFER) {
+    if ((surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) ==
+	(RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) {
         surf->stencil_offset = ALIGN(surf->bo_size, surf->bo_alignment);
         surf->bo_size = surf->stencil_offset + surf->bo_size / 4;
     }
@@ -752,14 +757,7 @@ static int eg_surface_init(struct radeon_surface_manager *surf_man,
     /* tiling mode */
     mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
 
-    /* for some reason eg need to have room for stencil right after depth */
-    if (surf->flags & RADEON_SURF_ZBUFFER) {
-        surf->flags |= RADEON_SURF_SBUFFER;
-    }
-    if (surf->flags & RADEON_SURF_SBUFFER) {
-        surf->flags |= RADEON_SURF_ZBUFFER;
-    }
-    if (surf->flags & RADEON_SURF_ZBUFFER) {
+    if (surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) {
         /* zbuffer only support 1D or 2D tiled surface */
         switch (mode) {
         case RADEON_SURF_MODE_1D:
@@ -827,11 +825,6 @@ static int eg_surface_best(struct radeon_surface_manager *surf_man,
 
     /* tiling mode */
     mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
-
-    /* for some reason eg need to have room for stencil right after depth */
-    if (surf->flags & RADEON_SURF_ZBUFFER) {
-        surf->flags |= RADEON_SURF_SBUFFER;
-    }
 
     /* set some default value to avoid sanity check choking on them */
     surf->tile_split = 1024;
