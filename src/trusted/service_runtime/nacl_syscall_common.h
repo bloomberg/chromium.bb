@@ -186,7 +186,7 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
 
 int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    void                 *eip,
-                                   void                 *stack_ptr,
+                                   uint32_t             stack_ptr,
                                    uint32_t             thread_ptr,
                                    uint32_t             second_thread_ptr);
 

@@ -907,7 +907,6 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uint32_t       user_tls1,
                                    uint32_t       user_tls2) {
   struct NaClAppThread  *natp;
-  uintptr_t             stack_ptr;
 
   natp = malloc(sizeof *natp);
   if (NULL == natp) {
@@ -917,19 +916,10 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
     return -NACL_ABI_EAGAIN;
   }
 
-  stack_ptr = NaClSysToUserStackAddr(nap, sys_stack_ptr);
-
-  if (0 != ((stack_ptr + sizeof(nacl_reg_t)) & NACL_STACK_ALIGN_MASK)) {
-    NaClLog(3,
-            ("NaClCreateAdditionalThread:  user thread library provided "
-             "an unaligned user stack pointer: 0x%"NACL_PRIxPTR"\n"),
-            stack_ptr);
-  }
-
   if (!NaClAppThreadCtor(natp,
                          nap,
                          prog_ctr,
-                         stack_ptr,
+                         NaClSysToUserStackAddr(nap, sys_stack_ptr),
                          user_tls1,
                          user_tls2)) {
     NaClLog(LOG_WARNING,

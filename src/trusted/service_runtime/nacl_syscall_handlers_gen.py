@@ -145,7 +145,7 @@ SYSCALL_LIST = [
      ['size_t size']),
     ('NACL_sys_tls_init', 'NaClCommonSysTls_Init', ['uint32_t thread_ptr']),
     ('NACL_sys_thread_create', 'NaClCommonSysThread_Create',
-     ['void *prog_ctr', 'void *stack_ptr',
+     ['void *prog_ctr', 'uint32_t stack_ptr',
       'uint32_t thread_ptr', 'uint32_t second_thread_ptr']),
     ('NACL_sys_tls_get', 'NaClCommonSysTlsGet', []),
     ('NACL_sys_thread_nice', 'NaClCommonSysThread_Nice', ['const int nice']),

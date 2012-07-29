@@ -5,6 +5,12 @@
 
 Import('env')
 
+
+# The first tests check stack alignment indirectly by stack-allocating
+# data structures that are meant to be aligned.  These tests could be
+# defeated if the toolchain optimizes the checks away or realigns the
+# stack defensively.
+
 stack_alignment_test_nexe = env.ComponentProgram('stack_alignment_test',
                                                  'stack_alignment_test.c',
                                                  EXTRA_LIBS=[
@@ -26,3 +32,28 @@ if env.Bit('build_x86') and not env.Bit('bitcode'):
   node = env.CommandSelLdrTestNacl('sse_alignment_test.out',
                                    sse_alignment_test_nexe)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_sse_alignment_test')
+
+
+# This test checks stack alignment directly, by checking the stack
+# pointer register.  This requires assembly code.
+
+asm_env = env.Clone()
+disable_asm = False
+if asm_env.Bit('bitcode'):
+  # We use inline assembly, which does not work in pexes.
+  if env.Bit('pnacl_generate_pexe'):
+    disable_asm = True
+  # Our inline assembly works with ARM but not x86 PNaCl/Clang.
+  if not env.Bit('target_arm'):
+    disable_asm = True
+  asm_env.AddBiasForPNaCl()
+  asm_env.PNaClForceNative()
+
+# This test's IRT interface querying does not work under nacl-glibc.
+if not disable_asm and not env.Bit('nacl_glibc'):
+  stack_alignment_asm_test_nexe = asm_env.ComponentProgram(
+      'stack_alignment_asm_test', 'stack_alignment_asm_test.c',
+      EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+  node = env.CommandSelLdrTestNacl('stack_alignment_asm_test.out',
+                                   stack_alignment_asm_test_nexe)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_stack_alignment_asm_test')

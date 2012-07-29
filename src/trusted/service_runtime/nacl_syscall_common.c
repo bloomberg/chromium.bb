@@ -2305,7 +2305,7 @@ cleanup:
 
 int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    void                 *prog_ctr,
-                                   void                 *stack_ptr,
+                                   uint32_t             stack_ptr,
                                    uint32_t             thread_ptr,
                                    uint32_t             second_thread_ptr) {
   struct NaClApp *nap = natp->nap;
@@ -2315,10 +2315,9 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
 
   NaClLog(3,
           ("Entered NaClCommonSysThread_Create(0x%08"NACL_PRIxPTR
-           " pc=0x%08"NACL_PRIxPTR", sp=0x%08"NACL_PRIxPTR", thread_ptr=0x%08"
+           " pc=0x%08"NACL_PRIxPTR", sp=0x%08"NACL_PRIx32", thread_ptr=0x%08"
            NACL_PRIx32")\n"),
-          (uintptr_t) natp, (uintptr_t) prog_ctr, (uintptr_t) stack_ptr,
-          thread_ptr);
+          (uintptr_t) natp, (uintptr_t) prog_ctr, stack_ptr, thread_ptr);
 
   if (!NaClIsValidJumpTarget(nap, (uintptr_t) prog_ctr)) {
     NaClLog(LOG_ERROR, "NaClCommonSysThread_Create: Bad function pointer\n");
@@ -2326,8 +2325,11 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  /* we do not enforce stack alignment, just check for validity */
-  sys_stack = NaClUserToSysAddr(nap, (uintptr_t) stack_ptr);
+  /* Align the stack pointer. */
+  stack_ptr = ((stack_ptr + NACL_STACK_PAD_BELOW_ALIGN)
+               & ~NACL_STACK_ALIGN_MASK) - NACL_STACK_PAD_BELOW_ALIGN;
+
+  sys_stack = NaClUserToSysAddr(nap, stack_ptr);
   if (kNaClBadAddress == sys_stack) {
     NaClLog(LOG_ERROR, "bad stack\n");
     retval = -NACL_ABI_EFAULT;
