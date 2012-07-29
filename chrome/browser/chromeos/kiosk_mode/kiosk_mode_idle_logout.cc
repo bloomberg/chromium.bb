@@ -18,33 +18,28 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 
+namespace chromeos {
+
 namespace {
 
 const int64 kLoginIdleTimeout = 100; // seconds
 
+static base::LazyInstance<KioskModeIdleLogout>
+    g_kiosk_mode_idle_logout = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
-namespace browser {
-
-void ShowIdleLogoutDialog() {
-  chromeos::IdleLogoutDialogView::ShowDialog();
+// static
+void KioskModeIdleLogout::Initialize() {
+  g_kiosk_mode_idle_logout.Get();
 }
-
-void CloseIdleLogoutDialog() {
-  chromeos::IdleLogoutDialogView::CloseDialog();
-}
-
-}  // namespace browser
-
-namespace chromeos {
 
 KioskModeIdleLogout::KioskModeIdleLogout() {
-  if (chromeos::KioskModeSettings::Get()->is_initialized())
+  if (KioskModeSettings::Get()->is_initialized())
     Setup();
   else
-    chromeos::KioskModeSettings::Get()->Initialize(
-        base::Bind(&KioskModeIdleLogout::Setup,
-                   base::Unretained(this)));
+    KioskModeSettings::Get()->Initialize(base::Bind(&KioskModeIdleLogout::Setup,
+                                                    base::Unretained(this)));
 }
 
 void KioskModeIdleLogout::Setup() {
@@ -78,12 +73,12 @@ void KioskModeIdleLogout::IdleNotify(int64 threshold) {
   // the logout dialog if it's still up.
   RequestNextActiveNotification();
 
-  browser::ShowIdleLogoutDialog();
+  IdleLogoutDialogView::ShowDialog();
 }
 
 void KioskModeIdleLogout::ActiveNotify() {
   // Before anything else, close the logout dialog to prevent restart
-  browser::CloseIdleLogoutDialog();
+  IdleLogoutDialogView::CloseDialog();
 
   // Now that we're active, register a request for notification for
   // the next time we go idle.
@@ -91,28 +86,21 @@ void KioskModeIdleLogout::ActiveNotify() {
 }
 
 void KioskModeIdleLogout::SetupIdleNotifications() {
-  chromeos::PowerManagerClient* power_manager =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  PowerManagerClient* power_manager =
+      DBusThreadManager::Get()->GetPowerManagerClient();
   if (!power_manager->HasObserver(this))
     power_manager->AddObserver(this);
 }
 
 void KioskModeIdleLogout::RequestNextActiveNotification() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+  DBusThreadManager::Get()->GetPowerManagerClient()->
       RequestActiveNotification();
 }
 
 void KioskModeIdleLogout::RequestNextIdleNotification() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RequestIdleNotification(chromeos::KioskModeSettings::Get()->
+  DBusThreadManager::Get()->GetPowerManagerClient()->
+      RequestIdleNotification(KioskModeSettings::Get()->
           GetIdleLogoutTimeout().InMilliseconds());
-}
-
-static base::LazyInstance<KioskModeIdleLogout>
-    g_kiosk_mode_idle_logout = LAZY_INSTANCE_INITIALIZER;
-
-void InitializeKioskModeIdleLogout() {
-  g_kiosk_mode_idle_logout.Get();
 }
 
 }  // namespace chromeos

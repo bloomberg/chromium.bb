@@ -352,7 +352,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize the screen locker now so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    chromeos::InitializeKioskModeIdleLogout();
+    chromeos::KioskModeIdleLogout::Initialize();
   } else {
     chromeos::ScreenLocker::InitClass();
   }
