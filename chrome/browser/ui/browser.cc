@@ -19,6 +19,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/process_info.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -152,6 +153,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/browser/color_chooser.h"
@@ -1194,6 +1196,26 @@ void Browser::OnWindowDidShow() {
   if (window_has_shown_)
     return;
   window_has_shown_ = true;
+
+// CurrentProcessInfo::CreationTime() is currently only implemented on Mac and
+// Windows.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // Measure the latency from startup till the first browser window becomes
+  // visible.
+  static bool is_first_browser_window = true;
+  if (is_first_browser_window &&
+      !startup_metric_utils::WasNonBrowserUIDisplayed()) {
+    is_first_browser_window = false;
+    const base::Time* process_creation_time =
+        base::CurrentProcessInfo::CreationTime();
+
+    if (process_creation_time) {
+      UMA_HISTOGRAM_LONG_TIMES(
+          "Startup.BrowserWindowDisplay",
+          base::Time::Now() - *process_creation_time);
+    }
+  }
+#endif // OS_MACOSX || OS_WIN
 
   // Nothing to do for non-tabbed windows.
   if (!is_type_tabbed())

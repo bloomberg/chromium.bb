@@ -267,6 +267,8 @@
         'common/spellcheck_common.h',
         'common/spellcheck_messages.h',
         'common/spellcheck_result.h',
+        'common/startup_metric_utils.cc',
+        'common/startup_metric_utils.h',
         'common/string_ordinal.cc',
         'common/string_ordinal.h',
         'common/switch_utils.cc',

@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/sys_string_conversions.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -16,6 +17,8 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& title,
                                 const string16& message,
                                 MessageBoxType type) {
+  startup_metric_utils::SetNonBrowserUIDisplayed();
+
   // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert setMessageText:base::SysUTF16ToNSString(message)];
