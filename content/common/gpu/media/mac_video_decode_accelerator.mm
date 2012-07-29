@@ -93,15 +93,10 @@ static bool BindImageToTexture(CGLContextObj context,
 }
 
 MacVideoDecodeAccelerator::MacVideoDecodeAccelerator(
-    media::VideoDecodeAccelerator::Client* client)
+    CGLContextObj cgl_context, media::VideoDecodeAccelerator::Client* client)
     : client_(client),
-      cgl_context_(NULL),
+      cgl_context_(cgl_context),
       did_build_config_record_(false) {
-}
-
-void MacVideoDecodeAccelerator::SetCGLContext(CGLContextObj cgl_context) {
-  DCHECK(CalledOnValidThread());
-  cgl_context_ = cgl_context;
 }
 
 bool MacVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {

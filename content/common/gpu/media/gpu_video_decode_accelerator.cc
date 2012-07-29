@@ -169,31 +169,25 @@ void GpuVideoDecodeAccelerator::Initialize(
     return;
   }
   DLOG(INFO) << "Initializing DXVA HW decoder for windows.";
-  scoped_ptr<DXVAVideoDecodeAccelerator> video_decoder(
-      new DXVAVideoDecodeAccelerator(this));
-  video_decode_accelerator_ = video_decoder.Pass();
+  video_decode_accelerator_.reset(new DXVAVideoDecodeAccelerator(this));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  scoped_ptr<OmxVideoDecodeAccelerator> video_decoder(
-      new OmxVideoDecodeAccelerator(this));
-  video_decoder->SetEglState(
+  video_decode_accelerator_.reset(new OmxVideoDecodeAccelerator(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
-      stub_->decoder()->GetGLContext()->GetHandle());
-  video_decode_accelerator_ = video_decoder.Pass();
+      stub_->decoder()->GetGLContext()->GetHandle(),
+      this));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  scoped_ptr<VaapiVideoDecodeAccelerator> video_decoder(
-      new VaapiVideoDecodeAccelerator(this, make_context_current_));
   gfx::GLContextGLX* glx_context =
       static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());
   GLXContext glx_context_handle =
       static_cast<GLXContext>(glx_context->GetHandle());
-  video_decoder->SetGlxState(glx_context->display(), glx_context_handle);
-  video_decode_accelerator_ = video_decoder.Pass();
+  video_decode_accelerator_.reset(new VaapiVideoDecodeAccelerator(
+      glx_context->display(), glx_context_handle, this,
+      make_context_current_));
 #elif defined(OS_MACOSX)
-  scoped_ptr<MacVideoDecodeAccelerator> video_decoder(
-      new MacVideoDecodeAccelerator(this));
-  video_decoder->SetCGLContext(static_cast<CGLContextObj>(
-      stub_->decoder()->GetGLContext()->GetHandle()));
-  video_decode_accelerator_ = video_decoder.Pass();
+  video_decode_accelerator_.reset(new MacVideoDecodeAccelerator(
+      static_cast<CGLContextObj>(
+          stub_->decoder()->GetGLContext()->GetHandle()),
+      this));
 #else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);

@@ -38,7 +38,8 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
     public media::VideoDecodeAccelerator {
  public:
   // Does not take ownership of |client| which must outlive |*this|.
-  OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
+  OmxVideoDecodeAccelerator(EGLDisplay egl_display, EGLContext egl_context,
+                            media::VideoDecodeAccelerator::Client* client);
   virtual ~OmxVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
@@ -50,8 +51,6 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   void Flush() OVERRIDE;
   void Reset() OVERRIDE;
   void Destroy() OVERRIDE;
-
-  void SetEglState(EGLDisplay egl_display, EGLContext egl_context);
 
   base::WeakPtr<OmxVideoDecodeAccelerator> weak_this() { return weak_this_; }
 

@@ -98,6 +98,7 @@ static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
       error, ret_val)
 
 OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
+    EGLDisplay egl_display, EGLContext egl_context,
     media::VideoDecodeAccelerator::Client* client)
     : message_loop_(MessageLoop::current()),
       component_handle_(NULL),
@@ -111,6 +112,8 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       input_buffers_at_component_(0),
       output_port_(0),
       output_buffers_at_component_(0),
+      egl_display_(egl_display),
+      egl_context_(egl_context),
       client_(client),
       codec_(UNKNOWN),
       h264_profile_(OMX_VIDEO_AVCProfileMax),
@@ -127,13 +130,6 @@ OmxVideoDecodeAccelerator::~OmxVideoDecodeAccelerator() {
   DCHECK_EQ(0, input_buffers_at_component_);
   DCHECK_EQ(0, output_buffers_at_component_);
   DCHECK(pictures_.empty());
-}
-
-void OmxVideoDecodeAccelerator::SetEglState(
-    EGLDisplay egl_display, EGLContext egl_context) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  egl_display_ = egl_display;
-  egl_context_ = egl_context;
 }
 
 // This is to initialize the OMX data structures to default values.

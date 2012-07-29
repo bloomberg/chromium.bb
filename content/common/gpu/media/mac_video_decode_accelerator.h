@@ -32,11 +32,9 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
       public base::NonThreadSafe {
  public:
   // Does not take ownership of |client| which must outlive |*this|.
-  MacVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
+  MacVideoDecodeAccelerator(CGLContextObj cgl_context,
+                            media::VideoDecodeAccelerator::Client* client);
   virtual ~MacVideoDecodeAccelerator();
-
-  // Set the OpenGL context to use.
-  void SetCGLContext(CGLContextObj cgl_context);
 
   // media::VideoDecodeAccelerator implementation.
   virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;

@@ -41,6 +41,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
     public media::VideoDecodeAccelerator {
  public:
   VaapiVideoDecodeAccelerator(
+      Display* x_display, GLXContext glx_context,
       Client* client,
       const base::Callback<bool(void)>& make_context_current);
   virtual ~VaapiVideoDecodeAccelerator();
@@ -54,9 +55,6 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual void Destroy() OVERRIDE;
-
-  // Used by user of this class to pass X/GLX state.
-  void SetGlxState(Display* x_display, GLXContext glx_context);
 
  private:
   // Ensure data has been synced with the output texture and notify

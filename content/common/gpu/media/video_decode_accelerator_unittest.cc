@@ -317,28 +317,25 @@ static bool DoNothingReturnTrue() { return true; }
 
 void GLRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
+  CHECK(!decoder_.get());
 #if defined(OS_WIN)
-  scoped_ptr<DXVAVideoDecodeAccelerator> decoder(
-      new DXVAVideoDecodeAccelerator(this));
+  decoder_.reset(new DXVAVideoDecodeAccelerator(this));
 #elif defined(OS_MACOSX)
-  scoped_ptr<MacVideoDecodeAccelerator> decoder(
-      new MacVideoDecodeAccelerator(this));
-  decoder->SetCGLContext(
-      static_cast<CGLContextObj>(rendering_helper_->GetGLContext()));
+  decoder_.reset(new MacVideoDecodeAccelerator(
+      static_cast<CGLContextObj>(rendering_helper_->GetGLContext()), this));
 #elif defined(ARCH_CPU_ARMEL)
-  scoped_ptr<OmxVideoDecodeAccelerator> decoder(
-      new OmxVideoDecodeAccelerator(this));
-  decoder->SetEglState(
-      static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-      static_cast<EGLContext>(rendering_helper_->GetGLContext()));
+  decoder_.reset(
+      new OmxVideoDecodeAccelerator(
+          static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+          static_cast<EGLContext>(rendering_helper_->GetGLContext()),
+          this));
 #elif defined(ARCH_CPU_X86_FAMILY)
-  scoped_ptr<VaapiVideoDecodeAccelerator> decoder(
-      new VaapiVideoDecodeAccelerator(this, base::Bind(&DoNothingReturnTrue)));
-  decoder->SetGlxState(
+  decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
-      static_cast<GLXContext>(rendering_helper_->GetGLContext()));
+      static_cast<GLXContext>(rendering_helper_->GetGLContext()),
+      this, base::Bind(&DoNothingReturnTrue)));
 #endif  // OS_WIN
-  decoder_ = decoder.Pass();
+  CHECK(decoder_.get());
   SetState(CS_DECODER_SET);
   if (decoder_deleted())
     return;

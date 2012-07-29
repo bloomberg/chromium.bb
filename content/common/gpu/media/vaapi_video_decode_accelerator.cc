@@ -52,9 +52,12 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
 }
 
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
+    Display* x_display, GLXContext glx_context,
     Client* client,
     const base::Callback<bool(void)>& make_context_current)
-    : make_context_current_(make_context_current),
+    : x_display_(x_display),
+      glx_context_(glx_context),
+      make_context_current_(make_context_current),
       state_(kUninitialized),
       input_ready_(&lock_),
       output_ready_(&lock_),
@@ -94,15 +97,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Client::NotifyInitializeDone, client_));
   return true;
-}
-
-// TODO(posciak, fischman): try to move these to constructor parameters,
-// but while removing SetEglState from OVDA as well for symmetry.
-void VaapiVideoDecodeAccelerator::SetGlxState(Display* x_display,
-                                              GLXContext glx_context) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  x_display_ = x_display;
-  glx_context_ = glx_context;
 }
 
 void VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady(int32 input_id,
