@@ -100,7 +100,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // Overridden from net::URLFetcherDelegate.
@@ -249,11 +249,12 @@ class AuthorizeAppsOperation : public GetDataOperation {
 
   // Overridden from GetDataOperation.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
 
   // Must override GetDataOperation's ParseResponse because the response is XML
   // not JSON.
-  virtual base::Value* ParseResponse(const std::string& data) OVERRIDE;
+  virtual void ParseResponse(GDataErrorCode fetch_error_code,
+                             const std::string& data) OVERRIDE;
  private:
   std::string app_id_;
   GURL document_url_;
@@ -328,7 +329,7 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
@@ -360,7 +361,7 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void NotifyStartToOperationRegistry() OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;

@@ -49,6 +49,28 @@ const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 // OAuth scope for Drive API.
 const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 
+// Parse JSON string to base::Value object.
+void ParseJsonOnBlockingPool(const std::string& data,
+                             scoped_ptr<base::Value>* value) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  int error_code = -1;
+  std::string error_message;
+  value->reset(base::JSONReader::ReadAndReturnError(data,
+                                                    base::JSON_PARSE_RFC,
+                                                    &error_code,
+                                                    &error_message));
+
+  if (!value->get()) {
+    LOG(ERROR) << "Error while parsing entry response: "
+               << error_message
+               << ", code: "
+               << error_code
+               << ", data:\n"
+               << data;
+  }
+}
+
 }  // namespace
 
 namespace gdata {
@@ -236,6 +258,13 @@ GDataErrorCode UrlFetchOperationBase::GetErrorCode(
   return code;
 }
 
+void UrlFetchOperationBase::OnProcessURLFetchResultsComplete(bool result) {
+  if (result)
+    NotifySuccessToOperationRegistry();
+  else
+    NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+}
+
 void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
@@ -252,11 +281,7 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
   }
 
   // Overridden by each specialization
-  bool success = ProcessURLFetchResults(source);
-  if (success)
-    NotifySuccessToOperationRegistry();
-  else
-    NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+  ProcessURLFetchResults(source);
 }
 
 void UrlFetchOperationBase::NotifySuccessToOperationRegistry() {
@@ -316,13 +341,13 @@ EntryActionOperation::EntryActionOperation(GDataOperationRegistry* registry,
 
 EntryActionOperation::~EntryActionOperation() {}
 
-bool EntryActionOperation::ProcessURLFetchResults(
-    const URLFetcher* source) {
+void EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
   if (!callback_.is_null()) {
     GDataErrorCode code = GetErrorCode(source);
     callback_.Run(code, document_url_);
   }
-  return true;
+  const bool success = true;
+  OnProcessURLFetchResultsComplete(success);
 }
 
 void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
@@ -335,57 +360,86 @@ void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
                                    Profile* profile,
                                    const GetDataCallback& callback)
-    : UrlFetchOperationBase(registry, profile), callback_(callback) {
+    : UrlFetchOperationBase(registry, profile),
+      callback_(callback),
+      weak_ptr_factory_(this) {
 }
 
 GetDataOperation::~GetDataOperation() {}
 
-bool GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
+void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   scoped_ptr<base::Value> root_value;
-  GDataErrorCode code = GetErrorCode(source);
+  GDataErrorCode fetch_error_code = GetErrorCode(source);
 
-  switch (code) {
+  switch (fetch_error_code) {
     case HTTP_SUCCESS:
-    case HTTP_CREATED: {
-      root_value.reset(ParseResponse(data));
-      if (!root_value.get())
-        code = GDATA_PARSE_ERROR;
-
+    case HTTP_CREATED:
+      ParseResponse(fetch_error_code, data);
       break;
-    }
     default:
+      RunCallback(fetch_error_code, scoped_ptr<base::Value>());
+      const bool success = false;
+      OnProcessURLFetchResultsComplete(success);
       break;
   }
-
-  if (!callback_.is_null())
-    callback_.Run(code, root_value.Pass());
-  return root_value.get() != NULL;
 }
 
-void GetDataOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
+void GetDataOperation::RunCallbackOnPrematureFailure(
+    GDataErrorCode fetch_error_code) {
   if (!callback_.is_null()) {
     scoped_ptr<base::Value> root_value;
-    callback_.Run(code, root_value.Pass());
+    callback_.Run(fetch_error_code, root_value.Pass());
   }
 }
 
-base::Value* GetDataOperation::ParseResponse(const std::string& data) {
-  int error_code = -1;
-  std::string error_message;
-  scoped_ptr<base::Value> root_value(base::JSONReader::ReadAndReturnError(
-      data, base::JSON_PARSE_RFC, &error_code, &error_message));
-  if (!root_value.get()) {
-    LOG(ERROR) << "Error while parsing entry response: "
-               << error_message
-               << ", code: "
-               << error_code
-               << ", data:\n"
-               << data;
-    return NULL;
+void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
+                                     const std::string& data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Uses this hack to avoid deep-copy of json object because json might be so
+  // big. This pointer of scped_ptr is to ensure a deletion of the parsed json
+  // value object.
+  scoped_ptr<base::Value>* parsed_value = new scoped_ptr<base::Value>();
+
+  BrowserThread::PostBlockingPoolTaskAndReply(
+      FROM_HERE,
+      base::Bind(&ParseJsonOnBlockingPool,
+                 data,
+                 parsed_value),
+      base::Bind(&GetDataOperation::OnDataParsed,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 fetch_error_code,
+                 base::Owned(parsed_value)));
+}
+
+void GetDataOperation::OnDataParsed(
+    gdata::GDataErrorCode fetch_error_code,
+    scoped_ptr<base::Value>* value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  bool success = true;
+  if (!value->get()) {
+    fetch_error_code = gdata::GDATA_PARSE_ERROR;
+    success = false;
   }
-  return root_value.release();
+
+  // The ownership of the parsed json object is transfered to RunCallBack(),
+  // keeping the ownership of the |value| here.
+  RunCallback(fetch_error_code, value->Pass());
+
+  DCHECK(!value->get());
+
+  OnProcessURLFetchResultsComplete(success);
+  // |value| will be deleted after return beause it is base::Owned()'d.
+}
+
+void GetDataOperation::RunCallback(GDataErrorCode fetch_error_code,
+                                   scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!callback_.is_null())
+    callback_.Run(fetch_error_code, value.Pass());
 }
 
 }  // namespace gdata
