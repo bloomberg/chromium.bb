@@ -64,4 +64,29 @@ void WaitForAppModalDialog(Shell* window) {
   runner->Run();
 }
 
+ShellAddedObserver::ShellAddedObserver()
+    : shell_(NULL) {
+  Shell::SetShellCreatedCallback(
+      base::Bind(&ShellAddedObserver::ShellCreated, base::Unretained(this)));
+}
+
+ShellAddedObserver::~ShellAddedObserver() {
+}
+
+Shell* ShellAddedObserver::GetShell() {
+  if (shell_)
+    return shell_;
+
+  runner_ = new MessageLoopRunner();
+  runner_->Run();
+  return shell_;
+}
+
+void ShellAddedObserver::ShellCreated(Shell* shell) {
+  DCHECK(!shell_);
+  shell_ = shell;
+  if (runner_)
+    runner_->QuitClosure().Run();
+}
+
 }  // namespace content

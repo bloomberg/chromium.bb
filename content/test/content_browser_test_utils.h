@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_H_
 #define CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_H_
 
+#include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -20,6 +21,7 @@ class Rect;
 
 namespace content {
 
+class MessageLoopRunner;
 class Shell;
 
 // Generate the file path for testing a particular test.
@@ -46,6 +48,26 @@ void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
 
 // Wait until an application modal dialog is requested.
 void WaitForAppModalDialog(Shell* window);
+
+// Used to wait for a new Shell window to be created. Instantiate this object
+// before the operation that will create the window.
+class ShellAddedObserver {
+ public:
+  ShellAddedObserver();
+  ~ShellAddedObserver();
+
+  // Will run a message loop to wait for the new window if it hasn't been
+  // created since the constructor.
+  Shell* GetShell();
+
+ private:
+  void ShellCreated(Shell* shell);
+
+  Shell* shell_;
+  scoped_refptr<MessageLoopRunner> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellAddedObserver);
+};
 
 #if defined OS_MACOSX
 void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);

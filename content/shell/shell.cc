@@ -29,6 +29,7 @@ static const int kTestWindowHeight = 600;
 namespace content {
 
 std::vector<Shell*> Shell::windows_;
+base::Callback<void(Shell*)> Shell::shell_created_callback_;
 
 bool Shell::quit_message_loop_ = true;
 
@@ -39,9 +40,14 @@ Shell::Shell(WebContents* web_contents)
       , default_edit_wnd_proc_(0)
 #endif
   {
-    registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-        Source<WebContents>(web_contents));
-    windows_.push_back(this);
+  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+      Source<WebContents>(web_contents));
+  windows_.push_back(this);
+
+  if (!shell_created_callback_.is_null()) {
+    shell_created_callback_.Run(this);
+    shell_created_callback_.Reset();
+  }
 }
 
 Shell::~Shell() {
@@ -77,6 +83,12 @@ void Shell::CloseAllWindows() {
   for (size_t i = 0; i < open_windows.size(); ++i)
     open_windows[i]->Close();
   MessageLoop::current()->RunAllPending();
+}
+
+void Shell::SetShellCreatedCallback(
+    base::Callback<void(Shell*)> shell_created_callback) {
+  DCHECK(shell_created_callback_.is_null());
+  shell_created_callback_ = shell_created_callback;
 }
 
 Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
@@ -145,9 +157,22 @@ gfx::NativeView Shell::GetContentView() {
   return web_contents_->GetNativeView();
 }
 
+WebContents* Shell::OpenURLFromTab(WebContents* source,
+                                   const OpenURLParams& params) {
+  // The only one we implement for now.
+  DCHECK(params.disposition == CURRENT_TAB);
+  source->GetController().LoadURL(
+      params.url, params.referrer, params.transition, std::string());
+  return source;
+}
+
 void Shell::LoadingStateChanged(WebContents* source) {
   UpdateNavigationControls();
   PlatformSetIsLoading(source->IsLoading());
+}
+
+void Shell::CloseContents(WebContents* source) {
+  Close();
 }
 
 void Shell::WebContentsCreated(WebContents* source_contents,
