@@ -1385,7 +1385,7 @@ void RenderWidgetHostViewAura::OnWindowDestroyed() {
   delete this;
 }
 
-void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
+void RenderWidgetHostViewAura::OnWindowTargetVisibilityChanged(bool visible) {
 }
 
 bool RenderWidgetHostViewAura::HasHitTestMask() const {

@@ -694,7 +694,7 @@ void Window::SetVisible(bool visible) {
   visible_ = visible;
   SchedulePaint();
   if (delegate_)
-    delegate_->OnWindowVisibilityChanged(visible);
+    delegate_->OnWindowTargetVisibilityChanged(visible);
 
   if (parent_ && parent_->layout_manager_.get())
     parent_->layout_manager_->OnChildWindowVisibilityChanged(this, visible);

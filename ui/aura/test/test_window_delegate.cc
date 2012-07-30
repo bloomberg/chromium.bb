@@ -88,7 +88,7 @@ void TestWindowDelegate::OnWindowDestroying() {
 void TestWindowDelegate::OnWindowDestroyed() {
 }
 
-void TestWindowDelegate::OnWindowVisibilityChanged(bool visible) {
+void TestWindowDelegate::OnWindowTargetVisibilityChanged(bool visible) {
 }
 
 bool TestWindowDelegate::HasHitTestMask() const {

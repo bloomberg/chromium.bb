@@ -855,7 +855,7 @@ void NativeWidgetAura::OnWindowDestroyed() {
     delete this;
 }
 
-void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
+void NativeWidgetAura::OnWindowTargetVisibilityChanged(bool visible) {
   delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
 

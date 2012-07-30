@@ -1168,7 +1168,7 @@ class VisibilityWindowDelegate : public TestWindowDelegate {
     hidden_ = 0;
   }
 
-  virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE {
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
     if (visible)
       shown_++;
     else

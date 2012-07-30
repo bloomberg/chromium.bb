@@ -84,11 +84,10 @@ class AURA_EXPORT WindowDelegate {
   // The delegate can use this as an opportunity to delete itself if necessary.
   virtual void OnWindowDestroyed() = 0;
 
-  // Called when the visibility of a Window changes. See description in
-  // WindowObserver::OnWindowDestroyed() for details.
-  // TODO: this should be renamed to OnWindowTargetVisibilityChanged() to
-  // match when it's sent.
-  virtual void OnWindowVisibilityChanged(bool visible) = 0;
+  // Called when the TargetVisibility() of a Window changes. |visible|
+  // corresponds to the target visibility of the window. See
+  // Window::TargetVisibility() for details.
+  virtual void OnWindowTargetVisibilityChanged(bool visible) = 0;
 
   // Called from Window::HitTest to check if the window has a custom hit test
   // mask. It works similar to the views counterparts. That is, if the function

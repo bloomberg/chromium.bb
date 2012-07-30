@@ -563,7 +563,7 @@ void WebContentsViewAura::OnWindowDestroying() {
 void WebContentsViewAura::OnWindowDestroyed() {
 }
 
-void WebContentsViewAura::OnWindowVisibilityChanged(bool visible) {
+void WebContentsViewAura::OnWindowTargetVisibilityChanged(bool visible) {
   if (visible)
     web_contents_->WasShown();
   else
