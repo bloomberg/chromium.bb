@@ -132,12 +132,13 @@ void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   // messages to the gpu channel through this object.  But queued posted tasks
   // can still be draining, so we're forgiving and simply ignore them.
   bool error = false;
+  uint32 message_type = message->type();
   if (!channel_) {
     delete message;
-    DLOG(ERROR) << "Send(" << message->type() << ") after error ignored";
+    DLOG(ERROR) << "Send(" << message_type << ") after error ignored";
     error = true;
   } else if (!channel_->Send(message)) {
-    DLOG(ERROR) << "Send(" << message->type() << ") failed";
+    DLOG(ERROR) << "Send(" << message_type << ") failed";
     error = true;
   }
   if (error)
