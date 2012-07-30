@@ -16,10 +16,7 @@
 
 Here is an example options page:
 
-<pre>
-&lt;html>
-&lt;head>&lt;title>My Test Extension Options&lt;/title>&lt;/head>
-&lt;script type="text/javascript">
+<pre>// Save this script as `options.js`
 
 // Saves options to localStorage.
 function save_options() {
@@ -50,10 +47,16 @@ function restore_options() {
     }
   }
 }
+document.addEventListener('DOMContentReady', restore_options);
+document.querySelector('#save').addEventListener('click', save_options);
+</pre>
 
-&lt;/script>
+<pre>
+&lt;html>
+&lt;head>&lt;title>My Test Extension Options&lt;/title>&lt;/head>
+&lt;script src="options.js">
 
-&lt;body onload="restore_options()">
+&lt;body>
 
 Favorite Color:
 &lt;select id="color">
@@ -64,7 +67,8 @@ Favorite Color:
 &lt;/select>
 
 &lt;br>
-&lt;button onclick="save_options()">Save&lt;/button>
+&lt;div id="status">&lt;/div>
+&lt;button id="save">Save&lt;/button>
 &lt;/body>
 &lt;/html>
 </pre>

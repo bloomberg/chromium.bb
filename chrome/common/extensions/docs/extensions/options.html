@@ -222,9 +222,7 @@
 }</pre>
 <a name="H2-1"></a><h2>Step 2: Write your options page</h2>
 Here is an example options page:
-<pre>&lt;html&gt;
-&lt;head&gt;&lt;title&gt;My Test Extension Options&lt;/title&gt;&lt;/head&gt;
-&lt;script type="text/javascript"&gt;
+<pre>// Save this script as `options.js`
 // Saves options to localStorage.
 function save_options() {
   var select = document.getElementById("color");
@@ -252,8 +250,13 @@ function restore_options() {
     }
   }
 }
-&lt;/script&gt;
-&lt;body onload="restore_options()"&gt;
+document.addEventListener('DOMContentReady', restore_options);
+document.querySelector('#save').addEventListener('click', save_options);
+</pre>
+<pre>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;My Test Extension Options&lt;/title&gt;&lt;/head&gt;
+&lt;script src="options.js"&gt;
+&lt;body&gt;
 Favorite Color:
 &lt;select id="color"&gt;
  &lt;option value="red"&gt;red&lt;/option&gt;
@@ -262,7 +265,8 @@ Favorite Color:
  &lt;option value="yellow"&gt;yellow&lt;/option&gt;
 &lt;/select&gt;
 &lt;br&gt;
-&lt;button onclick="save_options()"&gt;Save&lt;/button&gt;
+&lt;div id="status"&gt;&lt;/div&gt;
+&lt;button id="save"&gt;Save&lt;/button&gt;
 &lt;/body&gt;
 &lt;/html&gt;
 </pre>
