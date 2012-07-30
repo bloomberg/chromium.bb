@@ -1,0 +1,22 @@
+[
+  {
+    "namespace": "ref_test",
+    "types": [
+      {
+        "id": "type1",
+        "type": "string",
+        "description": "$ref:type2"
+      },
+      {
+        "id": "type2",
+        "type": "string",
+        "description": "A $ref:type3, or $ref:type2"
+      },
+      {
+        "id": "type3",
+        "type": "string",
+        "description": "$ref:other.type2 != $ref:ref_test.type2"
+      }
+    ]
+  }
+]

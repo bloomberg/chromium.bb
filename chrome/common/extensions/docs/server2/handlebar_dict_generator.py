@@ -22,17 +22,13 @@ def _RemoveNoDocs(item):
   return False
 
 def _GetLinkToRefType(namespace_name, ref_type):
-  terms = ref_type.split('.')
-  if len(terms) > 1:
-    text = '.'.join(terms[1:])
-    href = terms[0] + '.html' + '#type-' + text
-  else:
-    href = namespace_name + '.html' + '#type-' +ref_type
-    text = ref_type
-  return ({
-    "href": href,
-    "text": text
-  })
+  if ref_type.startswith(namespace_name + '.'):
+    type_name = ref_type[len(namespace_name + '.'):]
+    return { 'href': '#type-' + type_name, 'text': type_name }
+  elif '.' not in ref_type:
+    return { 'href': '#type-' + ref_type, 'text': ref_type }
+  api, type_name = ref_type.rsplit('.', 1)
+  return { 'href': api + '.html#type-' + type_name, 'text': ref_type }
 
 def _FormatValue(value):
   """Inserts commas every three digits for integer values. It is magic.
@@ -52,6 +48,32 @@ class HandlebarDictGenerator(object):
     except Exception as e:
       logging.info(e)
 
+  def _StripPrefix(self, name):
+    if name.startswith(self._namespace.name + '.'):
+      return name[len(self._namespace.name + '.'):]
+    return name
+
+  def _FormatDescription(self, description):
+    if description is None or '$ref:' not in description:
+      return description
+    refs = description.split('$ref:')
+    formatted_description = [refs[0]]
+    for ref in refs[1:]:
+      parts = ref.split(' ', 1)
+      if len(parts) == 1:
+        ref = parts[0]
+        rest = ''
+      else:
+        ref, rest = parts
+        rest = ' ' + rest
+      if not ref[-1].isalnum():
+        rest = ref[-1] + rest
+        ref = ref[:-1]
+      ref_dict = _GetLinkToRefType(self._namespace.name, ref)
+      formatted_description.append('<a href="%(href)s">%(text)s</a>%(rest)s' %
+          { 'href': ref_dict['href'], 'text': ref_dict['text'], 'rest': rest })
+    return ''.join(formatted_description)
+
   def Generate(self):
     try:
       return {
@@ -66,8 +88,8 @@ class HandlebarDictGenerator(object):
 
   def _GenerateType(self, type_):
     type_dict = {
-      'name': type_.name,
-      'description': type_.description,
+      'name': self._StripPrefix(type_.name),
+      'description': self._FormatDescription(type_.description),
       'properties': self._GenerateProperties(type_.properties),
       'functions': self._GenerateFunctions(type_.functions),
       'events': map(self._GenerateEvent, type_.events.values())
@@ -81,7 +103,7 @@ class HandlebarDictGenerator(object):
   def _GenerateFunction(self, function):
     function_dict = {
       'name': function.name,
-      'description': function.description,
+      'description': self._FormatDescription(function.description),
       'callback': self._GenerateCallback(function.callback),
       'parameters': [],
       'returns': None
@@ -98,8 +120,8 @@ class HandlebarDictGenerator(object):
 
   def _GenerateEvent(self, event):
     event_dict = {
-      'name': event.name,
-      'description': event.description,
+      'name': self._StripPrefix(event.name),
+      'description': self._FormatDescription(event.description),
       'parameters': map(self._GenerateProperty, event.params)
     }
     if len(event_dict['parameters']) > 0:
@@ -111,7 +133,7 @@ class HandlebarDictGenerator(object):
       return None
     callback_dict = {
       'name': 'callback',
-      'description': callback.description,
+      'description': self._FormatDescription(callback.description),
       'simple_type': {'simple_type': 'function'},
       'optional': callback.optional,
       'parameters': []
@@ -127,9 +149,9 @@ class HandlebarDictGenerator(object):
 
   def _GenerateProperty(self, property_):
     property_dict = {
-      'name': property_.name,
+      'name': self._StripPrefix(property_.name),
       'optional': property_.optional,
-      'description': property_.description,
+      'description': self._FormatDescription(property_.description),
       'properties': self._GenerateProperties(property_.properties),
       'functions': self._GenerateFunctions(property_.functions)
     }
