@@ -11,9 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
-
 #include "remoting/host/event_executor.h"
-#include "remoting/host/scoped_thread_desktop_win.h"
+#include "remoting/host/win/scoped_thread_desktop.h"
 #include "remoting/protocol/host_event_stub.h"
 
 namespace base {
@@ -59,7 +58,7 @@ class SessionEventExecutorWin : public EventExecutor,
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  ScopedThreadDesktopWin desktop_;
+  ScopedThreadDesktop desktop_;
 
   // The Chromoting IPC channel connecting the host with the service.
   scoped_ptr<IPC::ChannelProxy> chromoting_channel_;

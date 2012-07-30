@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_ELEVATED_CONTROLLER_WIN_H_
-#define REMOTING_HOST_ELEVATED_CONTROLLER_WIN_H_
+#ifndef REMOTING_HOST_WIN_ELEVATED_CONTROLLER_H_
+#define REMOTING_HOST_WIN_ELEVATED_CONTROLLER_H_
 
 #include <atlbase.h>
 #include <atlcom.h>
@@ -16,13 +16,13 @@
 
 namespace remoting {
 
-class ATL_NO_VTABLE ElevatedControllerWin
+class ATL_NO_VTABLE ElevatedController
     : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
-      public ATL::CComCoClass<ElevatedControllerWin, &CLSID_ElevatedController>,
+      public ATL::CComCoClass<ElevatedController, &CLSID_ElevatedController>,
       public ATL::IDispatchImpl<IDaemonControl2, &IID_IDaemonControl2,
                                 &LIBID_ChromotingElevatedControllerLib, 1, 1> {
  public:
-  ElevatedControllerWin();
+  ElevatedController();
 
   HRESULT FinalConstruct();
   void FinalRelease();
@@ -45,7 +45,7 @@ class ATL_NO_VTABLE ElevatedControllerWin
  private:
   HRESULT OpenService(ScopedScHandle* service_out);
 
-  BEGIN_COM_MAP(ElevatedControllerWin)
+  BEGIN_COM_MAP(ElevatedController)
     COM_INTERFACE_ENTRY(IDaemonControl)
     COM_INTERFACE_ENTRY(IDaemonControl2)
     COM_INTERFACE_ENTRY(IDispatch)
@@ -57,8 +57,8 @@ class ATL_NO_VTABLE ElevatedControllerWin
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 };
 
-OBJECT_ENTRY_AUTO(CLSID_ElevatedController, ElevatedControllerWin)
+OBJECT_ENTRY_AUTO(CLSID_ElevatedController, ElevatedController)
 
 } // namespace remoting
 
-#endif // REMOTING_HOST_ELEVATED_CONTROLLER_WIN_H_
+#endif  // REMOTING_HOST_WIN_ELEVATED_CONTROLLER_H_

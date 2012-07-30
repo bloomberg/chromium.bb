@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/scoped_thread_desktop_win.h"
+#include "remoting/host/win/scoped_thread_desktop.h"
 
 #include "base/logging.h"
 
-#include "remoting/host/desktop_win.h"
+#include "remoting/host/win/desktop.h"
 
 namespace remoting {
 
-ScopedThreadDesktopWin::ScopedThreadDesktopWin()
-    : initial_(DesktopWin::GetThreadDesktop()) {
+ScopedThreadDesktop::ScopedThreadDesktop()
+    : initial_(Desktop::GetThreadDesktop()) {
 }
 
-ScopedThreadDesktopWin::~ScopedThreadDesktopWin() {
+ScopedThreadDesktop::~ScopedThreadDesktop() {
   Revert();
 }
 
-bool ScopedThreadDesktopWin::IsSame(const DesktopWin& desktop) {
+bool ScopedThreadDesktop::IsSame(const Desktop& desktop) {
   if (assigned_.get() != NULL) {
     return assigned_->IsSame(desktop);
   } else {
@@ -26,14 +26,14 @@ bool ScopedThreadDesktopWin::IsSame(const DesktopWin& desktop) {
   }
 }
 
-void ScopedThreadDesktopWin::Revert() {
+void ScopedThreadDesktop::Revert() {
   if (assigned_.get() != NULL) {
     initial_->SetThreadDesktop();
     assigned_.reset();
   }
 }
 
-bool ScopedThreadDesktopWin::SetThreadDesktop(scoped_ptr<DesktopWin> desktop) {
+bool ScopedThreadDesktop::SetThreadDesktop(scoped_ptr<Desktop> desktop) {
   Revert();
 
   if (initial_->IsSame(*desktop))

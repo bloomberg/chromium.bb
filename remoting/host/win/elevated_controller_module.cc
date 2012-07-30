@@ -15,12 +15,12 @@
 #include "remoting/host/usage_stats_consent.h"
 
 // MIDL-generated declarations.
-#include "remoting/host/elevated_controller.h"
+#include "remoting/host/win/elevated_controller.h"
 
 namespace remoting {
 
-class ElevatedControllerModuleWin
-    : public ATL::CAtlExeModuleT<ElevatedControllerModuleWin> {
+class ElevatedControllerModule
+    : public ATL::CAtlExeModuleT<ElevatedControllerModule> {
  public:
   DECLARE_LIBID(LIBID_ChromotingElevatedControllerLib)
 };
@@ -28,7 +28,7 @@ class ElevatedControllerModuleWin
 } // namespace remoting
 
 
-remoting::ElevatedControllerModuleWin _AtlModule;
+remoting::ElevatedControllerModule _AtlModule;
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int command) {
 #ifdef OFFICIAL_BUILD

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_WTS_SESSION_PROCESS_LAUNCHER_WIN_H_
-#define REMOTING_HOST_WTS_SESSION_PROCESS_LAUNCHER_WIN_H_
+#ifndef REMOTING_HOST_WIN_WTS_SESSION_PROCESS_LAUNCHER_H_
+#define REMOTING_HOST_WIN_WTS_SESSION_PROCESS_LAUNCHER_H_
 
 #include <windows.h>
 
@@ -19,7 +19,7 @@
 #include "base/win/object_watcher.h"
 #include "ipc/ipc_channel.h"
 
-#include "remoting/host/wts_console_observer_win.h"
+#include "remoting/host/win/wts_console_observer.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -129,4 +129,4 @@ class WtsSessionProcessLauncher
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_WTS_SESSION_PROCESS_LAUNCHER_WIN_H_
+#endif  // REMOTING_HOST_WIN_WTS_SESSION_PROCESS_LAUNCHER_H_

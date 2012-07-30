@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/elevated_controller_win.h"
+#include "remoting/host/win/elevated_controller.h"
 
 #include <sddl.h>
 
@@ -18,9 +18,9 @@
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "remoting/host/branding.h"
-#include "remoting/host/elevated_controller_resource.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/verify_config_window_win.h"
+#include "remoting/host/win/elevated_controller_resource.h"
 
 namespace {
 
@@ -295,17 +295,17 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
 
 namespace remoting {
 
-ElevatedControllerWin::ElevatedControllerWin() : owner_window_(NULL) {
+ElevatedController::ElevatedController() : owner_window_(NULL) {
 }
 
-HRESULT ElevatedControllerWin::FinalConstruct() {
+HRESULT ElevatedController::FinalConstruct() {
   return S_OK;
 }
 
-void ElevatedControllerWin::FinalRelease() {
+void ElevatedController::FinalRelease() {
 }
 
-STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config_out) {
+STDMETHODIMP ElevatedController::GetConfig(BSTR* config_out) {
   FilePath config_dir = remoting::GetConfigDir();
 
   // Read the unprivileged part of host configuration.
@@ -328,7 +328,7 @@ STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config_out) {
   return S_OK;
 }
 
-STDMETHODIMP ElevatedControllerWin::GetVersion(BSTR* version_out) {
+STDMETHODIMP ElevatedController::GetVersion(BSTR* version_out) {
   // Report the product version number of the daemon controller binary as
   // the host version.
   HMODULE binary = base::GetModuleFromAddress(
@@ -349,7 +349,7 @@ STDMETHODIMP ElevatedControllerWin::GetVersion(BSTR* version_out) {
   return S_OK;
 }
 
-STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {
+STDMETHODIMP ElevatedController::SetConfig(BSTR config) {
   // Determine the config directory path and create it if necessary.
   FilePath config_dir = remoting::GetConfigDir();
   if (!file_util::CreateDirectory(config_dir)) {
@@ -362,12 +362,12 @@ STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {
   return WriteConfig(file_content.c_str(), file_content.size(), owner_window_);
 }
 
-STDMETHODIMP ElevatedControllerWin::SetOwnerWindow(LONG_PTR window_handle) {
+STDMETHODIMP ElevatedController::SetOwnerWindow(LONG_PTR window_handle) {
   owner_window_ = reinterpret_cast<HWND>(window_handle);
   return S_OK;
 }
 
-STDMETHODIMP ElevatedControllerWin::StartDaemon() {
+STDMETHODIMP ElevatedController::StartDaemon() {
   ScopedScHandle service;
   HRESULT hr = OpenService(&service);
   if (FAILED(hr)) {
@@ -407,7 +407,7 @@ STDMETHODIMP ElevatedControllerWin::StartDaemon() {
   return S_OK;
 }
 
-STDMETHODIMP ElevatedControllerWin::StopDaemon() {
+STDMETHODIMP ElevatedController::StopDaemon() {
   ScopedScHandle service;
   HRESULT hr = OpenService(&service);
   if (FAILED(hr)) {
@@ -447,7 +447,7 @@ STDMETHODIMP ElevatedControllerWin::StopDaemon() {
   return S_OK;
 }
 
-STDMETHODIMP ElevatedControllerWin::UpdateConfig(BSTR config) {
+STDMETHODIMP ElevatedController::UpdateConfig(BSTR config) {
   // Parse the config.
   std::string config_str = UTF16ToUTF8(
     string16(static_cast<char16*>(config), ::SysStringLen(config)));
@@ -481,7 +481,7 @@ STDMETHODIMP ElevatedControllerWin::UpdateConfig(BSTR config) {
                      owner_window_);
 }
 
-STDMETHODIMP ElevatedControllerWin::GetUsageStatsConsent(BOOL* allowed,
+STDMETHODIMP ElevatedController::GetUsageStatsConsent(BOOL* allowed,
                                                          BOOL* set_by_policy) {
   bool local_allowed;
   bool local_set_by_policy;
@@ -494,7 +494,7 @@ STDMETHODIMP ElevatedControllerWin::GetUsageStatsConsent(BOOL* allowed,
   }
 }
 
-STDMETHODIMP ElevatedControllerWin::SetUsageStatsConsent(BOOL allowed) {
+STDMETHODIMP ElevatedController::SetUsageStatsConsent(BOOL allowed) {
   if (remoting::SetUsageStatsConsent(!!allowed)) {
     return S_OK;
   } else {
@@ -502,7 +502,7 @@ STDMETHODIMP ElevatedControllerWin::SetUsageStatsConsent(BOOL allowed) {
   }
 }
 
-HRESULT ElevatedControllerWin::OpenService(ScopedScHandle* service_out) {
+HRESULT ElevatedController::OpenService(ScopedScHandle* service_out) {
   DWORD error;
 
   ScopedScHandle scmanager(

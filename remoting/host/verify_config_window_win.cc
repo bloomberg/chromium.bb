@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "remoting/host/elevated_controller_resource.h"
 #include "remoting/host/pin_hash.h"
+#include "remoting/host/win/elevated_controller_resource.h"
 #include "remoting/protocol/authentication_method.h"
 
 namespace remoting {

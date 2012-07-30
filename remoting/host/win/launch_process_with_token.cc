@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/launch_process_in_session_win.h"
+#include "remoting/host/win/launch_process_with_token.h"
 
 #include <windows.h>
 #include <winternl.h>
@@ -243,9 +243,7 @@ bool CreateRemoteSessionProcess(
 
 namespace remoting {
 
-// Launches |binary| in a different session. The target session is specified by
-// |user_token|.
-bool LaunchProcessInSession(const FilePath& binary,
+bool LaunchProcessWithToken(const FilePath& binary,
                             const std::wstring& command_line,
                             HANDLE user_token,
                             base::Process* process_out) {

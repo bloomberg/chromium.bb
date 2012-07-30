@@ -14,10 +14,10 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "remoting/base/capture_data.h"
-#include "remoting/host/desktop_win.h"
 #include "remoting/host/differ.h"
-#include "remoting/host/scoped_thread_desktop_win.h"
 #include "remoting/host/video_frame_capturer_helper.h"
+#include "remoting/host/win/desktop.h"
+#include "remoting/host/win/scoped_thread_desktop.h"
 #include "remoting/proto/control.pb.h"
 
 namespace remoting {
@@ -105,7 +105,7 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   static const int kNumBuffers = 2;
   VideoFrameBuffer buffers_[kNumBuffers];
 
-  ScopedThreadDesktopWin desktop_;
+  ScopedThreadDesktop desktop_;
 
   // GDI resources used for screen capture.
   scoped_ptr<base::win::ScopedGetDC> desktop_dc_;
@@ -216,7 +216,7 @@ void VideoFrameCapturerWin::Stop() {
 void VideoFrameCapturerWin::PrepareCaptureResources() {
   // Switch to the desktop receiving user input if different from the current
   // one.
-  scoped_ptr<DesktopWin> input_desktop = DesktopWin::GetInputDesktop();
+  scoped_ptr<Desktop> input_desktop = Desktop::GetInputDesktop();
   if (input_desktop.get() != NULL && !desktop_.IsSame(*input_desktop)) {
     // Release GDI resources otherwise SetThreadDesktop will fail.
     desktop_dc_.reset();

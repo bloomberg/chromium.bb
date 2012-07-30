@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_HOST_SERVICE_WIN_H_
-#define REMOTING_HOST_HOST_SERVICE_WIN_H_
+#ifndef REMOTING_HOST_WIN_HOST_SERVICE_H_
+#define REMOTING_HOST_WIN_HOST_SERVICE_H_
 
 #include <windows.h>
 
@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/synchronization/waitable_event.h"
 
-#include "remoting/host/wts_console_monitor_win.h"
+#include "remoting/host/win/wts_console_monitor.h"
 
 class CommandLine;
 class MessageLoop;
@@ -107,4 +107,4 @@ class HostService : public WtsConsoleMonitor {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_HOST_SERVICE_WIN_H_
+#endif  // REMOTING_HOST_WIN_HOST_SERVICE_H_

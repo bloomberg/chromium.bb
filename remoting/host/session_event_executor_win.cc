@@ -13,10 +13,10 @@
 #include "base/win/windows_version.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "remoting/proto/event.pb.h"
 #include "remoting/host/chromoting_messages.h"
-#include "remoting/host/desktop_win.h"
-#include "remoting/host/scoped_thread_desktop_win.h"
+#include "remoting/host/win/desktop.h"
+#include "remoting/host/win/scoped_thread_desktop.h"
+#include "remoting/proto/event.pb.h"
 
 namespace {
 
@@ -46,12 +46,12 @@ void EmulateSecureAttentionSequence() {
   const wchar_t kSasWindowClassName[] = L"SAS window class";
   const wchar_t kSasWindowTitle[] = L"SAS window";
 
-  scoped_ptr<remoting::DesktopWin> winlogon_desktop(
-      remoting::DesktopWin::GetDesktop(kWinlogonDesktopName));
+  scoped_ptr<remoting::Desktop> winlogon_desktop(
+      remoting::Desktop::GetDesktop(kWinlogonDesktopName));
   if (!winlogon_desktop.get())
     return;
 
-  remoting::ScopedThreadDesktopWin desktop;
+  remoting::ScopedThreadDesktop desktop;
   if (!desktop.SetThreadDesktop(winlogon_desktop.Pass()))
     return;
 
@@ -195,7 +195,7 @@ bool SessionEventExecutorWin::OnMessageReceived(const IPC::Message& message) {
 void SessionEventExecutorWin::SwitchToInputDesktop() {
   // Switch to the desktop receiving user input if different from the current
   // one.
-  scoped_ptr<DesktopWin> input_desktop = DesktopWin::GetInputDesktop();
+  scoped_ptr<Desktop> input_desktop = Desktop::GetInputDesktop();
   if (input_desktop.get() != NULL && !desktop_.IsSame(*input_desktop)) {
     // If SetThreadDesktop() fails, the thread is still assigned a desktop.
     // So we can continue capture screen bits, just from a diffected desktop.

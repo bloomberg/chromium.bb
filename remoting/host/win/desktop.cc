@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/desktop_win.h"
+#include "remoting/host/win/desktop.h"
 
 #include <vector>
 
@@ -10,10 +10,10 @@
 
 namespace remoting {
 
-DesktopWin::DesktopWin(HDESK desktop, bool own) : desktop_(desktop), own_(own) {
+Desktop::Desktop(HDESK desktop, bool own) : desktop_(desktop), own_(own) {
 }
 
-DesktopWin::~DesktopWin() {
+Desktop::~Desktop() {
   if (own_ && desktop_ != NULL) {
     if (!::CloseDesktop(desktop_)) {
       LOG_GETLASTERROR(ERROR)
@@ -22,7 +22,7 @@ DesktopWin::~DesktopWin() {
   }
 }
 
-bool DesktopWin::GetName(string16* desktop_name_out) const {
+bool Desktop::GetName(string16* desktop_name_out) const {
   if (desktop_ == NULL)
     return false;
 
@@ -43,7 +43,7 @@ bool DesktopWin::GetName(string16* desktop_name_out) const {
   return true;
 }
 
-bool DesktopWin::IsSame(const DesktopWin& other) const {
+bool Desktop::IsSame(const Desktop& other) const {
   string16 name;
   if (!GetName(&name))
     return false;
@@ -55,7 +55,7 @@ bool DesktopWin::IsSame(const DesktopWin& other) const {
   return name == other_name;
 }
 
-bool DesktopWin::SetThreadDesktop() const {
+bool Desktop::SetThreadDesktop() const {
   if (!::SetThreadDesktop(desktop_)) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to assign the desktop to the current thread";
@@ -65,7 +65,7 @@ bool DesktopWin::SetThreadDesktop() const {
   return true;
 }
 
-scoped_ptr<DesktopWin> DesktopWin::GetDesktop(const wchar_t* desktop_name) {
+scoped_ptr<Desktop> Desktop::GetDesktop(const wchar_t* desktop_name) {
   ACCESS_MASK desired_access =
       DESKTOP_CREATEMENU | DESKTOP_CREATEWINDOW | DESKTOP_ENUMERATE |
       DESKTOP_HOOKCONTROL | DESKTOP_WRITEOBJECTS | DESKTOP_READOBJECTS |
@@ -74,34 +74,34 @@ scoped_ptr<DesktopWin> DesktopWin::GetDesktop(const wchar_t* desktop_name) {
   if (desktop == NULL) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to open the desktop '" << desktop_name << "'";
-    return scoped_ptr<DesktopWin>();
+    return scoped_ptr<Desktop>();
   }
 
-  return scoped_ptr<DesktopWin>(new DesktopWin(desktop, true));
+  return scoped_ptr<Desktop>(new Desktop(desktop, true));
 }
 
-scoped_ptr<DesktopWin> DesktopWin::GetInputDesktop() {
+scoped_ptr<Desktop> Desktop::GetInputDesktop() {
   HDESK desktop = OpenInputDesktop(
                       0, FALSE, GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE);
   if (desktop == NULL) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to open the desktop receiving user input";
-    return scoped_ptr<DesktopWin>();
+    return scoped_ptr<Desktop>();
   }
 
-  return scoped_ptr<DesktopWin>(new DesktopWin(desktop, true));
+  return scoped_ptr<Desktop>(new Desktop(desktop, true));
 }
 
-scoped_ptr<DesktopWin> DesktopWin::GetThreadDesktop() {
+scoped_ptr<Desktop> Desktop::GetThreadDesktop() {
   HDESK desktop = ::GetThreadDesktop(GetCurrentThreadId());
   if (desktop == NULL) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to retrieve the handle of the desktop assigned to "
            "the current thread";
-    return scoped_ptr<DesktopWin>();
+    return scoped_ptr<Desktop>();
   }
 
-  return scoped_ptr<DesktopWin>(new DesktopWin(desktop, false));
+  return scoped_ptr<Desktop>(new Desktop(desktop, false));
 }
 
 }  // namespace remoting

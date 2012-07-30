@@ -5,7 +5,7 @@
 // This file implements the Windows service controlling Me2Me host processes
 // running within user sessions.
 
-#include "remoting/host/wts_session_process_launcher_win.h"
+#include "remoting/host/win/wts_session_process_launcher.h"
 
 #include <windows.h>
 #include <sddl.h>
@@ -26,9 +26,9 @@
 #include "ipc/ipc_message_macros.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/chromoting_messages.h"
-#include "remoting/host/launch_process_in_session_win.h"
 #include "remoting/host/sas_injector.h"
-#include "remoting/host/wts_console_monitor_win.h"
+#include "remoting/host/win/launch_process_with_token.h"
+#include "remoting/host/win/wts_console_monitor.h"
 
 using base::win::ScopedHandle;
 using base::TimeDelta;
@@ -265,7 +265,7 @@ void WtsSessionProcessLauncher::LaunchProcess() {
 
     // Try to launch the process and attach an object watcher to the returned
     // handle so that we get notified when the process terminates.
-    if (LaunchProcessInSession(host_binary_,
+    if (LaunchProcessWithToken(host_binary_,
                                command_line.GetCommandLineString(),
                                session_token_,
                                &process_)) {

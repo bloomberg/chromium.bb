@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_WTS_CONSOLE_OBSERVER_WIN_H_
-#define REMOTING_HOST_WTS_CONSOLE_OBSERVER_WIN_H_
+#ifndef REMOTING_HOST_WIN_WTS_CONSOLE_OBSERVER_H_
+#define REMOTING_HOST_WIN_WTS_CONSOLE_OBSERVER_H_
 
 #include <windows.h>
 
@@ -31,4 +31,4 @@ class WtsConsoleObserver {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_WTS_CONSOLE_OBSERVER_WIN_H_
+#endif  // REMOTING_HOST_WIN_WTS_CONSOLE_OBSERVER_H_

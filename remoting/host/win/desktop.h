@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_DESKTOP_WIN_H_
-#define REMOTING_HOST_DESKTOP_WIN_H_
+#ifndef REMOTING_HOST_WIN_DESKTOP_H_
+#define REMOTING_HOST_WIN_DESKTOP_H_
 
 #include <windows.h>
 
@@ -13,9 +13,9 @@
 
 namespace remoting {
 
-class DesktopWin {
+class Desktop {
  public:
-  ~DesktopWin();
+  ~Desktop();
 
   // Returns the name of the desktop represented by the object. Return false if
   // quering the name failed for any reason.
@@ -24,25 +24,25 @@ class DesktopWin {
   // Returns true if |other| has the same name as this desktop. Returns false
   // in any other case including failing Win32 APIs and uninitialized desktop
   // handles.
-  bool IsSame(const DesktopWin& other) const;
+  bool IsSame(const Desktop& other) const;
 
   // Assigns the desktop to the current thread. Returns false is the operation
   // failed for any reason.
   bool SetThreadDesktop() const;
 
   // Returns the desktop by its name or NULL if an error occurs.
-  static scoped_ptr<DesktopWin> GetDesktop(const wchar_t* desktop_name);
+  static scoped_ptr<Desktop> GetDesktop(const wchar_t* desktop_name);
 
   // Returns the desktop currently receiving user input or NULL if an error
   // occurs.
-  static scoped_ptr<DesktopWin> GetInputDesktop();
+  static scoped_ptr<Desktop> GetInputDesktop();
 
   // Returns the desktop currently assigned to the calling thread or NULL if
   // an error occurs.
-  static scoped_ptr<DesktopWin> GetThreadDesktop();
+  static scoped_ptr<Desktop> GetThreadDesktop();
 
  private:
-  DesktopWin(HDESK desktop, bool own);
+  Desktop(HDESK desktop, bool own);
 
   // The desktop handle.
   HDESK desktop_;
@@ -50,9 +50,9 @@ class DesktopWin {
   // True if |desktop_| must be closed on teardown.
   bool own_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopWin);
+  DISALLOW_COPY_AND_ASSIGN(Desktop);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_DESKTOP_WIN_H_
+#endif  // REMOTING_HOST_WIN_DESKTOP_H_
