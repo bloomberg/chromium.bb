@@ -324,7 +324,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
    * not.
    */
   if (natp != NULL) {
-    NaClSetGs(natp->sys.gs);
+    NaClSetGs(natp->user.trusted_gs);
   }
 #endif
 

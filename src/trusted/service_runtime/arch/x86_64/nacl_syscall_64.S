@@ -158,12 +158,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         fnstcw  NACL_THREAD_CONTEXT_OFFSET_FCW(%rdx)
         fldcw   NACL_THREAD_CONTEXT_OFFSET_SYS_FCW(%rdx)
 
-        /* restore system registers needed to call into C code */
-        leaq    IDENTIFIER(nacl_sys)(%rip), %rdx
-        leaq    0x0(%rdx,%rax,8), %rdx
-        movq    0x0(%rdx), %rdx
-
-        movq    NACL_THREAD_CONTEXT_OFFSET_RSP(%rdx), %rsp
+        movq    NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR(%rdx), %rsp
 #if NACL_LINUX || NACL_OSX
         movq    %rax, %rdi
 #elif NACL_WINDOWS

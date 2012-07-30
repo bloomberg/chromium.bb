@@ -72,7 +72,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
           "NaClStartThreadInApp: adjusted stack: 0x%"NACL_PRIxNACL_REG"\n",
           secure_stack_ptr);
 
-  NaClSetThreadCtxSp(&natp->sys, secure_stack_ptr);
+  natp->user.trusted_stack_ptr = secure_stack_ptr;
 #endif
 
   nap = natp->nap;
@@ -89,7 +89,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 
 #if NACL_WINDOWS
   /* This sets up a stack containing a return address that has unwind info. */
-  NaClSwitchSavingStackPtr(context, &natp->sys.rsp, NaClSwitch);
+  NaClSwitchSavingStackPtr(context, &context->trusted_stack_ptr, NaClSwitch);
 #else
   NaClSwitch(context);
 #endif

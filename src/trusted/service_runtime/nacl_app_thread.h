@@ -118,8 +118,11 @@ struct NaClAppThread {
    */
   struct NaClSignalContext  *suspended_registers;
 
+  /*
+   * 'user' contains all the architecture-specific state for this thread.
+   * TODO(mseaborn): Rename it to a more descriptive name.
+   */
   struct NaClThreadContext  user;
-  struct NaClThreadContext  sys;
   /*
    * NaClThread abstraction allows us to specify the stack size
    * (NACL_KERN_STACK_SIZE), but not its location.  The underlying

@@ -29,7 +29,6 @@ __declspec(dllexport)
  */
 #endif
 extern struct NaClThreadContext *nacl_user[NACL_THREAD_MAX];
-extern struct NaClThreadContext *nacl_sys[NACL_THREAD_MAX];
 #if NACL_WINDOWS
 /*
  * NaCl Idx -> Thread ID mapping. Gdb scans this array to find NaCl index
@@ -41,12 +40,12 @@ extern struct NaClThreadContext *nacl_sys[NACL_THREAD_MAX];
 __declspec(dllexport) extern uint32_t nacl_thread_ids[NACL_THREAD_MAX];
 #endif
 /*
- * nacl_user and nacl_sys are accessed w/o holding any locks.  once a
- * thread is live, only that thread itself may read/write the register
- * context contents (based on its %gs), and this allows a thread to
- * context switch from the application to the runtime, since we must
- * have a secure stack before calling any code, including lock
- * acquisition code.
+ * nacl_user is accessed without holding any locks.  once a thread is
+ * live, only that thread itself may read/write the register context
+ * contents (based on its %gs), and this allows a thread to context
+ * switch from the application to the runtime, since we must have a
+ * secure stack before calling any code, including lock acquisition
+ * code.
  */
 
 extern struct NaClAppThread     *nacl_thread[NACL_THREAD_MAX];

@@ -28,7 +28,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
   struct NaClApp  *nap;
   struct NaClThreadContext  *context;
 
-  natp->sys.stack_ptr = NaClGetStackPtr() & ~0xf;
+  natp->user.trusted_stack_ptr = NaClGetStackPtr() & ~0xf;
 
   nap = natp->nap;
   context = &natp->user;

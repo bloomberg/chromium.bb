@@ -31,6 +31,12 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
   UNREFERENCED_PARAMETER(nap);
 
+  /*
+   * We call this function so that it does not appear to be dead code,
+   * although it only contains compile-time assertions.
+   */
+  NaClThreadContextOffsetCheck();
+
   memset((void *)ntcp, 0, sizeof(*ntcp));
   ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;

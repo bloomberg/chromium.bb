@@ -121,6 +121,21 @@ struct NaClThreadContext {
   /*          38 */
   uint16_t    cs; /* spring_addr and cs must be adjacent */
   /*          3c */
+  uint16_t    padding;
+  /*          3e */
+
+  /* These two are adjacent because they are restored using 'lss'. */
+  uint32_t    trusted_stack_ptr;
+  /*          40 */
+  uint16_t    trusted_ss;
+  /*          44 */
+
+  uint16_t    trusted_es;
+  /*          46 */
+  uint16_t    trusted_fs;
+  /*          48 */
+  uint16_t    trusted_gs;
+  /*          4a */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -142,6 +157,10 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x34
 #define NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR   0x38
 #define NACL_THREAD_CONTEXT_OFFSET_CS            0x3c
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x40
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES    0x46
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS    0x48
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS    0x4a
 
 #if !defined(__ASSEMBLER__)
 
@@ -175,6 +194,11 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR, spring_addr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_CS, cs);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
+                   trusted_stack_ptr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_DS, ds);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ES, es);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FS, fs);
 
 #undef NACL_CHECK_FIELD
 }

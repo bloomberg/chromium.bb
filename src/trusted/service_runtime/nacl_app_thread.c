@@ -39,7 +39,6 @@ void WINAPI NaClThreadLauncher(void *state) {
   NaClTlsSetIdx(thread_idx);
   nacl_thread[thread_idx] = natp;
   nacl_user[thread_idx] = &natp->user;
-  nacl_sys[thread_idx] = &natp->sys;
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = GetCurrentThreadId();
 #endif
@@ -106,7 +105,6 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
    * any ldt-based lookups will not reach this dying thread's data.
    */
   thread_idx = NaClGetThreadIdx(natp);
-  nacl_sys[thread_idx] = NULL;
   nacl_user[thread_idx] = NULL;
   nacl_thread[thread_idx] = NULL;
 #if NACL_WINDOWS

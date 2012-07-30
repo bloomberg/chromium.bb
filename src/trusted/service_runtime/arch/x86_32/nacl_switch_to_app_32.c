@@ -51,13 +51,11 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * Save service runtime segment registers; fs/gs is used for TLS
    * on Windows and Linux respectively, so will change.  The others
    * should be global, but we save them from the thread anyway.
+   *
+   * %cs and %ds are restored by trampoline code, so not saved here.
    */
-#if 0 /* restored by trampoline code */
-  natp->sys.cs = NaClGetCs();
-  natp->sys.ds = NaClGetDs();
-#endif
-  natp->sys.es = NaClGetEs();
-  natp->sys.fs = NaClGetFs();
+  natp->user.trusted_es = NaClGetEs();
+  natp->user.trusted_fs = NaClGetFs();
 #if NACL_WINDOWS
   /*
    * Win32 leaks %gs values on return from a windows syscall if the
@@ -68,17 +66,17 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * since that segment selector may not be valid (e.g., if that
    * earlier thread had exited and its selector had been deallocated).
    */
-  natp->sys.gs = 0;
+  natp->user.trusted_gs = 0;
 #else
-  natp->sys.gs = NaClGetGs();
+  natp->user.trusted_gs = NaClGetGs();
 #endif
-  natp->sys.ss = NaClGetSs();
+  natp->user.trusted_ss = NaClGetSs();
   /*
    * Preserves stack alignment.  The trampoline code loads this value
    * to %esp, then pushes the thread ID (LDT index) onto the stack as
    * argument to NaClSyscallCSegHook.  See nacl_syscall.S.
    */
-  NaClSetThreadCtxSp(&natp->sys, (NaClGetStackPtr() & ~0xf) + 4);
+  natp->user.trusted_stack_ptr = (NaClGetStackPtr() & ~0xf) + 4;
 
   nap = natp->nap;
   context = &natp->user;

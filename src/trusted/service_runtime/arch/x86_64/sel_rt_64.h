@@ -53,6 +53,8 @@ struct NaClThreadContext {
   /*          0xa4 */
   uint16_t    sys_fcw;
   /*          0xa6 */
+  uint64_t    trusted_stack_ptr;
+  /*          0xa8 */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -77,6 +79,7 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x90
 #define NACL_THREAD_CONTEXT_OFFSET_FCW           0xa4
 #define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0xa6
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0xa8
 
 #if !defined(__ASSEMBLER__)
 
@@ -110,6 +113,8 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
+                   trusted_stack_ptr);
 
 #undef NACL_CHECK_FIELD
 }

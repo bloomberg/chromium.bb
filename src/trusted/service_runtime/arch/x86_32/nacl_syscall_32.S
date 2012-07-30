@@ -35,10 +35,10 @@
          * The trampoline code calls NaClPcrelThunk using an lcall,
          * restoring %cs.  Next, NaClPcrelThunk invokes
          * NaClSyscallSeg, with nacl_user in %ecx and %ds restored.
-         * The other segment registers remains to be restored, and we
-         * use address differences to obtain nacl_sys (and any other
-         * global variables), avoiding PIC address synthesis using the
-         * usual sequence of
+         * The other segment registers remain to be restored.
+         *
+         * For accessing global variables, we avoid PIC address
+         * synthesis using the usual sequence of
          *
          *     call 0f
          * 0:  pop %eax
@@ -85,25 +85,18 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
          * load only the system segments; called code do not depend on
          * any registers having particular values.  we will clear/discard
          * caller-saved registers at system call return.
-         */
-#if __PIC__
-        movl    4(%ecx), %edx
-        movl    0(%edx,%eax,4), %edx
-#else
-        movl    IDENTIFIER(nacl_sys)(,%eax,4), %edx
-#endif
-        /*
+         *
          * %cs and %ds already taken care of by NaCl_trampoline_seg_code
          *
          * %ebx need not be saved/restored even if -fpic were used, since
          * in that case %ebx is initialized on fn entry.
          */
-        movw    NACL_THREAD_CONTEXT_OFFSET_ES(%edx), %es
-        movw    NACL_THREAD_CONTEXT_OFFSET_FS(%edx), %fs
-        movw    NACL_THREAD_CONTEXT_OFFSET_GS(%edx), %gs
+        movw    NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES(%edx), %es
+        movw    NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS(%edx), %fs
+        movw    NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS(%edx), %gs
 
         /* 'lss' sets %ss as well as %esp */
-        lss     NACL_THREAD_CONTEXT_OFFSET_STACK_PTR(%edx), %esp
+        lss     NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR(%edx), %esp
         push    %eax
         call    IDENTIFIER(NaClSyscallCSegHook)
         /*

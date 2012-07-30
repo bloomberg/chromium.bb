@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 .text
@@ -67,7 +68,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 #ifdef __PIC__
   ldr  r3, .L.GOT
   ldr  r1, .L.nacl_user
-  ldr  r2, .L.nacl_sys
 .LPIC1:
   add  r3, pc
   ldr  r1, [r3, r1]
@@ -80,16 +80,8 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   /* store thread state to the nacl_user entry */
   stmia r1, NACL_CALLEE_SAVE_LIST
 
-#ifdef __PIC__
-  ldr r1, [r3, r2]
-#else
-  ldr r1, =nacl_sys
-#endif
-  ldr r1, [r1, r0, lsl #2]
-  /* r1 = nacl_sys[r0*4], r1 points to the nacl_sys entry of this thread */
-
-  /* restore the service runtime state from nacl_sys entry */
-  ldmia r1, NACL_CALLEE_SAVE_LIST
+  /* Restore the trusted stack */
+  ldr  sp, [r1, #NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR]
 
   bl  NaClSyscallCSegHook
 
@@ -110,8 +102,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   .word  _GLOBAL_OFFSET_TABLE_ - (.LPIC1 + 8)
 .L.nacl_user:
   .word  nacl_user(GOT)
-.L.nacl_sys:
-  .word  nacl_sys(GOT)
 #else
 .L.gNaClThreadIdx:
   .word  gNaClThreadIdx(tpoff)

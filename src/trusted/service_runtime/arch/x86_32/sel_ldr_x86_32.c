@@ -20,7 +20,6 @@
 
 struct NaClPcrelThunkGlobals {
   struct NaClThreadContext **user;
-  struct NaClThreadContext **sys;
 };
 
 static struct NaClPcrelThunkGlobals nacl_pcrel_globals;
@@ -38,7 +37,6 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
 
   /* idempotent */
   nacl_pcrel_globals.user = nacl_user;
-  nacl_pcrel_globals.sys = nacl_sys;
 
   if (0 != (error = NaCl_page_alloc_randomized(&thunk_addr,
                                                NACL_MAP_PAGESIZE))) {

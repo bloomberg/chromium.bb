@@ -11,6 +11,12 @@
 #ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H__
 #define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H__ 1
 
+/* This file can be #included from assembly to get the #defines. */
+#if !defined(__ASSEMBLER__)
+
+#include <stddef.h>
+
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 
 uint32_t NaClGetStackPtr(void);
@@ -24,12 +30,12 @@ typedef uint32_t nacl_reg_t;
 #define NACL_PRIxNACL_REG NACL_PRIx32
 #define NACL_PRIXNACL_REG NACL_PRIX32
 
-/*
- * NOTE: This struct needs to be synchronized with
- *       synchronized with  NACL_CALLEE_SAVE_LIST
- */
-
 struct NaClThreadContext {
+  /*
+   * r4 through to stack_ptr correspond to NACL_CALLEE_SAVE_LIST, and
+   * the assembly code expects them to appear at the start of the
+   * struct.
+   */
   nacl_reg_t  r4, r5, r6, r7, r8, r9, r10, fp, stack_ptr, prog_ctr;
   /*           0   4   8   c  10  14   18  1c         20        24 */
   /*
@@ -41,8 +47,29 @@ struct NaClThreadContext {
   /*            28 */
   uint32_t  new_prog_ctr;
   /*            2c */
-  uint32_t  tls_idx;
+  uint32_t  trusted_stack_ptr;
   /*            30 */
+  uint32_t  tls_idx;
+  /*            34 */
 };
+
+#endif /* !defined(__ASSEMBLER__) */
+
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x30
+
+#if !defined(__ASSEMBLER__)
+
+/*
+ * This function exists as a function only because compile-time
+ * assertions need to be inside a function.  This function does not
+ * need to be called for the assertions to be checked.
+ */
+static INLINE void NaClThreadContextOffsetCheck(void) {
+  NACL_COMPILE_TIME_ASSERT(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR
+                           == offsetof(struct NaClThreadContext,
+                                       trusted_stack_ptr));
+}
+
+#endif /* !defined(__ASSEMBLER__) */
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H___ */

@@ -75,7 +75,7 @@ void NaClTlsChange(struct NaClAppThread *natp);
 
 /*
  * Get the current thread index which is used to look up information in a
- * number of internal structures, e.g.nacl_thread[], nacl_user[], nacl_sys[]
+ * number of internal structures, e.g. nacl_thread[], nacl_user[]
  */
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp);
 

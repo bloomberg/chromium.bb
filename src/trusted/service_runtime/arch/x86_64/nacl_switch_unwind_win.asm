@@ -25,7 +25,7 @@ _TEXT SEGMENT
 ; http://code.google.com/p/nativeclient/issues/detail?id=2414
 
 ; Arg 1 (rcx):  user_context (&natp->user), passed on to NaClSwitch()
-; Arg 2 (rdx):  address of natp->sys.rsp, for saving the trusted stack pointer
+; Arg 2 (rdx):  address of natp->user.trusted_stack_ptr
 ; Arg 3 (r8):  address of CPUID-specific NaClSwitch() function
 NaClSwitchSavingStackPtr PROC FRAME
         ; Save all callee-saved registers.  This is necessary in case
