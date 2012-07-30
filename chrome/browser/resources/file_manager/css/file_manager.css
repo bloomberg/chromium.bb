@@ -455,12 +455,12 @@ div.root-eject:hover {
   background: -webkit-image-set(
     url('../images/files/ui/icon_search.png') 1x,
     url('../images/files/ui/2x/icon_search.png') 2x);
-  background-position: 4px 3.5px;
+  background-position: 4px 4.5px;
   background-repeat: no-repeat;
   display: -webkit-box;
-  height: 25px;
+  height: 27px;
   margin-right: 10px;
-  padding-left: 22px;
+  padding: 1px 6px 2px 23px;
   width: 150px;
 }
 
