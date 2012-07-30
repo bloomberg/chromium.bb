@@ -364,3 +364,16 @@ span.displayModeWarning {
   margin: 1.3em 1em 0 0;
   padding: 0;
 }
+
+.filtered_item {
+  line-height: 6px;
+}
+
+#filtered_apis {
+  margin-top: -5px;
+  padding-bottom: 5px;
+}
+
+#filtered_apis * {
+  color: #50A9D5;
+}
