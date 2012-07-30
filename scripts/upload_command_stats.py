@@ -26,7 +26,7 @@ UPLOAD_TIMEOUT = 5
 
 DISABLE_FILE = os.path.join(os.environ['HOME'], '.disable_build_stats_upload')
 
-DOMAIN_RE = re.compile(r'\.(?:corp\.google\.com|golo\.chromium\.org)$')
+DOMAIN_RE = re.compile(r'(?:^|\.)(?:corp\.google\.com|golo\.chromium\.org)$')
 GIT_ID_RE = re.compile(r'(?:@google\.com|@chromium\.org)$')
 
 
