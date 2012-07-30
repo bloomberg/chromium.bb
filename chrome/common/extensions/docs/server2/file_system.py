@@ -21,10 +21,14 @@ class FileSystem(object):
     def __init__(self, version):
       self.version = version
 
-  def Read(self, paths):
+  def Read(self, paths, binary=False):
     """Reads each file in paths and returns a dictionary mapping the path to the
     contents. If a path in paths ends with a '/', it is assumed to be a
     directory, and a list of files in the directory is mapped to the path.
+
+    If binary=False, the contents of each file will be unicode parsed as utf-8,
+    and failing that as latin-1 (some extension docs use latin-1). If
+    binary=True then the contents will be a str.
     """
     raise NotImplementedError()
 

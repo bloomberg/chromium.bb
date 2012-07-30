@@ -17,9 +17,12 @@ class LocalFileSystem(file_system.FileSystem):
   def _ConvertToFilepath(self, path):
     return path.replace('/', os.sep)
 
-  def _ReadFile(self, filename):
+  def _ReadFile(self, filename, binary):
     with open(os.path.join(self._base_path, filename), 'r') as f:
-      return file_system._ProcessFileData(f.read(), filename)
+      contents = f.read()
+      if binary:
+        return contents
+      return file_system._ProcessFileData(contents, filename)
 
   def _ListDir(self, dir_name):
     all_files = []
@@ -33,13 +36,13 @@ class LocalFileSystem(file_system.FileSystem):
         all_files.append(path)
     return all_files
 
-  def Read(self, paths):
+  def Read(self, paths, binary=False):
     result = {}
     for path in paths:
       if path.endswith('/'):
         result[path] = self._ListDir(self._ConvertToFilepath(path))
       else:
-        result[path] = self._ReadFile(self._ConvertToFilepath(path))
+        result[path] = self._ReadFile(self._ConvertToFilepath(path), binary)
     return Future(value=result)
 
   def Stat(self, path):

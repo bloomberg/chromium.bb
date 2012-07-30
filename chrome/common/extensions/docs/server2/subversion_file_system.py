@@ -14,8 +14,8 @@ class SubversionFileSystem(file_system.FileSystem):
   def __init__(self, fetcher):
     self._fetcher = fetcher
 
-  def Read(self, paths):
-    return Future(delegate=_AsyncFetchFuture(paths, self._fetcher))
+  def Read(self, paths, binary=False):
+    return Future(delegate=_AsyncFetchFuture(paths, self._fetcher, binary))
 
   def Stat(self, path):
     directory = path.rsplit('/', 1)[0]
@@ -23,12 +23,13 @@ class SubversionFileSystem(file_system.FileSystem):
     return self.StatInfo(int(re.search('([0-9]+)', dir_html).group(0)))
 
 class _AsyncFetchFuture(object):
-  def __init__(self, paths, fetcher):
+  def __init__(self, paths, fetcher, binary):
     # A list of tuples of the form (path, Future).
     self._fetches = []
     self._value = {}
     self._error = None
     self._fetches = [(path, fetcher.FetchAsync(path)) for path in paths]
+    self._binary = binary
 
   def _ListDir(self, directory):
     dom = xml.parseString(directory)
@@ -44,8 +45,10 @@ class _AsyncFetchFuture(object):
         self._value[path] = None
       elif path.endswith('/'):
         self._value[path] = self._ListDir(result.content)
-      else:
+      elif not self._binary:
         self._value[path] = file_system._ProcessFileData(result.content, path)
+      else:
+        self._value[path] = result.content
     if self._error is not None:
       raise self._error
     return self._value

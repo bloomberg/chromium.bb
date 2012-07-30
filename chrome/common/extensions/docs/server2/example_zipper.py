@@ -24,8 +24,9 @@ class ExampleZipper(object):
     zip_bytes = BytesIO()
     zip_file = ZipFile(zip_bytes, mode='w')
     try:
-      for filename, contents in self._file_system.Read(files).Get().iteritems():
-        zip_file.writestr(filename[len(prefix):].strip('/'), contents)
+      for name, file_contents in (
+          self._file_system.Read(files, binary=True).Get().iteritems()):
+        zip_file.writestr(name[len(prefix):].strip('/'), file_contents)
     finally:
       zip_file.close()
     return zip_bytes.getvalue()

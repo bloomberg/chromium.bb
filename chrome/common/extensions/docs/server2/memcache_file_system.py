@@ -27,7 +27,7 @@ class MemcacheFileSystem(FileSystem):
       stat_info = self.StatInfo(version)
     return stat_info
 
-  def Read(self, paths):
+  def Read(self, paths, binary=False):
     """Reads a list of files. If a file is in memcache and it is not out of
     date, it is returned. Otherwise, the file is retrieved from the file system.
     """
@@ -45,7 +45,7 @@ class MemcacheFileSystem(FileSystem):
         uncached.append(path)
         continue
       result[path] = data
-    new_items = self._file_system.Read(uncached).Get()
+    new_items = self._file_system.Read(uncached, binary=binary).Get()
     for item in new_items:
       version = self.Stat(item).version
       value = new_items[item]
