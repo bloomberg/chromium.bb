@@ -245,7 +245,7 @@ void TrayBubbleView::SetBubbleBorder(int arrow_offset) {
   SizeToContents();
 }
 
-void TrayBubbleView::UpdateAnchor() {
+void TrayBubbleView::UpdateBubble() {
   SizeToContents();
   GetWidget()->GetRootView()->SchedulePaint();
 }

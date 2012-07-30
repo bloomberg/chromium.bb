@@ -502,7 +502,7 @@ void SystemTray::UpdateNotificationBubble() {
 void SystemTray::UpdateNotificationAnchor() {
   if (!notification_bubble_.get())
     return;
-  notification_bubble_->bubble_view()->UpdateAnchor();
+  notification_bubble_->bubble_view()->UpdateBubble();
   // Ensure that the notification buble is above the launcher/status area.
   notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
 }
@@ -533,6 +533,13 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   UpdateAfterShelfAlignmentChange(alignment);
   SetBorder();
   tray_container_->UpdateLayout(alignment);
+  // Destroy an existing bubble so that it is rebuilt correctly.
+  bubble_.reset();
+  // Rebuild any notification bubble.
+  if (notification_bubble_.get()) {
+    notification_bubble_.reset();
+    UpdateNotificationBubble();
+  }
 }
 
 bool SystemTray::PerformAction(const views::Event& event) {

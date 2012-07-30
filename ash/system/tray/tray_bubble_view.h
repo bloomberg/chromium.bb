@@ -68,8 +68,8 @@ class TrayBubbleView : public views::BubbleDelegateView {
   // Creates a bubble border with the specified arrow offset.
   void SetBubbleBorder(int arrow_offset);
 
-  // Called whenever the bubble anchor location may have moved.
-  void UpdateAnchor();
+  // Called whenever the bubble size or location may have moved.
+  void UpdateBubble();
 
   // Sets the maximum bubble height and resizes the bubble.
   void SetMaxHeight(int height);
