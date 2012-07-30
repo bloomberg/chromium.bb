@@ -338,6 +338,19 @@ void SyncManagerImpl::ConfigureSyncer(
   DCHECK(!ready_task.is_null());
   DCHECK(!retry_task.is_null());
 
+  // Cleanup any types that might have just been disabled.
+  ModelTypeSet previous_types = ModelTypeSet::All();
+  if (!session_context_->routing_info().empty())
+    previous_types = GetRoutingInfoTypes(session_context_->routing_info());
+  if (!PurgeDisabledTypes(previous_types,
+                          GetRoutingInfoTypes(new_routing_info))) {
+    // We failed to cleanup the types. Invoke the ready task without actually
+    // configuring any types. The caller should detect this as a configuration
+    // failure and act appropriately.
+    ready_task.Run();
+    return;
+  }
+
   // TODO(zea): set this based on whether cryptographer has keystore
   // encryption key or not (requires opening a transaction). crbug.com/129665.
   ConfigurationParams::KeystoreKeyStatus keystore_key_status =
@@ -687,6 +700,19 @@ bool SyncManagerImpl::PurgePartiallySyncedTypes() {
   if (partially_synced_types.Empty())
     return true;
   return directory()->PurgeEntriesWithTypeIn(partially_synced_types);
+}
+
+bool SyncManagerImpl::PurgeDisabledTypes(
+    ModelTypeSet previously_enabled_types,
+    ModelTypeSet currently_enabled_types) {
+  ModelTypeSet disabled_types = Difference(previously_enabled_types,
+                                           currently_enabled_types);
+  if (disabled_types.Empty())
+    return true;
+
+  DVLOG(1) << "Purging disabled types "
+           << ModelTypeSetToString(disabled_types);
+  return directory()->PurgeEntriesWithTypeIn(disabled_types);
 }
 
 void SyncManagerImpl::UpdateCredentials(

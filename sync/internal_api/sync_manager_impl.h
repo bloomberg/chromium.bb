@@ -179,6 +179,7 @@ class SyncManagerImpl : public SyncManager,
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnNotificationStateChange);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnIncomingNotification);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, PurgeDisabledTypes);
 
   struct NotificationInfo {
     NotificationInfo();
