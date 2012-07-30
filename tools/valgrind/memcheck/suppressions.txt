@@ -5748,6 +5748,13 @@
    fun:_ZN7WebCore12WorkerThread12runEventLoopEv
    fun:_ZN7WebCore21DedicatedWorkerThread12runEventLoopEv
 }
+{
+   bug_139635
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6syncer21JsSyncManagerObserver24OnInitializationCompleteERKNS_10WeakHandleINS_9JsBackendEEEbNS_7EnumSetINS_9ModelTypeELS7_2ELS7_16EEE
+   fun:_ZN6syncer12_GLOBAL__N_155JsSyncManagerObserverTest_OnInitializationComplete_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

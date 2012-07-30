@@ -633,6 +633,24 @@
    fun:ReloadButtonGtkTest_*_Test::TestBody
 }
 {
+   bug_65940_a
+   Heapcheck:Leak
+   ...
+   fun:IPC::SyncChannel::SyncChannel
+   fun:ChildThread::Init
+   fun:ChildThread::ChildThread
+   fun:RenderThreadImpl::RenderThreadImpl
+}
+{
+   bug_65940_b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:IPC::ChannelProxy::Context::OnAddFilter
+}
+{
    bug_66054_a
    Heapcheck:Leak
    ...
@@ -1385,14 +1403,6 @@
    fun:*_*_Test::TestBody
 }
 {
-   bug_127717
-   Heapcheck:Leak
-   ...
-   fun:SkBitmap::HeapAllocator::allocPixelRef
-   fun:SkBitmap::allocPixels
-   fun:SkBitmap::allocPixels
-}
-{
    bug_128145
    Heapcheck:Leak
    ...
@@ -1479,28 +1489,16 @@
    fun:ui::InputMethodIBus::Init
 }
 {
-   bug_65940_a
-   Heapcheck:Leak
-   ...
-   fun:IPC::SyncChannel::SyncChannel
-   fun:ChildThread::Init
-   fun:ChildThread::ChildThread
-   fun:RenderThreadImpl::RenderThreadImpl
-}
-{
-   bug_65940_b
-   Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::_Vector_base::_M_allocate
-   fun:std::vector::_M_insert_aux
-   fun:std::vector::push_back
-   fun:IPC::ChannelProxy::Context::OnAddFilter
-}
-{
    bug_136936
    Heapcheck:Leak
    ...
    fun:std::basic_string::_Rep::_S_create
    ...
    fun:base::PlatformThread::SetName
+}
+{
+   bug_139635
+   Heapcheck:Leak
+   fun:syncer::JsSyncManagerObserver::OnInitializationComplete
+   fun:syncer::::JsSyncManagerObserverTest_OnInitializationComplete_Test::TestBody
 }
