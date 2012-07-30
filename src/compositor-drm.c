@@ -1337,14 +1337,16 @@ create_output_for_connector(struct drm_compositor *ec,
 	/* Get the current mode on the crtc that's currently driving
 	 * this connector. */
 	encoder = drmModeGetEncoder(ec->drm.fd, connector->encoder_id);
-	if (encoder == NULL)
-		goto err_free;
-	crtc = drmModeGetCrtc(ec->drm.fd, encoder->crtc_id);
-	drmModeFreeEncoder(encoder);
-	if (crtc == NULL)
-		goto err_free;
-	crtc_mode = crtc->mode;
-	drmModeFreeCrtc(crtc);
+	memset(&crtc_mode, 0, sizeof crtc_mode);
+	if (encoder != NULL) {
+		crtc = drmModeGetCrtc(ec->drm.fd, encoder->crtc_id);
+		drmModeFreeEncoder(encoder);
+		if (crtc == NULL)
+			goto err_free;
+		if (crtc->mode_valid)
+			crtc_mode = crtc->mode;
+		drmModeFreeCrtc(crtc);
+	}
 
 	for (i = 0; i < connector->count_modes; i++) {
 		ret = drm_output_add_mode(output, &connector->modes[i]);
@@ -1355,33 +1357,33 @@ create_output_for_connector(struct drm_compositor *ec,
 	preferred = NULL;
 	current = NULL;
 	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
-		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode)) {
-			drm_mode->base.flags |= WL_OUTPUT_MODE_CURRENT;
+		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
 			current = &drm_mode->base;
-		}
 		if (drm_mode->base.flags & WL_OUTPUT_MODE_PREFERRED)
 			preferred = &drm_mode->base;
 	}
 
-	if (current == NULL) {
+	if (current == NULL && crtc_mode.clock != 0) {
 		ret = drm_output_add_mode(output, &crtc_mode);
 		if (ret)
 			goto err_free;
 		current = container_of(output->base.mode_list.prev,
 				       struct weston_mode, link);
-		current->flags |= WL_OUTPUT_MODE_CURRENT;
 	}
 
-	if (preferred == NULL)
-		preferred = current;
-
-	if (option_current_mode) {
+	if (option_current_mode && current)
 		output->base.current = current;
-	} else {
+	else if (preferred)
 		output->base.current = preferred;
-		current->flags &= ~WL_OUTPUT_MODE_CURRENT;
-		preferred->flags |= WL_OUTPUT_MODE_CURRENT;
+	else if (current)
+		output->base.current = current;
+
+	if (output->base.current == NULL) {
+		weston_log("no available modes for %s\n", output->name);
+		goto err_free;
 	}
+
+	output->base.current->flags |= WL_OUTPUT_MODE_CURRENT;
 
 	output->surface = gbm_surface_create(ec->gbm,
 					     output->base.current->width,
