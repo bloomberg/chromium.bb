@@ -41,6 +41,8 @@ class TestExtensionSystem : public ExtensionSystem {
   // Creates an AlarmManager. Will be NULL otherwise.
   void CreateAlarmManager(base::Time (*now)());
 
+  void CreateSocketManager();
+
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE {}
   virtual void InitForOTRProfile() OVERRIDE {}
   void SetExtensionService(ExtensionService* service);
@@ -77,6 +79,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<AlarmManager> alarm_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
+  scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
 };
 
 }  // namespace extensions

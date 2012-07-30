@@ -19,6 +19,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace extensions {
 
@@ -41,6 +44,17 @@ void TestExtensionSystem::CreateExtensionProcessManager() {
 void TestExtensionSystem::CreateAlarmManager(
     AlarmManager::TimeProvider now) {
   alarm_manager_.reset(new AlarmManager(profile_, now));
+}
+
+void TestExtensionSystem::CreateSocketManager() {
+  // Note that we're intentionally creating the socket manager on the wrong
+  // thread (not the IO thread). This is because we don't want to presume or
+  // require that there be an IO thread in a lightweight test context. If we do
+  // need thread-specific behavior someday, we'll probably need something like
+  // CreateSocketManagerOnThreadForTesting(thread_id). But not today.
+  BrowserThread::ID id;
+  CHECK(BrowserThread::GetCurrentThreadIdentifier(&id));
+  socket_manager_.reset(new ApiResourceManager<Socket>(id));
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
@@ -138,7 +152,7 @@ TestExtensionSystem::serial_connection_manager() {
 }
 
 ApiResourceManager<Socket>*TestExtensionSystem::socket_manager() {
-  return NULL;
+  return socket_manager_.get();
 }
 
 ApiResourceManager<UsbDeviceResource>*
