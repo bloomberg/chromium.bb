@@ -89,6 +89,8 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
 void OffTheRecordProfileImpl::Init() {
   ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 
+  extensions::ExtensionSystem::Get(this)->InitForOTRProfile();
+
   DCHECK_NE(IncognitoModePrefs::DISABLED,
             IncognitoModePrefs::GetAvailability(profile_->GetPrefs()));
 

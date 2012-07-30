@@ -26,7 +26,7 @@ ExtensionDataTypeController::ExtensionDataTypeController(
 ExtensionDataTypeController::~ExtensionDataTypeController() {}
 
 bool ExtensionDataTypeController::StartModels() {
-  extensions::ExtensionSystem::Get(profile_)->Init(true);
+  extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
   return true;
 }
 

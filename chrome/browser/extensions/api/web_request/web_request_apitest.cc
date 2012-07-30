@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -62,6 +63,13 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartTestServer());
   }
+
+  void RunPermissionTest(
+      const char* extension_directory,
+      bool load_extension_with_incognito_permission,
+      bool wait_for_extension_loaded_in_incognito,
+      const char* expected_content_regular_window,
+      const char* exptected_content_incognito_window);
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestApi) {
@@ -132,3 +140,88 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_declarative.html")) <<
       message_;
 }
+
+void ExtensionWebRequestApiTest::RunPermissionTest(
+    const char* extension_directory,
+    bool load_extension_with_incognito_permission,
+    bool wait_for_extension_loaded_in_incognito,
+    const char* expected_content_regular_window,
+    const char* exptected_content_incognito_window) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+  ResultCatcher catcher_incognito;
+  catcher_incognito.RestrictToProfile(
+      browser()->profile()->GetOffTheRecordProfile());
+
+  ExtensionTestMessageListener listener("done", true);
+  ExtensionTestMessageListener listener_incognito("done_incognito", true);
+
+  ASSERT_TRUE(LoadExtensionWithOptions(
+      test_data_dir_.AppendASCII("webrequest_permissions")
+                    .AppendASCII(extension_directory),
+      load_extension_with_incognito_permission,
+      false));
+
+  // Test that navigation in regular window is properly redirected.
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // This navigation should be redirected.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      test_server()->GetURL("files/extensions/test_file.html"));
+
+  std::string body;
+  WebContents* tab = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+        tab->GetRenderViewHost(), L"",
+        L"window.domAutomationController.send(document.body.textContent)",
+        &body));
+  EXPECT_EQ(expected_content_regular_window, body);
+
+  // Test that navigation in OTR window is properly redirected.
+  Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(), GURL("about:blank"));
+
+  if (wait_for_extension_loaded_in_incognito)
+    EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());
+
+  // This navigation should be redirected if
+  // load_extension_with_incognito_permission is true.
+  ui_test_utils::NavigateToURL(
+      otr_browser,
+      test_server()->GetURL("files/extensions/test_file.html"));
+
+  body.clear();
+  WebContents* otr_tab = chrome::GetActiveWebContents(otr_browser);
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      otr_tab->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(document.body.textContent)",
+      &body));
+  EXPECT_EQ(exptected_content_incognito_window, body);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestDeclarativePermissionSpanning1) {
+  // Test spanning with incognito permission.
+  RunPermissionTest("spanning", true, false, "redirected1", "redirected1");
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestDeclarativePermissionSpanning2) {
+  // Test spanning without incognito permission.
+  RunPermissionTest("spanning", false, false, "redirected1", "");
+}
+
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestDeclarativePermissionSplit1) {
+  // Test split with incognito permission.
+  RunPermissionTest("split", true, true, "redirected1", "redirected2");
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestDeclarativePermissionSplit2) {
+  // Test split without incognito permission.
+  RunPermissionTest("split", false, false, "redirected1", "");
+}
+

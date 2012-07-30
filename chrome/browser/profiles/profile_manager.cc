@@ -688,7 +688,8 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  extensions::ExtensionSystem::Get(profile)->Init(!go_off_the_record);
+  extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
+      !go_off_the_record);
   // During tests, when |profile| is an instance of TestingProfile,
   // ExtensionSystem might not create an ExtensionService.
   if (extensions::ExtensionSystem::Get(profile)->extension_service()) {

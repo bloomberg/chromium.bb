@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "net/url_request/url_request.h"
@@ -198,19 +199,24 @@ int WebRequestAction::GetMinimumPriority() const {
   return std::numeric_limits<int>::min();
 }
 
-bool WebRequestAction::HasPermission(const extensions::Extension* extension,
-                                     const net::URLRequest* request) const {
-  // TODO(battre): Consider the permission to access requests from the incognito
-  // profile.
-  // TODO(battre): There should be a single place to check permissions for both
-  // the WebRequest API and the Declarative WebRequest API.
-  if (helpers::HideRequest(request))
+bool WebRequestAction::HasPermission(const ExtensionInfoMap* extension_info_map,
+                                     const std::string& extension_id,
+                                     const net::URLRequest* request,
+                                     bool crosses_incognito) const {
+  if (WebRequestPermissions::HideRequest(request))
     return false;
-  if (extension && !helpers::CanExtensionAccessURL(extension, request->url()))
-    return false;
-  // System requests are passed to extensions without host permissions.
-  // This is the same behavior as found in
-  // ExtensionWebRequestEventRouter::GetMatchingListenersImpl.
+
+  // In unit tests we don't have an extension_info_map object here and skip host
+  // permission checks.
+  if (!extension_info_map)
+    return true;
+
+  return WebRequestPermissions::CanExtensionAccessURL(
+      extension_info_map, extension_id, request->url(), crosses_incognito,
+      ShouldEnforceHostPermissions());
+}
+
+bool WebRequestAction::ShouldEnforceHostPermissions() const {
   return true;
 }
 
@@ -272,15 +278,17 @@ scoped_ptr<WebRequestActionSet> WebRequestActionSet::Create(
 }
 
 std::list<LinkedPtrEventResponseDelta> WebRequestActionSet::CreateDeltas(
-    const extensions::Extension* extension,
+    const ExtensionInfoMap* extension_info_map,
+    const std::string& extension_id,
     net::URLRequest* request,
+    bool crosses_incognito,
     RequestStages request_stage,
     const WebRequestRule::OptionalRequestData& optional_request_data,
-    const std::string& extension_id,
     const base::Time& extension_install_time) const {
   std::list<LinkedPtrEventResponseDelta> result;
   for (Actions::const_iterator i = actions_.begin(); i != actions_.end(); ++i) {
-    if (!(*i)->HasPermission(extension, request))
+    if (!(*i)->HasPermission(extension_info_map, extension_id, request,
+                             crosses_incognito))
       continue;
     if ((*i)->GetStages() & request_stage) {
       LinkedPtrEventResponseDelta delta = (*i)->CreateDelta(request,
@@ -382,12 +390,9 @@ WebRequestRedirectToTransparentImageAction::GetType() const {
   return WebRequestAction::ACTION_REDIRECT_TO_TRANSPARENT_IMAGE;
 }
 
-bool WebRequestRedirectToTransparentImageAction::HasPermission(
-    const extensions::Extension* extension,
-    const net::URLRequest* request) const {
-  // TODO(battre): Consider the permission to access requests from the incognito
-  // profile.
-  return true;
+bool WebRequestRedirectToTransparentImageAction::ShouldEnforceHostPermissions()
+    const {
+  return false;
 }
 
 LinkedPtrEventResponseDelta
@@ -423,10 +428,9 @@ WebRequestRedirectToEmptyDocumentAction::GetType() const {
   return WebRequestAction::ACTION_REDIRECT_TO_EMPTY_DOCUMENT;
 }
 
-bool WebRequestRedirectToEmptyDocumentAction::HasPermission(
-    const extensions::Extension* extension,
-    const net::URLRequest* request) const {
-  return true;
+bool
+WebRequestRedirectToEmptyDocumentAction::ShouldEnforceHostPermissions() const {
+  return false;
 }
 
 LinkedPtrEventResponseDelta
@@ -744,10 +748,8 @@ int WebRequestIgnoreRulesAction::GetMinimumPriority() const {
   return minimum_priority_;
 }
 
-bool WebRequestIgnoreRulesAction::HasPermission(
-    const extensions::Extension* extension,
-    const net::URLRequest* request) const {
-  return true;
+bool WebRequestIgnoreRulesAction::ShouldEnforceHostPermissions() const {
+  return false;
 }
 
 LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(

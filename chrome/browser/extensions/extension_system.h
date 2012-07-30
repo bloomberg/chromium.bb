@@ -58,7 +58,9 @@ class ExtensionSystem : public ProfileKeyedService {
   // Initializes extensions machinery.
   // Component extensions are always enabled, external and user extensions
   // are controlled by |extensions_enabled|.
-  virtual void Init(bool extensions_enabled) = 0;
+  virtual void InitForRegularProfile(bool extensions_enabled) = 0;
+
+  virtual void InitForOTRProfile() = 0;
 
   // The ExtensionService is created at startup.
   virtual ExtensionService* extension_service() = 0;
@@ -139,7 +141,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  virtual void Init(bool extensions_enabled) OVERRIDE;
+  virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE;
+  virtual void InitForOTRProfile() OVERRIDE;
 
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
   virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
@@ -193,7 +196,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     MessageService* message_service();
     EventRouter* event_router();
-    RulesRegistryService* rules_registry_service();
 
    private:
     Profile* profile_;
@@ -213,7 +215,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<MessageService> message_service_;
     scoped_ptr<EventRouter> extension_event_router_;
     scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
-    scoped_ptr<RulesRegistryService> rules_registry_service_;
   };
 
   Profile* profile_;
@@ -232,6 +233,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
   scoped_ptr<ApiResourceManager<
                UsbDeviceResource> > usb_device_resource_manager_;
+  scoped_ptr<RulesRegistryService> rules_registry_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };

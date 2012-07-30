@@ -1221,6 +1221,7 @@
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
         'browser/extensions/api/web_navigation/frame_navigation_state_unittest.cc',
         'browser/extensions/api/web_request/web_request_api_unittest.cc',
+        'browser/extensions/api/web_request/web_request_permissions_unittest.cc',
         'browser/extensions/api/web_request/web_request_time_tracker_unittest.cc',
         'browser/extensions/app_notification_manager_sync_unittest.cc',
         'browser/extensions/app_notification_manager_unittest.cc',

@@ -52,7 +52,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   // Returns true if the given extension can see events and data from another
   // sub-profile (incognito to original profile, or vice versa).
-  bool CanCrossIncognito(const extensions::Extension* extension);
+  bool CanCrossIncognito(const extensions::Extension* extension) const;
 
   // Adds an entry to process_map_.
   void RegisterExtensionProcess(const std::string& extension_id,

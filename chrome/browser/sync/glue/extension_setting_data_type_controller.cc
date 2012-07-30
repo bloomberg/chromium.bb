@@ -53,7 +53,7 @@ bool ExtensionSettingDataTypeController::PostTaskOnBackendThread(
 
 bool ExtensionSettingDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  extensions::ExtensionSystem::Get(profile_)->Init(true);
+  extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
   return true;
 }
 

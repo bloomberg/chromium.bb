@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 
 namespace {
@@ -87,12 +89,14 @@ scoped_ptr<WebRequestRule> WebRequestRule::Create(
 }
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRule::CreateDeltas(
-    const extensions::Extension* extension,
+    const ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
+    bool crosses_incognito,
     RequestStages request_stage,
     const OptionalRequestData& optional_request_data) const {
-  return actions_->CreateDeltas(extension, request, request_stage,
-      optional_request_data, id_.first, extension_installation_time_);
+  return actions_->CreateDeltas(extension_info_map, extension_id(), request,
+      crosses_incognito, request_stage, optional_request_data,
+      extension_installation_time_);
 }
 
 int WebRequestRule::GetMinimumPriority() const {

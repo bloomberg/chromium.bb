@@ -13,11 +13,14 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 
+class ExtensionInfoMap;
+class WebRequestPermissions;
+
 namespace extensions {
 class Extension;
 class URLMatcherConditionFactory;
-class WebRequestConditionSet;
 class WebRequestActionSet;
+class WebRequestConditionSet;
 }
 
 namespace extension_web_request_api_helpers {
@@ -66,6 +69,7 @@ class WebRequestRule {
       std::string* error);
 
   const GlobalRuleId& id() const { return id_; }
+  const std::string& extension_id() const { return id_.first; }
   const WebRequestConditionSet& conditions() const { return *conditions_; }
   const WebRequestActionSet& actions() const { return *actions_; }
   Priority priority() const { return priority_; }
@@ -78,8 +82,9 @@ class WebRequestRule {
   // have have sufficient permissions to modify the |request|. The returned list
   // may be empty in this case.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
-      const extensions::Extension* extension,
+      const ExtensionInfoMap* extension_info_map,
       net::URLRequest* request,
+      bool crosses_incognito,
       RequestStages request_stage,
       const OptionalRequestData& optional_request_data) const;
 

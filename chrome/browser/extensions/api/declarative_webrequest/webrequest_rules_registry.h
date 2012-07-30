@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/matcher/url_matcher.h"
 
 class Profile;
+class WebRequestPermissions;
 
 namespace extension_web_request_api_helpers {
 struct EventResponseDelta;
@@ -76,6 +77,7 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
       const ExtensionInfoMap* extension_info_map,
       net::URLRequest* request,
+      bool crosses_incognito,
       RequestStages request_stage,
       const WebRequestRule::OptionalRequestData& optional_request_data);
 

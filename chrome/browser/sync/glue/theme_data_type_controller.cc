@@ -27,7 +27,7 @@ syncer::ModelType ThemeDataTypeController::type() const {
 ThemeDataTypeController::~ThemeDataTypeController() {}
 
 bool ThemeDataTypeController::StartModels() {
-  extensions::ExtensionSystem::Get(profile_)->Init(true);
+  extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
   return true;
 }
 

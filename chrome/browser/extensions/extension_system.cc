@@ -73,8 +73,6 @@ ExtensionSystemImpl::Shared::Shared(Profile* profile)
 }
 
 ExtensionSystemImpl::Shared::~Shared() {
-  if (rules_registry_service_.get())
-    rules_registry_service_->Shutdown();
 }
 
 void ExtensionSystemImpl::Shared::InitPrefs() {
@@ -134,9 +132,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // These services must be registered before the ExtensionService tries to
   // load any extensions.
   {
-    rules_registry_service_.reset(new RulesRegistryService(profile_));
-    rules_registry_service_->RegisterDefaultRulesRegistries();
-
     management_policy_.reset(new ManagementPolicy);
     RegisterManagementPolicyProviders();
   }
@@ -236,10 +231,6 @@ EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return extension_event_router_.get();
 }
 
-RulesRegistryService* ExtensionSystemImpl::Shared::rules_registry_service() {
-  return rules_registry_service_.get();
-}
-
 //
 // ExtensionSystemImpl
 //
@@ -257,13 +248,15 @@ ExtensionSystemImpl::ExtensionSystemImpl(Profile* profile)
 }
 
 ExtensionSystemImpl::~ExtensionSystemImpl() {
+  if (rules_registry_service_.get())
+    rules_registry_service_->Shutdown();
 }
 
 void ExtensionSystemImpl::Shutdown() {
   extension_process_manager_.reset();
 }
 
-void ExtensionSystemImpl::Init(bool extensions_enabled) {
+void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   DCHECK(!profile_->IsOffTheRecord());
   if (user_script_master() || extension_service())
     return;  // Already initialized.
@@ -285,7 +278,21 @@ void ExtensionSystemImpl::Init(bool extensions_enabled) {
   usb_device_resource_manager_.reset(
       new ApiResourceManager<UsbDeviceResource>(BrowserThread::IO));
 
+  rules_registry_service_.reset(new RulesRegistryService(profile_));
+  rules_registry_service_->RegisterDefaultRulesRegistries();
+
   shared_->Init(extensions_enabled);
+}
+
+void ExtensionSystemImpl::InitForOTRProfile() {
+  // Only initialize the RulesRegistryService of the OTR ExtensionSystem if the
+  // regular ExtensionSystem has been initialized properly, as we depend on it.
+  // Some ChromeOS browser tests don't initialize the regular ExtensionSystem
+  // in login-tests.
+  if (extension_service()) {
+    rules_registry_service_.reset(new RulesRegistryService(profile_));
+    rules_registry_service_->RegisterDefaultRulesRegistries();
+  }
 }
 
 ExtensionService* ExtensionSystemImpl::extension_service() {
@@ -335,7 +342,7 @@ EventRouter* ExtensionSystemImpl::event_router() {
 }
 
 RulesRegistryService* ExtensionSystemImpl::rules_registry_service() {
-  return shared_->rules_registry_service();
+  return rules_registry_service_.get();
 }
 
 ApiResourceManager<SerialConnection>*
@@ -343,7 +350,7 @@ ExtensionSystemImpl::serial_connection_manager() {
   return serial_connection_manager_.get();
 }
 
-ApiResourceManager<Socket>*ExtensionSystemImpl::socket_manager() {
+ApiResourceManager<Socket>* ExtensionSystemImpl::socket_manager() {
   return socket_manager_.get();
 }
 

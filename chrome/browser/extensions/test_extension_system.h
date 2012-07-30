@@ -41,7 +41,8 @@ class TestExtensionSystem : public ExtensionSystem {
   // Creates an AlarmManager. Will be NULL otherwise.
   void CreateAlarmManager(base::Time (*now)());
 
-  virtual void Init(bool extensions_enabled) OVERRIDE {}
+  virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE {}
+  virtual void InitForOTRProfile() OVERRIDE {}
   void SetExtensionService(ExtensionService* service);
   virtual ExtensionService* extension_service() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;

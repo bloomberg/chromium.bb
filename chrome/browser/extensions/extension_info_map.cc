@@ -93,7 +93,7 @@ bool ExtensionInfoMap::IsIncognitoEnabled(
   return false;
 }
 
-bool ExtensionInfoMap::CanCrossIncognito(const Extension* extension) {
+bool ExtensionInfoMap::CanCrossIncognito(const Extension* extension) const {
   // This is duplicated from ExtensionService :(.
   return IsIncognitoEnabled(extension->id()) &&
       !extension->incognito_split_mode();

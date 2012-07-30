@@ -17,6 +17,8 @@
 #include "googleurl/src/gurl.h"
 #include "unicode/regex.h"
 
+class WebRequestPermission;
+
 namespace base {
 class DictionaryValue;
 class Time;
@@ -72,12 +74,21 @@ class WebRequestAction {
   // this rule. Defaults to MIN_INT.
   virtual int GetMinimumPriority() const;
 
-  // Returns whether |extension| has permission to execute this action
-  // on |request|. Defaults to checking the host permission.
-  // |extension| may only be NULL for during testing, in which case
-  // host permissions are ignored.
-  virtual bool HasPermission(const extensions::Extension* extension,
-                             const net::URLRequest* request) const;
+  // Returns whether the specified extension has permission to execute this
+  // action on |request|. Checks the host permission if
+  // ShouldEnforceHostPermissions instructs to do that.
+  // |extension_info_map| may only be NULL for during testing, in which case
+  // host permissions are ignored. |crosses_incognito| specifies
+  // whether the request comes from a different profile than |extension_id|
+  // but was processed because the extension is in spanning mode.
+  virtual bool HasPermission(const ExtensionInfoMap* extension_info_map,
+                             const std::string& extension_id,
+                             const net::URLRequest* request,
+                             bool crosses_incognito) const;
+
+  // Returns whether host permissions shall be enforced by this actions.
+  // Used by the standard implementation of HasPermission. Defaults to true.
+  virtual bool ShouldEnforceHostPermissions() const;
 
   // Factory method that instantiates a concrete WebRequestAction
   // implementation according to |json_action|, the representation of the
@@ -123,11 +134,12 @@ class WebRequestActionSet {
   // |actions_| that can be executed at |request_stage|. If |extension|
   // is not NULL, permissions of extensions are checked.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
-      const extensions::Extension* extension,
+      const ExtensionInfoMap* extension_info_map,
+      const std::string& extension_id,
       net::URLRequest* request,
+      bool crosses_incognito,
       RequestStages request_stage,
       const WebRequestRule::OptionalRequestData& optional_request_data,
-      const std::string& extension_id,
       const base::Time& extension_install_time) const;
 
   // Returns the minimum priority of rules that may be evaluated after
@@ -197,8 +209,7 @@ class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual bool HasPermission(const extensions::Extension* extension,
-                             const net::URLRequest* request) const OVERRIDE;
+  virtual bool ShouldEnforceHostPermissions() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
@@ -220,8 +231,7 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual bool HasPermission(const extensions::Extension* extension,
-                             const net::URLRequest* request) const OVERRIDE;
+  virtual bool ShouldEnforceHostPermissions() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
@@ -366,8 +376,7 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
   virtual int GetMinimumPriority() const OVERRIDE;
-  virtual bool HasPermission(const extensions::Extension* extension,
-                             const net::URLRequest* request) const OVERRIDE;
+  virtual bool ShouldEnforceHostPermissions() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,

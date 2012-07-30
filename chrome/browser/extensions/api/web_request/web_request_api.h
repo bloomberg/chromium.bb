@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/url_pattern_set.h"
@@ -132,7 +133,10 @@ class ExtensionWebRequestEventRouter
 
   static ExtensionWebRequestEventRouter* GetInstance();
 
+  // Registers a rule registry. Pass null for |rules_registry| to unregister
+  // the rule registry for |profile|.
   void RegisterRulesRegistry(
+      void* profile,
       scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry);
 
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
@@ -363,6 +367,10 @@ class ExtensionWebRequestEventRouter
   // Called on a page load to process all registered callbacks.
   void NotifyPageLoad();
 
+  // Returns the matching cross profile (the regular profile if |profile| is
+  // OTR and vice versa).
+  void* GetCrossProfile(void* profile) const;
+
   // A map for each profile that maps an event name to a set of extensions that
   // are listening to that event.
   ListenerMap listeners_;
@@ -385,7 +393,9 @@ class ExtensionWebRequestEventRouter
 
   CallbacksForPageLoad callbacks_for_page_load_;
 
-  scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry_;
+  // Maps each profile (and OTRProfile) to its respective rules registry.
+  std::map<void*, scoped_refptr<extensions::WebRequestRulesRegistry> >
+      rules_registries_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };

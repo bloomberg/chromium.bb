@@ -172,9 +172,6 @@ bool MergeOnAuthRequiredResponses(
     std::set<std::string>* conflicting_extensions,
     const net::BoundNetLog* net_log);
 
-// Returns true if the request shall not be reported to extensions.
-bool HideRequest(const net::URLRequest* request);
-
 // Returns whether |type| is a ResourceType that is handled by the web request
 // API.
 bool IsRelevantResourceType(ResourceType::Type type);

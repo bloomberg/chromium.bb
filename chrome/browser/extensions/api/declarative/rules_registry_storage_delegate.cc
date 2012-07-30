@@ -5,8 +5,11 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_storage_delegate.h"
 
 #include "base/bind.h"
+#include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/state_store.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,6 +66,10 @@ class RulesRegistryStorageDelegate::Inner
   friend class RulesRegistryStorageDelegate;
 
   ~Inner();
+
+  // Initialization of the storage delegate if it is used in the context of
+  // an incognito profile.
+  void InitForOTRProfile();
 
   // NotificationObserver
   virtual void Observe(
@@ -164,14 +171,33 @@ RulesRegistryStorageDelegate::Inner::Inner(
       rules_registry_thread_(rules_registry->GetOwnerThread()),
       rules_registry_(rules_registry),
       ready_(false) {
-  registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                  content::Source<Profile>(profile));
-  registrar_->Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                  content::Source<Profile>(profile));
+  if (!profile_->IsOffTheRecord()) {
+    registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                    content::Source<Profile>(profile));
+    registrar_->Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+                    content::Source<Profile>(profile));
+  } else {
+    registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                    content::Source<Profile>(profile->GetOriginalProfile()));
+    InitForOTRProfile();
+  }
 }
 
 RulesRegistryStorageDelegate::Inner::~Inner() {
   DCHECK(!registrar_.get());
+}
+
+void RulesRegistryStorageDelegate::Inner::InitForOTRProfile() {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  const ExtensionSet* extensions = extension_service->extensions();
+  for (ExtensionSet::const_iterator i = extensions->begin();
+       i != extensions->end(); ++i) {
+    if ((*i)->HasAPIPermission(APIPermission::kDeclarativeWebRequest) &&
+        extension_service->IsIncognitoEnabled((*i)->id()))
+      ReadFromStorage((*i)->id());
+  }
+  ready_ = true;
 }
 
 void RulesRegistryStorageDelegate::Inner::Observe(
@@ -186,7 +212,14 @@ void RulesRegistryStorageDelegate::Inner::Observe(
     // declarative rules, not just webRequest.
     if (extension->HasAPIPermission(
             APIPermission::kDeclarativeWebRequest)) {
-      ReadFromStorage(extension->id());
+      ExtensionInfoMap* extension_info_map =
+          ExtensionSystem::Get(profile_)->info_map();
+      if (profile_->IsOffTheRecord() &&
+          !extension_info_map->IsIncognitoEnabled(extension->id())) {
+        // Ignore this extension.
+      } else {
+        ReadFromStorage(extension->id());
+      }
     }
   } else if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
     CheckIfReady();
