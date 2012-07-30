@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
+#include "chrome/browser/net/cache_stats.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -402,7 +403,8 @@ void IOThread::Init() {
       NULL,
       NULL,
       NULL,
-      &system_enable_referrers_);
+      &system_enable_referrers_,
+      NULL);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableExtensionsHttpThrottling)) {
     network_delegate->NeverThrottleRequests();
@@ -426,6 +428,7 @@ void IOThread::Init() {
       new net::ServerBoundCertService(
           new net::DefaultServerBoundCertStore(NULL),
           base::WorkerPool::GetTaskRunner(true)));
+  globals_->cache_stats.reset(new chrome_browser_net::CacheStats());
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = globals_->host_resolver.get();
   session_params.cert_verifier = globals_->cert_verifier.get();

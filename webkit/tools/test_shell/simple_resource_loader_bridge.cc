@@ -187,6 +187,10 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
       const net::CompletionCallback& callback) OVERRIDE {
     return net::OK;
   }
+
+  virtual void OnCacheWaitStateChange(const net::URLRequest& request,
+                                      CacheWaitState state) OVERRIDE {
+  }
 };
 
 TestShellRequestContextParams* g_request_context_params = NULL;

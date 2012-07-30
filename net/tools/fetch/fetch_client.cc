@@ -59,7 +59,7 @@ class Client {
   Client(net::HttpTransactionFactory* factory, const std::string& url) :
       url_(url),
       buffer_(new net::IOBuffer(kBufferSize)) {
-    int rv = factory->CreateTransaction(&transaction_);
+    int rv = factory->CreateTransaction(&transaction_, NULL);
     DCHECK_EQ(net::OK, rv);
     buffer_->AddRef();
     g_driver.Get().ClientStarted();

@@ -17,6 +17,10 @@ template<class T> class PrefMember;
 
 typedef PrefMember<bool> BooleanPrefMember;
 
+namespace chrome_browser_net {
+class CacheStats;
+}
+
 namespace extensions {
 class EventRouterForwarder;
 }
@@ -41,7 +45,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       const policy::URLBlacklistManager* url_blacklist_manager,
       void* profile,
       CookieSettings* cookie_settings,
-      BooleanPrefMember* enable_referrers);
+      BooleanPrefMember* enable_referrers,
+      chrome_browser_net::CacheStats* cache_stats);
   virtual ~ChromeNetworkDelegate();
 
   // Causes |OnCanThrottleRequest| to never return true.
@@ -98,6 +103,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSocketStreamConnect(
       net::SocketStream* stream,
       const net::CompletionCallback& callback) OVERRIDE;
+  virtual void OnCacheWaitStateChange(const net::URLRequest& request,
+                                      CacheWaitState state) OVERRIDE;
 
   scoped_refptr<extensions::EventRouterForwarder> event_router_;
   void* profile_;
@@ -116,6 +123,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // When true, allow access to all file:// URLs.
   static bool g_allow_file_access_;
+
+  // Pointer to IOThread global, should outlive ChromeNetworkDelegate.
+  chrome_browser_net::CacheStats* cache_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

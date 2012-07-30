@@ -272,7 +272,7 @@ ChromeURLRequestContext*
 OffTheRecordProfileIOData::InitializeAppRequestContext(
     ChromeURLRequestContext* main_context,
     const std::string& app_id) const {
-  AppRequestContext* context = new AppRequestContext;
+  AppRequestContext* context = new AppRequestContext(cache_stats());
 
   // Copy most state from the main context.
   context->CopyFrom(main_context);
@@ -320,3 +320,7 @@ void OffTheRecordProfileIOData::CreateFtpProtocolHandler(
           network_delegate(), ftp_factory_.get(), ftp_auth_cache));
 }
 
+chrome_browser_net::CacheStats* OffTheRecordProfileIOData::GetCacheStats(
+    IOThread::Globals* io_thread_globals) const {
+  return NULL;
+}

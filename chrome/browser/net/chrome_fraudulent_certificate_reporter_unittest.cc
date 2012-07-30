@@ -121,7 +121,7 @@ class NotSendingTestReporter : public TestReporter {
 // This class doesn't do anything now, but in near future versions it will.
 class MockURLRequest : public net::URLRequest {
  public:
-  MockURLRequest(net::URLRequestContext* context)
+  explicit MockURLRequest(net::URLRequestContext* context)
       : net::URLRequest(GURL(""), NULL, context) {
   }
 
@@ -152,21 +152,24 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
 };
 
 static void DoReportIsSent() {
-  ChromeURLRequestContext context;
+  ChromeURLRequestContext context(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
+                                  NULL);
   SendingTestReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info, true);
 }
 
 static void DoReportIsNotSent() {
-  ChromeURLRequestContext context;
+  ChromeURLRequestContext context(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
+                                  NULL);
   NotSendingTestReporter reporter(&context);
   SSLInfo info = GetBadSSLInfo();
   reporter.SendReport("www.example.com", info, true);
 }
 
 static void DoMockReportIsSent() {
-  ChromeURLRequestContext context;
+  ChromeURLRequestContext context(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
+                                  NULL);
   MockReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info, true);

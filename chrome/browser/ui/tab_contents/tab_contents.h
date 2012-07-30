@@ -65,6 +65,10 @@ class SearchTabHelper;
 }
 }
 
+namespace chrome_browser_net {
+class CacheStatsTabHelper;
+}
+
 namespace extensions {
 class TabHelper;
 class WebNavigationTabObserver;
@@ -267,6 +271,7 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<BookmarkTabHelper> bookmark_tab_helper_;
+  scoped_ptr<chrome_browser_net::CacheStatsTabHelper> cache_stats_tab_helper_;
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   scoped_ptr<captive_portal::CaptivePortalTabHelper> captive_portal_tab_helper_;
 #endif

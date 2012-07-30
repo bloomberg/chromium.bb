@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/resource_context.h"
@@ -24,12 +25,12 @@ class CookieSettings;
 class DesktopNotificationService;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
-class IOThread;
 class Profile;
 class ProtocolHandlerRegistry;
 class TransportSecurityPersister;
 
 namespace chrome_browser_net {
+class CacheStats;
 class HttpServerPropertiesManager;
 class ResourcePrefetchPredictorObserver;
 }
@@ -136,7 +137,7 @@ class ProfileIOData {
  protected:
   class AppRequestContext : public ChromeURLRequestContext {
    public:
-    AppRequestContext();
+    explicit AppRequestContext(chrome_browser_net::CacheStats* cache_stats);
 
     void SetCookieStore(net::CookieStore* cookie_store);
     void SetHttpTransactionFactory(net::HttpTransactionFactory* http_factory);
@@ -239,6 +240,10 @@ class ProfileIOData {
     return main_request_context_.get();
   }
 
+  chrome_browser_net::CacheStats* cache_stats() const {
+    return cache_stats_;
+  }
+
   // Destroys the ResourceContext first, to cancel any URLRequests that are
   // using it still, before we destroy the member variables that those
   // URLRequests may be accessing.
@@ -290,6 +295,10 @@ class ProfileIOData {
       AcquireIsolatedAppRequestContext(
           ChromeURLRequestContext* main_context,
           const std::string& app_id) const = 0;
+
+  // Returns the CacheStats object to be used for this profile.
+  virtual chrome_browser_net::CacheStats* GetCacheStats(
+      IOThread::Globals* io_thread_globals) const = 0;
 
   // The order *DOES* matter for the majority of these member variables, so
   // don't move them around unless you know what you're doing!
@@ -363,6 +372,8 @@ class ProfileIOData {
 
   mutable scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
       resource_prefetch_predictor_observer_;
+
+  mutable chrome_browser_net::CacheStats* cache_stats_;
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;

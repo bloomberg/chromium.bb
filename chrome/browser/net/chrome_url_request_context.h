@@ -20,6 +20,10 @@ class IOThread;
 class Profile;
 class ProfileIOData;
 
+namespace chrome_browser_net {
+class CacheStats;
+}
+
 // Subclass of net::URLRequestContext which can be used to store extra
 // information for requests.
 //
@@ -27,7 +31,14 @@ class ProfileIOData;
 // including the constructor and destructor.
 class ChromeURLRequestContext : public net::URLRequestContext {
  public:
-  ChromeURLRequestContext();
+  enum ContextType {
+    CONTEXT_TYPE_MAIN,
+    CONTEXT_TYPE_MEDIA,
+    CONTEXT_TYPE_EXTENSIONS,
+    CONTEXT_TYPE_APP
+  };
+  ChromeURLRequestContext(ContextType type,
+                          chrome_browser_net::CacheStats* cache_stats);
   virtual ~ChromeURLRequestContext();
 
   base::WeakPtr<ChromeURLRequestContext> GetWeakPtr() {
@@ -70,6 +81,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 
   ChromeURLDataManagerBackend* chrome_url_data_manager_backend_;
   bool is_incognito_;
+  chrome_browser_net::CacheStats* cache_stats_;
 
   // ---------------------------------------------------------------------------
   // Important: When adding any new members above, consider whether they need to

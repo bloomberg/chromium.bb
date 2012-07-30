@@ -1450,6 +1450,8 @@
         'browser/metrics/variations_service.cc',
         'browser/metrics/variations_service.h',
         'browser/native_window_notification_source.h',
+        'browser/net/cache_stats.cc',
+        'browser/net/cache_stats.h',
         'browser/net/chrome_cookie_notification_details.h',
         'browser/net/chrome_fraudulent_certificate_reporter.cc',
         'browser/net/chrome_fraudulent_certificate_reporter.h',

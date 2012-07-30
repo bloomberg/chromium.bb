@@ -97,4 +97,9 @@ int ShellNetworkDelegate::OnBeforeSocketStreamConnect(
   return net::OK;
 }
 
+void ShellNetworkDelegate::OnCacheWaitStateChange(
+    const net::URLRequest& request,
+    CacheWaitState waiting) {
+}
+
 }  // namespace content
