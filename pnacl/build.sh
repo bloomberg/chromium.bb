@@ -3246,12 +3246,6 @@ driver-install() {
   echo """LIBMODE=${libmode}
 HAS_FRONTEND=1""" > "${destdir}"/driver.conf
 
-  # Install readelf and size
-  cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-readelf" \
-        "${destdir}/readelf"
-  cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-size" \
-        "${destdir}/size"
-
   # On windows, copy the cygwin DLLs needed by the driver tools
   if ${BUILD_PLATFORM_WIN}; then
     StepBanner "DRIVER" "Copying cygwin libraries"
