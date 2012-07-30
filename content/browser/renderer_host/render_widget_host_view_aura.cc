@@ -275,7 +275,7 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewAura::WasShown() {
-  if (!host_->IsHidden())
+  if (!host_->is_hidden())
     return;
   host_->WasShown();
 
@@ -288,7 +288,7 @@ void RenderWidgetHostViewAura::WasShown() {
 }
 
 void RenderWidgetHostViewAura::WasHidden() {
-  if (host_->IsHidden())
+  if (host_->is_hidden())
     return;
   host_->WasHidden();
 
@@ -615,7 +615,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   surface_route_id_ = params_in_pixel.route_id;
   // If protection state changed, then this swap is stale. We must still ACK but
   // do not update current_surface_ since it may have been discarded.
-  if (host_->IsHidden() ||
+  if (host_->is_hidden() ||
       (params_in_pixel.protection_state_id &&
           params_in_pixel.protection_state_id != protection_state_id_)) {
     DCHECK(!current_surface_);
@@ -686,7 +686,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   surface_route_id_ = params_in_pixel.route_id;
   // If visible state changed, then this PSB is stale. We must still ACK but
   // do not update current_surface_.
-  if (host_->IsHidden() ||
+  if (host_->is_hidden() ||
       (params_in_pixel.protection_state_id &&
           params_in_pixel.protection_state_id != protection_state_id_)) {
     DCHECK(!current_surface_);
@@ -795,7 +795,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
 }
 
 void RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor(ui::Compositor*) {
-  if (current_surface_ || !host_->IsHidden())
+  if (current_surface_ || !host_->is_hidden())
     return;
   current_surface_in_use_by_compositor_ = false;
   AdjustSurfaceProtection();
@@ -807,7 +807,7 @@ void RenderWidgetHostViewAura::AdjustSurfaceProtection() {
   // Otherwise, change to not proctected once done thumbnailing and compositing.
   bool surface_is_protected =
       current_surface_ ||
-      !host_->IsHidden() ||
+      !host_->is_hidden() ||
       (current_surface_is_protected_ &&
           (!pending_thumbnail_tasks_.empty() ||
               current_surface_in_use_by_compositor_));

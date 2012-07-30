@@ -155,7 +155,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // having been hidden.
   void WasHidden();
   void WasShown();
-  bool IsHidden() const { return is_hidden_; }
 
   // Returns true if the RenderWidget is hidden.
   bool is_hidden() const { return is_hidden_; }
