@@ -94,12 +94,6 @@ void MockInputMethodManager::AddInputMethodExtension(
 void MockInputMethodManager::RemoveInputMethodExtension(const std::string& id) {
 }
 
-void MockInputMethodManager::EnableHotkeys() {
-}
-
-void MockInputMethodManager::DisableHotkeys() {
-}
-
 bool MockInputMethodManager::SwitchToNextInputMethod() {
   return true;
 }

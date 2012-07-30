@@ -56,8 +56,6 @@ class InputMethodManagerImpl : public InputMethodManager,
       const std::vector<std::string>& layouts,
       const std::string& language) OVERRIDE;
   virtual void RemoveInputMethodExtension(const std::string& id) OVERRIDE;
-  virtual void EnableHotkeys() OVERRIDE;
-  virtual void DisableHotkeys() OVERRIDE;
   virtual bool SwitchToNextInputMethod() OVERRIDE;
   virtual bool SwitchToPreviousInputMethod() OVERRIDE;
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) OVERRIDE;
@@ -126,10 +124,6 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   void ChangeInputMethodInternal(const std::string& input_method_id,
                                  bool show_message);
-
-  // true when DisableHotkeys() is called to temporarily disable IME hotkeys.
-  // EnableHotkeys() resets the flag to the default value, false.
-  bool ignore_hotkeys_;
 
   // The current browser status.
   State state_;

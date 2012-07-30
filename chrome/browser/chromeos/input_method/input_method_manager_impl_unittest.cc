@@ -789,23 +789,6 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoIme) {
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
 }
 
-TEST_F(InputMethodManagerImplTest, TestEnableDisableHotkeys) {
-  manager_->EnableLayouts("ja", "xkb:us::eng");
-  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
-  manager_->DisableHotkeys();
-  EXPECT_FALSE(manager_->SwitchToNextInputMethod());
-  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
-  EXPECT_FALSE(manager_->SwitchToPreviousInputMethod());
-  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
-  EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_NONCONVERT, ui::EF_NONE)));
-  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
-  manager_->EnableHotkeys();
-  EXPECT_TRUE(manager_->SwitchToNextInputMethod());
-  EXPECT_NE("xkb:us::eng", manager_->GetCurrentInputMethod().id());
-}
-
 TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   TestObserver observer;
   manager_->AddObserver(&observer);

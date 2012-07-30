@@ -46,8 +46,6 @@ class MockInputMethodManager : public InputMethodManager {
       const std::vector<std::string>& layouts,
       const std::string& language) OVERRIDE;
   virtual void RemoveInputMethodExtension(const std::string& id) OVERRIDE;
-  virtual void EnableHotkeys() OVERRIDE;
-  virtual void DisableHotkeys() OVERRIDE;
   virtual bool SwitchToNextInputMethod() OVERRIDE;
   virtual bool SwitchToPreviousInputMethod() OVERRIDE;
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) OVERRIDE;

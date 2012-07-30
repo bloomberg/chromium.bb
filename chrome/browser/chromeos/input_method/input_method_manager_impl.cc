@@ -32,8 +32,7 @@ bool Contains(const std::vector<std::string>& container,
 }  // namespace
 
 InputMethodManagerImpl::InputMethodManagerImpl()
-    : ignore_hotkeys_(false),
-      state_(STATE_LOGIN_SCREEN),
+    : state_(STATE_LOGIN_SCREEN),
       util_(GetSupportedInputMethods()) {
 }
 
@@ -341,18 +340,7 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
   ChangeInputMethod(current_input_method_.id());
 }
 
-void InputMethodManagerImpl::EnableHotkeys() {
-  ignore_hotkeys_ = false;
-}
-
-void InputMethodManagerImpl::DisableHotkeys() {
-  ignore_hotkeys_ = true;
-}
-
 bool InputMethodManagerImpl::SwitchToNextInputMethod() {
-  if (ignore_hotkeys_)
-    return false;
-
   // Sanity checks.
   if (active_input_method_ids_.empty()) {
     DVLOG(1) << "active input method is empty";
@@ -370,9 +358,6 @@ bool InputMethodManagerImpl::SwitchToNextInputMethod() {
 }
 
 bool InputMethodManagerImpl::SwitchToPreviousInputMethod() {
-  if (ignore_hotkeys_)
-    return false;
-
   // Sanity check.
   if (active_input_method_ids_.empty()) {
     DVLOG(1) << "active input method is empty";
@@ -398,9 +383,6 @@ bool InputMethodManagerImpl::SwitchToPreviousInputMethod() {
 
 bool InputMethodManagerImpl::SwitchInputMethod(
     const ui::Accelerator& accelerator) {
-  if (ignore_hotkeys_)
-    return false;
-
   // Sanity check.
   if (active_input_method_ids_.empty()) {
     DVLOG(1) << "active input method is empty";
