@@ -24,25 +24,8 @@ typedef _XRRScreenResources XRRScreenResources;
 
 namespace chromeos {
 
-// The information we need to cache from an output to implement operations such
-// as power state but also to eliminate duplicate operations within a given
-// action (determining which CRTC to use for a given output, for example).
-struct CachedOutputDescription {
-  RROutput output;
-  RRCrtc crtc;
-  RRMode mirror_mode;
-  RRMode ideal_mode;
-  int x;
-  int y;
-  bool is_connected;
-  bool is_powered_on;
-  bool is_internal;
-  unsigned long mm_width;
-  unsigned long mm_height;
-};
-
 // Used to describe the state of a multi-display configuration.
-enum State {
+enum OutputState {
   STATE_INVALID,
   STATE_HEADLESS,
   STATE_SINGLE,
@@ -60,7 +43,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
-  State output_state() const { return output_state_; }
+  OutputState output_state() const { return output_state_; }
 
   // Called when the user hits ctrl-F4 to request a display mode change.
   // This method should only return false if it was called in a single-head or
@@ -75,7 +58,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Force switching the display mode to |new_state|.  This method is used when
   // the user explicitly changes the display mode in the options UI.  Returns
   // false if it was called in a single-head or headless mode.
-  bool SetDisplayMode(State new_state);
+  bool SetDisplayMode(OutputState new_state);
 
   // Called when an RRNotify event is received.  The implementation is
   // interested in the cases of RRNotify events which correspond to output
@@ -85,6 +68,24 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
+  // The information we need to cache from an output to implement operations
+  // such as power state but also to eliminate duplicate operations within a
+  // given action (determining which CRTC to use for a given output, for
+  // example).
+  struct CachedOutputDescription {
+    RROutput output;
+    RRCrtc crtc;
+    RRMode mirror_mode;
+    RRMode ideal_mode;
+    int x;
+    int y;
+    bool is_connected;
+    bool is_powered_on;
+    bool is_internal;
+    unsigned long mm_width;
+    unsigned long mm_height;
+  };
+
   // Updates |output_count_|, |output_cache_|, |mirror_supported_|,
   // |primary_output_index_|, and |secondary_output_index_| with new data.
   // Returns true if the update succeeded or false if it was skipped since no
@@ -98,7 +99,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   void UpdateCacheAndXrandrToState(Display* display,
                                    XRRScreenResources* screen,
                                    Window window,
-                                   State new_state);
+                                   OutputState new_state);
 
   // A helper to re-cache instance variable state and transition into the
   // appropriate default state for the observed displays.
@@ -108,14 +109,15 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // |mirror_supported_| to see how many displays are currently connected and
   // returns the state which is most appropriate as a default state for those
   // displays.
-  State GetDefaultState() const;
+  OutputState GetDefaultState() const;
 
   // Called during start-up to determine what the current state of the displays
   // appears to be, by investigating how the outputs compare to the data stored
   // in |output_cache_|.  Returns STATE_INVALID if the current display state
   // doesn't match any supported state.  |output_cache_| must be up-to-date with
   // regards to the state of X or this method may return incorrect results.
-  State InferCurrentState(Display* display, XRRScreenResources* screen) const;
+  OutputState InferCurrentState(
+      Display* display, XRRScreenResources* screen) const;
 
   // Scans the |output_cache_| to determine whether or not we are in a
   // "projecting" state and then calls the DBus kSetIsProjectingMethod on powerd
@@ -154,7 +156,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
   // The display state as derived from the outputs observed in |output_cache_|.
   // This is used for rotating display modes.
-  State output_state_;
+  OutputState output_state_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };

@@ -86,7 +86,7 @@ void DisplayOptionsHandler::OnDisplayRemoved(const gfx::Display& old_display) {
 void DisplayOptionsHandler::UpdateDisplaySectionVisibility() {
   aura::DisplayManager* display_manager =
       aura::Env::GetInstance()->display_manager();
-  chromeos::State output_state =
+  chromeos::OutputState output_state =
       ash::Shell::GetInstance()->output_configurator()->output_state();
   base::FundamentalValue show_options(
       DisplayController::IsExtendedDesktopEnabled() &&
@@ -139,7 +139,7 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
   args->GetBoolean(0, &is_mirroring);
   // We use 'PRIMARY_ONLY' for non-mirroring state for now.
   // TODO(mukai): fix this and support multiple display modes.
-  chromeos::State new_state =
+  chromeos::OutputState new_state =
       is_mirroring ? STATE_DUAL_MIRROR : STATE_DUAL_PRIMARY_ONLY;
   ash::Shell::GetInstance()->output_configurator()->SetDisplayMode(new_state);
   SendDisplayInfo();
