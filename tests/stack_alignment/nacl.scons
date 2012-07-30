@@ -38,19 +38,10 @@ if env.Bit('build_x86') and not env.Bit('bitcode'):
 # pointer register.  This requires assembly code.
 
 asm_env = env.Clone()
-disable_asm = False
-if asm_env.Bit('bitcode'):
-  # We use inline assembly, which does not work in pexes.
-  if env.Bit('pnacl_generate_pexe'):
-    disable_asm = True
-  # Our inline assembly works with ARM but not x86 PNaCl/Clang.
-  if not env.Bit('target_arm'):
-    disable_asm = True
-  asm_env.AddBiasForPNaCl()
-  asm_env.PNaClForceNative()
+asm_allowed = asm_env.AllowInlineAssembly()
 
 # This test's IRT interface querying does not work under nacl-glibc.
-if not disable_asm and not env.Bit('nacl_glibc'):
+if asm_allowed and not env.Bit('nacl_glibc'):
   stack_alignment_asm_test_nexe = asm_env.ComponentProgram(
       'stack_alignment_asm_test', 'stack_alignment_asm_test.c',
       EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])

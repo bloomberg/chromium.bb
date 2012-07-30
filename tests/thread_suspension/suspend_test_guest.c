@@ -16,7 +16,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
-#include "native_client/tests/thread_suspension/register_set.h"
+#include "native_client/tests/common/register_set.h"
 
 
 typedef int (*TYPE_nacl_test_syscall_1)(struct SuspendTestShm *test_shm);

@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_TESTS_THREAD_SUSPENSION_REGISTER_SET_H_
-#define NATIVE_CLIENT_TESTS_THREAD_SUSPENSION_REGISTER_SET_H_
+#ifndef NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
+#define NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
 
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
@@ -105,25 +105,9 @@
 #endif
 
 /* Initialize the register set with arbitrary test data. */
-static inline void RegsFillTestValues(struct NaClSignalContext *regs) {
-  int index;
-  for (index = 0; index < sizeof(*regs); index++) {
-    ((char *) regs)[index] = index + 1;
-  }
-}
+void RegsFillTestValues(struct NaClSignalContext *regs);
 
 /* Adjust registers to follow the sandbox's constraints. */
-static inline void RegsApplySandboxConstraints(struct NaClSignalContext *regs) {
-#if defined(__x86_64__)
-  uint64_t r15;
-  __asm__("mov %%r15, %0" : "=r"(r15));
-  regs->r15 = r15;
-  regs->prog_ctr = r15 + (uint32_t) regs->prog_ctr;
-  regs->stack_ptr = r15 + (uint32_t) regs->stack_ptr;
-  regs->rbp = r15 + (uint32_t) regs->rbp;
-#elif defined(__arm__)
-  regs->r9 = (uintptr_t) nacl_tls_get();
-#endif
-}
+void RegsApplySandboxConstraints(struct NaClSignalContext *regs);
 
 #endif

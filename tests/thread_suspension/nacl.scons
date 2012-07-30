@@ -14,19 +14,12 @@ if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
 
-if env.Bit('bitcode'):
-  # We use inline assembly, which does not work in pexes.
-  if env.Bit('pnacl_generate_pexe'):
-    Return()
-  env.AddBiasForPNaCl()
-  env.PNaClForceNative()
-  # Our inline assembly works with ARM but not x86 PNaCl/Clang.
-  if not env.Bit('target_arm'):
-    Return()
+if not env.AllowInlineAssembly():
+  Return()
 
 test_guest = env.ComponentProgram(
     'suspend_test_guest', ['suspend_test_guest.c'],
-    EXTRA_LIBS=['${NONIRT_LIBS}'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'test_common'])
 
 test_host = trusted_env.ComponentProgram(
     'suspend_test_host', ['suspend_test_host.c'],
