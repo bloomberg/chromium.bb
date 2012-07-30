@@ -22,28 +22,30 @@
 // 4. "device_id" is an array of strings.  0 is reserved.
 // 5. "multi_gpu_style" is a string, valid values include "optimus", and
 //    "amd_switchable".
-// 6. "driver_vendor" is a STRING structure (defined below).
-// 7. "driver_version" is a VERSION structure (defined below).
-// 8. "driver_date" is a VERSION structure (defined below).
+// 6. "multi_gpu_category" is a string, valid values include "any", "primary",
+//    and "secondary".  If unspecified, the default value is "primary".
+// 7. "driver_vendor" is a STRING structure (defined below).
+// 8. "driver_version" is a VERSION structure (defined below).
+// 9. "driver_date" is a VERSION structure (defined below).
 //    The version is interpreted as "year.month.day".
-// 9. "gl_vendor" is a STRING structure (defined below).
-// 10. "gl_renderer" is a STRING structure (defined below).
-// 11. "perf_graphics" is a FLOAT structure (defined below).
-// 12. "perf_gaming" is a FLOAT structure (defined below).
-// 13. "perf_overall" is a FLOAT structure (defined below).
-// 14. "exceptions" is a list of entries.
-// 15. "blacklist" is a list of gpu feature strings, valid values include
+// 10. "gl_vendor" is a STRING structure (defined below).
+// 11. "gl_renderer" is a STRING structure (defined below).
+// 12. "perf_graphics" is a FLOAT structure (defined below).
+// 13. "perf_gaming" is a FLOAT structure (defined below).
+// 14. "perf_overall" is a FLOAT structure (defined below).
+// 15. "exceptions" is a list of entries.
+// 16. "blacklist" is a list of gpu feature strings, valid values include
 //     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
 //     "multisampling", "flash_3d", "flash_stage3d", "texture_sharing",
 //     and "all".
 //     This field is mandatory.
-// 16. "description" has the description of the entry.
-// 17. "webkit_bugs" is an array of associated webkit bug numbers.
-// 18. "cr_bugs" is an array of associated webkit bug numbers.
-// 19. "browser_version" is a VERSION structure (defined below).  If this
+// 17. "description" has the description of the entry.
+// 18. "webkit_bugs" is an array of associated webkit bug numbers.
+// 19. "cr_bugs" is an array of associated webkit bug numbers.
+// 20. "browser_version" is a VERSION structure (defined below).  If this
 //     condition is not satisfied, the entry will be ignored.  If it is not
 //     present, then the entry applies to all versions of the browser.
-// 20. "disabled" is a boolean. If it is present, the entry will be skipped.
+// 21. "disabled" is a boolean. If it is present, the entry will be skipped.
 //     This can not be used in exceptions.
 //
 // VERSION includes "op", "style", "number", and "number2".  "op" can be any of
@@ -66,7 +68,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.4",
+  "version": "2.5",
   "entries": [
     {
       "id": 1,
@@ -655,6 +657,24 @@
       },
       "blacklist": [
         "texture_sharing"
+      ]
+    },
+    {
+      "id": 44,
+      "description": "Intel HD 4000 causes kernel panic on Lion.",
+      "cr_bugs": [134015],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "=",
+          "number": "10.7"
+        }
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0166"],
+      "multi_gpu_category": "any",
+      "blacklist": [
+        "all"
       ]
     }
   ]
