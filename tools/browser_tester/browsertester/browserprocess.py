@@ -8,10 +8,6 @@ import signal
 import subprocess
 import time
 
-# mozrunner is needed as long as we are supporting versions of Python
-# before 2.6.
-import mozrunner
-
 class BrowserProcessBase(object):
 
   def __init__(self, handle):
@@ -68,11 +64,6 @@ class BrowserProcessPosix(BrowserProcessBase):
 
 def RunCommandWithSubprocess(cmd, env=None):
   handle = subprocess.Popen(cmd, env=env)
-  return BrowserProcess(handle)
-
-
-def RunCommandWithMozrunner(cmd, env=None):
-  handle = mozrunner.run_command(cmd, env=env)
   return BrowserProcess(handle)
 
 
