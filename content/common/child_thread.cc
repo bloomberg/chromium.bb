@@ -32,6 +32,47 @@
 using content::ResourceDispatcher;
 using tracked_objects::ThreadData;
 
+namespace {
+
+#if defined(OS_POSIX)
+
+class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
+ public:
+  // IPC::ChannelProxy::MessageFilter
+  virtual void OnChannelError() OVERRIDE {
+    // For renderer/worker processes:
+    // On POSIX, at least, one can install an unload handler which loops
+    // forever and leave behind a renderer process which eats 100% CPU forever.
+    //
+    // This is because the terminate signals (ViewMsg_ShouldClose and the error
+    // from the IPC channel) are routed to the main message loop but never
+    // processed (because that message loop is stuck in V8).
+    //
+    // One could make the browser SIGKILL the renderers, but that leaves open a
+    // large window where a browser failure (or a user, manually terminating
+    // the browser because "it's stuck") will leave behind a process eating all
+    // the CPU.
+    //
+    // So, we install a filter on the channel so that we can process this event
+    // here and kill the process.
+    //
+    // We want to kill this process after giving it 30 seconds to run the exit
+    // handlers. SIGALRM has a default disposition of terminating the
+    // application.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChildCleanExit))
+      alarm(30);
+    else
+      _exit(0);
+  }
+
+ protected:
+  virtual ~SuicideOnChannelErrorFilter() {}
+};
+
+#endif  // OS(POSIX)
+
+}  // namespace
+
 ChildThread::ChildThread() {
   channel_name_ = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessChannelID);
@@ -66,6 +107,13 @@ void ChildThread::Init() {
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
   channel_->AddFilter(new ChildTraceMessageFilter());
+
+#if defined(OS_POSIX)
+  // Check that --process-type is specified so we don't do this in unit tests
+  // and single-process mode.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
+    channel_->AddFilter(new SuicideOnChannelErrorFilter());
+#endif
 }
 
 ChildThread::~ChildThread() {

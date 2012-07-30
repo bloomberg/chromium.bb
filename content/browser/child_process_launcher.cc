@@ -58,7 +58,7 @@ class ChildProcessLauncher::Context
         {
 #if defined(OS_POSIX)
           terminate_child_on_shutdown_ = !CommandLine::ForCurrentProcess()->
-              HasSwitch(switches::kRendererCleanExit);
+              HasSwitch(switches::kChildCleanExit);
 #else
           terminate_child_on_shutdown_ = true;
 #endif

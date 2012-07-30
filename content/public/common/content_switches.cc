@@ -532,11 +532,6 @@ const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererAssertTest[]            = "renderer-assert-test";
 
-#if defined(OS_POSIX)
-// Causes the renderer process to cleanly exit via calling exit().
-const char kRendererCleanExit[]             = "renderer-clean-exit";
-#endif
-
 // On POSIX only: the contents of this flag are prepended to the renderer
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kRendererCmdPrefix[]             = "renderer-cmd-prefix";
@@ -661,6 +656,11 @@ const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 const char kGraphicsMode[]                  = "graphics-mode";
 const char kGraphicsModeValueBasic[]        = "basic";
 const char kGraphicsModeValueCompositor[]   = "compositor";
+#endif
+
+#if defined(OS_POSIX)
+// Causes the child processes to cleanly exit via calling exit().
+const char kChildCleanExit[]                = "child-clean-exit";
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

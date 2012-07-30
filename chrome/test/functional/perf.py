@@ -664,7 +664,7 @@ class BasePerfTest(pyauto.PyUITest):
     # Window size impacts a variety of perf tests, ensure consistency.
     flags.append('--window-size=1024,768')
     if self._IsPGOMode():
-      flags = flags + ['--renderer-clean-exit', '--no-sandbox']
+      flags = flags + ['--child-clean-exit', '--no-sandbox']
     return flags
 
 

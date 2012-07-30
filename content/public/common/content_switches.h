@@ -168,9 +168,6 @@ CONTENT_EXPORT extern const char kProcessType[];
 CONTENT_EXPORT extern const char kRegisterPepperPlugins[];
 CONTENT_EXPORT extern const char kRemoteDebuggingPort[];
 CONTENT_EXPORT extern const char kRendererAssertTest[];
-#if defined(OS_POSIX)
-extern const char kRendererCleanExit[];
-#endif
 extern const char kRendererCmdPrefix[];
 CONTENT_EXPORT extern const char kRendererProcess[];
 extern const char kRendererProcessLimit[];
@@ -215,6 +212,10 @@ extern const char kGraphicsMode[];
 // Not actual flags, just values: for example, --graphics-mode=compositor
 extern const char kGraphicsModeValueBasic[];
 extern const char kGraphicsModeValueCompositor[];
+#endif
+
+#if defined(OS_POSIX)
+extern const char kChildCleanExit[];
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

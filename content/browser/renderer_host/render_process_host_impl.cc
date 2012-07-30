@@ -805,7 +805,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kRegisterPepperPlugins,
     switches::kRendererAssertTest,
 #if defined(OS_POSIX)
-    switches::kRendererCleanExit,
+    switches::kChildCleanExit,
 #endif
     switches::kRendererStartupDialog,
     switches::kShowPaintRects,

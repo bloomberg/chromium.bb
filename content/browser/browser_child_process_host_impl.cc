@@ -121,6 +121,11 @@ void BrowserChildProcessHostImpl::Launch(
   content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line, data_.id);
 
+#if defined(OS_POSIX)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChildCleanExit))
+    cmd_line->AppendSwitch(switches::kChildCleanExit);
+#endif
+
   child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
       exposed_dir,

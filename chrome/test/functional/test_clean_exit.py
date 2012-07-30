@@ -25,7 +25,7 @@ class SimpleTest(pyauto.PyUITest):
     """
     fd, self._strace_log = tempfile.mkstemp()
     os.close(fd)
-    extra_flags = ['--no-sandbox', '--renderer-clean-exit',
+    extra_flags = ['--no-sandbox', '--child-clean-exit',
                    '--renderer-cmd-prefix=/usr/bin/strace -o %s' %
                     self._strace_log]
     logging.debug('Strace file is: %s' % self._strace_log)
