@@ -65,7 +65,6 @@ class SyncManagerImpl : public SyncManager,
       bool use_ssl,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner,
       scoped_ptr<HttpPostProviderFactory> post_factory,
-      const ModelSafeRoutingInfo& model_safe_routing_info,
       const std::vector<ModelSafeWorker*>& workers,
       ExtensionsActivityMonitor* extensions_activity_monitor,
       SyncManager::ChangeDelegate* change_delegate,
@@ -221,11 +220,10 @@ class SyncManagerImpl : public SyncManager,
   // Open the directory named with username_for_share
   bool OpenDirectory();
 
-  // Sign into sync with given credentials.
-  // We do not verify the tokens given. After this call, the tokens are set
-  // and the sync DB is open. True if successful, false if something
-  // went wrong.
-  bool SignIn(const SyncCredentials& credentials);
+  // Purge those types from |previously_enabled_types| that are no longer
+  // enabled in |currently_enabled_types|.
+  bool PurgeDisabledTypes(ModelTypeSet previously_enabled_types,
+                          ModelTypeSet currently_enabled_types);
 
   void RequestNudgeForDataTypes(
       const tracked_objects::Location& nudge_location,

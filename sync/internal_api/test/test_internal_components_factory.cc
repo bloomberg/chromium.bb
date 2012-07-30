@@ -27,7 +27,6 @@ scoped_ptr<sessions::SyncSessionContext>
 TestInternalComponentsFactory::BuildContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
-    const ModelSafeRoutingInfo& routing_info,
     const std::vector<ModelSafeWorker*> workers,
     ExtensionsActivityMonitor* monitor,
     ThrottledDataTypeTracker* throttled_data_type_tracker,
@@ -38,9 +37,10 @@ TestInternalComponentsFactory::BuildContext(
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
   return scoped_ptr<sessions::SyncSessionContext>(
-      new sessions::SyncSessionContext(connection_manager, directory,
-          routing_info, workers, monitor, throttled_data_type_tracker,
-           empty_listeners, debug_info_getter, traffic_recorder));
+      new sessions::SyncSessionContext(
+          connection_manager, directory, workers, monitor,
+          throttled_data_type_tracker, empty_listeners, debug_info_getter,
+          traffic_recorder));
 }
 
 scoped_ptr<syncable::DirectoryBackingStore>

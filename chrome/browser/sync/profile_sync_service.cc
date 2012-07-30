@@ -327,14 +327,6 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
     return;
   }
 
-  syncer::ModelTypeSet initial_types;
-  // If sync setup hasn't finished, we don't want to initialize routing info
-  // for any data types so that we don't download updates for types that the
-  // user chooses not to sync on the first DownloadUpdatesCommand.
-  if (HasSyncSetupCompleted()) {
-    initial_types = GetPreferredDataTypes();
-  }
-
   SyncCredentials credentials = GetCredentials();
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
@@ -351,7 +343,6 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       this,
       MakeWeakHandle(sync_js_controller_.AsWeakPtr()),
       sync_service_url_,
-      initial_types,
       credentials,
       delete_stale_data,
       &sync_manager_factory_,

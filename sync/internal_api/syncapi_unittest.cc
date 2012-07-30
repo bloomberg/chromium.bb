@@ -676,8 +676,9 @@ class SyncManagerObserverMock : public SyncManager::Observer {
  public:
   MOCK_METHOD1(OnSyncCycleCompleted,
                void(const SyncSessionSnapshot&));  // NOLINT
-  MOCK_METHOD2(OnInitializationComplete,
-               void(const WeakHandle<JsBackend>&, bool));  // NOLINT
+  MOCK_METHOD3(OnInitializationComplete,
+               void(const WeakHandle<JsBackend>&, bool,
+                    syncer::ModelTypeSet));  // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));  // NOLINT
   MOCK_METHOD2(OnPassphraseRequired,
                void(PassphraseRequiredReason,
@@ -743,7 +744,7 @@ class SyncManagerTest : public testing::Test,
                 UpdateCredentials(credentials.email, credentials.sync_token));
 
     sync_manager_.AddObserver(&observer_);
-    EXPECT_CALL(observer_, OnInitializationComplete(_, _)).
+    EXPECT_CALL(observer_, OnInitializationComplete(_, _, _)).
         WillOnce(SaveArg<0>(&js_backend_));
 
     EXPECT_FALSE(js_backend_.IsInitialized());
@@ -759,8 +760,7 @@ class SyncManagerTest : public testing::Test,
                        base::MessageLoopProxy::current(),
                        scoped_ptr<HttpPostProviderFactory>(
                            new TestHttpPostProviderFactory()),
-                       routing_info, workers,
-                       &extensions_activity_monitor_, this,
+                       workers, &extensions_activity_monitor_, this,
                        credentials,
                        scoped_ptr<SyncNotifier>(sync_notifier_mock_),
                        "",

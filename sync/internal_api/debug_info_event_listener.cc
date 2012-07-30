@@ -46,7 +46,7 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
 
 void DebugInfoEventListener::OnInitializationComplete(
     const WeakHandle<JsBackend>& js_backend,
-    bool success) {
+    bool success, ModelTypeSet restored_types) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::INITIALIZATION_COMPLETE);
 }
 

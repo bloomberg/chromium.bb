@@ -54,7 +54,6 @@ bool IsOnThreadForGroup(syncer::ModelSafeGroup group) {
 }  // namespace
 
 SyncBackendRegistrar::SyncBackendRegistrar(
-    syncer::ModelTypeSet initial_types,
     const std::string& name, Profile* profile,
     MessageLoop* sync_loop) :
     name_(name),
@@ -70,30 +69,42 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   workers_[syncer::GROUP_UI] = ui_worker_;
   workers_[syncer::GROUP_PASSIVE] = new syncer::PassiveModelWorker(sync_loop_);
 
-  // Any datatypes that we want the syncer to pull down must be in the
-  // routing_info map.  We set them to group passive, meaning that
-  // updates will be applied to sync, but not dispatched to the native
-  // models.
-  for (syncer::ModelTypeSet::Iterator it = initial_types.First();
-       it.Good(); it.Inc()) {
-    routing_info_[it.Get()] = syncer::GROUP_PASSIVE;
-  }
-
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (history_service) {
     workers_[syncer::GROUP_HISTORY] = new HistoryModelWorker(history_service);
-  } else {
-    LOG_IF(WARNING, initial_types.Has(syncer::TYPED_URLS))
-        << "History store disabled, cannot sync Omnibox History";
-    routing_info_.erase(syncer::TYPED_URLS);
   }
 
   scoped_refptr<PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (password_store.get()) {
     workers_[syncer::GROUP_PASSWORD] = new PasswordModelWorker(password_store);
-  } else {
+  }
+}
+
+void SyncBackendRegistrar::SetInitialTypes(syncer::ModelTypeSet initial_types) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::AutoLock lock(lock_);
+
+  // This function should be called only once, shortly after construction.  The
+  // routing info at that point is expected to be emtpy.
+  DCHECK(routing_info_.empty());
+
+  // Set our initial state to reflect the current status of the sync directory.
+  // This will ensure that our calculations in ConfigureDataTypes() will always
+  // return correct results.
+  for (syncer::ModelTypeSet::Iterator it = initial_types.First();
+       it.Good(); it.Inc()) {
+    routing_info_[it.Get()] = syncer::GROUP_PASSIVE;
+  }
+
+  if (!workers_.count(syncer::GROUP_HISTORY)) {
+    LOG_IF(WARNING, initial_types.Has(syncer::TYPED_URLS))
+        << "History store disabled, cannot sync Omnibox History";
+    routing_info_.erase(syncer::TYPED_URLS);
+  }
+
+  if (!workers_.count(syncer::GROUP_PASSWORD)) {
     LOG_IF(WARNING, initial_types.Has(syncer::PASSWORDS))
         << "Password store not initialized, cannot sync passwords";
     routing_info_.erase(syncer::PASSWORDS);

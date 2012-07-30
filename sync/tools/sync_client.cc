@@ -355,7 +355,6 @@ int SyncClientMain(int argc, char* argv[]) {
                     kUseSsl,
                     blocking_task_runner,
                     post_factory.Pass(),
-                    routing_info,
                     workers,
                     extensions_activity_monitor,
                     &change_delegate,

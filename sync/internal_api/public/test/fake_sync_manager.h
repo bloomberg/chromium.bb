@@ -61,7 +61,6 @@ class FakeSyncManager : public SyncManager {
       bool use_ssl,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner,
       scoped_ptr<HttpPostProviderFactory> post_factory,
-      const ModelSafeRoutingInfo& model_safe_routing_info,
       const std::vector<ModelSafeWorker*>& workers,
       ExtensionsActivityMonitor* extensions_activity_monitor,
       ChangeDelegate* change_delegate,

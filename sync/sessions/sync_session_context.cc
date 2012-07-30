@@ -17,7 +17,6 @@ const unsigned int kMaxMessageSizeToRecord = 5 * 1024;
 SyncSessionContext::SyncSessionContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
-    const ModelSafeRoutingInfo& model_safe_routing_info,
     const std::vector<ModelSafeWorker*>& workers,
     ExtensionsActivityMonitor* extensions_activity_monitor,
     ThrottledDataTypeTracker* throttled_data_type_tracker,
@@ -27,7 +26,6 @@ SyncSessionContext::SyncSessionContext(
     : resolver_(NULL),
       connection_manager_(connection_manager),
       directory_(directory),
-      routing_info_(model_safe_routing_info),
       workers_(workers),
       extensions_activity_monitor_(extensions_activity_monitor),
       notifications_enabled_(false),

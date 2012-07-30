@@ -29,7 +29,6 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
   virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
-      const ModelSafeRoutingInfo& routing_info,
       const std::vector<ModelSafeWorker*> workers,
       ExtensionsActivityMonitor* monitor,
       ThrottledDataTypeTracker* throttled_data_type_tracker,

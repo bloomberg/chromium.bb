@@ -48,19 +48,30 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
   InSequence dummy;
 
   EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onInitializationComplete",
-                            HasDetails(JsEventDetails())));
-  EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onStopSyncingPermanently",
                             HasDetails(JsEventDetails())));
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onEncryptionComplete",
                             HasDetails(JsEventDetails())));
 
-  js_sync_manager_observer_.OnInitializationComplete(WeakHandle<JsBackend>(),
-      true);
   js_sync_manager_observer_.OnStopSyncingPermanently();
   js_sync_manager_observer_.OnEncryptionComplete();
+  PumpLoop();
+}
+
+TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
+  DictionaryValue expected_details;
+  syncer::ModelTypeSet restored_types;
+  restored_types.Put(BOOKMARKS);
+  restored_types.Put(NIGORI);
+  expected_details.Set("restoredTypes", ModelTypeSetToValue(restored_types));
+
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onInitializationComplete",
+                            HasDetailsAsDictionary(expected_details)));
+
+  js_sync_manager_observer_.OnInitializationComplete(
+      WeakHandle<JsBackend>(), true, restored_types);
   PumpLoop();
 }
 

@@ -33,14 +33,16 @@ class UIModelWorker;
 // events to the right processors.
 class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate {
  public:
-  // |initial_types| contains the initial set of types to sync
-  // (initially put in the passive group).  |name| is used for
-  // debugging.  Does not take ownership of |profile| or |sync_loop|.
-  // Must be created on the UI thread.
-  SyncBackendRegistrar(syncer::ModelTypeSet initial_types,
-                       const std::string& name,
+  // |name| is used for debugging.  Does not take ownership of |profile| or
+  // |sync_loop|.  Must be created on the UI thread.
+  SyncBackendRegistrar(const std::string& name,
                        Profile* profile,
                        MessageLoop* sync_loop);
+
+  // Informs the SyncBackendRegistrar of the currently enabled set of types.
+  // These types will be placed in the passive group.  This function should be
+  // called exactly once during startup.
+  void SetInitialTypes(syncer::ModelTypeSet initial_types);
 
   // SyncBackendRegistrar must be destroyed as follows:
   //

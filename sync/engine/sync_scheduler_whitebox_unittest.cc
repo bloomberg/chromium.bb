@@ -48,7 +48,7 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     context_.reset(
         new SyncSessionContext(
             connection_.get(), dir_maker_.directory(),
-            routes, workers, &extensions_activity_monitor_,
+            workers, &extensions_activity_monitor_,
             throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL));
     context_->set_notifications_enabled(true);

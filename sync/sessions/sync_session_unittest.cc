@@ -41,17 +41,6 @@ class SyncSessionTest : public testing::Test,
   }
 
   virtual void SetUp() {
-    ModelSafeRoutingInfo routing_info;
-    std::vector<ModelSafeWorker*> workers;
-
-    GetModelSafeRoutingInfo(&routing_info);
-    GetWorkers(&workers);
-
-    context_.reset(
-        new SyncSessionContext(
-            NULL, NULL, routing_info, workers, &extensions_activity_monitor_,
-            throttled_data_type_tracker_.get(),
-            std::vector<SyncEngineEventListener*>(), NULL, NULL));
     routes_.clear();
     routes_[BOOKMARKS] = GROUP_UI;
     routes_[AUTOFILL] = GROUP_DB;
@@ -65,6 +54,22 @@ class SyncSessionTest : public testing::Test,
     workers_.push_back(passive_worker);
     workers_.push_back(ui_worker);
     workers_.push_back(db_worker);
+
+    std::vector<ModelSafeWorker*> workers;
+    GetWorkers(&workers);
+
+    context_.reset(
+        new SyncSessionContext(
+            NULL,
+            NULL,
+            workers,
+            &extensions_activity_monitor_,
+            throttled_data_type_tracker_.get(),
+            std::vector<SyncEngineEventListener*>(),
+            NULL,
+            NULL));
+    context_->set_routing_info(routes_);
+
     session_.reset(MakeSession());
     throttled_data_type_tracker_.reset(new ThrottledDataTypeTracker(NULL));
   }

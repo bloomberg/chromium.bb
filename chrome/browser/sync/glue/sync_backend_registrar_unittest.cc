@@ -74,7 +74,8 @@ class SyncBackendRegistrarTest : public testing::Test {
 
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+  SyncBackendRegistrar registrar("test", &profile, &loop_);
+  registrar.SetInitialTypes(ModelTypeSet());
   EXPECT_FALSE(registrar.IsNigoriEnabled());
   {
     std::vector<syncer::ModelSafeWorker*> workers;
@@ -90,7 +91,8 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
 TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   TestingProfile profile;
   const ModelTypeSet initial_types(BOOKMARKS, NIGORI, PASSWORDS);
-  SyncBackendRegistrar registrar(initial_types, "test", &profile, &loop_);
+  SyncBackendRegistrar registrar("test", &profile, &loop_);
+  registrar.SetInitialTypes(initial_types);
   EXPECT_TRUE(registrar.IsNigoriEnabled());
   {
     std::vector<syncer::ModelSafeWorker*> workers;
@@ -111,7 +113,8 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
 
 TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+  SyncBackendRegistrar registrar("test", &profile, &loop_);
+  registrar.SetInitialTypes(ModelTypeSet());
 
   // Add.
   const ModelTypeSet types1(BOOKMARKS, NIGORI, AUTOFILL);
@@ -155,7 +158,8 @@ void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
 TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   InSequence in_sequence;
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+  SyncBackendRegistrar registrar("test", &profile, &loop_);
+  registrar.SetInitialTypes(ModelTypeSet());
 
   // Should do nothing.
   TriggerChanges(&registrar, BOOKMARKS);
@@ -202,7 +206,8 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   content::TestBrowserThread db_thread(BrowserThread::DB, &loop_);
   InSequence in_sequence;
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+  SyncBackendRegistrar registrar("test", &profile, &loop_);
+  registrar.SetInitialTypes(ModelTypeSet());
 
   // Should do nothing.
   TriggerChanges(&registrar, AUTOFILL);

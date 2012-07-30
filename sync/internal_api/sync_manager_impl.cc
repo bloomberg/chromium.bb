@@ -293,13 +293,11 @@ void SyncManagerImpl::ThrowUnrecoverableError() {
 }
 
 ModelTypeSet SyncManagerImpl::InitialSyncEndedTypes() {
-  DCHECK(initialized_);
   return directory()->initial_sync_ended_types();
 }
 
 ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
     ModelTypeSet types) {
-  DCHECK(initialized_);
   ModelTypeSet result;
   for (ModelTypeSet::Iterator i = types.First(); i.Good(); i.Inc()) {
     sync_pb::DataTypeProgressMarker marker;
@@ -365,7 +363,6 @@ bool SyncManagerImpl::Init(
     bool use_ssl,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner,
     scoped_ptr<HttpPostProviderFactory> post_factory,
-    const ModelSafeRoutingInfo& model_safe_routing_info,
     const std::vector<ModelSafeWorker*>& workers,
     ExtensionsActivityMonitor* extensions_activity_monitor,
     SyncManager::ChangeDelegate* change_delegate,
@@ -379,6 +376,8 @@ bool SyncManagerImpl::Init(
   CHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(post_factory.get());
+  DCHECK(!credentials.email.empty());
+  DCHECK(!credentials.sync_token.empty());
   DVLOG(1) << "SyncManager starting Init...";
 
   weak_handle_this_ = MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
@@ -407,6 +406,7 @@ bool SyncManagerImpl::Init(
           credentials.email, absolute_db_path).Pass();
 
   DCHECK(backing_store.get());
+  share_.name = credentials.email;
   share_.directory.reset(
       new syncable::Directory(encryptor_,
                               unrecoverable_error_handler_,
@@ -415,11 +415,33 @@ bool SyncManagerImpl::Init(
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, post_factory.release()));
-
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  observing_ip_address_changes_ = true;
-
   connection_manager_->AddListener(this);
+
+  DVLOG(1) << "Username: " << username_for_share();
+  if (!OpenDirectory()) {
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnInitializationComplete(
+                          MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
+                          false, syncer::ModelTypeSet()));
+    return false;
+  }
+
+  // Retrieve and set the sync notifier state.
+  std::string unique_id = directory()->cache_guid();
+  DVLOG(1) << "Read notification unique ID: " << unique_id;
+  allstatus_.SetUniqueId(unique_id);
+  sync_notifier_->SetUniqueId(unique_id);
+
+  std::string state = directory()->GetNotificationState();
+  if (VLOG_IS_ON(1)) {
+    std::string encoded_state;
+    base::Base64Encode(state, &encoded_state);
+    DVLOG(1) << "Read notification state: " << encoded_state;
+  }
+
+  // TODO(tim): Remove once invalidation state has been migrated to new
+  // InvalidationStateTracker store. Bug 124140.
+  sync_notifier_->SetStateDeprecated(state);
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";
@@ -429,7 +451,6 @@ bool SyncManagerImpl::Init(
   session_context_ = internal_components_factory->BuildContext(
       connection_manager_.get(),
       directory(),
-      model_safe_routing_info,
       workers,
       extensions_activity_monitor,
       &throttled_data_type_tracker_,
@@ -440,49 +461,28 @@ bool SyncManagerImpl::Init(
   scheduler_ = internal_components_factory->BuildScheduler(
       name_, session_context_.get()).Pass();
 
-  bool success = SignIn(credentials);
+  scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
 
-  if (success) {
-    scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
+  initialized_ = true;
 
-    initialized_ = true;
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  observing_ip_address_changes_ = true;
 
-    // Unapplied datatypes (those that do not have initial sync ended set) get
-    // re-downloaded during any configuration. But, it's possible for a datatype
-    // to have a progress marker but not have initial sync ended yet, making
-    // it a candidate for migration. This is a problem, as the DataTypeManager
-    // does not support a migration while it's already in the middle of a
-    // configuration. As a result, any partially synced datatype can stall the
-    // DTM, waiting for the configuration to complete, which it never will due
-    // to the migration error. In addition, a partially synced nigori will
-    // trigger the migration logic before the backend is initialized, resulting
-    // in crashes. We therefore detect and purge any partially synced types as
-    // part of initialization.
-    if (!PurgePartiallySyncedTypes())
-      success = false;
+  UpdateCredentials(credentials);
 
-    // Cryptographer should only be accessed while holding a
-    // transaction.  Grabbing the user share for the transaction
-    // checks the initialization state, so this must come after
-    // |initialized_| is set to true.
-    ReadTransaction trans(FROM_HERE, GetUserShare());
-    trans.GetCryptographer()->Bootstrap(restored_key_for_bootstrapping);
-    trans.GetCryptographer()->AddObserver(this);
-  }
+  // Cryptographer should only be accessed while holding a
+  // transaction.  Grabbing the user share for the transaction
+  // checks the initialization state, so this must come after
+  // |initialized_| is set to true.
+  ReadTransaction trans(FROM_HERE, GetUserShare());
+  trans.GetCryptographer()->Bootstrap(restored_key_for_bootstrapping);
+  trans.GetCryptographer()->AddObserver(this);
 
-  // Notify that initialization is complete. Note: This should be the last to
-  // execute if |signed_in| is false. Reason being in that case we would
-  // post a task to shutdown sync. But if this function posts any other tasks
-  // on the UI thread and if shutdown wins then that tasks would execute on
-  // a freed pointer. This is because UI thread is not shut down.
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
                         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-                        success));
-  if (!success)
-    return false;
-
-  return success;
+                        true, InitialSyncEndedTypes()));
+  return true;
 }
 
 void SyncManagerImpl::RefreshNigori(const std::string& chrome_version,
@@ -658,36 +658,21 @@ bool SyncManagerImpl::OpenDirectory() {
     return false;
   }
 
-  connection_manager_->set_client_id(directory()->cache_guid());
-  return true;
-}
-
-bool SyncManagerImpl::SignIn(const SyncCredentials& credentials) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(share_.name.empty());
-  share_.name = credentials.email;
-
-  DVLOG(1) << "Signing in user: " << username_for_share();
-  if (!OpenDirectory())
+  // Unapplied datatypes (those that do not have initial sync ended set) get
+  // re-downloaded during any configuration. But, it's possible for a datatype
+  // to have a progress marker but not have initial sync ended yet, making
+  // it a candidate for migration. This is a problem, as the DataTypeManager
+  // does not support a migration while it's already in the middle of a
+  // configuration. As a result, any partially synced datatype can stall the
+  // DTM, waiting for the configuration to complete, which it never will due
+  // to the migration error. In addition, a partially synced nigori will
+  // trigger the migration logic before the backend is initialized, resulting
+  // in crashes. We therefore detect and purge any partially synced types as
+  // part of initialization.
+  if (!PurgePartiallySyncedTypes())
     return false;
 
-  // Retrieve and set the sync notifier state. This should be done
-  // only after OpenDirectory is called.
-  std::string unique_id = directory()->cache_guid();
-  std::string state = directory()->GetNotificationState();
-  DVLOG(1) << "Read notification unique ID: " << unique_id;
-  if (VLOG_IS_ON(1)) {
-    std::string encoded_state;
-    base::Base64Encode(state, &encoded_state);
-    DVLOG(1) << "Read notification state: " << encoded_state;
-  }
-  allstatus_.SetUniqueId(unique_id);
-  sync_notifier_->SetUniqueId(unique_id);
-  // TODO(tim): Remove once invalidation state has been migrated to new
-  // InvalidationStateTracker store. Bug 124140.
-  sync_notifier_->SetStateDeprecated(state);
-
-  UpdateCredentials(credentials);
+  connection_manager_->set_client_id(directory()->cache_guid());
   return true;
 }
 
@@ -707,18 +692,17 @@ bool SyncManagerImpl::PurgePartiallySyncedTypes() {
 void SyncManagerImpl::UpdateCredentials(
     const SyncCredentials& credentials) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(initialized_);
   DCHECK_EQ(credentials.email, share_.name);
   DCHECK(!credentials.email.empty());
   DCHECK(!credentials.sync_token.empty());
 
   observing_ip_address_changes_ = true;
-  if (connection_manager_->set_auth_token(credentials.sync_token)) {
-    sync_notifier_->UpdateCredentials(
-        credentials.email, credentials.sync_token);
-    if (initialized_) {
-      scheduler_->OnCredentialsUpdated();
-    }
-  }
+  if (!connection_manager_->set_auth_token(credentials.sync_token))
+    return;  // Auth token is known to be invalid, so exit early.
+
+  sync_notifier_->UpdateCredentials(credentials.email, credentials.sync_token);
+  scheduler_->OnCredentialsUpdated();
 }
 
 void SyncManagerImpl::UpdateEnabledTypes(

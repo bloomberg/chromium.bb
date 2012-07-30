@@ -46,7 +46,8 @@ class JsSyncManagerObserver : public SyncManager::Observer {
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnInitializationComplete(
-      const WeakHandle<JsBackend>& js_backend, bool success) OVERRIDE;
+      const WeakHandle<JsBackend>& js_backend, bool success,
+      syncer::ModelTypeSet restored_types) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnActionableError(
       const SyncProtocolError& sync_protocol_error) OVERRIDE;

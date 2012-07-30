@@ -33,8 +33,8 @@ class DebugInfoEventListener : public SyncManager::Observer,
   virtual void OnSyncCycleCompleted(
     const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnInitializationComplete(
-    const WeakHandle<JsBackend>& js_backend,
-      bool success) OVERRIDE;
+      const syncer::WeakHandle<JsBackend>& js_backend,
+      bool success, ModelTypeSet restored_types) OVERRIDE;
   virtual void OnConnectionStatusChange(
       ConnectionStatus connection_status) OVERRIDE;
   virtual void OnPassphraseRequired(

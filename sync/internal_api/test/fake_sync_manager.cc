@@ -56,7 +56,6 @@ bool FakeSyncManager::Init(
     bool use_ssl,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner,
     scoped_ptr<HttpPostProviderFactory> post_factory,
-    const ModelSafeRoutingInfo& model_safe_routing_info,
     const std::vector<ModelSafeWorker*>& workers,
     ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
@@ -72,8 +71,8 @@ bool FakeSyncManager::Init(
   PurgePartiallySyncedTypes();
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
-                        WeakHandle<JsBackend>(),
-                        true));
+                        syncer::WeakHandle<syncer::JsBackend>(),
+                        true, initial_sync_ended_types_));
   return true;
 }
 
@@ -100,6 +99,7 @@ bool FakeSyncManager::PurgePartiallySyncedTypes() {
       partial_types.Put(i.Get());
   }
   progress_marker_types_.RemoveAll(partial_types);
+  cleaned_types_.PutAll(partial_types);
   return true;
 }
 

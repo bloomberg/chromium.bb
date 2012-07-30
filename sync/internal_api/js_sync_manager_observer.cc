@@ -124,13 +124,17 @@ void JsSyncManagerObserver::OnActionableError(
 
 void JsSyncManagerObserver::OnInitializationComplete(
     const WeakHandle<JsBackend>& js_backend,
-    bool success) {
+    bool success, syncer::ModelTypeSet restored_types) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   // Ignore the |js_backend| argument; it's not really convertible to
   // JSON anyway.
-  HandleJsEvent(FROM_HERE, "onInitializationComplete", JsEventDetails());
+
+  DictionaryValue* details = new DictionaryValue();
+  details->Set("restoredTypes", ModelTypeSetToValue(restored_types));
+
+  HandleJsEvent(FROM_HERE, "onInitializationComplete", JsEventDetails(details));
 }
 
 void JsSyncManagerObserver::OnStopSyncingPermanently() {

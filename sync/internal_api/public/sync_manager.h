@@ -298,7 +298,9 @@ class SyncManager {
     // function getChildNodeIds(id);
 
     virtual void OnInitializationComplete(
-        const WeakHandle<JsBackend>& js_backend, bool success) = 0;
+        const WeakHandle<syncer::JsBackend>& js_backend,
+        bool success,
+        syncer::ModelTypeSet restored_types) = 0;
 
     // We are no longer permitted to communicate with the server. Sync should
     // be disabled and state cleaned up at once.  This can happen for a number
@@ -369,7 +371,6 @@ class SyncManager {
       bool use_ssl,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner,
       scoped_ptr<HttpPostProviderFactory> post_factory,
-      const ModelSafeRoutingInfo& model_safe_routing_info,
       const std::vector<ModelSafeWorker*>& workers,
       ExtensionsActivityMonitor* extensions_activity_monitor,
       ChangeDelegate* change_delegate,

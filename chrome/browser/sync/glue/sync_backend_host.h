@@ -43,8 +43,6 @@ class ChangeProcessor;
 class ChromeSyncNotificationBridge;
 struct Experiments;
 class InvalidatorStorage;
-class JsBackend;
-class JsEventHandler;
 class SyncBackendRegistrar;
 class SyncPrefs;
 
@@ -170,7 +168,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       SyncFrontend* frontend,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
-      syncer::ModelTypeSet initial_types,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
       syncer::SyncManagerFactory* sync_manager_factory,
@@ -246,8 +243,9 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Deactivates change processing for the given data type.
   void DeactivateDataType(syncer::ModelType type);
 
-  // Called on |frontend_loop_| to obtain a handle to the UserShare needed
-  // for creating transactions.
+  // Called on |frontend_loop_| to obtain a handle to the UserShare needed for
+  // creating transactions.  Should not be called before we signal
+  // initialization is complete with OnBackendInitialized().
   syncer::UserShare* GetUserShare() const;
 
   // Called from any thread to obtain current status information in detailed or
@@ -343,6 +341,11 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void FinishConfigureDataTypesOnFrontendLoop(
       const syncer::ModelTypeSet failed_configuration_types,
       const base::Callback<void(syncer::ModelTypeSet)>& ready_task);
+
+  // Called when the SyncManager has been constructed and initialized.
+  virtual void HandleSyncManagerInitializationOnFrontendLoop(
+      const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success,
+      syncer::ModelTypeSet restored_types);
 
  private:
   // The real guts of SyncBackendHost, to keep the public client API clean.

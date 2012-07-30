@@ -36,6 +36,8 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
       Profile* profile,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
       const base::WeakPtr<InvalidatorStorage>& invalidator_storage,
+      syncer::TestIdFactory& id_factory,
+      base::Closure& callback,
       bool set_initial_sync_ended_on_init,
       bool synchronous_init,
       bool fail_initial_download,
@@ -51,12 +53,23 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
       const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback) OVERRIDE;
 
+  virtual void HandleSyncManagerInitializationOnFrontendLoop(
+    const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success,
+    syncer::ModelTypeSet restored_types) OVERRIDE;
+
   static void SetHistoryServiceExpectations(ProfileMock* profile);
+
+  void SetInitialSyncEndedForAllTypes();
+  void dont_set_initial_sync_ended_on_init();
 
  protected:
   virtual void InitCore(const DoInitializeOptions& options) OVERRIDE;
 
  private:
+  syncer::TestIdFactory& id_factory_;
+  base::Closure& callback_;
+
+  bool set_initial_sync_ended_on_init_;
   bool synchronous_init_;
   bool fail_initial_download_;
   bool use_real_database_;
@@ -70,16 +83,15 @@ class TestProfileSyncService : public ProfileSyncService {
   // callback fires.
   // TODO(tim): Remove |synchronous_backend_initialization|, and add ability to
   // inject TokenService alongside SigninManager.
-  TestProfileSyncService(ProfileSyncComponentsFactory* factory,
-                         Profile* profile,
-                         SigninManager* signin,
-                         ProfileSyncService::StartBehavior behavior,
-                         bool synchronous_backend_initialization,
-                         const base::Closure& callback);
+  TestProfileSyncService(
+      ProfileSyncComponentsFactory* factory,
+      Profile* profile,
+      SigninManager* signin,
+      ProfileSyncService::StartBehavior behavior,
+      bool synchronous_backend_initialization,
+      const base::Closure& callback);
 
   virtual ~TestProfileSyncService();
-
-  void SetInitialSyncEndedForAllTypes();
 
   virtual void OnBackendInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& backend,
@@ -88,6 +100,9 @@ class TestProfileSyncService : public ProfileSyncService {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // We implement our own version to avoid some DCHECKs.
+  virtual syncer::UserShare* GetUserShare() const OVERRIDE;
 
   // If this is called, configuring data types will require a syncer
   // nudge.

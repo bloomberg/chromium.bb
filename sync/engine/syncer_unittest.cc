@@ -236,9 +236,10 @@ class SyncerTest : public testing::Test,
 
     context_.reset(
         new SyncSessionContext(
-            mock_server_.get(), directory(), routing_info, workers,
+            mock_server_.get(), directory(), workers,
             &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
             listeners, NULL, &traffic_recorder_));
+    context_->set_routing_info(routing_info);
     ASSERT_FALSE(context_->resolver());
     syncer_ = new Syncer();
     session_.reset(MakeSession());

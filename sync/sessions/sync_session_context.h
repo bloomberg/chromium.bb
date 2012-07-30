@@ -51,7 +51,6 @@ class SyncSessionContext {
  public:
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::Directory* directory,
-                     const ModelSafeRoutingInfo& model_safe_routing_info,
                      const std::vector<ModelSafeWorker*>& workers,
                      ExtensionsActivityMonitor* extensions_activity_monitor,
                      ThrottledDataTypeTracker* throttled_data_type_tracker,

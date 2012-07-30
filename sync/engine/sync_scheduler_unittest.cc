@@ -118,9 +118,10 @@ class SyncSchedulerTest : public testing::Test {
     connection_->SetServerReachable();
     throttled_data_type_tracker_.reset(new ThrottledDataTypeTracker(NULL));
     context_.reset(new SyncSessionContext(
-            connection_.get(), directory(), routing_info, workers,
+            connection_.get(), directory(), workers,
             &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL));
+    context_->set_routing_info(routing_info);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
