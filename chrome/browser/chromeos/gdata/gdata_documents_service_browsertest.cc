@@ -15,8 +15,6 @@
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gdata {
-
 namespace {
 
 class GDataTest : public InProcessBrowserTest {
@@ -146,5 +144,3 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
   EXPECT_EQ(gdata::GDATA_PARSE_ERROR, result);
   EXPECT_FALSE(result_data);
 }
-
-}  // namespace gdata

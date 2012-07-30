@@ -261,7 +261,8 @@ void DownloadFileOperation::OnURLFetchDownloadData(
     get_download_data_callback_.Run(HTTP_SUCCESS, download_data.Pass());
 }
 
-void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool DownloadFileOperation::ProcessURLFetchResults(
+    const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
 
   // Take over the ownership of the the downloaded temp file.
@@ -274,7 +275,7 @@ void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
 
   if (!download_action_callback_.is_null())
     download_action_callback_.Run(code, document_url_, temp_file);
-  OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
+  return code == HTTP_SUCCESS;
 }
 
 void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
@@ -476,10 +477,11 @@ AuthorizeAppsOperation::GetExtraRequestHeaders() const {
   return headers;
 }
 
-void AuthorizeAppsOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool AuthorizeAppsOperation::ProcessURLFetchResults(
+    const URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
-  GetDataOperation::ProcessURLFetchResults(source);
+  return GetDataOperation::ProcessURLFetchResults(source);
 }
 
 bool AuthorizeAppsOperation::GetContentData(std::string* upload_content_type,
@@ -500,9 +502,7 @@ bool AuthorizeAppsOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-void AuthorizeAppsOperation::ParseResponse(
-    GDataErrorCode fetch_error_code,
-    const std::string& data) {
+base::Value* AuthorizeAppsOperation::ParseResponse(const std::string& data) {
   // Parse entry XML.
   XmlReader xml_reader;
   scoped_ptr<DocumentEntry> entry;
@@ -531,9 +531,7 @@ void AuthorizeAppsOperation::ParseResponse(
     }
   }
 
-  RunCallback(fetch_error_code, link_list.PassAs<base::Value>());
-  const bool success = true;
-  OnProcessURLFetchResultsComplete(success);
+  return link_list.release();
 }
 
 GURL AuthorizeAppsOperation::GetURL() const {
@@ -646,7 +644,7 @@ GURL InitiateUploadOperation::GetURL() const {
   return initiate_upload_url_;
 }
 
-void InitiateUploadOperation::ProcessURLFetchResults(
+bool InitiateUploadOperation::ProcessURLFetchResults(
     const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
 
@@ -663,7 +661,7 @@ void InitiateUploadOperation::ProcessURLFetchResults(
 
   if (!callback_.is_null())
     callback_.Run(code, GURL(upload_location));
-  OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
+  return code == HTTP_SUCCESS;
 }
 
 void InitiateUploadOperation::NotifySuccessToOperationRegistry() {
@@ -750,7 +748,8 @@ GURL ResumeUploadOperation::GetURL() const {
   return params_.upload_location;
 }
 
-void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool ResumeUploadOperation::ProcessURLFetchResults(
+    const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
   int64 start_range_received = -1;
@@ -811,8 +810,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     last_chunk_completed_ = true;
   }
 
-  OnProcessURLFetchResultsComplete(
-      last_chunk_completed_ || code == HTTP_RESUME_INCOMPLETE);
+  return last_chunk_completed_ || code == HTTP_RESUME_INCOMPLETE;
 }
 
 void ResumeUploadOperation::NotifyStartToOperationRegistry() {
