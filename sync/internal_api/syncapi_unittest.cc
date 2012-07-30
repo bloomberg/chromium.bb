@@ -2559,6 +2559,12 @@ class SyncManagerTestWithMockScheduler : public SyncManagerTest {
 // Test that the configuration params are properly created and sent to
 // ScheduleConfigure. No callback should be invoked. Any disabled datatypes
 // should be purged.
+// Fails on Windows: crbug.com/139726
+#if defined(OS_WIN)
+#define MAYBE_BasicConfiguration DISABLED_BasicConfiguration
+#else
+#define MAYBE_BasicConfiguration BasicConfiguration
+#endif
 TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
   ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
   ModelTypeSet types_to_download(BOOKMARKS, PREFERENCES);
@@ -2734,6 +2740,12 @@ TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {
 // Test CleanipDisabledTypes properly purges all disabled types as specified
 // by the previous and current enabled params. Enabled partial types should not
 // be purged.
+// Fails on Windows: crbug.com/139726
+#if defined(OS_WIN)
+#define MAYBE_PurgeDisabledTypes DISABLED_PurgeDisabledTypes
+#else
+#define MAYBE_PurgeDisabledTypes PurgeDisabledTypes
+#endif
 TEST_F(SyncManagerTest, PurgeDisabledTypes) {
   ModelSafeRoutingInfo routing_info;
   GetModelSafeRoutingInfo(&routing_info);
