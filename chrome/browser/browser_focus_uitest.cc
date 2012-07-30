@@ -561,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 
   // Now let's try reverse focus traversal.
@@ -613,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 }
 
@@ -688,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 
   // Now let's try reverse focus traversal.
@@ -731,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 }
 
@@ -878,7 +878,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
     chrome::NewTab(browser());
     observer.Wait();
   }
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   {
     content::WindowedNotificationObserver observer(

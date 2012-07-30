@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, MAYBE_ExistingUserLogin) {
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   existing_user_controller()->Login(kUsername, kPassword);
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .WillRepeatedly(Return(false));
   existing_user_controller()->DoAutoEnrollment();
   existing_user_controller()->CompleteLogin(kUsername, kPassword);
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(AnyNumber())
       .WillRepeatedly(Return(true));
   existing_user_controller()->CompleteLogin(kNewUsername, kPassword);
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 }
 
 }  // namespace chromeos

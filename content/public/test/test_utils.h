@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -25,6 +26,16 @@ void RunMessageLoop();
 
 // Variant of RunMessageLoop that takes RunLoop.
 void RunThisRunLoop(base::RunLoop* run_loop);
+
+// Turns on nestable tasks, runs all pending tasks in the message loop,
+// then resets nestable tasks to what they were originally. Prefer this
+// over MessageLoop::RunAllPending for in process browser tests to run
+// all pending tasks.
+void RunAllPendingInMessageLoop();
+
+// Blocks the current thread until all the pending messages in the loop of the
+// thread |thread_id| have been processed.
+void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
 // Get task to quit the given RunLoop. It allows a few generations of pending
 // tasks to run as opposed to run_loop->QuitClosure().

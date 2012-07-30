@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
   ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;
   ASSERT_FALSE(delegate.temp_file_.empty());
   // Flush the message loops to make sure the delete happens.
-  ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
-  ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
   ASSERT_FALSE(file_util::PathExists(delegate.temp_file_));
 }

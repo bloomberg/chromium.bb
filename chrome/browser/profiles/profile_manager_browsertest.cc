@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   profile_manager->ScheduleProfileForDeletion(singleton_profile_path);
 
   // Spin things till profile is actually deleted.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   // Make sure a new profile was created automatically.
   EXPECT_EQ(cache.GetNumberOfProfiles(), 1U);
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   profile_manager->ScheduleProfileForDeletion(profile_path2);
 
   // Spin things so deletion can take place.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   // Make sure a new profile was created automatically.
   EXPECT_EQ(cache.GetNumberOfProfiles(), 1U);

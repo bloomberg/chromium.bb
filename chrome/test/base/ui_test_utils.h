@@ -81,16 +81,6 @@ enum BrowserTestWaitFlags {
                       BROWSER_TEST_WAIT_FOR_NAVIGATION
 };
 
-// Turns on nestable tasks, runs all pending tasks in the message loop,
-// then resets nestable tasks to what they were originally. Prefer this
-// over MessageLoop::RunAllPending for in process browser tests to run
-// all pending tasks.
-void RunAllPendingInMessageLoop();
-
-// Blocks the current thread until all the pending messages in the loop of the
-// thread |thread_id| have been processed.
-void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id);
-
 // Puts the current tab title in |title|. Returns true on success.
 bool GetCurrentTabTitle(const Browser* browser, string16* title);
 

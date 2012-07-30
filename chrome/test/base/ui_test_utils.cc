@@ -144,39 +144,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
 };
 
-void RunAllPendingMessageAndSendQuit(content::BrowserThread::ID thread_id,
-                                     const base::Closure& quit_task) {
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   MessageLoop::QuitWhenIdleClosure());
-  content::RunMessageLoop();
-  content::BrowserThread::PostTask(thread_id, FROM_HERE, quit_task);
-}
-
 }  // namespace
-
-void RunAllPendingInMessageLoop() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   MessageLoop::QuitWhenIdleClosure());
-  content::RunMessageLoop();
-}
-
-void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id) {
-  if (content::BrowserThread::CurrentlyOn(thread_id)) {
-    RunAllPendingInMessageLoop();
-    return;
-  }
-  content::BrowserThread::ID current_thread_id;
-  if (!content::BrowserThread::GetCurrentThreadIdentifier(&current_thread_id)) {
-    NOTREACHED();
-    return;
-  }
-
-  base::RunLoop run_loop;
-  content::BrowserThread::PostTask(thread_id, FROM_HERE,
-      base::Bind(&RunAllPendingMessageAndSendQuit, current_thread_id,
-                 run_loop.QuitClosure()));
-  content::RunThisRunLoop(&run_loop);
-}
 
 bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   WebContents* web_contents = chrome::GetActiveWebContents(browser);

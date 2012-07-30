@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // test_dialog1.
   EXPECT_TRUE(focus_manager->ProcessAccelerator(
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   EXPECT_TRUE(test_dialog1->done());
   EXPECT_FALSE(test_dialog2->done());
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // Send another VKEY_RETURN, closing test_dialog2
   EXPECT_TRUE(focus_manager->ProcessAccelerator(
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_dialog2->done());
   EXPECT_EQ(0u, constrained_window_helper->constrained_window_count());
 }

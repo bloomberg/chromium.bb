@@ -345,7 +345,7 @@ bool SyncTest::SetupSync() {
 void SyncTest::CleanUpOnMainThread() {
   // Close all browser windows.
   browser::CloseAllBrowsers();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   // All browsers should be closed at this point, or else we could see memory
   // corruption in QuitBrowser().

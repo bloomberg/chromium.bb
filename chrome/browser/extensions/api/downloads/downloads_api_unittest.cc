@@ -968,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   // be able to query the file icon.
   download_item->Cancel(true);
   // Let cleanup complete on the FILE thread.
-  ui_test_utils::RunAllPendingInMessageLoop(BrowserThread::FILE);
+  content::RunAllPendingInMessageLoop(BrowserThread::FILE);
   args = base::StringPrintf("[%d, {\"size\": 32}]", download_item->GetId());
   EXPECT_TRUE(RunFunctionAndReturnString(new DownloadsGetFileIconFunction(),
                                          args, &result_string));

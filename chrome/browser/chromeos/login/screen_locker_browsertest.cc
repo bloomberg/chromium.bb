@@ -64,7 +64,7 @@ class Waiter : public content::NotificationObserver {
       content::RunMessageLoop();
     }
     // Make sure all pending tasks are executed.
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
     running_ = false;
   }
 
@@ -155,17 +155,17 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
   EXPECT_TRUE(tester->IsLocked());
   tester->EnterPassword("fail");
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(tester->IsLocked());
   tester->EnterPassword("pass");
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   // Successful authentication simply send a unlock request to PowerManager.
   EXPECT_TRUE(tester->IsLocked());
 
   // Emulate LockScreen request from SessionManager.
   // TODO(oshima): Find out better way to handle this in mock.
   ScreenLocker::Hide();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
 }
 
@@ -191,9 +191,9 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   }
   tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
   tester->EnterPassword("pass");
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ScreenLocker::Hide();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
 }
 
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
 
   // Close the locker to match expectations.
   ScreenLocker::Hide();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
 }
 
@@ -242,12 +242,12 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
   EXPECT_EQ("password", tester->GetPassword());
   // Escape clears the password.
   SimulateKeyPress(tester->GetWidget(), ui::VKEY_ESCAPE);
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ("", tester->GetPassword());
 
   // Close the locker to match expectations.
   ScreenLocker::Hide();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
 }
 

@@ -492,7 +492,7 @@ TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
   EXPECT_EQ(row1.title(),
             delegate_.modified_details()->changed_urls[0].title());
   EXPECT_FALSE(delegate_.favicon_details());
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
   const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
   ASSERT_TRUE(child);
@@ -593,7 +593,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
   // Verify the row1 has been added in bookmark model.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
   const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
   ASSERT_TRUE(child);
@@ -608,7 +608,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
                                                  &deleted_count));
   EXPECT_EQ(1, deleted_count);
   // Verify the row1 was removed from bookmark model.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ASSERT_EQ(0, bookmark_model_->mobile_node()->child_count());
 
   // Verify notifications
@@ -784,7 +784,7 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   ASSERT_TRUE(id2);
 
   // Verify the row1 has been added in bookmark model.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
   const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
   ASSERT_TRUE(child);
@@ -861,7 +861,7 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   EXPECT_EQ(id1, android_url_row1.id);
 
   // Verify the bookmark model was updated.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
   const BookmarkNode* child1 = bookmark_model_->mobile_node()->GetChild(0);
   ASSERT_TRUE(child1);
@@ -1550,7 +1550,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
   ASSERT_TRUE(id2);
 
   // Verify the row1 has been added in bookmark model.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
   const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
   ASSERT_TRUE(child);
@@ -1572,7 +1572,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
   EXPECT_EQ(Time::UnixEpoch(), url_row.last_visit());
 
   // Verify the row1 is still in bookmark model.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
   const BookmarkNode* child1 = bookmark_model_->mobile_node()->GetChild(0);
   ASSERT_TRUE(child1);
@@ -1708,7 +1708,7 @@ TEST_F(AndroidProviderBackendTest, AndroidCTSComplianceFolderColumnExists) {
   ASSERT_TRUE(id1);
   AndroidURLID id2 = backend->InsertHistoryAndBookmark(row2);
   ASSERT_TRUE(id2);
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   // Query by folder=0, the row1 should returned.
   std::vector<HistoryAndBookmarkRow::ColumnID> projections;

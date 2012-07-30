@@ -333,7 +333,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #endif  // defined(OS_POSIX)
 
   // Pump startup related events.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
 #if defined(OS_MACOSX)
   autorelease_pool_->Recycle();
@@ -346,7 +346,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   // Pump any pending events that were created as a result of creating a
   // browser.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   SetUpOnMainThread();
 #if defined(OS_MACOSX)
@@ -370,7 +370,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // run all pending messages here to avoid preempting the QuitBrowsers tasks.
   // TODO(jbates) Once crbug.com/134753 is fixed, this can be removed because it
   // will not be possible to post Quit tasks.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   QuitBrowsers();
   CHECK(BrowserList::empty());
@@ -397,7 +397,7 @@ void InProcessBrowserTest::QuitBrowsers() {
   // -autorelease on itself to ultimately destroy the Browser object. The line
   // below is necessary to pump these pending messages to ensure all Browsers
   // get deleted.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   delete autorelease_pool_;
   autorelease_pool_ = NULL;
 #endif

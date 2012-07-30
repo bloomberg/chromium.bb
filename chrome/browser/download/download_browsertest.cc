@@ -681,8 +681,8 @@ class DownloadTest : public InProcessBrowserTest {
     }
 
     // Wait till the |DownloadFile|s are destroyed.
-    ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
-    ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::UI);
+    content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+    content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
 
     // Validate that the correct files were downloaded.
     download_items.clear();

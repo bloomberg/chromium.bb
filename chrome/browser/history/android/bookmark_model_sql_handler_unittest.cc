@@ -63,7 +63,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
   // Runs the MessageLoopForUI, and return till all pending messages were
   // processed.
   void RunMessageLoopForUI() {
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 
   TestingProfileManager profile_manager_;

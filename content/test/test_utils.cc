@@ -11,6 +11,8 @@
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 namespace {
 
 // Number of times to repost a Quit task so that the MessageLoop finishes up
@@ -34,9 +36,13 @@ static void DeferredQuitRunLoop(const base::Closure& quit_task,
   }
 }
 
+void RunAllPendingMessageAndSendQuit(BrowserThread::ID thread_id,
+                                     const base::Closure& quit_task) {
+  RunAllPendingInMessageLoop();
+  BrowserThread::PostTask(thread_id, FROM_HERE, quit_task);
 }
 
-namespace content {
+}  // namespace
 
 void RunMessageLoop() {
   base::RunLoop run_loop;
@@ -55,6 +61,30 @@ void RunThisRunLoop(base::RunLoop* run_loop) {
   run_loop->Run();
   if (delegate)
     delegate->PostRunMessageLoop();
+}
+
+void RunAllPendingInMessageLoop() {
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   MessageLoop::QuitWhenIdleClosure());
+  RunMessageLoop();
+}
+
+void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
+  if (BrowserThread::CurrentlyOn(thread_id)) {
+    RunAllPendingInMessageLoop();
+    return;
+  }
+  BrowserThread::ID current_thread_id;
+  if (!BrowserThread::GetCurrentThreadIdentifier(&current_thread_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  base::RunLoop run_loop;
+  BrowserThread::PostTask(thread_id, FROM_HERE,
+      base::Bind(&RunAllPendingMessageAndSendQuit, current_thread_id,
+                 run_loop.QuitClosure()));
+  RunThisRunLoop(&run_loop);
 }
 
 base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop) {

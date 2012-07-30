@@ -52,7 +52,7 @@ void WaitForTabsAndPopups(Browser* browser,
         browser->tab_count() == num_tabs)
       break;
 
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 
   EXPECT_EQ(num_browsers, browser::GetBrowserCount(browser->profile()));

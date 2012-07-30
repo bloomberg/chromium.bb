@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileReadmeCreated) {
       content::Source<Profile>(profile.get()));
   observer.Wait();
 
-  ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 
   // Verify that README exists.
   EXPECT_TRUE(file_util::PathExists(
@@ -173,6 +173,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
   // Delete the Profile instance and run pending tasks (this includes the task
   // for README creation).
   profile.reset();
-  ui_test_utils::RunAllPendingInMessageLoop();
-  ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+  content::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 }

@@ -58,7 +58,7 @@ bool GetLocalSession(int index, const browser_sync::SyncedSession** session) {
 }
 
 bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   const browser_sync::SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return false;

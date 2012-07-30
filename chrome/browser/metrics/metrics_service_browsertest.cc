@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, MAYBE_CrashRenderers) {
   // simultaneously... so busy waiting here shouldn't be too bad.
   const PrefService* prefs = g_browser_process->local_state();
   while (!prefs->GetInteger(prefs::kStabilityRendererCrashCount)) {
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 
   // Verify that the expected stability metrics were recorded.

@@ -997,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
     // nothing".  Run anything pending in the message loop just to be sure.
     // (This shouldn't be necessary since notifications are synchronous, but
     // maybe it will help avoid flake someday in the future..)
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 
   EXPECT_EQ(1, observer.auth_needed_count_);

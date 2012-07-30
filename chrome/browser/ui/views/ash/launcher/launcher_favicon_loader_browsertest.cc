@@ -114,7 +114,7 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
     base::Time start_time = base::Time::Now();
     while (!contents_observer_->got_favicons() ||
            contents_observer_->downloads_received() < expected) {
-      ui_test_utils::RunAllPendingInMessageLoop();
+      content::RunAllPendingInMessageLoop();
       base::TimeDelta delta = base::Time::Now() - start_time;
       if (delta.InSeconds() >= max_seconds) {
         LOG(ERROR) << " WaitForFaviconDownlads timed out:"

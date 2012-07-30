@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
   EXPECT_FALSE(FindNotification("Dpath"));
 
   // Running the message loop should create the notification.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("Dpath"));
 
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
 
   // When the delayed notification is processed, it's an update, so we still
   // only have two notifications.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("DFpath"));
 
@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
   EXPECT_FALSE(FindNotification("Fpath"));
 
   // Even after processing messages, no new notification should be added.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("Dpath"));
   EXPECT_TRUE(FindNotification("DFpath"));
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
   EXPECT_TRUE(FindNotification("Dpath"));
 
   // Running pending messges should remove the notification.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
 
   // Immediate show then hide results in no notification.
@@ -136,14 +136,14 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
                                    "path");
   notifications_->HideNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
 
   // Delayed hide for a notification that doesn't exist does nothing.
   notifications_->HideNotificationDelayed(FileBrowserNotifications::DEVICE_FAIL,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
 }
 

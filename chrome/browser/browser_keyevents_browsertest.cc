@@ -613,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 
   // TODO(isherman): This is an experimental change to help diagnose
   // http://crbug.com/55713
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 #if defined(USE_AURA)
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
 #else

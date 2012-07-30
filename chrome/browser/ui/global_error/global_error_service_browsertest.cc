@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest, CloseBubbleView) {
   // Explicitly close the bubble view.
   EXPECT_TRUE(error->GetBubbleView());
   error->GetBubbleView()->CloseBubbleView();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, error->bubble_view_close_count());
 }
 
@@ -137,14 +137,14 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest,
 
   EXPECT_EQ(error.get(), service->GetFirstGlobalErrorWithBubbleView());
   error->ShowBubbleView(browser());
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(error->HasShownBubbleView());
   EXPECT_EQ(0, error->bubble_view_close_count());
 
   // Removing |error| from profile should dismiss the bubble view without
   // calling |error->BubbleViewDidClose|.
   service->RemoveGlobalError(error.get());
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, error->bubble_view_close_count());
   // |error| is no longer owned by service and will be deleted.
 }

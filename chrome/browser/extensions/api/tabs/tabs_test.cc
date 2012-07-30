@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
 #endif
 
   // Needed on Mac and Linux so that the BrowserWindow::IsActive calls work.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   GURL url;
   AddTabAtIndexToBrowser(focused_window, 0, url, content::PAGE_TRANSITION_LINK);

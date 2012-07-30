@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(PrintingLayoutTest, DISABLED_Delayed) {
     ui_test_utils::NavigateToURL(browser(), url);
   }
   chrome::CloseWindow(browser());
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0., CompareWithResult(L"popup_delayed_print"))
       << L"popup_delayed_print";
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(PrintingLayoutTest, DISABLED_IFrame) {
     ui_test_utils::NavigateToURL(browser(), url);
   }
   chrome::CloseWindow(browser());
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0., CompareWithResult(L"iframe")) << L"iframe";
 }

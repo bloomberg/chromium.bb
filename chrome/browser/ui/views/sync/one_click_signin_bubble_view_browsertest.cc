@@ -24,7 +24,7 @@ class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
     browser()->window()->ShowOneClickSigninBubble(
         base::Bind(&OneClickSigninBubbleViewBrowserTest::OnStartSync, this));
 
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
     EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
 
     OneClickSigninBubbleView* view =
@@ -52,11 +52,11 @@ class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
 // Disabled. See http://crbug.com/132348
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, DISABLED_Show) {
   ShowOneClickSigninBubble();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
 
   OneClickSigninBubbleView::Hide();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());

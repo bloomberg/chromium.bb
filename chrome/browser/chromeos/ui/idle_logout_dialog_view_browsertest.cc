@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndCloseView) {
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
   IdleLogoutDialogView::current_instance()->Close();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ExpectClosedDialog();
 }
 
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndCloseViewClose) {
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
   IdleLogoutDialogView::current_instance()->Close();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   IdleLogoutDialogView::CloseDialog();
 
   ExpectClosedDialog();
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest,
   IdleLogoutDialogView::ShowDialog();
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ExpectClosedDialog();
 }
 

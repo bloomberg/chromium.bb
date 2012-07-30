@@ -52,7 +52,7 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
   }
 
   void VerifyExpectations() {
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
     // At the end of each test, we expect no more activity from the prompt. The
     // prompt shouldn't exist anymore either.
     EXPECT_TRUE(did_receive_callback_);
@@ -89,7 +89,7 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
                    DownloadDangerPrompt::ACCEPT),
         base::Bind(&DownloadDangerPromptTest::PromptCallback, this,
                    DownloadDangerPrompt::CANCEL));
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 
   void PromptCallback(DownloadDangerPrompt::Action action) {

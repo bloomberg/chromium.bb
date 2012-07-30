@@ -341,7 +341,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
       // something important.  Since we don't know where in the observer list we
       // stand, just spin the message loop once more to allow the current
       // callstack to complete.
-      ui_test_utils::RunAllPendingInMessageLoop();
+      content::RunAllPendingInMessageLoop();
     }
   }
 

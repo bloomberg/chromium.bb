@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
   OnExit(ScreenObserver::EULA_ACCEPTED);
   // Let update screen smooth time process (time = 0ms).
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(WizardController::default_controller()->GetUpdateScreen(),
             WizardController::default_controller()->current_screen());
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
   OnExit(ScreenObserver::EULA_ACCEPTED);
   // Let update screen smooth time process (time = 0ms).
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(WizardController::default_controller()->GetUpdateScreen(),
             WizardController::default_controller()->current_screen());

@@ -323,7 +323,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
       if (!result)
         return false;
     }
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
 
     // All that work, for this one little test.
     EXPECT_TRUE((check_case.window_to_probe ==
@@ -365,7 +365,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
         (*bit)->window()->Close();
       }
     }
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
 
     return true;
   }

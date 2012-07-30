@@ -158,7 +158,7 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     // Ensure that any event insertions happen prior to getting events in order
     // to avoid race conditions.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
 
     std::vector<linked_ptr<Event> > events;
     content::BrowserThread::PostBlockingPoolSequencedTask(

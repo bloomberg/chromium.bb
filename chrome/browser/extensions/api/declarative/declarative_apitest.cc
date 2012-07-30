@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
       base::Bind(base::IgnoreResult(&RulesRegistry::GetAllRules),
                  rules_registry, extension_id, &known_rules));
 
-  ui_test_utils::RunAllPendingInMessageLoop(rules_registry->GetOwnerThread());
+  content::RunAllPendingInMessageLoop(rules_registry->GetOwnerThread());
 
   EXPECT_TRUE(known_rules.empty());
 }

@@ -149,7 +149,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, Connected())
         .WillOnce(Return(true));
     network_screen->OnContinuePressed();
-    ui_test_utils::RunAllPendingInMessageLoop();
+    content::RunAllPendingInMessageLoop();
   }
 
   scoped_ptr<MockScreenObserver> mock_screen_observer_;

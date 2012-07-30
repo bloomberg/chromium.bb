@@ -43,11 +43,11 @@ void TabModalConfirmDialogTest::SetUpOnMainThread() {
       chrome::GetActiveWebContents(browser()));
   dialog_ = CreateTestDialog(delegate_,
                              chrome::GetActiveTabContents(browser()));
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
 }
 
 void TabModalConfirmDialogTest::CleanUpOnMainThread() {
-  ui_test_utils::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop();
   ::testing::Mock::VerifyAndClearExpectations(delegate_);
 }
 

@@ -1219,7 +1219,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FitWindow) {
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        FindMovesOnTabClose_Issue1343052) {
   EnsureFindBoxOpen();
-  ui_test_utils::RunAllPendingInMessageLoop();  // Needed on Linux.
+  content::RunAllPendingInMessageLoop();  // Needed on Linux.
 
   gfx::Point position;
   EXPECT_TRUE(GetFindBarWindowInfo(&position, NULL));
@@ -1249,7 +1249,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   EnsureFindBoxOpen();
-  ui_test_utils::RunAllPendingInMessageLoop();  // Needed on Linux.
+  content::RunAllPendingInMessageLoop();  // Needed on Linux.
   EXPECT_TRUE(GetFindBarWindowInfo(&position, NULL));
 
   ui_test_utils::NavigateToURLWithDisposition(
