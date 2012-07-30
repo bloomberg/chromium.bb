@@ -36,6 +36,8 @@ typedef HRESULT (WINAPI *Direct3DCreate9ExFunc)(UINT sdk_version,
 const wchar_t kD3D9ModuleName[] = L"d3d9.dll";
 const char kCreate3D9DeviceExName[] = "Direct3DCreate9Ex";
 
+const char kGpuBlitDelay[] = "gpu-blit-delay";
+
 struct Vertex {
   float x, y, z, w;
   float u, v;
@@ -657,6 +659,16 @@ static base::TimeDelta GetSwapDelay() {
   return base::TimeDelta::FromMilliseconds(delay);
 }
 
+static base::TimeDelta GetBlitDelay() {
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  int delay = 0;
+  if (cmd_line->HasSwitch(kGpuBlitDelay)) {
+    base::StringToInt(cmd_line->GetSwitchValueNative(
+        kGpuBlitDelay).c_str(), &delay);
+  }
+  return base::TimeDelta::FromMilliseconds(delay);
+}
+
 void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
@@ -757,6 +769,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     0, 0,
     size.width(), size.height()
   };
+
+  static const base::TimeDelta blit_delay = GetBlitDelay();
+  if (blit_delay.ToInternalValue())
+    base::PlatformThread::Sleep(blit_delay);
 
   {
     TRACE_EVENT0("gpu", "Copy");
