@@ -27,6 +27,8 @@ class MediaStreamInfoBarDelegate;
   scoped_nsobject<NSPopUpButton> deviceMenu_;
   // Menu model for MediaStream capture devices.
   scoped_ptr<MediaStreamDevicesMenuModel> deviceMenuModel_;
+  // Space between controls in pixels - generated from the NIB.
+  CGFloat spaceBetweenControls_;
 }
 
 - (id)initWithDelegate:(MediaStreamInfoBarDelegate*)delegate

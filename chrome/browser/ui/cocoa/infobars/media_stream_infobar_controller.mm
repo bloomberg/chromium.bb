@@ -12,14 +12,16 @@
 #include "chrome/browser/media/media_stream_devices_menu_model.h"
 #include "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using InfoBarUtilities::CreateLabel;
+using InfoBarUtilities::MoveControl;
+using InfoBarUtilities::VerifyControlOrderAndSpacing;
 using l10n_util::GetNSStringWithFixup;
-
-static const CGFloat kSpaceBetweenControls = 8;
 
 InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   MediaStreamInfoBarController* infobar_controller =
@@ -27,24 +29,6 @@ InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
                                                        owner:owner];
   return new InfoBar(infobar_controller, this);
 }
-
-namespace {
-
-// Puts |toMove| to the right or left of |anchor|.
-void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
-  [GTMUILocalizerAndLayoutTweaker sizeToFitView:toModify];
-  NSRect toModifyFrame = [toModify frame];
-  NSRect anchorFrame = [anchor frame];
-  if (after) {
-    toModifyFrame.origin.x = NSMaxX(anchorFrame) + kSpaceBetweenControls;
-  } else {
-    toModifyFrame.origin.x = NSMinX(anchorFrame) - kSpaceBetweenControls -
-        NSWidth(toModifyFrame);
-  }
-  [toModify setFrame:toModifyFrame];
-}
-
-}  // namespace
 
 
 @interface MediaStreamInfoBarController(Private)
@@ -58,6 +42,10 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
 // Arranges all buttons and pup-up menu relative each other.
 - (void)arrangeInfobarLayout;
 
+// Create all the components for the infobar.
+- (void)constructView;
+
+- (void)showDeviceMenuTitle:(BOOL)showTitle;
 @end
 
 
@@ -67,22 +55,6 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
                  owner:(InfoBarTabHelper*)owner {
   if (self = [super initWithDelegate:delegate owner:owner]) {
     deviceMenuModel_.reset(new MediaStreamDevicesMenuModel(delegate));
-
-    label1_.reset([[NSTextField alloc] init]);
-    [label1_ setEditable:NO];
-    [label1_ setDrawsBackground:NO];
-    [label1_ setBordered:NO];
-
-    [okButton_ setBezelStyle:NSTexturedRoundedBezelStyle];
-    [cancelButton_ setBezelStyle:NSTexturedRoundedBezelStyle];
-
-    deviceMenu_.reset([[NSPopUpButton alloc] init]);
-    [deviceMenu_ setBezelStyle:NSTexturedRoundedBezelStyle];
-    [deviceMenu_ setAutoresizingMask:NSViewMaxXMargin];
-    [[deviceMenu_ cell] setArrowPosition:NSPopUpArrowAtBottom];
-    NSMenu* menu = [deviceMenu_ menu];
-    [menu setDelegate:nil];
-    [menu setAutoenablesItems:NO];
   }
   return self;
 }
@@ -124,26 +96,19 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
 }
 
 - (void)addAdditionalControls {
-  // Get a frame to use as inital frame for all buttons.
-  NSRect initFrame = [okButton_ frame];
+  // Create all the components for the infobar.
+  [self constructView];
 
-  // Setup up the text label and add the device menu to the infobar.
-  // TODO(mflodman) Use |label_| instead.
-  [label1_ setFrame:[label_ frame]];
-  [[label_ superview] replaceSubview:label_ with:label1_.get()];
-  label_.reset();
+  // Get layout information from the NIB.
+  NSRect cancelButtonFrame = [cancelButton_ frame];
+  NSRect okButtonFrame = [okButton_ frame];
 
-  [deviceMenu_ setFrame:initFrame];
-  [infoBarView_ addSubview:deviceMenu_];
-
-  // Add text to all buttons and the text field.
-  [self setLabelTexts];
+  // Verify Cancel button is on the left of OK button.
+  DCHECK(NSMaxX(cancelButtonFrame) < NSMinX(okButtonFrame));
+  spaceBetweenControls_ =  NSMinX(okButtonFrame) - NSMaxX(cancelButtonFrame);
 
   // Arrange the initial layout.
   [self arrangeInfobarLayout];
-
-  // Build the device popup menu.
-  [self rebuildDeviceMenu];
 
   // Make sure we get notified of infobar view size changes.
   // TODO(mflodman) Find if there is a way to use 'setAutorezingMask' instead.
@@ -188,14 +153,65 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
   // Set correct size for text frame.
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:label1_];
 
-  // Place |okButton_| to the right of the text field.
-  SizeAndPlaceControl(okButton_, label1_, true);
+  // From left to right: label_, cancelButton_ and okButton_.
+  MoveControl(label1_, cancelButton_, spaceBetweenControls_, true);
+  MoveControl(cancelButton_, okButton_, spaceBetweenControls_, true);
 
-  // Place |cancelButton| to the right of [okButton_|.
-  SizeAndPlaceControl(cancelButton_, okButton_, true);
+  // Build the device option popup menu.
+  [deviceMenu_ setHidden:NO];
+  [self showDeviceMenuTitle:YES];
+  MoveControl(closeButton_, deviceMenu_, spaceBetweenControls_, false);
 
-  // |deviceMenu_| is floating to the right, besides |closeButton_|.
-  SizeAndPlaceControl(deviceMenu_, closeButton_, false);
+  // Hide the title of deviceMenu_ or even the whole menu when it overlaps
+  // with the okButton_.
+  if (!VerifyControlOrderAndSpacing(okButton_, deviceMenu_))  {
+    NSRect oldFrame = [deviceMenu_ frame];
+    oldFrame.size.width = NSHeight(oldFrame);
+    [deviceMenu_ setFrame:oldFrame];
+    [self showDeviceMenuTitle:NO];
+    MoveControl(closeButton_, deviceMenu_, spaceBetweenControls_, false);
+    if (!VerifyControlOrderAndSpacing(okButton_, deviceMenu_)) {
+      [deviceMenu_ setHidden:YES];
+    }
+  }
+}
+
+- (void)constructView {
+  // Use the ok button frame as inital frame for all components.
+  NSRect initFrame = [okButton_ frame];
+
+  // Setup the text label and add the device menu to the infobar.
+  // TODO(mflodman) Use |label_| instead.
+  label1_.reset([[NSTextField alloc] init]);
+  [label1_ setEditable:NO];
+  [label1_ setDrawsBackground:NO];
+  [label1_ setBordered:NO];
+  [label1_ setFrame:[label_ frame]];
+  [[label_ superview] replaceSubview:label_ with:label1_];
+  label_.reset();
+
+  [okButton_ setBezelStyle:NSTexturedRoundedBezelStyle];
+  [cancelButton_ setBezelStyle:NSTexturedRoundedBezelStyle];
+
+  // Add text to all buttons and the text field.
+  [self setLabelTexts];
+
+  // Setup the device options menu.
+  deviceMenu_.reset([[NSPopUpButton alloc] initWithFrame:initFrame
+                                               pullsDown:YES]);
+  [deviceMenu_ setBezelStyle:NSTexturedRoundedBezelStyle];
+  [deviceMenu_ setAutoresizingMask:NSViewMinXMargin];
+  [self rebuildDeviceMenu];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:deviceMenu_];
+  NSMenu* menu = [deviceMenu_ menu];
+  [menu setDelegate:nil];
+  [menu setAutoenablesItems:NO];
+
+  // Add "options" popup z-ordered below all other controls so when we
+  // resize the toolbar it doesn't hide them.
+  [infoBarView_ addSubview:deviceMenu_
+                positioned:NSWindowBelow
+                relativeTo:nil];
 }
 
 - (void)rebuildDeviceMenu {
@@ -232,7 +248,19 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
       [item setEnabled:deviceMenuModel_->IsEnabledAt(i)];
     }
   }
-  [GTMUILocalizerAndLayoutTweaker sizeToFitView:deviceMenu_];
+}
+
+- (void)showDeviceMenuTitle:(BOOL)showTitle {
+  if (showTitle) {
+    NSString* menuTitle = GetNSStringWithFixup(
+        IDS_MEDIA_CAPTURE_DEVICES_MENU_TITLE);
+    [[[deviceMenu_ menu] itemAtIndex:0] setTitle:menuTitle];
+    [[deviceMenu_ cell] setArrowPosition:NSPopUpArrowAtBottom];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitView:deviceMenu_];
+  } else {
+    [[[deviceMenu_ menu] itemAtIndex:0] setTitle:@""];
+    [[deviceMenu_ cell] setArrowPosition:NSPopUpArrowAtCenter];
+  }
 }
 
 - (void)didChangeFrame:(NSNotification*)notification {
