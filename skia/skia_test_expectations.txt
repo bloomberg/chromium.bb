@@ -48,15 +48,6 @@
 //
 // START OVERRIDES HERE
 
-BUGCR130283 : svg/W3C-SVG-1.1/painting-stroke-04-t.svg = TEXT
-
-BUGCR131188 : css3/filters/effect-combined-hw.html = IMAGE
-BUGCR131188 : css3/filters/effect-grayscale-hw.html = IMAGE
-BUGCR131188 : css3/filters/effect-hue-rotate-hw.html = IMAGE
-BUGCR131188 : css3/filters/effect-saturate-hw.html = IMAGE
-BUGCR131188 : css3/filters/effect-sepia-hw.html = IMAGE
-BUGCR131188 : platform/chromium/virtual/gpu/fast/canvas/fillrect_gradient.html = IMAGE
-
 // We gave up on rebaselining http://crrev.com/140760 and instead rolled it out.
 // The following tests started failing while those expectations were in place...
 // maybe some other chrome/webkit change after 140760 modified results of these tests,
@@ -393,7 +384,5 @@ BUGCR131189 WIN : tables/mozilla_expected_failures/bugs/bug92647-1.html = IMAGE
 BUGCR131189 LINUX WIN : tables/mozilla_expected_failures/marvin/backgr_fixed-bg.html = IMAGE
 BUGCR131189 WIN : tables/mozilla_expected_failures/marvin/backgr_layers-show.html = IMAGE
 BUGCR131189 WIN : transforms/2d/zoom-menulist.html = IMAGE
-// Rebaseline this after Skia rev. 4780 has landed
-BUGCR139162 LINUX : svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE
 
 // END OVERRIDES HERE (this line ensures that the file is newline-terminated)
