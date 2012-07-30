@@ -107,8 +107,17 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
     return;
   }
   VideoDecodeAccelerator* vda ALLOW_UNUSED = vda_.release();
-  vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      &VideoDecodeAccelerator::Destroy, weak_vda_));
+  // Tricky: |this| needs to stay alive until after VDA::Destroy is actually
+  // called, not just posted.  We can't simply PostTaskAndReply using |closure|
+  // as the |reply| because we might be called while the renderer thread
+  // (a.k.a. vda_loop_proxy_) is paused (during WebMediaPlayerImpl::Destroy()),
+  // which would result in an apparent hang.  Instead, we take an artificial ref
+  // to |this| and release it as |reply| after VDA::Destroy returns.
+  AddRef();
+  vda_loop_proxy_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&VideoDecodeAccelerator::Destroy, weak_vda_),
+      base::Bind(&GpuVideoDecoder::Release, this));
   closure.Run();
 }
 
