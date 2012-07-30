@@ -27,15 +27,18 @@ generator_default_variables = {
   # Gyp expects the following variables to be expandable by the build
   # system to the appropriate locations.  Ninja prefers paths to be
   # known at gyp time.  To resolve this, introduce special
-  # variables starting with $! (which begin with a $ so gyp knows it
-  # should be treated as a path, but is otherwise an invalid
+  # variables starting with $! and $| (which begin with a $ so gyp knows it
+  # should be treated specially, but is otherwise an invalid
   # ninja/shell variable) that are passed to gyp here but expanded
   # before writing out into the target .ninja files; see
   # ExpandSpecial.
+  # $! is used for variables that represent a path and that can only appear at
+  # the start of a string, while $| is used for variables that can appear
+  # anywhere in a string.
   'INTERMEDIATE_DIR': '$!INTERMEDIATE_DIR',
   'SHARED_INTERMEDIATE_DIR': '$!PRODUCT_DIR/gen',
   'PRODUCT_DIR': '$!PRODUCT_DIR',
-  'CONFIGURATION_NAME': '$!CONFIGURATION',
+  'CONFIGURATION_NAME': '$|CONFIGURATION_NAME',
 
   # Special variables that may be used by gyp 'rule' targets.
   # We generate definitions for these variables on the fly when processing a
@@ -260,9 +263,8 @@ class NinjaWriter:
       path = path.replace(INTERMEDIATE_DIR,
                           os.path.join(product_dir or '', int_dir))
 
-    CONFIGURATION = '$!CONFIGURATION'
-    if CONFIGURATION in path:
-      path = path.replace(CONFIGURATION, self.config_name)
+    CONFIGURATION_NAME = '$|CONFIGURATION_NAME'
+    path = path.replace(CONFIGURATION_NAME, self.config_name)
 
     return path
 
@@ -288,11 +290,13 @@ class NinjaWriter:
         path = gyp.xcode_emulation.ExpandEnvVars(path, env)
       elif self.flavor == 'win':
         path = gyp.msvs_emulation.ExpandMacros(path, env)
-    if '$!' in path:
+    if path.startswith('$!'):
       expanded = self.ExpandSpecial(path)
       if self.flavor == 'win':
         expanded = os.path.normpath(expanded)
       return expanded
+    if '$|' in path:
+      path =  self.ExpandSpecial(path)
     assert '$' not in path, path
     return os.path.normpath(os.path.join(self.build_to_base, path))
 
