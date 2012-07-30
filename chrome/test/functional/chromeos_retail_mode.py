@@ -15,6 +15,10 @@ class ChromeosRetailMode(policy_base.PolicyTestBase):
   mode = 'kiosk'
   machine_id = 'KIOSK'
 
+  def ShouldOOBESkipToLogin(self):
+    # There's no OOBE to skip.
+    return False
+
   def _CheckOnRetailModeLoginScreen(self):
     """Checks that the retail mode login screen is visible."""
     return self.ExecuteJavascriptInOOBEWebUI(
