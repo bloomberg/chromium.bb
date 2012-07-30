@@ -3,10 +3,6 @@
 include_rules = [
   "+crypto",
 
-  # Until we move most of our testing infrastructure in a way that content can
-  # make use of it.
-  "+chrome/test",
-
   # The subdirectories in content/ will manually allow their own include
   # directories in content/ so we disallow all of them.
   "-content",

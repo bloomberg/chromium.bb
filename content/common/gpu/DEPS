@@ -1,5 +1,4 @@
 include_rules = [
-  "+chrome/app",
   "+gpu/command_buffer",
   "+libEGL",
   "+libGLESv2",

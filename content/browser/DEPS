@@ -14,10 +14,4 @@ include_rules = [
   # DO NOT ADD ANY CHROME INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.
-
-  # ONLY USED BY TESTS
-  "+chrome/browser/ui/browser.h",
-  "+chrome/browser/ui/browser_commands.h",
-  "+chrome/browser/ui/browser_tabstrip.h",
-  "+chrome/browser/ui/singleton_tabs.h",
 ]

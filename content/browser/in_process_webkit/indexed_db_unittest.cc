@@ -4,11 +4,11 @@
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/special_storage_policy.h"
