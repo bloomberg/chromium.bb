@@ -291,6 +291,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSpellCheckServiceEnabled,
     prefs::kSpellCheckUseSpellingService,
     Value::TYPE_BOOLEAN },
+  { key::kDisableScreenshots,
+    prefs::kDisableScreenshots,
+    Value::TYPE_BOOLEAN },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

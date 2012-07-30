@@ -16,6 +16,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/tabs/tabs.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -68,6 +69,7 @@
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
@@ -141,6 +143,7 @@ void RegisterLocalState(PrefService* local_state) {
   SSLConfigServiceManager::RegisterPrefs(local_state);
   chrome_variations::VariationsService::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);
+  chrome::RegisterScreenshotPrefs(local_state);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);
@@ -236,6 +239,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 
 #if !defined(OS_ANDROID)
   AppsPromo::RegisterUserPrefs(user_prefs);
+  CaptureVisibleTabFunction::RegisterUserPrefs(user_prefs);
   ChromeToMobileService::RegisterUserPrefs(user_prefs);
   extensions::CommandService::RegisterUserPrefs(user_prefs);
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);

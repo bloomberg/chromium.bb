@@ -62,6 +62,11 @@ const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 // higher.
 const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
 
+// Disables screenshot accelerators and extension APIs.
+// This setting resides both in profile prefs and local state. Accelerator
+// handling code reads local state, while extension APIs use profile pref.
+const char kDisableScreenshots[] = "disable_screenshots";
+
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
 // and user's profile.  Global property determines locale of login screen,

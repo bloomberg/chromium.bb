@@ -16,9 +16,11 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/feedback_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/ui/webui/screenshot_source.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -168,8 +171,7 @@ void ShowWebFeedbackView(Browser* browser,
   native_window = browser->window()->GetNativeWindow();
   snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
 #endif
-  bool success = chrome::GrabWindowSnapshot(native_window,
-                                            last_screenshot_png,
+  bool success = chrome::GrabWindowSnapshot(native_window, last_screenshot_png,
                                             snapshot_bounds);
   FeedbackUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
 
@@ -440,18 +442,18 @@ void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
   // Will delete itself when feedback_data_->SendReport() is called.
   feedback_data_ = new FeedbackData();
 
-  // send back values which the dialog js needs initially
-  ListValue dialog_defaults;
+  // Send back values which the dialog js needs initially.
+  DictionaryValue dialog_defaults;
 
-  // 0: current url
-  if (target_tab_url_.length())
-    dialog_defaults.Append(new StringValue(target_tab_url_));
-  else
-    dialog_defaults.Append(new StringValue(""));
+  // Current url.
+  dialog_defaults.SetString("currentUrl", target_tab_url_);
+
+  // Are screenshots disabled?
+  dialog_defaults.SetBoolean(
+      "disableScreenshots",
+      g_browser_process->local_state()->GetBoolean(prefs::kDisableScreenshots));
 
 #if defined(OS_CHROMEOS)
-  // 1: about:system
-  dialog_defaults.Append(new StringValue(chrome::kChromeUISystemInfoURL));
   // Trigger the request for system information here.
   chromeos::system::SyslogsProvider* provider =
       chromeos::system::SyslogsProvider::GetInstance();
@@ -463,8 +465,8 @@ void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
         base::Bind(&FeedbackData::SyslogsComplete,
                    base::Unretained(feedback_data_)));
   }
-  // 2: user e-mail
-  dialog_defaults.Append(new StringValue(GetUserEmail()));
+  // User e-mail
+  dialog_defaults.SetString("userEmail", GetUserEmail());
 #endif
 
   web_ui()->CallJavascriptFunction("setupDialogDefaults", dialog_defaults);

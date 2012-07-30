@@ -15,6 +15,7 @@ savedThumbnailIds['current-screenshots'] = '';
 savedThumbnailIds['saved-screenshots'] = '';
 
 var categoryTag = '';
+var forceDisableScreenshots = false;
 
 /**
  * Selects an image thumbnail in the specified div.
@@ -76,13 +77,10 @@ function addScreenshot(divId, screenshot) {
 /**
  * Disables screenshots completely.
  */
-function disableScreenshots() {
-  $('screenshot-row').hidden = true;
-  $('screenshot-checkbox').checked = false;
-
-  $('current-screenshots').hidden = true;
-  if ($('saved-screenshots'))
-    $('saved-screenshots').hidden = true;
+function enableScreenshots() {
+  if (forceDisableScreenshots)
+    return;
+  $('screenshot-row').hidden = false;
 }
 
 /**
@@ -240,7 +238,8 @@ function load() {
   if (parameters['customPageUrl'] != '') {
     $('page-url-text').value = parameters['customPageUrl'];
     // and disable the page image, since it doesn't make sense on a custum url.
-    disableScreenshots();
+    $('screenshot-checkbox').checked = false;
+    forceDisableScreenshots = true;
   }
 
   // Pick up the category tag (for most cases this will be an empty string)
@@ -278,23 +277,27 @@ function setupSavedScreenshots(screenshots) {
 }
 
 function setupDialogDefaults(defaults) {
-  if (defaults.length > 0) {
-    if ($('page-url-text').value == '')
-      $('page-url-text').value = defaults[0];
-    if (defaults[0] == '')
-      $('page-url-checkbox').checked = false;
+  // Current url.
+  if ($('page-url-text').value == '')
+    $('page-url-text').value = defaults.currentUrl;
+  if (defaults.currentUrl == '')
+    $('page-url-checkbox').checked = false;
 
-    if (defaults.length > 2) {
-      // We're in Chromium OS.
-      $('user-email-text').textContent = defaults[2];
-      if (defaults[2] == '') {
-        // if we didn't get an e-mail address from cros,
-        // disable the user email display totally.
-        $('user-email-table').hidden = true;
+  // Are screenshots disabled?
+  if (!defaults.disableScreenshots)
+    enableScreenshots();
 
-        // this also means we are in privacy mode, so no saved screenshots.
-        $('screenshot-link-tosaved').hidden = true;
-      }
+  // User e-mail.
+  if ($('user-email-text')) {
+    // We're in Chromium OS.
+    $('user-email-text').textContent = defaults.userEmail;
+    if (defaults.userEmail == '') {
+      // if we didn't get an e-mail address from cros,
+      // disable the user email display totally.
+      $('user-email-table').hidden = true;
+
+      // this also means we are in privacy mode, so no saved screenshots.
+      $('screenshot-link-tosaved').hidden = true;
     }
   }
 }

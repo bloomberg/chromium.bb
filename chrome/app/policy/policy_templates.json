@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 152
+#   For your editing convenience: highest ID currently used: 153
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2771,6 +2771,22 @@
       This policy affects all types of storage media. For example: USB flash drives, external hard drives, SD and other memory cards, optical storage etc. Internal storage is not affected, therefore files saved in the Download folder can still be accessed. Google Drive is also not affected by this policy.
 
       If this setting is disabled or not configured then users can use all supported types of external storage on their device.''',
+    },
+    {
+      'name': 'DisableScreenshots',
+      'type': 'main',
+      'supported_on': ['chrome_os:22-', 'chrome.*:22-'],
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 153,
+      'caption': '''Disable taking screenshots''',
+      'desc': '''Disables taking screenshots.
+
+      If enabled screenshots cannot be taken using keyboard shortcuts or extension APIs.
+
+      If disabled or not specified, taking screenshots is allowed.'''
     },
   ],
   'messages': {

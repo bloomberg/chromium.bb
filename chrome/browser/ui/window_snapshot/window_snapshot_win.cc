@@ -36,9 +36,9 @@ gfx::Rect GetWindowBounds(gfx::NativeWindow window_handle) {
 
 namespace chrome {
 
-bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
-                        std::vector<unsigned char>* png_representation,
-                        const gfx::Rect& snapshot_bounds) {
+bool GrabWindowSnapshotImpl(gfx::NativeWindow window_handle,
+                            std::vector<unsigned char>* png_representation,
+                            const gfx::Rect& snapshot_bounds) {
   DCHECK(snapshot_bounds.right() <= GetWindowBounds(window_handle).right());
   DCHECK(snapshot_bounds.bottom() <= GetWindowBounds(window_handle).bottom());
 

@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -111,10 +112,21 @@ void SaveScreenshot(const FilePath& screenshot_directory,
   }
 }
 
+bool AreScreenshotsDisabled() {
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kDisableScreenshots);
+}
+
 bool GrabWindowSnapshot(aura::Window* window,
                         const gfx::Rect& snapshot_bounds,
                         std::vector<unsigned char>* png_data) {
 #if defined(OS_LINUX)
+  // browser::GrabWindowSnapshot checks this too, but RootWindow::GrabSnapshot
+  // does not. The statement below is only to support linux-specific XGetImage
+  // optimization.
+  if (AreScreenshotsDisabled())
+    return false;
+
   // We use XGetImage() for Linux/ChromeOS for performance reasons.
   // See crbug.com/119492
   // TODO(mukai): remove this when the performance issue has been fixed.
@@ -147,6 +159,9 @@ void ScreenshotTaker::HandleTakeScreenshot(aura::Window* window) {
 void ScreenshotTaker::HandleTakePartialScreenshot(
     aura::Window* window, const gfx::Rect& rect) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (AreScreenshotsDisabled())
+    return;
 
   scoped_refptr<base::RefCountedBytes> png_data(new base::RefCountedBytes);
 

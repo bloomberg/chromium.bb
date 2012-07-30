@@ -15,9 +15,9 @@
 
 namespace chrome {
 
-bool GrabWindowSnapshot(gfx::NativeWindow window,
-                        std::vector<unsigned char>* png_representation,
-                        const gfx::Rect& snapshot_bounds) {
+bool GrabWindowSnapshotImpl(gfx::NativeWindow window,
+                            std::vector<unsigned char>* png_representation,
+                            const gfx::Rect& snapshot_bounds) {
   ui::Compositor* compositor = window->layer()->GetCompositor();
 
   gfx::Rect read_pixels_bounds = snapshot_bounds;

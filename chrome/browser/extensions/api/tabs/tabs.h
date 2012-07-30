@@ -16,6 +16,7 @@
 
 class BackingStore;
 class GURL;
+class PrefService;
 class SkBitmap;
 class TabContents;
 
@@ -165,6 +166,9 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
 };
 class CaptureVisibleTabFunction : public AsyncExtensionFunction,
                                   public content::NotificationObserver {
+ public:
+  static void RegisterUserPrefs(PrefService* service);
+
  protected:
   enum ImageFormat {
     FORMAT_JPEG,

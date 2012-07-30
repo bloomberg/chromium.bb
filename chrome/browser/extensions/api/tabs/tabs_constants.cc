@@ -96,6 +96,7 @@ const char kNotImplementedError[] = "This call is not yet implemented";
 const char kSupportedInWindowsOnlyError[] = "Supported in Windows only";
 const char kInvalidWindowTypeError[] = "Invalid value for type";
 const char kInvalidWindowStateError[] = "Invalid value for state";
+const char kScreenshotsDisabled[] = "Taking screenshots has been disabled";
 
 const char kNoCodeOrFileToExecuteError[] = "No source code or file specified.";
 const char kMoreThanOneValuesError[] = "Code and file should not be specified "

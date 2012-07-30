@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -1584,6 +1585,12 @@ bool CaptureVisibleTabFunction::GetTabToCapture(
 };
 
 bool CaptureVisibleTabFunction::RunImpl() {
+  PrefService* service = profile()->GetPrefs();
+  if (service->GetBoolean(prefs::kDisableScreenshots)) {
+    error_ = keys::kScreenshotsDisabled;
+    return false;
+  }
+
   WebContents* web_contents = NULL;
   TabContents* tab_contents = NULL;
   if (!GetTabToCapture(&web_contents, &tab_contents))
@@ -1739,6 +1746,11 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
                                              mime_type.c_str()));
   SetResult(new StringValue(base64_result));
   SendResponse(true);
+}
+
+void CaptureVisibleTabFunction::RegisterUserPrefs(PrefService* service) {
+  service->RegisterBooleanPref(prefs::kDisableScreenshots, false,
+                               PrefService::UNSYNCABLE_PREF);
 }
 
 bool DetectTabLanguageFunction::RunImpl() {

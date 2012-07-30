@@ -4237,6 +4237,7 @@
         'browser/ui/window_sizer/window_sizer_gtk.cc',
         'browser/ui/window_sizer/window_sizer_mac.mm',
         'browser/ui/window_sizer/window_sizer_win.cc',
+        'browser/ui/window_snapshot/window_snapshot.cc',
         'browser/ui/window_snapshot/window_snapshot.h',
         'browser/ui/window_snapshot/window_snapshot_aura.cc',
         'browser/ui/window_snapshot/window_snapshot_gtk.cc',
