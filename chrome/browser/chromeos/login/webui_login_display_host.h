@@ -51,6 +51,9 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   // Returns instance of the OOBE WebUI.
   OobeUI* GetOobeUI() const;
 
+  // Returns the current login view.
+  WebUILoginView* login_view() { return login_view_; }
+
  protected:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

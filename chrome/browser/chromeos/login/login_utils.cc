@@ -745,7 +745,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kEnableGView,
       ::switches::kEnableHighDPIPDFPlugin,
       ::switches::kEnableLogging,
-      ::switches::kEnableMobileSetupDialog,
       ::switches::kEnablePartialSwap,
       ::switches::kEnableUIReleaseFrontSurface,
       ::switches::kEnablePinch,

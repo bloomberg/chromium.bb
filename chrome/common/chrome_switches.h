@@ -372,7 +372,6 @@ extern const char kEnableDevicePolicy[];
 extern const char kEnableDriveV2Api[];
 extern const char kEnableGView[];
 extern const char kEnableKioskMode[];
-extern const char kEnableMobileSetupDialog[];
 extern const char kEnableONCPolicy[];
 extern const char kEnableStaticIPConfig[];
 extern const char kEnableUnsupportedBluetoothDevices[];

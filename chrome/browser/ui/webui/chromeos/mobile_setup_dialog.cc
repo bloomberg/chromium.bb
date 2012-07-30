@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
+#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -93,8 +95,20 @@ MobileSetupDialogDelegate::~MobileSetupDialogDelegate() {
 
 void MobileSetupDialogDelegate::ShowDialog(const std::string& service_path) {
   service_path_ = service_path;
+
+  gfx::NativeWindow parent = NULL;
+  // If we're on the login screen.
+  if (chromeos::WebUILoginDisplayHost::default_host()) {
+    chromeos::WebUILoginDisplayHost* webui_host =
+        static_cast<chromeos::WebUILoginDisplayHost*>(
+            chromeos::WebUILoginDisplayHost::default_host());
+    chromeos::WebUILoginView* login_view = webui_host->login_view();
+    if (login_view)
+      parent = login_view->GetNativeWindow();
+  }
+
   dialog_window_ = chrome::ShowWebDialog(
-      NULL,
+      parent,
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       this);
 }

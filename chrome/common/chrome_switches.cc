@@ -1366,9 +1366,6 @@ const char kEnableGView[]                   = "enable-gview";
 // Enable Kiosk mode for ChromeOS
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 
-// Enables mobile setup in a dialog.
-const char kEnableMobileSetupDialog[]       = "enable-mobile-dialog";
-
 // Enables support for policy-configured networks.
 const char kEnableONCPolicy[]               = "enable-onc-policy";
 

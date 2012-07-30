@@ -573,11 +573,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         ActivationState state = cell[i]->activation_state();
         if (state == ACTIVATION_STATE_NOT_ACTIVATED ||
             state == ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
-          // If a cellular network needs to be activated, then do not show it in
-          // the login/lock screen.
-          if (login_status == ash::user::LOGGED_IN_NONE ||
-              login_status == ash::user::LOGGED_IN_LOCKED)
+          // If a cellular network needs to be activated,
+          // then do not show it in the lock screen.
+          if (login_status == ash::user::LOGGED_IN_LOCKED)
             continue;
+
           info.description = l10n_util::GetStringFUTF16(
               IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE,
               info.name);

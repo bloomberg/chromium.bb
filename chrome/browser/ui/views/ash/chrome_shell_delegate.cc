@@ -199,21 +199,7 @@ void ChromeShellDelegate::OpenCrosh() {
 
 void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
 #if defined(OS_CHROMEOS)
-  Browser* browser = GetTargetBrowser();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMobileSetupDialog)) {
-    MobileSetupDialog::Show(service_path);
-  } else {
-    std::string url(chrome::kChromeUIMobileSetupURL);
-    url.append(service_path);
-    browser->OpenURL(
-        content::OpenURLParams(GURL(url),
-                               content::Referrer(),
-                               NEW_FOREGROUND_TAB,
-                               content::PAGE_TRANSITION_LINK,
-                               false));
-    browser->window()->Activate();
-  }
+  MobileSetupDialog::Show(service_path);
 #endif
 }
 
