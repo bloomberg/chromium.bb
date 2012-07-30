@@ -1100,6 +1100,8 @@
         'browser/chromeos/gdata/drive_webapps_registry_unittest.cc',
         'browser/chromeos/gdata/gdata_cache_metadata_unittest.cc',
         'browser/chromeos/gdata/gdata_cache_unittest.cc',
+        'browser/chromeos/gdata/gdata_contacts_service_stub.cc',
+        'browser/chromeos/gdata/gdata_contacts_service_stub.h',
         'browser/chromeos/gdata/gdata_db_unittest.cc',
         'browser/chromeos/gdata/gdata_file_system_unittest.cc',
         'browser/chromeos/gdata/gdata_files_unittest.cc',
