@@ -182,7 +182,7 @@ readonly PNACL_DIS="${INSTALL_NEWLIB_BIN}/pnacl-dis"
 readonly PNACL_NM="${INSTALL_NEWLIB_BIN}/pnacl-nm"
 readonly PNACL_TRANSLATE="${INSTALL_NEWLIB_BIN}/pnacl-translate"
 readonly PNACL_READELF="${INSTALL_NEWLIB_BIN}/pnacl-readelf"
-readonly PNACL_SIZE="${INSTALL_NEWLIB_BIN}/size"
+readonly PNACL_SIZE="${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-size"
 readonly PNACL_STRIP="${INSTALL_NEWLIB_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_NEWLIB_BIN}"/pnacl-illegal
 
