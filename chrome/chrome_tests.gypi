@@ -3007,7 +3007,6 @@
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
-        '../content/browser/renderer_host/resource_dispatcher_host_browsertest.cc',
       ],
       'rules': [
         {

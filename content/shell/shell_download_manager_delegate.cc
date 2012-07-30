@@ -24,6 +24,8 @@ namespace content {
 
 ShellDownloadManagerDelegate::ShellDownloadManagerDelegate()
     : download_manager_(NULL) {
+  // Balanced in Shutdown();
+  AddRef();
 }
 
 ShellDownloadManagerDelegate::~ShellDownloadManagerDelegate(){
@@ -33,6 +35,10 @@ ShellDownloadManagerDelegate::~ShellDownloadManagerDelegate(){
 void ShellDownloadManagerDelegate::SetDownloadManager(
     DownloadManager* download_manager) {
   download_manager_ = download_manager;
+}
+
+void ShellDownloadManagerDelegate::Shutdown() {
+  Release();
 }
 
 bool ShellDownloadManagerDelegate::DetermineDownloadTarget(

@@ -53,7 +53,7 @@ class ShutdownTest : public UIPerfTest {
       ui_test_utils::GetTestFilePath(kCurrentDir,
           FilePath(FILE_PATH_LITERAL("french_page.html"))),
       ui_test_utils::GetTestFilePath(kCurrentDir,
-          FilePath(FILE_PATH_LITERAL("onunload_cookie.html"))),
+          FilePath(FILE_PATH_LITERAL("setcookie.html"))),
     };
 
     for (size_t i = 0; i < arraysize(test_cases); i++) {

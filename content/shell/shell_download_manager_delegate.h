@@ -21,6 +21,7 @@ class ShellDownloadManagerDelegate
 
   void SetDownloadManager(DownloadManager* manager);
 
+  virtual void Shutdown() OVERRIDE;
   virtual bool DetermineDownloadTarget(
       DownloadItem* download,
       const DownloadTargetCallback& callback) OVERRIDE;

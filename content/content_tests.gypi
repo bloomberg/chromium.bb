@@ -576,6 +576,7 @@
         'browser/plugin_service_impl_browsertest.cc',
         'browser/renderer_host/render_view_host_browsertest.cc',
         'browser/renderer_host/render_view_host_manager_browsertest.cc',
+        'browser/renderer_host/resource_dispatcher_host_browsertest.cc',
         'browser/session_history_browsertest.cc',
         'browser/speech/speech_recognition_browsertest.cc',
         'browser/webkit_browsertest.cc',
