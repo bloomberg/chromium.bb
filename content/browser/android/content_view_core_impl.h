@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
@@ -34,8 +33,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   ContentViewCoreImpl(JNIEnv* env,
                       jobject obj,
                       WebContents* web_contents);
-
-  // ContentViewCore overrides
   virtual void Destroy(JNIEnv* env, jobject obj) OVERRIDE;
 
   // --------------------------------------------------------------------------
@@ -111,12 +108,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   jboolean NeedsReload(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);
   void SetClient(JNIEnv* env, jobject obj, jobject jclient);
-  void AddJavascriptInterface(JNIEnv* env,
-                              jobject obj,
-                              jobject object,
-                              jstring name,
-                              jboolean allow_inherited_methods);
-  void RemoveJavascriptInterface(JNIEnv* env, jobject obj, jstring name);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
@@ -150,7 +141,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnAcceleratedCompositingStateChange(RenderWidgetHostViewAndroid* rwhva,
                                            bool activated,
                                            bool force);
-  void StartContentIntent(const GURL& content_url);
+  virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from native code
@@ -195,7 +186,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.
-  WebContentsImpl* web_contents_;
+  WebContents* web_contents_;
 
   // We only set this to be the delegate of the web_contents if we own it.
   scoped_ptr<ContentViewClient> content_view_client_;

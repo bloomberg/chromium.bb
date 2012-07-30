@@ -54,9 +54,9 @@ public class ContentViewCore implements MotionEventDelegate {
     // Used for Chrome.
     public static final int PERSONALITY_CHROME = 1;
 
-    // Used to avoid enabling zooming in / out if resulting zooming will
-    // produce little visible difference.
-    private static float ZOOM_CONTROLS_EPSILON = 0.007f;
+    // Used to avoid enabling zooming in / out in WebView zoom controls
+    // if resulting zooming will produce little visible difference.
+    private static float WEBVIEW_ZOOM_CONTROLS_EPSILON = 0.007f;
 
     // To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
     // should be allowed to upload per 100ms.
@@ -130,7 +130,7 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private ContentSettings mContentSettings;
 
-    // Native pointer to C++ ContentViewCoreImpl object which will be set by nativeInit().
+    // Native pointer to C++ ContentView object which will be set by nativeInit()
     private int mNativeContentViewCore = 0;
 
     private ContentViewGestureHandler mContentViewGestureHandler;
@@ -180,6 +180,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * @param context Context used to obtain the application context.
      * @param maxRendererProcesses Same as ContentView.enableMultiProcess()
      * @return Whether the process actually needed to be initialized (false if already running).
+     * @hide Only used by the platform browser.
      */
     public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
         return AndroidBrowserProcess.initChromiumBrowserProcess(context, maxRendererProcesses);
@@ -264,10 +265,9 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Destroy the internal state of the ContentView. This method may only be
-     * called after the ContentView has been removed from the view system. No
-     * other methods may be called on this ContentView after this method has
-     * been called.
+     * Destroy the internal state of the WebView. This method may only be called
+     * after the WebView has been removed from the view system. No other methods
+     * may be called on this WebView after this method has been called.
      */
     public void destroy() {
         hidePopupDialog();
@@ -465,8 +465,8 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Clears the ContentViewCore's page history in both the backwards and
-     * forwards directions.
+     * Clears the WebView's page history in both the backwards and forwards
+     * directions.
      */
     public void clearHistory() {
         if (mNativeContentViewCore != 0) nativeClearHistory(mNativeContentViewCore);
@@ -564,7 +564,9 @@ public class ContentViewCore implements MotionEventDelegate {
 
     /**
      * This method should be called when the containing activity is paused
-     */
+     *
+     * @hide
+     **/
     public void onActivityPause() {
         TraceEvent.begin();
         hidePopupDialog();
@@ -572,21 +574,23 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Called when the ContentView is hidden.
-     */
+     * Called when the WebView is hidden.
+     *
+     * @hide
+     **/
     public void onHide() {
         hidePopupDialog();
     }
 
     /**
      * Return the ContentSettings object used to control the settings for this
-     * ContentViewCore.
+     * WebView.
      *
      * Note that when ContentView is used in the PERSONALITY_CHROME role,
      * ContentSettings can only be used for retrieving settings values. For
      * modifications, ChromeNativePreferences is to be used.
-     * @return A ContentSettings object that can be used to control this
-     *         ContentViewCore's settings.
+     * @return A ContentSettings object that can be used to control this WebView's
+     *         settings.
      */
     public ContentSettings getContentSettings() {
         return mContentSettings;
@@ -755,30 +759,30 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Checks whether the ContentViewCore can be zoomed in.
+     * Checks whether the WebView can be zoomed in.
      *
-     * @return True if the ContentViewCore can be zoomed in.
+     * @return True if the WebView can be zoomed in.
      */
     // This method uses the term 'zoom' for legacy reasons, but relates
     // to what chrome calls the 'page scale factor'.
     public boolean canZoomIn() {
-        return mNativeMaximumScale - mNativePageScaleFactor > ZOOM_CONTROLS_EPSILON;
+        return mNativeMaximumScale - mNativePageScaleFactor > WEBVIEW_ZOOM_CONTROLS_EPSILON;
     }
 
     /**
-     * Checks whether the ContentViewCore can be zoomed out.
+     * Checks whether the WebView can be zoomed out.
      *
-     * @return True if the ContentViewCore can be zoomed out.
+     * @return True if the WebView can be zoomed out.
      */
     // This method uses the term 'zoom' for legacy reasons, but relates
     // to what chrome calls the 'page scale factor'.
     public boolean canZoomOut() {
-        return mNativePageScaleFactor - mNativeMinimumScale > ZOOM_CONTROLS_EPSILON;
+        return mNativePageScaleFactor - mNativeMinimumScale > WEBVIEW_ZOOM_CONTROLS_EPSILON;
     }
 
     /**
-     * Zooms in the ContentViewCore by 25% (or less if that would result in
-     * zooming in more than possible).
+     * Zooms in the WebView by 25% (or less if that would result in zooming in
+     * more than possible).
      *
      * @return True if there was a zoom change, false otherwise.
      */
@@ -806,8 +810,8 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Zooms out the ContentViewCore by 20% (or less if that would result in
-     * zooming out more than possible).
+     * Zooms out the WebView by 20% (or less if that would result in zooming out
+     * more than possible).
      *
      * @return True if there was a zoom change, false otherwise.
      */
@@ -848,58 +852,6 @@ public class ContentViewCore implements MotionEventDelegate {
     // this method returns built-in zoom controls. This method is used in tests.
     public View getZoomControlsForTest() {
         return mZoomManager.getZoomControlsViewForTest();
-    }
-
-    /**
-     * This method injects the supplied Java object into the ContentViewCore.
-     * The object is injected into the JavaScript context of the main frame,
-     * using the supplied name. This allows the Java object to be accessed from
-     * JavaScript. Note that that injected objects will not appear in
-     * JavaScript until the page is next (re)loaded. For example:
-     * <pre> view.addJavascriptInterface(new Object(), "injectedObject");
-     * view.loadData("<!DOCTYPE html><title></title>", "text/html", null);
-     * view.loadUrl("javascript:alert(injectedObject.toString())");</pre>
-     * <p><strong>IMPORTANT:</strong>
-     * <ul>
-     * <li> addJavascriptInterface() can be used to allow JavaScript to control
-     * the host application. This is a powerful feature, but also presents a
-     * security risk. Use of this method in a ContentViewCore containing
-     * untrusted content could allow an attacker to manipulate the host
-     * application in unintended ways, executing Java code with the permissions
-     * of the host application. Use extreme care when using this method in a
-     * ContentViewCore which could contain untrusted content. Particular care
-     * should be taken to avoid unintentional access to inherited methods, such
-     * as {@link Object#getClass()}. To prevent access to inherited methods,
-     * set {@code allowInheritedMethods} to {@code false}. In addition, ensure
-     * that the injected object's public methods return only objects designed
-     * to be used by untrusted code, and never return a raw Object instance.
-     * <li> JavaScript interacts with Java objects on a private, background
-     * thread of the ContentViewCore. Care is therefore required to maintain
-     * thread safety.</li>
-     * </ul></p>
-     *
-     * @param object The Java object to inject into the ContentViewCore's
-     *               JavaScript context. Null values are ignored.
-     * @param name The name used to expose the instance in JavaScript.
-     * @param allowInheritedMethods Whether or not inherited methods may be
-     *                              called from JavaScript.
-     */
-    public void addJavascriptInterface(Object object, String name, boolean allowInheritedMethods) {
-        if (mNativeContentViewCore != 0 && object != null) {
-            nativeAddJavascriptInterface(mNativeContentViewCore, object, name,
-                    allowInheritedMethods);
-        }
-    }
-
-    /**
-     * Removes a previously added JavaScript interface with the given name.
-     *
-     * @param name The name of the interface to remove.
-     */
-    public void removeJavascriptInterface(String name) {
-        if (mNativeContentViewCore != 0) {
-            nativeRemoveJavascriptInterface(mNativeContentViewCore, name);
-        }
     }
 
     @CalledByNative
@@ -996,9 +948,4 @@ public class ContentViewCore implements MotionEventDelegate {
     private native boolean nativeNeedsReload(int nativeContentViewCoreImpl);
 
     private native void nativeClearHistory(int nativeContentViewCoreImpl);
-
-    private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
-                                                     String name, boolean allowInheritedMethods);
-
-    private native void nativeRemoveJavascriptInterface(int nativeContentViewCoreImpl, String name);
 }

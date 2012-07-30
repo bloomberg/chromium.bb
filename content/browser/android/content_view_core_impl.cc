@@ -10,8 +10,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/android/content_view_client.h"
 #include "content/browser/android/touch_point.h"
-#include "content/browser/renderer_host/java/java_bound_object.h"
-#include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -20,13 +18,11 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContentViewCore_jni.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
 #include "webkit/glue/webmenuitem.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
@@ -76,7 +72,7 @@ ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
 
 ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          WebContents* web_contents)
-    : web_contents_(static_cast<WebContentsImpl*>(web_contents)),
+    : web_contents_(web_contents),
       tab_crashed_(false) {
   DCHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
@@ -119,25 +115,6 @@ RenderWidgetHostViewAndroid*
 // ----------------------------------------------------------------------------
 // Methods called from Java via JNI
 // ----------------------------------------------------------------------------
-
-void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env, jobject obj,
-                                               jintArray indices) {
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  DCHECK(rvhi);
-  if (indices == NULL) {
-    rvhi->DidCancelPopupMenu();
-    return;
-  }
-
-  int selected_count = env->GetArrayLength(indices);
-  std::vector<int> selected_indices;
-  jint* indices_ptr = env->GetIntArrayElements(indices, NULL);
-  for (int i = 0; i < selected_count; ++i)
-    selected_indices.push_back(indices_ptr[i]);
-  env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
-  rvhi->DidSelectPopupMenuItems(selected_indices);
-}
 
 void ContentViewCoreImpl::LoadUrlWithoutUrlSanitization(JNIEnv* env,
                                                         jobject,
@@ -336,29 +313,6 @@ void ContentViewCoreImpl::SetClient(JNIEnv* env, jobject obj, jobject jclient) {
   content_view_client_.swap(client);
 }
 
-void ContentViewCoreImpl::AddJavascriptInterface(
-    JNIEnv* env,
-    jobject /* obj */,
-    jobject object,
-    jstring name,
-    jboolean allow_inherited_methods) {
-  ScopedJavaLocalRef<jobject> scoped_object(env, object);
-  // JavaBoundObject creates the NPObject with a ref count of 1, and
-  // JavaBridgeDispatcherHostManager takes its own ref.
-  NPObject* bound_object = JavaBoundObject::Create(scoped_object,
-                                                   allow_inherited_methods);
-  web_contents_->java_bridge_dispatcher_host_manager()->AddNamedObject(
-      ConvertJavaStringToUTF16(env, name), bound_object);
-  WebKit::WebBindings::releaseObject(bound_object);
-}
-
-void ContentViewCoreImpl::RemoveJavascriptInterface(JNIEnv* env,
-                                                    jobject /* obj */,
-                                                    jstring name) {
-  web_contents_->java_bridge_dispatcher_host_manager()->RemoveNamedObject(
-      ConvertJavaStringToUTF16(env, name));
-}
-
 // --------------------------------------------------------------------------
 // Methods called from native code
 // --------------------------------------------------------------------------
@@ -509,6 +463,29 @@ void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
   Java_ContentViewCore_startContentIntent(env,
                                           java_object_->View(env).obj(),
                                           jcontent_url.obj());
+}
+
+// --------------------------------------------------------------------------
+// Methods called from Java via JNI
+// --------------------------------------------------------------------------
+
+void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env, jobject obj,
+                                               jintArray indices) {
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  DCHECK(rvhi);
+  if (indices == NULL) {
+    rvhi->DidCancelPopupMenu();
+    return;
+  }
+
+  int selected_count = env->GetArrayLength(indices);
+  std::vector<int> selected_indices;
+  jint* indices_ptr = env->GetIntArrayElements(indices, NULL);
+  for (int i = 0; i < selected_count; ++i)
+    selected_indices.push_back(indices_ptr[i]);
+  env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
+  rvhi->DidSelectPopupMenuItems(selected_indices);
 }
 
 // --------------------------------------------------------------------------
