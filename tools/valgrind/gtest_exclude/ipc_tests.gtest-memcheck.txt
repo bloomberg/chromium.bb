@@ -3,3 +3,6 @@
 # ChromeOS-specific exclude files.
 IPCSyncChannelTest.SendAfterClose
 IPCSyncChannelTest.RestrictedDispatch
+
+# http://crbug.com/139659 - maybe related to http://crbug.com/136351?
+IPCSyncChannelTest.RestrictedDispatchDeadlock
