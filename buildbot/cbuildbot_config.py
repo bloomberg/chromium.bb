@@ -472,9 +472,10 @@ internal = _config(
   git_url=constants.MANIFEST_INT_URL,
 )
 
-# This adds Chrome branding.
+# This adds Chrome branding, and removes highdpi resources by default to save
+# space on the image.
 official = _config(
-  useflags=['chrome_internal', 'chrome_pdf'],
+  useflags=['chrome_internal', 'chrome_pdf', '-highdpi'],
   chromeos_official=True,
 )
 
@@ -927,6 +928,7 @@ _release.add_config('lumpy-release',
 
 _release.add_config('link-release',
   boards=['link'],
+  useflags=official['useflags'] + ['highdpi'],
   prebuilts=False,
 )
 
