@@ -3489,14 +3489,16 @@ int main(int argc, char *argv[])
 
 	ec = backend_init(display, argc, argv, config_file);
 	if (ec == NULL) {
-		weston_log("failed to create compositor\n");
+		weston_log("fatal: failed to create compositor\n");
 		exit(EXIT_FAILURE);
 	}
 
 	for (i = 1; argv[i]; i++)
-		weston_log("unhandled option: %s\n", argv[i]);
-	if (argv[1])
-		exit(EXIT_FAILURE);
+		weston_log("fatal: unhandled option: %s\n", argv[i]);
+	if (argv[1]) {
+		ret = EXIT_FAILURE;
+		goto out;
+	}
 
 	free(config_file);
 
@@ -3508,25 +3510,32 @@ int main(int argc, char *argv[])
 		module_init = load_module("xwayland.so",
 					  "weston_xserver_init",
 					  &xserver_module);
-	if (module_init && module_init(ec) < 0)
-		exit(EXIT_FAILURE);
+	if (module_init && module_init(ec) < 0) {
+		ret = EXIT_FAILURE;
+		goto out;
+	}
 
 	if (!shell)
 		shell = "desktop-shell.so";
 	module_init = load_module(shell, "shell_init", &shell_module);
-	if (!module_init || module_init(ec) < 0)
-		exit(EXIT_FAILURE);
+	if (!module_init || module_init(ec) < 0) {
+		ret = EXIT_FAILURE;
+		goto out;
+	}
 
 
 	module_init = NULL;
 	if (module)
 		module_init = load_module(module, "module_init", NULL);
-	if (module_init && module_init(ec) < 0)
-		exit(EXIT_FAILURE);
+	if (module_init && module_init(ec) < 0) {
+		ret = EXIT_FAILURE;
+		goto out;
+	}
 
 	if (wl_display_add_socket(display, socket_name)) {
-		weston_log("failed to add socket: %m\n");
-		exit(EXIT_FAILURE);
+		weston_log("fatal: failed to add socket: %m\n");
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	weston_compositor_dpms_on(ec);
@@ -3536,6 +3545,7 @@ int main(int argc, char *argv[])
 	else
 		ret = EXIT_FAILURE;
 
+out:
 	/* prevent further rendering while shutting down */
 	ec->state = WESTON_COMPOSITOR_SLEEPING;
 
