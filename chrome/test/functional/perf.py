@@ -689,9 +689,10 @@ class TabPerfTest(BasePerfTest):
   def testNewTabFlash(self):
     """Measures time to open a new tab navigated to a flash page."""
     self.assertTrue(
-        os.path.exists(os.path.join(self.DataDir(), 'plugin', 'flash.swf')),
+        os.path.exists(os.path.join(self.ContentDataDir(), 'plugin',
+                                    'flash.swf')),
         msg='Missing required flash data file.')
-    url = self.GetFileURLForDataPath('plugin', 'flash.swf')
+    url = self.GetFileURLForContentDataPath('plugin', 'flash.swf')
     self._RunNewTabTest('NewTabFlashPage', lambda: self._AppendTab(url),
                         'open_tab')
 
