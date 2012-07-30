@@ -71,6 +71,15 @@ class PrefValueStore {
                 base::Value::Type type,
                 const Value** out_value) const;
 
+  // Gets the recommended value for the given preference name that has the
+  // specified value type. A value stored in the recommended PrefStore that has
+  // the matching |name| but a non-matching |type| is silently ignored. Returns
+  // true if a valid value was found. Most callers should use
+  // Preference::GetRecommendedValue() instead of calling this method directly.
+  bool GetRecommendedValue(const std::string& name,
+                           base::Value::Type type,
+                           const Value** out_value) const;
+
   // These methods return true if a preference with the given name is in the
   // indicated pref store, even if that value is currently being overridden by
   // a higher-priority source.
@@ -183,10 +192,16 @@ class PrefValueStore {
   // indicates an error.
   PrefStoreType ControllingPrefStoreForPref(const char* name) const;
 
-  // Get a value from the specified store type.
+  // Get a value from the specified |store|.
   bool GetValueFromStore(const char* name,
                          PrefStoreType store,
                          const Value** out_value) const;
+
+  // Get a value from the specified |store| if its |type| matches.
+  bool GetValueFromStoreWithType(const char* name,
+                                 base::Value::Type type,
+                                 PrefStoreType store,
+                                 const Value** out_value) const;
 
   // Called upon changes in individual pref stores in order to determine whether
   // the user-visible pref value has changed. Triggers the change notification

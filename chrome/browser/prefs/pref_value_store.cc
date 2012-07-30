@@ -100,37 +100,33 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
 bool PrefValueStore::GetValue(const std::string& name,
                               base::Value::Type type,
                               const Value** out_value) const {
-  *out_value = NULL;
-  // Check the |PrefStore|s in order of their priority from highest to lowest
-  // to find the value of the preference described by the given preference name.
+  // Check the |PrefStore|s in order of their priority from highest to lowest,
+  // looking for the first preference value with the given |name| and |type|.
   for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
-    if (GetValueFromStore(name.c_str(), static_cast<PrefStoreType>(i),
-                          out_value)) {
-      if (!(*out_value)->IsType(type)) {
-        LOG(WARNING) << "Expected type for " << name << " is " << type
-                     << " but got " << (*out_value)->GetType()
-                     << " in store " << i;
-        continue;
-      }
+    if (GetValueFromStoreWithType(name.c_str(), type,
+                                  static_cast<PrefStoreType>(i), out_value))
       return true;
-    }
   }
   return false;
+}
+
+bool PrefValueStore::GetRecommendedValue(const std::string& name,
+                                         base::Value::Type type,
+                                         const Value** out_value) const {
+  return GetValueFromStoreWithType(name.c_str(), type, RECOMMENDED_STORE,
+                                   out_value);
 }
 
 void PrefValueStore::NotifyPrefChanged(
     const char* path,
     PrefValueStore::PrefStoreType new_store) {
   DCHECK(new_store != INVALID_STORE);
-
-  // If the pref is controlled by a higher-priority store, its effective value
-  // cannot have changed.
-  PrefStoreType controller = ControllingPrefStoreForPref(path);
-  if (controller == INVALID_STORE || controller >= new_store) {
-    pref_notifier_->OnPreferenceChanged(path);
-    if (pref_sync_associator_)
-      pref_sync_associator_->ProcessPrefChange(path);
-  }
+  // A notification is sent when the pref value in any store changes. If this
+  // store is currently being overridden by a higher-priority store, the
+  // effective value of the pref will not have changed.
+  pref_notifier_->OnPreferenceChanged(path);
+  if (pref_sync_associator_)
+    pref_sync_associator_->ProcessPrefChange(path);
 }
 
 bool PrefValueStore::PrefValueInManagedStore(const char* name) const {
@@ -235,6 +231,23 @@ bool PrefValueStore::GetValueFromStore(const char* name,
   }
 
   // No valid value found for the given preference name: set the return false.
+  *out_value = NULL;
+  return false;
+}
+
+bool PrefValueStore::GetValueFromStoreWithType(const char* name,
+                                               base::Value::Type type,
+                                               PrefStoreType store,
+                                               const Value** out_value) const {
+  if (GetValueFromStore(name, store, out_value)) {
+    if ((*out_value)->IsType(type))
+      return true;
+
+    LOG(WARNING) << "Expected type for " << name << " is " << type
+                 << " but got " << (*out_value)->GetType()
+                 << " in store " << store;
+  }
+
   *out_value = NULL;
   return false;
 }

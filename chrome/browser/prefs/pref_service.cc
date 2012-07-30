@@ -995,6 +995,20 @@ const Value* PrefService::Preference::GetValue() const {
   return NULL;
 }
 
+const Value* PrefService::Preference::GetRecommendedValue() const {
+  DCHECK(pref_service_->FindPreference(name_.c_str())) <<
+      "Must register pref before getting its value";
+
+  const Value* found_value = NULL;
+  if (pref_value_store()->GetRecommendedValue(name_, type_, &found_value)) {
+    DCHECK(found_value->IsType(type_));
+    return found_value;
+  }
+
+  // The pref has no recommended value.
+  return NULL;
+}
+
 bool PrefService::Preference::IsManaged() const {
   return pref_value_store()->PrefValueInManagedStore(name_.c_str());
 }

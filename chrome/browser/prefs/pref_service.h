@@ -86,6 +86,9 @@ class PrefService : public base::NonThreadSafe {
     // default value if no other has been set.
     const base::Value* GetValue() const;
 
+    // Returns the value recommended by the admin, if any.
+    const base::Value* GetRecommendedValue() const;
+
     // Returns true if the Preference is managed, i.e. set by an admin policy.
     // Since managed prefs have the highest priority, this also indicates
     // whether the pref is actually being controlled by the policy setting.

@@ -125,6 +125,16 @@ TEST(PrefServiceTest, Observers) {
   Mock::VerifyAndClearExpectations(&obs);
   Mock::VerifyAndClearExpectations(&obs2);
 
+  // Set a recommended value.
+  const StringValue recommended_pref_value("http://www.gmail.com/");
+  obs.Expect(&prefs, pref_name, &expected_new_pref_value2);
+  obs2.Expect(&prefs, pref_name, &expected_new_pref_value2);
+  // This should fire the checks in obs and obs2 but with an unchanged value
+  // as the recommended value is being overridden by the user-set value.
+  prefs.SetRecommendedPref(pref_name, recommended_pref_value.DeepCopy());
+  Mock::VerifyAndClearExpectations(&obs);
+  Mock::VerifyAndClearExpectations(&obs2);
+
   // Make sure obs2 still works after removing obs.
   registrar.Remove(pref_name, &obs);
   EXPECT_CALL(obs, Observe(_, _, _)).Times(0);
@@ -185,6 +195,86 @@ TEST(PrefServiceTest, UpdateCommandLinePrefStore) {
   actual_bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_TRUE(actual_bool_value);
+}
+
+TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
+  const int kDefaultValue = 5;
+  const int kUserValue = 10;
+  const int kRecommendedValue = 15;
+  TestingPrefService prefs;
+  prefs.RegisterIntegerPref(prefs::kStabilityLaunchCount, kDefaultValue);
+
+  // Create pref with a default value only.
+  const PrefService::Preference* pref =
+      prefs.FindPreference(prefs::kStabilityLaunchCount);
+  ASSERT_TRUE(pref);
+
+  // Check that GetValue() returns the default value.
+  const Value* value = pref->GetValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  int actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(kDefaultValue, actual_int_value);
+
+  // Check that GetRecommendedValue() returns no value.
+  value = pref->GetRecommendedValue();
+  ASSERT_FALSE(value);
+
+  // Set a user-set value.
+  prefs.SetUserPref(prefs::kStabilityLaunchCount,
+                    Value::CreateIntegerValue(kUserValue));
+
+  // Check that GetValue() returns the user-set value.
+  value = pref->GetValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(kUserValue, actual_int_value);
+
+  // Check that GetRecommendedValue() returns no value.
+  value = pref->GetRecommendedValue();
+  ASSERT_FALSE(value);
+
+  // Set a recommended value.
+  prefs.SetRecommendedPref(prefs::kStabilityLaunchCount,
+                           Value::CreateIntegerValue(kRecommendedValue));
+
+  // Check that GetValue() returns the user-set value.
+  value = pref->GetValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(kUserValue, actual_int_value);
+
+  // Check that GetRecommendedValue() returns the recommended value.
+  value = pref->GetRecommendedValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(kRecommendedValue, actual_int_value);
+
+  // Remove the user-set value.
+  prefs.RemoveUserPref(prefs::kStabilityLaunchCount);
+
+  // Check that GetValue() returns the recommended value.
+  value = pref->GetValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(kRecommendedValue, actual_int_value);
+
+  // Check that GetRecommendedValue() returns the recommended value.
+  value = pref->GetRecommendedValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(kRecommendedValue, actual_int_value);
 }
 
 class PrefServiceUserFilePrefsTest : public testing::Test {

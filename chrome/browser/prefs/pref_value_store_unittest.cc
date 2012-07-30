@@ -197,6 +197,16 @@ class PrefValueStoreTest : public testing::Test {
         default_pref::kDefaultValue);
   }
 
+  void ExpectValueChangeNotifications(const char* name) {
+    EXPECT_CALL(pref_notifier_, OnPreferenceChanged(name));
+    EXPECT_CALL(*sync_associator_, ProcessPrefChange(name));
+  }
+
+  void CheckAndClearValueChangeNotifications() {
+    Mock::VerifyAndClearExpectations(&pref_notifier_);
+    Mock::VerifyAndClearExpectations(sync_associator_.get());
+  }
+
   MockPrefNotifier pref_notifier_;
   scoped_ptr<MockPrefModelAssociator> sync_associator_;
   scoped_ptr<PrefValueStore> pref_value_store_;
@@ -266,104 +276,150 @@ TEST_F(PrefValueStoreTest, GetValue) {
   value = &tmp_dummy_value;
   ASSERT_FALSE(pref_value_store_->GetValue(prefs::kMissingPref,
                                            Value::TYPE_STRING, &value));
-  ASSERT_TRUE(value == NULL);
+  ASSERT_FALSE(value);
+}
+
+TEST_F(PrefValueStoreTest, GetRecommendedValue) {
+  const Value* value;
+
+  // The following tests read a value from the PrefService. The preferences are
+  // set in a way such that all lower-priority stores have a value and we can
+  // test whether overrides do not clutter the recommended value.
+
+  // Test getting recommended value when a managed value is present.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
+      prefs::kManagedPref,
+      Value::TYPE_STRING, &value));
+  std::string actual_str_value;
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(recommended_pref::kManagedValue, actual_str_value);
+
+  // Test getting recommended value when an extension value is present.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
+      prefs::kExtensionPref,
+      Value::TYPE_STRING, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(recommended_pref::kExtensionValue, actual_str_value);
+
+  // Test getting recommended value when a command-line value is present.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
+      prefs::kCommandLinePref,
+      Value::TYPE_STRING, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(recommended_pref::kCommandLineValue, actual_str_value);
+
+  // Test getting recommended value when a user-set value is present.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
+      prefs::kUserPref,
+      Value::TYPE_STRING, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(recommended_pref::kUserValue, actual_str_value);
+
+  // Test getting recommended value when no higher-priority value is present.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
+      prefs::kRecommendedPref,
+      Value::TYPE_STRING, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(recommended_pref::kRecommendedValue,
+            actual_str_value);
+
+  // Test getting recommended value when no recommended value is present.
+  base::FundamentalValue tmp_dummy_value(true);
+  value = &tmp_dummy_value;
+  ASSERT_FALSE(pref_value_store_->GetRecommendedValue(
+      prefs::kDefaultPref,
+      Value::TYPE_STRING, &value));
+  ASSERT_FALSE(value);
+
+  // Test getting a preference value that the |PrefValueStore|
+  // does not contain.
+  value = &tmp_dummy_value;
+  ASSERT_FALSE(pref_value_store_->GetRecommendedValue(
+      prefs::kMissingPref,
+      Value::TYPE_STRING, &value));
+  ASSERT_FALSE(value);
 }
 
 TEST_F(PrefValueStoreTest, PrefChanges) {
   // Check pref controlled by highest-priority store.
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kManagedPref));
-  EXPECT_CALL(*sync_associator_,
-      ProcessPrefChange(prefs::kManagedPref));
-  managed_pref_store_->NotifyPrefValueChanged(
-      prefs::kManagedPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  ExpectValueChangeNotifications(prefs::kManagedPref);
+  managed_pref_store_->NotifyPrefValueChanged(prefs::kManagedPref);
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(0);
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(_)).Times(0);
-  extension_pref_store_->NotifyPrefValueChanged(
-      prefs::kManagedPref);
-  command_line_pref_store_->NotifyPrefValueChanged(
-      prefs::kManagedPref);
-  user_pref_store_->NotifyPrefValueChanged(
-      prefs::kManagedPref);
-  recommended_pref_store_->NotifyPrefValueChanged(
-      prefs::kManagedPref);
-  default_pref_store_->NotifyPrefValueChanged(
-      prefs::kManagedPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  ExpectValueChangeNotifications(prefs::kManagedPref);
+  extension_pref_store_->NotifyPrefValueChanged(prefs::kManagedPref);
+  CheckAndClearValueChangeNotifications();
+
+  ExpectValueChangeNotifications(prefs::kManagedPref);
+  command_line_pref_store_->NotifyPrefValueChanged(prefs::kManagedPref);
+  CheckAndClearValueChangeNotifications();
+
+  ExpectValueChangeNotifications(prefs::kManagedPref);
+  user_pref_store_->NotifyPrefValueChanged(prefs::kManagedPref);
+  CheckAndClearValueChangeNotifications();
+
+  ExpectValueChangeNotifications(prefs::kManagedPref);
+  recommended_pref_store_->NotifyPrefValueChanged(prefs::kManagedPref);
+  CheckAndClearValueChangeNotifications();
+
+  ExpectValueChangeNotifications(prefs::kManagedPref);
+  default_pref_store_->NotifyPrefValueChanged(prefs::kManagedPref);
+  CheckAndClearValueChangeNotifications();
 
   // Check pref controlled by user store.
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
+  ExpectValueChangeNotifications(prefs::kUserPref);
   managed_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
+  ExpectValueChangeNotifications(prefs::kUserPref);
   extension_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
+  ExpectValueChangeNotifications(prefs::kUserPref);
   command_line_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
+  ExpectValueChangeNotifications(prefs::kUserPref);
   user_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(0);
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(_)).Times(0);
-  recommended_pref_store_->NotifyPrefValueChanged(
-      prefs::kUserPref);
-  default_pref_store_->NotifyPrefValueChanged(
-      prefs::kUserPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  ExpectValueChangeNotifications(prefs::kUserPref);
+  recommended_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
+  CheckAndClearValueChangeNotifications();
+
+  ExpectValueChangeNotifications(prefs::kUserPref);
+  default_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
+  CheckAndClearValueChangeNotifications();
 
   // Check pref controlled by default-pref store.
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
+  ExpectValueChangeNotifications(prefs::kDefaultPref);
   managed_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
+  ExpectValueChangeNotifications(prefs::kDefaultPref);
   extension_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
+  ExpectValueChangeNotifications(prefs::kDefaultPref);
   command_line_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
+  ExpectValueChangeNotifications(prefs::kDefaultPref);
   user_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
+  ExpectValueChangeNotifications(prefs::kDefaultPref);
   recommended_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
-  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
+  ExpectValueChangeNotifications(prefs::kDefaultPref);
   default_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-  Mock::VerifyAndClearExpectations(sync_associator_.get());
+  CheckAndClearValueChangeNotifications();
 }
 
 TEST_F(PrefValueStoreTest, OnInitializationCompleted) {
