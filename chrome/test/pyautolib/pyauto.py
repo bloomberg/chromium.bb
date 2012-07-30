@@ -95,9 +95,6 @@ _REMOTE_PROXY = None
 _OPTIONS = None
 _BROWSER_PID = None
 
-# TODO(bartfab): Remove when crosbug.com/20709 is fixed.
-AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE = '/root/.forget_usernames'
-
 
 class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   """Base class for UI Test Cases in Python.
@@ -484,30 +481,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     PyUITest.RunSuperuserActionOnChromeOS('RemoveAllCryptohomeVaults')
 
   @staticmethod
-  def TryToDisableLocalStateAutoClearingOnChromeOS():
-    """Disable clearing of the local state on session manager startup.
-
-    TODO(bartfab): Remove this method when crosbug.com/20709 is fixed.
-    """
-    PyUITest.RunSuperuserActionOnChromeOS('TryToDisableLocalStateAutoClearing')
-
-  @staticmethod
-  def TryToEnableLocalStateAutoClearingOnChromeOS():
-    """Enable clearing of the local state on session manager startup.
-
-    TODO(bartfab): Remove this method when crosbug.com/20709 is fixed.
-    """
-    PyUITest.RunSuperuserActionOnChromeOS('TryToEnableLocalStateAutoClearing')
-
-  @staticmethod
-  def IsLocalStateAutoClearingEnabledOnChromeOS():
-    """Check if the session manager is set to clear the local state on startup.
-
-    TODO(bartfab): Remove this method when crosbug.com/20709 is fixed.
-    """
-    return os.path.exists(AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE)
-
-  @staticmethod
   def _IsInodeNew(path, old_inode):
     """Determine whether an inode has changed. POSIX only.
 
@@ -772,16 +745,17 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       '--sync-notification-method=p2p',
     ]
 
-  def GetPrivateInfo(self):
+  @staticmethod
+  def GetPrivateInfo():
     """Fetch info from private_tests_info.txt in private dir.
 
     Returns:
       a dictionary of items from private_tests_info.txt
     """
     private_file = os.path.join(
-        self.DataDir(), 'pyauto_private', 'private_tests_info.txt')
+        PyUITest.DataDir(), 'pyauto_private', 'private_tests_info.txt')
     assert os.path.exists(private_file), '%s missing' % private_file
-    return self.EvalDataFrom(private_file)
+    return PyUITest.EvalDataFrom(private_file)
 
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[],
                 expect_retval=None, debug=True):

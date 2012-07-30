@@ -102,6 +102,9 @@ class PolicyTestBase(pyauto.PyUITest):
     device_id = string.upper(str(uuid.uuid4()))
     machine_id = 'CROSTEST'
 
+    _auth_server = None
+    _dns_server = None
+
   @staticmethod
   def _Call(command, check=False):
     """Invokes a subprocess and optionally asserts the return value is zero."""
@@ -321,7 +324,8 @@ class PolicyTestBase(pyauto.PyUITest):
     cros_ui.stop(allow_fail=True)
 
     # Stop mock GAIA server.
-    self._auth_server.stop()
+    if self._auth_server:
+      self._auth_server.stop()
 
     # Reenable TPM if present.
     if os.path.exists(TPM_SYSFS_PATH):
@@ -331,7 +335,8 @@ class PolicyTestBase(pyauto.PyUITest):
     self._ClearInstallAttributesOnChromeOS()
 
     # Stop mock DNS server.
-    self._dns_server.stop()
+    if self._dns_server:
+      self._dns_server.stop()
 
     # Stop mock DMServer.
     self.StopHTTPServer(self._http_server)
@@ -357,8 +362,16 @@ class PolicyTestBase(pyauto.PyUITest):
     """
     if self.IsChromeOS():
       # Perform the remainder of the setup with the device manager stopped.
-      self.WaitForSessionManagerRestart(
-          self._SetUpWithSessionManagerStopped)
+      try:
+        self.WaitForSessionManagerRestart(
+            self._SetUpWithSessionManagerStopped)
+      except:
+        # Destroy the non re-entrant services.
+        if self._auth_server:
+          self._auth_server.stop()
+        if self._dns_server:
+          self._dns_server.stop()
+        raise
 
     pyauto.PyUITest.setUp(self)
     self._branding = self.GetBrowserInfo()['properties']['branding']
