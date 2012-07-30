@@ -80,6 +80,7 @@
         'shell/shell_download_manager_delegate.h',
         'shell/shell_javascript_dialog_creator.cc',
         'shell/shell_javascript_dialog_creator.h',
+        'shell/shell_javascript_dialog_gtk.cc',
         'shell/shell_javascript_dialog_mac.mm',
         'shell/shell_javascript_dialog_win.cc',
         'shell/shell_javascript_dialog.h',

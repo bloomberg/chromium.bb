@@ -87,6 +87,7 @@ namespace content {
 
 ShellJavaScriptDialog::ShellJavaScriptDialog(
     ShellJavaScriptDialogCreator* creator,
+    gfx::NativeWindow parent_window,
     JavaScriptMessageType message_type,
     const string16& message_text,
     const string16& default_prompt_text,

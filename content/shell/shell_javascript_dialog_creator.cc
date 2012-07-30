@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/shell/layout_test_controller_host.h"
 #include "content/shell/shell_javascript_dialog.h"
 #include "content/shell/shell_switches.h"
@@ -51,7 +52,7 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
     return;
   }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   *did_suppress_message = false;
 
   if (dialog_.get()) {
@@ -63,8 +64,11 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
   string16 new_message_text = net::FormatUrl(origin_url, accept_lang) +
                               ASCIIToUTF16("\n\n") +
                               message_text;
+  gfx::NativeWindow parent_window =
+      web_contents->GetView()->GetTopLevelNativeWindow();
 
   dialog_.reset(new ShellJavaScriptDialog(this,
+                                          parent_window,
                                           javascript_message_type,
                                           new_message_text,
                                           default_prompt_text,
@@ -99,7 +103,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     return;
   }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   if (dialog_.get()) {
     // Seriously!?
     callback.Run(true, string16());
@@ -110,7 +114,11 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
       message_text +
       ASCIIToUTF16("\n\nIs it OK to leave/reload this page?");
 
+  gfx::NativeWindow parent_window =
+      web_contents->GetView()->GetTopLevelNativeWindow();
+
   dialog_.reset(new ShellJavaScriptDialog(this,
+                                          parent_window,
                                           JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
                                           new_message_text,
                                           string16(),  // default_prompt_text
@@ -124,7 +132,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
 
 void ShellJavaScriptDialogCreator::ResetJavaScriptState(
     WebContents* web_contents) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   if (dialog_.get()) {
     dialog_->Cancel();
     dialog_.reset();
@@ -135,7 +143,7 @@ void ShellJavaScriptDialogCreator::ResetJavaScriptState(
 }
 
 void ShellJavaScriptDialogCreator::DialogClosed(ShellJavaScriptDialog* dialog) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   DCHECK_EQ(dialog, dialog_.get());
   dialog_.reset();
 #else

@@ -48,7 +48,7 @@ class ShellJavaScriptDialogCreator : public JavaScriptDialogCreator {
   }
 
  private:
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   // The dialog being shown. No queueing.
   scoped_ptr<ShellJavaScriptDialog> dialog_;
 #else
