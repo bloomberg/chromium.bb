@@ -5762,21 +5762,6 @@
    fun:_ZN7WebCore21DedicatedWorkerThread12runEventLoopEv
 }
 {
-   bug_139635
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6syncer21JsSyncManagerObserver24OnInitializationCompleteERKNS_10WeakHandleINS_9JsBackendEEEbNS_7EnumSetINS_9ModelTypeELS7_2ELS7_16EEE
-   fun:_ZN6syncer12_GLOBAL__N_155JsSyncManagerObserverTest_OnInitializationComplete_Test8TestBodyEv
-}
-{
-   bug_139635a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6syncer21JsSyncManagerObserver24OnInitializationCompleteERKNS_10WeakHandleINS_9JsBackendEEEbNS_7EnumSetINS_9ModelTypeELS7_2ELS7_16EEE
-   fun:_ZN6syncer15SyncManagerImpl4Init*
-   fun:_ZN12browser_sync15SyncBackendHost4Core12DoInitializeERKNS0_19DoInitializeOptionsE
-}
-{
    bug_139662
    Memcheck:Uninitialized
    fun:qcms_transform_data_rgba_out_lut_sse2

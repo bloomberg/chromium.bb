@@ -131,10 +131,12 @@ void JsSyncManagerObserver::OnInitializationComplete(
   // Ignore the |js_backend| argument; it's not really convertible to
   // JSON anyway.
 
-  DictionaryValue* details = new DictionaryValue();
-  details->Set("restoredTypes", ModelTypeSetToValue(restored_types));
+  DictionaryValue details;
+  details.Set("restoredTypes", ModelTypeSetToValue(restored_types));
 
-  HandleJsEvent(FROM_HERE, "onInitializationComplete", JsEventDetails(details));
+  HandleJsEvent(FROM_HERE,
+                "onInitializationComplete",
+                JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnStopSyncingPermanently() {
