@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -82,7 +83,7 @@ bool ProfileWriter::BookmarkEntry::operator==(
 ProfileWriter::ProfileWriter(Profile* profile) : profile_(profile) {}
 
 bool ProfileWriter::BookmarkModelIsLoaded() const {
-  return profile_->GetBookmarkModel()->IsLoaded();
+  return BookmarkModelFactory::GetForProfile(profile_)->IsLoaded();
 }
 
 bool ProfileWriter::TemplateURLServiceIsLoaded() const {
@@ -123,7 +124,7 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
   if (bookmarks.empty())
     return;
 
-  BookmarkModel* model = profile_->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   DCHECK(model->IsLoaded());
 
   // If the bookmark bar is currently empty, we should import directly to it.

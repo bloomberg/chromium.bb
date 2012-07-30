@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer.h"
@@ -190,7 +191,7 @@ ImporterHost::~ImporterHost() {
 
   if (installed_bookmark_observer_) {
     DCHECK(profile_);
-    profile_->GetBookmarkModel()->RemoveObserver(this);
+    BookmarkModelFactory::GetForProfile(profile_)->RemoveObserver(this);
   }
 }
 
@@ -218,7 +219,7 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
   // BookmarkModel should be loaded before adding IE favorites. So we observe
   // the BookmarkModel if needed, and start the task after it has been loaded.
   if ((items & importer::FAVORITES) && !writer_->BookmarkModelIsLoaded()) {
-    profile_->GetBookmarkModel()->AddObserver(this);
+    BookmarkModelFactory::GetForProfile(profile_)->AddObserver(this);
     waiting_for_bookmarkbar_model_ = true;
     installed_bookmark_observer_ = true;
   }

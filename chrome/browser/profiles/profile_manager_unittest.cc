@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/history/history.h"
@@ -222,9 +223,9 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile1,
                                                    Profile::EXPLICIT_ACCESS));
   profile1->CreateBookmarkModel(true);
-  EXPECT_TRUE(profile1->GetBookmarkModel());
+  EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile1));
   profile2->CreateBookmarkModel(true);
-  EXPECT_TRUE(profile2->GetBookmarkModel());
+  EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile2));
   profile2->CreateHistoryService(true, false);
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile2,
                                                    Profile::EXPLICIT_ACCESS));
