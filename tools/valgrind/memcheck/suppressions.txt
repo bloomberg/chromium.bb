@@ -4601,15 +4601,10 @@
    fun:_ZNSt4listIPN3gpu5gles219VertexAttribManager16VertexAttribInfoESaIS4_EE6insertESt14_List_iteratorIS4_ERKS4_
    fun:_ZN3gpu5gles219VertexAttribManager16VertexAttribInfo7SetListEPSt4listIPS2_SaIS4_EE
    fun:_ZN3gpu5gles219VertexAttribManager10InitializeEj
-   fun:_ZN3gpu5gles216GLES2DecoderImpl10InitializeERK13scoped_refptrIN3gfx9GLSurfaceEERKS2_INS3_9GLContextEERKNS3_4SizeERKNS0_18DisallowedFeaturesEPKcRKSt6vectorIiSaIiEE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl10Initialize*
    fun:_ZN6webkit3gpu18GLInProcessContext10InitializeERKN3gfx4SizeEPS1_PKcPKiNS2_13GpuPreferenceE
    fun:_ZN6webkit3gpu18GLInProcessContext22CreateOffscreenContextEPS1_RKN3gfx4SizeES2_PKcPKiNS3_13GpuPreferenceE
    fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl10InitializeEN6WebKit20WebGraphicsContext3D10AttributesEPS3_
-   fun:_ZN25TestWebKitPlatformSupport32createOffscreenGraphicsContext3DERKN6WebKit20WebGraphicsContext3D10AttributesE
-   fun:_ZN7WebCore17GraphicsContext3D6createENS0_10AttributesEPNS_10HostWindowENS0_11RenderStyleE
-   fun:_ZN7WebCore21WebGLRenderingContext6createEPNS_17HTMLCanvasElementEPNS_22WebGLContextAttributesE
-   fun:_ZN7WebCore17HTMLCanvasElement10getContextERKN3WTF6StringEPNS_23CanvasContextAttributesE
-   fun:_ZN7WebCore19V8HTMLCanvasElement18getContextCallbackERKN2v89ArgumentsE
 }
 {
    bug_109495f
@@ -5097,6 +5092,35 @@
    fun:_ZN7WebCore32CanvasRenderingContext2DInternalL18strokeTextCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_122249a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
+   fun:_ZN7WebCore23v8StringToWebCoreStringEN2v86HandleINS0_6StringEEE
+   fun:_ZN7WebCore22v8ValueToWebCoreStringEN2v86HandleINS0_5ValueEEE
+   fun:_ZN7WebCoreL21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEERN3WTF6VectorINS1_INS0_5ArrayEEELm0EEE
+   fun:_ZN7WebCore21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEE
+}
+{
+   bug_122249b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore14IDBObjectStoreEEnwEm
+   fun:_ZN7WebCore14IDBObjectStore6create*
+   fun:_ZN7WebCore11IDBDatabase17createObjectStoreERKN3WTF6StringERKNS_10DictionaryERi
+}
+{
+   bug_122249c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN25TestWebKitPlatformSupport10idbFactoryEv
+   fun:_ZN6WebKit22IDBFactoryBackendProxyC1Ev
+   fun:_ZN6WebKit22IDBFactoryBackendProxy6createEv
+   fun:_ZN7WebCore15PlatformSupport10idbFactoryEv
+   fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
 }
 {
    bug_122429
