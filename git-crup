@@ -1,0 +1,80 @@
+#!/bin/sh
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# A convenience script to largely replicate the behavior of `gclient sync` in a
+# submodule-based checkout.  Fetches latest commits for top-level solutions;
+# updates submodules; and runs post-sync hooks.
+
+j=10
+ECHO=
+pull=pull
+pull_args=
+hooks=yes
+
+usage() {
+  cat <<EOF 1>&2
+Usage: git-cr-sync [-n|--dry-run] [--fetch] [-j|--jobs [jobs]]
+    [--no-hooks] [<args to git-pull or git-fetch>]
+EOF
+}
+
+parallel_update() {
+  ( echo Entering "$1" &&
+    cd "$1" &&
+    $ECHO git $pull $pull_args origin &&
+    git ls-files -s | grep ^160000 | awk '{print $4}' |
+    xargs -L 1 -P "$j" $ECHO git submodule update --init )
+}
+
+while test $# -ne 0; do
+  case "$1" in
+    -j|--jobs)
+      if test -n "$2"; then
+        j="$2"
+        shift
+      else
+        j=0
+      fi
+      ;;
+    -n|--dry-run)
+      ECHO=echo
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --fetch)
+      pull=fetch
+      ;;
+    --no-hooks)
+      hooks=no
+      ;;
+    *)
+      pull_args="$pull_args $1"
+      break
+      ;;
+  esac
+  shift
+done
+
+while test "$PWD" != "/"; do
+  if test -f "$PWD/src/.gitmodules"; then
+    break
+  fi
+  cd ..
+done
+if test "$PWD" = "/"; then
+  echo "Could not find the root of your checkout; aborting." 1>&2
+  exit 1
+fi
+
+ls -d */.git |
+while read gitdir; do
+  parallel_update `dirname $gitdir`
+done
+
+test "$hooks" = "yes" && test -x src/.git/hooks/deps2hooks.sh &&
+src/.git/hooks/deps2hooks.sh
+
