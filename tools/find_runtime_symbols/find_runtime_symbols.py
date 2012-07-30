@@ -3,14 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import logging
 import os
 import re
 import sys
 
-from parse_proc_maps import parse_proc_maps
-from procedure_boundaries import get_procedure_boundaries_from_nm_bsd
+from static_symbols import StaticSymbols
 from util import executable_condition
 
 
@@ -50,37 +48,9 @@ class _FileOutput(object):
       self.result.write('%s\n' % symbol_name)
 
 
-def _find_runtime_symbols(
-    prepared_data_dir, addresses, outputter, loglevel=logging.WARN):
-  log = logging.getLogger('find_runtime_symbols')
-  log.setLevel(loglevel)
-  handler = logging.StreamHandler()
-  handler.setLevel(loglevel)
-  formatter = logging.Formatter('%(message)s')
-  handler.setFormatter(formatter)
-  log.addHandler(handler)
-
-  if not os.path.exists(prepared_data_dir):
-    log.warn("Nothing found: %s" % prepared_data_dir)
-    return 1
-  if not os.path.isdir(prepared_data_dir):
-    log.warn("Not a directory: %s" % prepared_data_dir)
-    return 1
-
-  with open(os.path.join(prepared_data_dir, 'maps'), mode='r') as f:
-    maps = parse_proc_maps(f)
-
-  with open(os.path.join(prepared_data_dir, 'nm.json'), mode='r') as f:
-    nm_files = json.load(f)
-
-  symbol_table = {}
-  for entry in maps.iter(executable_condition):
-    if nm_files.has_key(entry.name):
-      if nm_files[entry.name]['format'] == 'bsd':
-        with open(os.path.join(prepared_data_dir,
-                               nm_files[entry.name]['file']), mode='r') as f:
-          symbol_table[entry.name] = get_procedure_boundaries_from_nm_bsd(
-              f, nm_files[entry.name]['mangled'])
+def _find_runtime_symbols(static_symbols, addresses, outputter):
+  maps = static_symbols.maps
+  symbol_tables = static_symbols.procedure_boundaries
 
   for address in addresses:
     if isinstance(address, str):
@@ -88,8 +58,8 @@ def _find_runtime_symbols(
     is_found = False
     for entry in maps.iter(executable_condition):
       if entry.begin <= address < entry.end:
-        if entry.name in symbol_table:
-          found = symbol_table[entry.name].find_procedure(
+        if entry.name in symbol_tables:
+          found = symbol_tables[entry.name].find_procedure(
               address - (entry.begin - entry.offset))
           outputter.output(address, found)
         else:
@@ -102,21 +72,21 @@ def _find_runtime_symbols(
   return 0
 
 
-def find_runtime_symbols_list(prepared_data_dir, addresses):
+def find_runtime_symbols_list(static_symbols, addresses):
   result = []
-  _find_runtime_symbols(prepared_data_dir, addresses, _ListOutput(result))
+  _find_runtime_symbols(static_symbols, addresses, _ListOutput(result))
   return result
 
 
-def find_runtime_symbols_dict(prepared_data_dir, addresses):
+def find_runtime_symbols_dict(static_symbols, addresses):
   result = {}
-  _find_runtime_symbols(prepared_data_dir, addresses, _DictOutput(result))
+  _find_runtime_symbols(static_symbols, addresses, _DictOutput(result))
   return result
 
 
-def find_runtime_symbols_file(prepared_data_dir, addresses, f):
+def find_runtime_symbols_file(static_symbols, addresses, f):
   _find_runtime_symbols(
-      prepared_data_dir, addresses, _FileOutput(f, False))
+      static_symbols, addresses, _FileOutput(f, False))
 
 
 def main():
@@ -127,7 +97,24 @@ def main():
 """ % sys.argv[0])
     return 1
 
-  return find_runtime_symbols_file(sys.argv[1], sys.stdin, sys.stdout)
+  log = logging.getLogger('find_runtime_symbols')
+  log.setLevel(logging.WARN)
+  handler = logging.StreamHandler()
+  handler.setLevel(logging.WARN)
+  formatter = logging.Formatter('%(message)s')
+  handler.setFormatter(formatter)
+  log.addHandler(handler)
+
+  prepared_data_dir = sys.argv[1]
+  if not os.path.exists(prepared_data_dir):
+    log.warn("Nothing found: %s" % prepared_data_dir)
+    return 1
+  if not os.path.isdir(prepared_data_dir):
+    log.warn("Not a directory: %s" % prepared_data_dir)
+    return 1
+
+  static_symbols = StaticSymbols.load(prepared_data_dir)
+  return find_runtime_symbols_file(static_symbols, sys.stdin, sys.stdout)
 
 
 if __name__ == '__main__':

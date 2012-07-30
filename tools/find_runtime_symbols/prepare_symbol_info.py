@@ -16,6 +16,39 @@ from parse_proc_maps import parse_proc_maps
 from util import executable_condition
 
 
+def _dump_command_result(command, output_dir_path, basename, suffix, log):
+  handle_out, filename_out = tempfile.mkstemp(
+      suffix=suffix, prefix=basename + '.', dir=output_dir_path)
+  handle_err, filename_err = tempfile.mkstemp(
+      suffix=suffix + '.err', prefix=basename + '.', dir=output_dir_path)
+  error = False
+  try:
+    subprocess.check_call(
+        command, stdout=handle_out, stderr=handle_err, shell=True)
+  except:
+    error = True
+  finally:
+    os.close(handle_err)
+    os.close(handle_out)
+
+  if os.path.exists(filename_err):
+    if log.getEffectiveLevel() <= logging.DEBUG:
+      with open(filename_err, 'r') as f:
+        for line in f:
+          log.debug(line.rstrip())
+    os.remove(filename_err)
+
+  if os.path.exists(filename_out) and (
+      os.path.getsize(filename_out) == 0 or error):
+    os.remove(filename_out)
+    return None
+
+  if not os.path.exists(filename_out):
+    return None
+
+  return filename_out
+
+
 def prepare_symbol_info(maps_path, output_dir_path=None, loglevel=logging.WARN):
   log = logging.getLogger('prepare_symbol_info')
   log.setLevel(loglevel)
@@ -58,42 +91,31 @@ def prepare_symbol_info(maps_path, output_dir_path=None, loglevel=logging.WARN):
     maps = parse_proc_maps(f)
 
   log.debug('Listing up symbols.')
-  nm_files = {}
+  files = {}
   for entry in maps.iter(executable_condition):
     log.debug('  %016x-%016x +%06x %s' % (
         entry.begin, entry.end, entry.offset, entry.name))
-    with tempfile.NamedTemporaryFile(
-        prefix=os.path.basename(entry.name) + '.',
-        suffix='.nm', delete=False, mode='w', dir=output_dir_path) as f:
-      nm_filename = os.path.realpath(f.name)
-      nm_succeeded = False
-      cppfilt_succeeded = False
-      p_nm = subprocess.Popen(
-          'nm -n --format bsd %s' % entry.name, shell=True,
-          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      p_cppfilt = subprocess.Popen(
-          'c++filt', shell=True,
-          stdin=p_nm.stdout, stdout=f, stderr=subprocess.PIPE)
+    nm_filename = _dump_command_result(
+        'nm -n --format bsd %s | c++filt' % entry.name,
+        output_dir_path, os.path.basename(entry.name), '.nm', log)
+    if not nm_filename:
+      continue
+    readelf_e_filename = _dump_command_result(
+        'readelf -e %s' % entry.name,
+        output_dir_path, os.path.basename(entry.name), '.readelf-e', log)
+    if not readelf_e_filename:
+      continue
 
-      if p_nm.wait() == 0:
-        nm_succeeded = True
-      for line in p_nm.stderr:
-        log.debug(line.rstrip())
-      if p_cppfilt.wait() == 0:
-        cppfilt_succeeded = True
-      for line in p_cppfilt.stderr:
-        log.debug(line.rstrip())
-
-    if nm_succeeded and cppfilt_succeeded:
-      nm_files[entry.name] = {
+    files[entry.name] = {}
+    files[entry.name]['nm'] = {
         'file': os.path.basename(nm_filename),
         'format': 'bsd',
         'mangled': False}
-    else:
-      os.remove(nm_filename)
+    files[entry.name]['readelf-e'] = {
+        'file': os.path.basename(readelf_e_filename)}
 
-  with open(os.path.join(output_dir_path, 'nm.json'), 'w') as f:
-    json.dump(nm_files, f, indent=2, sort_keys=True)
+  with open(os.path.join(output_dir_path, 'files.json'), 'w') as f:
+    json.dump(files, f, indent=2, sort_keys=True)
 
   log.info('Collected symbol information at "%s".' % output_dir_path)
   return 0
@@ -110,7 +132,7 @@ def main():
 """ % sys.argv[0])
     return 1
   elif len(sys.argv) == 2:
-    sys.exit(prepare_symbol_info(sys.argv[1], loglevel=logging.DEBUG))
+    sys.exit(prepare_symbol_info(sys.argv[1], loglevel=logging.INFO))
   else:
     sys.exit(prepare_symbol_info(sys.argv[1], sys.argv[2],
                                  loglevel=logging.INFO))

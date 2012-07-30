@@ -21,8 +21,9 @@ FIND_RUNTIME_SYMBOLS_PATH = os.path.join(
     'find_runtime_symbols')
 sys.path.append(FIND_RUNTIME_SYMBOLS_PATH)
 
-from prepare_symbol_info import prepare_symbol_info
 from find_runtime_symbols import find_runtime_symbols_list
+from prepare_symbol_info import prepare_symbol_info
+from static_symbols import StaticSymbols
 
 BUCKET_ID = 5
 VIRTUAL = 0
@@ -104,6 +105,29 @@ class ObsoleteDumpVersionException(ParsingException):
     self.value = value
   def __str__(self):
     return "obsolete heap profile dump version: %s" % repr(self.value)
+
+
+class DelayedStaticSymbols(object):
+  """Represents static symbol information loaded lazily."""
+
+  def __init__(self, prefix, keep=False):
+    self.maps_path = prefix + '.maps'
+    self.keep = keep
+    if keep:
+      self.prepared_data_dir = prefix + '.pre'
+    self.loaded_static_symbols = None
+
+  def get(self):
+    if not self.loaded_static_symbols:
+      if not self.keep:
+        self.prepared_data_dir = tempfile.mkdtemp()
+      try:
+        prepare_symbol_info(self.maps_path, self.prepared_data_dir)
+        self.loaded_static_symbols = StaticSymbols.load(self.prepared_data_dir)
+      finally:
+        if not self.keep:
+          shutil.rmtree(self.prepared_data_dir)
+    return self.loaded_static_symbols
 
 
 class Rule(object):
@@ -192,7 +216,7 @@ class Dump(object):
       for i in range(0, BUCKET_ID - 1):
         sys.stdout.write(words[i] + ' ')
       for address in bucket.stacktrace:
-        sys.stdout.write((symbols.get(address) or address) + ' ')
+        sys.stdout.write((symbols.get(address) or ('0x%016x' % address)) + ' ')
       sys.stdout.write('\n')
 
   @staticmethod
@@ -252,7 +276,7 @@ class Dump(object):
           int(words[ALLOC_COUNT]) - int(words[FREE_COUNT]),
           words[COMMITTED]))
       for address in bucket.stacktrace:
-        sys.stdout.write(' ' + address)
+        sys.stdout.write(' 0x%016x' % address)
       sys.stdout.write('\n')
 
   def print_for_pprof(
@@ -575,7 +599,7 @@ class Dump(object):
 
 
 def update_symbols(
-    symbol_path, maps_path, appeared_addresses, symbols):
+    symbol_path, delayed_static_symbols, appeared_addresses, symbols):
   """Updates address/symbol mapping on memory and in a .symbol cache file.
 
   It reads cached address/symbol mapping from a .symbol file if it exists.
@@ -590,7 +614,7 @@ def update_symbols(
 
   Args:
       symbol_path: A string representing a path for a .symbol file.
-      maps_path: A string of the path of /proc/.../maps.
+      delayed_static_symbols: A DelayedStaticSymbols object.
       appeared_addresses: A list of known addresses.
       symbols: A dict mapping runtime addresses to symbol names.
   """
@@ -601,7 +625,7 @@ def update_symbols(
         items = line.split(None, 1)
         if len(items) == 1:
           items.append('??')
-        symbols[items[0]] = items[1].rstrip()
+        symbols[int(items[0], 16)] = items[1].rstrip()
     if symbols:
       sys.stderr.write('  Found %d symbols in cache.\n' % len(symbols))
     else:
@@ -613,23 +637,20 @@ def update_symbols(
     if not unresolved_addresses:
       sys.stderr.write('  No need to resolve any more addresses.\n')
     else:
-      sys.stderr.write('  %d addresses are unresolved.\n' %
+      sys.stderr.write('  %d addresses unresolved.\n' %
                        len(unresolved_addresses))
-      prepared_data_dir = tempfile.mkdtemp()
-      try:
-        prepare_symbol_info(maps_path, prepared_data_dir)
+      static_symbols = delayed_static_symbols.get()
+      symbol_list = find_runtime_symbols_list(
+          static_symbols, unresolved_addresses)
 
-        symbol_list = find_runtime_symbols_list(
-            prepared_data_dir, unresolved_addresses)
+      for address, symbol in zip(unresolved_addresses, symbol_list):
+        if not symbol:
+          symbol = '??'
+        stripped_symbol = symbol.strip()
+        symbols[address] = stripped_symbol
+        symbol_f.write('%x %s\n' % (address, stripped_symbol))
 
-        for address, symbol in zip(unresolved_addresses, symbol_list):
-          if not symbol:
-            symbol = '??'
-          stripped_symbol = symbol.strip()
-          symbols[address] = stripped_symbol
-          symbol_f.write('%s %s\n' % (address, stripped_symbol))
-      finally:
-        shutil.rmtree(prepared_data_dir)
+    sys.stderr.write('  All symbols resolved.\n')
 
 
 def parse_policy(policy_path):
@@ -703,7 +724,8 @@ def load_buckets(prefix):
     with open(buckets_path, 'r') as buckets_f:
       for line in buckets_f:
         words = line.split()
-        buckets[int(words[0])] = Bucket(words[2:], words[1] == 'mmap')
+        stacktrace = [int(address, 16) for address in words[2:]]
+        buckets[int(words[0])] = Bucket(stacktrace, words[1] == 'mmap')
     n += 1
 
   return buckets
@@ -760,12 +782,13 @@ def load_dumps(dump_path_list, buckets):
   return dumps, appeared_addresses
 
 
-def load_and_update_symbol_cache(prefix, appeared_addresses):
-  maps_path = prefix + '.maps'
+def load_and_update_symbol_cache(
+    prefix, appeared_addresses, delayed_static_symbols):
   symbol_path = prefix + '.symbols'
   sys.stderr.write('Loading and updating symbol cache: "%s".\n' % symbol_path)
   symbols = {}
-  update_symbols(symbol_path, maps_path, appeared_addresses, symbols)
+  update_symbols(
+      symbol_path, delayed_static_symbols, appeared_addresses, symbols)
   return symbols
 
 
@@ -807,8 +830,31 @@ def load_policies(options_policy):
   return policies
 
 
+def load_basic_files_with_multiple_dumps(dump_path, keep):
+  prefix = find_prefix(dump_path)
+  buckets = load_buckets(prefix)
+  dumps, appeared_addresses = load_dumps(
+      determine_dump_path_list(dump_path, prefix), buckets)
+  delayed_static_symbols = DelayedStaticSymbols(prefix, keep)
+  symbols = load_and_update_symbol_cache(
+      prefix, appeared_addresses, delayed_static_symbols)
+  return buckets, dumps, appeared_addresses, delayed_static_symbols, symbols
+
+
+def load_basic_files_with_single_dump(dump_path, keep):
+  prefix = find_prefix(dump_path)
+  buckets = load_buckets(prefix)
+  dump, appeared_addresses = load_dump(dump_path, buckets)
+  delayed_static_symbols = DelayedStaticSymbols(prefix, keep)
+  symbols = load_and_update_symbol_cache(
+      prefix, appeared_addresses, delayed_static_symbols)
+  return buckets, dump, appeared_addresses, delayed_static_symbols, symbols
+
+
 def do_stacktrace(sys_argv):
-  parser = optparse.OptionParser(usage='Usage: %prog stacktrace <dump>')
+  parser = optparse.OptionParser(
+      'Usage: %prog stacktrace [--keep] <dump>')
+  parser.add_option('--keep', dest='keep', action='store_true')
   options, args = parser.parse_args(sys_argv)
 
   if len(args) != 2:
@@ -817,10 +863,8 @@ def do_stacktrace(sys_argv):
 
   dump_path = args[1]
 
-  prefix = find_prefix(dump_path)
-  buckets = load_buckets(prefix)
-  dump, appeared_addresses = load_dump(dump_path, buckets)
-  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  buckets, dump, appeared_addresses, delayed_static_symbols, symbols = (
+      load_basic_files_with_single_dump(dump_path, options.keep))
 
   dump.print_stacktrace(buckets, symbols)
 
@@ -828,9 +872,11 @@ def do_stacktrace(sys_argv):
 
 
 def do_csv(sys_argv):
-  parser = optparse.OptionParser('Usage: %prog csv [-p POLICY] <first-dump>')
+  parser = optparse.OptionParser(
+      'Usage: %prog csv [-p POLICY] [--keep] <first-dump>')
   parser.add_option('-p', '--policy', type='string', dest='policy',
                     help='profile with POLICY', metavar='POLICY')
+  parser.add_option('--keep', dest='keep', action='store_true')
   options, args = parser.parse_args(sys_argv)
 
   if len(args) != 2:
@@ -839,11 +885,8 @@ def do_csv(sys_argv):
 
   dump_path = args[1]
 
-  prefix = find_prefix(dump_path)
-  buckets = load_buckets(prefix)
-  dumps, appeared_addresses = load_dumps(
-      determine_dump_path_list(dump_path, prefix), buckets)
-  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  buckets, dumps, appeared_addresses, delayed_static_symbols, symbols = (
+      load_basic_files_with_multiple_dumps(dump_path, options.keep))
   policies = load_policies(options.policy)
 
   max_components = 0
@@ -878,9 +921,11 @@ def do_csv(sys_argv):
 
 
 def do_json(sys_argv):
-  parser = optparse.OptionParser('Usage: %prog json [-p POLICY] <first-dump>')
+  parser = optparse.OptionParser(
+      'Usage: %prog json [-p POLICY] [--keep] <first-dump>')
   parser.add_option('-p', '--policy', type='string', dest='policy',
                     help='profile with POLICY', metavar='POLICY')
+  parser.add_option('--keep', dest='keep', action='store_true')
   options, args = parser.parse_args(sys_argv)
 
   if len(args) != 2:
@@ -889,11 +934,8 @@ def do_json(sys_argv):
 
   dump_path = args[1]
 
-  prefix = find_prefix(dump_path)
-  buckets = load_buckets(prefix)
-  dumps, appeared_addresses = load_dumps(
-      determine_dump_path_list(dump_path, prefix), buckets)
-  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  buckets, dumps, appeared_addresses, delayed_static_symbols, symbols = (
+      load_basic_files_with_multiple_dumps(dump_path, options.keep))
   policies = load_policies(options.policy)
 
   json_base = {
@@ -927,9 +969,11 @@ def do_json(sys_argv):
 
 
 def do_list(sys_argv):
-  parser = optparse.OptionParser('Usage: %prog [-p POLICY] list <first-dump>')
+  parser = optparse.OptionParser(
+      'Usage: %prog [-p POLICY] [--keep] list <first-dump>')
   parser.add_option('-p', '--policy', type='string', dest='policy',
                     help='profile with POLICY', metavar='POLICY')
+  parser.add_option('--keep', dest='keep', action='store_true')
   options, args = parser.parse_args(sys_argv)
 
   if len(args) != 2:
@@ -938,11 +982,8 @@ def do_list(sys_argv):
 
   dump_path = args[1]
 
-  prefix = find_prefix(dump_path)
-  buckets = load_buckets(prefix)
-  dumps, appeared_addresses = load_dumps(
-      determine_dump_path_list(dump_path, prefix), buckets)
-  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  buckets, dumps, appeared_addresses, delayed_static_symbols, symbols = (
+      load_basic_files_with_multiple_dumps(dump_path, options.keep))
   policies = load_policies(options.policy)
 
   for policy in sorted(policies):
@@ -967,7 +1008,8 @@ def do_list(sys_argv):
 
 def do_expand(sys_argv):
   parser = optparse.OptionParser(
-      'Usage: %prog expand <dump> <policy> <component> <depth>')
+      'Usage: %prog expand [--keep] <dump> <policy> <component> <depth>')
+  parser.add_option('--keep', dest='keep', action='store_true')
   options, args = parser.parse_args(sys_argv)
 
   if len(args) != 5:
@@ -979,10 +1021,8 @@ def do_expand(sys_argv):
   component_name = args[3]
   depth = args[4]
 
-  prefix = find_prefix(dump_path)
-  buckets = load_buckets(prefix)
-  dump, appeared_addresses = load_dump(dump_path, buckets)
-  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  buckets, dump, appeared_addresses, delayed_static_symbols, symbols = (
+      load_basic_files_with_single_dump(dump_path, options.keep))
   policies = load_policies(target_policy)
 
   rule_list = policies[target_policy].rules
@@ -994,9 +1034,10 @@ def do_expand(sys_argv):
 
 def do_pprof(sys_argv):
   parser = optparse.OptionParser(
-      'Usage: %prog pprof [-c COMPONENT] <dump> <policy>')
+      'Usage: %prog pprof [-c COMPONENT] [--keep] <dump> <policy>')
   parser.add_option('-c', '--component', type='string', dest='component',
                     help='restrict to COMPONENT', metavar='COMPONENT')
+  parser.add_option('--keep', dest='keep', action='store_true')
   options, args = parser.parse_args(sys_argv)
 
   if len(args) != 3:
@@ -1007,15 +1048,13 @@ def do_pprof(sys_argv):
   target_policy = args[2]
   component = options.component
 
-  prefix = find_prefix(dump_path)
-  buckets = load_buckets(prefix)
-  dump, appeared_addresses = load_dump(dump_path, buckets)
-  symbols = load_and_update_symbol_cache(prefix, appeared_addresses)
+  buckets, dump, appeared_addresses, delayed_static_symbols, symbols = (
+      load_basic_files_with_single_dump(dump_path, options.keep))
   policies = load_policies(target_policy)
 
   rule_list = policies[target_policy].rules
 
-  with open(prefix + '.maps', 'r') as maps_f:
+  with open(find_prefix(dump_path) + '.maps', 'r') as maps_f:
     maps_lines = maps_f.readlines()
   dump.print_for_pprof(rule_list, buckets, maps_lines, component, symbols)
 
@@ -1054,12 +1093,12 @@ Commands:
    stacktrace   Convert runtime addresses to symbol names
 
 Quick Reference:
-   dmprof csv [-p POLICY] <first-dump>
-   dmprof expand <dump> <policy> <component> <depth>
-   dmprof json [-p POLICY] <first-dump>
-   dmprof list [-p POLICY] <first-dump>
-   dmprof pprof [-c COMPONENT] <dump> <policy>
-   dmprof stacktrace <dump>
+   dmprof csv [-p POLICY] [--keep] <first-dump>
+   dmprof expand [--keep] <dump> <policy> <component> <depth>
+   dmprof json [-p POLICY] [--keep] <first-dump>
+   dmprof list [-p POLICY] [--keep] <first-dump>
+   dmprof pprof [-c COMPONENT] [--keep] <dump> <policy>
+   dmprof stacktrace [--keep] <dump>
 """ % (sys.argv[0]))
     sys.exit(1)
   action = sys.argv.pop(1)
