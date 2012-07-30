@@ -29,3 +29,8 @@ deps = {
   "clang":
     Var("llvm_upstream_base") + "/clang.git@" + Var("clang_rev"),
 }
+
+skip_child_includes = [
+  'git',
+  'src',
+]
