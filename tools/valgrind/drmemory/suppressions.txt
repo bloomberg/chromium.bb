@@ -64,8 +64,7 @@ ntdll.dll!RtlValidateUnicodeString
 
 UNADDRESSABLE ACCESS
 name=http://crbug.com/131304
-avcodec-54.dll!avpriv_vorbis_parse_reset
-avcodec-54.dll!avpriv_vorbis_parse_reset
+avutil-51.dll!ff_vector_fmul_sse
 
 ############################
 # TODO(timurrrr): investigate these
