@@ -199,6 +199,10 @@ void PbufferImageTransportSurface::SendBuffersSwapped() {
 
   DCHECK(!is_swap_buffers_pending_);
   is_swap_buffers_pending_ = true;
+
+  // Pause all processing of this command buffer.
+  // http://code.google.com/p/chromium/issues/detail?id=135546
+  DeferDraws();
 }
 
 void PbufferImageTransportSurface::OnBufferPresented(uint32 sync_point) {
