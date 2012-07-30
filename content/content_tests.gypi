@@ -727,13 +727,14 @@
           },
         ]
     }],
-    ['chromeos == 1', {
+    ['chromeos == 1 or OS == "linux"', {
       'targets': [
         {
           'target_name': 'h264_parser_unittest',
           'type': 'executable',
           'dependencies': [
             'content_common',
+            '../base/base.gyp:base',
             '../testing/gtest.gyp:gtest',
           ],
           'sources': [

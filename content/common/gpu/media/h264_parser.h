@@ -222,7 +222,7 @@ struct H264SEIRecoveryPoint {
   int changing_slice_group_idc;
 };
 
-struct H264SEIMessage {
+struct CONTENT_EXPORT H264SEIMessage {
   H264SEIMessage();
 
   enum Type {
