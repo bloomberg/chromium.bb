@@ -19,7 +19,8 @@ ShellWindowGtk::ShellWindowGtk(Profile* profile,
                                const ShellWindow::CreateParams& params)
     : ShellWindow(profile, extension, url),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
-      is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()) {
+      is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
+      content_thinks_its_fullscreen_(false) {
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
   gfx::NativeView native_view =
