@@ -68,6 +68,8 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mJavaScriptEnabled", "Z");
     java_script_can_open_windows_automatically =
         GetFieldID(env, clazz, "mJavaScriptCanOpenWindowsAutomatically", "Z");
+    dom_storage_enabled =
+        GetFieldID(env, clazz, "mDomStorageEnabled", "Z");
   }
 
   // Field ids
@@ -86,6 +88,7 @@ struct ContentSettings::FieldIds {
   jfieldID load_images_automatically;
   jfieldID java_script_enabled;
   jfieldID java_script_can_open_windows_automatically;
+  jfieldID dom_storage_enabled;
 };
 
 ContentSettings::ContentSettings(JNIEnv* env,
@@ -192,6 +195,12 @@ void ContentSettings::SyncFromNativeImpl() {
 
   Java_ContentSettings_setPluginsDisabled(env, obj, !prefs.plugins_enabled);
   CheckException(env);
+
+  env->SetBooleanField(
+      obj,
+      field_ids_->dom_storage_enabled,
+      prefs.local_storage_enabled);
+  CheckException(env);
 }
 
 void ContentSettings::SyncToNativeImpl() {
@@ -267,6 +276,9 @@ void ContentSettings::SyncToNativeImpl() {
       obj, field_ids_->java_script_can_open_windows_automatically);
 
   prefs.plugins_enabled = !Java_ContentSettings_getPluginsDisabled(env, obj);
+
+  prefs.local_storage_enabled = env->GetBooleanField(
+      obj, field_ids_->dom_storage_enabled);
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }

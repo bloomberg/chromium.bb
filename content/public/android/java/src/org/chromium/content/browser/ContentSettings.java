@@ -65,6 +65,7 @@ public class ContentSettings {
     private boolean mJavaScriptEnabled = false;
     private boolean mJavaScriptCanOpenWindowsAutomatically = false;
     private PluginState mPluginState = PluginState.OFF;
+    private boolean mDomStorageEnabled = false;
 
     // Not accessed by the native side.
     private String mDefaultUserAgent = "";
@@ -622,6 +623,28 @@ public class ContentSettings {
      */
     public synchronized boolean getJavaScriptCanOpenWindowsAutomatically() {
         return mJavaScriptCanOpenWindowsAutomatically;
+    }
+
+    /**
+     * Sets whether the DOM storage API is enabled. The default value is false.
+     *
+     * @param flag true if the ContentView should use the DOM storage API
+     */
+    public synchronized void setDomStorageEnabled(boolean flag) {
+       if (mDomStorageEnabled != flag) {
+           mDomStorageEnabled = flag;
+           sendSyncMessage();
+       }
+    }
+
+    /**
+     * Gets whether the DOM Storage APIs are enabled.
+     *
+     * @return true if the DOM Storage APIs are enabled
+     * @see #setDomStorageEnabled
+     */
+    public synchronized boolean getDomStorageEnabled() {
+       return mDomStorageEnabled;
     }
 
     /**
