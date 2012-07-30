@@ -32,8 +32,8 @@ PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang -c
 PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++ -c -std=gnu++98
 PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++
 PNACL_DUMP?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/objdump
-PNACL_CCFLAGS?=-O0 -g -pthread $(NACL_WARNINGS)
 PNACL_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS)
+PNACL_LDFLAGS?=-g -pthread
 TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 """
 
