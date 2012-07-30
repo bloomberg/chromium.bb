@@ -440,11 +440,16 @@ int NaClValidateCodeReplacement(struct    NaClApp *nap,
                                 size_t    size);
 
 /*
- * Copies code from data_new to data_old in a thread-safe way
+ * Copies code from data_new to data_old in a thread-safe way.
  */
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size);
+
+/*
+ * Copies an instruction in a thread-safe way. Used by validators.
+ */
+int NaClCopyInstruction(uint8_t *dst, uint8_t *src, uint8_t sz);
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) NACL_WUR;
 

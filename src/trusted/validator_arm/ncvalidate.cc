@@ -129,4 +129,16 @@ const struct NaClValidatorInterface *NaClValidatorCreateArm() {
   return &validator;
 }
 
+/*
+ * When safe instruction copying gets implemented for ARM, it should be moved to
+ * be part of sel_ldr, not the validator.
+ */
+int NaClCopyInstruction(uint8_t *dst, uint8_t *src, uint8_t sz) {
+  UNREFERENCED_PARAMETER(dst);
+  UNREFERENCED_PARAMETER(src);
+  UNREFERENCED_PARAMETER(sz);
+
+  return 0;
+}
+
 EXTERN_C_END

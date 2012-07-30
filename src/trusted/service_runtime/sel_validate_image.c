@@ -8,7 +8,6 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
-#include "native_client/src/trusted/validator_x86/nccopycode.h"
 
 const size_t kMinimumCachedCodeSize = 40000;
 
@@ -104,22 +103,18 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
-  /* TODO(pasko): define NaClCopyCode in system-dependent files,
-   * avoid ARM conditional compilation using preprocessor macros.
-   */
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  NaClCopyInstructionFunc copy_func = NULL;
-#else
-  NaClCopyInstructionFunc copy_func = NaClCopyInstructionX86;
-#endif
   /* Fixed-feature mode disables any code copying for now. Currently
    * the only use of NaClCodeCopy() seems to be for dynamic code
    * modification, which should fail in NaClValidateCodeReplacement()
    * before reaching this.
    */
-  if (nap->fixed_feature_cpu_mode) return LOAD_BAD_FILE;
+  if (nap->fixed_feature_cpu_mode) {
+    return LOAD_BAD_FILE;
+  }
   return NaClValidateStatus(nap->validator->CopyCode(
-      guest_addr, data_old, data_new, size, &nap->cpu_features, copy_func));
+      guest_addr, data_old, data_new, size,
+      &nap->cpu_features,
+      NaClCopyInstruction));
 }
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {

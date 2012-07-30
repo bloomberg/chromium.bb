@@ -167,7 +167,7 @@ static Bool SerializeAllProcessors() {
   return TRUE;
 }
 
-int NaClCopyInstructionX86(uint8_t *dst, uint8_t *src, uint8_t sz) {
+int NaClCopyInstruction(uint8_t *dst, uint8_t *src, uint8_t sz) {
   intptr_t offset = 0;
   uint8_t *firstbyte_p = dst;
 
