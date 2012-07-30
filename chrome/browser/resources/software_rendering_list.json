@@ -66,7 +66,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.3",
+  "version": "2.4",
   "entries": [
     {
       "id": 1,
@@ -639,6 +639,22 @@
       "device_id": ["0x6760"],
       "blacklist": [
         "webgl"
+      ]
+    },
+    {
+      "id": 43,
+      "description": "Intel driver version 8.15.10.1749 has problems sharing textures.",
+      "cr_bugs": [133924],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "=",
+        "number": "8.15.10.1749"
+      },
+      "blacklist": [
+        "texture_sharing"
       ]
     }
   ]
