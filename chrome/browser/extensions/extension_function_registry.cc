@@ -36,7 +36,7 @@
 #include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/extension_font_settings_api.h"
-#include "chrome/browser/extensions/extension_i18n_api.h"
+#include "chrome/browser/extensions/api/i18n/i18n_api.h"
 #include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_module.h"

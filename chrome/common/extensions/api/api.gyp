@@ -24,6 +24,7 @@
           'events.json',
           'experimental_record.json',
           'file_browser_handler_internal.json',
+          'i18n.json',
           'font_settings.json',
           'history.json',
           'permissions.json',

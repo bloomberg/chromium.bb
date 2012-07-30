@@ -2,20 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_i18n_api.h"
+#include "chrome/browser/extensions/api/i18n/i18n_api.h"
+
+#include <algorithm>
+#include <string>
+#include <vector>
 
 #include "base/string_piece.h"
-#include "base/utf_string_conversions.h"
+#include "base/string_split.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/extensions/api/i18n.h"
+
+namespace GetAcceptLanguages = extensions::api::i18n::GetAcceptLanguages;
 
 // Errors.
 static const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";
 
 bool GetAcceptLanguagesFunction::RunImpl() {
-  string16 acceptLanguages =
-      UTF8ToUTF16(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  std::string accept_languages =
+      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   // Currently, there are 2 ways to set browser's accept-languages: through UI
   // or directly modify the preference file. The accept-languages set through
   // UI is guranteed to be valid, and the accept-languages string returned from
@@ -26,30 +33,21 @@ bool GetAcceptLanguagesFunction::RunImpl() {
   // of the language code) on accept-languages set through editing preference
   // file directly. So, here, we're adding extra checks to be resistant to
   // crashes caused by data corruption.
-  ListValue* result_languages = new ListValue();
-  SetResult(result_languages);
-  if (acceptLanguages.empty()) {
+  if (accept_languages.empty()) {
     error_ = kEmptyAcceptLanguagesError;
     return false;
   }
-  size_t begin = 0;
-  size_t end;
-  while (1) {
-    end = acceptLanguages.find(',', begin);
-    if (end > begin) {
-      // Guard against a malformed value with multiple "," in a row.
-      string16 acceptLang = acceptLanguages.substr(begin, end - begin);
-      result_languages->Append(Value::CreateStringValue(acceptLang));
-    }
-    begin = end + 1;
-    // 'begin >= acceptLanguages.length()' to guard against a value
-    // ending with ','.
-    if (end == string16::npos || begin >= acceptLanguages.length())
-      break;
-  }
-  if (result_languages->GetSize() == 0) {
+
+  std::vector<std::string> languages;
+  base::SplitString(accept_languages, ',', &languages);
+  languages.erase(std::remove(languages.begin(), languages.end(), ""),
+                  languages.end());
+
+  if (languages.empty()) {
     error_ = kEmptyAcceptLanguagesError;
     return false;
   }
+
+  results_ = GetAcceptLanguages::Results::Create(languages);
   return true;
 }
