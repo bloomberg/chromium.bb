@@ -1133,8 +1133,8 @@ DirectoryModel.isSystemDirectory = function(path) {
  * TODO(olege): Change callbacks to events.
  */
 DirectoryModel.prototype.search = function(query,
-                                             onSearchRescan,
-                                             onClearSearch) {
+                                           onSearchRescan,
+                                           onClearSearch) {
   query = query.trimLeft();
 
   var newDirContents;
@@ -1150,13 +1150,13 @@ DirectoryModel.prototype.search = function(query,
   }
 
   // If we already have event listener for an old search, we have to remove it.
-  if (this.onSearchRescan_)
-    this.removeEventListener('rescan-completed', this.onSearchRescan_);
+  if (this.onSearchCompleted_)
+    this.removeEventListener('scan-completed', this.onSearchCompleted_);
 
-  this.onSearchRescan_ = onSearchRescan;
+  this.onSearchCompleted_ = onSearchRescan;
   this.onClearSearch_ = onClearSearch;
 
-  this.addEventListener('rescan-completed', this.onSearchRescan_);
+  this.addEventListener('scan-completed', this.onSearchCompleted_);
 
   // If we are offline, let's fallback to file name search inside dir.
   if (this.getCurrentRootType() === RootType.GDATA && !this.isOffline()) {
@@ -1179,9 +1179,9 @@ DirectoryModel.prototype.clearSearch_ = function() {
   if (!this.isSearching())
     return;
 
-  if (this.onSearchRescan_) {
-    this.removeEventListener('rescan-completed', this.onSearchRescan_);
-    this.onSearchRescan_ = null;
+  if (this.onSearchCompleted_) {
+    this.removeEventListener('scan-completed', this.onSearchCompleted_);
+    this.onSearchCompleted_ = null;
   }
 
   if (this.onClearSearch_) {
