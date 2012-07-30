@@ -60,6 +60,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/url_request.h"
 
 #if defined(OS_CHROMEOS)
@@ -547,6 +548,9 @@ void ProfileIOData::SetUpJobFactoryDefaults(
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kChromeDevToolsScheme,
       CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
+  DCHECK(set_protocol);
+  set_protocol = job_factory->SetProtocolHandler(
+      chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)
   if (!is_incognito()) {
