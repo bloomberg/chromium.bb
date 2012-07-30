@@ -81,8 +81,11 @@ gnu_size() {
     return 0
   fi
   # If the PNaCl toolchain is installed, prefer to use its "size".
-  if [ -d "${PNACL_TC}" ] ; then
-    GNU_SIZE="${PNACL_TC}/bin/size"
+  # TODO(robertm): standardize on one of the pnacl dirs
+  if [ -d "${PNACL_TC}/../host/bin/" ] ; then
+    GNU_SIZE="${PNACL_TC}/../host/bin/arm-pc-nacl-size"
+  elif [ -d "${PNACL_TC}/../pkg/binutils/bin/" ] ; then
+    GNU_SIZE="${PNACL_TC}/../pkg/binutils/bin/arm-pc-nacl-size"
   elif ${BUILD_PLATFORM_LINUX} ; then
     GNU_SIZE="size"
   else

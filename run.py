@@ -500,19 +500,20 @@ def Usage2():
 def FindReadElf():
   '''Returns the path of "readelf" binary.'''
 
+  candidates = []
   # Use PNaCl's if it available.
-  readelf = os.path.join(env.pnacl_root_newlib, 'bin', 'readelf')
-  if os.path.exists(readelf):
-    return readelf
-
-  readelf = os.path.join(env.pnacl_root_glibc, 'bin', 'readelf')
-  if os.path.exists(readelf):
-    return readelf
+  # TODO(robertm): standardize on one of the pnacl dirs
+  candidates.append(
+    os.path.join(env.pnacl_base, 'host', 'bin', 'arm-pc-nacl-readelf'))
+  candidates.append(
+    os.path.join(env.pnacl_base,
+                 'pkg', 'binutils', 'bin', 'arm-pc-nacl-readelf'))
 
   # Otherwise, look for the system readelf
-  system_path = os.environ['PATH'].split(os.pathsep)
-  for path in system_path:
-    readelf = os.path.join(path, 'readelf')
+  for path in os.environ['PATH'].split(os.pathsep):
+    candidates.append(os.path.join(path, 'readelf'))
+
+  for readelf in candidates:
     if os.path.exists(readelf):
       return readelf
 
