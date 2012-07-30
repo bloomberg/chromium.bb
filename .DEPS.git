@@ -64,7 +64,7 @@ deps = {
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@d815c325bab0d1871d4c7e70600ecdfdab07db9e',
     'src/third_party/libjingle/source':
-        Var('git_url') + '/external/libjingle.git@872892c65a143c9bb88db7e562b8c6aec91e47fb',
+        Var('git_url') + '/external/libjingle.git@6d81def0de248e9bab5c35643ba8501bd46c4555',
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@2fdc3a8097b6a3f5de84aa9e6c901544d7166dec',
     'src/third_party/libphonenumber/src/phonenumbers':
