@@ -1663,6 +1663,140 @@ class Binary3RegisterShiftedTestTesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTestTesterRegsNotPc);
 };
 
+// Implements a decoder tester for VfpUsesRegOp
+// Op<c> ..., <Rt>, ...
+// +--------+------------------------+--------+--------+---------------+
+// |31302928|272625242322212019181716|15141312|1120 9 8|7 6 5 4 3 2 1 0|
+// +--------+------------------------+--------+--------+---------------+
+// |  cond  |                        |   Rt   | coproc |               |
+// +--------+------------------------+--------+--------+---------------+
+//
+// If t=15 then UNPREDICTABLE
+class VfpUsesRegOpTester : public CondVfpOpTester {
+ public:
+  explicit inline VfpUsesRegOpTester(const NamedClassDecoder& decoder)
+      : CondVfpOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VfpUsesRegOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VfpUsesRegOpTester);
+};
+
+// Implements a decoder tester for VfpMrsOp.
+// Vmrs<c> ..., <Rt>, ...
+// +--------+------------------------+--------+--------+---------------+
+// |31302928|272625242322212019181716|15141312|1120 9 8|7 6 5 4 3 2 1 0|
+// +--------+------------------------+--------+--------+---------------+
+// |  cond  |                        |   Rt   | coproc |               |
+// +--------+------------------------+--------+--------+---------------+
+//
+// if Rt=13 then UNPREDICTABLE.
+//
+// Note: if Rt=PC, then it doesn't update PC. Rather, it updates the
+// conditions flags ASPR.{N, Z, C, V} from corresponding conditions
+// in FPSCR.
+class VfpMrsOpTester : public CondVfpOpTester {
+ public:
+  explicit inline VfpMrsOpTester(const NamedClassDecoder& decoder)
+      : CondVfpOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VfpMrsOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VfpMrsOpTester);
+};
+
+// Implements a decoder tester for MoveVfpRegisterOp
+// Op<c> <Sn>, <Rt>
+// Op<c> <Rt>, <Sn>
+// +--------+--------------+--+--------+--------+--------+--+--------------+
+// |31302928|27262524232221|20|19181726|15141312|1110 9 8| 7| 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--+--------------+
+// |  cond  |              |op|   Vn   |   Rt   | coproc | N|              |
+// +--------+--------------+--+--------+--------+--------+--+--------------+
+// S[Vn:N] = The vfp register to use.
+// Rt = The core register to use.
+// op=1 => Move S[Vn:N] to Rt.
+// op=0 => Move Rt to S[Vn:N]
+//
+// If t=15 then UNPREDICTABLE
+//
+// Note: We don't model Register S[Vn:N] since it can't effect NaCl validation.
+class MoveVfpRegisterOpTester : public CondVfpOpTester {
+ public:
+  explicit inline MoveVfpRegisterOpTester(const NamedClassDecoder& decoder)
+      : CondVfpOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::MoveVfpRegisterOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveVfpRegisterOpTester);
+};
+
+// Implements a decoder tester for MoveVfpRegisterOpWithTypeSel.
+// Added constraint to MoveVfpRegisterOp:
+// When bits(23:21):bits(6:5) = '10x00' or 'x0x10', the instruction is
+// undefined. That is, these bits are used to define 8, 16, and 32 bit selectors
+// within Vn.
+class MoveVfpRegisterOpWithTypeSelTester : public MoveVfpRegisterOpTester {
+ public:
+  explicit inline MoveVfpRegisterOpWithTypeSelTester(
+      const NamedClassDecoder& decoder)
+      : MoveVfpRegisterOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::MoveVfpRegisterOpWithTypeSel expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveVfpRegisterOpWithTypeSelTester);
+};
+
+// Implements a decoder tester for DuplicateToVfpRegisters.
+// Op<c>.size <Dd>, <Rt>
+// Op<c>.size <Qd>, <Rt>
+// +--------+----------+--+--+--+--------+--------+--------+--+--+--+----------+
+// |31302928|2726252423|22|21|20|19181716|15141312|1110 9 8| 7| 6| 5| 4 3 2 1 0|
+// +--------+----------+--+--+--+--------+--------+--------+--+--+--+----------+
+// |  cond  |          | b| Q|  |   Vd   |   Rt   | coproc | D|  | e|          |
+// +--------+----------+--+--+--+--------+--------+--------+--+--+--+----------+
+// d = D:Vd
+// # D registers = (Q=0 ? 1 : 2)
+//
+// if Q=1 and Vd<0>=1 then UNDEFINED
+// if t=15 then UNPREDICTABLE.
+// if b:e=11 then UNDEFINED.
+class DuplicateToVfpRegistersTester : public CondVfpOpTester {
+ public:
+  explicit inline DuplicateToVfpRegistersTester(
+      const NamedClassDecoder& decoder)
+      : CondVfpOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::DuplicateToVfpRegisters expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToVfpRegistersTester);
+};
+
 }  // namespace
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_INST_CLASSES_TESTERS_H_

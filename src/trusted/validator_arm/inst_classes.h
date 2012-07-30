@@ -136,6 +136,9 @@ class RegDBits16To19Interface {
   static inline Register reg(const Instruction& i) {
     return Register(number(i));
   }
+  static inline bool IsEven(const Instruction& i) {
+    return (number(i) & 0x1) == 0;
+  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(RegDBits16To19Interface);
@@ -358,6 +361,17 @@ class RegisterListBits0To15Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(RegisterListBits0To15Interface);
 };
 
+// Interface class to pull out value in bit 5
+class Imm1Bit5Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(5, 5);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit5Interface);
+};
+
 // Interface class to pull out an immediate value in bits 7 through 11.
 class Imm5Bits7To11Interface {
  public:
@@ -424,6 +438,28 @@ class Imm2Bits18To19Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits18To19Interface);
 };
 
+// Interface class to pull out an immediate value in bits 21 through 23.
+class Imm3Bits21To23Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(23, 21);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm3Bits21To23Interface);
+};
+
+// Interface class to pull out an immediate value in bit 22.
+class Imm1Bit21Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(22, 22);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit21Interface);
+};
+
 // Interface class to pull out bit 5 on branch instructions,
 // to indicate whether the link register is also updated.
 class UpdatesLinkRegisterBit5Interface {
@@ -454,6 +490,18 @@ class UpdatesConditionsBit20Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesConditionsBit20Interface);
 };
 
+// Interface class to pull out to arm register bit 20, which
+// when true, updates the corresponging core register.
+class UpdatesArmRegisterBit20Interface {
+ public:
+  static inline bool IsDefined(const Instruction& i) {
+    return i.Bit(20);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesArmRegisterBit20Interface);
+};
+
 // Interface class to pull out W (writes) bit 21, which
 // defines if the istruction writes a value into the base address
 // register (Rn).
@@ -465,6 +513,17 @@ class WritesBit21Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(WritesBit21Interface);
+};
+
+// Interface class to pull out bit 21.
+class FlagBit21Interface {
+ public:
+  static inline bool IsDefined(const Instruction& i) {
+    return i.Bits(21, 21);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit21Interface);
 };
 
 // Interface class to pull out R (read SPSR) bit 22. which (for at

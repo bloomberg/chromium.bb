@@ -1689,6 +1689,130 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTest);
 };
 
+// Models of use of a general purpose register by a vfp instruction.
+// Op<c> ..., <Rt>, ...
+// +--------+------------------------+--------+--------+---------------+
+// |31302928|272625242322212019181716|15141312|1120 9 8|7 6 5 4 3 2 1 0|
+// +--------+------------------------+--------+--------+---------------+
+// |  cond  |                        |   Rt   | coproc |               |
+// +--------+------------------------+--------+--------+---------------+
+//
+// If t=15 then UNPREDICTABLE
+class VfpUsesRegOp : public CondVfpOp {
+ public:
+  static const RegTBits12To15Interface t;
+
+  // Methods for class.
+  inline VfpUsesRegOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VfpUsesRegOp);
+};
+
+// Models a define of a general purpose register from some vfp data register.
+// Vmrs<c> ..., <Rt>, ...
+// +--------+------------------------+--------+--------+---------------+
+// |31302928|272625242322212019181716|15141312|1120 9 8|7 6 5 4 3 2 1 0|
+// +--------+------------------------+--------+--------+---------------+
+// |  cond  |                        |   Rt   | coproc |               |
+// +--------+------------------------+--------+--------+---------------+
+//
+// if Rt=13 then UNPREDICTABLE.
+//
+// Note: if Rt=PC, then it doesn't update PC. Rather, it updates the
+// conditions flags ASPR.{N, Z, C, V} from corresponding conditions
+// in FPSCR.
+class VfpMrsOp : public CondVfpOp {
+ public:
+  static const RegTBits12To15Interface t;
+
+  // Methods for class.
+  inline VfpMrsOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VfpMrsOp);
+};
+
+// Models a move to/from a vfp register to the corresponding
+// core register.
+// Op<c> <Sn>, <Rt>
+// Op<c> <Rt>, <Sn>
+// +--------+--------------+--+--------+--------+--------+--+--------------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7| 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--+--------------+
+// |  cond  |              |op|   Vn   |   Rt   | coproc | N|              |
+// +--------+--------------+--+--------+--------+--------+--+--------------+
+// S[Vn:N] = The vfp register to use.
+// Rt = The core register to use.
+// op=1 => Move S[Vn:N] to Rt.
+// op=0 => Move Rt to S[Vn:N]
+//
+// If t=15 then UNPREDICTABLE
+//
+// Note: We don't model Register S[Vn:N] since it can't effect NaCl validation.
+class MoveVfpRegisterOp : public CondVfpOp {
+ public:
+  static const RegTBits12To15Interface t;
+  static const UpdatesArmRegisterBit20Interface to_arm_reg;
+
+  // Methods for class.
+  inline MoveVfpRegisterOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveVfpRegisterOp);
+};
+
+// Models a MoveVfpRegisterOp with added constraint:
+// When bits(23:21):bits(6:5) = '10x00' or 'x0x10', the instruction is
+// undefined. That is, these bits are used to define 8, 16, and 32 bit selectors
+// within Vn.
+class MoveVfpRegisterOpWithTypeSel : public MoveVfpRegisterOp {
+ public:
+  static const Imm3Bits21To23Interface opc1;
+  static const ShiftTypeBits5To6Interface opc2;
+
+  // Methods for class
+  inline MoveVfpRegisterOpWithTypeSel() {}
+  virtual SafetyLevel safety(Instruction i) const;
+};
+
+// Models a move from a core register to every element of a vfp register.
+// Op<c>.size <Dd>, <Rt>
+// Op<c>.size <Qd>, <Rt>
+// +--------+----------+--+--+--+--------+--------+--------+--+--+--+----------+
+// |31302928|2726252423|22|21|20|19181716|15141312|1110 9 8| 7| 6| 5| 4 3 2 1 0|
+// +--------+----------+--+--+--+--------+--------+--------+--+--+--+----------+
+// |  cond  |          | b| Q|  |   Vd   |   Rt   | coproc | D|  | e|          |
+// +--------+----------+--+--+--+--------+--------+--------+--+--+--+----------+
+// d = D:Vd
+// # D registers = (Q=0 ? 1 : 2)
+//
+// if Q=1 and Vd<0>=1 then UNDEFINED
+// if t=15 then UNPREDICTABLE.
+// if b:e=11 then UNDEFINED.
+class DuplicateToVfpRegisters : public CondVfpOp {
+ public:
+  static const Imm1Bit5Interface e;
+  static const RegTBits12To15Interface t;
+  static const RegDBits16To19Interface vd;
+  static const FlagBit21Interface is_two_regs;
+  static const Imm1Bit22Interface b;
+
+  // Methods for class
+  inline DuplicateToVfpRegisters() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+  inline uint32_t be_value(const Instruction& i) const {
+    return (b.value(i) << 1) | e.value(i);
+  }
+};
+
 }  // namespace
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_BASELINE_CLASSES_H_

@@ -47,6 +47,23 @@ class DontCareInst : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(DontCareInst);
 };
 
+// Defines a DontCareInst where register Rd is not Pc.
+//
+// Note: Some instructions may use other names for the registers,
+// but they have the same placement within the instruction, and
+// hence do not need a separate class decoder.
+class DontCareInstRdNotPc : public DontCareInst {
+ public:
+  // We use the following Rd to capture the register being set.
+  static const RegDBits12To15Interface d;
+
+  inline DontCareInstRdNotPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DontCareInstRdNotPc);
+};
+
 // Defines a DontCareInst where regsiters Rn, Rs, and Rm are not PC.
 //
 // Note: Some instructions may use other names for the registers,

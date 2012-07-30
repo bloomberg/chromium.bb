@@ -634,7 +634,8 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "        xx1x0      ~1111     = Load2RegisterImm8DoubleOp
                                   => LoadBasedImmedMemoryDouble
                                   Ldrd_Rule_66_A1_P136
-                                  cccc000pd1w0nnnnttttiiii1101iiii NotRnIsPc (v5TE)
+                                  cccc000pd1w0nnnnttttiiii1101iiii
+                                  NotRnIsPc (v5TE)
 | "        "          1111      = Load2RegisterImm8DoubleOp
                                   => LoadBasedImmedMemoryDouble 
                                   Ldrd_Rule_67_A1_P138
@@ -769,7 +770,8 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 001      01        -          = BranchToRegister => BxBlx
                                   Bx_Rule_25_A1_P62
                                   cccc000100101111111111110001mmmm (v4T)
-| "        11        -          = Unary2RegisterOpNotRmIsPc => Defs12To15RdRnNotPc
+| "        11        -          = Unary2RegisterOpNotRmIsPc
+                                  => Defs12To15RdRnNotPc
                                   Clz_Rule_31_A1_P72
                                   cccc000101101111dddd11110001mmmm (v6)
 | 010      01        -          = ForbiddenCondNop => Forbidden
@@ -884,7 +886,8 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                         Usda8_Rule_254_A1_P502
                                         cccc01111000ddddaaaammmm0001nnnn
                                         # Note: In baseline class, bits(15:12)
-                                        # is Ra (not Rd as column name suggests).
+                                        # is Ra (not Rd as column name
+                                        # suggests).
                                         NotRaIsPcAndRegsNotPc (v6)
 | 1101x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
                                         => Defs12To15CondsDontCareRdRnNotPc
@@ -1394,9 +1397,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                           cccc11101d110111dddd101s11m0mmmm
 | 1000        x1        = CondVfpOp => VfpOp
                           Vcvt_Vcvtr_Rule_295_A1_P578
-                          # Note: table pattern forces opc2(18:16)=000 for instruction.
-                          # This table also contains entry for opc2(18:16)=10x, but not
-                          # other opc2 values. However, rule A1 doesn't mention this
+                          # Note: table pattern forces opc2(18:16)=000 for
+                          # instruction. This table also contains entry for
+                          # opc2(18:16)=10x, but not other opc2 values.
+                          # However, rule A1 doesn't mention this
                           # restriction.
                           cccc11101d111000dddd101sp1m0mmmm
 | 101x        x1        = CondVfpOp => VfpOp
@@ -1404,9 +1408,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                           cccc11101d11101udddd101fx1i0iiii
 | 110x        x1        = CondVfpOp => VfpOp
                           Vcvt_Vcvtr_Rule_295_A1_P578
-                          # Note: table pattern forces opc2(18:16)=10x for instruction.
-                          # This table also contains entry for opc2(18:16)=000, but
-                          # not other opc2 values. However, rule A1 doesn't mention this
+                          # Note: table pattern forces opc2(18:16)=10x for
+                          # instruction. This table also contains entry for
+                          # opc2(18:16)=000, but not other opc2 values.
+                          # However, rule A1 doesn't mention this
                           # restriction.
                           cccc11101d11110xdddd101sp1m0mmmm
 | 111x        x1        = CondVfpOp => VfpOp
@@ -1462,27 +1467,31 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 +-- ext_reg_move (A7.8 page A7-31)
 # MRC and MCR instructions for coprocessors 10/11.
 | L(20) C(8) A(23:21) B(6:5)
-| 0     0    000      -      # TODO(karl): Fix this to do the right thing.
-                             # VMOV A8-648 (arm core and single precision)
-                             = CoprocessorOp
-| "     "    111      -      # TODO(karl): Fix this to do the right thing.
-                             # VMSR A8-660
-                             = CoprocessorOp
-| 0     1    0xx      -      # TODO(karl): Fix this to do the right thing.
-                             # VMRS A8-644 (arm core to scalar)
-                             = CoprocessorOp
-| "     "    1xx      0x     # TODO(karl): Fix this to do the right thing.
-                             # VDUP A8-594 (arm core reg)
-                             = CoprocessorOp
-| 1     0    000      -      # TODO(karl): Fix this to do the right thing.
-                             # VMOV A8-648 (arm core and single precision)
-                             = CoprocessorOp
-| "     "    111      -      # TODO(karl): Fix this to do the right thing.
-                             # VMRS A8-658
-                             = CoprocessorOp
-| "     1    xxx      -      # TODO(karl): Fix this to do the right thing.
-                             # VMOV A8-648 (scalar to arm core)
-                             = CoprocessorOp
+| 0     0    000      -      = MoveVfpRegisterOp
+                             Vmov_Rule_330_A1_P648
+                             cccc11100000nnnntttt1010n0010000
+| "     "    111      -      = VfpUsesRegOp => DontCareInstRdNotPc
+                             Vmsr_Rule_336_A1_P660
+                             cccc111011100001tttt101000010000
+| 0     1    0xx      -      = MoveVfpRegisterOpWithTypeSel
+                             # Note: reserving bit 23 to zero does not introduce
+                             # any special properties to the safety checks.
+                             # Hence, using MoveVfpRegisterOpWithTypeSel
+                             # is safe.
+                             Vmov_Rule_328_A1_P644
+                             cccc11100ii0ddddtttt1011dii10000
+| "     "    1xx      0x     = DuplicateToVfpRegisters
+                             Vdup_Rule_303_A1_P594
+                             cccc11101bq0ddddtttt1011d0e10000
+| 1     0    000      -      = MoveVfpRegisterOp
+                             Vmov_Rule_330_A1_P648
+                             cccc11100001nnnntttt1010n0010000
+| "     "    111      -      = VfpMrsOp
+                             Vmrs_Rule_335_A1_P658
+                             cccc111011110001tttt101000010000
+| "     1    xxx      -      = MoveVfpRegisterOpWithTypeSel
+                             Vmov_Rule_329_A1_P646
+                             cccc1110iii1nnnntttt1011nii10000
 | else:                      = Undefined  # Note on page A7-31
 +--
 
@@ -1510,8 +1519,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 100x_x0x1  -     -         =Forbidden         # RFE
 | 101x_xxxx  -     -         =Forbidden         # BLX(immediate)
 | 1100_0x11  -     ~1111     =LoadCoprocessor(v5)   # LDC(immed), LDC2(immed)
-| 1100_1xx1  -     1111      =LoadCoprocessor(v5)   # LDC(literal), LDC2(literal)
-| 1101_xxx1  -     1111      =LoadCoprocessor(v5)   # LDC(literal), LDC2(literal)
+| 1100_1xx1  -     1111      =LoadCoprocessor(v5)   # LDC(literal),
+                                                    # LDC2(literal)
+| 1101_xxx1  -     1111      =LoadCoprocessor(v5)   # LDC(literal),
+                                                    # LDC2(literal)
 | 1100_0x10  -     -         =StoreCoprocessor(v5)  # STC, STC2
 | 1100_1xx0  -     -         "
 | 1101_xxx0  -     -         "
@@ -1598,7 +1609,8 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "       "    1     -        =EffectiveNoOp  # VSUB(integer)
 | "       1    0     -        =EffectiveNoOp  # VTST(integer)
 | "       "    1     -        =EffectiveNoOp  # VCEQ(integer)
-| 1001    0    -     -        =EffectiveNoOp  # VMLA, VMLAL, VMLS, VMLSL (integer)
+| 1001    0    -     -        =EffectiveNoOp  # VMLA, VMLAL, VMLS,
+                                              # VMLSL (integer)
 | "       1    -     -        =EffectiveNoOp  # VMUL, VMULL(integer/poly)
 | 1010    -    -     -        =EffectiveNoOp  # VPMAX, VPMIN(integer)
 | 1011    0    0     -        =EffectiveNoOp  # VQDMULH

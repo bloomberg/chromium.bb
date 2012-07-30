@@ -170,7 +170,9 @@ class Arm32DecoderState : DecoderState {
   const Defs16To19CondsDontCareRdRmRnNotPc Defs16To19CondsDontCareRdRmRnNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const DontCareInst DontCareInst_instance_;
+  const DontCareInstRdNotPc DontCareInstRdNotPc_instance_;
   const DontCareInstRnRsRmNotPc DontCareInstRnRsRmNotPc_instance_;
+  const DuplicateToVfpRegisters DuplicateToVfpRegisters_instance_;
   const EffectiveNoOp EffectiveNoOp_instance_;
   const Forbidden Forbidden_instance_;
   const LoadBasedImmedMemory LoadBasedImmedMemory_instance_;
@@ -186,6 +188,8 @@ class Arm32DecoderState : DecoderState {
   const MaskAddress MaskAddress_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
   const MoveFromCoprocessor MoveFromCoprocessor_instance_;
+  const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
+  const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
   const Roadblock Roadblock_instance_;
   const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;
   const StoreBasedImmedMemoryDouble StoreBasedImmedMemoryDouble_instance_;
@@ -205,6 +209,7 @@ class Arm32DecoderState : DecoderState {
   const Unpredictable Unpredictable_instance_;
   const VectorLoad VectorLoad_instance_;
   const VectorStore VectorStore_instance_;
+  const VfpMrsOp VfpMrsOp_instance_;
   const VfpOp VfpOp_instance_;
   const NotImplemented not_implemented_;
 };

@@ -31,7 +31,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Defs16To19CondsDontCareRdRmRnNotPc_instance_()
   , Deprecated_instance_()
   , DontCareInst_instance_()
+  , DontCareInstRdNotPc_instance_()
   , DontCareInstRnRsRmNotPc_instance_()
+  , DuplicateToVfpRegisters_instance_()
   , EffectiveNoOp_instance_()
   , Forbidden_instance_()
   , LoadBasedImmedMemory_instance_()
@@ -47,6 +49,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MaskAddress_instance_()
   , MoveDoubleFromCoprocessor_instance_()
   , MoveFromCoprocessor_instance_()
+  , MoveVfpRegisterOp_instance_()
+  , MoveVfpRegisterOpWithTypeSel_instance_()
   , Roadblock_instance_()
   , StoreBasedImmedMemory_instance_()
   , StoreBasedImmedMemoryDouble_instance_()
@@ -66,6 +70,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unpredictable_instance_()
   , VectorLoad_instance_()
   , VectorStore_instance_()
+  , VfpMrsOp_instance_()
   , VfpOp_instance_()
   , not_implemented_()
 {}
@@ -707,32 +712,53 @@ const ClassDecoder& Arm32DecoderState::decode_ext_reg_move(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x00000100) == 0x00000000 /* C(8:8) == 0 */ &&
-      (insn.Bits() & 0x00E00000) == 0x00000000 /* A(23:21) == 000 */) {
-    return CoprocessorOp_instance_;
+  if ((insn.Bits() & 0x00100000) == 0x00000000 /* L(20:20) == 0 */ &&
+      (insn.Bits() & 0x00000100) == 0x00000000 /* C(8:8) == 0 */ &&
+      (insn.Bits() & 0x00E00000) == 0x00000000 /* A(23:21) == 000 */ &&
+      (insn.Bits() & 0x0FF00F7F) == 0x0E000A10 /* $pattern(31:0) == xxxx11100000xxxxxxxx1010x0010000 */) {
+    return MoveVfpRegisterOp_instance_;
   }
 
-  if ((insn.Bits() & 0x00000100) == 0x00000000 /* C(8:8) == 0 */ &&
-      (insn.Bits() & 0x00E00000) == 0x00E00000 /* A(23:21) == 111 */) {
-    return CoprocessorOp_instance_;
+  if ((insn.Bits() & 0x00100000) == 0x00000000 /* L(20:20) == 0 */ &&
+      (insn.Bits() & 0x00000100) == 0x00000000 /* C(8:8) == 0 */ &&
+      (insn.Bits() & 0x00E00000) == 0x00E00000 /* A(23:21) == 111 */ &&
+      (insn.Bits() & 0x0FFF0FFF) == 0x0EE10A10 /* $pattern(31:0) == xxxx111011100001xxxx101000010000 */) {
+    return DontCareInstRdNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x00100000) == 0x00000000 /* L(20:20) == 0 */ &&
       (insn.Bits() & 0x00000100) == 0x00000100 /* C(8:8) == 1 */ &&
-      (insn.Bits() & 0x00800000) == 0x00000000 /* A(23:21) == 0xx */) {
-    return CoprocessorOp_instance_;
+      (insn.Bits() & 0x00800000) == 0x00000000 /* A(23:21) == 0xx */ &&
+      (insn.Bits() & 0x0F900F1F) == 0x0E000B10 /* $pattern(31:0) == xxxx11100xx0xxxxxxxx1011xxx10000 */) {
+    return MoveVfpRegisterOpWithTypeSel_instance_;
   }
 
   if ((insn.Bits() & 0x00100000) == 0x00000000 /* L(20:20) == 0 */ &&
       (insn.Bits() & 0x00000100) == 0x00000100 /* C(8:8) == 1 */ &&
       (insn.Bits() & 0x00800000) == 0x00800000 /* A(23:21) == 1xx */ &&
-      (insn.Bits() & 0x00000040) == 0x00000000 /* B(6:5) == 0x */) {
-    return CoprocessorOp_instance_;
+      (insn.Bits() & 0x00000040) == 0x00000000 /* B(6:5) == 0x */ &&
+      (insn.Bits() & 0x0F900F5F) == 0x0E800B10 /* $pattern(31:0) == xxxx11101xx0xxxxxxxx1011x0x10000 */) {
+    return DuplicateToVfpRegisters_instance_;
   }
 
   if ((insn.Bits() & 0x00100000) == 0x00100000 /* L(20:20) == 1 */ &&
-      (insn.Bits() & 0x00000100) == 0x00000100 /* C(8:8) == 1 */) {
-    return CoprocessorOp_instance_;
+      (insn.Bits() & 0x00000100) == 0x00000000 /* C(8:8) == 0 */ &&
+      (insn.Bits() & 0x00E00000) == 0x00000000 /* A(23:21) == 000 */ &&
+      (insn.Bits() & 0x0FF00F7F) == 0x0E100A10 /* $pattern(31:0) == xxxx11100001xxxxxxxx1010x0010000 */) {
+    return MoveVfpRegisterOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x00100000) == 0x00100000 /* L(20:20) == 1 */ &&
+      (insn.Bits() & 0x00000100) == 0x00000000 /* C(8:8) == 0 */ &&
+      (insn.Bits() & 0x00E00000) == 0x00E00000 /* A(23:21) == 111 */ &&
+      (insn.Bits() & 0x0FFF0FFF) == 0x0EF10A10 /* $pattern(31:0) == xxxx111011110001xxxx101000010000 */) {
+    return VfpMrsOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x00100000) == 0x00100000 /* L(20:20) == 1 */ &&
+      (insn.Bits() & 0x00000100) == 0x00000100 /* C(8:8) == 1 */ &&
+      (insn.Bits() & 0x0F100F1F) == 0x0E100B10 /* $pattern(31:0) == xxxx1110xxx1xxxxxxxx1011xxx10000 */) {
+    return MoveVfpRegisterOpWithTypeSel_instance_;
   }
 
   if (true) {

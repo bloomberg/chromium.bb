@@ -927,4 +927,68 @@ RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
   return RegisterList(conditions.conds_if_updated(i));
 }
 
+// VfpUsesRegOp
+SafetyLevel VfpUsesRegOp::safety(Instruction i) const {
+  if (t.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
+  return CondVfpOp::safety(i);
+}
+
+RegisterList VfpUsesRegOp::defs(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
+// VfpMsrOp
+SafetyLevel VfpMrsOp::safety(Instruction i) const {
+  if (t.reg(i).Equals(kRegisterStack))
+    return UNPREDICTABLE;
+  return CondVfpOp::safety(i);
+}
+
+RegisterList VfpMrsOp::defs(const Instruction i) const {
+  return RegisterList(t.reg(i).Equals(kRegisterPc)
+                      ? kConditions : t.reg(i));
+}
+
+// MoveVfpRegisterOp
+SafetyLevel MoveVfpRegisterOp::safety(Instruction i) const {
+  if (t.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
+  return CondVfpOp::safety(i);
+}
+
+RegisterList MoveVfpRegisterOp::defs(const Instruction i) const {
+  RegisterList defs;
+  if (to_arm_reg.IsDefined(i)) defs.Add(t.reg(i));
+  return defs;
+}
+
+// MoveVfpRegisterOpWithTypeSel
+SafetyLevel MoveVfpRegisterOpWithTypeSel::safety(Instruction i) const {
+  // Compute type_sel = opc1(23:21):opc2(6:5).
+  uint32_t type_sel = (opc1.value(i) << 2) | opc2.value(i);
+
+  // If type_sel in { '10x00' , 'x0x10' }, the instruction is undefined.
+  if (((type_sel & 0x1b) == 0x10) ||  /* type_sel == '10x00 */
+      ((type_sel & 0xb) == 0x2))      /* type_sel == 'x0x10 */
+    return UNDEFINED;
+
+  return MoveVfpRegisterOp::safety(i);
+}
+
+// DuplicateToVfpRegisters
+SafetyLevel DuplicateToVfpRegisters::safety(Instruction i) const {
+  if (is_two_regs.IsDefined(i) && !vd.IsEven(i))
+    return UNDEFINED;
+
+  if (be_value(i) == 0x3)
+    return UNDEFINED;
+
+  if (t.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
+
+  return CondVfpOp::safety(i);
+}
+
 }  // namespace

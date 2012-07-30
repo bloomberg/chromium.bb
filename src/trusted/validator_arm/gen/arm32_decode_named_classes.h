@@ -911,6 +911,12 @@ class Deprecated_None
   virtual ~Deprecated_None() {}
 };
 
+class DuplicateToVfpRegisters_Vdup_Rule_303_A1_P594
+    : public DuplicateToVfpRegisters {
+ public:
+  virtual ~DuplicateToVfpRegisters_Vdup_Rule_303_A1_P594() {}
+};
+
 class EffectiveNoOp_None
     : public EffectiveNoOp {
  public:
@@ -1197,6 +1203,24 @@ class MoveImmediate12ToApsr_Msr_Rule_103_A1_P208
     : public MoveImmediate12ToApsr {
  public:
   virtual ~MoveImmediate12ToApsr_Msr_Rule_103_A1_P208() {}
+};
+
+class MoveVfpRegisterOp_Vmov_Rule_330_A1_P648
+    : public MoveVfpRegisterOp {
+ public:
+  virtual ~MoveVfpRegisterOp_Vmov_Rule_330_A1_P648() {}
+};
+
+class MoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644
+    : public MoveVfpRegisterOpWithTypeSel {
+ public:
+  virtual ~MoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644() {}
+};
+
+class MoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646
+    : public MoveVfpRegisterOpWithTypeSel {
+ public:
+  virtual ~MoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646() {}
 };
 
 class Roadblock_None
@@ -1533,6 +1557,18 @@ class VectorStore_None
     : public VectorStore {
  public:
   virtual ~VectorStore_None() {}
+};
+
+class VfpMrsOp_Vmrs_Rule_335_A1_P658
+    : public VfpMrsOp {
+ public:
+  virtual ~VfpMrsOp_Vmrs_Rule_335_A1_P658() {}
+};
+
+class VfpUsesRegOp_Vmsr_Rule_336_A1_P660
+    : public VfpUsesRegOp {
+ public:
+  virtual ~VfpUsesRegOp_Vmsr_Rule_336_A1_P660() {}
 };
 
 class Branch_B_Rule_16_A1_P44
@@ -2445,6 +2481,12 @@ class DontCareInst_Yield_Rule_413_A1_P812
     : public DontCareInst {
  public:
   virtual ~DontCareInst_Yield_Rule_413_A1_P812() {}
+};
+
+class DontCareInstRdNotPc_Vmsr_Rule_336_A1_P660
+    : public DontCareInstRdNotPc {
+ public:
+  virtual ~DontCareInstRdNotPc_Vmsr_Rule_336_A1_P660() {}
 };
 
 class DontCareInstRnRsRmNotPc_Cmn_Rule_34_A1_P78
@@ -4818,6 +4860,19 @@ class NamedDeprecated_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDeprecated_None);
 };
 
+class NamedDuplicateToVfpRegisters_Vdup_Rule_303_A1_P594
+    : public NamedClassDecoder {
+ public:
+  inline NamedDuplicateToVfpRegisters_Vdup_Rule_303_A1_P594()
+    : NamedClassDecoder(decoder_, "DuplicateToVfpRegisters Vdup_Rule_303_A1_P594")
+  {}
+  virtual ~NamedDuplicateToVfpRegisters_Vdup_Rule_303_A1_P594() {}
+
+ private:
+  nacl_arm_dec::DuplicateToVfpRegisters_Vdup_Rule_303_A1_P594 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDuplicateToVfpRegisters_Vdup_Rule_303_A1_P594);
+};
+
 class NamedEffectiveNoOp_None
     : public NamedClassDecoder {
  public:
@@ -5440,6 +5495,45 @@ class NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208
  private:
   nacl_arm_dec::MoveImmediate12ToApsr_Msr_Rule_103_A1_P208 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208);
+};
+
+class NamedMoveVfpRegisterOp_Vmov_Rule_330_A1_P648
+    : public NamedClassDecoder {
+ public:
+  inline NamedMoveVfpRegisterOp_Vmov_Rule_330_A1_P648()
+    : NamedClassDecoder(decoder_, "MoveVfpRegisterOp Vmov_Rule_330_A1_P648")
+  {}
+  virtual ~NamedMoveVfpRegisterOp_Vmov_Rule_330_A1_P648() {}
+
+ private:
+  nacl_arm_dec::MoveVfpRegisterOp_Vmov_Rule_330_A1_P648 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOp_Vmov_Rule_330_A1_P648);
+};
+
+class NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644
+    : public NamedClassDecoder {
+ public:
+  inline NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644()
+    : NamedClassDecoder(decoder_, "MoveVfpRegisterOpWithTypeSel Vmov_Rule_328_A1_P644")
+  {}
+  virtual ~NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644() {}
+
+ private:
+  nacl_arm_dec::MoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644);
+};
+
+class NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646
+    : public NamedClassDecoder {
+ public:
+  inline NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646()
+    : NamedClassDecoder(decoder_, "MoveVfpRegisterOpWithTypeSel Vmov_Rule_329_A1_P646")
+  {}
+  virtual ~NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646() {}
+
+ private:
+  nacl_arm_dec::MoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646);
 };
 
 class NamedRoadblock_None
@@ -6168,6 +6262,32 @@ class NamedVectorStore_None
  private:
   nacl_arm_dec::VectorStore_None decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStore_None);
+};
+
+class NamedVfpMrsOp_Vmrs_Rule_335_A1_P658
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpMrsOp_Vmrs_Rule_335_A1_P658()
+    : NamedClassDecoder(decoder_, "VfpMrsOp Vmrs_Rule_335_A1_P658")
+  {}
+  virtual ~NamedVfpMrsOp_Vmrs_Rule_335_A1_P658() {}
+
+ private:
+  nacl_arm_dec::VfpMrsOp_Vmrs_Rule_335_A1_P658 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpMrsOp_Vmrs_Rule_335_A1_P658);
+};
+
+class NamedVfpUsesRegOp_Vmsr_Rule_336_A1_P660
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpUsesRegOp_Vmsr_Rule_336_A1_P660()
+    : NamedClassDecoder(decoder_, "VfpUsesRegOp Vmsr_Rule_336_A1_P660")
+  {}
+  virtual ~NamedVfpUsesRegOp_Vmsr_Rule_336_A1_P660() {}
+
+ private:
+  nacl_arm_dec::VfpUsesRegOp_Vmsr_Rule_336_A1_P660 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpUsesRegOp_Vmsr_Rule_336_A1_P660);
 };
 
 class NamedBranch_B_Rule_16_A1_P44
@@ -8144,6 +8264,19 @@ class NamedDontCareInst_Yield_Rule_413_A1_P812
  private:
   nacl_arm_dec::DontCareInst_Yield_Rule_413_A1_P812 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Yield_Rule_413_A1_P812);
+};
+
+class NamedDontCareInstRdNotPc_Vmsr_Rule_336_A1_P660
+    : public NamedClassDecoder {
+ public:
+  inline NamedDontCareInstRdNotPc_Vmsr_Rule_336_A1_P660()
+    : NamedClassDecoder(decoder_, "DontCareInstRdNotPc Vmsr_Rule_336_A1_P660")
+  {}
+  virtual ~NamedDontCareInstRdNotPc_Vmsr_Rule_336_A1_P660() {}
+
+ private:
+  nacl_arm_dec::DontCareInstRdNotPc_Vmsr_Rule_336_A1_P660 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInstRdNotPc_Vmsr_Rule_336_A1_P660);
 };
 
 class NamedDontCareInstRnRsRmNotPc_Cmn_Rule_34_A1_P78

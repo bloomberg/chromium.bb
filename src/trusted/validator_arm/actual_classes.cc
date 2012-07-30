@@ -28,6 +28,12 @@ RegisterList DontCareInst::defs(const Instruction i) const {
   return kCondsDontCare;
 }
 
+SafetyLevel DontCareInstRdNotPc::safety(Instruction i) const {
+  if (d.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
 SafetyLevel DontCareInstRnRsRmNotPc::safety(Instruction i) const {
   if (RegisterList(m.reg(i)).Add(s.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
     return UNPREDICTABLE;
