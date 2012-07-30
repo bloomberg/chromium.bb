@@ -58,7 +58,7 @@ class LauncherTooltipManager::LauncherTooltipBubble
   void Close();
 
  private:
-  // views::WidgetDelegate overrides;
+  // views::WidgetDelegate overrides:
   virtual void WindowClosing() OVERRIDE;
 
   LauncherTooltipManager* host_;
@@ -82,7 +82,7 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
     aura::RootWindow* root_window =
         anchor->GetWidget()->GetNativeView()->GetRootWindow();
     set_parent_window(ash::Shell::GetInstance()->GetContainer(
-        root_window, ash::internal::kShellWindowId_LauncherContainer));
+        root_window, ash::internal::kShellWindowId_SettingBubbleContainer));
   }
   label_ = new views::Label;
   label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -127,6 +127,7 @@ LauncherTooltipManager::LauncherTooltipManager(
 }
 
 LauncherTooltipManager::~LauncherTooltipManager() {
+  CancelHidingAnimation();
   Close();
   if (shelf_layout_manager_)
     shelf_layout_manager_->RemoveObserver(this);
@@ -139,18 +140,16 @@ void LauncherTooltipManager::ShowDelayed(views::View* anchor,
   if (view_) {
     if (timer_.get() && timer_->IsRunning())
       return;
-    else
+    else {
+      CancelHidingAnimation();
       Close();
+    }
   }
 
   if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
     return;
 
   CreateBubble(anchor, text);
-  gfx::NativeView native_view = widget_->GetNativeView();
-  SetWindowVisibilityAnimationType(
-      native_view, WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  SetWindowVisibilityAnimationTransition(native_view, ANIMATE_SHOW);
   ResetTimer();
 }
 
@@ -159,6 +158,7 @@ void LauncherTooltipManager::ShowImmediately(views::View* anchor,
   if (view_) {
     if (timer_.get() && timer_->IsRunning())
       StopTimer();
+    CancelHidingAnimation();
     Close();
   }
 
@@ -166,12 +166,11 @@ void LauncherTooltipManager::ShowImmediately(views::View* anchor,
     return;
 
   CreateBubble(anchor, text);
-  gfx::NativeView native_view = widget_->GetNativeView();
-  SetWindowVisibilityAnimationTransition(native_view, ANIMATE_NONE);
   ShowInternal();
 }
 
 void LauncherTooltipManager::Close() {
+  StopTimer();
   if (view_) {
     view_->Close();
     view_ = NULL;
@@ -192,6 +191,7 @@ void LauncherTooltipManager::SetArrowLocation(ShelfAlignment alignment) {
 
   alignment_ = alignment;
   if (view_) {
+    CancelHidingAnimation();
     Close();
     ShowImmediately(anchor_, text_);
   }
@@ -310,6 +310,14 @@ void LauncherTooltipManager::OnAutoHideStateChanged(
   }
 }
 
+void LauncherTooltipManager::CancelHidingAnimation() {
+  if (!widget_ || !widget_->GetNativeView())
+    return;
+
+  gfx::NativeView native_view = widget_->GetNativeView();
+  SetWindowVisibilityAnimationTransition(native_view, ANIMATE_NONE);
+}
+
 void LauncherTooltipManager::CloseSoon() {
   MessageLoopForUI::current()->PostTask(
       FROM_HERE,
@@ -334,6 +342,11 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
   views::BubbleDelegateView::CreateBubble(view_);
   widget_ = view_->GetWidget();
   view_->SetText(text_);
+
+  gfx::NativeView native_view = widget_->GetNativeView();
+  SetWindowVisibilityAnimationType(
+      native_view, WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  SetWindowVisibilityAnimationTransition(native_view, ANIMATE_HIDE);
 }
 
 }  // namespace internal

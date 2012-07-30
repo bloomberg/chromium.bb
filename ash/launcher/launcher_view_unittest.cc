@@ -167,13 +167,13 @@ class MockLauncherDelegate : public ash::LauncherDelegate {
   }
 };
 
-class LauncherViewTest : public aura::test::AuraTestBase {
+class LauncherViewTest : public AshTestBase {
  public:
   LauncherViewTest() {}
   virtual ~LauncherViewTest() {}
 
   virtual void SetUp() OVERRIDE {
-    aura::test::AuraTestBase::SetUp();
+    AshTestBase::SetUp();
 
     model_.reset(new LauncherModel);
 
@@ -185,6 +185,11 @@ class LauncherViewTest : public aura::test::AuraTestBase {
 
     test_api_.reset(new LauncherViewTestAPI(launcher_view_.get()));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
+  }
+
+  virtual void TearDown() OVERRIDE {
+    launcher_view_.reset();
+    AshTestBase::TearDown();
   }
 
  protected:
@@ -649,6 +654,24 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
       gfx::Point(all_area.x(), all_area.y() - 1)));
   EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
       gfx::Point(all_area.x(), all_area.bottom())));
+}
+
+TEST_F(LauncherViewTest, ShouldHideTooltipWithAppListWindowTest) {
+  Shell::GetInstance()->ToggleAppList();
+  ASSERT_TRUE(Shell::GetInstance()->GetAppListWindow());
+
+  // The tooltip shouldn't hide if the mouse is on normal buttons.
+  for (int i = 0; i < test_api_->GetButtonCount() - 1; i++) {
+    internal::LauncherButton* button = test_api_->GetButton(i);
+    EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+        button->GetMirroredBounds().CenterPoint()))
+        << "LauncherView tries to hide on button " << i;
+  }
+
+  // The tooltip should hide on the app-list button.
+  views::View* app_list_button = launcher_view_->GetAppListButtonView();
+  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+      app_list_button->GetMirroredBounds().CenterPoint()));
 }
 
 // Resizing launcher view while an add animation without fade-in is running,

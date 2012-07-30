@@ -93,6 +93,7 @@ protected:
   friend class test::LauncherViewTest;
   friend class test::LauncherTooltipManagerTest;
 
+  void CancelHidingAnimation();
   void CloseSoon();
   void ShowInternal();
   void CreateBubble(views::View* anchor, const string16& text);
