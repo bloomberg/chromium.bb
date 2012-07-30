@@ -25,6 +25,7 @@ class APIDataSourceTest(unittest.TestCase):
 
     # Take the dict out of the list.
     expected = json.loads(self._ReadLocalFile('expected_test_file.json'))
+    expected.update({ 'permissions': None })
     self.assertEqual(expected, data_source['test_file'])
     self.assertEqual(expected, data_source['testFile'])
     self.assertEqual(expected, data_source['testFile.html'])
