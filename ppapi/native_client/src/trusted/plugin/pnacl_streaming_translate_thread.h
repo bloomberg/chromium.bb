@@ -24,7 +24,7 @@ class PnaclStreamingTranslateThread : public PnaclTranslateThread {
   virtual void RunTranslate(const pp::CompletionCallback& finish_callback,
                             const Manifest* manifest,
                             const Manifest* ld_manifest,
-                            LocalTempFile* obj_file,
+                            TempFile* obj_file,
                             LocalTempFile* nexe_file,
                             ErrorInfo* error_info,
                             PnaclResources* resources,

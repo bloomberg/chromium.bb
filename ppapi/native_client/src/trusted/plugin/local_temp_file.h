@@ -128,6 +128,6 @@ class LocalTempFile {
   static uint32_t next_identifier;
 };
 
-} // namespace plugin
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_LOCAL_TEMP_FILE_H_

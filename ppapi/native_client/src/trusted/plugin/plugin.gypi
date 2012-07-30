@@ -22,6 +22,7 @@
       'service_runtime.cc',
       'srpc_client.cc',
       'srpc_params.cc',
+      'temporary_file.cc',
       'utility.cc',
     ],
     # Append the arch-specific ISA code to common_sources.

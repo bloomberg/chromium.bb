@@ -76,6 +76,46 @@ void DoOpenPnaclFile(
   chrome_render_message_filter->Send(reply_msg);
 }
 
+void DoCreateTemporaryFile(
+    ChromeRenderMessageFilter* chrome_render_message_filter,
+    IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  FilePath file_path;
+  if (!file_util::CreateTemporaryFile(&file_path)) {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+    return;
+  }
+
+  base::PlatformFileError error;
+  base::PlatformFile file_handle = base::CreatePlatformFile(
+      file_path,
+      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_READ |
+      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_TEMPORARY |
+      base::PLATFORM_FILE_DELETE_ON_CLOSE,
+      NULL, &error);
+
+  if (error != base::PLATFORM_FILE_OK) {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+    return;
+  }
+
+  // Send the reply!
+  // Do any DuplicateHandle magic that is necessary first.
+  IPC::PlatformFileForTransit target_desc =
+      IPC::GetFileHandleForProcess(file_handle,
+                                   chrome_render_message_filter->peer_handle(),
+                                   true);
+  if (target_desc == IPC::InvalidPlatformFileForTransit()) {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+    return;
+  }
+
+  ChromeViewHostMsg_NaClCreateTemporaryFile::WriteReplyParams(
+      reply_msg, target_desc);
+  chrome_render_message_filter->Send(reply_msg);
+}
+
 }  // namespace
 
 namespace pnacl_file_host {
@@ -133,6 +173,18 @@ bool PnaclCanOpenFile(const std::string& filename,
   FilePath full_path = pnacl_dir.Append(file_to_find);
   *file_to_open = full_path;
   return true;
+}
+
+void CreateTemporaryFile(
+    ChromeRenderMessageFilter* chrome_render_message_filter,
+    IPC::Message* reply_msg) {
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&DoCreateTemporaryFile,
+                     make_scoped_refptr(chrome_render_message_filter),
+                     reply_msg))) {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+  }
 }
 
 }  // namespace pnacl_file_host

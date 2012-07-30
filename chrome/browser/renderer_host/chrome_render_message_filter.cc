@@ -76,6 +76,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_LaunchNaCl, OnLaunchNaCl)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetReadonlyPnaclFD,
                                     OnGetReadonlyPnaclFd)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_NaClCreateTemporaryFile,
+                                    OnNaClCreateTemporaryFile)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
@@ -178,6 +180,11 @@ void ChromeRenderMessageFilter::OnGetReadonlyPnaclFd(
   // This posts a task to another thread, but the renderer will
   // block until the reply is sent.
   pnacl_file_host::GetReadonlyPnaclFd(this, filename, reply_msg);
+}
+
+void ChromeRenderMessageFilter::OnNaClCreateTemporaryFile(
+    IPC::Message* reply_msg) {
+  pnacl_file_host::CreateTemporaryFile(this, reply_msg);
 }
 #endif
 

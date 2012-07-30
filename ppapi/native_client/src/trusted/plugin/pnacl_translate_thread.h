@@ -26,6 +26,7 @@ class Manifest;
 class NaClSubprocess;
 class Plugin;
 class PnaclResources;
+class TempFile;
 
 class PnaclTranslateThread {
  public:
@@ -36,7 +37,7 @@ class PnaclTranslateThread {
   virtual void RunTranslate(const pp::CompletionCallback& finish_callback,
                     const Manifest* manifest,
                     const Manifest* ld_manifest,
-                    LocalTempFile* obj_file,
+                    TempFile* obj_file,
                     LocalTempFile* nexe_file,
                     ErrorInfo* error_info,
                     PnaclResources* resources,
@@ -75,7 +76,7 @@ class PnaclTranslateThread {
   // Data about the translation files, owned by the coordinator
   const Manifest* manifest_;
   const Manifest* ld_manifest_;
-  LocalTempFile* obj_file_;
+  TempFile* obj_file_;
   LocalTempFile* nexe_file_;
   ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;

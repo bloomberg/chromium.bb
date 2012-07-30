@@ -5,8 +5,10 @@
 
 /* This file contains NaCl private interfaces. */
 
+#include "ppapi/c/private/pp_file_handle.h"
+
 /* PPB_NaCl_Private */
-interface PPB_NaCl_Private_0_6 {
+interface PPB_NaCl_Private_0_7 {
   /* This function launches NaCl's sel_ldr process.  On success, the function
    * returns true, otherwise it returns false.  When it returns true, it will
    * write |socket_count| nacl::Handles to imc_handles.
@@ -37,5 +39,11 @@ interface PPB_NaCl_Private_0_6 {
    * Do we want this to take a completion callback and be async, or
    * could we make this happen on another thread?
    */
-  int32_t GetReadonlyPnaclFd([in] str_t filename);
+  PP_FileHandle GetReadonlyPnaclFd([in] str_t filename);
+
+  /* This creates a temporary file that will be deleted by the time
+   * the last handle is closed (or earlier on POSIX systems), and
+   * returns a posix handle to that temporary file.
+   */
+  PP_FileHandle CreateTemporaryFile([in] PP_Instance instance);
 };

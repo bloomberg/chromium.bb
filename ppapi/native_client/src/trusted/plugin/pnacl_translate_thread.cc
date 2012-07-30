@@ -8,6 +8,7 @@
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/pnacl_resources.h"
 #include "native_client/src/trusted/plugin/srpc_params.h"
+#include "native_client/src/trusted/plugin/temporary_file.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
@@ -60,7 +61,13 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
   }
   // Run LD.
   SrpcParams params;
-  nacl::DescWrapper* ld_in_file = obj_file_->read_wrapper();
+
+  // Reset object file for reading first.
+  if (!obj_file_->Reset()) {
+    TranslateFailed("Link process could not reset object file");
+    return false;
+  }
+  nacl::DescWrapper* ld_in_file = obj_file_->get_wrapper();
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
   PluginReverseInterface* ld_reverse =
       ld_subprocess->service_runtime()->rev_interface();

@@ -38,6 +38,7 @@ class Manifest;
 class Plugin;
 class PnaclCoordinator;
 class PnaclTranslateThread;
+class TempFile;
 
 // A class invoked by Plugin to handle PNaCl client-side translation.
 // Usage:
@@ -153,13 +154,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Invoked when the pexe download finishes (using streaming translation)
   void BitcodeStreamDidFinish(int32_t pp_error);
   // Invoked when the write descriptor for obj_file_ is created.
-  void ObjectWriteDidOpen(int32_t pp_error);
-  // Invoked when the read descriptor for obj_file_ is created.
-  void ObjectReadDidOpen(int32_t pp_error);
-  // Invoked when the descriptors for obj_file_ have been closed.
-  void ObjectFileWasClosed(int32_t pp_error);
-  // Invoked when the obj_file_ temporary has been deleted.
-  void ObjectFileWasDeleted(int32_t pp_error);
+  void ObjectFileDidOpen(int32_t pp_error);
   // Invoked when the descriptors for nexe_file_ have been closed.
   void NexeFileWasClosed(int32_t pp_error);
   // Invoked when the nexe_file_ temporary has been renamed to the nexe name.
@@ -213,7 +208,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Optional cache identity for translation caching.
   nacl::string cache_identity_;
   // Object file, produced by the translator and consumed by the linker.
-  nacl::scoped_ptr<LocalTempFile> obj_file_;
+  nacl::scoped_ptr<TempFile> obj_file_;
   // Translated nexe file, produced by the linker and consumed by sel_ldr.
   nacl::scoped_ptr<LocalTempFile> nexe_file_;
 

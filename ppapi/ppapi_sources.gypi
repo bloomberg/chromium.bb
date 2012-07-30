@@ -90,6 +90,7 @@
       'c/dev/ppp_zoom_dev.h',
 
       # Private interfaces.
+      'c/private/pp_file_handle.h',
       'c/private/ppb_flash.h',
       'c/private/ppb_flash_clipboard.h',
       'c/private/ppb_flash_file.h',

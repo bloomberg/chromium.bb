@@ -239,4 +239,4 @@ void LocalTempFile::FinishRename() {
   old_ref_.reset(NULL);
 }
 
-} // namespace plugin
+}  // namespace plugin

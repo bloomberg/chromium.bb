@@ -16,6 +16,7 @@
 #include "native_client/src/trusted/plugin/pnacl_streaming_translate_thread.h"
 #include "native_client/src/trusted/plugin/pnacl_translate_thread.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
+#include "native_client/src/trusted/plugin/temporary_file.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 #include "ppapi/c/pp_errors.h"
@@ -304,32 +305,6 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   // the one from the compiler, (which is always just PP_ERROR_FAILED)
   if (translate_finish_error_ == PP_OK) translate_finish_error_ = pp_error;
 
-  // Close the object temporary file (regardless of error code).
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileWasClosed);
-  obj_file_->Close(cb);
-}
-
-void PnaclCoordinator::ObjectFileWasClosed(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::ObjectFileWasClosed (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error);
-    return;
-  }
-  // Delete the object temporary file.
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileWasDeleted);
-  obj_file_->Delete(cb);
-}
-
-void PnaclCoordinator::ObjectFileWasDeleted(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::ObjectFileWasDeleted (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error);
-    return;
-  }
   // Close the nexe temporary file.
   if (nexe_file_ != NULL) {
     pp::CompletionCallback cb =
@@ -474,11 +449,10 @@ void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
   // translator can start writing to it during streaming translation.
   // In the non-streaming case this can wait until the bitcode download is
   // finished.
-  obj_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
-                                    nacl::string(kPnaclTempDir)));
+  obj_file_.reset(new TempFile(plugin_));
   pp::CompletionCallback obj_cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::ObjectWriteDidOpen);
-  obj_file_->OpenWrite(obj_cb);
+    callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileDidOpen);
+  obj_file_->Open(obj_cb);
 
   streaming_downloader_.reset(new FileDownloader());
   streaming_downloader_->Initialize(plugin_);
@@ -521,20 +495,8 @@ StreamCallback PnaclCoordinator::GetCallback() {
       &PnaclCoordinator::BitcodeStreamGotData);
 }
 
-void PnaclCoordinator::ObjectWriteDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::ObjectWriteDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error);
-    return;
-  }
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::ObjectReadDidOpen);
-  obj_file_->OpenRead(cb);
-}
-
-void PnaclCoordinator::ObjectReadDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::ObjectReadDidOpen (pp_error=%"
+void PnaclCoordinator::ObjectFileDidOpen(int32_t pp_error) {
+  PLUGIN_PRINTF(("PnaclCoordinator::ObjectFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
     ReportPpapiError(pp_error);

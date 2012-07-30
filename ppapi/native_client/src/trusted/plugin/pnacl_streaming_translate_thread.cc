@@ -8,6 +8,7 @@
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/pnacl_resources.h"
 #include "native_client/src/trusted/plugin/srpc_params.h"
+#include "native_client/src/trusted/plugin/temporary_file.h"
 
 namespace plugin {
 
@@ -22,7 +23,7 @@ void PnaclStreamingTranslateThread::RunTranslate(
     const pp::CompletionCallback& finish_callback,
     const Manifest* manifest,
     const Manifest* ld_manifest,
-    LocalTempFile* obj_file,
+    TempFile* obj_file,
     LocalTempFile* nexe_file,
     ErrorInfo* error_info,
     PnaclResources* resources,
@@ -98,11 +99,10 @@ void PnaclStreamingTranslateThread::DoTranslate() {
   }
   // Run LLC.
   SrpcParams params;
-  nacl::DescWrapper* llc_out_file = obj_file_->write_wrapper();
+  nacl::DescWrapper* llc_out_file = obj_file_->get_wrapper();
   PluginReverseInterface* llc_reverse =
       llc_subprocess->service_runtime()->rev_interface();
-  llc_reverse->AddQuotaManagedFile(obj_file_->identifier(),
-                                   obj_file_->write_file_io());
+  llc_reverse->AddTempQuotaManagedFile(obj_file_->identifier());
 
   if (!llc_subprocess->InvokeSrpcMethod("StreamInit",
                                         "h",

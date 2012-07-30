@@ -28,6 +28,12 @@ void GetReadonlyPnaclFd(ChromeRenderMessageFilter* chrome_render_message_filter,
 bool PnaclCanOpenFile(const std::string& filename,
                       FilePath* file_to_open);
 
+// Creates a temporary file that will be deleted when the last handle
+// is closed, or earlier.
+void CreateTemporaryFile(
+    ChromeRenderMessageFilter* chrome_render_message_filter,
+    IPC::Message* reply_msg);
+
 }  // namespace pnacl_file_host
 
 #endif  // CHROME_BROWSER_NACL_HOST_PNACL_FILE_HOST_H_
