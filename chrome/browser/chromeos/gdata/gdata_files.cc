@@ -467,11 +467,8 @@ void GDataDirectoryService::RemoveEntryFromResourceMap(GDataEntry* entry) {
   resource_map_.erase(entry->resource_id());
 }
 
-void GDataDirectoryService::FindEntryByPath(const FilePath& file_path,
-                                         const FindEntryCallback& callback) {
-  // GDataFileSystem has already locked.
-  DCHECK(!callback.is_null());
-
+GDataEntry* GDataDirectoryService::FindEntryByPathSync(
+    const FilePath& file_path) {
   std::vector<FilePath::StringType> components;
   file_path.GetComponents(&components);
 
@@ -484,17 +481,15 @@ void GDataDirectoryService::FindEntryByPath(const FilePath& file_path,
     // Last element must match, if not last then it must be a directory.
     if (i == components.size() - 1) {
       if (current_dir->base_name() == components[i])
-        callback.Run(GDATA_FILE_OK, current_dir);
+        return current_dir;
       else
-        callback.Run(GDATA_FILE_ERROR_NOT_FOUND, NULL);
-      return;
+        return NULL;
     }
 
     // Not the last part of the path, search for the next segment.
     GDataEntry* entry = current_dir->FindChild(components[i + 1]);
     if (!entry) {
-      callback.Run(GDATA_FILE_ERROR_NOT_FOUND, NULL);
-      return;
+      return NULL;
     }
 
     // Found file, must be the last segment.
@@ -503,14 +498,12 @@ void GDataDirectoryService::FindEntryByPath(const FilePath& file_path,
       current_dir = entry->AsGDataDirectory();
     } else {
       if ((i + 1) == (components.size() - 1))
-        callback.Run(GDATA_FILE_OK, entry);
+        return entry;
       else
-        callback.Run(GDATA_FILE_ERROR_NOT_FOUND, NULL);
-
-      return;
+        return NULL;
     }
   }
-  callback.Run(GDATA_FILE_ERROR_NOT_FOUND, NULL);
+  return NULL;
 }
 
 GDataEntry* GDataDirectoryService::GetEntryByResourceId(

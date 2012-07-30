@@ -175,10 +175,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Struct used for StartFileUploadOnUIThread().
   struct StartFileUploadParams;
 
-  // Finds entry object by |file_path| and returns the entry object.
-  // Returns NULL if it does not find the entry.
-  GDataEntry* GetGDataEntryByPath(const FilePath& file_path);
-
   // Callback passed to |LoadFeedFromServer| from |Search| method.
   // |callback| is that should be run with data received from
   // |LoadFeedFromServer|.

@@ -571,14 +571,6 @@ CallbackType CreateRelayCallback(const CallbackType& callback) {
                     callback);
 }
 
-// Callback used to find a directory element for file system updates.
-void ReadOnlyFindEntryCallback(GDataEntry** out,
-                               GDataFileError error,
-                               GDataEntry* entry) {
-  if (error == GDATA_FILE_OK)
-    *out = entry;
-}
-
 // Wrapper around BrowserThread::PostTask to post a task to the blocking
 // pool with the given sequence token.
 void PostBlockingPoolSequencedTask(
@@ -974,7 +966,9 @@ void GDataFileSystem::FindEntryByPathSyncOnUIThread(
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  directory_service_->FindEntryByPath(search_file_path, callback);
+  GDataEntry* entry = directory_service_->FindEntryByPathSync(
+      search_file_path);
+  callback.Run(entry ? GDATA_FILE_OK : GDATA_FILE_ERROR_NOT_FOUND, entry);
 }
 
 void GDataFileSystem::ReloadFeedFromServerIfNeeded(
@@ -1387,8 +1381,10 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
   std::string src_file_resource_id;
   bool src_file_is_hosted_document = false;
 
-  GDataEntry* src_entry = GetGDataEntryByPath(src_file_path);
-  GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
+  GDataEntry* src_entry = directory_service_->FindEntryByPathSync(
+      src_file_path);
+  GDataEntry* dest_parent = directory_service_->FindEntryByPathSync(
+      dest_parent_path);
   if (!src_entry || !dest_parent) {
     error = GDATA_FILE_ERROR_NOT_FOUND;
   } else if (!dest_parent->AsGDataDirectory()) {
@@ -1593,8 +1589,10 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
   GDataFileError error = GDATA_FILE_OK;
   FilePath dest_parent_path = dest_file_path.DirName();
 
-  GDataEntry* src_entry = GetGDataEntryByPath(src_file_path);
-  GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
+  GDataEntry* src_entry = directory_service_->FindEntryByPathSync(
+      src_file_path);
+  GDataEntry* dest_parent = directory_service_->FindEntryByPathSync(
+      dest_parent_path);
   if (!src_entry || !dest_parent) {
     error = GDATA_FILE_ERROR_NOT_FOUND;
   } else if (!dest_parent->AsGDataDirectory()) {
@@ -1653,8 +1651,8 @@ void GDataFileSystem::AddEntryToDirectory(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
-  GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
+  GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
+  GDataEntry* dir_entry = directory_service_->FindEntryByPathSync(dir_path);
   if (error == GDATA_FILE_OK) {
     if (!entry || !dir_entry) {
       error = GDATA_FILE_ERROR_NOT_FOUND;
@@ -1690,8 +1688,8 @@ void GDataFileSystem::RemoveEntryFromDirectory(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
-  GDataEntry* dir = GetGDataEntryByPath(dir_path);
+  GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
+  GDataEntry* dir = directory_service_->FindEntryByPathSync(dir_path);
   if (error == GDATA_FILE_OK) {
     if (!entry || !dir) {
       error = GDATA_FILE_ERROR_NOT_FOUND;
@@ -2458,17 +2456,6 @@ void GDataFileSystem::RequestDirectoryRefreshByEntry(
   DVLOG(1) << "Directory refreshed: " << directory_path.value();
 }
 
-GDataEntry* GDataFileSystem::GetGDataEntryByPath(
-    const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Find directory element within the cached file system snapshot.
-  GDataEntry* entry = NULL;
-  directory_service_->FindEntryByPath(file_path,
-      base::Bind(&ReadOnlyFindEntryCallback, &entry));
-  return entry;
-}
-
 void GDataFileSystem::UpdateFileByResourceId(
     const std::string& resource_id,
     const FileOperationCallback& callback) {
@@ -3081,7 +3068,7 @@ void GDataFileSystem::OnAddEntryToDirectoryCompleted(
 
   GDataFileError error = GDataToGDataFileError(status);
   if (error == GDATA_FILE_OK) {
-    GDataEntry* entry = GetGDataEntryByPath(file_path);
+    GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
     if (entry) {
       DCHECK_EQ(directory_service_->root(), entry->parent());
       error = AddEntryToDirectoryOnFilesystem(entry, dir_path);
@@ -3242,7 +3229,7 @@ GDataFileError GDataFileSystem::RenameFileOnFilesystem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(updated_file_path);
 
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
+  GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
   if (!entry)
     return GDATA_FILE_ERROR_NOT_FOUND;
 
@@ -3269,7 +3256,7 @@ GDataFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(entry);
 
-  GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
+  GDataEntry* dir_entry = directory_service_->FindEntryByPathSync(dir_path);
   if (!dir_entry)
     return GDATA_FILE_ERROR_NOT_FOUND;
 
@@ -3290,11 +3277,11 @@ GDataFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(updated_file_path);
 
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
+  GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
   if (!entry)
     return GDATA_FILE_ERROR_NOT_FOUND;
 
-  GDataEntry* dir = GetGDataEntryByPath(dir_path);
+  GDataEntry* dir = directory_service_->FindEntryByPathSync(dir_path);
   if (!dir)
     return GDATA_FILE_ERROR_NOT_FOUND;
 
@@ -3643,7 +3630,7 @@ GDataFileError GDataFileSystem::AddNewDirectory(
     return GDATA_FILE_ERROR_FAILED;
 
   // Find parent directory element within the cached file system snapshot.
-  GDataEntry* entry = GetGDataEntryByPath(directory_path);
+  GDataEntry* entry = directory_service_->FindEntryByPathSync(directory_path);
   if (!entry)
     return GDATA_FILE_ERROR_FAILED;
 
@@ -3682,7 +3669,7 @@ GDataFileSystem::FindFirstMissingParentDirectory(
           path_parts.begin();
        iter != path_parts.end(); ++iter) {
     current_path = current_path.Append(*iter);
-    GDataEntry* entry = GetGDataEntryByPath(current_path);
+    GDataEntry* entry = directory_service_->FindEntryByPathSync(current_path);
     if (entry) {
       if (entry->file_info().is_directory) {
         *last_dir_content_url = entry->content_url();
@@ -3705,7 +3692,7 @@ GDataFileError GDataFileSystem::RemoveEntryFromGData(
   resource_id->clear();
 
   // Find directory element within the cached file system snapshot.
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
+  GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
 
   if (!entry)
     return GDATA_FILE_ERROR_NOT_FOUND;
@@ -3766,7 +3753,8 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
     return;
   }
 
-  GDataEntry* dir_entry = GetGDataEntryByPath(virtual_dir_path);
+  GDataEntry* dir_entry = directory_service_->FindEntryByPathSync(
+      virtual_dir_path);
   if (!dir_entry) {
     callback.Run();
     return;

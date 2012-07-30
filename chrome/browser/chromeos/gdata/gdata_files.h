@@ -358,9 +358,9 @@ class GDataDirectoryService {
   // Removes the entry from resource map.
   void RemoveEntryFromResourceMap(GDataEntry* entry);
 
-  // Searches for |file_path| triggering callback.
-  void FindEntryByPath(const FilePath& file_path,
-                       const FindEntryCallback& callback);
+  // Searches for |file_path| synchronously.
+  // TODO(satorux): Replace this with an async version crbug.com/137160
+  GDataEntry* FindEntryByPathSync(const FilePath& file_path);
 
   // Returns the GDataEntry* with the corresponding |resource_id|.
   // TODO(achuith): Get rid of this in favor of async version crbug.com/13957.
