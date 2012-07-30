@@ -105,7 +105,6 @@ void SyncBackendHostForProfileSyncTest
     syncer::ModelTypeSet restored_types) {
   // Here's our opportunity to pretend to do things that the SyncManager would
   // normally do during initialization, but can't because this is a test.
-  bool send_passphrase_required = false;
   if (success) {
     // Set up any nodes the test wants around before model association.
     if (!callback_.is_null()) {
@@ -124,7 +123,6 @@ void SyncBackendHostForProfileSyncTest
 
         // A side effect of adding the NIGORI mode (normally done by the
         // syncer) is a decryption attempt, which will fail the first time.
-        send_passphrase_required = true;
       }
 
       SetInitialSyncEndedForAllTypes();
