@@ -46,6 +46,9 @@ const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
 const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 
+// OAuth scope for the Contacts API.
+const char kContactsScope[] = "https://www.google.com/m8/feeds/";
+
 // OAuth scope for Drive API.
 const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 
@@ -71,6 +74,7 @@ void AuthOperation::Start() {
   scopes.push_back(kDocsListScope);
   scopes.push_back(kSpreadsheetsScope);
   scopes.push_back(kUserContentScope);
+  scopes.push_back(kContactsScope);
   if (gdata::util::IsDriveV2ApiEnabled())
     scopes.push_back(kDriveAppsScope);
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(

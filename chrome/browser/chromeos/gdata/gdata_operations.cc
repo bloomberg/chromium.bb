@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +48,18 @@ const char kGetDocumentEntryURLFormat[] =
 // Metadata feed with things like user quota.
 const char kAccountMetadataURL[] =
     "https://docs.google.com/feeds/metadata/default";
+
+// URL requesting all contacts.
+// TODO(derat): Per https://goo.gl/AufHP, "The feed may not contain all of the
+// user's contacts, because there's a default limit on the number of results
+// returned."  Decide if 10000 is reasonable or not.
+const char kGetContactsURL[] =
+    "https://www.google.com/m8/feeds/contacts/default/full"
+    "?alt=json&showdeleted=true&max-results=10000";
+
+// Query parameter optionally appended to |kGetContactsURL| to return only
+// recently-updated contacts.
+const char kGetContactsUpdatedMinParam[] = "updated-min";
 
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadContentType[] = "X-Upload-Content-Type: ";
@@ -873,6 +886,64 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
     const URLFetcher* source, int64 current, int64 total) {
   // Adjust the progress values according to the range currently uploaded.
   NotifyProgress(params_.start_range + current, params_.content_length);
+}
+
+//============================ GetContactsOperation ============================
+
+GetContactsOperation::GetContactsOperation(GDataOperationRegistry* registry,
+                                           Profile* profile,
+                                           const base::Time& min_update_time,
+                                           const GetDataCallback& callback)
+    : GetDataOperation(registry, profile, callback),
+      min_update_time_(min_update_time) {
+}
+
+GetContactsOperation::~GetContactsOperation() {}
+
+GURL GetContactsOperation::GetURL() const {
+  if (!feed_url_for_testing_.is_empty())
+    return GURL(feed_url_for_testing_);
+
+  GURL url(kGetContactsURL);
+  if (!min_update_time_.is_null()) {
+    std::string time_rfc3339 = util::FormatTimeAsString(min_update_time_);
+    url = chrome_common_net::AppendQueryParameter(
+              url, kGetContactsUpdatedMinParam, time_rfc3339);
+  }
+  return url;
+}
+
+//========================== GetContactPhotoOperation ==========================
+
+GetContactPhotoOperation::GetContactPhotoOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const GURL& photo_url,
+    const GetDownloadDataCallback& callback)
+    : UrlFetchOperationBase(registry, profile),
+      photo_url_(photo_url),
+      callback_(callback) {
+}
+
+GetContactPhotoOperation::~GetContactPhotoOperation() {}
+
+GURL GetContactPhotoOperation::GetURL() const {
+  return photo_url_;
+}
+
+bool GetContactPhotoOperation::ProcessURLFetchResults(
+    const net::URLFetcher* source) {
+  GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
+  scoped_ptr<std::string> data(new std::string);
+  source->GetResponseAsString(data.get());
+  callback_.Run(code, data.Pass());
+  return code == HTTP_SUCCESS;
+}
+
+void GetContactPhotoOperation::RunCallbackOnPrematureFailure(
+    GDataErrorCode code) {
+  scoped_ptr<std::string> data(new std::string);
+  callback_.Run(code, data.Pass());
 }
 
 }  // namespace gdata

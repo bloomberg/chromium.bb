@@ -20,6 +20,7 @@ namespace gdata {
 class DocumentsServiceInterface;
 class DriveWebAppsRegistry;
 class GDataCache;
+class GDataContactsService;
 class GDataDownloadObserver;
 class GDataFileSystemInterface;
 class GDataSyncClient;
@@ -33,19 +34,11 @@ class GDataUploader;
 // created per-profile.
 class GDataSystemService : public ProfileKeyedService  {
  public:
-  // Returns the documents service instance.
   DocumentsServiceInterface* docs_service() { return documents_service_.get(); }
-
-  // Returns the cache instance.
   GDataCache* cache() { return cache_; }
-
-  // Returns the file system instance.
   GDataFileSystemInterface* file_system() { return file_system_.get(); }
-
-  // Returns the uploader instance.
   GDataUploader* uploader() { return uploader_.get(); }
-
-  // Returns the file system instance.
+  GDataContactsService* contacts_service() { return contacts_service_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
 
   // ProfileKeyedService override:
@@ -76,6 +69,7 @@ class GDataSystemService : public ProfileKeyedService  {
   scoped_ptr<GDataFileSystemInterface> file_system_;
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
+  scoped_ptr<GDataContactsService> contacts_service_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataSystemService);
 };

@@ -19,7 +19,8 @@ message Contact {
   // Provider-assigned unique identifier.
   optional string provider_id = 1;
 
-  // Last time at which this contact was updated within the upstream provider.
+  // Last time at which this contact was updated within the upstream provider,
+  // as given by base::Time::ToInternalValue().
   optional int64 update_time = 2;
 
   // Has the contact been deleted recently within the upstream provider?

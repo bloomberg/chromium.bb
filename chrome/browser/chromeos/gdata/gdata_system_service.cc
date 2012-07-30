@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/gdata/gdata_contacts_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
@@ -70,6 +71,7 @@ void GDataSystemService::Initialize(
   download_observer_.reset(new GDataDownloadObserver(uploader(),
                                                      file_system()));
   sync_client_.reset(new GDataSyncClient(profile_, file_system(), cache()));
+  contacts_service_.reset(new GDataContactsService(profile_));
 
   sync_client_->Initialize();
   file_system_->Initialize();
@@ -84,6 +86,7 @@ void GDataSystemService::Initialize(
           GDataCache::CACHE_TYPE_TMP_DOWNLOADS));
 
   AddDriveMountPoint();
+  contacts_service_->Initialize();
 }
 
 void GDataSystemService::Shutdown() {
@@ -91,6 +94,7 @@ void GDataSystemService::Shutdown() {
   RemoveDriveMountPoint();
 
   // Shut down the member objects in the reverse order of creation.
+  contacts_service_.reset();
   sync_client_.reset();
   download_observer_.reset();
   file_system_.reset();

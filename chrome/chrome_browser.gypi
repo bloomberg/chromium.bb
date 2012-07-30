@@ -549,6 +549,8 @@
         'browser/chromeos/gdata/gdata_cache.h',
         'browser/chromeos/gdata/gdata_cache_metadata.cc',
         'browser/chromeos/gdata/gdata_cache_metadata.h',
+        'browser/chromeos/gdata/gdata_contacts_service.cc',
+        'browser/chromeos/gdata/gdata_contacts_service.h',
         'browser/chromeos/gdata/gdata_db.h',
         'browser/chromeos/gdata/gdata_db_factory.cc',
         'browser/chromeos/gdata/gdata_db_factory.h',

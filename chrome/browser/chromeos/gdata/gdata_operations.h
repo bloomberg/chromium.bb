@@ -383,6 +383,63 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };
 
+//============================ GetContactsOperation ============================
+
+// This class fetches a user's contacts.
+class GetContactsOperation : public GetDataOperation {
+ public:
+  GetContactsOperation(GDataOperationRegistry* registry,
+                       Profile* profile,
+                       const base::Time& min_update_time,
+                       const GetDataCallback& callback);
+  virtual ~GetContactsOperation();
+
+  void set_feed_url_for_testing(const GURL& url) {
+    feed_url_for_testing_ = url;
+  }
+
+ protected:
+  // Overridden from GetDataOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  // If non-empty, URL of the feed to fetch.
+  GURL feed_url_for_testing_;
+
+  // If is_null() is false, contains a minimum last-updated time that will be
+  // used to filter contacts.
+  base::Time min_update_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetContactsOperation);
+};
+
+//========================== GetContactPhotoOperation ==========================
+
+// This class fetches a contact's photo.
+class GetContactPhotoOperation : public UrlFetchOperationBase {
+ public:
+  GetContactPhotoOperation(GDataOperationRegistry* registry,
+                           Profile* profile,
+                           const GURL& photo_url,
+                           const GetDownloadDataCallback& callback);
+  virtual ~GetContactPhotoOperation();
+
+ protected:
+  // Overridden from UrlFetchOperationBase.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+
+ private:
+  // Location of the photo to fetch.
+  GURL photo_url_;
+
+  // Callback to which the photo data is passed.
+  GetDownloadDataCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetContactPhotoOperation);
+};
+
 }  // namespace gdata
 
 #endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_OPERATIONS_H_
