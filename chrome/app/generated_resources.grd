@@ -16789,9 +16789,14 @@ Battery full
       ClientLogin uses ASPs during authentication. ClientOAuth uses verification codes (i.e. OTPs) during authentication.
     </message>
 
+    <!-- Toast experiment. -->
+    <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make chrome the default browser">
+      Make it my default browser
+    </message>
+
     <!-- Windows 8 Metro mode. -->
     <message name="IDS_METRO_FLOW_TAB_TITLE"
-	         desc="The dialog window title.">
+             desc="The dialog window title.">
       Welcome to Chrome
     </message>
     <message name="IDS_METRO_FLOW_TITLE_SHORT"
