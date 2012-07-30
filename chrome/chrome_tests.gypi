@@ -488,6 +488,7 @@
         'browser/browser_focus_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',
         'browser/instant/instant_browsertest.cc',
+        'browser/mouseleave_browsertest.cc',
         'browser/printing/print_dialog_cloud_interative_uitest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/ui/fullscreen/fullscreen_controller_interactive_browsertest.cc',
@@ -519,7 +520,6 @@
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
         'test/ppapi/ppapi_interactive_browsertest.cc',
-        '../content/browser/mouseleave_browsertest.cc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {

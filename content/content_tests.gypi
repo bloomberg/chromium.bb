@@ -566,6 +566,7 @@
         'browser/device_orientation/device_orientation_browsertest.cc',
         'browser/dom_storage/dom_storage_browsertest.cc',
         'browser/download/mhtml_generation_browsertest.cc',
+        'browser/download/save_package_browsertest.cc',
         'browser/fileapi/file_system_browsertest.cc',
         'browser/in_process_webkit/indexed_db_browsertest.cc',
         'browser/in_process_webkit/indexed_db_layout_browsertest.cc',

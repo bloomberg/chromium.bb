@@ -3,21 +3,20 @@
 // found in the LICENSE file.
 
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/download/save_package.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 
-namespace {
+namespace content {
 
-const char kTestFile[] = "files/save_page/a.htm";
+const char kTestFile[] = "files/simple_page.html";
 
-class SavePackageBrowserTest : public InProcessBrowserTest {
+class SavePackageBrowserTest : public ContentBrowserTest {
  protected:
   void SetUp() OVERRIDE {
     ASSERT_TRUE(save_dir_.CreateUniqueTempDir());
-    InProcessBrowserTest::SetUp();
+    ContentBrowserTest::SetUp();
   }
 
   // Returns full paths of destination file and directory.
@@ -37,12 +36,12 @@ class SavePackageBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ImplicitCancel) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kTestFile);
-  ui_test_utils::NavigateToURL(browser(), url);
+  NavigateToURL(shell(), url);
   FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   scoped_refptr<SavePackage> save_package(new SavePackage(
-      chrome::GetActiveWebContents(browser()),
-      content::SAVE_PAGE_TYPE_AS_ONLY_HTML, full_file_name, dir));
+      shell()->web_contents(), SAVE_PAGE_TYPE_AS_ONLY_HTML, full_file_name,
+      dir));
   ASSERT_TRUE(test_server()->Stop());
 }
 
@@ -51,14 +50,14 @@ IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ImplicitCancel) {
 IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ExplicitCancel) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kTestFile);
-  ui_test_utils::NavigateToURL(browser(), url);
+  NavigateToURL(shell(), url);
   FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   scoped_refptr<SavePackage> save_package(new SavePackage(
-      chrome::GetActiveWebContents(browser()),
-      content::SAVE_PAGE_TYPE_AS_ONLY_HTML, full_file_name, dir));
+      shell()->web_contents(), SAVE_PAGE_TYPE_AS_ONLY_HTML, full_file_name,
+      dir));
   save_package->Cancel(true);
   ASSERT_TRUE(test_server()->Stop());
 }
 
-}  // namespace
+}  // namespace content
