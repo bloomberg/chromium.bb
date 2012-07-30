@@ -152,6 +152,10 @@ void WindowEventRouter::OnActiveWindowChanged(
 
   if (!window_profile)
     window_profile = previous_focused_profile;
+  if (!profile_->IsSameProfile(window_profile) ||
+      !ExtensionSystem::Get(window_profile)->event_router()) {
+    return;
+  }
 
   ExtensionSystem::Get(window_profile)->event_router()->
       DispatchEventsToRenderersAcrossIncognito(
