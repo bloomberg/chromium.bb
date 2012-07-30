@@ -1463,6 +1463,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     archive_path = self._SetupArchivePath()
     image_dir = self.GetImageDirSymlink()
     upload_queue = multiprocessing.Queue()
+    upload_symbols_queue = multiprocessing.Queue()
     hw_test_upload_queue = multiprocessing.Queue()
     bg_task_runner = background.BackgroundTaskRunner
 
@@ -1532,7 +1533,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
         upload_queue.put([commands.ArchiveFile(test_results, archive_path)])
 
     def ArchiveDebugSymbols():
-      """Generate and upload debug symbols."""
+      """Generate debug symbols and upload debug.tgz."""
       if config['archive_build_debug'] or config['vm_tests']:
         success = False
         try:
@@ -1540,15 +1541,22 @@ class ArchiveStage(BoardSpecificBuilderStage):
           success = True
         finally:
           self._BreakpadSymbolsGenerated(success)
+
+        # Kick off the symbol upload process in the background.
+        if config['upload_symbols']:
+          upload_symbols_queue.put([])
+
+        # Generate and upload tarball.
         filename = commands.GenerateDebugTarball(
             buildroot, board, archive_path, config['archive_build_debug'])
         upload_queue.put([filename])
-        if not debug and config['upload_symbols']:
-          commands.UploadSymbols(buildroot,
-                                 board=board,
-                                 official=config['chromeos_official'])
       else:
         self._BreakpadSymbolsGenerated(False)
+
+    def UploadSymbols():
+      """Upload generated debug symbols."""
+      if not debug:
+        commands.UploadSymbols(buildroot, board, config['chromeos_official'])
 
     def BuildAndArchiveFactoryImages():
       """Build and archive the factory zip file.
@@ -1695,11 +1703,12 @@ class ArchiveStage(BoardSpecificBuilderStage):
       PushImage()
 
     def BuildAndArchiveArtifacts(num_upload_processes=10):
-      with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
-        # Run archiving steps in parallel.
-        steps = [ArchiveReleaseArtifacts, ArchiveStrippedChrome,
-                 ArchiveArtifactsForHWTesting, ArchiveTestResults]
-        background.RunParallelSteps(steps)
+      with bg_task_runner(upload_symbols_queue, UploadSymbols, 1):
+        with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
+          # Run archiving steps in parallel.
+          steps = [ArchiveReleaseArtifacts, ArchiveStrippedChrome,
+                   ArchiveArtifactsForHWTesting, ArchiveTestResults]
+          background.RunParallelSteps(steps)
 
     def MarkAsLatest():
       # Update and upload LATEST file.
