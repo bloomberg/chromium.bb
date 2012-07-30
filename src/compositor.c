@@ -3394,6 +3394,50 @@ verify_xdg_runtime_dir(void)
 	}
 }
 
+static int
+usage(int error_code)
+{
+	fprintf(stderr,
+		"Usage: weston [OPTIONS]\n\n"
+		"This is weston version " VERSION ", the Wayland reference compositor.\n"
+		"Weston supports multiple backends, and depending on which backend is in use\n"
+		"different options will be accepted.\n\n"
+
+
+		"Core options:\n\n"
+		"  -B, --backend=MODULE\tBackend module, one of drm-backend.so,\n"
+		"\t\t\t\tx11-backend.so or wayland-backend.so\n"
+		"  -S, --socket=NAME\tName of socket to listen on\n"
+		"  -i, --idle-time=SECS\tIdle time in seconds\n"
+		"  --xserver\t\tEnable X server integration\n"
+		"  --module\t\tLoad the specified module\n"
+		"  --log==FILE\t\tLog to the given file\n"
+		"  -h, --help\t\tThis help message\n\n");
+
+	fprintf(stderr,
+		"Options for drm-backend.so:\n\n"
+		"  --connector=ID\tBring up only this connector\n"
+		"  --seat=SEAT\t\tThe seat that weston should run on\n"
+		"  --tty=TTY\t\tThe tty to use\n"
+		"  --current-mode\tPrefer current KMS mode over EDID preferred mode\n\n");
+
+	fprintf(stderr,
+		"Options for x11-backend.so:\n\n"
+		"  --width=WIDTH\t\tWidth of X window\n"
+		"  --height=HEIGHT\tHeight of X window\n"
+		"  --fullscreen\t\tRun in fullscreen mode\n"
+		"  --output-count=COUNT\tCreate multiple outputs\n"
+		"  --no-input\t\tDont create input devices\n\n");
+
+	fprintf(stderr,
+		"Options for wayland-backend.so:\n\n"
+		"  --width=WIDTH\t\tWidth of Wayland surface\n"
+		"  --height=HEIGHT\tHeight of Wayland surface\n"
+		"  --display=DISPLAY\tWayland display to connect to\n\n");
+
+	exit(error_code);
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_SUCCESS;
@@ -3414,6 +3458,7 @@ int main(int argc, char *argv[])
 	char *log = NULL;
 	int32_t idle_time = 300;
 	int32_t xserver = 0;
+	int32_t help = 0;
 	char *socket_name = NULL;
 	char *config_file;
 
@@ -3433,10 +3478,14 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "xserver", 0, &xserver },
 		{ WESTON_OPTION_STRING, "module", 0, &module },
 		{ WESTON_OPTION_STRING, "log", 0, &log },
+		{ WESTON_OPTION_BOOLEAN, "help", 'h', &help },
 	};
 
 	argc = parse_options(core_options,
 			     ARRAY_LENGTH(core_options), argc, argv);
+
+	if (help)
+		usage(EXIT_SUCCESS);
 
 	weston_log_file_open(log);
 	
