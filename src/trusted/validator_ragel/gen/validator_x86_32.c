@@ -47,6 +47,8 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
 
   assert(size % kBundleSize == 0);
 
+  if (!valid_targets || !jump_dests) goto error_detected;
+
   while (current_position < data + size) {
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
@@ -9585,5 +9587,7 @@ case 246:
   }
 
 error_detected:
+  free(jump_dests);
+  free(valid_targets);
   return result;
 }
