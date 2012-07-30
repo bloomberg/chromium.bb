@@ -130,7 +130,7 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private ContentSettings mContentSettings;
 
-    // Native pointer to C++ ContentView object which will be set by nativeInit()
+    // Native pointer to C++ ContentViewCoreImpl object which will be set by nativeInit().
     private int mNativeContentViewCore = 0;
 
     private ContentViewGestureHandler mContentViewGestureHandler;
@@ -854,6 +854,58 @@ public class ContentViewCore implements MotionEventDelegate {
         return mZoomManager.getZoomControlsViewForTest();
     }
 
+    /**
+     * This method injects the supplied Java object into the ContentViewCore.
+     * The object is injected into the JavaScript context of the main frame,
+     * using the supplied name. This allows the Java object to be accessed from
+     * JavaScript. Note that that injected objects will not appear in
+     * JavaScript until the page is next (re)loaded. For example:
+     * <pre> view.addJavascriptInterface(new Object(), "injectedObject");
+     * view.loadData("<!DOCTYPE html><title></title>", "text/html", null);
+     * view.loadUrl("javascript:alert(injectedObject.toString())");</pre>
+     * <p><strong>IMPORTANT:</strong>
+     * <ul>
+     * <li> addJavascriptInterface() can be used to allow JavaScript to control
+     * the host application. This is a powerful feature, but also presents a
+     * security risk. Use of this method in a ContentViewCore containing
+     * untrusted content could allow an attacker to manipulate the host
+     * application in unintended ways, executing Java code with the permissions
+     * of the host application. Use extreme care when using this method in a
+     * ContentViewCore which could contain untrusted content. Particular care
+     * should be taken to avoid unintentional access to inherited methods, such
+     * as {@link Object#getClass()}. To prevent access to inherited methods,
+     * set {@code allowInheritedMethods} to {@code false}. In addition, ensure
+     * that the injected object's public methods return only objects designed
+     * to be used by untrusted code, and never return a raw Object instance.
+     * <li> JavaScript interacts with Java objects on a private, background
+     * thread of the ContentViewCore. Care is therefore required to maintain
+     * thread safety.</li>
+     * </ul></p>
+     *
+     * @param object The Java object to inject into the ContentViewCore's
+     *               JavaScript context. Null values are ignored.
+     * @param name The name used to expose the instance in JavaScript.
+     * @param allowInheritedMethods Whether or not inherited methods may be
+     *                              called from JavaScript.
+     */
+    public void addJavascriptInterface(Object object, String name, boolean allowInheritedMethods) {
+        if (mNativeContentViewCore != 0 && object != null) {
+            nativeAddJavascriptInterface(mNativeContentViewCore, object, name,
+                    allowInheritedMethods);
+        }
+    }
+
+    /**
+     * Removes a previously added JavaScript interface with the given name.
+     *
+     * @param name The name of the interface to remove.
+     */
+    public void removeJavascriptInterface(String name) {
+        if (mNativeContentViewCore != 0) {
+            nativeRemoveJavascriptInterface(mNativeContentViewCore, name);
+        }
+    }
+
     @CalledByNative
     private void startContentIntent(String contentUrl) {
         getContentViewClient().onStartContentIntent(getContext(), contentUrl);
@@ -948,4 +1000,9 @@ public class ContentViewCore implements MotionEventDelegate {
     private native boolean nativeNeedsReload(int nativeContentViewCoreImpl);
 
     private native void nativeClearHistory(int nativeContentViewCoreImpl);
+
+    private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
+                                                     String name, boolean allowInheritedMethods);
+
+    private native void nativeRemoveJavascriptInterface(int nativeContentViewCoreImpl, String name);
 }
