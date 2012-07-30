@@ -446,7 +446,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;
 
   // An event filter that pre-handles key events while the partial
-  // screenshot UI is active.
+  // screenshot UI or the keyboard overlay is active.
   scoped_ptr<internal::OverlayEventFilter> overlay_filter_;
 
   // An event filter which handles system level gestures
