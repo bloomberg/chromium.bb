@@ -225,14 +225,15 @@ popup.html:
 <p>
   If, on the other hand, you have a need for some external JavaScript or object
   resources, you can relax the policy to a limited extent by whitelisting
-  specific HTTPS origins from which scripts should be accepted. Whitelisting
-  insecure HTTP resources will have no effect. This is intentional, because
-  we want to ensure that executable resources loaded with an extension's
-  elevated permissions is exactly the resource you expect, and hasn't been
-  replaced by an active network attacker. As <a
+  secure origins from which scripts should be accepted. We want to ensure that
+  executable resources loaded with an extension's elevated permissions are
+  exactly the resources you expect, and haven't been replaced by an active
+  network attacker. As <a
   href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">man-in-the-middle
-  attacks</a> are both trivial and undetectable over HTTP, only HTTPS origins
-  will be accepted.
+  attacks</a> are both trivial and undetectable over HTTP, those origins will
+  not be accepted. Currently, we allow whitelisting origins with the following
+  schemes: <code>HTTPS</code>, <code>chrome-extension</code>, and
+  <code>chrome-extension-resource</code>.
 </p>
 
 <p>
