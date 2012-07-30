@@ -8,6 +8,10 @@
 
 namespace crypto {
 
+// static
+const SecKeychainSearchRef MockKeychain::kDummySearchRef =
+    reinterpret_cast<SecKeychainSearchRef>(1000);
+
 MockKeychain::MockKeychain()
     : next_item_key_(0),
       search_copy_count_(0),
@@ -17,7 +21,7 @@ MockKeychain::MockKeychain()
       called_add_generic_(false),
       password_data_count_(0) {}
 
-void MockKeychain::InitializeKeychainData(unsigned int key) const {
+void MockKeychain::InitializeKeychainData(MockKeychainItemType key) const {
   UInt32 tags[] = { kSecAccountItemAttr,
                     kSecServerItemAttr,
                     kSecPortItemAttr,
@@ -61,7 +65,7 @@ void MockKeychain::InitializeKeychainData(unsigned int key) const {
 }
 
 MockKeychain::~MockKeychain() {
-  for (std::map<unsigned int, SecKeychainAttributeList>::iterator it =
+  for (std::map<MockKeychainItemType, SecKeychainAttributeList>::iterator it =
        keychain_attr_list_.begin(); it != keychain_attr_list_.end(); ++it) {
     for (unsigned int i = 0; i < it->second.count; ++i) {
       if (it->second.attr[i].data)
@@ -92,7 +96,7 @@ SecKeychainAttribute* MockKeychain::AttributeWithTag(
   return &(attribute_list.attr[attribute_index]);
 }
 
-void MockKeychain::SetTestDataBytes(int item,
+void MockKeychain::SetTestDataBytes(MockKeychainItemType item,
                                     UInt32 tag,
                                     const void* data,
                                     size_t length) {
@@ -110,25 +114,31 @@ void MockKeychain::SetTestDataBytes(int item,
   }
 }
 
-void MockKeychain::SetTestDataString(int item, UInt32 tag, const char* value) {
+void MockKeychain::SetTestDataString(
+    MockKeychainItemType item,
+    UInt32 tag,
+    const char* value) {
   SetTestDataBytes(item, tag, value, value ? strlen(value) : 0);
 }
 
-void MockKeychain::SetTestDataPort(int item, UInt32 value) {
+void MockKeychain::SetTestDataPort(MockKeychainItemType item, UInt32 value) {
   SecKeychainAttribute* attribute = AttributeWithTag(keychain_attr_list_[item],
                                                      kSecPortItemAttr);
   UInt32* data = static_cast<UInt32*>(attribute->data);
   *data = value;
 }
 
-void MockKeychain::SetTestDataProtocol(int item, SecProtocolType value) {
+void MockKeychain::SetTestDataProtocol(MockKeychainItemType item,
+                                       SecProtocolType value) {
   SecKeychainAttribute* attribute = AttributeWithTag(keychain_attr_list_[item],
                                                      kSecProtocolItemAttr);
   SecProtocolType* data = static_cast<SecProtocolType*>(attribute->data);
   *data = value;
 }
 
-void MockKeychain::SetTestDataAuthType(int item, SecAuthenticationType value) {
+void MockKeychain::SetTestDataAuthType(
+    MockKeychainItemType item,
+    SecAuthenticationType value) {
   SecKeychainAttribute* attribute = AttributeWithTag(
       keychain_attr_list_[item], kSecAuthenticationTypeItemAttr);
   SecAuthenticationType* data = static_cast<SecAuthenticationType*>(
@@ -136,21 +146,23 @@ void MockKeychain::SetTestDataAuthType(int item, SecAuthenticationType value) {
   *data = value;
 }
 
-void MockKeychain::SetTestDataNegativeItem(int item, Boolean value) {
+void MockKeychain::SetTestDataNegativeItem(MockKeychainItemType item,
+                                           Boolean value) {
   SecKeychainAttribute* attribute = AttributeWithTag(keychain_attr_list_[item],
                                                      kSecNegativeItemAttr);
   Boolean* data = static_cast<Boolean*>(attribute->data);
   *data = value;
 }
 
-void MockKeychain::SetTestDataCreator(int item, OSType value) {
+void MockKeychain::SetTestDataCreator(MockKeychainItemType item, OSType value) {
   SecKeychainAttribute* attribute = AttributeWithTag(keychain_attr_list_[item],
                                                      kSecCreatorItemAttr);
   OSType* data = static_cast<OSType*>(attribute->data);
   *data = value;
 }
 
-void MockKeychain::SetTestDataPasswordBytes(int item, const void* data,
+void MockKeychain::SetTestDataPasswordBytes(MockKeychainItemType item,
+                                            const void* data,
                                             size_t length) {
   keychain_data_[item].length = length;
   if (length > 0) {
@@ -163,7 +175,9 @@ void MockKeychain::SetTestDataPasswordBytes(int item, const void* data,
   }
 }
 
-void MockKeychain::SetTestDataPasswordString(int item, const char* value) {
+void MockKeychain::SetTestDataPasswordString(
+    MockKeychainItemType item,
+    const char* value) {
   SetTestDataPasswordBytes(item, value, value ? strlen(value) : 0);
 }
 
@@ -175,7 +189,8 @@ OSStatus MockKeychain::ItemCopyAttributesAndData(
     UInt32* length,
     void** outData) const {
   DCHECK(itemRef);
-  unsigned int key = reinterpret_cast<unsigned int>(itemRef) - 1;
+  MockKeychainItemType key =
+      reinterpret_cast<MockKeychainItemType>(itemRef) - 1;
   if (keychain_attr_list_.find(key) == keychain_attr_list_.end())
     return errSecInvalidItemRef;
 
@@ -204,7 +219,8 @@ OSStatus MockKeychain::ItemModifyAttributesAndData(
     return errSecAuthFailed;
   }
 
-  unsigned int key = reinterpret_cast<unsigned int>(itemRef) - 1;
+  MockKeychainItemType key =
+      reinterpret_cast<MockKeychainItemType>(itemRef) - 1;
   if (keychain_attr_list_.find(key) == keychain_attr_list_.end())
     return errSecInvalidItemRef;
 
@@ -232,7 +248,8 @@ OSStatus MockKeychain::ItemFreeAttributesAndData(
 }
 
 OSStatus MockKeychain::ItemDelete(SecKeychainItemRef itemRef) const {
-  unsigned int key = reinterpret_cast<unsigned int>(itemRef) - 1;
+  MockKeychainItemType key =
+      reinterpret_cast<MockKeychainItemType>(itemRef) - 1;
 
   for (unsigned int i = 0; i < keychain_attr_list_[key].count; ++i) {
     if (keychain_attr_list_[key].attr[i].data)
@@ -256,8 +273,10 @@ OSStatus MockKeychain::SearchCreateFromAttributes(
   // Figure out which of our mock items matches, and set up the array we'll use
   // to generate results out of SearchCopyNext.
   remaining_search_results_.clear();
-  for (std::map<unsigned int, SecKeychainAttributeList>::const_iterator it =
-       keychain_attr_list_.begin(); it != keychain_attr_list_.end(); ++it) {
+  for (std::map<MockKeychainItemType, SecKeychainAttributeList>::const_iterator
+           it = keychain_attr_list_.begin();
+       it != keychain_attr_list_.end();
+       ++it) {
     bool mock_item_matches = true;
     for (UInt32 search_attr = 0; search_attr < attrList->count; ++search_attr) {
       SecKeychainAttribute* mock_attribute =
@@ -274,7 +293,7 @@ OSStatus MockKeychain::SearchCreateFromAttributes(
   }
 
   DCHECK(searchRef);
-  *searchRef = reinterpret_cast<SecKeychainSearchRef>(kDummySearchRef);
+  *searchRef = kDummySearchRef;
   ++search_copy_count_;
   return noErr;
 }
@@ -291,8 +310,10 @@ bool MockKeychain::AlreadyContainsInternetPassword(
     UInt16 port,
     SecProtocolType protocol,
     SecAuthenticationType authenticationType) const {
-  for (std::map<unsigned int, SecKeychainAttributeList>::const_iterator it =
-       keychain_attr_list_.begin(); it != keychain_attr_list_.end(); ++it) {
+  for (std::map<MockKeychainItemType, SecKeychainAttributeList>::const_iterator
+           it = keychain_attr_list_.begin();
+       it != keychain_attr_list_.end();
+       ++it) {
     SecKeychainAttribute* attribute;
     attribute = AttributeWithTag(it->second, kSecServerItemAttr);
     if ((attribute->length != serverNameLength) ||
@@ -385,7 +406,7 @@ OSStatus MockKeychain::AddInternetPassword(
   }
 
   // Pick the next unused slot.
-  unsigned int key = next_item_key_++;
+  MockKeychainItemType key = next_item_key_++;
 
   // Initialize keychain data storage at the target location.
   InitializeKeychainData(key);
@@ -424,7 +445,7 @@ OSStatus MockKeychain::SearchCopyNext(SecKeychainSearchRef searchRef,
                                       SecKeychainItemRef* itemRef) const {
   if (remaining_search_results_.empty())
     return errSecItemNotFound;
-  unsigned int key = remaining_search_results_.front();
+  MockKeychainItemType key = remaining_search_results_.front();
   remaining_search_results_.erase(remaining_search_results_.begin());
   *itemRef = reinterpret_cast<SecKeychainItemRef>(key + 1);
   ++keychain_item_copy_count_;
@@ -483,7 +504,7 @@ void MockKeychain::Free(CFTypeRef ref) const {
   if (!ref)
     return;
 
-  if (reinterpret_cast<int>(ref) == kDummySearchRef) {
+  if (ref == kDummySearchRef) {
     --search_copy_count_;
   } else {
     --keychain_item_copy_count_;
@@ -503,8 +524,10 @@ int MockKeychain::UnfreedAttributeDataCount() const {
 }
 
 bool MockKeychain::CreatorCodesSetForAddedItems() const {
-  for (std::set<unsigned int>::const_iterator i = added_via_api_.begin();
-       i != added_via_api_.end(); ++i) {
+  for (std::set<MockKeychainItemType>::const_iterator
+           i = added_via_api_.begin();
+       i != added_via_api_.end();
+       ++i) {
     SecKeychainAttribute* attribute = AttributeWithTag(keychain_attr_list_[*i],
                                                        kSecCreatorItemAttr);
     OSType* data = static_cast<OSType*>(attribute->data);
@@ -515,7 +538,7 @@ bool MockKeychain::CreatorCodesSetForAddedItems() const {
 }
 
 void MockKeychain::AddTestItem(const KeychainTestData& item_data) {
-  unsigned int key = next_item_key_++;
+  MockKeychainItemType key = next_item_key_++;
 
   InitializeKeychainData(key);
   SetTestDataAuthType(key, item_data.auth_type);
@@ -531,4 +554,4 @@ void MockKeychain::AddTestItem(const KeychainTestData& item_data) {
   SetTestDataNegativeItem(key, item_data.negative_item);
 }
 
-} // namespace crypto
+}  // namespace crypto

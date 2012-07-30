@@ -5,6 +5,8 @@
 #ifndef CRYPTO_MOCK_KEYCHAIN_MAC_H_
 #define CRYPTO_MOCK_KEYCHAIN_MAC_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -14,6 +16,9 @@
 #include "crypto/keychain_mac.h"
 
 namespace crypto {
+
+// Type used for the keys in the std::map(s) and MockKeychain items.
+typedef uintptr_t MockKeychainItemType;
 
 // Mock Keychain wrapper for testing code that interacts with the OS X
 // Keychain.  Implemented by storing SecKeychainAttributeList and
@@ -149,34 +154,44 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
       SecProtocolType protocol,
       SecAuthenticationType authenticationType) const;
   // Initializes storage for keychain data at |key|.
-  void InitializeKeychainData(unsigned int key) const;
+  void InitializeKeychainData(MockKeychainItemType key) const;
   // Sets the data and length of |tag| in the item-th test item.
-  void SetTestDataBytes(int item, UInt32 tag, const void* data, size_t length);
+  void SetTestDataBytes(
+      MockKeychainItemType item,
+      UInt32 tag,
+      const void* data,
+      size_t length);
   // Sets the data and length of |tag| in the item-th test item based on
   // |value|. The null-terminator will not be included; the Keychain Services
   // docs don't indicate whether it is or not, so clients should not assume
   // that it will be.
-  void SetTestDataString(int item, UInt32 tag, const char* value);
+  void SetTestDataString(MockKeychainItemType item,
+                         UInt32 tag,
+                         const char* value);
   // Sets the data of the corresponding attribute of the item-th test item to
   // |value|. Assumes that the space has alread been allocated, and the length
   // set.
-  void SetTestDataPort(int item, UInt32 value);
-  void SetTestDataProtocol(int item, SecProtocolType value);
-  void SetTestDataAuthType(int item, SecAuthenticationType value);
-  void SetTestDataNegativeItem(int item, Boolean value);
-  void SetTestDataCreator(int item, OSType value);
+  void SetTestDataPort(MockKeychainItemType item, UInt32 value);
+  void SetTestDataProtocol(MockKeychainItemType item, SecProtocolType value);
+  void SetTestDataAuthType(MockKeychainItemType item,
+                           SecAuthenticationType value);
+  void SetTestDataNegativeItem(MockKeychainItemType item, Boolean value);
+  void SetTestDataCreator(MockKeychainItemType item, OSType value);
   // Sets the password data and length for the item-th test item.
-  void SetTestDataPasswordBytes(int item, const void* data, size_t length);
+  void SetTestDataPasswordBytes(
+      MockKeychainItemType item,
+      const void* data,
+      size_t length);
   // Sets the password for the item-th test item. As with SetTestDataString,
   // the data will not be null-terminated.
-  void SetTestDataPasswordString(int item, const char* value);
+  void SetTestDataPasswordString(MockKeychainItemType item, const char* value);
 
   // Returns the address of the attribute in attribute_list with tag |tag|.
   static SecKeychainAttribute* AttributeWithTag(
       const SecKeychainAttributeList& attribute_list,
       UInt32 tag);
 
-  static const int kDummySearchRef = 1000;
+  static const SecKeychainSearchRef kDummySearchRef;
 
   typedef struct KeychainPasswordData {
     KeychainPasswordData() : data(NULL), length(0) {}
@@ -186,15 +201,16 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
 
   // Mutable because the MockKeychain API requires its internal keychain storage
   // to be modifiable by users of this class.
-  mutable std::map<unsigned int, SecKeychainAttributeList> keychain_attr_list_;
-  mutable std::map<unsigned int, KeychainPasswordData> keychain_data_;
-  mutable unsigned int next_item_key_;
+  mutable std::map<MockKeychainItemType,
+                   SecKeychainAttributeList> keychain_attr_list_;
+  mutable std::map<MockKeychainItemType, KeychainPasswordData> keychain_data_;
+  mutable MockKeychainItemType next_item_key_;
 
   // Tracks the items that should be returned in subsequent calls to
   // SearchCopyNext, based on the last call to SearchCreateFromAttributes.
   // We can't handle multiple active searches, since we don't track the search
   // ref we return, but we don't need to for our mocking.
-  mutable std::vector<unsigned int> remaining_search_results_;
+  mutable std::vector<MockKeychainItemType> remaining_search_results_;
 
   // Track copies and releases to make sure they balance. Really these should
   // be maps to track per item, but this should be good enough to catch
@@ -204,7 +220,7 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
   mutable int attribute_data_copy_count_;
 
   // Tracks which items (by key) were added with AddInternetPassword.
-  mutable std::set<unsigned int> added_via_api_;
+  mutable std::set<MockKeychainItemType> added_via_api_;
 
   // Result code for the |FindGenericPassword()| method.
   OSStatus find_generic_result_;
