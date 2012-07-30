@@ -2565,7 +2565,7 @@ class SyncManagerTestWithMockScheduler : public SyncManagerTest {
 #else
 #define MAYBE_BasicConfiguration BasicConfiguration
 #endif
-TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
+TEST_F(SyncManagerTestWithMockScheduler, MAYBE_BasicConfiguration) {
   ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
   ModelTypeSet types_to_download(BOOKMARKS, PREFERENCES);
   ModelSafeRoutingInfo new_routing_info;
@@ -2746,7 +2746,7 @@ TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {
 #else
 #define MAYBE_PurgeDisabledTypes PurgeDisabledTypes
 #endif
-TEST_F(SyncManagerTest, PurgeDisabledTypes) {
+TEST_F(SyncManagerTest, MAYBE_PurgeDisabledTypes) {
   ModelSafeRoutingInfo routing_info;
   GetModelSafeRoutingInfo(&routing_info);
   ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
