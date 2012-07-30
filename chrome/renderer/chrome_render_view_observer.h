@@ -105,6 +105,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool allowWriteToClipboard(WebKit::WebFrame* frame,
                                      bool default_value) OVERRIDE;
   virtual bool allowWebComponents(const WebKit::WebDocument&, bool) OVERRIDE;
+  virtual bool allowHTMLNotifications(
+      const WebKit::WebDocument& document) OVERRIDE;
   virtual void didNotAllowPlugins(WebKit::WebFrame* frame) OVERRIDE;
   virtual void didNotAllowScript(WebKit::WebFrame* frame) OVERRIDE;
   virtual bool allowDisplayingInsecureContent(

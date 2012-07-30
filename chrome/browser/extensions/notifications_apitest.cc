@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NotificationsNoPermission) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsNoPermission) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
@@ -17,8 +17,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NotificationsNoPermission) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       DISABLED_NotificationsHasPermissionManifest) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermissionManifest) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
@@ -27,8 +26,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 #endif
 }
 
-// http://crbug.com/98061
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NotificationsHasPermission) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermission) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else

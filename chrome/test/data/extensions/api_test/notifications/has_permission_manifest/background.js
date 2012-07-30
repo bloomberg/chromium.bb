@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,11 +26,9 @@ function onNotificationDone() {
     if (changeInfo.status != 'complete')
       return;
     // web_page1 loaded, open extension page to inject script
-    if (tab.url == chromeExtensionsUrl) {
-      console.log(chromeExtensionsUrl + ' finished loading.');
-      chrome.tabs.onUpdated.removeListener(listener);
-      chrome.test.succeed();
-    }
+    console.log(chromeExtensionsUrl + ' finished loading.');
+    chrome.tabs.onUpdated.removeListener(listener);
+    chrome.test.succeed();
   };
 
   chrome.tabs.onUpdated.addListener(listener);

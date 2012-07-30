@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,17 @@ chrome.test.runTests([
                          webkitNotifications.checkPermission());
     chrome.test.succeed();
   },
-  function showNotification() {
+  function showHTMLNotification() {
+    // createHTMLNotification should not be exposed.
+    if (window.webkitNotifications.createHTMLNotification)
+      chrome.test.fail("createHTMLNotification is found.");
+    else
+      chrome.test.succeed();
+  },
+  function showTextNotification() {
     try {
-      window.webkitNotifications.createHTMLNotification(
-          chrome.extension.getURL("notification.html")).show();
+      window.webkitNotifications.createNotification(
+          "", "Foo", "This is text notification.").show();
     } catch (e) {
       chrome.test.assertTrue(e.message.indexOf("SECURITY_ERR") == 0);
       chrome.test.succeed();

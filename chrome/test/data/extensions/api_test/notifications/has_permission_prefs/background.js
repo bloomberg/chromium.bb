@@ -1,28 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-var notification = null;
-
-// Shows the notification window using the specified URL.
-// Control continues at onNotificationDone().
-function showNotification(url) {
-  notification = window.webkitNotifications.createHTMLNotification(url);
-  notification.onerror = function() {
-    chrome.test.fail("Failed to show notification.");
-  };
-  notification.show();
-}
-
-// Called by the notification when it is done with its tests.
-function onNotificationDone(notificationWindow) {
-  var views = chrome.extension.getViews();
-  chrome.test.assertEq(2, views.length);
-  notificationWindow.onunload = function() {
-    chrome.test.succeed();
-  }
-  notification.cancel();
-}
 
 chrome.test.runTests([
   function hasPermission() {
@@ -30,10 +8,23 @@ chrome.test.runTests([
                          webkitNotifications.checkPermission());
     chrome.test.succeed();
   },
-  function absoluteURL() {
-    showNotification(chrome.extension.getURL("notification.html"));
+  function showHTMLNotification() {
+    // createHTMLNotification is not exposed even when the web page permission
+    // is granted.
+    if (window.webkitNotifications.createHTMLNotification)
+      chrome.test.fail("createHTMLNotification is found.");
+    else
+      chrome.test.succeed();
   },
-  function relativeURL() {
-    showNotification("notification.html");
+  function showTextNotification() {
+    var notification = window.webkitNotifications.createNotification(
+        "", "Foo", "This is text notification.");
+    notification.onerror = function() {
+      chrome.test.fail("Failed to show notification.");
+    };
+    notification.ondisplay = function() {
+      chrome.test.succeed();
+    };
+    notification.show();
   }
 ]);

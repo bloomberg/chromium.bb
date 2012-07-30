@@ -519,6 +519,12 @@ bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
   return false;
 }
 
+bool ChromeRenderViewObserver::allowHTMLNotifications(
+    const WebDocument& document) {
+  WebSecurityOrigin origin = document.securityOrigin();
+  return HasExtensionPermission(origin, APIPermission::kNotification);
+}
+
 static void SendInsecureContentSignal(int signal) {
   UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent", signal,
                             INSECURE_CONTENT_NUM_EVENTS);
