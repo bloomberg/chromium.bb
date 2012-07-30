@@ -818,13 +818,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
 }
 */
 
-#if defined(OS_WIN)
 TEST_F(ViewTest, RemoveNotification) {
-#else
-// TODO(beng): stopped working with widget hierarchy split,
-//             http://crbug.com/82364
-TEST_F(ViewTest, DISABLED_RemoveNotification) {
-#endif
   ViewStorage* vs = ViewStorage::GetInstance();
   Widget* widget = new Widget;
   widget->Init(Widget::InitParams(Widget::InitParams::TYPE_POPUP));
