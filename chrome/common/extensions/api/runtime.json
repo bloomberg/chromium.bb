@@ -112,7 +112,7 @@
       {
         "name": "onInstalled",
         "type": "function",
-        "description": "Fired when the extension is first installed."
+        "description": "Fired when the extension is first installed, and on each update to a new version."
       },
       {
         "name": "onSuspend",
