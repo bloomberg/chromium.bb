@@ -869,3 +869,88 @@ TEST_F(GpuBlacklistTest, LexicalDriverVersion) {
       GpuBlacklist::kOsLinux, &os_version, gpu_info);
   EXPECT_EQ(type, 0);
 }
+
+TEST_F(GpuBlacklistTest, MultipleGPUsAny) {
+  const std::string multi_gpu_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"macosx\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x8086\",\n"
+      "      \"device_id\": [\"0x0166\"],\n"
+      "      \"multi_gpu_category\": \"any\",\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  Version os_version("10.6.4");
+
+  content::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0fd5;
+
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(
+      multi_gpu_json, GpuBlacklist::kAllOs));
+  GpuFeatureType type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsMacosx, &os_version, gpu_info);
+  EXPECT_EQ(type, 0);
+
+  content::GPUInfo::GPUDevice gpu_device;
+  gpu_device.vendor_id = 0x8086;
+  gpu_device.device_id = 0x0166;
+  gpu_info.secondary_gpus.push_back(gpu_device);
+  type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsMacosx, &os_version, gpu_info);
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
+}
+
+TEST_F(GpuBlacklistTest, MultipleGPUsSecondary) {
+  const std::string multi_gpu_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"macosx\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x8086\",\n"
+      "      \"device_id\": [\"0x0166\"],\n"
+      "      \"multi_gpu_category\": \"secondary\",\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  Version os_version("10.6.4");
+
+  content::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0fd5;
+
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(
+      multi_gpu_json, GpuBlacklist::kAllOs));
+  GpuFeatureType type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsMacosx, &os_version, gpu_info);
+  EXPECT_EQ(type, 0);
+
+  content::GPUInfo::GPUDevice gpu_device;
+  gpu_device.vendor_id = 0x8086;
+  gpu_device.device_id = 0x0166;
+  gpu_info.secondary_gpus.push_back(gpu_device);
+  type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsMacosx, &os_version, gpu_info);
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
+}
+

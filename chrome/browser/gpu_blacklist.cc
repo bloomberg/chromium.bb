@@ -67,8 +67,29 @@ std::string NumericalToLexical(const std::string& numerical) {
   return numerical;
 }
 
+bool GpuUnmatched(uint32 vendor_id, const std::vector<uint32>& device_id_list,
+                  const content::GPUInfo::GPUDevice& gpu) {
+  if (vendor_id == 0)
+    return false;
+  if (vendor_id != gpu.vendor_id)
+    return true;
+  bool device_specified = false;
+  for (size_t i = 0; i < device_id_list.size(); ++i) {
+    if (device_id_list[i] == 0)
+      continue;
+    if (device_id_list[i] == gpu.device_id)
+      return false;
+    device_specified = true;
+  }
+  return device_specified;
+}
+
 const char kMultiGpuStyleStringAMDSwitchable[] = "amd_switchable";
 const char kMultiGpuStyleStringOptimus[] = "optimus";
+
+const char kMultiGpuCategoryStringPrimary[] = "primary";
+const char kMultiGpuCategoryStringSecondary[] = "secondary";
+const char kMultiGpuCategoryStringAny[] = "any";
 
 const char kVersionStyleStringNumerical[] = "numerical";
 const char kVersionStyleStringLexical[] = "lexical";
@@ -404,6 +425,15 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
+  std::string multi_gpu_category;
+  if (value->GetString("multi_gpu_category", &multi_gpu_category)) {
+    if (!entry->SetMultiGpuCategory(multi_gpu_category)) {
+      LOG(WARNING) << "Malformed multi_gpu_category entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   DictionaryValue* driver_vendor_value = NULL;
   if (value->GetDictionary("driver_vendor", &driver_vendor_value)) {
     std::string vendor_op;
@@ -590,6 +620,7 @@ GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
       disabled_(false),
       vendor_id_(0),
       multi_gpu_style_(kMultiGpuStyleNone),
+      multi_gpu_category_(kMultiGpuCategoryPrimary),
       feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       contains_unknown_fields_(false),
       contains_unknown_features_(false) {
@@ -640,6 +671,16 @@ bool GpuBlacklist::GpuBlacklistEntry::SetMultiGpuStyle(
   if (style == kMultiGpuStyleNone)
     return false;
   multi_gpu_style_ = style;
+  return true;
+}
+
+bool GpuBlacklist::GpuBlacklistEntry::SetMultiGpuCategory(
+    const std::string& multi_gpu_category_string) {
+  MultiGpuCategory category =
+      StringToMultiGpuCategory(multi_gpu_category_string);
+  if (category == kMultiGpuCategoryNone)
+    return false;
+  multi_gpu_category_ = category;
   return true;
 }
 
@@ -758,24 +799,47 @@ GpuBlacklist::GpuBlacklistEntry::StringToMultiGpuStyle(
   return kMultiGpuStyleNone;
 }
 
+// static
+GpuBlacklist::GpuBlacklistEntry::MultiGpuCategory
+GpuBlacklist::GpuBlacklistEntry::StringToMultiGpuCategory(
+    const std::string& category) {
+  if (category == kMultiGpuCategoryStringPrimary)
+    return kMultiGpuCategoryPrimary;
+  if (category == kMultiGpuCategoryStringSecondary)
+    return kMultiGpuCategorySecondary;
+  if (category == kMultiGpuCategoryStringAny)
+    return kMultiGpuCategoryAny;
+  return kMultiGpuCategoryNone;
+}
+
 bool GpuBlacklist::GpuBlacklistEntry::Contains(
     OsType os_type, const Version& os_version,
     const content::GPUInfo& gpu_info) const {
   DCHECK(os_type != kOsAny);
   if (os_info_.get() != NULL && !os_info_->Contains(os_type, os_version))
     return false;
-  if (vendor_id_ != 0 && vendor_id_ != gpu_info.gpu.vendor_id)
-    return false;
-  if (device_id_list_.size() > 0) {
-    bool found = false;
-    for (size_t i = 0; i < device_id_list_.size(); ++i) {
-      if (device_id_list_[i] == gpu_info.gpu.device_id) {
-        found = true;
-        break;
-      }
-    }
-    if (!found)
-      return false;
+  bool is_not_primary_gpu =
+      GpuUnmatched(vendor_id_, device_id_list_, gpu_info.gpu);
+  bool is_not_secondary_gpu = true;
+  for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
+    is_not_secondary_gpu = is_not_secondary_gpu &&
+        GpuUnmatched(vendor_id_, device_id_list_, gpu_info.secondary_gpus[i]);
+  }
+  switch (multi_gpu_category_) {
+    case kMultiGpuCategoryPrimary:
+      if (is_not_primary_gpu)
+        return false;
+      break;
+    case kMultiGpuCategorySecondary:
+      if (is_not_secondary_gpu)
+        return false;
+      break;
+    case kMultiGpuCategoryAny:
+      if (is_not_primary_gpu && is_not_secondary_gpu)
+        return false;
+      break;
+    default:
+      break;
   }
   switch (multi_gpu_style_) {
     case kMultiGpuStyleOptimus:
