@@ -1853,9 +1853,9 @@ namespace {
                   (strcmp(it->second, "rm") ||
                    enabled(Actions::kParseOperandPositions))) {
                 fprintf(out_file, " @operand%zd_%s", operand_index, it->second);
+                ++operand_index;
               }
-            }
-            if (operand.enabled || enabled(Actions::kParseOperandPositions)) {
+            } else if (enabled(Actions::kParseOperandPositions)) {
               ++operand_index;
             }
           }
@@ -2422,10 +2422,16 @@ namespace {
           if (it2 != operand_type.end()) {
             if (operand.enabled) {
               fprintf(out_file, " @operand%zd_%s", operand_index, it2->second);
+              ++operand_index;
             }
-          }
-          if (operand.enabled || enabled(Actions::kParseOperandPositions)) {
-            ++operand_index;
+          } else if (operand.enabled) {
+            if (enabled(Actions::kParseOperandPositions) ||
+                (((operand.source != 'E') && (operand.source != 'M') &&
+                  (operand.source != 'N') && (operand.source != 'Q') &&
+                  (operand.source != 'R') && (operand.source != 'U') &&
+                  (operand.source != 'W')) || !memory_access)) {
+              ++operand_index;
+            }
           }
         }
       }
