@@ -160,16 +160,16 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
   res = DecodeChunkArch(enumerator->_itext, tempstate.inst_num_bytes,
                         RagelInstruction, RagelDecodeError, &RState);
 
-  RState.inst_is_legal = res;
-  if (res) {
+  RState.inst_is_legal = !res;
+  if (RState.inst_is_legal) {
     uint8_t chunk[(NACL_ENUM_MAX_INSTRUCTION_BYTES + kBundleMask) &
                   ~kBundleMask];
 
     /* Copy the command.  */
-    memcpy(chunk, enumerator->_itext, enumerator->_num_bytes);
+    memcpy(chunk, enumerator->_itext, tempstate.inst_num_bytes);
     /* Fill the rest with HLTs.  */
-    memset(chunk + enumerator->_num_bytes, 0xf4,
-           sizeof(chunk) - enumerator->_num_bytes);
+    memset(chunk + tempstate.inst_num_bytes, 0xf4,
+           sizeof(chunk) - tempstate.inst_num_bytes);
     ValidateChunkArch(chunk, sizeof(chunk), &old_validator_features,
                       RagelValidateError, &RState);
   }
