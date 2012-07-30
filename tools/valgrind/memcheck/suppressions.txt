@@ -5794,6 +5794,13 @@
    fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
    fun:_ZNK7WebCore15NativeImageSkia13resizedBitmapERK7SkIRectiiS3_
 }
+{
+   bug_139703
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5media8Pipeline7DoPauseERKN4base8CallbackIFvvEEE
+   fun:_ZN5media8Pipeline8SeekTaskEN4base9TimeDeltaERKNS1_8CallbackIFvNS_14PipelineStatusEEEE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
