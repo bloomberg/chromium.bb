@@ -1013,6 +1013,11 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
 
   // This used to leak a render view host.
   shell()->Close();
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   MessageLoop::QuitWhenIdleClosure());
+  content::RunMessageLoop();
+
   EXPECT_EQ(0U, rvh_observers.GetNumObservers());
 }
 
