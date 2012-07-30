@@ -222,6 +222,11 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
   }
 
+  content::WebContents* GetWindowDispositionTarget(
+      WebIntentPickerController* controller) {
+    return controller->window_disposition_source_;
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     // The FakeURLFetcherFactory will return a NULL URLFetcher if a request is
     // created for a URL it doesn't know and there is no default factory.
@@ -351,6 +356,9 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL2),
             chrome::GetActiveWebContents(browser())->GetURL());
+
+  EXPECT_TRUE(GetWindowDispositionTarget(
+      chrome::GetActiveTabContents(browser())->web_intent_picker_controller()));
 
   EXPECT_TRUE(dispatcher.dispatched_);
 

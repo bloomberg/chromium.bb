@@ -35,6 +35,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message.h"
@@ -137,6 +138,25 @@ void URLFetcherTrampoline::OnURLFetchComplete(
   delete this;
 }
 
+class SourceWindowObserver : content::WebContentsObserver {
+ public:
+  SourceWindowObserver(content::WebContents* web_contents,
+                       base::WeakPtr<WebIntentPickerController> controller)
+      : content::WebContentsObserver(web_contents),
+        controller_(controller) {}
+  virtual ~SourceWindowObserver() {}
+
+  // Implement WebContentsObserver
+  virtual void WebContentsDestroyed(content::WebContents* web_contents) {
+    if (controller_)
+      controller_->SourceWebContentsDestroyed(web_contents);
+    delete this;
+  }
+
+ private:
+  base::WeakPtr<WebIntentPickerController> controller_;
+};
+
 }  // namespace
 
 WebIntentPickerController::WebIntentPickerController(
@@ -147,6 +167,8 @@ WebIntentPickerController::WebIntentPickerController(
       pending_async_count_(0),
       pending_registry_calls_count_(0),
       picker_shown_(false),
+      window_disposition_source_(NULL),
+      source_intents_dispatcher_(NULL),
       intents_dispatcher_(NULL),
       service_tab_(NULL),
       weak_ptr_factory_(this) {
@@ -247,7 +269,7 @@ void WebIntentPickerController::ShowDialog(const string16& action,
         action, type,
         base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
                    weak_ptr_factory_.GetWeakPtr()));
-  }
+}
 
 void WebIntentPickerController::Observe(
     int type,
@@ -290,6 +312,11 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
           tab_util::GetSiteInstanceForNewTab(
               tab_contents_->profile(), url),
           MSG_ROUTING_NONE, NULL, NULL);
+
+      // Let the controller for the target TabContents know that it is hosting a
+      // web intents service.
+      contents->web_intent_picker_controller()->SetWindowDispositionSource(
+          tab_contents_->web_contents(), intents_dispatcher_);
 
       intents_dispatcher_->DispatchIntent(contents->web_contents());
       service_tab_ = contents->web_contents();
@@ -679,6 +706,38 @@ void WebIntentPickerController::OnExtensionIconAvailable(
 void WebIntentPickerController::OnExtensionIconUnavailable(
     const string16& extension_id) {
   AsyncOperationFinished();
+}
+
+void WebIntentPickerController::SetWindowDispositionSource(
+    content::WebContents* source,
+    content::WebIntentsDispatcher* dispatcher) {
+  window_disposition_source_ = source;
+  if (window_disposition_source_) {
+    // This object is self-deleting when the source WebContents is destroyed.
+    new SourceWindowObserver(window_disposition_source_,
+                             weak_ptr_factory_.GetWeakPtr());
+  }
+
+  source_intents_dispatcher_ = dispatcher;
+  if (dispatcher) {
+    dispatcher->RegisterReplyNotification(
+      base::Bind(&WebIntentPickerController::SourceDispatcherReplied,
+                 weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void WebIntentPickerController::SourceWebContentsDestroyed(
+    content::WebContents* source) {
+  window_disposition_source_ = NULL;
+}
+
+void WebIntentPickerController::SourceDispatcherReplied(
+    webkit_glue::WebIntentReplyType reply_type) {
+  source_intents_dispatcher_ = NULL;
+}
+
+bool WebIntentPickerController::ShowLocationBarPickerTool() {
+  return window_disposition_source_ || source_intents_dispatcher_;
 }
 
 void WebIntentPickerController::OnExtensionInstallServiceAvailable(
