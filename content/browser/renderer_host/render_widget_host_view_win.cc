@@ -418,6 +418,7 @@ class LocalGestureEvent :
     data().deltaX = details.generic_x();
     data().deltaY = details.generic_y();
     data().type = ConvertToWebInputEvent(type_);
+    data().boundingBox = details.bounding_box();
 
     // WebKit gesture events do not have bounding-boxes yet, and expect the data
     // in deltaX/deltaY instead (and instead of bounding box, WebKit expects the

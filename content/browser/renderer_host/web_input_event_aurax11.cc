@@ -409,6 +409,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       NOTREACHED() << "Unknown gesture type: " << event->type();
   }
 
+  gesture_event.boundingBox = event->details().bounding_box();
   gesture_event.deltaX = event->details().generic_x();
   gesture_event.deltaY = event->details().generic_y();
   gesture_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
