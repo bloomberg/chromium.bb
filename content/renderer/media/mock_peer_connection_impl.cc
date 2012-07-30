@@ -164,7 +164,8 @@ bool MockPeerConnectionImpl::SetRemoteDescription(
 
 bool MockPeerConnectionImpl::ProcessIceMessage(
     const webrtc::IceCandidateInterface* ice_candidate) {
-  ice_label_ = ice_candidate->label();
+  sdp_mid_ = ice_candidate->sdp_mid();
+  sdp_mline_index_ = ice_candidate->sdp_mline_index();
   return ice_candidate->ToString(&ice_sdp_);
 }
 

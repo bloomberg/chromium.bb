@@ -210,11 +210,12 @@ TEST_F(PeerConnectionHandlerJsepTest, Basic) {
 
   // Process ICE message.
   WebKit::WebICECandidateDescriptor candidate;
-  WebKit::WebString label = "test label";
+  WebKit::WebString label = "0";
   sdp = "test sdp";
   candidate.initialize(label, sdp);
   EXPECT_TRUE(pc_handler_->processIceMessage(candidate));
-  EXPECT_EQ(UTF16ToUTF8(label), mock_peer_connection_->ice_label());
+  EXPECT_EQ(0, mock_peer_connection_->sdp_mline_index());
+  EXPECT_TRUE(mock_peer_connection_->sdp_mid().empty());
   EXPECT_EQ(UTF16ToUTF8(sdp), mock_peer_connection_->ice_sdp());
 
   // Add stream.
@@ -260,11 +261,13 @@ TEST_F(PeerConnectionHandlerJsepTest, Basic) {
             mock_client_->ready_state());
 
   // On ICE candidate.
-  std::string candidate_label = "test label";
+  std::string candidate_label = "0";
   std::string candidate_sdp = "test sdp";
+  int sdp_mline_index = 0;
   scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
       mock_dependency_factory_->CreateIceCandidate(candidate_label,
-                                                  candidate_sdp));
+                                                   sdp_mline_index,
+                                                   candidate_sdp));
   pc_handler_->OnIceCandidate(native_candidate.get());
   EXPECT_EQ(candidate_label, mock_client_->candidate_label());
   EXPECT_EQ(candidate_sdp, mock_client_->candidate_sdp());

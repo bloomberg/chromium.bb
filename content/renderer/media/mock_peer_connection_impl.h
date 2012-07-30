@@ -87,7 +87,8 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   Action action() const { return action_; }
   const std::string& description_sdp() const { return description_sdp_; }
   IceOptions ice_options() const { return ice_options_; }
-  const std::string& ice_label() const { return ice_label_; }
+  const std::string& sdp_mid() const { return sdp_mid_; }
+  int sdp_mline_index() const { return sdp_mline_index_; }
   const std::string& ice_sdp() const { return ice_sdp_; }
 
   static const char kDummyOffer[];
@@ -111,7 +112,8 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   Action action_;
   std::string description_sdp_;
   IceOptions ice_options_;
-  std::string ice_label_;
+  std::string sdp_mid_;
+  int sdp_mline_index_;
   std::string ice_sdp_;
   ReadyState ready_state_;
 

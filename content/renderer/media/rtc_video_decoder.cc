@@ -14,7 +14,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/libjingle/source/talk/base/timeutils.h"
-#include "third_party/libjingle/source/talk/session/phone/videoframe.h"
+#include "third_party/libjingle/source/talk/media/base/videoframe.h"
 
 using media::CopyUPlane;
 using media::CopyVPlane;

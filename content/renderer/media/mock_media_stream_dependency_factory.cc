@@ -190,9 +190,9 @@ class MockSessionDescription : public SessionDescriptionInterface {
     NOTIMPLEMENTED();
     return "";
   }
-  virtual SdpType type() const OVERRIDE {
+  virtual std::string type() const OVERRIDE {
     NOTIMPLEMENTED();
-    return kOffer;
+    return "";
   }
   virtual bool AddCandidate(const IceCandidateInterface* candidate) OVERRIDE {
     NOTIMPLEMENTED();
@@ -219,13 +219,19 @@ class MockSessionDescription : public SessionDescriptionInterface {
 
 class MockIceCandidate : public IceCandidateInterface {
  public:
-  MockIceCandidate(const std::string& label, const std::string& sdp)
-      : label_(label),
+  MockIceCandidate(const std::string& sdp_mid,
+                   int sdp_mline_index,
+                   const std::string& sdp)
+      : sdp_mid_(sdp_mid),
+        sdp_mline_index_(sdp_mline_index),
         sdp_(sdp) {
   }
   virtual ~MockIceCandidate() {}
-  virtual std::string label() const OVERRIDE {
-    return label_;
+  virtual std::string sdp_mid() const OVERRIDE {
+    return sdp_mid_;
+  }
+  virtual int sdp_mline_index() const OVERRIDE {
+    return sdp_mline_index_;
   }
   virtual const cricket::Candidate& candidate() const OVERRIDE {
     // This function should never be called. It will intentionally crash. The
@@ -240,7 +246,8 @@ class MockIceCandidate : public IceCandidateInterface {
   }
 
  private:
-  std::string label_;
+  std::string sdp_mid_;
+  int sdp_mline_index_;
   std::string sdp_;
 };
 
@@ -314,7 +321,8 @@ MockMediaStreamDependencyFactory::CreateSessionDescription(
 
 webrtc::IceCandidateInterface*
 MockMediaStreamDependencyFactory::CreateIceCandidate(
-    const std::string& label,
+    const std::string& sdp_mid,
+    int sdp_mline_index,
     const std::string& sdp) {
-  return new webrtc::MockIceCandidate(label, sdp);
+  return new webrtc::MockIceCandidate(sdp_mid, sdp_mline_index, sdp);
 }

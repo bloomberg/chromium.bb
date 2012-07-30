@@ -76,7 +76,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory {
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& sdp);
   virtual webrtc::IceCandidateInterface* CreateIceCandidate(
-      const std::string& label,
+      const std::string& sdp_mid,
+      int sdp_mline_index,
       const std::string& sdp);
 
  private:

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_impl.h"
@@ -153,9 +154,18 @@ bool PeerConnectionHandlerJsep::startIce(const WebKit::WebICEOptions& options) {
 
 bool PeerConnectionHandlerJsep::processIceMessage(
     const WebKit::WebICECandidateDescriptor& candidate) {
+  int m_line_index = -1;
+  if (!base::StringToInt(UTF16ToUTF8(candidate.label()), &m_line_index)) {
+    LOG(ERROR) << "Invalid candidate label: "
+               << UTF16ToUTF8(candidate.label());
+    return false;
+  }
+  // TODO(ronghuawu): Use sdp_mid when its available, for now its empty string.
+  const std::string sdp_mid = "";
   scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
       dependency_factory_->CreateIceCandidate(
-          UTF16ToUTF8(candidate.label()),
+          sdp_mid,
+          m_line_index,
           UTF16ToUTF8(candidate.candidateLine())));
   if (!native_candidate.get()) {
     LOG(ERROR) << "Could not create native ICE candidate";
@@ -279,7 +289,7 @@ void PeerConnectionHandlerJsep::OnIceCandidate(
     const webrtc::IceCandidateInterface* candidate) {
   WebKit::WebICECandidateDescriptor web_candidate;
 
-  std::string label = candidate->label();
+  std::string label = StringPrintf("%d", candidate->sdp_mline_index());
   std::string sdp;
   if (!candidate->ToString(&sdp)) {
     LOG(ERROR) << "Could not get SDP string";
@@ -310,12 +320,20 @@ PeerConnectionHandlerJsep::CreateNativeSessionDescription(
     LOG(ERROR) << "Failed to create native session description";
     return NULL;
   }
-
+  // TODO(ronghuawu): Apply sdp_mid when its available, now its empty string.
+  const std::string sdp_mid = "";
   for (size_t i = 0; i < description.numberOfAddedCandidates(); ++i) {
     WebKit::WebICECandidateDescriptor candidate = description.candidate(i);
+    int m_line_index = -1;
+    if (!base::StringToInt(UTF16ToUTF8(candidate.label()), &m_line_index)) {
+      LOG(ERROR) << "Invalid candidate label: "
+                 << UTF16ToUTF8(candidate.label());
+      continue;
+    }
     scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
         dependency_factory_->CreateIceCandidate(
-            UTF16ToUTF8(candidate.label()),
+            sdp_mid,
+            m_line_index,
             UTF16ToUTF8(candidate.candidateLine())));
     if (!native_desc->AddCandidate(native_candidate.get()))
       LOG(ERROR) << "Failed to add candidate to native session description";

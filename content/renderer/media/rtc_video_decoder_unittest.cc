@@ -16,7 +16,7 @@
 #include "media/base/mock_filters.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/session/phone/videoframe.h"
+#include "third_party/libjingle/source/talk/media/base/videoframe.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;

@@ -145,7 +145,8 @@ MediaStreamDependencyFactory::CreateSessionDescription(const std::string& sdp) {
 }
 
 webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
-    const std::string& label,
+    const std::string& sdp_mid,
+    int sdp_mline_index,
     const std::string& sdp) {
-  return webrtc::CreateIceCandidate(label, sdp);
+  return webrtc::CreateIceCandidate(sdp_mid, sdp_mline_index, sdp);
 }
