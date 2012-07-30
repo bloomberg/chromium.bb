@@ -290,9 +290,6 @@ class GDataDirectory : public GDataEntry {
   // Takes over all entries from |dir|.
   bool TakeOverEntries(GDataDirectory* dir);
 
-  // Find a child by its name.
-  GDataEntry* FindChild(const FilePath::StringType& file_name) const;
-
   // Removes the entry from its children list and destroys the entry instance.
   bool RemoveEntry(GDataEntry* entry);
 
@@ -308,6 +305,12 @@ class GDataDirectory : public GDataEntry {
   }
 
  private:
+  friend class GDataDirectoryService;
+
+  // Find a child by its name.
+  // TODO(satorux): Remove this. crbug.com/139649
+  GDataEntry* FindChild(const FilePath::StringType& file_name) const;
+
   // Add |entry| to children.
   void AddChild(GDataEntry* entry);
 
