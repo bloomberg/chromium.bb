@@ -97,6 +97,8 @@ static const char *frag_shader_text =
 	"  gl_FragColor = v_color;\n"
 	"}\n";
 
+static int running = 1;
+
 static void
 init_egl(struct display *display, EGLint alpha_size)
 {
@@ -477,6 +479,8 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
 	if (key == KEY_F11 && state)
 		toggle_fullscreen(d->window, d->window->fullscreen ^ 1);
+	else if (key == KEY_ESC && state)
+		running = 0;
 }
 
 static void
@@ -548,8 +552,6 @@ event_mask_update(uint32_t mask, void *data)
 
 	return 0;
 }
-
-static int running = 1;
 
 static void
 signal_int(int signum)
