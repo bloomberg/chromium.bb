@@ -1590,7 +1590,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # Zip up the recovery image separately.
       # TODO(gauravsh): Remove recovery_image.bin from image.zip once we
       #                 we know for sure there are no users relying on it.
-      if config['chromeos_official'] and 'base' in config['images']:
+      if 'base' in config['images']:
         upload_queue.put([commands.BuildRecoveryImageZip(
             archive_path,
             os.path.join(image_dir, 'recovery_image.bin'))])
@@ -1624,11 +1624,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
         upload_queue.put([archive])
 
     def BuildAndArchiveAllImages():
-      # If we're an official build, generate the recovery image. To conserve
-      # loop devices, we try to only run one instance of build_image at a
-      # time. TODO(davidjames): Move the image generation out of the archive
-      # stage.
-      if config['chromeos_official'] and 'base' in config['images']:
+      # Generate the recovery image. To conserve loop devices, we try to only
+      # run one instance of build_image at a time. TODO(davidjames): Move the
+      # image generation out of the archive stage.
+      if 'base' in config['images']:
         commands.BuildRecoveryImage(buildroot, board, image_dir, extra_env)
 
       background.RunParallelSteps([BuildAndArchiveFactoryImages,
