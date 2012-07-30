@@ -737,8 +737,8 @@
       </if>
       <if expr="pp_ifdef('use_ash')">
         <!-- Ash has a gray frame, Windows uses blue. -->
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="ash/theme_frame_default_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_frame_default_inactive.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="ash/theme_frame_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_frame_inactive.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_frame_incognito_active.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_frame_incognito_inactive.png" />
       </if>

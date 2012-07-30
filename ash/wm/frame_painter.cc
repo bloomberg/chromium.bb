@@ -120,9 +120,9 @@ bool IsVisibleNormalWindow(aura::Window* window) {
 namespace ash {
 
 // static
-int FramePainter::kActiveWindowOpacity = 230;  // "Linus-approved" values
-int FramePainter::kInactiveWindowOpacity = 204;
-int FramePainter::kSoloWindowOpacity = 51;
+int FramePainter::kActiveWindowOpacity = 255;  // 1.0
+int FramePainter::kInactiveWindowOpacity = 255;  // 1.0
+int FramePainter::kSoloWindowOpacity = 77;  // 0.3
 std::set<FramePainter*>* FramePainter::instances_ = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
