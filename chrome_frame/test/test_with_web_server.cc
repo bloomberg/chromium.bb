@@ -697,7 +697,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRTest) {
 const wchar_t kInstallFlowTestUrl[] =
     L"install_flow_test.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
+// crbug.com/139694
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_InstallFlowTest) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     ScopedChromeFrameRegistrar::UnregisterAtPath(
         GetChromeFrameBuildPath().value(),
