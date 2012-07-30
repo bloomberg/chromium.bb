@@ -15,3 +15,6 @@ ClientSideDetectionHostTest.OnPhishingDetectionDoneDisabled
 # http://crbug.com/119610
 ProfileSyncServiceSessionTest.WriteFilledSessionToNode
 ProfileSyncServiceSessionTest.ValidTabs
+
+# http://crbug.com/139652
+BackgroundApplicationListModelTest.RandomTest

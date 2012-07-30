@@ -705,15 +705,6 @@
    fun:ExtensionUpdaterTest*
 }
 {
-   bug_73358
-   Heapcheck:Leak
-   fun:TestingProfile::GetRequestContextForExtensions
-   fun:ExtensionDataDeleter
-   fun:ExtensionService::ClearExtensionData
-   fun:ExtensionService::UninstallExtension
-   fun:BackgroundApplicationListModelTest_Load*Extension*_Test::TestBody
-}
-{
    bug_79322a
    Heapcheck:Leak
    fun:__gnu_cxx::new_allocator::allocate

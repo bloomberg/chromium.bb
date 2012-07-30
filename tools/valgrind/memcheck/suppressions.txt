@@ -2707,17 +2707,6 @@
    fun:_ZN7content18RenderViewHostImpl16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEi
 }
 {
-   bug_73358
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile30GetRequestContextForExtensionsEv
-   ...
-   fun:_ZN20ExtensionDataDeleterC1EP7ProfileRK4GURL
-   fun:_ZN16ExtensionService18ClearExtensionDataERK4GURL
-   fun:_ZN16ExtensionService18UninstallExtension*
-   fun:*BackgroundApplicationListModelTest*
-}
-{
    bug_73415
    Memcheck:Unaddressable
    fun:_ZN23AccessibilityController36shouldDumpAccessibilityNotificationsEv
@@ -5754,6 +5743,14 @@
    fun:_Znw*
    fun:_ZN6syncer21JsSyncManagerObserver24OnInitializationCompleteERKNS_10WeakHandleINS_9JsBackendEEEbNS_7EnumSetINS_9ModelTypeELS7_2ELS7_16EEE
    fun:_ZN6syncer12_GLOBAL__N_155JsSyncManagerObserverTest_OnInitializationComplete_Test8TestBodyEv
+}
+{
+   bug_139635a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6syncer21JsSyncManagerObserver24OnInitializationCompleteERKNS_10WeakHandleINS_9JsBackendEEEbNS_7EnumSetINS_9ModelTypeELS7_2ELS7_16EEE
+   fun:_ZN6syncer15SyncManagerImpl4Init*
+   fun:_ZN12browser_sync15SyncBackendHost4Core12DoInitializeERKNS0_19DoInitializeOptionsE
 }
 
 #-----------------------------------------------------------------------
