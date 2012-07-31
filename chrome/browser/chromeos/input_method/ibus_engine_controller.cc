@@ -886,8 +886,11 @@ class IBusEngineControllerImpl : public IBusEngineController {
       g_object_unref(chromeos_engine->table);
       chromeos_engine->table = NULL;
     }
-    if (ibus_bus_is_connected(chromeos_engine->connection->ibus_)) {
-      // We can't call destroy function without ibus-daemon connection,
+    if (chromeos_engine->connection &&
+        ibus_bus_is_connected(chromeos_engine->connection->ibus_)) {
+      // Connection may be NULL since extension IME can be uninstalled before
+      // |OnDestroy| is called.
+      // We can't call |destroy| function without ibus-daemon connection,
       // otherwise browser goes into deadlock state.
       // TODO(nona): investigate the reason of dead-lock.
       IBUS_OBJECT_CLASS(ibus_chromeos_engine_parent_class)
