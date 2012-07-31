@@ -387,13 +387,11 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
       synced_session_tracker_.GetTab(GetCurrentMachineTag(),
                                      tab.GetSessionId());
 
-  // We build a clean session specifics directly from the tab data.
-  sync_pb::SessionSpecifics session_s;
-  session_s.set_session_tag(GetCurrentMachineTag());
-  sync_pb::SessionTab* tab_s = session_s.mutable_tab();
+  // We build a clean session tab specifics directly from the tab data.
+  sync_pb::SessionTab tab_s;
 
   GURL new_url;
-  AssociateTabContents(window, tab, session_tab, tab_s, &new_url);
+  AssociateTabContents(window, tab, session_tab, &tab_s, &new_url);
 
   // Trigger the favicon load if needed. We do this before opening the write
   // transaction to avoid jank.
@@ -418,23 +416,22 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     return false;
   }
 
+  sync_pb::SessionSpecifics specifics = tab_node.GetSessionSpecifics();
   if (new_url == old_tab_url) {
     // Load the old specifics and copy over the favicon data if needed.
     // TODO(zea): store local favicons in the |synced_favicons_| map and use
     // that instead of reading from sync. This will be necessary to switch to
     // the new api.
-    const sync_pb::SessionSpecifics old_specifics =
-        tab_node.GetSessionSpecifics();
-    tab_s->set_favicon(old_specifics.tab().favicon());
-    tab_s->set_favicon_source(old_specifics.tab().favicon_source());
-    tab_s->set_favicon_type(old_specifics.tab().favicon_type());
+    tab_s.set_favicon(specifics.tab().favicon());
+    tab_s.set_favicon_source(specifics.tab().favicon_source());
+    tab_s.set_favicon_type(specifics.tab().favicon_type());
   }
-
-  // Note: we don't need to preserve unknown fields since we're the only ones
-  // who can write to this node (other clients can only delete).
+  // Retain the base SessionSpecifics data (tag, tab_node_id, etc.), and just
+  // write the new SessionTabSpecifics.
+  specifics.mutable_tab()->CopyFrom(tab_s);
 
   // Write into the actual sync model.
-  tab_node.SetSessionSpecifics(session_s);
+  tab_node.SetSessionSpecifics(specifics);
 
   return true;
 }
