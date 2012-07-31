@@ -1243,7 +1243,10 @@ def main(argv):
       stack.Add(osutils.TempDirContextManager, 'cbuildbot-tmp')
       logging.debug("Cbuildbot tempdir is %r.", os.environ.get('TMP'))
 
-    options.preserve_paths = set()
+    # TODO(ferringb): update this once https://gerrit.chromium.org/gerrit/25359
+    # is landed- it's sensitive to the manifest-versions cache path.
+    options.preserve_paths = set(['manifest-versions',
+                                  'manifest-versions-internal'])
     if log_file is not None:
       stack.Add(tee.Tee, log_file)
       options.preserve_paths.add(_DEFAULT_LOG_DIR)
