@@ -382,7 +382,8 @@ void ProgramManager::DoCompileShader(ShaderManager::ShaderInfo* info,
                                      ShaderTranslator* translator,
                                      FeatureInfo* feature_info) {
   if (program_cache_ &&
-      program_cache_->GetShaderCompilationStatus(*info->source()) ==
+      program_cache_->GetShaderCompilationStatus(info->source() ?
+                                                 *info->source() : "") ==
           ProgramCache::COMPILATION_SUCCEEDED) {
     info->SetStatus(true, "", translator);
     info->FlagSourceAsCompiled(false);

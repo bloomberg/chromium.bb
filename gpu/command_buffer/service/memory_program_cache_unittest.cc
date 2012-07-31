@@ -38,7 +38,9 @@ class ProgramBinaryEmulator {
                         GLsizei* length,
                         GLenum* format,
                         GLvoid* binary) {
-    *length = length_;
+    if (length) {
+      *length = length_;
+    }
     *format = format_;
     memcpy(binary, binary_, length_);
   }
@@ -406,6 +408,36 @@ TEST_F(MemoryProgramCacheTest, LoadCorrectProgram) {
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
 
   fragment_shader_->UpdateSource("different!");
+  EXPECT_EQ(ProgramCache::PROGRAM_LOAD_SUCCESS, cache_->LoadLinkedProgram(
+      kProgramId,
+      vertex_shader_,
+      fragment_shader_,
+      NULL));
+}
+
+TEST_F(MemoryProgramCacheTest, OverwriteOnNewSave) {
+  const GLenum kFormat = 1;
+  const int kProgramId = 10;
+  const int kBinaryLength = 20;
+  char test_binary[kBinaryLength];
+  for (int i = 0; i < kBinaryLength; ++i) {
+    test_binary[i] = i;
+  }
+  ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
+
+  SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, fragment_shader_, NULL);
+
+
+  char test_binary2[kBinaryLength];
+  for (int i = 0; i < kBinaryLength; ++i) {
+    test_binary2[i] = (i*2) % 250;
+  }
+  ProgramBinaryEmulator emulator2(kBinaryLength, kFormat, test_binary2);
+  SetExpectationsForSaveLinkedProgram(kProgramId, &emulator2);
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, fragment_shader_, NULL);
+
+  SetExpectationsForLoadLinkedProgram(kProgramId, &emulator2);
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_SUCCESS, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,

@@ -88,22 +88,18 @@ void MemoryProgramCache::SaveLinkedProgram(
     const ShaderManager::ShaderInfo* shader_a,
     const ShaderManager::ShaderInfo* shader_b,
     const LocationMap* bind_attrib_location_map) {
-  GLsizei length;
   GLenum format;
-  GLsizei buffer_length = 0;
-  glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH_OES, &buffer_length);
-  if (static_cast<unsigned int>(buffer_length) > max_size_bytes_) {
+  GLsizei length = 0;
+  glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
+  if (length == 0 || static_cast<unsigned int>(length) > max_size_bytes_) {
     return;
   }
-  scoped_array<char> binary(new char[buffer_length]);
+  scoped_array<char> binary(new char[length]);
   glGetProgramBinary(program,
-                     buffer_length,
-                     &length,
+                     length,
+                     NULL,
                      &format,
                      binary.get());
-  if (length == 0) {
-    return;
-  }
 
   char a_sha[kHashLength];
   char b_sha[kHashLength];
@@ -118,7 +114,11 @@ void MemoryProgramCache::SaveLinkedProgram(
   const std::string sha_string(sha, sizeof(sha));
 
   if (store_.find(sha_string) != store_.end()) {
-    return;
+    const StoreMap::iterator found = store_.find(sha_string);
+    const ProgramCacheValue* evicting = found->second;
+    curr_size_bytes_ -= evicting->length;
+    Evict(sha_string, evicting->shader_0_hash, evicting->shader_1_hash);
+    store_.erase(found);
   }
 
   while (curr_size_bytes_ + length > max_size_bytes_) {
