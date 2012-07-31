@@ -178,7 +178,7 @@ def generate_data(lines, translate_tests, backtranslate_tests, hyphenate_tests, 
             continue
 
         # does this line contain any processing flags
-        if any(x in lines[i] for x in possibleFlags):
+        if any(x in lines[i].split(': ') for x in possibleFlags):
             optionlist=lines[i].split(' ')
             for i in range(0, len(optionlist), 2):
                 optionlist[i]=optionlist[i].replace(":", "")
