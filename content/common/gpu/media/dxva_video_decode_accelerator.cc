@@ -679,6 +679,8 @@ void DXVAVideoDecodeAccelerator::Reset() {
 
   state_ = kResetting;
 
+  pending_output_samples_.clear();
+
   RETURN_AND_NOTIFY_ON_FAILURE(SendMFTMessage(MFT_MESSAGE_COMMAND_FLUSH, 0),
       "Reset: Failed to send message.", PLATFORM_FAILURE,);
 
