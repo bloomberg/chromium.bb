@@ -185,8 +185,6 @@ struct shell_surface {
 
 	struct weston_transform workspace_transform;
 
-	struct focus_state *focus_state;
-
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
 	struct wl_list link;
@@ -398,7 +396,6 @@ focus_state_create(struct weston_seat *seat)
 
 	surface = keyboard->focus;
 	shsurf = get_shell_surface((struct weston_surface *)keyboard->focus);
-	shsurf->focus_state = state;
 
 	state->seat = seat;
 	state->keyboard_focus = shsurf->surface;
