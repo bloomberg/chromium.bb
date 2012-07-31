@@ -112,18 +112,43 @@ class PolicyWatcherWin :
     }
   }
 
-  bool GetRegistryPolicyInteger(const string16& value_name,
+  bool GetRegistryPolicyString(const std::string& value_name,
+                               std::string* result) const {
+    std::wstring value_name_wide = UTF8ToWide(value_name);
+    std::wstring value;
+    RegKey policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
+    if (policy_key.ReadValue(value_name_wide.c_str(), &value) ==
+        ERROR_SUCCESS) {
+      *result = WideToUTF8(value);
+      return true;
+    }
+
+    if (policy_key.Open(HKEY_CURRENT_USER, kRegistrySubKey, KEY_READ) ==
+      ERROR_SUCCESS) {
+      if (policy_key.ReadValue(value_name_wide.c_str(), &value) ==
+          ERROR_SUCCESS) {
+        *result = WideToUTF8(value);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool GetRegistryPolicyInteger(const std::string& value_name,
                                 uint32* result) const {
+    std::wstring value_name_wide = UTF8ToWide(value_name);
     DWORD value = 0;
     RegKey policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
-    if (policy_key.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) {
+    if (policy_key.ReadValueDW(value_name_wide.c_str(), &value) ==
+        ERROR_SUCCESS) {
       *result = value;
       return true;
     }
 
     if (policy_key.Open(HKEY_CURRENT_USER, kRegistrySubKey, KEY_READ) ==
         ERROR_SUCCESS) {
-      if (policy_key.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) {
+      if (policy_key.ReadValueDW(value_name_wide.c_str(), &value) ==
+          ERROR_SUCCESS) {
         *result = value;
         return true;
       }
@@ -131,7 +156,7 @@ class PolicyWatcherWin :
     return false;
   }
 
-  bool GetRegistryPolicyBoolean(const string16& value_name,
+  bool GetRegistryPolicyBoolean(const std::string& value_name,
                                 bool* result) const {
     uint32 local_result = 0;
     bool ret = GetRegistryPolicyInteger(value_name, &local_result);
@@ -146,13 +171,17 @@ class PolicyWatcherWin :
     for (int i = 0; i < kBooleanPolicyNamesNum; ++i) {
       const char* policy_name = kBooleanPolicyNames[i];
       bool bool_value;
-      const string16 name(ASCIIToUTF16(policy_name));
-      if (GetRegistryPolicyBoolean(name, &bool_value)) {
+      if (GetRegistryPolicyBoolean(policy_name, &bool_value)) {
         policy->SetBoolean(policy_name, bool_value);
       }
     }
-    // TODO(simonmorris): Read policies whose names are in kStringPolicyNames.
-
+    for (int i = 0; i < kStringPolicyNamesNum; ++i) {
+      const char* policy_name = kStringPolicyNames[i];
+      std::string string_value;
+      if (GetRegistryPolicyString(policy_name, &string_value)) {
+        policy->SetString(policy_name, string_value);
+      }
+    }
     return policy;
   }
 
