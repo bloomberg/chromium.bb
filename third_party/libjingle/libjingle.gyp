@@ -647,6 +647,9 @@
       'include_dirs': [
         'source',
       ],
+      'dependencies': [
+        'libjingle',
+      ],
     }, # target peerconnection_server
   ],
 }
