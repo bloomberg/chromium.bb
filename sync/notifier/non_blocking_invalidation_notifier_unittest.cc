@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "google/cacheinvalidation/v2/types.pb.h"
+#include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"

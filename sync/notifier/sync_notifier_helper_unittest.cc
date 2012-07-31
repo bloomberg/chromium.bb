@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google/cacheinvalidation/v2/types.pb.h"
+#include "google/cacheinvalidation/types.pb.h"
 #include "sync/notifier/sync_notifier_helper.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"

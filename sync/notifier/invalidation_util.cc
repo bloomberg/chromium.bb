@@ -7,7 +7,7 @@
 #include <sstream>
 
 #include "google/cacheinvalidation/include/types.h"
-#include "google/cacheinvalidation/v2/types.pb.h"
+#include "google/cacheinvalidation/types.pb.h"
 
 namespace syncer {
 

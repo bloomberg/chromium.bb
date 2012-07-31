@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "google/cacheinvalidation/v2/types.pb.h"
+#include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/chrome_invalidation_client.h"

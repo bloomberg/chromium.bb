@@ -7,94 +7,33 @@
     # This library should build cleanly with the extra warnings turned on
     # for Chromium.
     'chromium_code': 1,
-    # The root directory for the proto files.
-    'proto_dir_root': 'files/src',
     # The relative path of the cacheinvalidation proto files from
-    # proto_dir_root.
+    # 'files/src'.
     # TODO(akalin): Add a RULE_INPUT_DIR predefined variable to gyp so
     # we don't need this variable.
-    # TODO(ghc): Remove v2/ dir and move all files up a level.
-    'proto_dir_relpath': 'google/cacheinvalidation/v2',
+    'proto_dir_relpath': 'google/cacheinvalidation',
     # Where files generated from proto files are put.
-    'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
-    # The path to the protoc executable.
-    'protoc': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+    'proto_in_dir': 'files/src/<(proto_dir_relpath)',
+    'proto_out_dir': '<(proto_dir_relpath)',
   },
   'targets': [
-    # The rule/action to generate files from the cacheinvalidation proto
-    # files.
-    {
-      'target_name': 'cacheinvalidation_proto',
-      'type': 'none',
-      'sources': [
-        '<(proto_dir_root)/<(proto_dir_relpath)/client.proto',
-        '<(proto_dir_root)/<(proto_dir_relpath)/client_gateway.proto',
-        '<(proto_dir_root)/<(proto_dir_relpath)/client_protocol.proto',
-        '<(proto_dir_root)/<(proto_dir_relpath)/client_test_internal.proto',
-        '<(proto_dir_root)/<(proto_dir_relpath)/types.proto',
-      ],
-      # TODO(akalin): This block was copied from the sync_proto target
-      # from chrome.gyp.  Decomp the shared blocks out somehow.
-      'rules': [
-        {
-          'rule_name': 'genproto',
-          'extension': 'proto',
-          'inputs': [
-            '<(protoc)',
-          ],
-          'outputs': [
-            '<(protoc_out_dir)/<(proto_dir_relpath)/<(RULE_INPUT_ROOT).pb.h',
-            '<(protoc_out_dir)/<(proto_dir_relpath)/<(RULE_INPUT_ROOT).pb.cc',
-          ],
-          'action': [
-            '<(protoc)',
-            '--proto_path=<(proto_dir_root)',
-            # This path needs to be prefixed by proto_path, so we can't
-            # use RULE_INPUT_PATH (which is an absolute path).
-            '<(proto_dir_root)/<(proto_dir_relpath)/<(RULE_INPUT_NAME)',
-            '--cpp_out=<(protoc_out_dir)',
-          ],
-          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'dependencies': [
-        '../../third_party/protobuf/protobuf.gyp:protoc#host',
-      ],
-    },
     # The C++ files generated from the cache invalidation protocol buffers.
     {
       'target_name': 'cacheinvalidation_proto_cpp',
       'type': 'static_library',
       'sources': [
-        '<(protoc_out_dir)/<(proto_dir_relpath)/client.pb.h',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/client.pb.cc',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/client_gateway.pb.h',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/client_gateway.pb.cc',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/client_protocol.pb.h',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/client_protocol.pb.cc',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/client_test_internal.pb.h',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/client_test_internal.pb.cc',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.h',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.cc',
+        '<(proto_in_dir)/client.proto',
+        '<(proto_in_dir)/client_gateway.proto',
+        '<(proto_in_dir)/client_protocol.proto',
+        '<(proto_in_dir)/client_test_internal.proto',
+        '<(proto_in_dir)/types.proto',
       ],
-      'dependencies': [
-        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        'cacheinvalidation_proto',
-      ],
-      'include_dirs': [
-        '<(protoc_out_dir)',
-      ],
+      'includes': [ '../../build/protoc.gypi' ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(protoc_out_dir)',
+          '<(proto_out_dir)',
         ],
       },
-      'export_dependent_settings': [
-        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
-      ],
-      # This target exports a hard dependency because it contains generated
-      # header files.
-      'hard_dependency': 1,
     },
     # The main cache invalidation library.  External clients should depend
     # only on this.

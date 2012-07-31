@@ -116,7 +116,7 @@ deps = {
 
   "src/third_party/cacheinvalidation/files/src/google":
     (Var("googlecode_url") % "google-cache-invalidation-api") +
-    "/trunk/src/google@218",
+    "/trunk/src/google@219",
 
   "src/third_party/leveldatabase/src":
     (Var("googlecode_url") % "leveldb") + "/trunk@67",
@@ -128,7 +128,7 @@ deps = {
     (Var("googlecode_url") % "grit-i18n") + "/trunk@63",
 
   "src/tools/gyp":
-    (Var("googlecode_url") % "gyp") + "/trunk@1440",
+    (Var("googlecode_url") % "gyp") + "/trunk@1441",
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),

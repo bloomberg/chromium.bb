@@ -13,7 +13,7 @@
 #include "google/cacheinvalidation/include/invalidation-client-factory.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "google/cacheinvalidation/v2/types.pb.h"
+#include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/registration_manager.h"
