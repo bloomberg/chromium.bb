@@ -128,15 +128,20 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
     const UsbTransferCallback& callback) {
   CheckDevice();
 
+  scoped_refptr<net::IOBuffer> resized_buffer(new net::IOBufferWithSize(
+      LIBUSB_CONTROL_SETUP_SIZE + length));
+  memcpy(resized_buffer->data() + LIBUSB_CONTROL_SETUP_SIZE, buffer->data(),
+         length);
+
   struct libusb_transfer* const transfer = libusb_alloc_transfer(0);
   const uint8 converted_type = CreateRequestType(direction, request_type,
                                                  recipient);
-  libusb_fill_control_setup(reinterpret_cast<uint8*>(buffer->data()),
+  libusb_fill_control_setup(reinterpret_cast<uint8*>(resized_buffer->data()),
                             converted_type, request, value, index, length);
   libusb_fill_control_transfer(transfer, handle_, reinterpret_cast<uint8*>(
-      buffer->data()), reinterpret_cast<libusb_transfer_cb_fn>(
+      resized_buffer->data()), reinterpret_cast<libusb_transfer_cb_fn>(
           &HandleTransferCompletion), this, timeout);
-  SubmitTransfer(transfer, buffer, callback);
+  SubmitTransfer(transfer, resized_buffer, callback);
 }
 
 void UsbDevice::BulkTransfer(const TransferDirection direction,
