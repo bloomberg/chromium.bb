@@ -12,10 +12,10 @@ vars = {
   "chromium_git": "http://git.chromium.org/git",
   "chromiumos_git": "http://git.chromium.org/chromiumos",
   "swig_revision": "69281",
-  "nacl_revision": "9277",
+  "nacl_revision": "9317",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
-  "nacl_tools_revision": "9016",  # native_client/DEPS: tools_rev
+  "nacl_tools_revision": "9286",  # native_client/DEPS: tools_rev
   "gtm_revision": "534",
 
   # These hashes need to be updated when nacl_toolchain_revision is changed.
@@ -30,21 +30,21 @@ vars = {
   "nacl_toolchain_mac_x86_newlib_hash":
       "93f3a7ca6f97b093380ab4c305b2be42e89004c0",
   "nacl_toolchain_pnacl_linux_x86_32_hash":
-      "a3b1a1221f3198302c2437321e2ef8f736fecd16",
+      "025f9b2c1fcb9eb142cb30225526fcc443091e19",
   "nacl_toolchain_pnacl_linux_x86_64_hash":
-      "d3275949352c35aa6272117e34931068ac190c14",
+      "fd5f7190d2462155a5a492980df99327a7733df9",
   "nacl_toolchain_pnacl_mac_x86_32_hash":
-      "1aff8c3c105dfb01224fd92e7cb39cdbb130edbc",
+      "6fabbbec2ec6c6854d21c95cda82284d8c3eabcc",
   "nacl_toolchain_pnacl_translator_hash":
-      "689ef2a1b4b013b4cbfb42e0ff71eaaf5aba5c1d",
+      "17fef3ab59d1445ec02ae571bf6f96adfc4d609b",
   "nacl_toolchain_pnacl_win_x86_32_hash":
-      "906beb9ecbc6be9a8f456f45dabd715bae8db16a",
+      "ef27427f000f66249a75eef028ef30d57056e9a7",
   "nacl_toolchain_win_x86_hash":
       "9a854462e601338153bc65bfdc1171a87dc0bfe6",
   "nacl_toolchain_win_x86_newlib_hash":
       "c4dd3f8b65e309d242a3bfce89a15f580ef2e4f0",
   "nacl_toolchain_revision": "9170",
-  "pnacl_toolchain_revision": "9213",
+  "pnacl_toolchain_revision": "9299",
 
   "libjingle_revision": "163",
   "libphonenumber_revision": "456",
@@ -289,9 +289,6 @@ deps = {
   "src/third_party/pyftpdlib/src":
     (Var("googlecode_url") % "pyftpdlib") + "/trunk@977",
 
-  # Needed to support nacl browser test jig.
-  "src/third_party/pylib":
-    Var("nacl_trunk") + "/src/third_party/pylib@" + Var("nacl_tools_revision"),
   "src/third_party/scons-2.0.1":
     Var("nacl_trunk") + "/src/third_party/scons-2.0.1@" +
         Var("nacl_tools_revision"),
