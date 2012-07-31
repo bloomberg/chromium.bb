@@ -661,8 +661,8 @@ chrome.fileBrowserPrivate = {
       SEARCH_NO_MATCHING_FILES: 'No files match <b>"$1"</b>',
       SEARCH_SPINNER: 'Searching...',
 
-      TIME_TODAY: 'Today, $1',
-      TIME_YESTERDAY: 'Yesterday, $1',
+      TIME_TODAY: 'Today $1',
+      TIME_YESTERDAY: 'Yesterday $1',
 
       ALL_FILES_FILTER: 'All files',
 
