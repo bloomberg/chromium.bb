@@ -38,7 +38,7 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket) {
   ChromeBrowserMainParts* cbw = static_cast<ChromeBrowserMainParts*>(bw.get());
   EXPECT_TRUE(cbw);
   if (cbw) {
-    cbw->WarmConnectionFieldTrial();
+    cbw->browser_field_trials_.WarmConnectionFieldTrial();
     EXPECT_EQ(0, net::GetSocketReusePolicy());
   }
 }
@@ -53,7 +53,7 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Random) {
   if (cbw) {
     const int kNumRuns = 1000;
     for (int i = 0; i < kNumRuns; i++) {
-      cbw->WarmConnectionFieldTrial();
+      cbw->browser_field_trials_.WarmConnectionFieldTrial();
       int val = net::GetSocketReusePolicy();
       EXPECT_LE(val, 2);
       EXPECT_GE(val, 0);
@@ -80,10 +80,10 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Invalid) {
   EXPECT_TRUE(cbw);
   if (cbw) {
 #if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
-    EXPECT_DEATH(cbw->WarmConnectionFieldTrial(),
+    EXPECT_DEATH(cbw->browser_field_trials_.WarmConnectionFieldTrial(),
                  "Not a valid socket reuse policy group");
 #else
-    EXPECT_DEBUG_DEATH(cbw->WarmConnectionFieldTrial(),
+    EXPECT_DEBUG_DEATH(cbw->browser_field_trials_.WarmConnectionFieldTrial(),
                        "Not a valid socket reuse policy group");
 #endif
   }

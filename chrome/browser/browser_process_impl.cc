@@ -20,7 +20,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/background/background_mode_manager.h"
-#include "chrome/browser/browser_trial.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"

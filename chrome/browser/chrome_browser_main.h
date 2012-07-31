@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/tracked_objects.h"
+#include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/task_profiler/auto_tracking.h"
@@ -97,49 +98,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   const PrefService* local_state() const { return local_state_; }
 
  private:
-  // Methods for |EarlyInitialization()| ---------------------------------------
-
-  // A/B test for the maximum number of persistent connections per host.
-  void ConnectionFieldTrial();
-
-  // A/B test for determining a value for unused socket timeout.
-  void SocketTimeoutFieldTrial();
-
-  // A/B test for the maximum number of connections per proxy server.
-  void ProxyConnectionsFieldTrial();
-
-  // A/B test for spdy when --use-spdy not set.
-  void SpdyFieldTrial();
-
-  // A/B test for warmest socket vs. most recently used socket.
-  void WarmConnectionFieldTrial();
-
-  // A/B test for automatically establishing a backup TCP connection when a
-  // specified timeout value is reached.
-  void ConnectBackupJobsFieldTrial();
-
-  // Field trial to see what disabling DNS pre-resolution does to
-  // latency of page loads.
-  void PredictorFieldTrial();
-
-  // Field trial to see what effect installing defaults in the NTP apps pane
-  // has on retention and general apps/webstore usage.
-  void DefaultAppsFieldTrial();
-
-  // A field trial to see what effects launching Chrome automatically on
-  // computer startup has on retention and usage of Chrome.
-  void AutoLaunchChromeFieldTrial();
-
-  // A collection of one-time-randomized and session-randomized field trials
-  // intended to test the uniformity and correctness of the field trial control,
-  // bucketing and reporting systems.
-  void SetupUniformityFieldTrials();
-
-  // Disables the new tab field trial if not running in desktop mode.
-  void DisableNewTabFieldTrialIfNecesssary();
-
-  // Field trial for testing TLS channel id.
-  void ChannelIDFieldTrial();
 
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
@@ -147,9 +105,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // creation of field trials. Call only after labs have been converted to
   // switches.
   void SetupMetricsAndFieldTrials();
-
-  // Add an invocation of your field trial init function to this method.
-  void SetupFieldTrials(bool proxy_policy_is_set);
 
   // Starts recording of metrics. This can only be called after we have a file
   // thread.
@@ -185,6 +140,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Statistical testing infrastructure for the entire browser. NULL until
   // SetupMetricsAndFieldTrials is called.
   scoped_ptr<base::FieldTrialList> field_trial_list_;
+
+  ChromeBrowserFieldTrials browser_field_trials_;
 
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.
