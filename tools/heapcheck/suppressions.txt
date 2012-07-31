@@ -1487,9 +1487,3 @@
    ...
    fun:base::PlatformThread::SetName
 }
-{
-   bug_139635
-   Heapcheck:Leak
-   fun:syncer::JsSyncManagerObserver::OnInitializationComplete
-   fun:syncer::::JsSyncManagerObserverTest_OnInitializationComplete_Test::TestBody
-}
