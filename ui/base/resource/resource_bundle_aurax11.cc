@@ -52,11 +52,14 @@ void ResourceBundle::LoadCommonResources() {
                         SCALE_FACTOR_100P);
     if (ShouldLoad2xResources()) {
       // 2x touch
-      AddDataPackFromPath(
-          GetResourcesPakFilePath("theme_resources_touch_200_percent.pak"),
-          SCALE_FACTOR_200P);
+      AddDataPackFromPath(GetResourcesPakFilePath(
+                          "theme_resources_touch_200_percent.pak"),
+                          SCALE_FACTOR_200P);
       AddDataPackFromPath(GetResourcesPakFilePath(
                           "ui_resources_touch_200_percent.pak"),
+                          SCALE_FACTOR_200P);
+      AddDataPackFromPath(GetResourcesPakFilePath(
+                          "webkit_resources_200_percent.pak"),
                           SCALE_FACTOR_200P);
     }
   } else {
@@ -74,6 +77,9 @@ void ResourceBundle::LoadCommonResources() {
                           SCALE_FACTOR_200P);
       AddDataPackFromPath(GetResourcesPakFilePath(
                           "ui_resources_200_percent.pak"),
+                          SCALE_FACTOR_200P);
+      AddDataPackFromPath(GetResourcesPakFilePath(
+                          "webkit_resources_200_percent.pak"),
                           SCALE_FACTOR_200P);
     }
   }

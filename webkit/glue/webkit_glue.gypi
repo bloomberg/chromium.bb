@@ -29,7 +29,7 @@
         {
           'action_name': 'webkit_resources',
           'variables': {
-            'grit_grd_file': 'webkit_resources.grd',
+            'grit_grd_file': 'resources/webkit_resources.grd',
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },

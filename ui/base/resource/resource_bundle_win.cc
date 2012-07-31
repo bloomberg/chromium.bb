@@ -63,6 +63,9 @@ void ResourceBundle::LoadCommonResources() {
         AddDataPackFromPath(GetResourcesPakFilePath(
                             "ui_resources_200_percent.pak"),
                             SCALE_FACTOR_200P);
+        AddDataPackFromPath(GetResourcesPakFilePath(
+                            "webkit_resources_200_percent.pak"),
+                            SCALE_FACTOR_200P);
       } else {
         AddDataPackFromPath(
             GetResourcesPakFilePath("theme_resources_100_percent.pak"),

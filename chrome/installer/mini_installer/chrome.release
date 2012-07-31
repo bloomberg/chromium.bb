@@ -35,6 +35,7 @@ default_apps\external_extensions.json: %(VersionDir)s\default_apps\
 [HIDPI]
 theme_resources_200_percent.pak: %(VersionDir)s\
 ui_resources_200_percent.pak: %(VersionDir)s\
+webkit_resources_200_percent.pak: %(VersionDir)s\
 
 [TOUCH]
 theme_resources_touch_100_percent.pak: %(VersionDir)s\

@@ -249,6 +249,7 @@
               'files': [
                 '<(grit_out_dir)/theme_resources_200_percent.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_200_percent.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_200_percent.pak',
               ],
             },
           ],

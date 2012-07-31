@@ -797,6 +797,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif  // GOOGLE_CHROME_BUILD
     switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
+    switches::kLoad2xResources,
     switches::kLoggingLevel,
     switches::kOldCheckboxStyle,
     switches::kNoReferrers,
