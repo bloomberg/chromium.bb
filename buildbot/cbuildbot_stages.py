@@ -715,7 +715,9 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def HandleSuccess(self):
     # We only promote for the pfq, not chrome pfq.
-    if (cbuildbot_config.IsPFQType(self._build_config['build_type']) and
+    # TODO(build): Run this logic in debug mode too.
+    if (not self._options.debug and
+        cbuildbot_config.IsPFQType(self._build_config['build_type']) and
         self._build_config['master'] and
         self._target_manifest_branch == 'master' and
         ManifestVersionedSyncStage.manifest_manager != None and
