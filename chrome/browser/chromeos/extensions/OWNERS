@@ -12,3 +12,11 @@ miket@chromium.org
 mpcomplete@chromium.org
 skerner@chromium.org
 yoz@chromium.org
+
+# Additional ChromeOS-specific reviewers
+achuith@chromium.org
+hashimoto@chromium.org
+hshi@chromium.org
+satorux@chromium.org
+tbarzic@chromium.org
+zelidrag@chromium.org
