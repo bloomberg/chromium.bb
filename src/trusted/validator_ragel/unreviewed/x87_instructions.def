@@ -216,11 +216,11 @@ fxam, 0xd9 0xe5, CPUFeature_x87
 ######## FXCH ##################################################################
 fxch r7, 0xd9 0xc8, CPUFeature_x87
 ######## FXRSTOR ###############################################################
-fxrstor Msx, 0x0f 0xae /1, norexw nacl-forbidden CPUFeature_FXSR
-fxrstor64 Msx, rexw 0x0f 0xae /1, amd64 nacl-forbidden CPUFeature_FXSR
+fxrstor Msx, 0x0f 0xae /1, norexw CPUFeature_FXSR nacl-forbidden
+fxrstor64 Msx, rexw 0x0f 0xae /1, amd64 CPUFeature_FXSR nacl-forbidden
 ######## FXSAVE ################################################################
-fxsave Msx, 0x0f 0xae /0, norexw nacl-forbidden CPUFeature_FXSR
-fxsave64 Msx, rexw 0x0f 0xae /0, amd64 nacl-forbidden CPUFeature_FXSR
+fxsave Msx, 0x0f 0xae /0, norexw CPUFeature_FXSR nacl-forbidden
+fxsave64 Msx, rexw 0x0f 0xae /0, amd64 CPUFeature_FXSR nacl-forbidden
 ######## FXTRACT ###############################################################
 fxtract, 0xd9 0xf4, CPUFeature_x87
 ######## FYL2X #################################################################

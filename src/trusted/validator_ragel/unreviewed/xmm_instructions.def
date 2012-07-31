@@ -157,7 +157,7 @@ vextractps Ib Vps Mss, 0xc4 RXB.00011 x.1111.0.01 0x17, CPUFeature_AVX
 ######## EXTRQ #################################################################
 # This instruction is perfectly safe but it's disallowed because xed does not
 # know it
-extrq ib Ib Uq, 0x66 0x0f 0x78 /0, nacl-forbidden CPUFeature_SSE4A
+extrq ib Ib Uq, 0x66 0x0f 0x78 /0, CPUFeature_SSE4A nacl-forbidden
 extrq Uq Vq, 0x66 0x0f 0x79, CPUFeature_SSE4A
 ######## HADDPD/VHADDPD ########################################################
 haddpd Wpd Vpd, 0x66 0x0f 0x7c, CPUFeature_SSE3
@@ -1170,14 +1170,14 @@ vxorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x57, CPUFeature_AVX
 ######## XGETBV ################################################################
 xgetbv, 0x0f 0x01 0xd0, CPUFeature_FXSR
 ######## XRSTOR ################################################################
-xrstor Msx, 0x0f 0xae /5, norexw CPUFeature_FXSR
-xrstor64 Msx, rexw 0x0f 0xae /5, amd64 CPUFeature_FXSR
+xrstor Msx, 0x0f 0xae /5, norexw CPUFeature_FXSR nacl-forbidden
+xrstor64 Msx, rexw 0x0f 0xae /5, amd64 CPUFeature_FXSR nacl-forbidden
 ######## XSAVE #################################################################
-xsave Msx, 0x0f 0xae /4, norexw CPUFeature_FXSR
-xsave64 Msx, rexw 0x0f 0xae /4, amd64 CPUFeature_FXSR
+xsave Msx, 0x0f 0xae /4, norexw CPUFeature_FXSR nacl-forbidden
+xsave64 Msx, rexw 0x0f 0xae /4, amd64 CPUFeature_FXSR nacl-forbidden
 ######## XSAVEOPT ##############################################################
-xsaveopt Msx, 0x0f 0xae /6, norexw CPUFeature_FXSR
-xsaveopt64 Msx, rexw 0x0f 0xae /6, amd64 CPUFeature_FXSR
+xsaveopt Msx, 0x0f 0xae /6, norexw CPUFeature_FXSR nacl-forbidden
+xsaveopt64 Msx, rexw 0x0f 0xae /6, amd64 CPUFeature_FXSR nacl-forbidden
 ######## XSETBV ################################################################
 xsetbv, 0x0f 0x01 0xd1, CPUFeature_FXSR nacl-forbidden
 ################################################################################
