@@ -56,11 +56,10 @@ TEST_F(DecoderVp8Test, GradientScaleDownEvenToEven) {
   TestGradient(320, 240, 160, 120, 0.04, 0.02);
 }
 
-// TODO(simonmorris): win_tsan and mac_valgrind catch leaks in this test.
-// The maximum error is non-deterministic. The mean error is not too high,
-// which suggests that the problem is restricted to a small area of the output
-// image. See crbug.com/139437.
-TEST_F(DecoderVp8Test, DISABLED_GradientScaleDownEvenToOdd) {
+TEST_F(DecoderVp8Test, GradientScaleDownEvenToOdd) {
+  // The maximum error is non-deterministic. The mean error is not too high,
+  // which suggests that the problem is restricted to a small area of the output
+  // image. See crbug.com/139437 and crbug.com/139633.
   TestGradient(320, 240, 161, 121, 1.0, 0.02);
 }
 
