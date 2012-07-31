@@ -381,6 +381,7 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
 #endif
 
     NaClAppThreadSetSuspendedRegisters(natp, &regs);
+    test_shm->expected_regs = regs;
     NaClUntrustedThreadsResumeAll(nap);
     CHECK(NaClWaitForMainThreadToExit(nap) == 0);
   }

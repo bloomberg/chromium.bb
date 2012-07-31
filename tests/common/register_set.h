@@ -242,4 +242,8 @@ void RegsFillTestValues(struct NaClSignalContext *regs);
 /* Adjust registers to follow the sandbox's constraints. */
 void RegsApplySandboxConstraints(struct NaClSignalContext *regs);
 
+/* This compares for equality all registers saved by REGS_SAVER_FUNC. */
+void RegsAssertEqual(const struct NaClSignalContext *actual,
+                     const struct NaClSignalContext *expected);
+
 #endif
