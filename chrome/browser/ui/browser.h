@@ -18,7 +18,6 @@
 #include "base/string16.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/event_disposition.h"
-#include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -49,6 +48,7 @@ class BrowserSyncedWindowDelegate;
 class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
+class DeviceAttachedIntentSource;
 class FindBarController;
 class FullscreenController;
 class PrefService;
@@ -896,7 +896,8 @@ class Browser : public TabStripModelObserver,
   scoped_ptr<chrome::BrowserInstantController> instant_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
-  DeviceAttachedIntentSource device_attached_intent_source_;
+
+  scoped_ptr<DeviceAttachedIntentSource> device_attached_intent_source_;
 
   scoped_refptr<FullscreenController> fullscreen_controller_;
 

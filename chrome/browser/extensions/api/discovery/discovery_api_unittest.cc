@@ -6,7 +6,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/extensions/api/discovery/discovery_api.h"
 #include "chrome/browser/extensions/api/discovery/suggested_link.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/experimental_discovery.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace utils = extension_function_test_utils;

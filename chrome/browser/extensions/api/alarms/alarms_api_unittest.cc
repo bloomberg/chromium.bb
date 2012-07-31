@@ -6,14 +6,12 @@
 
 #include "base/values.h"
 #include "base/test/mock_time_provider.h"
-#include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/alarms/alarms_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

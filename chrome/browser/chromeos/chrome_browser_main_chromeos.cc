@@ -15,7 +15,7 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/unload_controller.h"
 
+#include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"

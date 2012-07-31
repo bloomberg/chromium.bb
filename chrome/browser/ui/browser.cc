@@ -60,6 +60,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -351,7 +352,6 @@ Browser::Browser(const CreateParams& params)
           synced_window_delegate_(
               new BrowserSyncedWindowDelegate(this))),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
-      device_attached_intent_source_(this, this),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           command_controller_(new chrome::BrowserCommandController(this))),
       window_has_shown_(false) {
@@ -396,6 +396,8 @@ Browser::Browser(const CreateParams& params)
                              profile_->GetPrefs(), NULL);
 
   instant_controller_.reset(new chrome::BrowserInstantController(this));
+  device_attached_intent_source_.reset(
+      new DeviceAttachedIntentSource(this, (this)));
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 

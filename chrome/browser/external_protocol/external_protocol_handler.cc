@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -136,7 +136,7 @@ class ExternalDefaultProtocolObserver
   bool prompt_user_;
 };
 
-} // namespace
+}  // namespace
 
 // static
 void ExternalProtocolHandler::PrepopulateDictionary(DictionaryValue* win_pref) {

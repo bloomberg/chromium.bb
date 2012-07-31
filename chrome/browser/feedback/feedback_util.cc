@@ -18,7 +18,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/ui/browser_list.h"

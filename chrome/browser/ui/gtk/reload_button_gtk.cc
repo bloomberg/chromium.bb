@@ -8,6 +8,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -460,4 +461,3 @@ void ReloadButtonGtk::ClearCache() {
   if (browser_)
     chrome::ClearCache(browser_);
 }
-
