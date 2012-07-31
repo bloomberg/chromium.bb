@@ -231,6 +231,18 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
+  virtual void GetNetworkInterfaces(
+      const GetNetworkInterfacesCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetInterfaces);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetNetworkInterfaces,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   virtual void GetAllLogs(const GetAllLogsCallback& callback)
       OVERRIDE {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
@@ -374,6 +386,15 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       callback.Run(false, "");
   }
 
+  void OnGetNetworkInterfaces(const GetNetworkInterfacesCallback& callback,
+                              dbus::Response* response) {
+    std::string status;
+    if (response && dbus::MessageReader(response).PopString(&status))
+      callback.Run(true, status);
+    else
+      callback.Run(false, "");
+  }
+
   void OnGetAllLogs(const GetAllLogsCallback& callback,
                     dbus::Response* response) {
     std::map<std::string, std::string> logs;
@@ -479,8 +500,12 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
       OVERRIDE {
     callback.Run(false, "");
   }
-  virtual void GetModemStatus(const GetNetworkStatusCallback& callback)
+  virtual void GetModemStatus(const GetModemStatusCallback& callback)
       OVERRIDE {
+    callback.Run(false, "");
+  }
+  virtual void GetNetworkInterfaces(
+      const GetNetworkInterfacesCallback& callback) OVERRIDE {
     callback.Run(false, "");
   }
   virtual void GetAllLogs(const GetAllLogsCallback& callback) OVERRIDE {
