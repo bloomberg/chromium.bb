@@ -1,0 +1,22 @@
+Name: re2 - an efficient, principled regular expression library
+Short Name: re2
+URL: http://code.google.com/p/re2/
+Version: 83:c79416ca4228
+Date: 2012-06-20
+Revision: 83:c79416ca4228
+License: BSD 3-Clause License
+License File: LICENSE
+Security Critical: yes
+
+Description:
+RE2 is a fast, safe, thread-friendly alternative to backtracking regular
+expression engines like those used in PCRE, Perl, and Python.
+
+Local Modifications (to be applied in this order):
+- Dropped POSIX configuration (patches/remove-posix-option.patch)
+- Support for Windows (patches/re2-msvc9-chrome.patch)
+- Remove valgrind specific code that exists in chromium already
+  (patches/remove-valgrind-code.patch)
+- Fix an implicit conversion from NULL to false
+  (patches/fix-implicit-conversion.patch)
+- Support Android (re2-android.patch)

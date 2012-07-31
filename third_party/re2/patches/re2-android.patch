@@ -1,0 +1,53 @@
+diff -r cae1910ce3c5 re2/parse.cc
+--- a/re2/parse.cc	Mon Jul 30 16:12:46 2012 +0200
++++ b/re2/parse.cc	Tue Jul 31 14:12:31 2012 +0200
+@@ -16,6 +16,8 @@
+ // and recognizes the Perl escape sequences \d, \s, \w, \D, \S, and \W.
+ // See regexp.h for rationale.
+ 
++#include <ctype.h>
++
+ #include "util/util.h"
+ #include "re2/regexp.h"
+ #include "re2/stringpiece.h"
+diff -r cae1910ce3c5 re2/re2.cc
+--- a/re2/re2.cc	Mon Jul 30 16:12:46 2012 +0200
++++ b/re2/re2.cc	Tue Jul 31 14:12:31 2012 +0200
+@@ -9,6 +9,8 @@
+ 
+ #include "re2/re2.h"
+ 
++#include <ctype.h>
++
+ #include <stdio.h>
+ #include <string>
+ #ifdef WIN32
+diff -r cae1910ce3c5 util/util.h
+--- a/util/util.h	Mon Jul 30 16:12:46 2012 +0200
++++ b/util/util.h	Tue Jul 31 14:12:31 2012 +0200
+@@ -28,6 +28,7 @@
+ #include <utility>
+ #include <set>
+ 
++#include "build/build_config.h"
+ #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+ 
+ // Use std names.
+@@ -44,7 +45,7 @@
+ using std::swap;
+ using std::make_pair;
+ 
+-#if defined(__GNUC__) && !defined(USE_CXX0X)
++#if defined(__GNUC__) && !defined(USE_CXX0X) && !defined(OS_ANDROID)
+ 
+ #include <tr1/unordered_set>
+ using std::tr1::unordered_set;
+@@ -52,7 +53,7 @@
+ #else
+ 
+ #include <unordered_set>
+-#ifdef WIN32
++#if defined(WIN32) || defined(OS_ANDROID)
+ using std::tr1::unordered_set;
+ #else
+ using std::unordered_set;
