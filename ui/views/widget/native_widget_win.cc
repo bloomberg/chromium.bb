@@ -1712,8 +1712,10 @@ LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
   if (IsActive())
     delegate_->EnableInactiveRendering();
 
-  // Avoid DefWindowProc non-client rendering over our custom frame.
-  if (!GetWidget()->ShouldUseNativeFrame()) {
+  // Avoid DefWindowProc non-client rendering over our custom frame on newer
+  // Windows versions only (breaks taskbar activation indication on XP/Vista).
+  if (!GetWidget()->ShouldUseNativeFrame() &&
+      base::win::GetVersion() > base::win::VERSION_VISTA) {
     SetMsgHandled(TRUE);
     return TRUE;
   }
