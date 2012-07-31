@@ -204,7 +204,7 @@ main() {
   cleanup
 }
 
-if [[ ${#} < 4 || ${#} > 5 ]]; then
+if [[ ${#} < 4 ]]; then
   usage
   exit 1
 fi
