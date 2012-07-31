@@ -37,6 +37,7 @@ const wchar_t kD3D9ModuleName[] = L"d3d9.dll";
 const char kCreate3D9DeviceExName[] = "Direct3DCreate9Ex";
 
 const char kGpuBlitDelay[] = "gpu-blit-delay";
+const char kUseOcclusionQuery[] = "use-occlusion-query";
 
 struct Vertex {
   float x, y, z, w;
@@ -118,6 +119,10 @@ UINT GetPresentationInterval() {
     return D3DPRESENT_INTERVAL_IMMEDIATE;
   else
     return D3DPRESENT_INTERVAL_ONE;
+}
+
+bool UsingOcclusionQuery() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(kUseOcclusionQuery);
 }
 
 // Calculate the number necessary to transform |src_subrect| into |dst_size|
@@ -297,10 +302,18 @@ void PresentThread::ResetDevice() {
   if (FAILED(hr))
     return;
 
-  hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
-  if (FAILED(hr)) {
-    device_ = NULL;
-    return;
+  if (UsingOcclusionQuery()) {
+    hr = device_->CreateQuery(D3DQUERYTYPE_OCCLUSION, query_.Receive());
+    if (FAILED(hr)) {
+      device_ = NULL;
+      return;
+    }
+  } else {
+    hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
+    if (FAILED(hr)) {
+      device_ = NULL;
+      return;
+    }
   }
 
   base::win::ScopedComPtr<IDirect3DVertexShader9> vertex_shader;
@@ -800,6 +813,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
       { halfPixelX + 1, halfPixelY - 1, 0.5f, 1, 1, 0 },
       { halfPixelX - 1, halfPixelY - 1, 0.5f, 1, 0, 0 }
     };
+
+    if (UsingOcclusionQuery()) {
+      present_thread_->query()->Issue(D3DISSUE_BEGIN);
+    }
 
     present_thread_->device()->BeginScene();
     present_thread_->device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,
