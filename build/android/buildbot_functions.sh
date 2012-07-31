@@ -261,6 +261,14 @@ function bb_run_content_shell_test {
     "${SRC_ROOT}"/out/Release/content_shell/ContentShell-debug.apk
 }
 
+# Run content shell instrumentation test on device.
+function bb_run_content_shell_instrumentation_test {
+  echo "@@@BUILD_STEP Run content shell instrumentation test on actual "\
+       "hardware@@@"
+  build/android/run_instrumentation_tests.py -I \
+      --test-apk content_shell_test/ContentShellTest-debug -vvv
+}
+
 # Zip and archive a build.
 function bb_zip_build {
   echo "@@@BUILD_STEP Zip build@@@"
