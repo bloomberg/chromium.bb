@@ -100,6 +100,7 @@ void MemoryProgramCache::SaveLinkedProgram(
                      NULL,
                      &format,
                      binary.get());
+  UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.ProgramBinarySizeBytes", length);
 
   char a_sha[kHashLength];
   char b_sha[kHashLength];
@@ -112,6 +113,9 @@ void MemoryProgramCache::SaveLinkedProgram(
                      bind_attrib_location_map,
                      sha);
   const std::string sha_string(sha, sizeof(sha));
+
+  UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeBeforeKb",
+                       curr_size_bytes_ / 1024);
 
   if (store_.find(sha_string) != store_.end()) {
     const StoreMap::iterator found = store_.find(sha_string);
@@ -142,6 +146,10 @@ void MemoryProgramCache::SaveLinkedProgram(
                                              shader_b->uniform_map());
   curr_size_bytes_ += length;
   eviction_helper_.KeyUsed(sha_string);
+
+  UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
+                         curr_size_bytes_ / 1024);
+
   LinkedProgramCacheSuccess(sha_string,
                             std::string(a_sha, kHashLength),
                             std::string(b_sha, kHashLength));

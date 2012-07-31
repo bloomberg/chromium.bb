@@ -13,13 +13,17 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/program_cache.h"
+
+using base::TimeDelta;
 
 namespace gpu {
 namespace gles2 {
@@ -381,15 +385,26 @@ void ProgramManager::ProgramInfo::ExecuteBindAttribLocationCalls() {
 void ProgramManager::DoCompileShader(ShaderManager::ShaderInfo* info,
                                      ShaderTranslator* translator,
                                      FeatureInfo* feature_info) {
+  base::Time before = base::Time::Now();
   if (program_cache_ &&
       program_cache_->GetShaderCompilationStatus(info->source() ?
                                                  *info->source() : "") ==
           ProgramCache::COMPILATION_SUCCEEDED) {
     info->SetStatus(true, "", translator);
     info->FlagSourceAsCompiled(false);
+    HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheHitTime",
+                            (base::Time::Now() - before).InMicroseconds(),
+                            100,
+                            TimeDelta::FromSeconds(1).InMicroseconds(),
+                            50);
     return;
   }
   ForceCompileShader(info->source(), info, translator, feature_info);
+  HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheMissTime",
+                          (base::Time::Now() - before).InMicroseconds(),
+                          100,
+                          TimeDelta::FromSeconds(1).InMicroseconds(),
+                          50);
 }
 
 void ProgramManager::ForceCompileShader(const std::string* source,
@@ -467,6 +482,7 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
   }
   ExecuteBindAttribLocationCalls();
 
+  base::Time before_time = base::Time::Now();
   bool link = true;
   ProgramCache* cache = manager_->program_cache_;
   if (cache) {
@@ -482,6 +498,7 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
                   attached_shaders_[1],
                   &bind_attrib_location_map_);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
+      UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.LoadBinarySuccess", !link);
     }
 
     if (link) {
@@ -506,6 +523,7 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
   }
 
   if (link) {
+    before_time = base::Time::Now();
     if (cache && gfx::g_GL_ARB_get_program_binary) {
       glProgramParameteri(service_id(),
                           PROGRAM_BINARY_RETRIEVABLE_HINT,
@@ -523,6 +541,19 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
                                attached_shaders_[0],
                                attached_shaders_[1],
                                &bind_attrib_location_map_);
+      HISTOGRAM_CUSTOM_COUNTS(
+          "GPU.ProgramCache.BinaryCacheMissTime",
+          (base::Time::Now() - before_time).InMicroseconds(),
+          100,
+          TimeDelta::FromSeconds(1).InMicroseconds(),
+          50);
+    } else if (cache) {
+      HISTOGRAM_CUSTOM_COUNTS(
+          "GPU.ProgramCache.BinaryCacheHitTime",
+          (base::Time::Now() - before_time).InMicroseconds(),
+          100,
+          TimeDelta::FromSeconds(1).InMicroseconds(),
+          50);
     }
   } else {
     UpdateLogInfo();
