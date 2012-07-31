@@ -212,5 +212,10 @@ namespace experimental.bluetooth {
     // Fired when the power state of bluetooth on the system changes.
     // |powered| : True if bluetooth is powered, false otherwise.
     static void onPowerChanged(boolean has_power);
+
+    // Fired when the discovering state of the system changes.
+    // |discovering| : True if the system is currently in discovery mode, false
+    //                 otherwise.
+    static void onDiscoveringChanged(boolean discovering);
   };
 };

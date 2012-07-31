@@ -364,6 +364,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
   event_router()->AdapterPoweredChanged(mock_adapter_, false);
   event_router()->AdapterPresentChanged(mock_adapter_, true);
   event_router()->AdapterPresentChanged(mock_adapter_, false);
+  event_router()->AdapterDiscoveringChanged(mock_adapter_, true);
+  event_router()->AdapterDiscoveringChanged(mock_adapter_, false);
 
   listener.Reply("go");
 

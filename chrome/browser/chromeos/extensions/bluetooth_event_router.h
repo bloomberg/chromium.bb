@@ -43,6 +43,8 @@ class ExtensionBluetoothEventRouter
                                      bool present) OVERRIDE;
   virtual void AdapterPoweredChanged(chromeos::BluetoothAdapter* adapter,
                                      bool has_power) OVERRIDE;
+  virtual void AdapterDiscoveringChanged(chromeos::BluetoothAdapter* adapter,
+                                         bool discovering) OVERRIDE;
   virtual void DeviceAdded(chromeos::BluetoothAdapter* adapter,
                            chromeos::BluetoothDevice* device) OVERRIDE;
 

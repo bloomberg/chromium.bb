@@ -83,6 +83,14 @@ void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
       has_power);
 }
 
+void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
+    chromeos::BluetoothAdapter* adapter, bool discovering) {
+  DCHECK(adapter == adapter_.get());
+  DispatchBooleanValueEvent(
+      extensions::event_names::kBluetoothOnDiscoveringChanged,
+      discovering);
+}
+
 void ExtensionBluetoothEventRouter::DeviceAdded(
     chromeos::BluetoothAdapter* adapter, chromeos::BluetoothDevice* device) {
   if (!send_discovery_events_)
