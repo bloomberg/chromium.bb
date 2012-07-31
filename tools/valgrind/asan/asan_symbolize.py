@@ -11,15 +11,25 @@ import string
 import subprocess
 
 pipes = {}
+filetypes = {}
 vmaddrs = {}
+DEBUG=False
+
+def fix_filename(file_name):
+  for path_to_cut in sys.argv[1:]:
+    file_name = re.sub(".*" + path_to_cut, "", file_name)
+  file_name = re.sub(".*asan_[a-z_]*.cc:[0-9]*", "_asan_rtl_", file_name)
+  file_name = re.sub(".*crtstuff.c:0", "???:0", file_name)
+  return file_name
 
 # TODO(glider): need some refactoring here
 def symbolize_addr2line(line):
   #0 0x7f6e35cf2e45  (/blah/foo.so+0x11fe45)
-  match = re.match('^( *#[0-9]+ *0x[0-9a-f]+) *\((.*)\+(0x[0-9a-f]+)\)', line)
+  match = re.match('^( *#([0-9]+) *0x[0-9a-f]+) *\((.*)\+(0x[0-9a-f]+)\)', line)
   if match:
-    binary = match.group(2)
-    addr = match.group(3)
+    frameno = match.group(2)
+    binary = match.group(3)
+    addr = match.group(4)
     if not pipes.has_key(binary):
       pipes[binary] = subprocess.Popen(["addr2line", "-f", "-e", binary],
                          stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -31,10 +41,7 @@ def symbolize_addr2line(line):
     except:
       function_name = ""
       file_name = ""
-    for path_to_cut in sys.argv[1:]:
-      file_name = re.sub(".*" + path_to_cut, "", file_name)
-    file_name = re.sub(".*asan_rtl.cc:[0-9]*", "_asan_rtl_", file_name)
-    file_name = re.sub(".*crtstuff.c:0", "???:0", file_name)
+    file_name = fix_filename(file_name)
 
     print match.group(1), "in", function_name, file_name
   else:
