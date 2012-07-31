@@ -251,6 +251,9 @@ namespace extension_misc {
   extern const char kAppStateCannotRun[];
   extern const char kAppStateReadyToRun[];
 
+  // The path part of the file system url used for media file systems.
+  extern const char kMediaFileSystemPathPart[];
+
   // Error indicating that the app notifications API is not accessible by split
   // mode extensions in incognito windows.
   extern const char kAppNotificationsIncognitoError[];

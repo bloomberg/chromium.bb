@@ -59,35 +59,27 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   const content::RenderProcessHost* rph = render_view_host()->GetProcess();
   chrome::MediaFileSystemRegistry* media_fs_registry =
       MediaFileSystemRegistry::GetInstance();
-  const std::vector<MediaFileSystemRegistry::MediaFSIDAndPath> filesystems =
-      media_fs_registry->GetMediaFileSystems(rph, *GetExtension());
+  const std::vector<MediaFileSystemRegistry::MediaFSInfo> filesystems =
+      media_fs_registry->GetMediaFileSystemsForExtension(rph, *GetExtension());
 
   const int child_id = rph->GetID();
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < filesystems.size(); i++) {
-    // TODO(thestig) Check permissions to file systems when that capability
-    // exists.
-    const MediaFileSystemRegistry::MediaFSIDAndPath& fsid_and_path =
-        filesystems[i];
-    const std::string& fsid = fsid_and_path.first;
-    const FilePath& path = fsid_and_path.second;
-
     base::DictionaryValue* dict_value = new base::DictionaryValue();
     dict_value->SetWithoutPathExpansion(
-        "fsid", Value::CreateStringValue(fsid));
+        "fsid", Value::CreateStringValue(filesystems[i].fsid));
     // The directory name is not exposed to the js layer.
     dict_value->SetWithoutPathExpansion(
-        "dirname", Value::CreateStringValue("_"));
+        "name", Value::CreateStringValue(filesystems[i].name));
     list->Append(dict_value);
-
 
     if (GetExtension()->HasAPIPermission(
             extensions::APIPermission::kMediaGalleriesRead)) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
-      if (!policy->CanReadFile(child_id, path))
-        policy->GrantReadFile(child_id, path);
-      policy->GrantReadFileSystem(child_id, fsid);
+      if (!policy->CanReadFile(child_id, filesystems[i].path))
+        policy->GrantReadFile(child_id, filesystems[i].path);
+      policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
     }
     // TODO(vandebo) Handle write permission.
   }

@@ -21,7 +21,7 @@ chromeHidden.registerCustomHook('mediaGalleries',
       result = [];
       for (var i = 0; i < response.length; i++) {
         result.push(mediaGalleriesNatives.GetMediaFileSystemObject(
-            response[i].fsid, response[i].dirname));
+            response[i].fsid, response[i].name));
       }
     }
     if (request.callback)

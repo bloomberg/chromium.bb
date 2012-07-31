@@ -140,6 +140,8 @@ const char kAppStateRunning[] = "running";
 const char kAppStateCannotRun[] = "cannot_run";
 const char kAppStateReadyToRun[] = "ready_to_run";
 
+const char kMediaFileSystemPathPart[] = "_";
+
 const char kAppNotificationsIncognitoError[] =
     "This API is not accessible by 'split' mode "
     "extensions in incognito windows.";

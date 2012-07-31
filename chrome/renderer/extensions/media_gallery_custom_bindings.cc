@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/stringprintf.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
@@ -47,8 +48,8 @@ v8::Handle<v8::Value> MediaGalleryCustomBindings::GetMediaFileSystemObject(
     NOTREACHED();
     return v8::Undefined();
   }
-  std::string dirname(*v8::String::Utf8Value(args[1]));
-  if (dirname.empty()) {
+  std::string name(*v8::String::Utf8Value(args[1]));
+  if (name.empty()) {
     NOTREACHED();
     return v8::Undefined();
   }
@@ -57,13 +58,11 @@ v8::Handle<v8::Value> MediaGalleryCustomBindings::GetMediaFileSystemObject(
   const GURL origin = GURL(webframe->document().securityOrigin().toString());
   const GURL root_url =
       fileapi::GetFileSystemRootURI(origin, fileapi::kFileSystemTypeIsolated);
-  const std::string fsname = fileapi::GetIsolatedFileSystemName(origin, fsid);
-  const std::string url = base::StringPrintf("%s%s/%s/",
-                                             root_url.spec().c_str(),
-                                             fsid.c_str(),
-                                             dirname.c_str());
+  const std::string url =
+      base::StringPrintf("%s%s/%s/", root_url.spec().c_str(), fsid.c_str(),
+                         extension_misc::kMediaFileSystemPathPart);
   return webframe->createFileSystem(WebKit::WebFileSystem::TypeIsolated,
-                                    WebKit::WebString::fromUTF8(fsname),
+                                    WebKit::WebString::fromUTF8(name),
                                     WebKit::WebString::fromUTF8(url));
 }
 

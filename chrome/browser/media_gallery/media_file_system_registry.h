@@ -39,15 +39,18 @@ class MediaFileSystemRegistry
     : public base::SystemMonitor::DevicesChangedObserver,
       public content::NotificationObserver {
  public:
-  // (Filesystem ID, path)
-  typedef std::pair<std::string, FilePath> MediaFSIDAndPath;
+  struct MediaFSInfo {
+    std::string name;
+    std::string fsid;
+    FilePath path;
+  };
 
   // The instance is lazily created per browser process.
   static MediaFileSystemRegistry* GetInstance();
 
   // Returns the list of media filesystem IDs and paths for a given RPH.
   // Called on the UI thread.
-  std::vector<MediaFSIDAndPath> GetMediaFileSystems(
+  std::vector<MediaFSInfo> GetMediaFileSystemsForExtension(
       const content::RenderProcessHost* rph,
       const extensions::Extension& extension);
 
