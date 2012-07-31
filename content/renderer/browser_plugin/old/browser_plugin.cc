@@ -12,7 +12,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "content/common/browser_plugin_messages.h"
+#include "content/common/old_browser_plugin_messages.h"
 #include "content/public/common/url_constants.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_channel_handle.h"
@@ -83,7 +83,7 @@ BrowserPlugin::BrowserPlugin(
   ParseSrcAttribute("", &src);
 
   if (!src.empty()) {
-    render_view->Send(new BrowserPluginHostMsg_NavigateFromEmbedder(
+    render_view->Send(new OldBrowserPluginHostMsg_NavigateFromEmbedder(
         render_view->GetRoutingID(),
         id_,
         frame->identifier(),
@@ -142,7 +142,7 @@ void BrowserPlugin::Replace(
   PP_Instance instance = new_plugin->instance()->pp_instance();
   ppapi::proxy::HostDispatcher* dispatcher =
       ppapi::proxy::HostDispatcher::GetForInstance(instance);
-  dispatcher->Send(new BrowserPluginMsg_GuestReady(instance, id_));
+  dispatcher->Send(new OldBrowserPluginMsg_GuestReady(instance, id_));
 
   // TODO(fsamuel): We should delay the swapping out of the current plugin
   // until after the guest's WebGraphicsContext3D has been initialized. That

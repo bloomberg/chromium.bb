@@ -5,8 +5,8 @@
 #include "content/renderer/browser_plugin/old/guest_to_embedder_channel.h"
 
 #include "base/process_util.h"
-#include "content/common/browser_plugin_messages.h"
 #include "content/common/child_process.h"
+#include "content/common/old_browser_plugin_messages.h"
 #include "content/renderer/browser_plugin/old/browser_plugin_channel_manager.h"
 #include "content/renderer/browser_plugin/old/browser_plugin_var_serialization_rules.h"
 #include "content/renderer/render_thread_impl.h"
@@ -56,7 +56,7 @@ bool GuestToEmbedderChannel::OnMessageReceived(const IPC::Message& message) {
                         OnHandleFilteredInputEvent)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPGraphics3D_ContextLost,
                         OnContextLost)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestReady,
+    IPC_MESSAGE_HANDLER(OldBrowserPluginMsg_GuestReady,
                         OnGuestReady)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -247,7 +247,7 @@ void GuestToEmbedderChannel::OnDidChangeView(
   if (render_view_instances_.find(instance) != render_view_instances_.end()) {
     RenderViewImpl* render_view = render_view_instances_[instance];
         render_view->Send(
-            new BrowserPluginHostMsg_ResizeGuest(
+            new OldBrowserPluginHostMsg_ResizeGuest(
                 render_view->GetRoutingID(),
                 new_data.rect.size.width,
                 new_data.rect.size.height));
@@ -278,7 +278,7 @@ void GuestToEmbedderChannel::OnHandleMessage(
 
   RenderViewImpl* render_view = it->second;
   render_view->Send(
-      new BrowserPluginHostMsg_NavigateFromGuest(
+      new OldBrowserPluginHostMsg_NavigateFromGuest(
           render_view->GetRoutingID(),
           instance,
           var->value()));

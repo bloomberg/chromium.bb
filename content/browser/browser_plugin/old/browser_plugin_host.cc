@@ -7,7 +7,7 @@
 #include "content/browser/browser_plugin/old/browser_plugin_host_helper.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/browser_plugin_messages.h"
+#include "content/common/old_browser_plugin_messages.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -58,14 +58,14 @@ void BrowserPluginHost::RegisterContainerInstance(
 
 bool BrowserPluginHost::TakeFocus(bool reverse) {
   embedder_render_process_host()->Send(
-      new BrowserPluginMsg_AdvanceFocus(instance_id(), reverse));
+      new OldBrowserPluginMsg_AdvanceFocus(instance_id(), reverse));
   return true;
 }
 
 bool BrowserPluginHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginHost, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateFromGuest,
+    IPC_MESSAGE_HANDLER(OldBrowserPluginHostMsg_NavigateFromGuest,
                         OnNavigateFromGuest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -137,7 +137,7 @@ void BrowserPluginHost::ConnectEmbedderToChannel(
   // Tell the BrowserPlugin in the embedder that we're done and that it can
   // begin using the guest renderer.
   embedder_render_process_host()->Send(
-      new BrowserPluginMsg_LoadGuest(
+      new OldBrowserPluginMsg_LoadGuest(
           instance_id(),
           render_view_host->GetProcess()->
               GetID(),

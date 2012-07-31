@@ -16,7 +16,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ui/gfx/size.h"
 
-#define IPC_MESSAGE_START BrowserPluginMsgStart
+#define IPC_MESSAGE_START OldBrowserPluginMsgStart
 
 // Browser plugin messages
 
@@ -26,7 +26,7 @@
 // A renderer sends this to the browser process when it wants to
 // create a browser plugin.  The browser will create a guest renderer process
 // if necessary.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateFromEmbedder,
+IPC_MESSAGE_ROUTED3(OldBrowserPluginHostMsg_NavigateFromEmbedder,
                     int /* plugin instance id*/,
                     long long /* frame id */,
                     std::string /* src */)
@@ -48,7 +48,7 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateFromEmbedder,
 //    PP_Instance identifier.
 // The purpose of this message is to tell the browser to map a PP_Instance
 // identifier to BrowserPlugin identifier.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_MapInstance,
+IPC_MESSAGE_ROUTED2(OldBrowserPluginHostMsg_MapInstance,
                     int /* container_id */,
                     PP_Instance /* instance */)
 
@@ -56,24 +56,24 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_MapInstance,
 // These messages are from the embedder render process to the guest render
 // process.
 
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestReady,
+IPC_MESSAGE_CONTROL2(OldBrowserPluginMsg_GuestReady,
                      PP_Instance /* instance */,
                      int /* embedder_container_id */)
 
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process
 
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_ConnectToChannel,
+IPC_MESSAGE_ROUTED1(OldBrowserPluginHostMsg_ConnectToChannel,
                     IPC::ChannelHandle /* handle */)
 
 // A embedder sends this message to the browser when it wants
 // to resize a guest plugin container so that the guest is relaid out
 // according to the new size.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ResizeGuest,
+IPC_MESSAGE_ROUTED2(OldBrowserPluginHostMsg_ResizeGuest,
                     int32, /* width */
                     int32  /* height */)
 
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_NavigateFromGuest,
+IPC_MESSAGE_ROUTED2(OldBrowserPluginHostMsg_NavigateFromGuest,
                     PP_Instance /* instance */,
                     std::string /* src */)
 
@@ -81,12 +81,12 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_NavigateFromGuest,
 // These messages are from the browser process to the embedder.
 
 // A guest instance is ready to be placed.
-IPC_MESSAGE_CONTROL3(BrowserPluginMsg_LoadGuest,
+IPC_MESSAGE_CONTROL3(OldBrowserPluginMsg_LoadGuest,
                      int /* instance_id */,
                      int /* guest_process_id */,
                      IPC::ChannelHandle /* channel_handle */)
 
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,
+IPC_MESSAGE_CONTROL2(OldBrowserPluginMsg_AdvanceFocus,
                      int /* instance_id */,
                      bool /* reverse */)
 

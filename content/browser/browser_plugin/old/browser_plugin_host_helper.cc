@@ -5,7 +5,7 @@
 #include "content/browser/browser_plugin/old/browser_plugin_host_helper.h"
 
 #include "content/browser/browser_plugin/old/browser_plugin_host.h"
-#include "content/common/browser_plugin_messages.h"
+#include "content/common/old_browser_plugin_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/gfx/size.h"
@@ -26,11 +26,11 @@ BrowserPluginHostHelper::~BrowserPluginHostHelper() {
 bool BrowserPluginHostHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginHostHelper, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ConnectToChannel,
+    IPC_MESSAGE_HANDLER(OldBrowserPluginHostMsg_ConnectToChannel,
                         OnConnectToChannel)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateFromEmbedder,
+    IPC_MESSAGE_HANDLER(OldBrowserPluginHostMsg_NavigateFromEmbedder,
                         OnNavigateGuestFromEmbedder)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
+    IPC_MESSAGE_HANDLER(OldBrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

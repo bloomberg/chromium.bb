@@ -101,7 +101,7 @@ enum IPCMessageStart {
   AccessibilityMsgStart,
   PrerenderMsgStart,
   ChromotingMsgStart,
-  BrowserPluginMsgStart,
+  OldBrowserPluginMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

@@ -5,7 +5,7 @@
 #include "content/renderer/browser_plugin/old/browser_plugin_channel_manager.h"
 
 #include "base/process_util.h"
-#include "content/common/browser_plugin_messages.h"
+#include "content/common/old_browser_plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/browser_plugin/old/browser_plugin.h"
 #include "content/renderer/browser_plugin/old/guest_to_embedder_channel.h"
@@ -90,7 +90,7 @@ void BrowserPluginChannelManager::ReportChannelToEmbedder(
          pending_guests_.end());
   pending_guests_[pending_guests_key] = render_view->AsWeakPtr();
   RenderThreadImpl::current()->Send(
-      new BrowserPluginHostMsg_ConnectToChannel(render_view->GetRoutingID(),
+      new OldBrowserPluginHostMsg_ConnectToChannel(render_view->GetRoutingID(),
           embedder_channel_handle));
 }
 
@@ -98,8 +98,8 @@ bool BrowserPluginChannelManager::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginChannelManager, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadGuest, OnLoadGuest)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
+    IPC_MESSAGE_HANDLER(OldBrowserPluginMsg_LoadGuest, OnLoadGuest)
+    IPC_MESSAGE_HANDLER(OldBrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

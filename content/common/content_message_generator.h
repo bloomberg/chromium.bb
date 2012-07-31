@@ -8,7 +8,6 @@
 
 #include "content/common/accessibility_messages.h"
 #include "content/common/appcache_messages.h"
-#include "content/common/browser_plugin_messages.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/desktop_notification_messages.h"
@@ -29,6 +28,7 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/common/mime_registry_messages.h"
+#include "content/common/old_browser_plugin_messages.h"
 #include "content/common/p2p_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/plugin_messages.h"
