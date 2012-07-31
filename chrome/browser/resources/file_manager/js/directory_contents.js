@@ -533,8 +533,7 @@ DirectoryContentsLocalSearch.prototype.scanDirectory_ = function(entry) {
 };
 
 /**
- * Empty.
+ * We get results for each directory in one go in scanDirectory_.
  */
 DirectoryContentsLocalSearch.prototype.readNextChunk = function() {
-  this.onCompleted();
 };
