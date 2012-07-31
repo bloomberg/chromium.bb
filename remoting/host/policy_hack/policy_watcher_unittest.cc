@@ -50,6 +50,11 @@ class PolicyWatcherTest : public testing::Test {
     nat_false_domain_full_.SetBoolean(PolicyWatcher::kNatPolicyName, false);
     nat_false_domain_full_.SetString(PolicyWatcher::kHostDomainPolicyName,
                                     kHostDomain);
+    SetDefaults(nat_true_domain_empty_others_default_);
+    nat_true_domain_empty_others_default_.SetBoolean(
+        PolicyWatcher::kNatPolicyName, true);
+    nat_true_domain_empty_others_default_.SetString(
+        PolicyWatcher::kHostDomainPolicyName, "");
   }
 
  protected:
@@ -85,11 +90,14 @@ class PolicyWatcherTest : public testing::Test {
   base::DictionaryValue nat_true_domain_full_;
   base::DictionaryValue nat_false_domain_empty_;
   base::DictionaryValue nat_false_domain_full_;
+  base::DictionaryValue nat_true_domain_empty_others_default_;
 
  private:
   void SetDefaults(base::DictionaryValue& dict) {
     dict.SetBoolean(PolicyWatcher::kNatPolicyName, true);
+    dict.SetBoolean(PolicyWatcher::kRequireTwoFactorPolicyName, false);
     dict.SetString(PolicyWatcher::kHostDomainPolicyName, "");
+    dict.SetString(PolicyWatcher::kTalkGadgetPolicyName, "chromoting");
   }
 };
 
@@ -221,7 +229,8 @@ TEST_F(PolicyWatcherTest, NatNoneThenFalseThenTrue) {
 TEST_F(PolicyWatcherTest, ChangeOneRepeatedlyThenTwo) {
   testing::InSequence sequence;
   EXPECT_CALL(mock_policy_callback_,
-              OnPolicyUpdatePtr(IsPolicies(&nat_true_domain_empty_)));
+              OnPolicyUpdatePtr(IsPolicies(
+                  &nat_true_domain_empty_others_default_)));
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&domain_full_)));
   EXPECT_CALL(mock_policy_callback_,

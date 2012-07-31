@@ -49,8 +49,14 @@ class PolicyWatcher {
   // The name of the NAT traversal policy.
   static const char kNatPolicyName[];
 
+  // The name of the policy for requiring 2-factor authentication.
+  static const char kRequireTwoFactorPolicyName[];
+
   // The name of the host domain policy.
   static const char kHostDomainPolicyName[];
+
+  // The name of the talkgadget policy.
+  static const char kTalkGadgetPolicyName[];
 
  protected:
   virtual void StartWatchingInternal() = 0;
