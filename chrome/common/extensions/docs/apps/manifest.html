@@ -952,9 +952,10 @@ direct access to non-sandboxed pages (it may communicate with them via
 <code>postMessage()</code>).</li>
 <li>
   <p>A sandboxed page is not subject to the
-  <a href="../extensions/contentSecurityPolicy.html">Content Security Policy (CSP)</a> used
-  by the rest of the app or extension (it has its own separate CSP value). This
-  means that, for example, it can use inline script and <code>eval</code>.</p>
+  <a href="../extensions/contentSecurityPolicy.html">Content Security Policy
+  (CSP)</a> used by the rest of the app or extension (it has its own separate
+  CSP value). This means that, for example, it can use inline script and
+  <code>eval</code>.</p>
   <p>For example, here's how to specify that two extension pages are to be
   served in a sandbox with a custom CSP:</p>
   <pre>{
@@ -991,7 +992,8 @@ that embeds them.
 <a href="sandboxingEval.html">"Using eval in Chrome Extensions. Safely."</a>
 goes into more detail about implementing a sandboxing workflow that enables use
 of libraries that would otherwise have issues executing under extension's
-<a href="../extensions/contentSecurityPolicy.html">default Content Security Policy</a>.
+<a href="../extensions/contentSecurityPolicy.html">default Content Security
+Policy</a>.
 </p>
 <p>
 Sandboxed page may only be specified when using
