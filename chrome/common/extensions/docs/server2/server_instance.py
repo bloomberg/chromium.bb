@@ -7,7 +7,7 @@ import mimetypes
 import os
 
 STATIC_DIR_PREFIX = 'docs/server2'
-DOCS_PREFIX = 'docs'
+DOCS_PATH = 'docs'
 
 class ServerInstance(object):
   """This class is used to hold a data source and fetcher for an instance of a
@@ -40,7 +40,7 @@ class ServerInstance(object):
       content = self._example_zipper.Create(path[:-len('.zip')])
       response.headers['content-type'] = mimetypes.types_map['.zip']
     elif path.startswith('examples/'):
-      content = self._cache.GetFromFile(DOCS_PREFIX + '/' + path)
+      content = self._cache.GetFromFile(DOCS_PATH + '/' + path)
       response.headers['content-type'] = 'text/plain'
     elif path.startswith('static/'):
       content = self._FetchStaticResource(path, response)

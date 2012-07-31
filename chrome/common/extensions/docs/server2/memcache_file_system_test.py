@@ -7,13 +7,13 @@ import os
 import unittest
 
 import appengine_memcache as memcache
-from in_memory_memcache import InMemoryMemcache
+from appengine_memcache import AppEngineMemcache
 from local_file_system import LocalFileSystem
 from memcache_file_system import MemcacheFileSystem
 
 class LocalFileSystemTest(unittest.TestCase):
   def setUp(self):
-    self._memcache = InMemoryMemcache()
+    self._memcache = AppEngineMemcache('')
     self._file_system = MemcacheFileSystem(
         LocalFileSystem(os.path.join('test_data', 'file_system')),
         self._memcache)

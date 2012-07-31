@@ -71,4 +71,4 @@ class APIDataSource(object):
             self._base_path + '/' + idl_path), path)
       except Exception as e:
         logging.warn(e)
-        return None
+        raise

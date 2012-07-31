@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from google.appengine.api import urlfetch
-
+from appengine_wrappers import urlfetch
 from future import Future
 
 class _AsyncFetchDelegate(object):

@@ -29,8 +29,7 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertEqual(expected, data_source['test_file'])
     self.assertEqual(expected, data_source['testFile'])
     self.assertEqual(expected, data_source['testFile.html'])
-
-    self.assertEqual(None, data_source['junk'])
+    self.assertRaises(OSError, data_source.get, 'junk')
 
 if __name__ == '__main__':
   unittest.main()

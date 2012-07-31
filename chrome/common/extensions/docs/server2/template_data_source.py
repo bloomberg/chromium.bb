@@ -123,5 +123,5 @@ class TemplateDataSource(object):
     try:
       return self._cache.GetFromFile(base_path + '/' + real_path)
     except Exception as e:
-      logging.warn(e)
+      logging.error(e)
       return None

@@ -46,7 +46,8 @@ class HandlebarDictGenerator(object):
     try:
       self._namespace = model.Namespace(clean_json, clean_json['namespace'])
     except Exception as e:
-      logging.info(e)
+      logging.error(e)
+      raise
 
   def _StripPrefix(self, name):
     if name.startswith(self._namespace.name + '.'):
@@ -84,7 +85,8 @@ class HandlebarDictGenerator(object):
         'properties': self._GenerateProperties(self._namespace.properties)
       }
     except Exception as e:
-      logging.info(e)
+      logging.error(e)
+      raise
 
   def _GenerateType(self, type_):
     type_dict = {

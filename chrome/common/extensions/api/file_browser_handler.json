@@ -61,7 +61,7 @@
                   "type": "string",
                   "description": "Suggested name for the file."
               }
-            } 
+            }
           },
           {
             "name": "callback",
@@ -80,6 +80,7 @@
                   "entry": {
                     "type": "object",
                     "constructor": "Entry",
+                    "additionalProperties": { "type": "any" },
                     "optional": true,
                     "description": "Selected file entry. It will be null if a file hasn't been selected."
                   }
