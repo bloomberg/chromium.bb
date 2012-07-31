@@ -841,7 +841,7 @@ void PrintPreviewHandler::OnPrintDialogShown() {
 }
 
 void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
-  SelectFileDialog::FileTypeInfo file_type_info;
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
 
@@ -856,10 +856,10 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
     GetStickySettings()->StoreSavePath(file_path);
   }
 
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(preview_web_contents())),
   select_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_SAVEAS_FILE,
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
       GetStickySettings()->save_path()->Append(default_filename),
       &file_type_info,

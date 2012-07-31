@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 
 class ExtensionDialog;
@@ -28,11 +28,11 @@ class SelectFilePolicy;
 // Shows a dialog box for selecting a file or a folder, using the
 // file manager extension implementation.
 class SelectFileDialogExtension
-    : public SelectFileDialog,
+    : public ui::SelectFileDialog,
       public ExtensionDialogObserver {
  public:
   static SelectFileDialogExtension* Create(
-      SelectFileDialog::Listener* listener,
+      ui::SelectFileDialog::Listener* listener,
       ui::SelectFilePolicy* policy);
 
   // BaseShellDialog implementation.

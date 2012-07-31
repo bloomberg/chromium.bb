@@ -8,9 +8,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -24,7 +24,7 @@ namespace options2 {
 
 // ChromeOS user image options page UI handler.
 class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
-                                    public SelectFileDialog::Listener,
+                                    public ui::SelectFileDialog::Listener,
                                     public TakePhotoDialog::Delegate,
                                     public ImageDecoder::Delegate {
  public:
@@ -104,7 +104,7 @@ class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
                               const SkBitmap& decoded_image) OVERRIDE;
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
 
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   // Previous user image from camera/file and its data URL.
   gfx::ImageSkia previous_image_;

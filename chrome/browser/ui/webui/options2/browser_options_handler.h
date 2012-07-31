@@ -13,8 +13,8 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/models/table_model_observer.h"
 
 #if defined(OS_CHROMEOS)
@@ -35,7 +35,7 @@ class BrowserOptionsHandler
     : public OptionsPageUIHandler,
       public CloudPrintSetupHandlerDelegate,
       public ProfileSyncServiceObserver,
-      public SelectFileDialog::Listener,
+      public ui::SelectFileDialog::Listener,
       public ShellIntegration::DefaultWebClientObserver,
 #if defined(OS_CHROMEOS)
       public chromeos::system::PointerDeviceObserver::Observer,
@@ -297,7 +297,7 @@ class BrowserOptionsHandler
   // True if the multiprofiles switch is enabled.
   bool multiprofile_;
 
-  scoped_refptr<SelectFileDialog> select_folder_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
 
 #if !defined(OS_CHROMEOS)
   BooleanPrefMember enable_metrics_recording_;

@@ -43,9 +43,9 @@ SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
     : content::WebContentsObserver(web_contents),
       callback_(callback) {
   if (g_should_prompt_for_filename) {
-    select_file_dialog_ = SelectFileDialog::Create(
+    select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
-    select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
+    select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     suggested_path.ReplaceExtension("mhtml"),
                                     NULL,

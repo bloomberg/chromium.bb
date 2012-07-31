@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
 #define CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
 
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "net/base/x509_certificate.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 namespace content {
 class WebContents;
 }
 
-void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
-                              SelectFileDialog::Type type,
+void ShowCertSelectFileDialog(ui::SelectFileDialog* select_file_dialog,
+                              ui::SelectFileDialog::Type type,
                               const FilePath& suggested_path,
                               gfx::NativeWindow parent,
                               void* params);

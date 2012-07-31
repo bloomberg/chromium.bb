@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 class FilePath;
 
@@ -239,29 +239,29 @@ class UpdateBookmarkFunction : public BookmarksFunction {
 };
 
 class BookmarksIOFunction : public BookmarksFunction,
-                            public SelectFileDialog::Listener {
+                            public ui::SelectFileDialog::Listener {
  public:
   BookmarksIOFunction();
 
   virtual void FileSelected(const FilePath& path, int index, void* params) = 0;
 
-  // SelectFileDialog::Listener:
+  // ui::SelectFileDialog::Listener:
   virtual void MultiFilesSelected(const std::vector<FilePath>& files,
                                   void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
-  void SelectFile(SelectFileDialog::Type type);
+  void SelectFile(ui::SelectFileDialog::Type type);
 
  protected:
   virtual ~BookmarksIOFunction();
 
  private:
   void ShowSelectFileDialog(
-      SelectFileDialog::Type type,
+      ui::SelectFileDialog::Type type,
       const FilePath& default_path);
 
  protected:
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 };
 
 class ImportBookmarksFunction : public BookmarksIOFunction {

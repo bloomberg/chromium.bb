@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
-#include "chrome/browser/ui/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
@@ -20,7 +20,7 @@ class MessageBoxView;
 // data directory. Provides the user a chance to pick a different directory.
 class UserDataDirDialogView : public views::DialogDelegate,
                               public MessageLoopForUI::Dispatcher,
-                              public SelectFileDialog::Listener {
+                              public ui::SelectFileDialog::Listener {
  public:
   explicit UserDataDirDialogView(const FilePath& user_data_dir);
   virtual ~UserDataDirDialogView();
@@ -53,7 +53,7 @@ class UserDataDirDialogView : public views::DialogDelegate,
   FilePath user_data_dir_;
 
   views::MessageBoxView* message_box_view_;
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   // Used to keep track of whether or not to block the message loop (still
   // waiting for the user to dismiss the dialog).

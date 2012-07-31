@@ -7,8 +7,8 @@
 
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -32,7 +32,7 @@ namespace options2 {
 
 // ChromeOS user image options page UI handler.
 class SetWallpaperOptionsHandler : public ::options2::OptionsPageUIHandler,
-                                   public SelectFileDialog::Listener,
+                                   public ui::SelectFileDialog::Listener,
                                    public WallpaperDelegate {
  public:
   SetWallpaperOptionsHandler();
@@ -83,7 +83,7 @@ class SetWallpaperOptionsHandler : public ::options2::OptionsPageUIHandler,
   gfx::NativeWindow GetBrowserWindow() const;
 
   // Shows a dialog box for selecting a file.
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   base::WeakPtrFactory<SetWallpaperOptionsHandler> weak_factory_;
 

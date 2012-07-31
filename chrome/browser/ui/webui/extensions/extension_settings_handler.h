@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -23,6 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 class ExtensionHost;
 class ExtensionService;
@@ -58,7 +58,7 @@ struct ExtensionPage {
 class ExtensionSettingsHandler : public content::WebUIMessageHandler,
                                  public content::NotificationObserver,
                                  public content::WebContentsObserver,
-                                 public SelectFileDialog::Listener,
+                                 public ui::SelectFileDialog::Listener,
                                  public ExtensionUninstallDialog::Delegate {
  public:
   ExtensionSettingsHandler();
@@ -182,7 +182,7 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   extensions::ManagementPolicy* management_policy_;
 
   // Used to pick the directory when loading an extension.
-  scoped_refptr<SelectFileDialog> load_extension_dialog_;
+  scoped_refptr<ui::SelectFileDialog> load_extension_dialog_;
 
   // Used to start the |load_extension_dialog_| in the last directory that was
   // loaded.

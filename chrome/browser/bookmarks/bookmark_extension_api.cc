@@ -848,7 +848,7 @@ BookmarksIOFunction::~BookmarksIOFunction() {
     select_file_dialog_->ListenerDestroyed();
 }
 
-void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
+void BookmarksIOFunction::SelectFile(ui::SelectFileDialog::Type type) {
   // GetDefaultFilepathForBookmarkExport() might have to touch the filesystem
   // (stat or access, for example), so this requires a thread with IO allowed.
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
@@ -860,10 +860,10 @@ void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
   // Pre-populating the filename field in case this is a SELECT_SAVEAS_FILE
   // dialog. If not, there is no filename field in the dialog box.
   FilePath default_path;
-  if (type == SelectFileDialog::SELECT_SAVEAS_FILE)
+  if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE)
     default_path = GetDefaultFilepathForBookmarkExport();
   else
-    DCHECK(type == SelectFileDialog::SELECT_OPEN_FILE);
+    DCHECK(type == ui::SelectFileDialog::SELECT_OPEN_FILE);
 
   // After getting the |default_path|, ask the UI to display the file dialog.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -871,7 +871,7 @@ void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
                  type, default_path));
 }
 
-void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,
+void BookmarksIOFunction::ShowSelectFileDialog(ui::SelectFileDialog::Type type,
                                                const FilePath& default_path) {
   // Balanced in one of the three callbacks of SelectFileDialog:
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
@@ -880,9 +880,9 @@ void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,
   WebContents* web_contents = dispatcher()->delegate()->
       GetAssociatedWebContents();
 
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents));
-  SelectFileDialog::FileTypeInfo file_type_info;
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
 
@@ -912,7 +912,7 @@ void BookmarksIOFunction::MultiFilesSelected(
 bool ImportBookmarksFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
-  SelectFile(SelectFileDialog::SELECT_OPEN_FILE);
+  SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE);
   return true;
 }
 
@@ -937,7 +937,7 @@ void ImportBookmarksFunction::FileSelected(const FilePath& path,
 }
 
 bool ExportBookmarksFunction::RunImpl() {
-  SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE);
+  SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE);
   return true;
 }
 

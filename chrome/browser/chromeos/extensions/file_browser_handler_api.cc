@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/api/file_browser_handler_internal.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,6 +28,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 using content::BrowserContext;
 using extensions::api::file_browser_handler_internal::FileEntryInfo;
@@ -49,7 +49,7 @@ const char kNoUserGestureError[] =
 // |OnFilePathSelected| method will be called with the result.
 // When |SelectFile| is called, the class instance takes ownership of itself.
 class FileSelectorImpl : public FileSelector,
-                         public SelectFileDialog::Listener {
+                         public ui::SelectFileDialog::Listener {
  public:
   explicit FileSelectorImpl(FileHandlerSelectFileFunction* function);
   virtual ~FileSelectorImpl() OVERRIDE;
@@ -65,7 +65,7 @@ class FileSelectorImpl : public FileSelector,
   virtual void set_function_for_test(
       FileHandlerSelectFileFunction* function) OVERRIDE;
 
-  // SelectFileDialog::Listener overrides.
+  // ui::SelectFileDialog::Listener overrides.
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;
@@ -78,7 +78,7 @@ class FileSelectorImpl : public FileSelector,
   void SendResponse(bool success, const FilePath& selected_path);
 
   // Dialog that is shown by selector.
-  scoped_refptr<SelectFileDialog> dialog_;
+  scoped_refptr<ui::SelectFileDialog> dialog_;
 
   // Extension function that uses the selector.
   scoped_refptr<FileHandlerSelectFileFunction> function_;
@@ -127,10 +127,10 @@ bool FileSelectorImpl::DoSelectFile(const FilePath& suggested_name,
   if (!tab_contents)
     return false;
 
-  dialog_ = SelectFileDialog::Create(
+  dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(tab_contents->web_contents()));
 
-  dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
+  dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       string16() /* dialog title*/, suggested_name,
       NULL /* allowed file types */, 0 /* file type index */,
       std::string() /* default file extension */,

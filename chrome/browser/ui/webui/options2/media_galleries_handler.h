@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERIES_HANDLER_H_
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 #include "content/public/browser/notification_observer.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 namespace options2 {
 
 // Handles messages related to adding or removing media galleries.
 class MediaGalleriesHandler : public OptionsPageUIHandler,
-                              public SelectFileDialog::Listener {
+                              public ui::SelectFileDialog::Listener {
  public:
   MediaGalleriesHandler();
   virtual ~MediaGalleriesHandler();

@@ -88,7 +88,7 @@ SavePackageFilePicker::SavePackageFilePicker(
       static_cast<SavePageType>(download_prefs->save_file_type()));
   DCHECK_NE(-1, file_type_index);
 
-  SelectFileDialog::FileTypeInfo file_type_info;
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
 
   // TODO(benjhayden): Merge the first branch with the second when all of the
   // platform-specific file selection dialog implementations fully support
@@ -157,9 +157,9 @@ SavePackageFilePicker::SavePackageFilePicker(
   }
 
   if (g_should_prompt_for_filename) {
-    select_file_dialog_ = SelectFileDialog::Create(
+    select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
-    select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
+    select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     suggested_path,
                                     &file_type_info,

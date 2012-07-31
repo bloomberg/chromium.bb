@@ -13,12 +13,12 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 #if defined(USE_AURA)
 // http://crbug.com/105200
@@ -31,7 +31,7 @@ using content::BrowserThread;
 
 namespace {
 
-class FileSelectionUser : public SelectFileDialog::Listener {
+class FileSelectionUser : public ui::SelectFileDialog::Listener {
  public:
   FileSelectionUser()
       : file_selection_initialisation_in_progress(false) {
@@ -44,14 +44,14 @@ class FileSelectionUser : public SelectFileDialog::Listener {
 
   void StartFileSelection() {
     CHECK(!select_file_dialog_.get());
-    select_file_dialog_ = SelectFileDialog::Create(
+    select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(NULL));
 
     const FilePath file_path;
     const string16 title=string16();
 
     file_selection_initialisation_in_progress = true;
-    select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
+    select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                     title,
                                     file_path,
                                     NULL,
@@ -62,7 +62,7 @@ class FileSelectionUser : public SelectFileDialog::Listener {
     file_selection_initialisation_in_progress = false;
   }
 
-  // SelectFileDialog::Listener implementation.
+  // ui::SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path,
                             int index, void* params){
     ASSERT_FALSE(file_selection_initialisation_in_progress);
@@ -77,7 +77,7 @@ class FileSelectionUser : public SelectFileDialog::Listener {
   }
 
  private:
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   bool file_selection_initialisation_in_progress;
 };

@@ -10,8 +10,8 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 class Browser;
 class Profile;
@@ -46,15 +46,15 @@ bool ConvertFileToRelativeFileSystemPath(Profile* profile,
 
 // Gets base file browser url for.
 GURL GetFileBrowserUrlWithParams(
-    SelectFileDialog::Type type,
+    ui::SelectFileDialog::Type type,
     const string16& title,
     const FilePath& default_virtual_path,
-    const SelectFileDialog::FileTypeInfo* file_types,
+    const ui::SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
     const FilePath::StringType& default_extension);
 
 // Get file dialog title string from its type.
-string16 GetTitleFromType(SelectFileDialog::Type type);
+string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 
 // Shows a freshly mounted removable drive.
 // If there is another File Browser instance open this call does nothing.

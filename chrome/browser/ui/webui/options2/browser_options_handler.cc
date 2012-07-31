@@ -1058,10 +1058,10 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
 void BrowserOptionsHandler::HandleSelectDownloadLocation(
     const ListValue* args) {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  select_folder_dialog_ = SelectFileDialog::Create(
+  select_folder_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_folder_dialog_->SelectFile(
-      SelectFileDialog::SELECT_FOLDER,
+      ui::SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE),
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
       NULL, 0, FILE_PATH_LITERAL(""),

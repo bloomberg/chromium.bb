@@ -18,7 +18,6 @@
 #include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
@@ -36,6 +35,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_channel.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -67,7 +67,7 @@ ChromeWebUIDataSource* CreateTracingHTMLSource() {
 // this class's methods are expected to run on the UI thread.
 class TracingMessageHandler
     : public WebUIMessageHandler,
-      public SelectFileDialog::Listener,
+      public ui::SelectFileDialog::Listener,
       public base::SupportsWeakPtr<TracingMessageHandler>,
       public content::TraceSubscriber,
       public content::GpuDataManagerObserver {
@@ -105,11 +105,11 @@ class TracingMessageHandler
 
  private:
   // The file dialog to select a file for loading or saving traces.
-  scoped_refptr<SelectFileDialog> select_trace_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_trace_file_dialog_;
 
   // The type of the file dialog as the same one is used for loading or saving
   // traces.
-  SelectFileDialog::Type select_trace_file_dialog_type_;
+  ui::SelectFileDialog::Type select_trace_file_dialog_type_;
 
   // The trace data that is to be written to the file on saving.
   scoped_ptr<std::string> trace_data_to_save_;
@@ -164,10 +164,10 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
 ////////////////////////////////////////////////////////////////////////////////
 
 TracingMessageHandler::TracingMessageHandler()
-  : select_trace_file_dialog_type_(SelectFileDialog::SELECT_NONE),
-    trace_enabled_(false),
-    system_trace_in_progress_(false),
-    observing_(false) {
+    : select_trace_file_dialog_type_(ui::SelectFileDialog::SELECT_NONE),
+      trace_enabled_(false),
+      system_trace_in_progress_(false),
+      observing_(false) {
 }
 
 TracingMessageHandler::~TracingMessageHandler() {
@@ -331,7 +331,8 @@ void WriteTraceFileCallback(TaskProxy* proxy,
 
 void TracingMessageHandler::FileSelected(
     const FilePath& path, int index, void* params) {
-  if (select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE) {
+  if (select_trace_file_dialog_type_ ==
+      ui::SelectFileDialog::SELECT_OPEN_FILE) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&ReadTraceFileCallback,
@@ -349,7 +350,8 @@ void TracingMessageHandler::FileSelected(
 
 void TracingMessageHandler::FileSelectionCanceled(void* params) {
   select_trace_file_dialog_.release();
-  if (select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE) {
+  if (select_trace_file_dialog_type_ ==
+      ui::SelectFileDialog::SELECT_OPEN_FILE) {
     web_ui()->CallJavascriptFunction(
         "tracingController.onLoadTraceFileCanceled");
   } else {
@@ -362,11 +364,11 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
   // Only allow a single dialog at a time.
   if (select_trace_file_dialog_.get())
     return;
-  select_trace_file_dialog_type_ = SelectFileDialog::SELECT_OPEN_FILE;
-  select_trace_file_dialog_ = SelectFileDialog::Create(
+  select_trace_file_dialog_type_ = ui::SelectFileDialog::SELECT_OPEN_FILE;
+  select_trace_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_trace_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_OPEN_FILE,
+      ui::SelectFileDialog::SELECT_OPEN_FILE,
       string16(),
       FilePath(),
       NULL, 0, FILE_PATH_LITERAL(""),
@@ -411,11 +413,11 @@ void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
   DCHECK(ok);
   trace_data_to_save_.reset(trace_data);
 
-  select_trace_file_dialog_type_ = SelectFileDialog::SELECT_SAVEAS_FILE;
-  select_trace_file_dialog_ = SelectFileDialog::Create(
+  select_trace_file_dialog_type_ = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
+  select_trace_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_trace_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_SAVEAS_FILE,
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
       FilePath(),
       NULL, 0, FILE_PATH_LITERAL(""),

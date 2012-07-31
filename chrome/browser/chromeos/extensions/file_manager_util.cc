@@ -148,26 +148,26 @@ int UMAExtensionIndex(const char *file_extension,
 
 // Convert numeric dialog type to a string.
 std::string GetDialogTypeAsString(
-    SelectFileDialog::Type dialog_type) {
+    ui::SelectFileDialog::Type dialog_type) {
   std::string type_str;
   switch (dialog_type) {
-    case SelectFileDialog::SELECT_NONE:
+    case ui::SelectFileDialog::SELECT_NONE:
       type_str = "full-page";
       break;
 
-    case SelectFileDialog::SELECT_FOLDER:
+    case ui::SelectFileDialog::SELECT_FOLDER:
       type_str = "folder";
       break;
 
-    case SelectFileDialog::SELECT_SAVEAS_FILE:
+    case ui::SelectFileDialog::SELECT_SAVEAS_FILE:
       type_str = "saveas-file";
       break;
 
-    case SelectFileDialog::SELECT_OPEN_FILE:
+    case ui::SelectFileDialog::SELECT_OPEN_FILE:
       type_str = "open-file";
       break;
 
-    case SelectFileDialog::SELECT_OPEN_MULTI_FILE:
+    case ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE:
       type_str = "open-multi-file";
       break;
 
@@ -303,10 +303,10 @@ bool ConvertFileToRelativeFileSystemPath(
 }
 
 GURL GetFileBrowserUrlWithParams(
-    SelectFileDialog::Type type,
+    ui::SelectFileDialog::Type type,
     const string16& title,
     const FilePath& default_virtual_path,
-    const SelectFileDialog::FileTypeInfo* file_types,
+    const ui::SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
     const FilePath::StringType& default_extension) {
   DictionaryValue arg_value;
@@ -350,29 +350,29 @@ GURL GetFileBrowserUrlWithParams(
   return GURL(url);
 }
 
-string16 GetTitleFromType(SelectFileDialog::Type dialog_type) {
+string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
   string16 title;
   switch (dialog_type) {
-    case SelectFileDialog::SELECT_NONE:
+    case ui::SelectFileDialog::SELECT_NONE:
       // Full page file manager doesn't need a title.
       break;
 
-    case SelectFileDialog::SELECT_FOLDER:
+    case ui::SelectFileDialog::SELECT_FOLDER:
       title = l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_SELECT_FOLDER_TITLE);
       break;
 
-    case SelectFileDialog::SELECT_SAVEAS_FILE:
+    case ui::SelectFileDialog::SELECT_SAVEAS_FILE:
       title = l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_SELECT_SAVEAS_FILE_TITLE);
       break;
 
-    case SelectFileDialog::SELECT_OPEN_FILE:
+    case ui::SelectFileDialog::SELECT_OPEN_FILE:
       title = l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_SELECT_OPEN_FILE_TITLE);
       break;
 
-    case SelectFileDialog::SELECT_OPEN_MULTI_FILE:
+    case ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE:
       title = l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_SELECT_OPEN_MULTI_FILE_TITLE);
       break;

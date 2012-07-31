@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/certificate_manager_model.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 #include "net/base/cert_database.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_CHROMEOS)
@@ -26,9 +26,10 @@ namespace options2 {
 class CertIdMap;
 class FileAccessProvider;
 
-class CertificateManagerHandler : public OptionsPageUIHandler,
-    public CertificateManagerModel::Observer,
-    public SelectFileDialog::Listener {
+class CertificateManagerHandler
+    : public OptionsPageUIHandler,
+      public CertificateManagerModel::Observer,
+      public ui::SelectFileDialog::Listener {
  public:
   CertificateManagerHandler();
   virtual ~CertificateManagerHandler();
@@ -168,7 +169,7 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   bool use_hardware_backed_;
   std::string file_data_;
   net::CertificateList selected_cert_list_;
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   scoped_refptr<net::CryptoModule> module_;
 
   // Used in reading and writing certificate files.

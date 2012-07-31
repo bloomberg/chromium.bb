@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_PICKER_H_
 
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/ui/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 class FilePath;
 
@@ -17,7 +17,7 @@ class WebContents;
 }
 
 // Handles showing a dialog to the user to ask for the filename for a download.
-class DownloadFilePicker : public SelectFileDialog::Listener {
+class DownloadFilePicker : public ui::SelectFileDialog::Listener {
  public:
   DownloadFilePicker();
   virtual ~DownloadFilePicker();
@@ -59,7 +59,7 @@ class DownloadFilePicker : public SelectFileDialog::Listener {
   ChromeDownloadManagerDelegate::FileSelectedCallback file_selected_callback_;
 
   // For managing select file dialogs.
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFilePicker);
 };

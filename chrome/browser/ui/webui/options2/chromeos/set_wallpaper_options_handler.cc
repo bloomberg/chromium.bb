@@ -32,8 +32,8 @@ namespace options2 {
 namespace {
 
 // Returns info about extensions for files we support as wallpaper images.
-SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
-  SelectFileDialog::FileTypeInfo file_type_info;
+ui::SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(3);
 
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("jpg"));
@@ -184,7 +184,7 @@ void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
 
 void SetWallpaperOptionsHandler::HandleChooseFile(const ListValue* args) {
   DCHECK(args && args->empty());
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
 
   FilePath downloads_path;
@@ -192,10 +192,10 @@ void SetWallpaperOptionsHandler::HandleChooseFile(const ListValue* args) {
     NOTREACHED();
 
   // Static so we initialize it only once.
-  CR_DEFINE_STATIC_LOCAL(SelectFileDialog::FileTypeInfo, file_type_info,
+  CR_DEFINE_STATIC_LOCAL(ui::SelectFileDialog::FileTypeInfo, file_type_info,
       (GetUserImageFileTypeInfo()));
 
-  select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
+  select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                   l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE),
                                   downloads_path, &file_type_info, 0,
                                   FILE_PATH_LITERAL(""),

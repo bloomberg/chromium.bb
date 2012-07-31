@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_zoom.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
@@ -103,7 +103,7 @@ class Browser : public TabStripModelObserver,
                 public ZoomObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
-                public SelectFileDialog::Listener {
+                public ui::SelectFileDialog::Listener {
  public:
   // SessionService::WindowType mirrors these values.  If you add to this
   // enum, look at SessionService::WindowType to see if it needs to be
@@ -871,7 +871,7 @@ class Browser : public TabStripModelObserver,
   scoped_ptr<FindBarController> find_bar_controller_;
 
   // Dialog box used for opening and saving files.
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   // Keep track of the encoding auto detect pref.
   BooleanPrefMember encoding_auto_detect_;

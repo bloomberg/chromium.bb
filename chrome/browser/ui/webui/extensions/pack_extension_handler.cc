@@ -157,11 +157,11 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
   if (!args->GetString(1, &operation))
     NOTREACHED();
 
-  SelectFileDialog::Type type = SelectFileDialog::SELECT_FOLDER;
-  SelectFileDialog::FileTypeInfo info;
+  ui::SelectFileDialog::Type type = ui::SelectFileDialog::SELECT_FOLDER;
+  ui::SelectFileDialog::FileTypeInfo info;
   int file_type_index = 0;
   if (select_type == "file")
-    type = SelectFileDialog::SELECT_OPEN_FILE;
+    type = ui::SelectFileDialog::SELECT_OPEN_FILE;
 
   string16 select_title;
   if (operation == "load") {
@@ -180,7 +180,7 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
     NOTREACHED();
   }
 
-  load_extension_dialog_ = SelectFileDialog::Create(
+  load_extension_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   load_extension_dialog_->SelectFile(
       type, select_title, FilePath(), &info, file_type_index,

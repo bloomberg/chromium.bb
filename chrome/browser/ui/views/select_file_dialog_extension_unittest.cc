@@ -11,7 +11,7 @@
 class SelectFileDialogExtensionTest : public testing::Test {
  public:
   static SelectFileDialogExtension* CreateDialog(
-      SelectFileDialog::Listener* listener,
+      ui::SelectFileDialog::Listener* listener,
       int32 tab_id) {
     SelectFileDialogExtension* dialog = new SelectFileDialogExtension(listener,
                                                                       NULL);
@@ -25,7 +25,7 @@ class SelectFileDialogExtensionTest : public testing::Test {
 
 // Client of a FileManagerDialog that deletes itself whenever the dialog
 // is closed.
-class SelfDeletingClient : public SelectFileDialog::Listener {
+class SelfDeletingClient : public ui::SelectFileDialog::Listener {
  public:
   explicit SelfDeletingClient(int32 tab_id) {
     dialog_ = SelectFileDialogExtensionTest::CreateDialog(this, tab_id);
@@ -38,7 +38,7 @@ class SelfDeletingClient : public SelectFileDialog::Listener {
 
   SelectFileDialogExtension* dialog() const { return dialog_.get(); }
 
-  // SelectFileDialog::Listener implementation
+  // ui::SelectFileDialog::Listener implementation
   virtual void FileSelected(const FilePath& path,
                             int index, void* params) OVERRIDE {
     delete this;

@@ -3397,7 +3397,6 @@
         'browser/ui/search_engines/template_url_fetcher_ui_callbacks.h',
         'browser/ui/search_engines/template_url_table_model.cc',
         'browser/ui/search_engines/template_url_table_model.h',
-        'browser/ui/select_file_dialog.h',
         'browser/ui/simple_message_box.h',
         'browser/ui/singleton_tabs.cc',
         'browser/ui/singleton_tabs.h',

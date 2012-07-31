@@ -76,10 +76,10 @@ void MediaGalleriesHandler::OnGalleriesChanged() {
 }
 
 void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {
-  SelectFileDialog* dialog = SelectFileDialog::Create(
+  ui::SelectFileDialog* dialog = ui::SelectFileDialog::Create(
       this,
       new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
-  dialog->SelectFile(SelectFileDialog::SELECT_FOLDER,
+  dialog->SelectFile(ui::SelectFileDialog::SELECT_FOLDER,
                      string16(),  // TODO(estade): a name for the dialog?
                      FilePath(),
                      NULL, 0,

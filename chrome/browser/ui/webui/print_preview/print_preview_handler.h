@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "printing/print_job_constants.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 class FilePath;
 class PrintSystemTaskProxy;
@@ -39,7 +39,7 @@ class StickySettings;
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler : public content::WebUIMessageHandler,
                             public base::SupportsWeakPtr<PrintPreviewHandler>,
-                            public SelectFileDialog::Listener,
+                            public ui::SelectFileDialog::Listener,
                             public printing::PrintViewManagerObserver {
  public:
   PrintPreviewHandler();
@@ -195,7 +195,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   scoped_refptr<printing::PrintBackend> print_backend_;
 
   // The underlying dialog object.
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.

@@ -733,8 +733,9 @@ void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
       l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
 
   const int kFileTypeIndex = 0;  // No file type information to index.
-  const SelectFileDialog::Type kSelectType = SelectFileDialog::SELECT_FOLDER;
-  load_extension_dialog_ = SelectFileDialog::Create(
+  const ui::SelectFileDialog::Type kSelectType =
+      ui::SelectFileDialog::SELECT_FOLDER;
+  load_extension_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   load_extension_dialog_->SelectFile(
       kSelectType, select_title, last_unpacked_directory_, NULL,

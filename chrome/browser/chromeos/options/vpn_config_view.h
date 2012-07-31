@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"

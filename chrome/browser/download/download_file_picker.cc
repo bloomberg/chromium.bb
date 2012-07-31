@@ -70,9 +70,9 @@ void DownloadFilePicker::Init(
 
   DCHECK(download_manager_);
   WebContents* web_contents = item->GetWebContents();
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents));
-  SelectFileDialog::FileTypeInfo file_type_info;
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
   FilePath::StringType extension = suggested_path_.Extension();
   if (!extension.empty()) {
     extension.erase(extension.begin());  // drop the .
@@ -84,7 +84,7 @@ void DownloadFilePicker::Init(
       platform_util::GetTopLevel(web_contents->GetNativeView()) : NULL;
 
   select_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_SAVEAS_FILE,
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
       suggested_path_,
       &file_type_info,

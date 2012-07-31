@@ -17,8 +17,8 @@
 
 UserDataDirDialogView::UserDataDirDialogView(const FilePath& user_data_dir)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          select_file_dialog_(SelectFileDialog::Create(
-              this, new ChromeSelectFilePolicy(NULL)))),
+        select_file_dialog_(ui::SelectFileDialog::Create(
+            this, new ChromeSelectFilePolicy(NULL)))),
       is_blocking_(true) {
   const int kDialogWidth = 400;
   views::MessageBoxView::InitParams params(
@@ -61,7 +61,7 @@ bool UserDataDirDialogView::Accept() {
       IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON));
   HWND owning_hwnd =
       GetAncestor(message_box_view_->GetWidget()->GetNativeView(), GA_ROOT);
-  select_file_dialog_->SelectFile(SelectFileDialog::SELECT_FOLDER,
+  select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_FOLDER,
                                   dialog_title, FilePath(), NULL, 0,
                                   FilePath::StringType(), owning_hwnd, NULL);
   return false;

@@ -791,7 +791,7 @@ void Browser::OverrideEncoding(int encoding_id) {
 
 void Browser::OpenFile() {
   content::RecordAction(UserMetricsAction("OpenFile"));
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(
           chrome::GetActiveWebContents(this)));
 
@@ -799,7 +799,7 @@ void Browser::OpenFile() {
 
   // TODO(beng): figure out how to juggle this.
   gfx::NativeWindow parent_window = window_->GetNativeWindow();
-  select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
+  select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                   string16(), directory,
                                   NULL, 0, FILE_PATH_LITERAL(""),
                                   parent_window, NULL);
@@ -1755,7 +1755,7 @@ void Browser::OnZoomChanged(TabContents* source,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, SelectFileDialog::Listener implementation:
+// Browser, ui::SelectFileDialog::Listener implementation:
 
 void Browser::FileSelected(const FilePath& path, int index, void* params) {
   FileSelectedWithExtraInfo(ui::SelectedFileInfo(path, path), index, params);

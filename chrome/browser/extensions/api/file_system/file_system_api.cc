@@ -259,19 +259,19 @@ bool FileSystemIsWritableFileEntryFunction::RunImpl() {
 // Handles showing a dialog to the user to ask for the filename for a file to
 // save or open.
 class FileSystemChooseFileFunction::FilePicker
-    : public SelectFileDialog::Listener {
+    : public ui::SelectFileDialog::Listener {
  public:
   FilePicker(FileSystemChooseFileFunction* function,
              content::WebContents* web_contents,
              const FilePath& suggested_name,
-             SelectFileDialog::Type picker_type,
+             ui::SelectFileDialog::Type picker_type,
              EntryType entry_type)
       : suggested_name_(suggested_name),
         entry_type_(entry_type),
         function_(function) {
-    select_file_dialog_ = SelectFileDialog::Create(
+    select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
-    SelectFileDialog::FileTypeInfo file_type_info;
+    ui::SelectFileDialog::FileTypeInfo file_type_info;
     FilePath::StringType extension = suggested_name.Extension();
     if (!extension.empty()) {
       extension.erase(extension.begin());  // drop the .
@@ -326,7 +326,7 @@ class FileSystemChooseFileFunction::FilePicker
 
   EntryType entry_type_;
 
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   scoped_refptr<FileSystemChooseFileFunction> function_;
 
   DISALLOW_COPY_AND_ASSIGN(FilePicker);
@@ -334,7 +334,7 @@ class FileSystemChooseFileFunction::FilePicker
 
 bool FileSystemChooseFileFunction::ShowPicker(
     const FilePath& suggested_name,
-    SelectFileDialog::Type picker_type,
+    ui::SelectFileDialog::Type picker_type,
     EntryType entry_type) {
   ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
   DCHECK(registry);
@@ -396,7 +396,8 @@ bool FileSystemChooseFileFunction::RunImpl() {
 
   FilePath suggested_name;
   EntryType entry_type = READ_ONLY;
-  SelectFileDialog::Type picker_type = SelectFileDialog::SELECT_OPEN_FILE;
+  ui::SelectFileDialog::Type picker_type =
+      ui::SelectFileDialog::SELECT_OPEN_FILE;
 
   file_system::ChooseFileOptions* options = params->options.get();
   if (options) {
@@ -405,7 +406,7 @@ bool FileSystemChooseFileFunction::RunImpl() {
         entry_type = WRITABLE;
       } else if (*options->type == kSaveFileOption) {
         entry_type = WRITABLE;
-        picker_type = SelectFileDialog::SELECT_SAVEAS_FILE;
+        picker_type = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
       } else if (*options->type != kOpenFileOption) {
         error_ = kUnknownChooseFileType;
         return false;

@@ -579,16 +579,16 @@ void CertificateManagerHandler::ExportPersonal(const ListValue* args) {
 
   selected_cert_list_.push_back(cert);
 
-  SelectFileDialog::FileTypeInfo file_type_info;
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("p12"));
   file_type_info.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PKCS12_FILES));
   file_type_info.include_all_files = true;
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_SAVEAS_FILE, string16(),
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE, string16(),
       FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
       GetParentWindow(),
       reinterpret_cast<void*>(EXPORT_PERSONAL_FILE_SELECTED));
@@ -662,7 +662,7 @@ void CertificateManagerHandler::ExportPersonalFileWritten(int write_errno,
 }
 
 void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
-  SelectFileDialog::FileTypeInfo file_type_info;
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
   if (!args->GetBoolean(0, &use_hardware_backed_)) {
     // Unable to retrieve the hardware backed attribute from the args,
     // so bail.
@@ -675,10 +675,10 @@ void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
   file_type_info.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PKCS12_FILES));
   file_type_info.include_all_files = true;
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_OPEN_FILE, string16(),
+      ui::SelectFileDialog::SELECT_OPEN_FILE, string16(),
       FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
       GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_PERSONAL_FILE_SELECTED));
@@ -793,11 +793,11 @@ void CertificateManagerHandler::ImportExportCleanup() {
 }
 
 void CertificateManagerHandler::ImportServer(const ListValue* args) {
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   ShowCertSelectFileDialog(
       select_file_dialog_.get(),
-      SelectFileDialog::SELECT_OPEN_FILE,
+      ui::SelectFileDialog::SELECT_OPEN_FILE,
       FilePath(),
       GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_SERVER_FILE_SELECTED));
@@ -852,10 +852,10 @@ void CertificateManagerHandler::ImportServerFileRead(int read_errno,
 }
 
 void CertificateManagerHandler::ImportCA(const ListValue* args) {
-  select_file_dialog_ = SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   ShowCertSelectFileDialog(select_file_dialog_.get(),
-                           SelectFileDialog::SELECT_OPEN_FILE,
+                           ui::SelectFileDialog::SELECT_OPEN_FILE,
                            FilePath(),
                            GetParentWindow(),
                            reinterpret_cast<void*>(IMPORT_CA_FILE_SELECTED));

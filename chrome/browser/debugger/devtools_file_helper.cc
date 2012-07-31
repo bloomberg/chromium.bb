@@ -18,10 +18,10 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -34,12 +34,12 @@ base::LazyInstance<FilePath>::Leaky
 
 }  // namespace
 
-class DevToolsFileHelper::SaveAsDialog : public SelectFileDialog::Listener,
+class DevToolsFileHelper::SaveAsDialog : public ui::SelectFileDialog::Listener,
                                          public base::RefCounted<SaveAsDialog> {
  public:
   explicit SaveAsDialog(DevToolsFileHelper* helper)
       : helper_(helper) {
-    select_file_dialog_ = SelectFileDialog::Create(
+    select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(NULL));
   }
 
@@ -55,7 +55,7 @@ class DevToolsFileHelper::SaveAsDialog : public SelectFileDialog::Listener,
     url_ = url;
     content_ = content;
 
-    select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
+    select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     initial_path,
                                     NULL,
@@ -65,7 +65,7 @@ class DevToolsFileHelper::SaveAsDialog : public SelectFileDialog::Listener,
                                     NULL);
   }
 
-  // SelectFileDialog::Listener implementation.
+  // ui::SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path,
                             int index, void* params) {
     if (helper_)
@@ -87,7 +87,7 @@ class DevToolsFileHelper::SaveAsDialog : public SelectFileDialog::Listener,
   friend class base::RefCounted<SaveAsDialog>;
   virtual ~SaveAsDialog() {}
 
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   std::string url_;
   std::string content_;
   DevToolsFileHelper* helper_;

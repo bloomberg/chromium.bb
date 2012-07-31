@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/ui/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 namespace extensions {
 
@@ -78,7 +78,7 @@ class FileSystemChooseFileFunction : public FileSystemEntryFunction {
   virtual ~FileSystemChooseFileFunction() {}
   virtual bool RunImpl() OVERRIDE;
   bool ShowPicker(const FilePath& suggested_path,
-                  SelectFileDialog::Type picker_type,
+                  ui::SelectFileDialog::Type picker_type,
                   EntryType entry_type);
 
  private:
