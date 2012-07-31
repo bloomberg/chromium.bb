@@ -1017,7 +1017,7 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
                 CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 }
 
-TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
+TEST_F(HostContentSettingsMapTest, GetContentSetting) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
@@ -1038,6 +1038,37 @@ TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 embedder, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+}
+
+TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+
+  GURL http_host("http://example.com/");
+  GURL https_host("https://example.com/");
+  GURL embedder("chrome://foo");
+  GURL extension("chrome-extension://foo");
+  EXPECT_FALSE(host_content_settings_map->ShouldAllowAllContent(
+                   http_host, embedder, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_FALSE(host_content_settings_map->ShouldAllowAllContent(
+                   http_host, embedder, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(host_content_settings_map->ShouldAllowAllContent(
+                   http_host, embedder, CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_TRUE(host_content_settings_map->ShouldAllowAllContent(
+                  https_host, embedder, CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_TRUE(host_content_settings_map->ShouldAllowAllContent(
+                  https_host, embedder, CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_TRUE(host_content_settings_map->ShouldAllowAllContent(
+                  embedder, http_host, CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_TRUE(host_content_settings_map->ShouldAllowAllContent(
+                  extension, extension, CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_FALSE(host_content_settings_map->ShouldAllowAllContent(
+                   extension, extension, CONTENT_SETTINGS_TYPE_PLUGINS));
+  EXPECT_TRUE(host_content_settings_map->ShouldAllowAllContent(
+                  extension, extension, CONTENT_SETTINGS_TYPE_INTENTS));
+  EXPECT_FALSE(host_content_settings_map->ShouldAllowAllContent(
+                   extension, http_host, CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 TEST_F(HostContentSettingsMapTest, MigrateClearOnExit) {

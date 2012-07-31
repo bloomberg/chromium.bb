@@ -497,6 +497,11 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
       content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     return false;
   }
+  if (secondary_url.SchemeIs(chrome::kChromeUIScheme) &&
+      content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
+      primary_url.SchemeIsSecure()) {
+    return true;
+  }
   if (primary_url.SchemeIs(chrome::kExtensionScheme)) {
     return content_type != CONTENT_SETTINGS_TYPE_PLUGINS &&
         (content_type != CONTENT_SETTINGS_TYPE_COOKIES ||
