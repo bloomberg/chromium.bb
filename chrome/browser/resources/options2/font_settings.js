@@ -108,7 +108,7 @@ cr.define('options', function() {
      */
     standardFontSizeChanged_: function(el, value) {
       Preferences.setIntegerPref(
-        'webkit.webprefs.global.default_fixed_font_size',
+        'webkit.webprefs.default_fixed_font_size',
         value - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD, '');
     },
 
@@ -134,7 +134,7 @@ cr.define('options', function() {
      */
     minimumFontSizeChanged_: function(el, value) {
       Preferences.setIntegerPref(
-        'webkit.webprefs.global.minimum_logical_font_size', value, '');
+        'webkit.webprefs.minimum_logical_font_size', value, '');
     },
 
     /**
