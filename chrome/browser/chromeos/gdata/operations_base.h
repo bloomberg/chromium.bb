@@ -112,7 +112,7 @@ class UrlFetchOperationBase : public GDataOperationInterface,
 
   // Invoked by OnURLFetchComplete when the operation completes without an
   // authentication error. Must be implemented by a derived class.
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) = 0;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) = 0;
 
   // Invoked when it needs to notify the status. Chunked operations that
   // constructs a logically single operation from multiple physical operations
@@ -132,6 +132,9 @@ class UrlFetchOperationBase : public GDataOperationInterface,
 
   // Overridden from GDataOperationInterface.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
+
+  // Invoked when ProcessURLFetchResults() is completed.
+  void OnProcessURLFetchResultsComplete(bool result);
 
   // Returns an appropriate GDataErrorCode based on the HTTP response code and
   // the status of the URLFetcher.
@@ -163,7 +166,7 @@ class EntryActionOperation : public UrlFetchOperationBase {
 
  protected:
   // Overridden from UrlFetchOperationBase.
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   const GURL& document_url() const { return document_url_; }
@@ -186,15 +189,24 @@ class GetDataOperation : public UrlFetchOperationBase {
   virtual ~GetDataOperation();
 
   // Parse GData JSON response.
-  virtual base::Value* ParseResponse(const std::string& data);
+  virtual void ParseResponse(GDataErrorCode fetch_error_code,
+                             const std::string& data);
 
  protected:
   // Overridden from UrlFetchOperationBase.
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(
+      GDataErrorCode fetch_error_code) OVERRIDE;
+  void RunCallback(GDataErrorCode fetch_error_code,
+                   scoped_ptr<base::Value> value);
 
  private:
+  // Called when ParseJsonOnBlockingPool() is completed.
+  void OnDataParsed(gdata::GDataErrorCode fetch_error_code,
+                    scoped_ptr<base::Value>* value);
+
   GetDataCallback callback_;
+  base::WeakPtrFactory<GetDataOperation> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(GetDataOperation);
 };
 
