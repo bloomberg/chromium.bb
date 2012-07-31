@@ -52,6 +52,7 @@ std::string GpuFeatureTypeToString(content::GpuFeatureType feature);
 //    'flash_3d',
 //    'flash_stage3d',
 //    'texture_sharing'
+//    'video_decode'
 //
 // Each problems has:
 // {

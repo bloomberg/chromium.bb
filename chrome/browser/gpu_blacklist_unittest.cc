@@ -954,3 +954,32 @@ TEST_F(GpuBlacklistTest, MultipleGPUsSecondary) {
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 }
 
+TEST_F(GpuBlacklistTest, VideoDecode) {
+  const std::string video_decode_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"macosx\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x10de\",\n"
+      "      \"device_id\": [\"0x0640\"],\n"
+      "      \"blacklist\": [\n"
+      "        \"accelerated_video_decode\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  Version os_version("10.6.4");
+
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(
+      video_decode_json, GpuBlacklist::kAllOs));
+  GpuFeatureType type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsMacosx, &os_version, gpu_info());
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE);
+}
+

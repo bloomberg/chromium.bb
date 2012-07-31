@@ -40,6 +40,7 @@ const char kGpuFeatureNameMultisampling[] = "multisampling";
 const char kGpuFeatureNameFlash3d[] = "flash_3d";
 const char kGpuFeatureNameFlashStage3d[] = "flash_stage3d";
 const char kGpuFeatureNameTextureSharing[] = "texture_sharing";
+const char kGpuFeatureNameAcceleratedVideoDecode[] = "accelerated_video_decode";
 const char kGpuFeatureNameAll[] = "all";
 const char kGpuFeatureNameUnknown[] = "unknown";
 
@@ -258,6 +259,8 @@ GpuFeatureType StringToGpuFeatureType(const std::string& feature_string) {
     return content::GPU_FEATURE_TYPE_FLASH_STAGE3D;
   else if (feature_string == kGpuFeatureNameTextureSharing)
     return content::GPU_FEATURE_TYPE_TEXTURE_SHARING;
+  else if (feature_string == kGpuFeatureNameAcceleratedVideoDecode)
+    return content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE;
   else if (feature_string == kGpuFeatureNameAll)
     return content::GPU_FEATURE_TYPE_ALL;
   return content::GPU_FEATURE_TYPE_UNKNOWN;
@@ -371,6 +374,14 @@ Value* GetFeatureStatus() {
           "Sharing textures between processes has been disabled, either via"
           " about:flags or command line.",
           false
+      },
+      {
+          "video_decode",
+          flags & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE,
+          command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
+          "Accelerated video decode has been disabled, either via about:flags"
+          " or command line.",
+          true
       }
   };
   const size_t kNumFeatures = sizeof(kGpuFeatureInfo) / sizeof(GpuFeatureInfo);
