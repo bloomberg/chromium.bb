@@ -15,14 +15,47 @@
         "type": "object",
         "description": "A node (either a bookmark or a folder) in the bookmark tree.  Child nodes are ordered within their parent folder.",
         "properties": {
-          "id": {"type": "string", "minimum": 0, "description": "The unique identifier for the node. IDs are unique within the current profile, and they remain valid even after the browser is restarted."},
-          "parentId": {"type": "string", "minimum": 0, "optional": true, "description": "The <code>id</code> of the parent folder.  Omitted for the root node."},
-          "index": {"type": "integer", "optional": true, "description": "The 0-based position of this node within its parent folder."},
-          "url": {"type": "string", "optional": true, "description": "The URL navigated to when a user clicks the bookmark. Omitted for folders."},
-          "title": {"type": "string", "description": "The text displayed for the node."},
-          "dateAdded": {"type": "number", "optional": true, "description": "When this node was created, in milliseconds since the epoch (<code>new Date(dateAdded)</code>)."},
-          "dateGroupModified": {"type": "number", "optional": true, "description": "When the contents of this folder last changed, in milliseconds since the epoch."},
-          "children": {"type": "array", "optional": true, "items": {"$ref": "BookmarkTreeNode"}, "description": "An ordered list of children of this node."}
+          "id": {
+            "type": "string",
+            "minimum": 0,
+            "description": "The unique identifier for the node. IDs are unique within the current profile, and they remain valid even after the browser is restarted."
+          },
+          "parentId": {
+            "type": "string",
+            "minimum": 0,
+            "optional": true,
+            "description": "The <code>id</code> of the parent folder.  Omitted for the root node."
+          },
+          "index": {
+            "type": "integer",
+            "optional": true,
+            "description": "The 0-based position of this node within its parent folder."
+          },
+          "url": {
+            "type": "string",
+            "optional": true,
+            "description": "The URL navigated to when a user clicks the bookmark. Omitted for folders."
+          },
+          "title": {
+            "type": "string",
+            "description": "The text displayed for the node."
+          },
+          "dateAdded": {
+            "type": "number",
+            "optional": true,
+            "description": "When this node was created, in milliseconds since the epoch (<code>new Date(dateAdded)</code>)."
+          },
+          "dateGroupModified": {
+            "type": "number",
+            "optional": true,
+            "description": "When the contents of this folder last changed, in milliseconds since the epoch."
+          },
+          "children": {
+            "type": "array",
+            "optional": true,
+            "items": { "$ref": "BookmarkTreeNode" },
+            "description": "An ordered list of children of this node."
+          }
         }
       }
     ],
@@ -36,15 +69,29 @@
             "name": "idOrIdList",
             "description": "A single string-valued id, or an array of string-valued ids",
             "choices": [
-              {"type": "string"},
-              {"type": "array", "items": {"type": "string"}, "minItems": 1}
+              {
+                "type": "string",
+                "serialized_type": "int64"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "serialized_type": "int64"
+                },
+                "minItems": 1
+              }
             ]
           },
           {
             "type": "function",
             "name": "callback",
             "parameters": [
-              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+              {
+                "name": "results",
+                "type": "array",
+                "items": { "$ref": "BookmarkTreeNode" }
+              }
             ]
           }
         ]
@@ -54,12 +101,20 @@
         "type": "function",
         "description": "Retrieves the children of the specified BookmarkTreeNode id.",
         "parameters": [
-          {"type": "string", "name": "id"},
+          {
+            "type": "string",
+            "serialized_type": "int64",
+            "name": "id"
+          },
           {
             "type": "function",
             "name": "callback",
             "parameters": [
-              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+              {
+                "name": "results",
+                "type": "array",
+                "items": { "$ref": "BookmarkTreeNode"}
+              }
             ]
           }
         ]
@@ -79,7 +134,11 @@
             "type": "function",
             "name": "callback",
             "parameters": [
-              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+              {
+                "name": "results",
+                "type": "array",
+                "items": { "$ref": "BookmarkTreeNode" }
+              }
             ]
           }
         ]
@@ -93,7 +152,11 @@
             "type": "function",
             "name": "callback",
             "parameters": [
-              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+              {
+                "name": "results",
+                "type": "array",
+                "items": { "$ref": "BookmarkTreeNode" }
+              }
             ]
           }
         ]
@@ -105,6 +168,7 @@
         "parameters": [
           {
             "type": "string",
+            "serialized_type": "int64",
             "name": "id",
             "description": "The ID of the root of the subtree to retrieve."
           },
@@ -112,7 +176,11 @@
             "type": "function",
             "name": "callback",
             "parameters": [
-              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+              {
+                "name": "results",
+                "type": "array",
+                "items": { "$ref": "BookmarkTreeNode" }
+              }
             ]
           }
         ]
@@ -122,12 +190,19 @@
         "type": "function",
         "description": "Searches for BookmarkTreeNodes matching the given query.",
         "parameters": [
-          {"type": "string", "name": "query"},
+          {
+            "type": "string",
+            "name": "query"
+          },
           {
             "type": "function",
             "name": "callback",
             "parameters": [
-              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+              {
+                "name": "results",
+                "type": "array",
+                "items": { "$ref": "BookmarkTreeNode" }
+              }
             ]
           }
         ]
@@ -143,11 +218,23 @@
             "properties": {
               "parentId": {
                 "type": "string",
+                "serialized_type": "int64",
                 "optional": true,
-                "description": "Defaults to the Other Bookmarks folder."},
-              "index": {"type": "integer", "minimum": 0, "optional": true},
-              "title": {"type": "string", "optional": true},
-              "url": {"type": "string", "optional": true}
+                "description": "Defaults to the Other Bookmarks folder."
+              },
+              "index": {
+                "type": "integer",
+                "minimum": 0,
+                "optional": true
+              },
+              "title": {
+                "type": "string",
+                "optional": true
+              },
+              "url": {
+                "type": "string",
+                "optional": true
+              }
             }
           },
           {
@@ -155,7 +242,10 @@
             "name": "callback",
             "optional": true,
             "parameters": [
-              {"name": "result", "$ref": "BookmarkTreeNode" }
+              {
+                "name": "result",
+                "$ref": "BookmarkTreeNode"
+              }
             ]
           }
         ]
@@ -165,13 +255,24 @@
         "type": "function",
         "description": "Moves the specified BookmarkTreeNode to the provided location.",
         "parameters": [
-          {"type": "string", "name": "id"},
+          {
+            "type": "string",
+            "serialized_type": "int64",
+            "name": "id"
+          },
           {
             "type": "object",
             "name": "destination",
             "properties": {
-              "parentId": {"type": "string"},
-              "index": {"type": "integer", "minimum": 0, "optional": true}
+              "parentId": {
+                "type": "string",
+                "optional": true
+              },
+              "index": {
+                "type": "integer",
+                "minimum": 0,
+                "optional": true
+              }
             }
           },
           {
@@ -179,7 +280,10 @@
             "name": "callback",
             "optional": true,
             "parameters": [
-              {"name": "result", "$ref": "BookmarkTreeNode" }
+              {
+                "name": "result",
+                "$ref": "BookmarkTreeNode"
+              }
             ]
           }
         ]
@@ -189,13 +293,23 @@
         "type": "function",
         "description": "Updates the properties of a bookmark or folder. Specify only the properties that you want to change; unspecified properties will be left unchanged.  <b>Note:</b> Currently, only 'title' and 'url' are supported.",
         "parameters": [
-          {"type": "string", "name": "id"},
+          {
+            "type": "string",
+            "serialized_type": "int64",
+            "name": "id"
+          },
           {
             "type": "object",
             "name": "changes",
             "properties": {
-              "title": {"type": "string", "optional": true},
-              "url": {"type": "string", "optional": true}
+              "title": {
+                "type": "string",
+                "optional": true
+              },
+              "url": {
+                "type": "string",
+                "optional": true
+              }
             }
           },
           {
@@ -203,7 +317,10 @@
             "name": "callback",
             "optional": true,
             "parameters": [
-              {"name": "result", "$ref": "BookmarkTreeNode" }
+              {
+                "name": "result",
+                "$ref": "BookmarkTreeNode"
+              }
             ]
           }
         ]
@@ -213,8 +330,17 @@
         "type": "function",
         "description": "Removes a bookmark or an empty bookmark folder.",
         "parameters": [
-          {"type": "string", "name": "id"},
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+          {
+            "type": "string",
+            "serialized_type": "int64",
+            "name": "id"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
         ]
       },
       {
@@ -222,8 +348,17 @@
         "type": "function",
         "description": "Recursively removes a bookmark folder.",
         "parameters": [
-          {"type": "string", "name": "id"},
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+          {
+            "type": "string",
+            "serialized_type": "int64",
+            "name": "id"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
         ]
       },
       {
@@ -232,7 +367,12 @@
         "description": "Imports bookmarks from a chrome html bookmark file",
         "nodoc": "true",
         "parameters": [
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
         ]
       },
       {
@@ -241,7 +381,12 @@
         "description": "Exports bookmarks to a chrome html bookmark file",
         "nodoc": "true",
         "parameters": [
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
         ]
       }
     ],
@@ -251,7 +396,10 @@
         "type": "function",
         "description": "Fired when a bookmark or folder is created.",
         "parameters": [
-          {"type": "string", "name": "id"},
+          {
+            "type": "string",
+            "name": "id"
+          },
           {
             "$ref": "BookmarkTreeNode",
             "name": "bookmark"
@@ -263,7 +411,10 @@
         "type": "function",
         "description": "Fired when a bookmark or folder is removed.  When a folder is removed recursively, a single notification is fired for the folder, and none for its contents.",
         "parameters": [
-          {"type": "string", "name": "id"},
+          {
+            "type": "string",
+            "name": "id"
+          },
           {
             "type": "object",
             "name": "removeInfo",
@@ -279,13 +430,19 @@
         "type": "function",
         "description": "Fired when a bookmark or folder changes.  <b>Note:</b> Currently, only title and url changes trigger this.",
         "parameters": [
-          {"type": "string", "name": "id"},
+          {
+            "type": "string",
+            "name": "id"
+          },
           {
             "type": "object",
             "name": "changeInfo",
             "properties": {
-              "title": {"type": "string"},
-              "url": {"type": "string", "optional": true}
+              "title": { "type": "string" },
+              "url": {
+                "type": "string",
+                "optional": true
+              }
             }
           }
         ]
@@ -295,7 +452,10 @@
         "type": "function",
         "description": "Fired when a bookmark or folder is moved to a different parent folder.",
         "parameters": [
-          {"type": "string", "name": "id"},
+          {
+            "type": "string",
+            "name": "id"
+          },
           {
             "type": "object",
             "name": "moveInfo",
@@ -313,12 +473,18 @@
         "type": "function",
         "description": "Fired when the children of a folder have changed their order due to the order being sorted in the UI.  This is not called as a result of a move().",
         "parameters": [
-          {"type": "string", "name": "id"},
+          {
+            "type": "string",
+            "name": "id"
+          },
           {
             "type": "object",
             "name": "reorderInfo",
             "properties": {
-              "childIds": { "type": "array", "items": { "type": "string" } }
+              "childIds": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
             }
           }
         ]

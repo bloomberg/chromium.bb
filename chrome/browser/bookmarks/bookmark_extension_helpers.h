@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,28 +6,49 @@
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_HELPERS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/common/extensions/api/bookmarks.h"
 
 class BookmarkModel;
 class BookmarkNode;
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-}
 
 // Helper functions.
 namespace bookmark_extension_helpers {
 
 // The returned value is owned by the caller.
+extensions::api::bookmarks::BookmarkTreeNode* GetBookmarkTreeNode(
+    const BookmarkNode* node,
+    bool recurse,
+    bool only_folders);
+
+// TODO(mwrosen): Remove this function once chrome.experimental.bookmarkManager
+// is refactored to use the JSON schema compiler.
 base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
                                          bool recurse,
                                          bool only_folders);
 
-// Add a JSON representation of |node| to the JSON |list|.
-void AddNode(const BookmarkNode* node, base::ListValue* list, bool recurse);
+// Add a JSON representation of |node| to the JSON |nodes|.
+void AddNode(const BookmarkNode* node,
+             std::vector<linked_ptr<
+                 extensions::api::bookmarks::BookmarkTreeNode> >* nodes,
+             bool recurse);
 
+void AddNodeFoldersOnly(const BookmarkNode* node,
+                        std::vector<linked_ptr<
+                            extensions::api::bookmarks::BookmarkTreeNode> >*
+                                nodes,
+                        bool recurse);
+
+// TODO(mwrosen): Remove this function once chrome.experimental.bookmarkManager
+// is refactored to use the JSON schema compiler.
+void AddNode(const BookmarkNode* node,
+             base::ListValue* list,
+             bool recurse);
+
+// TODO(mwrosen): Remove this function once chrome.experimental.bookmarkManager
+// is refactored to use the JSON schema compiler.
 void AddNodeFoldersOnly(const BookmarkNode* node,
                         base::ListValue* list,
                         bool recurse);

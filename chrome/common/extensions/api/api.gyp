@@ -18,6 +18,7 @@
       'variables': {
         'chromium_code': 1,
         'json_schema_files': [
+          'bookmarks.json',
           'content_settings.json',
           'cookies.json',
           'debugger.json',
