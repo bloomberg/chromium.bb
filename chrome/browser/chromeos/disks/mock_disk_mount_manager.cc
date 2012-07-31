@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/disks/mock_disk_mount_manager.h"
 
+#include <utility>
+
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -173,8 +175,13 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
                                           true,  // has_media
                                           false,  // on_boot_device
                                           false);  // is_hidden
-  disks_.insert(std::pair<std::string, DiskMountManager::Disk*>(
-      std::string(mount_info.source_path), disk));
+  DiskMountManager::DiskMap::iterator it = disks_.find(mount_info.source_path);
+  if (it == disks_.end()) {
+    disks_.insert(std::make_pair(std::string(mount_info.source_path), disk));
+  } else {
+    delete it->second;
+    it->second = disk;
+  }
 }
 
 void MockDiskMountManager::RemoveDiskEntryForMountDevice(
@@ -186,9 +193,9 @@ void MockDiskMountManager::RemoveDiskEntryForMountDevice(
   }
 }
 
-void MockDiskMountManager::NotifyDiskChanged(DiskMountManagerEventType event,
-                                             const DiskMountManager::Disk* disk)
-{
+void MockDiskMountManager::NotifyDiskChanged(
+    DiskMountManagerEventType event,
+    const DiskMountManager::Disk* disk) {
   // Make sure we run on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
