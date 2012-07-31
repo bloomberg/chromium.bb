@@ -23,6 +23,11 @@ function FileTasks(fileManager, urls) {
 }
 
 /**
+* Location of the Chrome Web Store.
+*/
+FileTasks.CHROME_WEB_STORE_URL = 'https://chrome.google.com/webstore';
+
+/**
 * Location of the FAQ about the file actions.
 */
 FileTasks.NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
@@ -120,6 +125,7 @@ FileTasks.prototype.executeDefault_ = function() {
           filename = filename.substr(filename.lastIndexOf('/') + 1);
 
         var text = loadTimeData.getStringF('NO_ACTION_FOR_FILE',
+                                           FileTasks.CHROME_WEB_STORE_URL,
                                            FileTasks.NO_ACTION_FOR_FILE_URL);
         this.fileManager_.alert.showHtml(filename, text, function() {});
       }

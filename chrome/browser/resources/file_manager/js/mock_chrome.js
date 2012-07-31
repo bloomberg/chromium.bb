@@ -67,12 +67,17 @@ chrome.fileBrowserPrivate = {
   /**
    * View multiple files.
    */
-  viewFiles: function(selectedFiles) {
-    console.log('viewFiles called: ' + selectedFiles.length +
-                ' files selected');
-    for (var i = 0; i != selectedFiles.length; i++) {
-      window.open(selectedFiles[i]);
+  viewFiles: function(urls, actionId, callback) {
+    var success = true;
+    for (var i = 0; i != urls.length; i++) {
+      var url = urls[i];
+      if (!url.match(/\.(pdf|txt)$/i)) {
+        success = false;
+        break;
+      }
+      window.open(url);
     }
+    callback(success);
   },
 
   /**
@@ -588,7 +593,10 @@ chrome.fileBrowserPrivate = {
       OPEN_LABEL: 'Open',
       SAVE_LABEL: 'Save',
       OK_LABEL: 'OK',
-      NO_ACTION_FOR_FILE: "To view this file, convert it to a format that's viewable on the web. <a target='_blank' href='$1'>Learn More.</a>",
+      NO_ACTION_FOR_FILE: 'This file type is not supported. Please visit the ' +
+          '<a target=\'_blank\' href=\'$1\'>Chrome Web Store</a>' +
+          ' to find an app that can open this type of file.' +
+          ' <a target=\'_blank\' href=\'$2\'>Learn More.</a>',
 
       DEFAULT_NEW_FOLDER_NAME: 'New Folder',
       MORE_FILES: 'Show all files',
