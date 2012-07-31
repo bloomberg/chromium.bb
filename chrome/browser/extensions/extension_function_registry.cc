@@ -18,6 +18,9 @@
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
+#include "chrome/browser/extensions/api/identity/identity_api.h"
+#include "chrome/browser/extensions/api/i18n/i18n_api.h"
+#include "chrome/browser/extensions/api/idle/idle_api.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/metrics/metrics.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
@@ -36,8 +39,6 @@
 #include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/extension_font_settings_api.h"
-#include "chrome/browser/extensions/api/i18n/i18n_api.h"
-#include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
@@ -197,7 +198,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SearchHistoryFunction>();
 
   // Idle
-  RegisterFunction<ExtensionIdleQueryStateFunction>();
+  RegisterFunction<extensions::ExtensionIdleQueryStateFunction>();
 
   // I18N.
   RegisterFunction<GetAcceptLanguagesFunction>();

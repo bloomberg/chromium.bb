@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_idle_api.h"
+#include "chrome/browser/extensions/api/idle/idle_api.h"
 
 #include <algorithm>
 #include <map>
@@ -16,13 +16,17 @@
 #include "base/time.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_idle_api_constants.h"
+#include "chrome/browser/extensions/api/idle/idle_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
 
-namespace keys = extension_idle_api_constants;
+using extensions::ExtensionIdleCache;
+using extensions::ExtensionIdleEventRouter;
+using extensions::ExtensionIdleQueryStateFunction;
+
+namespace keys = extensions::idle_api_constants;
 
 namespace {
 
@@ -78,7 +82,8 @@ bool ExtensionIdlePollingTask::poll_task_running_ = false;
 void ExtensionIdlePollingTask::IdleStateCallback(IdleState current_state) {
   // If we just came into an active state, notify the extension.
   if (IDLE_STATE_ACTIVE == current_state && last_state_ != current_state)
-    ExtensionIdleEventRouter::OnIdleStateChange(profile_, current_state);
+    ExtensionIdleEventRouter::OnIdleStateChange(profile_,
+                                                            current_state);
 
   ExtensionIdlePollingTask::poll_task_running_ = false;
 
@@ -134,7 +139,7 @@ int CheckThresholdBounds(int timeout) {
   return timeout;
 }
 
-};  // namespace
+}  // namespace
 
 void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
                                                  IdleState state) {

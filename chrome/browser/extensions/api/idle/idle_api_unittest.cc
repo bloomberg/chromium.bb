@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <gtest/gtest.h>
 
-#include "chrome/browser/extensions/extension_idle_api.h"
+#include "chrome/browser/extensions/api/idle/idle_api.h"
+
+using extensions::ExtensionIdleCache;
 
 TEST(ExtensionIdleApiTest, CacheTest) {
   double throttle_interval = ExtensionIdleCache::get_throttle_interval();

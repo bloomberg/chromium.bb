@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_IDLE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_IDLE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_API_H_
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/idle.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 class Profile;
+
+FORWARD_DECLARE_TEST(ExtensionIdleApiTest, CacheTest);
+
+namespace extensions {
 
 // Event router class for events related to the idle API.
 class ExtensionIdleEventRouter {
@@ -41,7 +46,7 @@ class ExtensionIdleCache {
   static void UpdateCache(int threshold, IdleState state);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ExtensionIdleApiTest, CacheTest);
+  FRIEND_TEST_ALL_PREFIXES(::ExtensionIdleApiTest, CacheTest);
 
   struct CacheData {
     // Latest moment in history after which we are certain that there was some
@@ -80,4 +85,6 @@ class ExtensionIdleCache {
   static CacheData cached_data;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_IDLE_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_API_H_
