@@ -358,7 +358,12 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
 
   std::string error;
   dummy_extension_ = ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
-      parsed_manifest_.get(), id, localized_name_, "", &error);
+      parsed_manifest_.get(),
+      Extension::FROM_WEBSTORE,
+      id,
+      localized_name_,
+      "",
+      &error);
 
   if (!dummy_extension_) {
     OnWebstoreParseFailure(id_, WebstoreInstallHelper::Delegate::MANIFEST_ERROR,

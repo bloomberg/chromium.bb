@@ -232,6 +232,7 @@ const IssueAdviceInfoEntry& ExtensionInstallPrompt::Prompt::GetOAuthIssue(
 scoped_refptr<Extension>
     ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
     const DictionaryValue* manifest,
+    int flags,
     const std::string& id,
     const std::string& localized_name,
     const std::string& localized_description,
@@ -253,7 +254,7 @@ scoped_refptr<Extension>
       FilePath(),
       Extension::INTERNAL,
       localized_manifest.get() ? *localized_manifest.get() : *manifest,
-      Extension::NO_FLAGS,
+      flags,
       id,
       error);
 }

@@ -351,7 +351,12 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
                                       rating_count_);
   std::string error;
   dummy_extension_ = ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
-      manifest, id_, localized_name_, localized_description_, &error);
+      manifest,
+      Extension::REQUIRE_KEY | Extension::FROM_WEBSTORE,
+      id_,
+      localized_name_,
+      localized_description_,
+      &error);
   if (!dummy_extension_) {
     OnWebstoreParseFailure(id_, WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
                            kInvalidManifestError);

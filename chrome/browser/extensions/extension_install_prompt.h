@@ -159,6 +159,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // description with the localizations if provided.
   static scoped_refptr<extensions::Extension> GetLocalizedExtensionForDisplay(
       const base::DictionaryValue* manifest,
+      int flags,  // Extension::InitFromValueFlags
       const std::string& id,
       const std::string& localized_name,
       const std::string& localized_description,
