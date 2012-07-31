@@ -318,12 +318,27 @@ FingerViewController.prototype = {
               'color': '#ccc'});
     var lastEntry = null;
     var prevLastEntry = null;
+
+    var timeLimit = 1.0;  // seconds
+    // Compute final timestamp
+    var finalTimestamp = 0.0;
     var end = Math.min(this.end + 1, this.entries.length);
+    for (var i = (end - 1); i >= this.begin; i--) {
+      var entry = this.entries[i];
+      if (entry.type != 'hardwareState')
+        continue;
+      finalTimestamp = entry.timestamp;
+      break;
+    }
     for (var i = this.begin; i < end; i++) {
       var entry = this.entries[i];
       if (entry.type != 'hardwareState') {
         continue;
       }
+      if (finalTimestamp && entry.timestamp < (finalTimestamp - timeLimit)) {
+        continue;
+      }
+      var intensity = (finalTimestamp - entry.timestamp) / timeLimit;
       var buttonDown = entry.buttonsDown != 0;
       var newLast = {};
       var lines = [];
@@ -344,15 +359,21 @@ FingerViewController.prototype = {
                   'yPos': fingerState.positionY / yRes};
         if (trId in lastPosDict) {
           // Draw line from previous point to here
+          var i255 = finalTimestamp ? parseInt(intensity * 255) : 0;
           var line = {'start': lastPosDict[trId],
                       'end': pt,
                       'type': GraphController.LINE,
-                      'color': '#000'};
+                      'color':
+                      ['rgb(', i255, ',', i255, ',', i255, ')'].join('') };
           segs.push(line);
           lines.push(line);
         }
         newLast[trId] = pt;
         var color = '#ccc';
+        if (finalTimestamp) {
+          var i192 = parseInt(intensity * 192);
+          color = ['rgb(', i192, ',', i192, ',', i192, ')'].join('');
+        }
         var outPressure = fingerState.pressure *
             this.log.properties['Pressure Calibration Slope'] +
             this.log.properties['Pressure Calibration Offset'];

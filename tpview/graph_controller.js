@@ -183,6 +183,7 @@ GraphController.prototype = {
     //var radius = 'radius' in item ? item.radius : 3;
     ctx.arc(pt.xPos, pt.yPos, 3, 0, Math.PI * 2.0, true);
     if (item.label) {
+      ctx.fillStyle = item.color;
       ctx.fillText(item.label, pt.xPos, pt.yPos);
     }
     ctx.stroke();
