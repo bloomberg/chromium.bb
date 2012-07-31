@@ -118,8 +118,8 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 	else
 		c = 0xffffffff;
 
-	if (x < 2 || touch->width - 2 < x ||
-	    y < 2 || touch->height - 2 < y)
+	if (x < 2 || x >= touch->width - 2 ||
+	    y < 2 || y >= touch->height - 2)
 		return;
 
 	p = (uint32_t *) touch->data + (x - 2) + (y - 2) * touch->width;
