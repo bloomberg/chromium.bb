@@ -570,7 +570,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   prebuilts=False,
   useflags=official['useflags'] + ['pgo_generate'],
   hw_tests=['PGO_record'],
-  async_hw_tests=['pyauto_perf'],
+  async_hw_tests=[], # not very useful with pgo_generate turned on.
   upload_hw_test_artifacts=True,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
 )
