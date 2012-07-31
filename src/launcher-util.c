@@ -54,7 +54,7 @@ weston_launcher_open(struct weston_compositor *compositor,
 	struct weston_launcher_open *message;
 
 	if (sock == -1)
-		return open(path, flags);
+		return open(path, flags | O_CLOEXEC);
 
 	n = sizeof(*message) + strlen(path) + 1;
 	message = malloc(n);
