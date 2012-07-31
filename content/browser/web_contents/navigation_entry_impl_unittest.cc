@@ -185,6 +185,19 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_FALSE(entry2_.get()->GetIsOverridingUserAgent());
   entry2_.get()->SetIsOverridingUserAgent(true);
   EXPECT_TRUE(entry2_.get()->GetIsOverridingUserAgent());
+
+  // Browser initiated post data
+  EXPECT_EQ(NULL, entry1_.get()->GetBrowserInitiatedPostData());
+  EXPECT_EQ(NULL, entry2_.get()->GetBrowserInitiatedPostData());
+  const int length = 11;
+  const unsigned char* raw_data =
+      reinterpret_cast<const unsigned char*>("post\n\n\0data");
+  std::vector<unsigned char> post_data_vector(raw_data, raw_data+length);
+  scoped_refptr<base::RefCountedBytes> post_data =
+      base::RefCountedBytes::TakeVector(&post_data_vector);
+  entry2_.get()->SetBrowserInitiatedPostData(post_data.get());
+  EXPECT_EQ(post_data->front(),
+      entry2_.get()->GetBrowserInitiatedPostData()->front());
 }
 
 }  // namespace content

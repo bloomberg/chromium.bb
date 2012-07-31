@@ -212,6 +212,17 @@ int64 NavigationEntryImpl::GetPostID() const {
   return post_id_;
 }
 
+void NavigationEntryImpl::SetBrowserInitiatedPostData(
+    const base::RefCountedMemory* data) {
+  browser_initiated_post_data_ = data;
+}
+
+const base::RefCountedMemory*
+NavigationEntryImpl::GetBrowserInitiatedPostData() const {
+  return browser_initiated_post_data_.get();
+}
+
+
 const FaviconStatus& NavigationEntryImpl::GetFavicon() const {
   return favicon_;
 }

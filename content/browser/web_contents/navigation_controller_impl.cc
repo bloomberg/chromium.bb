@@ -653,6 +653,35 @@ void NavigationControllerImpl::LoadDataWithBaseURL(
   LoadEntry(entry);
 }
 
+void NavigationControllerImpl::PostURL(
+    const GURL& url,
+    const content::Referrer& referrer,
+    const base::RefCountedMemory& http_body,
+    bool is_overriding_user_agent) {
+  // Must be http scheme for a post request.
+  if (!url.SchemeIs(chrome::kHttpScheme) &&
+      !url.SchemeIs(chrome::kHttpsScheme)) {
+    NOTREACHED();
+    return;
+  }
+
+  needs_reload_ = false;
+
+  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+      CreateNavigationEntry(
+          url,
+          referrer,
+          content::PAGE_TRANSITION_TYPED,
+          false,
+          std::string(),
+          browser_context_));
+  entry->SetIsOverridingUserAgent(is_overriding_user_agent);
+  entry->SetHasPostData(true);
+  entry->SetBrowserInitiatedPostData(&http_body);
+
+  LoadEntry(entry);
+}
+
 void NavigationControllerImpl::DocumentLoadedInFrame() {
   last_document_loaded_ = base::TimeTicks::Now();
 }
@@ -729,6 +758,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NavigationEntryImpl* active_entry =
       NavigationEntryImpl::FromNavigationEntry(GetActiveEntry());
   active_entry->SetContentState(params.content_state);
+  // No longer needed since content state will hold the post data if any.
+  active_entry->SetBrowserInitiatedPostData(NULL);
+
 
   // Once committed, we do not need to track if the entry was initiated by
   // the renderer.

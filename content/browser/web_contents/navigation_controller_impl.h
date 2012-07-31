@@ -112,6 +112,10 @@ class CONTENT_EXPORT NavigationControllerImpl
       const GURL& base_url,
       const GURL& history_url,
       bool is_overriding_user_agent) OVERRIDE;
+  virtual void PostURL(const GURL& url,
+                       const content::Referrer& referrer,
+                       const base::RefCountedMemory& http_body,
+                       bool is_overriding_user_agent) OVERRIDE;
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.

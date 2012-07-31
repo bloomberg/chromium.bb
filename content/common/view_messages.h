@@ -693,6 +693,13 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
 
   // Whether or not the user agent override string should be used.
   IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
+
+  // True if this was a post request.
+  IPC_STRUCT_MEMBER(bool, is_post)
+
+  // If is_post is true, holds the post_data information from browser. Empty
+  // otherwise.
+  IPC_STRUCT_MEMBER(std::vector<unsigned char>, browser_initiated_post_data)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)

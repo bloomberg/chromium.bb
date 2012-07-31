@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_CONTROLLER_WEBVIEW_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_CONTROLLER_WEBVIEW_H_
 
+#include "base/memory/ref_counted_memory.h"
+
 class GURL;
 
 namespace content {
@@ -27,6 +29,12 @@ class NavigationControllerWebView {
                                    const GURL& base_url,
                                    const GURL& history_url,
                                    bool is_overriding_user_agent) = 0;
+
+  // Used to directly send a http post request with a raw http body provided.
+  virtual void PostURL(const GURL& url,
+                       const content::Referrer& referrer,
+                       const base::RefCountedMemory& http_body,
+                       bool is_overriding_user_agent) = 0;
 };
 
 }  // namespace content

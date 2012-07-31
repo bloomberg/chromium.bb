@@ -563,6 +563,31 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   contents()->SetDelegate(NULL);
 }
 
+// Test NavigationEntry is constructed correctly. No other logic tested.
+TEST_F(NavigationControllerTest, PostURL) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  const GURL url("http://foo1");
+
+  const int length = 5;
+  const unsigned char* raw_data =
+      reinterpret_cast<const unsigned char*>("d\n\0a2");
+  std::vector<unsigned char> post_data_vector(raw_data, raw_data+length);
+  scoped_refptr<base::RefCountedBytes> data =
+      base::RefCountedBytes::TakeVector(&post_data_vector);
+
+  controller.PostURL(url, content::Referrer(), *data.get(), true);
+
+  NavigationEntryImpl* post_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          controller.GetPendingEntry());
+
+  EXPECT_TRUE(post_entry);
+  EXPECT_TRUE(post_entry->GetHasPostData());
+  EXPECT_EQ(data->front(),
+      post_entry->GetBrowserInitiatedPostData()->front());
+}
+
 TEST_F(NavigationControllerTest, Reload) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;

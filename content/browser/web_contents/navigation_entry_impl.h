@@ -57,6 +57,10 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual bool GetHasPostData() const OVERRIDE;
   virtual void SetPostID(int64 post_id) OVERRIDE;
   virtual int64 GetPostID() const OVERRIDE;
+  virtual void SetBrowserInitiatedPostData(
+      const base::RefCountedMemory* data) OVERRIDE;
+  virtual const base::RefCountedMemory*
+      GetBrowserInitiatedPostData() const OVERRIDE;
   virtual const FaviconStatus& GetFavicon() const OVERRIDE;
   virtual FaviconStatus& GetFavicon() OVERRIDE;
   virtual const SSLStatus& GetSSL() const OVERRIDE;
@@ -185,7 +189,13 @@ class CONTENT_EXPORT NavigationEntryImpl
   GURL original_request_url_;
   bool is_overriding_user_agent_;
 
-  // This member is not persisted with sesssion restore.
+  // This member is not persisted with session restore because it is transient.
+  // If the post request succeeds, this field is cleared since the same
+  // information is stored in |content_state_| above. It is also only shallow
+  // copied with compiler provided copy constructor.
+  scoped_refptr<const base::RefCountedMemory> browser_initiated_post_data_;
+
+  // This member is not persisted with session restore.
   std::string extra_headers_;
 
   // Used for specifying base URL for pages loaded via data URLs. Not persisted.

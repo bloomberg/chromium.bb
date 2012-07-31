@@ -21,14 +21,18 @@
 #include "content/test/mock_keyboard.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/web_io_operators.h"
 
 #if defined(OS_LINUX) && !defined(USE_AURA)
@@ -298,6 +302,48 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
   ProcessPendingMessages();
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID));
+}
+
+TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
+  ViewMsg_Navigate_Params nav_params;
+
+  // An http url will trigger a resource load so cannot be used here.
+  nav_params.url = GURL("data:text/html,<div>Page</div>");
+  nav_params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+  nav_params.transition = content::PAGE_TRANSITION_TYPED;
+  nav_params.page_id = -1;
+  nav_params.is_post = true;
+
+  // Set up post data.
+  const unsigned char* raw_data = reinterpret_cast<const unsigned char*>(
+      "post \0\ndata");
+  const unsigned int length = 11;
+  const std::vector<unsigned char> post_data(raw_data, raw_data + length);
+  nav_params.browser_initiated_post_data = post_data;
+
+  view()->OnNavigate(nav_params);
+  ProcessPendingMessages();
+
+  const IPC::Message* frame_navigate_msg =
+      render_thread_->sink().GetUniqueMessageMatching(
+          ViewHostMsg_FrameNavigate::ID);
+  EXPECT_TRUE(frame_navigate_msg);
+
+  ViewHostMsg_FrameNavigate::Param host_nav_params;
+  ViewHostMsg_FrameNavigate::Read(frame_navigate_msg, &host_nav_params);
+  EXPECT_TRUE(host_nav_params.a.is_post);
+
+  // Check post data sent to browser matches
+  EXPECT_FALSE(host_nav_params.a.content_state.empty());
+  const WebKit::WebHistoryItem item = webkit_glue::HistoryItemFromString(
+      host_nav_params.a.content_state);
+  WebKit::WebHTTPBody body = item.httpBody();
+  WebKit::WebHTTPBody::Element element;
+  bool successful = body.elementAt(0, element);
+  EXPECT_TRUE(successful);
+  EXPECT_EQ(WebKit::WebHTTPBody::Element::TypeData, element.type);
+  EXPECT_EQ(length, element.data.size());
+  EXPECT_EQ(0, memcmp(raw_data, element.data.data(), length));
 }
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicy) {

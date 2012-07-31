@@ -236,6 +236,14 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   params->allow_download = !entry.IsViewSourceMode();
   params->embedder_channel_name = embedder_channel_name;
   params->embedder_container_id = embedder_container_id;
+  params->is_post = entry.GetHasPostData();
+  if(entry.GetBrowserInitiatedPostData()) {
+      params->browser_initiated_post_data.assign(
+          entry.GetBrowserInitiatedPostData()->front(),
+          entry.GetBrowserInitiatedPostData()->front() +
+              entry.GetBrowserInitiatedPostData()->size());
+
+  }
 
   if (delegate)
     delegate->AddNavigationHeaders(params->url, &params->extra_headers);

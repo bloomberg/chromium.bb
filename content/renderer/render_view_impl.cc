@@ -146,6 +146,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00Handler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00HandlerClient.h"
@@ -235,6 +236,7 @@ using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebHistoryItem;
+using WebKit::WebHTTPBody;
 using WebKit::WebIconURL;
 using WebKit::WebImage;
 using WebKit::WebInputElement;
@@ -1088,6 +1090,20 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
                                    WebString::fromUTF8(i.values()));
       }
     }
+
+    if (params.is_post) {
+      request.setHTTPMethod(WebString::fromUTF8("POST"));
+
+      // Set post data.
+      WebHTTPBody http_body;
+      http_body.initialize();
+      http_body.appendData(WebData(
+          reinterpret_cast<const char*>(
+              &params.browser_initiated_post_data.front()),
+          params.browser_initiated_post_data.size()));
+      request.setHTTPBody(http_body);
+    }
+
     main_frame->loadRequest(request);
   }
 
