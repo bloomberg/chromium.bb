@@ -226,23 +226,31 @@ cr.define('options', function() {
      * @private
      */
     layoutMirroringDisplays_: function() {
+      // Offset pixels for secondary display rectangles.
+      /** @const */ var MIRRORING_OFFSET_PIXELS = 2;
+      // Always show two displays because there must be two displays when
+      // the display_options is enabled.  Don't rely on displays_.length because
+      // there is only one display from chrome's perspective in mirror mode.
+      /** @const */ var MIN_NUM_DISPLAYS = 2;
+
       // The width/height should be same as the primary display:
       var width = this.displays_[0].width * VISUAL_SCALE;
       var height = this.displays_[0].height * VISUAL_SCALE;
 
-      this.displays_view_.style.height =
-        height + this.displays_.length * 2 + 'px';
+      var num_displays = Math.max(MIN_NUM_DISPLAYS, this.displays_.length);
 
-      for (var i = 0; i < this.displays_.length; i++) {
+      this.displays_view_.style.height =
+        height + num_displays * MIRRORING_OFFSET_PIXELS + 'px';
+
+      for (var i = 0; i < num_displays; i++) {
         var div = document.createElement('div');
-        this.displays_[i].div = div;
         div.className = 'displays-display';
-        div.style.top = i * 2 + 'px';
-        div.style.left = i * 2 + 'px';
+        div.style.top = i * MIRRORING_OFFSET_PIXELS + 'px';
+        div.style.left = i * MIRRORING_OFFSET_PIXELS + 'px';
         div.style.width = width + 'px';
         div.style.height = height + 'px';
         div.style.zIndex = i;
-        if (i == this.displays_.length - 1)
+        if (i == num_displays - 1)
           div.className += ' displays-primary';
         this.displays_view_.appendChild(div);
       }
@@ -329,9 +337,6 @@ cr.define('options', function() {
         this.focused_index_ = 1;
 
       this.displays_ = displays;
-
-      if (this.displays_.length <= 1)
-        return;
 
       this.resetDisplaysView_();
       if (this.mirroring_)

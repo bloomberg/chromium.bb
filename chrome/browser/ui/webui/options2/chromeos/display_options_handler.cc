@@ -84,13 +84,10 @@ void DisplayOptionsHandler::OnDisplayRemoved(const gfx::Display& old_display) {
 }
 
 void DisplayOptionsHandler::UpdateDisplaySectionVisibility() {
-  aura::DisplayManager* display_manager =
-      aura::Env::GetInstance()->display_manager();
   chromeos::OutputState output_state =
       ash::Shell::GetInstance()->output_configurator()->output_state();
   base::FundamentalValue show_options(
       DisplayController::IsExtendedDesktopEnabled() &&
-      display_manager->GetNumDisplays() > 1 &&
       output_state != chromeos::STATE_INVALID &&
       output_state != chromeos::STATE_HEADLESS &&
       output_state != chromeos::STATE_SINGLE);
