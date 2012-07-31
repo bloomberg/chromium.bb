@@ -483,8 +483,6 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
     return NULL;
   }
 
-  CHECK(handle);
-
   return handle;
 #endif
 }
