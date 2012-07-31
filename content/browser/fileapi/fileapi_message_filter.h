@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_util_proxy.h"
 #include "base/hash_tables.h"
 #include "base/id_map.h"
@@ -148,11 +148,17 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
                          const GURL& root);
   void DidCreateSnapshot(
       int request_id,
-      const GURL& blob_url,
+      const base::Callback<void(const FilePath&)>& register_file_callback,
       base::PlatformFileError result,
       const base::PlatformFileInfo& info,
       const FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+
+  // Registers the given file pointed by |virtual_path| and backed by
+  // |platform_path| as the |blob_url|.  Called by DidCreateSnapshot.
+  void RegisterFileAsBlob(const GURL& blob_url,
+                          const FilePath& virtual_path,
+                          const FilePath& platform_path);
 
   // Checks renderer's access permissions for single file.
   bool HasPermissionsForFile(const fileapi::FileSystemURL& url,

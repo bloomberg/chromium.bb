@@ -490,10 +490,13 @@ void FileAPIMessageFilter::OnCreateSnapshotFile(
     int request_id, const GURL& blob_url, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   FileSystemURL url(path);
+  base::Callback<void(const FilePath&)> register_file_callback =
+      base::Bind(&FileAPIMessageFilter::RegisterFileAsBlob,
+                 this, blob_url, url.path());
   GetNewOperation(url, request_id)->CreateSnapshotFile(
       url,
       base::Bind(&FileAPIMessageFilter::DidCreateSnapshot,
-                 this, request_id, blob_url));
+                 this, request_id, register_file_callback));
 }
 
 void FileAPIMessageFilter::OnStartBuildingBlob(const GURL& url) {
@@ -651,7 +654,7 @@ void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
 
 void FileAPIMessageFilter::DidCreateSnapshot(
     int request_id,
-    const GURL& blob_url,
+    const base::Callback<void(const FilePath&)>& register_file_callback,
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
     const FilePath& platform_path,
@@ -662,17 +665,27 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     return;
   }
 
-  FilePath::StringType extension = platform_path.Extension();
+  // Register the created file to the blob registry by calling
+  // RegisterFileAsBlob.
+  // Blob storage automatically finds and refs the file_ref, so we don't
+  // need to do anything for the returned file reference (|unused|) here.
+  register_file_callback.Run(platform_path);
+
+  // Return the file info and platform_path.
+  Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
+}
+
+void FileAPIMessageFilter::RegisterFileAsBlob(const GURL& blob_url,
+                                              const FilePath& virtual_path,
+                                              const FilePath& platform_path) {
+  // Use the virtual path's extension to determine MIME type.
+  FilePath::StringType extension = virtual_path.Extension();
   if (!extension.empty())
     extension = extension.substr(1);  // Strip leading ".".
 
   // This may fail, but then we'll be just setting the empty mime type.
   std::string mime_type;
   net::GetWellKnownMimeTypeFromExtension(extension, &mime_type);
-
-  // Register the created file to the blob registry.
-  // Blob storage automatically finds and refs the file_ref, so we don't
-  // need to do anything for the returned file reference (|unused|) here.
   BlobData::Item item;
   item.SetToFile(platform_path, 0, -1, base::Time());
   BlobStorageController* controller = blob_storage_context_->controller();
@@ -680,9 +693,6 @@ void FileAPIMessageFilter::DidCreateSnapshot(
   controller->AppendBlobDataItem(blob_url, item);
   controller->FinishBuildingBlob(blob_url, mime_type);
   blob_urls_.insert(blob_url.spec());
-
-  // Return the file info and platform_path.
-  Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
 }
 
 bool FileAPIMessageFilter::HasPermissionsForFile(
