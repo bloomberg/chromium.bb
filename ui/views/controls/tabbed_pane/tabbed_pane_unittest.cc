@@ -100,6 +100,12 @@ void TabbedPaneTest::TestSizeAndLayout(TabbedPane* tabbed_pane) {
   // If we switch to the other tab, it should get assigned the same bounds.
   tabbed_pane->SelectTabAt(1);
   EXPECT_EQ(bounds, child2->bounds());
+
+  // Clean up.
+  delete tabbed_pane->RemoveTabAtIndex(0);
+  EXPECT_EQ(1, tabbed_pane->GetTabCount());
+  delete tabbed_pane->RemoveTabAtIndex(0);
+  EXPECT_EQ(0, tabbed_pane->GetTabCount());
 }
 
 void TabbedPaneTest::TestAddRemove(TabbedPane* tabbed_pane) {
@@ -142,6 +148,13 @@ void TabbedPaneTest::TestAddRemove(TabbedPane* tabbed_pane) {
   // Remove the first one.
   delete tabbed_pane->RemoveTabAtIndex(0);
   EXPECT_EQ(0, tabbed_pane->GetSelectedTabIndex());
+
+  // Clean up the other panes.
+  EXPECT_EQ(3, tabbed_pane->GetTabCount());
+  delete tabbed_pane->RemoveTabAtIndex(0);
+  delete tabbed_pane->RemoveTabAtIndex(0);
+  delete tabbed_pane->RemoveTabAtIndex(0);
+  EXPECT_EQ(0, tabbed_pane->GetTabCount());
 }
 
 // Tests TabbedPane::GetPreferredSize() and TabbedPane::Layout().
@@ -167,4 +180,4 @@ TEST_F(TabbedPaneTest, AddRemove) {
 #endif
 }
 
-} // namespace views
+}  // namespace views
