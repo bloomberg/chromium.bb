@@ -11,6 +11,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "ui/base/layout.h"
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace chromeos {
 namespace options2 {
@@ -31,9 +36,10 @@ class UserImageSource : public ChromeURLDataManager::DataSource {
 
   // Returns PNG or GIF (when possible and if |is_image_animated| flag
   // is true) encoded image for user with specified email.  If there's
-  // no user with such email, returns the default image.
-  std::vector<unsigned char> GetUserImage(const std::string& email,
-                                          bool is_image_animated) const;
+  // no user with such email, returns the first default image.
+  base::RefCountedMemory* GetUserImage(const std::string& email,
+                                       bool is_image_animated,
+                                       ui::ScaleFactor scale_factor) const;
 
  private:
   virtual ~UserImageSource();

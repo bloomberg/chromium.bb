@@ -8,15 +8,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 
 namespace {
-
-// Resource ID of the image to use as stub image.
-const int kStubImageResourceID = IDR_PROFILE_PICTURE_LOADING;
 
 // Returns account name portion of an email.
 std::string GetUserName(const std::string& email) {
@@ -37,8 +32,6 @@ const char kGuestUser[] = "";
 
 User::User(const std::string& email)
     : email_(email),
-      user_image_(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          kDefaultImageResources[0])),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
       image_index_(kInvalidImageIndex),
       image_is_stub_(false) {
@@ -61,8 +54,7 @@ void User::SetImageURL(const GURL& image_url) {
 }
 
 void User::SetStubImage(int image_index) {
-  user_image_.SetImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      kStubImageResourceID));
+  user_image_ = UserImage();
   image_index_ = image_index;
   image_is_stub_ = true;
 }

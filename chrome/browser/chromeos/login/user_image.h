@@ -12,36 +12,35 @@
 
 namespace chromeos {
 
-// Wrapper class for bitmaps and raw images when it's necessary. Could
-// be used for storing profile images (including animated profile
-// images) and user wallpapers.
+// Wrapper class storing a still image and it's raw representation.  Could be
+// used for storing profile images (including animated profile images) and user
+// wallpapers.
 class UserImage {
  public:
+  // TODO(ivankr): replace with RefCountedMemory to prevent copying.
   typedef std::vector<unsigned char> RawImage;
 
-  // Constructs UserImage from bitmap. Should be used where only
-  // static image is needed (e.g. wallpapers).
+  // Create instance with an empty still frame and no raw data.
+  UserImage();
+
+  // Creates a new instance from a given still frame without any raw data.
   explicit UserImage(const gfx::ImageSkia& image);
 
-  // Constructs UserImage from raw image and bitmap that should
-  // represent single frame from that one. Can be used for wrapping
-  // animated images.
+  // Creates a new instance from a given still frame and raw representation.
+  // |raw_image| can be animated, in which case animated_image() will return the
+  // original |raw_image| and raw_image() will return the encoded representation
+  // of |image|.
   UserImage(const gfx::ImageSkia& image, const RawImage& raw_image);
 
   virtual ~UserImage();
 
-  // Replaces already stored image to new |image|. Note, that
-  // |raw_image| and |animated_image| will be reset after that
-  // operation.
-  void SetImage(const gfx::ImageSkia& image);
   const gfx::ImageSkia& image() const { return image_; }
 
-  // Returns true iff |image| argument of constructors or |SetImage|
-  // can be encoded as a bitmap.
+  // Optional raw representation of the still image.
   bool has_raw_image() const { return has_raw_image_; }
   const RawImage& raw_image() const { return raw_image_; }
 
-  // Returns true iff UserImage is constructed from animated image.
+  // Optional raw representation of the animated image.
   bool has_animated_image() const { return has_animated_image_; }
   const RawImage& animated_image() const { return animated_image_; }
 

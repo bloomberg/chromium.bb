@@ -23,12 +23,15 @@ bool IsAnimatedImage(const UserImage::RawImage& data) {
 
 }  // namespace
 
+UserImage::UserImage()
+    : has_raw_image_(false),
+      has_animated_image_(false) {
+}
+
 UserImage::UserImage(const gfx::ImageSkia& image)
     : image_(image),
       has_raw_image_(false),
       has_animated_image_(false) {
-  if (gfx::PNGCodec::EncodeBGRASkBitmap(image_, false, &raw_image_))
-    has_raw_image_ = true;
 }
 
 UserImage::UserImage(const gfx::ImageSkia& image,
@@ -39,25 +42,14 @@ UserImage::UserImage(const gfx::ImageSkia& image,
   if (IsAnimatedImage(raw_image)) {
     has_animated_image_ = true;
     animated_image_ = raw_image;
-  }
-  if (gfx::PNGCodec::EncodeBGRASkBitmap(image_, false, &raw_image_))
+    if (gfx::PNGCodec::EncodeBGRASkBitmap(image_, false, &raw_image_))
+      has_raw_image_ = true;
+  } else {
     has_raw_image_ = true;
+    raw_image_ = raw_image;
+  }
 }
 
 UserImage::~UserImage() {}
-
-void UserImage::SetImage(const gfx::ImageSkia& image) {
-  image_ = image;
-  if (gfx::PNGCodec::EncodeBGRASkBitmap(image_, false, &raw_image_)) {
-    has_raw_image_ = true;
-  } else {
-    has_raw_image_ = false;
-    RawImage().swap(raw_image_);  // Clear |raw_image_|.
-  }
-
-  has_animated_image_ = false;
-  if (!animated_image_.empty())
-    RawImage().swap(animated_image_);  // Clear |animated_image_|.
-}
 
 }  // namespace chromeos

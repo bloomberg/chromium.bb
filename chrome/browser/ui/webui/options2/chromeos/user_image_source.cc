@@ -7,7 +7,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/string_split.h"
+#include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/ui/webui/web_ui_util.cc"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_parse.h"
 #include "grit/theme_resources.h"
@@ -21,35 +23,35 @@ namespace {
 // non-animated version of user image should be returned.
 const char kKeyAnimated[] = "animated";
 
-// Extracts from user image request user email and type of requested
-// image (animated or non-animated). |path| is an user image request
-// and should look like "username@host?key1=value1&...&key_n=value_n".
-// So, "username@host" is stored into |email|. If a query part of
-// |path| contains "animated" key, |is_image_animated| is set to true,
-// otherwise |is_image_animated| is set to false. Doesn't change
-// arguments if email can't be parsed (for instance, in guest mode).
-void ParseRequest(const std::string& path,
+// Parses the user image URL, which looks like
+// "chrome://userimage/user@host?key1=value1&...&key_n=value_n@<scale>x",
+// to user email, optional parameters and scale factor.
+void ParseRequest(const GURL& url,
                   std::string* email,
-                  bool* is_image_animated) {
-  url_parse::Parsed parsed;
-  url_parse::ParseStandardURL(path.c_str(), path.size(), &parsed);
-  if (!parsed.username.is_valid() || !parsed.host.is_valid())
-    return;
+                  bool* is_image_animated,
+                  ui::ScaleFactor* scale_factor) {
+  DCHECK(url.is_valid());
 
-  DCHECK(email != NULL);
-  *email = path.substr(parsed.username.begin, parsed.username.len);
-  email->append("@");
-  email->append(path.substr(parsed.host.begin, parsed.host.len));
+  *email = url.path();
+  email->erase(0, 1);  // Strip initial slash.
 
-  if (!parsed.query.is_valid())
-    return;
+  // TODO(ivankr): when all chrome://userimage URLs have a valid @<scale>x,
+  // remove this and pass |email| instead of |&path| to ParsePathAndScale.
+  size_t pos = email->find('@');
+  if (pos != std::string::npos) {
+    pos = email->find('@', pos + 1);
+    if (pos != std::string::npos)
+      email->erase(pos);
+  }
+  std::string path;
+  web_ui_util::ParsePathAndScale(url, &path, scale_factor);
 
-  url_parse::Component query = parsed.query;
+  std::string url_spec = url.possibly_invalid_spec();
+  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
   url_parse::Component key, value;
-  DCHECK(is_image_animated != NULL);
   *is_image_animated = false;
-  while (ExtractQueryKeyValue(path.c_str(), &query, &key, &value)) {
-    if (path.substr(key.begin, key.len) == kKeyAnimated) {
+  while (ExtractQueryKeyValue(url_spec.c_str(), &query, &key, &value)) {
+    if (url_spec.substr(key.begin, key.len) == kKeyAnimated) {
       *is_image_animated = true;
       break;
     }
@@ -61,22 +63,26 @@ void ParseRequest(const std::string& path,
 namespace chromeos {
 namespace options2 {
 
-std::vector<unsigned char> UserImageSource::GetUserImage(
-    const std::string& email, bool is_image_animated) const {
+base::RefCountedMemory* UserImageSource::GetUserImage(
+    const std::string& email,
+    bool is_image_animated,
+    ui::ScaleFactor scale_factor) const {
   const chromeos::User* user = chromeos::UserManager::Get()->FindUser(email);
   if (user) {
-    if (user->has_animated_image() && is_image_animated)
-      return user->animated_image();
-    else if (user->has_raw_image())
-      return user->raw_image();
+    if (user->has_animated_image() && is_image_animated) {
+      return new base::RefCountedBytes(user->animated_image());
+    } else if (user->has_raw_image()) {
+      return new base::RefCountedBytes(user->raw_image());
+    } else if (user->has_default_image()) {
+      return ResourceBundle::GetSharedInstance().
+          LoadDataResourceBytes(kDefaultImageResources[user->image_index()],
+                                scale_factor);
+    } else {
+      NOTREACHED() << "User with custom image missing raw data";
+    }
   }
-  std::vector<unsigned char> user_image;
-  gfx::PNGCodec::EncodeBGRASkBitmap(
-      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGIN_DEFAULT_USER),
-      false,
-      &user_image);
-  return user_image;
+  return ResourceBundle::GetSharedInstance().
+      LoadDataResourceBytes(IDR_LOGIN_DEFAULT_USER, scale_factor);
 }
 
 UserImageSource::UserImageSource()
@@ -90,10 +96,11 @@ void UserImageSource::StartDataRequest(const std::string& path,
                                        int request_id) {
   std::string email;
   bool is_image_animated = false;
-  ParseRequest(path, &email, &is_image_animated);
-
-  std::vector<unsigned char> image = GetUserImage(email, is_image_animated);
-  SendResponse(request_id, new base::RefCountedBytes(image));
+  ui::ScaleFactor scale_factor;
+  GURL url(chrome::kChromeUIUserImageURL + path);
+  ParseRequest(url, &email, &is_image_animated, &scale_factor);
+  SendResponse(request_id,
+               GetUserImage(email, is_image_animated, scale_factor));
 }
 
 std::string UserImageSource::GetMimeType(const std::string& path) const {
@@ -101,7 +108,10 @@ std::string UserImageSource::GetMimeType(const std::string& path) const {
   // drag the image they get no extension.
   std::string email;
   bool is_image_animated = false;
-  ParseRequest(path, &email, &is_image_animated);
+  ui::ScaleFactor scale_factor;
+
+  GURL url(chrome::kChromeUIUserImageURL + path);
+  ParseRequest(url, &email, &is_image_animated, &scale_factor);
 
   if (is_image_animated) {
     const chromeos::User* user = chromeos::UserManager::Get()->FindUser(email);
