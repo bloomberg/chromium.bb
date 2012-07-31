@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/chrome_auth_private/chrome_auth_private_api.h"
+#include "chrome/browser/extensions/api/cloud_print_private/cloud_print_private_api.h"
 
 #include <string>
 #include "base/values.h"
@@ -19,13 +19,13 @@ bool test_mode = false;
 
 namespace extensions {
 
-SetCloudPrintCredentialsFunction::SetCloudPrintCredentialsFunction() {
+CloudPrintSetCredentialsFunction::CloudPrintSetCredentialsFunction() {
 }
 
-SetCloudPrintCredentialsFunction::~SetCloudPrintCredentialsFunction() {
+CloudPrintSetCredentialsFunction::~CloudPrintSetCredentialsFunction() {
 }
 
-bool SetCloudPrintCredentialsFunction::RunImpl() {
+bool CloudPrintSetCredentialsFunction::RunImpl() {
   std::string user_email;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &user_email));
   std::string robot_email;
@@ -46,7 +46,7 @@ bool SetCloudPrintCredentialsFunction::RunImpl() {
 }
 
 // static
-void SetCloudPrintCredentialsFunction::SetTestMode(bool test_mode_enabled) {
+void CloudPrintSetCredentialsFunction::SetTestMode(bool test_mode_enabled) {
   test_mode = test_mode_enabled;
 }
 

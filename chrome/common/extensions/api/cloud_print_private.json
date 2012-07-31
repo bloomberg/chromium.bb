@@ -4,11 +4,11 @@
 
 [
   {
-    "namespace": "chromeAuthPrivate",
+    "namespace": "cloudPrintPrivate",
     "nodoc": "true",
     "functions": [
       {
-        "name": "setCloudPrintCredentials",
+        "name": "setCredentials",
         "description": "Sets the login credentials for Cloud Print.",
         "type": "function",
         "parameters": [

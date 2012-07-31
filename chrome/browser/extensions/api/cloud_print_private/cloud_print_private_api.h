@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_CHROME_AUTH_PRIVATE_CHROME_AUTH_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_CHROME_AUTH_PRIVATE_CHROME_AUTH_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_CLOUD_PRINT_PRIVATE_CLOUD_PRINT_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_CLOUD_PRINT_PRIVATE_CLOUD_PRINT_PRIVATE_API_H_
 
 #include <string>
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace extensions {
 
-class SetCloudPrintCredentialsFunction : public AsyncExtensionFunction {
+class CloudPrintSetCredentialsFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("chromeAuthPrivate.setCloudPrintCredentials");
+  DECLARE_EXTENSION_FUNCTION_NAME("cloudPrintPrivate.setCredentials");
 
-  SetCloudPrintCredentialsFunction();
+  CloudPrintSetCredentialsFunction();
 
   // For use only in tests - sets a flag that can cause this function to not
   // actually set the credentials but instead simply reflect the passed in
@@ -22,7 +22,7 @@ class SetCloudPrintCredentialsFunction : public AsyncExtensionFunction {
   static void SetTestMode(bool test_mode_enabled);
 
  protected:
-  virtual ~SetCloudPrintCredentialsFunction();
+  virtual ~CloudPrintSetCredentialsFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -30,4 +30,4 @@ class SetCloudPrintCredentialsFunction : public AsyncExtensionFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_CHROME_AUTH_PRIVATE_CHROME_AUTH_PRIVATE_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_CLOUD_PRINT_PRIVATE_CLOUD_PRINT_PRIVATE_API_H_

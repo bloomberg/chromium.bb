@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/api/chrome_auth_private/chrome_auth_private_api.h"
+#include "chrome/browser/extensions/api/cloud_print_private/cloud_print_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,13 +12,13 @@
 #include "net/base/mock_host_resolver.h"
 
 // A base class for tests below.
-class ExtensionChromeAuthPrivateApiTest : public ExtensionApiTest {
+class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
  public:
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kCloudPrintServiceURL,
         "http://www.cloudprintapp.com/files/extensions/api_test/"
-        "chrome_auth_private");
+        "cloud_print_private");
   }
 
   void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -34,7 +34,7 @@ class ExtensionChromeAuthPrivateApiTest : public ExtensionApiTest {
    // flags.
   GURL GetTestServerURL(const std::string& path) {
     GURL url = test_server()->GetURL(
-        "files/extensions/api_test/chrome_auth_private/" + path);
+        "files/extensions/api_test/cloud_print_private/" + path);
 
     // Replace the host with 'www.cloudprintapp.com' so it matches the cloud
     // print app's extent.
@@ -46,15 +46,15 @@ class ExtensionChromeAuthPrivateApiTest : public ExtensionApiTest {
 };
 
 #if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(ExtensionChromeAuthPrivateApiTest,
-                       SetCloudPrintCredentialsSuccessHosted) {
+IN_PROC_BROWSER_TEST_F(ExtensionCloudPrintPrivateApiTest,
+                       CloudPrintSetCredentialsSuccessHosted) {
   // Run this as a hosted app. Since we have overridden the cloud print service
   // URL in the command line, this URL should match the web extent for our
   // cloud print component app and it should work.
-  extensions::SetCloudPrintCredentialsFunction::SetTestMode(true);
+  extensions::CloudPrintSetCredentialsFunction::SetTestMode(true);
   GURL page_url = GetTestServerURL(
       "enable_chrome_connector/cloud_print_success_tests.html");
   ASSERT_TRUE(RunPageTest(page_url.spec()));
-  extensions::SetCloudPrintCredentialsFunction::SetTestMode(false);
+  extensions::CloudPrintSetCredentialsFunction::SetTestMode(false);
 }
 #endif  // !defined(OS_CHROMEOS)

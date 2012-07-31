@@ -13,8 +13,8 @@
       <include name="IDR_EXTENSION_API_JSON_BOOKMARKS" file="extensions\api\bookmarks.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_BROWSERACTION" file="extensions\api\browser_action.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_BROWSINGDATA" file="extensions\api\browsing_data.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_CHROMEAUTHPRIVATE" file="extensions\api\chrome_auth_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CHROMEOSINFOPRIVATE" file="extensions\api\chromeos_info_private.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_CLOUDPRINTPRIVATE" file="extensions\api\cloud_print_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CONTENTSETTINGS" file="extensions\api\content_settings.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CONTEXTMENUS" file="extensions\api\context_menus.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_COOKIES" file="extensions\api\cookies.json" type="BINDATA" />

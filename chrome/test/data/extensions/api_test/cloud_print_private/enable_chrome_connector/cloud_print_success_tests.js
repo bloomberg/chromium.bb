@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@ var tests = [
     var userEmail = 'foo@gmail.com';
     var robotEmail = 'foorobot@googleusercontent.com';
     var credentials = '1/23546efa54';
-    chrome.chromeAuthPrivate.setCloudPrintCredentials(
+    chrome.cloudPrintPrivate.setCredentials(
         userEmail, robotEmail, credentials,
         chrome.test.callbackPass(function(result) {
            // In test mode, we expect the API to reflect the arguments back to

@@ -587,15 +587,15 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kExperimental);
 
   // These are private.
-  skip.insert(APIPermission::kChromeAuthPrivate);
   skip.insert(APIPermission::kChromeosInfoPrivate);
+  skip.insert(APIPermission::kCloudPrintPrivate);
+  skip.insert(APIPermission::kEchoPrivate);
   skip.insert(APIPermission::kFileBrowserHandlerInternal);
   skip.insert(APIPermission::kFileBrowserPrivate);
   skip.insert(APIPermission::kInputMethodPrivate);
   skip.insert(APIPermission::kManagedModePrivate);
   skip.insert(APIPermission::kMediaPlayerPrivate);
   skip.insert(APIPermission::kMetricsPrivate);
-  skip.insert(APIPermission::kEchoPrivate);
   skip.insert(APIPermission::kSystemPrivate);
   skip.insert(APIPermission::kTerminalPrivate);
   skip.insert(APIPermission::kWallpaperPrivate);

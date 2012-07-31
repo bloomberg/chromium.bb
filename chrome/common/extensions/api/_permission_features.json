@@ -43,12 +43,6 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
-  "chromeAuthPrivate": {
-    "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
-    // CloudPrint
-    "whitelist": ["mfehgcgbbipciphmccgaenjidiccnmng"]
-  },
   "chromePrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],
@@ -74,6 +68,12 @@
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
+  },
+  "cloudPrintPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app"],
+    // CloudPrint
+    "whitelist": ["mfehgcgbbipciphmccgaenjidiccnmng"]
   },
   "commands": {
     "channel": "stable",

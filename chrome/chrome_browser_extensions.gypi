@@ -549,8 +549,8 @@
           'sources': [
             'browser/extensions/api/idle/idle_api.cc',
             'browser/extensions/api/idle/idle_api.h',
-            'browser/extensions/api/chrome_auth_private/chrome_auth_private_api.cc',
-            'browser/extensions/api/chrome_auth_private/chrome_auth_private_api.h',
+            'browser/extensions/api/cloud_print_private/cloud_print_private_api.cc',
+            'browser/extensions/api/cloud_print_private/cloud_print_private_api.h',
             'browser/extensions/api/page_capture/page_capture_api.cc',
             'browser/extensions/api/page_capture/page_capture_api.h',
             'browser/extensions/api/debugger/debugger_api.cc',

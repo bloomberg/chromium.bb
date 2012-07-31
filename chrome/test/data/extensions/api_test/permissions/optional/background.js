@@ -230,11 +230,11 @@ chrome.test.getConfig(function(config) {
 
     // Make sure you can only access the white listed permissions.
     function whitelist() {
-      var error_msg = NOT_WHITE_LISTED_ERROR.replace('*', 'chromeAuthPrivate');
+      var error_msg = NOT_WHITE_LISTED_ERROR.replace('*', 'cloudPrintPrivate');
       chrome.permissions.request(
-          {permissions: ['chromeAuthPrivate']}, fail(error_msg));
+          {permissions: ['cloudPrintPrivate']}, fail(error_msg));
       chrome.permissions.remove(
-          {permissions: ['chromeAuthPrivate']}, fail(error_msg));
+          {permissions: ['cloudPrintPrivate']}, fail(error_msg));
     },
 
     function unknownPermission() {

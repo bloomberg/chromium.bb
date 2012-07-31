@@ -9,7 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/extensions/api/app/app_api.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
-#include "chrome/browser/extensions/api/chrome_auth_private/chrome_auth_private_api.h"
+#include "chrome/browser/extensions/api/cloud_print_private/cloud_print_private_api.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api.h"
 #include "chrome/browser/extensions/api/context_menu/context_menu_api.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
@@ -443,8 +443,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetMinimumFontSizeFunction>();
   RegisterFunction<SetMinimumFontSizeFunction>();
 
-  // ChromeAuth settings.
-  RegisterFunction<extensions::SetCloudPrintCredentialsFunction>();
+  // CloudPrint settings.
+  RegisterFunction<extensions::CloudPrintSetCredentialsFunction>();
 
   // Experimental App API.
   RegisterFunction<extensions::AppNotifyFunction>();

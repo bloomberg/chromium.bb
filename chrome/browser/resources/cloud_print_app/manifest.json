@@ -14,6 +14,6 @@
     ]
   },
   "permissions": [
-    "chromeAuthPrivate"
+    "cloudPrintPrivate"
   ]
 }

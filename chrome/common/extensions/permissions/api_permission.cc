@@ -134,7 +134,7 @@ void APIPermission::RegisterAllPermissions(
     { kMediaPlayerPrivate, "mediaPlayerPrivate", kFlagCannotBeOptional },
     { kMetricsPrivate, "metricsPrivate", kFlagCannotBeOptional },
     { kSystemPrivate, "systemPrivate", kFlagCannotBeOptional },
-    { kChromeAuthPrivate, "chromeAuthPrivate", kFlagCannotBeOptional },
+    { kCloudPrintPrivate, "cloudPrintPrivate", kFlagCannotBeOptional },
     { kInputMethodPrivate, "inputMethodPrivate", kFlagCannotBeOptional },
     { kEchoPrivate, "echoPrivate", kFlagCannotBeOptional },
     { kTerminalPrivate, "terminalPrivate", kFlagCannotBeOptional },

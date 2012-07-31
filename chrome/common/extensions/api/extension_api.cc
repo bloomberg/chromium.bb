@@ -349,10 +349,10 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_BROWSERACTION));
   RegisterSchema("browsingData", ReadFromResource(
       IDR_EXTENSION_API_JSON_BROWSINGDATA));
-  RegisterSchema("chromeAuthPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_CHROMEAUTHPRIVATE));
   RegisterSchema("chromeosInfoPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_CHROMEOSINFOPRIVATE));
+  RegisterSchema("cloudPrintPrivate", ReadFromResource(
+      IDR_EXTENSION_API_JSON_CLOUDPRINTPRIVATE));
   RegisterSchema("contentSettings", ReadFromResource(
       IDR_EXTENSION_API_JSON_CONTENTSETTINGS));
   RegisterSchema("contextMenus", ReadFromResource(
