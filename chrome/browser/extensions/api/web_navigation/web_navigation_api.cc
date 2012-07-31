@@ -182,7 +182,7 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
 
   FrameNavigationState::FrameID frame_id(
       details->source_frame_id,
-      details->source_web_contents->GetRenderViewHost()->GetProcess()->GetID());
+      details->source_web_contents->GetRenderViewHost());
   if (!frame_navigation_state.CanSendEvents(frame_id))
     return;
 
@@ -248,6 +248,9 @@ WebNavigationTabObserver::WebNavigationTabObserver(
   registrar_.Add(this,
                  content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
                  content::Source<content::WebContents>(web_contents));
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
+                 content::NotificationService::AllSources());
 }
 
 WebNavigationTabObserver::~WebNavigationTabObserver() {}
@@ -257,6 +260,19 @@ WebNavigationTabObserver* WebNavigationTabObserver::Get(
     content::WebContents* web_contents) {
   TabObserverMap::iterator i = g_tab_observer.Get().find(web_contents);
   return i == g_tab_observer.Get().end() ? NULL : i->second;
+}
+
+content::RenderViewHost* WebNavigationTabObserver::GetRenderViewHostInProcess(
+    int process_id) const {
+  if (render_view_host_ &&
+      render_view_host_->GetProcess()->GetID() == process_id) {
+    return render_view_host_;
+  }
+  if (pending_render_view_host_ &&
+      pending_render_view_host_->GetProcess()->GetID() == process_id) {
+    return pending_render_view_host_;
+  }
+  return NULL;
 }
 
 void WebNavigationTabObserver::Observe(
@@ -271,13 +287,37 @@ void WebNavigationTabObserver::Observe(
           resource_redirect_details->resource_type;
       if (resource_type == ResourceType::MAIN_FRAME ||
           resource_type == ResourceType::SUB_FRAME) {
+        content::RenderViewHost* render_view_host = NULL;
+        if (render_view_host_ &&
+            resource_redirect_details->origin_child_id ==
+                render_view_host_->GetProcess()->GetID()) {
+          render_view_host = render_view_host_;
+        } else if (pending_render_view_host_ &&
+                   resource_redirect_details->origin_child_id ==
+                       pending_render_view_host_->GetProcess()->GetID()) {
+          render_view_host = pending_render_view_host_;
+        }
+        if (!render_view_host)
+          return;
         FrameNavigationState::FrameID frame_id(
-            resource_redirect_details->frame_id,
-            resource_redirect_details->origin_child_id);
+            resource_redirect_details->frame_id, render_view_host);
         if (!navigation_state_.CanSendEvents(frame_id))
           return;
         navigation_state_.SetIsServerRedirected(frame_id);
       }
+      break;
+    }
+
+    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
+      content::RenderViewHost* render_view_host =
+          content::Source<content::RenderViewHost>(source).ptr();
+      if (render_view_host == render_view_host_)
+        render_view_host_ = NULL;
+      else if (render_view_host == pending_render_view_host_)
+        pending_render_view_host_ = NULL;
+      else
+        return;
+      SendErrorEvents(web_contents(), render_view_host);
       break;
     }
 
@@ -291,8 +331,8 @@ void WebNavigationTabObserver::AboutToNavigateRenderView(
   if (!render_view_host_) {
     render_view_host_ = render_view_host;
   } else if (render_view_host != render_view_host_) {
-    // TODO(jochen): If pending_render_view_host_ is non-NULL, send error events
-    // for all ongoing navigations in that RVH.
+    if (pending_render_view_host_)
+      SendErrorEvents(web_contents(), pending_render_view_host_);
     pending_render_view_host_ = render_view_host;
   }
 }
@@ -309,8 +349,7 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
       render_view_host != pending_render_view_host_)
     return;
 
-  FrameNavigationState::FrameID frame_id(
-      frame_num, render_view_host->GetProcess()->GetID());
+  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
 
   navigation_state_.TrackFrame(frame_id,
                                validated_url,
@@ -333,13 +372,12 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   if (render_view_host != render_view_host_ &&
       render_view_host != pending_render_view_host_)
     return;
-  // TODO(jochen): If we switched the RVH, send error events for all ongoing
-  // navigations in the old RVH.
+  if (render_view_host != render_view_host_)
+    SendErrorEvents(web_contents(), render_view_host_);
   render_view_host_ = render_view_host;
   pending_render_view_host_ = NULL;
 
-  FrameNavigationState::FrameID frame_id(
-      frame_num, render_view_host->GetProcess()->GetID());
+  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
 
@@ -398,18 +436,21 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
   if (render_view_host != render_view_host_ &&
       render_view_host != pending_render_view_host_)
     return;
-  if (render_view_host == pending_render_view_host_)
+  bool stop_tracking_frames = false;
+  if (render_view_host == pending_render_view_host_) {
     pending_render_view_host_ = NULL;
+    stop_tracking_frames = true;
+  }
 
-  FrameNavigationState::FrameID frame_id(
-      frame_num, render_view_host->GetProcess()->GetID());
-  if (!navigation_state_.CanSendEvents(frame_id))
-    return;
-
-  navigation_state_.SetErrorOccurredInFrame(frame_id);
-  helpers::DispatchOnErrorOccurred(
-      web_contents(), render_view_host->GetProcess()->GetID(), validated_url,
-      frame_num, is_main_frame, error_code);
+  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  if (navigation_state_.CanSendEvents(frame_id)) {
+    navigation_state_.SetErrorOccurredInFrame(frame_id);
+    helpers::DispatchOnErrorOccurred(
+        web_contents(), render_view_host->GetProcess()->GetID(), validated_url,
+        frame_num, is_main_frame, error_code);
+  }
+  if (stop_tracking_frames)
+    navigation_state_.StopTrackingFramesInRVH(render_view_host);
 }
 
 void WebNavigationTabObserver::DocumentLoadedInFrame(
@@ -417,8 +458,7 @@ void WebNavigationTabObserver::DocumentLoadedInFrame(
     content::RenderViewHost* render_view_host) {
   if (render_view_host != render_view_host_)
     return;
-  FrameNavigationState::FrameID frame_id(
-      frame_num, render_view_host->GetProcess()->GetID());
+  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   helpers::DispatchOnDOMContentLoaded(web_contents(),
@@ -434,8 +474,7 @@ void WebNavigationTabObserver::DidFinishLoad(
     content::RenderViewHost* render_view_host) {
   if (render_view_host != render_view_host_)
     return;
-  FrameNavigationState::FrameID frame_id(
-      frame_num, render_view_host->GetProcess()->GetID());
+  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   navigation_state_.SetNavigationCompleted(frame_id);
@@ -456,8 +495,7 @@ void WebNavigationTabObserver::DidFailLoad(
     content::RenderViewHost* render_view_host) {
   if (render_view_host != render_view_host_)
     return;
-  FrameNavigationState::FrameID frame_id(
-      frame_num, render_view_host->GetProcess()->GetID());
+  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   navigation_state_.SetErrorOccurredInFrame(frame_id);
@@ -473,8 +511,7 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
     WindowOpenDisposition disposition,
     content::PageTransition transition,
     int64 source_frame_num) {
-  FrameNavigationState::FrameID frame_id(
-      source_frame_num, render_view_host_->GetProcess()->GetID());
+  FrameNavigationState::FrameID frame_id(source_frame_num, render_view_host_);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
 
@@ -499,19 +536,29 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 
 void WebNavigationTabObserver::WebContentsDestroyed(content::WebContents* tab) {
   g_tab_observer.Get().erase(tab);
+  registrar_.RemoveAll();
+  SendErrorEvents(tab, NULL);
+}
+
+void WebNavigationTabObserver::SendErrorEvents(
+    content::WebContents* web_contents,
+    content::RenderViewHost* render_view_host) {
   for (FrameNavigationState::const_iterator frame = navigation_state_.begin();
        frame != navigation_state_.end(); ++frame) {
     if (!navigation_state_.GetNavigationCompleted(*frame) &&
-        navigation_state_.CanSendEvents(*frame)) {
+        navigation_state_.CanSendEvents(*frame) &&
+        (!render_view_host || frame->render_view_host == render_view_host)) {
       helpers::DispatchOnErrorOccurred(
-        tab,
-        frame->render_process_id,
+        web_contents,
+        frame->render_view_host->GetProcess()->GetID(),
         navigation_state_.GetUrl(*frame),
         frame->frame_num,
         navigation_state_.IsMainFrame(*frame),
         net::ERR_ABORTED);
     }
   }
+  if (render_view_host)
+    navigation_state_.StopTrackingFramesInRVH(render_view_host);
 }
 
 // See also NavigationController::IsURLInPageNavigation.
@@ -559,7 +606,12 @@ bool GetFrameFunction::RunImpl() {
   if (frame_id == 0)
     frame_id = frame_navigation_state.GetMainFrameID().frame_num;
 
-  FrameNavigationState::FrameID internal_frame_id(frame_id, process_id);
+  content::RenderViewHost* render_view_host =
+      observer->GetRenderViewHostInProcess(process_id);
+  if (!render_view_host)
+    return true;
+
+  FrameNavigationState::FrameID internal_frame_id(frame_id, render_view_host);
   if (!frame_navigation_state.IsValidFrame(internal_frame_id))
     return true;
 
@@ -613,7 +665,7 @@ bool GetAllFramesFunction::RunImpl() {
     frame->url = frame_url.spec();
     frame->frame_id = helpers::GetFrameId(
         navigation_state.IsMainFrame(frame_id), frame_id.frame_num);
-    frame->process_id = frame_id.render_process_id;
+    frame->process_id = frame_id.render_view_host->GetProcess()->GetID();
     frame->error_occurred = navigation_state.GetErrorOccurredInFrame(frame_id);
     result_list.push_back(frame);
   }

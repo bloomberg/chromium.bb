@@ -26,30 +26,31 @@ const char* kValidSchemes[] = {
 
 FrameNavigationState::FrameID::FrameID()
     : frame_num(-1),
-      render_process_id(-1) {
+      render_view_host(NULL) {
 }
 
-FrameNavigationState::FrameID::FrameID(int64 frame_num,
-                                       int render_process_id)
+FrameNavigationState::FrameID::FrameID(
+    int64 frame_num,
+    content::RenderViewHost* render_view_host)
     : frame_num(frame_num),
-      render_process_id(render_process_id) {
+      render_view_host(render_view_host) {
 }
 
 bool FrameNavigationState::FrameID::IsValid() const {
-  return frame_num >= 0 && render_process_id >= 0;
+  return frame_num >= 0 && render_view_host;
 }
 
 bool FrameNavigationState::FrameID::operator<(
     const FrameNavigationState::FrameID& other) const {
   return frame_num < other.frame_num ||
       (frame_num == other.frame_num &&
-       render_process_id < other.render_process_id);
+       render_view_host < other.render_view_host);
 }
 
 bool FrameNavigationState::FrameID::operator==(
     const FrameNavigationState::FrameID& other) const {
   return frame_num == other.frame_num &&
-      render_process_id == other.render_process_id;
+      render_view_host == other.render_view_host;
 }
 
 bool FrameNavigationState::FrameID::operator!=(
@@ -91,10 +92,6 @@ void FrameNavigationState::TrackFrame(FrameID frame_id,
                                       const GURL& url,
                                       bool is_main_frame,
                                       bool is_error_page) {
-  if (is_main_frame) {
-    frame_state_map_.clear();
-    frame_ids_.clear();
-  }
   FrameState& frame_state = frame_state_map_[frame_id];
   frame_state.error_occurred = is_error_page;
   frame_state.url = url;
@@ -102,10 +99,24 @@ void FrameNavigationState::TrackFrame(FrameID frame_id,
   frame_state.is_navigating = true;
   frame_state.is_committed = false;
   frame_state.is_server_redirected = false;
-  if (is_main_frame) {
-    main_frame_id_ = frame_id;
-  }
   frame_ids_.insert(frame_id);
+}
+
+void FrameNavigationState::StopTrackingFramesInRVH(
+    content::RenderViewHost* render_view_host) {
+  for (std::set<FrameID>::iterator frame = frame_ids_.begin();
+       frame != frame_ids_.end();) {
+    if (frame->render_view_host != render_view_host) {
+      ++frame;
+      continue;
+    }
+    FrameID frame_id = *frame;
+    ++frame;
+    if (frame_id == main_frame_id_)
+      main_frame_id_ = FrameID();
+    frame_state_map_.erase(frame_id);
+    frame_ids_.erase(frame_id);
+  }
 }
 
 void FrameNavigationState::UpdateFrame(FrameID frame_id, const GURL& url) {
@@ -134,7 +145,10 @@ GURL FrameNavigationState::GetUrl(FrameID frame_id) const {
 }
 
 bool FrameNavigationState::IsMainFrame(FrameID frame_id) const {
-  return main_frame_id_.IsValid() && main_frame_id_ == frame_id;
+  FrameIdToStateMap::const_iterator frame_state =
+      frame_state_map_.find(frame_id);
+  return (frame_state != frame_state_map_.end() &&
+          frame_state->second.is_main_frame);
 }
 
 FrameNavigationState::FrameID FrameNavigationState::GetMainFrameID() const {
@@ -168,6 +182,8 @@ bool FrameNavigationState::GetNavigationCompleted(FrameID frame_id) const {
 void FrameNavigationState::SetNavigationCommitted(FrameID frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].is_committed = true;
+  if (frame_state_map_[frame_id].is_main_frame)
+    main_frame_id_ = frame_id;
 }
 
 bool FrameNavigationState::GetNavigationCommitted(FrameID frame_id) const {

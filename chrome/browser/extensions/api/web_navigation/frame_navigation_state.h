@@ -11,6 +11,10 @@
 #include "base/compiler_specific.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+class RenderViewHost;
+}
+
 namespace extensions {
 
 // Tracks the navigation state of all frames in a given tab currently known to
@@ -18,12 +22,10 @@ namespace extensions {
 // occurred so no further events for this frame are being sent.
 class FrameNavigationState {
  public:
-  // A frame is uniquely identified by its frame ID and the render process ID.
-  // We use the render process ID instead of e.g. a pointer to the RVH so we
-  // don't depend on the lifetime of the RVH.
+  // A frame is uniquely identified by its frame ID and the RVH it's in.
   struct FrameID {
     FrameID();
-    FrameID(int64 frame_num, int render_process_id);
+    FrameID(int64 frame_num, content::RenderViewHost* render_view_host);
 
     bool IsValid() const;
 
@@ -32,7 +34,7 @@ class FrameNavigationState {
     bool operator!=(const FrameID& other) const;
 
     int64 frame_num;
-    int render_process_id;
+    content::RenderViewHost* render_view_host;
   };
   typedef std::set<FrameID>::const_iterator const_iterator;
 
@@ -55,6 +57,9 @@ class FrameNavigationState {
                   bool is_main_frame,
                   bool is_error_page);
 
+  // Stops tracking all frames for a given RenderViewHost.
+  void StopTrackingFramesInRVH(content::RenderViewHost* render_view_host);
+
   // Update the URL associated with a given frame.
   void UpdateFrame(FrameID frame_id, const GURL& url);
 
@@ -64,11 +69,12 @@ class FrameNavigationState {
   // Returns the URL corresponding to a tracked frame given by its |frame_id|.
   GURL GetUrl(FrameID frame_id) const;
 
-  // True if the frame given by its |frame_id| is the main frame of its tab.
+  // True if the frame given by its |frame_id| is a main frame of its tab.
+  // There might be multiple uncomitted main frames.
   bool IsMainFrame(FrameID frame_id) const;
 
-  // Returns the frame ID of the main frame, or -1 if the frame ID is not
-  // known.
+  // Returns the frame ID of the last comitted main frame, or -1 if the frame
+  // ID is not known.
   FrameID GetMainFrameID() const;
 
   // Marks a frame as in an error state, i.e. the onErrorOccurred event was
@@ -121,7 +127,7 @@ class FrameNavigationState {
   // Set of all known frames.
   std::set<FrameID> frame_ids_;
 
-  // The current main frame.
+  // The id of the last comitted main frame.
   FrameID main_frame_id_;
 
   // If true, also allow events from chrome-extension:// URLs.

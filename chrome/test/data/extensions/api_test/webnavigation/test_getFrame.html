@@ -8,7 +8,7 @@ chrome.test.runTests([
     chrome.tabs.create({"url": "about:blank"}, function(tab) {
       tabId = tab.id;
       var done = chrome.test.listenForever(
-        chrome.webNavigation.onBeforeNavigate,
+        chrome.webNavigation.onCommitted,
         function (details) {
           if (details.tabId != tabId)
             return;

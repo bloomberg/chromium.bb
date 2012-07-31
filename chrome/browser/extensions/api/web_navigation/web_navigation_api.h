@@ -40,6 +40,8 @@ class WebNavigationTabObserver : public content::NotificationObserver,
     return navigation_state_;
   }
 
+  content::RenderViewHost* GetRenderViewHostInProcess(int process_id) const;
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -96,6 +98,12 @@ class WebNavigationTabObserver : public content::NotificationObserver,
   // navigation.
   bool IsReferenceFragmentNavigation(FrameNavigationState::FrameID frame_id,
                                      const GURL& url);
+
+  // Creates and sends onErrorOccurred events for all on-going navigations. If
+  // |render_view_host| is non-NULL, only generates events for frames in this
+  // render view host.
+  void SendErrorEvents(content::WebContents* web_contents,
+                       content::RenderViewHost* render_view_host);
 
   // Tracks the state of the frames we are sending events for.
   FrameNavigationState navigation_state_;

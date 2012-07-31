@@ -4,21 +4,20 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
-class FrameNavigationStateTest : public ChromeRenderViewHostTestHarness {
-};
+content::RenderViewHost* fake_rvh =
+    reinterpret_cast<content::RenderViewHost*>(31337);
 
 // Test that a frame is correctly tracked, and removed once the tab contents
 // goes away.
-TEST_F(FrameNavigationStateTest, TrackFrame) {
+TEST(FrameNavigationStateTest, TrackFrame) {
   FrameNavigationState navigation_state;
-  const FrameNavigationState::FrameID frame_id1(23, 1);
-  const FrameNavigationState::FrameID frame_id2(42, 1);
+  const FrameNavigationState::FrameID frame_id1(23, fake_rvh);
+  const FrameNavigationState::FrameID frame_id2(42, fake_rvh);
   const GURL url1("http://www.google.com/");
   const GURL url2("http://mail.google.com/");
 
@@ -26,6 +25,7 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_FALSE(navigation_state.IsValidFrame(frame_id1));
   navigation_state.TrackFrame(frame_id1, url1, true, false);
+  navigation_state.SetNavigationCommitted(frame_id1);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.IsValidFrame(frame_id1));
 
@@ -33,6 +33,7 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
   EXPECT_FALSE(navigation_state.IsValidFrame(frame_id2));
   navigation_state.TrackFrame(frame_id2, url2, false, false);
+  navigation_state.SetNavigationCommitted(frame_id2);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
   EXPECT_TRUE(navigation_state.IsValidFrame(frame_id2));
 
@@ -42,13 +43,20 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
   EXPECT_FALSE(navigation_state.IsMainFrame(frame_id2));
   EXPECT_EQ(url2, navigation_state.GetUrl(frame_id2));
   EXPECT_EQ(frame_id1, navigation_state.GetMainFrameID());
+
+  // Drop the frames.
+  navigation_state.StopTrackingFramesInRVH(fake_rvh);
+  EXPECT_FALSE(navigation_state.CanSendEvents(frame_id1));
+  EXPECT_FALSE(navigation_state.IsValidFrame(frame_id1));
+  EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
+  EXPECT_FALSE(navigation_state.IsValidFrame(frame_id2));
 }
 
 // Test that no events can be sent for a frame after an error occurred, but
 // before a new navigation happened in this frame.
-TEST_F(FrameNavigationStateTest, ErrorState) {
+TEST(FrameNavigationStateTest, ErrorState) {
   FrameNavigationState navigation_state;
-  const FrameNavigationState::FrameID frame_id(42, 1);
+  const FrameNavigationState::FrameID frame_id(42, fake_rvh);
   const GURL url("http://www.google.com/");
 
   navigation_state.TrackFrame(frame_id, url, true, false);
@@ -73,10 +81,10 @@ TEST_F(FrameNavigationStateTest, ErrorState) {
 
 // Tests that for a sub frame, no events are send after an error occurred, but
 // before a new navigation happened in this frame.
-TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
+TEST(FrameNavigationStateTest, ErrorStateFrame) {
   FrameNavigationState navigation_state;
-  const FrameNavigationState::FrameID frame_id1(23, 1);
-  const FrameNavigationState::FrameID frame_id2(42, 1);
+  const FrameNavigationState::FrameID frame_id1(23, fake_rvh);
+  const FrameNavigationState::FrameID frame_id2(42, fake_rvh);
   const GURL url("http://www.google.com/");
 
   navigation_state.TrackFrame(frame_id1, url, true, false);
@@ -101,9 +109,9 @@ TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
 }
 
 // Tests that no events are send for a not web-safe scheme.
-TEST_F(FrameNavigationStateTest, WebSafeScheme) {
+TEST(FrameNavigationStateTest, WebSafeScheme) {
   FrameNavigationState navigation_state;
-  const FrameNavigationState::FrameID frame_id(23, 1);
+  const FrameNavigationState::FrameID frame_id(23, fake_rvh);
   const GURL url("unsafe://www.google.com/");
 
   navigation_state.TrackFrame(frame_id, url, true, false);
