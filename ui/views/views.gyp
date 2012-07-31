@@ -575,7 +575,6 @@
             '../aura/aura.gyp:test_support_aura',
           ],
           'sources/': [
-            ['exclude', 'controls/tabbed_pane/tabbed_pane_unittest.cc'],
             ['exclude', 'controls/table/table_view_unittest.cc'],
             ['exclude', 'widget/native_widget_win_unittest.cc'],
           ],

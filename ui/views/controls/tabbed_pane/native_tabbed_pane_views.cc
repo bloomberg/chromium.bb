@@ -359,7 +359,7 @@ int NativeTabbedPaneViews::GetSelectedTabIndex() {
 }
 
 View* NativeTabbedPaneViews::GetSelectedTab() {
-  return tab_strip_->selected_tab();
+  return content_view_->child_at(GetSelectedTabIndex());
 }
 
 View* NativeTabbedPaneViews::GetView() {
