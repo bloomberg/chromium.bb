@@ -400,6 +400,14 @@ evdev_configure_device(struct evdev_input_device *device)
 			device->caps |= EVDEV_MOTION_ABS;
 		}
 		if (TEST_BIT(abs_bits, ABS_MT_SLOT)) {
+			ioctl(device->fd, EVIOCGABS(ABS_MT_POSITION_X),
+			      &absinfo);
+			device->abs.min_x = absinfo.minimum;
+			device->abs.max_x = absinfo.maximum;
+			ioctl(device->fd, EVIOCGABS(ABS_MT_POSITION_Y),
+			      &absinfo);
+			device->abs.min_y = absinfo.minimum;
+			device->abs.max_y = absinfo.maximum;
 			device->is_mt = 1;
 			device->mt.slot = 0;
 			device->caps |= EVDEV_TOUCH;
