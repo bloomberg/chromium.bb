@@ -1,9 +1,6 @@
-# Core extension team members. Specific extension APIs may have other authors
-# (e.g. dmazzoni@ for TTS, kalman@ for settings), please check with them when
-# making significant changes.
+# This should match chrome/browser/extensions/OWNERS
 aa@chromium.org
 asargent@chromium.org
-bolms@chromium.org
 erikkay@chromium.org
 finnur@chromium.org
 jstritar@chromium.org
