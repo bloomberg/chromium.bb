@@ -1252,13 +1252,6 @@ frame_resize_handler(struct widget *widget,
 		allocation.width = width - decoration_width;
 		allocation.height = height - decoration_height;
 
-		widget->window->input_region =
-			wl_compositor_create_region(display->compositor);
-		wl_region_add(widget->window->input_region,
-			      t->margin, t->margin,
-			      width - 2 * t->margin,
-			      height - 2 * t->margin);
-
 		opaque_margin = t->margin + t->frame_radius;
 
 		wl_list_for_each(button, &frame->buttons_list, link)
@@ -1288,6 +1281,15 @@ frame_resize_handler(struct widget *widget,
 
 	width = child->allocation.width + decoration_width;
 	height = child->allocation.height + decoration_height;
+
+	if (widget->window->type != TYPE_FULLSCREEN) {
+		widget->window->input_region =
+			wl_compositor_create_region(display->compositor);
+		wl_region_add(widget->window->input_region,
+			      t->margin, t->margin,
+			      width - 2 * t->margin,
+			      height - 2 * t->margin);
+	}
 
 	widget_set_allocation(widget, 0, 0, width, height);
 
