@@ -2351,7 +2351,8 @@ install-sb-tool() {
     mv -f ${toolname}.${tarch}.nexe "${installbin}"/${toolname}.nexe
     if ${PNACL_BUILDBOT}; then
       spushd "${installbin}"
-      print-size-of-sb-tool ${tarch} ${toolname}
+      local tag="${toolname}_${tarch}_size"
+      print-tagged-tool-sizes "${tag}" "$(pwd)/${toolname}.nexe"
       spopd
     fi
   done
@@ -3699,21 +3700,20 @@ DebugRun() {
 }
 
 ######################################################################
-# Generate chromium perf bot logs for tracking the size of
-# translator binaries.
+# Generate chromium perf bot logs for tracking the size of a binary.
 #
-# This is called from install-sb-tool on the final nexes.
-print-size-of-sb-tool() {
-  local arch=$1
-  local toolname=$2
-  local tool_size_string=\
-$(${PNACL_SIZE} -B "${toolname}.nexe" | grep '[0-9]\+')
+print-tagged-tool-sizes() {
+  local tag="$1"
+  local binary="$2"
 
-  set -- ${tool_size_string}
-  echo "RESULT ${toolname}_${arch}_size: text= $1 bytes"
-  echo "RESULT ${toolname}_${arch}_size: data= $2 bytes"
-  echo "RESULT ${toolname}_${arch}_size: bss= $3 bytes"
-  echo "RESULT ${toolname}_${arch}_size: total= $4 bytes"
+  # size output look like:
+  #    text   data     bss     dec    hex  filename
+  #  354421  16132  168920  539473  83b51  .../tool
+  local sizes=($(${PNACL_SIZE} -B "${binary}" | grep '[0-9]\+'))
+  echo "RESULT ${tag}: text= ${sizes[0]} bytes"
+  echo "RESULT ${tag}: data= ${sizes[1]} bytes"
+  echo "RESULT ${tag}: bss= ${sizes[2]} bytes"
+  echo "RESULT ${tag}: total= ${sizes[3]} bytes"
 }
 
 ######################################################################
