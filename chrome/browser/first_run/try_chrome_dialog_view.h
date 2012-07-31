@@ -19,6 +19,7 @@ class Rect;
 
 namespace views {
 class RadioButton;
+class Checkbox;
 class Widget;
 }
 
@@ -27,23 +28,32 @@ class Widget;
 // resulting actions are up to the caller. One flavor looks like this:
 //
 //   +-----------------------------------------------+
-//   | |icon| You stopped using Google Chrome    [x] |
-//   | |icon| Would you like to:                     |
-//   |        [o] Give the new version a try         |
+//   | |icon| There is a new, safer version      [x] |
+//   | |icon| of Google Chrome available             |
+//   |        [o] Try it out (already installed)     |
 //   |        [ ] Uninstall Google Chrome            |
 //   |        [ OK ] [Don't bug me]                  |
-//   |                                               |
 //   |        _why_am_I_seeing this?_                |
+//   +-----------------------------------------------+
+//
+// Another flavor looks like:
+//   +-----------------------------------------------+
+//   | |icon| There is a new, safer version      [x] |
+//   | |icon| of Google Chrome available             |
+//   |        [o] Try it out (already installed)     |
+//   |        [ ] Don't bug me                       |
+//   |                  [ OK ]                       |
 //   +-----------------------------------------------+
 //
 class TryChromeDialogView : public views::ButtonListener,
                             public views::LinkListener {
  public:
   enum Result {
-    TRY_CHROME,          // Launch chrome right now.
-    NOT_NOW,             // Don't launch chrome. Exit now.
-    UNINSTALL_CHROME,    // Initiate chrome uninstall and exit.
-    DIALOG_ERROR,        // An error occurred creating the dialog.
+    TRY_CHROME,             // Launch chrome right now.
+    TRY_CHROME_AS_DEFAULT,  // Launch chrome and make it the default.
+    NOT_NOW,                // Don't launch chrome. Exit now.
+    UNINSTALL_CHROME,       // Initiate chrome uninstall and exit.
+    DIALOG_ERROR,           // An error occurred creating the dialog.
     COUNT
   };
 
@@ -59,12 +69,6 @@ class TryChromeDialogView : public views::ButtonListener,
   static Result Show(size_t flavor, ProcessSingleton* process_singleton);
 
  private:
-  enum ButtonTags {
-    BT_NONE,
-    BT_CLOSE_BUTTON,
-    BT_OK_BUTTON,
-  };
-
   explicit TryChromeDialogView(size_t flavor);
   virtual ~TryChromeDialogView();
 
@@ -101,6 +105,7 @@ class TryChromeDialogView : public views::ButtonListener,
   views::RadioButton* try_chrome_;
   views::RadioButton* kill_chrome_;
   views::RadioButton* dont_try_chrome_;
+  views::Checkbox* make_default_;
   Result result_;
 
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialogView);

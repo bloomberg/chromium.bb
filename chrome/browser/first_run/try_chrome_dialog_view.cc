@@ -18,6 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/text_button.h"
@@ -31,6 +32,14 @@ namespace {
 
 const wchar_t kHelpCenterUrl[] =
     L"https://www.google.com/support/chrome/bin/answer.py?answer=150752";
+
+enum ButtonTags {
+  BT_NONE,
+  BT_CLOSE_BUTTON,
+  BT_OK_BUTTON,
+  BT_TRY_IT_RADIO,
+  BT_DONT_BUG_RADIO
+};
 
 }  // namespace
 
@@ -53,7 +62,8 @@ TryChromeDialogView::TryChromeDialogView(size_t flavor)
       try_chrome_(NULL),
       kill_chrome_(NULL),
       dont_try_chrome_(NULL),
-      result_(COUNT) {
+      make_default_(NULL),
+      result_(COUNT)  {
 }
 
 TryChromeDialogView::~TryChromeDialogView() {
@@ -90,8 +100,8 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     return DIALOG_ERROR;
   }
   root_view->SetLayoutManager(layout);
-
   views::ColumnSet* columns;
+
   // First row: [icon][pad][text][button].
   columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
@@ -102,36 +112,48 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
-  // Second row: [pad][pad][radio 1].
+
+  // Optional second row: [pad][pad][radio 1].
   columns = layout->AddColumnSet(1);
   columns->AddPaddingColumn(0, icon_size.width());
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
+
   // Third row: [pad][pad][radio 2].
   columns = layout->AddColumnSet(2);
   columns->AddPaddingColumn(0, icon_size.width());
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
+
   // Fourth row: [pad][pad][button][pad][button].
   columns = layout->AddColumnSet(3);
   columns->AddPaddingColumn(0, icon_size.width());
-  columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
+
   // Fifth row: [pad][pad][link].
   columns = layout->AddColumnSet(4);
   columns->AddPaddingColumn(0, icon_size.width());
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
+
   // Optional fourth row: [button].
   columns = layout->AddColumnSet(5);
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
+
+  // Optional fourth row: [pad][pad][checkbox].
+  columns = layout->AddColumnSet(6);
+  columns->AddPaddingColumn(0, icon_size.width());
+  columns->AddPaddingColumn(0,
+      views::kRelatedControlHorizontalSpacing + views::kPanelHorizIndentation);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
   // First row views.
   layout->StartRow(0, 0);
@@ -171,45 +193,59 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   const string16 try_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_TRY_OPT));
   layout->StartRowWithPadding(0, 1, 0, 10);
   try_chrome_ = new views::RadioButton(try_it, 1);
-  layout->AddView(try_chrome_);
   try_chrome_->SetChecked(true);
+  try_chrome_->set_tag(BT_TRY_IT_RADIO);
+  try_chrome_->set_listener(this);
+  layout->AddView(try_chrome_);
 
-  // Third row views.
-  layout->StartRow(0, 2);
-  if (experiment.compact_bubble) {
-    // The compact bubble has, as its second radio button, "Don't bug me".
+  // Decide if the don't bug me is a button or a radio button.
+  bool dont_bug_me_button =
+      experiment.flags & BrowserDistribution::kDontBugMeAsButton ? true : false;
+
+  // Optional third and fourth row views.
+  if (!dont_bug_me_button) {
+    layout->StartRow(0, 1);
     const string16 decline(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
     dont_try_chrome_ = new views::RadioButton(decline, 1);
+    dont_try_chrome_->set_tag(BT_DONT_BUG_RADIO);
+    dont_try_chrome_->set_listener(this);
     layout->AddView(dont_try_chrome_);
-  } else {
-    // The regular bubble has, as its second radio button, "Uninstall Chrome".
+  }
+  if (experiment.flags & BrowserDistribution::kUninstall) {
+    layout->StartRow(0, 2);
     const string16 kill_it(l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME));
     kill_chrome_ = new views::RadioButton(kill_it, 1);
     layout->AddView(kill_chrome_);
   }
+  if (experiment.flags & BrowserDistribution::kMakeDefault) {
+    layout->StartRow(0, 6);
+    const string16 default_text(
+        l10n_util::GetStringUTF16(IDS_TRY_TOAST_SET_DEFAULT));
+    make_default_ = new views::Checkbox(default_text);
+    gfx::Font font = make_default_->font().DeriveFont(0, gfx::Font::ITALIC);
+    make_default_->SetFont(font);
+    make_default_->SetChecked(true);
+    layout->AddView(make_default_);
+  }
 
-  // Fourth row views.
+  // Button row, the last or next to last depending on the 'why?' link.
   const string16 ok_it(l10n_util::GetStringUTF16(IDS_OK));
-  const string16 cancel_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
-  const string16 why_this(l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
   views::Button* accept_button = new views::NativeTextButton(this, ok_it);
   accept_button->set_tag(BT_OK_BUTTON);
 
-  // The compact bubble uses a centered button column for buttons, since only
-  // the OK button appears.
-  int column_id_buttons = experiment.compact_bubble ? 5 : 3;
-  layout->StartRowWithPadding(0, column_id_buttons, 0, 10);
+  layout->StartRowWithPadding(0, dont_bug_me_button ? 3 : 5, 0, 10);
   layout->AddView(accept_button);
-  if (!experiment.compact_bubble) {
-    // The regular bubble needs a "Don't bug me" as a button, since it is not
-    // one of the options for the radio buttons. We also decided to include the
-    // "Why am I seeing this?" link for the regular bubble only.
+  if (dont_bug_me_button) {
+    // The bubble needs a "Don't bug me" as a button or as a radio button, this
+    // this the button case.
+    const string16 cancel_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
     views::Button* cancel_button = new views::NativeTextButton(this, cancel_it);
     cancel_button->set_tag(BT_CLOSE_BUTTON);
     layout->AddView(cancel_button);
-
-    // Fifth row views.
+  }
+  if (experiment.flags & BrowserDistribution::kWhyLink) {
     layout->StartRowWithPadding(0, 4, 0, 10);
+    const string16 why_this(l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
     views::Link* link = new views::Link(why_this);
     link->set_listener(this);
     layout->AddView(link);
@@ -269,14 +305,26 @@ void TryChromeDialogView::SetToastRegion(HWND window, int w, int h) {
 
 void TryChromeDialogView::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
-  if (sender->tag() == BT_CLOSE_BUTTON) {
+  if (sender->tag() == BT_DONT_BUG_RADIO) {
+    if (make_default_) {
+      make_default_->SetChecked(false);
+      make_default_->SetState(views::CustomButton::BS_DISABLED);
+    }
+    return;
+  } else if (sender->tag() == BT_TRY_IT_RADIO) {
+    if (make_default_) {
+      make_default_->SetChecked(true);
+      make_default_->SetState(views::CustomButton::BS_NORMAL);
+    }
+    return;
+  } else if (sender->tag() == BT_CLOSE_BUTTON) {
     // The user pressed cancel or the [x] button.
     result_ = NOT_NOW;
   } else if (!try_chrome_) {
     // We don't have radio buttons, the user pressed ok.
     result_ = TRY_CHROME;
   } else {
-    // The outcome is according to the selected ratio button.
+    // The outcome is according to the selected radio button.
     if (try_chrome_->checked())
       result_ = TRY_CHROME;
     else if (dont_try_chrome_ && dont_try_chrome_->checked())
@@ -286,6 +334,10 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
     else
       NOTREACHED() << "Unknown radio button selected";
   }
+
+  if ((result_ == TRY_CHROME) && make_default_->checked())
+      result_ = TRY_CHROME_AS_DEFAULT;
+
   popup_->Close();
   MessageLoop::current()->Quit();
 }

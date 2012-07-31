@@ -33,6 +33,14 @@ class BrowserDistribution {
     NUM_TYPES
   };
 
+  // Flags to control what to show in the UserExperiment dialog.
+  enum ToastUIflags {
+    kUninstall          = 1,    // Uninstall radio button.
+    kDontBugMeAsButton  = 2,    // Don't bug me is a button, not a radio button.
+    kWhyLink            = 4,    // Has the 'why I am seeing this' link.
+    kMakeDefault        = 8     // Has the 'make it default' checkbox.
+  };
+
   // A struct for communicating what a UserExperiment contains. In these
   // experiments we show toasts to the user if they are inactive for a certain
   // amount of time.
@@ -41,7 +49,7 @@ class BrowserDistribution {
                           // also known as the 'TV' part in 'TV80'.
     int flavor;           // The flavor index for this experiment.
     int heading;          // The heading resource ID to use for this experiment.
-    bool compact_bubble;  // Whether to show the compact heading or not.
+    int flags;            // See ToastUIFlags above.
     int control_group;    // Size of the control group (in percentages). Control
                           // group is the group that qualifies for the
                           // experiment but does not participate.

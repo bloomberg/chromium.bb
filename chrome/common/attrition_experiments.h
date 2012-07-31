@@ -18,18 +18,8 @@ enum Experiment {
   kSkype1 = IDS_TRY_TOAST_HEADING_SKYPE,
 };
 
-// This is used to match against locale and brands, and represents any
-// locale/brand.
-const wchar_t kAll[] = L"*";
-
 // A comma-separated list of brand codes that are associated with Skype.
-const wchar_t kSkype[] = L"SKPC,SKPG,SKPH,SKPI,SKPL,SKPM,SKPN";
-
-// The brand code for enterprise installations.
-const wchar_t kEnterprise[] = L"GGRV";
-
-// The brand code for showing more compact bubbles (experimental).
-const wchar_t kBrief[] = L"CHMA";
+const wchar_t kSkypeBrandCode[] = L"SKPC,SKPG,SKPH,SKPI,SKPL,SKPM,SKPN";
 
 }  // namespace
 

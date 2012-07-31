@@ -60,14 +60,15 @@ const wchar_t kICommandExecuteImplUuid[] =
 
 // The following strings are the possible outcomes of the toast experiment
 // as recorded in the |client| field.
-const wchar_t kToastExpControlGroup[] =      L"01";
-const wchar_t kToastExpCancelGroup[] =       L"02";
-const wchar_t kToastExpUninstallGroup[] =    L"04";
-const wchar_t kToastExpTriesOkGroup[] =      L"18";
-const wchar_t kToastExpTriesErrorGroup[] =   L"28";
-const wchar_t kToastActiveGroup[] =          L"40";
-const wchar_t kToastUDDirFailure[] =         L"40";
-const wchar_t kToastExpBaseGroup[] =         L"80";
+const wchar_t kToastExpControlGroup[] =        L"01";
+const wchar_t kToastExpCancelGroup[] =         L"02";
+const wchar_t kToastExpUninstallGroup[] =      L"04";
+const wchar_t kToastExpTriesOkGroup[] =        L"18";
+const wchar_t kToastExpTriesErrorGroup[] =     L"28";
+const wchar_t kToastExpTriesOkDefaultGroup[] = L"48";
+const wchar_t kToastActiveGroup[] =            L"40";
+const wchar_t kToastUDDirFailure[] =           L"40";
+const wchar_t kToastExpBaseGroup[] =           L"80";
 
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
@@ -612,6 +613,10 @@ void SetClient(const string16& experiment_group, bool last_write) {
 
 bool GoogleChromeDistribution::GetExperimentDetails(
     UserExperiment* experiment, int flavor) {
+  struct FlavorDetails {
+    int heading_id;
+    int flags;
+  };
   // Maximum number of experiment flavors we support.
   static const int kMax = 4;
   // This struct determines which experiment flavors we show for each locale and
@@ -624,29 +629,37 @@ bool GoogleChromeDistribution::GetExperimentDetails(
   // The big experiment in Feb 2011 used SJxx SKxx SLxx SMxx.
   // Note: the plugin infobar experiment uses PIxx codes.
   using namespace attrition_experiments;
+
   static const struct UserExperimentDetails {
     const wchar_t* locale;  // Locale to show this experiment for (* for all).
     const wchar_t* brands;  // Brand codes show this experiment for (* for all).
     int control_group;      // Size of the control group, in percentages.
-    const wchar_t prefix1;  // The first letter for the experiment code.
-    const wchar_t prefix2;  // The second letter for the experiment code. This
-                            // will be incremented by one for each additional
-                            // experiment flavor beyond the first.
-    int flavors;            // Numbers of flavors for this experiment. Should
-                            // always be positive and never exceed the number
-                            // of headings (below).
-    int headings[kMax];     // A list of IDs per experiment. 0 == no heading.
-  } kExperimentFlavors[] = {
-    // This list should be ordered most-specific rule first (catch-all, like all
-    // brands or all locales should be last).
-
-    // The experiment with the more compact bubble. This one is a bit special
-    // because it is split into two: CAxx is regular style bubble and CBxx is
-    // compact style bubble. See |compact_bubble| below.
-    {L"en-US", kBrief, 1, L'C', L'A', 2, { kEnUs3, kEnUs3, 0, 0 } },
-
-    // Catch-all rules.
-    {kAll, kAll, 1, L'B', L'A', 1, {kEnUs3, 0, 0, 0} },
+    const wchar_t* prefix;  // The two letter experiment code. The second letter
+                            // will be incremented with the flavor.
+    FlavorDetails flavors[kMax];
+  } kExperiments[] = {
+    // The first match from top to bottom is used so this list should be ordered
+    // most-specific rule first.
+    { L"*", L"CHMA",  // All locales, CHMA brand.
+      25,             // 25 percent control group.
+      L"ZA",          // Experiment is ZAxx, ZBxx, ZCxx, ZDxx etc.
+      // Three flavors.
+      { { IDS_TRY_TOAST_HEADING3, kDontBugMeAsButton | kUninstall | kWhyLink },
+        { IDS_TRY_TOAST_HEADING3, 0 },
+        { IDS_TRY_TOAST_HEADING3, kMakeDefault },
+        { 0, 0 },
+      }
+    },
+    { L"*", L"GGRV",  // All locales, GGRV is enterprise.
+      0,              // 0 percent control group.
+      L"EA",          // Experiment is EAxx, EBxx, etc.
+      // No flavors means no experiment.
+      { { 0, 0 },
+        { 0, 0 },
+        { 0, 0 },
+        { 0, 0 }
+      }
+    }
   };
 
   string16 locale;
@@ -657,50 +670,36 @@ bool GoogleChromeDistribution::GetExperimentDetails(
   string16 brand;
   if (!GoogleUpdateSettings::GetBrand(&brand))
     brand = ASCIIToWide("");  // Could still be viable for catch-all rules.
-  if (brand == kEnterprise)
-    return false;
 
-  for (int i = 0; i < arraysize(kExperimentFlavors); ++i) {
-    // A maximum of four flavors are supported at the moment.
-    CHECK_LE(kExperimentFlavors[i].flavors, kMax);
-    CHECK_GT(kExperimentFlavors[i].flavors, 0);
-    // Make sure each experiment has valid headings.
-    for (int f = 0; f < kMax; ++f) {
-      if (f < kExperimentFlavors[i].flavors) {
-        CHECK_GT(kExperimentFlavors[i].headings[f], 0);
-      } else {
-        CHECK_EQ(kExperimentFlavors[i].headings[f], 0);
-      }
-    }
-    // The prefix has to be a valid two letter combo.
-    CHECK(kExperimentFlavors[i].prefix1 >= 'A');
-    CHECK(kExperimentFlavors[i].prefix2 >= 'A');
-    CHECK(kExperimentFlavors[i].prefix2 +
-          kExperimentFlavors[i].flavors - 1 <= 'Z');
-
-    if (kExperimentFlavors[i].locale != locale &&
-        kExperimentFlavors[i].locale != ASCIIToWide("*"))
+  for (int i = 0; i < arraysize(kExperiments); ++i) {
+    if (kExperiments[i].locale != locale &&
+        kExperiments[i].locale != ASCIIToWide("*"))
       continue;
 
     std::vector<string16> brand_codes;
-    base::SplitString(kExperimentFlavors[i].brands, L',', &brand_codes);
+    base::SplitString(kExperiments[i].brands, L',', &brand_codes);
     if (brand_codes.empty())
       return false;
     for (std::vector<string16>::iterator it = brand_codes.begin();
          it != brand_codes.end(); ++it) {
       if (*it != brand && *it != L"*")
         continue;
-
       // We have found our match.
+      const UserExperimentDetails& match = kExperiments[i];
+      // Find out how many flavors we have. Zero means no experiment.
+      int num_flavors = 0;
+      while (match.flavors[num_flavors].heading_id) { ++num_flavors; }
+      if (!num_flavors)
+        return false;
+
       if (flavor < 0)
-        flavor = base::RandInt(0, kExperimentFlavors[i].flavors - 1);
+        flavor = base::RandInt(0, num_flavors - 1);
       experiment->flavor = flavor;
-      experiment->heading = kExperimentFlavors[i].headings[flavor];
-      experiment->control_group = kExperimentFlavors[i].control_group;
-      experiment->prefix.resize(2);
-      experiment->prefix[0] = kExperimentFlavors[i].prefix1;
-      experiment->prefix[1] = kExperimentFlavors[i].prefix2 + flavor;
-      experiment->compact_bubble = (brand == kBrief) && (flavor == 1);
+      experiment->heading = match.flavors[flavor].heading_id;
+      experiment->control_group = match.control_group;
+      const wchar_t prefix[] = { match.prefix[0], match.prefix[1] + flavor, 0 };
+      experiment->prefix = prefix;
+      experiment->flags = match.flavors[flavor].flags;
       return true;
     }
   }
@@ -852,6 +851,16 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
     default:
       outcome = kToastExpTriesErrorGroup;
   };
+
+  if (outcome == kToastExpTriesOkGroup) {
+    // User tried chrome, but if it had the default group button it belongs
+    // to a different outcome group.
+    UserExperiment experiment;
+    if (GetExperimentDetails(&experiment, flavor)) {
+      outcome = experiment.flags & kMakeDefault ? kToastExpTriesOkDefaultGroup :
+                                                  kToastExpTriesOkGroup;
+    }
+  }
 
   // Write to the |client| key for the last time.
   SetClient(experiment_group + outcome, true);
