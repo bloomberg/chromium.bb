@@ -528,6 +528,7 @@ button#detail-view:not([disabled]) {
   bottom: 0;
   display: -webkit-box;
   left: 0;
+  pointer-events: none;
   position: absolute;
   right: 0;
   top: 0;
