@@ -105,12 +105,18 @@ void AudioMessageFilter::OnChannelClosing() {
   IDMap<media::AudioOutputIPCDelegate>::iterator it(&delegates_);
   while (!it.IsAtEnd()) {
     it.GetCurrentValue()->OnIPCClosed();
+    delegates_.Remove(it.GetCurrentKey());
     it.Advance();
   }
 }
 
 AudioMessageFilter::~AudioMessageFilter() {
   DVLOG(1) << "AudioMessageFilter::~AudioMessageFilter()";
+
+  // Just in case the message filter is deleted before the channel
+  // is closed and there are still living audio devices.
+  OnChannelClosing();
+
   DCHECK(filter_);
   filter_ = NULL;
 }

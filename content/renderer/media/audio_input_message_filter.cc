@@ -22,6 +22,11 @@ AudioInputMessageFilter::AudioInputMessageFilter()
 
 AudioInputMessageFilter::~AudioInputMessageFilter() {
   DVLOG(1) << "AudioInputMessageFilter::~AudioInputMessageFilter()";
+
+  // Just in case the message filter is deleted before the channel
+  // is closed and there are still living audio devices.
+  OnChannelClosing();
+
   DCHECK_EQ(filter_, this);
   filter_ = NULL;
 }
@@ -83,6 +88,7 @@ void AudioInputMessageFilter::OnChannelClosing() {
   IDMap<media::AudioInputIPCDelegate>::iterator it(&delegates_);
   while (!it.IsAtEnd()) {
     it.GetCurrentValue()->OnIPCClosed();
+    delegates_.Remove(it.GetCurrentKey());
     it.Advance();
   }
 }

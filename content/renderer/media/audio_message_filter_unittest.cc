@@ -110,6 +110,7 @@ TEST(AudioMessageFilterTest, Basic) {
   delegate.Reset();
 
   message_loop.RunAllPending();
+  filter->RemoveDelegate(stream_id);
 }
 
 TEST(AudioMessageFilterTest, Delegates) {
@@ -143,4 +144,7 @@ TEST(AudioMessageFilterTest, Delegates) {
   delegate2.Reset();
 
   message_loop.RunAllPending();
+
+  filter->RemoveDelegate(stream_id1);
+  filter->RemoveDelegate(stream_id2);
 }
