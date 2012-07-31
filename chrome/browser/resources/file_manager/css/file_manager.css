@@ -465,6 +465,8 @@ div.root-eject:hover {
 }
 
 #search-box:focus {
+  border-color: rgb(77, 144, 254);
+  outline: none;
   width: 240px;
 }
 
@@ -472,6 +474,27 @@ div.root-eject:hover {
 #filename-input-box input {
   border: 1px solid #BBB;
   border-radius: 2px;
+}
+
+#search-box::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  background-image: -webkit-image-set(
+    url('../images/files/ui/search_clear.png') 1x,
+    url('../images/files/ui/2x/search_clear.png') 2x);
+  height: 16px;
+  width: 16px;
+}
+
+#search-box::-webkit-search-cancel-button:hover {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/search_clear_hover.png') 1x,
+    url('../images/files/ui/2x/search_clear_hover.png') 2x);
+}
+
+#search-box::-webkit-search-cancel-button:active {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/search_clear_pressed.png') 1x,
+    url('../images/files/ui/2x/search_clear_pressed.png') 2x);
 }
 
 button#detail-view {
@@ -745,6 +768,10 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 .table-row-cell input.rename {
   -webkit-margin-start: -3px;
   line-height: 20px;
+}
+
+input.rename:focus {
+  outline-color: rgb(77, 144, 254);
 }
 
 /* Elements that need to be LTR even in an RTL context, but should align
@@ -1435,4 +1462,8 @@ body:not([type='saveas-file']):not([type='full-page'])
 
 #list-container .table-header-cell:hover {
   background-color: #f2f2f2;
+}
+
+button:focus {
+  outline-color: rgb(77, 144, 254);
 }
