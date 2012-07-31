@@ -398,6 +398,7 @@ const char kCellularAllowRoamingProperty[] = "Cellular.AllowRoaming";
 const char kHomeProviderProperty[] = "Cellular.HomeProvider";
 const char kMeidProperty[] = "Cellular.MEID";
 const char kImeiProperty[] = "Cellular.IMEI";
+const char kIccidProperty[] = "Cellular.ICCID";
 const char kImsiProperty[] = "Cellular.IMSI";
 const char kEsnProperty[] = "Cellular.ESN";
 const char kMdnProperty[] = "Cellular.MDN";
