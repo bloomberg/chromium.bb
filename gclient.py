@@ -882,12 +882,16 @@ solutions = [
   def LoadCurrentConfig(options):
     """Searches for and loads a .gclient file relative to the current working
     dir. Returns a GClient object."""
-    path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
-    if not path:
-      return None
-    client = GClient(path, options)
-    client.SetConfig(gclient_utils.FileRead(
-        os.path.join(path, options.config_filename)))
+    if options.spec:
+      client = GClient('.', options)
+      client.SetConfig(options.spec)
+    else:
+      path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
+      if not path:
+        return None
+      client = GClient(path, options)
+      client.SetConfig(gclient_utils.FileRead(
+          os.path.join(path, options.config_filename)))
 
     if (options.revisions and
         len(client.dependencies) > 1 and
@@ -1221,10 +1225,15 @@ modules to operate on as well. If optional [url] parameter is
 provided, then configuration is read from a specified Subversion server
 URL.
 """
-  parser.add_option('--spec',
-                    help='create a gclient file containing the provided '
-                         'string. Due to Cygwin/Python brokenness, it '
-                         'probably can\'t contain any newlines.')
+
+  # We do a little dance with the --gclientfile option.  'gclient config' is the
+  # only command where it's acceptable to have both '--gclientfile' and '--spec'
+  # arguments.  So, we temporarily stash any --gclientfile parameter into
+  # options.output_config_file until after the (gclientfile xor spec) error
+  # check.
+  parser.remove_option('--gclientfile')
+  parser.add_option('--gclientfile', dest='output_config_file',
+                    help='Specify an alternate .gclient file')
   parser.add_option('--name',
                     help='overrides the default name for the solution')
   parser.add_option('--deps-file', default='DEPS',
@@ -1237,7 +1246,10 @@ URL.
                          'will never sync them)')
   parser.add_option('--git-deps', action='store_true',
                     help='sets the deps file to ".DEPS.git" instead of "DEPS"')
+  parser.set_defaults(config_filename=None)
   (options, args) = parser.parse_args(args)
+  if options.output_config_file:
+    setattr(options, 'config_filename', getattr(options, 'output_config_file'))
   if ((options.spec and args) or len(args) > 2 or
       (not options.spec and not args)):
     parser.error('Inconsistent arguments. Use either --spec or one or 2 args')
@@ -1520,6 +1532,7 @@ def Parser():
     jobs = 1
   else:
     jobs = 8
+  gclientfile_default = os.environ.get('GCLIENT_FILE', '.gclient')
   parser.add_option('-j', '--jobs', default=jobs, type='int',
                     help='Specify how many SCM commands can run in parallel; '
                           'default=%default')
@@ -1527,8 +1540,13 @@ def Parser():
                     help='Produces additional output for diagnostics. Can be '
                           'used up to three times for more logging info.')
   parser.add_option('--gclientfile', dest='config_filename',
-                    default=os.environ.get('GCLIENT_FILE', '.gclient'),
-                    help='Specify an alternate %default file')
+                    default=None,
+                    help='Specify an alternate %s file' % gclientfile_default)
+  parser.add_option('--spec',
+                    default=None,
+                    help='create a gclient file containing the provided '
+                         'string. Due to Cygwin/Python brokenness, it '
+                         'probably can\'t contain any newlines.')
   # Integrate standard options processing.
   old_parser = parser.parse_args
   def Parse(args):
@@ -1537,6 +1555,10 @@ def Parser():
         min(options.verbose, 3)]
     logging.basicConfig(level=level,
         format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
+    if options.config_filename and options.spec:
+      parser.error('Cannot specifiy both --gclientfile and --spec')
+    if not options.config_filename:
+      options.config_filename = gclientfile_default
     options.entries_filename = options.config_filename + '_entries'
     if options.jobs < 1:
       parser.error('--jobs must be 1 or higher')
