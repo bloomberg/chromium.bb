@@ -76,6 +76,9 @@ void SuggestionsSourceDiscovery::FetchItems(Profile* profile) {
                                       ASCIIToUTF16((*it)->link_text()),
                                       GURL((*it)->link_url()));
     page_value->SetDouble("score", (*it)->score());
+    const std::string& url_image = (*it)->url_image();
+    if (url_image.length() > 0)
+      page_value->SetString("urlImage", url_image);
     items_.push_back(page_value);
   }
   combiner_->OnItemsReady();

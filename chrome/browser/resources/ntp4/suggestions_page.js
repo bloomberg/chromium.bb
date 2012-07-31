@@ -109,7 +109,10 @@ cr.define('ntp', function() {
       // Sets the tooltip.
       this.title = data.title;
 
-      var thumbnailUrl = 'chrome://thumb/' + data.url;
+      var thumbnailUrl;
+      thumbnailUrl = data.urlImage ? data.urlImage :
+        'chrome://thumb/' + data.url;
+
       this.querySelector('.thumbnail').style.backgroundImage =
           url(thumbnailUrl);
 

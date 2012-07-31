@@ -16,17 +16,19 @@ namespace extensions {
 // wants to inject in the NTP's recommended pane.
 class SuggestedLink {
  public:
-  SuggestedLink(const std::string& link_url_, const std::string& link_text_,
-                double score);
+  SuggestedLink(const std::string& link_url, const std::string& link_text,
+                const std::string& url_image, double score);
   ~SuggestedLink();
 
   const std::string& link_url() const { return link_url_; }
   const std::string& link_text() const { return link_text_; }
+  const std::string& url_image() const { return url_image_; }
   double score() const { return score_; }
 
  private:
   std::string link_url_;
   std::string link_text_;
+  std::string url_image_;
 
   // |score_| is a value between 0 and 1 indicating the relative importance of
   // this suggested link. A link with score 1 is twice as likely to be presented

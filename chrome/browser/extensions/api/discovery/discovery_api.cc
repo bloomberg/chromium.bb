@@ -34,11 +34,18 @@ bool DiscoverySuggestFunction::RunImpl() {
     }
   }
 
+  std::string empty;
+  const std::string* url_image = &empty;
+  if (params->details.url_image != NULL)
+    url_image = params->details.url_image.get();
+
   extensions::SuggestedLinksRegistry* registry =
       extensions::SuggestedLinksRegistryFactory::GetForProfile(profile());
   scoped_ptr<extensions::SuggestedLink> suggested_link(
       new extensions::SuggestedLink(params->details.link_url,
-                                    params->details.link_text, score));
+                                    params->details.link_text,
+                                    *url_image,
+                                    score));
   registry->Add(extension_id(), suggested_link.Pass());
   return true;
 }

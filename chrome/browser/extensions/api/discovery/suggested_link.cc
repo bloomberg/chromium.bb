@@ -8,9 +8,11 @@ namespace extensions {
 
 SuggestedLink::SuggestedLink(const std::string& link_url,
                              const std::string& link_text,
+                             const std::string& url_image,
                              double score)
     : link_url_(link_url),
       link_text_(link_text),
+      url_image_(url_image),
       score_(score) {}
 
 SuggestedLink::~SuggestedLink() {}

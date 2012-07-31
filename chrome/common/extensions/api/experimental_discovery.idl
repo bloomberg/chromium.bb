@@ -14,6 +14,9 @@ namespace experimental.discovery {
     // The linkified text. It should be relatively short.
     DOMString linkText;
 
+    // The url of the image to use as a tile.
+    DOMString? urlImage;
+
     // A score indicating how interesting that suggestion is. The value must be
     // between 0 and 1. A suggestion with score 1 is twice as likely to be
     // displayed than one with a score of 0.5. Defaults to 1.
