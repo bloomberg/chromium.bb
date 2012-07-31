@@ -17,8 +17,11 @@ namespace mediaGalleries {
   };
 
   [inline_doc] dictionary MediaFileSystemsDetails {
-    // Whether to prompt the user for additional media galleries before
-    // returning the permitted set. Default is silent.
+    // Whether to prompt the user for permission to additional media galleries
+    // before returning the permitted set. Default is silent.  If the value
+    // 'yes' is passed, or if the application has not been granted access to
+    // any media galleries and the value 'if_needed' is passed, then the
+    // media gallery configuration dialog will be displayed.
     GetMediaFileSystemsInteractivity? interactive;
   };
 
