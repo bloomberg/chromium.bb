@@ -14,7 +14,7 @@ if not env.AllowInlineAssembly():
 
 test_guest = env.ComponentProgram(
     'setregs_test_guest', ['setregs_test_guest.c'],
-    EXTRA_LIBS=['${NONIRT_LIBS}'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'test_common'])
 
 test_host = trusted_env.ComponentProgram(
     'setregs_test_host', ['setregs_test_host.c'], EXTRA_LIBS=['sel'])

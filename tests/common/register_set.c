@@ -7,6 +7,8 @@
 #include "native_client/tests/common/register_set.h"
 
 
+const uint8_t kX86FlagBits[5] = { 0, 2, 6, 7, 11 };
+
 void RegsFillTestValues(struct NaClSignalContext *regs) {
   int index;
   for (index = 0; index < sizeof(*regs); index++) {

@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
 #define NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
 
@@ -99,6 +100,137 @@
         ".p2align 4\n"  /* Align for whatever comes after */ \
         asm_code \
         : : "r"(regs) : "memory")
+
+#else
+# error Unsupported architecture
+#endif
+
+#if defined(__i386__) || defined(__x86_64__)
+
+/*
+ * Normally it is possible to save x86 flags using the 'pushf'
+ * instruction.  However, 'pushf' is disallowed under NaCl.  Instead,
+ * we can read a subset of the flags indirectly using conditional
+ * instructions.
+ *
+ * We save 5 flags:
+ *   CF (carry), PF (parity), ZF (zero), SF (sign), OF (overflow)
+ *
+ * We don't attempt to check:
+ *   AF (for BCD arithmetic only, which is not allowed by the validator)
+ *   TF (trap flag:  not settable or observable by untrusted code)
+ *   DF (direction flag:  indirectly observable, but it's a hassle to do so)
+ */
+extern const uint8_t kX86FlagBits[5];
+
+/* We use 'mov' and 'lea' because they do not modify the flags. */
+# define SAVE_X86_FLAGS_INTO_REG(reg) \
+    "mov $0, "reg"\n" \
+    "jnc 0f; lea 1<<0("reg"), "reg"; 0:\n" \
+    "jnp 0f; lea 1<<2("reg"), "reg"; 0:\n" \
+    "jnz 0f; lea 1<<6("reg"), "reg"; 0:\n" \
+    "jns 0f; lea 1<<7("reg"), "reg"; 0:\n" \
+    "jno 0f; lea 1<<11("reg"), "reg"; 0:\n"
+
+#endif
+
+/*
+ * REGS_SAVER_FUNC(def_func, callee_func) defines a function named
+ * def_func which saves all registers on the stack and passes them to
+ * callee_func in the form of a "struct NaClSignalContext *".
+ */
+
+#if defined(__i386__)
+
+# define REGS_SAVER_FUNC(def_func, callee_func) \
+    void def_func(); \
+    void callee_func(struct NaClSignalContext *regs); \
+    __asm__( \
+        ".pushsection .text, \"ax\", @progbits\n" \
+        #def_func ":\n" \
+        /* Push most of "struct NaClSignalContext" in reverse order. */ \
+        "push $0\n"  /* Leave space for flags */ \
+        "push $0\n"  /* Leave space for prog_ctr */ \
+        "push %edi\n" \
+        "push %esi\n" \
+        "push %ebp\n" \
+        "push %esp\n" \
+        "push %ebx\n" \
+        "push %edx\n" \
+        "push %ecx\n" \
+        "push %eax\n" \
+        /* Save flags. */ \
+        SAVE_X86_FLAGS_INTO_REG("%eax") \
+        "movl %eax, 0x24(%esp)\n" \
+        /* Adjust saved %esp value to account for preceding pushes. */ \
+        "addl $5 * 4, 0x10(%esp)\n" \
+        /* Push argument to callee_func(). */ \
+        "push %esp\n" \
+        "call " #callee_func "\n" \
+        ".popsection\n")
+
+#elif defined(__x86_64__)
+
+# define REGS_SAVER_FUNC(def_func, callee_func) \
+    void def_func(); \
+    void callee_func(struct NaClSignalContext *regs); \
+    __asm__( \
+        ".pushsection .text, \"ax\", @progbits\n" \
+        #def_func ":\n" \
+        /* Push most of "struct NaClSignalContext" in reverse order. */ \
+        "push $0\n"  /* Leave space for flags */ \
+        "push $0\n"  /* Leave space for prog_ctr */ \
+        "push %r15\n" \
+        "push %r14\n" \
+        "push %r13\n" \
+        "push %r12\n" \
+        "push %r11\n" \
+        "push %r10\n" \
+        "push %r9\n" \
+        "push %r8\n" \
+        "push %rsp\n" \
+        "push %rbp\n" \
+        "push %rdi\n" \
+        "push %rsi\n" \
+        "push %rdx\n" \
+        "push %rcx\n" \
+        "push %rbx\n" \
+        "push %rax\n" \
+        /* Save flags. */ \
+        SAVE_X86_FLAGS_INTO_REG("%rax") \
+        "movl %eax, 0x88(%rsp)\n" \
+        /* Adjust saved %rsp value to account for preceding pushes. */ \
+        "addq $10 * 8, 0x38(%rsp)\n" \
+        /* Set argument to callee_func(). */ \
+        "movl %esp, %edi\n" \
+        /* Align the stack pointer */ \
+        "and $~15, %esp\n" \
+        "addq %r15, %rsp\n" \
+        "call " #callee_func "\n" \
+        ".popsection\n")
+
+#elif defined(__arm__)
+
+/*
+ * "push {sp}" is undefined ("unpredictable") on ARM, so we move sp to
+ * a temporary register to push its original value.  (Indeed, whether
+ * sp is modified before or after being written differs between QEMU
+ * and the Panda boards.)
+ */
+# define REGS_SAVER_FUNC(def_func, callee_func) \
+    void def_func(); \
+    void callee_func(struct NaClSignalContext *regs); \
+    __asm__( \
+        ".pushsection .text, \"ax\", %progbits\n" \
+        #def_func ":\n" \
+        "push {r14}\n" \
+        "add r14, sp, #4\n" \
+        "push {r0-r12, r14}\n"  /* Push most of "struct NaClSignalContext" */ \
+        "mov r0, sp\n"  /* Argument to callee_func() */ \
+        /* Padding to put the "bl" at the end of the bundle */ \
+        "nop; nop; nop\n" \
+        "bl " #callee_func "\n" \
+        ".popsection\n")
 
 #else
 # error Unsupported architecture
