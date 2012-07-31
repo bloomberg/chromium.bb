@@ -206,7 +206,7 @@
     },
     'media': {
       'filepath': 'media/|third_party/(ffmpeg|openmax)/|webmediaplayer|'\
-        'audio_message_filter|video_layer',
+        'audio_message_filter|video_layer|media_internals',
     },
     'message_loop': {
       'filepath': 'base/message_'
