@@ -908,11 +908,9 @@
     <enum name="key_state">
       <description summary="physical key state">
         Describes the physical state of a key which provoked the key event.
-	When a key repeats, the sequence is down -> repeat -> repeat -> up.
       </description>
       <entry name="released" value="0" summary="key is not pressed"/>
       <entry name="pressed" value="1" summary="key is pressed"/>
-      <entry name="repeat" value="2" summary="key is pressed and repeating"/>
     </enum>
 
     <event name="key">
