@@ -4715,9 +4715,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       # GAIA authentication.
       self.GetNextEvent()
     except JSONInterfaceError as e:
-      raise JSONInterfaceError('%s\nLogin failed. Perhaps Chrome crashed, '
+      raise JSONInterfaceError('Login failed. Perhaps Chrome crashed, '
                                'failed to start, or the login flow is '
-                               'broken?' % str(e))
+                               'broken? Error message: %s' % str(e))
 
   def Logout(self):
     """Log out from ChromeOS and wait for session_manager to come up.
