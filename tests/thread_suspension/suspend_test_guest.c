@@ -167,18 +167,6 @@ static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
         "push $ContinueAfterSyscall\n"  /* Push return address */
         "nacljmp %%eax, %%r15\n");
 #elif defined(__arm__)
-    /*
-     * We adjust for the 4 arguments that tramp_arm.S pushes on the
-     * stack and arm/nacl_switch.S pops off the stack.
-     *
-     * TODO(mseaborn): We should change the TCB and remove this
-     * adjustment, because it is wrong for
-     * NaClAppThreadGetSuspendedRegisters() to report register state
-     * that is different from what untrusted code will be resumed
-     * with.
-     */
-    test_shm->expected_regs.stack_ptr -= 16;
-
     call_regs.r0 = (uintptr_t) test_shm;  /* Set syscall argument */
     call_regs.r1 = syscall_addr;  /* Scratch register */
     call_regs.lr = (uintptr_t) ContinueAfterSyscall;

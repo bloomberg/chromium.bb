@@ -43,13 +43,6 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    */
   context->sysret = context->stack_ptr;
 
-  /*
-   * NaClSwitch pops 4 words from stack which are the parameters for
-   * syscall. In this case, it is not a syscall so no parameters, but we still
-   * need to adjust the stack
-   */
-  context->stack_ptr -= 16;
-
   NaClSwitch(context);
 }
 

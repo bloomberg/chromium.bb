@@ -36,7 +36,5 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
   add r0, #4  /* skip prog_ctr in struct NaClThreadContext */
   /* Read sysret and new_prog_ctr from struct NaClThreadContext */
   ldmia r0, {r0, r1}
-  /* Pop 4 arguments saved on the stack by the trampoline code */
-  add sp, #16
   /* Transfer control to untrusted code */
   bx r1
