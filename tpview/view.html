@@ -20,11 +20,11 @@ var finger_view_controller;
 function update_range(event, ui) {
   finger_view_controller.setRange(ui.values[0], ui.values[1]);
   var begin_event = finger_view_controller.getEvent(ui.values[0]);
-  $("#begin_event").text(begin_event);
+  $("#begin_event").val(begin_event);
   if ((beginTimestamp = finger_view_controller.getTimestamp(ui.values[0])) > 0)
     $('#input_begin_time').val(beginTimestamp);
   var end_event = finger_view_controller.getEvent(ui.values[1]);
-  $("#end_event").text(end_event);
+  $("#end_event").val(end_event);
   endTimestamp = finger_view_controller.getPreviousHardwareStateTimestamp(
       ui.values[1]);
   if (endTimestamp > 0)
@@ -371,12 +371,12 @@ $(document).ready(function() {
 <button id="begin_stepforward">Begin Step Forward</button>
 Set begin time: <input type='text' id='input_begin_time'
                   onkeyup="setBeginTimestamp()" />
-<div id="begin_event"></div><br/>
+<br/><textarea rows="4" id="begin_event" readonly="readonly"></textarea><br/>
 <button id="end_stepback">End Step Back</button>
 <button id="end_stepforward">End Step Forward</button>
 Set end time: <input type='text' id='input_end_time'
                   onkeyup="setEndTimestamp()" />
-<div id="end_event"></div><br/>
+<br/><textarea rows="4" id="end_event" readonly="readonly"></textarea><br/>
 <div id='num_fts'></div>
 <button id="first_finger_touch"> &lt;&lt; </button>
 <button id="prev_finger_touch"> &lt; </button>
