@@ -493,10 +493,11 @@ def choose_x_session():
   # "unity-2d-panel" was chosen here simply because it appears in the TryExec
   # line of the session's .desktop file; other choices might be just as good.
   for test_file, command in [
-    ("/usr/bin/gnome-session-fallback", "/usr/bin/gnome-session-fallback"),
+    ("/usr/bin/gnome-session-fallback",
+      ["/etc/X11/Xsession", "gnome-session-fallback"]),
     ("/etc/gdm/Xsession", "/etc/gdm/Xsession"),
     ("/usr/bin/unity-2d-panel",
-      ["/usr/bin/gnome-session", "--session=ubuntu-2d"]),
+      ["/etc/X11/Xsession", "/usr/bin/gnome-session --session=ubuntu-2d"]),
   ]:
     if os.path.exists(test_file):
       return command
