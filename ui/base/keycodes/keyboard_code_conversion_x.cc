@@ -64,10 +64,10 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_KP_End:
       return VKEY_END;
     case XK_Page_Up:
-    case XK_KP_Page_Up:
+    case XK_KP_Page_Up:  // aka XK_KP_Prior
       return VKEY_PRIOR;
     case XK_Page_Down:
-    case XK_KP_Page_Down:
+    case XK_KP_Page_Down:  // aka XK_KP_Next
       return VKEY_NEXT;
     case XK_Left:
     case XK_KP_Left:
@@ -235,6 +235,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_DECIMAL;
     case XK_KP_Divide:
       return VKEY_DIVIDE;
+    case XK_KP_Equal:
     case XK_equal:
     case XK_plus:
       return VKEY_OEM_PLUS;
@@ -329,6 +330,11 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_F23:
     case XK_F24:
       return static_cast<KeyboardCode>(VKEY_F1 + (keysym - XK_F1));
+    case XK_KP_F1:
+    case XK_KP_F2:
+    case XK_KP_F3:
+    case XK_KP_F4:
+      return static_cast<KeyboardCode>(VKEY_F1 + (keysym - XK_KP_F1));
 
 #if defined(TOOLKIT_GTK)
     case XF86XK_Refresh:
