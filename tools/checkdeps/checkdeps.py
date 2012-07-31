@@ -340,7 +340,7 @@ class DepsChecker(object):
     problems = []
     for file_path, include_lines in added_includes:
       # TODO(joi): Make this cover Java as well.
-      if not os.path.splitext(file_path)[1] in cpp.EXTENSIONS:
+      if not cpp.IsCppFile(file_path):
         pass
       rules_for_file = GetDirectoryRules(os.path.dirname(file_path))
       if rules_for_file:

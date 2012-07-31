@@ -5,6 +5,7 @@
 """Checks C++ and Objective-C files for illegal includes."""
 
 import codecs
+import os
 import re
 
 from rules import Rule
@@ -113,3 +114,10 @@ class CppChecker(object):
           ret_val += line_status
 
     return ret_val
+
+  @staticmethod
+  def IsCppFile(file_path):
+    """Returns True iff the given path ends in one of the extensions
+    handled by this checker.
+    """
+    return os.path.splitext(file_path)[1] in CppChecker.EXTENSIONS
