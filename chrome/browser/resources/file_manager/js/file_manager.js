@@ -1894,7 +1894,7 @@ FileManager.prototype = {
     li.className = 'root-item';
     var dm = this.directoryModel_;
     var handleClick = function() {
-      if (li.selected) {
+      if (li.selected && path !== dm.getCurrentDirPath()) {
         dm.changeDirectory(path);
       }
     };
