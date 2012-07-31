@@ -29,18 +29,6 @@ const char kValidateCallbacks[] = "validateCallbacks";
 const char kValidateAPI[] = "validateAPI";
 #endif
 
-std::string GetContextTypeDescription(Feature::Context context_type) {
-  switch (context_type) {
-    case Feature::UNSPECIFIED_CONTEXT:         return "UNSPECIFIED";
-    case Feature::BLESSED_EXTENSION_CONTEXT:   return "BLESSED_EXTENSION";
-    case Feature::UNBLESSED_EXTENSION_CONTEXT: return "UNBLESSED_EXTENSION";
-    case Feature::CONTENT_SCRIPT_CONTEXT:      return "CONTENT_SCRIPT";
-    case Feature::WEB_PAGE_CONTEXT:            return "WEB_PAGE";
-  }
-  NOTREACHED();
-  return "";
-}
-
 }  // namespace
 
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
@@ -54,7 +42,7 @@ ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
   VLOG(1) << "Created context:\n"
           << "  extension id: " << GetExtensionID() << "\n"
           << "  frame:        " << web_frame_ << "\n"
-          << "  context type: " << GetContextTypeDescription(context_type);
+          << "  context type: " << GetContextTypeDescription();
 }
 
 ChromeV8Context::~ChromeV8Context() {
@@ -170,7 +158,7 @@ void ChromeV8Context::DispatchOnLoadEvent(bool is_incognito_process,
   v8::HandleScope handle_scope;
   v8::Handle<v8::Value> argv[] = {
     v8::String::New(GetExtensionID().c_str()),
-    v8::String::New(GetContextTypeDescription(context_type_).c_str()),
+    v8::String::New(GetContextTypeDescription().c_str()),
     v8::Boolean::New(is_incognito_process),
     v8::Integer::New(manifest_version),
   };
@@ -180,4 +168,16 @@ void ChromeV8Context::DispatchOnLoadEvent(bool is_incognito_process,
 void ChromeV8Context::DispatchOnUnloadEvent() {
   v8::HandleScope handle_scope;
   CallChromeHiddenMethod("dispatchOnUnload", 0, NULL, NULL);
+}
+
+std::string ChromeV8Context::GetContextTypeDescription() {
+  switch (context_type_) {
+    case Feature::UNSPECIFIED_CONTEXT:         return "UNSPECIFIED";
+    case Feature::BLESSED_EXTENSION_CONTEXT:   return "BLESSED_EXTENSION";
+    case Feature::UNBLESSED_EXTENSION_CONTEXT: return "UNBLESSED_EXTENSION";
+    case Feature::CONTENT_SCRIPT_CONTEXT:      return "CONTENT_SCRIPT";
+    case Feature::WEB_PAGE_CONTEXT:            return "WEB_PAGE";
+  }
+  NOTREACHED();
+  return "";
 }

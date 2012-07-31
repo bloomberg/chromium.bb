@@ -10,6 +10,18 @@ var OpenChannelToExtension = extensionNatives.OpenChannelToExtension;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
+var inIncognitoContext = requireNative('process').InIncognitoContext();
+
+chrome.extension = chrome.extension || {};
+
+var manifestVersion = requireNative('process').GetManifestVersion();
+if (manifestVersion < 2) {
+  chrome.self = chrome.extension;
+  chrome.extension.inIncognitoTab = inIncognitoContext;
+}
+
+chrome.extension.inIncognitoContext = inIncognitoContext;
+
 // This should match chrome.windows.WINDOW_ID_NONE.
 //
 // We can't use chrome.windows.WINDOW_ID_NONE directly because the

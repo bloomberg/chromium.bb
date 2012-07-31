@@ -196,6 +196,56 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   }
 };
 
+class ProcessInfoNativeHandler : public ChromeV8Extension {
+ public:
+  explicit ProcessInfoNativeHandler(
+      ExtensionDispatcher* dispatcher,
+      const std::string& extension_id,
+      const std::string& context_type,
+      bool is_incognito_context,
+      int manifest_version)
+      : ChromeV8Extension(dispatcher),
+        extension_id_(extension_id),
+        context_type_(context_type),
+        is_incognito_context_(is_incognito_context),
+        manifest_version_(manifest_version) {
+    RouteFunction("GetExtensionId",
+        base::Bind(&ProcessInfoNativeHandler::GetExtensionId,
+                   base::Unretained(this)));
+    RouteFunction("GetContextType",
+        base::Bind(&ProcessInfoNativeHandler::GetContextType,
+                   base::Unretained(this)));
+    RouteFunction("InIncognitoContext",
+        base::Bind(&ProcessInfoNativeHandler::InIncognitoContext,
+                   base::Unretained(this)));
+    RouteFunction("GetManifestVersion",
+        base::Bind(&ProcessInfoNativeHandler::GetManifestVersion,
+                   base::Unretained(this)));
+  }
+
+  v8::Handle<v8::Value> GetExtensionId(const v8::Arguments& args) {
+    return v8::String::New(extension_id_.c_str());
+  }
+
+  v8::Handle<v8::Value> GetContextType(const v8::Arguments& args) {
+    return v8::String::New(context_type_.c_str());
+  }
+
+  v8::Handle<v8::Value> InIncognitoContext(const v8::Arguments& args) {
+    return v8::Boolean::New(is_incognito_context_);
+  }
+
+  v8::Handle<v8::Value> GetManifestVersion(const v8::Arguments& args) {
+    return v8::Integer::New(manifest_version_);
+  }
+
+ private:
+  std::string extension_id_;
+  std::string context_type_;
+  bool is_incognito_context_;
+  int manifest_version_;
+};
+
 class ChannelNativeHandler : public NativeHandler {
  public:
   explicit ChannelNativeHandler(chrome::VersionInfo::Channel channel)
@@ -738,6 +788,16 @@ void ExtensionDispatcher::DidCreateScriptContext(
           static_cast<chrome::VersionInfo::Channel>(chrome_channel_))));
   module_system->RegisterNativeHandler("logging",
       scoped_ptr<NativeHandler>(new LoggingNativeHandler()));
+
+
+  int manifest_version = extension ? extension->manifest_version() : 1;
+  module_system->RegisterNativeHandler("process",
+      scoped_ptr<NativeHandler>(new ProcessInfoNativeHandler(
+          this, context->GetExtensionID(),
+          context->GetContextTypeDescription(),
+          ChromeRenderProcessObserver::is_incognito_process(),
+          manifest_version)));
+
   GetOrCreateChrome(v8_context);
 
   // Loading JavaScript is expensive, so only run the full API bindings
@@ -784,9 +844,6 @@ void ExtensionDispatcher::DidCreateScriptContext(
 
   context->set_module_system(module_system.Pass());
 
-  int manifest_version = 1;
-  if (extension)
-    manifest_version = extension->manifest_version();
   context->DispatchOnLoadEvent(
       ChromeRenderProcessObserver::is_incognito_process(),
       manifest_version);

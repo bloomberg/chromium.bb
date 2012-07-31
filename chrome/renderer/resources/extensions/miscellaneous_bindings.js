@@ -18,8 +18,10 @@
   var BindToGC = miscNatives.BindToGC;
 
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-  var manifestVersion;
-  var extensionId;
+
+  var processNatives = requireNative('process');
+  var manifestVersion = processNatives.GetManifestVersion();
+  var extensionId = processNatives.GetExtensionId();
 
   // The reserved channel name for the sendRequest/sendMessage APIs.
   // Note: sendRequest is deprecated.
@@ -288,22 +290,3 @@
       }
     });
   }
-
-  // This function is called on context initialization for both content scripts
-  // and extension contexts.
-  chromeHidden.onLoad.addListener(function(tempExtensionId,
-                                           isExtensionProcess,
-                                           inIncognitoContext,
-                                           tempManifestVersion) {
-    extensionId = tempExtensionId;
-    manifestVersion = tempManifestVersion;
-
-    chrome.extension = chrome.extension || {};
-
-    if (manifestVersion < 2) {
-      chrome.self = chrome.extension;
-      chrome.extension.inIncognitoTab = inIncognitoContext;
-    }
-
-    chrome.extension.inIncognitoContext = inIncognitoContext;
-  });

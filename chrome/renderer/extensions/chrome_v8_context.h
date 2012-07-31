@@ -99,6 +99,9 @@ class ChromeV8Context {
   // APIs are available, returns an empty set.
   const std::set<std::string>& GetAvailableExtensionAPIs();
 
+  // Returns a string description of the type of context this is.
+  std::string GetContextTypeDescription();
+
  private:
   // The v8 context the bindings are accessible to. We keep a strong reference
   // to it for simplicity. In the case of content scripts, this is necessary
