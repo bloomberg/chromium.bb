@@ -22,11 +22,20 @@ PRIVATE_BASE_HTTPS_URL = 'https://sandbox.google.com/storage/'
 BASE_GS_URL = 'gs://'
 
 
-def CanonicalizeURL(url):
-  """Convert provided URL to gs:// URL, if it follows a known format."""
+def CanonicalizeURL(url, strict=False):
+  """Convert provided URL to gs:// URL, if it follows a known format.
+
+  Arguments:
+    url: URL to canonicalize.
+    strict: Raises exception if URL cannot be canonicalized.
+  """
   for prefix in (PUBLIC_BASE_HTTPS_URL, PRIVATE_BASE_HTTPS_URL):
     if url.startswith(prefix):
       return url.replace(prefix, BASE_GS_URL)
+
+  if not url.startswith(BASE_GS_URL) and strict:
+    raise ValueError('Url %r cannot be canonicalized.' % url)
+
   return url
 
 

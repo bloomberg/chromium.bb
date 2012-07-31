@@ -26,6 +26,7 @@ except ImportError:
 # lib shouldn't have to import from buildbot like this.
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 
 
@@ -39,14 +40,13 @@ def AbsolutePath(_option, opt, value):
   return expanded
 
 
-def ValidateGSPath(_option, opt, value):
+def NormalizeGSPath(_option, opt, value):
   """Expand paths and make them absolute."""
-  value = value.strip().rstrip("/")
-  if not value.startswith("gs://"):
+  try:
+    return gs.CanonicalizeURL(value, strict=True).rstrip('/')
+  except ValueError:
     raise optparse.OptionValueError("Invalid gs path %s specified for %s"
                                     % (value, opt))
-
-  return value
 
 
 def ValidateLogLevel(_option, opt, value):
@@ -64,7 +64,7 @@ class Option(optparse.Option):
   TYPES = optparse.Option.TYPES + ("path", "gs_path", "log_level")
   TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
   TYPE_CHECKER["path"] = AbsolutePath
-  TYPE_CHECKER["gs_path"] = ValidateGSPath
+  TYPE_CHECKER["gs_path"] = NormalizeGSPath
   TYPE_CHECKER["log_level"] = ValidateLogLevel
 
 

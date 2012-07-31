@@ -22,9 +22,69 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.lib import signals as cros_signals
 
-# pylint: disable=W0212,R0904
+# pylint: disable=W0212
+
+
+class RunCommandMock(partial_mock.PartialCmdMock):
+  """Provides a context where all RunCommand invocations low-level mocked."""
+
+  TARGET = 'chromite.lib.cros_build_lib'
+  ATTRS = ('RunCommand',)
+
+  def __init__(self, tempdir):
+    """Initialize.
+
+    Arguments:
+      tempdir: A temporary directory to use for mocking.
+    """
+    partial_mock.PartialCmdMock.__init__(self)
+    self.tempdir = tempdir
+
+  def RunCommand(self, cmd, *args, **kwargs):
+    result = self._results.LookupResult(
+        (cmd,), hook_args=(cmd,) + args, hook_kwargs=kwargs)
+
+    popen_mock = PopenMock(self.tempdir)
+    popen_mock.AddCmdResult(partial_mock.Ignore(), result.returncode,
+                            result.output, result.error)
+    with popen_mock:
+      return self.backup['RunCommand'](cmd, *args, **kwargs)
+
+
+class PopenMock(partial_mock.PartialCmdMock):
+  """Provides a context where all _Popen instances are low-level mocked."""
+
+  TARGET = 'chromite.lib.cros_build_lib._Popen'
+  ATTRS = ('__init__',)
+
+  def __init__(self, tempdir):
+    """Initialize.
+
+    Arguments:
+      tempdir: A temporary directory to use for mocking.
+    """
+    partial_mock.PartialCmdMock.__init__(self)
+    self.tempdir = tempdir
+
+  def _target__init__(self, inst, cmd, *args, **kwargs):
+    result = self._results.LookupResult(
+        (cmd,), hook_args=(inst, cmd,) + args, hook_kwargs=kwargs)
+
+    script = os.path.join(self.tempdir, 'mock_cmd.sh')
+    stdout = os.path.join(self.tempdir, 'output')
+    stderr = os.path.join(self.tempdir, 'error')
+    osutils.WriteFile(stdout, result.output)
+    osutils.WriteFile(stderr, result.error)
+    osutils.WriteFile(
+        script,
+        ['#!/bin/bash\n', 'cat %s\n' % stdout, 'cat %s >&2\n' % stderr,
+         'exit %s' % result.returncode])
+    os.chmod(script, 0700)
+    self.backup['__init__'](inst, [script, '--'] + cmd, *args, **kwargs)
+
 
 class TestRunCommandNoMock(cros_test_lib.TestCase):
   """Class that tests RunCommand by not mocking subprocess.Popen"""

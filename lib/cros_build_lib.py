@@ -2238,3 +2238,42 @@ def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
     else:
       for subitem in iflatten_instance(item, terminate_on_kls):
         yield subitem
+
+
+# TODO: Remove this once we move to snakeoil.
+def load_module(name):
+  """load a module
+
+  Arguments:
+    name: python dotted namespace path of the module to import
+
+  Raises:
+    FailedImport if importing fails
+
+  Returns:
+    imported module
+  """
+  m = __import__(name)
+  # __import__('foo.bar') returns foo, so...
+  for bit in name.split('.')[1:]:
+    m = getattr(m, bit)
+  return m
+
+
+def PredicateSplit(func, iterable):
+  """Splits an iterable into two groups based on a predicate return value.
+
+  Arguments:
+    func:  A functor that takes an item as its argument and returns a boolean
+      value indicating which group the item belongs.
+    iterable: The collection to split.
+
+  Returns:
+    A tuple containing two lists, the first containing items that func()
+    returned True for, and the second containing items that func() returned
+    False for.
+  """
+  trues, falses = [], []
+  for x in iterable:
+    (trues if func(x) else falses).append(x)
+  return trues, falses

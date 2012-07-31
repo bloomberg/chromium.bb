@@ -7,10 +7,8 @@
 
 import functools
 import logging
-import optparse
 import os
 import time
-import urlparse
 
 from chromite.lib import cros_build_lib
 from chromite.lib import commandline
@@ -75,22 +73,18 @@ def _ExtractChrome(src, dest):
 
 class DeployChrome(object):
   """Wraps the core deployment functionality."""
-  def __init__(self, options, tempdir, remote_access=None):
+  def __init__(self, options, tempdir):
     """Initialize the class.
 
     Arguments:
       options: Optparse result structure.
       tempdir: Scratch space for the class.  Caller has responsibility to clean
         it up.
-      remote_access:  For test purposes.  Supply the RemoteAccess instance to
-        use.  Used for deploy_chrome_unittest.py to supply a mock.
     """
     self.tempdir = tempdir
     self.options = options
     self.chrome_dir = os.path.join(tempdir, 'chrome')
-    self.host = remote_access
-    if self.host is None:
-      self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
+    self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
     self.start_ui_needed = False
 
   def _FetchChrome(self):
@@ -243,32 +237,6 @@ class DeployChrome(object):
 
     self._PrepareTarget()
     self._Deploy()
-
-
-def check_gs_path(_option, _opt, value):
-  """Convert passed-in path to gs:// path."""
-  value = value.rstrip('/')
-  if value.startswith('gs://'):
-    return value
-
-  parsed = urlparse.urlparse(value)
-  # pylint: disable=E1101
-  path = parsed.path.lstrip('/')
-
-  if parsed.hostname.startswith('sandbox.google.com'):
-    # Sandbox paths are 'storage/<bucket>/<path_to_object>', so strip out the
-    # first component.
-    storage, _, path = path.partition('/')
-    assert storage == 'storage', 'GS URL %s not in expected format.' % value
-
-  return 'gs://%s' % path
-
-
-class CustomOption(commandline.Option):
-  """Subclass Option class to implement path evaluation."""
-  TYPES = optparse.Option.TYPES + ('gs_path',)
-  TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-  TYPE_CHECKER['gs_path'] = check_gs_path
 
 
 def _CreateParser():
