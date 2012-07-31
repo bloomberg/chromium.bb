@@ -1957,9 +1957,10 @@ binutils-install() {
   echo "pruning hack: ${BINUTILS_INSTALL_DIR}"
   rm -f "${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld"
   rm -f "${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld.bfd"
-  rm -f "${BINUTILS_INSTALL_DIR}/arm-pc-nacl/bin/ld"
-  rm -f "${BINUTILS_INSTALL_DIR}/arm-pc-nacl/bin/ld.bfd"
 
+  # Also remove "${BINUTILS_INSTALL_DIR}/arm-pc-nacl" which contains
+  # duplicate binaries and unused linker scripts
+  rm -rf "${BINUTILS_INSTALL_DIR}/arm-pc-nacl/"
   spopd
 }
 
