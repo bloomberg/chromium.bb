@@ -50,6 +50,7 @@ enum animation_type {
 
 struct focus_state {
 	struct weston_seat *seat;
+	struct workspace *ws;
 	struct weston_surface *keyboard_focus;
 	struct wl_list link;
 	struct wl_listener seat_destroy_listener;
@@ -212,6 +213,13 @@ struct rotate_grab {
 		GLfloat y;
 	} center;
 };
+
+static void
+activate(struct desktop_shell *shell, struct weston_surface *es,
+	 struct weston_seat *seat);
+
+static struct workspace *
+get_current_workspace(struct desktop_shell *shell);
 
 static struct shell_surface *
 get_shell_surface(struct weston_surface *surface);
@@ -383,36 +391,29 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 }
 
 static struct focus_state *
-focus_state_create(struct weston_seat *seat)
+focus_state_create(struct weston_seat *seat, struct workspace *ws)
 {
-	struct wl_keyboard *keyboard = seat->seat.keyboard;
 	struct focus_state *state;
-	struct wl_surface *surface;
-	struct shell_surface *shsurf;
 
 	state = malloc(sizeof *state);
 	if (state == NULL)
 		return NULL;
 
-	surface = keyboard->focus;
-	shsurf = get_shell_surface((struct weston_surface *)keyboard->focus);
-
+	state->ws = ws;
 	state->seat = seat;
-	state->keyboard_focus = shsurf->surface;
-	wl_list_init(&state->link);
+	wl_list_insert(&ws->focus_list, &state->link);
 
 	state->seat_destroy_listener.notify = focus_state_seat_destroy;
 	state->surface_destroy_listener.notify = focus_state_surface_destroy;
 	wl_signal_add(&seat->seat.destroy_signal,
 		      &state->seat_destroy_listener);
-	wl_signal_add(&surface->resource.destroy_signal,
-		      &state->surface_destroy_listener);
+	wl_list_init(&state->surface_destroy_listener.link);
 
 	return state;
 }
 
 static void
-pop_focus_state(struct desktop_shell *shell, struct workspace *ws)
+restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 {
 	struct focus_state *state, *next;
 
@@ -420,30 +421,6 @@ pop_focus_state(struct desktop_shell *shell, struct workspace *ws)
 		if (state->keyboard_focus)
 			wl_keyboard_set_focus(state->seat->seat.keyboard,
 					      &state->keyboard_focus->surface);
-
-		focus_state_destroy(state);
-	}
-	wl_list_init(&ws->focus_list);
-}
-
-static void
-push_focus_state(struct desktop_shell *shell, struct workspace *ws)
-{
-	struct weston_seat *seat;
-	struct focus_state *state;
-	struct wl_keyboard *keyboard;
-
-	wl_list_for_each(seat, &shell->compositor->seat_list, link) {
-		keyboard = seat->seat.keyboard;
-		if (keyboard && keyboard->focus) {
-			state = focus_state_create(seat);
-			if (state == NULL)
-				return;
-
-			wl_list_insert(&ws->focus_list, &state->link);
-
-			wl_keyboard_set_focus(seat->seat.keyboard, NULL);
-		}
 	}
 }
 
@@ -598,8 +575,7 @@ reverse_workspace_change_animation(struct desktop_shell *shell,
 	shell->workspaces.anim_dir = -1 * shell->workspaces.anim_dir;
 	shell->workspaces.anim_timestamp = 0;
 
-	push_focus_state(shell, from);
-	pop_focus_state(shell, to);
+	restore_focus_state(shell, to);
 
 	workspace_damage_all_surfaces(from);
 	workspace_damage_all_surfaces(to);
@@ -720,8 +696,7 @@ animate_workspace_change(struct desktop_shell *shell,
 
 	workspace_translate_in(to, 0);
 
-	push_focus_state(shell, from);
-	pop_focus_state(shell, to);
+	restore_focus_state(shell, to);
 
 	workspace_damage_all_surfaces(from);
 	workspace_damage_all_surfaces(to);
@@ -759,8 +734,7 @@ change_workspace(struct desktop_shell *shell, unsigned int index)
 		wl_list_insert(&from->layer.link, &to->layer.link);
 		wl_list_remove(&from->layer.link);
 
-		push_focus_state(shell, from);
-		pop_focus_state(shell, to);
+		restore_focus_state(shell, to);
 	}
 	else
 		animate_workspace_change(shell, index, from, to);
@@ -2004,7 +1978,7 @@ resume_desktop(struct desktop_shell *shell)
 		       &shell->panel_layer.link);
 	wl_list_insert(&shell->panel_layer.link, &ws->layer.link);
 
-	pop_focus_state(shell, get_current_workspace(shell));
+	restore_focus_state(shell, get_current_workspace(shell));
 
 	shell->locked = false;
 	shell->compositor->idle_time = shell->compositor->option_idle_time;
@@ -2364,9 +2338,25 @@ static void
 activate(struct desktop_shell *shell, struct weston_surface *es,
 	 struct weston_seat *seat)
 {
-	struct workspace *ws;
+	struct workspace *ws = get_current_workspace(shell);
+	struct focus_state *state;
 
 	weston_surface_activate(es, seat);
+
+	wl_list_for_each(state, &ws->focus_list, link)
+		if (state->seat == seat)
+			break;
+
+	if (&state->link == &ws->focus_list) {
+		state = focus_state_create(seat, ws);
+		if (state == NULL)
+			return;
+	}
+
+	state->keyboard_focus = es;
+	wl_list_remove(&state->surface_destroy_listener.link);
+	wl_signal_add(&es->surface.resource.destroy_signal,
+		      &state->surface_destroy_listener);
 
 	switch (get_shell_surface_type(es)) {
 	case SHELL_SURFACE_FULLSCREEN:
@@ -2451,9 +2441,6 @@ lock(struct wl_listener *listener, void *data)
 		       &shell->lock_layer.link);
 
 	launch_screensaver(shell);
-
-	/* stash keyboard foci in current workspace */
-	push_focus_state(shell, get_current_workspace(shell));
 
 	/* TODO: disable bindings that should not work while locked. */
 
