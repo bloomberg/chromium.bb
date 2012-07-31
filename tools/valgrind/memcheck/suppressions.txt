@@ -3691,7 +3691,7 @@
    fun:gdk_window_ensure_native
    fun:gdk_x11_drawable_get_xid
    fun:_ZN20GtkNativeViewManager14GetIdForWidgetEP10_GtkWidget
-   fun:_ZNK23RenderWidgetHostViewGtk15GetNativeViewIdEv
+   fun:_ZNK7content23RenderWidgetHostViewGtk15GetNativeViewIdEv
 }
 {
    bug_96402
