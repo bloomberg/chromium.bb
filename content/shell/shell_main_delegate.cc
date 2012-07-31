@@ -27,7 +27,29 @@
 #include "content/shell/paths_mac.h"
 #endif  // OS_MACOSX
 
+#if defined(OS_WIN)
+#include "base/logging_win.h"
+#include <initguid.h>
+#endif
+
 namespace {
+
+#if defined(OS_WIN)
+// If "Content Shell" doesn't show up in your list of trace providers in
+// Sawbuck, add these registry entries to your machine (NOTE the optional
+// Wow6432Node key for x64 machines):
+// 1. Find:  HKLM\SOFTWARE\[Wow6432Node\]Google\Sawbuck\Providers
+// 2. Add a subkey with the name "{6A3E50A4-7E15-4099-8413-EC94D8C2A4B6}"
+// 3. Add these values:
+//    "default_flags"=dword:00000001
+//    "default_level"=dword:00000004
+//    @="Content Shell"
+
+// {6A3E50A4-7E15-4099-8413-EC94D8C2A4B6}
+const GUID kContentShellProviderName = {
+    0x6a3e50a4, 0x7e15, 0x4099,
+        { 0x84, 0x13, 0xec, 0x94, 0xd8, 0xc2, 0xa4, 0xb6 } };
+#endif
 
 void InitLogging() {
   FilePath log_filename;
@@ -56,6 +78,11 @@ ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
+#if defined(OS_WIN)
+  // Enable trace control and transport through event tracing for Windows.
+  logging::LogEventProvider::Initialize(kContentShellProviderName);
+#endif
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     InitLogging();
     CommandLine::ForCurrentProcess()->AppendSwitch(
