@@ -17,24 +17,79 @@ import tempfile
 import toolchainbinaries
 
 
-def VersionSelect(options, flavor):
-  """Decide which version to used based on options + flavor.
+SCRIPT_DIR = os.path.dirname(__file__)
+PARENT_DIR = os.path.dirname(SCRIPT_DIR)
+
+
+def LoadVersions(filepath):
+  """Load version data from specified filepath into a dictionary.
 
   Arguments:
-    options: options from the command line.
-    flavor: kind of toolchain.
+    filepath: path to the file which will be loaded.
+  Returns:
+    A dictionary of KEY:VALUE pairs.
+  """
+  versions = {}
+  version_lines = open(filepath, 'r').readlines()
+  for line_num, line in enumerate(version_lines, start=1):
+    line = line.strip()
+    if line.startswith('#'):
+      continue
+
+    if line == '':
+      continue
+
+    if '=' not in line:
+      raise RuntimeError('Expecting KEY=VALUE in line %d:\n\t>>%s<<' %
+                         (line_num, line))
+
+    key, val = line.split('=', 1)
+    versions[key] = val
+  return versions
+
+
+def VersionSelect(versions, flavor):
+  """Determine svn revision based on version data and flavor.
+
+  Arguments:
+    versions: version data loaded from file.
+    flavor: kind of tool.
   Returns:
     An svn version number.
   """
-  if toolchainbinaries.IsArmTrustedFlavor(flavor):
-    return options.arm_trusted_version
-  elif toolchainbinaries.IsPnaclFlavor(flavor):
-    return options.pnacl_version
-  else:
-    return options.x86_version
+
+  if 'pnacl' in flavor:
+    return versions['PNACL_VERSION']
+  if 'glibc' in flavor:
+    return versions['GLIBC_VERSION']
+  if 'arm-trusted' in flavor:
+    return versions['ARM_TRUSTED_VERSION']
+  return versions['NEWLIB_VERSION']
 
 
-def GetUpdatedDEPS(options):
+def HashKey(flavor):
+  """Generate the name of the key for this flavor's hash.
+
+  Arguments:    flavor: kind of tool.
+  Returns:
+    The string key for the hash.
+  """
+  return 'NACL_TOOL_%s_HASH' % flavor.upper()
+
+
+def HashSelect(versions, flavor):
+  """Determine expected hash value based on version data and flavor.
+
+  Arguments:
+    versions: version data loaded from file.
+    flavor: kind of tool.
+  Returns:
+    A SHA1 hash.
+  """
+  return versions[HashKey(flavor)]
+
+
+def GetUpdatedDEPS(options, versions):
   """Return a suggested DEPS toolchain hash update for all platforms.
 
   Arguments:
@@ -55,20 +110,20 @@ def GetUpdatedDEPS(options):
   new_deps = {}
   for flavor in flavors:
     url = toolchainbinaries.EncodeToolchainUrl(
-      options.base_url, VersionSelect(options, flavor), flavor)
-    new_deps['nacl_toolchain_%s_hash' % flavor] = download_utils.HashUrl(url)
+      options.base_url, VersionSelect(versions, flavor), flavor)
+    new_deps[flavor] = download_utils.HashUrl(url)
   return new_deps
 
 
-def ShowUpdatedDEPS(options):
+def ShowUpdatedDEPS(options, versions):
   """Print a suggested DEPS toolchain hash update for all platforms.
 
   Arguments:
     options: options from the command line.
   """
-  for key, value in sorted(GetUpdatedDEPS(options).iteritems()):
-    print '  "%s":' % key
-    print '      "%s",' % value
+  for flavor, value in sorted(GetUpdatedDEPS(options, versions).iteritems()):
+    keyname = HashKey(flavor)
+    print '%s=%s' % (keyname, value)
     sys.stdout.flush()
 
 
@@ -83,8 +138,7 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
     hash: expected hash of the toolchain.
   """
 
-  parent_dir = os.path.dirname(os.path.dirname(__file__))
-  toolchain_dir = os.path.join(parent_dir, 'toolchain')
+  toolchain_dir = os.path.join(PARENT_DIR, 'toolchain')
   if not os.path.exists(toolchain_dir):
     os.makedirs(toolchain_dir)
   download_dir = os.path.join(toolchain_dir, '.tars')
@@ -140,23 +194,17 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
   return True
 
 
-def Main(args):
- # Generate the time for the most recently modified script used by the download
-  script_dir = os.path.dirname(__file__)
-  src_list = ['download_toolchains.py', 'download_utils.py',
-              'cygtar.py', 'http_download.py']
-  srcs = [os.path.join(script_dir, src) for src in src_list]
-  src_times = []
-  for src in srcs:
-    src_times.append( os.stat(src).st_mtime )
-  script_time = sorted(src_times)[-1]
-
-  parent_dir = os.path.dirname(script_dir)
+def ParseArgs(args):
   parser = optparse.OptionParser()
   parser.add_option(
       '-b', '--base-url', dest='base_url',
       default=toolchainbinaries.BASE_DOWNLOAD_URL,
       help='base url to download from')
+  parser.add_option(
+      '-c', '--hashes', dest='hashes',
+      default=False,
+      action='store_true',
+      help='Calculate hashes.')
   parser.add_option(
       '-k', '--keep', dest='keep',
       default=False,
@@ -168,27 +216,9 @@ def Main(args):
       action='store_false',
       help='Produce less output.')
   parser.add_option(
-      '--x86-version', dest='x86_version',
-      default='latest',
-      help='which version of the toolchain to download for x86')
-  parser.add_option(
-      '--arm-trusted-version', dest='arm_trusted_version',
-      default='latest',
-      help='which version of the trusted toolchain to download for arm')
-  parser.add_option(
-      '--pnacl-version', dest='pnacl_version',
-      default='latest',
-      help='which version of the toolchain to download for pnacl')
-  parser.add_option(
       '--toolchain-dir', dest='toolchain_dir',
-      default=os.path.join(parent_dir, 'toolchain'),
+      default=os.path.join(PARENT_DIR, 'toolchain'),
       help='(optional) location of toolchain directory')
-  parser.add_option(
-      '--file-hash', dest='file_hashes', action='append', nargs=2, default=[],
-      metavar='ARCH HASH',
-      help='ARCH gives the name of the architecture (e.g. "x86_32") for '
-           'which to download an IRT binary.  '
-           'HASH gives the expected SHA1 hash of the file.')
   parser.add_option(
       '--nacl-newlib-only', dest='filter_out_predicates',
       action='append_const', const=toolchainbinaries.IsNotNaClNewlibFlavor,
@@ -204,7 +234,7 @@ def Main(args):
   parser.add_option(
       '--no-x86', dest='filter_out_predicates', action='append_const',
       const=toolchainbinaries.IsX86Flavor,
-      help='Filter out x86 gcc toolchains.')
+      help='Filter out x86 toolchains.')
   parser.add_option(
       '--no-pnacl-translator', dest='filter_out_predicates',
       action='append_const',
@@ -214,21 +244,52 @@ def Main(args):
       '--no-arm-trusted', dest='filter_out_predicates', action='append_const',
       const=toolchainbinaries.IsArmTrustedFlavor,
       help='Filter out trusted arm toolchains.')
-
   options, args = parser.parse_args(args)
-  if args:
-    parser.error('ERROR: invalid argument')
+
+  if len(args) > 1:
+    parser.error('Expecting only one version file.')
+  return options, args
+
+
+def ScriptDependencyTimestamp():
+  """Determine the timestamp for the most recently changed script."""
+  src_list = ['download_toolchains.py', 'download_utils.py',
+              'cygtar.py', 'http_download.py']
+  srcs = [os.path.join(SCRIPT_DIR, src) for src in src_list]
+  src_times = []
+
+  for src in srcs:
+    src_times.append(os.stat(src).st_mtime)
+  return sorted(src_times)[-1]
+
+
+def main(args):
+  script_time = ScriptDependencyTimestamp()
+  options, version_files = ParseArgs(args)
+
+  # If not provided, default to native_client/toolchain_versions.txt
+  if not version_files:
+    version_files = [os.path.join(PARENT_DIR, 'toolchain_versions.txt')]
+  versions = LoadVersions(version_files[0])
 
   platform_fixed = download_utils.PlatformName()
   arch_fixed = download_utils.ArchName()
   flavors = toolchainbinaries.PLATFORM_MAPPING[platform_fixed][arch_fixed]
+
+  if options.hashes:
+    print '  (Calculating, may take a second...)'
+    print '-' * 70
+    sys.stdout.flush()
+    ShowUpdatedDEPS(options, versions)
+    print '-' * 70
+    return 0
 
   if options.filter_out_predicates:
     for predicate in options.filter_out_predicates:
       flavors = [flavor for flavor in flavors if not predicate(flavor)]
 
   for flavor in flavors:
-    version = VersionSelect(options, flavor)
+    version = VersionSelect(versions, flavor)
     url = toolchainbinaries.EncodeToolchainUrl(
       options.base_url, version, flavor)
     dst = os.path.join(options.toolchain_dir, flavor)
@@ -237,18 +298,7 @@ def Main(args):
       force = True
     else:
       force = False
-
-    # If there are any hashes listed, check and require them for every flavor.
-    # List a bogus hash if none is specified so we get an error listing the
-    # correct hash if its missing.
-    if options.file_hashes:
-      hash_value = 'unspecified'  # bogus default.
-      for arch, hval in options.file_hashes:
-        if arch == flavor:
-          hash_value = hval
-          break
-    else:
-      hash_value = None
+    hash_value = HashSelect(versions, flavor)
 
     try:
       if SyncFlavor(flavor, url, dst, hash_value, script_time, force=force,
@@ -259,14 +309,15 @@ def Main(args):
     except download_utils.HashError, e:
       print str(e)
       print '-' * 70
-      print 'You probably want to update the DEPS hashes to:'
+      print 'You probably want to update the toolchain_version.txt hashes to:'
       print '  (Calculating, may take a second...)'
       print '-' * 70
       sys.stdout.flush()
-      ShowUpdatedDEPS(options)
+      ShowUpdatedDEPS(options, versions)
       print '-' * 70
-      sys.exit(1)
+      return 1
+  return 0
 
 
 if __name__ == '__main__':
-  Main(sys.argv[1:])
+  sys.exit(main(sys.argv[1:]))

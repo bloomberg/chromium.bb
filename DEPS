@@ -1,17 +1,6 @@
 # DEPS files look like -*- Python -*-
 
 vars = {
-  # Each of these toolchain revision numbers should only be updated
-  # whenever there has been a real change to the corresponding
-  # toolchain, so that new toolchain tarballs are not downloaded
-  # unnecessarily.  There is no need to keep these numbers in sync
-  # with each other.
-  "x86_toolchain_version": "9170",
-  "pnacl_toolchain_version": "9299",
-
-  # ARM trusted toolchain version cannot be changed for now.
-  "arm_trusted_toolchain_version": "7004",
-
   # When possible, keep chrome_rev and chromebinaries_rev at the same
   # value.  chromebinaries_rev should match LKGR so that we can download
   # the binaries, but sometimes chrome_rev needs to be more recent to get
@@ -127,10 +116,7 @@ hooks = [
   {
     "pattern": ".",
     "action": ["python", "native_client/build/download_toolchains.py",
-               "--x86-version", Var("x86_toolchain_version"),
-               "--arm-trusted-version", Var("arm_trusted_toolchain_version"),
-               "--pnacl-version", Var("pnacl_toolchain_version"),
-               "--keep"],
+               "--keep", "native_client/TOOL_REVISIONS"],
   },
   {
     "pattern": ".",
