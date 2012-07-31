@@ -51,7 +51,11 @@ int32_t RecvFrom(PP_Resource udp_socket,
                  char* buffer,
                  int32_t num_bytes,
                  PP_CompletionCallback callback) {
+#ifdef NDEBUG
+  EnterUDP enter(udp_socket, callback, false);
+#else
   EnterUDP enter(udp_socket, callback, true);
+#endif
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->RecvFrom(buffer, num_bytes,
