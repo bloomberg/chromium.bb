@@ -94,8 +94,14 @@ class PermissionMenuButton : public views::MenuButton,
                        PermissionMenuModel* model);
   virtual ~PermissionMenuButton();
 
+  // Overridden from views::MenuButton.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+  // Overridden from views::TextButton.
+  virtual void SetText(const string16& text) OVERRIDE;
+
  private:
-  // Overridden from views::MenuButtonListener:
+  // Overridden from views::MenuButtonListener.
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
 
@@ -158,7 +164,7 @@ void PermissionMenuModel::ExecuteCommand(int command_id) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// PermissionMenuModel
+// PermissionMenuButton
 ///////////////////////////////////////////////////////////////////////////////
 
 PermissionMenuButton::PermissionMenuButton(const string16& text,
@@ -168,6 +174,27 @@ PermissionMenuButton::PermissionMenuButton(const string16& text,
 }
 
 PermissionMenuButton::~PermissionMenuButton() {
+}
+
+gfx::Size PermissionMenuButton::GetPreferredSize() {
+  gfx::Insets insets = GetInsets();
+  // Scale the button to the current text size.
+  gfx::Size prefsize(text_size_.width() + insets.width(),
+                     text_size_.height() + insets.height());
+  if (max_width_ > 0)
+    prefsize.set_width(std::min(max_width_, prefsize.width()));
+  if (show_menu_marker()) {
+    prefsize.Enlarge(menu_marker()->width() +
+                         views::MenuButton::kMenuMarkerPaddingLeft +
+                         views::MenuButton::kMenuMarkerPaddingRight,
+                     0);
+  }
+  return prefsize;
+}
+
+void PermissionMenuButton::SetText(const string16& text) {
+  MenuButton::SetText(text);
+  SizeToPreferredSize();
 }
 
 void PermissionMenuButton::OnMenuButtonClicked(View* source,
@@ -284,6 +311,15 @@ ContentSetting PermissionSelectorView::GetSelectedSetting() const {
 
 ContentSettingsType PermissionSelectorView::GetPermissionType() const {
   return menu_button_model_->site_permission();
+}
+
+void PermissionSelectorView::ChildPreferredSizeChanged(View* child) {
+  SizeToPreferredSize();
+  // FIXME: The parent is only a plain |View| that is used as a
+  // container/box/panel. The SizeToPreferredSize method of the parent is
+  // called here directly in order not to implement a custom |View| class with
+  // its own implementation of the ChildPreferredSizeChanged method.
+  parent()->SizeToPreferredSize();
 }
 
 PermissionSelectorView::~PermissionSelectorView() {

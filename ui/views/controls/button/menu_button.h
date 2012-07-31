@@ -30,6 +30,10 @@ class VIEWS_EXPORT MenuButton : public TextButton {
  public:
   static const char kViewClassName[];
 
+  // How much padding to put on the left and right of the menu marker.
+  static const int kMenuMarkerPaddingLeft;
+  static const int kMenuMarkerPaddingRight;
+
   // Create a Button.
   MenuButton(ButtonListener* listener,
              const string16& text,
@@ -37,9 +41,11 @@ class VIEWS_EXPORT MenuButton : public TextButton {
              bool show_menu_marker);
   virtual ~MenuButton();
 
+  bool show_menu_marker() const { return show_menu_marker_; }
   void set_menu_marker(const gfx::ImageSkia* menu_marker) {
     menu_marker_ = menu_marker;
   }
+  const gfx::ImageSkia* menu_marker() const { return menu_marker_; }
 
   const gfx::Point& menu_offset() const { return menu_offset_; }
   void set_menu_offset(int x, int y) { menu_offset_.SetPoint(x, y); }

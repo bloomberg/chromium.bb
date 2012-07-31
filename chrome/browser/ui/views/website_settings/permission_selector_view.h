@@ -46,6 +46,10 @@ class PermissionSelectorView : public views::View {
   // Returns the permission type.
   ContentSettingsType GetPermissionType() const;
 
+ protected:
+  // Overridden from views::View.
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+
  private:
   virtual ~PermissionSelectorView();
 

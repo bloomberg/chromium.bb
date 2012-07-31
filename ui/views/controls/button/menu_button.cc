@@ -30,15 +30,13 @@ namespace views {
 // pressed event to show the menu.
 static const int64 kMinimumTimeBetweenButtonClicks = 100;
 
-// How much padding to put on the left and right of the menu marker.
-static const int kMenuMarkerPaddingLeft = 3;
-static const int kMenuMarkerPaddingRight = -1;
-
 // Default menu offset.
 static const int kDefaultMenuOffsetX = -2;
 static const int kDefaultMenuOffsetY = -4;
 
 // static
+const int MenuButton::kMenuMarkerPaddingLeft = 3;
+const int MenuButton::kMenuMarkerPaddingRight = -1;
 const char MenuButton::kViewClassName[] = "views/MenuButton";
 
 ////////////////////////////////////////////////////////////////////////////////
