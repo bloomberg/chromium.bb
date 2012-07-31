@@ -268,6 +268,8 @@
     'browser/debugger/worker_devtools_manager.h',
     'browser/debugger/worker_devtools_message_filter.cc',
     'browser/debugger/worker_devtools_message_filter.h',
+    'browser/device_monitor_linux.cc',
+    'browser/device_monitor_linux.h',
     'browser/device_orientation/accelerometer_mac.cc',
     'browser/device_orientation/accelerometer_mac.h',
     'browser/device_orientation/data_fetcher.h',

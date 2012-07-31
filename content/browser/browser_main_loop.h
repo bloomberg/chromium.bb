@@ -44,9 +44,13 @@ namespace content {
 class BrowserMainParts;
 class BrowserShutdownImpl;
 class BrowserThreadImpl;
-struct MainFunctionParams;
 class ResourceDispatcherHostImpl;
 class WebKitThread;
+struct MainFunctionParams;
+
+#if defined(OS_LINUX)
+class DeviceMonitorLinux;
+#endif
 
 // Implements the main browser loop stages called from BrowserMainRunner.
 // See comments in browser_main_parts.h for additional info.
@@ -105,6 +109,8 @@ class BrowserMainLoop {
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
 #if defined(OS_WIN)
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
+#elif defined(OS_LINUX)
+  scoped_ptr<DeviceMonitorLinux> device_monitor_linux_;
 #endif
 
   // Destroy parts_ before main_message_loop_ (required) and before other

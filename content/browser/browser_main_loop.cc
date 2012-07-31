@@ -66,6 +66,10 @@
 #include <glib-object.h>
 #endif
 
+#if defined(OS_LINUX)
+#include "content/browser/device_monitor_linux.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include <dbus/dbus-glib.h>
 #endif
@@ -613,6 +617,10 @@ void BrowserMainLoop::BrowserThreadsStarted() {
   content::BrowserGpuChannelHostFactory::Initialize();
 #if defined(USE_AURA)
   ImageTransportFactory::Initialize();
+#endif
+
+#if defined(OS_LINUX)
+  device_monitor_linux_.reset(new DeviceMonitorLinux());
 #endif
 
   // RDH needs the IO thread to be created.
