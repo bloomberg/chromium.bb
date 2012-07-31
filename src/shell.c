@@ -378,7 +378,7 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct focus_state *state = container_of(listener,
 						 struct focus_state,
-						 seat_destroy_listener);
+						 surface_destroy_listener);
 
 	wl_list_remove(&state->link);
 	focus_state_destroy(state);
