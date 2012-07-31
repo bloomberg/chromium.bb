@@ -305,7 +305,7 @@ void FileBrowserEventRouter::MountCompleted(
     }
     DiskMountManager::Disk* disk = disk_it->second;
 
-     notifications_->ManageNotificationsOnMountCompleted(
+    notifications_->ManageNotificationsOnMountCompleted(
         disk->system_path_prefix(), disk->drive_label(), disk->is_parent(),
         error_code == chromeos::MOUNT_ERROR_NONE,
         error_code == chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM);
