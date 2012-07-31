@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <ostream>
+
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +17,15 @@ const int kExpectedReturnValue = 42;
 TEST(SandboxBpf, CallSupports) {
   // We check that we don't crash, but it's ok if the kernel doesn't
   // support it.
-  Sandbox::supportsSeccompSandbox(-1);
+  bool seccomp_bpf_supported =
+      Sandbox::supportsSeccompSandbox(-1) == Sandbox::STATUS_AVAILABLE;
+  // We want to log whether or not seccomp BPF is actually supported
+  // since actual test coverage depends on it.
+  RecordProperty("SeccompBPFSupported",
+                 seccomp_bpf_supported ? "true." : "false.");
+  std::cout << "Seccomp BPF supported: "
+            << (seccomp_bpf_supported ? "true." : "false.")
+            << "\n";
 }
 
 TEST(SandboxBpf, CallSupportsTwice) {
