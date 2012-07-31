@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
@@ -105,7 +106,7 @@ BookmarkTabHelper::BookmarkDrag*
 void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  BookmarkModel* model = profile->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
   const bool old_state = is_starred_;
   is_starred_ = (model && model->IsBookmarked(web_contents()->GetURL()));
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,7 +72,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
       // The history service or bookmark bar model must exist.
       !(HistoryServiceFactory::GetForProfile(profile_,
                                              Profile::EXPLICIT_ACCESS) ||
-        profile_->GetBookmarkModel())) {
+        BookmarkModelFactory::GetForProfile(profile_))) {
     Stop(false);
     return;
   }
@@ -222,9 +223,8 @@ AutocompleteMatch HistoryContentsProvider::ResultToMatch(
   match.contents_class.push_back(
       ACMatchClassification(0, ACMatchClassification::URL));
   match.description = result.title();
-  match.starred =
-      (profile_->GetBookmarkModel() &&
-       profile_->GetBookmarkModel()->IsBookmarked(result.url()));
+  BookmarkModel* bm_model = BookmarkModelFactory::GetForProfile(profile_);
+  match.starred = (bm_model && bm_model->IsBookmarked(result.url()));
 
   ClassifyDescription(result, &match);
   return match;
@@ -258,15 +258,16 @@ void HistoryContentsProvider::ClassifyDescription(
 int HistoryContentsProvider::CalculateRelevance(
     const history::URLResult& result) {
   const bool in_title = MatchInTitle(result);
-  if (!profile_->GetBookmarkModel() ||
-      !profile_->GetBookmarkModel()->IsBookmarked(result.url()))
+  BookmarkModel* bm_model = BookmarkModelFactory::GetForProfile(profile_);
+  if (!bm_model || !bm_model->IsBookmarked(result.url()))
     return in_title ? (700 + title_count_++) : (500 + contents_count_++);
   return in_title ?
       (1000 + star_title_count_++) : (550 + star_contents_count_++);
 }
 
 void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {
-  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(profile_);
   if (!bookmark_model)
     return;
 

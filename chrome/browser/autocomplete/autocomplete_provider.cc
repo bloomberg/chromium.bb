@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -96,7 +97,7 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
   if (!profile_)
     return;
 
-  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
+  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
   if (!bookmark_model || !bookmark_model->IsLoaded())
     return;
 

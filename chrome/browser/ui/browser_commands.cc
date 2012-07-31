@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -560,7 +561,8 @@ void Exit() {
 void BookmarkCurrentPage(Browser* browser) {
   content::RecordAction(UserMetricsAction("Star"));
 
-  BookmarkModel* model = browser->profile()->GetBookmarkModel();
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
   if (!model || !model->IsLoaded())
     return;  // Ignore requests until bookmarks are loaded.
 
@@ -585,7 +587,8 @@ void BookmarkCurrentPage(Browser* browser) {
 }
 
 bool CanBookmarkCurrentPage(const Browser* browser) {
-  BookmarkModel* model = browser->profile()->GetBookmarkModel();
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
   return browser_defaults::bookmarks_enabled &&
       browser->profile()->GetPrefs()->GetBoolean(
           prefs::kEditBookmarksEnabled) &&
