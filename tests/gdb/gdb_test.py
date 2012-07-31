@@ -237,7 +237,6 @@ class Gdb(object):
     self._GetResponse()
     if os.environ.has_key('NACL_LD_SO'):
       # gdb uses bash-like escaping which removes slashes from Windows paths.
-      self.Command('file ' + FilenameToUnix(os.environ['NACL_LD_SO']))
       manifest_file = GenerateManifest(self._program,
                                        os.environ['NACL_LD_SO'],
                                        self._name)
