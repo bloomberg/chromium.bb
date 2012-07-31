@@ -7,13 +7,15 @@ import os
 from StringIO import StringIO
 import unittest
 
+import appengine_memcache as memcache
+import handler
 from handler import Handler
 
 KNOWN_FAILURES = [
   'webstore.html',
 ]
 
-class _MockResponse:
+class _MockResponse(object):
   def __init__(self):
     self.status = 200
     self.out = StringIO()
@@ -21,7 +23,7 @@ class _MockResponse:
   def set_status(self, status):
     self.status = status
 
-class _MockRequest:
+class _MockRequest(object):
   def __init__(self, path):
     self.headers = {}
     self.path = path
@@ -43,6 +45,20 @@ class IntegrationTest(unittest.TestCase):
     Handler(request, bad_response, local_path='../..').get()
     self.assertEqual(404, bad_response.status)
     self.assertTrue(bad_response.out.getvalue())
+
+  def testWarmupRequest(self):
+    for branch in ['dev', 'trunk', 'beta', 'stable']:
+      handler.BRANCH_UTILITY_MEMCACHE.Set(
+          branch + '.' +  handler.OMAHA_PROXY_URL,
+          'local',
+          memcache.MEMCACHE_BRANCH_UTILITY)
+    request = _MockRequest('_ah/warmup')
+    response = _MockResponse()
+    Handler(request, response, local_path='../..').get()
+    self.assertEqual(200, response.status)
+    # Test that the pages were rendered by checking the size of the output.
+    # In python 2.6 there is no 'assertGreater' method.
+    self.assertTrue(len(response.out.getvalue()) > 500000)
 
 if __name__ == '__main__':
   unittest.main()

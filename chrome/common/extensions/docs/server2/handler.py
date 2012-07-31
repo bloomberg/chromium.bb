@@ -36,10 +36,11 @@ TRUNK_URL = SVN_URL + '/trunk'
 BRANCH_URL = SVN_URL + '/branches'
 
 OMAHA_PROXY_URL = 'http://omahaproxy.appspot.com/json'
+BRANCH_UTILITY_MEMCACHE = AppEngineMemcache('branch_utility')
 BRANCH_UTILITY = BranchUtility(OMAHA_PROXY_URL,
                                DEFAULT_BRANCH,
                                AppEngineUrlFetcher(''),
-                               AppEngineMemcache('branch_utility'))
+                               BRANCH_UTILITY_MEMCACHE)
 
 STATIC_DIR_PREFIX = 'docs/server2'
 EXTENSIONS_PATH = 'chrome/common/extensions'
@@ -121,7 +122,8 @@ class Handler(webapp.RequestHandler):
     path = self.request.path
     if '_ah/warmup' in path:
       logging.info('Warmup request.')
-      self._NavigateToPath('trunk/samples.html')
+      if DEFAULT_BRANCH != 'local':
+        self._NavigateToPath('trunk/samples.html')
       self._NavigateToPath('dev/samples.html')
       self._NavigateToPath('beta/samples.html')
       self._NavigateToPath('stable/samples.html')
