@@ -131,8 +131,7 @@ class PrerenderTabHelper::PixelStats {
 };
 
 PrerenderTabHelper::PrerenderTabHelper(TabContents* tab)
-    : content::WebContentsObserver(tab->web_contents()),
-      tab_(tab) {
+    : content::WebContentsObserver(tab->web_contents()) {
 }
 
 PrerenderTabHelper::~PrerenderTabHelper() {

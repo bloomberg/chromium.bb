@@ -61,9 +61,6 @@ class PrerenderTabHelper : public content::WebContentsObserver {
   // Returns whether the WebContents being observed was prerendered.
   bool IsPrerendered();
 
-  // TabContents we're created for.
-  TabContents* tab_;
-
   // System time at which the current load was started for the purpose of
   // the perceived page load time (PPLT).
   base::TimeTicks pplt_load_start_;

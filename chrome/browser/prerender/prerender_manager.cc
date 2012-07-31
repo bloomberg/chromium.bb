@@ -62,10 +62,6 @@ namespace prerender {
 
 namespace {
 
-// Time window for which we will record windowed PLT's from the last
-// observed link rel=prefetch tag.
-const int kWindowDurationSeconds = 30;
-
 // Time interval at which periodic cleanups are performed.
 const int kPeriodicCleanupIntervalMs = 1000;
 
