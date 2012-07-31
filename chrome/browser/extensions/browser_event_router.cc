@@ -569,7 +569,7 @@ void BrowserEventRouter::CommandExecuted(Profile* profile,
 
   DispatchEventToExtension(profile,
                            extension_id,
-                           "experimental.keybinding.onCommand",
+                           "experimental.commands.onCommand",
                            json_args);
 }
 

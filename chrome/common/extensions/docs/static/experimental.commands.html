@@ -1,13 +1,13 @@
 <!-- BEGIN AUTHORED CONTENT -->
 <p>
-The keybinding API allows you to add keyboard shortcuts that trigger actions in
+The commands API allows you to add keyboard shortcuts that trigger actions in
 your extension. An action can be opening the browser action or page action popup
 or sending a command to the extension.
 </p>
 
 <h2 id="manifest">Manifest</h2>
 <p>
-In addition to the "experimental" permission you must declare the "keybinding"
+In addition to the "experimental" permission you must declare the "commands"
 permission in your extension's manifest to use this API and set manifest_version
 to (at least) 2.
 </p>
@@ -17,13 +17,13 @@ to (at least) 2.
   ...
 <b>  "permissions": [
     "experimental",
-    "keybinding",
+    "commands",
   ]</b>,
   ...
 }</pre>
 
 <h2 id="usage">Usage</h2>
-<p>The keybinding API allows you to define specific commands, and bind them to a
+<p>The commands API allows you to define specific commands, and bind them to a
 default key combination. Each command your extension accepts must be listed in
 the manifest as an attribute of the 'commands' manifest key. Note: Combinations
 that involve Ctrl+Alt are not permitted in order to avoid conflicts with the
@@ -64,7 +64,7 @@ defined in the manifest (except for '_execute_browser_action' and
 '_execute_page_action') via onCommand.addListener. For example:</p>
 
 <pre>
-chrome.experimental.keybinding.onCommand.addListener(function(command) {
+chrome.experimental.commands.onCommand.addListener(function(command) {
   console.log('Command:', command);
 });
 </pre>

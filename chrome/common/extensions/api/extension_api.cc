@@ -373,12 +373,12 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP));
   RegisterSchema("experimental.bookmarkManager", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER));
+  RegisterSchema("experimental.commands", ReadFromResource(
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_COMMANDS));
   RegisterSchema("experimental.infobars", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS));
   RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD));
-  RegisterSchema("experimental.keybinding", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_KEYBINDING));
   RegisterSchema("experimental.offscreenTabs", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_OFFSCREENTABS));
   RegisterSchema("experimental.processes", ReadFromResource(

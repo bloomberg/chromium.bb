@@ -4,7 +4,7 @@
 
 [
   {
-    "namespace": "experimental.keybinding",
+    "namespace": "experimental.commands",
     "events": [
       {
         "name": "onCommand",

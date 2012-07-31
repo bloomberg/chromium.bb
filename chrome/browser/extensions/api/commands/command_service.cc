@@ -37,7 +37,7 @@ namespace extensions {
 // static
 void CommandService::RegisterUserPrefs(
   PrefService* user_prefs) {
-      user_prefs->RegisterDictionaryPref(prefs::kExtensionKeybindings,
+      user_prefs->RegisterDictionaryPref(prefs::kExtensionCommands,
                                          PrefService::SYNCABLE_PREF);
 }
 
@@ -108,7 +108,7 @@ bool CommandService::AddKeybindingPref(
     return false;
 
   DictionaryPrefUpdate updater(profile_->GetPrefs(),
-                               prefs::kExtensionKeybindings);
+                               prefs::kExtensionCommands);
   DictionaryValue* bindings = updater.Get();
 
   std::string key = GetPlatformKeybindingKeyForAccelerator(accelerator);
@@ -167,7 +167,7 @@ void CommandService::UpdateKeybindingPrefs(const std::string& extension_id,
 ui::Accelerator CommandService::FindShortcutForCommand(
     const std::string& extension_id, const std::string& command) {
   const DictionaryValue* bindings =
-      profile_->GetPrefs()->GetDictionary(prefs::kExtensionKeybindings);
+      profile_->GetPrefs()->GetDictionary(prefs::kExtensionCommands);
   for (DictionaryValue::key_iterator it = bindings->begin_keys();
        it != bindings->end_keys(); ++it) {
     const DictionaryValue* item = NULL;
@@ -224,7 +224,7 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
 void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
                                            const std::string& command_name) {
   DictionaryPrefUpdate updater(profile_->GetPrefs(),
-                               prefs::kExtensionKeybindings);
+                               prefs::kExtensionCommands);
   DictionaryValue* bindings = updater.Get();
 
   typedef std::vector<std::string> KeysToRemove;

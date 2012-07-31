@@ -807,9 +807,9 @@ const char kExtensionsUIDeveloperMode[] = "extensions.ui.developer_mode";
 // actions toolbar.
 const char kExtensionToolbarSize[] = "extensions.toolbarsize";
 
-// Dictionary pref that tracks which keybinding belongs to which
+// Dictionary pref that tracks which command belongs to which
 // extension + named command pair.
-const char kExtensionKeybindings[] = "extensions.keybindings";
+const char kExtensionCommands[] = "extensions.commands";
 
 // Pref containing the directory for internal plugins as written to the plugins
 // list (below).

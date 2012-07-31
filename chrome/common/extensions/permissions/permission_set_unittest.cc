@@ -575,7 +575,7 @@ TEST(PermissionsTest, PermissionMessages) {
 
   // This permission requires explicit user action (shortcut) so we don't
   // prompt for it.
-  skip.insert(APIPermission::kKeybinding);
+  skip.insert(APIPermission::kCommands);
 
   // These permissions require explicit user action (configuration dialog)
   // so we don't prompt for them at install time.
