@@ -762,7 +762,7 @@ clip_span( GLcontext *ctx, SWspan *span )
          span->intTex[1] += leftClip * span->intTexStep[1];
 
 #define SHIFT_ARRAY(ARRAY, SHIFT, LEN) \
-         memcpy(ARRAY, ARRAY + (SHIFT), (LEN) * sizeof(ARRAY[0]))
+         memmove(ARRAY, ARRAY + (SHIFT), (LEN) * sizeof(ARRAY[0]))
 
          for (i = 0; i < FRAG_ATTRIB_MAX; i++) {
             if (span->arrayAttribs & (1 << i)) {

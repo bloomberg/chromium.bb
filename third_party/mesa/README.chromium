@@ -98,3 +98,6 @@ Later modifications (see chromium.patch):
 
 - Merged fix for https://bugs.freedesktop.org/show_bug.cgi?id=51574
   (commit b1802a2115323233352da558430e109ff187b8af)
+
+- Merged the replacement of memcpy() with memmove() in SHIFT_ARRAY declared in
+  s_span.c (commit a44d715d2b19dc2f8f48b01144cc38e4e2c5015a)
