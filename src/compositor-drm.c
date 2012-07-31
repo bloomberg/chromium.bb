@@ -53,13 +53,15 @@ enum output_config {
 	OUTPUT_CONFIG_OFF,
 	OUTPUT_CONFIG_PREFERRED,
 	OUTPUT_CONFIG_CURRENT,
-	OUTPUT_CONFIG_MODE
+	OUTPUT_CONFIG_MODE,
+	OUTPUT_CONFIG_MODELINE
 };
 
 struct drm_configured_output {
 	char *name;
 	char *mode;
 	int32_t width, height;
+	drmModeModeInfo crtc_mode;
 	enum output_config config;
 	struct wl_list link;
 };
@@ -1397,12 +1399,22 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
 		if (o && o->width == drm_mode->base.width &&
-			o->height == drm_mode->base.height)
+			o->height == drm_mode->base.height &&
+			o->config == OUTPUT_CONFIG_MODE)
 			configured = &drm_mode->base;
 		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
 			current = &drm_mode->base;
 		if (drm_mode->base.flags & WL_OUTPUT_MODE_PREFERRED)
 			preferred = &drm_mode->base;
+	}
+
+	if (o && o->config == OUTPUT_CONFIG_MODELINE) {
+		ret = drm_output_add_mode(output, &o->crtc_mode);
+		if (ret)
+			goto err_free;
+		configured = container_of(output->base.mode_list.prev,
+				       struct weston_mode, link);
+		current = configured;
 	}
 
 	if (current == NULL && crtc_mode.clock != 0) {
@@ -2043,6 +2055,65 @@ err_base:
 	return NULL;
 }
 
+static int
+set_sync_flags(drmModeModeInfo *mode, char *hsync, char *vsync)
+{
+	mode->flags = 0;
+
+	if (strcmp(hsync, "+hsync") == 0)
+		mode->flags |= DRM_MODE_FLAG_PHSYNC;
+	else if (strcmp(hsync, "-hsync") == 0)
+		mode->flags |= DRM_MODE_FLAG_NHSYNC;
+	else
+		return -1;
+
+	if (strcmp(vsync, "+vsync") == 0)
+		mode->flags |= DRM_MODE_FLAG_PVSYNC;
+	else if (strcmp(vsync, "-vsync") == 0)
+		mode->flags |= DRM_MODE_FLAG_NVSYNC;
+	else
+		return -1;
+
+	return 0;
+}
+
+static int
+check_for_modeline(struct drm_configured_output *output)
+{
+	drmModeModeInfo mode;
+	char hsync[16];
+	char vsync[16];
+	char mode_name[16];
+	float fclock;
+
+	mode.type = DRM_MODE_TYPE_USERDEF;
+	mode.hskew = 0;
+	mode.vscan = 0;
+	mode.vrefresh = 0;
+
+	if (sscanf(output_mode, "%f %hd %hd %hd %hd %hd %hd %hd %hd %s %s",
+						&fclock, &mode.hdisplay,
+						&mode.hsync_start,
+						&mode.hsync_end, &mode.htotal,
+						&mode.vdisplay,
+						&mode.vsync_start,
+						&mode.vsync_end, &mode.vtotal,
+						hsync, vsync) == 11) {
+		if (set_sync_flags(&mode, hsync, vsync))
+			return -1;
+
+		sprintf(mode_name, "%dx%d", mode.hdisplay, mode.vdisplay);
+		strcpy(mode.name, mode_name);
+
+		mode.clock = fclock * 1000;
+	} else
+		return -1;
+
+	output->crtc_mode = mode;
+
+	return 0;
+}
+
 static void
 output_section_done(void *data)
 {
@@ -2070,6 +2141,8 @@ output_section_done(void *data)
 		output->config = OUTPUT_CONFIG_CURRENT;
 	else if (sscanf(output_mode, "%dx%d", &output->width, &output->height) == 2)
 		output->config = OUTPUT_CONFIG_MODE;
+	else if (check_for_modeline(output) == 0)
+		output->config = OUTPUT_CONFIG_MODELINE;
 
 	if (output->config != OUTPUT_CONFIG_INVALID)
 		wl_list_insert(&configured_output_list, &output->link);
