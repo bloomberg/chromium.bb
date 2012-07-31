@@ -202,8 +202,9 @@ FileManager.prototype = {
         break;
       }
     }
+    console.warn('File error: ' + code);
     return loadTimeData.getString('FILE_ERROR_' + code) ||
-        loadTimeData.getStringF('FILE_ERROR_GENERIC', code);
+        loadTimeData.getString('FILE_ERROR_GENERIC');
   }
 
   function removeChildren(element) {

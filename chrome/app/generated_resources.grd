@@ -11486,7 +11486,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_FILE_BROWSER_FILE_ERROR_GENERIC" desc="In the File Manager, the error message when the file operation failed.">
-        An error occurred (code: <ph name="ERROR_CODE">$1<ex>ABORT</ex></ph>).
+        An error occurred.
       </message>
       <message name="IDS_FILE_BROWSER_FILE_ERROR_NOT_FOUND" desc="In the File Manager, the error message when the file could not be found.">
         The file could not be found.
@@ -11500,8 +11500,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_FILE_ERROR_NO_MODIFICATION_ALLOWED" desc="In the File Manager, the error message when the file could not be modified.">
         The file could not be modified.
       </message>
-      <message name="IDS_FILE_BROWSER_FILE_ERROR_INVALID_STATE" desc="In the File Manager, the error message when the file is no longer usable.">
-        The file is no longer usable.
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_INVALID_STATE" desc="In the File Manager, the error message when the file is not usable.">
+        The file or the directory is not usable.
       </message>
       <message name="IDS_FILE_BROWSER_FILE_ERROR_INVALID_MODIFICATION" desc="In the File Manager, the error message when the file could not be modified.">
         The file could not be modified.
