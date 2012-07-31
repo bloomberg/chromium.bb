@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 class CONTENT_EXPORT SystemMessageWindowWin {
@@ -16,7 +17,7 @@ class CONTENT_EXPORT SystemMessageWindowWin {
 
   virtual ~SystemMessageWindowWin();
 
-  virtual LRESULT OnDeviceChange(UINT event_type, DWORD data);
+  virtual LRESULT OnDeviceChange(UINT event_type, LPARAM data);
 
  private:
   void Init();
@@ -37,6 +38,8 @@ class CONTENT_EXPORT SystemMessageWindowWin {
 
   HMODULE instance_;
   HWND window_;
+  class DeviceNotifications;
+  scoped_ptr<DeviceNotifications> device_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMessageWindowWin);
 };
