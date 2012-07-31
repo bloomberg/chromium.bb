@@ -37,17 +37,6 @@ SkIRect CGRectToSkIRect(const CGRect& rect) {
   return sk_rect;
 }
 
-#if (MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5)
-// Possibly remove VideoFrameCapturerMac::CgBlitPreLion as well depending on
-// performance of VideoFrameCapturerMac::CgBlitPostLion on 10.6.
-#error No longer need to import CGDisplayCreateImage.
-#else
-// Declared here because CGDisplayCreateImage does not exist in the 10.5 SDK,
-// which we are currently compiling against, and it is required on 10.7 to do
-// screen capture.
-typedef CGImageRef (*CGDisplayCreateImageFunc)(CGDirectDisplayID displayID);
-#endif
-
 // The amount of time allowed for displays to reconfigure.
 const int64 kDisplayReconfigurationTimeoutInSeconds = 10;
 
@@ -243,9 +232,6 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   // structures. Specifically cgl_context_ and pixel_buffer_object_.
   base::WaitableEvent display_configuration_capture_event_;
 
-  // Will be non-null on lion.
-  CGDisplayCreateImageFunc display_create_image_func_;
-
   // Power management assertion to prevent the screen from sleeping.
   IOPMAssertionID power_assertion_id_display_;
 
@@ -261,7 +247,6 @@ VideoFrameCapturerMac::VideoFrameCapturerMac()
       last_buffer_(NULL),
       pixel_format_(media::VideoFrame::RGB32),
       display_configuration_capture_event_(false, true),
-      display_create_image_func_(NULL),
       power_assertion_id_display_(kIOPMNullAssertionID),
       power_assertion_id_user_(kIOPMNullAssertionID) {
 }
@@ -300,15 +285,6 @@ bool VideoFrameCapturerMac::Init() {
     return false;
   }
 
-  if (base::mac::IsOSLionOrLater()) {
-    display_create_image_func_ =
-        reinterpret_cast<CGDisplayCreateImageFunc>(
-            dlsym(RTLD_NEXT, "CGDisplayCreateImage"));
-    if (!display_create_image_func_) {
-      LOG(ERROR) << "Unable to load CGDisplayCreateImage on Lion";
-      return false;
-    }
-  }
   ScreenConfigurationChanged();
   return true;
 }
@@ -332,12 +308,18 @@ void VideoFrameCapturerMac::Start(const CursorShapeChangedCallback& callback) {
 
   // Create power management assertions to wake the display and prevent it from
   // going to sleep on user idle.
-  IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep,
-                      kIOPMAssertionLevelOn,
-                      &power_assertion_id_display_);
-  IOPMAssertionCreate(CFSTR("UserIsActive"),
-                      kIOPMAssertionLevelOn,
-                      &power_assertion_id_user_);
+  // TODO(jamiewalch): Use IOPMAssertionDeclareUserActivity on 10.7.3 and above
+  //                   instead of the following two assertions.
+  IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                              kIOPMAssertionLevelOn,
+                              CFSTR("Chrome Remote Desktop connection active"),
+                              &power_assertion_id_display_);
+  // This assertion ensures that the display is woken up if it  already asleep
+  // (as used by Apple Remote Desktop).
+  IOPMAssertionCreateWithName(CFSTR("UserIsActive"),
+                              kIOPMAssertionLevelOn,
+                              CFSTR("Chrome Remote Desktop connection active"),
+                              &power_assertion_id_user_);
 }
 
 void VideoFrameCapturerMac::Stop() {
@@ -373,8 +355,9 @@ void VideoFrameCapturerMac::CaptureInvalidRegion(
   current_buffer.Update();
 
   bool flip = false;  // GL capturers need flipping.
-  if (display_create_image_func_ != NULL) {
-    // Lion requires us to use their new APIs for doing screen capture.
+  if (base::mac::IsOSLionOrLater()) {
+    // Lion requires us to use their new APIs for doing screen capture. These
+    // APIS currently crash on 10.6.8 if there is no monitor attached.
     CgBlitPostLion(current_buffer, region);
   } else if (cgl_context_) {
     flip = true;
@@ -591,11 +574,14 @@ void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
     memcpy(buffer.ptr(), last_buffer_, buffer.bytes_per_row() * buffer_height);
   last_buffer_ = buffer.ptr();
   CGDirectDisplayID main_display = CGMainDisplayID();
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   uint8* display_base_address =
       reinterpret_cast<uint8*>(CGDisplayBaseAddress(main_display));
   CHECK(display_base_address);
   int src_bytes_per_row = CGDisplayBytesPerRow(main_display);
   int src_bytes_per_pixel = CGDisplayBitsPerPixel(main_display) / 8;
+#pragma clang diagnostic pop
   // TODO(hclam): We can reduce the amount of copying here by subtracting
   // |capturer_helper_|s region from |last_invalid_region_|.
   // http://crbug.com/92354
@@ -625,7 +611,7 @@ void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
   last_buffer_ = buffer.ptr();
   CGDirectDisplayID display = CGMainDisplayID();
   base::mac::ScopedCFTypeRef<CGImageRef> image(
-      display_create_image_func_(display));
+      CGDisplayCreateImage(display));
   if (image.get() == NULL)
     return;
   CGDataProviderRef provider = CGImageGetDataProvider(image);
@@ -665,15 +651,18 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   int height = CGDisplayPixelsHigh(mainDevice);
   helper_.InvalidateScreen(SkISize::Make(width, height));
 
-  if (!CGDisplayUsesOpenGLAcceleration(mainDevice)) {
-    VLOG(3) << "OpenGL support not available.";
-    return;
-  }
-
-  if (display_create_image_func_ != NULL) {
+  if (base::mac::IsOSLionOrLater()) {
+    LOG(INFO) << "Using CgBlitPostLion.";
     // No need for any OpenGL support on Lion
     return;
   }
+
+  if (!CGDisplayUsesOpenGLAcceleration(mainDevice)) {
+    LOG(INFO) << "Using CgBlitPreLion.";
+    return;
+  }
+
+  LOG(INFO) << "Using GlBlit";
 
   CGLPixelFormatAttribute attributes[] = {
     kCGLPFAFullScreen,
@@ -690,7 +679,8 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   err = CGLCreateContext(pixel_format, NULL, &cgl_context_);
   DCHECK_EQ(err, kCGLNoError);
   CGLDestroyPixelFormat(pixel_format);
-  CGLSetFullScreen(cgl_context_);
+  CGLSetFullScreenOnDisplay(cgl_context_,
+                            CGDisplayIDToOpenGLDisplayMask(mainDevice));
   CGLSetCurrentContext(cgl_context_);
 
   size_t buffer_size = width * height * sizeof(uint32_t);

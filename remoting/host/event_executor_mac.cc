@@ -71,7 +71,10 @@ EventExecutorMac::EventExecutorMac(
   // If the non-deprecated injection APIs were used instead, the equivalent of
   // this line would not be needed, as OS X defaults to _not_ suppressing local
   // inputs in that case.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CGSetLocalEventsSuppressionInterval(0.0);
+#pragma clang diagnostic pop
 }
 
 // Hard-coded mapping from Virtual Key codes to Mac KeySyms.
@@ -293,7 +296,10 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
 
   // We use the deprecated event injection API because the new one doesn't
   // work with switched-out sessions (curtain mode).
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CGError error = CGPostKeyboardEvent(0, keycode, event.pressed());
+#pragma clang diagnostic pop
   if (error != kCGErrorSuccess) {
     LOG(WARNING) << "CGPostKeyboardEvent error " << error;
   }
@@ -332,10 +338,13 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
     MiddleBit = 1 << (MouseEvent::BUTTON_MIDDLE - 1),
     RightBit = 1 << (MouseEvent::BUTTON_RIGHT - 1)
   };
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CGError error = CGPostMouseEvent(position, true, 3,
                                    (mouse_button_state_ & LeftBit) != 0,
                                    (mouse_button_state_ & RightBit) != 0,
                                    (mouse_button_state_ & MiddleBit) != 0);
+#pragma clang diagnostic pop
   if (error != kCGErrorSuccess) {
     LOG(WARNING) << "CGPostMouseEvent error " << error;
   }
@@ -344,7 +353,10 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
     int dx = event.wheel_offset_x();
     int dy = event.wheel_offset_y();
     // Note that |dy| (the vertical wheel) is the primary wheel.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     error = CGPostScrollWheelEvent(2, dy, dx);
+#pragma clang diagnostic pop
     if (error != kCGErrorSuccess) {
       LOG(WARNING) << "CGPostScrollWheelEvent error " << error;
     }
