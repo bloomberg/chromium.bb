@@ -6,7 +6,7 @@ import logging
 
 from HTMLParser import HTMLParser
 
-from path_utils import FormatKey
+from docs_server_utils import FormatKey
 from third_party.handlebar import Handlebar
 
 class _IntroParser(HTMLParser):

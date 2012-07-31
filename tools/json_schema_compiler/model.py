@@ -85,7 +85,8 @@ class Type(object):
       if not (
           'properties' in json or
           'additionalProperties' in json or
-          'functions' in json):
+          'functions' in json or
+          'events' in json):
         raise ParseException(self, name + " has no properties or functions")
       self.type_ = PropertyType.OBJECT
     self.name = name

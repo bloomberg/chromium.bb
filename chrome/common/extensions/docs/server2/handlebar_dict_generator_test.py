@@ -7,8 +7,8 @@ import json
 import os
 import unittest
 
+from docs_server_utils import GetLinkToRefType
 from handlebar_dict_generator import HandlebarDictGenerator
-from handlebar_dict_generator import _GetLinkToRefType
 from handlebar_dict_generator import _FormatValue
 import third_party.json_schema_compiler.json_comment_eater as comment_eater
 import third_party.json_schema_compiler.model as model
@@ -41,13 +41,13 @@ class DictGeneratorTest(unittest.TestCase):
     self._GenerateTest('test_file.json')
 
   def testGetLinkToRefType(self):
-    link = _GetLinkToRefType('truthTeller', 'liar.Tab')
+    link = GetLinkToRefType('truthTeller', 'liar.Tab')
     self.assertEquals('liar.html#type-Tab', link['href'])
     self.assertEquals('liar.Tab', link['text'])
-    link = _GetLinkToRefType('truthTeller', 'Tab')
+    link = GetLinkToRefType('truthTeller', 'Tab')
     self.assertEquals('#type-Tab', link['href'])
     self.assertEquals('Tab', link['text'])
-    link = _GetLinkToRefType('nay', 'lies.chrome.bookmarks.Tab')
+    link = GetLinkToRefType('nay', 'lies.chrome.bookmarks.Tab')
     self.assertEquals('lies.chrome.bookmarks.html#type-Tab', link['href'])
     self.assertEquals('lies.chrome.bookmarks.Tab', link['text'])
 

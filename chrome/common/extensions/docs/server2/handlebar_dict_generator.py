@@ -6,6 +6,7 @@ import copy
 import logging
 import os
 
+from docs_server_utils import GetLinkToRefType
 import third_party.json_schema_compiler.model as model
 
 def _RemoveNoDocs(item):
@@ -20,15 +21,6 @@ def _RemoveNoDocs(item):
       if _RemoveNoDocs(i):
         item.remove(i)
   return False
-
-def _GetLinkToRefType(namespace_name, ref_type):
-  if ref_type.startswith(namespace_name + '.'):
-    type_name = ref_type[len(namespace_name + '.'):]
-    return { 'href': '#type-' + type_name, 'text': type_name }
-  elif '.' not in ref_type:
-    return { 'href': '#type-' + ref_type, 'text': ref_type }
-  api, type_name = ref_type.rsplit('.', 1)
-  return { 'href': api + '.html#type-' + type_name, 'text': ref_type }
 
 def _FormatValue(value):
   """Inserts commas every three digits for integer values. It is magic.
@@ -70,7 +62,7 @@ class HandlebarDictGenerator(object):
       if not ref[-1].isalnum():
         rest = ref[-1] + rest
         ref = ref[:-1]
-      ref_dict = _GetLinkToRefType(self._namespace.name, ref)
+      ref_dict = GetLinkToRefType(self._namespace.name, ref)
       formatted_description.append('<a href="%(href)s">%(text)s</a>%(rest)s' %
           { 'href': ref_dict['href'], 'text': ref_dict['text'], 'rest': rest })
     return ''.join(formatted_description)
@@ -177,8 +169,8 @@ class HandlebarDictGenerator(object):
     elif property_.type_ == model.PropertyType.ADDITIONAL_PROPERTIES:
       dst_dict['additional_properties'] = True
     elif property_.type_ == model.PropertyType.REF:
-      dst_dict['link'] = _GetLinkToRefType(self._namespace.name,
-                                        property_.ref_type)
+      dst_dict['link'] = GetLinkToRefType(self._namespace.name,
+                                          property_.ref_type)
     elif property_.type_ == model.PropertyType.ARRAY:
       dst_dict['array'] = self._GenerateProperty(property_.item_type)
     elif property_.type_ == model.PropertyType.ENUM:

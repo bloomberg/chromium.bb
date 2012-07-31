@@ -4,7 +4,7 @@
   <div>
     <dt>{{+partials.type_name}}</dt>
     <dd>{{{description}}}</dd>
-    <dd><dl>{{#properties}}{{+partials.property}}{{/}}</dl></dd>
+    <dd><dl>{{#properties}}{{^additional_properties}}{{+partials.property}}{{/}}{{/}}</dl></dd>
     {{?functions}}
     <a name={{type.name}}-methods></a>
     <dd><h3>Methods of {{type.name}}</h3>

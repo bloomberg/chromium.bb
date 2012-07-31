@@ -2,7 +2,7 @@
 {{+partials.ref_link}}
 {{/}}
 {{#choices}}
-{{+partials.variable_type}}{{^last}} or {{/}}
+{{+partials.variable_type}}{{^@.last}} or {{/}}
 {{/}}
 {{?array}}
 array of {{+partials.variable_type}}

@@ -10,7 +10,9 @@
     <div id="gc-container">
       {{+partials.sidenav}}
       <div id="gc-pagecontent">
+        {{?article.toc}}
         {{+partials.table_of_contents toc:article.toc}}
+        {{/article.toc}}
 {{- This may contain <pre> tags so it is not indented -}}
 {{+article.intro}}
       </div>

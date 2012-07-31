@@ -4,7 +4,7 @@
 
 import logging
 
-from path_utils import FormatKey
+from docs_server_utils import FormatKey
 from third_party.handlebar import Handlebar
 
 EXTENSIONS_URL = '/chrome/extensions'
