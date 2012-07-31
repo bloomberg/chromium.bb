@@ -16,9 +16,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
 
 const int AppsPromo::kDefaultAppsCounterMax = 10;
 
@@ -33,15 +30,6 @@ const char kDefaultHeader[] = "Browse thousands of apps and games for Chrome";
 const char kDefaultButton[] = "Visit the Chrome Web Store";
 const char kDefaultExpire[] = "No thanks";
 const char kDefaultLink[] = "https://chrome.google.com/webstore";
-
-// Http success status code.
-const int kHttpSuccess = 200;
-
-// The match pattern for valid logo URLs.
-const char kValidLogoPattern[] = "https://*.google.com/*.png";
-
-// The prefix for 'data' URL images.
-const char kPNGDataURLPrefix[] = "data:image/png;base64,";
 
 // Returns the string pref at |path|, using |fallback| as the default (if there
 // is no pref value present). |fallback| is used for debugging in concert with
@@ -308,78 +296,4 @@ AppsPromo::UserGroup AppsPromo::GetCurrentUserGroup() const {
       = prefs_->FindPreference(prefs::kNtpWebStorePromoLastId);
   CHECK(last_promo_id);
   return last_promo_id->IsDefaultValue() ? USERS_NEW : USERS_EXISTING;
-}
-
-AppsPromoLogoFetcher::AppsPromoLogoFetcher(
-    Profile* profile,
-    const AppsPromo::PromoData& promo_data)
-    : profile_(profile),
-      promo_data_(promo_data) {
-  if (SupportsLogoURL()) {
-    if (HaveCachedLogo()) {
-      promo_data_.logo = AppsPromo::GetPromo().logo;
-      SavePromo();
-    } else {
-      FetchLogo();
-    }
-  } else {
-    // We only care about the source URL when this fetches the logo.
-    AppsPromo::SetSourcePromoLogoURL(GURL());
-    SavePromo();
-  }
-}
-
-AppsPromoLogoFetcher::~AppsPromoLogoFetcher() {}
-
-void AppsPromoLogoFetcher::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  std::string data;
-  std::string base64_data;
-
-  CHECK(source == url_fetcher_.get());
-  source->GetResponseAsString(&data);
-
-  if (source->GetStatus().is_success() &&
-      source->GetResponseCode() == kHttpSuccess &&
-      base::Base64Encode(data, &base64_data)) {
-    AppsPromo::SetSourcePromoLogoURL(promo_data_.logo);
-    promo_data_.logo = GURL(kPNGDataURLPrefix + base64_data);
-  } else {
-    // The logo wasn't downloaded correctly or we failed to encode it in
-    // base64. Reset the source URL so we fetch it again next time. AppsPromo
-    // will revert to the default logo.
-    AppsPromo::SetSourcePromoLogoURL(GURL());
-  }
-
-  SavePromo();
-}
-
-void AppsPromoLogoFetcher::FetchLogo() {
-  CHECK(promo_data_.logo.scheme() == chrome::kHttpsScheme);
-
-  url_fetcher_.reset(net::URLFetcher::Create(
-      0, promo_data_.logo, net::URLFetcher::GET, this));
-  url_fetcher_->SetRequestContext(
-      g_browser_process->system_request_context());
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->Start();
-}
-
-bool AppsPromoLogoFetcher::HaveCachedLogo() {
-  return promo_data_.logo == AppsPromo::GetSourcePromoLogoURL();
-}
-
-void AppsPromoLogoFetcher::SavePromo() {
-  AppsPromo::SetPromo(promo_data_);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
-      content::Source<Profile>(profile_),
-      content::NotificationService::NoDetails());
-}
-
-bool AppsPromoLogoFetcher::SupportsLogoURL() {
-  URLPattern allowed_urls(URLPattern::SCHEME_HTTPS, kValidLogoPattern);
-  return allowed_urls.MatchesURL(promo_data_.logo);
 }

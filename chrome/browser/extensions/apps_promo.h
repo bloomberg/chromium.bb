@@ -5,19 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_APPS_PROMO_H_
 #define CHROME_BROWSER_EXTENSIONS_APPS_PROMO_H_
 
-#include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
 class Profile;
-
-namespace net {
-class URLFetcher;
-}  // namespace net
 
 // This encapsulates business logic for:
 // - Whether to show the apps promo in the launcher
@@ -142,35 +136,6 @@ class AppsPromo {
   extensions::ExtensionIdSet old_default_app_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsPromo);
-};
-
-// Fetches logos over HTTPS, making sure we don't send cookies and that we
-// cache the image until its source URL changes.
-class AppsPromoLogoFetcher : public net::URLFetcherDelegate {
- public:
-  AppsPromoLogoFetcher(Profile* profile,
-                       const AppsPromo::PromoData& promo_data);
-  virtual ~AppsPromoLogoFetcher();
-
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
- private:
-  // Fetches the logo and stores the result as a data URL.
-  void FetchLogo();
-
-  // Checks if the logo was downloaded previously.
-  bool HaveCachedLogo();
-
-  // Sets the apps promo based on the current data and then issues the
-  // WEB_STORE_PROMO_LOADED notification so open NTPs can inject the promo.
-  void SavePromo();
-
-  // Checks if the promo logo matches https://*.google.com/*.png.
-  bool SupportsLogoURL();
-
-  Profile* profile_;
-  AppsPromo::PromoData promo_data_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APPS_PROMO_H_
