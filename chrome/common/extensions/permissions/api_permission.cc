@@ -165,6 +165,9 @@ void APIPermission::RegisterAllPermissions(
     { kVideoCapture, "videoCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
       PermissionMessage::kVideoCapture },
+    // "fileSystem" has no permission string because read-only access is only
+    // granted after the user has been shown a file chooser dialog and selected
+    // a file. Selecting the file is considered consent to read it.
     { kFileSystem, "fileSystem" },
     { kFileSystemWrite, "fileSystemWrite", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE,
