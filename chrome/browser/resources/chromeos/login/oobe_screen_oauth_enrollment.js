@@ -252,6 +252,8 @@ cr.define('oobe', function() {
      * Handler for cancellations of an enforced auto-enrollment.
      */
     cancelAutoEnrollment: function() {
+      if (!this.isAutoEnrollment_)
+        return;
       if (!this.confirmDialog_) {
         this.confirmDialog_ = new cr.ui.dialogs.ConfirmDialog(document.body);
         this.confirmDialog_.setOkLabel(
