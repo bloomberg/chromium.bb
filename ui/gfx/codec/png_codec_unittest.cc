@@ -1034,15 +1034,18 @@ TEST(PNGCodec, EncodeBGRASkBitmapDiscardTransparency) {
       uint32_t unpremultiplied =
           SkUnPreMultiply::PMColorToColor(original_pixel);
       uint32_t decoded_pixel = decoded_bitmap.getAddr32(0, y)[x];
-      EXPECT_TRUE(NonAlphaColorsClose(unpremultiplied, decoded_pixel))
+      uint32_t unpremultiplied_decoded =
+          SkUnPreMultiply::PMColorToColor(decoded_pixel);
+
+      EXPECT_TRUE(NonAlphaColorsClose(unpremultiplied, unpremultiplied_decoded))
           << "Original_pixel: ("
           << SkColorGetR(unpremultiplied) << ", "
           << SkColorGetG(unpremultiplied) << ", "
           << SkColorGetB(unpremultiplied) << "), "
           << "Decoded pixel: ("
-          << SkColorGetR(decoded_pixel) << ", "
-          << SkColorGetG(decoded_pixel) << ", "
-          << SkColorGetB(decoded_pixel) << ")";
+          << SkColorGetR(unpremultiplied_decoded) << ", "
+          << SkColorGetG(unpremultiplied_decoded) << ", "
+          << SkColorGetB(unpremultiplied_decoded) << ")";
     }
   }
 }
