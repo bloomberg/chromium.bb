@@ -144,17 +144,6 @@ ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) asm("llvm.nacl.tp.tls.offset");
  */
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) asm("llvm.nacl.tp.tdb.offset");
 
-/*
- * This actually has nothing whatsoever to do with TLS and doesn't really
- * belong here.  But it's treated the same way, so this is the convenient
- * place for it.
- *
- * Byte size of alignment padding required at the top of stack for a new
- * thread.  (On machines such as x86, this is the place where the return
- * address of the thread function would go.)
- */
-size_t __nacl_thread_stack_padding(void) asm("llvm.nacl.thread.stack.padding");
-
 #elif defined(__i386__) || defined(__x86_64__)
 
 /*
@@ -181,15 +170,6 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
   return 0;
 }
 
-static inline __attribute__((__unused__))
-size_t __nacl_thread_stack_padding(void) {
-#ifdef __x86_64__
-  return 8;
-#else
-  return 4;
-#endif
-}
-
 #elif defined(__arm__)
 
 /*
@@ -214,11 +194,6 @@ ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) {
 static inline __attribute__((__unused__))
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
   return -(ptrdiff_t) tdb_size;
-}
-
-static inline __attribute__((__unused__))
-size_t __nacl_thread_stack_padding(void) {
-  return 0;
 }
 
 #else

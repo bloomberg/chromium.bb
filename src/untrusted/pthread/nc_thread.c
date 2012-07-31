@@ -36,7 +36,22 @@
  */
 static struct nacl_irt_thread irt_thread;
 
+/*
+ * These days, the thread_create() syscall/IRT call will align the
+ * stack for us, but for compatibility with older, released x86
+ * versions of NaCl where thread_create() does not align the stack, we
+ * align the stack ourselves.
+ */
+#if defined(__i386__)
 static const uint32_t kStackAlignment = 32;
+static const uint32_t kStackPadBelowAlign = 4;  /* Return address size */
+#elif defined(__x86_64__)
+static const uint32_t kStackAlignment = 32;
+static const uint32_t kStackPadBelowAlign = 8;  /* Return address size */
+#else
+static const uint32_t kStackAlignment = 1;
+static const uint32_t kStackPadBelowAlign = 0;
+#endif
 
 #define TDB_SIZE (sizeof(struct nc_combined_tdb))
 
@@ -398,9 +413,8 @@ int pthread_create(pthread_t *thread_id,
    *
    * Both thread_stack and stacksize are multiples of 16.
    */
-  size_t stack_padding = __nacl_thread_stack_padding();
-  esp = (void *) (thread_stack + stacksize - stack_padding);
-  memset(esp, 0, stack_padding);
+  esp = (void *) (thread_stack + stacksize - kStackPadBelowAlign);
+  memset(esp, 0, kStackPadBelowAlign);
 
   /* start the thread */
   retval = irt_thread.thread_create(
