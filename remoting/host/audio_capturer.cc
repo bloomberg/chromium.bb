@@ -4,10 +4,12 @@
 
 #include "remoting/host/audio_capturer.h"
 
+#include "base/basictypes.h"
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {
 
+// Returns true if the sampling rate is supported by Pepper.
 bool AudioCapturer::IsValidSampleRate(int sample_rate) {
   switch (sample_rate) {
     case AudioPacket::SAMPLING_RATE_44100:
@@ -18,4 +20,4 @@ bool AudioCapturer::IsValidSampleRate(int sample_rate) {
   }
 }
 
-} // namespace remoting
+}  // namespace remoting

@@ -9,6 +9,8 @@
 #include <mmreg.h>
 #include <mmsystem.h>
 
+#include <stdlib.h>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -26,6 +28,12 @@ const int kBitsPerSample = 16;
 const int kBitsPerByte = 8;
 // Conversion factor from 100ns to 1ms.
 const int kHnsToMs = 10000;
+
+// Tolerance for catching packets of silence. If all samples have absolute
+// value less than this threshold, the packet will be counted as a packet of
+// silence. A value of 2 was chosen, because Windows can give samples of 1 and
+// -1, even when no audio is playing.
+const int kSilenceThreshold = 2;
 }  // namespace
 
 namespace remoting {
@@ -44,6 +52,8 @@ class AudioCapturerWin : public AudioCapturer {
   // Receives all packets from the audio capture endpoint buffer and pushes them
   // to the network.
   void DoCapture();
+
+  static bool IsPacketOfSilence(const AudioPacket* packet);
 
   PacketCapturedCallback callback_;
 
@@ -267,8 +277,11 @@ void AudioCapturerWin::DoCapture() {
     scoped_ptr<AudioPacket> packet = scoped_ptr<AudioPacket>(new AudioPacket());
     packet->set_data(data, frames * wave_format_ex_->nBlockAlign);
     packet->set_sampling_rate(sampling_rate_);
+    packet->set_bytes_per_sample(
+        static_cast<AudioPacket::BytesPerSample>(sizeof(int16)));
 
-    callback_.Run(packet.Pass());
+    if (!IsPacketOfSilence(packet.get()))
+      callback_.Run(packet.Pass());
 
     hr = audio_capture_client_->ReleaseBuffer(frames);
     if (FAILED(hr)) {
@@ -276,6 +289,22 @@ void AudioCapturerWin::DoCapture() {
       return;
     }
   }
+}
+
+// Detects whether there is audio playing in a packet of samples.
+// Windows can give nonzero samples, even when there is no audio playing, so
+// extremely low amplitude samples are counted as silence.
+bool AudioCapturerWin::IsPacketOfSilence(const AudioPacket* packet) {
+  DCHECK_EQ(static_cast<AudioPacket::BytesPerSample>(sizeof(int16)),
+            packet->bytes_per_sample());
+  const int16* data = reinterpret_cast<const int16*>(packet->data().data());
+  int number_of_samples = packet->data().size() * kBitsPerByte / kBitsPerSample;
+
+  for (int i = 0; i < number_of_samples; i++) {
+    if (abs(data[i]) > kSilenceThreshold)
+      return false;
+  }
+  return true;
 }
 
 scoped_ptr<AudioCapturer> AudioCapturer::Create() {
