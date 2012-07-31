@@ -24,7 +24,7 @@
   "permissions": [
     "https://accounts.google.com/*",
     "https://www.googleapis.com/chromoting/*",
-    "https://talkgadget.google.com/talkgadget/*",
+    "https://*.talkgadget.google.com/talkgadget/*",
     "https://relay.google.com/*",
     "clipboardRead",
     "clipboardWrite"
