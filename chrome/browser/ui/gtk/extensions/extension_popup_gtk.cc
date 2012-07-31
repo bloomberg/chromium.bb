@@ -40,7 +40,7 @@ const int ExtensionPopupGtk::kMaxWidth = 800;
 const int ExtensionPopupGtk::kMaxHeight = 600;
 
 ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
-                                     ExtensionHost* host,
+                                     extensions::ExtensionHost* host,
                                      GtkWidget* anchor,
                                      ShowAction show_action)
     : browser_(browser),
@@ -84,7 +84,7 @@ void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
   if (!manager)
     return;
 
-  ExtensionHost* host = manager->CreatePopupHost(url, browser);
+  extensions::ExtensionHost* host = manager->CreatePopupHost(url, browser);
   // This object will delete itself when the bubble is closed.
   new ExtensionPopupGtk(browser, host, anchor, show_action);
 }
@@ -94,11 +94,11 @@ void ExtensionPopupGtk::Observe(int type,
                                 const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
-      if (content::Details<ExtensionHost>(host_.get()) == details)
+      if (content::Details<extensions::ExtensionHost>(host_.get()) == details)
         ShowPopup();
       break;
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      if (content::Details<ExtensionHost>(host_.get()) == details)
+      if (content::Details<extensions::ExtensionHost>(host_.get()) == details)
         DestroyPopup();
       break;
     case content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING:

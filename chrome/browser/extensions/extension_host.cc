@@ -60,7 +60,8 @@ using content::OpenURLParams;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
-using extensions::ExtensionSystem;
+
+namespace extensions {
 
 // Helper class that rate-limits the creation of renderer processes for
 // ExtensionHosts, to avoid blocking the UI.
@@ -122,7 +123,7 @@ class ExtensionHost::ProcessCreationQueue {
 ////////////////
 // ExtensionHost
 
-ExtensionHost::ExtensionHost(const extensions::Extension* extension,
+ExtensionHost::ExtensionHost(const Extension* extension,
                              SiteInstance* site_instance,
                              const GURL& url,
                              chrome::ViewType host_type)
@@ -245,7 +246,7 @@ void ExtensionHost::LoadInitialURL() {
       !profile_->GetExtensionService()->IsBackgroundPageReady(extension_)) {
     // Make sure the background page loads before any others.
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-                   content::Source<extensions::Extension>(extension_));
+                   content::Source<Extension>(extension_));
     return;
   }
 
@@ -275,9 +276,8 @@ void ExtensionHost::Observe(int type,
       // sent. NULL it out so that dirty pointer issues don't arise in cases
       // when multiple ExtensionHost objects pointing to the same Extension are
       // present.
-      if (extension_ ==
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension) {
+      if (extension_ == content::Details<UnloadedExtensionInfo>(details)->
+          extension) {
         extension_ = NULL;
       }
       break;
@@ -599,3 +599,5 @@ void ExtensionHost::RenderViewReady() {
       content::Source<Profile>(profile_),
       content::Details<ExtensionHost>(this));
 }
+
+}  // namespace extensions

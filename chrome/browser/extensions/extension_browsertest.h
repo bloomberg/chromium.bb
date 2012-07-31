@@ -154,9 +154,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // Looks for an ExtensionHost whose URL has the given path component
   // (including leading slash).  Also verifies that the expected number of hosts
   // are loaded.
-  ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
-                                  const std::string& path,
-                                  int expected_hosts);
+  extensions::ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
+                                              const std::string& path,
+                                              int expected_hosts);
 
   // content::NotificationObserver
   virtual void Observe(int type,

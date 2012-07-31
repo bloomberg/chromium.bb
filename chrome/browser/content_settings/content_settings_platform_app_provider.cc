@@ -67,8 +67,8 @@ void PlatformAppProvider::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_HOST_CREATED: {
-      const ExtensionHost* host =
-          content::Details<ExtensionHost>(details).ptr();
+      const extensions::ExtensionHost* host =
+          content::Details<extensions::ExtensionHost>(details).ptr();
       if (host->extension()->is_platform_app())
         SetContentSettingForExtension(host->extension(), CONTENT_SETTING_BLOCK);
       break;

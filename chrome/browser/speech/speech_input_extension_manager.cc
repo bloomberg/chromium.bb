@@ -255,7 +255,8 @@ int SpeechInputExtensionManager::GetRenderProcessIDForExtension(
   ExtensionProcessManager* epm =
       extensions::ExtensionSystem::Get(profile_)->process_manager();
   DCHECK(epm);
-  ExtensionHost* eh = epm->GetBackgroundHostForExtension(extension_id);
+  extensions::ExtensionHost* eh =
+      epm->GetBackgroundHostForExtension(extension_id);
   DCHECK(eh);
   content::RenderProcessHost* rph = eh->render_process_host();
   DCHECK(rph);

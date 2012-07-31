@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
   // Lazy Background Page still exists, because the extension started a request.
   ExtensionProcessManager* pm =
       browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host =
+  extensions::ExtensionHost* host =
       pm->GetBackgroundHostForExtension(last_loaded_extension_id_);
   ASSERT_TRUE(host);
 

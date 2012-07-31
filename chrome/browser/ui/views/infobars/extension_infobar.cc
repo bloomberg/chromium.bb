@@ -118,7 +118,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
   menu_->set_focusable(true);
   AddChildView(menu_);
 
-  ExtensionHost* extension_host = GetDelegate()->extension_host();
+  extensions::ExtensionHost* extension_host = GetDelegate()->extension_host();
   AddChildView(extension_host->view());
 
   // This must happen after adding all other children so InfoBarView can ensure

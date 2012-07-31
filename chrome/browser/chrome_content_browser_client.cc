@@ -628,7 +628,7 @@ bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
     for (ExtensionProcessManager::const_iterator iter =
              epm->background_hosts().begin();
          iter != epm->background_hosts().end(); ++iter) {
-      ExtensionHost* host = *iter;
+      const extensions::ExtensionHost* host = *iter;
       process_ids.insert(host->render_process_host()->GetID());
     }
   }

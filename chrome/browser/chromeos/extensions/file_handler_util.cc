@@ -395,7 +395,7 @@ class ExtensionTaskExecutor : public FileTaskExecutor {
                                         const GURL& file_system_root,
                                         const FileDefinitionList& file_list,
                                         int handler_pid_in,
-                                        ExtensionHost* host);
+                                        extensions::ExtensionHost* host);
 
   // Populates |handler_host_permissions| with file path-permissions pairs that
   // will be given to the handler extension host process.
@@ -795,7 +795,7 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
     const GURL& file_system_root,
     const FileDefinitionList& file_list,
     int handler_pid_in,
-    ExtensionHost* host) {
+    extensions::ExtensionHost* host) {
   int handler_pid = host ? host->render_process_host()->GetID() :
                            handler_pid_in;
 

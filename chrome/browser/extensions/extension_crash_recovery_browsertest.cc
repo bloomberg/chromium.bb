@@ -75,7 +75,7 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     const Extension* extension =
         GetExtensionService()->extensions()->GetByID(extension_id);
     ASSERT_TRUE(extension);
-    ExtensionHost* extension_host = GetExtensionProcessManager()->
+    extensions::ExtensionHost* extension_host = GetExtensionProcessManager()->
         GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
 
@@ -92,7 +92,7 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     const Extension* extension =
         GetExtensionService()->extensions()->GetByID(extension_id);
     ASSERT_TRUE(extension);
-    ExtensionHost* extension_host = GetExtensionProcessManager()->
+    extensions::ExtensionHost* extension_host = GetExtensionProcessManager()->
         GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
     ExtensionProcessManager::ViewSet all_views =

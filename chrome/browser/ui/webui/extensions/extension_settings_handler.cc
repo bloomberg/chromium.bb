@@ -571,7 +571,8 @@ void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
     extensions::LazyBackgroundTaskQueue* queue =
         extensions::ExtensionSystem::Get(profile)->lazy_background_task_queue();
 
-    ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
+    extensions::ExtensionHost* host =
+        pm->GetBackgroundHostForExtension(extension->id());
     if (host) {
       InspectExtensionHost(host);
     } else {
@@ -880,7 +881,8 @@ ExtensionSettingsHandler::GetExtensionUninstallDialog() {
 #endif  // !defined(OS_ANDROID)
 }
 
-void ExtensionSettingsHandler::InspectExtensionHost(ExtensionHost* host) {
+void ExtensionSettingsHandler::InspectExtensionHost(
+    extensions::ExtensionHost* host) {
   if (host)
     DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
 }

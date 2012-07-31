@@ -28,8 +28,8 @@ struct SelectedFileInfo;
 }
 
 // This class handles file-selection requests coming from WebUI elements
-// (via the ExtensionHost class). It implements both the initialisation
-// and listener functions for file-selection dialogs.
+// (via the extensions::ExtensionHost class). It implements both the
+// initialisation and listener functions for file-selection dialogs.
 class FileSelectHelper
     : public base::RefCountedThreadSafe<FileSelectHelper>,
       public ui::SelectFileDialog::Listener,

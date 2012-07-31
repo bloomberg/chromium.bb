@@ -24,7 +24,6 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 
-class ExtensionHost;
 class ExtensionService;
 class FilePath;
 class PrefService;
@@ -36,6 +35,7 @@ class ListValue;
 
 namespace extensions {
 class Extension;
+class ExtensionHost;
 class ManagementPolicy;
 }
 
@@ -173,7 +173,7 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
   // Helper to inspect an ExtensionHost after it has been loaded.
-  void InspectExtensionHost(ExtensionHost* host);
+  void InspectExtensionHost(extensions::ExtensionHost* host);
 
   // Our model.  Outlives us since it's owned by our containing profile.
   ExtensionService* extension_service_;

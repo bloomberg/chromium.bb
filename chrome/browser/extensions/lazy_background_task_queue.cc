@@ -143,7 +143,8 @@ void LazyBackgroundTaskQueue::Observe(
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
       // If an on-demand background page finished loading, dispatch queued up
       // events for it.
-      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+      ExtensionHost* host =
+          content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() ==
               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         CHECK(host->did_stop_loading());
@@ -153,7 +154,8 @@ void LazyBackgroundTaskQueue::Observe(
     }
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+      ExtensionHost* host =
+           content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() ==
               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         PendingTasksKey key(profile,  host->extension()->id());

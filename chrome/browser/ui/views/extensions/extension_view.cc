@@ -14,7 +14,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "ui/views/widget/widget.h"
 
-ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
+ExtensionView::ExtensionView(extensions::ExtensionHost* host, Browser* browser)
     : host_(host),
       browser_(browser),
       initialized_(false),

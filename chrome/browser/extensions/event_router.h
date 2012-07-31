@@ -20,7 +20,6 @@
 #include "ipc/ipc_sender.h"
 
 class GURL;
-class ExtensionHost;
 class ExtensionDevToolsManager;
 class Profile;
 
@@ -30,6 +29,8 @@ class RenderProcessHost;
 
 namespace extensions {
 class Extension;
+class ExtensionHost;
+
 struct Event;
 
 class EventRouter : public content::NotificationObserver,

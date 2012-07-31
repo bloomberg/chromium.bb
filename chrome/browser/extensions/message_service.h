@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class ExtensionHost;
 class Profile;
 
 namespace content {
@@ -23,6 +22,7 @@ class WebContents;
 }
 
 namespace extensions {
+class ExtensionHost;
 class LazyBackgroundTaskQueue;
 
 // This class manages message and event passing between renderer processes.
@@ -123,16 +123,16 @@ class MessageService : public content::NotificationObserver {
   // use that argument.
   void PendingOpenChannel(const OpenChannelParams& params,
                           int source_process_id,
-                          ExtensionHost* host);
+                          extensions::ExtensionHost* host);
   void PendingCloseChannel(int port_id,
                            bool connection_error,
-                           ExtensionHost* host) {
+                           extensions::ExtensionHost* host) {
     if (host)
       CloseChannel(port_id, connection_error);
   }
   void PendingPostMessage(int port_id,
                           const std::string& message,
-                          ExtensionHost* host) {
+                          extensions::ExtensionHost* host) {
     if (host)
       PostMessageFromRenderer(port_id, message);
   }

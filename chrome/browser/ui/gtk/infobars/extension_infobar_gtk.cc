@@ -109,8 +109,8 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   gtk_util::CenterWidgetInHBox(hbox_, button_, false, 0);
 
   // Start loading the image for the menu button.
-  const extensions::Extension* extension = delegate_->extension_host()->
-      extension();
+  const extensions::Extension* extension =
+      delegate_->extension_host()->extension();
   ExtensionResource icon_resource = extension->GetIconResource(
       ExtensionIconSet::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
   // Create a tracker to load the image. It will report back on OnImageLoaded.
@@ -124,7 +124,7 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_), 0, 1, 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox_), alignment_, TRUE, TRUE, 0);
 
-  ExtensionHost* extension_host = delegate_->extension_host();
+  extensions::ExtensionHost* extension_host = delegate_->extension_host();
   view_ = extension_host->view();
 
   if (gtk_widget_get_parent(view_->native_view())) {

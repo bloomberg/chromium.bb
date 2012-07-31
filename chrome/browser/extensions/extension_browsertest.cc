@@ -534,11 +534,11 @@ void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
   EXPECT_EQ(url, contents->GetController().GetLastCommittedEntry()->GetURL());
 }
 
-ExtensionHost* ExtensionBrowserTest::FindHostWithPath(
+extensions::ExtensionHost* ExtensionBrowserTest::FindHostWithPath(
     ExtensionProcessManager* manager,
     const std::string& path,
     int expected_hosts) {
-  ExtensionHost* host = NULL;
+  extensions::ExtensionHost* host = NULL;
   int num_hosts = 0;
   ExtensionProcessManager::ExtensionHostSet background_hosts =
       manager->background_hosts();

@@ -16,12 +16,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class ExtensionHost;
 class Profile;
 
 namespace extensions {
-
 class Extension;
+class ExtensionHost;
 
 // This class maintains a queue of tasks that should execute when an
 // extension's lazy background page is loaded. It is also in charge of loading

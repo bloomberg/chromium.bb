@@ -40,7 +40,7 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 @interface ExtensionPopupController (Private)
 // Callers should be using the public static method for initialization.
 // NOTE: This takes ownership of |host|.
-- (id)initWithHost:(ExtensionHost*)host
+- (id)initWithHost:(extensions::ExtensionHost*)host
       parentWindow:(NSWindow*)parentWindow
         anchoredAt:(NSPoint)anchoredAt
      arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
@@ -87,8 +87,8 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
-        if (content::Details<ExtensionHost>([controller_ extensionHost]) ==
-                details) {
+        if (content::Details<extensions::ExtensionHost>(
+                [controller_ extensionHost]) == details) {
           [controller_ showDevTools];
         }
         break;
@@ -123,7 +123,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 
 @implementation ExtensionPopupController
 
-- (id)initWithHost:(ExtensionHost*)host
+- (id)initWithHost:(extensions::ExtensionHost*)host
       parentWindow:(NSWindow*)parentWindow
         anchoredAt:(NSPoint)anchoredAt
      arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
@@ -210,7 +210,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   return [static_cast<InfoBubbleWindow*>([self window]) isClosing];
 }
 
-- (ExtensionHost*)extensionHost {
+- (extensions::ExtensionHost*)extensionHost {
   return host_.get();
 }
 
@@ -235,7 +235,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if (!manager)
     return nil;
 
-  ExtensionHost* host = manager->CreatePopupHost(url, browser);
+  extensions::ExtensionHost* host = manager->CreatePopupHost(url, browser);
   DCHECK(host);
   if (!host)
     return nil;

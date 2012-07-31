@@ -11,16 +11,19 @@
 #include "ui/gfx/size.h"
 
 class Browser;
-class ExtensionHost;
 class SkBitmap;
 
 namespace content {
 class RenderViewHost;
 }
 
+namespace extensions {
+class ExtensionHost;
+}
+
 class ExtensionViewGtk {
  public:
-  ExtensionViewGtk(ExtensionHost* extension_host, Browser* browser);
+  ExtensionViewGtk(extensions::ExtensionHost* extension_host, Browser* browser);
 
   class Container {
    public:
@@ -54,7 +57,7 @@ class ExtensionViewGtk {
 
   Browser* browser_;
 
-  ExtensionHost* extension_host_;
+  extensions::ExtensionHost* extension_host_;
 
   // The background the view should have once it is initialized. This is set
   // when the view has a custom background, but hasn't been initialized yet.

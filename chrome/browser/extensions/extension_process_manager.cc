@@ -46,6 +46,7 @@ using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
+using extensions::ExtensionHost;
 
 namespace {
 
@@ -210,8 +211,8 @@ ExtensionHost* ExtensionProcessManager::CreateViewHost(
   EnsureBrowserWhenRequired(browser, view_type);
   ExtensionHost* host =
 #if defined(OS_MACOSX)
-      new ExtensionHostMac(extension, GetSiteInstanceForURL(url), url,
-                           view_type);
+      new extensions::ExtensionHostMac(
+          extension, GetSiteInstanceForURL(url), url, view_type);
 #else
       new ExtensionHost(extension, GetSiteInstanceForURL(url), url, view_type);
 #endif
@@ -276,8 +277,9 @@ void ExtensionProcessManager::CreateBackgroundHost(
 
   ExtensionHost* host =
 #if defined(OS_MACOSX)
-      new ExtensionHostMac(extension, GetSiteInstanceForURL(url), url,
-                           chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+      new extensions::ExtensionHostMac(
+          extension, GetSiteInstanceForURL(url), url,
+          chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
 #else
       new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
                         chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);

@@ -13,12 +13,15 @@
 
 class BaseWindow;
 class ExtensionDialogObserver;
-class ExtensionHost;
 class GURL;
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace extensions {
+class ExtensionHost;
 }
 
 // Modal dialog containing contents provided by an extension.
@@ -76,7 +79,7 @@ class ExtensionDialog : public views::WidgetDelegate,
   // Sets minimum contents size in pixels and makes the window resizable.
   void SetMinimumContentsSize(int width, int height);
 
-  ExtensionHost* host() const { return extension_host_.get(); }
+  extensions::ExtensionHost* host() const { return extension_host_.get(); }
 
   // views::WidgetDelegate overrides.
   virtual bool CanResize() const OVERRIDE;
@@ -101,19 +104,20 @@ class ExtensionDialog : public views::WidgetDelegate,
   friend class base::RefCounted<ExtensionDialog>;
 
   // Use Show() to create instances.
-  ExtensionDialog(ExtensionHost* host, ExtensionDialogObserver* observer);
+  ExtensionDialog(extensions::ExtensionHost* host,
+                  ExtensionDialogObserver* observer);
 
   static ExtensionDialog* ShowInternal(const GURL& url,
                                        BaseWindow* base_window,
-                                       ExtensionHost* host,
+                                       extensions::ExtensionHost* host,
                                        int width,
                                        int height,
                                        bool fullscreen,
                                        const string16& title,
                                        ExtensionDialogObserver* observer);
 
-  static ExtensionHost* CreateExtensionHost(const GURL& url,
-                                            Profile* profile);
+  static extensions::ExtensionHost* CreateExtensionHost(const GURL& url,
+                                                        Profile* profile);
 
   void InitWindow(BaseWindow* base_window, int width, int height);
   void InitWindowFullscreen();
@@ -125,7 +129,7 @@ class ExtensionDialog : public views::WidgetDelegate,
   string16 window_title_;
 
   // The contained host for the view.
-  scoped_ptr<ExtensionHost> extension_host_;
+  scoped_ptr<extensions::ExtensionHost> extension_host_;
 
   content::NotificationRegistrar registrar_;
 

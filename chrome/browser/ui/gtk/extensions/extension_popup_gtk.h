@@ -15,8 +15,11 @@
 #include "ui/gfx/rect.h"
 
 class Browser;
-class ExtensionHost;
 class GURL;
+
+namespace extensions {
+class ExtensionHost;
+}
 
 class ExtensionPopupGtk : public content::NotificationObserver,
                           public BubbleDelegateGtk,
@@ -68,7 +71,7 @@ class ExtensionPopupGtk : public content::NotificationObserver,
 
  private:
   ExtensionPopupGtk(Browser* browser,
-                    ExtensionHost* host,
+                    extensions::ExtensionHost* host,
                     GtkWidget* anchor,
                     ShowAction show_action);
   virtual ~ExtensionPopupGtk();
@@ -86,7 +89,7 @@ class ExtensionPopupGtk : public content::NotificationObserver,
   BubbleGtk* bubble_;
 
   // We take ownership of the popup ExtensionHost.
-  scoped_ptr<ExtensionHost> host_;
+  scoped_ptr<extensions::ExtensionHost> host_;
 
   // The widget for anchoring the position of the bubble.
   GtkWidget* anchor_;

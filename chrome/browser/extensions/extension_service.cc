@@ -635,7 +635,8 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
     // later.
     // TODO(yoz): this is not incognito-safe!
     ExtensionProcessManager* manager = system_->process_manager();
-    ExtensionHost* host = manager->GetBackgroundHostForExtension(extension_id);
+    extensions::ExtensionHost* host =
+        manager->GetBackgroundHostForExtension(extension_id);
     if (host && DevToolsAgentHostRegistry::HasDevToolsAgentHost(
             host->render_view_host())) {
       // Look for an open inspector for the background page.
@@ -2313,7 +2314,7 @@ void ExtensionService::ReportExtensionLoadError(
 }
 
 void ExtensionService::DidCreateRenderViewForBackgroundPage(
-    ExtensionHost* host) {
+    extensions::ExtensionHost* host) {
   OrphanedDevTools::iterator iter =
       orphaned_dev_tools_.find(host->extension_id());
   if (iter == orphaned_dev_tools_.end())
@@ -2336,7 +2337,8 @@ void ExtensionService::Observe(int type,
         break;
       }
 
-      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+      extensions::ExtensionHost* host =
+          content::Details<extensions::ExtensionHost>(details).ptr();
 
       // Mark the extension as terminated and Unload it. We want it to
       // be in a consistent state: either fully working or not loaded

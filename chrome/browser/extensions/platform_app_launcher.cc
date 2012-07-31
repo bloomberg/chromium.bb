@@ -172,7 +172,7 @@ class PlatformAppCommandLineLauncher
 
     ExtensionProcessManager* process_manager =
         ExtensionSystem::Get(profile_)->process_manager();
-    ExtensionHost* host =
+    extensions::ExtensionHost* host =
         process_manager->GetBackgroundHostForExtension(extension_->id());
     DCHECK(host);
     GrantAccessToFileAndLaunch(file_path, mime_type, host);
@@ -180,7 +180,7 @@ class PlatformAppCommandLineLauncher
 
   void GrantAccessToFileAndLaunch(const FilePath& file_path,
                                   const std::string& mime_type,
-                                  ExtensionHost* host) {
+                                  extensions::ExtensionHost* host) {
     // If there was an error loading the app page, |host| will be NULL.
     if (!host) {
       LOG(ERROR) << "Could not load app page for " << extension_->id();
@@ -260,7 +260,7 @@ class PlatformAppBlobIntentLauncher
 
     ExtensionProcessManager* process_manager =
         ExtensionSystem::Get(profile_)->process_manager();
-    ExtensionHost* host =
+    extensions::ExtensionHost* host =
         process_manager->GetBackgroundHostForExtension(extension_->id());
     DCHECK(host);
     GrantAccessToFileAndLaunch(host);
@@ -271,7 +271,7 @@ class PlatformAppBlobIntentLauncher
 
   virtual ~PlatformAppBlobIntentLauncher() {}
 
-  void GrantAccessToFileAndLaunch(ExtensionHost* host) {
+  void GrantAccessToFileAndLaunch(extensions::ExtensionHost* host) {
     // If there was an error loading the app page, |host| will be NULL.
     if (!host) {
       LOG(ERROR) << "Could not load app page for " << extension_->id();

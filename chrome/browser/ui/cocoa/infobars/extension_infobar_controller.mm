@@ -146,8 +146,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     dropdownButton_.reset([[MenuButton alloc] init]);
     [dropdownButton_ setOpenMenuOnClick:YES];
 
-    ExtensionHost* extensionHost = delegate_->AsExtensionInfoBarDelegate()->
-        extension_host();
+    extensions::ExtensionHost* extensionHost =
+        delegate_->AsExtensionInfoBarDelegate()->extension_host();
     Browser* browser =
         browser::FindBrowserWithWebContents(owner->web_contents());
     contextMenu_.reset([[ExtensionActionContextMenu alloc]

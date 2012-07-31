@@ -27,7 +27,7 @@
 
 using content::WebContents;
 
-ExtensionDialog::ExtensionDialog(ExtensionHost* host,
+ExtensionDialog::ExtensionDialog(extensions::ExtensionHost* host,
                                  ExtensionDialogObserver* observer)
     : window_(NULL),
       extension_host_(host),
@@ -57,7 +57,7 @@ ExtensionDialog* ExtensionDialog::Show(
     int height,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  ExtensionHost* host = CreateExtensionHost(url, profile);
+  extensions::ExtensionHost* host = CreateExtensionHost(url, profile);
   if (!host)
     return NULL;
   host->SetAssociatedWebContents(web_contents);
@@ -73,7 +73,7 @@ ExtensionDialog* ExtensionDialog::ShowFullscreen(
     Profile* profile,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  ExtensionHost* host = CreateExtensionHost(url, profile);
+  extensions::ExtensionHost* host = CreateExtensionHost(url, profile);
   if (!host)
     return NULL;
 
@@ -83,9 +83,10 @@ ExtensionDialog* ExtensionDialog::ShowFullscreen(
 #endif
 
 // static
-ExtensionDialog* ExtensionDialog::ShowInternal(const GURL& url,
+ExtensionDialog* ExtensionDialog::ShowInternal(
+    const GURL& url,
     BaseWindow* base_window,
-    ExtensionHost* host,
+    extensions::ExtensionHost* host,
     int width,
     int height,
     bool fullscreen,
@@ -112,8 +113,9 @@ ExtensionDialog* ExtensionDialog::ShowInternal(const GURL& url,
 }
 
 // static
-ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
-                                                    Profile* profile) {
+extensions::ExtensionHost* ExtensionDialog::CreateExtensionHost(
+    const GURL& url,
+    Profile* profile) {
   DCHECK(profile);
   ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
 
@@ -263,17 +265,17 @@ void ExtensionDialog::Observe(int type,
       extension_host_->view()->set_background(NULL);
       // The render view is created during the LoadURL(), so we should
       // set the focus to the view if nobody else takes the focus.
-      if (content::Details<ExtensionHost>(host()) == details)
+      if (content::Details<extensions::ExtensionHost>(host()) == details)
         MaybeFocusRenderView();
       break;
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
-      if (content::Details<ExtensionHost>(host()) != details)
+      if (content::Details<extensions::ExtensionHost>(host()) != details)
         return;
       Close();
       break;
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
-      if (content::Details<ExtensionHost>(host()) != details)
+      if (content::Details<extensions::ExtensionHost>(host()) != details)
         return;
       if (observer_)
         observer_->ExtensionTerminated(this);

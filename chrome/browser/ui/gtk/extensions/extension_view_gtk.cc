@@ -12,7 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
-ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host,
+ExtensionViewGtk::ExtensionViewGtk(extensions::ExtensionHost* extension_host,
                                    Browser* browser)
     : browser_(browser),
       extension_host_(extension_host),

@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   // Get the ExtensionHost that is hosting our background page.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
+  extensions::ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(

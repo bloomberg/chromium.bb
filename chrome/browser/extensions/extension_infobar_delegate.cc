@@ -92,7 +92,8 @@ void ExtensionInfoBarDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE) {
-    if (extension_host_.get() == content::Details<ExtensionHost>(details).ptr())
+    if (extension_host_.get() ==
+        content::Details<extensions::ExtensionHost>(details).ptr())
       RemoveSelf();
   } else {
     DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);

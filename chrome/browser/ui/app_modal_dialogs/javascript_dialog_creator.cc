@@ -35,7 +35,8 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator,
  public:
   static ChromeJavaScriptDialogCreator* GetInstance();
 
-  explicit ChromeJavaScriptDialogCreator(ExtensionHost* extension_host);
+  explicit ChromeJavaScriptDialogCreator(
+      extensions::ExtensionHost* extension_host);
   virtual ~ChromeJavaScriptDialogCreator();
 
   virtual void RunJavaScriptDialog(
@@ -87,7 +88,7 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator,
   // Extension Host which owns the ChromeJavaScriptDialogCreator instance.
   // It's used to get a extension name from a URL.
   // If it's not owned by any Extension, it should be NULL.
-  ExtensionHost* extension_host_;
+  extensions::ExtensionHost* extension_host_;
 
   content::NotificationRegistrar registrar_;
 
@@ -106,7 +107,7 @@ ChromeJavaScriptDialogCreator::~ChromeJavaScriptDialogCreator() {
 }
 
 ChromeJavaScriptDialogCreator::ChromeJavaScriptDialogCreator(
-    ExtensionHost* extension_host)
+    extensions::ExtensionHost* extension_host)
     : extension_host_(extension_host) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::Source<Profile>(extension_host_->profile()));
@@ -271,6 +272,6 @@ content::JavaScriptDialogCreator* GetJavaScriptDialogCreatorInstance() {
 }
 
 content::JavaScriptDialogCreator* CreateJavaScriptDialogCreatorInstance(
-    ExtensionHost* extension_host) {
+    extensions::ExtensionHost* extension_host) {
   return new ChromeJavaScriptDialogCreator(extension_host);
 }

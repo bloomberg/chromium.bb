@@ -11,11 +11,14 @@
 #include "ui/gfx/size.h"
 
 class Browser;
-class ExtensionHost;
 class SkBitmap;
 
 namespace content {
 class RenderViewHost;
+}
+
+namespace extensions {
+class ExtensionHost;
 }
 
 // This class represents extension views. An extension view internally contains
@@ -31,7 +34,7 @@ class ExtensionViewMac {
     virtual void OnExtensionViewDidShow(ExtensionViewMac* view) {};
   };
 
-  ExtensionViewMac(ExtensionHost* extension_host, Browser* browser);
+  ExtensionViewMac(extensions::ExtensionHost* extension_host, Browser* browser);
   ~ExtensionViewMac();
 
   // Starts the extension process and creates the native view. You must call
@@ -84,7 +87,7 @@ class ExtensionViewMac {
 
   Browser* browser_;  // weak
 
-  ExtensionHost* extension_host_;  // weak
+  extensions::ExtensionHost* extension_host_;  // weak
 
   // The background the view should have once it is initialized. This is set
   // when the view has a custom background, but hasn't been initialized yet.

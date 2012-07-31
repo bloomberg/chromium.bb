@@ -31,6 +31,7 @@ using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::WebContents;
+using extensions::ExtensionHost;
 
 // Looks for an background ExtensionHost whose URL has the given path component
 // (including leading slash).  Also verifies that the expected number of hosts

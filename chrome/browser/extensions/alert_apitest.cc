@@ -17,7 +17,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
   ASSERT_TRUE(RunExtensionTest("alert")) << message_;
 
   const extensions::Extension* extension = GetSingleLoadedExtension();
-  ExtensionHost* host = browser()->profile()->GetExtensionProcessManager()->
+  extensions::ExtensionHost* host =
+      browser()->profile()->GetExtensionProcessManager()->
       GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(host);
   host->render_view_host()->ExecuteJavascriptInWebFrame(string16(),

@@ -44,7 +44,7 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
     // sync with the Extension.
     ExtensionProcessManager* manager = browser()->profile()->
         GetExtensionProcessManager();
-    ExtensionHost* ext_host =
+    extensions::ExtensionHost* ext_host =
         manager->GetBackgroundHostForExtension(extension->id());
     EXPECT_TRUE(ext_host);
     if (!ext_host)

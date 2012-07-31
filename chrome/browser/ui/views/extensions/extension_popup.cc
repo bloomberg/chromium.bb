@@ -62,7 +62,7 @@ const int ExtensionPopup::kMaxHeight = 600;
 
 ExtensionPopup::ExtensionPopup(
     Browser* browser,
-    ExtensionHost* host,
+    extensions::ExtensionHost* host,
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation arrow_location)
     : BubbleDelegateView(anchor_view, arrow_location),
@@ -114,7 +114,7 @@ void ExtensionPopup::Observe(int type,
       break;
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
-      if (content::Details<ExtensionHost>(host()) == details)
+      if (content::Details<extensions::ExtensionHost>(host()) == details)
         GetWidget()->Close();
       break;
     case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING:
@@ -178,7 +178,7 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
     views::BubbleBorder::ArrowLocation arrow_location) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = manager->CreatePopupHost(url, browser);
+  extensions::ExtensionHost* host = manager->CreatePopupHost(url, browser);
   ExtensionPopup* popup = new ExtensionPopup(browser, host, anchor_view,
       arrow_location);
   views::BubbleDelegateView::CreateBubble(popup);

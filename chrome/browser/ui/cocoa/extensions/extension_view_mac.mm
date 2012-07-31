@@ -19,7 +19,7 @@ const CGFloat ExtensionViewMac::kMinHeight = 25.0;
 const CGFloat ExtensionViewMac::kMaxWidth = 800.0;
 const CGFloat ExtensionViewMac::kMaxHeight = 600.0;
 
-ExtensionViewMac::ExtensionViewMac(ExtensionHost* extension_host,
+ExtensionViewMac::ExtensionViewMac(extensions::ExtensionHost* extension_host,
                                    Browser* browser)
     : browser_(browser),
       extension_host_(extension_host),

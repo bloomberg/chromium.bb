@@ -41,7 +41,6 @@ class SiteInstance;
 namespace extensions {
 class Extension;
 class WindowController;
-}
 
 // This class is the browser component of an extension component's RenderView.
 // It handles setting up the renderer process, if needed, with special
@@ -65,7 +64,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   typedef ExtensionViewAndroid PlatformExtensionView;
 #endif
 
-  ExtensionHost(const extensions::Extension* extension,
+  ExtensionHost(const Extension* extension,
                 content::SiteInstance* site_instance,
                 const GURL& url, chrome::ViewType host_type);
   virtual ~ExtensionHost();
@@ -94,7 +93,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   // instantiate Browser objects.
   void CreateView(Browser* browser);
 
-  const extensions::Extension* extension() const { return extension_; }
+  const Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
   content::WebContents* host_contents() const { return host_contents_.get(); }
   content::RenderViewHost* render_view_host() const;
@@ -204,7 +203,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   bool is_background_page() const { return !view(); }
 
   // The extension that we're hosting in this view.
-  const extensions::Extension* extension_;
+  const Extension* extension_;
 
   // Id of extension that we're hosting in this view.
   const std::string extension_id_;
@@ -255,5 +254,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_HOST_H_

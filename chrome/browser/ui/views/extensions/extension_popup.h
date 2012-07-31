@@ -38,7 +38,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
       views::View* anchor_view,
       views::BubbleBorder::ArrowLocation arrow_location);
 
-  ExtensionHost* host() const { return extension_host_.get(); }
+  extensions::ExtensionHost* host() const { return extension_host_.get(); }
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
@@ -63,7 +63,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
 
  private:
   ExtensionPopup(Browser* browser,
-                 ExtensionHost* host,
+                 extensions::ExtensionHost* host,
                  views::View* anchor_view,
                  views::BubbleBorder::ArrowLocation arrow_location);
 
@@ -73,7 +73,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
   void CloseBubble();
 
   // The contained host for the view.
-  scoped_ptr<ExtensionHost> extension_host_;
+  scoped_ptr<extensions::ExtensionHost> extension_host_;
 
   // Flag used to indicate if the pop-up should open a devtools window once
   // it is shown inspecting it.

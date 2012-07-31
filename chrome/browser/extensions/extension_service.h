@@ -527,7 +527,7 @@ class ExtensionService
 
   // ExtensionHost of background page calls this method right after its render
   // view has been created.
-  void DidCreateRenderViewForBackgroundPage(ExtensionHost* host);
+  void DidCreateRenderViewForBackgroundPage(extensions::ExtensionHost* host);
 
   // For the extension in |version_path| with |id|, check to see if it's an
   // externally managed extension.  If so, uninstall it.

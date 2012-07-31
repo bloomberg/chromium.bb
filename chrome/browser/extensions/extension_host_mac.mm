@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 
 using content::NativeWebKeyboardEvent;
+
+namespace extensions {
 
 ExtensionHostMac::~ExtensionHostMac() {
   // If there is a popup open for this host's extension, close it.
@@ -35,3 +37,5 @@ void ExtensionHostMac::UnhandledKeyboardEvent(
   DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
   [event_window redispatchKeyEvent:event.os_event];
 }
+
+}  // namespace extensions

@@ -16,11 +16,14 @@
 
 class Browser;
 class DevtoolsNotificationBridge;
-class ExtensionHost;
 class ExtensionPopupContainer;
 
 namespace content {
 class NotificationRegistrar;
+}
+
+namespace extensions {
+class ExtensionHost;
 }
 
 // This controller manages a single browser action popup that can appear once a
@@ -40,7 +43,7 @@ class NotificationRegistrar;
   NSRect extensionFrame_;
 
   // The extension host object.
-  scoped_ptr<ExtensionHost> host_;
+  scoped_ptr<extensions::ExtensionHost> host_;
 
   scoped_ptr<content::NotificationRegistrar> registrar_;
   scoped_ptr<DevtoolsNotificationBridge> notificationBridge_;
@@ -54,7 +57,7 @@ class NotificationRegistrar;
 }
 
 // Returns the ExtensionHost object associated with this popup.
-- (ExtensionHost*)extensionHost;
+- (extensions::ExtensionHost*)extensionHost;
 
 // Starts the process of showing the given popup URL. Instantiates an
 // ExtensionPopupController with the parent window retrieved from |browser|, a

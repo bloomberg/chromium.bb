@@ -1490,7 +1490,8 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
       break;
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
       RemoveFromTaskManager(
-          content::Details<ExtensionHost>(details).ptr()->render_view_host());
+          content::Details<extensions::ExtensionHost>(details).ptr()->
+          render_view_host());
       break;
     case chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED:
       RemoveFromTaskManager(

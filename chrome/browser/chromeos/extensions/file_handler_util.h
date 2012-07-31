@@ -12,7 +12,6 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 
 class Browser;
-class ExtensionHost;
 class FileBrowserHandler;
 class GURL;
 class Profile;
