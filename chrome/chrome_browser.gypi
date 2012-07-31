@@ -1438,8 +1438,6 @@
         'browser/metrics/metrics_log_serializer.h',
         'browser/metrics/metrics_reporting_scheduler.cc',
         'browser/metrics/metrics_reporting_scheduler.h',
-        'browser/metrics/metrics_response.cc',
-        'browser/metrics/metrics_response.h',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
         'browser/metrics/thread_watcher.cc',

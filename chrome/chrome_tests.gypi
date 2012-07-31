@@ -1350,7 +1350,6 @@
         'browser/media_gallery/media_gallery_database_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_log_serializer_unittest.cc',
-        'browser/metrics/metrics_response_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/variations_service_unittest.cc',
