@@ -198,8 +198,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
     return vc_manager_.get();
   }
 
-  bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
-
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
   GpuChannelHost* GetGpuChannel();
@@ -267,9 +265,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   // Initialize COM when using plugins outside the sandbox (Windows only).
   scoped_ptr<base::win::ScopedCOMInitializer> initialize_com_;
-
-  // If true, then a GetPlugins call is allowed to rescan the disk.
-  bool plugin_refresh_allowed_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;

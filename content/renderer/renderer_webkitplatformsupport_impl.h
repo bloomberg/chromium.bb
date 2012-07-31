@@ -30,6 +30,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   RendererWebKitPlatformSupportImpl();
   virtual ~RendererWebKitPlatformSupportImpl();
 
+  void set_plugin_refresh_allowed(bool plugin_refresh_allowed) {
+    plugin_refresh_allowed_ = plugin_refresh_allowed;
+  }
   // WebKitPlatformSupport methods:
   virtual WebKit::WebClipboard* clipboard() OVERRIDE;
   virtual WebKit::WebMimeRegistry* mimeRegistry() OVERRIDE;
@@ -122,6 +125,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   // increments by 1, for every enable decrements by 1. When it reaches 0,
   // we tell the browser to enable fast termination.
   int sudden_termination_disables_;
+
+  // If true, then a GetPlugins call is allowed to rescan the disk.
+  bool plugin_refresh_allowed_;
 
   // Implementation of the WebSharedWorkerRepository APIs (provides an interface
   // to WorkerService on the browser thread.

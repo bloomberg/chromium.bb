@@ -79,6 +79,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+using content::RenderThread;
 using WebKit::WebAudioDevice;
 using WebKit::WebBlobRegistry;
 using WebKit::WebFileInfo;
@@ -167,6 +168,7 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
       clipboard_(new webkit_glue::WebClipboardImpl(clipboard_client_.get())),
       mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
       sudden_termination_disables_(0),
+      plugin_refresh_allowed_(true),
       shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
   if (g_sandbox_enabled) {
     sandbox_support_.reset(
@@ -184,7 +186,7 @@ RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl() {
 namespace {
 
 bool SendSyncMessageFromAnyThreadInternal(IPC::SyncMessage* msg) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  RenderThread* render_thread = RenderThread::Get();
   if (render_thread)
     return render_thread->Send(msg);
   scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter(
@@ -296,12 +298,12 @@ void RendererWebKitPlatformSupportImpl::cacheMetadata(
   // browser may cache it and return it on subsequent responses to speed
   // the processing of this resource.
   std::vector<char> copy(data, data + size);
-  RenderThreadImpl::current()->Send(
+  RenderThread::Get()->Send(
       new ViewHostMsg_DidGenerateCacheableMetadata(url, response_time, copy));
 }
 
 WebString RendererWebKitPlatformSupportImpl::defaultLocale() {
-  return ASCIIToUTF16(RenderThreadImpl::Get()->GetLocale());
+  return ASCIIToUTF16(RenderThread::Get()->GetLocale());
 }
 
 void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
@@ -319,7 +321,7 @@ void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
       return;
   }
 
-  RenderThreadImpl* thread = RenderThreadImpl::current();
+  RenderThread* thread = RenderThread::Get();
   if (thread)  // NULL in unittests.
     thread->Send(new ViewHostMsg_SuddenTerminationChanged(enabled));
 }
@@ -385,7 +387,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   std::string mime_type;
-  RenderThreadImpl::current()->Send(
+  RenderThread::Get()->Send(
       new MimeRegistryMsg_GetMimeTypeFromExtension(
           webkit_glue::WebStringToFilePathString(file_extension), &mime_type));
   return ASCIIToUTF16(mime_type);
@@ -400,7 +402,7 @@ WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   std::string mime_type;
-  RenderThreadImpl::current()->Send(new MimeRegistryMsg_GetMimeTypeFromFile(
+  RenderThread::Get()->Send(new MimeRegistryMsg_GetMimeTypeFromFile(
       FilePath(webkit_glue::WebStringToFilePathString(file_path)),
       &mime_type));
   return ASCIIToUTF16(mime_type);
@@ -416,7 +418,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::preferredExtensionForMIMEType(
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   FilePath::StringType file_extension;
-  RenderThreadImpl::current()->Send(
+  RenderThread::Get()->Send(
       new MimeRegistryMsg_GetPreferredExtensionForMimeType(
           UTF16ToASCII(mime_type), &file_extension));
   return webkit_glue::FilePathStringToWebString(file_extension);
@@ -456,7 +458,7 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
     HFONT font) {
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
-  RenderThreadImpl::current()->PreCacheFont(logfont);
+  RenderThread::Get()->PreCacheFont(logfont);
   return true;
 }
 
@@ -467,7 +469,7 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
   uint32 font_data_size;
   FontDescriptor src_font_descriptor(src_font);
   base::SharedMemoryHandle font_data;
-  if (!RenderThreadImpl::current()->Send(new ViewHostMsg_LoadFont(
+  if (!RenderThread::Get()->Send(new ViewHostMsg_LoadFont(
         src_font_descriptor, &font_data_size, &font_data, font_id))) {
     *out = NULL;
     *font_id = 0;
@@ -648,7 +650,7 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
     const WebKit::WebString& challenge,
     const WebKit::WebURL& url) {
   std::string signed_public_key;
-  RenderThreadImpl::current()->Send(new ViewHostMsg_Keygen(
+  RenderThread::Get()->Send(new ViewHostMsg_Keygen(
       static_cast<uint32>(key_size_index),
       challenge.utf8(),
       GURL(url),
@@ -661,7 +663,7 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
 void RendererWebKitPlatformSupportImpl::screenColorProfile(
     WebVector<char>* to_profile) {
   std::vector<char> profile;
-  RenderThreadImpl::current()->Send(
+  RenderThread::Get()->Send(
       new ViewHostMsg_GetMonitorColorProfile(&profile));
   *to_profile = profile;
 }
@@ -691,9 +693,9 @@ WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(
 
 void RendererWebKitPlatformSupportImpl::GetPlugins(
     bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
-  if (!RenderThreadImpl::current()->plugin_refresh_allowed())
+  if (!plugin_refresh_allowed_)
     refresh = false;
-  RenderThreadImpl::current()->Send(
+  RenderThread::Get()->Send(
       new ViewHostMsg_GetPlugins(refresh, plugins));
 }
 
