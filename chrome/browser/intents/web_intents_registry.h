@@ -108,31 +108,36 @@ class WebIntentsRegistry : public ProfileKeyedService {
   void CollapseIntents(IntentServiceList* services);
 
  private:
-  struct IntentsQuery;
-  typedef std::vector<IntentsQuery*> QueryVector;
+  struct QueryParams;
+  class QueryAdapter;
+  typedef std::vector<QueryAdapter*> QueryVector;
 
   // Handles services loaded
   void OnWebIntentsResultReceived(
-      IntentsQuery* query,
+      const QueryParams& params,
+      const QueryCallback& callback,
       const WDTypedResult* result);
 
   // Handles default services loaded
   void OnWebIntentsDefaultsResultReceived(
-      IntentsQuery* query,
+      const QueryParams& params,
+      const DefaultQueryCallback& callback,
       const WDTypedResult* result);
 
   // Implementation of GetIntentServicesForExtensionFilter.
-  void DoGetIntentServicesForExtensionFilter(scoped_ptr<IntentsQuery> query,
-                                             const std::string& extension_id);
+  void DoGetIntentServicesForExtensionFilter(
+      const QueryParams& params,
+      const std::string& extension_id,
+      const QueryCallback& callback);
 
   const extensions::Extension* ExtensionForURL(const std::string& url);
 
   // Adds a query to the list of pending queries.
-  void TrackQuery(IntentsQuery* query);
+  void TrackQuery(QueryAdapter* query);
 
   // Takes ownership of a query. This removes a query from the list
   // of pending queries.
-  void ReleaseQuery(IntentsQuery* query);
+  void ReleaseQuery(QueryAdapter* query);
 
   // Map for all in-flight web data requests/intent queries.
   QueryVector pending_queries_;
