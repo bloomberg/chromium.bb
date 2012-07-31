@@ -114,6 +114,7 @@ REFRESH_PACKAGES_TYPE = 'refresh_packages'
 
 # Define pool of machines for Hardware tests.
 HWTEST_MACH_POOL = 'bvt'
+HWTEST_PALADIN_POOL = 'cq-bvt'
 HWTEST_CHROME_PFQ_POOL = 'chromepfq'
 
 # Defines VM Test types.
