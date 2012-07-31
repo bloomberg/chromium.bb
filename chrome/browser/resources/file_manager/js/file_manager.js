@@ -3105,6 +3105,9 @@ FileManager.prototype = {
    * Update the tab title.
    */
   FileManager.prototype.updateTitle_ = function() {
+    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE)
+      return;
+
     this.document_.title = this.getCurrentDirectory().replace(
         new RegExp('^' + RootDirectory.GDATA),
         str('GDATA_DIRECTORY_LABEL'));
