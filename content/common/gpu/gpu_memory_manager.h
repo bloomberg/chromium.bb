@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
+#include "ui/gfx/size.h"
 
 class GpuCommandBufferStubBase;
 
@@ -42,22 +43,6 @@ class CONTENT_EXPORT GpuMemoryManager :
  public:
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
 
-  // These are predefined values (in bytes) for
-  // GpuMemoryAllocation::gpuResourceSizeInBytes.
-  // Maximum Allocation for all tabs is a soft limit that can be exceeded
-  // during the time it takes for renderers to respect new allocations,
-  // including when switching tabs or opening a new window.
-  // To alleviate some pressure, we decrease our desired limit by "one tabs'
-  // worth" of memory.
-  enum {
-#if defined(OS_ANDROID)
-    kMinimumAllocationForTab = 32 * 1024 * 1024,
-    kMaximumAllocationForTabs = 64 * 1024 * 1024,
-#else
-    kMinimumAllocationForTab = 64 * 1024 * 1024,
-    kMaximumAllocationForTabs = 512 * 1024 * 1024 - kMinimumAllocationForTab,
-#endif
-  };
 
   // StubMemoryStat is used to store memory-allocation-related information about
   // a GpuCommandBufferStubBase for some time point.
@@ -88,18 +73,28 @@ class CONTENT_EXPORT GpuMemoryManager :
     return stub_memory_stats_for_last_manage_;
   }
 
-  // Tries to estimate the total available gpu memory for use by
-  // GpuMemoryManager.  Ideally should consider other system applications and
-  // other internal but non GpuMemoryManager managed sources, etc.
-  size_t GetAvailableGpuMemory() const;
-
   // Track a change in memory allocated by any context
   void TrackMemoryAllocatedChange(size_t old_size, size_t new_size);
 
-
  private:
   friend class GpuMemoryManagerTest;
+
   void Manage();
+
+  size_t CalculateBonusMemoryAllocationBasedOnSize(gfx::Size size) const;
+
+  size_t GetAvailableGpuMemory() const {
+    return bytes_available_gpu_memory_;
+  }
+
+  // The minimum non-zero amount of memory that a tab may be assigned
+  size_t GetMinimumTabAllocation() const {
+#if defined(OS_ANDROID)
+    return 32 * 1024 * 1024;
+#else
+    return 64 * 1024 * 1024;
+#endif
+  }
 
   class CONTENT_EXPORT StubWithSurfaceComparator {
    public:
@@ -115,6 +110,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   size_t max_surfaces_with_frontbuffer_soft_limit_;
 
   StubMemoryStatMap stub_memory_stats_for_last_manage_;
+
+  // The maximum amount of memory that may be allocated for GPU resources
+  size_t bytes_available_gpu_memory_;
 
   // The current total memory usage, and historical maximum memory usage
   size_t bytes_allocated_current_;

@@ -9,10 +9,13 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace {
 
@@ -28,25 +31,6 @@ bool IsInSameContextShareGroupAsAnyOf(
   }
   return false;
 }
-
-#if defined(OS_ANDROID)
-size_t CalculateBonusMemoryAllocationBasedOnSize(gfx::Size size) {
-  const int viewportMultiplier = 16;
-  const unsigned int componentsPerPixel = 4; // GraphicsContext3D::RGBA
-  const unsigned int bytesPerComponent = 1; // sizeof(GC3Dubyte)
-
-  if (size.IsEmpty())
-    return 0;
-
-  size_t limit = viewportMultiplier * size.width() * size.height() *
-                     componentsPerPixel * bytesPerComponent;
-  if (limit < GpuMemoryManager::kMinimumAllocationForTab)
-    limit = GpuMemoryManager::kMinimumAllocationForTab;
-  else if (limit > GpuMemoryManager::kMaximumAllocationForTabs)
-    limit = GpuMemoryManager::kMaximumAllocationForTabs;
-  return limit - GpuMemoryManager::kMinimumAllocationForTab;
-}
-#endif
 
 void AssignMemoryAllocations(
     GpuMemoryManager::StubMemoryStatMap* stub_memory_stats,
@@ -65,14 +49,46 @@ void AssignMemoryAllocations(
 
 }
 
+size_t GpuMemoryManager::CalculateBonusMemoryAllocationBasedOnSize(
+    gfx::Size size) const {
+  const int kViewportMultiplier = 16;
+  const unsigned int kComponentsPerPixel = 4; // GraphicsContext3D::RGBA
+  const unsigned int kBytesPerComponent = 1; // sizeof(GC3Dubyte)
+
+  if (size.IsEmpty())
+    return 0;
+
+  size_t limit = kViewportMultiplier * size.width() * size.height() *
+                 kComponentsPerPixel * kBytesPerComponent;
+  if (limit < GetMinimumTabAllocation())
+    limit = GetMinimumTabAllocation();
+  else if (limit > GetAvailableGpuMemory())
+    limit = GetAvailableGpuMemory();
+  return limit - GetMinimumTabAllocation();
+}
+
 GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
         size_t max_surfaces_with_frontbuffer_soft_limit)
     : client_(client),
       manage_immediate_scheduled_(false),
       max_surfaces_with_frontbuffer_soft_limit_(
           max_surfaces_with_frontbuffer_soft_limit),
+      bytes_available_gpu_memory_(0),
       bytes_allocated_current_(0),
       bytes_allocated_historical_max_(0) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceGpuMemAvailableMb)) {
+    base::StringToSizeT(
+      command_line->GetSwitchValueASCII(switches::kForceGpuMemAvailableMb),
+      &bytes_available_gpu_memory_);
+    bytes_available_gpu_memory_ *= 1024 * 1024;
+  } else {
+#if defined(OS_ANDROID)
+    bytes_available_gpu_memory_ = 64 * 1024 * 1024;
+#else
+    bytes_available_gpu_memory_ = 448 * 1024 * 1024;
+#endif
+  }
 }
 
 GpuMemoryManager::~GpuMemoryManager() {
@@ -112,11 +128,6 @@ void GpuMemoryManager::ScheduleManage(bool immediate) {
   }
 }
 
-size_t GpuMemoryManager::GetAvailableGpuMemory() const {
-  // TODO(mmocny): Implement this with real system figures.
-  return kMaximumAllocationForTabs;
-}
-
 void GpuMemoryManager::TrackMemoryAllocatedChange(size_t old_size,
                                                   size_t new_size)
 {
@@ -124,8 +135,7 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(size_t old_size,
     size_t delta = old_size - new_size;
     DCHECK(bytes_allocated_current_ >= delta);
     bytes_allocated_current_ -= delta;
-  }
-  else {
+  } else {
     size_t delta = new_size - old_size;
     bytes_allocated_current_ += delta;
     if (bytes_allocated_current_ > bytes_allocated_historical_max_) {
@@ -241,11 +251,11 @@ void GpuMemoryManager::Manage() {
   size_t num_stubs_need_mem = stubs_with_surface_foreground.size() +
                               stubs_without_surface_foreground.size() +
                               stubs_without_surface_background.size();
-  size_t base_allocation_size = kMinimumAllocationForTab * num_stubs_need_mem;
-  if (base_allocation_size < kMaximumAllocationForTabs &&
+  size_t base_allocation_size = GetMinimumTabAllocation() * num_stubs_need_mem;
+  if (base_allocation_size < GetAvailableGpuMemory() &&
       !stubs_with_surface_foreground.empty())
-    bonus_allocation = (kMaximumAllocationForTabs - base_allocation_size) /
-                           stubs_with_surface_foreground.size();
+    bonus_allocation = (GetAvailableGpuMemory() - base_allocation_size) /
+                       stubs_with_surface_foreground.size();
 #else
   // On android, calculate bonus allocation based on surface size.
   if (!stubs_with_surface_foreground.empty())
@@ -259,7 +269,7 @@ void GpuMemoryManager::Manage() {
   AssignMemoryAllocations(
       &stub_memory_stats_for_last_manage_,
       stubs_with_surface_foreground,
-      GpuMemoryAllocation(kMinimumAllocationForTab + bonus_allocation,
+      GpuMemoryAllocation(GetMinimumTabAllocation() + bonus_allocation,
           GpuMemoryAllocation::kHasFrontbuffer |
           GpuMemoryAllocation::kHasBackbuffer),
       true);
@@ -279,14 +289,14 @@ void GpuMemoryManager::Manage() {
   AssignMemoryAllocations(
       &stub_memory_stats_for_last_manage_,
       stubs_without_surface_foreground,
-      GpuMemoryAllocation(kMinimumAllocationForTab,
+      GpuMemoryAllocation(GetMinimumTabAllocation(),
           GpuMemoryAllocation::kHasNoBuffers),
       true);
 
   AssignMemoryAllocations(
       &stub_memory_stats_for_last_manage_,
       stubs_without_surface_background,
-      GpuMemoryAllocation(kMinimumAllocationForTab,
+      GpuMemoryAllocation(GetMinimumTabAllocation(),
           GpuMemoryAllocation::kHasNoBuffers),
       false);
 
@@ -295,14 +305,6 @@ void GpuMemoryManager::Manage() {
       stubs_without_surface_hibernated,
       GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers),
       false);
-
-  size_t assigned_allocation_sum = 0;
-  for (StubMemoryStatMap::iterator it =
-          stub_memory_stats_for_last_manage_.begin();
-      it != stub_memory_stats_for_last_manage_.end();
-      ++it) {
-    assigned_allocation_sum += it->second.allocation.gpu_resource_size_in_bytes;
-  }
 }
 
 #endif

@@ -37,6 +37,9 @@ const char kEnforceGLMinimums[]             = "enforce-gl-minimums";
 // affected systems.
 const char kForceGLFinishWorkaround[]       = "force-glfinish-workaround";
 
+// Sets the total amount of memory that may be allocated for GPU resources
+const char kForceGpuMemAvailableMb[]        = "force-gpu-mem-available-mb";
+
 // Sets the maximum size of the in-memory gpu program cache, in kb
 const char kGpuProgramCacheSizeKb[]         = "gpu-program-cache-size-kb";
 
@@ -52,6 +55,7 @@ const char* kGpuSwitches[] = {
   kDisableGpuProgramCache,
   kEnforceGLMinimums,
   kForceGLFinishWorkaround,
+  kForceGpuMemAvailableMb,
   kGpuProgramCacheSizeKb,
   kTraceGL,
 };
