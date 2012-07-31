@@ -41,7 +41,7 @@ LRESULT SystemMessageWindowWin::OnDeviceChange(UINT event_type, DWORD data) {
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
   switch (event_type) {
     case DBT_DEVNODES_CHANGED:
-      monitor->ProcessDevicesChanged();
+      monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_UNKNOWN);
       break;
   }
   return TRUE;

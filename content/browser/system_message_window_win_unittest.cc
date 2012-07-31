@@ -30,7 +30,7 @@ class SystemMessageWindowWinTest : public testing::Test {
 };
 
 TEST_F(SystemMessageWindowWinTest, DevicesChanged) {
-  EXPECT_CALL(observer_, OnDevicesChanged()).Times(1);
+  EXPECT_CALL(observer_, OnDevicesChanged(testing::_)).Times(1);
   window_.OnDeviceChange(DBT_DEVNODES_CHANGED, NULL);
   message_loop_.RunAllPending();
 }

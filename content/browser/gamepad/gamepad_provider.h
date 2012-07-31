@@ -40,7 +40,7 @@ class CONTENT_EXPORT GamepadProvider :
   void Resume();
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
-  virtual void OnDevicesChanged() OVERRIDE;
+  virtual void OnDevicesChanged(base::SystemMonitor::DeviceType type) OVERRIDE;
 
  private:
 
