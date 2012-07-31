@@ -73,7 +73,12 @@ class MediaDeviceNotificationsTest : public testing::Test {
   }
 
   void MountDevice(MountError error_code,
-                   const DiskMountManager::MountPointInfo& mount_info) {
+                   const DiskMountManager::MountPointInfo& mount_info,
+                   const std::string& device_id) {
+    if (error_code == MOUNT_ERROR_NONE) {
+      disk_mount_manager_mock_->CreateDiskEntryForMountDevice(
+        mount_info, device_id);
+    }
     notifications_->MountCompleted(disks::DiskMountManager::MOUNTING,
                                    error_code,
                                    mount_info);
@@ -85,6 +90,10 @@ class MediaDeviceNotificationsTest : public testing::Test {
     notifications_->MountCompleted(disks::DiskMountManager::UNMOUNTING,
                                    error_code,
                                    mount_info);
+    if (error_code == MOUNT_ERROR_NONE) {
+      disk_mount_manager_mock_->RemoveDiskEntryForMountDevice(
+          mount_info);
+    }
     WaitForFileThread();
   }
 
@@ -146,14 +155,14 @@ TEST_F(MediaDeviceNotificationsTest, BasicAttachDetach) {
                                               mount_path1.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  const std::string kDeviceId0 = "0";
+  const std::string kDeviceId0 = "FFFF-FFFF";
   EXPECT_CALL(observer(),
               OnMediaDeviceAttached(kDeviceId0,
                                     ASCIIToUTF16(kDevice1Name),
                                     base::SystemMonitor::TYPE_PATH,
                                     mount_path1.value()))
       .InSequence(mock_sequence);
-  MountDevice(MOUNT_ERROR_NONE, mount_info);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kDeviceId0);
 
   EXPECT_CALL(observer(), OnMediaDeviceDetached(kDeviceId0))
       .InSequence(mock_sequence);
@@ -165,7 +174,7 @@ TEST_F(MediaDeviceNotificationsTest, BasicAttachDetach) {
                                                mount_path2.value(),
                                                MOUNT_TYPE_DEVICE,
                                                disks::MOUNT_CONDITION_NONE);
-  const std::string kDeviceId1 = "1";
+  const std::string kDeviceId1 = "FFF0-FFF0";
 
   EXPECT_CALL(observer(),
               OnMediaDeviceAttached(kDeviceId1,
@@ -173,7 +182,7 @@ TEST_F(MediaDeviceNotificationsTest, BasicAttachDetach) {
                                     base::SystemMonitor::TYPE_PATH,
                                     mount_path2.value()))
       .InSequence(mock_sequence);
-  MountDevice(MOUNT_ERROR_NONE, mount_info2);
+  MountDevice(MOUNT_ERROR_NONE, mount_info2, kDeviceId1);
 
   EXPECT_CALL(observer(), OnMediaDeviceDetached(kDeviceId1))
       .InSequence(mock_sequence);
@@ -184,19 +193,21 @@ TEST_F(MediaDeviceNotificationsTest, BasicAttachDetach) {
 TEST_F(MediaDeviceNotificationsTest, DCIM) {
   testing::Sequence mock_sequence;
   FilePath mount_path = CreateMountPoint(kMountPointA, false);
+  const std::string kDeviceId = "FFFF-FFFF";
   ASSERT_FALSE(mount_path.empty());
   DiskMountManager::MountPointInfo mount_info(kDevice1,
                                               mount_path.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _, _)).Times(0);
-  MountDevice(MOUNT_ERROR_NONE, mount_info);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kDeviceId);
 }
 
 // Non device mounts and mount errors are ignored.
 TEST_F(MediaDeviceNotificationsTest, Ignore) {
   testing::Sequence mock_sequence;
   FilePath mount_path = CreateMountPoint(kMountPointA, true);
+  const std::string kDeviceId = "FFFF-FFFF";
   ASSERT_FALSE(mount_path.empty());
 
   // Mount error.
@@ -205,18 +216,18 @@ TEST_F(MediaDeviceNotificationsTest, Ignore) {
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _, _)).Times(0);
-  MountDevice(MOUNT_ERROR_UNKNOWN, mount_info);
+  MountDevice(MOUNT_ERROR_UNKNOWN, mount_info, kDeviceId);
 
   // Not a device
   mount_info.mount_type = MOUNT_TYPE_ARCHIVE;
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _, _)).Times(0);
-  MountDevice(MOUNT_ERROR_NONE, mount_info);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kDeviceId);
 
   // Unsupported file system.
   mount_info.mount_type = MOUNT_TYPE_DEVICE;
   mount_info.mount_condition = disks::MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM;
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _, _)).Times(0);
-  MountDevice(MOUNT_ERROR_NONE, mount_info);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kDeviceId);
 }
 
 }  // namespace

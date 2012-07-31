@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -16,10 +17,21 @@
 
 namespace chromeos {
 
+namespace {
+
+std::string GetDeviceUuid(const std::string& source_path) {
+  // Get the media device uuid if exists.
+  const disks::DiskMountManager::DiskMap& disks =
+      disks::DiskMountManager::GetInstance()->disks();
+  disks::DiskMountManager::DiskMap::const_iterator it = disks.find(source_path);
+  return it == disks.end() ? std::string() : it->second->fs_uuid();
+}
+
+}  // namespace
+
 using content::BrowserThread;
 
-MediaDeviceNotifications::MediaDeviceNotifications()
-    : current_device_id_(0) {
+MediaDeviceNotifications::MediaDeviceNotifications() {
   DCHECK(disks::DiskMountManager::GetInstance());
   disks::DiskMountManager::GetInstance()->AddObserver(this);
 }
@@ -101,7 +113,16 @@ void MediaDeviceNotifications::AddMountedPathOnUIThread(
     NOTREACHED();
     return;
   }
-  const std::string device_id_str = base::IntToString(current_device_id_++);
+
+  // Get the media device uuid if exists.
+  std::string device_id_str = GetDeviceUuid(mount_info.source_path);
+
+  // Keep track of device uuid, to see how often we receive empty uuid values.
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_uuid_available",
+                        !device_id_str.empty());
+  if (device_id_str.empty())
+    return;
+
   mount_map_.insert(std::make_pair(mount_info.mount_path, device_id_str));
   base::SystemMonitor::Get()->ProcessMediaDeviceAttached(
       device_id_str,

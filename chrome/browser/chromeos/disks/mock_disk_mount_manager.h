@@ -48,6 +48,17 @@ class MockDiskMountManager : public DiskMountManager {
   // Sets up default results for mock methods.
   void SetupDefaultReplies();
 
+  // Creates a fake disk entry for the mounted device. This function is
+  // primarily for MediaDeviceNotificationsTest.
+  void CreateDiskEntryForMountDevice(
+      const DiskMountManager::MountPointInfo& mount_info,
+      const std::string& device_id);
+
+  // Removes the fake disk entry associated with the mounted device. This
+  // function is primarily for MediaDeviceNotificationsTest.
+  void RemoveDiskEntryForMountDevice(
+      const DiskMountManager::MountPointInfo& mount_info);
+
  private:
   // Is used to implement AddObserver.
   void AddObserverInternal(DiskMountManager::Observer* observer);

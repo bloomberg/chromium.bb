@@ -57,11 +57,6 @@ class MediaDeviceNotifications
   void AddMountedPathOnUIThread(
       const disks::DiskMountManager::MountPointInfo& mount_info);
 
-  // The lowest available device id number.
-  // Only accessed on the UI thread.
-  // TODO(thestig) Remove this and use a device UUID instead.
-  int current_device_id_;
-
   // Mapping of relevant mount points and their corresponding mount devices.
   // Only accessed on the UI thread.
   MountMap mount_map_;

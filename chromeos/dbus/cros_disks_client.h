@@ -110,6 +110,9 @@ class DiskInfo {
   // Returns true if the device should be hidden from the file browser.
   bool is_hidden() const { return is_hidden_; }
 
+  // Returns file system uuid.
+  std::string uuid() const { return uuid_; }
+
  private:
   void InitializeFromResponse(dbus::Response* response);
 
@@ -127,6 +130,7 @@ class DiskInfo {
   uint64 total_size_in_bytes_;
   bool is_read_only_;
   bool is_hidden_;
+  std::string uuid_;
 };
 
 // A class to make the actual DBus calls for cros-disks service.

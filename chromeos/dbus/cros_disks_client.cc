@@ -546,6 +546,7 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
   MaybePopString(properties[cros_disks::kDeviceFile], &file_path_);
   MaybePopString(properties[cros_disks::kDriveModel], &drive_model_);
   MaybePopString(properties[cros_disks::kIdLabel], &label_);
+  MaybePopString(properties[cros_disks::kIdUuid], &uuid_);
   MaybePopUint64(properties[cros_disks::kDeviceSize], &total_size_in_bytes_);
 
   uint32 media_type_uint32 = 0;
