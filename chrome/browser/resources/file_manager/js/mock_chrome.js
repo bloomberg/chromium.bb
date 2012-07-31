@@ -456,7 +456,7 @@ chrome.fileBrowserPrivate = {
       SIZE_TB: 'TB',
       SIZE_PB: 'PB',
       TYPE_COLUMN_LABEL: 'Type',
-      DATE_COLUMN_LABEL: 'Date',
+      DATE_COLUMN_LABEL: 'Date modified',
       PREVIEW_COLUMN_LABEL: 'Preview',
 
       ERROR_CREATING_FOLDER: 'Unable to create folder "$1". $2',
@@ -540,7 +540,7 @@ chrome.fileBrowserPrivate = {
       GDATA_SHOW_HOSTED_FILES_OPTION: 'Show Google Docs files',
       GDATA_WAITING_FOR_SPACE_INFO: 'Waiting for space info...',
       GDATA_FAILED_SPACE_INFO: 'Failed to retrieve space info',
-      GDATA_BUY_MORE_SPACE: 'Buy more...',
+      GDATA_BUY_MORE_SPACE: 'Buy more storage...',
       GDATA_SPACE_AVAILABLE: '$1 left',
 
       OFFLINE_COLUMN_LABEL: 'Available offline',

@@ -10891,7 +10891,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Type
       </message>
       <message name="IDS_FILE_BROWSER_DATE_COLUMN_LABEL" desc="Date column label.">
-        Date
+        Date modified
       </message>
       <message name="IDS_FILE_BROWSER_PREVIEW_COLUMN_LABEL" desc="Preview column label.">
         Preview
@@ -10965,6 +10965,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_IMPORT_PHOTOS_BUTTON_LABEL" desc="Title of the action for importing photos.">
         Import photos
+      </message>
+
+      <message name="IDS_FILE_BROWSER_NOT_FORMATTED_USB" desc="In the File Manager, message shown for an unformatted USB device.">
+        Your USB device is not formatted.
+      </message>
+      <message name="IDS_FILE_BROWSER_NOT_FORMATTED_SD" desc="In the File Manager, message shown for an unformatted SD card.">
+        Your SD card is not formatted.
+      </message>
+      <message name="IDS_FILE_BROWSER_NOT_FORMATTED_EXTERNAL" desc="In the File Manager, message shown for an unformatted external storage device.">
+        Your external storage device is not formatted.
       </message>
 
       <message name="IDS_FILE_BROWSER_ACTION_VIEW" desc="Title of the action to view (no edit) a file.">
@@ -11223,6 +11233,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_HOSTED_OFFLINE_MESSAGE" desc="Message informing the user that the selected file is only available online.">
         You must be online to access this file.
       </message>
+      <message name="IDS_FILE_BROWSER_GDRIVE_OFFLINE_MESSAGE" desc="Message informing the user that they should go online to access Google Drive for the first time.">
+        You must be online to access Google Drive for the first time.
+      </message>
       <message name="IDS_FILE_BROWSER_HOSTED_OFFLINE_MESSAGE_PLURAL" desc="Message informing the user that the selected files are only available online.">
         You must be online to access these files.
       </message>
@@ -11248,7 +11261,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="SPACE_AVAILABLE">$1<ex>4.8 GB</ex></ph> left
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_BUY_MORE_SPACE" desc="Menu item, offering user to buy more space on Google Drive">
-        Buy more...
+        Buy more storage...
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_WAITING_FOR_SPACE_INFO" desc="Menu item, saying that FileBrowser is waiting for account's space information from GData servers. When actual data arrives, this item will be replaced with IDS_FILE_BROWSER_GDATA_SPACE_AVAILABLE">
         Waiting for space info...
