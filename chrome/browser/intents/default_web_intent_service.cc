@@ -10,3 +10,13 @@ DefaultWebIntentService::DefaultWebIntentService()
     suppression(0) {}
 
 DefaultWebIntentService::~DefaultWebIntentService() {}
+
+bool DefaultWebIntentService::operator==(
+    const DefaultWebIntentService& other) const {
+  return action == other.action &&
+         type == other.type &&
+         url_pattern == other.url_pattern &&
+         user_date == other.user_date &&
+         suppression == other.suppression &&
+         service_url == other.service_url;
+}

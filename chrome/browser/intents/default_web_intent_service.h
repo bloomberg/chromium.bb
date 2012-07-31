@@ -36,6 +36,8 @@ struct DefaultWebIntentService {
 
   DefaultWebIntentService();
   ~DefaultWebIntentService();
+
+  bool operator==(const DefaultWebIntentService& other) const;
 };
 
 #endif  // CHROME_BROWSER_INTENTS_DEFAULT_WEB_INTENT_SERVICE_H_
