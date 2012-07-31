@@ -50,7 +50,7 @@ string16 ExtensionErrorUI::GenerateMessageSection(
     const extensions::Extension* e = extension_service_->GetExtensionById(*iter,
         true);
     message += l10n_util::GetStringFUTF16(template_message_id,
-                                          string16(ASCIIToUTF16(e->name())));
+                                          UTF8ToUTF16(e->name()));
   }
   return message;
 }
