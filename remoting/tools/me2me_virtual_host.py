@@ -93,7 +93,7 @@ class Authentication:
     """
     print "Email:",
     self.login = raw_input()
-    password = getpass.getpass("Password: ")
+    password = getpass.getpass("App-specific password: ")
 
     chromoting_auth = gaia_auth.GaiaAuthenticator('chromoting')
     self.chromoting_auth_token = chromoting_auth.authenticate(self.login,
