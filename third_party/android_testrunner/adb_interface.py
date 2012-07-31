@@ -176,7 +176,7 @@ class AdbInterface:
 
   def StartInstrumentation(
       self, instrumentation_path, timeout_time=60*10, no_window_animation=False,
-      profile=False, instrumentation_args={}):
+      profile=False, instrumentation_args={}, silent_log=False):
 
     """Runs an instrumentation class on the target.
 
@@ -195,6 +195,8 @@ class AdbInterface:
       profile: If True, profiling will be turned on for the instrumentation.
       instrumentation_args: Dictionary of key value bundle arguments to pass to
       instrumentation.
+      silent_log: If True, the invocation of the instrumentation test runner
+        will not be logged.
 
     Returns:
       (test_results, inst_finished_bundle)
@@ -217,22 +219,26 @@ class AdbInterface:
         instrumentation_path, no_window_animation=no_window_animation,
         profile=profile, raw_mode=True,
         instrumentation_args=instrumentation_args)
-    logger.Log(command_string)
+    if silent_log:
+      logger.SilentLog(command_string)
+    else:
+      logger.Log(command_string)
     (test_results, inst_finished_bundle) = (
         am_instrument_parser.ParseAmInstrumentOutput(
             self.SendShellCommand(command_string, timeout_time=timeout_time,
                                   retry_count=2)))
-
     if "code" not in inst_finished_bundle:
+      logger.Log('No code available. inst_finished_bundle contains: %s '
+                 % inst_finished_bundle)
       raise errors.InstrumentationError("no test results... device setup "
                                         "correctly?")
 
     if inst_finished_bundle["code"] == "0":
-      short_msg_result = "no error message"
-      if "shortMsg" in inst_finished_bundle:
-        short_msg_result = inst_finished_bundle["shortMsg"]
-        logger.Log("Error! Test run failed: %s" % short_msg_result)
-      raise errors.InstrumentationError(short_msg_result)
+      long_msg_result = "no error message"
+      if "longMsg" in inst_finished_bundle:
+        long_msg_result = inst_finished_bundle["longMsg"]
+        logger.Log("Error! Test run failed: %s" % long_msg_result)
+      raise errors.InstrumentationError(long_msg_result)
 
     if "INSTRUMENTATION_ABORTED" in inst_finished_bundle:
       logger.Log("INSTRUMENTATION ABORTED!")

@@ -9,8 +9,10 @@ This package is the scripts used to run the unit test for Android and from
 Android Gingerbread.
 
 Local Modifications:
-There are no local modifications, all files were copied from
-<android_gingerbread_tree>/development/testrunner/
+1. Added |silent_log| argument to |StartInstrumentation| so that output can be
+  suppressed.
+2. Changed error message handling in |StartInstrumentation| from |shortMsg| to
+  |longMsg| to provide more information when debugging.
 
 Here is the detail steps
 1. Checkout Android source code
