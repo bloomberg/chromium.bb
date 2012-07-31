@@ -1,5 +1,9 @@
 <?php
 /**
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
  * A "Hello world!" for the Chrome Web Store Licensing API, in PHP. This
  * program logs the user in with Google's Federated Login API (OpenID), fetches
  * their license state with OAuth, and prints one of these greetings as
@@ -13,11 +17,6 @@
  * of the user being redirected to the Google login page, a popup window opens
  * to the login page, keeping the user on the main application page. See
  * popuplib.js
- *
- * Copyright 2010 the Chromium Authors
- *
- * Use of this source code is governed by a BSD-style license that can be found
- * in the "LICENSE" file.
  *
  * Eric Bidelman <ericbidelman@chromium.org>
  */

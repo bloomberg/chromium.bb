@@ -1,4 +1,8 @@
 /*
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
  * The "Hello world!" of the Chrome Web Store Licensing API, in Java. This
  * program logs the user in with OpenID, fetches their license state with OAuth,
  * and prints one of these greetings as appropriate:
@@ -6,11 +10,6 @@
  *   1. Hello *no* license!
  *   2. Hello *free trial* license!
  *   3. Hello *full* license!
- *
- * Copyright 2010 the Chromium Authors
- *
- * Use of this source code is governed by a BSD-style license that can be found
- * in the "LICENSE" file.
  *
  * Brian Kennish <bkennish@chromium.org>
  */
