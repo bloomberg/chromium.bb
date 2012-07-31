@@ -96,12 +96,10 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
 
 TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   // Add an entry.
-  net::HashValue fp1;
-  fp1.tag = net::HASH_VALUE_SHA1;
-  memset(fp1.data(), 0, fp1.size());
-  net::HashValue fp2;
-  fp2.tag = net::HASH_VALUE_SHA1;
-  memset(fp2.data(), 1, fp2.size());
+  net::SHA1Fingerprint fp1;
+  memset(fp1.data, 0, sizeof(fp1.data));
+  net::SHA1Fingerprint fp2;
+  memset(fp2.data, 1, sizeof(fp2.data));
   TransportSecurityState::DomainState example_state;
   example_state.upgrade_expiry =
       base::Time::Now() + base::TimeDelta::FromSeconds(1000);
@@ -113,8 +111,8 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   state_.EnableHost("www.example.com", example_state);
 
   // Add another entry.
-  memset(fp1.data(), 2, fp1.size());
-  memset(fp2.data(), 3, fp2.size());
+  memset(fp1.data, 2, sizeof(fp1.data));
+  memset(fp2.data, 3, sizeof(fp2.data));
   example_state.upgrade_expiry =
       base::Time::Now() + base::TimeDelta::FromSeconds(3000);
   example_state.upgrade_mode =
@@ -183,18 +181,17 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   TransportSecurityState::DomainState domain_state;
   static const char kTestDomain[] = "example.com";
   EXPECT_FALSE(state_.GetDomainState(kTestDomain, false, &domain_state));
-  net::HashValueVector hashes;
+  net::FingerprintVector hashes;
   EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(hashes));
 
-  net::HashValue hash;
-  hash.tag = net::HASH_VALUE_SHA1;
-  memset(hash.data(), '1', hash.size());
+  net::SHA1Fingerprint hash;
+  memset(hash.data, '1', sizeof(hash.data));
   domain_state.static_spki_hashes.push_back(hash);
 
   EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(hashes));
   hashes.push_back(hash);
   EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(hashes));
-  hashes[0].data()[0] = '2';
+  hashes[0].data[0] = '2';
   EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(hashes));
 
   const base::Time current_time(base::Time::Now());
@@ -207,9 +204,8 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   EXPECT_TRUE(persister_->LoadEntries(ser, &dirty));
   EXPECT_TRUE(state_.GetDomainState(kTestDomain, false, &domain_state));
   EXPECT_EQ(1u, domain_state.static_spki_hashes.size());
-  EXPECT_EQ(hash.tag, domain_state.static_spki_hashes[0].tag);
-  EXPECT_EQ(0, memcmp(domain_state.static_spki_hashes[0].data(), hash.data(),
-                      hash.size()));
+  EXPECT_EQ(0, memcmp(domain_state.static_spki_hashes[0].data, hash.data,
+                      sizeof(hash.data)));
 }
 
 TEST_F(TransportSecurityPersisterTest, ForcePreloads) {
