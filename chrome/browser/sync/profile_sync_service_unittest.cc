@@ -82,7 +82,7 @@ class ProfileSyncServiceTest : public testing::Test {
 
   void StartSyncService() {
     StartSyncServiceAndSetInitialSyncEnded(
-        true, true, false, true, true, false);
+        true, true, false, true, true, syncer::STORAGE_IN_MEMORY);
   }
 
   void StartSyncServiceAndSetInitialSyncEnded(
@@ -91,7 +91,7 @@ class ProfileSyncServiceTest : public testing::Test {
       bool synchronous_sync_configuration,
       bool sync_setup_completed,
       bool expect_create_dtm,
-      bool use_real_database) {
+      syncer::StorageOption storage_option) {
     if (!service_.get()) {
       SigninManager* signin =
           SigninManagerFactory::GetForProfile(profile_.get());
@@ -109,8 +109,7 @@ class ProfileSyncServiceTest : public testing::Test {
         service_->dont_set_initial_sync_ended_on_init();
       if (synchronous_sync_configuration)
         service_->set_synchronous_sync_configuration();
-      if (use_real_database)
-        service_->set_use_real_database();
+      service_->set_storage_option(storage_option);
       if (!sync_setup_completed)
         profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
@@ -253,7 +252,8 @@ TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsControllerHandlersDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true, false);
+  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true,
+                                         syncer::STORAGE_IN_MEMORY);
 
   StrictMock<syncer::MockJsEventHandler> event_handler;
   EXPECT_CALL(event_handler, HandleJsEvent(_, _)).Times(AtLeast(1));
@@ -294,7 +294,8 @@ TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsControllerProcessJsMessageBasicDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true, false);
+  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true,
+                                         syncer::STORAGE_IN_MEMORY);
 
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
 
@@ -336,7 +337,8 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   ASSERT_NE(-1,
             file_util::WriteFile(sync_file3, nonsense3, strlen(nonsense3)));
 
-  StartSyncServiceAndSetInitialSyncEnded(false, false, true, false, true, true);
+  StartSyncServiceAndSetInitialSyncEnded(false, false, true, false, true,
+                                         syncer::STORAGE_ON_DISK);
   EXPECT_FALSE(service_->HasSyncSetupCompleted());
   EXPECT_FALSE(service_->sync_initialized());
 
@@ -359,29 +361,16 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   ASSERT_NE(file2text.compare(nonsense2), 0);
 }
 
-// Disabled because of crbug.com/109668.
-TEST_F(ProfileSyncServiceTest, DISABLED_CorruptDatabase) {
-  const char* nonesense = "not a database";
-
-  FilePath temp_directory = profile_->GetPath().AppendASCII("Sync Data");
-  FilePath sync_db_file = temp_directory.AppendASCII("SyncData.sqlite3");
-
-  ASSERT_TRUE(file_util::CreateDirectory(temp_directory));
-  ASSERT_NE(-1,
-            file_util::WriteFile(sync_db_file, nonesense, strlen(nonesense)));
-
-  // Initialize with HasSyncSetupCompleted() set to true and InitialSyncEnded
-  // false.  This is to model the scenario that would result when opening the
-  // sync database fails.
-  StartSyncServiceAndSetInitialSyncEnded(false, true, true, true, false, true);
+// Simulates a scenario where a database is corrupted and it is impossible to
+// recreate it.  This test is useful mainly when it is run under valgrind.  Its
+// expectations are not very interesting.
+TEST_F(ProfileSyncServiceTest, FailToOpenDatabase) {
+  StartSyncServiceAndSetInitialSyncEnded(false, true, true, true, false,
+                                         syncer::STORAGE_INVALID);
 
   // The backend is not ready.  Ensure the PSS knows this.
   EXPECT_FALSE(service_->sync_initialized());
-
-  // Ensure we will be prepared to initialize a fresh DB next time.
-  EXPECT_FALSE(service_->HasSyncSetupCompleted());
 }
 
 }  // namespace
-
 }  // namespace browser_sync

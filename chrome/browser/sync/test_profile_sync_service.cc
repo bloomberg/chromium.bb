@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
-#include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/js/js_reply_handler.h"
 #include "sync/protocol/encryption.pb.h"
@@ -37,7 +36,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     bool set_initial_sync_ended_on_init,
     bool synchronous_init,
     bool fail_initial_download,
-    bool use_real_database)
+    syncer::StorageOption storage_option)
     : browser_sync::SyncBackendHost(
         profile->GetDebugName(), profile, sync_prefs, invalidator_storage),
       id_factory_(id_factory),
@@ -45,7 +44,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
       set_initial_sync_ended_on_init_(set_initial_sync_ended_on_init),
       synchronous_init_(synchronous_init),
       fail_initial_download_(fail_initial_download),
-      use_real_database_(use_real_database) {}
+      storage_option_(storage_option) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 
@@ -66,9 +65,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   test_options.credentials.email = "testuser@gmail.com";
   test_options.credentials.sync_token = "token";
   test_options.restored_key_for_bootstrapping = "";
-  TestInternalComponentsFactory::StorageOption storage =
-      use_real_database_ ? TestInternalComponentsFactory::ON_DISK
-                         : TestInternalComponentsFactory::IN_MEMORY;
+  syncer::StorageOption storage = storage_option_;
 
   // It'd be nice if we avoided creating the InternalComponentsFactory in the
   // first place, but SyncBackendHost will have created one by now so we must
@@ -174,7 +171,7 @@ TestProfileSyncService::TestProfileSyncService(
       callback_(callback),
       set_initial_sync_ended_on_init_(true),
       fail_initial_download_(false),
-      use_real_database_(false) {
+      storage_option_(syncer::STORAGE_IN_MEMORY) {
   SetSyncSetupCompleted();
 }
 
@@ -216,8 +213,9 @@ void TestProfileSyncService::set_synchronous_sync_configuration() {
 void TestProfileSyncService::fail_initial_download() {
   fail_initial_download_ = true;
 }
-void TestProfileSyncService::set_use_real_database() {
-  use_real_database_ = true;
+void TestProfileSyncService::set_storage_option(
+    syncer::StorageOption storage_option) {
+  storage_option_ = storage_option;
 }
 
 void TestProfileSyncService::CreateBackend() {
@@ -230,5 +228,5 @@ void TestProfileSyncService::CreateBackend() {
       set_initial_sync_ended_on_init_,
       synchronous_backend_initialization_,
       fail_initial_download_,
-      use_real_database_));
+      storage_option_));
 }

@@ -167,6 +167,8 @@
         'syncable/entry_kernel.h',
         'syncable/in_memory_directory_backing_store.cc',
         'syncable/in_memory_directory_backing_store.h',
+        'syncable/invalid_directory_backing_store.cc',
+        'syncable/invalid_directory_backing_store.h',
         'syncable/metahandle_set.h',
         'syncable/model_type.cc',
         'syncable/mutable_entry.cc',

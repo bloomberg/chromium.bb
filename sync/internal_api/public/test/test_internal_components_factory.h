@@ -9,16 +9,18 @@
 
 namespace syncer {
 
+enum StorageOption {
+  // BuildDirectoryBackingStore should not use persistent on-disk storage.
+  STORAGE_IN_MEMORY,
+  // Use this if you want BuildDirectoryBackingStore to create a real
+  // on disk store.
+  STORAGE_ON_DISK,
+  // Use this to test the case where a directory fails to load.
+  STORAGE_INVALID
+};
+
 class TestInternalComponentsFactory : public InternalComponentsFactory {
  public:
-  enum StorageOption {
-    // BuildDirectoryBackingStore should not use persistent on-disk storage.
-    IN_MEMORY,
-    // Use this if you want BuildDirectoryBackingStore to create a real
-    // on disk store.
-    ON_DISK
-  };
-
   explicit TestInternalComponentsFactory(StorageOption option);
   virtual ~TestInternalComponentsFactory();
 

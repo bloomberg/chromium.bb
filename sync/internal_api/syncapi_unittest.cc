@@ -882,8 +882,7 @@ class SyncManagerTest : public testing::Test,
   }
 
   virtual InternalComponentsFactory* GetFactory() {
-    return new TestInternalComponentsFactory(
-        TestInternalComponentsFactory::IN_MEMORY);
+    return new TestInternalComponentsFactory(STORAGE_IN_MEMORY);
   }
 
   // Returns true if we are currently encrypting all sync data.  May
@@ -2522,7 +2521,7 @@ class ComponentsFactory : public TestInternalComponentsFactory {
   ComponentsFactory(SyncScheduler* scheduler_to_use,
                     sessions::SyncSessionContext** session_context)
       : TestInternalComponentsFactory(
-            TestInternalComponentsFactory::IN_MEMORY),
+            syncer::STORAGE_IN_MEMORY),
         scheduler_to_use_(scheduler_to_use),
         session_context_(session_context) {}
   virtual ~ComponentsFactory() {}

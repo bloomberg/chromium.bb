@@ -421,10 +421,6 @@ bool SyncManagerImpl::Init(
                               report_unrecoverable_error_function_,
                               backing_store.release()));
 
-  connection_manager_.reset(new SyncAPIServerConnectionManager(
-      sync_server_and_path, port, use_ssl, post_factory.release()));
-  connection_manager_->AddListener(this);
-
   DVLOG(1) << "Username: " << username_for_share();
   if (!OpenDirectory()) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
@@ -433,6 +429,11 @@ bool SyncManagerImpl::Init(
                           false, syncer::ModelTypeSet()));
     return false;
   }
+
+  connection_manager_.reset(new SyncAPIServerConnectionManager(
+      sync_server_and_path, port, use_ssl, post_factory.release()));
+  connection_manager_->set_client_id(directory()->cache_guid());
+  connection_manager_->AddListener(this);
 
   // Retrieve and set the sync notifier state.
   std::string unique_id = directory()->cache_guid();
@@ -681,7 +682,6 @@ bool SyncManagerImpl::OpenDirectory() {
   if (!PurgePartiallySyncedTypes())
     return false;
 
-  connection_manager_->set_client_id(directory()->cache_guid());
   return true;
 }
 

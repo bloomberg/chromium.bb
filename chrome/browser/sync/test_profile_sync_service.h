@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/test/base/profile_mock.h"
+#include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -41,7 +42,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
       bool set_initial_sync_ended_on_init,
       bool synchronous_init,
       bool fail_initial_download,
-      bool use_real_database);
+      syncer::StorageOption storage_option);
   virtual ~SyncBackendHostForProfileSyncTest();
 
   MOCK_METHOD1(RequestNudge, void(const tracked_objects::Location&));
@@ -72,7 +73,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   bool set_initial_sync_ended_on_init_;
   bool synchronous_init_;
   bool fail_initial_download_;
-  bool use_real_database_;
+  syncer::StorageOption storage_option_;
 };
 
 }  // namespace browser_sync
@@ -110,7 +111,7 @@ class TestProfileSyncService : public ProfileSyncService {
   void set_synchronous_sync_configuration();
 
   void fail_initial_download();
-  void set_use_real_database();
+  void set_storage_option(syncer::StorageOption option);
 
   syncer::TestIdFactory* id_factory();
 
@@ -136,7 +137,7 @@ class TestProfileSyncService : public ProfileSyncService {
   bool set_initial_sync_ended_on_init_;
 
   bool fail_initial_download_;
-  bool use_real_database_;
+  syncer::StorageOption storage_option_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_

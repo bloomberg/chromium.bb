@@ -7,6 +7,7 @@
 #include "sync/sessions/sync_session_context.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
+#include "sync/syncable/invalid_directory_backing_store.h"
 #include "sync/test/engine/fake_sync_scheduler.h"
 
 namespace syncer {
@@ -49,14 +50,20 @@ TestInternalComponentsFactory::BuildContext(
 scoped_ptr<syncable::DirectoryBackingStore>
 TestInternalComponentsFactory::BuildDirectoryBackingStore(
       const std::string& dir_name, const FilePath& backing_filepath) {
-  if (storage_option_ == IN_MEMORY) {
-    return scoped_ptr<syncable::DirectoryBackingStore>(
-        new syncable::InMemoryDirectoryBackingStore(dir_name));
-  } else {
-    return scoped_ptr<syncable::DirectoryBackingStore>(
-        new syncable::OnDiskDirectoryBackingStore(dir_name,
-                                                  backing_filepath));
+  switch (storage_option_) {
+    case STORAGE_IN_MEMORY:
+      return scoped_ptr<syncable::DirectoryBackingStore>(
+          new syncable::InMemoryDirectoryBackingStore(dir_name));
+    case STORAGE_ON_DISK:
+      return scoped_ptr<syncable::DirectoryBackingStore>(
+          new syncable::OnDiskDirectoryBackingStore(dir_name,
+                                                    backing_filepath));
+    case STORAGE_INVALID:
+      return scoped_ptr<syncable::DirectoryBackingStore>(
+          new syncable::InvalidDirectoryBackingStore());
   }
+  NOTREACHED();
+  return scoped_ptr<syncable::DirectoryBackingStore>();
 }
 
 }  // namespace syncer

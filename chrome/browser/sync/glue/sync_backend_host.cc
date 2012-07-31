@@ -846,6 +846,13 @@ void SyncBackendHost::Core::OnInitializationComplete(
     bool success,
     const syncer::ModelTypeSet restored_types) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+
+  if (!success) {
+    sync_manager_->RemoveObserver(this);
+    sync_manager_->ShutdownOnSyncThread();
+    sync_manager_.reset();
+  }
+
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop,
@@ -1053,19 +1060,22 @@ void SyncBackendHost::Core::DoRefreshNigori(
 
 void SyncBackendHost::Core::DoStopSyncManagerForShutdown(
     const base::Closure& closure) {
-  DCHECK(sync_manager_.get());
-  sync_manager_->StopSyncingForShutdown(closure);
+  if (sync_manager_.get()) {
+    sync_manager_->StopSyncingForShutdown(closure);
+  } else {
+    sync_loop_->PostTask(FROM_HERE, closure);
+  }
 }
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (!sync_manager_.get())
-    return;
+  if (sync_manager_.get()) {
+    save_changes_timer_.reset();
+    sync_manager_->ShutdownOnSyncThread();
+    sync_manager_->RemoveObserver(this);
+    sync_manager_.reset();
+  }
 
-  save_changes_timer_.reset();
-  sync_manager_->ShutdownOnSyncThread();
-  sync_manager_->RemoveObserver(this);
-  sync_manager_.reset();
   chrome_sync_notification_bridge_ = NULL;
   registrar_ = NULL;
 
