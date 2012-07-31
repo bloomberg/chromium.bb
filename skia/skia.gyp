@@ -1003,6 +1003,15 @@
             }],
           ],
         }],
+        [ 'OS == "ios"', {
+          'sources/': [
+            # iOS does not require most of skia and only needs a single file.
+            # Rather than creating a separate top-level target, simply exclude
+            # all files except for the one that is needed.
+            ['exclude', '.*'],
+            ['include', '^ext/google_logging\\.cc$'],
+          ],
+        }],
         [ 'OS == "mac"', {
           'defines': [
             'SK_BUILD_FOR_MAC',
@@ -1072,12 +1081,15 @@
             ],
           },
         }],
-      ],
-      'dependencies': [
-        'skia_opts',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../third_party/sfntly/sfntly.gyp:sfntly',
-        '../third_party/zlib/zlib.gyp:zlib',
+        ['OS != "ios"', {
+
+          'dependencies': [
+            'skia_opts',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../third_party/sfntly/sfntly.gyp:sfntly',
+            '../third_party/zlib/zlib.gyp:zlib',
+          ],
+        }],
       ],
       'direct_dependent_settings': {
         'include_dirs': [
