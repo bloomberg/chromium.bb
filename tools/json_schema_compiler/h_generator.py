@@ -159,8 +159,8 @@ class HGenerator(object):
       if prop.description:
         c.Comment(prop.description)
       (c.Append('%s %s;' % (
-          self._cpp_type_generator.GetType(prop, wrap_optional=True),
-          prop.unix_name))
+           self._cpp_type_generator.GetCompiledType(prop, wrap_optional=True),
+           prop.unix_name))
         .Append()
       )
     return c
@@ -183,8 +183,8 @@ class HGenerator(object):
         c.Comment(type_.description)
       c.Append('typedef std::vector<%(item_type)s> %(classname)s;')
       c.Substitute({'classname': classname, 'item_type':
-          self._cpp_type_generator.GetType(type_.item_type,
-                                           wrap_optional=True)})
+          self._cpp_type_generator.GetCompiledType(type_.item_type,
+                                                   wrap_optional=True)})
     elif type_.type_ == PropertyType.STRING:
       if type_.description:
         c.Comment(type_.description)
@@ -294,7 +294,7 @@ class HGenerator(object):
             [choice.type_.name for choice in prop.choices.values()]))
         c.Concat(self._GeneratePropertyStructures(prop.choices.values()))
       elif prop.type_ == PropertyType.ENUM:
-        enum_name = self._cpp_type_generator.GetType(prop)
+        enum_name = self._cpp_type_generator.GetCompiledType(prop)
         c.Concat(self._GenerateEnumDeclaration(
             enum_name,
             prop,
@@ -339,7 +339,7 @@ class HGenerator(object):
         if param.description:
           c.Comment(param.description)
         declaration_list.append('const %s' % cpp_util.GetParameterDeclaration(
-            param, self._cpp_type_generator.GetType(param)))
+            param, self._cpp_type_generator.GetCompiledType(param)))
       c.Append('scoped_ptr<base::ListValue> Create(%s);' %
                ', '.join(declaration_list))
       if generate_to_json:

@@ -48,6 +48,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager = CppTypeGenerator('', self.windows, self.windows.unix_name)
     manager.AddNamespace(self.tabs, self.tabs.unix_name)
     self.assertEquals('#include "path/to/tabs.h"\n'
+                      '#include "base/string_number_conversions.h"\n'
                       '#include "base/json/json_writer.h"',
                       manager.GenerateIncludes().Render())
     self.assertEquals('namespace tabs {\n'
@@ -58,7 +59,8 @@ class CppTypeGeneratorTest(unittest.TestCase):
                       '}  // windows',
                       manager.GenerateForwardDeclarations().Render())
     manager = CppTypeGenerator('', self.permissions, self.permissions.unix_name)
-    self.assertEquals('#include "base/json/json_writer.h"',
+    self.assertEquals('#include "base/string_number_conversions.h"\n'
+                      '#include "base/json/json_writer.h"',
                       manager.GenerateIncludes().Render())
     self.assertEquals('namespace permissions {\n'
                       'struct Permissions;\n'
@@ -66,7 +68,8 @@ class CppTypeGeneratorTest(unittest.TestCase):
                       manager.GenerateForwardDeclarations().Render())
     manager = CppTypeGenerator('', self.content_settings,
                                self.content_settings.unix_name)
-    self.assertEquals('', manager.GenerateIncludes().Render())
+    self.assertEquals('#include "base/string_number_conversions.h"',
+                      manager.GenerateIncludes().Render())
 
 
   def testGenerateIncludesAndForwardDeclarationsMultipleTypes(self):
@@ -83,6 +86,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager = CppTypeGenerator('', windows, self.windows.unix_name)
     manager.AddNamespace(tabs_namespace, self.tabs.unix_name)
     self.assertEquals('#include "path/to/tabs.h"\n'
+                      '#include "base/string_number_conversions.h"\n'
                       '#include "base/json/json_writer.h"',
                       manager.GenerateIncludes().Render())
     self.assertEquals('namespace tabs {\n'
@@ -109,7 +113,8 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager.AddNamespace(browser_action_namespace,
                          self.browser_action.unix_name)
     self.assertEquals('#include "path/to/browser_action.h"\n'
-                      '#include "path/to/font_settings.h"',
+                      '#include "path/to/font_settings.h"\n'
+                      '#include "base/string_number_conversions.h"',
                       manager.GenerateIncludes().Render())
     self.assertEquals('namespace browserAction {\n'
                       'typedef std::vector<int> ColorArray;\n'

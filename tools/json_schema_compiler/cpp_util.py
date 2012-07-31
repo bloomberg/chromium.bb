@@ -75,9 +75,47 @@ def GetParameterDeclaration(param, type_):
   }
 
 def GenerateIfndefName(path, filename):
-    """Formats a path and filename as a #define name.
+  """Formats a path and filename as a #define name.
 
-    e.g chrome/extensions/gen, file.h becomes CHROME_EXTENSIONS_GEN_FILE_H__.
-    """
-    return (('%s_%s_H__' % (path, filename))
-            .upper().replace(os.sep, '_').replace('/', '_'))
+  e.g chrome/extensions/gen, file.h becomes CHROME_EXTENSIONS_GEN_FILE_H__.
+  """
+  return (('%s_%s_H__' % (path, filename))
+          .upper().replace(os.sep, '_').replace('/', '_'))
+
+def GenerateTypeToCompiledTypeConversion(prop, from_, to):
+  try:
+    return _GenerateTypeConversionHelper(prop.type_, prop.compiled_type, from_,
+                                         to)
+  except KeyError:
+    raise NotImplementedError('Conversion from %s to %s in %s not supported' %
+                              (prop.type_, prop.compiled_type, prop.name))
+
+def GenerateCompiledTypeToTypeConversion(prop, from_, to):
+  try:
+    return _GenerateTypeConversionHelper(prop.compiled_type, prop.type_, from_,
+                                         to)
+  except KeyError:
+    raise NotImplementedError('Conversion from %s to %s in %s not supported' %
+                              (prop.compiled_type, prop.type_, prop.name))
+
+def _GenerateTypeConversionHelper(from_type, to_type, from_, to):
+  """Converts from PropertyType from_type to PropertyType to_type.
+
+  from_type: The PropertyType to be converted from.
+  to_type: The PropertyType to be converted to.
+  from_: The variable name of the type to be converted from.
+  to: The variable name of the type to be converted to.
+  """
+  # TODO(mwrosen): Add support for more from/to combinations as necessary.
+  return {
+      PropertyType.STRING: {
+          PropertyType.INTEGER: 'base::StringToInt(%(from)s, &%(to)s)',
+          PropertyType.INT64: 'base::StringToInt64(%(from)s, &%(to)s)',
+      },
+      PropertyType.INTEGER: {
+          PropertyType.STRING: '%(to)s = base::IntToString(%(from)s)',
+      },
+      PropertyType.INT64: {
+          PropertyType.STRING: '%(to)s = base::Int64ToString(%(from)s)',
+      }
+  }[from_type][to_type] % {'from': from_, 'to': to}

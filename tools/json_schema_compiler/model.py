@@ -151,6 +151,8 @@ class Property(object):
   - |optional| a boolean representing whether the property is optional
   - |description| a description of the property (if provided)
   - |type_| the model.PropertyType of this property
+  - |compiled_type| the model.PropertyType that this property should be
+    compiled to from the JSON. Defaults to |type_|.
   - |ref_type| the type that the REF property is referencing. Can be used to
     map to its model.Type
   - |item_type| a model.Property representing the type of each element in an
@@ -190,40 +192,23 @@ class Property(object):
         self.enum_values.append(value)
       self.type_ = PropertyType.ENUM
     elif 'type' in json:
-      json_type = json['type']
-      if json_type == 'string':
-        self.type_ = PropertyType.STRING
-      elif json_type == 'any':
-        self.type_ = PropertyType.ANY
-      elif json_type == 'boolean':
-        self.type_ = PropertyType.BOOLEAN
-      elif json_type == 'integer':
-        self.type_ = PropertyType.INTEGER
-      elif json_type == 'number':
-        self.type_ = PropertyType.DOUBLE
-      elif json_type == 'array':
+      self.type_ = self._JsonTypeToPropertyType(json['type'])
+      if self.type_ == PropertyType.ARRAY:
         self.item_type = Property(self, name + "Element", json['items'],
             from_json=from_json,
             from_client=from_client)
-        self.type_ = PropertyType.ARRAY
-      elif json_type == 'object':
-        self.type_ = PropertyType.OBJECT
+      elif self.type_ == PropertyType.OBJECT:
         # These members are read when this OBJECT Property is used as a Type
         type_ = Type(self, self.name, json)
         # self.properties will already have some value from |_AddProperties|.
         self.properties.update(type_.properties)
         self.functions = type_.functions
-      elif json_type == 'function':
-        self.type_ = PropertyType.FUNCTION
-      elif json_type == 'binary':
-        self.type_ = PropertyType.BINARY
-      else:
-        raise ParseException(self, 'type ' + json_type + ' not recognized')
     elif 'choices' in json:
       if not json['choices'] or len(json['choices']) == 0:
         raise ParseException(self, 'Choices has no choices')
       self.choices = {}
       self.type_ = PropertyType.CHOICES
+      self.compiled_type = self.type_
       for choice_json in json['choices']:
         choice = Property(self, self.name, choice_json,
             from_json=from_json,
@@ -237,6 +222,7 @@ class Property(object):
       self.value = json['value']
       if type(self.value) == int:
         self.type_ = PropertyType.INTEGER
+        self.compiled_type = self.type_
       else:
         # TODO(kalman): support more types as necessary.
         raise ParseException(
@@ -244,6 +230,30 @@ class Property(object):
     else:
       raise ParseException(
           self, 'Property has no type, $ref, choices, or value')
+    if 'compiled_type' in json:
+      if 'type' in json:
+        self.compiled_type = self._JsonTypeToPropertyType(json['compiled_type'])
+      else:
+        raise ParseException(self, 'Property has compiled_type but no type')
+    else:
+      self.compiled_type = self.type_
+
+  def _JsonTypeToPropertyType(self, json_type):
+    try:
+      return {
+        'any': PropertyType.ANY,
+        'array': PropertyType.ARRAY,
+        'binary': PropertyType.BINARY,
+        'boolean': PropertyType.BOOLEAN,
+        'integer': PropertyType.INTEGER,
+        'int64': PropertyType.INT64,
+        'function': PropertyType.FUNCTION,
+        'number': PropertyType.DOUBLE,
+        'object': PropertyType.OBJECT,
+        'string': PropertyType.STRING,
+      }[json_type]
+    except KeyError:
+      raise NotImplementedError('Type %s not recognized' % json_type)
 
   def GetUnixName(self):
     """Gets the property's unix_name. Raises AttributeError if not set.
@@ -288,6 +298,7 @@ class PropertyType(object):
       return self.name
 
   INTEGER = _Info(True, "INTEGER")
+  INT64 = _Info(True, "INT64")
   DOUBLE = _Info(True, "DOUBLE")
   BOOLEAN = _Info(True, "BOOLEAN")
   STRING = _Info(True, "STRING")

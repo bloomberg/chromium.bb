@@ -253,20 +253,36 @@ class CCGenerator(object):
       else:
         if prop.optional:
           if prop.type_ == PropertyType.ENUM:
-            c.Sblock('if (%s != %s)' %
+            c.Sblock('if (%s != %s) {' %
                 (prop.unix_name,
                  self._cpp_type_generator.GetEnumNoneValue(prop)))
           elif prop.type_ == PropertyType.CHOICES:
-            c.Sblock('if (%s_type != %s)' %
+            c.Sblock('if (%s_type != %s) {' %
                 (prop.unix_name,
                  self._cpp_type_generator.GetEnumNoneValue(prop)))
           else:
-            c.Sblock('if (%s.get())' % prop.unix_name)
-        c.Append('value->SetWithoutPathExpansion("%s", %s);' % (
-            prop.name,
-            self._CreateValueFromProperty(prop, 'this->' + prop.unix_name)))
+            c.Sblock('if (%s.get()) {' % prop.unix_name)
+
+        if prop.type_ == prop.compiled_type:
+          c.Append('value->SetWithoutPathExpansion("%s", %s);' % (
+              prop.name,
+              self._CreateValueFromProperty(prop, 'this->' + prop.unix_name)))
+        else:
+          conversion_src = 'this->' + prop.unix_name
+          if prop.optional:
+            conversion_src = '*' + conversion_src
+          (c.Append('%s %s;' % (self._cpp_type_generator.GetType(prop),
+                                prop.unix_name))
+            .Append(cpp_util.GenerateCompiledTypeToTypeConversion(
+                self._cpp_type_generator.GetReferencedProperty(prop),
+                conversion_src,
+                prop.unix_name) + ';')
+            .Append('value->SetWithoutPathExpansion("%s", %s);' % (
+                prop.unix_name,
+                self._CreateValueFromProperty(prop, prop.unix_name)))
+          )
         if prop.optional:
-          c.Eblock();
+          c.Eblock('}');
     (c.Append()
       .Append('return value.Pass();')
       .Eblock('}')
@@ -337,7 +353,11 @@ class CCGenerator(object):
           self._cpp_type_generator.GetReferencedProperty(prop), var,
           prop.optional)
     elif self._IsFundamentalOrFundamentalRef(prop):
-      if prop.optional:
+      # If prop.type != prop.compiled_type, then no asterisk is necessary
+      # because the target is a local variable and not a dereferenced scoped
+      # pointer. The asterisk is instead prepended to conversion_src around line
+      # 273.
+      if prop.optional and prop.type_ == prop.compiled_type:
         var = '*' + var
       prop = self._cpp_type_generator.GetReferencedProperty(prop);
       return {
@@ -448,16 +468,42 @@ class CCGenerator(object):
                   value_var,
                   '&temp'))
           .Append('  return %(failure_value)s;')
-          .Append('%(dst)s->%(name)s.reset(new %(ctype)s(temp));')
         )
+        if prop.type_ != prop.compiled_type:
+          (c.Append('%(compiled_ctype)s temp2;')
+            .Append('if (!%s)' %
+                 cpp_util.GenerateTypeToCompiledTypeConversion(
+                     self._cpp_type_generator.GetReferencedProperty(prop),
+                     'temp',
+                     'temp2'))
+            .Append('  return %(failure_value)s;')
+            .Append('%(dst)s->%(name)s.reset(new %(compiled_ctype)s(temp2));')
+          )
+        else:
+          c.Append('%(dst)s->%(name)s.reset(new %(ctype)s(temp));')
+
       else:
+        if prop.type_ == prop.compiled_type:
+          assignment_target = '&%s->%s' % (dst, prop.unix_name)
+        else:
+          c.Append('%(ctype)s temp;')
+          assignment_target = '&temp'
         (c.Append('if (!%s)' %
             cpp_util.GetAsFundamentalValue(
                 self._cpp_type_generator.GetReferencedProperty(prop),
                 value_var,
-                '&%s->%s' % (dst, prop.unix_name)))
+                assignment_target))
           .Append('  return %(failure_value)s;')
         )
+        if prop.type_ != prop.compiled_type:
+          (c.Append('if (!%s)' %
+              cpp_util.GenerateTypeToCompiledTypeConversion(
+                  self._cpp_type_generator.GetReferencedProperty(prop),
+                  'temp',
+                  '%s->%s' % (dst, prop.unix_name)))
+            .Append('  return %(failure_value)s;')
+          )
+
     elif self._IsObjectOrObjectRef(prop):
       if prop.optional:
         (c.Append('const base::DictionaryValue* dictionary = NULL;')
@@ -546,6 +592,7 @@ class CCGenerator(object):
     }
     if prop.type_ not in (PropertyType.CHOICES, PropertyType.ANY):
       sub['ctype'] = self._cpp_type_generator.GetType(prop)
+      sub['compiled_ctype'] = self._cpp_type_generator.GetCompiledType(prop)
       sub['value_type'] = cpp_util.GetValueType(self._cpp_type_generator
           .GetReferencedProperty(prop).type_)
     c.Substitute(sub)
@@ -721,10 +768,20 @@ class CCGenerator(object):
         # scoped_ptr if it's optional.
         param_copy = param.Copy()
         param_copy.optional = False
-        c.Append('create_results->Append(%s);' %
-            self._CreateValueFromProperty(param_copy, param_copy.unix_name))
         declaration_list.append("const %s" % cpp_util.GetParameterDeclaration(
-            param_copy, self._cpp_type_generator.GetType(param_copy)))
+            param_copy, self._cpp_type_generator.GetCompiledType(param_copy)))
+        param_name = param_copy.unix_name
+        if param_copy.type_ != param_copy.compiled_type:
+          param_name = 'temp_' + param_name
+          (c.Append('%s %s;' % (self._cpp_type_generator.GetType(param_copy),
+                                param_name))
+            .Append(cpp_util.GenerateCompiledTypeToTypeConversion(
+                 param_copy,
+                 param_copy.unix_name,
+                 param_name) + ';')
+          )
+        c.Append('create_results->Append(%s);' %
+            self._CreateValueFromProperty(param_copy, param_name))
 
       c.Append('return create_results.Pass();')
       c.Eblock('}')

@@ -116,6 +116,14 @@ class CppTypeGenerator(object):
     return cpp_util.Classname(prop.name) + 'Type'
 
   def GetType(self, prop, pad_for_generics=False, wrap_optional=False):
+    return self._GetTypeHelper(prop, pad_for_generics, wrap_optional)
+
+  def GetCompiledType(self, prop, pad_for_generics=False, wrap_optional=False):
+    return self._GetTypeHelper(prop, pad_for_generics, wrap_optional,
+                               use_compiled_type=True)
+
+  def _GetTypeHelper(self, prop, pad_for_generics=False, wrap_optional=False,
+                     use_compiled_type=False):
     """Translates a model.Property into its C++ type.
 
     If REF types from different namespaces are referenced, will resolve
@@ -125,9 +133,13 @@ class CppTypeGenerator(object):
 
     Use wrap_optional to wrap the type in a scoped_ptr<T> if the Property is
     optional.
+
+    Use use_compiled_type when converting from prop.type_ to prop.compiled_type.
     """
     cpp_type = None
-    if prop.type_ == PropertyType.REF:
+    type_ = prop.type_ if not use_compiled_type else prop.compiled_type
+
+    if type_ == PropertyType.REF:
       dependency_namespace = self._ResolveTypeNamespace(prop.ref_type)
       if not dependency_namespace:
         raise KeyError('Cannot find referenced type: %s' % prop.ref_type)
@@ -136,28 +148,30 @@ class CppTypeGenerator(object):
             schema_util.StripSchemaNamespace(prop.ref_type))
       else:
         cpp_type = schema_util.StripSchemaNamespace(prop.ref_type)
-    elif prop.type_ == PropertyType.BOOLEAN:
+    elif type_ == PropertyType.BOOLEAN:
       cpp_type = 'bool'
-    elif prop.type_ == PropertyType.INTEGER:
+    elif type_ == PropertyType.INTEGER:
       cpp_type = 'int'
-    elif prop.type_ == PropertyType.DOUBLE:
+    elif type_ == PropertyType.INT64:
+      cpp_type = 'int64'
+    elif type_ == PropertyType.DOUBLE:
       cpp_type = 'double'
-    elif prop.type_ == PropertyType.STRING:
+    elif type_ == PropertyType.STRING:
       cpp_type = 'std::string'
-    elif prop.type_ == PropertyType.ENUM:
+    elif type_ == PropertyType.ENUM:
       cpp_type = cpp_util.Classname(prop.name)
-    elif prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
+    elif type_ == PropertyType.ADDITIONAL_PROPERTIES:
       cpp_type = 'base::DictionaryValue'
-    elif prop.type_ == PropertyType.ANY:
+    elif type_ == PropertyType.ANY:
       cpp_type = any_helper.ANY_CLASS
-    elif prop.type_ == PropertyType.OBJECT:
+    elif type_ == PropertyType.OBJECT:
       cpp_type = cpp_util.Classname(prop.name)
-    elif prop.type_ == PropertyType.FUNCTION:
+    elif type_ == PropertyType.FUNCTION:
       # Functions come into the json schema compiler as empty objects. We can
       # record these as empty DictionaryValue's so that we know if the function
       # was passed in or not.
       cpp_type = 'base::DictionaryValue'
-    elif prop.type_ == PropertyType.ARRAY:
+    elif type_ == PropertyType.ARRAY:
       item_type = prop.item_type
       if item_type.type_ == PropertyType.REF:
         item_type = self.GetReferencedProperty(item_type)
@@ -168,14 +182,14 @@ class CppTypeGenerator(object):
         cpp_type = 'std::vector<%s> '
       cpp_type = cpp_type % self.GetType(
           prop.item_type, pad_for_generics=True)
-    elif prop.type_ == PropertyType.BINARY:
+    elif type_ == PropertyType.BINARY:
       cpp_type = 'std::string'
     else:
-      raise NotImplementedError(prop.type_)
+      raise NotImplementedError(type_)
 
     # Enums aren't wrapped because C++ won't allow it. Optional enums have a
     # NONE value generated instead.
-    if wrap_optional and prop.optional and prop.type_ != PropertyType.ENUM:
+    if wrap_optional and prop.optional and type_ != PropertyType.ENUM:
       cpp_type = 'scoped_ptr<%s> ' % cpp_type
     if pad_for_generics:
       return cpp_type
@@ -222,6 +236,8 @@ class CppTypeGenerator(object):
                       self._cpp_namespaces[dependency])
          for dependency in self._NamespaceTypeDependencies().keys()]):
       c.Append('#include "%s"' % header)
+    c.Append('#include "base/string_number_conversions.h"')
+
     if self._namespace.events:
       c.Append('#include "base/json/json_writer.h"')
     return c

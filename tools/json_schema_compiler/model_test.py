@@ -66,7 +66,7 @@ class ModelTest(unittest.TestCase):
   def testPropertyNotImplemented(self):
     (self.permissions_json[0]['types'][0]
         ['properties']['permissions']['type']) = 'something'
-    self.assertRaises(model.ParseException, self.model.AddNamespace,
+    self.assertRaises(NotImplementedError, self.model.AddNamespace,
         self.permissions_json[0], 'path/to/something.json')
 
   def testDescription(self):
