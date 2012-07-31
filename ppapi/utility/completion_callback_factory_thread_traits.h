@@ -118,7 +118,7 @@ class NonThreadSafeThreadTraits {
 
   /// A simple object that acts like a lock but does nothing.
   ///
-  /// MStrong>Note:</strong> in Debug mode, it checks that it is either
+  /// <strong>Note:</strong> in Debug mode, it checks that it is either
   /// called on the main thread, or always called on another thread. It also
   /// asserts that the caller does not recursively lock.
   class Lock {
