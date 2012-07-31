@@ -55,10 +55,16 @@ class MemoryTypeTracker {
     }
     has_updated_mem_represented_ = true;
     last_updated_mem_represented_ = mem_represented;
-    TRACE_COUNTER_ID1(trace_category_,
-                      trace_name_,
-                      memory_tracker_,
-                      last_updated_mem_represented_);
+    if (trace_category_ && trace_name_ && memory_tracker_) {
+      TRACE_COUNTER_ID1(trace_category_,
+                        trace_name_,
+                        memory_tracker_,
+                        last_updated_mem_represented_);
+    }
+  }
+
+  size_t GetMemRepresented() const {
+    return last_updated_mem_represented_;
   }
 
  private:

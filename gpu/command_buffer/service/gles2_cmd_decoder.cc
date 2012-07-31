@@ -38,6 +38,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -348,14 +349,14 @@ class Texture {
   }
 
   size_t estimated_size() const {
-    return estimated_size_;
+    return memory_tracker_.GetMemRepresented();
   }
 
  private:
   GLES2DecoderImpl* decoder_;
+  MemoryTypeTracker memory_tracker_;
   GLuint id_;
   gfx::Size size_;
-  size_t estimated_size_;
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
 
@@ -384,13 +385,13 @@ class RenderBuffer {
   }
 
   size_t estimated_size() const {
-    return estimated_size_;
+    return memory_tracker_.GetMemRepresented();
   }
 
  private:
   GLES2DecoderImpl* decoder_;
+  MemoryTypeTracker memory_tracker_;
   GLuint id_;
-  size_t estimated_size_;
   DISALLOW_COPY_AND_ASSIGN(RenderBuffer);
 };
 
@@ -1690,8 +1691,9 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
 
 Texture::Texture(GLES2DecoderImpl* decoder)
     : decoder_(decoder),
-      id_(0),
-      estimated_size_(0) {
+      memory_tracker_(decoder->GetContextGroup()->memory_tracker(),
+                      NULL, NULL),
+      id_(0) {
 }
 
 Texture::~Texture() {
@@ -1719,7 +1721,7 @@ void Texture::Create() {
   // crash.
   glTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  estimated_size_ = 16u * 16u * 4u;
+  memory_tracker_.UpdateMemRepresented(16u * 16u * 4u);
   TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
 }
 
@@ -1746,7 +1748,7 @@ bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
     GLES2Util::ComputeImageDataSizes(
         size.width(), size.height(), format, GL_UNSIGNED_BYTE, 4, &image_size,
         NULL, NULL);
-    estimated_size_ = image_size;
+    memory_tracker_.UpdateMemRepresented(image_size);
     TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
   }
   return success;
@@ -1770,7 +1772,7 @@ void Texture::Destroy() {
     ScopedGLErrorSuppressor suppressor(decoder_);
     glDeleteTextures(1, &id_);
     id_ = 0;
-    estimated_size_ = 0;
+    memory_tracker_.UpdateMemRepresented(0);
     TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
   }
 }
@@ -1781,8 +1783,9 @@ void Texture::Invalidate() {
 
 RenderBuffer::RenderBuffer(GLES2DecoderImpl* decoder)
     : decoder_(decoder),
-      id_(0),
-      estimated_size_(0) {
+      memory_tracker_(decoder->GetContextGroup()->memory_tracker(),
+                      NULL, NULL),
+      id_(0) {
 }
 
 RenderBuffer::~RenderBuffer() {
@@ -1824,8 +1827,9 @@ bool RenderBuffer::AllocateStorage(const gfx::Size& size, GLenum format,
   }
   bool success = glGetError() == GL_NO_ERROR;
   if (success) {
-    estimated_size_ = size.width() * size.height() * samples *
-                      GLES2Util::RenderbufferBytesPerPixel(format);
+    memory_tracker_.UpdateMemRepresented(
+        size.width() * size.height() * samples *
+        GLES2Util::RenderbufferBytesPerPixel(format));
     TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
   }
   return success;
@@ -1836,7 +1840,7 @@ void RenderBuffer::Destroy() {
     ScopedGLErrorSuppressor suppressor(decoder_);
     glDeleteRenderbuffersEXT(1, &id_);
     id_ = 0;
-    estimated_size_ = 0;
+    memory_tracker_.UpdateMemRepresented(0);
     TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
   }
 }
