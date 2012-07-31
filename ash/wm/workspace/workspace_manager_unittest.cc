@@ -672,5 +672,27 @@ TEST_F(WorkspaceManagerTest, DontResetAnimation) {
   EXPECT_TRUE(w1->GetProperty(aura::client::kAnimationsDisabledKey));
 }
 
+// Verifies a window marked as persisting across all workspaces ends up in its
+// own workspace when maximized.
+TEST_F(WorkspaceManagerTest, MaximizeDontPersistEndsUpInOwnWorkspace) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+
+  SetPersistsAcrossAllWorkspaces(
+      w1.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  w1->Show();
+
+  // Shouldn't contain the window initially.
+  EXPECT_FALSE(manager_->Contains(w1.get()));
+
+  // Maximize should trigger containing the window.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_TRUE(manager_->Contains(w1.get()));
+
+  // And resetting to normal should remove it.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_FALSE(manager_->Contains(w1.get()));
+}
+
 }  // namespace internal
 }  // namespace ash

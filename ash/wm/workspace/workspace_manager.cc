@@ -71,7 +71,8 @@ bool WorkspaceManager::ShouldManageWindow(aura::Window* window) {
   return window->type() == aura::client::WINDOW_TYPE_NORMAL &&
          !window->transient_parent() &&
          ash::GetTrackedByWorkspace(window) &&
-         !ash::GetPersistsAcrossAllWorkspaces(window);
+         (!ash::GetPersistsAcrossAllWorkspaces(window) ||
+          wm::IsWindowMaximized(window));
 }
 
 bool WorkspaceManager::Contains(aura::Window* window) const {
@@ -170,13 +171,17 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
 }
 
 void WorkspaceManager::ShowStateChanged(aura::Window* window) {
-  if (!ShouldManageWindow(window) || !FindBy(window))
+  Workspace* workspace = FindBy(window);
+  if (!workspace)
     return;
-
-  Workspace::Type old_type = FindBy(window)->type();
-  Workspace::Type new_type = Workspace::TypeForWindow(window);
-  if (new_type != old_type)
-    OnTypeOfWorkspacedNeededChanged(window);
+  if (!ShouldManageWindow(window)) {
+    RemoveWindow(window);
+  } else {
+    Workspace::Type old_type = workspace->type();
+    Workspace::Type new_type = Workspace::TypeForWindow(window);
+    if (new_type != old_type)
+      OnTypeOfWorkspacedNeededChanged(window);
+  }
   UpdateShelfVisibility();
 }
 
