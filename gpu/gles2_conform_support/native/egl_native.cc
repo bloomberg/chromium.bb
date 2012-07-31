@@ -20,6 +20,23 @@ void GTFNativeDestroyPixmap(EGLNativeDisplayType nativeDisplay,
                             EGLNativePixmapType nativePixmap) {
 }
 
+EGLImageKHR GTFCreateEGLImageExternal(
+    int width, int height, int format,
+    float r, float g, float b, float a, void** resource) {
+  return (EGLImageKHR)NULL;
+}
+
+void GTFDestroyEGLImageExternal(EGLImageKHR image, void* resource) {
+}
+
+const int* GTFQueryFormatsEGLImageExternal(void) {
+  return NULL;
+}
+
+GTFbool GTFIsAlphaFormatEGLImageExternal(int format) {
+  return GTFfalse;
+}
+
 }  // extern "C"
 
 
