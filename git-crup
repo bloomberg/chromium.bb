@@ -21,11 +21,23 @@ EOF
 }
 
 parallel_update() {
-  ( echo Entering "$1" &&
-    cd "$1" &&
-    $ECHO git $pull $pull_args origin &&
-    git ls-files -s | grep ^160000 | awk '{print $4}' |
-    xargs -L 1 -P "$j" $ECHO git submodule update --init )
+  ( echo Entering "$1"
+    cd "$1"
+    $ECHO git $pull $pull_args origin
+    $ECHO git submodule sync
+    if ( echo test | xargs --max-lines=1 true 2>/dev/null ); then
+      max_lines="--max-lines=1"
+    else
+      max_lines="-L 1"
+    fi
+    if ( echo test | xargs -P "$j" true 2>/dev/null )
+    then
+      git ls-files -s | grep ^160000 | awk '{print $4}' |
+      xargs $max_lines -P "$j" $ECHO git submodule update --init
+    else
+      echo "Warn: parallel execution is not supported on this platform."
+      $ECHO git submodule update --init
+    fi )
 }
 
 while test $# -ne 0; do
@@ -75,6 +87,5 @@ while read gitdir; do
   parallel_update `dirname $gitdir`
 done
 
-test "$hooks" = "yes" && test -x src/.git/hooks/deps2hooks.sh &&
-src/.git/hooks/deps2hooks.sh
-
+gclient_spec="solutions=[{'name':'src','url':None,'deps_file':'.DEPS.git'}]"
+test "$hooks" = "yes" && gclient runhooks --spec="$gclient_spec"
