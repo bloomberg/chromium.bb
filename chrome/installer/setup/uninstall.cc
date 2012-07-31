@@ -187,9 +187,9 @@ void CloseAllChromeProcesses() {
       window = FindWindowEx(NULL, window, wnd_class.c_str(), NULL);
       if (!SendMessageTimeout(tmpWnd, WM_CLOSE, 0, 0, SMTO_BLOCK, 3000, NULL) &&
           (GetLastError() == ERROR_TIMEOUT)) {
-        base::CleanupProcesses(installer::kChromeExe, 0,
+        base::CleanupProcesses(installer::kChromeExe, base::TimeDelta(),
                                content::RESULT_CODE_HUNG, NULL);
-        base::CleanupProcesses(installer::kNaClExe, 0,
+        base::CleanupProcesses(installer::kNaClExe, base::TimeDelta(),
                                content::RESULT_CODE_HUNG, NULL);
         return;
       }
@@ -199,9 +199,11 @@ void CloseAllChromeProcesses() {
   // If asking politely didn't work, wait for 15 seconds and then kill all
   // chrome.exe. This check is just in case Chrome is ignoring WM_CLOSE
   // messages.
-  base::CleanupProcesses(installer::kChromeExe, 15000,
+  base::CleanupProcesses(installer::kChromeExe,
+                         base::TimeDelta::FromSeconds(15),
                          content::RESULT_CODE_HUNG, NULL);
-  base::CleanupProcesses(installer::kNaClExe, 15000,
+  base::CleanupProcesses(installer::kNaClExe,
+                         base::TimeDelta::FromSeconds(15),
                          content::RESULT_CODE_HUNG, NULL);
 }
 
@@ -236,7 +238,7 @@ void CloseChromeFrameHelperProcess() {
 
   if (kill) {
     VLOG(1) << installer::kChromeFrameHelperExe << " hung.  Killing.";
-    base::CleanupProcesses(installer::kChromeFrameHelperExe, 0,
+    base::CleanupProcesses(installer::kChromeFrameHelperExe, base::TimeDelta(),
                            content::RESULT_CODE_HUNG, NULL);
   }
 }

@@ -204,7 +204,7 @@ TEST_F(MiniInstallTest, RepairFolderOnFullUser) {
       full_installer_, SwitchBuilder().AddChrome()));
   ASSERT_TRUE(installer_test::ValidateInstall(false,
       InstallationValidator::CHROME_SINGLE, provider_->GetCurrentBuild()));
-  base::CleanupProcesses(installer::kChromeExe, 0,
+  base::CleanupProcesses(installer::kChromeExe, base::TimeDelta(),
                          content::RESULT_CODE_HUNG, NULL);
   ASSERT_TRUE(installer_test::DeleteInstallDirectory(
       false, // system level
@@ -220,7 +220,7 @@ TEST_F(MiniInstallTest, RepairFolderOnFullSys) {
       SwitchBuilder().AddChrome().AddSystemInstall()));
   ASSERT_TRUE(installer_test::ValidateInstall(true,
       InstallationValidator::CHROME_SINGLE, provider_->GetCurrentBuild()));
-  base::CleanupProcesses(installer::kChromeExe, 0,
+  base::CleanupProcesses(installer::kChromeExe, base::TimeDelta(),
                          content::RESULT_CODE_HUNG, NULL);
   ASSERT_TRUE(installer_test::DeleteInstallDirectory(
       true, // system level
@@ -237,7 +237,7 @@ TEST_F(MiniInstallTest, RepairRegistryOnFullUser) {
       full_installer_, SwitchBuilder().AddChrome()));
   ASSERT_TRUE(installer_test::ValidateInstall(false,
       InstallationValidator::CHROME_SINGLE, provider_->GetCurrentBuild()));
-  base::CleanupProcesses(installer::kChromeExe, 0,
+  base::CleanupProcesses(installer::kChromeExe, base::TimeDelta(),
                          content::RESULT_CODE_HUNG, NULL);
   ASSERT_TRUE(installer_test::DeleteRegistryKey(
       false, // system level
