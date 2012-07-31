@@ -83,10 +83,10 @@ TEST_F(DriveAPIParserTest, AppListParser) {
     EXPECT_EQ("123456788192", app1.id());
     EXPECT_EQ("Drive app 1", app1.name());
     EXPECT_EQ("", app1.object_type());
-    EXPECT_EQ(true, app1.supports_create());
-    EXPECT_EQ(true, app1.supports_import());
-    EXPECT_EQ(true, app1.is_installed());
-    EXPECT_EQ(false, app1.is_authorized());
+    EXPECT_TRUE(app1.supports_create());
+    EXPECT_TRUE(app1.supports_import());
+    EXPECT_TRUE(app1.is_installed());
+    EXPECT_FALSE(app1.is_authorized());
     EXPECT_EQ("https://chrome.google.com/webstore/detail/"
               "abcdefghabcdefghabcdefghabcdefgh",
               app1.product_url().spec());
@@ -125,10 +125,10 @@ TEST_F(DriveAPIParserTest, AppListParser) {
     EXPECT_EQ("876543210000", app2.id());
     EXPECT_EQ("Drive app 2", app2.name());
     EXPECT_EQ("", app2.object_type());
-    EXPECT_EQ(false, app2.supports_create());
-    EXPECT_EQ(false, app2.supports_import());
-    EXPECT_EQ(true, app2.is_installed());
-    EXPECT_EQ(false, app2.is_authorized());
+    EXPECT_FALSE(app2.supports_create());
+    EXPECT_FALSE(app2.supports_import());
+    EXPECT_TRUE(app2.is_installed());
+    EXPECT_FALSE(app2.is_authorized());
     EXPECT_EQ("https://chrome.google.com/webstore/detail/"
               "hgfedcbahgfedcbahgfedcbahgfedcba",
               app2.product_url().spec());
