@@ -542,7 +542,6 @@ void WebMediaPlayerAndroid::CreateStreamTexture() {
         texture_size_.width,
         texture_size_.height,
         base::TimeDelta(),
-        base::TimeDelta(),
         base::Bind(&WebMediaPlayerAndroid::DestroyStreamTexture,
                    base::Unretained(this)))));
 }

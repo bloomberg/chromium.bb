@@ -8,6 +8,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <utility>
 
 #include "media/base/pipeline_status.h"
 #include "media/base/demuxer_stream.h"
@@ -118,8 +119,7 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   void RecordBufferTimeData(
       const BitstreamBuffer& bitstream_buffer, const Buffer& buffer);
-  void GetBufferTimeData(
-      int32 id, base::TimeDelta* timestamp, base::TimeDelta* duration);
+  base::TimeDelta GetBufferTimestamp(int32 id);
 
   // Set |vda_| and |weak_vda_| on the VDA thread (in practice the render
   // thread).
@@ -145,10 +145,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   // TODO(scherkus): I think this should be calculated by VideoRenderers based
   // on information provided by VideoDecoders (i.e., aspect ratio).
   gfx::Size natural_size_;
-
-  // Frame duration specified in the video stream's configuration, or 0 if not
-  // present.
-  base::TimeDelta config_frame_duration_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
@@ -198,13 +194,8 @@ class MEDIA_EXPORT GpuVideoDecoder
   // The texture target used for decoded pictures.
   uint32 decoder_texture_target_;
 
-  struct BufferTimeData {
-    BufferTimeData(int32 bbid, base::TimeDelta ts, base::TimeDelta dur);
-    ~BufferTimeData();
-    int32 bitstream_buffer_id;
-    base::TimeDelta timestamp;
-    base::TimeDelta duration;
-  };
+  // Maintains bitstream buffer ID to timestamp mappings.
+  typedef std::pair<int32, base::TimeDelta> BufferTimeData;
   std::list<BufferTimeData> input_buffer_time_data_;
 
   // picture_buffer_id and the frame wrapping the corresponding Picture, for

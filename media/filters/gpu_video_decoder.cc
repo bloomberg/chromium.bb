@@ -36,13 +36,6 @@ GpuVideoDecoder::BufferPair::BufferPair(
 
 GpuVideoDecoder::BufferPair::~BufferPair() {}
 
-GpuVideoDecoder::BufferTimeData::BufferTimeData(
-    int32 bbid, base::TimeDelta ts, base::TimeDelta dur)
-    : bitstream_buffer_id(bbid), timestamp(ts), duration(dur) {
-}
-
-GpuVideoDecoder::BufferTimeData::~BufferTimeData() {}
-
 GpuVideoDecoder::GpuVideoDecoder(
     MessageLoop* message_loop,
     MessageLoop* vda_loop,
@@ -163,7 +156,6 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
     demuxer_stream_->EnableBitstreamConverter();
 
   natural_size_ = config.natural_size();
-  config_frame_duration_ = GetFrameDuration(config);
 
   DVLOG(1) << "GpuVideoDecoder::Initialize() succeeded.";
   vda_loop_proxy_->PostTaskAndReply(
@@ -274,11 +266,8 @@ void GpuVideoDecoder::RequestBufferDecode(
 
 void GpuVideoDecoder::RecordBufferTimeData(
     const BitstreamBuffer& bitstream_buffer, const Buffer& buffer) {
-  base::TimeDelta duration = buffer.GetDuration();
-  if (duration == base::TimeDelta())
-    duration = config_frame_duration_;
   input_buffer_time_data_.push_front(BufferTimeData(
-      bitstream_buffer.id(), buffer.GetTimestamp(), duration));
+      bitstream_buffer.id(), buffer.GetTimestamp()));
   // Why this value?  Because why not.  avformat.h:MAX_REORDER_DELAY is 16, but
   // that's too small for some pathological B-frame test videos.  The cost of
   // using too-high a value is low (192 bits per extra slot).
@@ -289,21 +278,15 @@ void GpuVideoDecoder::RecordBufferTimeData(
     input_buffer_time_data_.pop_back();
 }
 
-void GpuVideoDecoder::GetBufferTimeData(
-    int32 id, base::TimeDelta* timestamp, base::TimeDelta* duration) {
-  // If all else fails later, at least we can set a default duration if there
-  // was one in the config.
-  *duration = config_frame_duration_;
+base::TimeDelta GpuVideoDecoder::GetBufferTimestamp(int32 id) {
   for (std::list<BufferTimeData>::const_iterator it =
            input_buffer_time_data_.begin(); it != input_buffer_time_data_.end();
        ++it) {
-    if (it->bitstream_buffer_id != id)
-      continue;
-    *timestamp = it->timestamp;
-    *duration = it->duration;
-    return;
+    if (it->first == id)
+      return it->second;
   }
   NOTREACHED() << "Missing bitstreambuffer id: " << id;
+  return kNoTimestamp();
 }
 
 const gfx::Size& GpuVideoDecoder::natural_size() {
@@ -393,14 +376,11 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   const PictureBuffer& pb = it->second;
 
   // Update frame's timestamp.
-  base::TimeDelta timestamp;
-  base::TimeDelta duration;
-  GetBufferTimeData(picture.bitstream_buffer_id(), &timestamp, &duration);
-
+  base::TimeDelta timestamp = GetBufferTimestamp(picture.bitstream_buffer_id());
   DCHECK(decoder_texture_target_);
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
       pb.texture_id(), decoder_texture_target_, pb.size().width(),
-      pb.size().height(), timestamp, duration,
+      pb.size().height(), timestamp,
       base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
                  picture.picture_buffer_id())));
 

@@ -242,8 +242,7 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
                                      natural_size_.width(),
                                      natural_size_.height(),
-                                     buf->timestamp - start_time_,
-                                     base::TimeDelta::FromMilliseconds(0));
+                                     buf->timestamp - start_time_);
 
   last_frame_timestamp_ = buf->timestamp;
   uint8* buffer = buf->memory_pointer;

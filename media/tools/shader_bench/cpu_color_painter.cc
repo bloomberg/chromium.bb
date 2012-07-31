@@ -69,7 +69,6 @@ void CPUColorPainter::Paint(scoped_refptr<media::VideoFrame> video_frame) {
       media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
                                      video_frame->width(),
                                      video_frame->height(),
-                                     base::TimeDelta(),
                                      base::TimeDelta());
 
   media::ConvertYUVToRGB32(video_frame->data(media::VideoFrame::kYPlane),

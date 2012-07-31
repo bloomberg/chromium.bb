@@ -55,7 +55,6 @@ void GetFrames(std::string file_name,
         media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
                                        width,
                                        height,
-                                       base::TimeDelta(),
                                        base::TimeDelta());
     long bytes_read =
         fread(video_frame->data(0), 1, frame_size, file_handle);

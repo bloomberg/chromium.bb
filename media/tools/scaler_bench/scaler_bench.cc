@@ -124,7 +124,6 @@ static double BenchmarkFilter(media::ScaleFilter filter) {
         VideoFrame::CreateFrame(VideoFrame::RGB32,
                                 dest_width,
                                 dest_height,
-                                TimeDelta::FromSeconds(0),
                                 TimeDelta::FromSeconds(0)));
   }
 
@@ -164,7 +163,6 @@ static double BenchmarkScaleWithRect() {
         VideoFrame::CreateFrame(VideoFrame::RGB32,
                                 dest_width,
                                 dest_height,
-                                TimeDelta::FromSeconds(0),
                                 TimeDelta::FromSeconds(0)));
   }
 

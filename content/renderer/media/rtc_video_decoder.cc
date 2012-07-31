@@ -161,8 +161,7 @@ void RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
                                      visible_size_.width(),
                                      visible_size_.height(),
-                                     timestamp - start_time_,
-                                     base::TimeDelta::FromMilliseconds(0));
+                                     timestamp - start_time_);
   last_frame_timestamp_ = timestamp;
 
   // Aspect ratio unsupported; DCHECK when there are non-square pixels.
