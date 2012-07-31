@@ -4,6 +4,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# install -r doesn't always work?  Try uninstalling first.
-adb uninstall org.chromium.content_shell
-adb install -r ${CHROME_SRC}/out/Release/content_shell/ContentShell-debug.apk 
+CONTENT_SHELL_APK=${CHROME_SRC}/out/Release/content_shell/ContentShell-debug.apk
+
+if [ ! -f "${CONTENT_SHELL_APK}" ]; then
+  echo "Error: Could not find ${CONTENT_SHELL_APK} to install."
+  exit 1
+fi
+
+DEVS=$(adb devices | grep device | grep -v devices | awk '{ print $1 }')
+
+if [[ -z $DEVS ]]; then
+  echo "Error: No connected devices. Device needed to run content shell test."
+  exit 1
+fi
+
+for DEV in ${DEVS}; do
+  # Reinstall content shell.  This will also kill existing content_shell procs.
+  echo "Installing ${CONTENT_SHELL_APK} in ${DEV}"
+  adb -s ${DEV} uninstall org.chromium.content_shell
+  adb -s ${DEV} install -r ${CONTENT_SHELL_APK}
+done

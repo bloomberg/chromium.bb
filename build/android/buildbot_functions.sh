@@ -265,6 +265,7 @@ function bb_run_content_shell_test {
 function bb_run_content_shell_instrumentation_test {
   echo "@@@BUILD_STEP Run content shell instrumentation test on actual "\
        "hardware@@@"
+  build/android/adb_install_content_shell
   build/android/run_instrumentation_tests.py -I \
       --test-apk content_shell_test/ContentShellTest-debug -vvv
 }
