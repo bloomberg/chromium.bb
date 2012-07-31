@@ -25,7 +25,10 @@
 // Deallocated objects are re-classed as |CrZombie|.  No superclass
 // because then the class would have to override many/most of the
 // inherited methods (|NSObject| is like a category magnet!).
-@interface CrZombie {
+// Without the __attribute__, clang's -Wobjc-root-class warns on the missing
+// superclass.
+__attribute__((objc_root_class))
+@interface CrZombie  {
   Class isa;
 }
 @end
