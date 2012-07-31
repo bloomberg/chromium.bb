@@ -898,7 +898,8 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
   }
 
   VLOG(1) << "Connected to network: " << network->name()
-          << " State: " << network->state();
+          << " State: " << network->state()
+          << " Status: " << status;
 
   // If the user asked not to save credentials, flimflam will have
   // forgotten them.  Wipe our cache as well.

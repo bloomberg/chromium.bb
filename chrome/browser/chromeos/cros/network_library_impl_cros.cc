@@ -839,11 +839,16 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
             << " State = " << network->GetStateString()
             << " connecting = " << network->connecting()
             << " connection_started = " << network->connection_started();
+    WifiNetwork* wifi = NULL;
+    if (network->type() == TYPE_WIFI)
+      wifi = static_cast<WifiNetwork*>(network);
     if (network->failed() && network->notify_failure()) {
       // We have not notified observers of a connection failure yet.
       AddNetwork(network);
-    } else if (network->connecting() && network->connection_started()) {
-      // Network was in connecting state; set state to failed.
+    } else if (network->connecting() && network->connection_started() &&
+               !(wifi && wifi->hidden_ssid())) {
+      // Network was in connecting state; set state to failed, but not if it
+      // had a hidden SSID (since that won't appear in the scanning list).
       VLOG(2) << "Removed network was connecting: " << network->name();
       network->SetState(STATE_FAILURE);
       AddNetwork(network);

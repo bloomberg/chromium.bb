@@ -289,13 +289,16 @@ void Network::SetState(ConnectionState new_state) {
     // CONNECT_REQUESTED is set internally. Shill/flimflam do not update the
     // state immediately, so ignore any Idle state updates sent while a
     // connection attempt is in progress.
+    VLOG(2) << "Ignoring idle state change after connection request.";
     return;
   }
   ConnectionState old_state = state_;
+  VLOG(2) << "Entering new state: " << ConnectionStateString(new_state);
   state_ = new_state;
   if (!IsConnectingState(new_state))
     set_connection_started(false);
   if (new_state == STATE_FAILURE) {
+    VLOG(2) << "Detected Failure state.";
     if (old_state != STATE_UNKNOWN && old_state != STATE_IDLE) {
       // New failure, the user needs to be notified.
       // Transition STATE_IDLE -> STATE_FAILURE sometimes happens on resume
@@ -303,8 +306,10 @@ void Network::SetState(ConnectionState new_state) {
       notify_failure_ = true;
       // Normally error_ should be set, but if it is not we need to set it to
       // something here so that the retry logic will be triggered.
-      if (error_ == ERROR_NO_ERROR)
+      if (error_ == ERROR_NO_ERROR) {
+        VLOG(2) << "Detected NO_ERROR error state.  Setting to UNKNOWN.";
         error_ = ERROR_UNKNOWN;
+      }
     }
   } else if (new_state != STATE_UNKNOWN) {
     notify_failure_ = false;
