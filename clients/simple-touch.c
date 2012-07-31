@@ -109,6 +109,8 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 		0xffffff00,
 		0xff0000ff,
 		0xffff00ff,
+		0xff00ff00,
+		0xff00ffff,
 	};
 
 	if (id < (int32_t) ARRAY_LENGTH(colors))
@@ -116,18 +118,28 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 	else
 		c = 0xffffffff;
 
-	if (x < 1 || touch->width - 1 < x ||
-	    y < 1 || touch->height - 1 < y)
+	if (x < 2 || touch->width - 2 < x ||
+	    y < 2 || touch->height - 2 < y)
 		return;
 
-	p = (uint32_t *) touch->data + (x - 1) + (y -1 ) * touch->width;
+	p = (uint32_t *) touch->data + (x - 2) + (y - 2) * touch->width;
+	p[2] = c;
+	p += touch->width;
 	p[1] = c;
+	p[2] = c;
+	p[3] = c;
 	p += touch->width;
 	p[0] = c;
 	p[1] = c;
 	p[2] = c;
+	p[3] = c;
+	p[4] = c;
 	p += touch->width;
 	p[1] = c;
+	p[2] = c;
+	p[3] = c;
+	p += touch->width;
+	p[2] = c;
 
 	wl_surface_damage(touch->surface, 0, 0, touch->width, touch->height);
 }
