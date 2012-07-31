@@ -609,7 +609,7 @@ FileManager.prototype = {
     this.deleteButton_ = this.dialogDom_.querySelector('#delete-button');
     this.table_ = this.dialogDom_.querySelector('.detail-table');
     this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
-    this.spinner_ = this.dialogDom_.querySelector('.spinner');
+    this.spinner_ = this.dialogDom_.querySelector('#spinner-with-text');
     this.showSpinner_(false);
     this.butter_ = this.dialogDom_.querySelector('.butter-bar');
     this.unmountedPanel_ = this.dialogDom_.querySelector('#unmounted-panel');
@@ -3317,7 +3317,13 @@ FileManager.prototype = {
 
   FileManager.prototype.showSpinner_ = function(on) {
     this.cancelSpinnerTimeout_();
-    this.spinner_.style.display = on ? '' : 'none';
+    if (on) {
+      this.spinner_.textContent =
+          this.directoryModel_.isSearching() ? str('SEARCH_SPINNER') : '';
+      this.spinner_.style.display = '';
+    } else {
+      this.spinner_.style.display = 'none';
+    }
   };
 
   FileManager.prototype.onNewFolderCommand_ = function(event) {
