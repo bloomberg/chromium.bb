@@ -224,10 +224,6 @@ struct weston_seat {
 	struct wl_listener saved_kbd_focus_listener;
 
 	uint32_t num_tp;
-	struct wl_surface *touch_focus;
-	struct wl_listener touch_focus_listener;
-	struct wl_resource *touch_focus_resource;
-	struct wl_listener touch_focus_resource_listener;
 
 	struct wl_listener new_drag_icon_listener;
 

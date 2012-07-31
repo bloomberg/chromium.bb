@@ -2061,31 +2061,18 @@ notify_keyboard_focus_out(struct wl_seat *seat)
 }
 
 static void
-lose_touch_focus_resource(struct wl_listener *listener, void *data)
-{
-	struct weston_seat *seat = container_of(listener, struct weston_seat,
-						touch_focus_resource_listener);
-
-	seat->touch_focus_resource = NULL;
-}
-
-static void
-lose_touch_focus(struct wl_listener *listener, void *data)
-{
-	struct weston_seat *seat = container_of(listener, struct weston_seat,
-						touch_focus_listener);
-
-	seat->touch_focus = NULL;
-}
-
-static void
 touch_set_focus(struct weston_seat *ws, struct wl_surface *surface)
 {
 	struct wl_seat *seat = &ws->seat;
 	struct wl_resource *resource;
 
-	if (ws->touch_focus == surface)
+	if (seat->touch->focus == surface)
 		return;
+
+	if (seat->touch->focus_resource)
+		wl_list_remove(&seat->touch->focus_listener.link);
+	seat->touch->focus = NULL;
+	seat->touch->focus_resource = NULL;
 
 	if (surface) {
 		resource =
@@ -2096,23 +2083,10 @@ touch_set_focus(struct weston_seat *ws, struct wl_surface *surface)
 			return;
 		}
 
-		ws->touch_focus_resource_listener.notify =
-			lose_touch_focus_resource;
-		wl_signal_add(&resource->destroy_signal,
-			      &ws->touch_focus_resource_listener);
-		ws->touch_focus_listener.notify = lose_touch_focus;
-		wl_signal_add(&surface->resource.destroy_signal,
-			       &ws->touch_focus_listener);
-
 		seat->touch->focus = surface;
 		seat->touch->focus_resource = resource;
-	} else {
-		if (seat->touch->focus)
-			wl_list_remove(&ws->touch_focus_listener.link);
-		if (seat->touch->focus_resource)
-			wl_list_remove(&ws->touch_focus_resource_listener.link);
-		seat->touch->focus = NULL;
-		seat->touch->focus_resource = NULL;
+		wl_signal_add(&resource->destroy_signal,
+			      &seat->touch->focus_listener);
 	}
 }
 
@@ -2146,33 +2120,33 @@ notify_touch(struct wl_seat *seat, uint32_t time, int touch_id,
 		if (ws->num_tp == 1) {
 			es = weston_compositor_pick_surface(ec, x, y, &sx, &sy);
 			touch_set_focus(ws, &es->surface);
-		} else if (ws->touch_focus) {
-			es = (struct weston_surface *) ws->touch_focus;
+		} else if (seat->touch->focus) {
+			es = (struct weston_surface *)seat->touch->focus;
 			weston_surface_from_global_fixed(es, x, y, &sx, &sy);
 		}
 
-		if (ws->touch_focus_resource && ws->touch_focus)
-			wl_touch_send_down(ws->touch_focus_resource,
+		if (seat->touch->focus_resource && seat->touch->focus)
+			wl_touch_send_down(seat->touch->focus_resource,
 					   serial, time,
-					   &ws->touch_focus->resource,
+					   &seat->touch->focus->resource,
 					   touch_id, sx, sy);
 		break;
 	case WL_TOUCH_MOTION:
-		es = (struct weston_surface *) ws->touch_focus;
+		es = (struct weston_surface *)seat->touch->focus;
 		if (!es)
 			break;
 
 		weston_surface_from_global_fixed(es, x, y, &sx, &sy);
-		if (ws->touch_focus_resource)
-			wl_touch_send_motion(ws->touch_focus_resource,
+		if (seat->touch->focus_resource)
+			wl_touch_send_motion(seat->touch->focus_resource,
 					     time, touch_id, sx, sy);
 		break;
 	case WL_TOUCH_UP:
 		weston_compositor_idle_release(ec);
 		ws->num_tp--;
 
-		if (ws->touch_focus_resource)
-			wl_touch_send_up(ws->touch_focus_resource,
+		if (seat->touch->focus_resource)
+			wl_touch_send_up(seat->touch->focus_resource,
 					 serial, time, touch_id);
 		if (ws->num_tp == 0)
 			touch_set_focus(ws, NULL);
