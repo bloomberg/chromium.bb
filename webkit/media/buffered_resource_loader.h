@@ -29,7 +29,6 @@ const int64 kPositionNotSpecified = -1;
 
 const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
-const char kDataScheme[] = "data";
 
 // BufferedResourceLoader is single threaded and must be accessed on the
 // render thread. It wraps a WebURLLoader and does in-memory buffering,

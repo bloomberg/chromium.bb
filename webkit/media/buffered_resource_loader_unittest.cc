@@ -44,7 +44,6 @@ static const char* kHttpUrl = "http://test";
 static const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
 static const char kHttpRedirectToSameDomainUrl2[] = "http://test/ing2";
 static const char kHttpRedirectToDifferentDomainUrl1[] = "http://test2";
-static const char kHttpRedirectToDifferentDomainUrl2[] = "http://test2/ing";
 
 static const int kDataSize = 1024;
 static const int kHttpOK = 200;

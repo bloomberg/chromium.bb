@@ -79,7 +79,6 @@ class MediaInternals : public content::MediaObserver {
   // Calls javascript |function|(|value|) on each attached UI.
   void SendUpdate(const std::string& function, Value* value);
 
-  static MediaInternals* instance_;
   DictionaryValue data_;
   ObserverList<MediaInternalsObserver> observers_;
   scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;

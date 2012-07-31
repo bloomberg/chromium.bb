@@ -178,7 +178,6 @@ class RTCVideoDecoderTest : public testing::Test {
  protected:
   static const int kWidth;
   static const int kHeight;
-  static const char* kUrl;
   static const PipelineStatistics kStatistics;
 
   RTCVideoDecoderTest() {
