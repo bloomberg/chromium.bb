@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 
@@ -231,9 +232,13 @@ void SetPhoto(const gfx::Size& size, Contact* contact) {
     contact->clear_raw_untrusted_photo();
     return;
   }
+
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
   bitmap.allocPixels();
+  SkCanvas canvas(bitmap);
+  canvas.clear(SK_ColorBLACK);
+
   std::vector<unsigned char> png_photo;
   CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_photo));
   contact->set_raw_untrusted_photo(&png_photo[0], png_photo.size());

@@ -3,6 +3,7 @@ include_rules = [
   "+crypto",
   "+gpu",
   "+jni",
+  "+leveldb",
   "+net",
   "+printing",
   "+sql",
@@ -50,7 +51,7 @@ include_rules = [
   "+third_party/mozilla",     # Mozilla interface headers.
   "+third_party/npapi",       # NPAPI interface headers.
   "+third_party/skia",
-  "+third_party/tcmalloc",    # tcmallo
+  "+third_party/tcmalloc",
   "+third_party/GTM",         # Google Toolbox for Mac.
 
   "+ui",
