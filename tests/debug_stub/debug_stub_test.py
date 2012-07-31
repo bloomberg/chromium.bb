@@ -380,7 +380,7 @@ class DebugStubTest(unittest.TestCase):
       reply = connection.RspRequest('vCont;s:%x;c' % tid)
       # WARNING! This check is valid in single-threaded case only!
       # In multi-threaded case another thread might stop first.
-      self.assertTrue(reply.startswith('T05thread:%x' % tid))
+      self.assertEqual(reply, 'T05thread:%x;' % tid)
 
       # Try to continue the thread and to single-step all others.
       reply = connection.RspRequest('vCont;c:%x;s' % tid)
@@ -419,6 +419,33 @@ class DebugStubTest(unittest.TestCase):
       proc.kill()
       proc.wait()
 
+  def test_software_single_step(self):
+    # We want this test to work on ARM. As we can't skip past trap instruction
+    # on ARM, we'll step from initial breakpoint to the first trap instruction.
+    # We can use any test that has initial breakpoint and trap instruction on
+    # the same thread.
+    proc = PopenDebugStub('test_breakpoint')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+
+      # We stopped on initial breakpoint. Ask for stop reply.
+      reply = connection.RspRequest('?')
+      # Unfortunately, signal raised by initial breakpoint differs across
+      # platforms, so we don't check signal number.
+      self.assertTrue(reply.startswith('T'))
+      # Signal number is 2 digits, skip it.
+      self.assertTrue(reply[len('T??'):].startswith('thread:'))
+      self.assertTrue(reply.endswith(';'))
+      # Extract thread id.
+      tid = int(reply[len('T??thread:'):-1], 16)
+
+      # Continue one thread.
+      # Check we stopped on the same thread.
+      reply = connection.RspRequest('vCont;c:%x' % tid)
+      self.assertEqual(reply, 'T05thread:%x;' % tid)
+    finally:
+      proc.kill()
+      proc.wait()
 
 def Main():
   # TODO(mseaborn): Clean up to remove the global variables.  They are

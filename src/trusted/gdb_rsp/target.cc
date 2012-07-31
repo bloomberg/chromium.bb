@@ -656,6 +656,35 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
           return true;
         }
 
+        // Continue one thread and keep other threads stopped.
+        //
+        // GDB sends this for software single step, which is used:
+        // - on Win64 to step over rsp modification and subsequent rsp
+        //   sandboxing at once. For details, see:
+        //     http://code.google.com/p/nativeclient/issues/detail?id=2903
+        // - TODO: on ARM, which has no hardware support for single step
+        // - TODO: to step over syscalls
+        //
+        // Unfortunately, we can't make this just Win-specific. We might
+        // use Linux GDB to connect to Win debug stub, so even Linux GDB
+        // should send software single step. Vice versa, software single
+        // step-enabled Win GDB might be connected to Linux debug stub,
+        // so even Linux debug stub should accept software single step.
+        if (strncmp(subcommand, ";c:", 3) == 0) {
+          char *end;
+          uint32_t thread_id = static_cast<uint32_t>(
+              strtol(subcommand + 3, &end, 16));
+          if (end != subcommand + 3 && *end == 0) {
+            if (thread_id == sig_thread_) {
+              step_over_breakpoint_thread_ = sig_thread_;
+              return true;
+            }
+          }
+
+          err = BAD_ARGS;
+          break;
+        }
+
         // Unsupported form of vCont.
         err = BAD_FORMAT;
         break;
