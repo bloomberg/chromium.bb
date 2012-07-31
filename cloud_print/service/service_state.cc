@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -172,6 +173,10 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   post_body += "&service=" + net::EscapeUrlEncodedData(service, true);
 
   net::URLRequest request(url, &fetcher_delegate, context.get());
+  int load_flags = request.load_flags();
+  load_flags = load_flags | net::LOAD_DO_NOT_SEND_COOKIES;
+  load_flags = load_flags | net::LOAD_DO_NOT_SAVE_COOKIES;
+  request.set_load_flags(load_flags);
 
   request.AppendBytesToUpload(post_body.c_str(), post_body.size());
   request.SetExtraRequestHeaderByName(
