@@ -31,7 +31,7 @@ namespace remoting {
 
 namespace {
 
-const char kDaemonScript[] = "me2me_virtual_host.py";
+const char kDaemonScript[] = "me2me_virtual_host";
 const int64 kDaemonTimeoutMs = 5000;
 
 std::string GetMd5(const std::string& value) {
