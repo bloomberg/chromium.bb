@@ -279,18 +279,6 @@ class GDataDirectory : public GDataEntry {
   bool FromProto(const GDataDirectoryProto& proto) WARN_UNUSED_RESULT;
   void ToProto(GDataDirectoryProto* proto) const;
 
-  // Takes the ownership of |entry| from its current parent. If this directory
-  // is already the current parent of |file|, this method effectively goes
-  // through the name de-duplication for |file| based on the current state of
-  // the file system.
-  bool TakeEntry(GDataEntry* entry);
-
-  // Takes over all entries from |dir|.
-  bool TakeOverEntries(GDataDirectory* dir);
-
-  // Removes the entry from its children list and destroys the entry instance.
-  bool RemoveEntry(GDataEntry* entry);
-
   // Removes child elements.
   void RemoveChildren();
   void RemoveChildFiles();
@@ -313,6 +301,21 @@ class GDataDirectory : public GDataEntry {
   // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
   // TODO(satorux): Remove this. crbug.com/139649
   void AddEntry(GDataEntry* entry);
+
+  // Removes the entry from its children list and destroys the entry instance.
+  // TODO(satorux): Remove this. crbug.com/139649
+  bool RemoveEntry(GDataEntry* entry);
+
+  // Takes the ownership of |entry| from its current parent. If this directory
+  // is already the current parent of |file|, this method effectively goes
+  // through the name de-duplication for |file| based on the current state of
+  // the file system.
+  // TODO(satorux): Remove this. crbug.com/139649
+  bool TakeEntry(GDataEntry* entry);
+
+  // Takes over all entries from |dir|.
+  // TODO(satorux): Remove this. crbug.com/139649
+  bool TakeOverEntries(GDataDirectory* dir);
 
   // Find a child by its name.
   // TODO(satorux): Remove this. crbug.com/139649

@@ -557,6 +557,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GDataEntry* entry,
       std::set<FilePath>* changed_dirs);
 
+  // Callback for GetEntryByResourceIdAsync.
+  // Removes stale entry upon upload of file.
+  static void RemoveStaleEntryOnUpload(const std::string& resource_id,
+                                       GDataDirectory* parent_dir,
+                                       GDataEntry* existing_entry);
+
   // Finds directory where new |file| should be added to during feed processing.
   // |orphaned_entries_dir| collects files/dirs that don't have a parent in
   // either locally cached file system or in this new feed.

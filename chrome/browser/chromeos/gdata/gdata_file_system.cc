@@ -405,20 +405,6 @@ void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
 }
 
 // Callback for GetEntryByResourceIdAsync.
-// Removes stale entry upon upload of file.
-void RemoveStaleEntryOnUpload(const std::string& resource_id,
-                              GDataDirectory* parent_dir,
-                              GDataEntry* existing_entry) {
-  if (existing_entry &&
-      // This should always match, but just in case.
-      existing_entry->parent() == parent_dir) {
-    parent_dir->RemoveEntry(existing_entry);
-  } else {
-    LOG(ERROR) << "Entry for the existing file not found: " << resource_id;
-  }
-}
-
-// Callback for GetEntryByResourceIdAsync.
 // Adds |entry| to |results|. Runs |callback| with |results| when
 // |run_callback| is true.
 void AddEntryToSearchResults(
@@ -3451,11 +3437,6 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
   }
 }
 
-// Helper function for adding new |file| from the feed into |directory|. It
-// checks the type of file and updates |changed_dirs| if this file adding
-// operation needs to raise directory notification update. If file is being
-// added to |orphaned_dir_service| such notifications are not raised since
-// we ignore such files and don't add them to the file system now.
 // static
 void GDataFileSystem::AddEntryToDirectoryAndCollectChangedDirectories(
     GDataEntry* entry,
@@ -3467,9 +3448,6 @@ void GDataFileSystem::AddEntryToDirectoryAndCollectChangedDirectories(
     changed_dirs->insert(entry->GetFilePath());
 }
 
-// Helper function for removing |entry| from |directory|. If |entry| is a
-// directory too, it will collect all its children file paths into
-// |changed_dirs| as well.
 // static
 void GDataFileSystem::RemoveEntryFromDirectoryAndCollectChangedDirectories(
     GDataDirectory* directory,
@@ -3479,6 +3457,19 @@ void GDataFileSystem::RemoveEntryFromDirectoryAndCollectChangedDirectories(
   // that they are smoked.
   GetChildDirectoryPaths(entry, changed_dirs);
   directory->RemoveEntry(entry);
+}
+
+// static
+void GDataFileSystem::RemoveStaleEntryOnUpload(const std::string& resource_id,
+                                               GDataDirectory* parent_dir,
+                                               GDataEntry* existing_entry) {
+  if (existing_entry &&
+      // This should always match, but just in case.
+      existing_entry->parent() == parent_dir) {
+    parent_dir->RemoveEntry(existing_entry);
+  } else {
+    LOG(ERROR) << "Entry for the existing file not found: " << resource_id;
+  }
 }
 
 GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
