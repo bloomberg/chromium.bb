@@ -11,6 +11,7 @@
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/service_runtime.h"
 
 #include "ppapi/cpp/completion_callback.h"
 
@@ -32,8 +33,7 @@ class PnaclTranslateThread {
  public:
   PnaclTranslateThread();
   virtual ~PnaclTranslateThread();
-  // TODO(jvoung/dschuff): handle surfaway issues when coordinator/plugin
-  // goes away. This data may have to be refcounted not touched in that case.
+
   virtual void RunTranslate(const pp::CompletionCallback& finish_callback,
                     const Manifest* manifest,
                     const Manifest* ld_manifest,
@@ -64,6 +64,15 @@ class PnaclTranslateThread {
                        const nacl::string& soname,
                        const nacl::string& lib_dependencies);
 
+  // Register a reverse service interface which will be shutdown if the
+  // plugin is shutdown. The reverse service pointer must be available on the
+  // main thread because the translation thread could be blocked on SRPC
+  // waiting for the translator, which could be waiting on a reverse
+  // service call.
+  // (see also the comments in Plugin::~Plugin about ShutdownSubprocesses,
+  // but that only handles the main nexe and not the translator nexes.)
+  void RegisterReverseInterface(PluginReverseInterface *interface);
+
   // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;
   // True if the translation thread and related subprocesses should exit.
@@ -72,6 +81,9 @@ class PnaclTranslateThread {
   struct NaClMutex subprocess_mu_;
 
   nacl::scoped_ptr<NaClThread> translate_thread_;
+
+  // Reverse interface to shutdown on SetSubprocessesShouldDie
+  PluginReverseInterface* current_rev_interface_;
 
   // Data about the translation files, owned by the coordinator
   const Manifest* manifest_;

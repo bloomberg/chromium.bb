@@ -14,6 +14,7 @@
 namespace plugin {
 
 PnaclTranslateThread::PnaclTranslateThread() : subprocesses_should_die_(false),
+                                               current_rev_interface_(NULL),
                                                manifest_(NULL),
                                                ld_manifest_(NULL),
                                                obj_file_(NULL),
@@ -73,6 +74,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
       ld_subprocess->service_runtime()->rev_interface();
   ld_reverse->AddQuotaManagedFile(nexe_file_->identifier(),
                                   nexe_file_->write_file_io());
+  RegisterReverseInterface(ld_reverse);
   if (!ld_subprocess->InvokeSrpcMethod("RunWithDefaultCommandLine",
                                        "hhiss",
                                        &params,
@@ -87,6 +89,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
   PLUGIN_PRINTF(("PnaclCoordinator: link (translator=%p) succeeded\n",
                  this));
   // Shut down the ld subprocess.
+  RegisterReverseInterface(NULL);
   ld_subprocess.reset(NULL);
   if (SubprocessesShouldDie()) {
     TranslateFailed("stopped by coordinator.");
@@ -109,6 +112,19 @@ void PnaclTranslateThread::TranslateFailed(const nacl::string& error_string) {
   core->CallOnMainThread(0, report_translate_finished_, PP_ERROR_FAILED);
 }
 
+// This synchronization method (using the pointer directly in the
+// translation thread, setting a copy here, and calling shutdown on the
+// main thread) is safe only because only the translation thread sets
+// the copy, and the shutdown method is thread-safe. This method must be
+// called on the translation thread before any RPCs are called, and called
+// again with NULL before the object is destroyed.
+void PnaclTranslateThread::RegisterReverseInterface(
+    PluginReverseInterface *interface) {
+  nacl::MutexLocker ml(&subprocess_mu_);
+  current_rev_interface_ = interface;
+}
+
+
 bool PnaclTranslateThread::SubprocessesShouldDie() {
   nacl::MutexLocker ml(&subprocess_mu_);
   return subprocesses_should_die_;
@@ -118,16 +134,13 @@ void PnaclTranslateThread::SetSubprocessesShouldDie() {
   PLUGIN_PRINTF(("PnaclTranslateThread::SetSubprocessesShouldDie\n"));
   nacl::MutexLocker ml(&subprocess_mu_);
   subprocesses_should_die_ = true;
+  if (current_rev_interface_) {
+    current_rev_interface_->ShutDown();
+    current_rev_interface_ = NULL;
+  }
 }
 
 PnaclTranslateThread::~PnaclTranslateThread() {
-  PLUGIN_PRINTF(("~PnaclTranslateThread (translate_thread=%p)\n",
-                 translate_thread_.get()));
-  if (translate_thread_ != NULL) {
-    SetSubprocessesShouldDie();
-    NaClThreadJoin(translate_thread_.get());
-    PLUGIN_PRINTF(("~PnaclTranslateThread joined\n"));
-  }
   NaClMutexDtor(&subprocess_mu_);
 }
 

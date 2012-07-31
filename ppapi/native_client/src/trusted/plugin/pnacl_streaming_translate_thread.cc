@@ -17,7 +17,12 @@ PnaclStreamingTranslateThread::PnaclStreamingTranslateThread() : done_(false) {
   NaClXCondVarCtor(&buffer_cond_);
 }
 
-PnaclStreamingTranslateThread::~PnaclStreamingTranslateThread() {}
+PnaclStreamingTranslateThread::~PnaclStreamingTranslateThread() {
+  PLUGIN_PRINTF(("~PnaclTranslateThread (translate_thread=%p)\n", this));
+  SetSubprocessesShouldDie();
+  NaClThreadJoin(translate_thread_.get());
+  PLUGIN_PRINTF(("~PnaclTranslateThread joined\n"));
+}
 
 void PnaclStreamingTranslateThread::RunTranslate(
     const pp::CompletionCallback& finish_callback,
@@ -103,6 +108,7 @@ void PnaclStreamingTranslateThread::DoTranslate() {
   PluginReverseInterface* llc_reverse =
       llc_subprocess->service_runtime()->rev_interface();
   llc_reverse->AddTempQuotaManagedFile(obj_file_->identifier());
+  RegisterReverseInterface(llc_reverse);
 
   if (!llc_subprocess->InvokeSrpcMethod("StreamInit",
                                         "h",
@@ -142,6 +148,10 @@ void PnaclStreamingTranslateThread::DoTranslate() {
     } else {
       NaClXMutexUnlock(&cond_mu_);
     }
+    if (SubprocessesShouldDie()) {
+      TranslateFailed("Stopped by coordinator.");
+      return;
+    }
   }
   PLUGIN_PRINTF(("PnaclTranslateThread done with chunks\n"));
   // Finish llc.
@@ -162,6 +172,7 @@ void PnaclStreamingTranslateThread::DoTranslate() {
                  lib_dependencies.c_str()));
 
   // Shut down the llc subprocess.
+  RegisterReverseInterface(NULL);
   llc_subprocess.reset(NULL);
   if (SubprocessesShouldDie()) {
     TranslateFailed("stopped by coordinator.");
