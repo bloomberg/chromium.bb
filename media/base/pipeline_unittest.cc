@@ -34,7 +34,6 @@ namespace media {
 
 // Demuxer properties.
 static const int kTotalBytes = 1024;
-static const int kBufferedBytes = 1024;
 static const int kBitrate = 1234;
 
 ACTION_P(SetDemuxerProperties, duration) {

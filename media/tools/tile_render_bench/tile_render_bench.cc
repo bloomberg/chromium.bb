@@ -35,7 +35,6 @@ static const int kMaxTextures = kStartSize * kStartSize / kEndSize / kEndSize;
 
 Display* g_display = NULL;
 Window g_window = 0;
-bool g_running = false;
 GLXContext g_gl_context = NULL;
 GLuint g_textures[kMaxTextures];
 scoped_array<uint8> g_image;
