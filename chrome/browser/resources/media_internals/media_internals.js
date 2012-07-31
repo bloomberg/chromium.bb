@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,8 +41,8 @@ cr.define('media', function() {
    * Initialize variables and ask MediaInternals for all its data.
    */
   function initialize() {
-    audioStreamDiv = document.getElementById('audio-streams');
-    cacheDiv = document.getElementById('cache-entries');
+    audioStreamDiv = $('audio-streams');
+    cacheDiv = $('cache-entries');
 
     // Get information about all currently active media.
     chrome.send('getEverything');
@@ -66,14 +66,16 @@ cr.define('media', function() {
 
       out.textContent += 'Audio stream ' + stream.id.split('.')[1];
       out.textContent += ' is ' + (stream.playing ? 'playing' : 'paused');
-      out.textContent += ' at ' + (stream.volume * 100).toFixed(0);
-      out.textContent += '% volume.';
+      if (typeof stream.volume != 'undefined') {
+        out.textContent += ' at ' + (stream.volume * 100).toFixed(0);
+        out.textContent += '% volume.';
+      }
       return out;
     }
 
     var out = document.createElement('ul');
     audioStreams.map(printStream).forEach(function(s) {
-      out.appendChild(s)
+      out.appendChild(s);
     });
 
     audioStreamDiv.textContent = '';
@@ -147,7 +149,7 @@ cr.define('media', function() {
   function onRendererTerminated(renderer) {
     for (var key in mediaPlayers) {
       if (mediaPlayers[key].renderer == renderer) {
-        document.getElementById('media-players').removeChild(mediaPlayers[key]);
+        $('media-players').removeChild(mediaPlayers[key]);
         delete mediaPlayers[key];
         break;
       }
