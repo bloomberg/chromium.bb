@@ -256,7 +256,9 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind,
 
   // Don't grant further access to GPU if it is not allowed.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
-  if (gpu_data_manager != NULL && !gpu_data_manager->GpuAccessAllowed())
+  if (gpu_data_manager != NULL &&
+      (!gpu_data_manager->GpuAccessAllowed() ||
+       gpu_data_manager->GetGpuFeatureType() == content::GPU_FEATURE_TYPE_ALL))
     return NULL;
 
   if (g_gpu_process_hosts[kind] && HostIsValid(g_gpu_process_hosts[kind]))
