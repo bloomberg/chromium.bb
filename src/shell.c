@@ -385,9 +385,25 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 	struct focus_state *state = container_of(listener,
 						 struct focus_state,
 						 surface_destroy_listener);
+	struct desktop_shell *shell;
+	struct weston_surface *surface, *next;
 
-	wl_list_remove(&state->link);
-	focus_state_destroy(state);
+	next = NULL;
+	wl_list_for_each(surface, &state->ws->layer.surface_list, layer_link) {
+		if (surface == state->keyboard_focus)
+			continue;
+
+		next = surface;
+		break;
+	}
+
+	if (next) {
+		shell = state->seat->compositor->shell_interface.shell;
+		activate(shell, next, state->seat);
+	} else {
+		wl_list_remove(&state->link);
+		focus_state_destroy(state);
+	}
 }
 
 static struct focus_state *
