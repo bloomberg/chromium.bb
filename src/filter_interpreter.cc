@@ -24,7 +24,9 @@ void FilterInterpreter::SetHardwarePropertiesImpl(
 
 DictionaryValue* FilterInterpreter::EncodeCommonInfo() {
   DictionaryValue *root = Interpreter::EncodeCommonInfo();
+#ifdef DEEP_LOGS
   root->Set(ActivityLog::kKeyNext, next_->EncodeCommonInfo());
+#endif
   return root;
 }
 
