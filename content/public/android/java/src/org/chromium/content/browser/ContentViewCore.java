@@ -54,9 +54,9 @@ public class ContentViewCore implements MotionEventDelegate {
     // Used for Chrome.
     public static final int PERSONALITY_CHROME = 1;
 
-    // Used to avoid enabling zooming in / out in WebView zoom controls
-    // if resulting zooming will produce little visible difference.
-    private static float WEBVIEW_ZOOM_CONTROLS_EPSILON = 0.007f;
+    // Used to avoid enabling zooming in / out if resulting zooming will
+    // produce little visible difference.
+    private static float ZOOM_CONTROLS_EPSILON = 0.007f;
 
     // To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
     // should be allowed to upload per 100ms.
@@ -180,7 +180,6 @@ public class ContentViewCore implements MotionEventDelegate {
      * @param context Context used to obtain the application context.
      * @param maxRendererProcesses Same as ContentView.enableMultiProcess()
      * @return Whether the process actually needed to be initialized (false if already running).
-     * @hide Only used by the platform browser.
      */
     public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
         return AndroidBrowserProcess.initChromiumBrowserProcess(context, maxRendererProcesses);
@@ -265,9 +264,10 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Destroy the internal state of the WebView. This method may only be called
-     * after the WebView has been removed from the view system. No other methods
-     * may be called on this WebView after this method has been called.
+     * Destroy the internal state of the ContentView. This method may only be
+     * called after the ContentView has been removed from the view system. No
+     * other methods may be called on this ContentView after this method has
+     * been called.
      */
     public void destroy() {
         hidePopupDialog();
@@ -465,8 +465,8 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Clears the WebView's page history in both the backwards and forwards
-     * directions.
+     * Clears the ContentViewCore's page history in both the backwards and
+     * forwards directions.
      */
     public void clearHistory() {
         if (mNativeContentViewCore != 0) nativeClearHistory(mNativeContentViewCore);
@@ -564,9 +564,7 @@ public class ContentViewCore implements MotionEventDelegate {
 
     /**
      * This method should be called when the containing activity is paused
-     *
-     * @hide
-     **/
+     */
     public void onActivityPause() {
         TraceEvent.begin();
         hidePopupDialog();
@@ -574,23 +572,21 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Called when the WebView is hidden.
-     *
-     * @hide
-     **/
+     * Called when the ContentView is hidden.
+     */
     public void onHide() {
         hidePopupDialog();
     }
 
     /**
      * Return the ContentSettings object used to control the settings for this
-     * WebView.
+     * ContentViewCore.
      *
      * Note that when ContentView is used in the PERSONALITY_CHROME role,
      * ContentSettings can only be used for retrieving settings values. For
      * modifications, ChromeNativePreferences is to be used.
-     * @return A ContentSettings object that can be used to control this WebView's
-     *         settings.
+     * @return A ContentSettings object that can be used to control this
+     *         ContentViewCore's settings.
      */
     public ContentSettings getContentSettings() {
         return mContentSettings;
@@ -759,30 +755,30 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Checks whether the WebView can be zoomed in.
+     * Checks whether the ContentViewCore can be zoomed in.
      *
-     * @return True if the WebView can be zoomed in.
+     * @return True if the ContentViewCore can be zoomed in.
      */
     // This method uses the term 'zoom' for legacy reasons, but relates
     // to what chrome calls the 'page scale factor'.
     public boolean canZoomIn() {
-        return mNativeMaximumScale - mNativePageScaleFactor > WEBVIEW_ZOOM_CONTROLS_EPSILON;
+        return mNativeMaximumScale - mNativePageScaleFactor > ZOOM_CONTROLS_EPSILON;
     }
 
     /**
-     * Checks whether the WebView can be zoomed out.
+     * Checks whether the ContentViewCore can be zoomed out.
      *
-     * @return True if the WebView can be zoomed out.
+     * @return True if the ContentViewCore can be zoomed out.
      */
     // This method uses the term 'zoom' for legacy reasons, but relates
     // to what chrome calls the 'page scale factor'.
     public boolean canZoomOut() {
-        return mNativePageScaleFactor - mNativeMinimumScale > WEBVIEW_ZOOM_CONTROLS_EPSILON;
+        return mNativePageScaleFactor - mNativeMinimumScale > ZOOM_CONTROLS_EPSILON;
     }
 
     /**
-     * Zooms in the WebView by 25% (or less if that would result in zooming in
-     * more than possible).
+     * Zooms in the ContentViewCore by 25% (or less if that would result in
+     * zooming in more than possible).
      *
      * @return True if there was a zoom change, false otherwise.
      */
@@ -810,8 +806,8 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * Zooms out the WebView by 20% (or less if that would result in zooming out
-     * more than possible).
+     * Zooms out the ContentViewCore by 20% (or less if that would result in
+     * zooming out more than possible).
      *
      * @return True if there was a zoom change, false otherwise.
      */

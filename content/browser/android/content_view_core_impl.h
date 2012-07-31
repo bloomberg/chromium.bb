@@ -150,7 +150,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnAcceleratedCompositingStateChange(RenderWidgetHostViewAndroid* rwhva,
                                            bool activated,
                                            bool force);
-  virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
+  void StartContentIntent(const GURL& content_url);
 
   // --------------------------------------------------------------------------
   // Methods called from native code

@@ -35,12 +35,6 @@ class ContentViewCore {
                                  WebContents* web_contents);
   static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
 
-  // --------------------------------------------------------------------------
-  // Public methods that call to Java via JNI
-  // --------------------------------------------------------------------------
-
-  virtual void StartContentIntent(const GURL& content_url) = 0;
-
  protected:
   virtual ~ContentViewCore() {};
 };

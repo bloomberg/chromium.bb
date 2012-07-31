@@ -120,6 +120,25 @@ RenderWidgetHostViewAndroid*
 // Methods called from Java via JNI
 // ----------------------------------------------------------------------------
 
+void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env, jobject obj,
+                                               jintArray indices) {
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  DCHECK(rvhi);
+  if (indices == NULL) {
+    rvhi->DidCancelPopupMenu();
+    return;
+  }
+
+  int selected_count = env->GetArrayLength(indices);
+  std::vector<int> selected_indices;
+  jint* indices_ptr = env->GetIntArrayElements(indices, NULL);
+  for (int i = 0; i < selected_count; ++i)
+    selected_indices.push_back(indices_ptr[i]);
+  env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
+  rvhi->DidSelectPopupMenuItems(selected_indices);
+}
+
 void ContentViewCoreImpl::LoadUrlWithoutUrlSanitization(JNIEnv* env,
                                                         jobject,
                                                         jstring jurl,
@@ -490,29 +509,6 @@ void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
   Java_ContentViewCore_startContentIntent(env,
                                           java_object_->View(env).obj(),
                                           jcontent_url.obj());
-}
-
-// --------------------------------------------------------------------------
-// Methods called from Java via JNI
-// --------------------------------------------------------------------------
-
-void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env, jobject obj,
-                                               jintArray indices) {
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  DCHECK(rvhi);
-  if (indices == NULL) {
-    rvhi->DidCancelPopupMenu();
-    return;
-  }
-
-  int selected_count = env->GetArrayLength(indices);
-  std::vector<int> selected_indices;
-  jint* indices_ptr = env->GetIntArrayElements(indices, NULL);
-  for (int i = 0; i < selected_count; ++i)
-    selected_indices.push_back(indices_ptr[i]);
-  env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
-  rvhi->DidSelectPopupMenuItems(selected_indices);
 }
 
 // --------------------------------------------------------------------------
