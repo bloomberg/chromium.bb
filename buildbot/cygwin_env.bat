@@ -4,7 +4,7 @@
 
 @echo off
 setlocal
-set HERMETIC_CYGWIN=hermetic_cygwin_1_7_15-0_1
+set HERMETIC_CYGWIN=hermetic_cygwin_1_7_15-0_1-with-20120725-cygwin
 if exist "%~dp0..\cygwin\%HERMETIC_CYGWIN%.installed" goto :skip_cygwin_install
 if exist "%~dp0..\tools\BUILD\.gcc-extras-version" del "%~dp0..\tools\BUILD\.gcc-extras-version"
 if exist "%~dp0..\tools\BACKPORTS\binutils" rmdir /s /q "%~dp0..\tools\BACKPORTS\binutils"
@@ -37,11 +37,13 @@ echo Failed to remove old version of cygwin
 set ERRORLEVEL=1
 goto :end
 :download_fail
-c:\cygwin\bin\wget https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/%HERMETIC_CYGWIN%.exe -O "%~dp0%HERMETIC_CYGWIN%.exe"
+:: TODO(bradnelson): Check certs when this issue is resolved.
+::     http://code.google.com/p/nativeclient/issues/detail?id=2931
+c:\cygwin\bin\wget --no-check-certificate https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/%HERMETIC_CYGWIN%.exe -O "%~dp0%HERMETIC_CYGWIN%.exe"
 if errorlevel 1 goto :wget_fail
 goto download_success
 :wget_fail
-c:\cygwin\bin\wget https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/%HERMETIC_CYGWIN%.exe -O "%~dp0%HERMETIC_CYGWIN%.exe"
+c:\cygwin\bin\wget --no-check-certificate https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/%HERMETIC_CYGWIN%.exe -O "%~dp0%HERMETIC_CYGWIN%.exe"
 if errorlevel 1 goto :cygwin_wget_fail
 goto download_success
 :cygwin_wget_fail
