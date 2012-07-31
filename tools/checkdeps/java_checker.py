@@ -8,6 +8,8 @@ import codecs
 import os
 import re
 
+from rules import Rule
+
 
 class JavaChecker(object):
   """Import checker for Java files.
@@ -94,7 +96,7 @@ class JavaChecker(object):
           # Convert Windows paths to Unix style, as used in DEPS files.
           include_path = include_path.replace(os.path.sep, '/')
           (allowed, why_failed) = rules.DirAllowed(include_path)
-          if not allowed:
+          if allowed == Rule.DISALLOW:
             if self._verbose:
               result += '\nFor %s' % rules
             result += 'Illegal include: "%s"\n    Because of %s\n' % (

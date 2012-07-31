@@ -1,0 +1,5 @@
+include_rules = [
+  "-tools/checkdeps/testdata/disallowed",
+  "+tools/checkdeps/testdata/allowed",
+  "-third_party/explicitly_disallowed",
+]

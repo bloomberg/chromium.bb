@@ -1,0 +1,5 @@
+include_rules = [
+  "+tools/checkdeps/testdata/disallowed/allowed",
+  "!tools/checkdeps/testdata/disallowed/temporarily_allowed.h",
+  "+third_party/allowed_may_use",
+]

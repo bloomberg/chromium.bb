@@ -32,24 +32,24 @@ include_rules = [
 
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+content/browser/geolocation/wifi_data_provider_common.h",
+  "!content/browser/geolocation/wifi_data_provider_common.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-chrome/browser/ui/views",
   # TODO(tfarina): Remove all these. crbug.com/125846.
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+chrome/browser/ui/views/ash/panel_view_aura.h",
-  "+chrome/browser/ui/views/constrained_window_views.h",
-  "+chrome/browser/ui/views/extensions/extension_view.h",
-  "+chrome/browser/ui/views/frame/browser_view.h",
-  "+chrome/browser/ui/views/location_bar/location_bar_view.h",
-  "+chrome/browser/ui/views/location_bar/location_icon_view.h",
-  "+chrome/browser/ui/views/notifications/balloon_view.h",
-  "+chrome/browser/ui/views/notifications/balloon_view_host.h",
-  "+chrome/browser/ui/views/page_info_bubble_view.h",
-  "+chrome/browser/ui/views/reload_button.h",
-  "+chrome/browser/ui/views/select_file_dialog_extension.h",
-  "+chrome/browser/ui/views/unhandled_keyboard_event_handler.h",
+  "!chrome/browser/ui/views/ash/panel_view_aura.h",
+  "!chrome/browser/ui/views/constrained_window_views.h",
+  "!chrome/browser/ui/views/extensions/extension_view.h",
+  "!chrome/browser/ui/views/frame/browser_view.h",
+  "!chrome/browser/ui/views/location_bar/location_bar_view.h",
+  "!chrome/browser/ui/views/location_bar/location_icon_view.h",
+  "!chrome/browser/ui/views/notifications/balloon_view.h",
+  "!chrome/browser/ui/views/notifications/balloon_view_host.h",
+  "!chrome/browser/ui/views/page_info_bubble_view.h",
+  "!chrome/browser/ui/views/reload_button.h",
+  "!chrome/browser/ui/views/select_file_dialog_extension.h",
+  "!chrome/browser/ui/views/unhandled_keyboard_event_handler.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   # Other libraries.
@@ -70,5 +70,5 @@ include_rules = [
 
   # FIXME: this is used by a browser_test. We need to find a better structure
   # for this include.
-  "+chrome/renderer/visitedlink_slave.h",
+  "!chrome/renderer/visitedlink_slave.h",
 ]
