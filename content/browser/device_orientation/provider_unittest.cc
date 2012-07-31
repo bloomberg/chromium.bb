@@ -66,7 +66,8 @@ class UpdateChecker : public Provider::Observer {
 };
 
 // Class for injecting test orientation data into the Provider.
-class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
+class MockOrientationFactory
+    : public base::RefCountedThreadSafe<MockOrientationFactory> {
  public:
   MockOrientationFactory()
       : is_failing_(false) {
@@ -98,7 +99,7 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
   }
 
  private:
-  friend class base::RefCounted<MockOrientationFactory>;
+  friend class base::RefCountedThreadSafe<MockOrientationFactory>;
 
   ~MockOrientationFactory() {
   }
