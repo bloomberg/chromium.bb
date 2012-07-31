@@ -860,6 +860,14 @@
           "output": "hár-mas-szá-mú"
         }, 
         {
+          "input": "hármasszak", 
+          "output": "hár-masszak"
+        }, 
+        {
+          "input": "Hármassziget", 
+          "output": "Hár-mas-szi-get"
+        }, 
+        {
           "input": "hársszén", 
           "output": "hárs-szén"
         }, 

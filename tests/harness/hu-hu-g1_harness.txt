@@ -835,6 +835,14 @@
           "output": "hármasszámú"
         }, 
         {
+          "input": "⠓⠈⠗⠍⠁⠎⠱⠁⠅", 
+          "output": "hármasszak"
+        }, 
+        {
+          "input": "⠨⠓⠈⠗⠍⠁⠎⠱⠊⠛⠑⠞", 
+          "output": "Hármassziget"
+        }, 
+        {
           "input": "⠓⠈⠗⠎⠱⠡⠝", 
           "output": "hársszén"
         }, 
@@ -3985,6 +3993,14 @@
         {
           "input": "hármasszámú", 
           "output": "⠓⠈⠗⠍⠁⠎⠱⠈⠍⠬"
+        }, 
+        {
+          "input": "hármasszak", 
+          "output": "⠓⠈⠗⠍⠁⠎⠱⠁⠅"
+        }, 
+        {
+          "input": "Hármassziget", 
+          "output": "⠨⠓⠈⠗⠍⠁⠎⠱⠊⠛⠑⠞"
         }, 
         {
           "input": "hársszén", 

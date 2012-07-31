@@ -1035,6 +1035,16 @@ hármasszámú
 testmode: backtranslate
 hármasszámú
 
+hármasszak
+
+testmode: backtranslate
+hármasszak
+
+Hármassziget
+
+testmode: backtranslate
+Hármassziget
+
 hársszén
 
 testmode: backtranslate

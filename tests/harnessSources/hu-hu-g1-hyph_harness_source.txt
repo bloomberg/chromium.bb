@@ -640,6 +640,12 @@ testmode: hyphenate
 hármasszámú
 
 testmode: hyphenate
+hármasszak
+
+testmode: hyphenate
+Hármassziget
+
+testmode: hyphenate
 hársszén
 
 testmode: hyphenate
