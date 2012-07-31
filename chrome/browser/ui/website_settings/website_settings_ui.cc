@@ -139,7 +139,7 @@ const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
       break;
     case CONTENT_SETTINGS_TYPE_COOKIES:
       resource_id = use_blocked ? IDR_BLOCKED_COOKIES
-                                : IDR_COOKIE_ICON;
+                                : IDR_ACCESSED_COOKIES;
       break;
     case CONTENT_SETTINGS_TYPE_POPUPS:
       resource_id = use_blocked ? IDR_BLOCKED_POPUPS
