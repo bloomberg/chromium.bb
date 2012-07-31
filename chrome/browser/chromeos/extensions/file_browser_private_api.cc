@@ -1152,8 +1152,7 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
   }
 
   const FilePath& source_path = files[0].local_path;
-  const FilePath::StringType& display_name =
-      files[0].file_path.BaseName().value();
+  const FilePath::StringType& display_name = files[0].display_name;
   // Check if the source path is under GData cache directory.
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
