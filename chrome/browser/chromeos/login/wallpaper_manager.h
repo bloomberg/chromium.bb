@@ -10,11 +10,14 @@
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "unicode/timezone.h"
+
+class PrefService;
 
 namespace chromeos {
 
@@ -27,6 +30,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   WallpaperManager();
 
+  // Registers wallpaper manager preferences.
+  static void RegisterPrefs(PrefService* local_state);
+
   // Adds PowerManagerClient observer. It needs to be added after
   // PowerManagerClient initialized.
   void AddPowerManagerClientObserver();
@@ -35,13 +41,22 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Cancel any previous timer if any.
   void RestartTimer();
 
+  // Saves |username| selected wallpaper information to local state.
+  void SaveUserWallpaperInfo(const std::string& username,
+                             const std::string& file_name,
+                             ash::WallpaperLayout layout,
+                             User::WallpaperType type);
+
   // Sets last selected user on user pod row.
   void SetLastSelectedUser(const std::string& last_selected_user);
 
   // Sets wallpaper to the image file |path| points to.
-  void SetWallpaperFromFile(std::string email,
-                            const std::string& path,
-                            ash::WallpaperLayout layout);
+  void SetWallpaperFromFilePath(const std::string& path,
+                                ash::WallpaperLayout layout);
+
+  // Sets wallpaper to |wallpaper|.
+  void SetWallpaperFromImageSkia(const gfx::ImageSkia& wallpaper,
+                                 ash::WallpaperLayout layout);
 
   // User was deselected at login screen, reset wallpaper if needed.
   void UserDeselected();
@@ -57,6 +72,10 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // current wallpaper if it changed. This function should be called at exactly
   // at 0am if chromeos device is on.
   void BatchUpdateWallpaper();
+
+  // Sets wallpaper to image in |user_image| with |layout|.
+  void OnWallpaperLoaded(ash::WallpaperLayout layout,
+                         const UserImage& user_image);
 
   // Loads user image from its file.
   scoped_refptr<UserImageLoader> image_loader_;

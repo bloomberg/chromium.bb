@@ -679,6 +679,7 @@ extern const char kDeviceActivityTimes[];
 extern const char kDeviceLocation[];
 extern const char kSyncSpareBootstrapToken[];
 extern const char kExternalStorageDisabled[];
+extern const char kUsersWallpaperInfo[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

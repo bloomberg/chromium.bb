@@ -1800,6 +1800,9 @@ const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 // A pref holding the value of the policy used to disable mounting of external
 // storage for the user.
 const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
+
+// A dictionary that maps usernames to wallpaper properties.
+const char kUsersWallpaperInfo[] = "user_wallpaper_info";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

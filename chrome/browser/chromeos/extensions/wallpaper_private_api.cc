@@ -99,10 +99,10 @@ class WallpaperSetWallpaperFunction::WallpaperDecoder
 WallpaperSetWallpaperFunction::WallpaperDecoder*
     WallpaperSetWallpaperFunction::wallpaper_decoder_;
 
-WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction(){
+WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction() {
 }
 
-WallpaperSetWallpaperFunction::~WallpaperSetWallpaperFunction(){
+WallpaperSetWallpaperFunction::~WallpaperSetWallpaperFunction() {
 }
 
 bool WallpaperSetWallpaperFunction::RunImpl() {
@@ -176,8 +176,11 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
 }
 
 void WallpaperSetWallpaperFunction::SetDecodedWallpaper() {
-  ash::Shell::GetInstance()->desktop_background_controller()->
-      SetCustomWallpaper(wallpaper_, layout_);
+  chromeos::WallpaperManager* wallpaper_manager =
+      chromeos::WallpaperManager::Get();
+  wallpaper_manager->SetWallpaperFromImageSkia(wallpaper_, layout_);
+  wallpaper_manager->SaveUserWallpaperInfo(email_, file_name_, layout_,
+                                           chromeos::User::DEFAULT);
   wallpaper_decoder_ = NULL;
   SendResponse(true);
 }
