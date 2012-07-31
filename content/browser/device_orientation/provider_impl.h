@@ -18,10 +18,6 @@
 
 class MessageLoop;
 
-namespace base {
-class Thread;
-}
-
 namespace device_orientation {
 
 class ProviderImpl : public Provider {
@@ -37,32 +33,19 @@ class ProviderImpl : public Provider {
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
  private:
+  class PollingThread;
+
   virtual ~ProviderImpl();
 
   // Starts or Stops the provider. Called from creator_loop_.
   void Start();
   void Stop();
 
-  // Method for finding a suitable DataFetcher and starting the polling.
-  // Runs on the polling_thread_.
-  void DoInitializePollingThread(
-      const std::vector<DataFetcherFactory>& factories);
   void ScheduleInitializePollingThread();
-
-  // Method for polling a DataFetcher. Runs on the polling_thread_.
-  void DoPoll();
-  void ScheduleDoPoll();
 
   // Method for notifying observers of an orientation update.
   // Runs on the creator_thread_.
   void DoNotify(const Orientation& orientation);
-  void ScheduleDoNotify(const Orientation& orientation);
-
-  static bool SignificantlyDifferent(const Orientation& orientation1,
-                                     const Orientation& orientation2);
-
-  enum { kDesiredSamplingIntervalMs = 100 };
-  base::TimeDelta SamplingInterval() const;
 
   // The Message Loop on which this object was created.
   // Typically the I/O loop, but may be something else during testing.
@@ -73,14 +56,13 @@ class ProviderImpl : public Provider {
   std::set<Observer*> observers_;
   Orientation last_notification_;
 
-  // When polling_thread_ is running, members below are only to be used
-  // from that thread.
-  scoped_ptr<DataFetcher> data_fetcher_;
-  Orientation last_orientation_;
   base::WeakPtrFactory<ProviderImpl> weak_factory_;
 
-  // Polling is done on this background thread.
-  scoped_ptr<base::Thread> polling_thread_;
+  // Polling is done on this background thread. PollingThread is owned by
+  // the ProviderImpl object. But its deletion doesn't happen synchronously
+  // along with deletion of the ProviderImpl. Thus this should be a raw
+  // pointer instead of scoped_ptr.
+  PollingThread* polling_thread_;
 };
 
 }  // namespace device_orientation

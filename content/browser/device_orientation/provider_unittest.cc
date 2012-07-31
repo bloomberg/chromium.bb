@@ -70,8 +70,16 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
  public:
   MockOrientationFactory()
       : is_failing_(false) {
-    EXPECT_FALSE(instance_);
-    instance_ = this;
+  }
+
+  static void SetCurInstance(MockOrientationFactory* instance) {
+    if (instance) {
+      EXPECT_FALSE(instance_);
+    }
+    else {
+      EXPECT_TRUE(instance_);
+    }
+    instance_ = instance;
   }
 
   static DataFetcher* CreateDataFetcher() {
@@ -93,7 +101,6 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
   friend class base::RefCounted<MockOrientationFactory>;
 
   ~MockOrientationFactory() {
-    instance_ = NULL;
   }
 
   // Owned by ProviderImpl. Holds a reference back to MockOrientationFactory.
@@ -210,6 +217,7 @@ TEST_F(DeviceOrientationProviderTest, ProviderIsSingleton) {
 TEST_F(DeviceOrientationProviderTest, BasicPushTest) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
+  MockOrientationFactory::SetCurInstance(orientation_factory.get());
   Init(MockOrientationFactory::CreateDataFetcher);
   Orientation test_orientation;
   test_orientation.set_alpha(1);
@@ -224,11 +232,13 @@ TEST_F(DeviceOrientationProviderTest, BasicPushTest) {
   MessageLoop::current()->Run();
 
   provider_->RemoveObserver(checker.get());
+  MockOrientationFactory::SetCurInstance(NULL);
 }
 
 TEST_F(DeviceOrientationProviderTest, MultipleObserversPushTest) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
+  MockOrientationFactory::SetCurInstance(orientation_factory.get());
   Init(MockOrientationFactory::CreateDataFetcher);
 
   Orientation test_orientations[] = {Orientation(), Orientation(),
@@ -277,6 +287,7 @@ TEST_F(DeviceOrientationProviderTest, MultipleObserversPushTest) {
 
   provider_->RemoveObserver(checker_b.get());
   provider_->RemoveObserver(checker_c.get());
+  MockOrientationFactory::SetCurInstance(NULL);
 }
 
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -289,6 +300,7 @@ TEST_F(DeviceOrientationProviderTest, MultipleObserversPushTest) {
 TEST_F(DeviceOrientationProviderTest, MAYBE_ObserverNotRemoved) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
+  MockOrientationFactory::SetCurInstance(orientation_factory.get());
   Init(MockOrientationFactory::CreateDataFetcher);
   Orientation test_orientation;
   test_orientation.set_alpha(1);
@@ -312,6 +324,8 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_ObserverNotRemoved) {
   orientation_factory->SetOrientation(test_orientation2);
   MessageLoop::current()->Run();
 
+  MockOrientationFactory::SetCurInstance(NULL);
+
   // Note that checker is not removed. This should not be a problem.
 }
 
@@ -324,6 +338,7 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_ObserverNotRemoved) {
 TEST_F(DeviceOrientationProviderTest, MAYBE_StartFailing) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
+  MockOrientationFactory::SetCurInstance(orientation_factory.get());
   Init(MockOrientationFactory::CreateDataFetcher);
   Orientation test_orientation;
   test_orientation.set_alpha(1);
@@ -351,11 +366,13 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_StartFailing) {
 
   provider_->RemoveObserver(checker_a.get());
   provider_->RemoveObserver(checker_b.get());
+  MockOrientationFactory::SetCurInstance(NULL);
 }
 
 TEST_F(DeviceOrientationProviderTest, StartStopStart) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
+  MockOrientationFactory::SetCurInstance(orientation_factory.get());
   Init(MockOrientationFactory::CreateDataFetcher);
 
   Orientation test_orientation;
@@ -388,11 +405,13 @@ TEST_F(DeviceOrientationProviderTest, StartStopStart) {
   MessageLoop::current()->Run();
 
   provider_->RemoveObserver(checker_b.get());
+  MockOrientationFactory::SetCurInstance(NULL);
 }
 
 TEST_F(DeviceOrientationProviderTest, SignificantlyDifferent) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
+  MockOrientationFactory::SetCurInstance(orientation_factory.get());
   Init(MockOrientationFactory::CreateDataFetcher);
 
   // Values that should be well below or above the implementation's
@@ -443,6 +462,7 @@ TEST_F(DeviceOrientationProviderTest, SignificantlyDifferent) {
 
   provider_->RemoveObserver(checker_a.get());
   provider_->RemoveObserver(checker_b.get());
+  MockOrientationFactory::SetCurInstance(NULL);
 }
 
 }  // namespace
