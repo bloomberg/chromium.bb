@@ -15,7 +15,7 @@ hooks=yes
 
 usage() {
   cat <<EOF 1>&2
-Usage: git-cr-sync [-n|--dry-run] [--fetch] [-j|--jobs [jobs]]
+Usage: git-crup [-n|--dry-run] [--fetch] [-j|--jobs [jobs]]
     [--no-hooks] [<args to git-pull or git-fetch>]
 EOF
 }
