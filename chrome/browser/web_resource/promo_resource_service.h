@@ -24,9 +24,6 @@ class Profile;
 // promotional messages to certain groups of Chrome users.
 class PromoResourceService : public WebResourceService {
  public:
-  // Checks for conditions to show promo.
-  static bool CanShowNotificationPromo(Profile* profile);
-
   static void RegisterPrefs(PrefService* local_state);
 
   static void RegisterUserPrefs(PrefService* prefs);

@@ -355,6 +355,7 @@ void NotificationPromo::CheckForNewNotification() {
 }
 
 void NotificationPromo::OnNewNotification() {
+  DVLOG(1) << "OnNewNotification";
   // Create a new promo group.
   group_ = base::RandInt(0, num_groups_ - 1);
   WritePrefs();

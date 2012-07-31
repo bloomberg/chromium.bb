@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -29,7 +30,7 @@
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
+#include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -407,12 +408,11 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetString("themegravity",
       (alignment & ThemeService::ALIGN_RIGHT) ? "right" : "");
 
-  // If the user has preferences for a start and end time for a promo from
-  // the server, and this promo string exists, set the localized string.
-  if (PromoResourceService::CanShowNotificationPromo(profile_)) {
-    load_time_data.SetString("serverpromo",
-        prefs->GetString(prefs::kNtpPromoLine));
-  }
+  // Set the promo string for display if there is a valid outstanding promo.
+  NotificationPromo notification_promo(profile_);
+  notification_promo.InitFromPrefs();
+  if (notification_promo.CanShow())
+    load_time_data.SetString("serverpromo", notification_promo.promo_text());
 
   // Determine whether to show the menu for accessing tabs on other devices.
   bool show_other_sessions_menu = !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -537,9 +537,9 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst.push_back(SkColorToRGBAString(color_section_link));  // $13
   subst.push_back(SkColorToRGBAString(color_link_underline));  // $14
   subst.push_back(SkColorToRGBAString(color_section_link_underline));  // $15
-  subst.push_back(SkColorToRGBAString(color_section_header_text)); // $16
+  subst.push_back(SkColorToRGBAString(color_section_header_text));  // $16
   subst.push_back(SkColorToRGBAString(
-      color_section_header_text_hover)); // $17
+      color_section_header_text_hover));  // $17
   subst.push_back(SkColorToRGBAString(color_section_header_rule));  // $18
   subst.push_back(SkColorToRGBAString(
       color_section_header_rule_light));  // $19
