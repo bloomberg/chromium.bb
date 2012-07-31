@@ -94,6 +94,10 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnCustomLinkClicked() {}
   virtual void OnManageLinkClicked() {}
 
+  // Called by the view code when the bubble is closed by the user using the
+  // Done button.
+  virtual void OnDoneClicked() {}
+
  protected:
   ContentSettingBubbleModel(TabContents* tab_contents, Profile* profile,
       ContentSettingsType content_type);
@@ -163,6 +167,7 @@ class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
                                ContentSettingsType content_type);
 
   virtual void OnRadioClicked(int radio_index) OVERRIDE;
+  virtual void OnDoneClicked() OVERRIDE;
 
  private:
   // These states must match the order of appearance of the radio buttons

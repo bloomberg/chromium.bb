@@ -691,6 +691,16 @@ void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
     NOTREACHED();
 }
 
+void ContentSettingRPHBubbleModel::OnDoneClicked() {
+  // The user has one chance to deal with the RPH content setting UI,
+  // then we remove it.
+  tab_contents()->content_settings()->ClearPendingProtocolHandler();
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<WebContents>(tab_contents()->web_contents()),
+      content::NotificationService::NoDetails());
+}
+
 void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
   // A no-op if the handler hasn't been ignored, but needed in case the user
   // selects sequences like register/ignore/register.

@@ -486,6 +486,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 }
 
 - (IBAction)closeBubble:(id)sender {
+  contentSettingBubbleModel_->OnDoneClicked();
   [self close];
 }
 

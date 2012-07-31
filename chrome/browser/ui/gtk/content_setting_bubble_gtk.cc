@@ -304,6 +304,7 @@ void ContentSettingBubbleGtk::OnRadioToggled(GtkWidget* widget) {
 }
 
 void ContentSettingBubbleGtk::OnCloseButtonClicked(GtkWidget *button) {
+  content_setting_bubble_model_->OnDoneClicked();
   Close();
 }
 

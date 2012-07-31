@@ -288,6 +288,7 @@ void ContentSettingBubbleContents::Init() {
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const views::Event& event) {
   if (sender == close_button_) {
+    content_setting_bubble_model_->OnDoneClicked();
     StartFade(false);
     return;
   }
