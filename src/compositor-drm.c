@@ -44,6 +44,25 @@
 #include "log.h"
 
 static int option_current_mode = 0;
+static char *output_name;
+static char *output_mode;
+static struct wl_list configured_output_list;
+
+enum output_config {
+	OUTPUT_CONFIG_INVALID = 0,
+	OUTPUT_CONFIG_OFF,
+	OUTPUT_CONFIG_PREFERRED,
+	OUTPUT_CONFIG_CURRENT,
+	OUTPUT_CONFIG_MODE
+};
+
+struct drm_configured_output {
+	char *name;
+	char *mode;
+	int32_t width, height;
+	enum output_config config;
+	struct wl_list link;
+};
 
 enum {
 	WESTON_PLANE_DRM_CURSOR =	0x100,
@@ -1296,7 +1315,8 @@ create_output_for_connector(struct drm_compositor *ec,
 {
 	struct drm_output *output;
 	struct drm_mode *drm_mode, *next;
-	struct weston_mode *m, *preferred, *current;
+	struct weston_mode *m, *preferred, *current, *configured;
+	struct drm_configured_output *o = NULL, *temp;
 	drmModeEncoder *encoder;
 	drmModeModeInfo crtc_mode;
 	drmModeCrtc *crtc;
@@ -1356,7 +1376,29 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	preferred = NULL;
 	current = NULL;
+	configured = NULL;
+
+	wl_list_for_each(temp, &configured_output_list, link) {
+		if (strcmp(temp->name, output->name) == 0) {
+			weston_log("%s mode \"%s\" in config\n",
+							temp->name, temp->mode);
+			o = temp;
+			break;
+		}
+	}
+
+	if (o && strcmp("off", o->mode) == 0) {
+		weston_log("Disabling output %s\n", o->name);
+
+		drmModeSetCrtc(ec->drm.fd, output->crtc_id,
+							0, 0, 0, 0, 0, NULL);
+		goto err_free;
+	}
+
 	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
+		if (o && o->width == drm_mode->base.width &&
+			o->height == drm_mode->base.height)
+			configured = &drm_mode->base;
 		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
 			current = &drm_mode->base;
 		if (drm_mode->base.flags & WL_OUTPUT_MODE_PREFERRED)
@@ -1371,8 +1413,13 @@ create_output_for_connector(struct drm_compositor *ec,
 				       struct weston_mode, link);
 	}
 
+	if (o && o->config == OUTPUT_CONFIG_CURRENT)
+		configured = current;
+
 	if (option_current_mode && current)
 		output->base.current = current;
+	else if (configured)
+		output->base.current = configured;
 	else if (preferred)
 		output->base.current = preferred;
 	else if (current)
@@ -1712,9 +1759,12 @@ drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 	struct weston_seat *seat, *next;
+	struct drm_configured_output *o, *n;
 
 	wl_list_for_each_safe(seat, next, &ec->seat_list, link)
 		evdev_input_destroy(seat);
+	wl_list_for_each_safe(o, n, &configured_output_list, link)
+		free(o);
 
 	wl_event_source_remove(d->udev_drm_source);
 	wl_event_source_remove(d->drm_source);
@@ -1982,6 +2032,38 @@ err_base:
 	return NULL;
 }
 
+static void
+output_section_done(void *data)
+{
+	struct drm_configured_output *output;
+
+	output = malloc(sizeof *output);
+
+	if (!output)
+		return;
+
+	output->config = OUTPUT_CONFIG_INVALID;
+	output->name = output_name;
+	output->mode = output_mode;
+
+	if (strcmp(output_mode, "off") == 0)
+		output->config = OUTPUT_CONFIG_OFF;
+	else if (strcmp(output_mode, "preferred") == 0)
+		output->config = OUTPUT_CONFIG_PREFERRED;
+	else if (strcmp(output_mode, "current") == 0)
+		output->config = OUTPUT_CONFIG_CURRENT;
+	else if (sscanf(output_mode, "%dx%d", &output->width, &output->height) == 2)
+		output->config = OUTPUT_CONFIG_MODE;
+
+	if (output->config != OUTPUT_CONFIG_INVALID)
+		wl_list_insert(&configured_output_list, &output->link);
+	else {
+		free(output);
+		weston_log("Invalid mode \"%s\" for output %s\n",
+						output_mode, output_name);
+	}
+}
+
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int argc, char *argv[],
 	     const char *config_file)
@@ -1997,6 +2079,21 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 	};
 
 	parse_options(drm_options, ARRAY_LENGTH(drm_options), argc, argv);
+
+	wl_list_init(&configured_output_list);
+
+	const struct config_key drm_config_keys[] = {
+		{ "name", CONFIG_KEY_STRING, &output_name },
+		{ "mode", CONFIG_KEY_STRING, &output_mode },
+	};
+
+	const struct config_section config_section[] = {
+		{ "output", drm_config_keys,
+		ARRAY_LENGTH(drm_config_keys), output_section_done },
+	};
+
+	parse_config_file(config_file, config_section,
+				ARRAY_LENGTH(config_section), NULL);
 
 	return drm_compositor_create(display, connector, seat, tty, argc, argv,
 				     config_file);
