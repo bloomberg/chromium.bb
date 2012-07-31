@@ -61,7 +61,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   aura::client::SetCursorClient(root_window(), &cursor_client);
 
   MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
-      gfx::Point(15, 15), 0);
+      gfx::Point(10, 10), 0);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 

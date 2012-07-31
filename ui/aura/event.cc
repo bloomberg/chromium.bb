@@ -119,7 +119,7 @@ LocatedEvent::LocatedEvent(ui::EventType type,
                            int flags)
     : Event(type, flags),
       location_(location),
-      root_location_(location) {
+      root_location_(root_location) {
 }
 
 void LocatedEvent::UpdateForRootTransform(const ui::Transform& root_transform) {
