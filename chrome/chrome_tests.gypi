@@ -4313,10 +4313,15 @@
                 '..',
                 '../third_party/python_26/include',
               ],
-              'link_settings': {
-                'libraries': [
-                  '../third_party/python_26/libs/python26.lib',
-                ],
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'AdditionalLibraryDirectories': [
+                    '<(DEPTH)/third_party/python_26/libs',
+                  ],
+                  'AdditionalDependencies': [
+                    'python26.lib',
+                  ],
+                },
               }
             }],
             ['clang == 1', {
