@@ -61,15 +61,13 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAllowFileAccessFromFiles);
   }
-#if defined(OS_MACOSX)
-  OverrideFrameworkBundlePath();
-#endif
   SetContentClient(&content_client_);
   return false;
 }
 
 void ShellMainDelegate::PreSandboxStartup() {
 #if defined(OS_MACOSX)
+  OverrideFrameworkBundlePath();
   OverrideChildProcessPath();
 #endif  // OS_MACOSX
   InitializeResourceBundle();
