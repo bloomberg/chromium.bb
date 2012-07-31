@@ -6,19 +6,23 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
+namespace chromeos {
+
 namespace {
 
 const char kStubSystemSalt[] = "stub_system_salt";
 
-}
+// Does nothing.  Used as a Cryptohome::VoidMethodCallback.
+void DoNothing(DBusMethodCallStatus call_status) {}
 
-namespace chromeos {
+}  // namespace
 
 // This class handles the interaction with the ChromeOS cryptohome library APIs.
 class CryptohomeLibraryImpl : public CryptohomeLibrary {
@@ -49,7 +53,8 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   }
 
   virtual void TpmCanAttemptOwnership() OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership();
+    DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
+        base::Bind(&DoNothing));
   }
 
   virtual void TpmClearStoredPassword() OVERRIDE {

@@ -30,6 +30,9 @@ class CHROMEOS_EXPORT CryptohomeClient {
                          > AsyncCallStatusHandler;
   // A callback to handle responses of AsyncXXX methods.
   typedef base::Callback<void(int async_id)> AsyncMethodCallback;
+  // A callback to handle responses of methods without result values.
+  typedef base::Callback<void(
+      DBusMethodCallStatus call_status)> VoidMethodCallback;
   // A callback to handle responses of methods returning a bool value.
   typedef base::Callback<void(DBusMethodCallStatus call_status,
                               bool result)> BoolMethodCallback;
@@ -121,9 +124,9 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // This method blocks until the call returns.
   virtual bool TpmIsBeingOwned(bool* owning) = 0;
 
-  // Calls TpmCanAttemptOwnership method and returns true when the call
-  // succeeds.  This method blocks until the call returns.
-  virtual bool TpmCanAttemptOwnership() = 0;
+  // Calls TpmCanAttemptOwnership method.
+  // This method tells the service that it is OK to attempt ownership.
+  virtual void TpmCanAttemptOwnership(const VoidMethodCallback& callback) = 0;
 
   // Calls TpmClearStoredPassword method and returns true when the call
   // succeeds.  This method blocks until the call returns.

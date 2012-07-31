@@ -195,12 +195,11 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmCanAttemptOwnership() OVERRIDE {
+  virtual void TpmCanAttemptOwnership(
+      const VoidMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomeTpmCanAttemptOwnership);
-    scoped_ptr<dbus::Response> response(
-        blocking_method_caller_.CallMethodAndBlock(&method_call));
-    return response.get() != NULL;
+    CallVoidMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -309,6 +308,24 @@ class CryptohomeClientImpl : public CryptohomeClient {
       return;
     }
     callback.Run(async_id);
+  }
+
+  // Calls a method without result values.
+  void CallVoidMethod(dbus::MethodCall* method_call,
+                      const VoidMethodCallback& callback) {
+    proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnVoidMethod,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  void OnVoidMethod(const VoidMethodCallback& callback,
+                    dbus::Response* response) {
+    if (!response) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE);
+      return;
+    }
+    callback.Run(DBUS_METHOD_CALL_SUCCESS);
   }
 
   // Calls a method with a bool value reult and block.
@@ -529,7 +546,11 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmCanAttemptOwnership() OVERRIDE { return true; }
+  virtual void TpmCanAttemptOwnership(
+      const VoidMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+  }
 
   // CryptohomeClient override.
   virtual bool TpmClearStoredPassword() OVERRIDE { return true; }
