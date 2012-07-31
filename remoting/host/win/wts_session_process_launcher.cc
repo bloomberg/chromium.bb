@@ -16,7 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
@@ -212,11 +212,13 @@ namespace remoting {
 const uint32 kInvalidSessionId = 0xffffffff;
 
 WtsSessionProcessLauncher::WtsSessionProcessLauncher(
+    const base::Closure& stopped_callback,
     WtsConsoleMonitor* monitor,
     const FilePath& host_binary,
-    scoped_refptr<base::MessageLoopProxy> main_message_loop,
-    scoped_refptr<base::MessageLoopProxy> ipc_message_loop)
-    : host_binary_(host_binary),
+    scoped_refptr<base::SingleThreadTaskRunner> main_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_message_loop)
+    : Stoppable(main_message_loop, stopped_callback),
+      host_binary_(host_binary),
       main_message_loop_(main_message_loop),
       ipc_message_loop_(ipc_message_loop),
       monitor_(monitor),
@@ -225,14 +227,16 @@ WtsSessionProcessLauncher::WtsSessionProcessLauncher(
 }
 
 WtsSessionProcessLauncher::~WtsSessionProcessLauncher() {
+  monitor_->RemoveWtsConsoleObserver(this);
+  if (state_ != StateDetached) {
+    OnSessionDetached();
+  }
+
   DCHECK(state_ == StateDetached);
   DCHECK(!timer_.IsRunning());
   DCHECK(process_.handle() == NULL);
   DCHECK(process_watcher_.GetWatchedObject() == NULL);
   DCHECK(chromoting_channel_.get() == NULL);
-  if (monitor_ != NULL) {
-    monitor_->RemoveWtsConsoleObserver(this);
-  }
 }
 
 void WtsSessionProcessLauncher::LaunchProcess() {
@@ -328,12 +332,7 @@ void WtsSessionProcessLauncher::OnObjectSignaled(HANDLE object) {
   state_ = StateStarting;
 
   if (stop_trying) {
-    OnSessionDetached();
-
-    // N.B. The service will stop once the last observer is removed from
-    // the list.
-    monitor_->RemoveWtsConsoleObserver(this);
-    monitor_ = NULL;
+    Stop();
     return;
   }
 
@@ -386,6 +385,11 @@ void WtsSessionProcessLauncher::OnSendSasToConsole() {
 
 void WtsSessionProcessLauncher::OnSessionAttached(uint32 session_id) {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
+
+  if (stoppable_state() != Stoppable::kRunning) {
+    return;
+  }
+
   DCHECK(state_ == StateDetached);
   DCHECK(!timer_.IsRunning());
   DCHECK(process_.handle() == NULL);
@@ -461,6 +465,14 @@ void WtsSessionProcessLauncher::OnSessionDetached() {
   }
 
   session_token_.Close();
+}
+
+void WtsSessionProcessLauncher::DoStop() {
+  if (state_ != StateDetached) {
+    OnSessionDetached();
+  }
+
+  CompleteStopping();
 }
 
 } // namespace remoting

@@ -8,18 +8,24 @@
 #include <windows.h>
 
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/synchronization/waitable_event.h"
-
 #include "remoting/host/win/wts_console_monitor.h"
 
 class CommandLine;
 class MessageLoop;
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace remoting {
 
+class Stoppable;
 class WtsConsoleObserver;
+class WtsSessionProcessLauncher;
 
 class HostService : public WtsConsoleMonitor {
  public:
@@ -40,12 +46,14 @@ class HostService : public WtsConsoleMonitor {
   HostService();
   ~HostService();
 
+  void OnLauncherShutdown();
+
   // Notifies the service of changes in session state.
   void OnSessionChange();
 
   // This is a common entry point to the main service loop called by both
   // RunAsService() and RunInConsole().
-  void RunMessageLoop();
+  void RunMessageLoop(MessageLoop* message_loop);
 
   // This function handshakes with the service control manager and starts
   // the service.
@@ -78,11 +86,13 @@ class HostService : public WtsConsoleMonitor {
   // to the physical console.
   ObserverList<WtsConsoleObserver> console_observers_;
 
+  scoped_ptr<WtsSessionProcessLauncher> launcher_;
+
   // The host binary name.
   FilePath host_binary_;
 
   // Service message loop.
-  MessageLoop* message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // The action routine to be executed.
   int (HostService::*run_routine_)();
@@ -92,9 +102,6 @@ class HostService : public WtsConsoleMonitor {
 
   // The service status handle.
   SERVICE_STATUS_HANDLE service_status_handle_;
-
-  // True if the service is being stopped.
-  bool shutting_down_;
 
   // A waitable event that is used to wait until the service is stopped.
   base::WaitableEvent stopped_event_;

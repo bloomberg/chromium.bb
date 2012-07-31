@@ -19,12 +19,14 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/scoped_sc_handle_win.h"
+#include "remoting/base/stoppable.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/win/host_service_resource.h"
@@ -82,11 +84,9 @@ namespace remoting {
 
 HostService::HostService() :
   console_session_id_(kInvalidSessionId),
-  message_loop_(NULL),
   run_routine_(&HostService::RunAsService),
   service_name_(kWindowsServiceName),
   service_status_handle_(0),
-  shutting_down_(false),
   stopped_event_(true, false) {
 }
 
@@ -94,20 +94,20 @@ HostService::~HostService() {
 }
 
 void HostService::AddWtsConsoleObserver(WtsConsoleObserver* observer) {
-  DCHECK(message_loop_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   console_observers_.AddObserver(observer);
 }
 
 void HostService::RemoveWtsConsoleObserver(WtsConsoleObserver* observer) {
-  DCHECK(message_loop_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   console_observers_.RemoveObserver(observer);
+}
 
-  // Stop the service if there are no more observers.
-  if (!console_observers_.might_have_observers()) {
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  }
+void HostService::OnLauncherShutdown() {
+  launcher_.reset(NULL);
+  main_task_runner_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void HostService::OnSessionChange() {
@@ -116,10 +116,7 @@ void HostService::OnSessionChange() {
   // the console session is still the same every time a session change
   // notification event is posted. This also takes care of coalescing multiple
   // events into one since we look at the latest state.
-  uint32 console_session_id = kInvalidSessionId;
-  if (!shutting_down_) {
-    console_session_id = WTSGetActiveConsoleSessionId();
-  }
+  uint32 console_session_id = WTSGetActiveConsoleSessionId();
   if (console_session_id_ != console_session_id) {
     if (console_session_id_ != kInvalidSessionId) {
       FOR_EACH_OBSERVER(WtsConsoleObserver,
@@ -145,7 +142,9 @@ BOOL WINAPI HostService::ConsoleControlHandler(DWORD event) {
     case CTRL_CLOSE_EVENT:
     case CTRL_LOGOFF_EVENT:
     case CTRL_SHUTDOWN_EVENT:
-      self->message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
+          &WtsSessionProcessLauncher::Stop,
+          base::Unretained(self->launcher_.get())));
       self->stopped_event_.Wait();
       return TRUE;
 
@@ -195,27 +194,26 @@ int HostService::Run() {
   return (this->*run_routine_)();
 }
 
-void HostService::RunMessageLoop() {
+void HostService::RunMessageLoop(MessageLoop* message_loop) {
   // Launch the I/O thread.
   base::Thread io_thread(kIoThreadName);
   base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
   if (!io_thread.StartWithOptions(io_thread_options)) {
     LOG(FATAL) << "Failed to start the I/O thread";
-    shutting_down_ = true;
     stopped_event_.Signal();
     return;
   }
 
-  WtsSessionProcessLauncher launcher(this, host_binary_,
-                                     message_loop_->message_loop_proxy(),
-                                     io_thread.message_loop_proxy());
+  // Create the session process launcher.
+  launcher_.reset(new WtsSessionProcessLauncher(
+      base::Bind(&HostService::OnLauncherShutdown, base::Unretained(this)),
+      this,
+      host_binary_,
+      main_task_runner_,
+      io_thread.message_loop_proxy()));
 
   // Run the service.
-  message_loop_->Run();
-
-  // Clean up the observers by emulating detaching from the console.
-  shutting_down_ = true;
-  OnSessionChange();
+  message_loop->Run();
 
   // Release the control handler.
   stopped_event_.Signal();
@@ -240,7 +238,7 @@ int HostService::RunInConsole() {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
 
   // Allow other threads to post to our message loop.
-  message_loop_ = &message_loop;
+  main_task_runner_ = message_loop.message_loop_proxy();
 
   int result = kErrorExitCode;
 
@@ -278,14 +276,14 @@ int HostService::RunInConsole() {
 
   // Post a dummy session change notification to peek up the current console
   // session.
-  message_loop.PostTask(FROM_HERE, base::Bind(
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(
       &HostService::OnSessionChange, base::Unretained(this)));
 
   // Subscribe to session change notifications.
   if (WTSRegisterSessionNotification(window,
                                      NOTIFY_FOR_ALL_SESSIONS) != FALSE) {
     // Run the service.
-    RunMessageLoop();
+    RunMessageLoop(&message_loop);
 
     WTSUnRegisterSessionNotification(window);
     result = kSuccessExitCode;
@@ -305,7 +303,6 @@ cleanup:
   // it crashes nothing is going to be broken because of it.
   SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, FALSE);
 
-  message_loop_ = NULL;
   return result;
 }
 
@@ -320,12 +317,14 @@ DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
 
     case SERVICE_CONTROL_SHUTDOWN:
     case SERVICE_CONTROL_STOP:
-      self->message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
+          &WtsSessionProcessLauncher::Stop,
+          base::Unretained(self->launcher_.get())));
       self->stopped_event_.Wait();
       return NO_ERROR;
 
     case SERVICE_CONTROL_SESSIONCHANGE:
-      self->message_loop_->PostTask(FROM_HERE, base::Bind(
+      self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
           &HostService::OnSessionChange, base::Unretained(self)));
       return NO_ERROR;
 
@@ -339,7 +338,7 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
 
   // Allow other threads to post to our message loop.
   HostService* self = HostService::GetInstance();
-  self->message_loop_ = &message_loop;
+  self->main_task_runner_ = message_loop.message_loop_proxy();
 
   // Register the service control handler.
   self->service_status_handle_ =
@@ -370,11 +369,11 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
 
   // Post a dummy session change notification to peek up the current console
   // session.
-  message_loop.PostTask(FROM_HERE, base::Bind(
+  self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
       &HostService::OnSessionChange, base::Unretained(self)));
 
   // Run the service.
-  self->RunMessageLoop();
+  self->RunMessageLoop(&message_loop);
 
   // Tell SCM that the service is stopped.
   service_status.dwCurrentState = SERVICE_STOPPED;
@@ -385,8 +384,6 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
         << "Failed to report service status to the service control manager";
     return;
   }
-
-  self->message_loop_ = NULL;
 }
 
 LRESULT CALLBACK HostService::SessionChangeNotificationProc(HWND hwnd,
