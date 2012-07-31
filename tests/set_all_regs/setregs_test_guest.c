@@ -33,7 +33,7 @@ void SaveRegistersAndCheck();
  * we can read a subset of the flags indirectly using conditional
  * instructions.
  *
- * g_saved_x86_flags stores 5 flags:
+ * We save 5 flags:
  *   CF (carry), PF (parity), ZF (zero), SF (sign), OF (overflow)
  *
  * We don't attempt to check:
@@ -41,39 +41,16 @@ void SaveRegistersAndCheck();
  *   TF (trap flag:  not settable or observable by untrusted code)
  *   DF (direction flag:  indirectly observable, but it's a hassle to do so)
  */
-uint8_t g_saved_x86_flags[8];
 static const uint8_t kX86FlagBits[5] = { 0, 2, 6, 7, 11 };
 
-#if defined(__x86_64__)
-# define RIP "(%rip)"
-#else
-# define RIP
-#endif
-
-/*
- * We don't attempt to compute the flags register's value as we go
- * because that would involve arithmetic instructions, which modify
- * the flags.  Instead, we save each bit to memory and reconstitute
- * the flags register's value in C later.
- */
-#define SAVE_X86_FLAGS \
-    /* First, reset g_saved_x86_flags */ \
-    "movl $0, g_saved_x86_flags + 0"RIP"\n" \
-    "movl $0, g_saved_x86_flags + 4"RIP"\n" \
-    "jnc 0f; movb $1, g_saved_x86_flags + 0"RIP"; 0:\n" \
-    "jnp 0f; movb $1, g_saved_x86_flags + 1"RIP"; 0:\n" \
-    "jnz 0f; movb $1, g_saved_x86_flags + 2"RIP"; 0:\n" \
-    "jns 0f; movb $1, g_saved_x86_flags + 3"RIP"; 0:\n" \
-    "jno 0f; movb $1, g_saved_x86_flags + 4"RIP"; 0:\n"
-
-uint32_t GetSavedX86Flags() {
-  uint32_t flags = 0;
-  int index;
-  for (index = 0; index < NACL_ARRAY_SIZE(kX86FlagBits); index++) {
-    flags |= g_saved_x86_flags[index] << kX86FlagBits[index];
-  }
-  return flags;
-}
+/* We use 'mov' and 'lea' because they do not modify the flags. */
+#define SAVE_X86_FLAGS_INTO_REG(reg) \
+    "mov $0, "reg"\n" \
+    "jnc 0f; lea 1<<0("reg"), "reg"; 0:\n" \
+    "jnp 0f; lea 1<<2("reg"), "reg"; 0:\n" \
+    "jnz 0f; lea 1<<6("reg"), "reg"; 0:\n" \
+    "jns 0f; lea 1<<7("reg"), "reg"; 0:\n" \
+    "jno 0f; lea 1<<11("reg"), "reg"; 0:\n"
 
 #endif
 
@@ -83,18 +60,21 @@ __asm__(
     ".pushsection .text, \"ax\", @progbits\n"
     "SaveRegistersAndCheck:\n"
     /* Push most of "struct NaClSignalContext" in reverse order. */
-    SAVE_X86_FLAGS
     "push $0\n"  /* Leave space for flags */
     "push $0\n"  /* Leave space for prog_ctr */
     "push %edi\n"
     "push %esi\n"
     "push %ebp\n"
     "push %esp\n"
-    "addl $5 * 4, (%esp)\n"  /* Fix up */
     "push %ebx\n"
     "push %edx\n"
     "push %ecx\n"
     "push %eax\n"
+    /* Save flags. */
+    SAVE_X86_FLAGS_INTO_REG("%eax")
+    "movl %eax, 0x24(%esp)\n"
+    /* Adjust saved %esp value to account for preceding pushes. */
+    "addl $5 * 4, 0x10(%esp)\n"
     "push %esp\n"  /* Push argument to CheckSavedRegisters() function */
     "call CheckSavedRegisters\n"
     ".popsection\n");
@@ -103,7 +83,6 @@ __asm__(
     ".pushsection .text, \"ax\", @progbits\n"
     "SaveRegistersAndCheck:\n"
     /* Push most of "struct NaClSignalContext" in reverse order. */
-    SAVE_X86_FLAGS
     "push $0\n"  /* Leave space for flags */
     "push $0\n"  /* Leave space for prog_ctr */
     "push %r15\n"
@@ -115,7 +94,6 @@ __asm__(
     "push %r9\n"
     "push %r8\n"
     "push %rsp\n"
-    "addq $10 * 8, (%rsp)\n"  /* Fix up */
     "push %rbp\n"
     "push %rdi\n"
     "push %rsi\n"
@@ -123,6 +101,11 @@ __asm__(
     "push %rcx\n"
     "push %rbx\n"
     "push %rax\n"
+    /* Save flags. */
+    SAVE_X86_FLAGS_INTO_REG("%rax")
+    "movl %eax, 0x88(%rsp)\n"
+    /* Adjust saved %rsp value to account for preceding pushes. */
+    "addq $10 * 8, 0x38(%rsp)\n"
     "movl %esp, %edi\n"  /* Argument to CheckSavedRegisters() function */
     /* Align the stack pointer */
     "and $~15, %esp\n"
@@ -154,7 +137,6 @@ void CheckSavedRegisters(struct NaClSignalContext *regs) {
 #define CHECK_REG(reg_name) ASSERT_EQ(regs->reg_name, g_regs_req.reg_name)
 
 #if defined(__i386__)
-  regs->flags = GetSavedX86Flags();
   CHECK_REG(eax);
   CHECK_REG(ecx);
   CHECK_REG(edx);
@@ -165,7 +147,6 @@ void CheckSavedRegisters(struct NaClSignalContext *regs) {
   CHECK_REG(edi);
   CHECK_REG(flags);
 #elif defined(__x86_64__)
-  regs->flags = GetSavedX86Flags();
   CHECK_REG(rax);
   CHECK_REG(rbx);
   CHECK_REG(rcx);
@@ -249,7 +230,7 @@ int main() {
 
 #if defined(__i386__) || defined(__x86_64__)
   /* Test setting each x86 flag in turn. */
-  for (index = 0; index < NACL_ARRAY_SIZE(kX86FlagBits) && index < 2; index++) {
+  for (index = 0; index < NACL_ARRAY_SIZE(kX86FlagBits); index++) {
     fprintf(stderr, "testing flags bit %i...\n", kX86FlagBits[index]);
     g_regs_req.flags = 1 << kX86FlagBits[index];
     TestSettingRegisters();
