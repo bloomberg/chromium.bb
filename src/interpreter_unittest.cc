@@ -44,10 +44,12 @@ class InterpreterTestInterpreter : public Interpreter {
   IntProperty int_prop_;
   ShortProperty short_prop_;
   StringProperty string_prop_;
+  char* expected_interpreter_name_;
 
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout) {
     interpret_call_count_++;
+    EXPECT_STREQ(expected_interpreter_name_, GetName().c_str());
     EXPECT_NE(0, bool_prop_.val_);
     EXPECT_NE(0, double_prop_.val_);
     EXPECT_NE(0, int_prop_.val_);
@@ -109,6 +111,8 @@ TEST(InterpreterTest, SimpleTest) {
     133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
     1, 0, 0  //t5r2, semi, button pad
   };
+  char interpreter_name[] = "InterpreterTestInterpreter";
+  base_interpreter->expected_interpreter_name_ = interpreter_name;
   base_interpreter->expected_hwprops_ = hwprops;
   base_interpreter->SetHardwareProperties(hwprops);
   EXPECT_EQ(1, base_interpreter->set_hwprops_call_count_);
@@ -147,6 +151,7 @@ TEST(InterpreterTest, SimpleTest) {
   InterpreterTestInterpreter* base_interpreter2 =
       new InterpreterTestInterpreter(&prop_reg2);
   base_interpreter2->return_value_ = base_interpreter->return_value_;
+  base_interpreter2->expected_interpreter_name_ = interpreter_name;
 
   ActivityReplay replay(&prop_reg2);
   replay.Parse(initial_log);

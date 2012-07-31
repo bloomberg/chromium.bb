@@ -56,15 +56,15 @@ class Interpreter {
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
-  virtual DictionaryValue* EncodeCommonInfo() {
-    return log_.EncodeCommonInfo();
-  }
+  virtual DictionaryValue* EncodeCommonInfo();
 
   std::string Encode();
 
   virtual void Clear() {
     log_.Clear();
   }
+
+  std::string GetName();
 
  protected:
   ActivityLog log_;
@@ -79,6 +79,7 @@ class Interpreter {
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops) {}
 
  private:
+  std::string name_;
   void LogOutputs(Gesture* result, stime_t* timeout);
 };
 }  // namespace gestures

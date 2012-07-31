@@ -4,12 +4,15 @@
 
 #include "gestures/include/interpreter.h"
 
+#include <cxxabi.h>
 #include <string>
 
 #include <base/json/json_writer.h>
 #include <base/values.h>
 
+#include "gestures/include/activity_log.h"
 #include "gestures/include/gestures.h"
+#include "gestures/include/logging.h"
 
 namespace gestures {
 
@@ -34,6 +37,12 @@ void Interpreter::SetHardwareProperties(const HardwareProperties& hwprops) {
   SetHardwarePropertiesImpl(hwprops);
 }
 
+DictionaryValue* Interpreter::EncodeCommonInfo() {
+  DictionaryValue* root = log_.EncodeCommonInfo();
+  root->Set(ActivityLog::kKeyInterpreterName, new StringValue(GetName()));
+  return root;
+}
+
 std::string Interpreter::Encode() {
   DictionaryValue *root;
   root = EncodeCommonInfo();
@@ -42,6 +51,32 @@ std::string Interpreter::Encode() {
   std::string out;
   base::JSONWriter::Write(root, true, &out);
   return out;
+}
+
+std::string Interpreter::GetName() {
+  if (name_.empty()) {
+    int status;
+    char* full_name = abi::__cxa_demangle(typeid(*this).name(), 0, 0, &status);
+    if (full_name == NULL) {
+      if (status == -1)
+        Err("Memory allocation failed");
+      else if (status == -2)
+        Err("Mangled_name is not a valid name");
+      else if (status == -3)
+        Err("One of the arguments is invalid");
+      return name_;
+    }
+    // the return value of abi::__cxa_demangle(...) is gestures::XXXInterpreter
+    char* last_colon = strrchr(full_name, ':');
+    char* class_name;
+    if (last_colon)
+      class_name = last_colon + 1;
+    else
+      class_name = full_name;
+    name_ = std::string(class_name);
+    free(full_name);
+  }
+  return name_;
 }
 
 void Interpreter::LogOutputs(Gesture* result, stime_t* timeout) {

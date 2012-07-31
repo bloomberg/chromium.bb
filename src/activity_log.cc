@@ -357,6 +357,7 @@ string ActivityLog::Encode() {
   return out;
 }
 
+const char ActivityLog::kKeyInterpreterName[] = "interpreterName";
 const char ActivityLog::kKeyNext[] = "nextLayer";
 const char ActivityLog::kKeyRoot[] = "entries";
 const char ActivityLog::kKeyType[] = "type";

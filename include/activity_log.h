@@ -83,6 +83,7 @@ class ActivityLog {
     return &buffer_[(head_idx_ + idx) % kBufferSize];
   }
 
+  static const char kKeyInterpreterName[];
   static const char kKeyNext[];
   static const char kKeyRoot[];
   static const char kKeyType[];
