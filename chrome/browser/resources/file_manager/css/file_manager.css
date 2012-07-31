@@ -522,6 +522,27 @@ button#detail-view:not([disabled]) {
   width: 22px;
 }
 
+#spinner-container {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#spinner-with-text {
+  background-image: url('../images/common/spinner.svg');
+  background-repeat: no-repeat;
+  font-size: 16px;
+  height: 22px;
+  min-width: 22px;
+  opacity: 0.6;
+  padding-left: 26px;
+}
+
 .downloads-warning {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
