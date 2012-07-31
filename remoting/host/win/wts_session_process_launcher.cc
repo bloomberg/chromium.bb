@@ -15,8 +15,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
@@ -39,6 +42,9 @@ namespace {
 // a session.
 const int kMaxLaunchDelaySeconds = 60;
 const int kMinLaunchDelaySeconds = 1;
+
+const FilePath::CharType kMe2meHostBinaryName[] =
+    FILE_PATH_LITERAL("remoting_me2me_host.exe");
 
 // Match the pipe name prefix used by Chrome IPC channels.
 const wchar_t kChromePipeNamePrefix[] = L"\\\\.\\pipe\\chrome.";
@@ -214,11 +220,9 @@ const uint32 kInvalidSessionId = 0xffffffff;
 WtsSessionProcessLauncher::WtsSessionProcessLauncher(
     const base::Closure& stopped_callback,
     WtsConsoleMonitor* monitor,
-    const FilePath& host_binary,
     scoped_refptr<base::SingleThreadTaskRunner> main_message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_message_loop)
     : Stoppable(main_message_loop, stopped_callback),
-      host_binary_(host_binary),
       main_message_loop_(main_message_loop),
       ipc_message_loop_(ipc_message_loop),
       monitor_(monitor),
@@ -249,6 +253,15 @@ void WtsSessionProcessLauncher::LaunchProcess() {
 
   launch_time_ = base::Time::Now();
 
+  // Construct the host binary name.
+  FilePath dir_path;
+  if (!PathService::Get(base::DIR_EXE, &dir_path)) {
+    LOG(ERROR) << "Failed to get the executable file name.";
+    Stop();
+    return;
+  }
+  FilePath host_binary = dir_path.Append(kMe2meHostBinaryName);
+
   std::wstring channel_name;
   ScopedHandle pipe;
   if (CreatePipeForIpcChannel(this, &channel_name, &pipe)) {
@@ -261,7 +274,7 @@ void WtsSessionProcessLauncher::LaunchProcess() {
 
     // Create the host process command line passing the name of the IPC channel
     // to use and copying known switches from the service's command line.
-    CommandLine command_line(host_binary_);
+    CommandLine command_line(host_binary);
     command_line.AppendSwitchNative(kChromotingIpcSwitchName, channel_name);
     command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
                                   kCopiedSwitchNames,
@@ -269,7 +282,7 @@ void WtsSessionProcessLauncher::LaunchProcess() {
 
     // Try to launch the process and attach an object watcher to the returned
     // handle so that we get notified when the process terminates.
-    if (LaunchProcessWithToken(host_binary_,
+    if (LaunchProcessWithToken(host_binary,
                                command_line.GetCommandLineString(),
                                session_token_,
                                &process_)) {

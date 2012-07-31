@@ -8,7 +8,6 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -44,14 +43,12 @@ class WtsSessionProcessLauncher
       public IPC::Listener,
       public WtsConsoleObserver {
  public:
-  // Constructs a WtsSessionProcessLauncher object. |host_binary| is the name of
-  // the executable to be launched in the console session. All interaction with
+  // Constructs a WtsSessionProcessLauncher object. All interaction with
   // |monitor| should happen on |main_message_loop|. |ipc_message_loop| has
   // to be an I/O message loop.
   WtsSessionProcessLauncher(
       const base::Closure& stopped_callback,
       WtsConsoleMonitor* monitor,
-      const FilePath& host_binary,
       scoped_refptr<base::SingleThreadTaskRunner> main_message_loop,
       scoped_refptr<base::SingleThreadTaskRunner> ipc_message_loop);
 
@@ -80,9 +77,6 @@ class WtsSessionProcessLauncher
   // Sends the Secure Attention Sequence to the session represented by
   // |session_token_|.
   void OnSendSasToConsole();
-
-  // Name of the host executable.
-  FilePath host_binary_;
 
   // Time of the last launch attempt.
   base::Time launch_time_;

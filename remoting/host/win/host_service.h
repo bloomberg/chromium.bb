@@ -7,7 +7,6 @@
 
 #include <windows.h>
 
-#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -87,9 +86,6 @@ class HostService : public WtsConsoleMonitor {
   ObserverList<WtsConsoleObserver> console_observers_;
 
   scoped_ptr<WtsSessionProcessLauncher> launcher_;
-
-  // The host binary name.
-  FilePath host_binary_;
 
   // Service message loop.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

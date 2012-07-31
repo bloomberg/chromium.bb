@@ -131,14 +131,14 @@ bool SasInjectorWin::InjectSas() {
   // Load sas.dll. The library is expected to be in the same folder as this
   // binary.
   if (!sas_dll_.is_valid()) {
-    FilePath exe_path;
-    if (!PathService::Get(base::FILE_EXE, &exe_path)) {
+    FilePath dir_path;
+    if (!PathService::Get(base::DIR_EXE, &dir_path)) {
       LOG(ERROR) << "Failed to get the executable file name.";
       return false;
     }
 
-    sas_dll_.Reset(base::LoadNativeLibrary(
-        exe_path.DirName().Append(kSasDllFileName), NULL));
+    sas_dll_.Reset(base::LoadNativeLibrary(dir_path.Append(kSasDllFileName),
+                                           NULL));
   }
   if (!sas_dll_.is_valid()) {
     LOG(ERROR) << "Failed to load '" << kSasDllFileName << "'";

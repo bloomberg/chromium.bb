@@ -15,10 +15,9 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
@@ -50,9 +49,6 @@ const wchar_t kRunActionName[] = L"run";
 // "--console" runs the service interactively for debugging purposes.
 const char kConsoleSwitchName[] = "console";
 
-// "--host-binary" specifies the host binary to run in console session.
-const char kHostBinarySwitchName[] = "host-binary";
-
 // "--help" or "--?" prints the usage message.
 const char kHelpSwitchName[] = "help";
 const char kQuestionSwitchName[] = "?";
@@ -66,7 +62,6 @@ const char kUsageMessage[] =
   "\n"
   "Options:\n"
   "  --console     - Run the service interactively for debugging purposes.\n"
-  "  --host-binary - Specifies the host binary to run.\n"
   "  --help, --?   - Print this message.\n";
 
 // Exit codes:
@@ -173,14 +168,6 @@ bool HostService::InitWithCommandLine(const CommandLine* command_line) {
     }
   }
 
-  if (command_line->HasSwitch(kHostBinarySwitchName)) {
-    host_binary_ = command_line->GetSwitchValuePath(kHostBinarySwitchName);
-  } else {
-    LOG(ERROR) << "Invalid command line: --" << kHostBinarySwitchName
-               << " is required.";
-    return false;
-  }
-
   // Run interactively if needed.
   if (run_routine_ == &HostService::RunAsService &&
       command_line->HasSwitch(kConsoleSwitchName)) {
@@ -208,7 +195,6 @@ void HostService::RunMessageLoop(MessageLoop* message_loop) {
   launcher_.reset(new WtsSessionProcessLauncher(
       base::Bind(&HostService::OnLauncherShutdown, base::Unretained(this)),
       this,
-      host_binary_,
       main_task_runner_,
       io_thread.message_loop_proxy()));
 
