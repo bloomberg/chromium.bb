@@ -14,7 +14,8 @@ namespace gestures {
 
 PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, FingerMetrics* finger_metrics)
-    : finger_metrics_(finger_metrics),
+    : FilterInterpreter(next),
+      finger_metrics_(finger_metrics),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_width_(prop_reg, "Palm Width", 21.2),
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
@@ -23,14 +24,13 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
       palm_eval_timeout_(prop_reg, "Palm Eval Timeout", 0.1),
       palm_stationary_time_(prop_reg, "Palm Stationary Time", 2.0),
       palm_stationary_distance_(prop_reg, "Palm Stationary Distance", 4.0) {
-  next_.reset(next);
   if (!finger_metrics_) {
     test_finger_metrics_.reset(new FingerMetrics(prop_reg));
     finger_metrics_ = test_finger_metrics_.get();
   }
 }
 
-Gesture* PalmClassifyingFilterInterpreter::SyncInterpret(
+Gesture* PalmClassifyingFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate,
     stime_t* timeout) {
   FillOriginInfo(*hwstate);
@@ -42,12 +42,7 @@ Gesture* PalmClassifyingFilterInterpreter::SyncInterpret(
   return NULL;
 }
 
-Gesture* PalmClassifyingFilterInterpreter::HandleTimer(stime_t now,
-                                                       stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
-}
-
-void PalmClassifyingFilterInterpreter::SetHardwareProperties(
+void PalmClassifyingFilterInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hwprops) {
   hw_props_ = hwprops;
   if (next_.get())

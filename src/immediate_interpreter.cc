@@ -371,8 +371,8 @@ ImmediateInterpreter::~ImmediateInterpreter() {
   }
 }
 
-Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
-                                             stime_t* timeout) {
+Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                                 stime_t* timeout) {
   if (!prev_state_.fingers) {
     Err("Must call SetHardwareProperties() before Push().");
     return 0;
@@ -413,7 +413,7 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
   return result_.type != kGestureTypeNull ? &result_ : NULL;
 }
 
-Gesture* ImmediateInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
+Gesture* ImmediateInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
   result_.type = kGestureTypeNull;
   UpdateTapGesture(NULL,
                    set<short, kMaxGesturingFingers>(),
@@ -1772,7 +1772,7 @@ void ImmediateInterpreter::IntWasWritten(IntProperty* prop) {
   }
 }
 
-void ImmediateInterpreter::SetHardwareProperties(
+void ImmediateInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hw_props) {
   hw_props_ = hw_props;
   if (prev_state_.fingers) {

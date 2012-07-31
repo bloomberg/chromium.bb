@@ -27,13 +27,6 @@ class LoggingFilterInterpreter : public FilterInterpreter,
   LoggingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~LoggingFilterInterpreter();
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
-
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
-
   virtual void IntWasWritten(IntProperty* prop);
 
   std::string EncodeActivityLog();

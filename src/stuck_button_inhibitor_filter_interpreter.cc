@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,13 +10,12 @@ namespace gestures {
 
 StuckButtonInhibitorFilterInterpreter::StuckButtonInhibitorFilterInterpreter(
     Interpreter* next)
-    : incoming_button_must_be_up_(true),
+    : FilterInterpreter(next),
+      incoming_button_must_be_up_(true),
       sent_buttons_down_(0),
-      next_expects_timer_(false) {
-  next_.reset(next);
-}
+      next_expects_timer_(false) {}
 
-Gesture* StuckButtonInhibitorFilterInterpreter::SyncInterpret(
+Gesture* StuckButtonInhibitorFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
   HandleHardwareState(*hwstate);
   stime_t next_timeout = -1.0;
@@ -25,7 +24,7 @@ Gesture* StuckButtonInhibitorFilterInterpreter::SyncInterpret(
   return result;
 }
 
-Gesture* StuckButtonInhibitorFilterInterpreter::HandleTimer(
+Gesture* StuckButtonInhibitorFilterInterpreter::HandleTimerImpl(
     stime_t now, stime_t* timeout) {
   if (!next_expects_timer_) {
     if (!sent_buttons_down_) {
@@ -43,11 +42,6 @@ Gesture* StuckButtonInhibitorFilterInterpreter::HandleTimer(
   Gesture* result = next_->HandleTimer(now, &next_timeout);
   HandleGesture(&result, next_timeout, timeout);
   return result;
-}
-
-void StuckButtonInhibitorFilterInterpreter::SetHardwareProperties(
-    const HardwareProperties& hwprops) {
-  next_->SetHardwareProperties(hwprops);
 }
 
 void StuckButtonInhibitorFilterInterpreter::HandleHardwareState(

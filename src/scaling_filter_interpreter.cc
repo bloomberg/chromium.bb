@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,8 @@ namespace gestures {
 // Takes ownership of |next|:
 ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
                                                    Interpreter* next)
-    : tp_x_scale_(1.0),
+    : FilterInterpreter(next),
+      tp_x_scale_(1.0),
       tp_y_scale_(1.0),
       tp_x_translate_(0.0),
       tp_y_translate_(0.0),
@@ -25,12 +26,10 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
       pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
       pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0),
       touch_major_scale_(prop_reg, "Touch Major Calibration Slope", 1.0),
-      touch_major_translate_(prop_reg, "Touch Major Calibration Offset", 0.0) {
-  next_.reset(next);
-}
+      touch_major_translate_(prop_reg, "Touch Major Calibration Offset", 0.0) {}
 
-Gesture* ScalingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
-                                                 stime_t* timeout) {
+Gesture* ScalingFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                                     stime_t* timeout) {
   ScaleHardwareState(hwstate);
   Gesture* fg = next_->SyncInterpret(hwstate, timeout);
   if (fg)
@@ -38,7 +37,8 @@ Gesture* ScalingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   return fg;
 }
 
-Gesture* ScalingFilterInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
+Gesture* ScalingFilterInterpreter::HandleTimerImpl(stime_t now,
+                                                   stime_t* timeout) {
   Gesture* gs = next_->HandleTimer(now, timeout);
   if (gs)
     ScaleGesture(gs);
@@ -106,7 +106,7 @@ void ScalingFilterInterpreter::ScaleGesture(Gesture* gs) {
   }
 }
 
-void ScalingFilterInterpreter::SetHardwareProperties(
+void ScalingFilterInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hw_props) {
 
   tp_x_scale_ = 1.0 / hw_props.res_x;

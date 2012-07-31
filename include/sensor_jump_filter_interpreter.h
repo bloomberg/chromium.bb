@@ -5,9 +5,9 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // For FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/map.h"
 #include "gestures/include/prop_registry.h"
 
@@ -23,7 +23,7 @@ namespace gestures {
 // When a suspicious jump is detected, the finger is flagged with a warp
 // flag for the axis in which the jump occurred.
 
-class SensorJumpFilterInterpreter : public Interpreter,
+class SensorJumpFilterInterpreter : public FilterInterpreter,
                                     public PropertyDelegate {
   FRIEND_TEST(SensorJumpFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(SensorJumpFilterInterpreterTest, ActualLogTest);
@@ -32,16 +32,11 @@ class SensorJumpFilterInterpreter : public Interpreter,
   SensorJumpFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~SensorJumpFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
-
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
  private:
-  scoped_ptr<Interpreter> next_;
-
   // Whether or not this filter is enabled. If disabled, it behaves as a
   // simple passthrough.
   BoolProperty enabled_;

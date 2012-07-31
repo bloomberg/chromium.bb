@@ -12,15 +12,14 @@ namespace gestures {
 
 SensorJumpFilterInterpreter::SensorJumpFilterInterpreter(PropRegistry* prop_reg,
                                                          Interpreter* next)
-    : enabled_(prop_reg, "Sensor Jump Filter Enable", 0),
+    : FilterInterpreter(next),
+      enabled_(prop_reg, "Sensor Jump Filter Enable", 0),
       min_warp_dist_(prop_reg, "Sensor Jump Min Dist", 0.9),
       max_warp_dist_(prop_reg, "Sensor Jump Max Dist", 7.5),
-      similar_multiplier_(prop_reg, "Sensor Jump Similar Multiplier", 0.9) {
-  next_.reset(next);
-}
+      similar_multiplier_(prop_reg, "Sensor Jump Similar Multiplier", 0.9) {}
 
-Gesture* SensorJumpFilterInterpreter::SyncInterpret(HardwareState* hwstate,
-                                                    stime_t* timeout) {
+Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                                        stime_t* timeout) {
   if (!enabled_.val_)
     return next_->SyncInterpret(hwstate, timeout);
   RemoveMissingIdsFromMap(&previous_input_[0], *hwstate);
@@ -88,16 +87,6 @@ Gesture* SensorJumpFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   previous_input_[0] = current_input;
 
   return next_->SyncInterpret(hwstate, timeout);
-}
-
-Gesture* SensorJumpFilterInterpreter::HandleTimer(stime_t now,
-                                                  stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
-}
-
-void SensorJumpFilterInterpreter::SetHardwareProperties(
-    const HardwareProperties& hwprops) {
-  next_->SetHardwareProperties(hwprops);
 }
 
 }  // namespace gestures

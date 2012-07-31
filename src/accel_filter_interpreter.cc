@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,15 +16,14 @@ namespace gestures {
 // Takes ownership of |next|:
 AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
                                                Interpreter* next)
-    : sensitivity_(prop_reg, "Sensitivity", 3),
+    : FilterInterpreter(next),
+      sensitivity_(prop_reg, "Sensitivity", 3),
       custom_point_str_(prop_reg, "Pointer Accel Curve", ""),
       custom_scroll_str_(prop_reg, "Scroll Accel Curve", ""),
       point_x_out_scale_(prop_reg, "Point X Out Scale", 1.0),
       point_y_out_scale_(prop_reg, "Point Y Out Scale", 1.0),
       scroll_x_out_scale_(prop_reg, "Scroll X Out Scale", 3.0),
       scroll_y_out_scale_(prop_reg, "Scroll Y Out Scale", 3.0) {
-  next_.reset(next);
-
   // Set up default curves.
 
   // Our pointing curves are the following.
@@ -78,15 +77,16 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
   }
 }
 
-Gesture* AccelFilterInterpreter::SyncInterpret(HardwareState* hwstate,
-                                               stime_t* timeout) {
+Gesture* AccelFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                                   stime_t* timeout) {
   Gesture* fg = next_->SyncInterpret(hwstate, timeout);
   if (fg)
     ScaleGesture(fg);
   return fg;
 }
 
-Gesture* AccelFilterInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
+Gesture* AccelFilterInterpreter::HandleTimerImpl(stime_t now,
+                                                 stime_t* timeout) {
   Gesture* gs = next_->HandleTimer(now, timeout);
   if (gs)
     ScaleGesture(gs);
@@ -205,11 +205,6 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
     return;
   }
   Err("Overflowed acceleration curve!");
-}
-
-void AccelFilterInterpreter::SetHardwareProperties(
-    const HardwareProperties& hw_props) {
-  next_->SetHardwareProperties(hw_props);
 }
 
 }  // namespace gestures

@@ -5,9 +5,9 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/map.h"
 #include "gestures/include/prop_registry.h"
 
@@ -19,7 +19,7 @@ namespace gestures {
 // This interpreter looks for accidental wiggle that occurs near a physical
 // button click event and suppresses that motion.
 
-class ClickWiggleFilterInterpreter : public Interpreter {
+class ClickWiggleFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(ClickWiggleFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest);
 
@@ -45,18 +45,13 @@ class ClickWiggleFilterInterpreter : public Interpreter {
   ClickWiggleFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~ClickWiggleFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
-
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
  private:
   void UpdateClickWiggle(const HardwareState& hwstate);
   void SetWarpFlags(HardwareState* hwstate) const;
-
-  scoped_ptr<Interpreter> next_;
 
   map<short, ClickWiggleRec, kMaxFingers> wiggle_recs_;
 

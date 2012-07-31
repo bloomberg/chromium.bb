@@ -5,8 +5,8 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_SCALING_FILTER_INTERPRETER_H_
@@ -39,26 +39,25 @@ namespace gestures {
 // mm. The two properties allow a configuration file to specify a linear
 // relationship between pressure and surface area.
 
-class ScalingFilterInterpreter : public Interpreter {
+class ScalingFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(ScalingFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
   ScalingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~ScalingFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:
   void ScaleHardwareState(HardwareState* hwstate);
   void ScaleGesture(Gesture* gs);
   void FilterLowPressure(HardwareState* hwstate);
-
-  scoped_ptr<Interpreter> next_;
 
   float tp_x_scale_, tp_y_scale_;
   float tp_x_translate_, tp_y_translate_;

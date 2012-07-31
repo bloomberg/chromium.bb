@@ -17,9 +17,11 @@ namespace gestures {
 
 class FilterInterpreter : public Interpreter {
  public:
-  FilterInterpreter(PropRegistry* prop_reg)
-    : Interpreter(prop_reg) {}
-  FilterInterpreter() : Interpreter() {}
+  FilterInterpreter(PropRegistry* prop_reg, Interpreter* next)
+      : Interpreter(prop_reg) { next_.reset(next); }
+  explicit FilterInterpreter(Interpreter* next) : Interpreter() {
+    next_.reset(next);
+  }
 
   virtual ~FilterInterpreter() {}
 
@@ -28,7 +30,15 @@ class FilterInterpreter : public Interpreter {
   void Clear();
 
  protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
+  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
+
   scoped_ptr<Interpreter> next_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FilterInterpreter);
 };
 }  // namespace gestures
 

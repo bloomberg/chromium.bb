@@ -10,9 +10,8 @@ namespace gestures {
 
 AppleTrackpadFilterInterpreter::AppleTrackpadFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : enabled_(prop_reg, "Apple TP Filter Enable", 0) {
-  next_.reset(next);
-}
+    : FilterInterpreter(next),
+      enabled_(prop_reg, "Apple TP Filter Enable", 0) {}
 
 Gesture* AppleTrackpadFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
@@ -21,16 +20,6 @@ Gesture* AppleTrackpadFilterInterpreter::SyncInterpretImpl(
       hwstate->fingers[i].pressure = hwstate->fingers[i].touch_major;
   }
   return next_->SyncInterpret(hwstate, timeout);
-}
-
-Gesture* AppleTrackpadFilterInterpreter::HandleTimerImpl(stime_t now,
-                                                  stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
-}
-
-void AppleTrackpadFilterInterpreter::SetHardwarePropertiesImpl(
-    const HardwareProperties& hwprops) {
-  next_->SetHardwareProperties(hwprops);
 }
 
 }  // namespace gestures

@@ -50,6 +50,8 @@ void ActivityLog::LogHardwareState(const HardwareState& hwstate) {
     entry->details.hwstate.fingers = NULL;
     return;
   }
+  if (!finger_states_.get())
+    return;
   entry->details.hwstate.fingers = &finger_states_[TailIdx() * max_fingers_];
   std::copy(&hwstate.fingers[0], &hwstate.fingers[hwstate.finger_cnt],
             entry->details.hwstate.fingers);

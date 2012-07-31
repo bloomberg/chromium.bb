@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,8 @@ bool IirFilterInterpreter::IoHistory::operator==(
 // normalized cutoff frequency of 0.2.
 IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
                                            Interpreter* next)
-    : b0_(prop_reg, "IIR b0", 0.0674552738890719, this),
+    : FilterInterpreter(next),
+      b0_(prop_reg, "IIR b0", 0.0674552738890719, this),
       b1_(prop_reg, "IIR b1", 0.134910547778144, this),
       b2_(prop_reg, "IIR b2", 0.0674552738890719, this),
       b3_(prop_reg, "IIR b3", 0.0, this),
@@ -38,11 +39,9 @@ IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
       a2_(prop_reg, "IIR a2", 0.412801598096189, this),
       iir_dist_thresh_(prop_reg, "IIR Distance Threshold", 10, this),
       using_iir_(true),
-      is_semi_mt_device_(false) {
-  next_.reset(next);
-}
+      is_semi_mt_device_(false) {}
 
-Gesture* IirFilterInterpreter::SyncInterpret(HardwareState* hwstate,
+Gesture* IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {
   // Delete old entries from map
   short dead_ids[histories_.size()];
@@ -118,11 +117,7 @@ Gesture* IirFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   return next_->SyncInterpret(hwstate, timeout);
 }
 
-Gesture* IirFilterInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
-}
-
-void IirFilterInterpreter::SetHardwareProperties(
+void IirFilterInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hwprops) {
   is_semi_mt_device_ = hwprops.support_semi_mt;
   return next_->SetHardwareProperties(hwprops);

@@ -12,11 +12,10 @@ namespace gestures {
 
 BoxFilterInterpreter::BoxFilterInterpreter(PropRegistry* prop_reg,
                                            Interpreter* next)
-    : box_width_(prop_reg, "Box Width", 0.0) {
-  next_.reset(next);
-}
+    : FilterInterpreter(next),
+      box_width_(prop_reg, "Box Width", 0.0) {}
 
-Gesture* BoxFilterInterpreter::SyncInterpret(HardwareState* hwstate,
+Gesture* BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {
   if (box_width_.val_ == 0.0)
     return next_->SyncInterpret(hwstate, timeout);
@@ -55,15 +54,6 @@ Gesture* BoxFilterInterpreter::SyncInterpret(HardwareState* hwstate,
     previous_output_[hwstate->fingers[i].tracking_id] = hwstate->fingers[i];
 
   return next_->SyncInterpret(hwstate, timeout);
-}
-
-Gesture* BoxFilterInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
-}
-
-void BoxFilterInterpreter::SetHardwareProperties(
-    const HardwareProperties& hwprops) {
-  next_->SetHardwareProperties(hwprops);
 }
 
 }  // namespace gestures

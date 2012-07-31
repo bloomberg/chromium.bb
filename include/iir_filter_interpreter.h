@@ -5,9 +5,9 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/map.h"
 #include "gestures/include/prop_registry.h"
 
@@ -22,7 +22,7 @@ namespace gestures {
 // configured via properties to use other formulae or
 // different coefficients for the Butterworth filter.
 
-class IirFilterInterpreter : public Interpreter, public PropertyDelegate {
+class IirFilterInterpreter : public FilterInterpreter, public PropertyDelegate {
   FRIEND_TEST(IirFilterInterpreterTest, DisableIIRTest);
  public:
   // We'll maintain one IOHistory record per active finger
@@ -68,18 +68,16 @@ class IirFilterInterpreter : public Interpreter, public PropertyDelegate {
   IirFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~IirFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
+  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
-
+ public:
   virtual void DoubleWasWritten(DoubleProperty* prop);
 
  private:
-  scoped_ptr<Interpreter> next_;
-
   // y[0] = b[0]*x[0] + b[1]*x[1] + b[2]*x[2] + b[3]*x[3]
   //        - (a[1]*y[1] + a[2]*y[2])
   DoubleProperty b0_, b1_, b2_, b3_, a1_, a2_;

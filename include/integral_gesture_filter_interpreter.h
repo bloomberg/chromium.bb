@@ -4,8 +4,8 @@
 
 #include <base/memory/scoped_ptr.h>
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 
 #ifndef GESTURES_INTEGRAL_GESTURE_FILTER_INTERPRETER_H_
 #define GESTURES_INTEGRAL_GESTURE_FILTER_INTERPRETER_H_
@@ -18,23 +18,20 @@ namespace gestures {
 // a user is very slowly rolling their finger, many gestures w/ values < 1
 // can be accumulated and together create a move of a single pixel.
 
-class IntegralGestureFilterInterpreter : public Interpreter {
+class IntegralGestureFilterInterpreter : public FilterInterpreter {
  public:
   // Takes ownership of |next|:
   explicit IntegralGestureFilterInterpreter(Interpreter* next);
   virtual ~IntegralGestureFilterInterpreter();
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
+ private:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                  stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
  private:
   void HandleGesture(Gesture** gs);
-
-  scoped_ptr<Interpreter> next_;
 
   float x_move_remainder_, y_move_remainder_;
   float hscroll_remainder_, vscroll_remainder_;

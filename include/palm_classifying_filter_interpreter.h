@@ -5,9 +5,9 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/map.h"
 #include "gestures/include/set.h"
 
@@ -20,7 +20,7 @@ namespace gestures {
 // optionally classify each as a palm. Sometimes a contact is classified as
 // a palm in some frames, and then in subsequent frames it is not.
 
-class PalmClassifyingFilterInterpreter : public Interpreter {
+class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest);
   FRIEND_TEST(PalmClassifyingFilterInterpreterTest, PalmReevaluateTest);
   FRIEND_TEST(PalmClassifyingFilterInterpreterTest, PalmTest);
@@ -31,12 +31,11 @@ class PalmClassifyingFilterInterpreter : public Interpreter {
                                    FingerMetrics* finger_metrics);
   virtual ~PalmClassifyingFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:
   void FillOriginInfo(const HardwareState& hwstate);
@@ -61,8 +60,6 @@ class PalmClassifyingFilterInterpreter : public Interpreter {
   // Returns the length of time the contact has been on the pad. Returns -1
   // on error.
   stime_t FingerAge(short finger_id, stime_t now) const;
-
-  scoped_ptr<Interpreter> next_;
 
   // Time when a contact arrived. Persists even when fingers change.
   map<short, stime_t, kMaxFingers> origin_timestamps_;

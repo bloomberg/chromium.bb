@@ -15,7 +15,8 @@ namespace gestures {
 
 Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : last_id_(0),
+    : FilterInterpreter(next),
+      last_id_(0),
       interpreter_enabled_(prop_reg, "SemiMT Correcting Filter Enable", 0),
       pressure_threshold_(prop_reg, "SemiMT Pressure Threshold", 30),
       hysteresis_pressure_(prop_reg, "SemiMT Hysteresis Pressure", 25),
@@ -30,7 +31,6 @@ Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
       jump_threshold_(prop_reg, "SemiMT Finger Jump Distance", 260.0),
       bounding_box_(prop_reg, "SemiMT Bounding Box Input", 0) {
   ClearHistory();
-  next_.reset(next);
 }
 
 Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
@@ -56,11 +56,6 @@ Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
     }
   }
   return next_->SyncInterpret(hwstate, timeout);
-}
-
-Gesture* Cr48ProfileSensorFilterInterpreter::HandleTimerImpl(
-    stime_t now, stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
 }
 
 void Cr48ProfileSensorFilterInterpreter::SetHardwarePropertiesImpl(

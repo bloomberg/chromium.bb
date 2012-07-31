@@ -18,32 +18,14 @@ namespace gestures {
 
 LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
                                                    Interpreter* next)
-    : FilterInterpreter(prop_reg),
+    : FilterInterpreter(prop_reg, next),
       logging_notify_(prop_reg, "Logging Notify", 0, this),
       logging_reset_(prop_reg, "Logging Reset", 0, this) {
-  next_.reset(next);
   if (prop_reg)
     prop_reg->set_activity_log(&log_);
 }
 
 LoggingFilterInterpreter::~LoggingFilterInterpreter() {}
-
-Gesture* LoggingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
-                                                 stime_t* timeout) {
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  return result;
-}
-
-Gesture* LoggingFilterInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
-  Gesture* result = next_->HandleTimer(now, timeout);
-  return result;
-}
-
-void LoggingFilterInterpreter::SetHardwareProperties(
-    const HardwareProperties& hwprops) {
-  log_.SetHardwareProperties(hwprops);
-  next_->SetHardwareProperties(hwprops);
-}
 
 void LoggingFilterInterpreter::IntWasWritten(IntProperty* prop) {
   if (prop == &logging_notify_)

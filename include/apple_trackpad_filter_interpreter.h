@@ -18,7 +18,7 @@ namespace gestures {
 // value using touch_major value so that it can work with gestures library.
 
 class AppleTrackpadFilterInterpreter : public FilterInterpreter,
-                                    public PropertyDelegate {
+                                       public PropertyDelegate {
   FRIEND_TEST(AppleTrackpadFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
@@ -27,11 +27,7 @@ class AppleTrackpadFilterInterpreter : public FilterInterpreter,
 
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                 stime_t* timeout);
-
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
+                                     stime_t* timeout);
 
  private:
   // Whether or not this filter is enabled. If disabled, it behaves as a

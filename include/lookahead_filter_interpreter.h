@@ -7,9 +7,9 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // For FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/list.h"
 #include "gestures/include/map.h"
 #include "gestures/include/prop_registry.h"
@@ -19,7 +19,7 @@
 
 namespace gestures {
 
-class LookaheadFilterInterpreter : public Interpreter {
+class LookaheadFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, DrumrollTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest);
@@ -36,12 +36,13 @@ class LookaheadFilterInterpreter : public Interpreter {
   LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~LookaheadFilterInterpreter();
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:
   struct QState {
@@ -106,7 +107,6 @@ class LookaheadFilterInterpreter : public Interpreter {
 
   unsigned short max_fingers_per_hwstate_;
 
-  scoped_ptr<Interpreter> next_;
   stime_t interpreter_due_;
 
   // We want to present time to next_ in a monotonically increasing manner,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,8 @@ static const stime_t kMaxDelay = 0.09;  // 90ms
 
 LookaheadFilterInterpreter::LookaheadFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : last_id_(0), max_fingers_per_hwstate_(0), interpreter_due_(-1.0),
+    : FilterInterpreter(next),
+      last_id_(0), max_fingers_per_hwstate_(0), interpreter_due_(-1.0),
       last_interpreted_time_(0.0),
       min_nonsuppress_speed_(prop_reg, "Input Queue Min Nonsuppression Speed",
                              200.0),
@@ -34,13 +35,11 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
                                 15.0),
       quick_move_thresh_(prop_reg, "Quick Move Distance Thresh", 3.0),
       co_move_ratio_(prop_reg, "Drumroll Co Move Ratio", 1.2),
-      suppress_immediate_tapdown_(prop_reg, "Suppress Immediate Tapdown", 1) {
-  next_.reset(next);
-}
+      suppress_immediate_tapdown_(prop_reg, "Suppress Immediate Tapdown", 1) {}
 
 LookaheadFilterInterpreter::~LookaheadFilterInterpreter() {}
 
-Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
+Gesture* LookaheadFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                    stime_t* timeout) {
   // Push back into queue
   if (free_list_.Empty()) {
@@ -77,7 +76,7 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   UpdateInterpreterDue(interpreter_due_ < 0.0 ?
                        interpreter_due_ : interpreter_due_ + hwstate->timestamp,
                        hwstate->timestamp, timeout);
-  return HandleTimer(hwstate->timestamp, timeout);
+  return HandleTimerImpl(hwstate->timestamp, timeout);
 }
 
 // Interpolates the two hardware states into out.
@@ -363,8 +362,8 @@ void LookaheadFilterInterpreter::AttemptInterpolation() {
   queue_.InsertBefore(new_node, node);
 }
 
-Gesture* LookaheadFilterInterpreter::HandleTimer(stime_t now,
-                                                 stime_t* timeout) {
+Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
+                                                     stime_t* timeout) {
   result_ = TapDownOccurringGesture(now);
   Gesture* result = NULL;
   stime_t next_timeout = -1.0;
@@ -477,7 +476,7 @@ void LookaheadFilterInterpreter::UpdateInterpreterDue(
   }
 }
 
-void LookaheadFilterInterpreter::SetHardwareProperties(
+void LookaheadFilterInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hwprops) {
   hwprops_ = hwprops;
   const size_t kMaxQNodes = 16;

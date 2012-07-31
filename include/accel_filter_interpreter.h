@@ -7,8 +7,8 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_ACCEL_FILTER_INTERPRETER_H_
@@ -19,7 +19,7 @@ namespace gestures {
 // This interpreter provides pointer and scroll acceleration based on
 // an acceleration curve and the user's sensitivity setting.
 
-class AccelFilterInterpreter : public Interpreter {
+class AccelFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(AccelFilterInterpreterTest, CustomAccelTest);
   FRIEND_TEST(AccelFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(AccelFilterInterpreterTest, TimingTest);
@@ -29,12 +29,11 @@ class AccelFilterInterpreter : public Interpreter {
   AccelFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~AccelFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
  private:
   struct CurveSegment {
@@ -52,8 +51,6 @@ class AccelFilterInterpreter : public Interpreter {
   void ParseCurveString(const char* input, char* cache, CurveSegment* out_segs);
 
   void ScaleGesture(Gesture* gs);
-
-  scoped_ptr<Interpreter> next_;
 
   static const size_t kMaxCurveSegs = 3;
   static const size_t kMaxCustomCurveSegs = 20;

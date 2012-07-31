@@ -5,8 +5,8 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_FLING_STOP_FILTER_INTERPRETER_H_
@@ -17,27 +17,24 @@ namespace gestures {
 // This interpreter generates the fling-stop messages when new fingers
 // arrive on the pad.
 
-class FlingStopFilterInterpreter : public Interpreter {
+class FlingStopFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(FlingStopFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
   FlingStopFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~FlingStopFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
  private:
   // May override an outgoing gesture with a fling stop gesture.
 
   void UpdateFlingStopDeadline(const HardwareState& hwstate);
   stime_t SetNextDeadlineAndReturnTimeoutVal(stime_t now, stime_t next_timeout);
-
-  scoped_ptr<Interpreter> next_;
 
   // touch_cnt from previously input HardwareState.
   short prev_touch_cnt_;

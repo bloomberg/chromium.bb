@@ -5,9 +5,9 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/set.h"
 
@@ -44,19 +44,18 @@ struct MergedContact {
   short output_id;
 };
 
-class SplitCorrectingFilterInterpreter : public Interpreter {
+class SplitCorrectingFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(SplitCorrectingFilterInterpreterTest, DistFromPointToLineTest);
  public:
   // Takes ownership of |next|:
   SplitCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~SplitCorrectingFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:
   void RemoveMissingUnmergedContacts(const HardwareState& hwstate);
@@ -100,8 +99,6 @@ class SplitCorrectingFilterInterpreter : public Interpreter {
 
   // Dumps internal state and hwstate.
   void Dump(const HardwareState& hwstate) const;
-
-  scoped_ptr<Interpreter> next_;
 
   // We only enable on non-T5R2 pads
   bool enabled_;

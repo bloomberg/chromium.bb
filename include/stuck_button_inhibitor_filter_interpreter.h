@@ -5,8 +5,8 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 
 #ifndef GESTURES_STUCK_BUTTON_INHIBITOR_FILTER_INTERPRETER_H_
 #define GESTURES_STUCK_BUTTON_INHIBITOR_FILTER_INTERPRETER_H_
@@ -20,24 +20,21 @@
 
 namespace gestures {
 
-class StuckButtonInhibitorFilterInterpreter : public Interpreter {
+class StuckButtonInhibitorFilterInterpreter : public FilterInterpreter {
  public:
   // Takes ownership of |next|:
   explicit StuckButtonInhibitorFilterInterpreter(Interpreter* next);
   virtual ~StuckButtonInhibitorFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                  stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
  private:
   void HandleHardwareState(const HardwareState& hwstate);
   void HandleGesture(Gesture** gesture, stime_t next_timeout, stime_t* timeout);
-
-  scoped_ptr<Interpreter> next_;
 
   bool incoming_button_must_be_up_;
 

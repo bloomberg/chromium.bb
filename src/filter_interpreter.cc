@@ -8,6 +8,20 @@
 
 namespace gestures {
 
+Gesture* FilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                              stime_t* timeout) {
+  return next_->SyncInterpret(hwstate, timeout);
+}
+
+Gesture* FilterInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
+  return next_->HandleTimer(now, timeout);
+}
+
+void FilterInterpreter::SetHardwarePropertiesImpl(
+    const HardwareProperties& hwprops) {
+  next_->SetHardwareProperties(hwprops);
+}
+
 DictionaryValue* FilterInterpreter::EncodeCommonInfo() {
   DictionaryValue *root = Interpreter::EncodeCommonInfo();
   root->Set(ActivityLog::kKeyNext, next_->EncodeCommonInfo());

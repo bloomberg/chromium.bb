@@ -13,7 +13,8 @@ namespace gestures {
 // Takes ownership of |next|:
 ClickWiggleFilterInterpreter::ClickWiggleFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : button_edge_occurred_(0.0),
+    : FilterInterpreter(next),
+      button_edge_occurred_(0.0),
       prev_buttons_(0),
       wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 5.5),
       wiggle_suppress_timeout_(prop_reg, "Wiggle Timeout", 0.075),
@@ -22,11 +23,9 @@ ClickWiggleFilterInterpreter::ClickWiggleFilterInterpreter(
                                   0.75),
       one_finger_click_wiggle_timeout_(prop_reg,
                                        "One Finger Click Wiggle Timeout",
-                                       0.2) {
-  next_.reset(next);
-}
+                                       0.2) {}
 
-Gesture* ClickWiggleFilterInterpreter::SyncInterpret(HardwareState* hwstate,
+Gesture* ClickWiggleFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                      stime_t* timeout) {
   UpdateClickWiggle(*hwstate);
   SetWarpFlags(hwstate);
@@ -144,16 +143,6 @@ void ClickWiggleFilterInterpreter::SetWarpFlags(HardwareState* hwstate) const {
         wiggle_recs_[fs->tracking_id].suppress_dec_press_)
       fs->flags |= (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
   }
-}
-
-Gesture* ClickWiggleFilterInterpreter::HandleTimer(stime_t now,
-                                                   stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
-}
-
-void ClickWiggleFilterInterpreter::SetHardwareProperties(
-    const HardwareProperties& hw_props) {
-  next_->SetHardwareProperties(hw_props);
 }
 
 }  // namespace gestures

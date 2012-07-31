@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,16 +14,15 @@ namespace gestures {
 // Takes ownership of |next|:
 IntegralGestureFilterInterpreter::IntegralGestureFilterInterpreter(
     Interpreter* next)
-    : x_move_remainder_(0.0),
+    : FilterInterpreter(next),
+      x_move_remainder_(0.0),
       y_move_remainder_(0.0),
       hscroll_remainder_(0.0),
-      vscroll_remainder_(0.0) {
-  next_.reset(next);
-}
+      vscroll_remainder_(0.0) {}
 
 IntegralGestureFilterInterpreter::~IntegralGestureFilterInterpreter() {}
 
-Gesture* IntegralGestureFilterInterpreter::SyncInterpret(
+Gesture* IntegralGestureFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
   if (hwstate->finger_cnt == 0 && hwstate->touch_cnt == 0)
     x_move_remainder_ = y_move_remainder_ = hscroll_remainder_ =
@@ -34,8 +33,8 @@ Gesture* IntegralGestureFilterInterpreter::SyncInterpret(
   return *ret;
 }
 
-Gesture* IntegralGestureFilterInterpreter::HandleTimer(stime_t now,
-                                                       stime_t* timeout) {
+Gesture* IntegralGestureFilterInterpreter::HandleTimerImpl(stime_t now,
+                                                           stime_t* timeout) {
   Gesture* gs = next_->HandleTimer(now, timeout);
   Gesture** ret = &gs;
   HandleGesture(ret);
@@ -83,11 +82,6 @@ void IntegralGestureFilterInterpreter::HandleGesture(Gesture** ret) {
     default:
       break;
   }
-}
-
-void IntegralGestureFilterInterpreter::SetHardwareProperties(
-    const HardwareProperties& hw_props) {
-  next_->SetHardwareProperties(hw_props);
 }
 
 }  // namespace gestures

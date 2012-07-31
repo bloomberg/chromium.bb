@@ -147,13 +147,15 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   ImmediateInterpreter(PropRegistry* prop_reg, FingerMetrics* finger_metrics);
   virtual ~ImmediateInterpreter();
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
+  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
-  void SetHardwareProperties(const HardwareProperties& hw_props);
+  void SetHardwarePropertiesImpl(const HardwareProperties& hw_props);
 
+ public:
   TapToClickState tap_to_click_state() const { return tap_to_click_state_; }
 
   float tap_min_pressure() const { return tap_min_pressure_.val_; }

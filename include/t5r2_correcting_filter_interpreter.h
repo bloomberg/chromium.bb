@@ -4,8 +4,8 @@
 
 #include <base/memory/scoped_ptr.h>
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_T5R2_CORRECTING_FILTER_INTERPRETER_H_
@@ -22,22 +22,17 @@ namespace gestures {
 // HardwareStates in a row have the same non-zero touch_cnt with a
 // zero finger_cnt, it sets the second touch_cnt to 0.
 
-class T5R2CorrectingFilterInterpreter : public Interpreter {
+class T5R2CorrectingFilterInterpreter : public FilterInterpreter {
  public:
   // Takes ownership of |next|:
   T5R2CorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~T5R2CorrectingFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
-
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
  private:
-  scoped_ptr<Interpreter> next_;
-
   unsigned short last_finger_cnt_;
   unsigned short last_touch_cnt_;
 

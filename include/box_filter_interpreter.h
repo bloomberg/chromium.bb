@@ -5,9 +5,9 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/interpreter.h"
 #include "gestures/include/map.h"
 #include "gestures/include/prop_registry.h"
 
@@ -31,23 +31,18 @@ namespace gestures {
 // point is outside, shift the box over to include the new point, then report
 // the new center of the box.
 
-class BoxFilterInterpreter : public Interpreter, public PropertyDelegate {
+class BoxFilterInterpreter : public FilterInterpreter, public PropertyDelegate {
   FRIEND_TEST(BoxFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
   BoxFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~BoxFilterInterpreter() {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
-
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
-
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+ protected:
+  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout);
 
  private:
-  scoped_ptr<Interpreter> next_;
-
   DoubleProperty box_width_;
 
   map<short, FingerState, kMaxFingers> previous_output_;

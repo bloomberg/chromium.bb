@@ -15,7 +15,8 @@ namespace gestures {
 
 Gesture* Interpreter::SyncInterpret(HardwareState* hwstate,
                                     stime_t* timeout) {
-  log_.LogHardwareState(*hwstate);
+  if (hwstate)
+    log_.LogHardwareState(*hwstate);
   Gesture* result = SyncInterpretImpl(hwstate, timeout);
   LogOutputs(result, timeout);
   return result;

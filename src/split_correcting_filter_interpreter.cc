@@ -13,15 +13,15 @@ namespace gestures {
 // Takes ownership of |next|:
 SplitCorrectingFilterInterpreter::SplitCorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : enabled_(true),
+    : FilterInterpreter(next),
+      enabled_(true),
       merge_max_separation_(prop_reg, "Split Merge Max Separation", 17.0),
       merge_max_movement_(prop_reg, "Split Merge Max Movement", 3.0),
-      merge_max_ratio_(prop_reg, "Merge Max Ratio", sinf(DegToRad(19.0))) {
-  next_.reset(next);
-}
+      merge_max_ratio_(prop_reg, "Merge Max Ratio", sinf(DegToRad(19.0))) {}
 
-Gesture* SplitCorrectingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
-                                                         stime_t* timeout) {
+Gesture* SplitCorrectingFilterInterpreter::SyncInterpretImpl(
+    HardwareState* hwstate,
+    stime_t* timeout) {
   // Update internal state
   if (enabled_) {
     RemoveMissingUnmergedContacts(*hwstate);
@@ -36,12 +36,7 @@ Gesture* SplitCorrectingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   return next_->SyncInterpret(hwstate, timeout);
 }
 
-Gesture* SplitCorrectingFilterInterpreter::HandleTimer(stime_t now,
-                                                       stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
-}
-
-void SplitCorrectingFilterInterpreter::SetHardwareProperties(
+void SplitCorrectingFilterInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hwprops) {
   enabled_ = !hwprops.supports_t5r2 && !hwprops.support_semi_mt;
   next_->SetHardwareProperties(hwprops);
