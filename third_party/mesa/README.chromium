@@ -101,3 +101,8 @@ Later modifications (see chromium.patch):
 
 - Merged the replacement of memcpy() with memmove() in SHIFT_ARRAY declared in
   s_span.c (commit a44d715d2b19dc2f8f48b01144cc38e4e2c5015a)
+
+- Suppressed the OOB read reported by AddressSanitizer in swizzle_for_size from
+  ir_to_mesa.cpp
+  https://code.google.com/p/chromium/issues/detail?id=139772
+  https://bugs.freedesktop.org/show_bug.cgi?id=52996

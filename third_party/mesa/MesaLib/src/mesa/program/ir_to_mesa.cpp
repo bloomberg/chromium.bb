@@ -56,6 +56,11 @@ extern "C" {
 #include "program/prog_parameter.h"
 }
 
+#if defined(ADDRESS_SANITIZER)
+// Suppress AddressSanitizer reports about OOB reads in swizzle_for_size().
+// See also http://crbug.com/139772.
+__attribute__((no_address_safety_analysis))
+#endif
 static int swizzle_for_size(int size);
 
 /**
