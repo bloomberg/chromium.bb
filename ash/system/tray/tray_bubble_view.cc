@@ -33,8 +33,8 @@ const int kBottomLineHeight = 1;
 const int kSystemTrayBubbleHorizontalInset = 1;
 const int kSystemTrayBubbleVerticalInset = 1;
 
-const int kArrowHeight = 10;
-const int kArrowWidth = 20;
+const int kArrowHeight = 9;
+const int kArrowWidth = 19;
 
 // Inset the arrow a bit from the edge.
 const int kArrowMinOffset = kArrowWidth / 2 + 4;
@@ -188,6 +188,7 @@ class TrayBubbleBorder : public views::BubbleBorder {
                                                               arrow_reference);
 
     SkPaint paint;
+    paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(background ? background->get_color() : kBackgroundColor);
     canvas->DrawPath(path, paint);
