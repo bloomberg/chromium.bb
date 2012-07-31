@@ -64,6 +64,12 @@ void GenerateSalt(uint8 salt[LINK_SALT_LENGTH]) {
   memcpy(salt, &randval, 8);
 }
 
+// Opens file on a background thread to not block UI thread.
+void AsyncOpen(FILE** file, FilePath filename) {
+  *file = OpenFile(filename, "wb+");
+  DLOG_IF(ERROR, !(*file)) << "Failed to open file " << filename.value();
+}
+
 // Returns true if the write was complete.
 static bool WriteToFile(FILE* file,
                         off_t offset,
@@ -84,9 +90,26 @@ static bool WriteToFile(FILE* file,
 }
 
 // This task executes on a background thread and executes a write. This
-// prevents us from blocking the UI thread doing I/O.
-void AsyncWrite(FILE* file, int32 offset, const std::string& data) {
-  WriteToFile(file, offset, data.data(), data.size());
+// prevents us from blocking the UI thread doing I/O. Double pointer to FILE
+// is used because file may still not be opened by the time of scheduling
+// the task for execution.
+void AsyncWrite(FILE** file, int32 offset, const std::string& data) {
+  WriteToFile(*file, offset, data.data(), data.size());
+}
+
+// Truncates the file to the current position asynchronously on a background
+// thread. Double pointer to FILE is used because file may still not be opened
+// by the time of scheduling the task for execution.
+void AsyncTruncate(FILE** file) {
+  base::IgnoreResult(TruncateFile(*file));
+}
+
+// Closes the file on a background thread and releases memory used for storage
+// of FILE* value. Double pointer to FILE is used because file may still not
+// be opened by the time of scheduling the task for execution.
+void AsyncClose(FILE** file) {
+  base::IgnoreResult(fclose(*file));
+  free(file);
 }
 
 }  // namespace
@@ -178,6 +201,8 @@ VisitedLinkMaster::~VisitedLinkMaster() {
     table_builder_->DisownMaster();
   }
   FreeURLTable();
+  // FreeURLTable() will schedule closing of the file and deletion of |file_|.
+  // So nothing should be done here.
 }
 
 void VisitedLinkMaster::InitMembers(Listener* listener, Profile* profile) {
@@ -455,7 +480,7 @@ bool VisitedLinkMaster::DeleteFingerprint(Fingerprint fingerprint,
   return true;
 }
 
-bool VisitedLinkMaster::WriteFullTable() {
+void VisitedLinkMaster::WriteFullTable() {
   // This function can get called when the file is open, for example, when we
   // resize the table. We must handle this case and not try to reopen the file,
   // since there may be write operations pending on the file I/O thread.
@@ -469,13 +494,10 @@ bool VisitedLinkMaster::WriteFullTable() {
   // that the file size is different when we load it back in, and then we will
   // regenerate the table.
   if (!file_) {
+    file_ = static_cast<FILE**>(calloc(1, sizeof(*file_)));
     FilePath filename;
     GetDatabaseFileName(&filename);
-    file_ = OpenFile(filename, "wb+");
-    if (!file_) {
-      DLOG(ERROR) << "Failed to open file " << filename.value();
-      return false;
-    }
+    PostIOTask(FROM_HERE, base::Bind(&AsyncOpen, file_, filename));
   }
 
   // Write the new header.
@@ -492,8 +514,7 @@ bool VisitedLinkMaster::WriteFullTable() {
               hash_table_, table_length_ * sizeof(Fingerprint));
 
   // The hash table may have shrunk, so make sure this is the end.
-  PostIOTask(FROM_HERE, base::Bind(base::IgnoreResult(&TruncateFile), file_));
-  return true;
+  PostIOTask(FROM_HERE, base::Bind(&AsyncTruncate, file_));
 }
 
 bool VisitedLinkMaster::InitFromFile() {
@@ -523,7 +544,8 @@ bool VisitedLinkMaster::InitFromFile() {
   DebugValidate();
 #endif
 
-  file_ = file_closer.release();
+  file_ = static_cast<FILE**>(malloc(sizeof(*file_)));
+  *file_ = file_closer.release();
   return true;
 }
 
@@ -545,7 +567,8 @@ bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
   if (suppress_rebuild) {
     // When we disallow rebuilds (normally just unit tests), just use the
     // current empty table.
-    return WriteFullTable();
+    WriteFullTable();
+    return true;
   }
 
   // This will build the table from history. On the first run, history will
@@ -682,7 +705,9 @@ void VisitedLinkMaster::FreeURLTable() {
   }
   if (!file_)
     return;
-  PostIOTask(FROM_HERE, base::Bind(base::IgnoreResult(&fclose), file_));
+  PostIOTask(FROM_HERE, base::Bind(&AsyncClose, file_));
+  // AsyncClose() will close the file and free the memory pointed by |file_|.
+  file_ = NULL;
 }
 
 bool VisitedLinkMaster::ResizeTableIfNecessary() {
@@ -837,10 +862,6 @@ void VisitedLinkMaster::OnTableRebuildComplete(
         AddFingerprint(*i, false);
       added_since_rebuild_.clear();
 
-      // We shouldn't be writing the table from the main thread!
-      //   http://code.google.com/p/chromium/issues/detail?id=24163
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
-
       // Now handle deletions.
       DeleteFingerprintsFromCurrentTable(deleted_since_rebuild_);
       deleted_since_rebuild_.clear();
@@ -860,7 +881,7 @@ void VisitedLinkMaster::OnTableRebuildComplete(
   }
 }
 
-void VisitedLinkMaster::WriteToFile(FILE* file,
+void VisitedLinkMaster::WriteToFile(FILE** file,
                                     off_t offset,
                                     void* data,
                                     int32 data_size) {

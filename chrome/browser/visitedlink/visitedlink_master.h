@@ -116,8 +116,8 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
   // Call to cause the entire database file to be re-written from scratch
   // to disk. Used by the performance tester.
-  bool RewriteFile() {
-    return WriteFullTable();
+  void RewriteFile() {
+    WriteFullTable();
   }
 #endif
 
@@ -168,9 +168,9 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   void PostIOTask(const tracked_objects::Location& from_here,
                   const base::Closure& task);
 
-  // Writes the entire table to disk, returning true on success. It will leave
-  // the table file open and the handle to it in file_
-  bool WriteFullTable();
+  // Writes the entire table to disk. It will leave the table file open and
+  // the handle to it will be stored in file_.
+  void WriteFullTable();
 
   // Try to load the table from the database file. If the file doesn't exist or
   // is corrupt, this will return failure.
@@ -191,7 +191,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
   // Wrapper around Window's WriteFile using asynchronous I/O. This will proxy
   // the write to a background thread.
-  void WriteToFile(FILE* hfile, off_t offset, void* data, int32 data_size);
+  void WriteToFile(FILE** hfile, off_t offset, void* data, int32 data_size);
 
   // Helper function to schedule and asynchronous write of the used count to
   // disk (this is a common operation).
@@ -337,8 +337,14 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
   // The currently open file with the table in it. This may be NULL if we're
   // rebuilding and haven't written a new version yet. Writing to the file may
-  // be safely ignored in this case.
-  FILE* file_;
+  // be safely ignored in this case. Also |file_| may be non-NULL but point to
+  // a NULL pointer. That would mean that opening of the file is already
+  // scheduled in a background thread and any writing to the file can also be
+  // scheduled to the background thread as it's guaranteed to be executed after
+  // the opening.
+  // The class owns both the |file_| pointer and the pointer pointed
+  // by |*file_|.
+  FILE** file_;
 
   // Shared memory consists of a SharedHeader followed by the table.
   base::SharedMemory *shared_memory_;
