@@ -9,6 +9,7 @@ include_rules = [
   "+content/public",
 
   # The content_shell is an embedder so it must work with resource bundles.
+  "+ui/base/l10n",
   "+ui/base/resource",
 
   # Shell resources

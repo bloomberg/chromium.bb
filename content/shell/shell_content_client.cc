@@ -5,6 +5,7 @@
 #include "content/shell/shell_content_client.h"
 
 #include "base/string_piece.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/user_agent.h"
 
@@ -18,6 +19,10 @@ std::string ShellContentClient::GetUserAgent() const {
   // something reasonably current; the "77.34.5" is a hint that this isn't a
   // standard Chrome.
   return webkit_glue::BuildUserAgentFromProduct("Chrome/19.77.34.5");
+}
+
+string16 ShellContentClient::GetLocalizedString(int message_id) const {
+  return l10n_util::GetStringUTF16(message_id);
 }
 
 base::StringPiece ShellContentClient::GetDataResource(

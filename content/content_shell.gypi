@@ -254,6 +254,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
             ],
           },
           'inputs': [
