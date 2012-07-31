@@ -141,7 +141,7 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 	p += touch->width;
 	p[2] = c;
 
-	wl_surface_damage(touch->surface, 0, 0, touch->width, touch->height);
+	wl_surface_damage(touch->surface, x - 2, y - 2, 5, 5);
 }
 
 static void
