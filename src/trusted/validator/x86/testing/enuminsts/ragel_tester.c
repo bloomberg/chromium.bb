@@ -84,19 +84,21 @@ struct RagelDecodeState RState;
 
 void RagelPrintInst() {
   int i;
+  int print_num_bytes = RState.inst_num_bytes;
 
-  for (i = 0; i < RState.inst_num_bytes; i++) {
+  if (print_num_bytes == 0) print_num_bytes = 4;
+  for (i = 0; i < print_num_bytes; i++) {
     printf("%02x ", RState.inst_offset[i]);
   }
   printf(": %s\n", RState.inst_name);
 }
 
+/* It's difficult to use this to detect actual decoder errors because for */
+/* enuminst we want to ignore errors for all but the first instruction.   */
 void RagelDecodeError (const uint8_t *ptr, void *userdata) {
   UNREFERENCED_PARAMETER(ptr);
   UNREFERENCED_PARAMETER(userdata);
   return;
-  printf("DFA error in decoder: ");
-  RagelPrintInst();
 }
 
 void RagelValidateError (const uint8_t *ptr, uint32_t error, void *userdata) {
@@ -156,11 +158,15 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
   (void)DecodeChunkArch(enumerator->_itext, enumerator->_num_bytes,
                         RagelInstruction, RagelDecodeError, &tempstate);
 
-  /* Decode again, this time specifying length of first instruction. */
-  res = DecodeChunkArch(enumerator->_itext, tempstate.inst_num_bytes,
-                        RagelInstruction, RagelDecodeError, &RState);
+  if (tempstate.inst_num_bytes == 0) {
+    /* This indicates a decoder error. */
+  } else {
+    /* Decode again, this time specifying length of first instruction. */
+    res = DecodeChunkArch(enumerator->_itext, tempstate.inst_num_bytes,
+                          RagelInstruction, RagelDecodeError, &RState);
+    RState.inst_is_legal = !res;
+  }
 
-  RState.inst_is_legal = !res;
   if (RState.inst_is_legal) {
     uint8_t chunk[(NACL_ENUM_MAX_INSTRUCTION_BYTES + kBundleMask) &
                   ~kBundleMask];
