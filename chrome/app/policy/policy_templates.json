@@ -139,6 +139,7 @@
         {
           'name': 'HomepageLocation',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {
             'dynamic_refresh': True,
@@ -161,6 +162,7 @@
         {
           'name': 'HomepageIsNewTabPage',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {
             'dynamic_refresh': True,
@@ -184,6 +186,7 @@
     {
       'name': 'DefaultBrowserSettingEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:11-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -201,6 +204,7 @@
     {
       'name': 'ApplicationLocaleValue',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome.win:8-'],
       'features': {
         'dynamic_refresh': False,
@@ -219,6 +223,7 @@
     {
       'name': 'AlternateErrorPagesEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': True,
@@ -240,6 +245,7 @@
     {
       'name': 'SearchSuggestEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': True,
@@ -261,6 +267,7 @@
     {
       'name': 'DnsPrefetchingEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': True,
@@ -278,6 +285,7 @@
     {
       'name': 'DisableSpdy',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -294,6 +302,10 @@
     {
       'name': 'DisabledSchemes',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
       'features': {'dynamic_refresh': True},
       'example_value': ['file', 'mailto'],
@@ -309,6 +321,7 @@
     {
       'name': 'JavascriptEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'deprecated': True,
@@ -330,6 +343,7 @@
     {
       'name': 'IncognitoEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'deprecated': True,
@@ -348,6 +362,10 @@
     {
       'name': 'IncognitoModeAvailability',
       'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
       'items': [
         {
           'name': 'Enabled',
@@ -381,6 +399,7 @@
     {
       'name': 'SavingBrowserHistoryDisabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -403,6 +422,7 @@
         {
           'name': 'RemoteAccessClientFirewallTraversal',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
           'features': {'dynamic_refresh': True},
           # Mark this 'removed' when http://crbug.com/100216 is resolved.
@@ -420,6 +440,7 @@
         {
           'name': 'RemoteAccessHostFirewallTraversal',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
           'features': {'dynamic_refresh': True},
           'example_value': False,
@@ -438,6 +459,7 @@
     {
       'name': 'PrintingEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -454,6 +476,7 @@
     {
       'name': 'CloudPrintProxyEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -470,6 +493,7 @@
     {
       'name': 'SafeBrowsingEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': False,
@@ -491,6 +515,7 @@
     {
       'name': 'MetricsReportingEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-'],
       'features': {
         'dynamic_refresh': False,
@@ -518,6 +543,7 @@
         {
           'name': 'PasswordManagerEnabled',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {
             'dynamic_refresh': True,
@@ -539,6 +565,7 @@
         {
           'name': 'PasswordManagerAllowShowPasswords',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': False,
@@ -555,6 +582,7 @@
     {
       'name': 'AutoFillEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': True,
@@ -572,6 +600,10 @@
     {
       'name': 'DisabledPlugins',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
@@ -591,6 +623,10 @@
     {
       'name': 'EnabledPlugins',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
@@ -610,6 +646,10 @@
     {
       'name': 'DisabledPluginsExceptions',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
@@ -629,6 +669,7 @@
     {
       'name': 'DisablePluginFinder',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -642,6 +683,7 @@
     {
       'name': 'SyncDisabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -656,6 +698,7 @@
     {
       'name': 'UserDataDir',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome.win:11-', 'chrome.mac:11-'],
       'features': {'dynamic_refresh': False},
       'example_value': '${users}/${user_name}/Chrome',
@@ -671,6 +714,7 @@
     {
       'name': 'DiskCacheDir',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:13-'],
       'features': {'dynamic_refresh': False},
       'example_value': '${user_home}/Chrome_cache',
@@ -686,6 +730,7 @@
     {
       'name': 'DiskCacheSize',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': False},
       'example_value': 104857600,
@@ -703,6 +748,7 @@
     {
       'name': 'MediaCacheSize',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': False},
       'example_value': 104857600,
@@ -720,6 +766,7 @@
     {
       'name': 'DownloadDirectory',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:11-'],
       'features': {
         'dynamic_refresh': True,
@@ -738,6 +785,7 @@
     {
       'name': 'ClearSiteDataOnExit',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': True,
@@ -776,6 +824,16 @@
         {
           'name': 'ProxyMode',
           'type': 'string-enum',
+          'schema': {
+            'type': 'string',
+            'enum': [
+              'direct',
+              'auto_detect',
+              'pac_script',
+              'fixed_servers',
+              'system'
+            ],
+          },
           'items': [
             {
               'name': 'ProxyDisabled',
@@ -828,6 +886,10 @@
         {
           'name': 'ProxyServerMode',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 0, 1, 2, 3 ],
+          },
           'items': [
             {
               'name': 'ProxyServerDisabled',
@@ -876,6 +938,7 @@
         {
           'name': 'ProxyServer',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': '123.123.123.123:8080',
@@ -893,6 +956,7 @@
         {
           'name': 'ProxyPacUrl',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': 'http://internal.site/example.pac',
@@ -910,6 +974,7 @@
         {
           'name': 'ProxyBypassList',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': 'http://www.example1.com,http://www.example2.com,http://internalsite/',
@@ -934,6 +999,16 @@
       # http://crbug.com/108992, http://crbug.com/108996
       'name': 'ProxySettings',
       'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'ProxyMode': { 'type': 'string' },
+          'ProxyPacUrl': { 'type': 'string' },
+          'ProxyServer': { 'type': 'string' },
+          'ProxyBypassList': { 'type': 'string' },
+          'ProxyServerMode': { 'type': 'string' },
+        },
+      },
       'supported_on': ['chrome.*:18-', 'chrome_os:0.18-'],
       'future': True,
       'features': {'dynamic_refresh': True},
@@ -953,6 +1028,7 @@
         {
           'name': 'AuthSchemes',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': False},
           'example_value': 'basic,digest,ntlm,negotiate',
@@ -967,6 +1043,7 @@
         {
           'name': 'DisableAuthNegotiateCnameLookup',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': False},
           'example_value': False,
@@ -981,6 +1058,7 @@
         {
           'name': 'EnableAuthNegotiatePort',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': False},
           'example_value': False,
@@ -995,6 +1073,7 @@
         {
           'name': 'AuthServerWhitelist',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': False},
           'example_value': '*example.com,foobar.com,*baz',
@@ -1009,6 +1088,7 @@
         {
           'name': 'AuthNegotiateDelegateWhitelist',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': False},
           'example_value': 'foobar.example.com',
@@ -1023,6 +1103,7 @@
         {
           'name': 'GSSAPILibraryName',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.linux:9-', 'chrome.mac:9-'],
           'features': {'dynamic_refresh': False},
           'example_value': 'libgssapi_krb5.so.2',
@@ -1035,6 +1116,7 @@
         {
           'name': 'AllowCrossOriginAuthPrompt',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:13-'],
           'features': {'dynamic_refresh': True},
           'example_value': False,
@@ -1055,6 +1137,10 @@
         {
           'name': 'ExtensionInstallBlacklist',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['extension_id1', 'extension_id2'],
@@ -1070,6 +1156,10 @@
         {
           'name': 'ExtensionInstallWhitelist',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['extension_id1', 'extension_id2'],
@@ -1085,6 +1175,10 @@
         {
           'name': 'ExtensionInstallForcelist',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx'],
@@ -1106,6 +1200,10 @@
         {
           'name': 'ExtensionInstallSources',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:21-', 'chrome_os:21-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['https://corp.mycompany.com/*'],
@@ -1125,6 +1223,7 @@
     {
       'name': 'ShowHomeButton',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': True,
@@ -1146,6 +1245,7 @@
     {
       'name': 'DeveloperToolsDisabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': False,
@@ -1168,6 +1268,10 @@
         {
           'name': 'RestoreOnStartup',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 4, 5 ],
+          },
           'items': [
             {
               'name': 'RestoreOnStartupIsNewTabPage',
@@ -1211,6 +1315,10 @@
           # after fixing http://crbug.com/106684
           'name': 'RestoreOnStartupURLs',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://example.com', 'http://chromium.org'],
@@ -1225,6 +1333,7 @@
     {
       'name': 'BlockThirdPartyCookies',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': True,
@@ -1252,6 +1361,7 @@
         {
           'name': 'DefaultSearchProviderEnabled',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': True,
@@ -1272,6 +1382,7 @@
         {
           'name': 'DefaultSearchProviderName',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': 'My Intranet Search',
@@ -1284,6 +1395,7 @@
         {
           'name': 'DefaultSearchProviderKeyword',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': 'mis',
@@ -1298,6 +1410,7 @@
         {
           'name': 'DefaultSearchProviderSearchURL',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': 'http://search.my.company/search?q={searchTerms}',
@@ -1310,6 +1423,7 @@
         {
           'name': 'DefaultSearchProviderSuggestURL',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': 'http://search.my.company/suggest?q={searchTerms}',
@@ -1324,6 +1438,7 @@
         {
           'name': 'DefaultSearchProviderInstantURL',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': 'http://search.my.company/suggest?q={searchTerms}',
@@ -1338,6 +1453,7 @@
         {
           'name': 'DefaultSearchProviderIconURL',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': 'http://search.my.company/favicon.ico',
@@ -1352,6 +1468,10 @@
         {
           'name': 'DefaultSearchProviderEncodings',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1'],
@@ -1376,6 +1496,10 @@
         {
           'name': 'DefaultCookiesSetting',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2, 4 ],
+          },
           'items': [
             {
               'name': 'AllowCookies',
@@ -1405,6 +1529,10 @@
         {
           'name': 'DefaultImagesSetting',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2 ],
+          },
           'items': [
             {
               'name': 'AllowImages',
@@ -1429,6 +1557,10 @@
         {
           'name': 'DefaultJavaScriptSetting',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2 ],
+          },
           'items': [
             {
               'name': 'AllowJavaScript',
@@ -1453,6 +1585,10 @@
         {
           'name': 'DefaultPluginsSetting',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2 ],
+          },
           'items': [
             {
               'name': 'AllowPlugins',
@@ -1477,6 +1613,10 @@
         {
           'name': 'DefaultPopupsSetting',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2 ],
+          },
           'items': [
             {
               'name': 'AllowPopups',
@@ -1501,6 +1641,10 @@
         {
           'name': 'DefaultNotificationsSetting',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2, 3 ],
+          },
           'items': [
             {
               'name': 'AllowNotifications',
@@ -1530,6 +1674,10 @@
         {
           'name': 'DefaultGeolocationSetting',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2, 3 ],
+          },
           'items': [
             {
               'name': 'AllowGeolocation',
@@ -1559,6 +1707,10 @@
         {
           'name': 'DefaultMediaStreamSetting',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2 ],
+          },
           'items': [
             {
               'name': 'PromptOnAccess',
@@ -1583,6 +1735,10 @@
         {
           'name': 'AutoSelectCertificateForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
           'features': {'dynamic_refresh': True},
           'example_value': ["{\\\"pattern\\\":\\\"https://www.example.com\\\",\\\"filter\\\":{\\\"ISSUER\\\":{\\\"CN\\\":\\\"certificate issuer name\\\"}}}"],
@@ -1595,6 +1751,10 @@
         {
           'name': 'CookiesAllowedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1607,6 +1767,10 @@
         {
           'name': 'CookiesBlockedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1619,6 +1783,10 @@
         {
           'name': 'CookiesSessionOnlyForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1633,6 +1801,10 @@
         {
           'name': 'ImagesAllowedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1645,6 +1817,10 @@
         {
           'name': 'ImagesBlockedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1657,6 +1833,10 @@
         {
           'name': 'JavaScriptAllowedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1669,6 +1849,10 @@
         {
           'name': 'JavaScriptBlockedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1681,6 +1865,10 @@
         {
           'name': 'PluginsAllowedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1693,6 +1881,10 @@
         {
           'name': 'PluginsBlockedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1705,6 +1897,10 @@
         {
           'name': 'PopupsAllowedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1717,6 +1913,10 @@
         {
           'name': 'PopupsBlockedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1729,6 +1929,10 @@
         {
           'name': 'NotificationsAllowedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:16-', 'chrome_os:0.16-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1741,6 +1945,10 @@
         {
           'name': 'NotificationsBlockedForUrls',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome.*:16-', 'chrome_os:0.16-'],
           'features': {'dynamic_refresh': True},
           'example_value': ['http://www.example.com', '[*.]example.edu'],
@@ -1749,12 +1957,13 @@
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.''',
-        }
+        },
       ],
     },
     {
       'name': 'Disable3DAPIs',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': False},
       'example_value': False,
@@ -1769,6 +1978,7 @@
     {
       'name': 'PolicyRefreshRate',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:0.11-'],
       'features': {'dynamic_refresh': True},
       'example_value': 3600000,
@@ -1792,6 +2002,10 @@
         {
           'name': 'ChromeFrameRendererSettings',
           'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 0, 1 ],
+          },
           'items': [
             {
               'name': 'RenderInHost',
@@ -1815,6 +2029,10 @@
         {
           'name': 'RenderInChromeFrameList',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome_frame:8-'],
           'features': {'dynamic_refresh': False},
           'example_value': ['http://www.example.com', 'http://www.example.edu'],
@@ -1829,6 +2047,10 @@
         {
           'name': 'RenderInHostList',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome_frame:8-'],
           'features': {'dynamic_refresh': False},
           'example_value': ['http://www.example.com', 'http://www.example.edu'],
@@ -1843,6 +2065,7 @@
         {
           'name': 'AdditionalLaunchParameters',
           'type': 'string',
+          'schema': { 'type': 'string' },
           'supported_on': ['chrome_frame:19-'],
           'features': {'dynamic_refresh': False},
           'example_value': '--enable-media-stream --enable-media-source',
@@ -1863,6 +2086,10 @@
         {
           'name': 'ChromeFrameContentTypes',
           'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
           'supported_on': ['chrome_frame:8-'],
           'features': {'dynamic_refresh': False},
           'example_value': ['text/xml', 'application/xml'],
@@ -1877,6 +2104,7 @@
     {
       'name': 'ChromeOsLockOnIdleSuspend',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:0.9-'],
       'features': {
         'dynamic_refresh': True,
@@ -1898,6 +2126,7 @@
     {
       'name': 'InstantEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {
         'dynamic_refresh': True,
@@ -1919,6 +2148,7 @@
     {
       'name': 'TranslateEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
       'features': {
         'dynamic_refresh': True,
@@ -1940,6 +2170,7 @@
     {
       'name': 'AllowOutdatedPlugins',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -1956,6 +2187,7 @@
     {
       'name': 'AlwaysAuthorizePlugins',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:13-', 'chrome_os:0.13-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -1970,6 +2202,7 @@
     {
       'name': 'BookmarkBarEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
       'features': {
         'dynamic_refresh': True,
@@ -1991,6 +2224,7 @@
     {
       'name': 'EditBookmarksEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
       'features': {'dynamic_refresh': True},
       'example_value': False,
@@ -2005,6 +2239,7 @@
     {
       'name': 'AllowFileSelectionDialogs',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:12-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -2021,6 +2256,7 @@
     {
       'name': 'GCFUserDataDir',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome_frame:12-'],
       'features': {'dynamic_refresh': False},
       'example_value': '${user_home}/Chrome Frame',
@@ -2036,6 +2272,7 @@
     {
       'name': 'DevicePolicyRefreshRate',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:0.11-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2051,6 +2288,7 @@
     {
       'name': 'ImportBookmarks',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:15-'],
       'features': {
         'dynamic_refresh': True,
@@ -2069,6 +2307,7 @@
     {
       'name': 'ImportHistory',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:15-'],
       'features': {
         'dynamic_refresh': True,
@@ -2087,6 +2326,7 @@
     {
       'name': 'ImportHomepage',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:15-'],
       'features': {
         'dynamic_refresh': True,
@@ -2105,6 +2345,7 @@
     {
       'name': 'ImportSearchEngine',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:15-'],
       'features': {
         'dynamic_refresh': True,
@@ -2123,6 +2364,7 @@
     {
       'name': 'ImportSavedPasswords',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:15-'],
       'features': {
         'dynamic_refresh': True,
@@ -2141,6 +2383,7 @@
     {
       'name': 'MaxConnectionsPerProxy',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
       'features': {'dynamic_refresh': False},
       'example_value': 32,
@@ -2159,6 +2402,7 @@
     {
       'name': 'HideWebStorePromo',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
       'features': {'dynamic_refresh': False},
       'example_value': False,
@@ -2171,6 +2415,10 @@
     {
       'name': 'URLBlacklist',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
       'features': {'dynamic_refresh': True},
       'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'http://server:8080/path', '.exact.hostname.com', '*'],
@@ -2193,6 +2441,10 @@
     {
       'name': 'URLWhitelist',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
       'features': {'dynamic_refresh': True},
       'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'http://server:8080/path', '.exact.hostname.com'],
@@ -2213,6 +2465,7 @@
     {
       'name': 'OpenNetworkConfiguration',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome_os:0.16-'],
       'features': {'dynamic_refresh': True},
       'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
@@ -2223,6 +2476,7 @@
     {
       'name': 'DeviceOpenNetworkConfiguration',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome_os:0.16-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2235,6 +2489,7 @@
     {
       'name': 'CloudPrintSubmitEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -2249,6 +2504,7 @@
     {
       'name': 'EnterpriseWebStoreURL',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:17-', 'chrome_os:0.17-'],
       'features': {'dynamic_refresh': True},
       'example_value': 'http://company-intranet/chromeapps',
@@ -2261,6 +2517,7 @@
     {
       'name': 'EnterpriseWebStoreName',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:17-', 'chrome_os:0.17-'],
       'features': {'dynamic_refresh': True},
       'example_value': 'WidgCo Chrome Apps',
@@ -2273,6 +2530,7 @@
     {
       'name': 'EnableOriginBoundCerts',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': True},
       'future': True,
@@ -2286,6 +2544,7 @@
     {
       'name': 'EnableMemoryInfo',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:17-', 'chrome_os:0.18-'],
       'features': {'dynamic_refresh': True},
       'future': True,
@@ -2299,6 +2558,7 @@
     {
       'name': 'DisablePrintPreview',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:18-'],
       'features': {'dynamic_refresh': False},
       'example_value': False,
@@ -2309,6 +2569,7 @@
     {
       'name': 'DisableSSLRecordSplitting',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:18-', 'chrome_os:0.18-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -2321,6 +2582,7 @@
     {
       'name': 'EnableOnlineRevocationChecks',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:19-', 'chrome_os:0.19-'],
       'features': {'dynamic_refresh': True},
       'example_value': False,
@@ -2333,6 +2595,7 @@
     {
       'name': 'ReportDeviceVersionInfo',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:0.18-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2346,6 +2609,7 @@
     {
       'name': 'ReportDeviceActivityTimes',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:18-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2359,6 +2623,7 @@
     {
       'name': 'ReportDeviceBootMode',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:18-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2372,6 +2637,7 @@
     {
       'name': 'ReportDeviceLocation',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:20-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2386,6 +2652,10 @@
     {
       'name': 'DeviceUserWhitelist',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome_os:12-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2399,6 +2669,7 @@
     {
       'name': 'DeviceAllowNewUsers',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:12-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2412,6 +2683,7 @@
     {
       'name': 'DeviceGuestModeEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:12-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2425,6 +2697,7 @@
     {
       'name': 'DeviceShowUserNamesOnSignin',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:12-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2436,6 +2709,7 @@
     {
       'name': 'DeviceDataRoamingEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:12-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2447,6 +2721,7 @@
     {
       'name': 'DeviceMetricsReportingEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:14-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2458,6 +2733,10 @@
     {
       'name': 'ChromeOsReleaseChannel',
       'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [ 'stable-channel', 'beta-channel', 'dev-channel' ],
+      },
       'items': [
         {
           'name': 'StableChannel',
@@ -2473,7 +2752,7 @@
           'name': 'DevChannel',
           'value': 'dev-channel',
           'caption': '''Dev channel (may be unstable)''',
-        }
+        },
       ],
       'supported_on': ['chrome_os:0.11-'],
       'device_only': True,
@@ -2486,6 +2765,7 @@
     {
       'name': 'ChromeOsReleaseChannelDelegated',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:0.19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2499,6 +2779,7 @@
     {
       'name': 'DeviceEphemeralUsersEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2510,6 +2791,10 @@
     {
       'name': 'DeviceStartUpUrls',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2523,6 +2808,7 @@
     {
       'name': 'DeviceIdleLogoutTimeout',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2538,6 +2824,7 @@
     {
       'name': 'DeviceIdleLogoutWarningDuration',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2553,6 +2840,7 @@
     {
       'name': 'DeviceLoginScreenSaverId',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2566,6 +2854,7 @@
     {
       'name': 'DeviceLoginScreenSaverTimeout',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2581,6 +2870,10 @@
     {
       'name': 'DeviceAppPack',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2596,6 +2889,7 @@
     {
       'name': 'DeviceAutoUpdateDisabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2609,6 +2903,7 @@
     {
       'name': 'DeviceTargetVersionPrefix',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2627,6 +2922,7 @@
     {
       'name': 'DeviceUpdateScatterFactor',
       'type': 'int',
+      'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:20-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2638,6 +2934,10 @@
     {
       'name': 'DeviceUpdateAllowedConnectionTypes',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome_os:21-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
@@ -2651,6 +2951,7 @@
     {
       'name': 'BackgroundModeEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win:19-', 'chrome.linux:19-'],
       'features': {
         'dynamic_refresh': True,
@@ -2676,6 +2977,7 @@
         {
           'name': 'GDataDisabled',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome_os:19-'],
           'features': {'dynamic_refresh': True},
           'example_value': True,
@@ -2688,6 +2990,7 @@
         {
           'name': 'GDataDisabledOverCellular',
           'type': 'main',
+          'schema': { 'type': 'boolean' },
           'supported_on': ['chrome_os:19-'],
           'features': {'dynamic_refresh': True},
           'example_value': True,
@@ -2702,6 +3005,10 @@
     {
       'name': 'PinnedLauncherApps',
       'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome_os:20-' ],
       'features': {
         'dynamic_refresh': True,
@@ -2719,6 +3026,7 @@
     {
       'name': 'RestrictSigninToPattern',
       'type': 'string',
+      'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:21-'],
       'features': {'dynamic_refresh': True},
       'example_value': '*@domain.com',
@@ -2733,6 +3041,7 @@
     {
       'name': 'DisableSafeBrowsingProceedAnyway',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:22-', 'chrome_os:0.22-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -2745,6 +3054,7 @@
     {
       'name': 'SpellCheckServiceEnabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:22-', 'chrome_os:0.22-'],
       'features': {'dynamic_refresh': True},
       'example_value': False,
@@ -2759,6 +3069,7 @@
     {
       'name': 'ExternalStorageDisabled',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:0.22-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
@@ -2775,6 +3086,7 @@
     {
       'name': 'DisableScreenshots',
       'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:22-', 'chrome.*:22-'],
       'features': {
         'dynamic_refresh': True,

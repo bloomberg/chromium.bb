@@ -19,6 +19,16 @@ TRAILING_WHITESPACE = re.compile('.*?([ \t]+)$')
 # Matches all non-empty strings that contain no whitespaces.
 NO_WHITESPACE = re.compile('[^\s]+$')
 
+# Convert a 'type' to its corresponding schema type.
+TYPE_TO_SCHEMA = {
+  'int': 'integer',
+  'list': 'array',
+  'dict': 'object',
+  'main': 'boolean',
+  'string': 'string',
+  'int-enum': 'integer',
+  'string-enum': 'string',
+}
 
 class PolicyTemplateChecker(object):
 
@@ -112,6 +122,15 @@ class PolicyTemplateChecker(object):
       if (i + 1) not in policy_ids:
         self._Error('No policy with id: %s' % (i + 1))
 
+  def _CheckPolicySchema(self, policy, policy_type):
+    '''Checks that the 'schema' field matches the 'type' field.'''
+    self._CheckContains(policy, 'schema', dict)
+    if isinstance(policy.get('schema'), dict):
+      self._CheckContains(policy['schema'], 'type', str)
+      if policy['schema'].get('type') != TYPE_TO_SCHEMA[policy_type]:
+        self._Error('Schema type must match the existing type for policy %s' %
+                    policy.get('name'))
+
   def _CheckPolicy(self, policy, is_in_group, policy_ids):
     if not isinstance(policy, dict):
       self._Error('Each policy must be a dictionary.', 'policy', None, policy)
@@ -122,7 +141,7 @@ class PolicyTemplateChecker(object):
       if key not in ('name', 'type', 'caption', 'desc', 'device_only',
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future',
-                     'id'):
+                     'id', 'schema'):
         self.warning_count += 1
         print ('In policy %s: Warning: Unknown key: %s' %
                (policy.get('name'), key))
@@ -180,6 +199,11 @@ class PolicyTemplateChecker(object):
       # Each policy must have a protobuf ID.
       id = self._CheckContains(policy, 'id', int)
       self._AddPolicyID(id, policy_ids, policy)
+
+      # 'schema' is the new 'type'.
+      # TODO(joaodasilva): remove the 'type' checks once 'schema' is used
+      # everywhere.
+      self._CheckPolicySchema(policy, policy_type)
 
       # Each policy must have a supported_on list.
       supported_on = self._CheckContains(policy, 'supported_on', list)
