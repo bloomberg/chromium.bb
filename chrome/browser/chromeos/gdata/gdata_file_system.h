@@ -536,6 +536,27 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                int feed_changestamp,
                                FileResourceIdMap* file_map);
 
+  // Helper function for adding new |file| from the feed into |directory|. It
+  // checks the type of file and updates |changed_dirs| if this file adding
+  // operation needs to raise directory notification update. If file is being
+  // added to |orphaned_dir_service| such notifications are not raised since
+  // we ignore such files and don't add them to the file system now.
+  // static
+  static void AddEntryToDirectoryAndCollectChangedDirectories(
+      GDataEntry* entry,
+      GDataDirectory* directory,
+      GDataDirectoryService* orphaned_dir_service,
+      std::set<FilePath>* changed_dirs);
+
+  // Helper function for removing |entry| from |directory|. If |entry| is a
+  // directory too, it will collect all its children file paths into
+  // |changed_dirs| as well.
+  // static
+  static void RemoveEntryFromDirectoryAndCollectChangedDirectories(
+      GDataDirectory* directory,
+      GDataEntry* entry,
+      std::set<FilePath>* changed_dirs);
+
   // Finds directory where new |file| should be added to during feed processing.
   // |orphaned_entries_dir| collects files/dirs that don't have a parent in
   // either locally cached file system or in this new feed.

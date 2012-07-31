@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_db.h"
 
+#include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_db_factory.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
+#include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +68,7 @@ class GDataDBTest : public testing::Test {
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<GDataDB> gdata_db_;
+  MessageLoopForUI message_loop;
 };
 
 void GDataDBTest::SetUp() {
@@ -143,8 +146,15 @@ GDataDirectory* GDataDBTest::AddDirectory(
   const std::string resource_id = std::string("dir_resource_id:") +
                                   dir_name;
   dir->set_title(dir_name);
+  dir->SetBaseNameFromTitle();
   dir->set_resource_id(resource_id);
-  parent->AddEntry(dir);
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  directory_service->AddEntryToDirectory(
+      parent->GetFilePath(),
+      dir,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_OK, error);
 
   GDataDB::Status status = gdata_db_->Put(*dir);
   EXPECT_EQ(GDataDB::DB_OK, status);
@@ -161,8 +171,15 @@ GDataFile* GDataDBTest::AddFile(GDataDirectory* parent,
   const std::string resource_id = std::string("file_resource_id:") +
                                   title;
   file->set_title(title);
+  file->SetBaseNameFromTitle();
   file->set_resource_id(resource_id);
-  parent->AddEntry(file);
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  directory_service->AddEntryToDirectory(
+      parent->GetFilePath(),
+      file,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_OK, error);
 
   GDataDB::Status status = gdata_db_->Put(*file);
   EXPECT_EQ(GDataDB::DB_OK, status);

@@ -63,5 +63,11 @@ bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b) {
           a.is_persistent() == b.is_persistent());
 }
 
+void CopyErrorCodeFromFileOperationCallback(GDataFileError* output,
+                                            GDataFileError error) {
+  DCHECK(output);
+  *output = error;
+}
+
 }  // namespace test_util
 }  // namespace gdata

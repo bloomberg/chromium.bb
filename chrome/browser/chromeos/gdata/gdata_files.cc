@@ -6,9 +6,11 @@
 
 #include <vector>
 
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -25,19 +27,6 @@ const char kEscapedSlash[] = "\xE2\x88\x95";
 std::string ExtractResourceId(const GURL& url) {
   return net::UnescapeURLComponent(url.ExtractFileName(),
                                    net::UnescapeRule::URL_SPECIAL_CHARS);
-}
-
-// Replaces file entry |old_entry| with its fresh value |fresh_file|.
-void RefreshFileInternal(scoped_ptr<GDataFile> fresh_file,
-                         GDataEntry* old_entry) {
-  GDataDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
-  if (entry_parent) {
-    DCHECK_EQ(fresh_file->resource_id(), old_entry->resource_id());
-    DCHECK(old_entry->AsGDataFile());
-
-    entry_parent->RemoveEntry(old_entry);
-    entry_parent->AddEntry(fresh_file.release());
-  }
 }
 
 // Returns true if |proto| is a valid proto as the root directory.
@@ -456,6 +445,26 @@ GDataDirectoryService::~GDataDirectoryService() {
   resource_map_.clear();
 }
 
+void GDataDirectoryService::AddEntryToDirectory(
+    const FilePath& directory_path,
+    GDataEntry* entry,
+    const FileOperationCallback& callback) {
+  GDataEntry* destination = FindEntryByPathSync(directory_path);
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  if (!destination) {
+    error = GDATA_FILE_ERROR_NOT_FOUND;
+  } else if (!destination->AsGDataDirectory()) {
+    error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
+  } else {
+    destination->AsGDataDirectory()->AddEntry(entry);
+    error = GDATA_FILE_OK;
+  }
+  if (!callback.is_null()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, error));
+  }
+}
+
 void GDataDirectoryService::AddEntryToResourceMap(GDataEntry* entry) {
   // GDataFileSystem has already locked.
   DVLOG(1) << "AddEntryToResourceMap " << entry->resource_id();
@@ -525,8 +534,24 @@ void GDataDirectoryService::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
 
   // Need to get a reference here because Passed() could get evaluated first.
   const std::string& resource_id = fresh_file->resource_id();
-  GetEntryByResourceIdAsync(resource_id,
-      base::Bind(&RefreshFileInternal, base::Passed(&fresh_file)));
+  GetEntryByResourceIdAsync(
+      resource_id,
+      base::Bind(&GDataDirectoryService::RefreshFileInternal,
+                 base::Passed(&fresh_file)));
+}
+
+// static
+void GDataDirectoryService::RefreshFileInternal(
+    scoped_ptr<GDataFile> fresh_file,
+    GDataEntry* old_entry) {
+  GDataDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
+  if (entry_parent) {
+    DCHECK_EQ(fresh_file->resource_id(), old_entry->resource_id());
+    DCHECK(old_entry->AsGDataFile());
+
+    entry_parent->RemoveEntry(old_entry);
+    entry_parent->AddEntry(fresh_file.release());
+  }
 }
 
 // Convert to/from proto.

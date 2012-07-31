@@ -7,7 +7,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gdata {
@@ -210,18 +212,35 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
 }
 
 TEST(GDataRootDirectoryTest, RefreshFile) {
+  MessageLoopForUI message_loop;
   GDataDirectoryService directory_service;
   GDataDirectory* root(directory_service.root());
   // Add a directory to the file system.
   GDataDirectory* directory_entry = new GDataDirectory(root,
                                                        &directory_service);
   directory_entry->set_resource_id("folder:directory_resource_id");
-  root->AddEntry(directory_entry);
+  directory_entry->set_title("directory");
+  directory_entry->SetBaseNameFromTitle();
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  directory_service.AddEntryToDirectory(
+      FilePath(kGDataRootDirectory),
+      directory_entry,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(GDATA_FILE_OK, error);
 
   // Add a new file to the directory.
   GDataFile* initial_file_entry = new GDataFile(NULL, &directory_service);
   initial_file_entry->set_resource_id("file:file_resource_id");
-  directory_entry->AddEntry(initial_file_entry);
+  initial_file_entry->set_title("file");
+  initial_file_entry->SetBaseNameFromTitle();
+  directory_service.AddEntryToDirectory(
+      directory_entry->GetFilePath(),
+      initial_file_entry,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(GDATA_FILE_OK, error);
+
   ASSERT_EQ(directory_entry, initial_file_entry->parent());
 
   // Initial file system state set, let's try refreshing entries.

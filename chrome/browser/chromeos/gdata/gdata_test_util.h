@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+
 namespace gdata {
 
 class GDataCacheEntry;
@@ -36,6 +38,12 @@ GDataCacheEntry ToCacheEntry(int cache_state);
 
 // Returns true if the cache state of the given two cache entries are equal.
 bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b);
+
+// Copies |error| to |output|. Used to run asynchronous functions that take
+// FileOperationCallback from tests.
+void CopyErrorCodeFromFileOperationCallback(
+    GDataFileError* output, GDataFileError error);
+
 
 }  // namespace test_util
 }  // namespace gdata

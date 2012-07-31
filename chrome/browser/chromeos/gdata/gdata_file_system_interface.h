@@ -34,10 +34,6 @@ struct SearchResultInfo {
   bool is_directory;
 };
 
-// Used for file operations like removing files.
-typedef base::Callback<void(GDataFileError error)>
-    FileOperationCallback;
-
 // Used to get files from the file system.
 typedef base::Callback<void(GDataFileError error,
                             const FilePath& file_path,

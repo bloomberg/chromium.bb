@@ -154,34 +154,6 @@ void GetChildDirectoryPaths(GDataEntry* entry,
 }
 
 
-// Helper function for removing |entry| from |directory|. If |entry| is a
-// directory too, it will collect all its children file paths into
-// |changed_dirs| as well.
-void RemoveEntryFromDirectoryAndCollectChangedDirectories(
-    GDataDirectory* directory,
-    GDataEntry* entry,
-    std::set<FilePath>* changed_dirs) {
-  // Get the list of all sub-directory paths, so we can notify their listeners
-  // that they are smoked.
-  GetChildDirectoryPaths(entry, changed_dirs);
-  directory->RemoveEntry(entry);
-}
-
-// Helper function for adding new |file| from the feed into |directory|. It
-// checks the type of file and updates |changed_dirs| if this file adding
-// operation needs to raise directory notification update. If file is being
-// added to |orphaned_dir_service| such notifications are not raised since
-// we ignore such files and don't add them to the file system now.
-void AddEntryToDirectoryAndCollectChangedDirectories(
-    GDataEntry* entry,
-    GDataDirectory* directory,
-    GDataDirectoryService* orphaned_dir_service,
-    std::set<FilePath>* changed_dirs) {
-  directory->AddEntry(entry);
-  if (entry->AsGDataDirectory() && directory != orphaned_dir_service->root())
-    changed_dirs->insert(entry->GetFilePath());
-}
-
 // Invoked upon completion of TransferRegularFile initiated by Copy.
 //
 // |callback| is run on the thread represented by |relay_proxy|.
@@ -3477,6 +3449,36 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
       NotifyDirectoryChanged(*dir_iter);
     }
   }
+}
+
+// Helper function for adding new |file| from the feed into |directory|. It
+// checks the type of file and updates |changed_dirs| if this file adding
+// operation needs to raise directory notification update. If file is being
+// added to |orphaned_dir_service| such notifications are not raised since
+// we ignore such files and don't add them to the file system now.
+// static
+void GDataFileSystem::AddEntryToDirectoryAndCollectChangedDirectories(
+    GDataEntry* entry,
+    GDataDirectory* directory,
+    GDataDirectoryService* orphaned_dir_service,
+    std::set<FilePath>* changed_dirs) {
+  directory->AddEntry(entry);
+  if (entry->AsGDataDirectory() && directory != orphaned_dir_service->root())
+    changed_dirs->insert(entry->GetFilePath());
+}
+
+// Helper function for removing |entry| from |directory|. If |entry| is a
+// directory too, it will collect all its children file paths into
+// |changed_dirs| as well.
+// static
+void GDataFileSystem::RemoveEntryFromDirectoryAndCollectChangedDirectories(
+    GDataDirectory* directory,
+    GDataEntry* entry,
+    std::set<FilePath>* changed_dirs) {
+  // Get the list of all sub-directory paths, so we can notify their listeners
+  // that they are smoked.
+  GetChildDirectoryPaths(entry, changed_dirs);
+  directory->RemoveEntry(entry);
 }
 
 GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
