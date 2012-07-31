@@ -21,7 +21,7 @@ const int kMaxInlineDispositionHeight = 900;
 
 // static
 gfx::Size WebIntentPicker::GetMinInlineDispositionSize() {
-  return gfx::Size(0, 0);
+  return gfx::Size(1, 1);
 }
 
 // static
