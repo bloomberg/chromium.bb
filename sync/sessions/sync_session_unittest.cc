@@ -67,7 +67,8 @@ class SyncSessionTest : public testing::Test,
             throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(),
             NULL,
-            NULL));
+            NULL,
+            true  /* enable keystore encryption */));
     context_->set_routing_info(routes_);
 
     session_.reset(MakeSession());

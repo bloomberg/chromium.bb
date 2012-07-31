@@ -56,7 +56,9 @@ class SyncSessionContext {
                      ThrottledDataTypeTracker* throttled_data_type_tracker,
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter,
-                     TrafficRecorder* traffic_recorder);
+                     TrafficRecorder* traffic_recorder,
+                     bool keystore_encryption_enabled);
+
   ~SyncSessionContext();
 
   ConflictResolver* resolver() { return resolver_; }
@@ -118,6 +120,10 @@ class SyncSessionContext {
     return traffic_recorder_;
   }
 
+  bool keystore_encryption_enabled() const {
+    return keystore_encryption_enabled_;
+  }
+
  private:
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
@@ -161,6 +167,11 @@ class SyncSessionContext {
   DebugInfoGetter* const debug_info_getter_;
 
   TrafficRecorder* traffic_recorder_;
+
+  // Temporary variable while keystore encryption is behind a flag. True if
+  // we should attempt performing keystore encryption related work, false if
+  // the experiment is not enabled.
+  bool keystore_encryption_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

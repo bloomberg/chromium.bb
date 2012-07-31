@@ -197,6 +197,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   ListValue* section_last_session = AddSection(
       stats_list, "Status from Last Completed Session");
   StringSyncStat session_source(section_last_session, "Sync Source");
+  StringSyncStat get_key_result(section_last_session, "GetKey Step Result");
   StringSyncStat download_result(section_last_session, "Download Step Result");
   StringSyncStat commit_result(section_last_session, "Commit Step Result");
 
@@ -297,6 +298,9 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   if (snapshot.is_initialized()) {
     session_source.SetValue(
         syncer::GetUpdatesSourceString(snapshot.source().updates_source));
+    get_key_result.SetValue(
+        GetSyncerErrorString(
+            snapshot.model_neutral_state().last_get_key_result));
     download_result.SetValue(
         GetSyncerErrorString(
             snapshot.model_neutral_state().last_download_updates_result));

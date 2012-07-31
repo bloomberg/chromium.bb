@@ -351,15 +351,9 @@ void SyncManagerImpl::ConfigureSyncer(
     return;
   }
 
-  // TODO(zea): set this based on whether cryptographer has keystore
-  // encryption key or not (requires opening a transaction). crbug.com/129665.
-  ConfigurationParams::KeystoreKeyStatus keystore_key_status =
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY;
-
   ConfigurationParams params(GetSourceFromReason(reason),
                              types_to_config,
                              new_routing_info,
-                             keystore_key_status,
                              ready_task);
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
@@ -382,6 +376,7 @@ bool SyncManagerImpl::Init(
     const SyncCredentials& credentials,
     scoped_ptr<SyncNotifier> sync_notifier,
     const std::string& restored_key_for_bootstrapping,
+    bool keystore_encryption_enabled,
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
@@ -469,7 +464,8 @@ bool SyncManagerImpl::Init(
       &throttled_data_type_tracker_,
       listeners,
       &debug_info_event_listener_,
-      &traffic_recorder_).Pass();
+      &traffic_recorder_,
+      keystore_encryption_enabled).Pass();
   session_context_->set_account_name(credentials.email);
   scheduler_ = internal_components_factory->BuildScheduler(
       name_, session_context_.get()).Pass();

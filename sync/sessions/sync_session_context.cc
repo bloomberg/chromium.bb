@@ -22,7 +22,8 @@ SyncSessionContext::SyncSessionContext(
     ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter,
-    TrafficRecorder* traffic_recorder)
+    TrafficRecorder* traffic_recorder,
+    bool keystore_encryption_enabled)
     : resolver_(NULL),
       connection_manager_(connection_manager),
       directory_(directory),
@@ -32,7 +33,8 @@ SyncSessionContext::SyncSessionContext(
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
       throttled_data_type_tracker_(throttled_data_type_tracker),
       debug_info_getter_(debug_info_getter),
-      traffic_recorder_(traffic_recorder) {
+      traffic_recorder_(traffic_recorder),
+      keystore_encryption_enabled_(keystore_encryption_enabled) {
   std::vector<SyncEngineEventListener*>::const_iterator it;
   for (it = listeners.begin(); it != listeners.end(); ++it)
     listeners_.AddObserver(*it);

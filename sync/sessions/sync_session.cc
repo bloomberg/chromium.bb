@@ -241,17 +241,17 @@ std::set<ModelSafeGroup>
 namespace {
 // Return true if the command in question was attempted and did not complete
 // successfully.
-//
 bool IsError(SyncerError error) {
   return error != UNSET && error != SYNCER_OK;
 }
 
 // Returns false iff one of the command results had an error.
 bool HadErrors(const ModelNeutralState& state) {
+  const bool get_key_error = IsError(state.last_get_key_result);
   const bool download_updates_error =
       IsError(state.last_download_updates_result);
   const bool commit_error = IsError(state.commit_result);
-  return download_updates_error || commit_error;
+  return get_key_error || download_updates_error || commit_error;
 }
 }  // namespace
 
@@ -261,7 +261,8 @@ bool SyncSession::Succeeded() const {
 
 bool SyncSession::SuccessfullyReachedServer() const {
   const ModelNeutralState& state = status_controller_->model_neutral_state();
-  bool reached_server = state.last_download_updates_result == SYNCER_OK;
+  bool reached_server = state.last_get_key_result == SYNCER_OK ||
+                        state.last_download_updates_result == SYNCER_OK;
   // It's possible that we reached the server on one attempt, then had an error
   // on the next (or didn't perform some of the server-communicating commands).
   // We want to verify that, for all commands attempted, we successfully spoke

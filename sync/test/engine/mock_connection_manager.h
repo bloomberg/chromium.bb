@@ -122,6 +122,8 @@ class MockConnectionManager : public ServerConnectionManager {
   void FailNextPostBufferToPathCall() { countdown_to_postbuffer_fail_ = 1; }
   void FailNthPostBufferToPathCall(int n) { countdown_to_postbuffer_fail_ = n; }
 
+  void SetKeystoreKey(const std::string& key);
+
   void FailNonPeriodicGetUpdates() { fail_non_periodic_get_updates_ = true; }
 
   // Simple inspectors.
@@ -302,8 +304,8 @@ class MockConnectionManager : public ServerConnectionManager {
   base::Closure mid_commit_callback_;
   MidCommitObserver* mid_commit_observer_;
 
-  // The clear data response we'll return in the next response
-  sync_pb::SyncEnums::ErrorType clear_user_data_response_errortype_;
+  // The keystore key we return for a GetUpdates with need_encryption_key set.
+  std::string keystore_key_;
 
   // The AUTHENTICATE response we'll return for auth requests.
   sync_pb::AuthenticateResponse auth_response_;

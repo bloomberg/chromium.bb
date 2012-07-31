@@ -600,6 +600,12 @@ class SyncDataModelTest(unittest.TestCase):
         len(changes))
     self.assertEqual(version2, version)
 
+  def testGetKey(self):
+    key1 = self.model.GetKey()
+    key2 = self.model.GetKey()
+    self.assertTrue(len(key1) > 0)
+    self.assertEqual(key1, key2)
+
 
 if __name__ == '__main__':
   unittest.main()

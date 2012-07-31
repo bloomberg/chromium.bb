@@ -142,6 +142,10 @@ void StatusController::set_sync_protocol_error(
   model_neutral_.sync_protocol_error = error;
 }
 
+void StatusController::set_last_get_key_result(const SyncerError result) {
+  model_neutral_.last_get_key_result = result;
+}
+
 void StatusController::set_last_download_updates_result(
     const SyncerError result) {
   model_neutral_.last_download_updates_result = result;
@@ -149,6 +153,10 @@ void StatusController::set_last_download_updates_result(
 
 void StatusController::set_commit_result(const SyncerError result) {
   model_neutral_.commit_result = result;
+}
+
+SyncerError StatusController::last_get_key_result() const {
+  return model_neutral_.last_get_key_result;
 }
 
 void StatusController::update_conflicts_resolved(bool resolved) {

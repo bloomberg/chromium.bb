@@ -992,6 +992,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
           options.chrome_sync_notification_bridge,
           options.sync_notifier_factory->CreateSyncNotifier())),
       options.restored_key_for_bootstrapping,
+      CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kSyncKeystoreEncryption),
       scoped_ptr<InternalComponentsFactory>(
           options.internal_components_factory),
       &encryptor_,

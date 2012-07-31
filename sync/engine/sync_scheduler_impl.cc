@@ -65,18 +65,15 @@ bool IsActionableError(
 }  // namespace
 
 ConfigurationParams::ConfigurationParams()
-    : source(GetUpdatesCallerInfo::UNKNOWN),
-      keystore_key_status(KEYSTORE_KEY_UNNECESSARY) {}
+    : source(GetUpdatesCallerInfo::UNKNOWN) {}
 ConfigurationParams::ConfigurationParams(
     const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
     const ModelTypeSet& types_to_download,
     const ModelSafeRoutingInfo& routing_info,
-    KeystoreKeyStatus keystore_key_status,
     const base::Closure& ready_task)
     : source(source),
       types_to_download(types_to_download),
       routing_info(routing_info),
-      keystore_key_status(keystore_key_status),
       ready_task(ready_task) {
   DCHECK(!ready_task.is_null());
 }
@@ -352,12 +349,6 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
                        &restricted_routes,
                        &restricted_workers);
   session_context_->set_routing_info(params.routing_info);
-
-  if (params.keystore_key_status == ConfigurationParams::KEYSTORE_KEY_NEEDED) {
-    // TODO(zea): implement in such a way that we can handle failures and the
-    // subsequent retrys the scheduler might perform. See crbug.com/129665.
-    NOTIMPLEMENTED();
-  }
 
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {

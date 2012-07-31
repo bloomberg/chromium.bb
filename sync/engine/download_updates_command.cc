@@ -11,6 +11,7 @@
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/internal_api/public/base/model_type_payload_map.h"
 #include "sync/syncable/directory.h"
+#include "sync/syncable/read_transaction.h"
 
 using sync_pb::DebugInfo;
 
@@ -24,6 +25,30 @@ DownloadUpdatesCommand::DownloadUpdatesCommand(
     : create_mobile_bookmarks_folder_(create_mobile_bookmarks_folder) {}
 
 DownloadUpdatesCommand::~DownloadUpdatesCommand() {}
+
+namespace {
+
+SyncerError HandleGetEncryptionKeyResponse(
+    const sync_pb::ClientToServerResponse& update_response,
+    syncable::Directory* dir) {
+  bool success = false;
+  if (!update_response.get_updates().has_encryption_key()) {
+    LOG(ERROR) << "Failed to receive encryption key from server.";
+    return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+  syncable::ReadTransaction trans(FROM_HERE, dir);
+  Cryptographer* cryptographer = dir->GetCryptographer(&trans);
+  success = cryptographer->SetKeystoreKey(
+      update_response.get_updates().encryption_key());
+
+  DVLOG(1) << "GetUpdates returned encryption key of length "
+           << update_response.get_updates().encryption_key().length()
+           << ". Cryptographer keystore key "
+           << (success ? "" : "not ") << "updated.";
+  return (success ? SYNCER_OK : SERVER_RESPONSE_VALIDATION_FAILED);
+}
+
+}  // namespace
 
 SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   sync_pb::ClientToServerMessage client_to_server_message;
@@ -59,6 +84,17 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     if (type_payload != type_payload_map.end()) {
       progress_marker->set_notification_hint(type_payload->second);
     }
+  }
+
+  bool need_encryption_key = false;
+  if (session->context()->keystore_encryption_enabled()) {
+    syncable::Directory* dir = session->context()->directory();
+    syncable::ReadTransaction trans(FROM_HERE, dir);
+    Cryptographer* cryptographer =
+        session->context()->directory()->GetCryptographer(&trans);
+    need_encryption_key = !cryptographer->HasKeystoreKey();
+    get_updates->set_need_encryption_key(need_encryption_key);
+
   }
 
   // We want folders for our associated types, always.  If we were to set
@@ -102,6 +138,12 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
            << " updates and indicated "
            << update_response.get_updates().changes_remaining()
            << " updates left on server.";
+
+  if (need_encryption_key) {
+    status->set_last_get_key_result(
+        HandleGetEncryptionKeyResponse(update_response, dir));
+  }
+
   return result;
 }
 

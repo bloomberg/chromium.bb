@@ -764,6 +764,7 @@ class SyncManagerTest : public testing::Test,
                        credentials,
                        scoped_ptr<SyncNotifier>(sync_notifier_mock_),
                        "",
+                       true,  // enable keystore encryption
                        scoped_ptr<InternalComponentsFactory>(GetFactory()),
                        &encryptor_,
                        &handler_,

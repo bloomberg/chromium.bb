@@ -1240,6 +1240,9 @@ const char kSyncAllowInsecureXmppConnection[] =
 // Invalidates any login info passed into sync's XMPP connection.
 const char kSyncInvalidateXmppLogin[]       = "sync-invalidate-xmpp-login";
 
+// Enable support for keystore key based encryption.
+const char kSyncKeystoreEncryption[] = "sync-keystore-encryption";
+
 // Overrides the default notification method for sync.
 const char kSyncNotificationMethod[]        = "sync-notification-method";
 

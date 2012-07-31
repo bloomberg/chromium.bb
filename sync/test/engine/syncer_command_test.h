@@ -127,7 +127,8 @@ class SyncerCommandTestBase : public testing::Test,
             throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(),
             &mock_debug_info_getter_,
-            &traffic_recorder_));
+            &traffic_recorder_,
+            true  /* enable keystore encryption*/ ));
     context_->set_account_name(directory()->name());
     ClearSession();
   }

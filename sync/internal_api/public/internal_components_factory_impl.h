@@ -29,7 +29,8 @@ class InternalComponentsFactoryImpl : public InternalComponentsFactory {
       ThrottledDataTypeTracker* throttled_data_type_tracker,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
-      TrafficRecorder* traffic_recorder) OVERRIDE;
+      TrafficRecorder* traffic_recorder,
+      bool keystore_encryption_enabled) OVERRIDE;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(

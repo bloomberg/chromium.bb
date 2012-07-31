@@ -179,6 +179,15 @@ class Cryptographer {
   // stored in the |pending_keys_|.
   UpdateResult Update(const sync_pb::NigoriSpecifics& nigori);
 
+  // Set the keystore-derived nigori from the provided key.
+  // Returns true if we succesfully create the keystore derived nigori from the
+  // provided key, false otherwise.
+  bool SetKeystoreKey(const std::string& keystore_key);
+
+  // Returns true if we currently have a keystore-derived nigori, false
+  // otherwise.
+  bool HasKeystoreKey();
+
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();
 
@@ -237,6 +246,7 @@ class Cryptographer {
 
   NigoriMap nigoris_;  // The Nigoris we know about, mapped by key name.
   NigoriMap::value_type* default_nigori_;  // The Nigori used for encryption.
+  NigoriMap::value_type* keystore_nigori_; // Nigori generated from keystore.
 
   scoped_ptr<sync_pb::EncryptedData> pending_keys_;
 

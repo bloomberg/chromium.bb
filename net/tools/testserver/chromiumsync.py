@@ -13,6 +13,7 @@ import copy
 import operator
 import pickle
 import random
+import string
 import sys
 import threading
 import time
@@ -96,6 +97,9 @@ ROOT_ID = '0'
 # Unix time epoch in struct_time format. The tuple corresponds to UTC Wednesday
 # Jan 1 1970, 00:00:00, non-dst.
 UNIX_TIME_EPOCH = (1970, 1, 1, 0, 0, 0, 3, 1, 0)
+
+# The number of characters in the server-generated encryption key.
+KEYSTORE_KEY_LENGTH = 16
 
 class Error(Exception):
   """Error class for this module."""
@@ -468,6 +472,9 @@ class SyncDataModel(object):
     self.induced_error_frequency = 0
     self.sync_count_before_errors = 0
 
+    self._key = ''.join(random.choice(string.ascii_uppercase + string.digits)
+        for x in xrange(KEYSTORE_KEY_LENGTH))
+
   def _SaveEntry(self, entry):
     """Insert or update an entry in the change log, and give it a new version.
 
@@ -663,6 +670,11 @@ class SyncDataModel(object):
     # The new client timestamp is the timestamp of the last item in the
     # batch, even if that item was filtered out.
     return (batch[-1].version, filtered, len(new_changes) - len(batch))
+
+  def GetKey(self):
+    """Returns the encryption key for this account."""
+    print "Returning encryption key: %s" % self._key
+    return self._key
 
   def _CopyOverImmutableFields(self, entry):
     """Preserve immutable fields by copying pre-commit state.
@@ -1043,7 +1055,7 @@ class TestServer(object):
   def HandleSetInducedError(self, path):
      query = urlparse.urlparse(path)[4]
      self.account_lock.acquire()
-     code = 200;
+     code = 200
      response = 'Success'
      error = sync_pb2.ClientToServerResponse.Error()
      try:
@@ -1132,8 +1144,8 @@ class TestServer(object):
       response.error_code = sync_enums_pb2.SyncEnums.SUCCESS
       self.CheckStoreBirthday(request)
       response.store_birthday = self.account.store_birthday
-      self.CheckTransientError();
-      self.CheckSendError();
+      self.CheckTransientError()
+      self.CheckSendError()
 
       print_context('->')
 
@@ -1262,3 +1274,6 @@ class TestServer(object):
       reply = update_response.entries.add()
       reply.CopyFrom(entry)
     update_sieve.SaveProgress(new_timestamp, update_response)
+
+    if update_request.need_encryption_key:
+      update_response.encryption_key = self.account.GetKey()

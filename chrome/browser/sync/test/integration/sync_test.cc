@@ -197,6 +197,10 @@ void SyncTest::AddTestSwitches(CommandLine* cl) {
   // Disable non-essential access of external network resources.
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);
+
+  // TODO(sync): remove this once keystore encryption is enabled by default.
+  if (!cl->HasSwitch(switches::kSyncKeystoreEncryption))
+    cl->AppendSwitch(switches::kSyncKeystoreEncryption);
 }
 
 void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {}

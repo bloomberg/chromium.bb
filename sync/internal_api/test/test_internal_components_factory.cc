@@ -32,7 +32,8 @@ TestInternalComponentsFactory::BuildContext(
     ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
-    TrafficRecorder* traffic_recorder) {
+    TrafficRecorder* traffic_recorder,
+    bool keystore_encryption_enabled) {
 
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
@@ -40,7 +41,9 @@ TestInternalComponentsFactory::BuildContext(
       new sessions::SyncSessionContext(
           connection_manager, directory, workers, monitor,
           throttled_data_type_tracker, empty_listeners, debug_info_getter,
-          traffic_recorder));
+          traffic_recorder,
+          keystore_encryption_enabled));
+
 }
 
 scoped_ptr<syncable::DirectoryBackingStore>

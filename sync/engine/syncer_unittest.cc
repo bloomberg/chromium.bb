@@ -238,7 +238,8 @@ class SyncerTest : public testing::Test,
         new SyncSessionContext(
             mock_server_.get(), directory(), workers,
             &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
-            listeners, NULL, &traffic_recorder_));
+            listeners, NULL, &traffic_recorder_,
+            true  /* enable keystore encryption */));
     context_->set_routing_info(routing_info);
     ASSERT_FALSE(context_->resolver());
     syncer_ = new Syncer();
@@ -252,6 +253,8 @@ class SyncerTest : public testing::Test,
     root_id_ = TestIdFactory::root();
     parent_id_ = ids_.MakeServer("parent id");
     child_id_ = ids_.MakeServer("child id");
+    directory()->set_store_birthday(mock_server_->store_birthday());
+    mock_server_->SetKeystoreKey("encryption_key");
   }
 
   virtual void TearDown() {
@@ -2307,7 +2310,6 @@ class EntryCreatedInNewFolderTest : public SyncerTest {
 };
 
 TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
-  directory()->set_store_birthday(mock_server_->store_birthday());
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::CREATE, trans.root_id(),
@@ -4165,6 +4167,37 @@ TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
   mock_server_->ClearUpdatesQueue();
 
   EXPECT_FALSE(initial_sync_ended_for_type(BOOKMARKS));
+}
+
+TEST_F(SyncerTest, GetKeySuccess) {
+  {
+    syncable::ReadTransaction rtrans(FROM_HERE, directory());
+    EXPECT_FALSE(cryptographer(&rtrans)->HasKeystoreKey());
+  }
+
+  SyncShareConfigure();
+
+  EXPECT_EQ(session_->status_controller().last_get_key_result(), SYNCER_OK);
+  {
+    syncable::ReadTransaction rtrans(FROM_HERE, directory());
+    EXPECT_TRUE(cryptographer(&rtrans)->HasKeystoreKey());
+  }
+}
+
+TEST_F(SyncerTest, GetKeyEmpty) {
+  {
+    syncable::ReadTransaction rtrans(FROM_HERE, directory());
+    EXPECT_FALSE(cryptographer(&rtrans)->HasKeystoreKey());
+  }
+
+  mock_server_->SetKeystoreKey("");
+  SyncShareConfigure();
+
+  EXPECT_NE(session_->status_controller().last_get_key_result(), SYNCER_OK);
+  {
+    syncable::ReadTransaction rtrans(FROM_HERE, directory());
+    EXPECT_FALSE(cryptographer(&rtrans)->HasKeystoreKey());
+  }
 }
 
 // Test what happens if a client deletes, then recreates, an object very

@@ -14,8 +14,17 @@ void SimulateHasMoreToSync(sessions::SyncSession* session,
   ASSERT_TRUE(session->HasMoreToSync());
 }
 
+void SimulateGetEncryptionKeyFailed(sessions::SyncSession* session,
+                                    SyncerStep begin, SyncerStep end) {
+  session->mutable_status_controller()->set_last_get_key_result(
+      SERVER_RESPONSE_VALIDATION_FAILED);
+  session->mutable_status_controller()->set_last_download_updates_result(
+      SYNCER_OK);
+}
+
 void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,
                                    SyncerStep begin, SyncerStep end) {
+  session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_TRANSIENT_ERROR);
 }
@@ -40,6 +49,7 @@ void SimulateSuccess(sessions::SyncSession* session,
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->SetFinished();
   if (end == SYNCER_END) {
+    session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
     session->mutable_status_controller()->set_last_download_updates_result(
         SYNCER_OK);
     session->mutable_status_controller()->set_commit_result(SYNCER_OK);

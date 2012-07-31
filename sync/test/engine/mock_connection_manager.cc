@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/stringprintf.h"
 #include "sync/engine/syncer_proto_util.h"
+#include "sync/test/engine/test_id_factory.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/write_transaction.h"
@@ -427,7 +428,7 @@ void MockConnectionManager::ProcessGetUpdates(
     if (!updates->entries(i).deleted()) {
       ModelType entry_type = GetModelType(updates->entries(i));
       EXPECT_TRUE(
-        IsModelTypePresentInSpecifics(gu.from_progress_marker(), entry_type))
+          IsModelTypePresentInSpecifics(gu.from_progress_marker(), entry_type))
           << "Syncer did not request updates being provided by the test.";
     }
   }
@@ -447,7 +448,17 @@ void MockConnectionManager::ProcessGetUpdates(
     }
   }
 
+  // Fill the keystore key if requested.
+  if (gu.need_encryption_key())
+    response->mutable_get_updates()->set_encryption_key(keystore_key_);
+
   update_queue_.pop_front();
+}
+
+void MockConnectionManager::SetKeystoreKey(const std::string& key) {
+  // Note: this is not a thread-safe set, ok for now.  NOT ok if tests
+  // run the syncer on the background thread while this method is called.
+  keystore_key_ = key;
 }
 
 bool MockConnectionManager::ShouldConflictThisCommit() {

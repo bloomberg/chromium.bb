@@ -15,6 +15,7 @@ ModelNeutralState::ModelNeutralState()
       num_reflected_updates_downloaded_total(0),
       num_local_overwrites(0),
       num_server_overwrites(0),
+      last_get_key_result(UNSET),
       last_download_updates_result(UNSET),
       commit_result(UNSET),
       conflicts_resolved(false),

@@ -149,6 +149,8 @@ class StatusController {
     return model_neutral_;
   }
 
+  SyncerError last_get_key_result() const;
+
   // A toolbelt full of methods for updating counters and flags.
   void set_num_server_changes_remaining(int64 changes_remaining);
   void set_num_successful_bookmark_commits(int value);
@@ -161,6 +163,7 @@ class StatusController {
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();
   void set_sync_protocol_error(const SyncProtocolError& error);
+  void set_last_get_key_result(const SyncerError result);
   void set_last_download_updates_result(const SyncerError result);
   void set_commit_result(const SyncerError result);
 

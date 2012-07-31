@@ -362,6 +362,7 @@ int SyncClientMain(int argc, char* argv[]) {
                     scoped_ptr<SyncNotifier>(
                         sync_notifier_factory.CreateSyncNotifier()),
                     kRestoredKeyForBootstrapping,
+                    true,  // enable keystore encryption
                     scoped_ptr<InternalComponentsFactory>(
                         new InternalComponentsFactoryImpl()),
                     &null_encryptor,

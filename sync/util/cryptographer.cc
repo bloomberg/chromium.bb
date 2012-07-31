@@ -25,6 +25,7 @@ Cryptographer::Observer::~Observer() {}
 Cryptographer::Cryptographer(Encryptor* encryptor)
     : encryptor_(encryptor),
       default_nigori_(NULL),
+      keystore_nigori_(NULL),
       encrypted_types_(SensitiveTypes()),
       encrypt_everything_(false) {
   DCHECK(encryptor);
@@ -306,6 +307,26 @@ Cryptographer::UpdateResult Cryptographer::Update(
     }
   }
   return Cryptographer::SUCCESS;
+}
+
+bool Cryptographer::SetKeystoreKey(const std::string& keystore_key) {
+  if (keystore_key.empty())
+    return false;
+  KeyParams params = {"localhost", "dummy", keystore_key};
+
+  // AddKey updates the default nigori, so we save the current default and
+  // make sure the keystore_nigori_ gets updated instead.
+  NigoriMap::value_type* old_default = default_nigori_;
+  if (AddKey(params)) {
+    keystore_nigori_ = default_nigori_;
+    default_nigori_ = old_default;
+    return true;
+  }
+  return false;
+}
+
+bool Cryptographer::HasKeystoreKey() {
+  return keystore_nigori_ != NULL;
 }
 
 // Static

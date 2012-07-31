@@ -26,16 +26,11 @@ namespace syncer {
 struct ServerConnectionEvent;
 
 struct ConfigurationParams {
-  enum KeystoreKeyStatus {
-    KEYSTORE_KEY_UNNECESSARY,
-    KEYSTORE_KEY_NEEDED
-  };
   ConfigurationParams();
   ConfigurationParams(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
       const ModelTypeSet& types_to_download,
       const ModelSafeRoutingInfo& routing_info,
-      KeystoreKeyStatus keystore_key_status,
       const base::Closure& ready_task);
   ~ConfigurationParams();
 
@@ -45,8 +40,6 @@ struct ConfigurationParams {
   ModelTypeSet types_to_download;
   // The new routing info (superset of types to be downloaded).
   ModelSafeRoutingInfo routing_info;
-  // Whether we need to perform a GetKey command.
-  KeystoreKeyStatus keystore_key_status;
   // Callback to invoke on configuration completion.
   base::Closure ready_task;
 };

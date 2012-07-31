@@ -120,7 +120,8 @@ class SyncSchedulerTest : public testing::Test {
     context_.reset(new SyncSessionContext(
             connection_.get(), directory(), workers,
             &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
-            std::vector<SyncEngineEventListener*>(), NULL, NULL));
+            std::vector<SyncEngineEventListener*>(), NULL, NULL,
+            true  /* enable keystore encryption */));
     context_->set_routing_info(routing_info);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
@@ -312,7 +313,6 @@ TEST_F(SyncSchedulerTest, Config) {
       GetUpdatesCallerInfo::RECONFIGURATION,
       model_types,
       TypesToRoutingInfo(model_types),
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   ASSERT_TRUE(scheduler()->ScheduleConfiguration(params));
   ASSERT_EQ(1, counter.times_called());
@@ -346,7 +346,6 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
       GetUpdatesCallerInfo::RECONFIGURATION,
       model_types,
       TypesToRoutingInfo(model_types),
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   ASSERT_FALSE(scheduler()->ScheduleConfiguration(params));
   ASSERT_EQ(0, counter.times_called());
@@ -389,7 +388,6 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
       GetUpdatesCallerInfo::RECONFIGURATION,
       model_types,
       TypesToRoutingInfo(model_types),
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   ASSERT_FALSE(scheduler()->ScheduleConfiguration(params));
   ASSERT_EQ(0, counter.times_called());
@@ -730,7 +728,6 @@ TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
       GetUpdatesCallerInfo::RECONFIGURATION,
       types,
       TypesToRoutingInfo(types),
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   ASSERT_FALSE(scheduler()->ScheduleConfiguration(params));
   ASSERT_EQ(0, counter.times_called());
@@ -784,7 +781,6 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
       GetUpdatesCallerInfo::RECONFIGURATION,
       config_types,
       TypesToRoutingInfo(config_types),
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   ASSERT_TRUE(scheduler()->ScheduleConfiguration(params));
   ASSERT_EQ(1, counter.times_called());
@@ -848,6 +844,17 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailDownloadTwice) {
   EXPECT_TRUE(RunAndGetBackoff());
 }
 
+// Have the syncer fail to get the encryption key yet succeed in downloading
+// updates. Expect this will leave the scheduler in backoff.
+TEST_F(BackoffTriggersSyncSchedulerTest, FailGetEncryptionKey) {
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(Invoke(sessions::test_util::SimulateGetEncryptionKeyFailed))
+      .WillRepeatedly(DoAll(
+              Invoke(sessions::test_util::SimulateGetEncryptionKeyFailed),
+              QuitLoopNowAction()));
+  EXPECT_TRUE(RunAndGetBackoff());
+}
+
 // Test that no polls or extraneous nudges occur when in backoff.
 TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   SyncShareRecords r;
@@ -899,7 +906,6 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
       GetUpdatesCallerInfo::RECONFIGURATION,
       types,
       TypesToRoutingInfo(types),
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   ASSERT_FALSE(scheduler()->ScheduleConfiguration(params));
   ASSERT_EQ(0, counter.times_called());
@@ -1074,7 +1080,6 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
       GetUpdatesCallerInfo::RECONFIGURATION,
       model_types,
       TypesToRoutingInfo(model_types),
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   ASSERT_TRUE(scheduler()->ScheduleConfiguration(params));
   ASSERT_EQ(1, counter.times_called());

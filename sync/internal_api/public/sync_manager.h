@@ -359,6 +359,10 @@ class SyncManager {
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
   // |sync_notifier| is owned and used to listen for notifications.
+  // |restored_key_for_bootstrapping| is the key used to boostrap the
+  // cryptographer
+  // |keystore_encryption_enabled| determines whether we enable the keystore
+  // encryption functionality in the cryptographer/nigori.
   // |report_unrecoverable_error_function| may be NULL.
   //
   // TODO(akalin): Replace the |post_factory| parameter with a
@@ -377,6 +381,7 @@ class SyncManager {
       const SyncCredentials& credentials,
       scoped_ptr<SyncNotifier> sync_notifier,
       const std::string& restored_key_for_bootstrapping,
+      bool keystore_encryption_enabled,
       scoped_ptr<InternalComponentsFactory> internal_components_factory,
       Encryptor* encryptor,
       UnrecoverableErrorHandler* unrecoverable_error_handler,

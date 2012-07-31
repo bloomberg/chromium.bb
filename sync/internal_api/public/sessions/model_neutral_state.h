@@ -48,7 +48,9 @@ struct ModelNeutralState {
   // Any protocol errors that we received during this sync session.
   SyncProtocolError sync_protocol_error;
 
-  // Records the most recent results of PostCommit and GetUpdates commands.
+  // Records the most recent results of GetKey, PostCommit and GetUpdates
+  // commands.
+  SyncerError last_get_key_result;
   SyncerError last_download_updates_result;
   SyncerError commit_result;
 

@@ -446,6 +446,14 @@ message GetUpdatesMessage {
   // delimited by a length prefix, which is encoded as a varint.
   optional bool streaming = 7 [default = false];
 
+  // Whether the client needs the server to provide an encryption key for this
+  // account.
+  // Note: this should typically only be set on the first GetUpdates a client
+  // requests. Clients are expected to persist the encryption key from then on.
+  // The allowed frequency for requesting encryption keys is much lower than
+  // other datatypes, so repeated usage will likely result in throttling.
+  optional bool need_encryption_key = 8 [default = false];
+
   // Whether to create the mobile bookmarks folder if it's not
   // already created.  Should be set to true only by mobile clients.
   optional bool create_mobile_bookmarks_folder = 1000 [default = false];
@@ -572,6 +580,10 @@ message GetUpdatesResponse {
   // Progress markers in the context of a response will never have the
   // |timestamp_token_for_migration| field set.
   repeated DataTypeProgressMarker new_progress_marker = 5;
+
+  // The current encryption key associated with this account. Only set if the
+  // GetUpdatesMessage in the request had need_encryption_key == true.
+  optional bytes encryption_key = 6;
 };
 
 // The metadata response for GetUpdatesMessage.  This response is sent when
@@ -625,25 +637,6 @@ message ClientToServerResponse {
   optional CommitResponse commit = 1;
   optional GetUpdatesResponse get_updates = 2;
   optional AuthenticateResponse authenticate = 3;
-  // DEPRECATED - this field was never used in production.
-  // optional ClearUserDataResponse clear_user_data = 9;
-  optional GetUpdatesMetadataResponse stream_metadata = 10;
-  // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
-  // none of the other fields (error_code and etc) will be set.
-  optional GetUpdatesStreamingResponse stream_data = 11;
-
-  message Error {
-    optional SyncEnums.ErrorType error_type = 1 [default = UNKNOWN];
-    optional string error_description       = 2;
-    optional string url                     = 3;
-    optional SyncEnums.Action action        = 4 [default = UNKNOWN_ACTION];
-
-    // Currently only meaningful if |error_type| is throttled. If this field
-    // is absent then the whole client (all datatypes) is throttled.
-    repeated int32 error_data_type_ids = 5;
-  }
-
-  optional Error error = 13;
 
   // Up until protocol_version 24, the default was SUCCESS which made it
   // impossible to add new enum values since older clients would parse any
@@ -663,9 +656,27 @@ message ClientToServerResponse {
 
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
+  // DEPRECATED - this field was never used in production.
+  // optional ClearUserDataResponse clear_user_data = 9;
+  optional GetUpdatesMetadataResponse stream_metadata = 10;
+  // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
+  // none of the other fields (error_code and etc) will be set.
+  optional GetUpdatesStreamingResponse stream_data = 11;
 
   // The data types whose storage has been migrated.  Present when the value of
   // error_code is MIGRATION_DONE.
   repeated int32 migrated_data_type_id = 12;
+
+  message Error {
+    optional SyncEnums.ErrorType error_type = 1 [default = UNKNOWN];
+    optional string error_description       = 2;
+    optional string url                     = 3;
+    optional SyncEnums.Action action        = 4 [default = UNKNOWN_ACTION];
+
+    // Currently only meaningful if |error_type| is throttled. If this field
+    // is absent then the whole client (all datatypes) is throttled.
+    repeated int32 error_data_type_ids = 5;
+  }
+  optional Error error = 13;
 };
 

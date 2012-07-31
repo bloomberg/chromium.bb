@@ -43,7 +43,7 @@ std::string GetSessionNameSynchronously() {
 #elif defined(OS_LINUX)
   session_name = base::GetLinuxDistro();
 #elif defined(OS_MACOSX)
-  session_name = internal::GetHardwareModelName();
+//  session_name = internal::GetHardwareModelName();
 #elif defined(OS_WIN)
   session_name = internal::GetComputerName();
 #elif defined(OS_ANDROID)
