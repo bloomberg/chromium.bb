@@ -652,10 +652,14 @@ create_cursors(struct display *display)
 	display->cursors =
 		malloc(ARRAY_LENGTH(cursors) * sizeof display->cursors[0]);
 
-	for (i = 0; i < ARRAY_LENGTH(cursors); i++)
+	for (i = 0; i < ARRAY_LENGTH(cursors); i++) {
 		display->cursors[i] =
 			wl_cursor_theme_get_cursor(display->cursor_theme,
 						   cursors[i]);
+		if (!display->cursors[i])
+			fprintf(stderr, "could not load cursor '%s'\n",
+				cursors[i]);
+	}
 }
 
 static void
