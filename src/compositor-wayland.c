@@ -824,6 +824,11 @@ wayland_input_create(struct wayland_compositor *c)
 }
 
 static void
+wayland_restore(struct weston_compositor *ec)
+{
+}
+
+static void
 wayland_destroy(struct weston_compositor *ec)
 {
 	weston_compositor_shutdown(ec);
@@ -871,6 +876,7 @@ wayland_compositor_create(struct wl_display *display,
 		goto err_display;
 
 	c->base.destroy = wayland_destroy;
+	c->base.restore = wayland_restore;
 
 	if (weston_compositor_init_gl(&c->base) < 0)
 		goto err_display;

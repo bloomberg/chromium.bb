@@ -335,6 +335,7 @@ struct weston_compositor {
 	int has_bind_display;
 
 	void (*destroy)(struct weston_compositor *ec);
+	void (*restore)(struct weston_compositor *ec);
 	int (*authenticate)(struct weston_compositor *c, uint32_t id);
 
 	void (*ping_handler)(struct weston_surface *surface, uint32_t serial);
@@ -701,6 +702,9 @@ tty_create(struct weston_compositor *compositor,
 
 void
 tty_destroy(struct tty *tty);
+
+void
+tty_reset(struct tty *tty);
 
 int
 tty_activate_vt(struct tty *tty, int vt);

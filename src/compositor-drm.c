@@ -1755,6 +1755,16 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 }
 
 static void
+drm_restore(struct weston_compositor *ec)
+{
+	struct drm_compositor *d = (struct drm_compositor *) ec;
+
+	if (weston_launcher_drm_set_master(&d->base, d->drm.fd, 0) < 0)
+		weston_log("failed to drop master: %m\n");
+	tty_reset(d->tty);
+}
+
+static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
@@ -1951,6 +1961,7 @@ drm_compositor_create(struct wl_display *display,
 	}
 
 	ec->base.destroy = drm_destroy;
+	ec->base.restore = drm_restore;
 
 	ec->base.focus = 1;
 

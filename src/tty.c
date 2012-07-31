@@ -257,13 +257,9 @@ err:
 	return NULL;
 }
 
-void
-tty_destroy(struct tty *tty)
+void tty_reset(struct tty *tty)
 {
 	struct vt_mode mode = { 0 };
-
-	if (tty->input_source)
-		wl_event_source_remove(tty->input_source);
 
 	if (ioctl(tty->fd, KDSKBMODE, tty->kb_mode))
 		weston_log("failed to restore keyboard mode: %m\n");
@@ -282,8 +278,17 @@ tty_destroy(struct tty *tty)
 		ioctl(tty->fd, VT_ACTIVATE, tty->starting_vt);
 		ioctl(tty->fd, VT_WAITACTIVE, tty->starting_vt);
 	}
+}
+
+void
+tty_destroy(struct tty *tty)
+{
+	if (tty->input_source)
+		wl_event_source_remove(tty->input_source);
 
 	wl_event_source_remove(tty->vt_source);
+
+	tty_reset(tty);
 
 	close(tty->fd);
 

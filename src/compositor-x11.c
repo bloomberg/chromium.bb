@@ -1029,6 +1029,11 @@ x11_compositor_get_resources(struct x11_compositor *c)
 }
 
 static void
+x11_restore(struct weston_compositor *ec)
+{
+}
+
+static void
 x11_destroy(struct weston_compositor *ec)
 {
 	struct x11_compositor *compositor = (struct x11_compositor *)ec;
@@ -1087,6 +1092,7 @@ x11_compositor_create(struct wl_display *display,
 		goto err_xdisplay;
 
 	c->base.destroy = x11_destroy;
+	c->base.restore = x11_restore;
 
 	if (weston_compositor_init_gl(&c->base) < 0)
 		goto err_egl;

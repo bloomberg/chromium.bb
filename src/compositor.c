@@ -57,7 +57,7 @@
 #include "git-version.h"
 
 static struct wl_list child_process_list;
-static jmp_buf segv_jmp_buf;
+static struct weston_compositor *segv_compositor;
 
 static int
 sigchld_handler(int signal_number, void *data)
@@ -3309,6 +3309,14 @@ on_segv_signal(int s, siginfo_t *siginfo, void *context)
 	int i, count;
 	Dl_info info;
 
+	/* This SIGSEGV handler will do a best-effort backtrace, and
+	 * then call the backend restore function, which will switch
+	 * back to the vt we launched from or ungrab X etc and then
+	 * raise SIGTRAP.  If we run weston under gdb from X or a
+	 * different vt, and tell gdb "handle SIGSEGV nostop", this
+	 * will allow weston to switch back to gdb on crash and then
+	 * gdb will catch the crash with SIGTRAP. */
+
 	weston_log("caught segv\n");
 
 	count = backtrace(buffer, ARRAY_LENGTH(buffer));
@@ -3320,7 +3328,9 @@ on_segv_signal(int s, siginfo_t *siginfo, void *context)
 			info.dli_fname);
 	}
 
-	longjmp(segv_jmp_buf, 1);
+	segv_compositor->restore(segv_compositor);
+
+	raise(SIGTRAP);
 }
 
 
@@ -3513,11 +3523,6 @@ int main(int argc, char *argv[])
 	signals[3] = wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler,
 					      NULL);
 
-	segv_action.sa_flags = SA_SIGINFO | SA_RESETHAND;
-	segv_action.sa_sigaction = on_segv_signal;
-	sigemptyset(&segv_action.sa_mask);
-	sigaction(SIGSEGV, &segv_action, NULL);
-
 	if (!backend) {
 		if (getenv("WAYLAND_DISPLAY"))
 			backend = "wayland-backend.so";
@@ -3541,6 +3546,12 @@ int main(int argc, char *argv[])
 		weston_log("fatal: failed to create compositor\n");
 		exit(EXIT_FAILURE);
 	}
+
+	segv_action.sa_flags = SA_SIGINFO | SA_RESETHAND;
+	segv_action.sa_sigaction = on_segv_signal;
+	sigemptyset(&segv_action.sa_mask);
+	sigaction(SIGSEGV, &segv_action, NULL);
+	segv_compositor = ec;
 
 	for (i = 1; argv[i]; i++)
 		weston_log("fatal: unhandled option: %s\n", argv[i]);
@@ -3589,12 +3600,10 @@ int main(int argc, char *argv[])
 
 	weston_compositor_dpms_on(ec);
 	weston_compositor_wake(ec);
-	if (setjmp(segv_jmp_buf) == 0)
-		wl_display_run(display);
-	else
-		ret = EXIT_FAILURE;
 
-out:
+	wl_display_run(display);
+
+ out:
 	/* prevent further rendering while shutting down */
 	ec->state = WESTON_COMPOSITOR_SLEEPING;
 
