@@ -102,7 +102,6 @@ View::View()
       parent_(NULL),
       visible_(true),
       enabled_(true),
-      painting_enabled_(true),
       notify_enter_exit_on_child_(false),
       registered_for_visible_bounds_notification_(false),
       clip_insets_(0, 0, 0, 0),
@@ -690,7 +689,7 @@ void View::SchedulePaint() {
 }
 
 void View::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (!visible_ || !painting_enabled_)
+  if (!visible_)
     return;
 
   if (layer()) {
@@ -1501,7 +1500,7 @@ void View::SchedulePaintBoundsChanged(SchedulePaintType type) {
 }
 
 void View::PaintCommon(gfx::Canvas* canvas) {
-  if (!visible_ || !painting_enabled_)
+  if (!visible_)
     return;
 
   {

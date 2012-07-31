@@ -293,8 +293,6 @@
         'native_theme_delegate.h',
         'native_theme_painter.cc',
         'native_theme_painter.h',
-        'paint_lock.cc',
-        'paint_lock.h',
         'painter.cc',
         'painter.h',
         'repeat_controller.cc',

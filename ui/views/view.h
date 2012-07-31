@@ -1114,7 +1114,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class internal::RootView;
   friend class FocusManager;
   friend class Widget;
-  friend class PaintLock;
 
   // Used to track a drag. RootView passes this into
   // ProcessMousePressed/Dragged.
@@ -1237,11 +1236,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool ConvertPointFromAncestor(const View* ancestor, gfx::Point* point) const;
 
   // Accelerated painting ------------------------------------------------------
-
-  // Disables painting during time critical operations. Used by PaintLock.
-  // TODO(vollick) Ideally, the widget would not dispatch paints into the
-  // hierarchy during time critical operations and this would not be needed.
-  void set_painting_enabled(bool enabled) { painting_enabled_ = enabled; }
 
   // Creates the layer and related fields for this view.
   void CreateLayer();
@@ -1371,9 +1365,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Whether this view is enabled.
   bool enabled_;
-
-  // Whether this view is painting.
-  bool painting_enabled_;
 
   // When this flag is on, a View receives a mouse-enter and mouse-leave event
   // even if a descendant View is the event-recipient for the real mouse
