@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/api/page_capture.h"
 #include "webkit/blob/shareable_file_reference.h"
 
 class FilePath;
@@ -52,7 +53,7 @@ class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
   // Returns the WebContents we are associated with, NULL if it's been closed.
   content::WebContents* GetWebContents();
 
-  int tab_id_;
+  scoped_ptr<extensions::api::page_capture::SaveAsMHTML::Params> params_;
 
   // The path to the temporary file containing the MHTML data.
   FilePath mhtml_path_;

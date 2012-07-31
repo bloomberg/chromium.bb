@@ -26,6 +26,8 @@ using content::WebContents;
 using extensions::PageCaptureSaveAsMHTMLFunction;
 using webkit_blob::ShareableFileReference;
 
+namespace SaveAsMHTML = extensions::api::page_capture::SaveAsMHTML;
+
 namespace {
 
 // Error messages.
@@ -40,7 +42,7 @@ const char* const kTabClosedError = "Cannot find the tab for thie request.";
 
 static PageCaptureSaveAsMHTMLFunction::TestDelegate* test_delegate_ = NULL;
 
-PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() : tab_id_(0) {
+PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() {
 }
 
 PageCaptureSaveAsMHTMLFunction::~PageCaptureSaveAsMHTMLFunction() {
@@ -55,13 +57,8 @@ void PageCaptureSaveAsMHTMLFunction::SetTestDelegate(TestDelegate* delegate) {
 }
 
 bool PageCaptureSaveAsMHTMLFunction::RunImpl() {
-  DictionaryValue* args;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
-
-  if (!args->HasKey("tabId"))
-    return false;
-
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger("tabId", &tab_id_));
+  params_ = SaveAsMHTML::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   AddRef();  // Balanced in ReturnFailure/ReturnSuccess()
 
@@ -193,8 +190,9 @@ WebContents* PageCaptureSaveAsMHTMLFunction::GetWebContents() {
   Browser* browser = NULL;
   TabContents* tab_contents = NULL;
 
-  if (!ExtensionTabUtil::GetTabById(tab_id_, profile(), include_incognito(),
-      &browser, NULL, &tab_contents, NULL)) {
+  if (!ExtensionTabUtil::GetTabById(params_->details.tab_id, profile(),
+                                    include_incognito(), &browser, NULL,
+                                    &tab_contents, NULL)) {
     return NULL;
   }
   return tab_contents->web_contents();
