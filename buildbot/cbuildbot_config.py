@@ -698,8 +698,11 @@ incremental.add_config('amd64-generic-asan',
 internal_pfq = internal.derive(pfq, overlays=constants.BOTH_OVERLAYS)
 internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS,
                                           trybot_list=False, branch=True)
-internal_paladin = internal.derive(paladin, overlays=constants.BOTH_OVERLAYS,
-                                   vm_tests=None)
+internal_paladin = internal.derive(paladin,
+  overlays=constants.BOTH_OVERLAYS,
+  vm_tests=None,
+  hw_tests_pool=constants.HWTEST_PALADIN_POOL,
+)
 
 internal_incremental = internal.derive(incremental,
                                        overlays=constants.BOTH_OVERLAYS)
@@ -740,7 +743,6 @@ internal_paladin.add_config('zgb-paladin',
 internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='alex paladin',
-  hw_tests_pool=constants.HWTEST_PALADIN_POOL,
   upload_hw_test_artifacts=True,
 )
 
@@ -752,7 +754,6 @@ internal_paladin.add_config('stumpy-paladin',
 internal_paladin.add_config('lumpy-paladin',
   boards=['lumpy'],
   paladin_builder_name='lumpy paladin',
-  hw_tests_pool=constants.HWTEST_PALADIN_POOL,
   upload_hw_test_artifacts=True,
 )
 
@@ -792,7 +793,6 @@ internal_paladin.add_config('unified-lumpy-paladin',
   paladin_builder_name='unified lumpy paladin',
   vm_tests=None,
   prebuilts=None,
-  hw_tests_pool=constants.HWTEST_PALADIN_POOL,
   hw_tests=['bvt'],
   upload_hw_test_artifacts=True,
   important=False,
