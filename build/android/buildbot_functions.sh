@@ -35,11 +35,11 @@ function bb_parse_args {
 }
 
 
-# Setup environment for Android build.
+# Setup environment for Android build.  Do not set ANDROID_SDK_ROOT so that
+# default version from $ROOT/src/third_party/android_tools/
 # Called from bb_baseline_setup.
 # Moved to top of file so it is easier to find.
 function bb_setup_environment {
-  export ANDROID_SDK_ROOT=/usr/local/google/android-sdk-linux
   export ANDROID_NDK_ROOT=/usr/local/google/android-ndk-r7
 }
 
