@@ -2383,7 +2383,7 @@ input_set_pointer_image_index(struct input *input, int index)
 	if (!buffer)
 		return;
 
-	wl_pointer_set_cursor(input->pointer, input->display->serial,
+	wl_pointer_set_cursor(input->pointer, input->pointer_enter_serial,
 			      input->pointer_surface,
 			      image->hotspot_x, image->hotspot_y);
 	wl_surface_attach(input->pointer_surface, buffer, 0, 0);
@@ -2408,7 +2408,8 @@ pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 	}
 
 	if (input->current_cursor == CURSOR_BLANK) {
-		wl_pointer_set_cursor(input->pointer, input->display->serial,
+		wl_pointer_set_cursor(input->pointer,
+				      input->pointer_enter_serial,
 				      NULL, 0, 0);
 		return;
 	}
