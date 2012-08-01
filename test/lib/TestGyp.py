@@ -21,6 +21,24 @@ __all__.extend([
   'TestGyp',
 ])
 
+def remove_debug_line_numbers(contents):
+  """Function to remove the line numbers from the debug output
+  of gyp and thus remove the exremem fragility of the stdout
+  comparison tests.
+  """
+  lines = contents.splitlines()
+  # split each line on ":"
+  lines = [l.split(":", 3) for l in lines]
+  # join each line back together while ignoring the
+  # 3rd column which is the line number
+  lines = [len(l) > 3 and ":".join(l[3:]) or l for l in lines]
+  return "\n".join(lines)
+
+def match_modulo_line_numbers(contents_a, contents_b):
+  """File contents matcher that ignores line numbers."""
+  contents_a = remove_debug_line_numbers(contents_a)
+  contents_b = remove_debug_line_numbers(contents_b)
+  return TestCommon.match_exact(contents_a, contents_b)
 
 class TestGypBase(TestCommon.TestCommon):
   """
@@ -76,22 +94,18 @@ class TestGypBase(TestCommon.TestCommon):
 
     self.initialize_build_tool()
 
-    if not kw.has_key('match'):
-      kw['match'] = TestCommon.match_exact
+    kw.setdefault('match', TestCommon.match_exact)
 
     # Put test output in out/testworkarea by default.
     # Use temporary names so there are no collisions.
     workdir = os.path.join('out', kw.get('workdir', 'testworkarea'))
     # Create work area if it doesn't already exist.
-    try:
+    if not os.path.isdir(workdir):
       os.makedirs(workdir)
-    except OSError:
-      pass
+
     kw['workdir'] = tempfile.mktemp(prefix='testgyp.', dir=workdir)
 
-    formats = kw.get('formats', [])
-    if kw.has_key('formats'):
-      del kw['formats']
+    formats = kw.pop('formats', [])
 
     super(TestGypBase, self).__init__(*args, **kw)
 
@@ -222,11 +236,14 @@ class TestGypBase(TestCommon.TestCommon):
     """
     Runs gyp against the specified gyp_file with the specified args.
     """
+
+    # When running gyp, and comparing its output we use a comparitor
+    # that ignores the line numbers that gyp logs in its debug output.
+    if kw.pop('ignore_line_numbers', False):
+      kw.setdefault('match', match_modulo_line_numbers)
+
     # TODO:  --depth=. works around Chromium-specific tree climbing.
-    depth = '.'
-    if 'depth' in kw:
-      depth = kw['depth']
-      del kw['depth']
+    depth = kw.pop('depth', '.')
     args = ('--depth='+depth, '--format='+self.format, gyp_file) + args
     return self.run(program=self.gyp, arguments=args, **kw)
 
@@ -460,11 +477,7 @@ class TestGypAndroid(TestGypBase):
     # run on the host.
 
     # Copied from TestCommon.run()
-    try:
-      match = kw['match']
-      del kw['match']
-    except KeyError:
-      match = self.match
+    match = kw.pop('match', self.match)
     status = None
     if os.path.exists(self.built_file_path(name)):
       status = 1
@@ -1001,11 +1014,7 @@ def TestGyp(*args, **kw):
   """
   Returns an appropriate TestGyp* instance for a specified GYP format.
   """
-  format = kw.get('format')
-  if format:
-    del kw['format']
-  else:
-    format = os.environ.get('TESTGYP_FORMAT')
+  format = kw.pop('format', os.environ.get('TESTGYP_FORMAT'))
   for format_class in format_class_list:
     if format == format_class.format:
       return format_class(*args, **kw)

@@ -1,19 +1,3 @@
-GENERAL:__init__.py:360:main running with these options:
-GENERAL:__init__.py:367:main   check: None
-GENERAL:__init__.py:367:main   circular_check: True
-GENERAL:__init__.py:367:main   debug: ['variables', 'general']
-GENERAL:__init__.py:367:main   defines: None
-GENERAL:__init__.py:365:main   depth: '.'
-GENERAL:__init__.py:367:main   formats: ['gypd']
-GENERAL:__init__.py:367:main   generator_flags: []
-GENERAL:__init__.py:367:main   generator_output: None
-GENERAL:__init__.py:367:main   includes: None
-GENERAL:__init__.py:367:main   msvs_version: None
-GENERAL:__init__.py:365:main   suffix: ''
-GENERAL:__init__.py:367:main   toplevel_dir: None
-GENERAL:__init__.py:367:main   use_environment: True
-GENERAL:__init__.py:421:main cmdline_default_variables: {}
-GENERAL:__init__.py:447:main generator_flags: {}
 VARIABLES:input.py:562:ExpandVariables Matches: {'content': 'letters_list', 'is_array': '', 'replace': '<(letters_list)', 'type': '<', 'command_string': None}
 VARIABLES:input.py:797:ExpandVariables Found output 'ABCDEFG', recursing.
 VARIABLES:input.py:562:ExpandVariables Matches: {'content': 'other_letters', 'is_array': '', 'replace': '<(other_letters)', 'type': '<', 'command_string': None}
