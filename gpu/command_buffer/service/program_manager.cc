@@ -454,8 +454,6 @@ void ProgramManager::ForceCompileShader(const std::string* source,
     // We cannot reach here if we are using the shader translator.
     // All invalid shaders must be rejected by the translator.
     // All translated shaders must compile.
-    LOG_IF(ERROR, translator)
-        << "Shader translator allowed/produced an invalid shader.";
     GLint max_len = 0;
     glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &max_len);
     scoped_array<char> temp(new char[max_len]);
@@ -464,6 +462,12 @@ void ProgramManager::ForceCompileShader(const std::string* source,
     DCHECK(max_len == 0 || len < max_len);
     DCHECK(len == 0 || temp[len] == '\0');
     info->SetStatus(false, std::string(temp.get(), len).c_str(), NULL);
+    LOG_IF(ERROR, translator)
+        << "Shader translator allowed/produced an invalid shader "
+        << "unless the driver is buggy:"
+        << "\n--original-shader--\n" << (source ? *source : "")
+        << "\n--translated-shader--\n" << shader_src
+        << "\n--info-log--\n" << *info->log_info();
   }
 }
 
