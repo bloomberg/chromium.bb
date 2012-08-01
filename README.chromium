@@ -1,6 +1,7 @@
 Name: libjpeg-turbo
 URL: http://sourceforge.net/projects/libjpeg-turbo/
 Version: 1.2.80
+License: Custom license
 License File: LICENSE.txt
 Security Critical: yes
 
