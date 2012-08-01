@@ -265,6 +265,19 @@ void WebIntentsRegistry::OnWebIntentsResultReceived(
   callback.Run(matching_services);
 }
 
+void WebIntentsRegistry::OnAllDefaultIntentServicesReceived(
+    const DefaultIntentServicesCallback& callback,
+    const WDTypedResult* result) {
+  DCHECK(result);
+  DCHECK(result->GetType() == WEB_INTENTS_DEFAULTS_RESULT);
+
+  const std::vector<DefaultWebIntentService> services = static_cast<
+      const WDResult<std::vector<DefaultWebIntentService> >*>(result)->
+          GetValue();
+
+  callback.Run(services);
+}
+
 void WebIntentsRegistry::OnWebIntentsDefaultsResultReceived(
     const QueryParams& params,
     const DefaultQueryCallback& callback,
@@ -357,6 +370,20 @@ void WebIntentsRegistry::GetAllIntentServices(
 
   QueryAdapter* query = new QueryAdapter(this, handler);
   query->query_handle_ = wds_->GetAllWebIntentServices(query);
+}
+
+void WebIntentsRegistry::GetAllDefaultIntentServices(
+    const DefaultIntentServicesCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  ResultsHandler handler = base::Bind(
+      &WebIntentsRegistry::OnAllDefaultIntentServicesReceived,
+      base::Unretained(this),
+      callback);
+
+  QueryAdapter* query = new QueryAdapter(this, handler);
+  query->query_handle_ =
+      wds_->GetAllDefaultWebIntentServices(query);
 }
 
 void WebIntentsRegistry::IntentServiceExists(
