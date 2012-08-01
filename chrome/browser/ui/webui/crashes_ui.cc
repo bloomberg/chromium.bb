@@ -33,7 +33,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
 
 using content::WebContents;

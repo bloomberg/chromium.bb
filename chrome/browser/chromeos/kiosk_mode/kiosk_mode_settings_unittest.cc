@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros_settings.h"
-#include "chrome/browser/chromeos/cros_settings_names.h"
-#include "chrome/browser/chromeos/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

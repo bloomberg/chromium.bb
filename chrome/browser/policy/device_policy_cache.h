@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_POLICY_DEVICE_POLICY_CACHE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/signed_settings.h"
+#include "chrome/browser/chromeos/settings/signed_settings.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 
 namespace chromeos {

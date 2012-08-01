@@ -83,10 +83,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/options2/chromeos/timezone_options_util.h"
 #include "ui/gfx/image/image_skia.h"

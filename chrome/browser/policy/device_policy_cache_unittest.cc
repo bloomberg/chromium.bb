@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/device_policy_cache.h"
 
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/login/mock_signed_settings_helper.h"
+#include "chrome/browser/chromeos/settings/mock_signed_settings_helper.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
