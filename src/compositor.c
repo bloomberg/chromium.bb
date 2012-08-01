@@ -2213,15 +2213,14 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 		surface = container_of(surface_resource->data,
 				       struct weston_surface, surface);
 
+	if (seat->seat.pointer->focus == NULL)
+		return;
+	if (seat->seat.pointer->focus->resource.client != client)
+		return;
 	if (seat->seat.pointer->focus_serial - serial > UINT32_MAX / 2)
 		return;
 
 	if (surface && surface != seat->sprite) {
-		if (seat->seat.pointer->focus == NULL)
-			return;
-		if (seat->seat.pointer->focus->resource.client != client)
-			return;
-
 		if (surface->configure) {
 			wl_resource_post_error(&surface->surface.resource,
 					       WL_DISPLAY_ERROR_INVALID_OBJECT,
