@@ -77,7 +77,8 @@
           ],
           'include_dirs': [
             'mswin'
-          ]
+          ],
+          'msvs_disabled_warnings': [ 4018 ],
         }]
       ]
     },
