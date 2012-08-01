@@ -69,7 +69,11 @@ void ExtensionBluetoothEventRouter::SetSendDiscoveryEvents(bool should_send) {
 
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(
     chromeos::BluetoothAdapter* adapter, bool present) {
-  DCHECK(adapter == adapter_.get());
+  if (adapter != adapter_.get()) {
+    DVLOG(1) << "Ignoring event for adapter " << adapter->address();
+    return;
+  }
+
   DispatchBooleanValueEvent(
       extensions::event_names::kBluetoothOnAvailabilityChanged,
       present);
@@ -77,7 +81,11 @@ void ExtensionBluetoothEventRouter::AdapterPresentChanged(
 
 void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
     chromeos::BluetoothAdapter* adapter, bool has_power) {
-  DCHECK(adapter == adapter_.get());
+  if (adapter != adapter_.get()) {
+    DVLOG(1) << "Ignoring event for adapter " << adapter->address();
+    return;
+  }
+
   DispatchBooleanValueEvent(
       extensions::event_names::kBluetoothOnPowerChanged,
       has_power);
@@ -85,7 +93,11 @@ void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
 
 void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
     chromeos::BluetoothAdapter* adapter, bool discovering) {
-  DCHECK(adapter == adapter_.get());
+  if (adapter != adapter_.get()) {
+    DVLOG(1) << "Ignoring event for adapter " << adapter->address();
+    return;
+  }
+
   DispatchBooleanValueEvent(
       extensions::event_names::kBluetoothOnDiscoveringChanged,
       discovering);
