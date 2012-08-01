@@ -8,6 +8,7 @@ import codecs
 import os
 import re
 
+import results
 from rules import Rule
 
 
@@ -37,53 +38,41 @@ class CppChecker(object):
 
   def CheckLine(self, rules, line, fail_on_temp_allow=False):
     """Checks the given line with the given rule set.
-    Returns a triplet (is_include, illegal_description, rule_type).
 
-    If the line is an #include directive the first value will be True.
-    If it is also an illegal include, the second value will be a
-    string describing the error.  Otherwise, it will be None.  If
-    fail_on_temp_allow is False, only Rule.DISALLOW rules will cause a
-    problem to be reported.  If it is true, both Rule.DISALLOW and
-    Rule.TEMP_ALLOW will cause an error.
-
-    The last item in the triplet returns the type of rule that
-    applied, one of Rule.ALLOW (which implies the second item is
-    None), Rule.DISALLOW (which implies that the second item is not
-    None) and Rule.TEMP_ALLOW (in which case the second item will be
-    None only if fail_on_temp_allow is False).
+    Returns a tuple (is_include, dependency_violation) where
+    is_include is True only if the line is an #include or #import
+    statement, and dependency_violation is an instance of
+    results.DependencyViolation if the line violates a rule, or None
+    if it does not.
     """
     found_item = self._EXTRACT_INCLUDE_PATH.match(line)
     if not found_item:
-      return False, None, Rule.ALLOW  # Not a match
+      return False, None  # Not a match
 
     include_path = found_item.group(1)
 
     if '\\' in include_path:
-      return True, 'Include paths may not include backslashes', Rule.DISALLOW
+      return True, rules.SpecificRule(
+          'Include paths may not include backslashes.')
 
     if '/' not in include_path:
       # Don't fail when no directory is specified. We may want to be more
       # strict about this in the future.
       if self._verbose:
         print ' WARNING: directory specified with no path: ' + include_path
-      return True, None, Rule.ALLOW
+      return True, None
 
-    (allowed, why_failed) = rules.DirAllowed(include_path)
-    if (allowed == Rule.DISALLOW or
-        (fail_on_temp_allow and allowed == Rule.TEMP_ALLOW)):
-      if self._verbose:
-        retval = '\nFor %s' % rules
-      else:
-        retval = ''
-      return True, retval + ('Illegal include: "%s"\n    Because of %s' %
-          (include_path, why_failed)), allowed
-
-    return True, None, allowed
+    rule = rules.RuleApplyingTo(include_path)
+    if (rule.allow == Rule.DISALLOW or
+        (fail_on_temp_allow and rule.allow == Rule.TEMP_ALLOW)):
+      return True, results.DependencyViolation(include_path, rule, rules)
+    return True, None
 
   def CheckFile(self, rules, filepath):
     if self._verbose:
       print 'Checking: ' + filepath
 
+    dependee_status = results.DependeeStatus(filepath)
     ret_val = ''  # We'll collect the error messages in here
     last_include = 0
     with codecs.open(filepath, encoding='utf-8') as f:
@@ -105,15 +94,13 @@ class CppChecker(object):
             in_if0 -= 1
           continue
 
-        is_include, line_status, rule_type = self.CheckLine(rules, line)
+        is_include, violation = self.CheckLine(rules, line)
         if is_include:
           last_include = line_num
-        if line_status is not None:
-          if len(line_status) > 0:  # Add newline to separate messages.
-            line_status += '\n'
-          ret_val += line_status
+        if violation:
+          dependee_status.AddViolation(violation)
 
-    return ret_val
+    return dependee_status
 
   @staticmethod
   def IsCppFile(file_path):

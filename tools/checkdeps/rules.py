@@ -13,9 +13,9 @@ class Rule(object):
   # These are the prefixes used to indicate each type of rule. These
   # are also used as values for self.allow to indicate which type of
   # rule this is.
-  ALLOW = "+"
-  DISALLOW = "-"
-  TEMP_ALLOW = "!"
+  ALLOW = '+'
+  DISALLOW = '-'
+  TEMP_ALLOW = '!'
 
   def __init__(self, allow, directory, source):
     self.allow = allow
@@ -28,12 +28,25 @@ class Rule(object):
   def ParentOrMatch(self, other):
     """Returns true if the input string is an exact match or is a parent
     of the current rule. For example, the input "foo" would match "foo/bar"."""
-    return self._dir == other or self._dir.startswith(other + "/")
+    return self._dir == other or self._dir.startswith(other + '/')
 
   def ChildOrMatch(self, other):
     """Returns true if the input string would be covered by this rule. For
     example, the input "foo/bar" would match the rule "foo"."""
-    return self._dir == other or other.startswith(self._dir + "/")
+    return self._dir == other or other.startswith(self._dir + '/')
+
+
+class SpecificRule(Rule):
+  """A rule that has a specific reason not related to directory or
+  source, for failing.
+  """
+
+  def __init__(self, reason):
+    super(SpecificRule, self).__init__(Rule.DISALLOW, '', '')
+    self._reason = reason
+
+  def __str__(self):
+    return self._reason
 
 
 def ParseRuleString(rule_string, source):
@@ -74,16 +87,9 @@ class Rules(object):
     self._rules = [x for x in self._rules if not x.ParentOrMatch(rule_dir)]
     self._rules.insert(0, Rule(add_rule, rule_dir, source))
 
-  def DirAllowed(self, allowed_dir):
-    """Returns a tuple (success, message), where success indicates if the given
-    directory is allowed given the current set of rules, and the message tells
-    why if the comparison failed."""
+  def RuleApplyingTo(self, allowed_dir):
+    """Returns the rule that applies to 'allowed_dir'."""
     for rule in self._rules:
       if rule.ChildOrMatch(allowed_dir):
-        # This rule applies.
-        why_failed = ""
-        if rule.allow != Rule.ALLOW:
-          why_failed = str(rule)
-        return (rule.allow, why_failed)
-    # No rules apply, fail.
-    return (Rule.DISALLOW, "no rule applying")
+        return rule
+    return SpecificRule('no rule applying.')

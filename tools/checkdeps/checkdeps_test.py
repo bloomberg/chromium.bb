@@ -11,6 +11,7 @@ import unittest
 
 
 import checkdeps
+import results
 
 
 class CheckDepsTest(unittest.TestCase):
@@ -19,9 +20,10 @@ class CheckDepsTest(unittest.TestCase):
     self.deps_checker = checkdeps.DepsChecker(being_tested=True)
 
   def testRegularCheckDepsRun(self):
-    problems = self.deps_checker.CheckDirectory(
+    self.deps_checker.CheckDirectory(
         os.path.join(self.deps_checker.base_directory,
                      'tools/checkdeps/testdata'))
+    problems = self.deps_checker.results_formatter.GetResults()
     self.failUnlessEqual(3, len(problems))
 
     def VerifySubstringsInProblems(key_path, substrings_in_sequence):
@@ -50,6 +52,17 @@ class CheckDepsTest(unittest.TestCase):
                                ['-third_party/explicitly_disallowed',
                                 'Because of no rule applying',
                                 'Because of no rule applying'])
+
+  def testTempRulesGenerator(self):
+    self.deps_checker.results_formatter = results.TemporaryRulesFormatter()
+    self.deps_checker.CheckDirectory(
+        os.path.join(self.deps_checker.base_directory,
+                     'tools/checkdeps/testdata/allowed'))
+    temp_rules = self.deps_checker.results_formatter.GetResults()
+    expected = [u'  "!third_party/explicitly_disallowed/bad.h",',
+                u'  "!third_party/no_rule/bad.h",',
+                u'  "!tools/checkdeps/testdata/disallowed/bad.h",']
+    self.failUnlessEqual(expected, temp_rules)
 
   def testCheckAddedIncludesAllGood(self):
     problems = self.deps_checker.CheckAddedCppIncludes(

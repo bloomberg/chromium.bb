@@ -72,16 +72,17 @@ import copy
 
 import cpp_checker
 import java_checker
+from results import NormalResultsFormatter, TemporaryRulesFormatter
 from rules import Rule, Rules
 
 
 # Variable name used in the DEPS file to add or subtract include files from
 # the module-level deps.
-INCLUDE_RULES_VAR_NAME = "include_rules"
+INCLUDE_RULES_VAR_NAME = 'include_rules'
 
 # Optionally present in the DEPS file to list subdirectories which should not
 # be checked. This allows us to skip third party code, for example.
-SKIP_SUBDIRS_VAR_NAME = "skip_child_includes"
+SKIP_SUBDIRS_VAR_NAME = 'skip_child_includes'
 
 
 def NormalizePath(path):
@@ -109,11 +110,25 @@ class DepsChecker(object):
         os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '..'))
 
     self.verbose = verbose
+    self.results_formatter = NormalResultsFormatter(verbose)
+
+    self._under_test = being_tested
 
     self.git_source_directories = set()
     self._AddGitSourceDirectories()
 
-    self._under_test = being_tested
+    # Map of normalized directory paths to rules to use for those
+    # directories, or None for directories that should be skipped.
+    self.directory_rules = {}
+    self._ApplyDirectoryRulesAndSkipSubdirs(Rules(), self.base_directory)
+
+  def Report(self):
+    """Prints a report of results, and returns an exit code for the process."""
+    if self.results_formatter.GetResults():
+      self.results_formatter.PrintResults()
+      return 1
+    print '\nSUCCESS\n'
+    return 0
 
   def _ApplyRules(self, existing_rules, includes, cur_dir):
     """Applies the given include rules, returning the new rules.
@@ -136,17 +151,17 @@ class DepsChecker(object):
 
       source = relative_dir
       if len(source) == 0:
-        source = "top level"  # Make the help string a little more meaningful.
-      rules.AddRule("+" + relative_dir, "Default rule for " + source)
+        source = 'top level'  # Make the help string a little more meaningful.
+      rules.AddRule('+' + relative_dir, 'Default rule for ' + source)
     else:
-      raise Exception("Internal error: base directory is not at the beginning" +
-                      " for\n  %s and base dir\n  %s" %
+      raise Exception('Internal error: base directory is not at the beginning' +
+                      ' for\n  %s and base dir\n  %s' %
                       (cur_dir, self.base_directory))
 
     # Last, apply the additional explicit rules.
     for (_, rule_str) in enumerate(includes):
       if not relative_dir:
-        rule_description = "the top level include_rules"
+        rule_description = 'the top level include_rules'
       else:
         rule_description = relative_dir + "'s include_rules"
       rules.AddRule(rule_str, rule_description)
@@ -182,7 +197,7 @@ class DepsChecker(object):
 
     # Check the DEPS file in this directory.
     if self.verbose:
-      print "Applying rules from", dir_name
+      print 'Applying rules from', dir_name
     def FromImpl(_unused, _unused2):
       pass  # NOP function so "From" doesn't fail.
 
@@ -195,17 +210,17 @@ class DepsChecker(object):
 
       def Lookup(self, var_name):
         """Implements the Var syntax."""
-        if var_name in self._local_scope.get("vars", {}):
-          return self._local_scope["vars"][var_name]
-        raise Exception("Var is not defined: %s" % var_name)
+        if var_name in self._local_scope.get('vars', {}):
+          return self._local_scope['vars'][var_name]
+        raise Exception('Var is not defined: %s' % var_name)
 
     local_scope = {}
     global_scope = {
-        "File": FileImpl,
-        "From": FromImpl,
-        "Var": _VarImpl(local_scope).Lookup,
+        'File': FileImpl,
+        'From': FromImpl,
+        'Var': _VarImpl(local_scope).Lookup,
         }
-    deps_file = os.path.join(dir_name, "DEPS")
+    deps_file = os.path.join(dir_name, 'DEPS')
 
     # The second conditional here is to disregard the
     # tools/checkdeps/DEPS file while running tests.  This DEPS file
@@ -219,7 +234,7 @@ class DepsChecker(object):
         not self._under_test or not os.path.split(dir_name)[1] == 'checkdeps'):
       execfile(deps_file, global_scope, local_scope)
     elif self.verbose:
-      print "  No deps file found in", dir_name
+      print '  No deps file found in', dir_name
 
     # Even if a DEPS file does not exist we still invoke ApplyRules
     # to apply the implicit "allow" rule for the current directory
@@ -229,38 +244,81 @@ class DepsChecker(object):
     return (self._ApplyRules(existing_rules, include_rules, norm_dir_name),
             skip_subdirs)
 
+  def _ApplyDirectoryRulesAndSkipSubdirs(self, parent_rules, dir_path):
+    """Given |parent_rules| and a subdirectory |dir_path| from the
+    directory that owns the |parent_rules|, add |dir_path|'s rules to
+    |self.directory_rules|, and add None entries for any of its
+    subdirectories that should be skipped.
+    """
+    directory_rules, excluded_subdirs = self._ApplyDirectoryRules(parent_rules,
+                                                                  dir_path)
+    self.directory_rules[NormalizePath(dir_path)] = directory_rules
+    for subdir in excluded_subdirs:
+      self.directory_rules[NormalizePath(
+          os.path.normpath(os.path.join(dir_path, subdir)))] = None
+
+  def GetDirectoryRules(self, dir_path):
+    """Returns a Rules object to use for the given directory, or None
+    if the given directory should be skipped.  This takes care of
+    first building rules for parent directories (up to
+    self.base_directory) if needed.
+
+    Args:
+      dir_path: A real (non-normalized) path to the directory you want
+      rules for.
+    """
+    norm_dir_path = NormalizePath(dir_path)
+
+    if not norm_dir_path.startswith(
+        NormalizePath(os.path.normpath(self.base_directory))):
+      dir_path = os.path.join(self.base_directory, dir_path)
+      norm_dir_path = NormalizePath(dir_path)
+
+    parent_dir = os.path.dirname(dir_path)
+    parent_rules = None
+    if not norm_dir_path in self.directory_rules:
+      parent_rules = self.GetDirectoryRules(parent_dir)
+
+    # We need to check for an entry for our dir_path again, in case we
+    # are at a path e.g. A/B/C where A/B/DEPS specifies the C
+    # subdirectory to be skipped; in this case, the invocation to
+    # GetDirectoryRules(parent_dir) has already filled in an entry for
+    # A/B/C.
+    if not norm_dir_path in self.directory_rules:
+      if not parent_rules:
+        # If the parent directory should be skipped, then the current
+        # directory should also be skipped.
+        self.directory_rules[norm_dir_path] = None
+      else:
+        self._ApplyDirectoryRulesAndSkipSubdirs(parent_rules, dir_path)
+    return self.directory_rules[norm_dir_path]
+
   def CheckDirectory(self, start_dir):
     """Checks all relevant source files in the specified directory and
     its subdirectories for compliance with DEPS rules throughout the
     tree (starting at |self.base_directory|).  |start_dir| must be a
     subdirectory of |self.base_directory|.
 
-    Returns an empty array on success.  On failure, the array contains
-    strings that can be printed as human-readable error messages.
+    On completion, self.results_formatter has the results of
+    processing, and calling Report() will print a report of results.
     """
-    # TODO(joi): Make this work for start_dir != base_dir (I have a
-    # subsequent change in flight to do this).
-    base_rules = Rules()
     java = java_checker.JavaChecker(self.base_directory, self.verbose)
     cpp = cpp_checker.CppChecker(self.verbose)
     checkers = dict(
         (extension, checker)
         for checker in [java, cpp] for extension in checker.EXTENSIONS)
-    return self._CheckDirectoryImpl(base_rules, checkers, start_dir)
+    self._CheckDirectoryImpl(checkers, start_dir)
 
-  def _CheckDirectoryImpl(self, parent_rules, checkers, dir_name):
-    (rules, skip_subdirs) = self._ApplyDirectoryRules(parent_rules, dir_name)
+  def _CheckDirectoryImpl(self, checkers, dir_name):
+    rules = self.GetDirectoryRules(dir_name)
     if rules == None:
-      return []
+      return
 
     # Collect a list of all files and directories to check.
     files_to_check = []
     dirs_to_check = []
-    results = []
     contents = os.listdir(dir_name)
     for cur in contents:
-      if cur in skip_subdirs:
-        continue  # Don't check children that DEPS has asked us to skip.
       full_name = os.path.join(dir_name, cur)
       if os.path.isdir(full_name):
         dirs_to_check.append(full_name)
@@ -271,13 +329,12 @@ class DepsChecker(object):
     for cur in files_to_check:
       checker = checkers[os.path.splitext(cur)[1]]
       file_status = checker.CheckFile(rules, cur)
-      if file_status:
-        results.append("ERROR in " + cur + "\n" + file_status)
+      if file_status.HasViolations():
+        self.results_formatter.AddError(file_status)
 
     # Next recurse into the subdirectories.
     for cur in dirs_to_check:
-      results.extend(self._CheckDirectoryImpl(rules, checkers, cur))
-    return results
+      self._CheckDirectoryImpl(checkers, cur)
 
   def CheckAddedCppIncludes(self, added_includes):
     """This is used from PRESUBMIT.py to check new #include statements added in
@@ -291,74 +348,32 @@ class DepsChecker(object):
       where rule_type is one of Rule.DISALLOW or Rule.TEMP_ALLOW and
       rule_description is human-readable. Empty if no problems.
     """
-    # Map of normalized directory paths to rules to use for those
-    # directories, or None for directories that should be skipped.
-    directory_rules = {}
-
-    def ApplyDirectoryRulesAndSkipSubdirs(parent_rules, dir_path):
-      rules_tuple = self._ApplyDirectoryRules(parent_rules, dir_path)
-      directory_rules[NormalizePath(dir_path)] = rules_tuple[0]
-      for subdir in rules_tuple[1]:
-        # We skip this one case for running tests.
-        directory_rules[NormalizePath(
-            os.path.normpath(os.path.join(dir_path, subdir)))] = None
-
-    ApplyDirectoryRulesAndSkipSubdirs(Rules(), self.base_directory)
-
-    def GetDirectoryRules(dir_path):
-      """Returns a Rules object to use for the given directory, or None
-      if the given directory should be skipped.
-      """
-      norm_dir_path = NormalizePath(dir_path)
-
-      if not dir_path.startswith(
-          NormalizePath(os.path.normpath(self.base_directory))):
-        dir_path = os.path.join(self.base_directory, dir_path)
-        norm_dir_path = NormalizePath(dir_path)
-
-      parent_dir = os.path.dirname(dir_path)
-      parent_rules = None
-      if not norm_dir_path in directory_rules:
-        parent_rules = GetDirectoryRules(parent_dir)
-
-      # We need to check for an entry for our dir_path again, in case we
-      # are at a path e.g. A/B/C where A/B/DEPS specifies the C
-      # subdirectory to be skipped; in this case, the invocation to
-      # GetDirectoryRules(parent_dir) has already filled in an entry for
-      # A/B/C.
-      if not norm_dir_path in directory_rules:
-        if not parent_rules:
-          # If the parent directory should be skipped, then the current
-          # directory should also be skipped.
-          directory_rules[norm_dir_path] = None
-        else:
-          ApplyDirectoryRulesAndSkipSubdirs(parent_rules, dir_path)
-      return directory_rules[norm_dir_path]
-
     cpp = cpp_checker.CppChecker(self.verbose)
-
     problems = []
     for file_path, include_lines in added_includes:
       # TODO(joi): Make this cover Java as well.
       if not cpp.IsCppFile(file_path):
         pass
-      rules_for_file = GetDirectoryRules(os.path.dirname(file_path))
+      rules_for_file = self.GetDirectoryRules(os.path.dirname(file_path))
       if rules_for_file:
         for line in include_lines:
-          is_include, line_status, rule_type = cpp.CheckLine(
-              rules_for_file, line, True)
-          if rule_type != Rule.ALLOW:
-            problems.append((file_path, rule_type, line_status))
+          is_include, violation = cpp.CheckLine(rules_for_file, line, True)
+          if violation:
+            rule_type = violation.violated_rule.allow
+            if rule_type != Rule.ALLOW:
+              violation_text = NormalResultsFormatter.FormatViolation(
+                  violation, self.verbose)
+              problems.append((file_path, rule_type, violation_text))
     return problems
 
   def _AddGitSourceDirectories(self):
     """Adds any directories containing sources managed by git to
     self.git_source_directories.
     """
-    if not os.path.exists(os.path.join(self.base_directory, ".git")):
+    if not os.path.exists(os.path.join(self.base_directory, '.git')):
       return
 
-    popen_out = os.popen("cd %s && git ls-files --full-name ." %
+    popen_out = os.popen('cd %s && git ls-files --full-name .' %
                          subprocess.list2cmdline([self.base_directory]))
     for line in popen_out.readlines():
       dir_name = os.path.join(self.base_directory, os.path.dirname(line))
@@ -378,8 +393,7 @@ def PrintUsage():
            of the script in "<root>/tools/checkdeps".
 
   tocheck  Specifies the directory, relative to root, to check. This defaults
-           to "." so it checks everything. Only one level deep is currently
-           supported, so you can say "chrome" but not "chrome/browser".
+           to "." so it checks everything.
 
 Examples:
   python checkdeps.py
@@ -388,15 +402,18 @@ Examples:
 
 def main():
   option_parser = optparse.OptionParser()
-  option_parser.add_option("", "--root", default="", dest="base_directory",
+  option_parser.add_option('', '--root', default='', dest='base_directory',
                            help='Specifies the repository root. This defaults '
                            'to "../../.." relative to the script file, which '
                            'will normally be the repository root.')
-  option_parser.add_option("-v", "--verbose", action="store_true",
-                           default=False, help="Print debug logging")
+  option_parser.add_option('', '--temprules', action='store_true',
+                           default=False, help='Print rules to temporarily '
+                           'allow files that fail dependency checking.')
+  option_parser.add_option('-v', '--verbose', action='store_true',
+                           default=False, help='Print debug logging')
   options, args = option_parser.parse_args()
 
-  deps_checker = DepsChecker(options.base_directory, options.verbose)
+  deps_checker = DepsChecker(options.base_directory, verbose=options.verbose)
 
   # Figure out which directory we have to check.
   start_dir = deps_checker.base_directory
@@ -410,17 +427,13 @@ def main():
     PrintUsage()
     return 1
 
-  print "Using base directory:", deps_checker.base_directory
-  print "Checking:", start_dir
+  print 'Using base directory:', deps_checker.base_directory
+  print 'Checking:', start_dir
 
-  results = deps_checker.CheckDirectory(start_dir)
-  if results:
-    for result in results:
-      print result
-    print "\nFAILED\n"
-    return 1
-  print "\nSUCCESS\n"
-  return 0
+  if options.temprules:
+    deps_checker.results_formatter = TemporaryRulesFormatter()
+  deps_checker.CheckDirectory(start_dir)
+  return deps_checker.Report()
 
 
 if '__main__' == __name__:
