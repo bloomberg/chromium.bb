@@ -1464,6 +1464,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     upload_url = self.GetGSUploadLocation()
     archive_path = self._SetupArchivePath()
     image_dir = self.GetImageDirSymlink()
+    release_upload_queue = multiprocessing.Queue()
     upload_queue = multiprocessing.Queue()
     upload_symbols_queue = multiprocessing.Queue()
     hw_test_upload_queue = multiprocessing.Queue()
@@ -1551,7 +1552,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
         # Generate and upload tarball.
         filename = commands.GenerateDebugTarball(
             buildroot, board, archive_path, config['archive_build_debug'])
-        upload_queue.put([filename])
+        release_upload_queue.put([filename])
       else:
         self._BreakpadSymbolsGenerated(False)
 
@@ -1585,7 +1586,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       if factory_install_symlink and factory_test_symlink:
         image_root = os.path.dirname(factory_install_symlink)
         filename = commands.BuildFactoryZip(buildroot, archive_path, image_root)
-        upload_queue.put([filename])
+        release_upload_queue.put([filename])
 
     def ArchiveRegularImages():
       """Build and archive regular images.
@@ -1595,13 +1596,14 @@ class ArchiveStage(BoardSpecificBuilderStage):
       """
 
       # Zip up everything in the image directory.
-      upload_queue.put([commands.BuildImageZip(archive_path, image_dir)])
+      image_zip = commands.BuildImageZip(archive_path, image_dir)
+      release_upload_queue.put([image_zip])
 
       # Zip up the recovery image separately.
       # TODO(gauravsh): Remove recovery_image.bin from image.zip once we
       #                 we know for sure there are no users relying on it.
       if 'base' in config['images']:
-        upload_queue.put([commands.BuildRecoveryImageZip(
+        release_upload_queue.put([commands.BuildRecoveryImageZip(
             archive_path,
             os.path.join(image_dir, 'recovery_image.bin'))])
 
@@ -1620,18 +1622,18 @@ class ArchiveStage(BoardSpecificBuilderStage):
         version = self.GetVersion()
         hwqual_name = 'chromeos-hwqual-%s-%s' % (board, version)
         filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path)
-        upload_queue.put([filename])
+        release_upload_queue.put([filename])
 
       # Archive au-generator.zip.
       filename = 'au-generator.zip'
       shutil.copy(os.path.join(image_dir, filename), archive_path)
-      upload_queue.put([filename])
+      release_upload_queue.put([filename])
 
     def ArchiveFirmwareImages():
       """Archive firmware images built from source if available."""
       archive = commands.BuildFirmwareArchive(buildroot, board, archive_path)
       if archive:
-        upload_queue.put([archive])
+        release_upload_queue.put([archive])
 
     def BuildAndArchiveAllImages():
       # Generate the recovery image. To conserve loop devices, we try to only
@@ -1698,10 +1700,12 @@ class ArchiveStage(BoardSpecificBuilderStage):
                             profile=self._options.profile or config['profile'])
 
 
-    def ArchiveReleaseArtifacts():
-      steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
-               ArchiveFirmwareImages]
-      background.RunParallelSteps(steps)
+    def ArchiveReleaseArtifacts(num_upload_processes=10):
+      with bg_task_runner(release_upload_queue, UploadArtifact,
+                          num_upload_processes):
+        steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
+                 ArchiveFirmwareImages]
+        background.RunParallelSteps(steps)
       PushImage()
 
     def BuildAndArchiveArtifacts(num_upload_processes=10):
