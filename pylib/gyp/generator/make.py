@@ -1811,8 +1811,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     """Convert a path to its output directory form."""
     if '$(' in path:
       path = path.replace('$(obj)/', '$(obj).%s/$(TARGET)/' % self.toolset)
-      return path
-    return '$(obj).%s/$(TARGET)/%s' % (self.toolset, path)
+    if not '$(obj)' in path:
+      path = '$(obj).%s/$(TARGET)/%s' % (self.toolset, path)
+    return path
 
 
   def Pchify(self, path, lang):
