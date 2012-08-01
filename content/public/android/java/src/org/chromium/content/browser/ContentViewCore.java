@@ -22,6 +22,7 @@ import org.chromium.base.WeakContext;
 import org.chromium.content.browser.ContentViewGestureHandler;
 import org.chromium.content.browser.TouchPoint;
 import org.chromium.content.browser.ZoomManager;
+import org.chromium.content.common.CleanupReference;
 import org.chromium.content.common.TraceEvent;
 
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
@@ -118,6 +119,19 @@ public class ContentViewCore implements MotionEventDelegate {
          */
         boolean super_awakenScrollBars(int startDelay, boolean invalidate);
     }
+
+    private static final class DestroyRunnable implements Runnable {
+        private int mNativeContentViewCore;
+        private DestroyRunnable(int nativeContentViewCore) {
+            mNativeContentViewCore = nativeContentViewCore;
+        }
+        @Override
+        public void run() {
+            nativeDestroy(mNativeContentViewCore);
+        }
+    }
+
+    private CleanupReference mCleanupReference;
 
     private Context mContext;
     private ViewGroup mContainerView;
@@ -241,6 +255,7 @@ public class ContentViewCore implements MotionEventDelegate {
     // TODO(jrg): incomplete; upstream the rest of this method.
     private void initialize(Context context, int nativeWebContents, int personality) {
         mNativeContentViewCore = nativeInit(nativeWebContents);
+        mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeContentViewCore));
 
         mPersonality = personality;
         mContentSettings = new ContentSettings(this, mNativeContentViewCore);
@@ -282,14 +297,11 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     public void destroy() {
         hidePopupDialog();
-        if (mNativeContentViewCore != 0) {
-            nativeDestroy(mNativeContentViewCore);
-            mNativeContentViewCore = 0;
-        }
-        if (mContentSettings != null) {
-            mContentSettings.destroy();
-            mContentSettings = null;
-        }
+        mCleanupReference.cleanupNow();
+        mNativeContentViewCore = 0;
+        // Do not propagate the destroy() to settings, as the client may still hold a reference to
+        // that and could still be using it.
+        mContentSettings = null;
     }
 
     /**
@@ -1013,7 +1025,7 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     private native int nativeInit(int webContentsPtr);
 
-    private native void nativeDestroy(int nativeContentViewCoreImpl);
+    private static native void nativeDestroy(int nativeContentViewCoreImpl);
 
     private native void nativeLoadUrlWithoutUrlSanitization(int nativeContentViewCoreImpl,
             String url, int pageTransition);
