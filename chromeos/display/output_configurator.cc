@@ -16,6 +16,7 @@
 #undef Status
 #undef RootWindow
 
+#include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/message_pump_aurax11.h"
@@ -399,6 +400,11 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
                               new_state);
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&OutputConfigurator::NotifyOnDisplayChanged,
+                            base::Unretained(this)));
+
   return true;
 }
 
@@ -422,6 +428,14 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
     // Ignore the case of RR_UnkownConnection.
   }
   return true;
+}
+
+void OutputConfigurator::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void OutputConfigurator::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool OutputConfigurator::TryRecacheOutputs(Display* display,
@@ -841,6 +855,10 @@ void OutputConfigurator::CheckIsProjectingAndNotify() {
       &method_call,
       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       dbus::ObjectProxy::EmptyResponseCallback());
+}
+
+void OutputConfigurator::NotifyOnDisplayChanged() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChanged());
 }
 
 }  // namespace chromeos

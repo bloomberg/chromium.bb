@@ -99,6 +99,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/display/output_configurator_animation.h"
 #include "chromeos/display/output_configurator.h"
 #include "ui/aura/dispatcher_linux.h"
 #endif  // defined(OS_CHROMEOS)
@@ -182,6 +183,8 @@ Shell::Shell(ShellDelegate* delegate)
 #if defined(OS_CHROMEOS)
       output_configurator_(new chromeos::OutputConfigurator(
           internal::DisplayController::IsExtendedDesktopEnabled())),
+      output_configurator_animation_(
+          new internal::OutputConfiguratorAnimation()),
 #endif  // defined(OS_CHROMEOS)
       shelf_(NULL),
       panel_layout_manager_(NULL),
@@ -190,7 +193,7 @@ Shell::Shell(ShellDelegate* delegate)
   gfx::Screen::SetInstance(screen_);
   ui_controls::InstallUIControlsAura(internal::CreateUIControls());
 #if defined(OS_CHROMEOS)
-  // OutputConfigurator needs to get events regarding added/removed outputs.
+  output_configurator_->AddObserver(output_configurator_animation_.get());
   static_cast<aura::DispatcherLinux*>(
       aura::Env::GetInstance()->GetDispatcher())->AddDispatcherForRootWindow(
           output_configurator());
@@ -272,6 +275,7 @@ Shell::~Shell() {
   instance_ = NULL;
 
 #if defined(OS_CHROMEOS)
+  output_configurator_->RemoveObserver(output_configurator_animation_.get());
   // Remove OutputConfigurator from Dispatcher.
   static_cast<aura::DispatcherLinux*>(
       aura::Env::GetInstance()->GetDispatcher())->RemoveDispatcherForRootWindow(

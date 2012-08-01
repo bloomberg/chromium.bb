@@ -85,6 +85,7 @@ class EventRewriterEventFilter;
 class FocusCycler;
 class MagnificationController;
 class MouseCursorEventFilter;
+class OutputConfiguratorAnimation;
 class OverlayEventFilter;
 class PanelLayoutManager;
 class ResizeShadowController;
@@ -358,6 +359,9 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   chromeos::OutputConfigurator* output_configurator() {
     return output_configurator_.get();
   }
+  internal::OutputConfiguratorAnimation* output_configurator_animation() {
+    return output_configurator_animation_.get();
+  }
 #endif  // defined(OS_CHROMEOS)
 
  private:
@@ -467,6 +471,8 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
 #if defined(OS_CHROMEOS)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
+  scoped_ptr<internal::OutputConfiguratorAnimation>
+      output_configurator_animation_;
 #endif  // defined(OS_CHROMEOS)
 
   CursorManager cursor_manager_;

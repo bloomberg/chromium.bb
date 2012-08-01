@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/event_types.h"
+#include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chromeos/chromeos_export.h"
@@ -40,6 +41,13 @@ enum OutputState {
 // it.
 class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
  public:
+  class Observer {
+   public:
+    // Called when the change of the display mode finished.  It will usually
+    // start the fading in the displays.
+    virtual void OnDisplayModeChanged() = 0;
+  };
+
   explicit OutputConfigurator(bool is_extended_display_enabled);
   virtual ~OutputConfigurator();
 
@@ -66,6 +74,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // to our own reconfiguration operations so spurious events are common.
   // Spurious events will have no effect.
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   // The information we need to cache from an output to implement operations
@@ -124,6 +135,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // with the result.
   void CheckIsProjectingAndNotify();
 
+  // Fires OnDisplayModeChanged() event to the observers.
+  void NotifyOnDisplayChanged();
+
   // This is detected by the constructor to determine whether or not we should
   // be enabled.  If we aren't running on ChromeOS, we can't assume that the
   // Xrandr X11 extension is supported.
@@ -160,6 +174,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // The display state as derived from the outputs observed in |output_cache_|.
   // This is used for rotating display modes.
   OutputState output_state_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };

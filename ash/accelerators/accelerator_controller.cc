@@ -35,6 +35,7 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -50,6 +51,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/display/output_configurator_animation.h"
 #include "chromeos/display/output_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -406,9 +408,14 @@ bool AcceleratorController::PerformAction(int action,
       return HandleCrosh();
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
-    case CYCLE_DISPLAY_MODE:
-      ash::Shell::GetInstance()->output_configurator()->CycleDisplayMode();
+    case CYCLE_DISPLAY_MODE: {
+      internal::OutputConfiguratorAnimation* animation =
+          Shell::GetInstance()->output_configurator_animation();
+      animation->StartFadeOutAnimation(base::Bind(
+          base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
+          base::Unretained(Shell::GetInstance()->output_configurator())));
       return true;
+    }
 #endif
     case OPEN_FEEDBACK_PAGE:
       ash::Shell::GetInstance()->delegate()->OpenFeedbackPage();

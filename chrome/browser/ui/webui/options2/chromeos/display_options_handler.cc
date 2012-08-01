@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/display/display_controller.h"
+#include "ash/display/output_configurator_animation.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/json/json_value_converter.h"
@@ -125,6 +126,24 @@ void DisplayOptionsHandler::SendDisplayInfo() {
       mirroring, displays, layout);
 }
 
+void DisplayOptionsHandler::FadeOutForMirroringFinished(bool is_mirroring) {
+  // We use 'PRIMARY_ONLY' for non-mirroring state for now.
+  // TODO(mukai): fix this and support multiple display modes.
+  chromeos::OutputState new_state =
+      is_mirroring ? STATE_DUAL_MIRROR : STATE_DUAL_PRIMARY_ONLY;
+  ash::Shell::GetInstance()->output_configurator()->SetDisplayMode(new_state);
+  SendDisplayInfo();
+  // Not necessary to start fade-in animation.  OutputConfigurator will do that.
+}
+
+void DisplayOptionsHandler::FadeOutForDisplayLayoutFinished(int layout) {
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  pref_service->SetInteger(prefs::kSecondaryDisplayLayout, layout);
+  SendDisplayInfo();
+  ash::Shell::GetInstance()->output_configurator_animation()->
+      StartFadeInAnimation();
+}
+
 void DisplayOptionsHandler::HandleDisplayInfo(
     const base::ListValue* unused_args) {
   SendDisplayInfo();
@@ -134,12 +153,11 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
   DCHECK(!args->empty());
   bool is_mirroring = false;
   args->GetBoolean(0, &is_mirroring);
-  // We use 'PRIMARY_ONLY' for non-mirroring state for now.
-  // TODO(mukai): fix this and support multiple display modes.
-  chromeos::OutputState new_state =
-      is_mirroring ? STATE_DUAL_MIRROR : STATE_DUAL_PRIMARY_ONLY;
-  ash::Shell::GetInstance()->output_configurator()->SetDisplayMode(new_state);
-  SendDisplayInfo();
+  ash::Shell::GetInstance()->output_configurator_animation()->
+      StartFadeOutAnimation(base::Bind(
+          &DisplayOptionsHandler::FadeOutForMirroringFinished,
+          base::Unretained(this),
+          is_mirroring));
 }
 
 void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
@@ -150,10 +168,11 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
   }
   DCHECK_LE(DisplayController::TOP, layout);
   DCHECK_GE(DisplayController::LEFT, layout);
-
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  pref_service->SetInteger(prefs::kSecondaryDisplayLayout, layout);
-  SendDisplayInfo();
+  ash::Shell::GetInstance()->output_configurator_animation()->
+      StartFadeOutAnimation(base::Bind(
+          &DisplayOptionsHandler::FadeOutForDisplayLayoutFinished,
+          base::Unretained(this),
+          static_cast<int>(layout)));
 }
 
 }  // namespace options2

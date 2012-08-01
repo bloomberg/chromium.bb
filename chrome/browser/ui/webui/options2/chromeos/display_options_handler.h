@@ -46,6 +46,13 @@ class DisplayOptionsHandler : public ::options2::OptionsPageUIHandler,
   // Sends the current display information to the web_ui of options page.
   void SendDisplayInfo();
 
+  // Called when the fade-out animation for mirroring status change is finished.
+  void FadeOutForMirroringFinished(bool is_mirroring);
+
+  // Called when the fade-out animation for secondary display layout change is
+  // finished.
+  void FadeOutForDisplayLayoutFinished(int layout);
+
   // Handlers of JS messages.
   void HandleDisplayInfo(const base::ListValue* unused_args);
   void HandleMirroring(const base::ListValue* args);
