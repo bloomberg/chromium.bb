@@ -79,14 +79,12 @@ scoped_refptr<Extension> LoadAndExpectSuccess(const std::string& name) {
 
 class WebIntentsRegistryTest : public testing::Test {
  public:
-   WebIntentsRegistryTest()
-     : ui_thread_(BrowserThread::UI, &message_loop_),
-       db_thread_(BrowserThread::DB) {}
+  WebIntentsRegistryTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB) {}
 
  protected:
   virtual void SetUp() {
-    CommandLine::ForCurrentProcess()->AppendSwitch("--enable-web-intents");
-
     db_thread_.Start();
     wds_ = new WebDataService();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -108,7 +106,8 @@ class WebIntentsRegistryTest : public testing::Test {
     // carry on with the test.
     base::WaitableEvent done(false, false);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
+                            base::Bind(&base::WaitableEvent::Signal,
+                                       base::Unretained(&done)));
     done.Wait();
     db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -139,75 +138,75 @@ class WebIntentsRegistryTest : public testing::Test {
 // Base consumer for WebIntentsRegistry results.
 class TestConsumer {
  public:
-   // Wait for the UI message loop to terminate - happens when OnIntesQueryDone
-   // is invoked.
-   void WaitForData() {
-     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-     MessageLoop::current()->Run();
-   }
+  // Wait for the UI message loop to terminate - happens when OnIntesQueryDone
+  // is invoked.
+  void WaitForData() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoop::current()->Run();
+  }
 };
 
 // Consumer of service lists. Stores result data and
 // terminates UI thread when callback is invoked.
 class ServiceListConsumer : public TestConsumer {
  public:
-   void Accept(
-       const std::vector<webkit_glue::WebIntentServiceData>& services) {
-     services_ = services;
+  void Accept(
+      const std::vector<webkit_glue::WebIntentServiceData>& services) {
+    services_ = services;
 
-     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-     MessageLoop::current()->Quit();
-   }
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoop::current()->Quit();
+  }
 
-   bool ResultsContain(const webkit_glue::WebIntentServiceData& service) {
-     for (size_t i = 0; i < services_.size(); ++i) {
-       if (services_[i] == service)
-         return true;
-     }
-     return false;
-   }
+  bool ResultsContain(const webkit_glue::WebIntentServiceData& service) {
+    for (size_t i = 0; i < services_.size(); ++i) {
+      if (services_[i] == service)
+        return true;
+    }
+    return false;
+  }
 
-   // Result data from callback.
-   std::vector<webkit_glue::WebIntentServiceData> services_;
+  // Result data from callback.
+  std::vector<webkit_glue::WebIntentServiceData> services_;
 };
 
 // Consume or defaultservice lists. Stores result data and
 // terminates UI thread when callback is invoked.
 class DefaultServiceListConsumer : public TestConsumer {
  public:
-   void Accept(const std::vector<DefaultWebIntentService>& services) {
-     services_ = services;
+  void Accept(const std::vector<DefaultWebIntentService>& services) {
+    services_ = services;
 
-     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-     MessageLoop::current()->Quit();
-   }
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoop::current()->Quit();
+  }
 
-   bool ResultsContain(const DefaultWebIntentService& service) {
-     for (size_t i = 0; i < services_.size(); ++i) {
-       if (services_[i] == service)
-         return true;
-     }
-     return false;
-   }
+  bool ResultsContain(const DefaultWebIntentService& service) {
+    for (size_t i = 0; i < services_.size(); ++i) {
+      if (services_[i] == service)
+        return true;
+    }
+    return false;
+  }
 
-   // Result data from callback.
-   std::vector<DefaultWebIntentService> services_;
+  // Result data from callback.
+  std::vector<DefaultWebIntentService> services_;
 };
 
 // Consumer of a default service. Stores result data and
 // terminates UI thread when callback is invoked.
 class DefaultServiceConsumer : public TestConsumer {
  public:
-   void Accept(
-       const DefaultWebIntentService& default_service) {
-     service_ = default_service;
+  void Accept(
+      const DefaultWebIntentService& default_service) {
+    service_ = default_service;
 
-     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-     MessageLoop::current()->Quit();
-   }
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoop::current()->Quit();
+  }
 
-   // Result default data from callback.
-   DefaultWebIntentService service_;
+  // Result default data from callback.
+  DefaultWebIntentService service_;
 };
 
 TEST_F(WebIntentsRegistryTest, BasicTests) {
@@ -291,7 +290,7 @@ TEST_F(WebIntentsRegistryTest, GetAllIntents) {
   ASSERT_EQ(2U, consumer.services_.size());
 
   if (consumer.services_[0].action != ASCIIToUTF16("share"))
-    std::swap(consumer.services_[0],consumer.services_[1]);
+    std::swap(consumer.services_[0], consumer.services_[1]);
 
   service.action = ASCIIToUTF16("share");
   EXPECT_EQ(service, consumer.services_[0]);
