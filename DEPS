@@ -12,39 +12,11 @@ vars = {
   "chromium_git": "http://git.chromium.org/git",
   "chromiumos_git": "http://git.chromium.org/chromiumos",
   "swig_revision": "69281",
-  "nacl_revision": "9317",
+  "nacl_revision": "9336",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "9286",  # native_client/DEPS: tools_rev
   "gtm_revision": "534",
-
-  # These hashes need to be updated when nacl_toolchain_revision is changed.
-  # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
-  # new values.
-  "nacl_toolchain_linux_x86_hash":
-      "5a013540b816336f6f2af26c525f8d9f8e20e144",
-  "nacl_toolchain_linux_x86_newlib_hash":
-      "c3598baef5a49e6ce8ca768d7f01383641d56025",
-  "nacl_toolchain_mac_x86_hash":
-      "664e057b1507923b0526ebb7294deb8c31cb8bfc",
-  "nacl_toolchain_mac_x86_newlib_hash":
-      "93f3a7ca6f97b093380ab4c305b2be42e89004c0",
-  "nacl_toolchain_pnacl_linux_x86_32_hash":
-      "025f9b2c1fcb9eb142cb30225526fcc443091e19",
-  "nacl_toolchain_pnacl_linux_x86_64_hash":
-      "fd5f7190d2462155a5a492980df99327a7733df9",
-  "nacl_toolchain_pnacl_mac_x86_32_hash":
-      "6fabbbec2ec6c6854d21c95cda82284d8c3eabcc",
-  "nacl_toolchain_pnacl_translator_hash":
-      "17fef3ab59d1445ec02ae571bf6f96adfc4d609b",
-  "nacl_toolchain_pnacl_win_x86_32_hash":
-      "ef27427f000f66249a75eef028ef30d57056e9a7",
-  "nacl_toolchain_win_x86_hash":
-      "9a854462e601338153bc65bfdc1171a87dc0bfe6",
-  "nacl_toolchain_win_x86_newlib_hash":
-      "c4dd3f8b65e309d242a3bfce89a15f580ef2e4f0",
-  "nacl_toolchain_revision": "9170",
-  "pnacl_toolchain_revision": "9299",
 
   "libjingle_revision": "163",
   "libphonenumber_revision": "456",
@@ -593,30 +565,6 @@ hooks = [
         "python", "src/build/download_nacl_toolchains.py",
          "--no-arm-trusted",
          "--optional-pnacl",
-         "--pnacl-version", Var("pnacl_toolchain_revision"),
-         "--file-hash", "pnacl_linux_x86_32",
-             Var("nacl_toolchain_pnacl_linux_x86_32_hash"),
-         "--file-hash", "pnacl_linux_x86_64",
-             Var("nacl_toolchain_pnacl_linux_x86_64_hash"),
-         "--file-hash", "pnacl_translator",
-             Var("nacl_toolchain_pnacl_translator_hash"),
-         "--file-hash", "pnacl_mac_x86_32",
-             Var("nacl_toolchain_pnacl_mac_x86_32_hash"),
-         "--file-hash", "pnacl_win_x86_32",
-             Var("nacl_toolchain_pnacl_win_x86_32_hash"),
-         "--x86-version", Var("nacl_toolchain_revision"),
-         "--file-hash", "mac_x86_newlib",
-             Var("nacl_toolchain_mac_x86_newlib_hash"),
-         "--file-hash", "win_x86_newlib",
-             Var("nacl_toolchain_win_x86_newlib_hash"),
-         "--file-hash", "linux_x86_newlib",
-             Var("nacl_toolchain_linux_x86_newlib_hash"),
-         "--file-hash", "mac_x86",
-             Var("nacl_toolchain_mac_x86_hash"),
-         "--file-hash", "win_x86",
-             Var("nacl_toolchain_win_x86_hash"),
-         "--file-hash", "linux_x86",
-             Var("nacl_toolchain_linux_x86_hash"),
          "--save-downloads-dir",
              "src/native_client_sdk/src/build_tools/toolchain_archives",
          "--keep",
