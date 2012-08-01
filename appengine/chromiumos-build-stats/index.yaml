@@ -103,3 +103,17 @@ indexes:
   - name: username
   - name: end_date
     direction: desc
+
+- kind: Statistics
+  ancestor: yes
+  properties:
+  - name: username
+  - name: end_date
+  - name: run_time
+
+- kind: Statistics
+  ancestor: yes
+  properties:
+  - name: cmd_base
+  - name: end_date
+  - name: run_time
