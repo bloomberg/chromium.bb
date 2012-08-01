@@ -419,16 +419,6 @@ class LocalGestureEvent :
     data().deltaY = details.generic_y();
     data().type = ConvertToWebInputEvent(type_);
     data().boundingBox = details.bounding_box();
-
-    // WebKit gesture events do not have bounding-boxes yet, and expect the data
-    // in deltaX/deltaY instead (and instead of bounding box, WebKit expects the
-    // radius). This is currently used only for tap events. So special case this
-    // particular case.
-    // http://crbug.com/138572
-    if (type_ == ui::ET_GESTURE_TAP) {
-      data().deltaX = details.bounding_box().width() / 2;
-      data().deltaY = details.bounding_box().height() / 2;
-    }
   }
 
   virtual int GetLowestTouchId() const OVERRIDE {
