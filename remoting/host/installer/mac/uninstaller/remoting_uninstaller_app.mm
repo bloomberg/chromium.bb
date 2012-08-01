@@ -24,7 +24,7 @@
                                    defaultButton:@"OK"
                                  alternateButton:nil
                                      otherButton:nil
-                       informativeTextWithFormat:message];
+                       informativeTextWithFormat:@"%@", message];
   [alert runModal];
 }
 

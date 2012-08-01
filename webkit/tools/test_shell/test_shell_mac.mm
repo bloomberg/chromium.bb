@@ -554,14 +554,15 @@ bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
   NSSavePanel* save_panel = [NSSavePanel savePanel];
 
   /* set up new attributes */
-  [save_panel setRequiredFileType:@"txt"];
+  [save_panel setAllowedFileTypes:@[@"txt"]];
   [save_panel setMessage:
       [NSString stringWithUTF8String:WideToUTF8(prompt_title).c_str()]];
 
   /* display the NSSavePanel */
-  if ([save_panel runModalForDirectory:NSHomeDirectory() file:@""] ==
-      NSOKButton) {
-    *result = FilePath([[save_panel filename] fileSystemRepresentation]);
+  [save_panel setDirectoryURL:[NSURL fileURLWithPath:NSHomeDirectory()]];
+  [save_panel setNameFieldStringValue:@""];
+  if ([save_panel runModal] == NSFileHandlingPanelOKButton) {
+    *result = FilePath([[[save_panel URL] path] fileSystemRepresentation]);
     return true;
   }
   return false;

@@ -32,7 +32,8 @@ using namespace testing;
 namespace {
 
 // SSL cipher suite like specified in RFC5246 Appendix A.5. "The Cipher Suite".
-static int TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x3D;
+// Without the CR_ prefix, this clashes with the OS X 10.8 headers.
+int CR_TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x3D;
 
 int SetSSLVersion(int connection_status, int version) {
   // Clear SSL version bits (Bits 20, 21 and 22).
@@ -227,7 +228,7 @@ TEST_F(WebsiteSettingsTest, HTTPSConnection) {
   ssl_.security_bits = 81;  // No error if > 80.
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
@@ -247,7 +248,7 @@ TEST_F(WebsiteSettingsTest, HTTPSMixedContent) {
   ssl_.content_status = SSLStatus::DISPLAYED_INSECURE_CONTENT;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
@@ -275,7 +276,7 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   ssl_.content_status = SSLStatus::DISPLAYED_INSECURE_CONTENT;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
@@ -294,7 +295,7 @@ TEST_F(WebsiteSettingsTest, HTTPSRevocationError) {
   ssl_.security_bits = 81;  // No error if > 80.
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
@@ -313,7 +314,7 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
   ssl_.security_bits = 1;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());

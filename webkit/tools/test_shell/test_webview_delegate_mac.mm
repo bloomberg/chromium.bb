@@ -269,7 +269,7 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const string16& message) {
                                    defaultButton:@"OK"
                                  alternateButton:nil
                                      otherButton:nil
-                       informativeTextWithFormat:text];
+                       informativeTextWithFormat:@"%@", text];
   [alert runModal];
 }
 
