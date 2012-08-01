@@ -420,6 +420,16 @@
             'CHROMIUM_STRIP_SAVE_FILE': 'app/app.saves',
             'INFOPLIST_FILE': 'app/helper-Info.plist',
           },
+          # Turn off -dead_strip in Release mode for the helper app. There's
+          # little here to strip, and doing so preserves symbols from
+          # crt1.10.6.o, which get removed incorrectly. http://crbug.com/139902
+          'configurations': {
+            'Release': {
+              'xcode_settings': {
+                'DEAD_CODE_STRIPPING': 'NO',
+              },
+            },
+          },
           'postbuilds': [
             {
               # The helper doesn't have real localizations, it just has

@@ -247,6 +247,16 @@
             'CHROMIUM_CREATOR': '<(mac_creator)',
             'CHROMIUM_SHORT_NAME': '<(branding)',
           },
+          # Turn off -dead_strip in Release mode for the main app. There's
+          # little here to strip, and doing so preserves symbols from
+          # crt1.10.6.o, which get removed incorrectly. http://crbug.com/139902
+          'configurations': {
+            'Release': {
+              'xcode_settings': {
+                'DEAD_CODE_STRIPPING': 'NO',
+              },
+            },
+          },
           'dependencies': [
             'helper_app',
             'infoplist_strings_tool',
