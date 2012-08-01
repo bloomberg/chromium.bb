@@ -136,7 +136,7 @@ class AppResource {
   static scoped_ptr<AppResource> CreateFrom(const base::Value& value);
 
   // Returns application ID, which is 12-digit decimals (e.g. "123456780123").
-  const std::string& id() const { return id_; }
+  const std::string& application_id() const { return application_id_; }
 
   // Returns application name.
   const std::string& name() const { return name_; }
@@ -205,7 +205,7 @@ class AppResource {
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
 
-  std::string id_;
+  std::string application_id_;
   std::string name_;
   std::string object_type_;
   bool supports_create_;
@@ -255,6 +255,115 @@ class AppList {
   ScopedVector<AppResource> items_;
 
   DISALLOW_COPY_AND_ASSIGN(AppList);
+};
+
+// FileResource reporesents a file or folder metadata in Drive.
+// https://developers.google.com/drive/v2/reference/files
+class FileResource {
+ public:
+  ~FileResource();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<FileResource>* converter);
+  static scoped_ptr<FileResource> CreateFrom(const base::Value& value);
+
+  // Returns true if this is a directory.
+  // Note: "folder" is used elsewhere in this file to match Drive API reference,
+  // but outside this file we use "directory" to match HTML5 filesystem API.
+  bool IsDirectory() const;
+
+  // Returns file ID.  This is unique in all files in Google Drive.
+  const std::string& file_id() const { return file_id_; }
+
+  // Returns ETag for this file.
+  const std::string& etag() const { return etag_; }
+
+  // Returns MIME type of this file.
+  const std::string& mime_type() const { return mime_type_; }
+
+  // Returns the title of this file.
+  const std::string& title() const { return title_; }
+
+  // Returns modification time by the user.
+  const base::Time& modified_by_me_date() const { return modified_by_me_date_; }
+
+  // Returns the download URL.
+  const GURL& download_url() const { return download_url_; }
+
+  // Returns the extension part of the filename.
+  const std::string& file_extension() const { return file_extension_; }
+
+  // Returns MD5 checksum of this file.
+  const std::string& md5_checksum() const { return md5_checksum_; }
+
+  // Returns the size of this file in bytes.
+  int64 file_size() const { return file_size_; }
+
+ private:
+  friend class base::internal::RepeatedMessageConverter<FileResource>;
+  friend class FileList;
+  FileResource();
+
+  // Parses and initializes data members from content of |value|.
+  // Return false if parsing fails.
+  bool Parse(const base::Value& value);
+
+  std::string file_id_;
+  std::string etag_;
+  std::string mime_type_;
+  std::string title_;
+  base::Time modified_by_me_date_;
+  GURL download_url_;
+  std::string file_extension_;
+  std::string md5_checksum_;
+  int64 file_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileResource);
+};
+
+// FileList represents a collection of files and folders.
+// https://developers.google.com/drive/v2/reference/files/list
+class FileList {
+ public:
+  ~FileList();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<FileList>* converter);
+  static scoped_ptr<FileList> CreateFrom(const base::Value& value);
+
+  // Returns the ETag of the list.
+  const std::string& etag() const { return etag_; }
+
+  // Returns the page token for the next page of files, if the list is large
+  // to fit in one response.  If this is empty, there is no more file lists.
+  const std::string& next_page_token() const { return next_page_token_; }
+
+  // Returns a link to the next page of files.  The URL includes the next page
+  // token.
+  const GURL& next_link() const { return next_link_; }
+
+  // Returns a set of files in this list.
+  const ScopedVector<FileResource>& items() const { return items_; }
+
+ private:
+  friend class DriveAPIParserTest;
+  FRIEND_TEST_ALL_PREFIXES(DriveAPIParserTest, FileListParser);
+  FileList();
+
+  // Parses and initializes data members from content of |value|.
+  // Return false if parsing fails.
+  bool Parse(const base::Value& value);
+
+  std::string etag_;
+  std::string next_page_token_;
+  GURL next_link_;
+  ScopedVector<FileResource> items_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileList);
 };
 
 }  // namespace gdata

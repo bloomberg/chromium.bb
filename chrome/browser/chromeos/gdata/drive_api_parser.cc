@@ -34,6 +34,9 @@ bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
 
 // Common
 const char kKind[] = "kind";
+const char kId[] = "id";
+const char kETag[] = "etag";
+const char kItems[] = "items";
 
 // About Resource:
 const char kAboutKind[] = "drive#about";
@@ -49,8 +52,6 @@ const char kIconUrl[] = "iconUrl";
 
 // Apps Resource:
 const char kAppKind[] = "drive#app";
-const char kId[] = "id";
-const char kETag[] = "etag";
 const char kName[] = "name";
 const char kObjectType[] = "objectType";
 const char kSupportsCreate[] = "supportsCreate";
@@ -66,8 +67,23 @@ const char kIcons[] = "icons";
 
 // Apps List:
 const char kAppListKind[] = "drive#appList";
-const char kItems[] = "items";
 
+// File Resource:
+const char kFileKind[] = "drive#file";
+const char kMimeType[] = "mimeType";
+const char kTitle[] = "title";
+const char kModifiedByMeDate[] = "modifiedByMeDate";
+const char kDownloadUrl[] = "downloadUrl";
+const char kFileExtension[] = "fileExtension";
+const char kMd5Checksum[] = "md5Checksum";
+const char kFileSize[] = "fileSize";
+
+const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
+
+// Files List:
+const char kFileListKind[] = "drive#fileList";
+const char kNextPageToken[] = "nextPageToken";
+const char kNextLink[] = "nextLink";
 
 // Maps category name to enum IconCategory.
 struct AppIconCategoryMap {
@@ -205,7 +221,7 @@ AppResource::~AppResource() {}
 // static
 void AppResource::RegisterJSONConverter(
     base::JSONValueConverter<AppResource>* converter) {
-  converter->RegisterStringField(kId, &AppResource::id_);
+  converter->RegisterStringField(kId, &AppResource::application_id_);
   converter->RegisterStringField(kName, &AppResource::name_);
   converter->RegisterStringField(kObjectType, &AppResource::object_type_);
   converter->RegisterBoolField(kSupportsCreate, &AppResource::supports_create_);
@@ -274,6 +290,97 @@ bool AppList::Parse(const base::Value& value) {
   base::JSONValueConverter<AppList> converter;
   if (!converter.Convert(value, this)) {
     LOG(ERROR) << "Unable to parse: Invalid AppList";
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FileResource implementation
+
+FileResource::FileResource() {}
+
+FileResource::~FileResource() {}
+
+// static
+void FileResource::RegisterJSONConverter(
+    base::JSONValueConverter<FileResource>* converter) {
+  converter->RegisterStringField(kId, &FileResource::file_id_);
+  converter->RegisterStringField(kETag, &FileResource::etag_);
+  converter->RegisterStringField(kMimeType, &FileResource::mime_type_);
+  converter->RegisterStringField(kTitle, &FileResource::title_);
+  converter->RegisterCustomField<base::Time>(
+      kModifiedByMeDate,
+      &FileResource::modified_by_me_date_,
+      &gdata::util::GetTimeFromString);
+  converter->RegisterCustomField<GURL>(kDownloadUrl,
+                                       &FileResource::download_url_,
+                                       GetGURLFromString);
+  converter->RegisterStringField(kFileExtension,
+                                 &FileResource::file_extension_);
+  converter->RegisterStringField(kMd5Checksum, &FileResource::md5_checksum_);
+  converter->RegisterCustomField<int64>(kFileSize,
+                                        &FileResource::file_size_,
+                                        &base::StringToInt64);
+}
+
+// static
+scoped_ptr<FileResource> FileResource::CreateFrom(const base::Value& value) {
+  scoped_ptr<FileResource> resource(new FileResource());
+  if (!IsResourceKindExpected(value, kFileKind) || !resource->Parse(value)) {
+    LOG(ERROR) << "Unable to create: Invalid FileResource JSON!";
+    return scoped_ptr<FileResource>(NULL);
+  }
+  return resource.Pass();
+}
+
+bool FileResource::IsDirectory() const {
+  return mime_type_ == kDriveFolderMimeType;
+}
+
+bool FileResource::Parse(const base::Value& value) {
+  base::JSONValueConverter<FileResource> converter;
+  if (!converter.Convert(value, this)) {
+    LOG(ERROR) << "Unable to parse: Invalid FileResource";
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FileList implementation
+
+FileList::FileList() {}
+
+FileList::~FileList() {}
+
+// static
+void FileList::RegisterJSONConverter(
+    base::JSONValueConverter<FileList>* converter) {
+  converter->RegisterStringField(kETag, &FileList::etag_);
+  converter->RegisterStringField(kNextPageToken, &FileList::next_page_token_);
+  converter->RegisterCustomField<GURL>(kNextLink,
+                                       &FileList::next_link_,
+                                       GetGURLFromString);
+  converter->RegisterRepeatedMessage<FileResource>(kItems,
+                                                   &FileList::items_);
+}
+
+// static
+scoped_ptr<FileList> FileList::CreateFrom(const base::Value& value) {
+  scoped_ptr<FileList> resource(new FileList());
+  if (!IsResourceKindExpected(value, kFileListKind) ||
+      !resource->Parse(value)) {
+    LOG(ERROR) << "Unable to create: Invalid FileList JSON!";
+    return scoped_ptr<FileList>(NULL);
+  }
+  return resource.Pass();
+}
+
+bool FileList::Parse(const base::Value& value) {
+  base::JSONValueConverter<FileList> converter;
+  if (!converter.Convert(value, this)) {
+    LOG(ERROR) << "Unable to parse: Invalid FileList";
     return false;
   }
   return true;
