@@ -30,7 +30,7 @@ ShellResourceDispatcherHostDelegate::CreateLoginDelegate(
     return NULL;
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(TOOLKIT_GTK)
 // TODO: implement ShellLoginDialog for other platforms, drop this #if
   return NULL;
 #else

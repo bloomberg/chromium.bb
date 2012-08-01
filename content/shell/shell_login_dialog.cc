@@ -59,7 +59,7 @@ ShellLoginDialog::~ShellLoginDialog() {
   // referenced/dereferenced.
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(TOOLKIT_GTK)
 // Bogus implementations for linking. They are never called because
 // ResourceDispatcherHostDelegate::CreateLoginDelegate returns NULL.
 // TODO: implement ShellLoginDialog for other platforms, drop this #if

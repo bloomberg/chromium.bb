@@ -86,6 +86,7 @@
         'shell/shell_javascript_dialog_mac.mm',
         'shell/shell_javascript_dialog_win.cc',
         'shell/shell_javascript_dialog.h',
+        'shell/shell_login_dialog_gtk.cc',
         'shell/shell_login_dialog_mac.mm',
         'shell/shell_login_dialog.cc',
         'shell/shell_login_dialog.h',
