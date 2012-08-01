@@ -75,9 +75,11 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
   void RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       const std::string& key,
       int expected_mask) {
+    scoped_refptr<RemoveBrowsingDataFunction> function =
+        new RemoveBrowsingDataFunction();
     SCOPED_TRACE(key);
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
-        new RemoveBrowsingDataFunction(),
+        function.get(),
         std::string("[{\"since\": 1}, {\"") + key + "\": true}]",
         browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
@@ -87,9 +89,11 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
   void RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
       const std::string& protectedStr,
       int expected_mask) {
+    scoped_refptr<RemoveBrowsingDataFunction> function =
+        new RemoveBrowsingDataFunction();
     SCOPED_TRACE(protectedStr);
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
-        new RemoveBrowsingDataFunction(),
+        function.get(),
         "[{\"originType\": " + protectedStr + "}, {\"cookies\": true}]",
         browser()));
     EXPECT_EQ(expected_mask, GetOriginSetMask());
@@ -104,11 +108,12 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
   BrowsingDataRemover::set_removing(true);
+  scoped_refptr<RemoveBrowsingDataFunction> function =
+      new RemoveBrowsingDataFunction();
   EXPECT_TRUE(MatchPattern(
-      RunFunctionAndReturnError(
-          new RemoveBrowsingDataFunction(),
-          kRemoveEverythingArguments,
-          browser()),
+      RunFunctionAndReturnError(function,
+                                kRemoveEverythingArguments,
+                                browser()),
       extension_browsing_data_api_constants::kOneAtATimeError));
   BrowsingDataRemover::set_removing(false);
 
@@ -119,10 +124,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
 // Use-after-free, see http://crbug.com/116522
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
                        DISABLED_RemoveBrowsingDataAll) {
-  EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
-      new RemoveBrowsingDataFunction(),
-      kRemoveEverythingArguments,
-      browser()));
+  scoped_refptr<RemoveBrowsingDataFunction> function =
+      new RemoveBrowsingDataFunction();
+  EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(function.get(),
+                                                   kRemoveEverythingArguments,
+                                                   browser()));
 
   EXPECT_EQ(base::Time::FromDoubleT(1.0), GetBeginTime());
   EXPECT_EQ((BrowsingDataRemover::REMOVE_SITE_DATA |

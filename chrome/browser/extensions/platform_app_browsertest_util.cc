@@ -61,20 +61,22 @@ WebContents* PlatformAppBrowserTest::GetFirstShellWindowWebContents() {
 
 size_t PlatformAppBrowserTest::RunGetWindowsFunctionForExtension(
     const Extension* extension) {
-  GetAllWindowsFunction* function = new GetAllWindowsFunction();
+  scoped_refptr<GetAllWindowsFunction> function = new GetAllWindowsFunction();
   function->set_extension(extension);
   scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(function, "[]", browser())));
+      utils::RunFunctionAndReturnSingleResult(function.get(),
+                                              "[]",
+                                              browser())));
   return result->GetSize();
 }
 
 bool PlatformAppBrowserTest::RunGetWindowFunctionForExtension(
     int window_id,
     const Extension* extension) {
-  GetWindowFunction* function = new GetWindowFunction();
+  scoped_refptr<GetWindowFunction> function = new GetWindowFunction();
   function->set_extension(extension);
   utils::RunFunction(
-          function,
+          function.get(),
           base::StringPrintf("[%u]", window_id),
           browser(),
           utils::NONE);

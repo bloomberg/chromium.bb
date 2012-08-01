@@ -479,6 +479,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
                                           const std::string& args) {
+    scoped_refptr<UIThreadExtensionFunction> delete_function(function);
     SetUpExtensionFunction(function);
     return extension_function_test_utils::RunFunctionAndReturnSingleResult(
         function, args, browser(), GetFlags());
@@ -486,6 +487,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                         const std::string& args) {
+    scoped_refptr<UIThreadExtensionFunction> delete_function(function);
     SetUpExtensionFunction(function);
     return extension_function_test_utils::RunFunctionAndReturnError(
         function, args, browser(), GetFlags());

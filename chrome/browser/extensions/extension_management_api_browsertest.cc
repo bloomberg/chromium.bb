@@ -170,8 +170,10 @@ const char ExtensionManagementApiEscalationTest::kId[] =
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
                        DisabledReason) {
+  scoped_refptr<GetExtensionByIdFunction> function =
+      new GetExtensionByIdFunction();
   scoped_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
-      new GetExtensionByIdFunction(),
+      function.get(),
       base::StringPrintf("[\"%s\"]", kId),
       browser()));
   ASSERT_TRUE(result.get() != NULL);

@@ -61,6 +61,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
 
   base::Value* RunFunctionWithExtension(
       UIThreadExtensionFunction* function, const std::string& args) {
+    scoped_refptr<UIThreadExtensionFunction> delete_function(function);
     function->set_extension(extension_.get());
     return utils::RunFunctionAndReturnSingleResult(function, args, browser());
   }
