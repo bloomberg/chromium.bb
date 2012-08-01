@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/history/android/android_time.h"
 #include "chrome/browser/history/history_backend.h"
@@ -131,7 +132,7 @@ class AndroidProviderBackendTest : public testing::Test {
     // how the BookmarkModelSQLHandler gets the BookmarkModel.
     Profile* profile = ProfileManager::GetLastUsedProfile();
     ASSERT_TRUE(profile);
-    bookmark_model_ = profile->GetBookmarkModel();
+    bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
     ASSERT_TRUE(bookmark_model_);
 
     // Setup the database directory and files.

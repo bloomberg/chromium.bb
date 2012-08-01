@@ -7,6 +7,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -50,7 +51,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
     // how the BookmarkModelSQLHandler gets the BookmarkModel.
     Profile* profile = ProfileManager::GetLastUsedProfile();
     ASSERT_TRUE(profile);
-    bookmark_model_ = profile->GetBookmarkModel();
+    bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
     ASSERT_TRUE(bookmark_model_);
 
     // Create the directory for history database.
