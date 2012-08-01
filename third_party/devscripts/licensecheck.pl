@@ -538,6 +538,10 @@ sub parselicense($) {
         $license = $license . "with Bison parser exception";
     }
 
+    if ($licensetext =~ /As a special exception to the GNU General Public License, if you distribute this file as part of a program or library that is built using GNU Libtool, you may include this file under the same distribution terms that you use for the rest of that program/) {
+        $license = $license . "with libtool exception";
+    }
+
     $license = "UNKNOWN" if (!length($license));
 
     return $license;

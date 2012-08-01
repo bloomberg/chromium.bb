@@ -53,6 +53,7 @@ WHITELISTED_LICENSES = [
     # TODO(phajdan.jr): Make licensecheck not print the comma after 3.1.
     'BSL (v1.0) GPL (v3.1,)',
     'GPL (v2 or later) with Bison parser exception',
+    'GPL (v2 or later) with libtool exception',
     'GPL (v3 or later) with Bison parser exception',
     'GPL with Bison parser exception',
     'ISC',
