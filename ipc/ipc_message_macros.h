@@ -393,7 +393,7 @@
   IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 3, 4, (type1_in, type2_in, type3_in), (type1_out, type2_out, type3_out, type4_out))
 
 #define IPC_SYNC_MESSAGE_ROUTED4_0(msg_class, type1_in, type2_in, type3_in, type4_in) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 1, (type1_in, type2_in, type3_in, type4_in), ())
+  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 0, (type1_in, type2_in, type3_in, type4_in), ())
 
 #define IPC_SYNC_MESSAGE_ROUTED4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
   IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 1, (type1_in, type2_in, type3_in, type4_in), (type1_out))
@@ -408,7 +408,7 @@
   IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 4, (type1_in, type2_in, type3_in, type4_in), (type1_out, type2_out, type3_out, type4_out))
 
 #define IPC_SYNC_MESSAGE_ROUTED5_0(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 1, (type1_in, type2_in, type3_in, type4_in, type5_in), ())
+  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 0, (type1_in, type2_in, type3_in, type4_in, type5_in), ())
 
 #define IPC_SYNC_MESSAGE_ROUTED5_1(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out) \
   IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 1, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out))
