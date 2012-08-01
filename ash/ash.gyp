@@ -603,7 +603,7 @@
             'shell/cocoa/nibs/MainMenu.xib',
             'shell/cocoa/nibs/RootWindow.xib',
             '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
-            '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
+            '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
           ],
           'mac_bundle_resources!': [
             'shell/cocoa/app-Info.plist',

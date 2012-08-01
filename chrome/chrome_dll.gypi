@@ -292,7 +292,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
                 '<(grit_out_dir)/theme_resources_100_percent.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
-                '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
+                '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
                 # Note: pseudo_locales are generated via the packed_resources
                 # dependency but not copied to the final target.  See
                 # common.gypi for more info.

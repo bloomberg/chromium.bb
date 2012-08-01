@@ -26,6 +26,8 @@ GRIT_DIR = None
 SHARE_INT_DIR = None
 INT_DIR = None
 
+# The target platform. If it is not defined, sys.platform will be used.
+OS = None
 
 class Usage(Exception):
   def __init__(self, msg):
@@ -39,7 +41,7 @@ def calc_output(locale):
   # reference it.
   if locale == 'fake-bidi':
     return '%s/%s.pak' % (INT_DIR, locale)
-  if sys.platform in ('darwin',):
+  if OS == 'mac':
     # For Cocoa to find the locale at runtime, it needs to use '_' instead
     # of '-' (http://crbug.com/20441).  Also, 'en-US' should be represented
     # simply as 'en' (http://crbug.com/19165, http://crbug.com/25578).
@@ -131,8 +133,9 @@ def DoMain(argv):
   global GRIT_DIR
   global SHARE_INT_DIR
   global INT_DIR
+  global OS
 
-  short_options = 'iog:s:x:b:h'
+  short_options = 'iog:s:x:b:hp:'
   long_options = 'help'
 
   print_inputs = False
@@ -140,7 +143,8 @@ def DoMain(argv):
   usage_msg = ''
 
   helpstr = """\
-Usage:  %s [-h] [-i | -o] -g <DIR> -x <DIR> -s <DIR> -b <branding> <locale> [...]
+Usage:  %s [-h] [-i | -o] -g <DIR> -x <DIR> -s <DIR> -b <branding> [-p <os>]
+        <locale> [...]
   -h, --help     Print this help, then exit.
   -i             Print the expected input file list, then exit.
   -o             Print the expected output file list, then exit.
@@ -148,6 +152,7 @@ Usage:  %s [-h] [-i | -o] -g <DIR> -x <DIR> -s <DIR> -b <branding> <locale> [...
   -x DIR         Intermediate build files output directory.
   -s DIR         Shared intermediate build files output directory.
   -b branding    Branding type of this build.
+  -p os          The target os. (e.g. mac, linux, win, etc.)
   locale [...]   One or more locales to repack.""" % (
       os.path.basename(__file__))
 
@@ -160,20 +165,32 @@ Usage:  %s [-h] [-i | -o] -g <DIR> -x <DIR> -s <DIR> -b <branding> <locale> [...
     usage_msg = 'Please specificy at least one locale to process.\n'
 
   for o, a in opts:
-    if o in ('-i'):
+    if o == '-i':
       print_inputs = True
-    elif o in ('-o'):
+    elif o == '-o':
       print_outputs = True
-    elif o in ('-g'):
+    elif o == '-g':
       GRIT_DIR = a
-    elif o in ('-s'):
+    elif o == '-s':
       SHARE_INT_DIR = a
-    elif o in ('-x'):
+    elif o == '-x':
       INT_DIR = a
-    elif o in ('-b'):
+    elif o == '-b':
       BRANDING = a
+    elif o == '-p':
+      OS = a
     elif o in ('-h', '--help'):
       raise Usage(helpstr)
+
+  if not OS:
+    if sys.platform == 'darwin':
+      OS = 'mac'
+    elif sys.platform.startswith('linux'):
+      OS = 'linux'
+    elif sys.platform in ('cygwin', 'win32'):
+      OS = 'win'
+    else:
+      OS = sys.platform
 
   if not (GRIT_DIR and INT_DIR and SHARE_INT_DIR):
     usage_msg += 'Please specify all of "-g" and "-x" and "-s".\n'
