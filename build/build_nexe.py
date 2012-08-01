@@ -128,9 +128,10 @@ class Builder(object):
 
     self.inc_paths = ArgToList(options.incdirs)
     self.lib_paths = ArgToList(options.libdirs)
+    self.define_list = ArgToList(options.defines)
 
     self.name = options.name
-    self.BuildCompileOptions(options.compile_flags, options.defines)
+    self.BuildCompileOptions(options.compile_flags, self.define_list)
     self.BuildLinkOptions(options.link_flags)
     self.BuildArchiveOptions()
     self.verbose = options.verbose
@@ -183,10 +184,23 @@ class Builder(object):
     options = ArgToList(options)
     self.assemble_options = options + ['-I' + name for name in self.inc_paths]
 
-  def BuildCompileOptions(self, options, defines):
+  def BuildCompileOptions(self, options, define_list):
     """Generates compile options, called once by __init__."""
     options = ArgToList(options)
-    options += ['-D' + define for define in defines]
+    # We want to shared gyp 'defines' with other targets, but not
+    # ones that are host system dependent. Filtering them out.
+    # This really should be better.
+    # See: http://code.google.com/p/nativeclient/issues/detail?id=2936
+    define_list = [define for define in define_list
+                   if not (define.startswith('NACL_TARGET_ARCH=') or
+                           define.startswith('NACL_TARGET_SUBARCH=') or
+                           define.startswith('NACL_WINDOWS=') or
+                           define.startswith('NACL_OSX=') or
+                           define.startswith('NACL_LINUX=') or
+                           'WIN32' in define or
+                           'WINDOWS' in define or
+                           'WINVER' in define)]
+    options += ['-D' + define for define in define_list]
     self.compile_options = options + ['-I' + name for name in self.inc_paths]
 
   def BuildLinkOptions(self, options):
@@ -380,11 +394,12 @@ def Main(argv):
                     help='Set build type (newlib, glibc).')
   parser.add_option('--compile_flags', dest='compile_flags',
                     help='Set compile flags.')
+  parser.add_option('--defines', dest='defines',
+                    help='Set defines')
   parser.add_option('--link_flags', dest='link_flags',
                     help='Set link flags.')
   parser.add_option('-v', '--verbose', dest='verbose', default=False,
                     help='Enable verbosity', action='store_true')
-  parser.add_option('-D', dest='defines', default=[], action='append')
   (options, files) = parser.parse_args(argv[1:])
 
   if not argv:
