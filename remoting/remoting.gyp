@@ -7,7 +7,10 @@
     # TODO(dmaclach): can we pick this up some other way? Right now it's
     # duplicated from chrome.gyp
     'chromium_code': 1,
+
     'remoting_audio': 0,
+    'remoting_multi_process%': 0,
+
     # Use consistent strings across all platforms. Note that the plugin name
     # is brand-dependent and is defined further down.
     # Must match host/plugin/constants.h
@@ -202,6 +205,11 @@
       ['remoting_audio == 1', {
         'defines': [
           'ENABLE_REMOTING_AUDIO',
+        ],
+      }],
+      ['remoting_multi_process == 1', {
+        'defines': [
+          'REMOTING_MULTI_PROCESS',
         ],
       }],
     ],
@@ -597,6 +605,9 @@
             'host/chromoting_messages.h',
             'host/constants.h',
             'host/constants_win.cc',
+            'host/daemon_process.cc',
+            'host/daemon_process.h',
+            'host/daemon_process_win.cc',
             'host/sas_injector.h',
             'host/sas_injector_win.cc',
             'host/usage_stats_consent.h',

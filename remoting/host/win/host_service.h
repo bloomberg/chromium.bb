@@ -22,9 +22,16 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
+#if defined(REMOTING_MULTI_PROCESS)
+class DaemonProcess;
+#endif  // defined(REMOTING_MULTI_PROCESS)
+
 class Stoppable;
 class WtsConsoleObserver;
+
+#if !defined(REMOTING_MULTI_PROCESS)
 class WtsSessionProcessLauncher;
+#endif  // !defined(REMOTING_MULTI_PROCESS)
 
 class HostService : public WtsConsoleMonitor {
  public:
@@ -45,7 +52,7 @@ class HostService : public WtsConsoleMonitor {
   HostService();
   ~HostService();
 
-  void OnLauncherShutdown();
+  void OnChildStopped();
 
   // Notifies the service of changes in session state.
   void OnSessionChange();
@@ -85,7 +92,7 @@ class HostService : public WtsConsoleMonitor {
   // to the physical console.
   ObserverList<WtsConsoleObserver> console_observers_;
 
-  scoped_ptr<WtsSessionProcessLauncher> launcher_;
+  scoped_ptr<Stoppable> child_;
 
   // Service message loop.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

@@ -31,9 +31,6 @@ class Message;
 
 namespace remoting {
 
-// Session id that does not represent any session.
-extern const uint32 kInvalidSessionId;
-
 class SasInjector;
 class WtsConsoleMonitor;
 

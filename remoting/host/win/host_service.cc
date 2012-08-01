@@ -27,14 +27,25 @@
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/base/stoppable.h"
 #include "remoting/host/branding.h"
+
+#if defined(REMOTING_MULTI_PROCESS)
+#include "remoting/host/daemon_process.h"
+#endif  // defined(REMOTING_MULTI_PROCESS)
+
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/win/host_service_resource.h"
 #include "remoting/host/win/wts_console_observer.h"
+
+#if !defined(REMOTING_MULTI_PROCESS)
 #include "remoting/host/win/wts_session_process_launcher.h"
+#endif  // !defined(REMOTING_MULTI_PROCESS)
 
 using base::StringPrintf;
 
 namespace {
+
+// Session id that does not represent any session.
+const uint32 kInvalidSessionId = 0xffffffffu;
 
 const char kIoThreadName[] = "I/O thread";
 
@@ -100,8 +111,8 @@ void HostService::RemoveWtsConsoleObserver(WtsConsoleObserver* observer) {
   console_observers_.RemoveObserver(observer);
 }
 
-void HostService::OnLauncherShutdown() {
-  launcher_.reset(NULL);
+void HostService::OnChildStopped() {
+  child_.reset(NULL);
   main_task_runner_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
@@ -138,8 +149,7 @@ BOOL WINAPI HostService::ConsoleControlHandler(DWORD event) {
     case CTRL_LOGOFF_EVENT:
     case CTRL_SHUTDOWN_EVENT:
       self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
-          &WtsSessionProcessLauncher::Stop,
-          base::Unretained(self->launcher_.get())));
+          &Stoppable::Stop, base::Unretained(self->child_.get())));
       self->stopped_event_.Wait();
       return TRUE;
 
@@ -182,21 +192,32 @@ int HostService::Run() {
 }
 
 void HostService::RunMessageLoop(MessageLoop* message_loop) {
+#if defined(REMOTING_MULTI_PROCESS)
+
+  child_ = DaemonProcess::Create(
+      main_task_runner_,
+      base::Bind(&HostService::OnChildStopped,
+                 base::Unretained(this))).PassAs<Stoppable>();
+
+#else  // !defined(REMOTING_MULTI_PROCESS)
+
   // Launch the I/O thread.
   base::Thread io_thread(kIoThreadName);
   base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
   if (!io_thread.StartWithOptions(io_thread_options)) {
-    LOG(FATAL) << "Failed to start the I/O thread";
+    LOG(ERROR) << "Failed to start the I/O thread";
     stopped_event_.Signal();
     return;
   }
 
   // Create the session process launcher.
-  launcher_.reset(new WtsSessionProcessLauncher(
-      base::Bind(&HostService::OnLauncherShutdown, base::Unretained(this)),
+  child_.reset(new WtsSessionProcessLauncher(
+      base::Bind(&HostService::OnChildStopped, base::Unretained(this)),
       this,
       main_task_runner_,
       io_thread.message_loop_proxy()));
+
+#endif  // !defined(REMOTING_MULTI_PROCESS)
 
   // Run the service.
   message_loop->Run();
@@ -304,8 +325,7 @@ DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
     case SERVICE_CONTROL_SHUTDOWN:
     case SERVICE_CONTROL_STOP:
       self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
-          &WtsSessionProcessLauncher::Stop,
-          base::Unretained(self->launcher_.get())));
+          &Stoppable::Stop, base::Unretained(self->child_.get())));
       self->stopped_event_.Wait();
       return NO_ERROR;
 

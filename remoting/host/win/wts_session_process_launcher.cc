@@ -214,9 +214,6 @@ bool CreatePipeForIpcChannel(void* instance,
 
 namespace remoting {
 
-// Session id that does not represent any session.
-const uint32 kInvalidSessionId = 0xffffffff;
-
 WtsSessionProcessLauncher::WtsSessionProcessLauncher(
     const base::Closure& stopped_callback,
     WtsConsoleMonitor* monitor,
