@@ -124,7 +124,8 @@ cr.define('options.internet', function() {
       });
 
       $('buyplan-details').addEventListener('click', function(event) {
-        chrome.send('buyDataPlan', [params.servicePath]);
+        var data = $('connection-state').data;
+        chrome.send('buyDataPlan', [String(data.servicePath)]);
         OptionsPage.closeOverlay();
       });
 
