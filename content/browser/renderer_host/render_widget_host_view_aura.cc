@@ -1304,7 +1304,7 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
   }
 
   RenderViewHostDelegate* delegate = NULL;
-  if (popup_type_ == WebKit::WebPopupTypeNone)
+  if (popup_type_ == WebKit::WebPopupTypeNone && !is_fullscreen_)
     delegate = RenderViewHost::From(host_)->GetDelegate();
   if (delegate && event->type() == ui::ET_GESTURE_BEGIN &&
       event->details().touch_points() == 1) {
