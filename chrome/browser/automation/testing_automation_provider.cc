@@ -39,6 +39,7 @@
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -1390,12 +1391,13 @@ void TestingAutomationProvider::GetBookmarksAsJSON(
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      if (!browser->profile()->GetBookmarkModel()->IsLoaded()) {
+      BookmarkModel* bookmark_model =
+          BookmarkModelFactory::GetForProfile(browser->profile());
+      if (!bookmark_model->IsLoaded()) {
         return;
       }
       scoped_refptr<BookmarkStorage> storage(new BookmarkStorage(
-          browser->profile(),
-          browser->profile()->GetBookmarkModel()));
+          browser->profile(), bookmark_model));
       *success = storage->SerializeData(bookmarks_as_json);
     }
   }
@@ -1406,7 +1408,8 @@ void TestingAutomationProvider::WaitForBookmarkModelToLoad(
     IPC::Message* reply_message) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
-    BookmarkModel* model = browser->profile()->GetBookmarkModel();
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForProfile(browser->profile());
     if (model->IsLoaded()) {
       AutomationMsg_WaitForBookmarkModelToLoad::WriteReplyParams(
           reply_message, true);
@@ -1427,7 +1430,8 @@ void TestingAutomationProvider::AddBookmarkGroup(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      BookmarkModel* model =
+          BookmarkModelFactory::GetForProfile(browser->profile());
       if (!model->IsLoaded()) {
         *success = false;
         return;
@@ -1455,7 +1459,8 @@ void TestingAutomationProvider::AddBookmarkURL(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      BookmarkModel* model =
+          BookmarkModelFactory::GetForProfile(browser->profile());
       if (!model->IsLoaded()) {
         *success = false;
         return;
@@ -1482,7 +1487,8 @@ void TestingAutomationProvider::ReparentBookmark(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      BookmarkModel* model =
+          BookmarkModelFactory::GetForProfile(browser->profile());
       if (!model->IsLoaded()) {
         *success = false;
         return;
@@ -1507,7 +1513,8 @@ void TestingAutomationProvider::SetBookmarkTitle(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      BookmarkModel* model =
+          BookmarkModelFactory::GetForProfile(browser->profile());
       if (!model->IsLoaded()) {
         *success = false;
         return;
@@ -1530,7 +1537,8 @@ void TestingAutomationProvider::SetBookmarkURL(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      BookmarkModel* model =
+          BookmarkModelFactory::GetForProfile(browser->profile());
       if (!model->IsLoaded()) {
         *success = false;
         return;
@@ -1552,7 +1560,8 @@ void TestingAutomationProvider::RemoveBookmark(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      BookmarkModel* model =
+          BookmarkModelFactory::GetForProfile(browser->profile());
       if (!model->IsLoaded()) {
         *success = false;
         return;

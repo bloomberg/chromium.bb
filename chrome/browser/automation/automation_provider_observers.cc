@@ -26,6 +26,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -1615,7 +1616,8 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
     page_value->SetString("snippet", page.snippet().text());
     page_value->SetBoolean(
         "starred",
-        provider_->profile()->GetBookmarkModel()->IsBookmarked(page.url()));
+        BookmarkModelFactory::GetForProfile(
+            provider_->profile())->IsBookmarked(page.url()));
     history_list->Append(page_value);
   }
 

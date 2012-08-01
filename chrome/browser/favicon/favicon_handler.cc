@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/icon_messages.h"
 #include "content/public/browser/favicon_status.h"
@@ -390,7 +391,8 @@ bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
     return true;
 
   // Otherwise store the favicon if the page is bookmarked.
-  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(profile_);
   return bookmark_model && bookmark_model->IsBookmarked(url);
 }
 

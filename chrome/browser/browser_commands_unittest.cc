@@ -4,6 +4,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -106,7 +107,8 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
 
   // It should now be bookmarked in the bookmark model.
   EXPECT_EQ(profile(), browser()->profile());
-  EXPECT_TRUE(browser()->profile()->GetBookmarkModel()->IsBookmarked(url1));
+  EXPECT_TRUE(BookmarkModelFactory::GetForProfile(
+      browser()->profile())->IsBookmarked(url1));
 }
 
 // Tests back/forward in new tab (Control + Back/Forward button in the UI).
