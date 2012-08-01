@@ -42,8 +42,6 @@
         '..',
       ],
       'sources': [
-        'shell/android/draw_context.cc',
-        'shell/android/draw_context.h',
         'shell/geolocation/shell_access_token_store.cc',
         'shell/geolocation/shell_access_token_store.h',
         'shell/layout_test_controller.cc',
@@ -561,6 +559,8 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/shell',
           ],
           'sources': [
+            'shell/android/draw_context.cc',
+            'shell/android/draw_context.h',
             'shell/android/shell_library_loader.cc',
             'shell/android/shell_library_loader.h',
             'shell/android/shell_manager.cc',
