@@ -2050,8 +2050,13 @@ output_section_done(void *data)
 
 	output = malloc(sizeof *output);
 
-	if (!output)
+	if (!output || !output_name || !output_mode) {
+		free(output_name);
+		output_name = NULL;
+		free(output_mode);
+		output_mode = NULL;
 		return;
+	}
 
 	output->config = OUTPUT_CONFIG_INVALID;
 	output->name = output_name;
