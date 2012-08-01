@@ -6184,9 +6184,6 @@ class Main(object):
         default=os.path.join('chrome', 'test', 'data'),
         help='Relative path from which http server should serve files.')
     parser.add_option(
-        '', '--list-missing-tests', action='store_true', default=False,
-        help='Print a list of tests not included in PYAUTO_TESTS, and exit')
-    parser.add_option(
         '-L', '--list-tests', action='store_true', default=False,
         help='List all tests, and exit.')
     parser.add_option(
@@ -6231,10 +6228,6 @@ class Main(object):
 
     logging.basicConfig(level=level, format=format,
                         filename=self._options.log_file)
-
-    if self._options.list_missing_tests:
-      self._ListMissingTests()
-      sys.exit(0)
 
   def TestsDir(self):
     """Returns the path to dir containing tests.
@@ -6302,24 +6295,6 @@ class Main(object):
       logging.warn('No tests in "%s"', name)
       return []
 
-  def _ListMissingTests(self):
-    """Print tests missing from PYAUTO_TESTS."""
-    # Fetch tests from all test scripts
-    all_test_files = filter(lambda x: x.endswith('.py'),
-                            os.listdir(self.TestsDir()))
-    all_tests_modules = [os.path.splitext(x)[0] for x in all_test_files]
-    all_tests = reduce(lambda x, y: x + y,
-                       map(self._ImportTestsFromName, all_tests_modules))
-    # Fetch tests included by PYAUTO_TESTS
-    pyauto_tests_file = os.path.join(self.TestsDir(), self._tests_filename)
-    pyauto_tests = reduce(lambda x, y: x + y,
-                          map(self._ImportTestsFromName,
-                              self._ExpandTestNamesFrom(pyauto_tests_file,
-                                                        self._options.suite)))
-    for a_test in all_tests:
-      if a_test not in pyauto_tests:
-        print a_test
-
   def _HasTestCases(self, module_string):
     """Determines if we have any PyUITest test case classes in the module
        identified by |module_string|."""
@@ -6336,11 +6311,13 @@ class Main(object):
 
     The given args can be either a module (ex: module1) or a testcase
     (ex: module2.MyTestCase) or a test (ex: module1.MyTestCase.testX)
-    If empty, the tests in the already imported modules are loaded.
+    or a suite name (ex: @FULL). If empty, the tests in the already imported
+    modules are loaded.
 
     Args:
       args: [module1, module2, module3.testcase, module4.testcase.testX]
-            These modules or test cases or tests should be importable
+            These modules or test cases or tests should be importable.
+            Suites can be specified by prefixing @. Example: @FULL
 
       Returns:
         a list of expanded test names.  Example:
@@ -6352,18 +6329,34 @@ class Main(object):
             'module4.testcase.testX'
           ]
     """
+
+    def _TestsFromDescriptionFile(suite):
+      pyauto_tests_file = os.path.join(self.TestsDir(), self._tests_filename)
+      if suite:
+        logging.debug("Reading %s (@%s)", pyauto_tests_file, suite)
+      else:
+        logging.debug("Reading %s", pyauto_tests_file)
+      if not os.path.exists(pyauto_tests_file):
+        logging.warn("%s missing. Cannot load tests.", pyauto_tests_file)
+        return []
+      else:
+        return self._ExpandTestNamesFrom(pyauto_tests_file, suite)
+
     if not args:  # Load tests ourselves
       if self._HasTestCases('__main__'):    # we are running a test script
         module_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
         args.append(module_name)   # run the test cases found in it
       else:  # run tests from the test description file
-        pyauto_tests_file = os.path.join(self.TestsDir(), self._tests_filename)
-        logging.debug("Reading %s", pyauto_tests_file)
-        if not os.path.exists(pyauto_tests_file):
-          logging.warn("%s missing. Cannot load tests.", pyauto_tests_file)
+        args = _TestsFromDescriptionFile(self._options.suite)
+    else:  # Check args with @ prefix for suites
+      out_args = []
+      for arg in args:
+        if arg.startswith('@'):
+          suite = arg[1:]
+          out_args += _TestsFromDescriptionFile(suite)
         else:
-          args = self._ExpandTestNamesFrom(pyauto_tests_file,
-                                           self._options.suite)
+          out_args.append(arg)
+      args = out_args
     return args
 
   def _ExpandTestNamesFrom(self, filename, suite):
