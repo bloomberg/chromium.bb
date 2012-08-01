@@ -1010,7 +1010,10 @@ void GDataFileSystem::OnGetAccountMetadata(
                    << ", server = "
                    << account_metadata->largest_changestamp();
     }
-    directory_service_->set_origin(initial_origin);
+    // If our cache holds the latest state from the server, change the
+    // state to FROM_SERVER.
+    directory_service_->set_origin(
+        initial_origin == FROM_CACHE ? FROM_SERVER : initial_origin);
     changes_detected = false;
   }
 

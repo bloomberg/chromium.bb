@@ -83,7 +83,7 @@ class MockDocumentsService : public DocumentsServiceInterface {
   MOCK_CONST_METHOD0(HasRefreshToken, bool());
 
   void set_account_metadata(base::Value* account_metadata) {
-    feed_data_.reset(account_metadata);
+    account_metadata_.reset(account_metadata);
   }
 
   void set_feed_data(base::Value* feed_data) {

@@ -653,10 +653,13 @@ class GDataFileSystemTest : public testing::Test {
   // Creates a proto file representing a filesystem with directories:
   // drive, drive/Dir1, drive/Dir1/SubDir2
   // and files
-  // drive/File1, drive/Dir1/File2, drive/Dir1/SubDir2/File3
+  // drive/File1, drive/Dir1/File2, drive/Dir1/SubDir2/File3.
+  // Sets the changestamp to 654321, equal to that of "account_metadata.json"
+  // test data, indicating the cache is holding the latest file system info.
   void SaveTestFileSystem() {
     GDataRootDirectoryProto root;
     root.set_version(kProtoVersion);
+    root.set_largest_changestamp(654321);
     GDataDirectoryProto* root_dir = root.mutable_gdata_directory();
     GDataEntryProto* dir_base = root_dir->mutable_gdata_entry();
     PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
@@ -1209,6 +1212,32 @@ TEST_F(GDataFileSystemTest, CachedFeedLoading) {
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2"))));
   EXPECT_TRUE(EntryExists(
       FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2/File3"))));
+}
+
+TEST_F(GDataFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
+  SaveTestFileSystem();
+
+  // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
+  // so no request for new feeds (i.e., call to GetDocuments) should happen.
+  mock_doc_service_->set_account_metadata(
+      LoadJSONFile("account_metadata.json"));
+  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(_, _, _, _, _)).Times(0);
+
+  // Kicks loading of cached file system and query for server update.
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
+
+  // Since the file system has verified that it holds the latest snapshot,
+  // it should change its state to FROM_SERVER, which admits periodic refresh.
+  // To test it, call CheckForUpdates and verify it does try to check updates.
+  mock_doc_service_->set_account_metadata(
+      LoadJSONFile("account_metadata.json"));
+  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
+
+  file_system_->CheckForUpdates();
+  test_util::RunBlockingPoolTask();
 }
 
 TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
