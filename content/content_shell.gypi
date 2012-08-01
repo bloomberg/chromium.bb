@@ -649,7 +649,10 @@
                 '-buildfile',
                 'shell/android/java/content_shell_apk.xml',
                 # '<(CONFIGURATION_NAME)',
-              ]
+              ],
+              'dependencies': [
+                'content_java',
+              ],
             }
           ],
         },

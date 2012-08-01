@@ -17,6 +17,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/rect.h"
@@ -111,6 +112,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   jboolean NeedsReload(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);
   void SetClient(JNIEnv* env, jobject obj, jobject jclient);
+  jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script);
   void AddJavascriptInterface(JNIEnv* env,
                               jobject obj,
                               jobject object,
@@ -192,6 +194,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   struct JavaObject;
   JavaObject* java_object_;
+
+  NotificationRegistrar notification_registrar_;
 
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.

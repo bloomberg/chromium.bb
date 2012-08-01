@@ -8,6 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/json/json_writer.h"
 #include "content/browser/android/content_view_client.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
@@ -18,6 +19,10 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
@@ -82,9 +87,17 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
   InitJNI(env, obj);
+
+  notification_registrar_.Add(this,
+                              NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
+                              NotificationService::AllSources());
 }
 
 ContentViewCoreImpl::~ContentViewCoreImpl() {
+  // Make sure nobody calls back into this object while we are tearing things
+  // down.
+  notification_registrar_.RemoveAll();
+
   if (java_object_) {
     JNIEnv* env = AttachCurrentThread();
     env->DeleteWeakGlobalRef(java_object_->obj);
@@ -100,6 +113,27 @@ void ContentViewCoreImpl::Destroy(JNIEnv* env, jobject obj) {
 void ContentViewCoreImpl::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
+  switch (type) {
+    case NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT: {
+      if (!web_contents_ || Source<RenderViewHost>(source).ptr() !=
+          web_contents_->GetRenderViewHost()) {
+        return;
+      }
+
+      JNIEnv* env = base::android::AttachCurrentThread();
+      std::pair<int, Value*>* result_pair =
+          Details<std::pair<int, Value*> >(details).ptr();
+      std::string json;
+      base::JSONWriter::Write(result_pair->second, &json);
+      ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env,
+                                                                   json);
+      Java_ContentViewCore_onEvaluateJavaScriptResult(env,
+          java_object_->View(env).obj(),
+          static_cast<jint>(result_pair->first), j_json.obj());
+      break;
+    }
+  }
+
   // TODO(jrg)
 }
 
@@ -137,6 +171,15 @@ void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env, jobject obj,
     selected_indices.push_back(indices_ptr[i]);
   env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
   rvhi->DidSelectPopupMenuItems(selected_indices);
+}
+
+jint ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env, jobject obj,
+                                             jstring script) {
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
+
+  string16 script_utf16 = ConvertJavaStringToUTF16(env, script);
+  return host->ExecuteJavascriptInWebFrameNotifyResult(string16(),
+                                                       script_utf16);
 }
 
 void ContentViewCoreImpl::LoadUrlWithoutUrlSanitization(JNIEnv* env,
@@ -399,6 +442,13 @@ jint Init(JNIEnv* env, jobject obj, jint native_web_contents) {
   ContentViewCore* view = ContentViewCore::Create(
       env, obj, reinterpret_cast<WebContents*>(native_web_contents));
   return reinterpret_cast<jint>(view);
+}
+
+jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script) {
+  ContentViewCoreImpl* view = static_cast<ContentViewCoreImpl*>
+      (ContentViewCore::GetNativeContentViewCore(env, obj));
+
+  return view->EvaluateJavaScript(env, obj, script);
 }
 
 // --------------------------------------------------------------------------

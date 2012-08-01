@@ -578,6 +578,21 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
+     * Injects the passed JavaScript code in the current page and evaluates it.
+     * Once evaluated, an asynchronous call to
+     * ContentViewClient.onJavaScriptEvaluationResult is made. Used in automation
+     * tests.
+     *
+     * @return an id that is passed along in the asynchronous onJavaScriptEvaluationResult callback
+     * @throws IllegalStateException If the ContentView has been destroyed.
+     * @hide
+     */
+    public int evaluateJavaScript(String script) throws IllegalStateException {
+        checkIsAlive();
+        return nativeEvaluateJavaScript(script);
+    }
+
+    /**
      * This method should be called when the containing activity is paused
      */
     public void onActivityPause() {
@@ -808,6 +823,12 @@ public class ContentViewCore implements MotionEventDelegate {
     private void showSelectPopup(String[] items, int[] enabled, boolean multiple,
             int[] selectedIndices) {
         SelectPopupDialog.show(this, items, enabled, multiple, selectedIndices);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onEvaluateJavaScriptResult(int id, String jsonResult) {
+        getContentViewClient().onEvaluateJavaScriptResult(id, jsonResult);
     }
 
     /**
@@ -1068,6 +1089,8 @@ public class ContentViewCore implements MotionEventDelegate {
     private native boolean nativeNeedsReload(int nativeContentViewCoreImpl);
 
     private native void nativeClearHistory(int nativeContentViewCoreImpl);
+
+    private native int nativeEvaluateJavaScript(String script);
 
     private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
                                                      String name, boolean allowInheritedMethods);
