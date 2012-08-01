@@ -261,13 +261,30 @@ function bb_run_content_shell_test {
     "${SRC_ROOT}"/out/Release/content_shell/ContentShell-debug.apk
 }
 
+# Run instrumentation test.
+# Args:
+#   $1: TEST_APK.
+#   $2: EXTRA_FLAGS to be passed to run_instrumentation_tests.py.
+function bb_run_instrumentation_test {
+  local TEST_APK=${1}
+  local EXTRA_FLAGS=${2}
+  echo "@@@BUILD_STEP Android Instrumentation ${TEST_APK} ${EXTRA_FLAGS} "\
+       "on actual hardware@@@"
+  local INSTRUMENTATION_FLAGS="-vvv"
+  INSTRUMENTATION_FLAGS+=" --test-apk ${TEST_APK}"
+  INSTRUMENTATION_FLAGS+=" ${EXTRA_FLAGS}"
+  build/android/run_instrumentation_tests.py ${INSTRUMENTATION_FLAGS}
+}
+
 # Run content shell instrumentation test on device.
 function bb_run_content_shell_instrumentation_test {
-  echo "@@@BUILD_STEP Run content shell instrumentation test on actual "\
-       "hardware@@@"
   build/android/adb_install_content_shell
-  build/android/run_instrumentation_tests.py -I \
-      --test-apk content_shell_test/ContentShellTest-debug -vvv
+  local TEST_APK="content_shell_test/ContentShellTest-debug"
+  # Use -I to install the test apk only on the first run.
+  bb_run_instrumentation_test ${TEST_APK} "-I -A Smoke"
+  bb_run_instrumentation_test ${TEST_APK} "-A SmallTest"
+  bb_run_instrumentation_test ${TEST_APK} "-A MediumTest"
+  bb_run_instrumentation_test ${TEST_APK} "-A LargeTest"
 }
 
 # Zip and archive a build.
