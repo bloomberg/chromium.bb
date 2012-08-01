@@ -17,6 +17,8 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+class CWSIntentsRegistryForTest;
+
 // Handles storing and retrieving of web intents in the web database.
 // The registry provides filtering logic to retrieve specific types of intents.
 class CWSIntentsRegistry : public ProfileKeyedService,
@@ -56,8 +58,7 @@ class CWSIntentsRegistry : public ProfileKeyedService,
   // Make sure that only CWSIntentsRegistryFactory can create an instance of
   // CWSIntentsRegistry.
   friend class CWSIntentsRegistryFactory;
-  FRIEND_TEST_ALL_PREFIXES(CWSIntentsRegistryTest, ValidQuery);
-  FRIEND_TEST_ALL_PREFIXES(CWSIntentsRegistryTest, InvalidQuery);
+  friend class ::CWSIntentsRegistryForTest;
 
   struct IntentsQuery;
 
