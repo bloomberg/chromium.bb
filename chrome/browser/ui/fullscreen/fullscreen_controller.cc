@@ -29,38 +29,31 @@ using content::RenderViewHost;
 using content::UserMetricsAction;
 using content::WebContents;
 
-FullscreenController::FullscreenController(BrowserWindow* window,
-                                           Profile* profile,
-                                           Browser* browser)
-  : window_(window),
-    profile_(profile),
-    browser_(browser),
-    fullscreened_tab_(NULL),
-    tab_caused_fullscreen_(false),
-    tab_fullscreen_accepted_(false),
-    toggled_into_fullscreen_(false),
-    mouse_lock_tab_(NULL),
-    mouse_lock_state_(MOUSELOCK_NOT_REQUESTED) {
+FullscreenController::FullscreenController(Browser* browser)
+    : ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      browser_(browser),
+      window_(browser->window()),
+      profile_(browser->profile()),
+      fullscreened_tab_(NULL),
+      tab_caused_fullscreen_(false),
+      tab_fullscreen_accepted_(false),
+      toggled_into_fullscreen_(false),
+      mouse_lock_tab_(NULL),
+      mouse_lock_state_(MOUSELOCK_NOT_REQUESTED) {
+  DCHECK(window_);
+  DCHECK(profile_);
 }
 
-void FullscreenController::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
-      if (content::Details<content::LoadCommittedDetails>(details)->
-          is_navigation_to_different_page()) {
-        ExitTabFullscreenOrMouseLockIfNecessary();
-      }
-      break;
-
-    default:
-      NOTREACHED() << "Got a notification we didn't register for.";
-  }
+FullscreenController::~FullscreenController() {
 }
 
 bool FullscreenController::IsFullscreenForBrowser() const {
   return window_->IsFullscreen() && !tab_caused_fullscreen_;
+}
+
+void FullscreenController::ToggleFullscreenMode() {
+  extension_caused_fullscreen_ = GURL();
+  ToggleFullscreenModeInternal(false);
 }
 
 bool FullscreenController::IsFullscreenForTabOrPending() const {
@@ -77,9 +70,88 @@ bool FullscreenController::IsFullscreenForTabOrPending(
   return true;
 }
 
+void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
+                                                      bool enter_fullscreen) {
+  if (web_contents != chrome::GetActiveWebContents(browser_))
+    return;
+
+#if defined(OS_WIN)
+  // For now, avoid breaking when initiating full screen tab mode while in
+  // a metro snap.
+  // TODO(robertshield): Find a way to reconcile tab-initiated fullscreen
+  //                     modes with metro snap.
+  if (IsInMetroSnapMode())
+    return;
+#endif
+
+  bool in_browser_or_tab_fullscreen_mode;
+#if defined(OS_MACOSX)
+  in_browser_or_tab_fullscreen_mode = window_->InPresentationMode();
+#else
+  in_browser_or_tab_fullscreen_mode = window_->IsFullscreen();
+#endif
+
+  if (enter_fullscreen) {
+    SetFullscreenedTab(TabContents::FromWebContents(web_contents));
+    if (!in_browser_or_tab_fullscreen_mode) {
+      tab_caused_fullscreen_ = true;
+#if defined(OS_MACOSX)
+      TogglePresentationModeInternal(true);
+#else
+      ToggleFullscreenModeInternal(true);
+#endif
+    } else {
+      // We need to update the fullscreen exit bubble, e.g., going from browser
+      // fullscreen to tab fullscreen will need to show different content.
+      const GURL& url = web_contents->GetURL();
+      if (!tab_fullscreen_accepted_) {
+        tab_fullscreen_accepted_ =
+            GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
+      }
+      UpdateFullscreenExitBubbleContent();
+    }
+  } else {
+    if (in_browser_or_tab_fullscreen_mode) {
+      if (tab_caused_fullscreen_) {
+#if defined(OS_MACOSX)
+        TogglePresentationModeInternal(true);
+#else
+        ToggleFullscreenModeInternal(true);
+#endif
+      } else {
+        // If currently there is a tab in "tab fullscreen" mode and fullscreen
+        // was not caused by it (i.e., previously it was in "browser fullscreen"
+        // mode), we need to switch back to "browser fullscreen" mode. In this
+        // case, all we have to do is notifying the tab that it has exited "tab
+        // fullscreen" mode.
+        NotifyTabOfExitIfNecessary();
+      }
+    }
+  }
+}
+
+void FullscreenController::ToggleFullscreenModeWithExtension(
+    const GURL& extension_url) {
+  // |extension_caused_fullscreen_| will be reset if this causes fullscreen to
+  // exit.
+  extension_caused_fullscreen_ = extension_url;
+  ToggleFullscreenModeInternal(false);
+}
+
 #if defined(OS_WIN)
 bool FullscreenController::IsInMetroSnapMode() {
   return window_->IsInMetroSnapMode();
+}
+
+void FullscreenController::SetMetroSnapMode(bool enable) {
+  toggled_into_fullscreen_ = false;
+  window_->SetMetroSnapMode(enable);
+}
+#endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+void FullscreenController::TogglePresentationMode() {
+  TogglePresentationModeInternal(false);
 }
 #endif
 
@@ -152,97 +224,11 @@ void FullscreenController::RequestToLockMouse(WebContents* web_contents,
   UpdateFullscreenExitBubbleContent();
 }
 
-void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
-                                                      bool enter_fullscreen) {
-  if (web_contents != chrome::GetActiveWebContents(browser_))
-    return;
-
-#if defined(OS_WIN)
-  // For now, avoid breaking when initiating full screen tab mode while in
-  // a metro snap.
-  // TODO(robertshield): Find a way to reconcile tab-initiated fullscreen
-  //                     modes with metro snap.
-  if (IsInMetroSnapMode())
-    return;
-#endif
-
-  bool in_browser_or_tab_fullscreen_mode;
-#if defined(OS_MACOSX)
-  in_browser_or_tab_fullscreen_mode = window_->InPresentationMode();
-#else
-  in_browser_or_tab_fullscreen_mode = window_->IsFullscreen();
-#endif
-
-  if (enter_fullscreen) {
-    SetFullscreenedTab(TabContents::FromWebContents(web_contents));
-    if (!in_browser_or_tab_fullscreen_mode) {
-      tab_caused_fullscreen_ = true;
-#if defined(OS_MACOSX)
-      TogglePresentationModeInternal(true);
-#else
-      ToggleFullscreenModeInternal(true);
-#endif
-    } else {
-      // We need to update the fullscreen exit bubble, e.g., going from browser
-      // fullscreen to tab fullscreen will need to show different content.
-      const GURL& url = web_contents->GetURL();
-      if (!tab_fullscreen_accepted_) {
-        tab_fullscreen_accepted_ =
-            GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
-      }
-      UpdateFullscreenExitBubbleContent();
-    }
-  } else {
-    if (in_browser_or_tab_fullscreen_mode) {
-      if (tab_caused_fullscreen_) {
-#if defined(OS_MACOSX)
-        TogglePresentationModeInternal(true);
-#else
-        ToggleFullscreenModeInternal(true);
-#endif
-      } else {
-        // If currently there is a tab in "tab fullscreen" mode and fullscreen
-        // was not caused by it (i.e., previously it was in "browser fullscreen"
-        // mode), we need to switch back to "browser fullscreen" mode. In this
-        // case, all we have to do is notifying the tab that it has exited "tab
-        // fullscreen" mode.
-        NotifyTabOfExitIfNecessary();
-      }
-    }
+void FullscreenController::OnTabDeactivated(TabContents* contents) {
+  if (contents &&
+      (contents == fullscreened_tab_ || contents == mouse_lock_tab_)) {
+    ExitTabFullscreenOrMouseLockIfNecessary();
   }
-}
-
-#if defined(OS_WIN)
-void FullscreenController::SetMetroSnapMode(bool enable) {
-  toggled_into_fullscreen_ = false;
-  window_->SetMetroSnapMode(enable);
-}
-#endif
-
-#if defined(OS_MACOSX)
-void FullscreenController::TogglePresentationMode() {
-  TogglePresentationModeInternal(false);
-}
-#endif
-
-void FullscreenController::ToggleFullscreenMode() {
-  extension_caused_fullscreen_ = GURL();
-  ToggleFullscreenModeInternal(false);
-}
-
-void FullscreenController::ToggleFullscreenModeWithExtension(
-    const GURL& extension_url) {
-  // |extension_caused_fullscreen_| will be reset if this causes fullscreen to
-  // exit.
-  extension_caused_fullscreen_ = extension_url;
-  ToggleFullscreenModeInternal(false);
-}
-
-void FullscreenController::LostMouseLock() {
-  mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
-  SetMouseLockTab(NULL);
-  NotifyMouseLockChange();
-  UpdateFullscreenExitBubbleContent();
 }
 
 void FullscreenController::OnTabClosing(WebContents* web_contents) {
@@ -259,10 +245,32 @@ void FullscreenController::OnTabClosing(WebContents* web_contents) {
   }
 }
 
-void FullscreenController::OnTabDeactivated(TabContents* contents) {
-  if (contents &&
-      (contents == fullscreened_tab_ || contents == mouse_lock_tab_))
+void FullscreenController::WindowFullscreenStateChanged() {
+  bool exiting_fullscreen;
+#if defined(OS_MACOSX)
+  exiting_fullscreen = !window_->InPresentationMode();
+#else
+  exiting_fullscreen = !window_->IsFullscreen();
+#endif
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&FullscreenController::NotifyFullscreenChange,
+          ptr_factory_.GetWeakPtr(), !exiting_fullscreen));
+  if (exiting_fullscreen)
+    NotifyTabOfExitIfNecessary();
+  if (exiting_fullscreen)
+    window_->GetDownloadShelf()->Unhide();
+  else
+    window_->GetDownloadShelf()->Hide();
+}
+
+bool FullscreenController::HandleUserPressedEscape() {
+  if (IsFullscreenForTabOrPending() ||
+      IsMouseLocked() || IsMouseLockRequested()) {
     ExitTabFullscreenOrMouseLockIfNecessary();
+    return true;
+  }
+
+  return false;
 }
 
 void FullscreenController::OnAcceptFullscreenPermission(
@@ -341,121 +349,27 @@ void FullscreenController::OnDenyFullscreenPermission(
     ExitTabFullscreenOrMouseLockIfNecessary();
 }
 
-void FullscreenController::WindowFullscreenStateChanged() {
-  bool exiting_fullscreen;
-#if defined(OS_MACOSX)
-  exiting_fullscreen = !window_->InPresentationMode();
-#else
-  exiting_fullscreen = !window_->IsFullscreen();
-#endif
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&FullscreenController::NotifyFullscreenChange,
-          this, !exiting_fullscreen));
-  if (exiting_fullscreen)
-    NotifyTabOfExitIfNecessary();
-  if (exiting_fullscreen)
-    window_->GetDownloadShelf()->Unhide();
-  else
-    window_->GetDownloadShelf()->Hide();
-}
-
-bool FullscreenController::HandleUserPressedEscape() {
-  if (IsFullscreenForTabOrPending() ||
-      IsMouseLocked() || IsMouseLockRequested()) {
-    ExitTabFullscreenOrMouseLockIfNecessary();
-    return true;
-  }
-
-  return false;
-}
-
-FullscreenController::~FullscreenController() {}
-
-void FullscreenController::NotifyTabOfExitIfNecessary() {
-  if (fullscreened_tab_) {
-    RenderViewHost* rvh =
-        fullscreened_tab_->web_contents()->GetRenderViewHost();
-    SetFullscreenedTab(NULL);
-    tab_caused_fullscreen_ = false;
-    tab_fullscreen_accepted_ = false;
-    if (rvh)
-      rvh->ExitFullscreen();
-  }
-
-  if (mouse_lock_tab_) {
-    WebContents* web_contents = mouse_lock_tab_->web_contents();
-    if (IsMouseLockRequested()) {
-      web_contents->GotResponseToLockMouseRequest(false);
-      NotifyMouseLockChange();
-    } else if (web_contents->GetRenderViewHost() &&
-               web_contents->GetRenderViewHost()->GetView()) {
-      web_contents->GetRenderViewHost()->GetView()->UnlockMouse();
-    }
-    SetMouseLockTab(NULL);
-    mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
-  }
-
+void FullscreenController::LostMouseLock() {
+  mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
+  SetMouseLockTab(NULL);
+  NotifyMouseLockChange();
   UpdateFullscreenExitBubbleContent();
 }
 
-void FullscreenController::UpdateNotificationRegistrations() {
-  if (fullscreened_tab_ && mouse_lock_tab_)
-    DCHECK(fullscreened_tab_ == mouse_lock_tab_);
+void FullscreenController::Observe(int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
+      if (content::Details<content::LoadCommittedDetails>(details)->
+              is_navigation_to_different_page()) {
+        ExitTabFullscreenOrMouseLockIfNecessary();
+      }
+      break;
 
-  TabContents* tab = fullscreened_tab_ ? fullscreened_tab_ : mouse_lock_tab_;
-
-  if (tab && registrar_.IsEmpty()) {
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<content::NavigationController>(
-            &tab->web_contents()->GetController()));
-  } else if (!tab && !registrar_.IsEmpty()) {
-    registrar_.RemoveAll();
+    default:
+      NOTREACHED() << "Got a notification we didn't register for.";
   }
-}
-
-void FullscreenController::ExitTabFullscreenOrMouseLockIfNecessary() {
-  if (tab_caused_fullscreen_)
-    ToggleFullscreenMode();
-  else
-    NotifyTabOfExitIfNecessary();
-}
-
-void FullscreenController::UpdateFullscreenExitBubbleContent() {
-  GURL url;
-  if (fullscreened_tab_)
-    url = fullscreened_tab_->web_contents()->GetURL();
-  else if (mouse_lock_tab_)
-    url = mouse_lock_tab_->web_contents()->GetURL();
-  else if (!extension_caused_fullscreen_.is_empty())
-    url = extension_caused_fullscreen_;
-
-  FullscreenExitBubbleType bubble_type = GetFullscreenExitBubbleType();
-
-  // If bubble displays buttons, unlock mouse to allow pressing them.
-  if (fullscreen_bubble::ShowButtonsForType(bubble_type) &&
-      IsMouseLocked() &&
-      mouse_lock_tab_->web_contents()) {
-    WebContents* web_contents = mouse_lock_tab_->web_contents();
-    if (web_contents && web_contents->GetRenderViewHost() &&
-        web_contents->GetRenderViewHost()->GetView())
-      web_contents->GetRenderViewHost()->GetView()->UnlockMouse();
-  }
-
-  window_->UpdateFullscreenExitBubbleContent(url, bubble_type);
-}
-
-void FullscreenController::NotifyFullscreenChange(bool is_fullscreen) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-      content::Source<FullscreenController>(this),
-      content::Details<bool>(&is_fullscreen));
-}
-
-void FullscreenController::NotifyMouseLockChange() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
-      content::Source<FullscreenController>(this),
-      content::NotificationService::NoDetails());
 }
 
 FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
@@ -506,44 +420,61 @@ FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
   return FEB_TYPE_NONE;
 }
 
-ContentSetting
-    FullscreenController::GetFullscreenSetting(const GURL& url) const {
-  if (url.SchemeIsFile())
-    return CONTENT_SETTING_ALLOW;
+void FullscreenController::UpdateNotificationRegistrations() {
+  if (fullscreened_tab_ && mouse_lock_tab_)
+    DCHECK(fullscreened_tab_ == mouse_lock_tab_);
 
-  return profile_->GetHostContentSettingsMap()->GetContentSetting(url, url,
-      CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
-}
+  TabContents* tab = fullscreened_tab_ ? fullscreened_tab_ : mouse_lock_tab_;
 
-ContentSetting
-    FullscreenController::GetMouseLockSetting(const GURL& url) const {
-  if (url.SchemeIsFile())
-    return CONTENT_SETTING_ALLOW;
-
-  HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
-  return settings_map->GetContentSetting(url, url,
-      CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string());
-}
-
-#if defined(OS_MACOSX)
-void FullscreenController::TogglePresentationModeInternal(bool for_tab) {
-  toggled_into_fullscreen_ = !window_->InPresentationMode();
-  GURL url;
-  if (for_tab) {
-    url = chrome::GetActiveWebContents(browser_)->GetURL();
-    tab_fullscreen_accepted_ = toggled_into_fullscreen_ &&
-        GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
+  if (tab && registrar_.IsEmpty()) {
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &tab->web_contents()->GetController()));
+  } else if (!tab && !registrar_.IsEmpty()) {
+    registrar_.RemoveAll();
   }
-  if (toggled_into_fullscreen_)
-    window_->EnterPresentationMode(url, GetFullscreenExitBubbleType());
-  else
-    window_->ExitPresentationMode();
-  UpdateFullscreenExitBubbleContent();
-
-  // WindowFullscreenStateChanged will be called by BrowserWindowController
-  // when the transition completes.
 }
-#endif
+
+void FullscreenController::NotifyFullscreenChange(bool is_fullscreen) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+      content::Source<FullscreenController>(this),
+      content::Details<bool>(&is_fullscreen));
+}
+
+void FullscreenController::NotifyTabOfExitIfNecessary() {
+  if (fullscreened_tab_) {
+    RenderViewHost* rvh =
+        fullscreened_tab_->web_contents()->GetRenderViewHost();
+    SetFullscreenedTab(NULL);
+    tab_caused_fullscreen_ = false;
+    tab_fullscreen_accepted_ = false;
+    if (rvh)
+      rvh->ExitFullscreen();
+  }
+
+  if (mouse_lock_tab_) {
+    WebContents* web_contents = mouse_lock_tab_->web_contents();
+    if (IsMouseLockRequested()) {
+      web_contents->GotResponseToLockMouseRequest(false);
+      NotifyMouseLockChange();
+    } else if (web_contents->GetRenderViewHost() &&
+               web_contents->GetRenderViewHost()->GetView()) {
+      web_contents->GetRenderViewHost()->GetView()->UnlockMouse();
+    }
+    SetMouseLockTab(NULL);
+    mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
+  }
+
+  UpdateFullscreenExitBubbleContent();
+}
+
+void FullscreenController::NotifyMouseLockChange() {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+      content::Source<FullscreenController>(this),
+      content::NotificationService::NoDetails());
+}
 
 // TODO(koz): Change |for_tab| to an enum.
 void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
@@ -585,6 +516,26 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
   // the BrowserWindow invoke WindowFullscreenStateChanged when appropriate.
 }
 
+#if defined(OS_MACOSX)
+void FullscreenController::TogglePresentationModeInternal(bool for_tab) {
+  toggled_into_fullscreen_ = !window_->InPresentationMode();
+  GURL url;
+  if (for_tab) {
+    url = chrome::GetActiveWebContents(browser_)->GetURL();
+    tab_fullscreen_accepted_ = toggled_into_fullscreen_ &&
+        GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
+  }
+  if (toggled_into_fullscreen_)
+    window_->EnterPresentationMode(url, GetFullscreenExitBubbleType());
+  else
+    window_->ExitPresentationMode();
+  UpdateFullscreenExitBubbleContent();
+
+  // WindowFullscreenStateChanged will be called by BrowserWindowController
+  // when the transition completes.
+}
+#endif
+
 void FullscreenController::SetFullscreenedTab(TabContents* tab) {
   fullscreened_tab_ = tab;
   UpdateNotificationRegistrations();
@@ -593,4 +544,54 @@ void FullscreenController::SetFullscreenedTab(TabContents* tab) {
 void FullscreenController::SetMouseLockTab(TabContents* tab) {
   mouse_lock_tab_ = tab;
   UpdateNotificationRegistrations();
+}
+
+void FullscreenController::ExitTabFullscreenOrMouseLockIfNecessary() {
+  if (tab_caused_fullscreen_)
+    ToggleFullscreenMode();
+  else
+    NotifyTabOfExitIfNecessary();
+}
+
+void FullscreenController::UpdateFullscreenExitBubbleContent() {
+  GURL url;
+  if (fullscreened_tab_)
+    url = fullscreened_tab_->web_contents()->GetURL();
+  else if (mouse_lock_tab_)
+    url = mouse_lock_tab_->web_contents()->GetURL();
+  else if (!extension_caused_fullscreen_.is_empty())
+    url = extension_caused_fullscreen_;
+
+  FullscreenExitBubbleType bubble_type = GetFullscreenExitBubbleType();
+
+  // If bubble displays buttons, unlock mouse to allow pressing them.
+  if (fullscreen_bubble::ShowButtonsForType(bubble_type) &&
+      IsMouseLocked() &&
+      mouse_lock_tab_->web_contents()) {
+    WebContents* web_contents = mouse_lock_tab_->web_contents();
+    if (web_contents && web_contents->GetRenderViewHost() &&
+        web_contents->GetRenderViewHost()->GetView())
+      web_contents->GetRenderViewHost()->GetView()->UnlockMouse();
+  }
+
+  window_->UpdateFullscreenExitBubbleContent(url, bubble_type);
+}
+
+ContentSetting
+    FullscreenController::GetFullscreenSetting(const GURL& url) const {
+  if (url.SchemeIsFile())
+    return CONTENT_SETTING_ALLOW;
+
+  return profile_->GetHostContentSettingsMap()->GetContentSetting(url, url,
+      CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
+}
+
+ContentSetting
+    FullscreenController::GetMouseLockSetting(const GURL& url) const {
+  if (url.SchemeIsFile())
+    return CONTENT_SETTING_ALLOW;
+
+  HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
+  return settings_map->GetContentSetting(url, url,
+      CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string());
 }

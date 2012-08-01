@@ -447,7 +447,7 @@ Browser::Browser(const CreateParams& params)
     local_state->ClearPref(prefs::kAutofillPersonalDataManagerFirstRun);
   }
 
-  fullscreen_controller_ = new FullscreenController(window_, profile_, this);
+  fullscreen_controller_.reset(new FullscreenController(this));
 }
 
 Browser::~Browser() {

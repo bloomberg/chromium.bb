@@ -899,7 +899,7 @@ class Browser : public TabStripModelObserver,
 
   scoped_ptr<DeviceAttachedIntentSource> device_attached_intent_source_;
 
-  scoped_refptr<FullscreenController> fullscreen_controller_;
+  scoped_ptr<FullscreenController> fullscreen_controller_;
 
   scoped_ptr<extensions::WindowController> extension_window_controller_;
 
