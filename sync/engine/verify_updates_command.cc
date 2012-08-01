@@ -56,6 +56,26 @@ bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
   if (existing_entry.good())
     existing_version = existing_entry.Get(syncable::BASE_VERSION);
 
+  if (!existing_entry.good() && update.deleted()) {
+    // There are several possible explanations for this.  The most common cases
+    // will be first time sync and the redelivery of deletions we've already
+    // synced, accepted, and purged from our database.  In either case, the
+    // update is useless to us.  Let's count them all as "not new", even though
+    // that may not always be entirely accurate.
+    return false;
+  }
+
+  if (existing_entry.good() &&
+      !existing_entry.Get(syncable::UNIQUE_CLIENT_TAG).empty() &&
+      existing_entry.Get(syncable::IS_DEL) &&
+      update.deleted()) {
+    // Unique client tags will have their version set to zero when they're
+    // deleted.  The usual version comparison logic won't be able to detect
+    // reflections of these items.  Instead, we assume any received tombstones
+    // are reflections.  That should be correct most of the time.
+    return false;
+  }
+
   return existing_version < update.version();
 }
 
