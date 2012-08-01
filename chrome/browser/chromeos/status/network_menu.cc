@@ -588,6 +588,11 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       chromeos::ActivationState activation_state =
           cell_networks[i]->activation_state();
 
+      // This is currently only used in the OOBE screen, do not show
+      // activating 3G option.
+      if (activation_state != ACTIVATION_STATE_ACTIVATED)
+        continue;
+
       // Ampersand is a valid character in a network name, but menu2 uses it
       // to mark "mnemonics" for keyboard shortcuts.  http://crosbug.com/14697
       std::string network_name = EscapeAmpersands(cell_networks[i]->name());
