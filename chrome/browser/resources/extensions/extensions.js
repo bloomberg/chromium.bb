@@ -151,6 +151,7 @@ cr.define('extensions', function() {
       ExtensionSettings.showOverlay($('extensionCommandsOverlay'));
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_ExtensionCommands']);
+      e.preventDefault();
     },
 
     /**
