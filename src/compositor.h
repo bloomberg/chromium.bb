@@ -685,6 +685,18 @@ weston_seat_init_touch(struct weston_seat *seat);
 void
 weston_seat_release(struct weston_seat *seat);
 
+/* String literal of spaces, the same width as the timestamp. */
+#define STAMP_SPACE "               "
+
+void
+weston_log_file_open(const char *filename);
+void
+weston_log_file_close(void);
+int
+weston_log(const char *fmt, ...);
+int
+weston_log_continue(const char *fmt, ...);
+
 enum {
 	TTY_ENTER_VT,
 	TTY_LEAVE_VT

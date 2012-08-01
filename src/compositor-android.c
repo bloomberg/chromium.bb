@@ -30,7 +30,6 @@
 
 #include "compositor.h"
 #include "android-framebuffer.h"
-#include "log.h"
 
 struct android_compositor;
 

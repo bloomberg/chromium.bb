@@ -35,7 +35,6 @@
 #include <sys/stat.h>
 
 #include "compositor.h"
-#include "log.h"
 
 /* Introduced in 2.6.38 */
 #ifndef K_OFF

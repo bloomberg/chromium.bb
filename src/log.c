@@ -30,7 +30,7 @@
 #include <wayland-server.h>
 #include <wayland-util.h>
 
-#include "log.h"
+#include "compositor.h"
 
 static FILE *weston_logfile = NULL;
 

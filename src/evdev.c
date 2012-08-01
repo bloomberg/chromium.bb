@@ -31,7 +31,6 @@
 #include "evdev.h"
 #include "evdev-private.h"
 #include "launcher-util.h"
-#include "log.h"
 
 static void
 evdev_led_update(struct weston_seat *seat_base, enum weston_led leds)

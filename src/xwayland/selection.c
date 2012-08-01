@@ -28,7 +28,6 @@
 #include <fcntl.h>
 
 #include "xwayland.h"
-#include "../log.h"
 
 static int
 weston_wm_write_property(int fd, uint32_t mask, void *data)

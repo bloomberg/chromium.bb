@@ -53,7 +53,6 @@
 #include <wayland-server.h>
 #include "compositor.h"
 #include "../shared/os-compatibility.h"
-#include "log.h"
 #include "git-version.h"
 
 static struct wl_list child_process_list;

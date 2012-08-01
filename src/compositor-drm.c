@@ -41,7 +41,6 @@
 #include "compositor.h"
 #include "evdev.h"
 #include "launcher-util.h"
-#include "log.h"
 
 static int option_current_mode = 0;
 static char *output_name;

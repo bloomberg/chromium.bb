@@ -49,7 +49,6 @@
 
 #include "compositor.h"
 #include "../shared/config-parser.h"
-#include "log.h"
 
 struct x11_compositor {
 	struct weston_compositor	 base;

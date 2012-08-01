@@ -42,7 +42,6 @@
 #include <EGL/eglext.h>
 
 #include "compositor.h"
-#include "log.h"
 
 struct wayland_compositor {
 	struct weston_compositor	 base;

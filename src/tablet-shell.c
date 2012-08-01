@@ -29,7 +29,6 @@
 
 #include "compositor.h"
 #include "tablet-shell-server-protocol.h"
-#include "log.h"
 
 /*
  * TODO: Don't fade back from black until we've received a lockscreen

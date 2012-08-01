@@ -34,7 +34,6 @@
 
 #include "xwayland.h"
 #include "xserver-server-protocol.h"
-#include "../log.h"
 
 
 static int
