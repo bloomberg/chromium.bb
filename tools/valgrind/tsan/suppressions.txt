@@ -1029,11 +1029,3 @@
    fun:browser_sync::NewNonFrontendDataTypeController::StartAssociationWithSharedChangeProcessor
    fun:base::internal::RunnableAdapter::Run
 }
-{
-  bug_139849
-  ThreadSanitizer:Race
-  fun:base::Thread::~Thread
-  fun:device_orientation::ProviderImpl::PollingThread::~PollingThread
-  fun:::DeleteThread
-  fun:base::internal::RunnableAdapter::Run
-}

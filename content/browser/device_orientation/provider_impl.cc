@@ -31,6 +31,7 @@ bool IsElementSignificantlyDifferent(bool can_provide_element1,
 }
 
 void DeleteThread(base::Thread* thread) {
+  thread->Stop();
   delete thread;
 }
 
