@@ -97,8 +97,8 @@ void AuthOperation::Start() {
   scopes.push_back(kSpreadsheetsScope);
   scopes.push_back(kUserContentScope);
   scopes.push_back(kContactsScope);
-  if (gdata::util::IsDriveV2ApiEnabled())
-    scopes.push_back(kDriveAppsScope);
+  // Drive App scope is required for even WAPI v3 apps access.
+  scopes.push_back(kDriveAppsScope);
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
       this, g_browser_process->system_request_context()));
   NotifyStart();
