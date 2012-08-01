@@ -291,7 +291,7 @@ TEST_F(InputMethodIBusTest, CanComposeInline) {
   EXPECT_EQ(true, ime_->CanComposeInline());
   can_compose_inline_ = false;
   ime_->OnTextInputTypeChanged(this);
-  EXPECT_EQ(false, ime_->CanComposeInline());
+  EXPECT_FALSE(ime_->CanComposeInline());
 }
 
 TEST_F(InputMethodIBusTest, GetTextInputClient) {

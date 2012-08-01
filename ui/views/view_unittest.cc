@@ -3338,7 +3338,7 @@ TEST_F(ViewLayerTest, RecreateLayer) {
   v->layer()->set_scale_content(false);
   scoped_ptr<ui::Layer> old_layer(v->RecreateLayer());
   ui::Layer* new_layer = v->layer();
-  EXPECT_EQ(false, new_layer->scale_content());
+  EXPECT_FALSE(new_layer->scale_content());
 }
 
 #endif  // USE_AURA
