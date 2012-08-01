@@ -1,7 +1,7 @@
 Name: SMHasher
 URL: http://code.google.com/p/smhasher/
 Version: 0
-Revision: 136
+Revision: 146
 License: MIT (SMHasher), Public Domain (MurmurHash)
 License File: LICENSE
 Security Critical: yes
