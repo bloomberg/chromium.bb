@@ -17,11 +17,13 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/command_buffer_proxy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
+#include "ui/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -374,6 +376,13 @@ void CompositorSwapClient::OnLostContext() {
   // Note: previous line destroyed this. Don't access members from now on.
 }
 
+WebKit::WebGraphicsContext3D* CreateTestContext() {
+  ui::TestWebGraphicsContext3D* test_context =
+      new ui::TestWebGraphicsContext3D();
+  test_context->Initialize();
+  return test_context;
+}
+
 }  // anonymous namespace
 
 // static
@@ -384,6 +393,8 @@ void ImageTransportFactory::Initialize() {
   }
   if (ui::IsTestCompositorEnabled()) {
     g_factory = new DefaultTransportFactory();
+    content::WebKitPlatformSupportImpl::SetOffscreenContextFactoryForTest(
+        CreateTestContext);
   } else {
 #if defined(OS_WIN)
     g_factory = new DefaultTransportFactory();

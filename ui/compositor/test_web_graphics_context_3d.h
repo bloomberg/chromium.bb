@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "ui/compositor/compositor_export.h"
 
 namespace gfx {
 class GLContext;
@@ -18,7 +19,8 @@ class GLSurface;
 namespace ui {
 
 // WebGraphicsContext3D that does nothing. Suitable for testing.
-class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
+class COMPOSITOR_EXPORT TestWebGraphicsContext3D :
+    public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
  public:
   TestWebGraphicsContext3D();
   virtual ~TestWebGraphicsContext3D();
