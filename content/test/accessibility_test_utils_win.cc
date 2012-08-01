@@ -230,38 +230,36 @@ string16 IAccessible2RoleToString(int32 ia_role) {
   return AccessibilityRoleStateMap::GetInstance()->ia2_role_string_map[ia_role];
 }
 
-string16 IAccessibleStateToString(int32 ia_state) {
-  string16 state_str;
+void IAccessibleStateToStringVector(int32 ia_state,
+                                    std::vector<string16>* result) {
   const std::map<int32, string16>& state_string_map =
       AccessibilityRoleStateMap::GetInstance()->ia_state_string_map;
   std::map<int32, string16>::const_iterator it;
-
-  for (it = state_string_map.begin();
-       it != state_string_map.end();
-       ++it) {
-    if (it->first & ia_state) {
-      if (!state_str.empty())
-        state_str += L",";
-      state_str += it->second;
-    }
+  for (it = state_string_map.begin(); it != state_string_map.end(); ++it) {
+    if (it->first & ia_state)
+      result->push_back(it->second);
   }
-  return state_str;
 }
 
-string16 IAccessible2StateToString(int32 ia2_state) {
-  string16 state_str;
+string16 IAccessibleStateToString(int32 ia_state) {
+  std::vector<string16> strings;
+  IAccessibleStateToStringVector(ia_state, &strings);
+  return JoinString(strings, ',');
+}
+
+void IAccessible2StateToStringVector(int32 ia2_state,
+                                     std::vector<string16>* result) {
   const std::map<int32, string16>& state_string_map =
       AccessibilityRoleStateMap::GetInstance()->ia2_state_string_map;
   std::map<int32, string16>::const_iterator it;
-
-  for (it = state_string_map.begin();
-       it != state_string_map.end();
-       ++it) {
-    if (it->first & ia2_state) {
-      if (!state_str.empty())
-        state_str += L",";
-      state_str += it->second;
-    }
+  for (it = state_string_map.begin(); it != state_string_map.end(); ++it) {
+    if (it->first & ia2_state)
+      result->push_back(it->second);
   }
-  return state_str;
+}
+
+string16 IAccessible2StateToString(int32 ia2_state) {
+  std::vector<string16> strings;
+  IAccessible2StateToStringVector(ia2_state, &strings);
+  return JoinString(strings, ',');
 }
