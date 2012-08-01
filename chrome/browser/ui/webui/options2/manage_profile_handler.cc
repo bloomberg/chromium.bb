@@ -27,6 +27,13 @@
 
 namespace options2 {
 
+namespace {
+
+const char kCreateProfileIconGridName[] = "create-profile-icon-grid";
+const char kManageProfileIconGridName[] = "manage-profile-icon-grid";
+
+}  // namespace
+
 ManageProfileHandler::ManageProfileHandler() {
 }
 
@@ -86,18 +93,22 @@ void ManageProfileHandler::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
     SendProfileNames();
-    SendProfileIcons(Value::CreateStringValue("manage-profile-icon-grid"));
+    base::StringValue value(kManageProfileIconGridName);
+    SendProfileIcons(value);
   } else {
     OptionsPageUIHandler::Observe(type, source, details);
   }
 }
 
 void ManageProfileHandler::RequestDefaultProfileIcons(const ListValue* args) {
-  SendProfileIcons(Value::CreateStringValue("manage-profile-icon-grid"));
-  SendProfileIcons(Value::CreateStringValue("create-profile-icon-grid"));
+  base::StringValue create_value(kCreateProfileIconGridName);
+  base::StringValue manage_value(kManageProfileIconGridName);
+  SendProfileIcons(manage_value);
+  SendProfileIcons(create_value);
 }
 
-void ManageProfileHandler::SendProfileIcons(base::StringValue* icon_grid) {
+void ManageProfileHandler::SendProfileIcons(
+    const base::StringValue& icon_grid) {
   ListValue image_url_list;
 
   // First add the GAIA picture if it's available.
@@ -122,7 +133,7 @@ void ManageProfileHandler::SendProfileIcons(base::StringValue* icon_grid) {
   }
 
   web_ui()->CallJavascriptFunction(
-      "ManageProfileOverlay.receiveDefaultProfileIcons", *icon_grid,
+      "ManageProfileOverlay.receiveDefaultProfileIcons", icon_grid,
       image_url_list);
 }
 

@@ -68,7 +68,7 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // Send all profile icons to the overlay.
   // |iconGrid| is the string representation of which grid the icons will
   // populate (i.e. "create-profile-icon-grid" or "manage-profile-icon-grid").
-  void SendProfileIcons(base::StringValue* icon_grid);
+  void SendProfileIcons(const base::StringValue& icon_grid);
 
   // URL for the current profile's GAIA picture.
   std::string gaia_picture_url_;
