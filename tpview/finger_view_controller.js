@@ -13,9 +13,12 @@ function FingerViewController(inGraph, outGraph, inText) {
 };
 
 FingerViewController.prototype = {
-  setEntriesLog: function(log) {
-    this.entries = log.entries;
-    this.log = log
+  setEntriesLog: function(log, layer) {
+    var tmp = log;
+    for (var i = 0; i < layer; i++)
+      tmp = tmp.nextLayer;
+    this.entries = tmp.entries;
+    this.log = log;
     if (this.entries.length > 0)
       this.begin = this.end = 0;
     else

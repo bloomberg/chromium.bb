@@ -12,11 +12,18 @@ body {
 }
 
 .viewspan {
-	width: 49%;
+	width: 500px;
 	/*float: left;*/
 	/*border: 1px solid #f77;*/
 	display: inline-block;
 	vertical-align:text-top;
+}
+
+.midviewspan {
+	width: 300px;
+	height: 0px;
+	padding: 0 0 0 100px;
+	display: inline-block;
 }
 
 .heading {

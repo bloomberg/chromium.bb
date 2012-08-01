@@ -17,6 +17,9 @@
 
 var finger_view_controller;
 
+var current_layer = 0;
+var json_obj;
+
 function update_range(event, ui) {
   finger_view_controller.setRange(ui.values[0], ui.values[1]);
   var begin_event = finger_view_controller.getEvent(ui.values[0]);
@@ -36,11 +39,11 @@ function update_range(event, ui) {
 }
 
 function loadLogObj(obj) {
-  finger_view_controller.setEntriesLog(obj);
+  finger_view_controller.setEntriesLog(obj, current_layer);
   finger_view_controller.initFTS();
   var MAX_SIZE = 10000;
-  var min = Math.max(0, obj.entries.length - MAX_SIZE);
-  var max = obj.entries.length - 1;
+  var min = Math.max(0, finger_view_controller.entries.length - MAX_SIZE);
+  var max = finger_view_controller.entries.length - 1;
   finger_view_controller.setRange(min, max);
   $("#slider").slider({
     min: min,
@@ -50,7 +53,6 @@ function loadLogObj(obj) {
     slide: update_range,
     change: update_range
   });
-  finger_view_controller.resetZooms();
   update_range(null, { values: [min, max] });
 }
 
@@ -66,7 +68,11 @@ function handleFileSelect(evt) {
   reader.onload = function(e) {
     $('#text_box').val(e.target.result);
     var obj = jQuery.parseJSON(e.target.result);
+    json_obj = obj;
+    generateRadioButtons(obj);
+    current_layer = 0;
     loadLogObj(obj);
+    finger_view_controller.resetZooms();
   };
   reader.readAsText(file);
 }
@@ -220,6 +226,21 @@ function shrink() {
   loadLogObj(snippet);
 }
 
+function generateRadioButtons(obj) {
+  var radioHTML = '<input type="radio" name="viewLayer" value="0" ' +
+                  'checked="checked" onclick="radioChange(event)">' +
+                  obj.interpreterName + '</input><br/>';
+  var layer = 0;
+  while (obj.hasOwnProperty('nextLayer')) {
+    obj = obj.nextLayer;
+    layer++;
+    radioHTML += '<input type="radio" name="viewLayer" value="' + layer +
+                 '" onclick="radioChange(event)">' + obj.interpreterName +
+                 '</input><br/>';
+  }
+  document.getElementById('button_div').innerHTML = radioHTML;
+}
+
 function generateUnittest() {
   var interpreter_name = $('#unittest_interpreter').val();
   var unittest_name = $('#unittest_testname').val();
@@ -228,6 +249,13 @@ function generateUnittest() {
   var unittest = finger_view_controller.getUnitTest(
       values[0], values[1], interpreter_name, unittest_name);
   $('#unittest_box').val(unittest);
+}
+
+function radioChange(e) {
+  if (e.target.value != current_layer) {
+    current_layer = e.target.value;
+    loadLogObj(json_obj);
+  }
 }
 
 $(document).ready(function() {
@@ -249,7 +277,7 @@ $(document).ready(function() {
   var inGc = new GraphController($('#fview'));
   
   finger_view_controller = new FingerViewController(inGc, gc, $('#intext'));
-  finger_view_controller.setEntriesLog(secret_obj);
+  finger_view_controller.setEntriesLog(secret_obj, 0);
   $("#out-resetzoom").button({
     icons: {
       primary: "ui-icon-arrow-4-diag"
@@ -348,7 +376,9 @@ $(document).ready(function() {
     }
   });
 
+  generateRadioButtons(secret_obj);
   loadLogObj(secret_obj);
+  finger_view_controller.resetZooms();
 });
 
 </script>
@@ -359,7 +389,9 @@ $(document).ready(function() {
 <canvas class="view" id="fview" width="480" height="320"></canvas><br/>
 <div id="intext">Time: 123123123.123<br/>Finger Cnt: 2<br/>Touch Cnt: 2</div>
 <button class="button" id="in-resetzoom">Reset Zoom</button><br/>
-</div><div class="viewspan">
+</div>
+<div class="midviewspan" id="button_div"></div>
+<div class="viewspan">
 <div class="heading">Output:</div>
 <canvas class="view" id="gview" width="480" height="320"></canvas><br/>
 <button class="button" id="out-resetzoom">Reset Zoom</button><br/>
