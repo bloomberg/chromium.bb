@@ -652,7 +652,7 @@ void TerminateFunction::TerminateProcess() {
   Release();
 }
 
-GetProcessInfoFunction::GetProcessInfoFunction() {
+GetProcessInfoFunction::GetProcessInfoFunction() : memory_(false) {
 }
 
 GetProcessInfoFunction::~GetProcessInfoFunction() {
