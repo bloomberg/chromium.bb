@@ -806,6 +806,174 @@ static const struct wl_pointer_grab_interface move_grab_interface = {
 	move_grab_button,
 };
 
+static int
+surface_move(struct shell_surface *shsurf, struct weston_seat *ws)
+{
+	struct weston_move_grab *move;
+
+	if (!shsurf)
+		return -1;
+
+	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+		return 0;
+
+	move = malloc(sizeof *move);
+	if (!move)
+		return -1;
+
+	move->dx = wl_fixed_from_double(shsurf->surface->geometry.x) -
+			ws->seat.pointer->grab_x;
+	move->dy = wl_fixed_from_double(shsurf->surface->geometry.y) -
+			ws->seat.pointer->grab_y;
+
+	shell_grab_start(&move->base, &move_grab_interface, shsurf,
+			 ws->seat.pointer, DESKTOP_SHELL_CURSOR_MOVE);
+
+	return 0;
+}
+
+static void
+shell_surface_move(struct wl_client *client, struct wl_resource *resource,
+		   struct wl_resource *seat_resource, uint32_t serial)
+{
+	struct weston_seat *ws = seat_resource->data;
+	struct shell_surface *shsurf = resource->data;
+
+	if (ws->seat.pointer->button_count == 0 ||
+	    ws->seat.pointer->grab_serial != serial ||
+	    ws->seat.pointer->focus != &shsurf->surface->surface)
+		return;
+
+	if (surface_move(shsurf, ws) < 0)
+		wl_resource_post_no_memory(resource);
+}
+
+struct weston_resize_grab {
+	struct shell_grab base;
+	uint32_t edges;
+	int32_t width, height;
+};
+
+static void
+resize_grab_motion(struct wl_pointer_grab *grab,
+		   uint32_t time, wl_fixed_t x, wl_fixed_t y)
+{
+	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
+	struct wl_pointer *pointer = grab->pointer;
+	struct shell_surface *shsurf = resize->base.shsurf;
+	int32_t width, height;
+	wl_fixed_t from_x, from_y;
+	wl_fixed_t to_x, to_y;
+
+	if (!shsurf)
+		return;
+
+	weston_surface_from_global_fixed(shsurf->surface,
+				         pointer->grab_x, pointer->grab_y,
+				         &from_x, &from_y);
+	weston_surface_from_global_fixed(shsurf->surface,
+				         pointer->x, pointer->y, &to_x, &to_y);
+
+	width = resize->width;
+	if (resize->edges & WL_SHELL_SURFACE_RESIZE_LEFT) {
+		width += wl_fixed_to_int(from_x - to_x);
+	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_RIGHT) {
+		width += wl_fixed_to_int(to_x - from_x);
+	}
+
+	height = resize->height;
+	if (resize->edges & WL_SHELL_SURFACE_RESIZE_TOP) {
+		height += wl_fixed_to_int(from_y - to_y);
+	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_BOTTOM) {
+		height += wl_fixed_to_int(to_y - from_y);
+	}
+
+	shsurf->client->send_configure(shsurf->surface,
+				       resize->edges, width, height);
+}
+
+static void
+send_configure(struct weston_surface *surface,
+	       uint32_t edges, int32_t width, int32_t height)
+{
+	struct shell_surface *shsurf = get_shell_surface(surface);
+
+	wl_shell_surface_send_configure(&shsurf->resource,
+					edges, width, height);
+}
+
+static const struct weston_shell_client shell_client = {
+	send_configure
+};
+
+static void
+resize_grab_button(struct wl_pointer_grab *grab,
+		   uint32_t time, uint32_t button, uint32_t state_w)
+{
+	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
+	struct wl_pointer *pointer = grab->pointer;
+	enum wl_pointer_button_state state = state_w;
+
+	if (pointer->button_count == 0 &&
+	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
+		shell_grab_end(&resize->base);
+		free(grab);
+	}
+}
+
+static const struct wl_pointer_grab_interface resize_grab_interface = {
+	noop_grab_focus,
+	resize_grab_motion,
+	resize_grab_button,
+};
+
+static int
+surface_resize(struct shell_surface *shsurf,
+	       struct weston_seat *ws, uint32_t edges)
+{
+	struct weston_resize_grab *resize;
+
+	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+		return 0;
+
+	if (edges == 0 || edges > 15 ||
+	    (edges & 3) == 3 || (edges & 12) == 12)
+		return 0;
+
+	resize = malloc(sizeof *resize);
+	if (!resize)
+		return -1;
+
+	resize->edges = edges;
+	resize->width = shsurf->surface->geometry.width;
+	resize->height = shsurf->surface->geometry.height;
+
+	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
+			 ws->seat.pointer, edges);
+
+	return 0;
+}
+
+static void
+shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
+		     struct wl_resource *seat_resource, uint32_t serial,
+		     uint32_t edges)
+{
+	struct weston_seat *ws = seat_resource->data;
+	struct shell_surface *shsurf = resource->data;
+
+	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+		return;
+
+	if (ws->seat.pointer->button_count == 0 ||
+	    ws->seat.pointer->grab_serial != serial ||
+	    ws->seat.pointer->focus != &shsurf->surface->surface)
+		return;
+
+	if (surface_resize(shsurf, ws, edges) < 0)
+		wl_resource_post_no_memory(resource);
+}
+
 static void
 busy_cursor_grab_focus(struct wl_pointer_grab *base,
 		       struct wl_surface *surface, int32_t x, int32_t y)
@@ -990,174 +1158,6 @@ shell_surface_set_class(struct wl_client *client,
 
 	free(shsurf->class);
 	shsurf->class = strdup(class);
-}
-
-static int
-surface_move(struct shell_surface *shsurf, struct weston_seat *ws)
-{
-	struct weston_move_grab *move;
-
-	if (!shsurf)
-		return -1;
-
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
-		return 0;
-
-	move = malloc(sizeof *move);
-	if (!move)
-		return -1;
-
-	move->dx = wl_fixed_from_double(shsurf->surface->geometry.x) -
-			ws->seat.pointer->grab_x;
-	move->dy = wl_fixed_from_double(shsurf->surface->geometry.y) -
-			ws->seat.pointer->grab_y;
-
-	shell_grab_start(&move->base, &move_grab_interface, shsurf,
-			 ws->seat.pointer, DESKTOP_SHELL_CURSOR_MOVE);
-
-	return 0;
-}
-
-static void
-shell_surface_move(struct wl_client *client, struct wl_resource *resource,
-		   struct wl_resource *seat_resource, uint32_t serial)
-{
-	struct weston_seat *ws = seat_resource->data;
-	struct shell_surface *shsurf = resource->data;
-
-	if (ws->seat.pointer->button_count == 0 ||
-	    ws->seat.pointer->grab_serial != serial ||
-	    ws->seat.pointer->focus != &shsurf->surface->surface)
-		return;
-
-	if (surface_move(shsurf, ws) < 0)
-		wl_resource_post_no_memory(resource);
-}
-
-struct weston_resize_grab {
-	struct shell_grab base;
-	uint32_t edges;
-	int32_t width, height;
-};
-
-static void
-resize_grab_motion(struct wl_pointer_grab *grab,
-		   uint32_t time, wl_fixed_t x, wl_fixed_t y)
-{
-	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
-	struct wl_pointer *pointer = grab->pointer;
-	struct shell_surface *shsurf = resize->base.shsurf;
-	int32_t width, height;
-	wl_fixed_t from_x, from_y;
-	wl_fixed_t to_x, to_y;
-
-	if (!shsurf)
-		return;
-
-	weston_surface_from_global_fixed(shsurf->surface,
-				         pointer->grab_x, pointer->grab_y,
-				         &from_x, &from_y);
-	weston_surface_from_global_fixed(shsurf->surface,
-				         pointer->x, pointer->y, &to_x, &to_y);
-
-	width = resize->width;
-	if (resize->edges & WL_SHELL_SURFACE_RESIZE_LEFT) {
-		width += wl_fixed_to_int(from_x - to_x);
-	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_RIGHT) {
-		width += wl_fixed_to_int(to_x - from_x);
-	}
-
-	height = resize->height;
-	if (resize->edges & WL_SHELL_SURFACE_RESIZE_TOP) {
-		height += wl_fixed_to_int(from_y - to_y);
-	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_BOTTOM) {
-		height += wl_fixed_to_int(to_y - from_y);
-	}
-
-	shsurf->client->send_configure(shsurf->surface,
-				       resize->edges, width, height);
-}
-
-static void
-send_configure(struct weston_surface *surface,
-	       uint32_t edges, int32_t width, int32_t height)
-{
-	struct shell_surface *shsurf = get_shell_surface(surface);
-
-	wl_shell_surface_send_configure(&shsurf->resource,
-					edges, width, height);
-}
-
-static const struct weston_shell_client shell_client = {
-	send_configure
-};
-
-static void
-resize_grab_button(struct wl_pointer_grab *grab,
-		   uint32_t time, uint32_t button, uint32_t state_w)
-{
-	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
-	struct wl_pointer *pointer = grab->pointer;
-	enum wl_pointer_button_state state = state_w;
-
-	if (pointer->button_count == 0 &&
-	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
-		shell_grab_end(&resize->base);
-		free(grab);
-	}
-}
-
-static const struct wl_pointer_grab_interface resize_grab_interface = {
-	noop_grab_focus,
-	resize_grab_motion,
-	resize_grab_button,
-};
-
-static int
-surface_resize(struct shell_surface *shsurf,
-	       struct weston_seat *ws, uint32_t edges)
-{
-	struct weston_resize_grab *resize;
-
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
-		return 0;
-
-	if (edges == 0 || edges > 15 ||
-	    (edges & 3) == 3 || (edges & 12) == 12)
-		return 0;
-
-	resize = malloc(sizeof *resize);
-	if (!resize)
-		return -1;
-
-	resize->edges = edges;
-	resize->width = shsurf->surface->geometry.width;
-	resize->height = shsurf->surface->geometry.height;
-
-	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
-			 ws->seat.pointer, edges);
-
-	return 0;
-}
-
-static void
-shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
-		     struct wl_resource *seat_resource, uint32_t serial,
-		     uint32_t edges)
-{
-	struct weston_seat *ws = seat_resource->data;
-	struct shell_surface *shsurf = resource->data;
-
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
-		return;
-
-	if (ws->seat.pointer->button_count == 0 ||
-	    ws->seat.pointer->grab_serial != serial ||
-	    ws->seat.pointer->focus != &shsurf->surface->surface)
-		return;
-
-	if (surface_resize(shsurf, ws, edges) < 0)
-		wl_resource_post_no_memory(resource);
 }
 
 static struct weston_output *
