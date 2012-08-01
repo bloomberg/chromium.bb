@@ -392,19 +392,19 @@ void ProgramManager::DoCompileShader(ShaderManager::ShaderInfo* info,
           ProgramCache::COMPILATION_SUCCEEDED) {
     info->SetStatus(true, "", translator);
     info->FlagSourceAsCompiled(false);
-    HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheHitTime",
-                            (base::Time::Now() - before).InMicroseconds(),
-                            100,
-                            TimeDelta::FromSeconds(1).InMicroseconds(),
-                            50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheHitTime",
+                                (base::Time::Now() - before).InMicroseconds(),
+                                100,
+                                TimeDelta::FromSeconds(1).InMicroseconds(),
+                                50);
     return;
   }
   ForceCompileShader(info->source(), info, translator, feature_info);
-  HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheMissTime",
-                          (base::Time::Now() - before).InMicroseconds(),
-                          100,
-                          TimeDelta::FromSeconds(1).InMicroseconds(),
-                          50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheMissTime",
+                              (base::Time::Now() - before).InMicroseconds(),
+                              100,
+                              TimeDelta::FromSeconds(1).InMicroseconds(),
+                              50);
 }
 
 void ProgramManager::ForceCompileShader(const std::string* source,
@@ -545,14 +545,14 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
                                attached_shaders_[0],
                                attached_shaders_[1],
                                &bind_attrib_location_map_);
-      HISTOGRAM_CUSTOM_COUNTS(
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheMissTime",
           (base::Time::Now() - before_time).InMicroseconds(),
           100,
           TimeDelta::FromSeconds(1).InMicroseconds(),
           50);
     } else if (cache) {
-      HISTOGRAM_CUSTOM_COUNTS(
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheHitTime",
           (base::Time::Now() - before_time).InMicroseconds(),
           100,
