@@ -13,7 +13,6 @@
 #include "native_client/src/trusted/plugin/manifest.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/pnacl_streaming_translate_thread.h"
 #include "native_client/src/trusted/plugin/pnacl_translate_thread.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/temporary_file.h"
@@ -440,7 +439,7 @@ void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
   // Create the translation thread object immediately. This ensures that any
   // pieces of the file that get downloaded before the compilation thread
   // is accepting SRPCs won't get dropped.
-  translate_thread_.reset(new PnaclStreamingTranslateThread());
+  translate_thread_.reset(new PnaclTranslateThread());
   if (translate_thread_ == NULL) {
     ReportNonPpapiError("could not allocate translation thread.");
     return;
@@ -484,10 +483,8 @@ void PnaclCoordinator::BitcodeStreamGotData(int32_t pp_error,
                                             FileStreamData data) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamGotData (pp_error=%"
                  NACL_PRId32", data=%p)\n", pp_error, data ? &(*data)[0] : 0));
-  PnaclStreamingTranslateThread* thread =
-    static_cast<PnaclStreamingTranslateThread*>(translate_thread_.get());
-  DCHECK(thread);
-  thread->PutBytes(data, pp_error);
+  DCHECK(translate_thread_.get());
+  translate_thread_->PutBytes(data, pp_error);
 }
 
 StreamCallback PnaclCoordinator::GetCallback() {
