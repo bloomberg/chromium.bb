@@ -251,6 +251,11 @@ GCCPatterns = [
   ( ('-iquote(.+)'),
     "env.append('CC_FLAGS', '-iquote', pathtools.normalize($0))"),
 
+  ( ('-idirafter', '(.+)'),
+      "env.append('CC_FLAGS', '-idirafter'+pathtools.normalize($0))"),
+  ( '-idirafter(.+)',
+      "env.append('CC_FLAGS', '-idirafter'+pathtools.normalize($0))"),
+
   ( ('(-include)','(.+)'),    AddCCFlag),
   ( ('(-include.+)'),         AddCCFlag),
   ( '(-g)',                   AddCCFlag),
