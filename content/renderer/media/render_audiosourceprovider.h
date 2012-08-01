@@ -56,7 +56,6 @@ class RenderAudioSourceProvider
   virtual void Stop() OVERRIDE;
   virtual void Play() OVERRIDE;
   virtual void Pause(bool flush) OVERRIDE;
-  virtual void SetPlaybackRate(float rate) OVERRIDE;
   virtual bool SetVolume(double volume) OVERRIDE;
   virtual void Initialize(const media::AudioParameters& params,
                           RenderCallback* renderer) OVERRIDE;
