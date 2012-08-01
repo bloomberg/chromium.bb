@@ -191,9 +191,7 @@ def _install_action(decoder, action, values):
   values['constraints'] = action.constraints if action.constraints else ''
   values['pattern'] = action.pattern
   values['baseline_class'] =  _decoder_replace(CLASS, 'baseline') % values
-  values['actual_class'] = (
-      _decoder_replace(CLASS, 'actual') %
-      values if values['rule'] else values['actual'])
+  values['actual_class'] = _decoder_replace(CLASS, 'actual') % values
   _install_baseline_and_actuals('named_DECODER_class', NAMED_CLASS, values)
   _install_baseline_and_actuals('DECODER_instance', INSTANCE, values)
   values['base_tester'] = BASE_TESTER % values
@@ -214,29 +212,45 @@ def _install_baseline_and_actuals(key, pattern, values):
   for basis in ['baseline', 'actual']:
     _install_key_pattern(key, pattern, basis, values)
 
-def _generate_baseline_and_actual(code, decoder,
+def _generate_baseline_and_actual(code, symbol, decoder,
                                   values, out, actions=['rule']):
-  # Generate code for 'baseline' and 'actual' decoders, filtering
-  # actions with the given set of fields.
+  """ Generates code to define the given symbol. Does so for both
+      baseline and actual decoders, filtering using actions.
+
+      code - The code to generate.
+      symbol - The symbol being defined.
+      decoder - The decoder (tables) to use.
+      values - The name map to use to generate code.
+      actions - The fields to keep when generating code.
+  """
+  generated_symbols = set()
 
   # Generate one for each type of basline decoder.
   baseline_actions = actions[:]
   baseline_actions.insert(0, 'baseline');
   baseline_code = _decoder_replace(code, 'baseline')
+  baseline_symbol = _decoder_replace(symbol, 'baseline');
   for d in decoder.action_filter(baseline_actions).decoders():
     _install_action(decoder, d, values);
-    out.write(baseline_code % values)
+    sym_name = (baseline_symbol % values)
+    if sym_name not in generated_symbols:
+      out.write(baseline_code % values)
+      generated_symbols.add(sym_name)
 
   # Generate one for each actual type that is different than the
   # baseline.
   actual_actions = actions[:]
   actual_actions.insert(0, 'actual-not-baseline')
   actual_code = _decoder_replace(code, 'actual')
+  actual_symbol = _decoder_replace(symbol, 'actual')
   for d in decoder.action_filter(actual_actions).decoders():
     # Note: 'actual-not-baseline' sets actual to None if same as baseline.
     if d.actual:
       _install_action(decoder, d, values);
-      out.write(actual_code % values)
+      sym_name = (actual_symbol % values)
+      if sym_name not in generated_symbols:
+        out.write(actual_code % values)
+        generated_symbols.add(sym_name)
 
 # Defines the header for decoder_named_classes.h
 NAMED_CLASSES_H_HEADER="""%(FILE_HEADER)s
@@ -265,6 +279,8 @@ RULE_CLASS="""class %(DECODER_class)s
 };
 
 """
+
+RULE_CLASS_SYM="%(DECODER_class)s"
 
 NAMED_DECODERS_HEADER="""}  // nacl_arm_dec
 
@@ -297,6 +313,8 @@ NAMED_CLASS_DECLARE="""class %(named_DECODER_class)s
 };
 
 """
+
+NAMED_CLASS_DECLARE_SYM="%(named_DECODER_class)s"
 
 NAMED_CLASSES_H_FOOTER="""
 // Defines the default parse action if the table doesn't define
@@ -339,9 +357,10 @@ def generate_named_classes_h(decoder, decoder_name, filename, out, cl_args):
       }
   out.write(NAMED_CLASSES_H_HEADER % values)
   out.write(RULE_CLASSES_HEADER)
-  _generate_baseline_and_actual(RULE_CLASS, decoder, values, out)
+  _generate_baseline_and_actual(RULE_CLASS, RULE_CLASS_SYM,
+                                decoder, values, out)
   out.write(NAMED_DECODERS_HEADER)
-  _generate_baseline_and_actual(NAMED_CLASS_DECLARE,
+  _generate_baseline_and_actual(NAMED_CLASS_DECLARE, NAMED_CLASS_DECLARE_SYM,
                                 decoder, values, out)
   out.write(NAMED_CLASSES_H_FOOTER % values)
 
@@ -382,6 +401,8 @@ class Named%(decoder_name)s : nacl_arm_dec::DecoderState {
 
 DECODER_STATE_FIELD="""
   const %(named_DECODER_class)s %(DECODER_instance)s;"""
+
+DECODER_STATE_FIELD_NAME="%(named_DECODER_class)s"
 
 DECODER_STATE_DECODER_COMMENTS="""
  private:
@@ -431,7 +452,8 @@ def generate_named_decoder_h(decoder, decoder_name, filename, out, cl_args):
         'decoder_name': decoder_name,
         }
     out.write(NAMED_DECODER_H_HEADER % values)
-    _generate_baseline_and_actual(DECODER_STATE_FIELD, decoder, values, out)
+    _generate_baseline_and_actual(DECODER_STATE_FIELD, DECODER_STATE_FIELD_NAME,
+                                  decoder, values, out)
     out.write(DECODER_STATE_DECODER_COMMENTS)
     for table in decoder.tables():
       values['table'] = table.name
