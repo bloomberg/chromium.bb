@@ -1776,6 +1776,14 @@ drm_restore(struct weston_compositor *ec)
 }
 
 static void
+drm_free_configured_output(struct drm_configured_output *output)
+{
+	free(output->name);
+	free(output->mode);
+	free(output);
+}
+
+static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
@@ -1785,7 +1793,7 @@ drm_destroy(struct weston_compositor *ec)
 	wl_list_for_each_safe(seat, next, &ec->seat_list, link)
 		evdev_input_destroy(seat);
 	wl_list_for_each_safe(o, n, &configured_output_list, link)
-		free(o);
+		drm_free_configured_output(o);
 
 	wl_event_source_remove(d->udev_drm_source);
 	wl_event_source_remove(d->drm_source);
@@ -2146,9 +2154,9 @@ output_section_done(void *data)
 	if (output->config != OUTPUT_CONFIG_INVALID)
 		wl_list_insert(&configured_output_list, &output->link);
 	else {
-		free(output);
 		weston_log("Invalid mode \"%s\" for output %s\n",
 						output_mode, output_name);
+		drm_free_configured_output(output);
 	}
 }
 
