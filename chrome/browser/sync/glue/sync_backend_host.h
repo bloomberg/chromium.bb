@@ -297,6 +297,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         syncer::SyncManagerFactory* sync_manager_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
+        const std::string& restored_keystore_key_for_bootstrapping,
         syncer::InternalComponentsFactory* internal_components_factory,
         syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
         syncer::ReportUnrecoverableErrorFunction
@@ -319,6 +320,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     std::string lsid;
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
+    std::string restored_keystore_key_for_bootstrapping;
     syncer::InternalComponentsFactory* internal_components_factory;
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler;
     syncer::ReportUnrecoverableErrorFunction
@@ -368,6 +370,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     INITIALIZED,            // Initialization is complete.
   };
 
+  // Enum used to distinguish which bootstrap encryption token is being updated.
+  enum BootstrapTokenType {
+    PASSPHRASE_BOOTSTRAP_TOKEN,
+    KEYSTORE_BOOTSTRAP_TOKEN
+  };
+
   // Checks if we have received a notice to turn on experimental datatypes
   // (via the nigori node) and informs the frontend if that is the case.
   // Note: it is illegal to call this before the backend is initialized.
@@ -397,7 +405,9 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // across browser restart to avoid requiring the user to re-enter their
   // passphrase.  |token| must be valid UTF-8 as we use the PrefService for
   // storage.
-  void PersistEncryptionBootstrapToken(const std::string& token);
+  void PersistEncryptionBootstrapToken(
+      const std::string& token,
+      BootstrapTokenType token_type);
 
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialization_state_ == INITIALIZED; }

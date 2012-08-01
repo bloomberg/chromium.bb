@@ -381,6 +381,7 @@ class SyncManager {
       const SyncCredentials& credentials,
       scoped_ptr<SyncNotifier> sync_notifier,
       const std::string& restored_key_for_bootstrapping,
+      const std::string& restored_keystore_key_for_bootstrapping,
       bool keystore_encryption_enabled,
       scoped_ptr<InternalComponentsFactory> internal_components_factory,
       Encryptor* encryptor,
@@ -463,6 +464,10 @@ class SyncManager {
   // Whether or not the Nigori node is encrypted using an explicit passphrase.
   // May be called on any thread.
   virtual bool IsUsingExplicitPassphrase() = 0;
+
+  // Extracts the keystore encryption bootstrap token if a keystore key existed.
+  // Returns true if bootstrap token successfully extracted, false otherwise.
+  virtual bool GetKeystoreKeyBootstrapToken(std::string* token) = 0;
 
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.

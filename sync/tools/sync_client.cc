@@ -345,6 +345,7 @@ int SyncClientMain(int argc, char* argv[]) {
   ExtensionsActivityMonitor* extensions_activity_monitor = NULL;
   LoggingChangeDelegate change_delegate;
   const char kRestoredKeyForBootstrapping[] = "";
+  const char kRestoredKeystoreKeyForBootstrapping[] = "";
   NullEncryptor null_encryptor;
   LoggingUnrecoverableErrorHandler unrecoverable_error_handler;
   sync_manager->Init(database_dir.path(),
@@ -362,6 +363,7 @@ int SyncClientMain(int argc, char* argv[]) {
                     scoped_ptr<SyncNotifier>(
                         sync_notifier_factory.CreateSyncNotifier()),
                     kRestoredKeyForBootstrapping,
+                    kRestoredKeystoreKeyForBootstrapping,
                     true,  // enable keystore encryption
                     scoped_ptr<InternalComponentsFactory>(
                         new InternalComponentsFactoryImpl()),

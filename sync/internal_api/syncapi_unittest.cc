@@ -763,7 +763,7 @@ class SyncManagerTest : public testing::Test,
                        workers, &extensions_activity_monitor_, this,
                        credentials,
                        scoped_ptr<SyncNotifier>(sync_notifier_mock_),
-                       "",
+                       "", "",  // bootstrap tokens
                        true,  // enable keystore encryption
                        scoped_ptr<InternalComponentsFactory>(GetFactory()),
                        &encryptor_,

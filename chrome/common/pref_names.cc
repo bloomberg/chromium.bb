@@ -1646,6 +1646,11 @@ const char kInvalidatorMaxInvalidationVersions[] =
 const char kSyncEncryptionBootstrapToken[] =
     "sync.encryption_bootstrap_token";
 
+// Same as kSyncEncryptionBootstrapToken, but derived from the keystore key,
+// so we don't have to do a GetKey command at restart.
+const char kSyncKeystoreEncryptionBootstrapToken[] =
+    "sync.keystore_encryption_bootstrap_token";
+
 // Boolean tracking whether the user chose to specify a secondary encryption
 // passphrase.
 const char kSyncUsingSecondaryPassphrase[] = "sync.using_secondary_passphrase";

@@ -98,6 +98,10 @@ class Cryptographer {
   // never call Bootstrap at all.
   void Bootstrap(const std::string& restored_bootstrap_token);
 
+  // Bootstrap the keystore key.
+  void BootstrapKeystoreKey(
+      const std::string& restored_keystore_bootstrap_token);
+
   // Returns whether we can decrypt |encrypted| using the keys we currently know
   // about.
   bool CanDecrypt(const sync_pb::EncryptedData& encrypted) const;
@@ -169,6 +173,9 @@ class Cryptographer {
   // can't be created (i.e. if this Cryptograhper doesn't have valid keys).
   bool GetBootstrapToken(std::string* token) const;
 
+  // Obtain the bootstrap token based on the keystore encryption key.
+  bool GetKeystoreKeyBootstrapToken(std::string* token) const;
+
   // Update the cryptographer based on the contents of the nigori specifics.
   // This updates both the encryption keys and the set of encrypted types.
   // Returns NEEDS_PASSPHRASE if was unable to decrypt the pending keys,
@@ -186,7 +193,7 @@ class Cryptographer {
 
   // Returns true if we currently have a keystore-derived nigori, false
   // otherwise.
-  bool HasKeystoreKey();
+  bool HasKeystoreKey() const;
 
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();
@@ -232,8 +239,9 @@ class Cryptographer {
   // Does not update the default nigori.
   void InstallKeyBag(const sync_pb::NigoriKeyBag& bag);
 
-  // Helper method to add a nigori as the new default nigori.
-  bool AddKeyImpl(Nigori* nigori);
+  // Helper method to add a nigori as either the new default nigori or the new
+  // keystore nigori.
+  bool AddKeyImpl(Nigori* nigori, bool is_keystore_key);
 
   // Functions to serialize + encrypt a Nigori object in an opaque format for
   // persistence by sync infrastructure.

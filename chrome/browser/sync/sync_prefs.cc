@@ -52,6 +52,7 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncHasSetupCompleted);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
+  pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
 
   // TODO(nick): The current behavior does not clear
   // e.g. prefs::kSyncBookmarks.  Is that really what we want?
@@ -175,6 +176,19 @@ std::string SyncPrefs::GetEncryptionBootstrapToken() const {
 void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
   DCHECK(CalledOnValidThread());
   pref_service_->SetString(prefs::kSyncEncryptionBootstrapToken, token);
+}
+
+std::string SyncPrefs::GetKeystoreEncryptionBootstrapToken() const {
+  DCHECK(CalledOnValidThread());
+  return
+      pref_service_ ?
+      pref_service_->GetString(prefs::kSyncKeystoreEncryptionBootstrapToken) :
+      "";
+}
+
+void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
+  DCHECK(CalledOnValidThread());
+  pref_service_->SetString(prefs::kSyncKeystoreEncryptionBootstrapToken, token);
 }
 
 // static
@@ -339,6 +353,10 @@ void SyncPrefs::RegisterPreferences() {
   pref_service_->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
                                     "",
                                     PrefService::UNSYNCABLE_PREF);
+  pref_service_->RegisterStringPref(
+      prefs::kSyncKeystoreEncryptionBootstrapToken,
+      "",
+      PrefService::UNSYNCABLE_PREF);
 #if defined(OS_CHROMEOS)
   pref_service_->RegisterStringPref(prefs::kSyncSpareBootstrapToken,
                                     "",

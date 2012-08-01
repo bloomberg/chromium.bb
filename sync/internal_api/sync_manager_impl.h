@@ -71,6 +71,7 @@ class SyncManagerImpl : public SyncManager,
       const SyncCredentials& credentials,
       scoped_ptr<SyncNotifier> sync_notifier,
       const std::string& restored_key_for_bootstrapping,
+      const std::string& restored_keystore_key_for_bootstrapping,
       bool keystore_encryption_enabled,
       scoped_ptr<InternalComponentsFactory> internal_components_factory,
       Encryptor* encryptor,
@@ -100,6 +101,7 @@ class SyncManagerImpl : public SyncManager,
   virtual void RemoveObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
   virtual bool IsUsingExplicitPassphrase() OVERRIDE;
+  virtual bool GetKeystoreKeyBootstrapToken(std::string* token) OVERRIDE;
   virtual void SaveChanges() OVERRIDE;
   virtual void StopSyncingForShutdown(const base::Closure& callback) OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;

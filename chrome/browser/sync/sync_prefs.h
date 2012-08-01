@@ -94,9 +94,14 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // This pref is set outside of sync.
   bool IsManaged() const;
 
-  // Use this encryption bootstrap token once already syncing.
+  // Use this encryption bootstrap token if we're using an explicit passphrase.
   std::string GetEncryptionBootstrapToken() const;
   void SetEncryptionBootstrapToken(const std::string& token);
+
+  // Use this keystore bootstrap token if we're not using an explicit
+  // passphrase.
+  std::string GetKeystoreEncryptionBootstrapToken() const;
+  void SetKeystoreEncryptionBootstrapToken(const std::string& token);
 
   // Maps |data_type| to its corresponding preference name.
   static const char* GetPrefNameForDataType(syncer::ModelType data_type);

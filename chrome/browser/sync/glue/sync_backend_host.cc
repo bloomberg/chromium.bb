@@ -411,6 +411,7 @@ void SyncBackendHost::Initialize(
       sync_manager_factory,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
+      sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
       new InternalComponentsFactoryImpl(),
       unrecoverable_error_handler,
       report_unrecoverable_error_function));
@@ -786,6 +787,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     syncer::SyncManagerFactory* sync_manager_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
+    const std::string& restored_keystore_key_for_bootstrapping,
     InternalComponentsFactory* internal_components_factory,
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
@@ -804,6 +806,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       sync_manager_factory(sync_manager_factory),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
+      restored_keystore_key_for_bootstrapping(
+          restored_keystore_key_for_bootstrapping),
       internal_components_factory(internal_components_factory),
       unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(
@@ -834,6 +838,24 @@ void SyncBackendHost::Core::OnSyncCycleCompleted(
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+
+  if (snapshot.model_neutral_state().last_get_key_result ==
+          syncer::SYNCER_OK) {
+    // If we just received a new keystore key, get it and make sure we update
+    // the bootstrap token with it.
+    std::string keystore_token;
+    sync_manager_->GetKeystoreKeyBootstrapToken(&keystore_token);
+    if (!keystore_token.empty()) {
+      DVLOG(1) << "Persisting keystore encryption bootstrap token.";
+      host_.Call(FROM_HERE,
+                 &SyncBackendHost::PersistEncryptionBootstrapToken,
+                 keystore_token,
+                 KEYSTORE_BOOTSTRAP_TOKEN);
+    } else {
+      NOTREACHED();
+    }
+  }
+
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop,
@@ -900,9 +922,10 @@ void SyncBackendHost::Core::OnBootstrapTokenUpdated(
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_.Call(
-      FROM_HERE,
-      &SyncBackendHost::PersistEncryptionBootstrapToken, bootstrap_token);
+  host_.Call(FROM_HERE,
+             &SyncBackendHost::PersistEncryptionBootstrapToken,
+             bootstrap_token,
+             PASSPHRASE_BOOTSTRAP_TOKEN);
 }
 
 void SyncBackendHost::Core::OnStopSyncingPermanently() {
@@ -999,6 +1022,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
           options.chrome_sync_notification_bridge,
           options.sync_notifier_factory->CreateSyncNotifier())),
       options.restored_key_for_bootstrapping,
+      options.restored_keystore_key_for_bootstrapping,
       CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSyncKeystoreEncryption),
       scoped_ptr<InternalComponentsFactory>(
@@ -1271,9 +1295,14 @@ void SyncBackendHost::RetryConfigurationOnFrontendLoop(
 }
 
 void SyncBackendHost::PersistEncryptionBootstrapToken(
-    const std::string& token) {
+    const std::string& token,
+    BootstrapTokenType token_type) {
   CHECK(sync_prefs_.get());
-  sync_prefs_->SetEncryptionBootstrapToken(token);
+  DCHECK(!token.empty());
+  if (token_type == PASSPHRASE_BOOTSTRAP_TOKEN)
+    sync_prefs_->SetEncryptionBootstrapToken(token);
+  else
+    sync_prefs_->SetKeystoreEncryptionBootstrapToken(token);
 }
 
 void SyncBackendHost::HandleActionableErrorEventOnFrontendLoop(

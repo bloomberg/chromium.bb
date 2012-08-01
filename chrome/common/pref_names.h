@@ -588,6 +588,7 @@ extern const char kGoogleServicesUsername[];
 extern const char kGoogleServicesUsernamePattern[];
 extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kSyncEncryptionBootstrapToken[];
+extern const char kSyncKeystoreEncryptionBootstrapToken[];
 extern const char kSyncAcknowledgedSyncTypes[];
 // Deprecated in favor of kInvalidatorMaxInvalidationVersions.
 extern const char kSyncMaxInvalidationVersions[];

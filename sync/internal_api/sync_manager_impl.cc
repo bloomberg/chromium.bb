@@ -376,6 +376,7 @@ bool SyncManagerImpl::Init(
     const SyncCredentials& credentials,
     scoped_ptr<SyncNotifier> sync_notifier,
     const std::string& restored_key_for_bootstrapping,
+    const std::string& restored_keystore_key_for_bootstrapping,
     bool keystore_encryption_enabled,
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
@@ -486,6 +487,8 @@ bool SyncManagerImpl::Init(
   // |initialized_| is set to true.
   ReadTransaction trans(FROM_HERE, GetUserShare());
   trans.GetCryptographer()->Bootstrap(restored_key_for_bootstrapping);
+  trans.GetCryptographer()->BootstrapKeystoreKey(
+      restored_keystore_key_for_bootstrapping);
   trans.GetCryptographer()->AddObserver(this);
 
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
@@ -1062,6 +1065,11 @@ bool SyncManagerImpl::IsUsingExplicitPassphrase() {
   return node.GetNigoriSpecifics().using_explicit_passphrase();
 }
 
+bool SyncManagerImpl::GetKeystoreKeyBootstrapToken(std::string* token) {
+  ReadTransaction trans(FROM_HERE, GetUserShare());
+  return trans.GetCryptographer()->GetKeystoreKeyBootstrapToken(token);
+}
+
 void SyncManagerImpl::RefreshEncryption() {
   DCHECK(initialized_);
 
@@ -1505,13 +1513,15 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
     }
 
     if (!event.snapshot.has_more_to_sync()) {
-      // To account for a nigori node arriving with stale/bad data, we ensure
-      // that the nigori node is up to date at the end of each cycle.
-      WriteTransaction trans(FROM_HERE, GetUserShare());
-      WriteNode nigori_node(&trans);
-      if (nigori_node.InitByTagLookup(kNigoriTag) == BaseNode::INIT_OK) {
-        Cryptographer* cryptographer = trans.GetCryptographer();
-        UpdateNigoriEncryptionState(cryptographer, &nigori_node);
+      {
+        // To account for a nigori node arriving with stale/bad data, we ensure
+        // that the nigori node is up to date at the end of each cycle.
+        WriteTransaction trans(FROM_HERE, GetUserShare());
+        WriteNode nigori_node(&trans);
+        if (nigori_node.InitByTagLookup(kNigoriTag) == BaseNode::INIT_OK) {
+          Cryptographer* cryptographer = trans.GetCryptographer();
+          UpdateNigoriEncryptionState(cryptographer, &nigori_node);
+        }
       }
 
       DVLOG(1) << "Sending OnSyncCycleCompleted";

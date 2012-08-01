@@ -62,6 +62,7 @@ bool FakeSyncManager::Init(
     const SyncCredentials& credentials,
     scoped_ptr<SyncNotifier> sync_notifier,
     const std::string& restored_key_for_bootstrapping,
+    const std::string& restored_keystore_key_for_bootstrapping,
     bool keystore_encryption_enabled,
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
@@ -174,6 +175,10 @@ SyncStatus FakeSyncManager::GetDetailedStatus() const {
 
 bool FakeSyncManager::IsUsingExplicitPassphrase() {
   NOTIMPLEMENTED();
+  return false;
+}
+
+bool FakeSyncManager::GetKeystoreKeyBootstrapToken(std::string* token) {
   return false;
 }
 
