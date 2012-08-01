@@ -697,6 +697,14 @@ chrome.extension = {
       return path.replace('external/', 'file:///persistent/');
     }
     return path || document.location.href;
+  },
+
+  getBackgroundPage: function() {
+    return window;
+  },
+
+  getViews: function() {
+    return [window];
   }
 };
 
@@ -717,6 +725,15 @@ chrome.test = {
  */
 chrome.fileBrowserHandler = {
   onExecute: new MockEventSource()
+};
+
+/**
+ * Mock object for |chrome.runtime|.
+ */
+chrome.runtime = {
+  getBackgroundPage: function(callback) {
+    setTimeout(function() {callback(window);}, 0);
+  }
 };
 
 /**
@@ -791,44 +808,3 @@ chrome.mediaPlayerPrivate = {
     this.popup_ = null;
   }
 };
-
-/**
- * TODO(olege): Remove once a Chrome with this interface available is released.
- */
-var v8Intl = (function() {
-
-var v8Intl = {};
-
-/**
- * Constructs v8Intl.DateTimeFormat object given optional locales and options
- * parameters.
- *
- * @constructor
- * @param {Array?} locales Unused in the mock.
- * @param {Object} options Unused in the mock.
- */
-v8Intl.DateTimeFormat = function(locales, options) {
-  return {
-    format: function(dateValue) {
-      return dateValue.toString();
-    }
-  };
-};
-
-/**
- * @constructor
- * @param {Array?} locales Unused in the mock.
- * @param {Object} options Unused in the mock.
- */
-v8Intl.Collator = function(locales, options) {
-  return {
-    compare: function(a, b) {
-      if (a > b) return 1;
-      if (a < b) return -1;
-      return 0;
-    }
-  };
-};
-
-return v8Intl;
-}());

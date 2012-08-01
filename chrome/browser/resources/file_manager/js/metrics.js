@@ -16,6 +16,7 @@
       document.location.protocol == 'http:') {
     console.log('created mock script');
     document.write('<script src="js/mock_chrome.js"><\57script>');
+    document.write('<script src="js/file_copy_manager.js"><\57script>');
   }
 })();
 
