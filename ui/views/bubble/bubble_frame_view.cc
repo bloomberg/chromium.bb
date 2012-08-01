@@ -39,18 +39,11 @@ int GetOffScreenLength(const gfx::Rect& monitor_bounds,
 
 namespace views {
 
-BubbleFrameView::BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
-                                 SkColor color,
-                                 const gfx::Insets& margins)
-    : bubble_border_(NULL),
+BubbleFrameView::BubbleFrameView(const gfx::Insets& margins,
+                                 BubbleBorder* border)
+    : bubble_border_(border),
       content_margins_(margins) {
-  if (base::i18n::IsRTL())
-    arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
-  // TODO(alicet): Expose the shadow option in BorderContentsView when we make
-  // the fullscreen exit bubble use the new bubble code.
-  SetBubbleBorder(new BubbleBorder(arrow_location, BubbleBorder::NO_SHADOW));
-  set_background(new BubbleBackground(bubble_border_));
-  bubble_border()->set_background_color(color);
+  set_border(bubble_border_);
 }
 
 BubbleFrameView::~BubbleFrameView() {}

@@ -7,7 +7,6 @@
 
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/user/login_status.h"
-#include "ash/wm/shelf_types.h"
 #include "base/base_export.h"
 #include "base/timer.h"
 #include "ui/views/widget/widget.h"
@@ -30,22 +29,6 @@ class SystemTrayBubble : public TrayBubbleView::Host,
     BUBBLE_TYPE_NOTIFICATION
   };
 
-  enum AnchorType {
-    ANCHOR_TYPE_TRAY,
-    ANCHOR_TYPE_BUBBLE
-  };
-
-  struct InitParams {
-    InitParams(AnchorType anchor_type, ShelfAlignment shelf_alignmen);
-
-    views::View* anchor;
-    AnchorType anchor_type;
-    bool can_activate;
-    ash::user::LoginStatus login_status;
-    int arrow_offset;
-    int max_height;
-  };
-
   SystemTrayBubble(ash::SystemTray* tray,
                    const std::vector<ash::SystemTrayItem*>& items,
                    BubbleType bubble_type);
@@ -57,11 +40,12 @@ class SystemTrayBubble : public TrayBubbleView::Host,
 
   // Creates |bubble_view_| and a child views for each member of |items_|.
   // Also creates |bubble_widget_| and sets up animations.
-  void InitView(const InitParams& init_params);
+  void InitView(views::View* anchor,
+                TrayBubbleView::InitParams init_params,
+                user::LoginStatus login_status);
 
   // Overridden from TrayBubbleView::Host.
   virtual void BubbleViewDestroyed() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect() const OVERRIDE;
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
   virtual void OnClickedOutsideView() OVERRIDE;
@@ -88,7 +72,6 @@ class SystemTrayBubble : public TrayBubbleView::Host,
   views::Widget* bubble_widget_;
   std::vector<ash::SystemTrayItem*> items_;
   BubbleType bubble_type_;
-  AnchorType anchor_type_;
 
   int autoclose_delay_;
   base::OneShotTimer<SystemTrayBubble> autoclose_;

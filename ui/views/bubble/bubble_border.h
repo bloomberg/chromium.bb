@@ -123,6 +123,12 @@ class VIEWS_EXPORT BubbleBorder : public Border {
  protected:
   virtual ~BubbleBorder();
 
+  // Calculates the insets for a specific arrow location. Normally called from
+  // GetInsets(arrow_location()), but may be called by specialized BubbleBorder
+  // implementations.
+  void GetInsetsForArrowLocation(gfx::Insets* insets,
+                                 ArrowLocation arrow_loc) const;
+
  private:
   struct BorderImages;
 

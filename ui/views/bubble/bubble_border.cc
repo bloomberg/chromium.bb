@@ -174,11 +174,16 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
 }
 
 void BubbleBorder::GetInsets(gfx::Insets* insets) const {
+  return GetInsetsForArrowLocation(insets, arrow_location());
+}
+
+void BubbleBorder::GetInsetsForArrowLocation(gfx::Insets* insets,
+                                             ArrowLocation arrow_loc) const {
   int top = images_->top->height();
   int bottom = images_->bottom->height();
   int left = images_->left->width();
   int right = images_->right->width();
-  switch (arrow_location_) {
+  switch (arrow_loc) {
     case TOP_LEFT:
     case TOP_RIGHT:
       top = std::max(top, images_->top_arrow->height());

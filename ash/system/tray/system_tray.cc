@@ -30,7 +30,6 @@
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -144,6 +143,7 @@ class SystemTrayLayerAnimationObserver : public ui::LayerAnimationObserver {
 
 using internal::SystemTrayBubble;
 using internal::SystemTrayLayerAnimationObserver;
+using internal::TrayBubbleView;
 
 SystemTray::SystemTray()
     : items_(),
@@ -256,7 +256,8 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
 }
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
-  ShowDefaultViewWithOffset(creation_type, -1);
+  ShowDefaultViewWithOffset(creation_type,
+                            TrayBubbleView::InitParams::kArrowDefaultOffset);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
@@ -366,35 +367,25 @@ void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
 }
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
+  // Don't attempt to align the arrow if the shelf is on the left or right.
+  if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM)
+    return TrayBubbleView::InitParams::kArrowDefaultOffset;
+
   std::map<SystemTrayItem*, views::View*>::const_iterator it =
       tray_item_map_.find(item);
   if (it == tray_item_map_.end())
-    return -1;
+    return TrayBubbleView::InitParams::kArrowDefaultOffset;
 
   const views::View* item_view = it->second;
-  gfx::Rect item_bounds = item_view->bounds();
-  if (!item_bounds.IsEmpty()) {
-    int x_offset = item_bounds.x() + item_bounds.width() / 2;
-    return base::i18n::IsRTL() ? x_offset : tray_container_->width() - x_offset;
+  if (item_view->bounds().IsEmpty()) {
+    // The bounds of item could be still empty if it does not have a visible
+    // tray view. In that case, use the default (minimum) offset.
+    return TrayBubbleView::InitParams::kArrowDefaultOffset;
   }
 
-  // The bounds of item could be still empty.  It could happen in the case that
-  // the view appears for the first time in the current session, because the
-  // bounds is not calculated yet. In that case, we want to guess the offset
-  // from the position of its parent.
-  int x_offset = 0;
-  for (int i = 0; i < tray_container_->child_count(); ++i) {
-    const views::View* child = tray_container_->child_at(i);
-    if (child == item_view)
-      return base::i18n::IsRTL() ?
-          x_offset : tray_container_->width() - x_offset;
-
-    if (!child->visible())
-      continue;
-    x_offset = child->bounds().right();
-  }
-
-  return -1;
+  gfx::Point point(item_view->width() / 2, 0);
+  ConvertPointToWidget(item_view, &point);
+  return point.x();
 }
 
 void SystemTray::ShowDefaultViewWithOffset(BubbleCreationType creation_type,
@@ -423,17 +414,13 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
     views::View* anchor = tray_container_;
-    SystemTrayBubble::InitParams init_params(
-        SystemTrayBubble::ANCHOR_TYPE_TRAY,
-        shelf_alignment());
-    init_params.anchor = anchor;
+    TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
+                                           shelf_alignment());
     init_params.can_activate = can_activate;
-    init_params.login_status = delegate->GetUserLoginStatus();
-    if (arrow_offset >= 0)
-      init_params.arrow_offset = arrow_offset;
     if (detailed)
       init_params.max_height = default_bubble_height_;
-    bubble_->InitView(init_params);
+    init_params.arrow_offset = arrow_offset;
+    bubble_->InitView(anchor, init_params, delegate->GetUserLoginStatus());
   }
   // Save height of default view for creating detailed views directly.
   if (!detailed)
@@ -479,22 +466,20 @@ void SystemTray::UpdateNotificationBubble() {
         this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION));
   }
   views::View* anchor;
-  SystemTrayBubble::AnchorType anchor_type;
+  TrayBubbleView::AnchorType anchor_type;
   if (bubble_.get()) {
     anchor = bubble_->bubble_view();
-    anchor_type = SystemTrayBubble::ANCHOR_TYPE_BUBBLE;
+    anchor_type = TrayBubbleView::ANCHOR_TYPE_BUBBLE;
   } else {
     anchor = tray_container_;
-    anchor_type = SystemTrayBubble::ANCHOR_TYPE_TRAY;
+    anchor_type = TrayBubbleView::ANCHOR_TYPE_TRAY;
   }
-  SystemTrayBubble::InitParams init_params(anchor_type, shelf_alignment());
-  init_params.anchor = anchor;
-  init_params.login_status =
-      ash::Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
-  int arrow_offset = GetTrayXOffset(notification_items_[0]);
-  if (arrow_offset >= 0)
-    init_params.arrow_offset = arrow_offset;
-  notification_bubble_->InitView(init_params);
+  TrayBubbleView::InitParams init_params(anchor_type, shelf_alignment());
+  init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
+  init_params.arrow_color = kBackgroundColor;
+  user::LoginStatus login_status =
+      Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
+  notification_bubble_->InitView(anchor, init_params, login_status);
   if (hide_notifications_)
     notification_bubble_->SetVisible(false);
 }
@@ -533,7 +518,7 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   UpdateAfterShelfAlignmentChange(alignment);
   SetBorder();
   tray_container_->UpdateLayout(alignment);
-  // Destroy an existing bubble so that it is rebuilt correctly.
+  // Destroy any existing bubble so that it is rebuilt correctly.
   bubble_.reset();
   // Rebuild any notification bubble.
   if (notification_bubble_.get()) {
@@ -549,13 +534,15 @@ bool SystemTray::PerformAction(const views::Event& event) {
       bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DEFAULT) {
     bubble_->Close();
   } else {
-    int arrow_offset = -1;
+    int arrow_offset = TrayBubbleView::InitParams::kArrowDefaultOffset;
     if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
       const views::LocatedEvent& located_event =
           static_cast<const views::LocatedEvent&>(event);
-      if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM)
-        arrow_offset = base::i18n::IsRTL() ?
-            located_event.x() : tray_container_->width() - located_event.x();
+      if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+        gfx::Point point(located_event.x(), 0);
+        ConvertPointToWidget(this, &point);
+        arrow_offset = point.x();
+      }
     }
     ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset);
   }

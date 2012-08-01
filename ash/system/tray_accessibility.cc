@@ -75,7 +75,6 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
   if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
     return NULL;
 
-  DCHECK(string_id_);
   CHECK(default_ == NULL);
   default_ = new DefaultAccessibilityView();
 

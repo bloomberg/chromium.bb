@@ -18,9 +18,9 @@ namespace views {
 // This is a NonClientFrameView used to render the BubbleBorder.
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
  public:
-  BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
-                  SkColor color,
-                  const gfx::Insets& margins);
+  // Sets the border to |border|, taking ownership. Important: do not call
+  // set_border() directly to change the border, use SetBubbleBorder() instead.
+  BubbleFrameView(const gfx::Insets& margins, BubbleBorder* border);
   virtual ~BubbleFrameView();
 
   // NonClientFrameView overrides:

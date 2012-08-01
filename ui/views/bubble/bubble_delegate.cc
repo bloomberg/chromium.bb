@@ -181,7 +181,16 @@ View* BubbleDelegateView::GetContentsView() {
 
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
     Widget* widget) {
-  return new BubbleFrameView(arrow_location(), color(), margins());
+  BubbleBorder::ArrowLocation arrow_loc = arrow_location();
+  if (base::i18n::IsRTL())
+    arrow_loc = BubbleBorder::horizontal_mirror(arrow_loc);
+  // TODO(alicet): Expose the shadow option in BorderContentsView when we make
+  // the fullscreen exit bubble use the new bubble code.
+  BubbleBorder* border = new BubbleBorder(arrow_loc, BubbleBorder::NO_SHADOW);
+  border->set_background_color(color());
+  BubbleFrameView* frame_view = new BubbleFrameView(margins(), border);
+  frame_view->set_background(new BubbleBackground(border));
+  return frame_view;
 }
 
 void BubbleDelegateView::OnWidgetClosing(Widget* widget) {

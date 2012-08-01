@@ -342,7 +342,7 @@ class WebNotificationView : public views::View,
 
     views::ColumnSet* columns = layout->AddColumnSet(0);
 
-    int padding_width = kTrayPopupPaddingHorizontal/2;
+    const int padding_width = kTrayPopupPaddingHorizontal/2;
     columns->AddPaddingColumn(0, padding_width);
 
     // Notification Icon.
@@ -354,7 +354,7 @@ class WebNotificationView : public views::View,
     columns->AddPaddingColumn(0, padding_width);
 
     // Notification message text.
-    int message_width = kWebNotificationWidth - kWebNotificationIconSize -
+    const int message_width = kWebNotificationWidth - kWebNotificationIconSize -
         kWebNotificationButtonWidth - (padding_width * 3);
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                        100, /* resize percent */
@@ -485,6 +485,7 @@ class WebNotificationButtonView : public views::View,
 
 }  // namespace internal
 
+using internal::TrayBubbleView;
 using internal::WebNotificationList;
 using internal::WebNotificationView;
 
@@ -546,7 +547,7 @@ class WebNotificationTray::BubbleContentsView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(BubbleContentsView);
 };
 
-class WebNotificationTray::Bubble : public internal::TrayBubbleView::Host,
+class WebNotificationTray::Bubble : public TrayBubbleView::Host,
                                     public views::Widget::Observer {
  public:
   explicit Bubble(WebNotificationTray* tray)
@@ -556,32 +557,24 @@ class WebNotificationTray::Bubble : public internal::TrayBubbleView::Host,
         contents_view_(NULL),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
     views::View* anchor = tray->tray_container();
-    views::BubbleBorder::ArrowLocation arrow_location;
-    int arrow_offset = 0;
+    TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
+                                           tray->shelf_alignment());
+    init_params.bubble_width = kWebNotificationWidth;
+    init_params.max_height = kWebNotificationBubbleMaxHeight;
     if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
-      arrow_location = views::BubbleBorder::BOTTOM_RIGHT;
-      arrow_offset = anchor->GetContentsBounds().width() / 2;
-    } else if (tray_->shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-      arrow_location = views::BubbleBorder::LEFT_BOTTOM;
-    } else {
-      arrow_location = views::BubbleBorder::RIGHT_BOTTOM;
+      gfx::Point bounds(anchor->width() / 2, 0);
+      ConvertPointToWidget(anchor, &bounds);
+      init_params.arrow_offset = bounds.x();
     }
-    bubble_view_ = new internal::TrayBubbleView(
-        anchor, arrow_location, this, false, kWebNotificationWidth);
-    bubble_view_->SetMaxHeight(kWebNotificationBubbleMaxHeight);
-
-    bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
-
-    bubble_view_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
-    bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
-    bubble_view_->SetBubbleBorder(arrow_offset);
-
-    bubble_widget_->AddObserver(this);
+    bubble_view_ = TrayBubbleView::Create(anchor, this, init_params);
 
     contents_view_ = new BubbleContentsView(tray);
     bubble_view_->AddChildView(contents_view_);
 
-    InitializeHost(bubble_widget_, tray_);
+    bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
+    bubble_widget_->AddObserver(this);
+
+    InitializeAndShowBubble(bubble_widget_, bubble_view_, tray_);
 
     ScheduleUpdate();
   }
@@ -612,11 +605,6 @@ class WebNotificationTray::Bubble : public internal::TrayBubbleView::Host,
     contents_view_ = NULL;
   }
 
-  virtual gfx::Rect GetAnchorRect() const OVERRIDE {
-    gfx::Rect anchor_rect = tray_->tray_container()->GetBoundsInScreen();
-    return anchor_rect;
-  }
-
   virtual void OnMouseEnteredView() OVERRIDE {
   }
 
@@ -643,7 +631,7 @@ class WebNotificationTray::Bubble : public internal::TrayBubbleView::Host,
   }
 
   WebNotificationTray* tray_;
-  internal::TrayBubbleView* bubble_view_;
+  TrayBubbleView* bubble_view_;
   views::Widget* bubble_widget_;
   BubbleContentsView* contents_view_;
   base::WeakPtrFactory<Bubble> weak_ptr_factory_;

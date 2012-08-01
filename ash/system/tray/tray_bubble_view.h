@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
 
+#include "ash/wm/shelf_types.h"
 #include "ui/aura/event_filter.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
@@ -24,15 +25,23 @@ namespace internal {
 // Mostly this handles custom anchor location and arrow and border rendering.
 class TrayBubbleView : public views::BubbleDelegateView {
  public:
+  enum AnchorType {
+    ANCHOR_TYPE_TRAY,
+    ANCHOR_TYPE_BUBBLE
+  };
+
   class Host : public aura::EventFilter {
    public:
     Host();
     virtual ~Host();
 
-    void InitializeHost(views::Widget* widget, views::View* tray_view);
+    // Set widget_ and tray_view_, set up animations, and show the bubble.
+    // Must occur after bubble_view->CreateBubble() is called.
+    void InitializeAndShowBubble(views::Widget* widget,
+                                 TrayBubbleView* bubble_view,
+                                 views::View* tray_view);
 
     virtual void BubbleViewDestroyed() = 0;
-    virtual gfx::Rect GetAnchorRect() const = 0;
     virtual void OnMouseEnteredView() = 0;
     virtual void OnMouseExitedView() = 0;
     virtual void OnClickedOutsideView() = 0;
@@ -58,17 +67,27 @@ class TrayBubbleView : public views::BubbleDelegateView {
     DISALLOW_COPY_AND_ASSIGN(Host);
   };
 
-  TrayBubbleView(views::View* anchor,
-                 views::BubbleBorder::ArrowLocation arrow_location,
-                 Host* host,
-                 bool can_activate,
-                 int bubble_width);
+  struct InitParams {
+    static const int kArrowDefaultOffset;
+
+    InitParams(AnchorType anchor_type,
+               ShelfAlignment shelf_alignment);
+    AnchorType anchor_type;
+    ShelfAlignment shelf_alignment;
+    int bubble_width;
+    int max_height;
+    bool can_activate;
+    int arrow_offset;
+    SkColor arrow_color;
+  };
+
+  static TrayBubbleView* Create(views::View* anchor,
+                                Host* host,
+                                const InitParams& init_params);
+
   virtual ~TrayBubbleView();
 
-  // Creates a bubble border with the specified arrow offset.
-  void SetBubbleBorder(int arrow_offset);
-
-  // Called whenever the bubble size or location may have moved.
+  // Called whenever the bubble size or location may have changed.
   void UpdateBubble();
 
   // Sets the maximum bubble height and resizes the bubble.
@@ -79,6 +98,8 @@ class TrayBubbleView : public views::BubbleDelegateView {
 
   // Overridden from views::WidgetDelegate.
   virtual bool CanActivate() const OVERRIDE;
+  virtual views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE;
 
   // Overridden from views::BubbleDelegateView.
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
@@ -90,6 +111,11 @@ class TrayBubbleView : public views::BubbleDelegateView {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
+  TrayBubbleView(const InitParams& init_params,
+                 views::BubbleBorder::ArrowLocation arrow_location,
+                 views::View* anchor,
+                 Host* host);
+
   // Overridden from views::BubbleDelegateView.
   virtual void Init() OVERRIDE;
   virtual gfx::Rect GetBubbleBounds() OVERRIDE;
@@ -101,10 +127,8 @@ class TrayBubbleView : public views::BubbleDelegateView {
                                     views::View* child) OVERRIDE;
 
  private:
+  InitParams params_;
   Host* host_;
-  bool can_activate_;
-  int max_height_;
-  int bubble_width_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };
