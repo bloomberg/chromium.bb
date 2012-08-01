@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/api/tabs/tabs.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -106,12 +107,14 @@ class BrowserEventRouter : public TabStripModelObserver,
   // so we avoid duplication by dropping events destined for other profiles.
   void DispatchEvent(Profile* profile,
                      const char* event_name,
-                     const std::string& json_args);
+                     const std::string& json_args,
+                     EventRouter::UserGestureState user_gesture);
 
   void DispatchEventToExtension(Profile* profile,
                                 const std::string& extension_id,
                                 const char* event_name,
-                                const std::string& json_args);
+                                const std::string& json_args,
+                                EventRouter::UserGestureState user_gesture);
 
   void DispatchEventsAcrossIncognito(Profile* profile,
                                      const char* event_name,
@@ -122,7 +125,8 @@ class BrowserEventRouter : public TabStripModelObserver,
                             const std::string& extension_id,
                             const char* event_name,
                             const content::WebContents* web_contents,
-                            bool active);
+                            bool active,
+                            EventRouter::UserGestureState user_gesture);
 
   void DispatchSimpleBrowserEvent(Profile* profile,
                                   const int window_id,

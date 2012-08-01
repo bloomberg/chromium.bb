@@ -300,6 +300,20 @@ void EventRouter::DispatchEventToRenderers(const std::string& event_name,
                            event_url, EventFilteringInfo());
 }
 
+void EventRouter::DispatchEventToRenderers(const std::string& event_name,
+                                           const std::string& event_args,
+                                           Profile* restrict_to_profile,
+                                           const GURL& event_url,
+                                           UserGestureState user_gesture) {
+  DCHECK(!event_args.empty());
+  StringValue event_args_value(event_args);
+  EventFilteringInfo info;
+  linked_ptr<Event> event(new Event(event_name, event_args_value,
+                                    event_url, restrict_to_profile,
+                                    user_gesture, info));
+  DispatchEventImpl("", event);
+}
+
 void EventRouter::DispatchEventToExtension(const std::string& extension_id,
                                            const std::string& event_name,
                                            const Value& event_args,

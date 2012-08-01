@@ -127,6 +127,13 @@ class EventRouter : public content::NotificationObserver,
                                 Profile* restrict_to_profile,
                                 const GURL& event_url);
 
+  // As above, but enables sending an explicit user gesture indicator.
+  void DispatchEventToRenderers(const std::string& event_name,
+                                const std::string& event_args,
+                                Profile* restrict_to_profile,
+                                const GURL& event_url,
+                                UserGestureState user_gesture);
+
   // Same as above, except only send the event to the given extension.
   virtual void DispatchEventToExtension(const std::string& extension_id,
                                         const std::string& event_name,

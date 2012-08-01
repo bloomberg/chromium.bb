@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/event_names.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -167,7 +166,8 @@ void BrowserEventRouter::TabCreatedAt(WebContents* contents,
                                       int index,
                                       bool active) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  DispatchEventWithTab(profile, "", events::kOnTabCreated, contents, active);
+  DispatchEventWithTab(profile, "", events::kOnTabCreated, contents, active,
+                       EventRouter::USER_GESTURE_NOT_ENABLED);
 
   RegisterForTabNotifications(contents);
 }
@@ -197,7 +197,8 @@ void BrowserEventRouter::TabInsertedAt(TabContents* contents,
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
 
-  DispatchEvent(contents->profile(), events::kOnTabAttached, json_args);
+  DispatchEvent(contents->profile(), events::kOnTabAttached, json_args,
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void BrowserEventRouter::TabDetachedAt(TabContents* contents, int index) {
@@ -220,7 +221,8 @@ void BrowserEventRouter::TabDetachedAt(TabContents* contents, int index) {
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
 
-  DispatchEvent(contents->profile(), events::kOnTabDetached, json_args);
+  DispatchEvent(contents->profile(), events::kOnTabDetached, json_args,
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
@@ -239,7 +241,8 @@ void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
 
-  DispatchEvent(contents->profile(), events::kOnTabRemoved, json_args);
+  DispatchEvent(contents->profile(), events::kOnTabRemoved, json_args,
+                EventRouter::USER_GESTURE_UNKNOWN);
 
   int removed_count = tab_entries_.erase(tab_id);
   DCHECK_GT(removed_count, 0);
@@ -272,9 +275,12 @@ void BrowserEventRouter::ActiveTabChanged(TabContents* old_contents,
   base::JSONWriter::Write(&args, &new_json_args);
 
   Profile* profile = new_contents->profile();
-  DispatchEvent(profile, events::kOnTabSelectionChanged, old_json_args);
-  DispatchEvent(profile, events::kOnTabActiveChanged, old_json_args);
-  DispatchEvent(profile, events::kOnTabActivated, new_json_args);
+  EventRouter::UserGestureState gesture = user_gesture ?
+      EventRouter::USER_GESTURE_ENABLED : EventRouter::USER_GESTURE_NOT_ENABLED;
+  DispatchEvent(profile, events::kOnTabSelectionChanged, old_json_args,
+                gesture);
+  DispatchEvent(profile, events::kOnTabActiveChanged, old_json_args, gesture);
+  DispatchEvent(profile, events::kOnTabActivated, new_json_args, gesture);
 }
 
 void BrowserEventRouter::TabSelectionChanged(
@@ -307,8 +313,10 @@ void BrowserEventRouter::TabSelectionChanged(
 
   // The onHighlighted event replaced onHighlightChanged.
   Profile* profile = tab_strip_model->profile();
-  DispatchEvent(profile, events::kOnTabHighlightChanged, json_args);
-  DispatchEvent(profile, events::kOnTabHighlighted, json_args);
+  DispatchEvent(profile, events::kOnTabHighlightChanged, json_args,
+                EventRouter::USER_GESTURE_UNKNOWN);
+  DispatchEvent(profile, events::kOnTabHighlighted, json_args,
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void BrowserEventRouter::TabMoved(TabContents* contents,
@@ -330,7 +338,8 @@ void BrowserEventRouter::TabMoved(TabContents* contents,
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
 
-  DispatchEvent(contents->profile(), events::kOnTabMoved, json_args);
+  DispatchEvent(contents->profile(), events::kOnTabMoved, json_args,
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void BrowserEventRouter::TabUpdated(WebContents* contents, bool did_navigate) {
@@ -348,26 +357,29 @@ void BrowserEventRouter::TabUpdated(WebContents* contents, bool did_navigate) {
     DispatchTabUpdatedEvent(contents, changed_properties);
 }
 
-void BrowserEventRouter::DispatchEvent(Profile* profile,
-                                       const char* event_name,
-                                       const std::string& json_args) {
+void BrowserEventRouter::DispatchEvent(
+    Profile* profile,
+    const char* event_name,
+    const std::string& json_args,
+    EventRouter::UserGestureState user_gesture) {
   if (!profile_->IsSameProfile(profile) || !profile->GetExtensionEventRouter())
     return;
 
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, json_args, profile, GURL(), EventFilteringInfo());
+      event_name, json_args, profile, GURL(), user_gesture);
 }
 
 void BrowserEventRouter::DispatchEventToExtension(
     Profile* profile,
     const std::string& extension_id,
     const char* event_name,
-    const std::string& json_args) {
+    const std::string& json_args,
+    EventRouter::UserGestureState user_gesture) {
   if (!profile_->IsSameProfile(profile) || !profile->GetExtensionEventRouter())
     return;
 
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, event_name, json_args, profile, GURL());
+      extension_id, event_name, json_args, profile, GURL(), user_gesture);
 }
 
 void BrowserEventRouter::DispatchEventsAcrossIncognito(
@@ -382,11 +394,13 @@ void BrowserEventRouter::DispatchEventsAcrossIncognito(
       event_name, json_args, profile, cross_incognito_args, GURL());
 }
 
-void BrowserEventRouter::DispatchEventWithTab(Profile* profile,
-                                              const std::string& extension_id,
-                                              const char* event_name,
-                                              const WebContents* web_contents,
-                                              bool active) {
+void BrowserEventRouter::DispatchEventWithTab(
+    Profile* profile,
+    const std::string& extension_id,
+    const char* event_name,
+    const WebContents* web_contents,
+    bool active,
+    EventRouter::UserGestureState user_gesture) {
   if (!profile_->IsSameProfile(profile))
     return;
 
@@ -396,9 +410,10 @@ void BrowserEventRouter::DispatchEventWithTab(Profile* profile,
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
   if (!extension_id.empty()) {
-    DispatchEventToExtension(profile, extension_id, event_name, json_args);
+    DispatchEventToExtension(profile, extension_id, event_name, json_args,
+                             user_gesture);
   } else {
-    DispatchEvent(profile, event_name, json_args);
+    DispatchEvent(profile, event_name, json_args, user_gesture);
   }
 }
 
@@ -413,7 +428,8 @@ void BrowserEventRouter::DispatchSimpleBrowserEvent(
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
 
-  DispatchEvent(profile, event_name, json_args);
+  DispatchEvent(profile, event_name, json_args,
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void BrowserEventRouter::DispatchTabUpdatedEvent(
@@ -438,7 +454,8 @@ void BrowserEventRouter::DispatchTabUpdatedEvent(
   base::JSONWriter::Write(&args, &json_args);
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  DispatchEvent(profile, events::kOnTabUpdated, json_args);
+  DispatchEvent(profile, events::kOnTabUpdated, json_args,
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 BrowserEventRouter::TabEntry* BrowserEventRouter::GetTabEntry(
@@ -518,7 +535,8 @@ void BrowserEventRouter::DispatchOldPageActionEvent(
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
 
-  DispatchEventToExtension(profile, extension_id, "pageActions", json_args);
+  DispatchEventToExtension(profile, extension_id, "pageActions", json_args,
+                           EventRouter::USER_GESTURE_ENABLED);
 }
 
 void BrowserEventRouter::BrowserActionExecuted(
@@ -570,7 +588,8 @@ void BrowserEventRouter::CommandExecuted(Profile* profile,
   DispatchEventToExtension(profile,
                            extension_id,
                            "experimental.commands.onCommand",
-                           json_args);
+                           json_args,
+                           EventRouter::USER_GESTURE_ENABLED);
 }
 
 void BrowserEventRouter::ExtensionActionExecuted(
@@ -595,7 +614,8 @@ void BrowserEventRouter::ExtensionActionExecuted(
                          extension_action.extension_id(),
                          event_name,
                          tab_contents->web_contents(),
-                         true);
+                         true,
+                         EventRouter::USER_GESTURE_ENABLED);
   }
 }
 
