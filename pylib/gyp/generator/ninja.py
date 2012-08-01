@@ -1313,6 +1313,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('rc', 'rc.exe')
     master_ninja.variable('asm', 'ml.exe')
     master_ninja.variable('mt', 'mt.exe')
+    master_ninja.variable('use_dep_database', '1')
   else:
     master_ninja.variable('ld', flock + ' linker.lock $cxx')
     master_ninja.variable('ar', os.environ.get('AR', 'ar'))
