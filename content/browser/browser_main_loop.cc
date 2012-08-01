@@ -498,8 +498,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   if (resource_dispatcher_host_.get())
     resource_dispatcher_host_.get()->Shutdown();
 
-  speech_recognition_manager_.reset();
-
 #if defined(USE_AURA)
   ImageTransportFactory::Terminate();
 #endif
