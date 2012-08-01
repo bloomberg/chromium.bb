@@ -79,6 +79,7 @@ WebPreferences::WebPreferences()
       show_composited_layer_tree(false),
       show_fps_counter(false),
       show_paint_rects(false),
+      render_vsync_enabled(true),
       asynchronous_spell_checking_enabled(true),
       unified_textchecker_enabled(false),
       accelerated_compositing_enabled(false),
@@ -319,6 +320,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Display visualization of what has changed on the screen using an
   // overlay of rects, if requested on the command line.
   settings->setShowPaintRects(show_paint_rects);
+
+  // Set whether to throttle framerate to Vsync.
+  settings->setRenderVSyncEnabled(render_vsync_enabled);
 
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);

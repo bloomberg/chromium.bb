@@ -73,6 +73,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/gl/gl_switches.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webpreferences.h"
@@ -476,6 +477,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kShowFPSCounter);
   prefs.show_paint_rects =
       command_line.HasSwitch(switches::kShowPaintRects);
+  prefs.render_vsync_enabled =
+      !command_line.HasSwitch(switches::kDisableGpuVsync);
   prefs.accelerated_compositing_enabled =
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
