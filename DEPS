@@ -504,6 +504,9 @@ deps_os = {
     "src/third_party/gold":
       "/trunk/deps/third_party/gold@124239",
 
+    "src/third_party/libmtp":
+      "/trunk/deps/third_party/libmtp@149471",
+
     # For Chromium OS.
     "src/third_party/cros_system_api":
       Var("chromiumos_git") + "/platform/system_api.git" +
