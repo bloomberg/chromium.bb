@@ -975,7 +975,6 @@ _factory_release = _release.derive(
 
 _firmware_release = _release.derive(
   images=['base'],
-  push_image=False,
   build_tests=False,
   unittests=False,
   vm_tests=None,
