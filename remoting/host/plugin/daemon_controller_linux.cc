@@ -233,21 +233,35 @@ void DaemonControllerLinux::DoGetConfig(const GetConfigCallback& callback) {
 
 void DaemonControllerLinux::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
-    const CompletionCallback& done) {
+    const CompletionCallback& done_callback) {
+  JsonHostConfig config_file(GetConfigPath());
+  for (DictionaryValue::key_iterator key(config->begin_keys());
+       key != config->end_keys(); ++key) {
+    std::string value;
+    if (!config->GetString(*key, &value)) {
+      LOG(ERROR) << *key << " is not a string.";
+      done_callback.Run(RESULT_FAILED);
+      return;
+    }
+    config_file.SetString(*key, value);
+  }
+
+  bool success = config_file.Save();
+  if (!success) {
+    done_callback.Run(RESULT_FAILED);
+    return;
+  }
+
   std::vector<std::string> args;
-  args.push_back("--explicit-config");
-  std::string config_json;
-  base::JSONWriter::Write(config.get(), &config_json);
-  args.push_back(config_json);
-  std::vector<std::string> no_args;
-  int exit_code = 0;
+  args.push_back("--silent");
   AsyncResult result;
+  int exit_code;
   if (RunScript(args, &exit_code)) {
     result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
   } else {
     result = RESULT_FAILED;
   }
-  done.Run(result);
+  done_callback.Run(result);
 }
 
 void DaemonControllerLinux::DoUpdateConfig(
@@ -264,6 +278,7 @@ void DaemonControllerLinux::DoUpdateConfig(
     if (!config->GetString(*key, &value)) {
       LOG(ERROR) << *key << " is not a string.";
       done_callback.Run(RESULT_FAILED);
+      return;
     }
     config_file.SetString(*key, value);
   }

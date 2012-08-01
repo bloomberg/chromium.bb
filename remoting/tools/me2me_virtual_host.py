@@ -383,9 +383,11 @@ class Desktop:
   def launch_host(self, host):
     # Start remoting host
     args = [locate_executable(REMOTING_COMMAND),
-            "--host_config=%s" % (host.config_file),
-            "--auth_config=%s" % (host.auth.config_file)]
+            "--host_config=%s" % (host.config_file)]
+    if host.auth.config_file != host.config_file:
+      args.append("--auth_config=%s" % (host.auth.config_file))
     self.host_proc = subprocess.Popen(args, env=self.child_env)
+    logging.info(args)
     if not self.host_proc.pid:
       raise Exception("Could not start remoting host")
 
@@ -624,8 +626,9 @@ def main():
   parser.add_option("", "--check-running", dest="check_running", default=False,
                     action="store_true",
                     help="return 0 if the daemon is running, or 1 otherwise")
-  parser.add_option("", "--explicit-config", dest="explicit_config",
-                    help="explicitly specify content of the config")
+  parser.add_option("", "--silent", dest="silent", default=False,
+                    action="store_true",
+                    help="Start the host without trying to configure it.")
   (options, args) = parser.parse_args()
 
   host_hash = hashlib.md5(socket.gethostname()).hexdigest()
@@ -687,32 +690,41 @@ def main():
   if not os.path.exists(CONFIG_DIR):
     os.makedirs(CONFIG_DIR, mode=0700)
 
-  if options.explicit_config:
-    for file_name in ["auth.json", "host#%s.json" % host_hash]:
-      settings_file = open(os.path.join(CONFIG_DIR, file_name), 'w')
-      settings_file.write(options.explicit_config)
-      settings_file.close()
+  host_config_file = os.path.join(CONFIG_DIR, "host#%s.json" % host_hash)
 
-  # TODO(sergeyu): Move auth parameters to the host config.
-  auth = Authentication(os.path.join(CONFIG_DIR, "auth.json"))
-  need_auth_tokens = not auth.load_config()
+  # --silent option is specified when we are started from WebApp UI. Don't use
+  # separate auth file in that case.
+  # TODO(sergeyu): Always use host config for auth parameters.
+  if options.silent:
+    auth_config_file = host_config_file
+  else:
+    auth_config_file = os.path.join(CONFIG_DIR, "auth.json")
 
-  host = Host(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash), auth)
-  register_host = not host.load_config()
+  auth = Authentication(auth_config_file)
+  auth_config_loaded = auth.load_config()
 
-  # Outside the loop so user doesn't get asked twice.
-  if register_host:
-    host.ask_pin()
-  elif options.new_pin or not host.is_pin_set():
-    host.ask_pin()
-    host.save_config()
-    running, pid = PidFile(pid_filename).check()
-    if running and pid != 0:
-      os.kill(pid, signal.SIGUSR1)
-      print "The running instance has been updated with the new PIN."
-      return 0
+  host = Host(host_config_file, auth)
+  host_config_loaded = host.load_config()
 
-  if not options.explicit_config:
+  if options.silent:
+    if not host_config_loaded or not auth_config_loaded:
+      logging.error("Failed to load host configuration.")
+      return 1
+  else:
+    need_auth_tokens = not auth_config_loaded
+    need_register_host = not host_config_loaded
+    # Outside the loop so user doesn't get asked twice.
+    if need_register_host:
+      host.ask_pin()
+    elif options.new_pin or not host.is_pin_set():
+      host.ask_pin()
+      host.save_config()
+      running, pid = PidFile(pid_filename).check()
+      if running and pid != 0:
+        os.kill(pid, signal.SIGUSR1)
+        print "The running instance has been updated with the new PIN."
+        return 0
+
     # The loop is to deal with the case of registering a new Host with
     # previously-saved auth tokens (from a previous run of this script), which
     # may require re-prompting for username & password.
@@ -727,7 +739,7 @@ def main():
         return 1
 
       try:
-        if register_host:
+        if need_register_host:
           host.register()
           host.save_config()
       except urllib2.HTTPError, err:
@@ -842,16 +854,25 @@ def main():
       # will be created and registered.
       if os.WEXITSTATUS(status) == 2:
         logging.info("Host configuration is invalid - exiting.")
-        os.remove(auth.config_file)
-        os.remove(host.config_file)
+        try:
+          os.remove(host.config_file)
+          os.remove(auth.config_file)
+        except:
+          pass
         return 0
       elif os.WEXITSTATUS(status) == 3:
         logging.info("Host ID has been deleted - exiting.")
-        os.remove(host.config_file)
+        try:
+          os.remove(host.config_file)
+        except:
+          pass
         return 0
       elif os.WEXITSTATUS(status) == 4:
         logging.info("OAuth credentials are invalid - exiting.")
-        os.remove(auth.config_file)
+        try:
+          os.remove(auth.config_file)
+        except:
+          pass
         return 0
 
 if __name__ == "__main__":
