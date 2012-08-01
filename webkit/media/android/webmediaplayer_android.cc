@@ -84,13 +84,18 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   main_loop_->AddDestructionObserver(this);
   if (manager_)
     player_id_ = manager_->RegisterMediaPlayer(this);
-  if (stream_texture_factory_.get())
+  if (stream_texture_factory_.get()) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
+    stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
+  }
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
   if (manager_)
     manager_->UnregisterMediaPlayer(player_id_);
+
+  if (stream_id_)
+    stream_texture_factory_->DestroyStreamTexture(texture_id_);
 
   if (main_loop_)
     main_loop_->RemoveDestructionObserver(this);
@@ -441,8 +446,16 @@ void WebMediaPlayerAndroid::OnMediaInfo(int info_type) {
 }
 
 void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
+  if (natural_size_.width == width && natural_size_.height == height)
+    return;
+
   natural_size_.width = width;
   natural_size_.height = height;
+  if (texture_id_) {
+    video_frame_.reset(new WebVideoFrameImpl(VideoFrame::WrapNativeTexture(
+        texture_id_, kGLTextureExternalOES, width, height, base::TimeDelta(),
+        base::Closure())));
+  }
 }
 
 void WebMediaPlayerAndroid::UpdateNetworkState(
@@ -505,9 +518,6 @@ void WebMediaPlayerAndroid::PlayInternal() {
   CHECK(prepared_);
 
   if (hasVideo() && stream_texture_factory_.get()) {
-    if (!stream_id_)
-      CreateStreamTexture();
-
     if (needs_establish_peer_) {
       stream_texture_factory_->EstablishPeer(stream_id_, player_id_);
       needs_establish_peer_ = false;
@@ -529,29 +539,6 @@ void WebMediaPlayerAndroid::SeekInternal(float seconds) {
   seeking_ = true;
   media_player_->SeekTo(ConvertSecondsToTimestamp(seconds), base::Bind(
       &WebMediaPlayerProxyAndroid::SeekCompleteCallback, proxy_));
-}
-
-void WebMediaPlayerAndroid::CreateStreamTexture() {
-  DCHECK(!stream_id_);
-  DCHECK(!texture_id_);
-  stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
-  if (texture_id_)
-    video_frame_.reset(new WebVideoFrameImpl(VideoFrame::WrapNativeTexture(
-        texture_id_,
-        kGLTextureExternalOES,
-        texture_size_.width,
-        texture_size_.height,
-        base::TimeDelta(),
-        base::Bind(&WebMediaPlayerAndroid::DestroyStreamTexture,
-                   base::Unretained(this)))));
-}
-
-void WebMediaPlayerAndroid::DestroyStreamTexture() {
-  DCHECK(stream_id_);
-  DCHECK(texture_id_);
-  stream_texture_factory_->DestroyStreamTexture(texture_id_);
-  texture_id_ = 0;
-  stream_id_ = 0;
 }
 
 void WebMediaPlayerAndroid::WillDestroyCurrentMessageLoop() {

@@ -152,10 +152,6 @@ class WebMediaPlayerAndroid :
   void UpdateNetworkState(WebKit::WebMediaPlayer::NetworkState state);
   void UpdateReadyState(WebKit::WebMediaPlayer::ReadyState state);
 
-  // Methods for creation and deletion of stream texture.
-  void CreateStreamTexture();
-  void DestroyStreamTexture();
-
   // whether the current process is incognito mode
   static bool incognito_mode_;
 
