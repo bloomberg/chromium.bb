@@ -26,7 +26,7 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@05ba5f84d93b9ac5355d7d49281a93acd6089d68',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@c3aca252052482b7cb4c0dace04b6c9ac1bf6e60',
+        Var('git_url') + '/native_client/src/native_client.git@74533ac40065cd15b51b61a76c61bee67c03e359',
     'src/native_client_sdk/src/site_scons':
         Var('git_url') + '/native_client/src/native_client/site_scons.git@1e6214cb361161cda3767060716e357fcfbdca32',
     'src/sandbox/linux/seccomp-legacy':
