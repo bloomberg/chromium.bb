@@ -820,7 +820,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
     present_thread_->device()->BeginScene();
     present_thread_->device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,
-                                               arraysize(vertices),
+                                               2,
                                                vertices,
                                                sizeof(vertices[0]));
     present_thread_->device()->EndScene();
