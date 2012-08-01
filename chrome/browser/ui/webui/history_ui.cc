@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -305,7 +306,7 @@ void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
 void BrowsingHistoryHandler::HandleRemoveBookmark(const ListValue* args) {
   string16 url = ExtractStringValue(args);
   Profile* profile = Profile::FromWebUI(web_ui());
-  BookmarkModel* model = profile->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
   bookmark_utils::RemoveAllBookmarks(model, GURL(url));
 }
 
@@ -353,7 +354,8 @@ void BrowsingHistoryHandler::QueryComplete(
     }
     Profile* profile = Profile::FromWebUI(web_ui());
     page_value->SetBoolean("starred",
-        profile->GetBookmarkModel()->IsBookmarked(page.url()));
+        BookmarkModelFactory::GetForProfile(profile)->IsBookmarked(
+            page.url()));
     results_value.Append(page_value);
   }
 

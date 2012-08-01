@@ -163,6 +163,7 @@
 #include "base/values.h"
 #include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/process_map.h"
@@ -713,7 +714,7 @@ void MetricsService::Observe(int type,
     case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED: {
       Profile* p = content::Source<Profile>(source).ptr();
       if (p)
-        LogBookmarks(p->GetBookmarkModel());
+        LogBookmarks(BookmarkModelFactory::GetForProfile(p));
       break;
     }
     default:

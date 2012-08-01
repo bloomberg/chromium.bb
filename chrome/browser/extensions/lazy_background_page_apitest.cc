@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -305,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, IncognitoSplitMode) {
 
     LazyBackgroundObserver page_complete(browser()->profile()),
                            page2_complete(incognito_browser->profile());
-    BookmarkModel* bookmark_model = browser()->profile()->GetBookmarkModel();
+    BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(browser()->profile());
     ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
     const BookmarkNode* parent = bookmark_model->bookmark_bar_node();
     bookmark_model->AddURL(
