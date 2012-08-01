@@ -831,6 +831,13 @@
     ],
   },
 
+  # Trace event tests.
+  'TRACING': {
+    'all': [
+      'tracing.tracing_smoke_test',
+    ],
+  },
+
   # Pyauto functional tests running on coverage bots.
   'CODE_COVERAGE': {
     'all': [
