@@ -35,7 +35,7 @@ uint32 GetOffsetInUTF16(const std::string& utf8_string, uint32 utf8_offset) {
 
 class TestableInputMethodIBus : public InputMethodIBus {
  public:
-  TestableInputMethodIBus(internal::InputMethodDelegate* delegate)
+  explicit TestableInputMethodIBus(internal::InputMethodDelegate* delegate)
       : InputMethodIBus(delegate) {
   }
 
@@ -45,7 +45,7 @@ class TestableInputMethodIBus : public InputMethodIBus {
 
 class CreateInputContextSuccessHandler {
  public:
-  CreateInputContextSuccessHandler(const dbus::ObjectPath& object_path)
+  explicit CreateInputContextSuccessHandler(const dbus::ObjectPath& object_path)
       : object_path_(object_path) {
   }
 
@@ -89,7 +89,7 @@ class CreateInputContextDelayFailHandler {
     error_callback_ = error_callback;
   }
 
- chromeos::IBusClient::ErrorCallback error_callback_;
+  chromeos::IBusClient::ErrorCallback error_callback_;
 };
 
 class InputMethodIBusTest : public internal::InputMethodDelegate,

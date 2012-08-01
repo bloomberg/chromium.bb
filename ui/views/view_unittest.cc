@@ -945,16 +945,16 @@ gfx::Point ConvertPointToView(View* view, const gfx::Point& p) {
   return tmp;
 }
 
-void RotateCounterclockwise(ui::Transform& transform) {
-  transform.matrix().set3x3(0, -1, 0,
-                            1,  0, 0,
-                            0,  0, 1);
+void RotateCounterclockwise(ui::Transform* transform) {
+  transform->matrix().set3x3(0, -1, 0,
+                             1,  0, 0,
+                             0,  0, 1);
 }
 
-void RotateClockwise(ui::Transform& transform) {
-  transform.matrix().set3x3( 0, 1, 0,
-                            -1, 0, 0,
-                             0, 0, 1);
+void RotateClockwise(ui::Transform* transform) {
+  transform->matrix().set3x3( 0, 1, 0,
+                             -1, 0, 0,
+                              0, 0, 1);
 }
 
 }  // namespace
@@ -2006,7 +2006,7 @@ TEST_F(ViewTest, TransformPaint) {
 
   // Rotate |v1| counter-clockwise.
   ui::Transform transform;
-  RotateCounterclockwise(transform);
+  RotateCounterclockwise(&transform);
   transform.SetTranslateY(500.0f);
   v1->SetTransform(transform);
 
@@ -2040,7 +2040,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Rotate |v1| counter-clockwise.
   ui::Transform transform(v1->GetTransform());
-  RotateCounterclockwise(transform);
+  RotateCounterclockwise(&transform);
   transform.SetTranslateY(500.0f);
   v1->SetTransform(transform);
 
@@ -2062,7 +2062,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Now rotate |v2| inside |v1| clockwise.
   transform = v2->GetTransform();
-  RotateClockwise(transform);
+  RotateClockwise(&transform);
   transform.SetTranslateX(100.0f);
   v2->SetTransform(transform);
 
@@ -2092,7 +2092,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Rotate |v3| clockwise with respect to |v2|.
   transform = v1->GetTransform();
-  RotateClockwise(transform);
+  RotateClockwise(&transform);
   transform.SetTranslateX(30.0f);
   v3->SetTransform(transform);
 
@@ -2128,7 +2128,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Rotate |v3| clockwise with respect to |v2|, and scale it along both axis.
   transform = v3->GetTransform();
-  RotateClockwise(transform);
+  RotateClockwise(&transform);
   transform.SetTranslateX(30.0f);
   // Rotation sets some scaling transformation. Using SetScale would overwrite
   // that and pollute the rotation. So combine the scaling with the existing
@@ -2181,7 +2181,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
 
   // Rotate |child| counter-clockwise
   ui::Transform transform;
-  RotateCounterclockwise(transform);
+  RotateCounterclockwise(&transform);
   transform.SetTranslateY(50.0f);
   child->SetTransform(transform);
   EXPECT_EQ(gfx::Rect(40, 0, 10, 50), child->GetVisibleBounds());
@@ -2417,7 +2417,7 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
 
   // Rotate |v2|
   ui::Transform t2;
-  RotateCounterclockwise(t2);
+  RotateCounterclockwise(&t2);
   t2.SetTranslateY(100.0f);
   v2->SetTransform(t2);
 
