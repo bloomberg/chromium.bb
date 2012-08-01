@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   }
 
   // Test that we received the changes.
-  EXPECT_FALSE(action->GetIcon(tab_id).isNull());
+  EXPECT_FALSE(action->GetIcon(tab_id).IsEmpty());
 }
 
 // Test that calling chrome.pageAction.setPopup() can enable a popup.

@@ -95,11 +95,6 @@ void BrowserActionButton::ViewHierarchyChanged(
                          gfx::Size(Extension::kBrowserActionIconMaxSize,
                                    Extension::kBrowserActionIconMaxSize),
                          ImageLoadingTracker::DONT_CACHE);
-    } else {
-      // Set the icon to be the default extensions icon.
-      default_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_EXTENSIONS_FAVICON).ToSkBitmap();
-      UpdateState();
     }
 
     MaybeRegisterExtensionCommand();
@@ -153,8 +148,7 @@ void BrowserActionButton::ShowContextMenuForView(View* source,
 void BrowserActionButton::OnImageLoaded(const gfx::Image& image,
                                         const std::string& extension_id,
                                         int index) {
-  if (!image.IsEmpty())
-    default_icon_ = *image.ToSkBitmap();
+  browser_action_->CacheIcon(browser_action_->default_icon_path(), image);
 
   // Call back to UpdateState() because a more specific icon might have been set
   // while the load was outstanding.
@@ -174,9 +168,7 @@ void BrowserActionButton::UpdateState() {
              views::CustomButton::BS_NORMAL);
   }
 
-  SkBitmap icon(browser_action()->GetIcon(tab_id));
-  if (icon.isNull())
-    icon = default_icon_;
+  SkBitmap icon(*browser_action()->GetIcon(tab_id).ToSkBitmap());
   if (!icon.isNull()) {
     if (!browser_action()->GetIsVisible(tab_id))
       icon = MakeTransparent(icon);
@@ -392,9 +384,8 @@ BrowserActionView::~BrowserActionView() {
 gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   int tab_id = panel_->GetCurrentTabId();
 
-  SkBitmap icon = button_->extension()->browser_action()->GetIcon(tab_id);
-  if (icon.isNull())
-    icon = button_->default_icon();
+  SkBitmap icon = *button_->extension()->browser_action()->GetIcon(
+      tab_id).ToSkBitmap();
 
   // Dim the icon if our button is disabled.
   if (!button_->IsEnabled(tab_id))

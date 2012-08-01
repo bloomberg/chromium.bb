@@ -143,13 +143,10 @@ void PageActionDecoration::OnImageLoaded(const gfx::Image& image,
 
   // Map the index of the loaded image back to its name. If we ever get an
   // index greater than the number of icons, it must be the default icon.
-  if (!image.IsEmpty()) {
-    const SkBitmap* bitmap = image.ToSkBitmap();
-    if (index < static_cast<int>(page_action_->icon_paths()->size()))
-      page_action_icons_[page_action_->icon_paths()->at(index)] = *bitmap;
-    else
-      page_action_icons_[page_action_->default_icon_path()] = *bitmap;
-  }
+  if (index < static_cast<int>(page_action_->icon_paths()->size()))
+    page_action_->CacheIcon(page_action_->icon_paths()->at(index), image);
+  else
+    page_action_->CacheIcon(page_action_->default_icon_path(), image);
 
   // If we have no owner, that means this class is still being constructed.
   TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
@@ -172,41 +169,13 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents,
     SetToolTip(page_action_->GetTitle(current_tab_id_));
 
     // Set the image.
-    // It can come from three places. In descending order of priority:
-    // - The developer can set it dynamically by path or bitmap. It will be in
-    //   page_action_->GetIcon().
-    // - The developer can set it dynamically by index. It will be in
-    //   page_action_->GetIconIndex().
-    // - It can be set in the manifest by path. It will be in page_action_->
-    //   default_icon_path().
-
-    // First look for a dynamically set bitmap.
-    SkBitmap skia_icon = page_action_->GetIcon(current_tab_id_);
-    if (skia_icon.isNull()) {
-      int icon_index = page_action_->GetIconIndex(current_tab_id_);
-      std::string icon_path = (icon_index < 0) ?
-          page_action_->default_icon_path() :
-          page_action_->icon_paths()->at(icon_index);
-      if (!icon_path.empty()) {
-        PageActionMap::iterator iter = page_action_icons_.find(icon_path);
-        if (iter != page_action_icons_.end())
-          skia_icon = iter->second;
-      }
-    }
-    if (!skia_icon.isNull()) {
-      const ExtensionAction::IconAnimation* icon_animation =
-          scoped_icon_animation_observer_.icon_animation();
-      if (icon_animation)
-        skia_icon = icon_animation->Apply(skia_icon);
-      SetImage(gfx::SkBitmapToNSImage(skia_icon));
+    gfx::Image icon = page_action_->GetIcon(current_tab_id_);
+    if (!icon.IsEmpty()) {
+      SetImage(icon.ToNSImage());
     } else if (!GetImage()) {
-      // During install the action can be displayed before the icons
-      // have come in.  Rather than deal with this in multiple places,
-      // provide a placeholder image.  This will be replaced when an
-      // icon comes in.
       const NSSize default_size = NSMakeSize(Extension::kPageActionIconMaxSize,
                                              Extension::kPageActionIconMaxSize);
-      SetImage([[NSImage alloc] initWithSize:default_size]);
+      SetImage([[[NSImage alloc] initWithSize:default_size] autorelease]);
     }
   }
 

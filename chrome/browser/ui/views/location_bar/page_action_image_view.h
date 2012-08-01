@@ -103,10 +103,6 @@ class PageActionImageView : public views::ImageView,
   // The corresponding browser.
   Browser* browser_;
 
-  // A cache of bitmaps the page actions might need to show, mapped by path.
-  typedef std::map<std::string, SkBitmap> PageActionMap;
-  PageActionMap page_action_icons_;
-
   // The object that is waiting for the image loading to complete
   // asynchronously.
   ImageLoadingTracker tracker_;

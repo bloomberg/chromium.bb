@@ -45,9 +45,6 @@ class BrowserActionButton : public views::MenuButton,
   // Called to update the display to match the browser action's state.
   void UpdateState();
 
-  // Returns the default icon, if any.
-  const SkBitmap& default_icon() const { return default_icon_; }
-
   // Does this button's action have a popup?
   virtual bool IsPopup();
   virtual GURL GetPopupUrl();
@@ -124,10 +121,6 @@ class BrowserActionButton : public views::MenuButton,
   // The object that is waiting for the image loading to complete
   // asynchronously.
   ImageLoadingTracker tracker_;
-
-  // The default icon for our browser action. This might be non-empty if the
-  // browser action had a value for default_icon in the manifest.
-  SkBitmap default_icon_;
 
   // The browser action shelf.
   BrowserActionsContainer* panel_;

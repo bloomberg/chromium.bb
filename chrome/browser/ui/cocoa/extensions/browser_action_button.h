@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,12 +30,6 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   // extension's icon.
   scoped_ptr<ExtensionImageTrackerBridge> imageLoadingBridge_;
 
-  // The default icon of the Button.
-  scoped_nsobject<NSImage> defaultIcon_;
-
-  // The icon specific to the active tab.
-  scoped_nsobject<NSImage> tabSpecificIcon_;
-
   // Used to move the button and query whether a button is currently animating.
   scoped_nsobject<NSViewAnimation> moveAnimation_;
 
@@ -60,10 +54,6 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
               tabId:(int)tabId;
 
 - (void)setFrame:(NSRect)frameRect animate:(BOOL)animate;
-
-- (void)setDefaultIcon:(NSImage*)image;
-
-- (void)setTabSpecificIcon:(NSImage*)image;
 
 - (void)updateState;
 

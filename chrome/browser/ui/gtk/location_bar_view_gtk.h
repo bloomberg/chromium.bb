@@ -300,16 +300,6 @@ class LocationBarViewGtk : public OmniboxEditController,
     // us, it resides in the extension of this particular profile.
     ExtensionAction* page_action_;
 
-    // A cache of all the different icon paths associated with this page action.
-    typedef std::map<std::string, GdkPixbuf*> PixbufMap;
-    PixbufMap pixbufs_;
-
-    // A cache of the last dynamically generated bitmap and the pixbuf that
-    // corresponds to it. We keep track of both so we can free old pixbufs as
-    // their icons are replaced.
-    SkBitmap last_icon_skbitmap_;
-    GdkPixbuf* last_icon_pixbuf_;
-
     // The object that is waiting for the image loading to complete
     // asynchronously.
     ImageLoadingTracker tracker_;

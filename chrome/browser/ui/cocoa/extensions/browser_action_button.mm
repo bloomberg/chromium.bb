@@ -50,7 +50,8 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
   ExtensionImageTrackerBridge(BrowserActionButton* owner,
                               const Extension* extension)
       : owner_(owner),
-        tracker_(this) {
+        tracker_(this),
+        browser_action_(extension->browser_action()) {
     // The Browser Action API does not allow the default icon path to be
     // changed at runtime, so we can load this now and cache it.
     std::string path = extension->browser_action()->default_icon_path();
@@ -59,16 +60,10 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
                          gfx::Size(Extension::kBrowserActionIconMaxSize,
                                    Extension::kBrowserActionIconMaxSize),
                          ImageLoadingTracker::DONT_CACHE);
-    } else {
-      // Set the icon to be the default extensions icon.
-      SkBitmap bm = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_EXTENSIONS_FAVICON);
-      [owner_ setDefaultIcon:gfx::SkBitmapToNSImage(bm)];
-      [owner_ updateState];
     }
     registrar_.Add(
         this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-        content::Source<ExtensionAction>(extension->browser_action()));
+        content::Source<ExtensionAction>(browser_action_));
   }
 
   ~ExtensionImageTrackerBridge() {}
@@ -77,8 +72,7 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
   void OnImageLoaded(const gfx::Image& image,
                      const std::string& extension_id,
                      int index) OVERRIDE {
-    if (!image.IsEmpty())
-      [owner_ setDefaultIcon:image.ToNSImage()];
+    browser_action_->CacheIcon(browser_action_->default_icon_path(), image);
     [owner_ updateState];
   }
 
@@ -98,6 +92,9 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
 
   // Loads the button's icons for us on the file thread.
   ImageLoadingTracker tracker_;
+
+  // The browser action whose images we're loading.
+  ExtensionAction* const browser_action_;
 
   // Used for registering to receive notifications and automatic clean up.
   content::NotificationRegistrar registrar_;
@@ -241,14 +238,6 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
   }
 }
 
-- (void)setDefaultIcon:(NSImage*)image {
-  defaultIcon_.reset([image retain]);
-}
-
-- (void)setTabSpecificIcon:(NSImage*)image {
-  tabSpecificIcon_.reset([image retain]);
-}
-
 - (void)updateState {
   if (tabId_ < 0)
     return;
@@ -260,13 +249,9 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
     [self setToolTip:base::SysUTF8ToNSString(tooltip)];
   }
 
-  SkBitmap image = extension_->browser_action()->GetIcon(tabId_);
-  if (!image.isNull()) {
-    [self setTabSpecificIcon:gfx::SkBitmapToNSImage(image)];
-    [self setImage:tabSpecificIcon_];
-  } else if (defaultIcon_) {
-    [self setImage:defaultIcon_];
-  }
+  gfx::Image image = extension_->browser_action()->GetIcon(tabId_);
+  if (!image.IsEmpty())
+    [self setImage:image.ToNSImage()];
 
   [[self cell] setTabId:tabId_];
 

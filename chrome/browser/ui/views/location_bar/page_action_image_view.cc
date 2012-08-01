@@ -181,13 +181,10 @@ void PageActionImageView::OnImageLoaded(const gfx::Image& image,
 
   // Map the index of the loaded image back to its name. If we ever get an
   // index greater than the number of icons, it must be the default icon.
-  if (!image.IsEmpty()) {
-    const SkBitmap* bitmap = image.ToSkBitmap();
-    if (index < static_cast<int>(page_action_->icon_paths()->size()))
-      page_action_icons_[page_action_->icon_paths()->at(index)] = *bitmap;
-    else
-      page_action_icons_[page_action_->default_icon_path()] = *bitmap;
-  }
+  if (index < static_cast<int>(page_action_->icon_paths()->size()))
+    page_action_->CacheIcon(page_action_->icon_paths()->at(index), image);
+  else
+    page_action_->CacheIcon(page_action_->default_icon_path(), image);
 
   // During object construction owner_ will be NULL.
   TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
@@ -246,34 +243,9 @@ void PageActionImageView::UpdateVisibility(WebContents* contents,
   SetTooltipText(UTF8ToUTF16(tooltip_));
 
   // Set the image.
-  // It can come from three places. In descending order of priority:
-  // - The developer can set it dynamically by path or bitmap. It will be in
-  //   page_action_->GetIcon().
-  // - The developer can set it dynamically by index. It will be in
-  //   page_action_->GetIconIndex().
-  // - It can be set in the manifest by path. It will be in
-  //   page_action_->default_icon_path().
-
-  // First look for a dynamically set bitmap.
-  SkBitmap icon = page_action_->GetIcon(current_tab_id_);
-  if (icon.isNull()) {
-    int icon_index = page_action_->GetIconIndex(current_tab_id_);
-    std::string icon_path = (icon_index < 0) ?
-        page_action_->default_icon_path() :
-        page_action_->icon_paths()->at(icon_index);
-    if (!icon_path.empty()) {
-      PageActionMap::iterator iter = page_action_icons_.find(icon_path);
-      if (iter != page_action_icons_.end())
-        icon = iter->second;
-    }
-  }
-
-  if (!icon.isNull()) {
-    const ExtensionAction::IconAnimation* icon_animation =
-        scoped_icon_animation_observer_.icon_animation();
-    if (icon_animation)
-      icon = icon_animation->Apply(icon);
-    SetImage(icon);
+  gfx::Image icon = page_action_->GetIcon(current_tab_id_);
+  if (!icon.IsEmpty()) {
+    SetImage(*icon.ToImageSkia());
   }
 
   SetVisible(true);

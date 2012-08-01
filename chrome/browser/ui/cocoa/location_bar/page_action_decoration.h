@@ -85,11 +85,6 @@ class PageActionDecoration : public ImageDecoration,
   // profile.
   ExtensionAction* page_action_;
 
-  // A cache of images the Page Actions might need to show, mapped by
-  // path.
-  typedef std::map<std::string, SkBitmap> PageActionMap;
-  PageActionMap page_action_icons_;
-
   // The object that is waiting for the image loading to complete
   // asynchronously.
   ImageLoadingTracker tracker_;

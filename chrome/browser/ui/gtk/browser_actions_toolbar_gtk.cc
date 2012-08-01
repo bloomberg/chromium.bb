@@ -127,12 +127,6 @@ class BrowserActionButton : public content::NotificationObserver,
                          gfx::Size(Extension::kBrowserActionIconMaxSize,
                                    Extension::kBrowserActionIconMaxSize),
                          ImageLoadingTracker::DONT_CACHE);
-    } else {
-      const SkBitmap* bm =
-          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_EXTENSIONS_FAVICON).ToSkBitmap();
-      default_skbitmap_ = *bm;
-      default_icon_ = gfx::GdkPixbufFromSkBitmap(*bm);
     }
 
     UpdateState();
@@ -228,11 +222,8 @@ class BrowserActionButton : public content::NotificationObserver,
   void OnImageLoaded(const gfx::Image& image,
                      const std::string& extension_id,
                      int index) OVERRIDE {
-    if (!image.IsEmpty()) {
-      default_skbitmap_ = *image.ToSkBitmap();
-      default_icon_ =
-          static_cast<GdkPixbuf*>(g_object_ref(image.ToGdkPixbuf()));
-    }
+    extension_->browser_action()->CacheIcon(
+        extension_->browser_action()->default_icon_path(), image);
     UpdateState();
   }
 
@@ -249,16 +240,9 @@ class BrowserActionButton : public content::NotificationObserver,
     else
       gtk_widget_set_tooltip_text(button(), tooltip.c_str());
 
-    SkBitmap image = extension_->browser_action()->GetIcon(tab_id);
-    if (!image.isNull()) {
-      GdkPixbuf* previous_gdk_icon = tab_specific_icon_;
-      tab_specific_icon_ = gfx::GdkPixbufFromSkBitmap(image);
-      SetImage(tab_specific_icon_);
-      if (previous_gdk_icon)
-        g_object_unref(previous_gdk_icon);
-    } else if (default_icon_) {
-      SetImage(default_icon_);
-    }
+    gfx::Image image = extension_->browser_action()->GetIcon(tab_id);
+    if (!image.IsEmpty())
+      SetImage(image.ToGdkPixbuf());
     bool enabled = extension_->browser_action()->GetIsVisible(tab_id);
     gtk_widget_set_sensitive(button(), enabled);
 
@@ -266,13 +250,8 @@ class BrowserActionButton : public content::NotificationObserver,
   }
 
   SkBitmap GetIcon() {
-    const SkBitmap& image = extension_->browser_action()->GetIcon(
-        toolbar_->GetCurrentTabId());
-    if (!image.isNull()) {
-      return image;
-    } else {
-      return default_skbitmap_;
-    }
+    return *extension_->browser_action()->GetIcon(
+        toolbar_->GetCurrentTabId()).ToSkBitmap();
   }
 
   MenuGtk* GetContextMenu() {

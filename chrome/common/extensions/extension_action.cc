@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/common/badge_util.h"
 #include "googleurl/src/gurl.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -51,6 +52,12 @@ const int kMaxTextWidth = 23;
 // The minimum width for center-aligning the badge.
 const int kCenterAlignThreshold = 20;
 
+
+int Width(const gfx::Image& image) {
+  if (image.IsEmpty())
+    return 0;
+  return image.ToSkBitmap()->width();
+}
 
 }  // namespace
 
@@ -190,12 +197,42 @@ GURL ExtensionAction::GetPopupUrl(int tab_id) const {
   return GetValue(&popup_url_, tab_id);
 }
 
-void ExtensionAction::SetIcon(int tab_id, const SkBitmap& bitmap) {
-  SetValue(&icon_, tab_id, bitmap);
+void ExtensionAction::CacheIcon(const std::string& path,
+                                const gfx::Image& icon) {
+  if (!icon.IsEmpty())
+    path_to_icon_cache_.insert(std::make_pair(path, icon));
 }
 
-SkBitmap ExtensionAction::GetIcon(int tab_id) const {
-  return GetValue(&icon_, tab_id);
+void ExtensionAction::SetIcon(int tab_id, const SkBitmap& bitmap) {
+  SetValue(&icon_, tab_id, gfx::Image(bitmap));
+}
+
+gfx::Image ExtensionAction::GetIcon(int tab_id) const {
+  // Check if a specific icon is set for this tab.
+  gfx::Image icon = GetValue(&icon_, tab_id);
+  if (icon.IsEmpty()) {
+    // Need to find an icon from a path.
+    const std::string* path = NULL;
+    // Check if one of the elements of icon_path() was selected.
+    int icon_index = GetIconIndex(tab_id);
+    if (icon_index >= 0) {
+      path = &icon_paths()->at(icon_index);
+    } else {
+      // Otherwise, use the default icon.
+      path = &default_icon_path();
+    }
+
+    std::map<std::string, gfx::Image>::const_iterator cached_icon =
+        path_to_icon_cache_.find(*path);
+    if (cached_icon != path_to_icon_cache_.end()) {
+      icon = cached_icon->second;
+    } else {
+      icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_EXTENSIONS_FAVICON);
+    }
+  }
+
+  return ApplyIconAnimation(tab_id, icon);
 }
 
 void ExtensionAction::SetIconIndex(int tab_id, int index) {
@@ -248,10 +285,10 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   // Calculate badge size. It is clamped to a min width just because it looks
   // silly if it is too skinny.
   int badge_width = SkScalarFloor(text_width) + kPadding * 2;
-  int icon_width = GetIcon(tab_id).width();
+  int icon_width = Width(GetValue(&icon_, tab_id));
   // Force the pixel width of badge to be either odd (if the icon width is odd)
   // or even otherwise. If there is a mismatch you get http://crbug.com/26400.
-  if (icon_width != 0 && (badge_width % 2 != GetIcon(tab_id).width() % 2))
+  if (icon_width != 0 && (badge_width % 2 != icon_width % 2))
     badge_width += 1;
   badge_width = std::max(kBadgeHeight, badge_width);
 
@@ -313,6 +350,15 @@ base::WeakPtr<ExtensionAction::IconAnimation> ExtensionAction::GetIconAnimation(
       icon_animation_.find(tab_id);
   return (it != icon_animation_.end()) ? it->second->animation()->AsWeakPtr()
                                        : base::WeakPtr<IconAnimation>();
+}
+
+gfx::Image ExtensionAction::ApplyIconAnimation(int tab_id,
+                                               const gfx::Image& orig) const {
+  std::map<int, linked_ptr<IconAnimationWrapper> >::const_iterator it =
+      icon_animation_.find(tab_id);
+  if (it == icon_animation_.end())
+    return orig;
+  return gfx::Image(it->second->animation()->Apply(*orig.ToSkBitmap()));
 }
 
 void ExtensionAction::RunIconAnimation(int tab_id) {

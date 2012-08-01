@@ -1699,7 +1699,6 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
     ExtensionAction* page_action)
     : owner_(NULL),
       page_action_(page_action),
-      last_icon_pixbuf_(NULL),
       tracker_(this),
       current_tab_id_(-1),
       window_(NULL),
@@ -1755,12 +1754,6 @@ LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
 
   image_.Destroy();
   event_box_.Destroy();
-  for (PixbufMap::iterator iter = pixbufs_.begin(); iter != pixbufs_.end();
-       ++iter) {
-    g_object_unref(iter->second);
-  }
-  if (last_icon_pixbuf_)
-    g_object_unref(last_icon_pixbuf_);
 }
 
 bool LocationBarViewGtk::PageActionViewGtk::IsVisible() {
@@ -1782,54 +1775,11 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
         page_action_->GetTitle(current_tab_id_).c_str());
 
     // Set the image.
-    // It can come from three places. In descending order of priority:
-    // - The developer can set it dynamically by path or bitmap. It will be in
-    //   page_action_->GetIcon().
-    // - The developer can set it dyanmically by index. It will be in
-    //   page_action_->GetIconIndex().
-    // - It can be set in the manifest by path. It will be in page_action_->
-    //   default_icon_path().
-
-    // First look for a dynamically set bitmap.
-    SkBitmap icon = page_action_->GetIcon(current_tab_id_);
-    GdkPixbuf* pixbuf = NULL;
-    if (!icon.isNull()) {
-      if (icon.pixelRef() != last_icon_skbitmap_.pixelRef()) {
-        if (last_icon_pixbuf_)
-          g_object_unref(last_icon_pixbuf_);
-        last_icon_skbitmap_ = icon;
-        last_icon_pixbuf_ = gfx::GdkPixbufFromSkBitmap(icon);
-      }
-      DCHECK(last_icon_pixbuf_);
-      pixbuf = last_icon_pixbuf_;
-    } else {
-      // Otherwise look for a dynamically set index, or fall back to the
-      // default path.
-      int icon_index = page_action_->GetIconIndex(current_tab_id_);
-      std::string icon_path = (icon_index < 0) ?
-          page_action_->default_icon_path() :
-          page_action_->icon_paths()->at(icon_index);
-      if (!icon_path.empty()) {
-        PixbufMap::iterator iter = pixbufs_.find(icon_path);
-        if (iter != pixbufs_.end())
-          pixbuf = iter->second;
-      }
-    }
-    // The pixbuf might not be loaded yet.
-    if (pixbuf) {
-      const ExtensionAction::IconAnimation* icon_animation =
-          scoped_icon_animation_observer_.icon_animation();
-      if (icon_animation) {
-        // Draw |pixbuf| with the fade-in |icon_animation_| applied to it.
-        // Use a temporary gfx::Image to do the conversion to/from a SkBitmap.
-        g_object_ref(pixbuf);  // don't let gfx::Image take ownership.
-        gfx::Image animated_image(
-            icon_animation->Apply(*gfx::Image(pixbuf).ToSkBitmap()));
-        gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
-                                  animated_image.ToGdkPixbuf());
-      } else {
-        gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);
-      }
+    gfx::Image icon = page_action_->GetIcon(current_tab_id_);
+    if (!icon.IsEmpty()) {
+      GdkPixbuf* pixbuf = icon.ToGdkPixbuf();
+      DCHECK(pixbuf);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);
     }
   }
 
@@ -1860,14 +1810,10 @@ void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
 
   // Map the index of the loaded image back to its name. If we ever get an
   // index greater than the number of icons, it must be the default icon.
-  if (!image.IsEmpty()) {
-    GdkPixbuf* pixbuf =
-        static_cast<GdkPixbuf*>(g_object_ref(image.ToGdkPixbuf()));
-    if (index < static_cast<int>(page_action_->icon_paths()->size()))
-      pixbufs_[page_action_->icon_paths()->at(index)] = pixbuf;
-    else
-      pixbufs_[page_action_->default_icon_path()] = pixbuf;
-  }
+  if (index < static_cast<int>(page_action_->icon_paths()->size()))
+    page_action_->CacheIcon(page_action_->icon_paths()->at(index), image);
+  else
+    page_action_->CacheIcon(page_action_->default_icon_path(), image);
 
   // If we have no owner, that means this class is still being constructed.
   TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;

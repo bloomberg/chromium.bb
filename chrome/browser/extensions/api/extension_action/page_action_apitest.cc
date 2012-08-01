@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   // Test that we received the changes.
   tab_id = chrome::GetActiveTabContents(browser())->restore_tab_helper()->
       session_id().id();
-  EXPECT_FALSE(action->GetIcon(tab_id).isNull());
+  EXPECT_FALSE(action->GetIcon(tab_id).IsEmpty());
 }
 
 // Test that calling chrome.pageAction.setPopup() can enable a popup.
