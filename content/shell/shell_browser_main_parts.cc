@@ -32,6 +32,12 @@ static GURL GetStartupURL() {
   if (command_line->HasSwitch(switches::kContentBrowserTest))
     return GURL();
   const CommandLine::StringVector& args = command_line->GetArgs();
+
+#if defined(OS_ANDROID)
+  // Delay renderer creation on Android until surface is ready.
+  return GURL();
+#endif
+
   if (args.empty())
     return GURL("http://www.google.com/");
 

@@ -4,13 +4,16 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/draw_delegate_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/android/device_info.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 
 namespace content {
@@ -150,6 +153,10 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
+  gfx::Size bounds = DrawDelegateImpl::GetInstance()->GetBounds();
+  if (!bounds.IsEmpty())
+    return gfx::Rect(bounds);
+
   if (content_view_core_) {
     return content_view_core_->GetBounds();
   } else {
@@ -258,7 +265,11 @@ void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  NOTREACHED();
+  DrawDelegateImpl::GetInstance()->OnSurfaceUpdated(
+      params.surface_handle,
+      this,
+      base::Bind(&RenderWidgetHostImpl::AcknowledgeBufferPresent,
+                 params.route_id, gpu_host_id));
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
@@ -284,6 +295,11 @@ void RenderWidgetHostViewAndroid::StartContentIntent(
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
+  gfx::GLSurfaceHandle handle =
+      DrawDelegateImpl::GetInstance()->GetDrawSurface();
+  if (!handle.is_null())
+    return handle;
+
   // On Android, we cannot generate a window handle that can be passed to the
   // GPU process through the native side. Instead, we send the surface handle
   // through Binder after the compositing context has been created.

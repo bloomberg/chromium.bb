@@ -46,6 +46,8 @@ public class Shell extends LinearLayout {
 
     private ClipDrawable mProgressDrawable;
 
+    private View mSurfaceView;
+
     /**
      * Constructor for inflating via XML.
      */
@@ -53,17 +55,27 @@ public class Shell extends LinearLayout {
         super(context, attrs);
     }
 
+    /**
+     * Set the SurfaceView being renderered to as soon as it is available.
+     */
+    public void setSurfaceView(View surfaceView) {
+        mSurfaceView = surfaceView;
+        ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mSurfaceView,
+                new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT));
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
         mProgressDrawable = (ClipDrawable) findViewById(R.id.toolbar).getBackground();
-
-        initilizeUrlField();
+        initializeUrlField();
         initializeNavigationButtons();
     }
 
-    private void initilizeUrlField() {
+    private void initializeUrlField() {
         mUrlTextView = (EditText) findViewById(R.id.url);
         mUrlTextView.setOnEditorActionListener(new OnEditorActionListener() {
             @Override

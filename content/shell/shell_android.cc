@@ -8,8 +8,10 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/android/jni_string.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/android/shell_manager.h"
 #include "jni/Shell_jni.h"
 
@@ -23,6 +25,9 @@ base::StringPiece Shell::PlatformResourceProvider(int key) {
 }
 
 void Shell::PlatformInitialize() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  DCHECK(command_line->HasSwitch(switches::kForceCompositingMode));
+  DCHECK(command_line->HasSwitch(switches::kEnableThreadedCompositing));
 }
 
 void Shell::PlatformCleanUp() {
