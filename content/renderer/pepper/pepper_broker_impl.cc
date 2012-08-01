@@ -5,9 +5,9 @@
 #include "content/renderer/pepper/pepper_broker_impl.h"
 
 #include "build/build_config.h"
+#include "content/public/renderer/renderer_restrict_dispatch_group.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
-#include "content/renderer/renderer_restrict_dispatch_group.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"

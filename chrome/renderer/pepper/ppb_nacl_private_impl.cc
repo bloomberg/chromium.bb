@@ -18,6 +18,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/renderer_restrict_dispatch_group.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
@@ -171,6 +172,10 @@ class OutOfProcessProxy : public PluginDelegate::OutOfProcessProxy {
       return false;
     }
 
+    // Make sure that incoming plugin->renderer "unblock" messages can ONLY
+    // unblock other pepper messages.
+    dispatcher_->channel()->SetRestrictDispatchChannelGroup(
+        content::kRendererRestrictDispatchGroup_Pepper);
     return true;
   }
 
