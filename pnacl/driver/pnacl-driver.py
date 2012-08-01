@@ -239,6 +239,8 @@ GCCPatterns = [
 
   ( ('-isystem', '(.*)'),
                        "env.append('ISYSTEM_USER', pathtools.normalize($0))"),
+  ( '-isystem(.+)',
+                       "env.append('ISYSTEM_USER', pathtools.normalize($0))"),
   ( ('-I', '(.+)'),    "env.append('CC_FLAGS', '-I'+pathtools.normalize($0))"),
   ( '-I(.+)',          "env.append('CC_FLAGS', '-I'+pathtools.normalize($0))"),
 
