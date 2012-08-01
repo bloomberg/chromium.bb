@@ -1183,8 +1183,10 @@ def GetBootstrap(env):
   if 'TRUSTED_ENV' in env:
     trusted_env = env['TRUSTED_ENV']
     if trusted_env.Bit('linux'):
+      template_digits = 'X' * 16
       return (trusted_env.File('${STAGING_DIR}/nacl_helper_bootstrap'),
-              ['--r_debug=0xXXXXXXXXXXXXXXXX', '--reserved_at_zero=0xXXXXXXXX'])
+              ['--r_debug=0x' + template_digits,
+               '--reserved_at_zero=0x' + template_digits])
   return None, None
 
 pre_base_env.AddMethod(GetBootstrap)

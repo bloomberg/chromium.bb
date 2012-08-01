@@ -59,7 +59,9 @@ LOCAL_GCC = '/usr/bin/gcc'
 
 EMU_SCRIPT = 'toolchain/linux_arm-trusted/run_under_qemu_arm'
 
-BOOTSTRAP_ARGS = '--r_debug=0xXXXXXXXXXXXXXXXX --reserved_at_zero=0xXXXXXXXX'
+TEMPLATE_DIGITS = 'X' * 16
+BOOTSTRAP_ARGS = '--r_debug=0x%s --reserved_at_zero=0x%s' % (TEMPLATE_DIGITS,
+                                                             TEMPLATE_DIGITS)
 
 BOOTSTRAP_ARM = 'scons-out/opt-linux-arm/staging/nacl_helper_bootstrap'
 SEL_LDR_ARM = 'scons-out/opt-linux-arm/staging/sel_ldr'

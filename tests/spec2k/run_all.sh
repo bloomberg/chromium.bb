@@ -508,9 +508,10 @@ SetupSelLdr() {
   # We don't CheckFileBuilt for VALIDATOR because we currently don't build
   # or use it on x86
 
+  TEMPLATE_DIGITS="XXXXXXXXXXXXXXXX"
   PREFIX="${prefix} ${SEL_LDR_BOOTSTRAP} \
-${SEL_LDR} --r_debug=0xXXXXXXXXXXXXXXXX \
---reserved_at_zero=0xXXXXXXXX -B ${IRT_IMAGE} \
+${SEL_LDR} --r_debug=0x${TEMPLATE_DIGITS} \
+--reserved_at_zero=0x${TEMPLATE_DIGITS} -B ${IRT_IMAGE} \
 -a ${extra_flags} -f ${preload}"
   DASHDASH="--"
 }

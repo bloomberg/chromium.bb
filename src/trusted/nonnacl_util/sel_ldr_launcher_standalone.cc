@@ -60,7 +60,7 @@ void SelLdrLauncherStandalone::BuildCommandLine(vector<nacl::string>* command) {
   command->push_back(sel_ldr_);
   if (!sel_ldr_bootstrap_.empty()) {
     command->push_back("--r_debug=0xXXXXXXXXXXXXXXXX");
-    command->push_back("--reserved_at_zero=0xXXXXXXXX");
+    command->push_back("--reserved_at_zero=0xXXXXXXXXXXXXXXXX");
   }
   command->push_back("-R");  // RPC will be used to point to the nexe.
 

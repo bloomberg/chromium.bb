@@ -13,8 +13,8 @@
  * and reserved_at_zero and updates argc and argv to act as though
  * these arguments were not passed.  For example, the command
  *
- * nacl_helper_bootstrap program \
- * --r_debug=0xXXXXXXXXXXXXXXXX --reserved_at_zero=0xXXXXXXXX program_arg
+ * nacl_helper_bootstrap program --r_debug=0xXXXXXXXXXXXXXXXX \
+ * --reserved_at_zero=0xXXXXXXXXXXXXXXXX program_arg
  *
  * will result in the following argc and argv structure for program after
  * running throughg the bootstrapper:
@@ -22,7 +22,7 @@
  * argc: 4
  * argv[0]: program
  * argv[1]: --r_debug=0xXXXXXXXXXXXXXXXX
- * argv[2]: --reserved_at_zero=0xXXXXXXXX
+ * argv[2]: --reserved_at_zero=0xXXXXXXXXXXXXXXXX
  * argv[3]: program_arg
  *
  * After program calls NaClHandleBootstrapArgs, the argc and argv structure

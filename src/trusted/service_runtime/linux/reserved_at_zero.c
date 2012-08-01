@@ -8,8 +8,9 @@
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 
 /*
- * The launcher passes --reserved_at_zero=0xXXXXXXXX.  nacl_helper_bootstrap
- * replaces the Xs wih the size of the prereserved sandbox memory.
+ * The launcher passes --reserved_at_zero=0xXXXXXXXXXXXXXXXX.
+ * nacl_helper_bootstrap replaces the Xs wih the size of the
+ * prereserved sandbox memory.
  */
 void NaClHandleReservedAtZero(const char *switch_value) {
   char *endp = NULL;

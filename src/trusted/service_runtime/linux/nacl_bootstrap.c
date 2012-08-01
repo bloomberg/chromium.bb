@@ -44,16 +44,14 @@ typedef uintptr_t __attribute__((may_alias)) stack_val_t;
  * us from having to reformat the whole stack to find space for a string longer
  * than the original argument.
  */
+#define TEMPLATE_DIGITS "XXXXXXXXXXXXXXXX"
 #define R_DEBUG_TEMPLATE_PREFIX "--r_debug=0x"
-#define R_DEBUG_TEMPLATE_DIGITS "XXXXXXXXXXXXXXXX"
-static const char kRDebugTemplate[] =
-    R_DEBUG_TEMPLATE_PREFIX R_DEBUG_TEMPLATE_DIGITS;
+static const char kRDebugTemplate[] = R_DEBUG_TEMPLATE_PREFIX TEMPLATE_DIGITS;
 static const size_t kRDebugPrefixLen = sizeof(R_DEBUG_TEMPLATE_PREFIX) - 1;
 
 #define RESERVED_AT_ZERO_TEMPLATE_PREFIX "--reserved_at_zero=0x"
-#define RESERVED_AT_ZERO_TEMPLATE_DIGITS "XXXXXXXX"
 static const char kReservedAtZeroTemplate[] =
-    RESERVED_AT_ZERO_TEMPLATE_PREFIX RESERVED_AT_ZERO_TEMPLATE_DIGITS;
+    RESERVED_AT_ZERO_TEMPLATE_PREFIX TEMPLATE_DIGITS;
 static const size_t kReservedAtZeroPrefixLen =
     sizeof(RESERVED_AT_ZERO_TEMPLATE_PREFIX) - 1;
 extern size_t RESERVE_TOP;
@@ -418,7 +416,7 @@ struct r_debug _r_debug __attribute__((nocommon, section(".r_debug")));
 static int check_r_debug_arg(char *arg) {
   if (my_strcmp(arg, kRDebugTemplate) == 0) {
     fill_in_template_digits(arg + kRDebugPrefixLen,
-                            sizeof(R_DEBUG_TEMPLATE_DIGITS) - 1,
+                            sizeof(TEMPLATE_DIGITS) - 1,
                             (uintptr_t) &_r_debug);
     return 1;
   }
@@ -433,7 +431,7 @@ static int check_r_debug_arg(char *arg) {
 static int check_reserved_at_zero_arg(char *arg) {
   if (my_strcmp(arg, kReservedAtZeroTemplate) == 0) {
     fill_in_template_digits(arg + kReservedAtZeroPrefixLen,
-                            sizeof(RESERVED_AT_ZERO_TEMPLATE_DIGITS) - 1,
+                            sizeof(TEMPLATE_DIGITS) - 1,
                             (uintptr_t) &RESERVE_TOP);
     return 1;
   }
