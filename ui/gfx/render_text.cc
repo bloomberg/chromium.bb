@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_constants.h"
 
 namespace {
 
@@ -394,6 +395,10 @@ void RenderText::SetText(const string16& text) {
   // or SetCursorPosition in upper layer.
   SetSelectionModel(SelectionModel());
 
+  // Invalidate the cached text direction if it depends on the text contents.
+  if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
+    text_direction_ = base::i18n::UNKNOWN_DIRECTION;
+
   ResetLayout();
 }
 
@@ -596,6 +601,42 @@ void RenderText::ApplyDefaultStyle() {
   ResetLayout();
 }
 
+void RenderText::SetDirectionalityMode(DirectionalityMode mode) {
+  if (mode == directionality_mode_)
+    return;
+
+  directionality_mode_ = mode;
+  text_direction_ = base::i18n::UNKNOWN_DIRECTION;
+  ResetLayout();
+}
+
+base::i18n::TextDirection RenderText::GetTextDirection() {
+  if (text_direction_ == base::i18n::UNKNOWN_DIRECTION) {
+    switch (directionality_mode_) {
+      case DIRECTIONALITY_FROM_TEXT:
+        // Derive the direction from the display text, which differs from text()
+        // in the case of obscured (password) textfields.
+        text_direction_ =
+            base::i18n::GetFirstStrongCharacterDirection(GetDisplayText());
+        break;
+      case DIRECTIONALITY_FROM_UI:
+        text_direction_ = base::i18n::IsRTL() ? base::i18n::RIGHT_TO_LEFT :
+                                                base::i18n::LEFT_TO_RIGHT;
+        break;
+      case DIRECTIONALITY_FORCE_LTR:
+        text_direction_ = base::i18n::LEFT_TO_RIGHT;
+        break;
+      case DIRECTIONALITY_FORCE_RTL:
+        text_direction_ = base::i18n::RIGHT_TO_LEFT;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  return text_direction_;
+}
+
 VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
   return GetTextDirection() == base::i18n::LEFT_TO_RIGHT ?
       CURSOR_RIGHT : CURSOR_LEFT;
@@ -701,6 +742,8 @@ void RenderText::SetTextShadows(const ShadowValues& shadows) {
 
 RenderText::RenderText()
     : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
+      directionality_mode_(DIRECTIONALITY_FROM_TEXT),
+      text_direction_(base::i18n::UNKNOWN_DIRECTION),
       cursor_enabled_(true),
       cursor_visible_(false),
       insert_mode_(true),

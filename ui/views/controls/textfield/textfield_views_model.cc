@@ -18,6 +18,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/views_delegate.h"
 

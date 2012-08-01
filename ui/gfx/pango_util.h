@@ -64,10 +64,9 @@ void UI_EXPORT DrawTextOntoCairoSurface(cairo_t* cr,
 // They are shared with internal skia interfaces.
 // ----------------------------------------------------------------------------
 
-// Setup pango layout |layout|, including set layout text as |text|, font
-// description based on |font|, width as |width| in PANGO_SCALE for RTL lcoale,
-// and set up whether auto-detect directionality, alignment, ellipsis, word
-// wrapping, resolution etc.
+// Setup pango |layout|; set the |text|, the font description based on |font|,
+// the |width| in PANGO_SCALE for RTL locale, the base |text_direction|,
+// alignment, ellipsis, word wrapping, resolution, etc.
 void SetupPangoLayout(PangoLayout* layout,
                       const string16& text,
                       const gfx::Font& font,

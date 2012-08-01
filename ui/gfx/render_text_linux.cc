@@ -80,15 +80,6 @@ RenderTextLinux::~RenderTextLinux() {
   ResetLayout();
 }
 
-base::i18n::TextDirection RenderTextLinux::GetTextDirection() {
-  EnsureLayout();
-
-  PangoDirection base_dir = pango_find_base_dir(layout_text_, -1);
-  if (base_dir == PANGO_DIRECTION_RTL || base_dir == PANGO_DIRECTION_WEAK_RTL)
-    return base::i18n::RIGHT_TO_LEFT;
-  return base::i18n::LEFT_TO_RIGHT;
-}
-
 Size RenderTextLinux::GetStringSize() {
   EnsureLayout();
   int width = 0, height = 0;
@@ -288,13 +279,13 @@ void RenderTextLinux::EnsureLayout() {
     layout_ = pango_cairo_create_layout(cr);
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
-    SetupPangoLayoutWithFontDescription(
-        layout_,
-        GetDisplayText(),
-        font_list().GetFontDescriptionString(),
-        display_rect().width(),
-        base::i18n::GetFirstStrongCharacterDirection(text()),
-        Canvas::DefaultCanvasTextAlignment());
+
+    SetupPangoLayoutWithFontDescription(layout_,
+                                        GetDisplayText(),
+                                        font_list().GetFontDescriptionString(),
+                                        display_rect().width(),
+                                        GetTextDirection(),
+                                        Canvas::DefaultCanvasTextAlignment());
 
     // No width set so that the x-axis position is relative to the start of the
     // text. ToViewPoint and ToTextPoint take care of the position conversion

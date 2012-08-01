@@ -22,6 +22,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/text_constants.h"
 
 class SkCanvas;
 class SkDrawLooper;
@@ -89,23 +90,6 @@ struct UI_EXPORT StyleRange {
 };
 
 typedef std::vector<StyleRange> StyleRanges;
-
-// TODO(msw): Distinguish between logical character stops and glyph stops?
-// CHARACTER_BREAK cursor movements should stop at neighboring characters.
-// WORD_BREAK cursor movements should stop at the nearest word boundaries.
-// LINE_BREAK cursor movements should stop at the text ends as shown on screen.
-enum BreakType {
-  CHARACTER_BREAK,
-  WORD_BREAK,
-  LINE_BREAK,
-};
-
-// Horizontal text alignment styles.
-enum HorizontalAlignment {
-  ALIGN_LEFT,
-  ALIGN_CENTER,
-  ALIGN_RIGHT,
-};
 
 // RenderText represents an abstract model of styled text and its corresponding
 // visual layout. Support is built in for a cursor, a selection, simple styling,
@@ -246,8 +230,9 @@ class UI_EXPORT RenderText {
   // Apply |default_style_| over the entire text range.
   void ApplyDefaultStyle();
 
-  // Returns the dominant direction of the current text.
-  virtual base::i18n::TextDirection GetTextDirection() = 0;
+  // Set the text directionality mode and get the text direction yielded.
+  void SetDirectionalityMode(DirectionalityMode mode);
+  base::i18n::TextDirection GetTextDirection();
 
   // Returns the visual movement direction corresponding to the logical end
   // of the text, considering only the dominant direction returned by
@@ -438,6 +423,13 @@ class UI_EXPORT RenderText {
 
   // Horizontal alignment of the text with respect to |display_rect_|.
   HorizontalAlignment horizontal_alignment_;
+
+  // The text directionality mode, defaults to DIRECTIONALITY_FROM_TEXT.
+  DirectionalityMode directionality_mode_;
+
+  // The cached text direction, potentially computed from the text or UI locale.
+  // Use GetTextDirection(), do not use this potentially invalid value directly!
+  base::i18n::TextDirection text_direction_;
 
   // A list of fonts used to render |text_|.
   FontList font_list_;

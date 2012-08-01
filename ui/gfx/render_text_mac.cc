@@ -87,10 +87,6 @@ RenderTextMac::RenderTextMac() : common_baseline_(0), runs_valid_(false) {
 RenderTextMac::~RenderTextMac() {
 }
 
-base::i18n::TextDirection RenderTextMac::GetTextDirection() {
-  return base::i18n::LEFT_TO_RIGHT;
-}
-
 Size RenderTextMac::GetStringSize() {
   EnsureLayout();
   return string_size_;
@@ -182,6 +178,9 @@ void RenderTextMac::EnsureLayout() {
       CFAttributedStringCreate(NULL, cf_text, attributes));
   base::mac::ScopedCFTypeRef<CFMutableAttributedStringRef> attr_text_mutable(
       CFAttributedStringCreateMutableCopy(NULL, 0, attr_text));
+
+  // TODO(asvitkine|msw): Respect GetTextDirection(), which may not match the
+  // natural text direction. See kCTTypesetterOptionForcedEmbeddingLevel, etc.
 
   ApplyStyles(attr_text_mutable, ct_font);
   line_.reset(CTLineCreateWithAttributedString(attr_text_mutable));

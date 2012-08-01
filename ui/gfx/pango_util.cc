@@ -204,9 +204,11 @@ static void SetupPangoLayoutWithoutFont(
     cairo_font_options = NULL;
   }
 
-  // Callers of DrawStringInt handle RTL layout themselves, so tell pango to not
-  // scope out RTL characters.
+  // Set Pango's base text direction explicitly from |text_direction|.
   pango_layout_set_auto_dir(layout, FALSE);
+  pango_context_set_base_dir(pango_layout_get_context(layout),
+      (text_direction == base::i18n::RIGHT_TO_LEFT ?
+       PANGO_DIRECTION_RTL : PANGO_DIRECTION_LTR));
 
   if (width > 0)
     pango_layout_set_width(layout, width * PANGO_SCALE);

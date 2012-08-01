@@ -305,12 +305,6 @@ RenderTextWin::RenderTextWin()
 RenderTextWin::~RenderTextWin() {
 }
 
-base::i18n::TextDirection RenderTextWin::GetTextDirection() {
-  EnsureLayout();
-  return (script_state_.uBidiLevel == 0) ?
-      base::i18n::LEFT_TO_RIGHT : base::i18n::RIGHT_TO_LEFT;
-}
-
 Size RenderTextWin::GetStringSize() {
   EnsureLayout();
   return string_size_;
@@ -600,11 +594,9 @@ void RenderTextWin::ItemizeLogicalText() {
   string_size_ = Size(0, GetFont().GetHeight());
   common_baseline_ = 0;
 
-  // Use the first strong character direction as the base text direction.
-  // TODO(msw): Use the application text direction instead of LTR by default?
+  // Set Uniscribe's base text direction.
   script_state_.uBidiLevel =
-      (base::i18n::GetFirstStrongCharacterDirection(text()) ==
-           base::i18n::RIGHT_TO_LEFT) ? 1 : 0;
+      (GetTextDirection() == base::i18n::RIGHT_TO_LEFT) ? 1 : 0;
 
   if (text().empty())
     return;

@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/text_constants.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -20,6 +21,15 @@
 namespace gfx {
 
 namespace {
+
+// Various weak, LTR, RTL, and Bidi string cases with three characters each.
+const wchar_t kWeak[] =      L" . ";
+const wchar_t kLtr[] =       L"abc";
+const wchar_t kLtrRtl[] =    L"a"L"\x5d0\x5d1";
+const wchar_t kLtrRtlLtr[] = L"a"L"\x5d1"L"b";
+const wchar_t kRtl[] =       L"\x5d0\x5d1\x5d2";
+const wchar_t kRtlLtr[] =    L"\x5d0\x5d1"L"a";
+const wchar_t kRtlLtrRtl[] = L"\x5d0"L"a"L"\x5d1";
 
 // Checks whether |range| contains |index|. This is not the same as calling
 // |range.Contains(ui::Range(index))| - as that would return true when
@@ -219,12 +229,12 @@ TEST_F(RenderTextTest, ApplyStyleRange) {
 static void SetTextWith2ExtraStyles(RenderText* render_text) {
   render_text->SetText(ASCIIToUTF16("abcdefghi"));
 
-  gfx::StyleRange strike;
+  StyleRange strike;
   strike.strike = true;
   strike.range = ui::Range(0, 3);
   render_text->ApplyStyleRange(strike);
 
-  gfx::StyleRange underline;
+  StyleRange underline;
   underline.underline = true;
   underline.range = ui::Range(3, 6);
   render_text->ApplyStyleRange(underline);
@@ -383,39 +393,54 @@ TEST_F(RenderTextTest, PasswordCensorship) {
 }
 
 TEST_F(RenderTextTest, GetTextDirection) {
-  const bool was_rtl = base::i18n::IsRTL();
-  // Ensure that text direction is set by the first strong character direction.
+  struct {
+    const wchar_t* text;
+    const base::i18n::TextDirection text_direction;
+  } cases[] = {
+    // Blank strings and those with no/weak directionality default to LTR.
+    { L"",        base::i18n::LEFT_TO_RIGHT },
+    { kWeak,      base::i18n::LEFT_TO_RIGHT },
+    // Strings that begin with strong LTR characters.
+    { kLtr,       base::i18n::LEFT_TO_RIGHT },
+    { kLtrRtl,    base::i18n::LEFT_TO_RIGHT },
+    { kLtrRtlLtr, base::i18n::LEFT_TO_RIGHT },
+    // Strings that begin with strong RTL characters.
+    { kRtl,       base::i18n::RIGHT_TO_LEFT },
+    { kRtlLtr,    base::i18n::RIGHT_TO_LEFT },
+    { kRtlLtrRtl, base::i18n::RIGHT_TO_LEFT },
+  };
+
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  const bool was_rtl = base::i18n::IsRTL();
+
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
     SetRTL(!base::i18n::IsRTL());
+    const base::i18n::TextDirection ui_direction = base::i18n::IsRTL() ?
+        base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
 
-    // Blank strings (and those without directionality) default to LTR.
-    render_text->SetText(string16());
-    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
-    render_text->SetText(ASCIIToUTF16(" "));
-    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
-
-    // Pure LTR.
-    render_text->SetText(ASCIIToUTF16("abc"));
-    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
-    // LTR-RTL
-    render_text->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
-    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
-    // LTR-RTL-LTR.
-    render_text->SetText(WideToUTF16(L"a"L"\x05d1"L"b"));
-    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
-    // Pure RTL.
-    render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2"));
-    EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
-    // RTL-LTR
-    render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2"L"abc"));
-    EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
-    // RTL-LTR-RTL.
-    render_text->SetText(WideToUTF16(L"\x05d0"L"a"L"\x05d1"));
-    EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
+    // Ensure that directionality modes yield the correct text directions.
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(cases); j++) {
+      render_text->SetText(WideToUTF16(cases[j].text));
+      render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_TEXT);
+      EXPECT_EQ(render_text->GetTextDirection(), cases[j].text_direction);
+      render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_UI);
+      EXPECT_EQ(render_text->GetTextDirection(), ui_direction);
+      render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
+      EXPECT_EQ(render_text->GetTextDirection(), base::i18n::LEFT_TO_RIGHT);
+      render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_RTL);
+      EXPECT_EQ(render_text->GetTextDirection(), base::i18n::RIGHT_TO_LEFT);
+    }
   }
+
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
+
+  // Ensure that text changes update the direction for DIRECTIONALITY_FROM_TEXT.
+  render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_TEXT);
+  render_text->SetText(WideToUTF16(kLtr));
+  EXPECT_EQ(render_text->GetTextDirection(), base::i18n::LEFT_TO_RIGHT);
+  render_text->SetText(WideToUTF16(kRtl));
+  EXPECT_EQ(render_text->GetTextDirection(), base::i18n::RIGHT_TO_LEFT);
 }
 
 void RunMoveCursorLeftRightTest(RenderText* render_text,
@@ -731,14 +756,8 @@ TEST_F(RenderTextTest, EdgeSelectionModels) {
 }
 
 TEST_F(RenderTextTest, SelectAll) {
-  const wchar_t* const cases[] = {
-    L"abc",
-    L"a"L"\x5d0\x5d1",
-    L"a"L"\x5d1"L"b",
-    L"\x5d0\x5d1\x5d2",
-    L"\x5d0\x5d1"L"a",
-    L"\x5d0"L"a"L"\x5d1",
-  };
+  const wchar_t* const cases[] =
+      { kWeak, kLtr, kLtrRtl, kLtrRtlLtr, kRtl, kRtlLtr, kRtlLtrRtl };
 
   // Ensure that SelectAll respects the |reversed| argument regardless of
   // application locale and text content directionality.
@@ -749,6 +768,11 @@ TEST_F(RenderTextTest, SelectAll) {
 
   for (size_t i = 0; i < 2; ++i) {
     SetRTL(!base::i18n::IsRTL());
+    // Test that an empty string produces an empty selection model.
+    render_text->SetText(string16());
+    EXPECT_EQ(render_text->selection_model(), SelectionModel());
+
+    // Test the weak, LTR, RTL, and Bidi string cases.
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(cases); j++) {
       render_text->SetText(WideToUTF16(cases[j]));
       render_text->SelectAll(false);
