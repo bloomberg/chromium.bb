@@ -19,6 +19,7 @@
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_illegal.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_memory_protect.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 
 /* To turn on debugging of instruction decoding, change value of
@@ -129,7 +130,6 @@ Bool NaClInstValidates(uint8_t* mbase,
                        NaClPcAddress vbase,
                        NaClInstStruct* inst) {
   NaClSegment segment;
-  NaClInstIter* iter;
   NaClValidatorState* state;
   Bool validates = FALSE;
   NaClCPUFeaturesX86 cpu_features;
@@ -139,18 +139,21 @@ Bool NaClInstValidates(uint8_t* mbase,
                                    &cpu_features);
   do {
     NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
-    iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
-    if (NULL == iter) break;
-    state->cur_inst_state = NaClInstIterGetState(iter);
+    state->cur_iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
+    if (NULL == state->cur_iter) break;
+    state->cur_inst_state = NaClInstIterGetState(state->cur_iter);
     state->cur_inst = NaClInstStateInst(state->cur_inst_state);
     state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
     NaClValidateInstructionLegal(state);
-    NaClSafeSegmentReference(state, iter, NULL);
+    NaClSafeSegmentReference(state, state->cur_iter, NULL);
+    NaClMemoryReferenceValidator(state);
+    NaClBaseRegisterValidator(state);
     validates = NaClValidatesOk(state);
+    NaClInstIterDestroy(state->cur_iter);
+    state->cur_iter = NULL;
     state->cur_inst_state = NULL;
     state->cur_inst = NULL;
     state->cur_inst_vector = NULL;
-    NaClInstIterDestroy(iter);
   } while(0);
   NaClValidatorStateDestroy(state);
   return validates;
