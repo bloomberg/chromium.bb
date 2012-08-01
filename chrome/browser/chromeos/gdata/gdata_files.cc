@@ -175,7 +175,7 @@ GDataEntry* GDataFile::FromDocumentEntry(
     file->file_info_.size = doc->file_size();
     file->file_md5_ = doc->file_md5();
 
-    // The resumable-edit-media link should only be present for regualar
+    // The resumable-edit-media link should only be present for regular
     // files as hosted documents are not uploadable.
     const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_EDIT_MEDIA);
     if (upload_link)

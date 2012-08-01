@@ -159,7 +159,7 @@ class MockGDataUploader : public GDataUploaderInterface {
         DocumentEntry::ExtractAndParse(*value));
     upload_file_info->entry = document_entry.Pass();
 
-    // Run the complection callback.
+    // Run the completion callback.
     const UploadFileInfo::UploadCompletionCallback callback =
         upload_file_info->completion_callback;
     if (!callback.is_null())
@@ -602,7 +602,7 @@ class GDataFileSystemTest : public testing::Test {
         std::string(),
         GDataCache::CACHE_TYPE_PINNED,
         GDataCache::CACHED_FILE_FROM_SERVER);
-    // Check that pin symlink exists, without deferencing to target path.
+    // Check that pin symlink exists, without dereferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (test_util::ToCacheEntry(expected_cache_state_).is_pinned()) {
       EXPECT_TRUE(exists);
@@ -622,7 +622,7 @@ class GDataFileSystemTest : public testing::Test {
         std::string(),
         GDataCache::CACHE_TYPE_OUTGOING,
         GDataCache::CACHED_FILE_FROM_SERVER);
-    // Check that outgoing symlink exists, without deferencing to target path.
+    // Check that outgoing symlink exists, without dereferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (expect_outgoing_symlink_ &&
         test_util::ToCacheEntry(expected_cache_state_).is_dirty()) {
@@ -827,7 +827,7 @@ class GDataFileSystemTest : public testing::Test {
 
   MessageLoopForUI message_loop_;
   // The order of the test threads is important, do not change the order.
-  // See also content/browser/browser_thread_imple.cc.
+  // See also content/browser/browser_thread_impl.cc.
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -1453,7 +1453,7 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
   EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
-// Test the case where the parent of |dest_file_path| is a existing file,
+// Test the case where the parent of |dest_file_path| is an existing file,
 // not a directory.
 TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
   FilePath src_file_path(FILE_PATH_LITERAL("drive/Document 1.gdoc"));

@@ -182,10 +182,10 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       base::PlatformFile* platform_file,
       base::PlatformFileError* truncate_result);
 
-  // GDataFileSystemProxy is owned by Profile, which outlives
-  // GDataFileSystemProxy, which is owned by CrosMountPointProvider (i.e. by
-  // the time Profile is removed, the file manager is already gone). Hence
-  // it's safe to use this as a raw pointer.
+  // GDataFileSystem is owned by Profile, which outlives GDataFileSystemProxy,
+  // which is owned by CrosMountPointProvider (i.e. by the time Profile is
+  // removed, the file manager is already gone). Hence it's safe to use this as
+  // a raw pointer.
   GDataFileSystemInterface* file_system_;
 };
 

@@ -33,7 +33,7 @@ namespace {
 const char kGDataRootDirectory[] = "drive";
 const char kFeedField[] = "feed";
 
-// Helper function that creates platform file on bocking IO thread pool.
+// Helper function that creates platform file on blocking IO thread pool.
 void OpenPlatformFileOnIOPool(const FilePath& local_path,
                                 int file_flags,
                                 base::PlatformFile* platform_file,

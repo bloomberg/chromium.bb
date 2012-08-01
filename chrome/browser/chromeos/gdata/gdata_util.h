@@ -23,7 +23,7 @@ namespace util {
 
 // Path constants.
 
-// The extention for dirty files. The file names look like
+// The extension for dirty files. The file names look like
 // "<resource-id>.local".
 const char kLocallyModifiedFileExtension[] = "local";
 // The extension for mounted files. The file names look like

@@ -168,7 +168,7 @@ class GDataCache {
   void GetResourceIdsOfBacklogOnUIThread(
       const GetResourceIdsOfBacklogCallback& callback);
 
-  // Gets the resource IDs of all exsiting (i.e. cached locally) pinned
+  // Gets the resource IDs of all existing (i.e. cached locally) pinned
   // files, including pinned dirty files.
   //
   // Must be called on UI thread. |callback| is run on UI thread.

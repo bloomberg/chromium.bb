@@ -65,13 +65,13 @@ typedef struct {
 SerializationTimetable kSerializeTimetable[] = {
 #ifndef NDEBUG
     {0.5, 0},    // Less than 0.5MB, dump immediately.
-    {-1,  1},    // Any size, dump if older than 1 minue.
+    {-1,  1},    // Any size, dump if older than 1 minute.
 #else
     {0.5, 0},    // Less than 0.5MB, dump immediately.
     {1.0, 15},   // Less than 1.0MB, dump after 15 minutes.
     {2.0, 30},
     {4.0, 60},
-    {-1,  120},  // Any size, dump if older than 120 minues.
+    {-1,  120},  // Any size, dump if older than 120 minutes.
 #endif
 };
 

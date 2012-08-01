@@ -69,7 +69,7 @@ int64 GetAmountOfFreeDiskSpace() {
 // bytes, while keeping kMinFreeSpace bytes on the disk.
 bool HasEnoughSpaceFor(int64 num_bytes) {
   int64 free_space = GetAmountOfFreeDiskSpace();
-  // Substract this as if this portion does not exist.
+  // Subtract this as if this portion does not exist.
   free_space -= kMinFreeSpace;
   return (free_space >= num_bytes);
 }
@@ -95,7 +95,7 @@ void InitCachePaths(const std::vector<FilePath>& cache_paths) {
 }
 
 // Remove all files under the given directory, non-recursively.
-// Do not remove recursively as we don't want to touch <gache>/tmp/downloads,
+// Do not remove recursively as we don't want to touch <gcache>/tmp/downloads,
 // which is used for user initiated downloads like "Save As"
 void RemoveAllFiles(const FilePath& directory) {
   using file_util::FileEnumerator;
