@@ -27,31 +27,134 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Android runs a fairly new Linux kernel, so signal info is there,
-// but the NDK doesn't have the structs defined, so define
-// them here.
-// Adapted from platform-linux.cc in V8
-
+// Only recent versions of Android's C library correctly define the
+// required types for ucontext_t handling. This header provides a
+// custom declarations that will work when Google Breakpad is built
+// against any version of the NDK or platform headers, and work on
+// any version of the system.
+//
+// See http://code.google.com/p/android/issues/detail?id=34784
+//
 #ifndef GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_
 #define GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_
 
-#include <android/api-level.h>
 #include <signal.h>
+#include <stdint.h>
 
-// <signal.h> didn't include <asm/sigcontext.h> before API level 8.
-// It is used to define struct sigcontext properly.
-#if defined(__arm__) && __ANDROID_API__ < 8
+#ifndef __BIONIC_HAVE_UCONTEXT_T
+
+#if defined(__arm__)
+
+// Ensure that 'struct sigcontext' is defined.
 #include <asm/sigcontext.h>
-#endif
-
-typedef uint32_t __sigset_t;
 typedef struct sigcontext mcontext_t;
+
 typedef struct ucontext {
   uint32_t uc_flags;
   struct ucontext* uc_link;
   stack_t uc_stack;
   mcontext_t uc_mcontext;
-  __sigset_t uc_sigmask;
+  // Other fields are not used by Google Breakpad. Don't define them.
 } ucontext_t;
+
+#elif defined(__i386__)
+
+/* 80-bit floating-point register */
+struct _libc_fpreg {
+  unsigned short significand[4];
+  unsigned short exponent;
+};
+
+/* Simple floating-point state, see FNSTENV instruction */
+struct _libc_fpstate {
+  unsigned long cw;
+  unsigned long sw;
+  unsigned long tag;
+  unsigned long ipoff;
+  unsigned long cssel;
+  unsigned long dataoff;
+  unsigned long datasel;
+  struct _libc_fpreg _st[8];
+  unsigned long status;
+};
+
+typedef struct {
+  uint32_t gregs[19];
+  struct _libc_fpstate* fpregs;
+  uint32_t oldmask;
+  uint32_t cr2;
+} mcontext_t;
+
+enum {
+  REG_GS = 0,
+  REG_FS,
+  REG_ES,
+  REG_DS,
+  REG_EDI,
+  REG_ESI,
+  REG_EBP,
+  REG_ESP,
+  REG_EBX,
+  REG_EDX,
+  REG_ECX,
+  REG_EAX,
+  REG_TRAPNO,
+  REG_ERR,
+  REG_EIP,
+  REG_CS,
+  REG_EFL,
+  REG_UESP,
+  REG_SS,
+  REG_ES,
+  REG_ES,
+  REG_ES,
+  REG_ES,
+};
+
+typedef struct ucontext {
+  uint32_t uc_flags;
+  struct ucontext* uc_link;
+  stack_t uc_stack;
+  mcontext_t uc_mcontext;
+  // Other fields are not used by Google Breakpad. Don't define them.
+} ucontext_t;
+
+#elif defined(__mips__)
+
+// Not supported by Google Breakpad at this point, but just in case.
+typedef struct {
+  uint32_t regmask;
+  uint32_t status;
+  uint64_t pc;
+  uint64_t gregs[32];
+  uint64_t fpregs[32];
+  uint32_t acx;
+  uint32_t fpc_csr;
+  uint32_t fpc_eir;
+  uint32_t used_math;
+  uint32_t dsp;
+  uint64_t mdhi;
+  uint64_t mdlo;
+  uint32_t hi1;
+  uint32_t lo1;
+  uint32_t hi2;
+  uint32_t lo2;
+  uint32_t hi3;
+  uint32_t lo3;
+} mcontext_t;
+
+typedef struct ucontext {
+  uint32_t uc_flags;
+  struct ucontext* uc_link;
+  stack_t uc_stack;
+  mcontext_t uc_mcontext;
+  // Other fields are not used by Google Breakpad. Don't define them.
+} ucontext_t;
+
+#else
+#  error "Unsupported Android CPU ABI!"
+#endif
+
+#endif  // !__BIONIC_HAVE_UCONTEXT_T
 
 #endif  // GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_
