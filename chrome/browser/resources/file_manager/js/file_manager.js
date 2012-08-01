@@ -3153,7 +3153,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.findListItemForEvent_ = function(event) {
-    return this.findListItemForNode_(event.srcElement);
+    return this.findListItemForNode_(event.touchedElement || event.srcElement);
   };
 
   FileManager.prototype.findListItemForNode_ = function(node) {
