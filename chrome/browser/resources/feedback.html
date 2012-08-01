@@ -18,7 +18,7 @@
   <div id="content">
     <span id="description" colspan="2" i18n-content="description"></span>
     <textarea id="description-text" rows="10"></textarea>
-    <div id="page-url" class="checkbox">
+    <div id="page-url" class="input-text-container checkbox">
       <label>
         <input id="page-url-checkbox" type="checkbox"
             value="pageurl" checked>
@@ -26,19 +26,17 @@
       </label>
       <input id="page-url-text">
     </div>
-<if expr="pp_ifdef('chromeos')">
     <!-- User e-mail -->
-    <div id="user-email-table">
-      <div class="checkbox">
-        <label>
-          <input id="user-email-checkbox" type="checkbox" checked>
-          <span id="user-email-label" i18n-content="user-email"></span>
-        </label>
-        <span id="user-email-text"></span>
-      </div>
+    <div id="user-email" class="input-text-container checkbox">
+      <label>
+        <input id="user-email-checkbox" type="checkbox" checked>
+        <span id="user-email-label" i18n-content="user-email"></span>
+      </label>
+      <input id="user-email-text">
     </div>
+<if expr="pp_ifdef('chromeos')">
     <!-- System Information -->
-    <div class="feedback-fieldlabel checkbox">
+    <div class="checkbox">
       <label>
         <input id="sys-info-checkbox" type="checkbox" checked>
         <span id="sysinfo-label">
@@ -49,7 +47,7 @@
 </if>
     <!-- Screenshot -->
     <div id="screenshot-row" hidden>
-      <div class="feedback-fieldlabel checkbox">
+      <div class="checkbox">
         <label>
           <input id="screenshot-checkbox" type="checkbox">
           <span id="screenshot-label-current"
@@ -59,7 +57,7 @@
               i18n-content="saved-screenshot" hidden></span>
         </label>
         <a id="screenshot-link-tosaved" href="#"
-            i18n-content="choose-different-screenshot">
+            i18n-content="choose-different-screenshot" hidden>
         </a>
         <a id="screenshot-link-tocurrent" href="#"
             i18n-content="choose-original-screenshot" hidden>

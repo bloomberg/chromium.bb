@@ -101,19 +101,19 @@ function sendReport() {
   var pageUrl = $('page-url-text').value;
   if (!$('page-url-checkbox').checked)
     pageUrl = '';
+  var userEmail = $('user-email-text').value;
+  if (!$('user-email-checkbox').checked)
+    userEmail = '';
 
   var reportArray = [pageUrl,
                      categoryTag,
                      $('description-text').value,
+                     userEmail,
                      imagePath];
 
   // Add chromeos data if it exists.
-  if ($('user-email-text') && $('sys-info-checkbox')) {
-    var userEmail = $('user-email-text').textContent;
-    if (!$('user-email-checkbox').checked)
-      userEmail = '';
-    reportArray = reportArray.concat([userEmail,
-                                      String($('sys-info-checkbox').checked)]);
+  if ($('sys-info-checkbox')) {
+    reportArray = reportArray.concat([String($('sys-info-checkbox').checked)]);
   }
 
   // open the landing page in a new tab, sendReport will close this one.
@@ -282,23 +282,15 @@ function setupDialogDefaults(defaults) {
     $('page-url-text').value = defaults.currentUrl;
   if (defaults.currentUrl == '')
     $('page-url-checkbox').checked = false;
+  // User e-mail.
+  $('user-email-text').value = defaults.userEmail;
 
   // Are screenshots disabled?
   if (!defaults.disableScreenshots)
     enableScreenshots();
 
-  // User e-mail.
-  if ($('user-email-text')) {
-    // We're in Chromium OS.
-    $('user-email-text').textContent = defaults.userEmail;
-    if (defaults.userEmail == '') {
-      // if we didn't get an e-mail address from cros,
-      // disable the user email display totally.
-      $('user-email-table').hidden = true;
-
-      // this also means we are in privacy mode, so no saved screenshots.
-      $('screenshot-link-tosaved').hidden = true;
-    }
+  if (defaults.useSaved) {
+    $('screenshot-link-tosaved').hidden = false;
   }
 }
 

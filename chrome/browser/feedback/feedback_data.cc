@@ -31,9 +31,9 @@ void FeedbackData::UpdateData(Profile* profile,
                                const std::string& category_tag,
                                const std::string& page_url,
                                const std::string& description,
+                               const std::string& user_email,
                                ScreenshotDataPtr image
 #if defined(OS_CHROMEOS)
-                               , const std::string& user_email
                                , const bool send_sys_info
                                , const bool sent_report
                                , const std::string& timestamp
@@ -45,9 +45,9 @@ void FeedbackData::UpdateData(Profile* profile,
   category_tag_ = category_tag;
   page_url_ = page_url;
   description_ = description;
+  user_email_ = user_email;
   image_ = image;
 #if defined(OS_CHROMEOS)
-  user_email_ = user_email;
   send_sys_info_ = send_sys_info;
   sent_report_ = sent_report;
   timestamp_ = timestamp;
@@ -69,11 +69,11 @@ void FeedbackData::SendReport() {
                             , category_tag_
                             , page_url_
                             , description_
+                            , user_email_
                             , image_
                             , screen_size.width()
                             , screen_size.height()
 #if defined(OS_CHROMEOS)
-                            , user_email_
                             , zip_content_ ? zip_content_->c_str() : NULL
                             , zip_content_ ? zip_content_->length() : 0
                             , send_sys_info_ ? sys_info_ : NULL

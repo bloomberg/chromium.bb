@@ -68,11 +68,11 @@ class FeedbackUtil {
       , const std::string& category_tag
       , const std::string& page_url_text
       , const std::string& description
+      , const std::string& user_email_text
       , ScreenshotDataPtr png_data
       , int png_width
       , int png_height
 #if defined(OS_CHROMEOS)
-      , const std::string& user_email_text
       , const char* zipped_logs_data
       , int zipped_logs_length
       , const chromeos::system::LogDictionaryType* const sys_info

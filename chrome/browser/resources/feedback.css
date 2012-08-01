@@ -30,23 +30,21 @@
   width: 100%;
 }
 
-#page-url {
+.input-text-container {
   -webkit-box-align: baseline;
   display: -webkit-box;
 }
 
-#page-url-text {
-  /* Don't push checkboxes out of alignment with bulky input. */
-  margin-bottom: -0.25em;
-}
-
-#page-url > label {
+.input-text-container > label {
   -webkit-margin-end: 1em;
+  width: 150px;
 }
 
-#page-url-text {
+.input-text-container > input {
   -webkit-box-flex: 1;
   display: block;
+  /* Don't push checkboxes out of alignment with bulky input. */
+  margin-bottom: -0.25em;
 }
 
 .thumbnail-list {

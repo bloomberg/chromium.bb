@@ -22,6 +22,9 @@
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -112,6 +115,20 @@ std::string GetUserEmail() {
     return std::string();
   else
     return manager->GetLoggedInUser().display_email();
+}
+
+#else
+
+std::string GetUserEmail() {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile)
+    return std::string();
+
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  if (!signin)
+    return std::string();
+
+  return signin->GetAuthenticatedUsername();
 }
 
 #endif  // OS_CHROMEOS
@@ -252,8 +269,9 @@ ChromeWebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
                              IDS_FEEDBACK_SCREENSHOT_LABEL);
   source->AddLocalizedString("saved-screenshot",
                              IDS_FEEDBACK_SAVED_SCREENSHOT_LABEL);
-#if defined(OS_CHROMEOS)
   source->AddLocalizedString("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
+
+#if defined(OS_CHROMEOS)
   source->AddLocalizedString("sysinfo",
                              IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX);
   source->AddLocalizedString("currentscreenshots",
@@ -453,6 +471,10 @@ void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
       "disableScreenshots",
       g_browser_process->local_state()->GetBoolean(prefs::kDisableScreenshots));
 
+  // User e-mail
+  std::string user_email = GetUserEmail();
+  dialog_defaults.SetString("userEmail", user_email);
+
 #if defined(OS_CHROMEOS)
   // Trigger the request for system information here.
   chromeos::system::SyslogsProvider* provider =
@@ -465,8 +487,10 @@ void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
         base::Bind(&FeedbackData::SyslogsComplete,
                    base::Unretained(feedback_data_)));
   }
-  // User e-mail
-  dialog_defaults.SetString("userEmail", GetUserEmail());
+
+  // On ChromeOS if the user's email is blank, it means we don't
+  // have a logged in user, hence don't use saved screenshots.
+  dialog_defaults.SetBoolean("useSaved", !user_email.empty());
 #endif
 
   web_ui()->CallJavascriptFunction("setupDialogDefaults", dialog_defaults);
@@ -508,7 +532,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
 #if defined(OS_CHROMEOS)
   if (list_value->GetSize() != 6) {
 #else
-  if (list_value->GetSize() != 4) {
+  if (list_value->GetSize() != 5) {
 #endif
     LOG(ERROR) << "Feedback data corrupt! Feedback not sent.";
     return;
@@ -521,6 +545,8 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   (*i++)->GetAsString(&category_tag);
   std::string description;
   (*i++)->GetAsString(&description);
+  std::string user_email;
+  (*i++)->GetAsString(&user_email);
   std::string screenshot_path;
   (*i++)->GetAsString(&screenshot_path);
   screenshot_path.erase(0, strlen(kScreenshotBaseUrl));
@@ -531,8 +557,6 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
     image_ptr = screenshot_source_->GetCachedScreenshot(screenshot_path);
 
 #if defined(OS_CHROMEOS)
-  std::string user_email;
-  (*i++)->GetAsString(&user_email);
   std::string sys_info_checkbox;
   (*i++)->GetAsString(&sys_info_checkbox);
   bool send_sys_info = (sys_info_checkbox == "true");
@@ -548,9 +572,9 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
                                , std::string()
                                , page_url
                                , description
+                               , user_email
                                , image_ptr
 #if defined(OS_CHROMEOS)
-                               , user_email
                                , send_sys_info
                                , false  // sent_report
                                , timestamp_
