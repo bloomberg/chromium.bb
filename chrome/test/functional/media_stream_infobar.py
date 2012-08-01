@@ -5,9 +5,10 @@
 
 import pyauto_functional
 import pyauto
+import webrtc_test_base
 
 
-class MediaStreamInfobarTest(pyauto.PyUITest):
+class MediaStreamInfobarTest(webrtc_test_base.WebrtcTestBase):
   """Performs basic tests on the media stream infobar.
 
   This infobar is used to grant or deny access to WebRTC capabilities for a
@@ -73,8 +74,9 @@ class MediaStreamInfobarTest(pyauto.PyUITest):
 
     self.WaitForInfobarCount(1)
     self.PerformActionOnInfobar(with_action, infobar_index=0)
+    self.WaitForGetUserMediaResult(tab_index=0)
 
-    return self.ExecuteJavascript('obtainGetUserMediaResult()')
+    return self.GetUserMediaResult(tab_index=0)
 
 
 if __name__ == '__main__':

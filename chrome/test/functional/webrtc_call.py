@@ -5,18 +5,16 @@
 
 import os
 import subprocess
-import time
-import unittest
 
 import pyauto_functional
 import pyauto
-
+import webrtc_test_base
 
 class MissingRequiredBinaryException(Exception):
   pass
 
 
-class WebRTCCallTest(pyauto.PyUITest):
+class WebRTCCallTest(webrtc_test_base.WebrtcTestBase):
   """Test we can set up a WebRTC call and disconnect it.
 
   Prerequisites: This test case must run on a machine with a webcam, either
@@ -149,9 +147,9 @@ class WebRTCCallTest(pyauto.PyUITest):
 
     self.WaitForInfobarCount(1, tab_index=tab_index)
     self.PerformActionOnInfobar(action, infobar_index=0, tab_index=tab_index)
-    self._WaitForGetUserMediaResult(tab_index=0)
+    self.WaitForGetUserMediaResult(tab_index=0)
 
-    result = self._GetUserMediaResult(tab_index=0)
+    result = self.GetUserMediaResult(tab_index=0)
     self._AssertNoFailures(tab_index)
     return result
 
@@ -183,16 +181,6 @@ class WebRTCCallTest(pyauto.PyUITest):
   def _Disconnect(self, tab_index):
     self.assertEquals('ok-disconnected', self.ExecuteJavascript(
         'disconnect()', tab_index=tab_index))
-
-  def _WaitForGetUserMediaResult(self, tab_index):
-    def HasResult():
-      return self._GetUserMediaResult(tab_index) != 'not-called-yet'
-    self.assertTrue(self.WaitUntil(HasResult),
-                    msg='Timed out while waiting for getUserMedia callback.')
-
-  def _GetUserMediaResult(self, tab_index):
-    return self.ExecuteJavascript(
-        'obtainGetUserMediaResult()', tab_index=tab_index)
 
   def _StartDetectingVideo(self, tab_index, video_element):
     self.assertEquals('ok-started', self.ExecuteJavascript(
