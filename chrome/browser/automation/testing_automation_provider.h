@@ -290,6 +290,19 @@ class TestingAutomationProvider : public AutomationProvider,
       base::DictionaryValue* args,
       IPC::Message* reply_message);
 
+  // Open a new browser window.
+  // Uses the JSON interface for input/output.
+  void OpenNewBrowserWindow(base::DictionaryValue* args,
+                            IPC::Message* reply_message);
+  // Close a browser window.
+  // Uses the JSON interface for input/output.
+  void CloseBrowserWindow(base::DictionaryValue* args,
+                          IPC::Message* reply_message);
+  // Reset to the default theme.
+  // Uses the JSON interface for input/output.
+  void ResetToDefaultTheme(base::DictionaryValue* args,
+                           IPC::Message* reply_message);
+
   // Get info about multi-profile users.
   // Uses the JSON interface for input/output.
   void GetMultiProfileInfo(
@@ -305,6 +318,10 @@ class TestingAutomationProvider : public AutomationProvider,
   // Uses the JSON interface for input/output.
   void GetBrowserInfo(base::DictionaryValue* args,
                       IPC::Message* reply_message);
+
+  // Get the browser window count. Uses the JSON interface.
+  void GetBrowserWindowCountJSON(base::DictionaryValue* args,
+                                 IPC::Message* reply_message);
 
   // Get info about browser-related processes that currently exist.
   void GetProcessInfo(base::DictionaryValue* args,
@@ -616,6 +633,20 @@ class TestingAutomationProvider : public AutomationProvider,
   void FindInPage(Browser* browser,
                   base::DictionaryValue* args,
                   IPC::Message* reply_message);
+
+  // Opens the find request dialogue in the given browser.
+  // Example:
+  //   input: { "windex": 1 }
+  //   output: none
+  void OpenFindInPage(base::DictionaryValue* args,
+                      IPC::Message* reply_message);
+
+  // Returns whether the find request dialogue is visible in the given browser.
+  // Example:
+  //   input: { "windex": 1 }
+  //   output: { "is_visible": true }
+  void IsFindInPageVisible(base::DictionaryValue* args,
+                           IPC::Message* reply_message);
 
   // Returns information about translation for a given tab. Includes
   // information about the translate bar if it is showing.
@@ -1659,9 +1690,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void WaitForInfoBarCount(int tab_handle,
                            size_t target_count,
                            IPC::Message* reply_message);
-
-  // Resets to the default theme.
-  void ResetToDefaultTheme();
 
   void WaitForProcessLauncherThreadToGoIdle(IPC::Message* reply_message);
 

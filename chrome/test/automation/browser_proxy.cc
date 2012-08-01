@@ -205,14 +205,6 @@ bool BrowserProxy::WaitForTabToBecomeActive(int tab,
   return false;
 }
 
-bool BrowserProxy::OpenFindInPage() {
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_OpenFindInPage(handle_));
-  // This message expects no response.
-}
-
 bool BrowserProxy::IsFindWindowFullyVisible(bool* is_visible) {
   if (!is_valid())
     return false;

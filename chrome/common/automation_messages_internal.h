@@ -500,7 +500,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WindowExecuteCommand,
 
 // This message opens the Find window within a tab corresponding to the
 // supplied tab handle.
-IPC_MESSAGE_CONTROL1(AutomationMsg_OpenFindInPage,
+IPC_MESSAGE_CONTROL1(AutomationMsg_DEPRECATED_OpenFindInPage,
                      int /* tab_handle */)
 
 // Posts a message from external host to chrome renderer.
@@ -863,7 +863,7 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_SendJSONRequestWithBrowserHandle,
                             bool /* success */)
 
 // Resets to the default theme.
-IPC_SYNC_MESSAGE_CONTROL0_0(AutomationMsg_ResetToDefaultTheme)
+IPC_SYNC_MESSAGE_CONTROL0_0(AutomationMsg_DEPRECIATED_ResetToDefaultTheme)
 
 // This message requests the external tab identified by the tab handle
 // passed in be closed.

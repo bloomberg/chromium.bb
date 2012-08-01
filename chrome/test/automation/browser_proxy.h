@@ -106,10 +106,6 @@ class BrowserProxy : public AutomationResourceProxy {
       int tab,
       base::TimeDelta wait_timeout) WARN_UNUSED_RESULT;
 
-  // Opens the FindInPage box. Note: If you just want to search within a tab
-  // you don't need to call this function, just use FindInPage(...) directly.
-  bool OpenFindInPage() WARN_UNUSED_RESULT;
-
   // Returns whether the Find window is fully visible If animating, |is_visible|
   // will be false. Returns false on failure.
   bool IsFindWindowFullyVisible(bool* is_visible) WARN_UNUSED_RESULT;

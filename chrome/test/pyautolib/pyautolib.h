@@ -69,22 +69,7 @@ class PyUITestBase : public UITestBase {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  // Open the Find box
-  void OpenFindInPage(int window_index = 0);
-
-  // Determines the visibility of the Find box
-  bool IsFindInPageVisible(int window_index = 0);
-
   // AutomationProxy methods
-
-  // Open a new browser window. Returns false on failure.
-  bool OpenNewBrowserWindow(bool show);
-
-  // Close a browser window. Returns false on failure.
-  bool CloseBrowserWindow(int window_index);
-
-  // Fetch the number of browser windows. Includes popups.
-  int GetBrowserWindowCount();
 
   // Returns bookmark bar visibility state.
   bool GetBookmarkBarVisibility();
@@ -138,9 +123,6 @@ class PyUITestBase : public UITestBase {
   std::string _SendJSONRequest(int window_index,
                                const std::string& request,
                                int timeout);
-
-  // Resets to the default theme. Returns true on success.
-  bool ResetToDefaultTheme();
 
   // Sets a cookie value for a url. Returns true on success.
   bool SetCookie(const GURL& cookie_url, const std::string& value,

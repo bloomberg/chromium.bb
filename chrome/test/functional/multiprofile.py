@@ -210,8 +210,8 @@ class MultiprofileTest(pyauto.PyUITest):
     self.assertEqual('chrome://newtab/', info['windows'][2]['tabs'][0]['url'])
     self._SetStartUpPage('http://www.yahoo.com', windex=2)
     # Exit Profile 1 / Profile 2
-    self.CloseBrowserWindow(1)
     self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
     # Relaunch Browser with Profile 2, verify startup page.
     self._AssertStartUpPage('http://www.yahoo.com', profile='Profile 2')
     # Relaunch Browser with Profile 1, verify startup page.
@@ -228,8 +228,8 @@ class MultiprofileTest(pyauto.PyUITest):
     self.OpenNewBrowserWindowWithNewProfile()
     self._SetHomePage('http://www.yahoo.com', windex=2)
     # Exit Profile 1 / Profile 2
-    self.CloseBrowserWindow(1)
     self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
     # Relaunch Browser with Profile 2, verify startup page.
     self._AssertHomePage('http://www.yahoo.com', profile='Profile 2')
     # Relaunch Browser with Profile 1, verify startup page.
@@ -247,8 +247,8 @@ class MultiprofileTest(pyauto.PyUITest):
     self.OpenNewBrowserWindowWithNewProfile()
     self._SetSessionRestoreURLs(self._RESTORE_DEFAULT_URL_VALUE, windex=2)
     # Exit Profile 1 / Profile 2
-    self.CloseBrowserWindow(1)
     self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
     # Relaunch Browser with Profile 1, verify session restores on startup.
     url_list = ['http://www.google.com/', 'http://news.google.com/']
     self._AssertSessionRestore(url_list, self._RESTORE_LASTOPEN_URL_VALUE,
@@ -269,8 +269,8 @@ class MultiprofileTest(pyauto.PyUITest):
     # Launch browser with new Profile 2.
     self.OpenNewBrowserWindowWithNewProfile()
     # Exit Profile 1 / Profile 2
-    self.CloseBrowserWindow(1)
     self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
     # Relaunch Browser with Profile 1, verify instant search is enabled.
     self.AppendBrowserLaunchSwitch('--profile-directory=Profile 1')
     self.RestartBrowser(clear_profile=False)
@@ -296,8 +296,8 @@ class MultiprofileTest(pyauto.PyUITest):
         '&utm_source=opensearch', 2)
     self.MakeSearchEngineDefault('youtube.com', windex=2)
     # Exit Profile 1 / Profile 2
-    self.CloseBrowserWindow(1)
     self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
     # Relaunch Browser with Profile 1, verify default search engine as 'Hulu'.
     self._AssertDefaultSearchEngine('hulu.com', profile='Profile 1')
     # Relaunch Browser with Profile 2, verify default search engine as
@@ -316,9 +316,8 @@ class MultiprofileTest(pyauto.PyUITest):
     self._AddSearchEngine('foo', 'foo.com', 'http://foo/?q=%s', windex=2)
     # Delete search engine 'foo.com' from Profile 1 and exit.
     self.DeleteSearchEngine('foo.com', windex=1)
-    self.CloseBrowserWindow(1)
-    # Exit Profile 2
     self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
     # Relaunch Browser with Profile 1, verify search engine 'foo.com'
     # is deleted.
     self.AppendBrowserLaunchSwitch('--profile-directory=Profile 1')

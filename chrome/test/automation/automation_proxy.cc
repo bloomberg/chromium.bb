@@ -466,10 +466,6 @@ bool AutomationProxy::EndTracing(std::string* json_trace_output) {
   return true;
 }
 
-bool AutomationProxy::ResetToDefaultTheme() {
-  return Send(new AutomationMsg_ResetToDefaultTheme());
-}
-
 bool AutomationProxy::SendJSONRequest(const std::string& request,
                                       int timeout_ms,
                                       std::string* response) {

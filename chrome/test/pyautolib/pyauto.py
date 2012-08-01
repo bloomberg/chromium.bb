@@ -1270,6 +1270,51 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
+  def GetBrowserWindowCount(self):
+    """Get the browser window count.
+
+    Args:
+      None.
+
+    Returns:
+      Integer count of the number of browser windows. Includes popups.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {'command': 'GetBrowserWindowCount'}
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['count']
+
+  def OpenNewBrowserWindow(self, show):
+    """Create a new browser window.
+
+    Args:
+      show: Boolean indicating whether to show the window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'OpenNewBrowserWindow',
+        'show': show,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def CloseBrowserWindow(self, windex=0):
+    """Create a new browser window.
+
+    Args:
+      windex: Index of the browser window to close; defaults to 0.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'CloseBrowserWindow',
+        'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
   def AppendTab(self, url, windex=0):
     """Append a new tab.
 
@@ -3205,6 +3250,21 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def ResetToDefaultTheme(self, windex=0):
+    """Reset to default theme.
+
+    Args:
+      windex: Index of the window to reset; defaults to 0.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'ResetToDefaultTheme',
+      'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
   def SetTheme(self, crx_file_path, windex=0):
     """Installs the given theme synchronously.
 
@@ -3405,6 +3465,40 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex,
                                           timeout=timeout)
+
+  def OpenFindInPage(self, windex=0):
+    """Opens the "Find in Page" box.
+
+    Args:
+      windex: Index of the window; defaults to 0.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'OpenFindInPage',
+      'windex' : windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def IsFindInPageVisible(self, windex=0):
+    """Returns the visibility of the "Find in Page" box.
+
+    Args:
+      windex: Index of the window; defaults to 0.
+
+    Returns:
+      A boolean indicating the visibility state of the "Find in Page" box.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'IsFindInPageVisible',
+      'windex' : windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['is_visible']
+
 
   def AddDomEventObserver(self, event_name='', automation_id=-1,
                           recurring=False):

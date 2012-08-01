@@ -411,8 +411,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ActionOnSSLBlockingPage,
                                     ActionOnSSLBlockingPage)
     IPC_MESSAGE_HANDLER(AutomationMsg_BringBrowserToFront, BringBrowserToFront)
-    IPC_MESSAGE_HANDLER(AutomationMsg_OpenFindInPage,
-                        HandleOpenFindInPageRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_FindWindowVisibility,
                         GetFindWindowVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_BookmarkBarVisibility,
@@ -451,7 +449,6 @@ bool TestingAutomationProvider::OnMessageReceived(
                                     WaitForTabCountToBecome)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForInfoBarCount,
                                     WaitForInfoBarCount)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_WaitForProcessLauncherThreadToGoIdle,
         WaitForProcessLauncherThreadToGoIdle)
@@ -1164,6 +1161,45 @@ void TestingAutomationProvider::OpenNewBrowserWindowOfType(
     browser->window()->Show();
 }
 
+void TestingAutomationProvider::OpenNewBrowserWindow(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  bool show;
+  if (!args->GetBoolean("show", &show)) {
+    reply.SendError("'show' missing or invalid.");
+    return;
+  }
+  new BrowserOpenedNotificationObserver(this, reply_message, true);
+  Browser* browser = new Browser(
+      Browser::CreateParams(Browser::TYPE_TABBED, profile_));
+  chrome::AddBlankTab(browser, true);
+  if (show)
+    browser->window()->Show();
+}
+
+void TestingAutomationProvider::GetBrowserWindowCountJSON(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  DictionaryValue dict;
+  dict.SetInteger("count", static_cast<int>(BrowserList::size()));
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::CloseBrowserWindow(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
+  new BrowserClosedNotificationObserver(browser, this, reply_message, true);
+  browser->window()->Close();
+}
+
 void TestingAutomationProvider::OpenProfileWindow(
     base::DictionaryValue* args, IPC::Message* reply_message) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1310,14 +1346,6 @@ void TestingAutomationProvider::BringBrowserToFront(int browser_handle,
     Browser* browser = browser_tracker_->GetResource(browser_handle);
     browser->window()->Activate();
     *success = true;
-  }
-}
-
-void TestingAutomationProvider::HandleOpenFindInPageRequest(
-    const IPC::Message& message, int handle) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    chrome::FindInPage(browser, false, false);
   }
 }
 
@@ -1614,6 +1642,10 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::GetActiveTabIndexJSON;
   handler_map_["AppendTab"] =
       &TestingAutomationProvider::AppendTabJSON;
+  handler_map_["OpenNewBrowserWindow"] =
+      &TestingAutomationProvider::OpenNewBrowserWindow;
+  handler_map_["CloseBrowserWindow"] =
+      &TestingAutomationProvider::CloseBrowserWindow;
   handler_map_["WaitUntilNavigationCompletes"] =
       &TestingAutomationProvider::WaitUntilNavigationCompletes;
   handler_map_["GetLocalStatePrefsInfo"] =
@@ -1640,6 +1672,10 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::GoBack;
   handler_map_["Reload"] =
       &TestingAutomationProvider::ReloadJSON;
+  handler_map_["OpenFindInPage"] =
+      &TestingAutomationProvider::OpenFindInPage;
+  handler_map_["IsFindInPageVisible"] =
+      &TestingAutomationProvider::IsFindInPageVisible;
   handler_map_["CaptureEntirePage"] =
       &TestingAutomationProvider::CaptureEntirePageJSON;
   handler_map_["SetDownloadShelfVisible"] =
@@ -1706,6 +1742,8 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::IsPageActionVisible;
   handler_map_["CreateNewAutomationProvider"] =
       &TestingAutomationProvider::CreateNewAutomationProvider;
+  handler_map_["GetBrowserWindowCount"] =
+      &TestingAutomationProvider::GetBrowserWindowCountJSON;
   handler_map_["GetBrowserInfo"] =
       &TestingAutomationProvider::GetBrowserInfo;
   handler_map_["GetTabInfo"] =
@@ -1912,6 +1950,8 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::GetBlockedPopupsInfo;
   browser_handler_map_["UnblockAndLaunchBlockedPopup"] =
       &TestingAutomationProvider::UnblockAndLaunchBlockedPopup;
+  handler_map_["ResetToDefaultTheme"] =
+      &TestingAutomationProvider::ResetToDefaultTheme;
 
   // SetTheme() implemented using InstallExtension().
   browser_handler_map_["GetThemeInfo"] =
@@ -3800,6 +3840,39 @@ void TestingAutomationProvider::FindInPage(
                   match_case,
                   find_next,
                   reply_message);
+}
+
+void TestingAutomationProvider::OpenFindInPage(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
+  chrome::FindInPage(browser, false, false);
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::IsFindInPageVisible(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  bool visible;
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
+  FindBarTesting* find_bar =
+      browser->GetFindBarController()->find_bar()->GetFindBarTesting();
+  find_bar->GetFindBarWindowInfo(NULL, &visible);
+  DictionaryValue dict;
+  dict.SetBoolean("is_visible", visible);
+  reply.SendSuccess(&dict);
 }
 
 // See GetTranslateInfo() in chrome/test/pyautolib/pyauto.py for sample json
@@ -6954,6 +7027,20 @@ void TestingAutomationProvider::ActivateTabJSON(
   reply.SendSuccess(NULL);
 }
 
+void TestingAutomationProvider::ResetToDefaultTheme(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
+  ThemeServiceFactory::GetForProfile(browser->profile())->UseDefaultTheme();
+  reply.SendSuccess(NULL);
+}
+
 void TestingAutomationProvider::IsPageActionVisible(
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -7070,10 +7157,6 @@ void TestingAutomationProvider::WaitForInfoBarCount(
   // The delegate will delete itself.
   new InfoBarCountObserver(this, reply_message,
       TabContents::FromWebContents(controller->GetWebContents()), target_count);
-}
-
-void TestingAutomationProvider::ResetToDefaultTheme() {
-  ThemeServiceFactory::GetForProfile(profile_)->UseDefaultTheme();
 }
 
 void TestingAutomationProvider::WaitForProcessLauncherThreadToGoIdle(

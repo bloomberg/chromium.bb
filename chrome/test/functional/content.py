@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -58,7 +58,7 @@ class ContentTest(pyauto.PyUITest):
     self.NavigateToURL(self._DataDirURL('title1.html'))
     for (window_index, url) in ((1, 'title2.html'), (2, 'title3.html')):
       self.OpenNewBrowserWindow(True)
-      self.GetBrowserWindow(window_index).BringToFront()
+      self.BringBrowserToFront(window_index)
       self.NavigateToURL(self._DataDirURL(url), window_index, 0)
 
     test_utils.StringContentCheck(self, self.GetTabContents(0, 0),

@@ -64,7 +64,7 @@ class ThemesTest(pyauto.PyUITest):
     crx_file = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
     self.SetTheme(crx_file)
-    self.assertTrue(self.ResetToDefaultTheme())
+    self.ResetToDefaultTheme()
     self.assertFalse(self.GetThemeInfo())
 
   def testThemeUndo(self):

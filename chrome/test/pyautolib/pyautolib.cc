@@ -102,40 +102,6 @@ void PyUITestBase::SetLaunchSwitches() {
   launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
 }
 
-void PyUITestBase::OpenFindInPage(int window_index) {
-  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
-  ASSERT_TRUE(browser_proxy.get());
-  EXPECT_TRUE(browser_proxy->OpenFindInPage());
-}
-
-bool PyUITestBase::IsFindInPageVisible(int window_index) {
-  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
-  EXPECT_TRUE(browser_proxy.get());
-  if (!browser_proxy.get())
-    return false;
-  bool is_visible;
-  EXPECT_TRUE(browser_proxy->IsFindWindowFullyVisible(&is_visible));
-  return is_visible;
-}
-
-bool PyUITestBase::OpenNewBrowserWindow(bool show) {
-  return automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED, show);
-}
-
-bool PyUITestBase::CloseBrowserWindow(int window_index) {
-  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
-  if (!browser_proxy.get())
-    return false;
-  bool app_closed;
-  return CloseBrowser(browser_proxy.get(), &app_closed);
-}
-
-int PyUITestBase::GetBrowserWindowCount() {
-  int num_windows = 0;
-  EXPECT_TRUE(automation()->GetBrowserWindowCount(&num_windows));
-  return num_windows;
-}
-
 bool PyUITestBase::GetBookmarkBarState(bool* visible,
                                        bool* detached,
                                        int window_index) {
@@ -328,8 +294,4 @@ void PyUITestBase::RequestFailureResponse(
     // TODO(craigdh): Determine specific cause.
     ErrorResponse("Chrome failed to respond", request, response);
   }
-}
-
-bool PyUITestBase::ResetToDefaultTheme() {
-  return automation()->ResetToDefaultTheme();
 }

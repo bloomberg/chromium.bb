@@ -331,25 +331,6 @@ class PyUITestBase {
   %feature("docstring", "Remove (delete) a bookmark.") RemoveBookmark;
   bool RemoveBookmark(std::wstring id, int window_index=0);
 
-  %feature("docstring", "Open the Find box in the given or first browser "
-           "window.") OpenFindInPage;
-  void OpenFindInPage(int window_index=0);
-
-  %feature("docstring", "Determine if the find box is visible in the "
-           "given or first browser window.") IsFindInPageVisible;
-  bool IsFindInPageVisible(int window_index=0);
-
-  // Tabs and windows methods
-  %feature("docstring", "Open a new browser window.") OpenNewBrowserWindow;
-  bool OpenNewBrowserWindow(bool show);
-
-  %feature("docstring", "Close a browser window.") CloseBrowserWindow;
-  bool CloseBrowserWindow(int window_index);
-
-  %feature("docstring", "Fetch the number of browser windows. Includes popups.")
-      GetBrowserWindowCount;
-  int GetBrowserWindowCount();
-
   // Misc methods
   %feature("docstring", "Get a proxy to the browser window at the given "
                         "zero-based index.") GetBrowserWindow;
@@ -364,10 +345,6 @@ class PyUITestBase {
   std::string _SendJSONRequest(int window_index,
                                const std::string& request,
                                int timeout);
-
-  %feature("docstring", "Resets to the default theme. "
-           "Returns true on success.") ResetToDefaultTheme;
-  bool ResetToDefaultTheme();
 
   %feature("docstring",
            "Returns empty string if there were no unexpected Chrome asserts or "

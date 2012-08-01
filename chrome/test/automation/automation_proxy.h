@@ -148,9 +148,6 @@ class AutomationProxy : public IPC::Listener, public AutomationMessageSender {
   // was a problem sending the result querying RPC.
   bool GetExtensionTestResult(bool* result, std::string* message);
 
-  // Resets to the default theme. Returns true on success.
-  bool ResetToDefaultTheme();
-
   // Generic pattern for sending automation requests.
   bool SendJSONRequest(const std::string& request,
                        int timeout_ms,
