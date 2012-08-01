@@ -120,6 +120,14 @@ bool PepperPlatformAudioOutputImpl::Initialize(
   client_ = client;
 
   media::AudioParameters::Format format;
+#if defined(OS_WIN)
+  // For Chrome 21 on Windows, avoid the low-latency (WASAPI) path for the sake
+  // of Pepper Flash. Currently, the WASAPI path will fail silently for, e.g.,
+  // 5.1/7.1 sound. (Flash always requests 44.1 kHz anyways, so it's already
+  // using the non-low-latency (wave-out) path on any system that's configured
+  // for 48 kHz.)
+  format = media::AudioParameters::AUDIO_PCM_LINEAR;
+#else
   const int kMaxFramesForLowLatency = 2400;
   // Use the low latency back end if the client request is compatible, and
   // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
@@ -130,6 +138,7 @@ bool PepperPlatformAudioOutputImpl::Initialize(
   } else {
     format = media::AudioParameters::AUDIO_PCM_LINEAR;
   }
+#endif
 
   media::AudioParameters params(format, CHANNEL_LAYOUT_STEREO, sample_rate, 16,
                                 frames_per_buffer);
