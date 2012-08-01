@@ -68,7 +68,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.5",
+  "version": "2.6",
   "entries": [
     {
       "id": 1,
@@ -673,6 +673,22 @@
       "vendor_id": "0x8086",
       "device_id": ["0x0166"],
       "multi_gpu_category": "any",
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 45,
+      "description": "Parallels drivers older than 7 are buggy.",
+      "cr_bugs": [138105],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1ab8",
+      "driver_version": {
+        "op": "<",
+        "number": "7"
+      },
       "blacklist": [
         "all"
       ]
