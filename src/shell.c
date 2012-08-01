@@ -993,9 +993,21 @@ busy_cursor_grab_motion(struct wl_pointer_grab *grab,
 }
 
 static void
-busy_cursor_grab_button(struct wl_pointer_grab *grab,
+busy_cursor_grab_button(struct wl_pointer_grab *base,
 			uint32_t time, uint32_t button, uint32_t state)
 {
+	struct shell_grab *grab = (struct shell_grab *) base;
+	struct shell_surface *shsurf;
+	struct weston_surface *surface = 
+		(struct weston_surface *) grab->grab.pointer->current;
+	struct weston_seat *seat =
+		(struct weston_seat *) grab->grab.pointer->seat;
+
+	shsurf = get_shell_surface(surface);
+	if (shsurf && button == BTN_LEFT && state) {
+		activate(shsurf->shell, shsurf->surface, seat);
+		surface_move(shsurf, seat);
+	}
 }
 
 static const struct wl_pointer_grab_interface busy_cursor_grab_interface = {
