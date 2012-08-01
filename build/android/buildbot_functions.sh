@@ -268,7 +268,8 @@ function bb_run_content_shell_test {
 function bb_run_instrumentation_test {
   local TEST_APK=${1}
   local EXTRA_FLAGS=${2}
-  echo "@@@BUILD_STEP Android Instrumentation ${TEST_APK} ${EXTRA_FLAGS} "\
+  local APK_NAME=$(basename ${TEST_APK})
+  echo "@@@BUILD_STEP Android Instrumentation ${APK_NAME} ${EXTRA_FLAGS} "\
        "on actual hardware@@@"
   local INSTRUMENTATION_FLAGS="-vvv"
   INSTRUMENTATION_FLAGS+=" --test-apk ${TEST_APK}"
