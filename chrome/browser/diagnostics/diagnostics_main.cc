@@ -215,6 +215,10 @@ class TestWriter {
     return console_->Write(txt);
   }
 
+  bool WriteInfoText(const std::string& txt) {
+    return WriteInfoText(UTF8ToWide(txt));
+  }
+
   // Write a result block. It consist of two lines. The first line
   // has [PASS] or [FAIL] with |name| and the second line has
   // the text in |extra|.
@@ -243,10 +247,10 @@ class TestWriter {
   DISALLOW_COPY_AND_ASSIGN(TestWriter);
 };
 
-std::wstring PrintableUSCurrentTime() {
+std::string PrintableUSCurrentTime() {
   base::Time::Exploded exploded = {0};
   base::Time::Now().UTCExplode(&exploded);
-  return base::StringPrintf(L"%d:%d:%d.%d:%d:%d",
+  return base::StringPrintf("%d:%d:%d.%d:%d:%d",
                             exploded.year,
                             exploded.month,
                             exploded.day_of_month,
@@ -269,8 +273,8 @@ class TestController : public DiagnosticsModel::Observer {
   // Run all the diagnostics of |model| and invoke the view as the model
   // callbacks arrive.
   void Run(DiagnosticsModel* model) {
-    std::wstring title(L"Chrome Diagnostics Mode (");
-    writer_->WriteInfoText(title.append(PrintableUSCurrentTime()) + L")\n");
+    writer_->WriteInfoText(L"Chrome Diagnostics Mode (");
+    writer_->WriteInfoText(PrintableUSCurrentTime() + ")\n");
     if (!model) {
       writer_->WriteResult(false, L"Diagnostics start", L"model is null");
       return;
@@ -283,7 +287,7 @@ class TestController : public DiagnosticsModel::Observer {
     ResourceBundle::InitSharedInstanceWithLocale(std::string(), NULL);
     int count = model->GetTestAvailableCount();
     writer_->WriteInfoText(base::StringPrintf(
-        L"%d available test(s)\n\n", count));
+        "%d available test(s)\n\n", count));
     model->RunAll(this);
   }
 
@@ -303,7 +307,7 @@ class TestController : public DiagnosticsModel::Observer {
   virtual void OnDoneAll(DiagnosticsModel* model) {
     if (writer_->failures() > 0) {
       writer_->WriteInfoText(base::StringPrintf(
-          L"DONE. %d failure(s)\n\n", writer_->failures()));
+          "DONE. %d failure(s)\n\n", writer_->failures()));
     } else {
       writer_->WriteInfoText(L"DONE\n\n");
     }

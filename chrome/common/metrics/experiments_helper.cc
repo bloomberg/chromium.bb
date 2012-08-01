@@ -156,9 +156,8 @@ void SetChildProcessLoggingExperimentList() {
   GetFieldTrialSelectedGroupIds(&name_group_ids);
   std::vector<string16> experiment_strings(name_group_ids.size());
   for (size_t i = 0; i < name_group_ids.size(); ++i) {
-    // Wish there was a StringPrintf for string16... :-(
-    experiment_strings[i] = WideToUTF16(base::StringPrintf(
-        L"%x-%x", name_group_ids[i].name, name_group_ids[i].group));
+    experiment_strings[i] = UTF8ToUTF16(base::StringPrintf(
+        "%x-%x", name_group_ids[i].name, name_group_ids[i].group));
   }
   child_process_logging::SetExperimentList(experiment_strings);
 }
