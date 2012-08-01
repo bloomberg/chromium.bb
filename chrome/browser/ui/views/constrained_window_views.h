@@ -79,6 +79,7 @@ class ConstrainedWindowViews : public views::Widget,
   virtual void OnNativeConstrainedWindowMouseActivate() OVERRIDE;
   virtual views::internal::NativeWidgetDelegate*
       AsNativeWidgetDelegate() OVERRIDE;
+  virtual int GetNonClientComponent(const gfx::Point& point) OVERRIDE;
 
   TabContents* tab_contents_;
 

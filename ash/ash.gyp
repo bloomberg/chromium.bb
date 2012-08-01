@@ -52,6 +52,8 @@
         'accelerators/focus_manager_factory.h',
         'accelerators/nested_dispatcher_controller.cc',
         'accelerators/nested_dispatcher_controller.h',
+        'ash_constants.cc',
+        'ash_constants.h',
         'ash_switches.cc',
         'ash_switches.h',
         'caps_lock_delegate.h',

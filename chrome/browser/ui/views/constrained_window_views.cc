@@ -26,6 +26,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/net_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -49,6 +50,7 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
@@ -586,10 +588,19 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   // Ash window headers can be transparent.
   params.transparent = true;
   ash::SetChildWindowVisibilityChangesAnimated(params.parent);
+  // No animations should get performed on the window since that will re-order
+  // the window stack which will then cause many problems.
+  if (params.parent && params.parent->parent()) {
+    params.parent->parent()->SetProperty(aura::client::kAnimationsDisabledKey,
+                                         true);
+  }
 #endif
   Init(params);
 
   tab_contents_->constrained_window_tab_helper()->AddConstrainedDialog(this);
+#if defined(USE_ASH)
+  GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
+#endif
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
@@ -608,6 +619,12 @@ void ConstrainedWindowViews::ShowConstrainedWindow() {
 }
 
 void ConstrainedWindowViews::CloseConstrainedWindow() {
+#if defined(USE_ASH)
+  gfx::NativeView view = tab_contents_->web_contents()->GetNativeView();
+  // Allow the parent to animate again.
+  if (view && view->parent())
+    view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
+#endif
   tab_contents_->constrained_window_tab_helper()->WillClose(this);
   Close();
 }
@@ -663,4 +680,9 @@ void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {
 views::internal::NativeWidgetDelegate*
     ConstrainedWindowViews::AsNativeWidgetDelegate() {
   return this;
+}
+
+int ConstrainedWindowViews::GetNonClientComponent(const gfx::Point& point) {
+  // Prevent a constrained window to be moved by the user.
+  return HTNOWHERE;
 }

@@ -4,6 +4,7 @@
 
 #include "ash/wm/frame_painter.h"
 
+#include "ash/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
@@ -609,7 +610,10 @@ bool FramePainter::UseSoloWindowHeader() {
   for (std::set<FramePainter*>::const_iterator it = instances_->begin();
        it != instances_->end();
        ++it) {
-    if (IsVisibleNormalWindow((*it)->window_)) {
+    // The window needs to be a 'normal window'. To exclude constrained windows
+    // the existence of a layout manager gets additionally tested.
+    if (IsVisibleNormalWindow((*it)->window_) &&
+        (!(*it)->window_->GetProperty(ash::kConstrainedWindowKey))) {
       window_count++;
       if (window_count > 1)
         return false;
