@@ -18,6 +18,12 @@ public class AppResource {
     /** Dimension of the radius used in the link preview overlay. */
     public static int DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS;
 
+    /** Drawable icon resource for the Share button in the action bar. */
+    public static int DRAWABLE_ICON_ACTION_BAR_SHARE;
+
+    /** Drawable icon resource for the Web Search button in the action bar. */
+    public static int DRAWABLE_ICON_ACTION_BAR_WEB_SEARCH;
+
     /** Drawable resource for the link preview popup overlay. */
     public static int DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY;
 
@@ -44,6 +50,12 @@ public class AppResource {
 
     /** Layout of the month picker dialog. */
     public static int LAYOUT_MONTH_PICKER_DIALOG;
+
+    /** String for the Share button in the action bar. */
+    public static int STRING_ACTION_BAR_SHARE;
+
+    /** String for the Web Search button in the action bar. */
+    public static int STRING_ACTION_BAR_WEB_SEARCH;
 
     /** String for the Clear button in the date picker dialog. */
     public static int STRING_DATE_PICKER_DIALOG_CLEAR;

@@ -544,6 +544,8 @@
     'browser/renderer_host/gtk_window_utils.h',
     'browser/renderer_host/image_transport_factory.cc',
     'browser/renderer_host/image_transport_factory.h',
+    'browser/renderer_host/ime_adapter_android.cc',
+    'browser/renderer_host/ime_adapter_android.h',
     'browser/renderer_host/java/java_bound_object.cc',
     'browser/renderer_host/java/java_bound_object.h',
     'browser/renderer_host/java/java_bridge_channel_host.cc',

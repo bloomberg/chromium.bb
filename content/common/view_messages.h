@@ -981,6 +981,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Replace,
 IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
 
+// Replaces all text in the current input field with the specified string.
+IPC_MESSAGE_ROUTED0(ViewMsg_Unselect)
+
 // Requests the renderer to select the region between two points.
 IPC_MESSAGE_ROUTED2(ViewMsg_SelectRange,
                     gfx::Point /* start */,

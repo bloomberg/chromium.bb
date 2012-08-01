@@ -10,12 +10,14 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.KeyEvent;
 
 import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentHttpAuthHandler;
+import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 
 import java.net.URISyntaxException;
 
@@ -262,6 +264,14 @@ public class ContentViewClient {
      */
     public boolean shouldOverrideScroll(float dx, float dy, float scrollX, float scrollY) {
         return false;
+    }
+
+    /**
+     * Returns an ActionMode.Callback for in-page selection.
+     */
+    public ActionMode.Callback getSelectActionModeCallback(
+            Context context, ActionHandler actionHandler, boolean incognito) {
+        return new SelectActionModeCallback(context, actionHandler, incognito);
     }
 
     /**

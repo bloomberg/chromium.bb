@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -145,6 +146,16 @@ public class ContentViewCore implements MotionEventDelegate {
     // mAlwaysInTapRegion is not reset. So when the last finger is up, onSingleTapUp()
     // will be mistakenly fired.
     private boolean mIgnoreSingleTap;
+
+    // Only valid when focused on a text / password field.
+    private ImeAdapter mImeAdapter;
+
+    // Tracks whether a selection is currently active.  When applied to selected text, indicates
+    // whether the last selected text is still highlighted.
+    private boolean mHasSelection;
+    private String mLastSelectedText;
+    private boolean mSelectionEditable;
+    private ActionMode mActionMode;
 
     // The legacy webview DownloadListener.
     private DownloadListener mDownloadListener;
@@ -472,6 +483,10 @@ public class ContentViewCore implements MotionEventDelegate {
         if (mNativeContentViewCore != 0) nativeClearHistory(mNativeContentViewCore);
     }
 
+    String getSelectedText() {
+        return mHasSelection ? mLastSelectedText : "";
+    }
+
     // End FrameLayout overrides.
 
 
@@ -712,6 +727,63 @@ public class ContentViewCore implements MotionEventDelegate {
     // Called by DownloadController.
     ContentViewDownloadDelegate getDownloadDelegate() {
         return mDownloadDelegate;
+    }
+
+    private void showSelectActionBar() {
+        if (mActionMode != null) {
+            mActionMode.invalidate();
+            return;
+        }
+
+        // Start a new action mode with a SelectActionModeCallback.
+        SelectActionModeCallback.ActionHandler actionHandler =
+                new SelectActionModeCallback.ActionHandler() {
+            @Override
+            public boolean selectAll() {
+                return mImeAdapter.selectAll();
+            }
+
+            @Override
+            public boolean cut() {
+                return mImeAdapter.cut();
+            }
+
+            @Override
+            public boolean copy() {
+                return mImeAdapter.copy();
+            }
+
+            @Override
+            public boolean paste() {
+                return mImeAdapter.paste();
+            }
+
+            @Override
+            public boolean isSelectionEditable() {
+                return mSelectionEditable;
+            }
+
+            @Override
+            public String getSelectedText() {
+                return ContentViewCore.this.getSelectedText();
+            }
+
+            @Override
+            public void onDestroyActionMode() {
+                mActionMode = null;
+                mImeAdapter.unselect();
+                getContentViewClient().onContextualActionBarHidden();
+            }
+        };
+        mActionMode = mContainerView.startActionMode(
+                getContentViewClient().getSelectActionModeCallback(getContext(), actionHandler,
+                        nativeIsIncognito(mNativeContentViewCore)));
+        if (mActionMode == null) {
+            // There is no ActionMode, so remove the selection.
+            mImeAdapter.unselect();
+        } else {
+            getContentViewClient().onContextualActionBarShown();
+        }
     }
 
     /**
