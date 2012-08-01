@@ -66,6 +66,8 @@ Bool NACL_FLAGS_validator_trace_inst_internals = FALSE;
 
 Bool NACL_FLAGS_ncval_annotate = TRUE;
 
+Bool NACL_FLAGS_unsafe_single_inst_mode = FALSE;
+
 #ifdef NCVAL_TESTING
 Bool NACL_FLAGS_report_conditions_on_all = FALSE;
 

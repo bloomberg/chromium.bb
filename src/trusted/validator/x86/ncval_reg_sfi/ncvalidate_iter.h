@@ -74,6 +74,11 @@ extern Bool NACL_FLAGS_validator_trace_inst_interals;
  */
 extern Bool NACL_FLAGS_ncval_annotate;
 
+/* UNSAFE interal flags used by enuminst test to support
+ * partial validation.
+ */
+extern Bool NACL_FLAGS_unsafe_single_inst_mode;
+
 #ifdef NCVAL_TESTING
 /* Command line flag for printing out prefix/postfix conditions. */
 extern Bool NACL_FLAGS_print_validator_conditions;

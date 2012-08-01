@@ -99,8 +99,10 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* vstate,
      * should always be false.
      */
   } else {
-    NaClValidatorInstMessage(LOG_ERROR, vstate, inst,
-                             "Instruction jumps to bad address\n");
+    if (!NACL_FLAGS_unsafe_single_inst_mode) {
+      NaClValidatorInstMessage(LOG_ERROR, vstate, inst,
+                               "Instruction jumps to bad address\n");
+    }
   }
 }
 
@@ -476,15 +478,17 @@ static void NaClValidateCallAlignment(NaClValidatorState* vstate) {
      * This #if defined(ERROR_ON_CALL_BUNDLE_ALIGNMENT) was added to allow
      * experimentation with different call/return idioms.
      */
-    NaClValidatorInstMessage(
+    if (!NACL_FLAGS_unsafe_single_inst_mode) {
+      NaClValidatorInstMessage(
 #if defined(ERROR_ON_CALL_BUNDLE_ALIGNMENT)
-        LOG_ERROR,
+          LOG_ERROR,
 #else
-        LOG_WARNING,
+          LOG_WARNING,
 #endif
-        vstate, vstate->cur_inst_state,
-        "Bad call alignment, return pc = %"NACL_PRIxNaClPcAddress"\n",
-        printable_next_addr);
+          vstate, vstate->cur_inst_state,
+          "Bad call alignment, return pc = %"NACL_PRIxNaClPcAddress"\n",
+          printable_next_addr);
+    }
   }
 }
 

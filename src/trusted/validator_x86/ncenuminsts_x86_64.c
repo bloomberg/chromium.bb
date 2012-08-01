@@ -135,6 +135,7 @@ Bool NaClInstValidates(uint8_t* mbase,
   NaClCPUFeaturesX86 cpu_features;
 
   NaClGetCurrentCPUFeatures(&cpu_features);
+  NACL_FLAGS_unsafe_single_inst_mode = TRUE;
   state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size, RegR15, FALSE,
                                    &cpu_features);
   do {
@@ -148,6 +149,7 @@ Bool NaClInstValidates(uint8_t* mbase,
     NaClSafeSegmentReference(state, state->cur_iter, NULL);
     NaClMemoryReferenceValidator(state);
     NaClBaseRegisterValidator(state);
+    NaClJumpValidator(state);
     validates = NaClValidatesOk(state);
     NaClInstIterDestroy(state->cur_iter);
     state->cur_iter = NULL;
