@@ -90,6 +90,14 @@ def HashSelect(versions, flavor):
   return versions[HashKey(flavor)]
 
 
+def IsFlavorNeeded(options, flavor):
+  if options.filter_out_predicates:
+    for predicate in options.filter_out_predicates:
+      if predicate(flavor):
+        return False
+  return True
+
+
 def GetUpdatedDEPS(options, versions):
   """Return a suggested DEPS toolchain hash update for all platforms.
 
@@ -101,13 +109,8 @@ def GetUpdatedDEPS(options, versions):
     pm = toolchainbinaries.PLATFORM_MAPPING[platform]
     for arch in pm:
       for flavor in pm[arch]:
-        if (options.nacl_newlib_only and
-            not toolchainbinaries.IsNaClNewlibFlavor(flavor)):
-          continue
-        if (options.no_arm_trusted and
-            toolchainbinaries.IsArmTrustedFlavor(flavor)):
-          continue
-        flavors.add(flavor)
+        if IsFlavorNeeded(options, flavor):
+          flavors.add(flavor)
   new_deps = {}
   for flavor in flavors:
     url = toolchainbinaries.EncodeToolchainUrl(
@@ -273,10 +276,6 @@ def main(args):
     version_files = [os.path.join(PARENT_DIR, 'TOOL_REVISIONS')]
   versions = LoadVersions(version_files[0])
 
-  platform_fixed = download_utils.PlatformName()
-  arch_fixed = download_utils.ArchName()
-  flavors = toolchainbinaries.PLATFORM_MAPPING[platform_fixed][arch_fixed]
-
   if options.hashes:
     print '  (Calculating, may take a second...)'
     print '-' * 70
@@ -285,9 +284,11 @@ def main(args):
     print '-' * 70
     return 0
 
-  if options.filter_out_predicates:
-    for predicate in options.filter_out_predicates:
-      flavors = [flavor for flavor in flavors if not predicate(flavor)]
+  platform = download_utils.PlatformName()
+  arch = download_utils.ArchName()
+  flavors = [flavor
+             for flavor in toolchainbinaries.PLATFORM_MAPPING[platform][arch]
+             if IsFlavorNeeded(options, flavor)]
 
   for flavor in flavors:
     version = VersionSelect(versions, flavor)
@@ -310,7 +311,7 @@ def main(args):
     except download_utils.HashError, e:
       print str(e)
       print '-' * 70
-      print 'You probably want to update the toolchain_version.txt hashes to:'
+      print 'You probably want to update the %s hashes to:' % version_files[0]
       print '  (Calculating, may take a second...)'
       print '-' * 70
       sys.stdout.flush()
