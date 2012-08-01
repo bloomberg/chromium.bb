@@ -4,20 +4,21 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
-#include "chrome/browser/ui/extensions/web_auth_flow_window.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 using content::TestBrowserThread;
 using content::WebContents;
-using content::WebContentsDelegate;
 using content::WebContentsTester;
 using extensions::WebAuthFlow;
 using testing::Return;
@@ -31,65 +32,51 @@ class MockDelegate : public WebAuthFlow::Delegate {
   MOCK_METHOD0(OnAuthFlowFailure, void());
 };
 
-class MockWebAuthFlowWindow : public WebAuthFlowWindow {
- public:
-  MockWebAuthFlowWindow() : WebAuthFlowWindow(NULL, NULL, NULL) {
-  }
-
-  virtual void Show() OVERRIDE {
-    // Do nothing in tests.
-  }
-};
-
 class MockWebAuthFlow : public WebAuthFlow {
  public:
   MockWebAuthFlow(
      WebAuthFlow::Delegate* delegate,
-     BrowserContext* browser_context,
+     Profile* profile,
      const std::string& extension_id,
      const GURL& provider_url,
      bool interactive)
      : WebAuthFlow(
            delegate,
-           browser_context,
+           profile,
            extension_id,
            provider_url,
            interactive ? WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT),
-       browser_context_(browser_context),
+       profile_(profile),
        web_contents_(NULL),
-       window_(NULL) { }
+       window_shown_(false) { }
 
   virtual WebContents* CreateWebContents() OVERRIDE {
     CHECK(!web_contents_);
-    web_contents_ = WebContentsTester::CreateTestWebContents(
-        browser_context_, NULL);
+    web_contents_ = WebContentsTester::CreateTestWebContents(profile_, NULL);
     return web_contents_;
   }
 
-  virtual WebAuthFlowWindow* CreateAuthWindow() OVERRIDE {
-    CHECK(!window_);
-    window_ = new MockWebAuthFlowWindow();
-    return window_;
-  }
-
-  WebContentsTester* contents_tester() {
-    return WebContentsTester::For(web_contents_);
-  }
-
-  MockWebAuthFlowWindow& window() {
-    return *window_;
+  virtual void ShowAuthFlowPopup() OVERRIDE {
+    window_shown_ = true;
   }
 
   bool HasWindow() const {
-    return window_ != NULL;
+    return window_shown_;
+  }
+
+  void NotifyWebContentsDestroyed() {
+    content::NotificationService::current()->Notify(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::Source<WebContents>(web_contents_),
+        content::NotificationService::NoDetails());
   }
 
   virtual ~MockWebAuthFlow() { }
 
  private:
-  BrowserContext* browser_context_;
+  Profile* profile_;
   WebContents* web_contents_;
-  MockWebAuthFlowWindow* window_;
+  bool window_shown_;
 };
 
 }  // namespace
@@ -127,8 +114,12 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
     return flow_.get();
   }
 
-  void CallOnClose() {
-    flow_base()->OnClose();
+  bool CallBeforeUrlLoaded(const GURL& url) {
+    return flow_base()->BeforeUrlLoaded(url);
+  }
+
+  void CallAfterUrlLoaded() {
+    flow_base()->AfterUrlLoaded();
   }
 
   bool CallIsValidRedirectUrl(const GURL& url) {
@@ -148,7 +139,7 @@ TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlNonInteractive) {
   CreateAuthFlow(ext_id, url, false);
   EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
   flow_->Start();
-  flow_->contents_tester()->NavigateAndCommit(result);
+  CallBeforeUrlLoaded(result);
 }
 
 TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlInteractive) {
@@ -159,7 +150,7 @@ TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlInteractive) {
   CreateAuthFlow(ext_id, url, true);
   EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
   flow_->Start();
-  flow_->contents_tester()->NavigateAndCommit(result);
+  CallBeforeUrlLoaded(result);
 }
 
 TEST_F(WebAuthFlowTest, SilentRedirectToChromeExtensionSchemeUrl) {
@@ -170,7 +161,7 @@ TEST_F(WebAuthFlowTest, SilentRedirectToChromeExtensionSchemeUrl) {
   CreateAuthFlow(ext_id, url, true);
   EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
   flow_->Start();
-  flow_->contents_tester()->NavigateAndCommit(result);
+  CallBeforeUrlLoaded(result);
 }
 
 TEST_F(WebAuthFlowTest, NeedsUIButNonInteractive) {
@@ -180,7 +171,7 @@ TEST_F(WebAuthFlowTest, NeedsUIButNonInteractive) {
   CreateAuthFlow(ext_id, url, false);
   EXPECT_CALL(delegate_, OnAuthFlowFailure()).Times(1);
   flow_->Start();
-  flow_->contents_tester()->TestSetIsLoading(false);
+  CallAfterUrlLoaded();
 }
 
 TEST_F(WebAuthFlowTest, UIResultsInSuccess) {
@@ -191,9 +182,9 @@ TEST_F(WebAuthFlowTest, UIResultsInSuccess) {
   CreateAuthFlow(ext_id, url, true);
   EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
   flow_->Start();
-  flow_->contents_tester()->TestSetIsLoading(false);
+  CallAfterUrlLoaded();
   EXPECT_TRUE(flow_->HasWindow());
-  flow_->contents_tester()->NavigateAndCommit(result);
+  CallBeforeUrlLoaded(result);
 }
 
 TEST_F(WebAuthFlowTest, UIClosedByUser) {
@@ -204,9 +195,9 @@ TEST_F(WebAuthFlowTest, UIClosedByUser) {
   CreateAuthFlow(ext_id, url, true);
   EXPECT_CALL(delegate_, OnAuthFlowFailure()).Times(1);
   flow_->Start();
-  flow_->contents_tester()->TestSetIsLoading(false);
+  CallAfterUrlLoaded();
   EXPECT_TRUE(flow_->HasWindow());
-  CallOnClose();
+  flow_->NotifyWebContentsDestroyed();
 }
 
 TEST_F(WebAuthFlowTest, IsValidRedirectUrl) {
