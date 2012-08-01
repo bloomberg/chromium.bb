@@ -193,10 +193,18 @@ function getDisplayName(args) {
 function padToWidth(s, width) {
   s = String(s);
   assert(s.length <= width);
-  while (s.length < width) {
-    s = "0" + s;
+  if (s.length < width) {
+    s = stringOfLength(width - s.length, '0') + s;
   }
   return s;
+}
+
+function stringOfLength(n, c) {
+  if (c == null)
+    c = 'X';
+  assert(n > 0);
+  assert(n == Math.floor(n));
+  return new Array(n + 1).join(c);
 }
 
 function getSimpleKey(i) {
@@ -333,11 +341,4 @@ function getValuesFromCursor(
     }
   }
   request.onerror = onError;
-}
-
-
-function stringOfLength(n) {
-  assert(n > 0);
-  assert(n == Math.floor(n));
-  return new Array(n + 1).join('0');
 }
