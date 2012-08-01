@@ -1,6 +1,8 @@
 Name: xdg-utils
 URL: http://portland.freedesktop.org/wiki/
 Version: 3ba869a97b737fd308502a7f9e63bda202891642
+License: MIT
+Security Critical: no
 
 Description:
 This directory contains a copy of xdg-utils obtained from git on 2011-07-20,
