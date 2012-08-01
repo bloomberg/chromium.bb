@@ -201,6 +201,8 @@ class MainPage(webapp.RequestHandler):
 class PostPage(webapp.RequestHandler):
   """Provides interface for uploading command stats to database."""
 
+  NO_VALUE = '__NO_VALUE_AT_ALL__'
+
   def post(self):
     """Support POST of command stats."""
     logging.info('Stats POST received at %r', self.request.uri)
@@ -218,10 +220,12 @@ class PostPage(webapp.RequestHandler):
 
       # Note that using hasattr with self.request does not work at all.
       # It (almost) always says the attribute is not present, when getattr
-      # does actually return a value.
-      value = self.request.get(prop)
+      # does actually return a value.  Also note that self.request.get is
+      # not returning None as the default value if no explicit default value
+      # is provided, contrary to the spec for dict.get.
+      value = self.request.get(prop, self.NO_VALUE)
 
-      if value is not None:
+      if value is not self.NO_VALUE:
         # Integer properties require casting
         if isinstance(model_prop, db.IntegerProperty):
           value = int(value)
