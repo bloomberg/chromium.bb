@@ -1425,14 +1425,15 @@ FileManager.prototype = {
   FileManager.prototype.updateFileTypeFilter_ = function() {
     this.directoryModel_.removeFilter('fileType');
     var selectedIndex = Number(this.fileTypeSelector_.selectedIndex);
-    if (selectedIndex < 1)  // 'All files' or nothing selected.
-      return;
-    var regexp = new RegExp('.*(' +
-        this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
-    function filter(entry) {
-      return entry.isDirectory || regexp.test(entry.name);
+    if (selectedIndex >= 1) { // Specific filter selected.
+      var regexp = new RegExp('.*(' +
+          this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
+      function filter(entry) {
+        return entry.isDirectory || regexp.test(entry.name);
+      }
+      this.directoryModel_.addFilter('fileType', filter);
     }
-    this.directoryModel_.addFilter('fileType', filter);
+    this.directoryModel_.rescan();
   };
 
   /**
