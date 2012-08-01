@@ -679,8 +679,15 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   err = CGLCreateContext(pixel_format, NULL, &cgl_context_);
   DCHECK_EQ(err, kCGLNoError);
   CGLDestroyPixelFormat(pixel_format);
-  CGLSetFullScreenOnDisplay(cgl_context_,
-                            CGDisplayIDToOpenGLDisplayMask(mainDevice));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  // TODO(jamiewalch): The non-deprecated equivalent code is shown below, but
+  //                   it causes 10.6 Macs' displays to go black. Find out why.
+  //
+  //   CGLSetFullScreenOnDisplay(cgl_context_,
+  //                             CGDisplayIDToOpenGLDisplayMask(mainDevice));
+  CGLSetFullScreen(cgl_context_);
+#pragma clang diagnostic pop
   CGLSetCurrentContext(cgl_context_);
 
   size_t buffer_size = width * height * sizeof(uint32_t);
