@@ -1363,28 +1363,28 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'cc',
       description='CC $out',
       command=cc_template % {'outspec': '/Fo$out'},
-      deplist='$out.dl',
+      depfile='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_c')
     master_ninja.rule(
       'cc_pch',
       description='CC PCH $out',
       command=cc_template % {'outspec': '/Fp$out /Fo$out.obj'},
-      deplist='$out.dl',
+      depfile='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_c')
     master_ninja.rule(
       'cxx',
       description='CXX $out',
       command=cxx_template % {'outspec': '/Fo$out'},
-      deplist='$out.dl',
+      depfile='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_cc')
     master_ninja.rule(
       'cxx_pch',
       description='CXX PCH $out',
       command=cxx_template % {'outspec': '/Fp$out /Fo$out.obj'},
-      deplist='$out.dl',
+      depfile='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_cc')
     master_ninja.rule(
