@@ -20,7 +20,7 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD1(SetAsyncCallStatusHandler,
                void(const AsyncCallStatusHandler& handler));
   MOCK_METHOD0(ResetAsyncCallStatusHandler, void());
-  MOCK_METHOD1(IsMounted, void(const BoolMethodCallback& callback));
+  MOCK_METHOD1(IsMounted, void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(Unmount, bool(bool* success));
   MOCK_METHOD3(AsyncCheckKey,
                void(const std::string& username,
@@ -40,16 +40,17 @@ class MockCryptohomeClient : public CryptohomeClient {
                                 const AsyncMethodCallback& callback));
   MOCK_METHOD1(AsyncMountGuest,
                void(const AsyncMethodCallback& callback));
-  MOCK_METHOD1(TpmIsReady, void(const BoolMethodCallback& callback));
-  MOCK_METHOD1(TpmIsEnabled, void(const BoolMethodCallback& callback));
+  MOCK_METHOD1(TpmIsReady, void(const BoolDBusMethodCallback& callback));
+  MOCK_METHOD1(TpmIsEnabled, void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(CallTpmIsEnabledAndBlock, bool(bool* enabled));
-  MOCK_METHOD1(TpmGetPassword, void(const StringMethodCallback& callback));
+  MOCK_METHOD1(TpmGetPassword, void(const StringDBusMethodCallback& callback));
   MOCK_METHOD1(TpmIsOwned, bool(bool* owned));
   MOCK_METHOD1(TpmIsBeingOwned, bool(bool* owning));
   MOCK_METHOD1(TpmCanAttemptOwnership,
-               void(const VoidMethodCallback& callback));
+               void(const VoidDBusMethodCallback& callback));
   MOCK_METHOD0(TpmClearStoredPassword, bool());
-  MOCK_METHOD1(Pkcs11IsTpmTokenReady, void(const BoolMethodCallback& callback));
+  MOCK_METHOD1(Pkcs11IsTpmTokenReady,
+               void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(Pkcs11GetTpmTokenInfo,
                void(const Pkcs11GetTpmTokenInfoCallback& callback));
   MOCK_METHOD3(InstallAttributesGet,

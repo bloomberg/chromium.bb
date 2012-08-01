@@ -35,7 +35,6 @@ namespace chromeos {
 class CHROMEOS_EXPORT FlimflamIPConfigClient {
  public:
   typedef FlimflamClientHelper::PropertyChangedHandler PropertyChangedHandler;
-  typedef FlimflamClientHelper::VoidCallback VoidCallback;
   typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
   virtual ~FlimflamIPConfigClient();
 
@@ -72,18 +71,18 @@ class CHROMEOS_EXPORT FlimflamIPConfigClient {
   virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) = 0;
+                           const VoidDBusMethodCallback& callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call succeeds.
   virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
                              const std::string& name,
-                             const VoidCallback& callback) = 0;
+                             const VoidDBusMethodCallback& callback) = 0;
 
   // Calls Remove method.
   // |callback| is called after the method call succeeds.
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
-                      const VoidCallback& callback) = 0;
+                      const VoidDBusMethodCallback& callback) = 0;
 
   // DEPRECATED DO NOT USE: Calls Remove method and blocks until the method call
   // finishes.

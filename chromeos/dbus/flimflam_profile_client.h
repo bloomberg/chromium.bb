@@ -35,7 +35,6 @@ namespace chromeos {
 class CHROMEOS_EXPORT FlimflamProfileClient {
  public:
   typedef FlimflamClientHelper::PropertyChangedHandler PropertyChangedHandler;
-  typedef FlimflamClientHelper::VoidCallback VoidCallback;
   typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
 
   virtual ~FlimflamProfileClient();
@@ -69,7 +68,7 @@ class CHROMEOS_EXPORT FlimflamProfileClient {
   // |callback| is called after the method call succeeds.
   virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
                            const std::string& entry_path,
-                           const VoidCallback& callback) = 0;
+                           const VoidDBusMethodCallback& callback) = 0;
 
  protected:
   // Create() should be used instead.

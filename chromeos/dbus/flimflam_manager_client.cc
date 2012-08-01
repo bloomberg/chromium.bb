@@ -81,7 +81,7 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
 
   virtual void SetProperty(const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -91,7 +91,7 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
   }
 
   virtual void RequestScan(const std::string& type,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kRequestScanFunction);
     dbus::MessageWriter writer(&method_call);
@@ -99,8 +99,9 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
     helper_.CallVoidMethod(&method_call, callback);
   }
 
-  virtual void EnableTechnology(const std::string& type,
-                                const VoidCallback& callback) OVERRIDE {
+  virtual void EnableTechnology(
+      const std::string& type,
+      const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kEnableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -108,8 +109,9 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
     helper_.CallVoidMethod(&method_call, callback);
   }
 
-  virtual void DisableTechnology(const std::string& type,
-                                 const VoidCallback& callback) OVERRIDE {
+  virtual void DisableTechnology(
+      const std::string& type,
+      const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kDisableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -117,8 +119,9 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
     helper_.CallVoidMethod(&method_call, callback);
   }
 
-  virtual void ConfigureService(const base::DictionaryValue& properties,
-                                const VoidCallback& callback) OVERRIDE {
+  virtual void ConfigureService(
+      const base::DictionaryValue& properties,
+      const VoidDBusMethodCallback& callback) OVERRIDE {
     DCHECK(AreServicePropertiesValid(properties));
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kConfigureServiceFunction);
@@ -127,8 +130,9 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
     helper_.CallVoidMethod(&method_call, callback);
   }
 
-  virtual void GetService(const base::DictionaryValue& properties,
-                          const ObjectPathCallback& callback) OVERRIDE {
+  virtual void GetService(
+      const base::DictionaryValue& properties,
+      const ObjectPathDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kGetServiceFunction);
     dbus::MessageWriter writer(&method_call);
@@ -183,7 +187,7 @@ class FlimflamManagerClientStubImpl : public FlimflamManagerClient {
   // FlimflamManagerClient override.
   virtual void SetProperty(const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     stub_properties_.Set(name, value.DeepCopy());
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
@@ -192,39 +196,43 @@ class FlimflamManagerClientStubImpl : public FlimflamManagerClient {
 
   // FlimflamManagerClient override.
   virtual void RequestScan(const std::string& type,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS));
   }
 
   // FlimflamManagerClient override.
-  virtual void EnableTechnology(const std::string& type,
-                                const VoidCallback& callback) OVERRIDE {
+  virtual void EnableTechnology(
+      const std::string& type,
+      const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS));
   }
 
   // FlimflamManagerClient override.
-  virtual void DisableTechnology(const std::string& type,
-                                 const VoidCallback& callback) OVERRIDE {
+  virtual void DisableTechnology(
+      const std::string& type,
+      const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS));
   }
 
   // FlimflamManagerClient override.
-  virtual void ConfigureService(const base::DictionaryValue& properties,
-                                const VoidCallback& callback) OVERRIDE {
+  virtual void ConfigureService(
+      const base::DictionaryValue& properties,
+      const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS));
   }
 
   // FlimflamManagerClient override.
-  virtual void GetService(const base::DictionaryValue& properties,
-                          const ObjectPathCallback& callback) OVERRIDE {
+  virtual void GetService(
+      const base::DictionaryValue& properties,
+      const ObjectPathDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS,

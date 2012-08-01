@@ -27,17 +27,17 @@ class MockFlimflamDeviceClient : public FlimflamDeviceClient {
   MOCK_METHOD1(CallGetPropertiesAndBlock,
                base::DictionaryValue*(const dbus::ObjectPath& device_path));
   MOCK_METHOD2(ProposeScan, void(const dbus::ObjectPath& device_path,
-                                 const VoidCallback& callback));
+                                 const VoidDBusMethodCallback& callback));
   MOCK_METHOD4(SetProperty, void(const dbus::ObjectPath& device_path,
                                  const std::string& name,
                                  const base::Value& value,
-                                 const VoidCallback& callback));
+                                 const VoidDBusMethodCallback& callback));
   MOCK_METHOD3(ClearProperty, void(const dbus::ObjectPath& device_path,
                                    const std::string& name,
-                                   const VoidCallback& callback));
+                                   const VoidDBusMethodCallback& callback));
   MOCK_METHOD3(AddIPConfig, void(const dbus::ObjectPath& device_path,
                                  const std::string& method,
-                                 const ObjectPathCallback& callback));
+                                 const ObjectPathDBusMethodCallback& callback));
   MOCK_METHOD2(CallAddIPConfigAndBlock,
                dbus::ObjectPath(const dbus::ObjectPath& device_path,
                                 const std::string& method));

@@ -75,7 +75,7 @@ class FlimflamServiceClientImpl : public FlimflamServiceClient {
   virtual void SetProperty(const dbus::ObjectPath& service_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -87,7 +87,7 @@ class FlimflamServiceClientImpl : public FlimflamServiceClient {
   // FlimflamServiceClient override.
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
-                             const VoidCallback& callback) OVERRIDE {
+                             const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kClearPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -107,7 +107,7 @@ class FlimflamServiceClientImpl : public FlimflamServiceClient {
 
   // FlimflamServiceClient override.
   virtual void Disconnect(const dbus::ObjectPath& service_path,
-                          const VoidCallback& callback) OVERRIDE {
+                          const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kDisconnectFunction);
     GetHelper(service_path)->CallVoidMethod(&method_call, callback);
@@ -115,16 +115,17 @@ class FlimflamServiceClientImpl : public FlimflamServiceClient {
 
   // FlimflamServiceClient override.
   virtual void Remove(const dbus::ObjectPath& service_path,
-                      const VoidCallback& callback) OVERRIDE {
+                      const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kRemoveServiceFunction);
     GetHelper(service_path)->CallVoidMethod(&method_call, callback);
   }
 
   // FlimflamServiceClient override.
-  virtual void ActivateCellularModem(const dbus::ObjectPath& service_path,
-                                     const std::string& carrier,
-                                     const VoidCallback& callback) OVERRIDE {
+  virtual void ActivateCellularModem(
+      const dbus::ObjectPath& service_path,
+      const std::string& carrier,
+      const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kActivateCellularModemFunction);
     dbus::MessageWriter writer(&method_call);
@@ -198,14 +199,14 @@ class FlimflamServiceClientStubImpl : public FlimflamServiceClient {
   virtual void SetProperty(const dbus::ObjectPath& service_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     PostSuccessVoidCallback(callback);
   }
 
   // FlimflamServiceClient override.
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
-                             const VoidCallback& callback) OVERRIDE {
+                             const VoidDBusMethodCallback& callback) OVERRIDE {
     PostSuccessVoidCallback(callback);
   }
 
@@ -218,20 +219,21 @@ class FlimflamServiceClientStubImpl : public FlimflamServiceClient {
 
   // FlimflamServiceClient override.
   virtual void Disconnect(const dbus::ObjectPath& service_path,
-                          const VoidCallback& callback) OVERRIDE {
+                          const VoidDBusMethodCallback& callback) OVERRIDE {
     PostSuccessVoidCallback(callback);
   }
 
   // FlimflamServiceClient override.
   virtual void Remove(const dbus::ObjectPath& service_path,
-                      const VoidCallback& callback) OVERRIDE {
+                      const VoidDBusMethodCallback& callback) OVERRIDE {
     PostSuccessVoidCallback(callback);
   }
 
   // FlimflamServiceClient override.
-  virtual void ActivateCellularModem(const dbus::ObjectPath& service_path,
-                                     const std::string& carrier,
-                                     const VoidCallback& callback) OVERRIDE {
+  virtual void ActivateCellularModem(
+      const dbus::ObjectPath& service_path,
+      const std::string& carrier,
+      const VoidDBusMethodCallback& callback) OVERRIDE {
     PostSuccessVoidCallback(callback);
   }
 
@@ -249,7 +251,7 @@ class FlimflamServiceClientStubImpl : public FlimflamServiceClient {
   }
 
   // Posts a task to run a void callback with success status code.
-  void PostSuccessVoidCallback(const VoidCallback& callback) {
+  void PostSuccessVoidCallback(const VoidDBusMethodCallback& callback) {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS));

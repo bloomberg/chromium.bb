@@ -677,7 +677,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestHiddenWifiNetworkProperties) {
       base::Value::CreateStringValue(security));
   // Set expectations.
   const dbus::ObjectPath service_path("/service/path");
-  FlimflamClientHelper::ObjectPathCallback callback;
+  ObjectPathDBusMethodCallback callback;
   EXPECT_CALL(*mock_manager_client_, GetService(IsEqualTo(&properties), _))
       .WillOnce(SaveArg<1>(&callback));
   EXPECT_CALL(*mock_service_client_,
@@ -725,7 +725,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestVirtualNetworkProperties) {
 
   // Set expectations.
   const dbus::ObjectPath service_path("/service/path");
-  FlimflamClientHelper::ObjectPathCallback callback;
+  ObjectPathDBusMethodCallback callback;
   EXPECT_CALL(*mock_manager_client_, GetService(IsEqualTo(&properties), _))
       .WillOnce(SaveArg<1>(&callback));
   EXPECT_CALL(*mock_service_client_,

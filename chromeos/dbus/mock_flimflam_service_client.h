@@ -27,20 +27,21 @@ class MockFlimflamServiceClient : public FlimflamServiceClient {
   MOCK_METHOD4(SetProperty, void(const dbus::ObjectPath& service_path,
                                  const std::string& name,
                                  const base::Value& value,
-                                 const VoidCallback& callback));
+                                 const VoidDBusMethodCallback& callback));
   MOCK_METHOD3(ClearProperty, void(const dbus::ObjectPath& service_path,
                                    const std::string& name,
-                                   const VoidCallback& callback));
+                                   const VoidDBusMethodCallback& callback));
   MOCK_METHOD3(Connect, void(const dbus::ObjectPath& service_path,
                              const base::Closure& callback,
                              const ErrorCallback& error_callback));
   MOCK_METHOD2(Disconnect, void(const dbus::ObjectPath& service_path,
-                                const VoidCallback& callback));
+                                const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(Remove, void(const dbus::ObjectPath& service_path,
-                            const VoidCallback& callback));
-  MOCK_METHOD3(ActivateCellularModem, void(const dbus::ObjectPath& service_path,
-                                           const std::string& carrier,
-                                           const VoidCallback& callback));
+                            const VoidDBusMethodCallback& callback));
+  MOCK_METHOD3(ActivateCellularModem,
+               void(const dbus::ObjectPath& service_path,
+                    const std::string& carrier,
+                    const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(CallActivateCellularModemAndBlock,
                bool(const dbus::ObjectPath& service_path,
                     const std::string& carrier));

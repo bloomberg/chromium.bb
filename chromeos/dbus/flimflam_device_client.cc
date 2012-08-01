@@ -59,7 +59,7 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
 
   // FlimflamProfileClient override.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kProposeScanFunction);
     GetHelper(device_path)->CallVoidMethod(&method_call, callback);
@@ -69,7 +69,7 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -81,7 +81,7 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
   // FlimflamProfileClient override.
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
-                             const VoidCallback& callback) OVERRIDE {
+                             const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kClearPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -90,9 +90,10 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
   }
 
   // FlimflamProfileClient override.
-  virtual void AddIPConfig(const dbus::ObjectPath& device_path,
-                           const std::string& method,
-                           const ObjectPathCallback& callback) OVERRIDE {
+  virtual void AddIPConfig(
+      const dbus::ObjectPath& device_path,
+      const std::string& method,
+      const ObjectPathDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kAddIPConfigFunction);
     dbus::MessageWriter writer(&method_call);
@@ -273,7 +274,7 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
 
   // FlimflamProfileClient override.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
   }
 
@@ -281,7 +282,7 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     base::DictionaryValue* device_properties = NULL;
     if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
       PostVoidCallback(callback, DBUS_METHOD_CALL_FAILURE);
@@ -294,7 +295,7 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
   // FlimflamDeviceClient override.
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
-                             const VoidCallback& callback) OVERRIDE {
+                             const VoidDBusMethodCallback& callback) OVERRIDE {
     base::DictionaryValue* device_properties = NULL;
     if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
       PostVoidCallback(callback, DBUS_METHOD_CALL_FAILURE);
@@ -305,9 +306,10 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
   }
 
   // FlimflamDeviceClient override.
-  virtual void AddIPConfig(const dbus::ObjectPath& device_path,
-                           const std::string& method,
-                           const ObjectPathCallback& callback) OVERRIDE {
+  virtual void AddIPConfig(
+      const dbus::ObjectPath& device_path,
+      const std::string& method,
+      const ObjectPathDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS,
@@ -377,7 +379,7 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
   }
 
   // Posts a task to run a void callback with status code |status|.
-  void PostVoidCallback(const VoidCallback& callback,
+  void PostVoidCallback(const VoidDBusMethodCallback& callback,
                         DBusMethodCallStatus status) {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback, status));

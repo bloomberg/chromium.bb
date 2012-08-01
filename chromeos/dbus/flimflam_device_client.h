@@ -35,8 +35,6 @@ namespace chromeos {
 class CHROMEOS_EXPORT FlimflamDeviceClient {
  public:
   typedef FlimflamClientHelper::PropertyChangedHandler PropertyChangedHandler;
-  typedef FlimflamClientHelper::VoidCallback VoidCallback;
-  typedef FlimflamClientHelper::ObjectPathCallback ObjectPathCallback;
   typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef FlimflamClientHelper::ErrorCallback ErrorCallback;
 
@@ -73,26 +71,26 @@ class CHROMEOS_EXPORT FlimflamDeviceClient {
   // Calls ProposeScan method.
   // |callback| is called after the method call finishes.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
-                           const VoidCallback& callback) = 0;
+                           const VoidDBusMethodCallback& callback) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call finishes.
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) = 0;
+                           const VoidDBusMethodCallback& callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call finishes.
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
-                             const VoidCallback& callback) = 0;
+                             const VoidDBusMethodCallback& callback) = 0;
 
   // Calls AddIPConfig method.
   // |callback| is called after the method call finishes.
   virtual void AddIPConfig(const dbus::ObjectPath& device_path,
                            const std::string& method,
-                           const ObjectPathCallback& callback) = 0;
+                           const ObjectPathDBusMethodCallback& callback) = 0;
 
   // DEPRECATED DO NOT USE: Calls AddIPConfig method and blocks until the method
   // call finishes.

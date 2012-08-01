@@ -58,8 +58,7 @@ void CryptohomeWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   }
 }
 
-CryptohomeClient::BoolMethodCallback
-CryptohomeWebUIHandler::GetCryptohomeBoolCallback(
+BoolDBusMethodCallback CryptohomeWebUIHandler::GetCryptohomeBoolCallback(
     const std::string& destination_id) {
   return base::Bind(&CryptohomeWebUIHandler::OnCryptohomeBoolProperty,
                     weak_ptr_factory_.GetWeakPtr(),

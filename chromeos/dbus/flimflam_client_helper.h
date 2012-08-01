@@ -42,14 +42,6 @@ class FlimflamClientHelper {
   typedef base::Callback<void(const std::string& name,
                               const base::Value& value)> PropertyChangedHandler;
 
-  // A callback to handle responses for methods without results.
-  typedef base::Callback<void(DBusMethodCallStatus call_status)> VoidCallback;
-
-  // A callback to handle responses for methods with ObjectPath results.
-  typedef base::Callback<void(
-      DBusMethodCallStatus call_status,
-      const dbus::ObjectPath& result)> ObjectPathCallback;
-
   // A callback to handle responses for methods with DictionaryValue results.
   typedef base::Callback<void(
       DBusMethodCallStatus call_status,
@@ -79,11 +71,11 @@ class FlimflamClientHelper {
 
   // Calls a method without results.
   void CallVoidMethod(dbus::MethodCall* method_call,
-                      const VoidCallback& callback);
+                      const VoidDBusMethodCallback& callback);
 
   // Calls a method with an object path result.
   void CallObjectPathMethod(dbus::MethodCall* method_call,
-                            const ObjectPathCallback& callback);
+                            const ObjectPathDBusMethodCallback& callback);
 
   // Calls a method with a dictionary value result.
   void CallDictionaryValueMethod(dbus::MethodCall* method_call,
@@ -127,10 +119,11 @@ class FlimflamClientHelper {
   void OnPropertyChanged(dbus::Signal* signal);
 
   // Handles responses for methods without results.
-  void OnVoidMethod(const VoidCallback& callback, dbus::Response* response);
+  void OnVoidMethod(const VoidDBusMethodCallback& callback,
+                    dbus::Response* response);
 
   // Handles responses for methods with ObjectPath results.
-  void OnObjectPathMethod(const ObjectPathCallback& callback,
+  void OnObjectPathMethod(const ObjectPathDBusMethodCallback& callback,
                           dbus::Response* response);
 
   // Handles responses for methods with DictionaryValue results.

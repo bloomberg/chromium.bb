@@ -36,7 +36,6 @@ namespace chromeos {
 class CHROMEOS_EXPORT FlimflamServiceClient {
  public:
   typedef FlimflamClientHelper::PropertyChangedHandler PropertyChangedHandler;
-  typedef FlimflamClientHelper::VoidCallback VoidCallback;
   typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef FlimflamClientHelper::ErrorCallback ErrorCallback;
 
@@ -66,13 +65,13 @@ class CHROMEOS_EXPORT FlimflamServiceClient {
   virtual void SetProperty(const dbus::ObjectPath& service_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) = 0;
+                           const VoidDBusMethodCallback& callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call succeeds.
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
-                             const VoidCallback& callback) = 0;
+                             const VoidDBusMethodCallback& callback) = 0;
 
   // Calls Connect method.
   // |callback| is called after the method call succeeds.
@@ -83,18 +82,19 @@ class CHROMEOS_EXPORT FlimflamServiceClient {
   // Calls Disconnect method.
   // |callback| is called after the method call succeeds.
   virtual void Disconnect(const dbus::ObjectPath& service_path,
-                          const VoidCallback& callback) = 0;
+                          const VoidDBusMethodCallback& callback) = 0;
 
   // Calls Remove method.
   // |callback| is called after the method call succeeds.
   virtual void Remove(const dbus::ObjectPath& service_path,
-                      const VoidCallback& callback) = 0;
+                      const VoidDBusMethodCallback& callback) = 0;
 
   // Calls ActivateCellularModem method.
   // |callback| is called after the method call succeeds.
-  virtual void ActivateCellularModem(const dbus::ObjectPath& service_path,
-                                     const std::string& carrier,
-                                     const VoidCallback& callback) = 0;
+  virtual void ActivateCellularModem(
+      const dbus::ObjectPath& service_path,
+      const std::string& carrier,
+      const VoidDBusMethodCallback& callback) = 0;
 
   // DEPRECATED DO NOT USE: Calls ActivateCellularModem method and blocks until
   // the method call finishes.

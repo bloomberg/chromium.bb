@@ -27,8 +27,6 @@ namespace chromeos {
 class CHROMEOS_EXPORT FlimflamManagerClient {
  public:
   typedef FlimflamClientHelper::PropertyChangedHandler PropertyChangedHandler;
-  typedef FlimflamClientHelper::VoidCallback VoidCallback;
-  typedef FlimflamClientHelper::ObjectPathCallback ObjectPathCallback;
   typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
 
   virtual ~FlimflamManagerClient();
@@ -61,32 +59,32 @@ class CHROMEOS_EXPORT FlimflamManagerClient {
   // |callback| is called after the method call succeeds.
   virtual void SetProperty(const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) = 0;
+                           const VoidDBusMethodCallback& callback) = 0;
 
   // Calls RequestScan method.
   // |callback| is called after the method call succeeds.
   virtual void RequestScan(const std::string& type,
-                           const VoidCallback& callback) = 0;
+                           const VoidDBusMethodCallback& callback) = 0;
 
   // Calls EnableTechnology method.
   // |callback| is called after the method call succeeds.
   virtual void EnableTechnology(const std::string& type,
-                                const VoidCallback& callback) = 0;
+                                const VoidDBusMethodCallback& callback) = 0;
 
   // Calls DisableTechnology method.
   // |callback| is called after the method call succeeds.
   virtual void DisableTechnology(const std::string& type,
-                                 const VoidCallback& callback) = 0;
+                                 const VoidDBusMethodCallback& callback) = 0;
 
   // Calls ConfigureService method.
   // |callback| is called after the method call succeeds.
   virtual void ConfigureService(const base::DictionaryValue& properties,
-                                const VoidCallback& callback) = 0;
+                                const VoidDBusMethodCallback& callback) = 0;
 
   // Calls GetService method.
   // |callback| is called after the method call succeeds.
   virtual void GetService(const base::DictionaryValue& properties,
-                          const ObjectPathCallback& callback) = 0;
+                          const ObjectPathDBusMethodCallback& callback) = 0;
 
  protected:
   // Create() should be used instead.

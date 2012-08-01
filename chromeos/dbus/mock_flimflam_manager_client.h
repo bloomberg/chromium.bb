@@ -23,17 +23,17 @@ class MockFlimflamManagerClient : public FlimflamManagerClient {
   MOCK_METHOD0(CallGetPropertiesAndBlock, base::DictionaryValue*());
   MOCK_METHOD3(SetProperty, void(const std::string& name,
                                  const base::Value& value,
-                                 const VoidCallback& callback));
+                                 const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(RequestScan, void(const std::string& type,
-                                 const VoidCallback& callback));
+                                 const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(EnableTechnology, void(const std::string& type,
-                                      const VoidCallback& callback));
+                                      const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(DisableTechnology, void(const std::string& type,
-                                       const VoidCallback& callback));
+                                       const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(ConfigureService, void(const base::DictionaryValue& properties,
-                                      const VoidCallback& callback));
+                                      const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(GetService, void(const base::DictionaryValue& properties,
-                                const ObjectPathCallback& callback));
+                                const ObjectPathDBusMethodCallback& callback));
 };
 
 }  // namespace chromeos

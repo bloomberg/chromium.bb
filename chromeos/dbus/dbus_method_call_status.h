@@ -5,6 +5,14 @@
 #ifndef CHROMEOS_DBUS_DBUS_METHOD_CALL_STATUS_H_
 #define CHROMEOS_DBUS_DBUS_METHOD_CALL_STATUS_H_
 
+#include "base/callback.h"
+
+namespace dbus {
+
+class ObjectPath;
+
+}  // namespace dbus
+
 namespace chromeos {
 
 // An enum to describe whether or not a DBus method call succeeded.
@@ -13,6 +21,24 @@ enum DBusMethodCallStatus {
   DBUS_METHOD_CALL_SUCCESS,
 };
 
-}  // namespace
+// A callback to handle responses of methods without results.
+typedef base::Callback<void(
+    DBusMethodCallStatus call_status)> VoidDBusMethodCallback;
+
+// A callback to handle responses of methods returning a bool value.
+typedef base::Callback<void(DBusMethodCallStatus call_status,
+                            bool result)> BoolDBusMethodCallback;
+
+// A callback to handle responses of methods returning a string value.
+typedef base::Callback<void(
+    DBusMethodCallStatus call_status,
+    const std::string& result)> StringDBusMethodCallback;
+
+// A callback to handle responses of methods returning a ObjectPath value.
+typedef base::Callback<void(
+    DBusMethodCallStatus call_status,
+    const dbus::ObjectPath& result)> ObjectPathDBusMethodCallback;
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_DBUS_METHOD_CALL_STATUS_H_

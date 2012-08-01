@@ -29,7 +29,7 @@ class MockFlimflamProfileClient : public FlimflamProfileClient {
                               const DictionaryValueCallback& callback));
   MOCK_METHOD3(DeleteEntry, void(const dbus::ObjectPath& profile_path,
                                  const std::string& entry_path,
-                                 const VoidCallback& callback));
+                                 const VoidDBusMethodCallback& callback));
 };
 
 }  // namespace chromeos

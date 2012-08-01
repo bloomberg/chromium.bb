@@ -35,7 +35,7 @@ class CryptohomeWebUIHandler : public content::WebUIMessageHandler {
   void OnPageLoaded(const base::ListValue* args);
 
   // Returns a callback to handle Cryptohome property values.
-  CryptohomeClient::BoolMethodCallback GetCryptohomeBoolCallback(
+  BoolDBusMethodCallback GetCryptohomeBoolCallback(
       const std::string& destination_id);
 
   // This method is called when Cryptohome D-Bus method call completes.

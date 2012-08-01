@@ -37,12 +37,12 @@ class FlimflamIPConfigClientImpl : public FlimflamIPConfigClient {
   virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) OVERRIDE;
+                           const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
                              const std::string& name,
-                             const VoidCallback& callback) OVERRIDE;
+                             const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
-                      const VoidCallback& callback) OVERRIDE;
+                      const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual bool CallRemoveAndBlock(
       const dbus::ObjectPath& ipconfig_path) OVERRIDE;
 
@@ -107,7 +107,7 @@ void FlimflamIPConfigClientImpl::SetProperty(
     const dbus::ObjectPath& ipconfig_path,
     const std::string& name,
     const base::Value& value,
-    const VoidCallback& callback) {
+    const VoidDBusMethodCallback& callback) {
   dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
                                flimflam::kSetPropertyFunction);
   dbus::MessageWriter writer(&method_call);
@@ -148,7 +148,7 @@ void FlimflamIPConfigClientImpl::SetProperty(
 void FlimflamIPConfigClientImpl::ClearProperty(
     const dbus::ObjectPath& ipconfig_path,
     const std::string& name,
-    const VoidCallback& callback) {
+    const VoidDBusMethodCallback& callback) {
   dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
                                flimflam::kClearPropertyFunction);
   dbus::MessageWriter writer(&method_call);
@@ -156,8 +156,9 @@ void FlimflamIPConfigClientImpl::ClearProperty(
   GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
 }
 
-void FlimflamIPConfigClientImpl::Remove(const dbus::ObjectPath& ipconfig_path,
-                                        const VoidCallback& callback) {
+void FlimflamIPConfigClientImpl::Remove(
+    const dbus::ObjectPath& ipconfig_path,
+    const VoidDBusMethodCallback& callback) {
   dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
                                flimflam::kRemoveConfigFunction);
   GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
@@ -205,7 +206,7 @@ class FlimflamIPConfigClientStubImpl : public FlimflamIPConfigClient {
   virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
@@ -213,14 +214,14 @@ class FlimflamIPConfigClientStubImpl : public FlimflamIPConfigClient {
   // FlimflamIPConfigClient override.
   virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
                              const std::string& name,
-                             const VoidCallback& callback) OVERRIDE {
+                             const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
 
   // FlimflamIPConfigClient override.
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
-                      const VoidCallback& callback) OVERRIDE {
+                      const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }

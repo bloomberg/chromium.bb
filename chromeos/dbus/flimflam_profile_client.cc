@@ -36,7 +36,7 @@ class FlimflamProfileClientImpl : public FlimflamProfileClient {
                         const DictionaryValueCallback& callback) OVERRIDE;
   virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
                            const std::string& entry_path,
-                           const VoidCallback& callback) OVERRIDE;
+                           const VoidDBusMethodCallback& callback) OVERRIDE;
 
  private:
   typedef std::map<std::string, FlimflamClientHelper*> HelperMap;
@@ -104,7 +104,7 @@ void FlimflamProfileClientImpl::GetEntry(
 void FlimflamProfileClientImpl::DeleteEntry(
     const dbus::ObjectPath& profile_path,
     const std::string& entry_path,
-    const VoidCallback& callback) {
+    const VoidDBusMethodCallback& callback) {
   dbus::MethodCall method_call(flimflam::kFlimflamProfileInterface,
                                flimflam::kDeleteEntryFunction);
   dbus::MessageWriter writer(&method_call);
@@ -152,7 +152,7 @@ class FlimflamProfileClientStubImpl : public FlimflamProfileClient {
   // FlimflamProfileClient override.
   virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
                            const std::string& entry_path,
-                           const VoidCallback& callback) OVERRIDE {
+                           const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS));

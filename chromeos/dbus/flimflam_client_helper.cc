@@ -44,8 +44,9 @@ void FlimflamClientHelper::MonitorPropertyChanged(
                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FlimflamClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
-                                          const VoidCallback& callback) {
+void FlimflamClientHelper::CallVoidMethod(
+    dbus::MethodCall* method_call,
+    const VoidDBusMethodCallback& callback) {
   proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                      base::Bind(&FlimflamClientHelper::OnVoidMethod,
                                 weak_ptr_factory_.GetWeakPtr(),
@@ -54,7 +55,7 @@ void FlimflamClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
 
 void FlimflamClientHelper::CallObjectPathMethod(
     dbus::MethodCall* method_call,
-    const ObjectPathCallback& callback) {
+    const ObjectPathDBusMethodCallback& callback) {
   proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                      base::Bind(&FlimflamClientHelper::OnObjectPathMethod,
                                 weak_ptr_factory_.GetWeakPtr(),
@@ -204,7 +205,7 @@ void FlimflamClientHelper::OnPropertyChanged(dbus::Signal* signal) {
   property_changed_handler_.Run(name, *value);
 }
 
-void FlimflamClientHelper::OnVoidMethod(const VoidCallback& callback,
+void FlimflamClientHelper::OnVoidMethod(const VoidDBusMethodCallback& callback,
                                         dbus::Response* response) {
   if (!response) {
     callback.Run(DBUS_METHOD_CALL_FAILURE);
@@ -214,7 +215,7 @@ void FlimflamClientHelper::OnVoidMethod(const VoidCallback& callback,
 }
 
 void FlimflamClientHelper::OnObjectPathMethod(
-    const ObjectPathCallback& callback,
+    const ObjectPathDBusMethodCallback& callback,
     dbus::Response* response) {
   if (!response) {
     callback.Run(DBUS_METHOD_CALL_FAILURE, dbus::ObjectPath());
