@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,9 +26,9 @@ unsigned RestrictedToken::Init(const HANDLE effective_token) {
                           effective_token,
                           ::GetCurrentProcess(),
                           &effective_token_dup,
-                          DUPLICATE_SAME_ACCESS,
+                          0,
                           FALSE,
-                          0)) {  // no special options
+                          DUPLICATE_SAME_ACCESS)) {
       effective_token_ = effective_token_dup;
     } else {
       return ::GetLastError();
@@ -263,13 +263,16 @@ unsigned RestrictedToken::AddUserSidForDenyOnly() {
                                       size,
                                       &size);
 
+  if (!result) {
+    delete[] reinterpret_cast<BYTE*>(token_user);
+    return ::GetLastError();
+  }
+
   Sid user = reinterpret_cast<SID*>(token_user->User.Sid);
+  sids_for_deny_only_.push_back(user);
+
   delete[] reinterpret_cast<BYTE*>(token_user);
 
-  if (!result)
-    return ::GetLastError();
-
-  sids_for_deny_only_.push_back(user);
   return ERROR_SUCCESS;
 }
 
@@ -323,6 +326,7 @@ unsigned RestrictedToken::DeleteAllPrivileges(
   }
 
   delete[] reinterpret_cast<BYTE *>(token_privileges);
+
   return ERROR_SUCCESS;
 }
 
@@ -406,14 +410,16 @@ unsigned RestrictedToken::AddRestrictingSidCurrentUser() {
                                       size,
                                       &size);
 
+  if (!result) {
+    delete[] reinterpret_cast<BYTE*>(token_user);
+    return ::GetLastError();
+  }
+
   Sid user = reinterpret_cast<SID*>(token_user->User.Sid);
+  sids_to_restrict_.push_back(user);
+
   delete[] reinterpret_cast<BYTE*>(token_user);
 
-
-  if (!result)
-    return ::GetLastError();
-
-  sids_to_restrict_.push_back(user);
   return ERROR_SUCCESS;
 }
 

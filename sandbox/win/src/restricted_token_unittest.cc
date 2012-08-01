@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -292,6 +292,44 @@ TEST(RestrictedTokenTest, DenyOwnerSid) {
   }
 }
 
+// Tests test method AddOwnerSidForDenyOnly with a custom effective token.
+TEST(RestrictedTokenTest, DenyOwnerSidCustom) {
+  // Get the current process token.
+  HANDLE token_handle = INVALID_HANDLE_VALUE;
+  ASSERT_TRUE(::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS,
+                                 &token_handle));
+
+  ASSERT_NE(INVALID_HANDLE_VALUE, token_handle);
+
+  ATL::CAccessToken access_token;
+  access_token.Attach(token_handle);
+
+  RestrictedToken token;
+  ASSERT_EQ(ERROR_SUCCESS, token.Init(access_token.GetHandle()));
+  ASSERT_EQ(ERROR_SUCCESS, token.AddUserSidForDenyOnly());
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
+
+  ATL::CAccessToken restricted_token;
+  restricted_token.Attach(token_handle);
+
+  ATL::CTokenGroups groups;
+  ASSERT_TRUE(restricted_token.GetGroups(&groups));
+
+  ATL::CSid::CSidArray sids;
+  ATL::CAtlArray<DWORD> attributes;
+  groups.GetSidsAndAttributes(&sids, &attributes);
+
+  ATL::CSid user_sid;
+  ASSERT_TRUE(restricted_token.GetUser(&user_sid));
+
+  for (unsigned int i = 0; i < sids.GetCount(); ++i) {
+    if (user_sid == sids[i]) {
+      ASSERT_EQ(SE_GROUP_USE_FOR_DENY_ONLY,
+                attributes[i] & SE_GROUP_USE_FOR_DENY_ONLY);
+    }
+  }
+}
+
 // Tests the method DeleteAllPrivileges.
 TEST(RestrictedTokenTest, DeleteAllPrivileges) {
   RestrictedToken token;
@@ -422,6 +460,31 @@ TEST(RestrictedTokenTest, AddRestrictingSidCurrentUser) {
   HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
+  ASSERT_EQ(ERROR_SUCCESS, token.AddRestrictingSidCurrentUser());
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
+
+  ATL::CAccessToken restricted_token;
+  restricted_token.Attach(token_handle);
+  ATL::CSid user;
+  restricted_token.GetUser(&user);
+
+  CheckRestrictingSid(restricted_token, user, 1);
+}
+
+// Tests the method AddRestrictingSidCurrentUser with a custom effective token.
+TEST(RestrictedTokenTest, AddRestrictingSidCurrentUserCustom) {
+  // Get the current process token.
+  HANDLE token_handle = INVALID_HANDLE_VALUE;
+  ASSERT_TRUE(::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS,
+                                 &token_handle));
+
+  ASSERT_NE(INVALID_HANDLE_VALUE, token_handle);
+
+  ATL::CAccessToken access_token;
+  access_token.Attach(token_handle);
+
+  RestrictedToken token;
+  ASSERT_EQ(ERROR_SUCCESS, token.Init(access_token.GetHandle()));
   ASSERT_EQ(ERROR_SUCCESS, token.AddRestrictingSidCurrentUser());
   ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
