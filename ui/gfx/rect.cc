@@ -6,8 +6,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
 #elif defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #endif

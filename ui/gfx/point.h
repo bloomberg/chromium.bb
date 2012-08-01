@@ -11,6 +11,8 @@
 #if defined(OS_WIN)
 typedef unsigned long DWORD;
 typedef struct tagPOINT POINT;
+#elif defined(OS_IOS)
+#include <CoreGraphics/CoreGraphics.h>
 #elif defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
