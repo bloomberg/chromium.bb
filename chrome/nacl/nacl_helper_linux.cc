@@ -175,7 +175,7 @@ static void CheckRDebug(char *argv0) {
 }
 
 /*
- * The zygote passes --reserved_at_zero=0xXXXXXXXX.
+ * The zygote passes --reserved_at_zero=0xXXXXXXXXXXXXXXXX.
  * nacl_helper_bootstrap replaces the Xs with the amount of prereserved
  * sandbox memory.
  *
