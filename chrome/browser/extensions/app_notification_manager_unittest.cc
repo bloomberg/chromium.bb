@@ -18,9 +18,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using extensions::Extension;
 
 namespace util = app_notification_test_util;
+
+namespace extensions {
 
 class AppNotificationManagerTest : public testing::Test {
  public:
@@ -127,3 +128,5 @@ TEST_F(AppNotificationManagerTest, ExtensionUninstall) {
   EXPECT_EQ(NULL, mgr_->GetAll(id1));
   util::ExpectListsEqual(list2, *mgr_->GetAll(id2));
 }
+
+}  // namespace extensions

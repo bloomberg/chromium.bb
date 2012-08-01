@@ -9,6 +9,8 @@
 #include "base/string_number_conversions.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace extensions {
+
 namespace {
 
 const char* kIsLocalKey = "is_local";
@@ -153,3 +155,5 @@ AppNotificationList* CopyAppNotificationList(
   }
   return copy;
 }
+
+}  // namespace extensions

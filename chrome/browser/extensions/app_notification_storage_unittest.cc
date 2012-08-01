@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,8 @@
 using content::BrowserThread;
 
 namespace util = app_notification_test_util;
+
+namespace extensions {
 
 class AppNotificationStorageTest : public testing::Test {
  public:
@@ -137,3 +139,5 @@ TEST_F(AppNotificationStorageTest, ReplaceExisting) {
   EXPECT_TRUE(storage_->Get(id, &tmp_list));
   util::ExpectListsEqual(list2, tmp_list);
 }
+
+}  // namespace extensions

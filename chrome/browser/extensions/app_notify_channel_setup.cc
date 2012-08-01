@@ -36,6 +36,8 @@ using base::StringPrintf;
 using content::BrowserThread;
 using net::URLFetcher;
 
+namespace extensions {
+
 namespace {
 
 static const char kChannelSetupAuthError[] = "unauthorized";
@@ -56,8 +58,8 @@ static const char kOAuth2IssueTokenScope[] =
 static const char kCWSChannelServiceURL[] =
     "https://www.googleapis.com/chromewebstore/v1.1/channels/id";
 
-static AppNotifyChannelSetup::InterceptorForTests* g_interceptor_for_tests =
-    NULL;
+static AppNotifyChannelSetup::InterceptorForTests*
+    g_interceptor_for_tests = NULL;
 
 }  // namespace.
 
@@ -410,3 +412,5 @@ bool AppNotifyChannelSetup::ParseCWSChannelServiceResponse(
   DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
   return dict->GetString("id", result);
 }
+
+}  // namespace extensions

@@ -10,6 +10,8 @@
 class Profile;
 class TabContents;
 
+namespace extensions {
+
 // An interface for prompting a user to sign in to sync so that we can create
 // an app notification channel for one of their apps.
 class AppNotifyChannelUI {
@@ -45,5 +47,7 @@ class AppNotifyChannelUI {
                                     const std::string& app_name,
                                     AppNotifyChannelUI::UIType ui_type);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_NOTIFY_CHANNEL_UI_H_

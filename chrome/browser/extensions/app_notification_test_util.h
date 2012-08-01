@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,25 +7,27 @@
 
 #include "chrome/browser/extensions/app_notification.h"
 
+namespace extensions {
 class AppNotificationManager;
+}
 
 namespace app_notification_test_util {
 
 // Does a deep equality check of two AppNotificationList's, adding a gtest
 // failure and logging at the first difference found.
-void ExpectListsEqual(const AppNotificationList& one,
-                      const AppNotificationList& two);
+void ExpectListsEqual(const extensions::AppNotificationList& one,
+                      const extensions::AppNotificationList& two);
 
 // Helper for inserting |count| dummy notifications with |prefix| in their
 // title and body into |list|.
-void AddNotifications(AppNotificationList* list,
+void AddNotifications(extensions::AppNotificationList* list,
                       const std::string& extension_id,
                       int count,
                       const std::string& prefix);
 
 // Adds a copy of each item in |list| to |manager|.
-bool AddCopiesFromList(AppNotificationManager* manager,
-                       const AppNotificationList& list);
+bool AddCopiesFromList(extensions::AppNotificationManager* manager,
+                       const extensions::AppNotificationList& list);
 
 }  // namespace app_notification_test_util
 

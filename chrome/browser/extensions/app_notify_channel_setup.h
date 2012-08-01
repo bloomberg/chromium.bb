@@ -17,8 +17,10 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class AppNotifyChannelSetupTest;
 class Profile;
+
+namespace extensions {
+class AppNotifyChannelSetupTest;
 
 // This class uses the browser login credentials to setup app notifications
 // for a given app.
@@ -172,5 +174,7 @@ class AppNotifyChannelSetup
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelSetup);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_NOTIFY_CHANNEL_SETUP_H_

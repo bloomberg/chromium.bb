@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "chrome/browser/extensions/app_notification.h"
 
 class FilePath;
+
+namespace extensions {
 
 // Represents storage for app notifications for a particular extension id.
 //
@@ -38,5 +40,7 @@ class AppNotificationStorage {
   // Deletes all data for |extension_id|.
   virtual bool Delete(const std::string& extension_id) = 0;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_NOTIFICATION_STORAGE_H__

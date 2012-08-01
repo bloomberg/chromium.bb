@@ -46,7 +46,6 @@
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
 
-class AppNotificationManager;
 class BookmarkExtensionEventRouter;
 class ExtensionErrorUI;
 class ExtensionFontSettingsEventRouter;
@@ -65,6 +64,7 @@ class ExtensionInputMethodEventRouter;
 }
 
 namespace extensions {
+class AppNotificationManager;
 class AppSyncData;
 class BrowserEventRouter;
 class ComponentLoader;
@@ -495,7 +495,7 @@ class ExtensionService
 
   extensions::MenuManager* menu_manager() { return &menu_manager_; }
 
-  AppNotificationManager* app_notification_manager() {
+  extensions::AppNotificationManager* app_notification_manager() {
     return app_notification_manager_.get();
   }
 
@@ -788,7 +788,7 @@ class ExtensionService
   extensions::MenuManager menu_manager_;
 
   // Keeps track of app notifications.
-  scoped_refptr<AppNotificationManager> app_notification_manager_;
+  scoped_refptr<extensions::AppNotificationManager> app_notification_manager_;
 
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;

@@ -42,21 +42,23 @@ void AppNotificationDataTypeController::Observe(
 AppNotificationDataTypeController::~AppNotificationDataTypeController() {
 }
 
-AppNotificationManager*
+extensions::AppNotificationManager*
 AppNotificationDataTypeController::GetAppNotificationManager() {
   return profile_->GetExtensionService()->app_notification_manager();
 }
 
-// We want to start the AppNotificationManager before we begin associating.
+// We want to start the extensions::AppNotificationManager before we begin
+// associating.
 bool AppNotificationDataTypeController::StartModels() {
-  AppNotificationManager* manager = GetAppNotificationManager();
+  extensions::AppNotificationManager* manager = GetAppNotificationManager();
   DCHECK(manager);
   if (manager->loaded())
     return true;  // Continue to Associate().
 
-  // Add an observer and continue when the AppNotificationManager is loaded.
+  // Add an observer and continue when the extensions::AppNotificationManager
+  // is loaded.
   registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_MANAGER_LOADED,
-                 content::Source<AppNotificationManager>(manager));
+                 content::Source<extensions::AppNotificationManager>(manager));
   return false;  // Don't continue Associate().
 }
 

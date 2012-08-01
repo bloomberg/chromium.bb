@@ -15,6 +15,8 @@
 class Profile;
 class TabContents;
 
+namespace extensions {
+
 class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
                                public ProfileSyncServiceObserver {
  public:
@@ -62,5 +64,7 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelUIImpl);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_NOTIFY_CHANNEL_UI_IMPL_H_

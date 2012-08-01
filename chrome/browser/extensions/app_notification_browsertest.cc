@@ -18,6 +18,8 @@ using content::BrowserThread;
 
 class AppNotificationTest : public ExtensionBrowserTest {};
 
+namespace extensions {
+
 namespace {
 
 // Our test app will call the getNotificationChannel API using this client id.
@@ -55,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(AppNotificationTest, SaveClientId) {
   Interceptor interceptor;
   AppNotifyChannelSetup::SetInterceptorForTests(&interceptor);
 
-  const extensions::Extension* app =
+  const Extension* app =
       LoadExtension(test_data_dir_.AppendASCII("app_notifications"));
   ASSERT_TRUE(app != NULL);
 
@@ -67,7 +69,9 @@ IN_PROC_BROWSER_TEST_F(AppNotificationTest, SaveClientId) {
   EXPECT_TRUE(interceptor.was_called());
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  extensions::ExtensionPrefs* prefs = service->extension_prefs();
+  ExtensionPrefs* prefs = service->extension_prefs();
   std::string saved_id = prefs->GetAppNotificationClientId(app->id());
   EXPECT_EQ(kExpectedClientId, saved_id);
 }
+
+}  // namespace extensions

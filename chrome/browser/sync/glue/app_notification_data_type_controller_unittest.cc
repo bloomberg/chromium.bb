@@ -40,17 +40,17 @@ class TestAppNotificationDataTypeController
       : AppNotificationDataTypeController(profile_sync_factory,
                                           profile,
                                           sync_service),
-        manager_(new AppNotificationManager(profile_)) {
+        manager_(new extensions::AppNotificationManager(profile_)) {
   }
 
-  virtual AppNotificationManager* GetAppNotificationManager() {
+  virtual extensions::AppNotificationManager* GetAppNotificationManager() {
     return manager_.get();
   }
 
  private:
   virtual ~TestAppNotificationDataTypeController() {}
 
-  scoped_refptr<AppNotificationManager> manager_;
+  scoped_refptr<extensions::AppNotificationManager> manager_;
 };
 
 namespace {
@@ -194,7 +194,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, StartManagerNotReady) {
     // Send the notification that the TemplateURLService has started.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_NOTIFICATION_MANAGER_LOADED,
-      content::Source<AppNotificationManager>(
+      content::Source<extensions::AppNotificationManager>(
           app_notif_dtc_->GetAppNotificationManager()),
           content::NotificationService::NoDetails());
   EXPECT_EQ(DataTypeController::MODEL_LOADED, app_notif_dtc_->state());

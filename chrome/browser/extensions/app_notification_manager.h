@@ -29,6 +29,8 @@ namespace syncer {
 class SyncErrorFactory;
 }
 
+namespace extensions {
+
 // This class keeps track of notifications for installed apps.
 class AppNotificationManager
     : public base::RefCountedThreadSafe<
@@ -179,5 +181,7 @@ class AppNotificationManager
 
   DISALLOW_COPY_AND_ASSIGN(AppNotificationManager);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_NOTIFICATION_MANAGER_H_

@@ -9,6 +9,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
 
+namespace extensions {
+
 class AppNotifyChannelUIAndroid : public AppNotifyChannelUI {
  public:
   AppNotifyChannelUIAndroid();
@@ -19,5 +21,7 @@ class AppNotifyChannelUIAndroid : public AppNotifyChannelUI {
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelUIAndroid);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_NOTIFY_CHANNEL_UI_ANDROID_H_

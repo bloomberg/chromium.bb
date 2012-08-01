@@ -8,6 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 
+namespace extensions {
+
 AppNotifyChannelUIAndroid::AppNotifyChannelUIAndroid() {}
 
 AppNotifyChannelUIAndroid::~AppNotifyChannelUIAndroid() {
@@ -25,3 +27,5 @@ void AppNotifyChannelUIAndroid::PromptSyncSetup(
     AppNotifyChannelUI::Delegate* delegate) {
   NOTIMPLEMENTED();
 }
+
+}  // namespace extensions

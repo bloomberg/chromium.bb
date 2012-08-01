@@ -27,6 +27,8 @@ using content::BrowserThread;
 using testing::_;
 using testing::Return;
 
+namespace extensions {
+
 namespace {
 
 const int kRouteId = 4;
@@ -316,3 +318,5 @@ TEST_F(AppNotifyChannelSetupTest, SecondFetchAccessTokenSuccess) {
   scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
   RunServerTest(setup, "dummy_do_not_use", "");
 }
+
+}  // namespace extensions

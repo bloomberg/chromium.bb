@@ -89,6 +89,8 @@ class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
 
 }  // namespace
 
+namespace extensions {
+
 class AppNotificationManagerSyncTest : public testing::Test {
  public:
   AppNotificationManagerSyncTest()
@@ -749,3 +751,5 @@ TEST_F(AppNotificationManagerSyncTest, ClearAllGetsSynced) {
   syncer::SyncChange c3 = processor()->GetChangeByGuid(n3->guid());
   AssertSyncChange(c3, syncer::SyncChange::ACTION_DELETE, *n3);
 }
+
+}  // namespace extensions

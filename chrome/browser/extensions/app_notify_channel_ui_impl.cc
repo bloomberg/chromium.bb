@@ -28,6 +28,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace extensions {
+
 class AppNotifyChannelUIImpl::InfoBar : public ConfirmInfoBarDelegate {
  public:
   InfoBar(AppNotifyChannelUIImpl* creator,
@@ -205,3 +207,5 @@ void AppNotifyChannelUIImpl::StopObservingSync() {
   ProfileSyncServiceFactory::GetInstance()->GetForProfile(
       profile_)->RemoveObserver(this);
 }
+
+}  // namespace extensions

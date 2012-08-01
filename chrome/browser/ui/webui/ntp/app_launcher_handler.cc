@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/app_notification.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -93,7 +94,7 @@ AppLauncherHandler::~AppLauncherHandler() {}
 // Serializes |notification| into a new DictionaryValue which the caller then
 // owns.
 static DictionaryValue* SerializeNotification(
-    const AppNotification& notification) {
+    const extensions::AppNotification& notification) {
   DictionaryValue* dictionary = new DictionaryValue();
   dictionary->SetString("title", notification.title());
   dictionary->SetString("body", notification.body());
@@ -104,10 +105,11 @@ static DictionaryValue* SerializeNotification(
   return dictionary;
 }
 
-void AppLauncherHandler::CreateAppInfo(const Extension* extension,
-                                       const AppNotification* notification,
-                                       ExtensionService* service,
-                                       DictionaryValue* value) {
+void AppLauncherHandler::CreateAppInfo(
+    const Extension* extension,
+    const extensions::AppNotification* notification,
+    ExtensionService* service,
+    DictionaryValue* value) {
   value->Clear();
 
   // The Extension class 'helpfully' wraps bidi control characters that
@@ -249,7 +251,7 @@ void AppLauncherHandler::Observe(int type,
     case chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED: {
       const std::string& id =
           *content::Details<const std::string>(details).ptr();
-      const AppNotification* notification =
+      const extensions::AppNotification* notification =
           extension_service_->app_notification_manager()->GetLast(id);
       base::StringValue id_value(id);
       if (notification) {
@@ -406,7 +408,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 }
 
 DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
-  AppNotificationManager* notification_manager =
+  extensions::AppNotificationManager* notification_manager =
       extension_service_->app_notification_manager();
   DictionaryValue* app_info = new DictionaryValue();
   // CreateAppInfo can change the extension prefs.
@@ -773,7 +775,7 @@ void AppLauncherHandler::HandleNotificationClose(const ListValue* args) {
 
   UMA_HISTOGRAM_COUNTS("AppNotification.NTPNotificationClosed", 1);
 
-  AppNotificationManager* notification_manager =
+  extensions::AppNotificationManager* notification_manager =
       extension_service_->app_notification_manager();
   notification_manager->ClearAll(extension_id);
 }

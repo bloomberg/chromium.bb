@@ -12,7 +12,9 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace extensions {
 class AppNotificationManager;
+}
 
 namespace browser_sync {
 
@@ -31,7 +33,7 @@ class AppNotificationDataTypeController
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden in test to control creation and init order.
-  virtual AppNotificationManager* GetAppNotificationManager();
+  virtual extensions::AppNotificationManager* GetAppNotificationManager();
 
  private:
   friend class TestAppNotificationDataTypeController;

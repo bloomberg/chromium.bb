@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::IntToString;
+using extensions::AppNotification;
+using extensions::AppNotificationList;
 
 namespace app_notification_test_util {
 
@@ -38,7 +40,7 @@ void AddNotifications(AppNotificationList* list,
   }
 }
 
-bool AddCopiesFromList(AppNotificationManager* manager,
+bool AddCopiesFromList(extensions::AppNotificationManager* manager,
                        const AppNotificationList& list) {
   bool result = true;
   for (AppNotificationList::const_iterator i = list.begin();

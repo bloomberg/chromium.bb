@@ -24,6 +24,8 @@ using content::BrowserThread;
 
 typedef std::map<std::string, syncer::SyncData> SyncDataMap;
 
+namespace extensions {
+
 namespace {
 
 class GuidComparator
@@ -175,7 +177,7 @@ void AppNotificationManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   CHECK(type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
-  ClearAll(content::Details<const extensions::Extension>(details).ptr()->id());
+  ClearAll(content::Details<const Extension>(details).ptr()->id());
 }
 
 syncer::SyncDataList AppNotificationManager::GetAllSyncData(
@@ -584,3 +586,5 @@ AppNotification* AppNotificationManager::CreateNotificationFromSyncData(
     notification->set_link_url(GURL(specifics.link_url()));
   return notification;
 }
+
+}  // namespace extensions

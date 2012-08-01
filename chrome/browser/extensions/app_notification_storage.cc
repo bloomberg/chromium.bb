@@ -20,6 +20,8 @@ using base::JSONReader;
 using base::JSONWriter;
 using content::BrowserThread;
 
+namespace extensions {
+
 // A concrete implementation of the AppNotificationStorage interface, using
 // LevelDb for backing storage.
 class LevelDbAppNotificationStorage : public AppNotificationStorage {
@@ -131,7 +133,7 @@ bool LevelDbAppNotificationStorage::GetExtensionIds(
   scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options_));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
     std::string key = iter->key().ToString();
-    if (extensions::Extension::IdIsValid(key))
+    if (Extension::IdIsValid(key))
       result->insert(key);
   }
 
@@ -226,3 +228,5 @@ bool LevelDbAppNotificationStorage::OpenDbIfNeeded(bool create_if_missing) {
   db_.reset(db);
   return true;
 }
+
+}  // namespace extensions

@@ -20,10 +20,13 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class AppNotification;
 class ExtensionService;
 class PrefChangeRegistrar;
 class Profile;
+
+namespace extensions {
+class AppNotification;
+}
 
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler : public content::WebUIMessageHandler,
@@ -37,7 +40,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Populate a dictionary with the information from an extension.
   static void CreateAppInfo(
       const extensions::Extension* extension,
-      const AppNotification* notification,
+      const extensions::AppNotification* notification,
       ExtensionService* service,
       base::DictionaryValue* value);
 
