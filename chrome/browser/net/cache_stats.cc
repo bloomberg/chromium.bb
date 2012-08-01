@@ -165,9 +165,9 @@ CacheStats::CacheStats() {
             0, 101, 102, base::Histogram::kUmaTargetedHistogramFlag));
     intermediate_histograms_.push_back(
         base::LinearHistogram::FactoryGet(
-            "DiskCache.FractionCacheUseIntermediatePLT_" +
+            "CacheStats.FractionCacheUseIntermediatePLT_" +
             base::IntToString(kStatsCollectionTimesMs[i]),
-            0, 101, 102, base::Histogram::kNoFlags));
+            0, 101, 102, base::Histogram::kUmaTargetedHistogramFlag));
   }
   DCHECK_EQ(final_histograms_.size(), arraysize(kStatsCollectionTimesMs));
   DCHECK_EQ(intermediate_histograms_.size(),
