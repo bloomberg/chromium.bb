@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
@@ -794,11 +795,13 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 
   bool check_if_default_search_valid = !is_default_search_managed_;
 
-#if defined(ENABLE_PROTECTOR_SERVICE)
   // Don't do anything if the default search provider has been changed since the
   // check at the beginning (overridden by Sync).
   if (is_default_search_hijacked &&
       default_search_provider_ == hijacked_default_search_provider) {
+    // Put the #if defined(ENABLE_PROTECTOR_SERVICE) inside the 'if' block to
+    // avoid 'unused-but-set-variable' error.
+#if defined(ENABLE_PROTECTOR_SERVICE)
     // The histograms should be reported even when Protector is disabled.
     scoped_ptr<protector::BaseSettingChange> change(
         protector::CreateDefaultSearchProviderChange(
@@ -818,8 +821,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     // The default search provider sanity check makes no sense in this case
     // because ProtectorService is going to change default search eventually.
     check_if_default_search_valid = false;
-  }
 #endif
+  }
 
   if (check_if_default_search_valid) {
     bool has_default_search_provider = default_search_provider_ != NULL &&

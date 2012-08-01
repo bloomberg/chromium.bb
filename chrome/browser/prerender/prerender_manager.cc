@@ -208,7 +208,7 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
 #if defined(OS_ANDROID)
   // TODO(jcivelli): http://crbug.com/113322 We should have an option to disable
   //                link-prerender and enable omnibox-prerender only.
-  return false;
+  return NULL;
 #else
   DCHECK(!size.IsEmpty());
   if (PrerenderData* parent_prerender_data =

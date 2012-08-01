@@ -389,7 +389,7 @@ std::string MemoryUsageInfoToString(const std::string& test_name,
   AppendResult(output, "ws_final_t", "", "ws_f_t" + trace_name,
                total_working_set_size, "bytes",
                false /* not important */);
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
+#elif defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
   AppendResult(output, "vm_size_final_b", "", "vm_size_f_b" + trace_name,
                browser_virtual_size, "bytes",
                false /* not important */);
