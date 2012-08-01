@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -37,10 +38,6 @@ struct UploadFileInfo;
 namespace {
 struct LoadRootFeedParams;
 }  // namespace
-
-// TODO(satorux): Move this into a new file. crbug.com/130669
-typedef std::map<std::string /* resource_id */, GDataEntry*>
-    FileResourceIdMap;
 
 // The production implementation of GDataFileSystemInterface.
 class GDataFileSystem : public GDataFileSystemInterface,
@@ -799,7 +796,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path);
   void OnRequestDirectoryRefresh(GetDocumentsParams* params,
                                  GDataFileError error);
-  void RequestDirectoryRefreshByEntry(const FilePath& directory_path,
+  void RequestDirectoryRefreshByEntry(
+      const FilePath& directory_path,
       const std::string& directory_resource_id,
       const FileResourceIdMap& file_map,
       GDataEntry* directory_entry);

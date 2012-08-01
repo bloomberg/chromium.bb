@@ -585,6 +585,8 @@
         'browser/chromeos/gdata/gdata_uploader.h',
         'browser/chromeos/gdata/gdata_util.cc',
         'browser/chromeos/gdata/gdata_util.h',
+        'browser/chromeos/gdata/gdata_wapi_feed_processor.cc',
+        'browser/chromeos/gdata/gdata_wapi_feed_processor.h',
         'browser/chromeos/gdata/gdata_wapi_parser.cc',
         'browser/chromeos/gdata/gdata_wapi_parser.h',
         'browser/chromeos/gdata/operations_base.cc',
