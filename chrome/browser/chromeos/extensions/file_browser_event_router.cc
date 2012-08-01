@@ -238,7 +238,7 @@ void FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
       file_system->StartUpdates();
     ++num_remote_update_requests_;
   } else {
-    DCHECK_LE(0, num_remote_update_requests_);
+    DCHECK_LE(1, num_remote_update_requests_);
     --num_remote_update_requests_;
     if (num_remote_update_requests_ == 0)
       file_system->StopUpdates();
