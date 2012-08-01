@@ -78,7 +78,6 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_CONTAINS_ERRORS:
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
-    case net::ERR_CERT_NOT_IN_DNS:
       OnCertErrorInternal(handler, false, handler->fatal());
       break;
     default:

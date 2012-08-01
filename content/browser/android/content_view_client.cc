@@ -559,7 +559,6 @@ ContentViewClientError ContentViewClient::ToContentViewClientError(
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
-    case net::ERR_CERT_NOT_IN_DNS:
     case net::ERR_CERT_NON_UNIQUE_NAME:
       return CONTENT_VIEW_CLIENT_ERROR_OK;
 
