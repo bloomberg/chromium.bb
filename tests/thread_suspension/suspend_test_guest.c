@@ -109,33 +109,6 @@ static void ContinueAfterSyscall(void) {
   longjmp(return_jmp_buf, 1);
 }
 
-static void UnsetNonCalleeSavedRegisters(struct NaClSignalContext *regs) {
-#if defined(__i386__)
-  regs->eax = 0;
-  regs->ecx = 0;
-  regs->edx = 0;
-#elif defined(__x86_64__)
-  regs->rax = 0;
-  regs->rcx = 0;
-  regs->rdx = 0;
-  regs->rsi = 0;
-  regs->rdi = 0;
-  regs->r8 = 0;
-  regs->r9 = 0;
-  regs->r10 = 0;
-  regs->r11 = 0;
-#elif defined(__arm__)
-  regs->r0 = 0;
-  regs->r1 = 0;
-  regs->r2 = 0;
-  regs->r3 = 0;
-  regs->r12 = 0;
-  regs->lr = 0;
-#else
-# error Unsupported architecture
-#endif
-}
-
 /* Set registers to known values and enter a NaCl syscall. */
 static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
   struct NaClSignalContext call_regs;
@@ -154,7 +127,7 @@ static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
    * as call_regs but with various registers zeroed out.
    */
   test_shm->expected_regs = call_regs;
-  UnsetNonCalleeSavedRegisters(&test_shm->expected_regs);
+  RegsUnsetNonCalleeSavedRegisters(&test_shm->expected_regs);
 
   uintptr_t syscall_addr = (uintptr_t) NACL_SYSCALL(test_syscall_1);
   if (!setjmp(return_jmp_buf)) {

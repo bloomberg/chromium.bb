@@ -93,3 +93,30 @@ void RegsAssertEqual(const struct NaClSignalContext *actual,
 
 #undef CHECK_REG
 }
+
+void RegsUnsetNonCalleeSavedRegisters(struct NaClSignalContext *regs) {
+#if defined(__i386__)
+  regs->eax = 0;
+  regs->ecx = 0;
+  regs->edx = 0;
+#elif defined(__x86_64__)
+  regs->rax = 0;
+  regs->rcx = 0;
+  regs->rdx = 0;
+  regs->rsi = 0;
+  regs->rdi = 0;
+  regs->r8 = 0;
+  regs->r9 = 0;
+  regs->r10 = 0;
+  regs->r11 = 0;
+#elif defined(__arm__)
+  regs->r0 = 0;
+  regs->r1 = 0;
+  regs->r2 = 0;
+  regs->r3 = 0;
+  regs->r12 = 0;
+  regs->lr = 0;
+#else
+# error Unsupported architecture
+#endif
+}

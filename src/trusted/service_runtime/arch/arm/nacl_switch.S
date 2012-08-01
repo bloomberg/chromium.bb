@@ -22,13 +22,14 @@
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
 
 /*
- * We clear registers r2, r3, lr, flag and status fields in CPSR
- * (status register) to avoid information leaks.  The remaining
+ * We clear registers r2, r3, r12 (ip), lr, flag and status fields in
+ * CPSR (status register) to avoid information leaks.  The remaining
  * registers are overwritten by the code that follows after.
  */
 
   mov r2, #0
   mov r3, #0
+  mov r12, #0
   mov lr, #0
   msr cpsr_fs, #0
 

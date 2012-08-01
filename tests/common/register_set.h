@@ -246,4 +246,7 @@ void RegsApplySandboxConstraints(struct NaClSignalContext *regs);
 void RegsAssertEqual(const struct NaClSignalContext *actual,
                      const struct NaClSignalContext *expected);
 
+/* Zero out registers that are clobbered by function calls. */
+void RegsUnsetNonCalleeSavedRegisters(struct NaClSignalContext *regs);
+
 #endif

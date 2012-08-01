@@ -96,6 +96,9 @@ MACROENTRY
          * are a byte shorter than their 64-bit counterparts
          * when the target register is one of the first eight,
          * and they implicitly zero the high halves.
+         *
+         * The 'xorl' instruction also resets most flags to known
+         * values.
          */
         xorl    %edx, %edx
         movl    %edx, %esi

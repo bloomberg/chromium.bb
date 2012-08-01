@@ -214,11 +214,17 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClGetTlsFastPath):
         leaq    IDENTIFIER(nacl_tls)(%rip), %rdx
         leaq    (%rdx,%rax,4), %rdx
         movl    0x0(%rdx), %eax
-        xorl    %edx, %edx  /* do not leak nacl_tls[thread_id] address */
         /* sandbox the return, straight off the untrusted stack */
         movq    0x8(%rsp), %rcx
         addq    $0x10, %rsp
         addl    $31, %ecx
         andl    $0xffffffe0, %ecx
         addq    %r15, %rcx
+        /*
+         * Set %rdx to zero so that we do not leak nacl_tls[thread_id]
+         * address.  This also resets flags.  Resetting flags to fixed
+         * values by doing this last simplifies testing that we do not
+         * leak any information via flags.
+         */
+        xorl    %edx, %edx
         jmp     *%rcx

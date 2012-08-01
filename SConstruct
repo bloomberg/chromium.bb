@@ -3485,6 +3485,7 @@ irt_variant_tests = [
     'tests/stack_alignment/nacl.scons',
     'tests/stubout_mode/nacl.scons',
     'tests/sysbasic/nacl.scons',
+    'tests/syscall_return_regs/nacl.scons',
     'tests/syscall_return_sandboxing/nacl.scons',
     'tests/syscalls/nacl.scons',
     'tests/threads/nacl.scons',
