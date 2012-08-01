@@ -294,6 +294,7 @@ class GDataDirectory : public GDataEntry {
   // TODO(satorux): Remove the friend statements. crbug.com/139649
   friend class GDataDirectoryService;
   friend class GDataFileSystem;
+  friend class GDataWapiFeedProcessor;
 
   // Adds child file to the directory and takes over the ownership of |file|
   // object. The method will also do name de-duplication to ensure that the

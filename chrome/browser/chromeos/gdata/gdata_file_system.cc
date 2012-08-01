@@ -568,6 +568,95 @@ void RunGetEntryInfoWithFilePathCallback(
 
 }  // namespace
 
+// Struct used to record UMA stats with FeedToFileResourceMap().
+//
+// TODO(satorux): Move this to a new file. crbug.com/130669
+struct FeedToFileResourceMapUmaStats {
+  FeedToFileResourceMapUmaStats()
+      : num_regular_files(0),
+        num_hosted_documents(0) {}
+
+  typedef std::map<DocumentEntry::EntryKind, int> EntryKindToCountMap;
+  int num_regular_files;
+  int num_hosted_documents;
+  EntryKindToCountMap num_files_with_entry_kind;
+};
+
+// GDataWapiFeedProcessor is used to process feeds from WAPI (codename for
+// Documents List API).
+//
+// TODO(satorux): Move this into a new file. crbug.com/130669
+class GDataWapiFeedProcessor {
+ public:
+  explicit GDataWapiFeedProcessor(GDataDirectoryService* directory_service)
+      : directory_service_(directory_service) {
+  }
+
+  // Applies the documents feeds to the file system using |directory_service_|.
+  //
+  // |start_changestamp| determines the type of feed to process. The value is
+  // set to zero for the root feeds, every other value is for the delta feeds.
+  //
+  // In the case of processing the root feeds |root_feed_changestamp| is used
+  // as its initial changestamp value. The value comes from
+  // AccountMetadataFeed.
+  GDataFileError ApplyFeeds(const std::vector<DocumentFeed*>& feed_list,
+                            int start_changestamp,
+                            int root_feed_changestamp,
+                            std::set<FilePath>* changed_dirs);
+
+  // Converts list of document feeds from collected feeds into
+  // FileResourceIdMap.
+  GDataFileError FeedToFileResourceMap(
+    const std::vector<DocumentFeed*>& feed_list,
+    FileResourceIdMap* file_map,
+    int* feed_changestamp,
+    FeedToFileResourceMapUmaStats* uma_stats);
+
+ private:
+  // Updates UMA histograms about file counts.
+  void UpdateFileCountUmaHistograms(
+      const FeedToFileResourceMapUmaStats& uma_stats) const;
+
+  // Applies the pre-processed feed from |file_map| map onto the file system.
+  // All entries in |file_map| will be erased (i.e. the map becomes empty),
+  // and values are deleted.
+  void ApplyFeedFromFileUrlMap(bool is_delta_feed,
+                               int feed_changestamp,
+                               FileResourceIdMap* file_map,
+                               std::set<FilePath>* changed_dirs);
+
+  // Helper function for adding new |file| from the feed into |directory|. It
+  // checks the type of file and updates |changed_dirs| if this file adding
+  // operation needs to raise directory notification update. If file is being
+  // added to |orphaned_dir_service| such notifications are not raised since
+  // we ignore such files and don't add them to the file system now.
+  static void AddEntryToDirectoryAndCollectChangedDirectories(
+      GDataEntry* entry,
+      GDataDirectory* directory,
+      GDataDirectoryService* orphaned_dir_service,
+      std::set<FilePath>* changed_dirs);
+
+  // Helper function for removing |entry| from |directory|. If |entry| is a
+  // directory too, it will collect all its children file paths into
+  // |changed_dirs| as well.
+  static void RemoveEntryFromDirectoryAndCollectChangedDirectories(
+      GDataDirectory* directory,
+      GDataEntry* entry,
+      std::set<FilePath>* changed_dirs);
+
+  // Finds directory where new |file| should be added to during feed processing.
+  // |orphaned_entries_dir| collects files/dirs that don't have a parent in
+  // either locally cached file system or in this new feed.
+  GDataDirectory* FindDirectoryForNewEntry(
+      GDataEntry* new_entry,
+      const FileResourceIdMap& file_map,
+      GDataDirectoryService* orphaned_dir_service);
+
+  GDataDirectoryService* directory_service_;
+  DISALLOW_COPY_AND_ASSIGN(GDataWapiFeedProcessor);
+};
+
 // GDataFileSystem::GetDocumentsParams struct implementation.
 struct GDataFileSystem::GetDocumentsParams {
   GetDocumentsParams(int start_changestamp,
@@ -714,18 +803,6 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
 
 GDataFileSystem::GetFileFromCacheParams::~GetFileFromCacheParams() {
 }
-
-// GDataFileSystem::FeedToFileResourceMapUmaStats implementation.
-struct GDataFileSystem::FeedToFileResourceMapUmaStats {
-  FeedToFileResourceMapUmaStats()
-      : num_regular_files(0),
-        num_hosted_documents(0) {}
-
-  typedef std::map<DocumentEntry::EntryKind, int> EntryKindToCountMap;
-  int num_regular_files;
-  int num_hosted_documents;
-  EntryKindToCountMap num_files_with_entry_kind;
-};
 
 // GDataFileSystem::StartFileUploadParams implementation.
 struct GDataFileSystem::StartFileUploadParams {
@@ -2365,10 +2442,12 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
   int unused_delta_feed_changestamp = 0;
   FeedToFileResourceMapUmaStats unused_uma_stats;
   FileResourceIdMap file_map;
-  error = FeedToFileResourceMap(*params->feed_list,
-                                &file_map,
-                                &unused_delta_feed_changestamp,
-                                &unused_uma_stats);
+  GDataWapiFeedProcessor feed_processor(directory_service_.get());
+  error = feed_processor.FeedToFileResourceMap(
+      *params->feed_list,
+      &file_map,
+      &unused_delta_feed_changestamp,
+      &unused_uma_stats);
   if (error != GDATA_FILE_OK) {
     LOG(ERROR) << "Failed to convert feed: " << directory_path.value()
                << ": " << error;
@@ -3282,6 +3361,33 @@ GDataFileError GDataFileSystem::UpdateFromFeed(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "Updating directory with a feed";
 
+  std::set<FilePath> changed_dirs;
+
+  GDataWapiFeedProcessor feed_processor(directory_service_.get());
+  const GDataFileError error = feed_processor.ApplyFeeds(
+      feed_list,
+      start_changestamp,
+      root_feed_changestamp,
+      &changed_dirs);
+
+  // Don't send directory content change notification while performing
+  // the initial content retrieval.
+  const bool should_notify_directory_changed = (start_changestamp != 0);
+  if (should_notify_directory_changed) {
+    for (std::set<FilePath>::iterator dir_iter = changed_dirs.begin();
+        dir_iter != changed_dirs.end(); ++dir_iter) {
+      NotifyDirectoryChanged(*dir_iter);
+    }
+  }
+
+  return error;
+}
+
+GDataFileError GDataWapiFeedProcessor::ApplyFeeds(
+    const std::vector<DocumentFeed*>& feed_list,
+    int start_changestamp,
+    int root_feed_changestamp,
+    std::set<FilePath>* changed_dirs) {
   bool is_delta_feed = start_changestamp != 0;
 
   directory_service_->set_origin(FROM_SERVER);
@@ -3290,16 +3396,17 @@ GDataFileError GDataFileSystem::UpdateFromFeed(
   FeedToFileResourceMapUmaStats uma_stats;
   FileResourceIdMap file_map;
   GDataFileError error = FeedToFileResourceMap(feed_list,
-                                                        &file_map,
-                                                        &delta_feed_changestamp,
-                                                        &uma_stats);
+                                               &file_map,
+                                               &delta_feed_changestamp,
+                                               &uma_stats);
   if (error != GDATA_FILE_OK)
     return error;
 
   ApplyFeedFromFileUrlMap(
       is_delta_feed,
       is_delta_feed ? delta_feed_changestamp : root_feed_changestamp,
-      &file_map);
+      &file_map,
+      changed_dirs);
 
   // Shouldn't record histograms when processing delta feeds.
   if (!is_delta_feed)
@@ -3308,7 +3415,7 @@ GDataFileError GDataFileSystem::UpdateFromFeed(
   return GDATA_FILE_OK;
 }
 
-void GDataFileSystem::UpdateFileCountUmaHistograms(
+void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
     const FeedToFileResourceMapUmaStats& uma_stats) const {
   const int num_total_files =
       uma_stats.num_hosted_documents + uma_stats.num_regular_files;
@@ -3331,21 +3438,17 @@ void GDataFileSystem::UpdateFileCountUmaHistograms(
   }
 }
 
-void GDataFileSystem::ApplyFeedFromFileUrlMap(
+void GDataWapiFeedProcessor::ApplyFeedFromFileUrlMap(
     bool is_delta_feed,
     int feed_changestamp,
-    FileResourceIdMap* file_map) {
+    FileResourceIdMap* file_map,
+  std::set<FilePath>* changed_dirs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Don't send directory content change notification while performing
-  // the initial content retrieval.
-  const bool should_notify_directory_changed = is_delta_feed;
-
-  std::set<FilePath> changed_dirs;
+  DCHECK(changed_dirs);
 
   if (!is_delta_feed) {  // Full update.
     directory_service_->root()->RemoveChildren();
-    changed_dirs.insert(directory_service_->root()->GetFilePath());
+    changed_dirs->insert(directory_service_->root()->GetFilePath());
   }
   directory_service_->set_largest_changestamp(feed_changestamp);
 
@@ -3376,7 +3479,7 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
         continue;
       }
       RemoveEntryFromDirectoryAndCollectChangedDirectories(
-          dest_dir, old_entry, &changed_dirs);
+          dest_dir, old_entry, changed_dirs);
     } else if (old_entry) {  // Change or move of existing entry.
       // Please note that entry rename is just a special case of change here
       // since name is just one of the properties that can change.
@@ -3393,10 +3496,10 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
       }
       // Remove the old instance of this entry.
       RemoveEntryFromDirectoryAndCollectChangedDirectories(
-          dest_dir, old_entry, &changed_dirs);
+          dest_dir, old_entry, changed_dirs);
       // Did we actually move the new file to another directory?
       if (dest_dir->resource_id() != entry->parent_resource_id()) {
-        changed_dirs.insert(dest_dir->GetFilePath());
+        changed_dirs->insert(dest_dir->GetFilePath());
         dest_dir = FindDirectoryForNewEntry(entry.get(),
                                             *file_map,
                                             orphaned_dir_service.get());
@@ -3406,7 +3509,7 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
           entry.release(),
           dest_dir,
           orphaned_dir_service.get(),
-          &changed_dirs);
+          changed_dirs);
     } else {  // Adding a new file.
       dest_dir = FindDirectoryForNewEntry(entry.get(),
                                           *file_map,
@@ -3416,7 +3519,7 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
           entry.release(),
           dest_dir,
           orphaned_dir_service.get(),
-          &changed_dirs);
+          changed_dirs);
     }
 
     // Record changed directory if this was a delta feed and the parent
@@ -3424,22 +3527,15 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
     if (dest_dir && (dest_dir->parent() ||
         dest_dir == directory_service_->root()) &&
         dest_dir != orphaned_dir_service->root() && is_delta_feed) {
-      changed_dirs.insert(dest_dir->GetFilePath());
+      changed_dirs->insert(dest_dir->GetFilePath());
     }
   }
   // All entry must be erased from the map.
   DCHECK(file_map->empty());
-
-  if (should_notify_directory_changed) {
-    for (std::set<FilePath>::iterator dir_iter = changed_dirs.begin();
-        dir_iter != changed_dirs.end(); ++dir_iter) {
-      NotifyDirectoryChanged(*dir_iter);
-    }
-  }
 }
 
 // static
-void GDataFileSystem::AddEntryToDirectoryAndCollectChangedDirectories(
+void GDataWapiFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
     GDataEntry* entry,
     GDataDirectory* directory,
     GDataDirectoryService* orphaned_dir_service,
@@ -3450,7 +3546,8 @@ void GDataFileSystem::AddEntryToDirectoryAndCollectChangedDirectories(
 }
 
 // static
-void GDataFileSystem::RemoveEntryFromDirectoryAndCollectChangedDirectories(
+void GDataWapiFeedProcessor::
+RemoveEntryFromDirectoryAndCollectChangedDirectories(
     GDataDirectory* directory,
     GDataEntry* entry,
     std::set<FilePath>* changed_dirs) {
@@ -3473,7 +3570,7 @@ void GDataFileSystem::RemoveStaleEntryOnUpload(const std::string& resource_id,
   }
 }
 
-GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
+GDataDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
     GDataEntry* new_entry,
     const FileResourceIdMap& file_map,
     GDataDirectoryService* orphaned_dir_service) {
@@ -3506,7 +3603,7 @@ GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
   return dir;
 }
 
-GDataFileError GDataFileSystem::FeedToFileResourceMap(
+GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
     const std::vector<DocumentFeed*>& feed_list,
     FileResourceIdMap* file_map,
     int* feed_changestamp,
@@ -3538,7 +3635,7 @@ GDataFileError GDataFileSystem::FeedToFileResourceMap(
          iter != feed->entries().end(); ++iter) {
       DocumentEntry* doc = *iter;
       GDataEntry* entry = GDataEntry::FromDocumentEntry(
-          NULL, doc, directory_service_.get());
+          NULL, doc, directory_service_);
       // Some document entries don't map into files (i.e. sites).
       if (!entry)
         continue;

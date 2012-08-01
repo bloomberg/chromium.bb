@@ -38,6 +38,10 @@ namespace {
 struct LoadRootFeedParams;
 }  // namespace
 
+// TODO(satorux): Move this into a new file. crbug.com/130669
+typedef std::map<std::string /* resource_id */, GDataEntry*>
+    FileResourceIdMap;
+
 // The production implementation of GDataFileSystemInterface.
 class GDataFileSystem : public GDataFileSystemInterface,
                         public content::NotificationObserver {
@@ -156,9 +160,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // execution of GetFileByPath() method.
   struct GetFileFromCacheParams;
 
-  typedef std::map<std::string /* resource_id */, GDataEntry*>
-      FileResourceIdMap;
-
   // Callback similar to FileOperationCallback but with a given |file_path|.
   typedef base::Callback<void(GDataFileError error,
                               const FilePath& file_path)>
@@ -168,9 +169,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   typedef base::Callback<void(GetDocumentsParams* params,
                               GDataFileError error)>
       LoadDocumentFeedCallback;
-
-  // Struct used to record UMA stats with FeedToFileResourceMap().
-  struct FeedToFileResourceMapUmaStats;
 
   // Struct used for StartFileUploadOnUIThread().
   struct StartFileUploadParams;
@@ -524,59 +522,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
       int largest_changestamp,
       int root_feed_changestamp);
 
-  // Updates UMA histograms about file counts.
-  void UpdateFileCountUmaHistograms(
-      const FeedToFileResourceMapUmaStats& uma_stats) const;
-
-  // Applies the pre-processed feed from |file_map| map onto the file system.
-  // All entries in |file_map| will be erased (i.e. the map becomes empty),
-  // and values are deleted.
-  void ApplyFeedFromFileUrlMap(bool is_delta_feed,
-                               int feed_changestamp,
-                               FileResourceIdMap* file_map);
-
-  // Helper function for adding new |file| from the feed into |directory|. It
-  // checks the type of file and updates |changed_dirs| if this file adding
-  // operation needs to raise directory notification update. If file is being
-  // added to |orphaned_dir_service| such notifications are not raised since
-  // we ignore such files and don't add them to the file system now.
-  // static
-  static void AddEntryToDirectoryAndCollectChangedDirectories(
-      GDataEntry* entry,
-      GDataDirectory* directory,
-      GDataDirectoryService* orphaned_dir_service,
-      std::set<FilePath>* changed_dirs);
-
-  // Helper function for removing |entry| from |directory|. If |entry| is a
-  // directory too, it will collect all its children file paths into
-  // |changed_dirs| as well.
-  // static
-  static void RemoveEntryFromDirectoryAndCollectChangedDirectories(
-      GDataDirectory* directory,
-      GDataEntry* entry,
-      std::set<FilePath>* changed_dirs);
-
   // Callback for GetEntryByResourceIdAsync.
   // Removes stale entry upon upload of file.
   static void RemoveStaleEntryOnUpload(const std::string& resource_id,
                                        GDataDirectory* parent_dir,
                                        GDataEntry* existing_entry);
-
-  // Finds directory where new |file| should be added to during feed processing.
-  // |orphaned_entries_dir| collects files/dirs that don't have a parent in
-  // either locally cached file system or in this new feed.
-  GDataDirectory* FindDirectoryForNewEntry(
-      GDataEntry* new_entry,
-      const FileResourceIdMap& file_map,
-      GDataDirectoryService* orphaned_entries);
-
-  // Converts list of document feeds from collected feeds into
-  // FileResourceIdMap.
-  GDataFileError FeedToFileResourceMap(
-      const std::vector<DocumentFeed*>& feed_list,
-      FileResourceIdMap* file_map,
-      int* feed_changestamp,
-      FeedToFileResourceMapUmaStats* uma_stats);
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
