@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/seccomp_sandbox.h"
 #include "content/public/common/sandbox_init.h"
 
 #if defined(__i386__) || defined(__x86_64__)
@@ -77,6 +78,18 @@ inline bool IsChromeOS() {
 #else
   return false;
 #endif
+}
+
+void LogSandboxStarted(const std::string& sandbox_name,
+                       const std::string& process_type) {
+  const std::string activated_sandbox =
+      "Activated " + sandbox_name + " sandbox for process type: " +
+      process_type + ".";
+  if (IsChromeOS()) {
+    LOG(WARNING) << activated_sandbox;
+  } else {
+    VLOG(1) << activated_sandbox;
+  }
 }
 
 intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
@@ -427,8 +440,8 @@ void WarmupPolicy(playground2::Sandbox::EvaluateSyscall policy) {
 }
 
 // Is the sandbox fully disabled for this process?
-bool ShouldDisableSandbox(const CommandLine& command_line,
-                          const std::string& process_type) {
+bool ShouldDisableBpfSandbox(const CommandLine& command_line,
+                             const std::string& process_type) {
   if (command_line.HasSwitch(switches::kNoSandbox) ||
       command_line.HasSwitch(switches::kDisableSeccompFilterSandbox)) {
     return true;
@@ -485,13 +498,11 @@ playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
 #endif  // __x86_64__
 }
 
-void InitializeSandbox_x86() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  const std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  if (ShouldDisableSandbox(command_line, process_type))
-    return;
+// Initialize the seccomp-bpf sandbox.
+bool InitializeBpfSandbox_x86(const CommandLine& command_line,
+                               const std::string& process_type) {
+  if (ShouldDisableBpfSandbox(command_line, process_type))
+    return false;
 
   // No matter what, InitializeSandbox() should always be called before threads
   // are started.
@@ -503,23 +514,7 @@ void InitializeSandbox_x86() {
     // does not trigger.
     // On non-DEBUG build, we still log an error
     LOG(ERROR) << error_message;
-    return;
-  }
-
-  // We should not enable seccomp mode 2 if seccomp mode 1 is activated. There
-  // is no easy way to know if seccomp mode 1 is activated, this is a hack.
-  //
-  // SeccompSandboxEnabled() (which really is "may we try to enable seccomp
-  // inside the Zygote") is buggy because it relies on the --enable/disable
-  // seccomp-sandbox flags which unfortunately doesn't get passed to every
-  // process type.
-  // TODO(markus): Provide a way to detect if seccomp mode 1 is enabled or let
-  // us disable it by default on Debug builds.
-  if (prctl(PR_GET_SECCOMP, 0, 0, 0, 0) != 0) {
-    VLOG(1) << "Seccomp BPF disabled in "
-            << process_type
-            <<  " because seccomp mode 1 is enabled.";
-    return;
+    return false;
   }
 
   // TODO(jln): find a way for the Zygote processes under the setuid sandbox to
@@ -528,7 +523,7 @@ void InitializeSandbox_x86() {
   // now.
   if (playground2::Sandbox::supportsSeccompSandbox(-1) !=
       playground2::Sandbox::STATUS_AVAILABLE) {
-    return;
+    return false;
   }
 
   playground2::Sandbox::EvaluateSyscall SyscallPolicy =
@@ -540,15 +535,24 @@ void InitializeSandbox_x86() {
   playground2::Sandbox::setSandboxPolicy(SyscallPolicy, NULL);
   playground2::Sandbox::startSandbox();
 
-  // TODO(jorgelo): remove this once we surface
-  // seccomp filter sandbox status in about:sandbox.
-  const std::string ActivatedSeccomp =
-      "Activated seccomp filter sandbox for process type: " +
-      process_type + ".";
-  if (IsChromeOS())
-    LOG(WARNING) << ActivatedSeccomp;
-  else
-    VLOG(1) << ActivatedSeccomp;
+  return true;
+}
+
+bool InitializeLegacySandbox_x86(const CommandLine& command_line,
+                                  const std::string& process_type) {
+#if defined(SECCOMP_SANDBOX)
+  // Start the old seccomp mode 1 (sandbox/linux/seccomp-legacy).
+  if (process_type == switches::kRendererProcess && SeccompSandboxEnabled()) {
+    // N.b. SupportsSeccompSandbox() returns a cached result, as we already
+    // called it earlier in the zygote. Thus, it is OK for us to not pass in
+    // a file descriptor for "/proc".
+    if (SupportsSeccompSandbox(-1)) {
+      StartSeccompSandbox();
+      return true;
+    }
+  }
+#endif
+  return false;
 }
 
 }  // anonymous namespace
@@ -559,7 +563,28 @@ namespace content {
 
 void InitializeSandbox() {
 #if defined(__i386__) || defined(__x86_64__)
-  InitializeSandbox_x86();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  bool seccomp_legacy_started = false;
+  bool seccomp_bpf_started = false;
+
+  // First, try to enable seccomp-legacy.
+  seccomp_legacy_started =
+      InitializeLegacySandbox_x86(command_line, process_type);
+  if (seccomp_legacy_started)
+    LogSandboxStarted("seccomp-legacy", process_type);
+
+  // Then, try to enable seccomp-bpf.
+  // If seccomp-legacy is enabled, seccomp-bpf initialization will crash
+  // instead of failing gracefully.
+  // TODO(markus): fix this (crbug.com/139872).
+  if (!seccomp_legacy_started) {
+    seccomp_bpf_started =
+        InitializeBpfSandbox_x86(command_line, process_type);
+  }
+  if (seccomp_bpf_started)
+    LogSandboxStarted("seccomp-bpf", process_type);
 #endif
 }
 
