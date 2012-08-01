@@ -45,8 +45,7 @@ node = env.CommandTest(
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
 env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_stepi_after_break_test',
-                       is_broken=env.Bit('host_windows'))
+                       'run_gdb_stepi_after_break_test')
 
 node = env.CommandTest(
     'gdb_print_symbol.out',
@@ -58,8 +57,7 @@ node = env.CommandTest(
 # The test fails on printing wrong value of function parameter, see
 # http://code.google.com/p/nativeclient/issues/detail?id=2898
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_print_symbol_test',
-                       is_broken=(env.Bit('build_x86_64') or
-                                  env.Bit('host_windows')))
+                       is_broken=env.Bit('build_x86_64'))
 
 node = env.CommandTest(
     'gdb_break_inside_function.out',
