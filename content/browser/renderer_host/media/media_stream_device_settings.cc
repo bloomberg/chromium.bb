@@ -135,7 +135,8 @@ void DoDeviceRequest(
 MediaStreamDeviceSettings::MediaStreamDeviceSettings(
     SettingsRequester* requester)
     : requester_(requester),
-      use_fake_ui_(false) {
+      use_fake_ui_(false),
+      weak_ptr_factory_(this) {
   DCHECK(requester_);
 }
 
@@ -361,7 +362,7 @@ void MediaStreamDeviceSettings::PostRequestToUi(const std::string& label) {
   }
 
   scoped_refptr<ResponseCallbackHelper> helper =
-      new ResponseCallbackHelper(AsWeakPtr());
+      new ResponseCallbackHelper(weak_ptr_factory_.GetWeakPtr());
   content::MediaResponseCallback callback =
       base::Bind(&ResponseCallbackHelper::PostResponse,
                  helper.get(), label);

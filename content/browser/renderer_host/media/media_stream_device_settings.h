@@ -32,8 +32,7 @@ class SettingsRequester;
 
 // MediaStreamDeviceSettings is responsible for getting user permission to use
 // a media capture device as well as selecting what device to use.
-class CONTENT_EXPORT MediaStreamDeviceSettings
-    : public base::SupportsWeakPtr<MediaStreamDeviceSettings> {
+class CONTENT_EXPORT MediaStreamDeviceSettings {
  public:
   explicit MediaStreamDeviceSettings(SettingsRequester* requester);
   virtual ~MediaStreamDeviceSettings();
@@ -87,6 +86,8 @@ class CONTENT_EXPORT MediaStreamDeviceSettings
 
   // See comment above for method UseFakeUI. Used for automated testing.
   bool use_fake_ui_;
+
+  base::WeakPtrFactory<MediaStreamDeviceSettings> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDeviceSettings);
 };

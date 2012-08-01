@@ -59,7 +59,8 @@ ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
       delegate_(delegate),
       last_upload_position_(0),
       waiting_for_upload_progress_ack_(false),
-      is_transferring_(false) {
+      is_transferring_(false),
+      weak_ptr_factory_(this) {
   request_->set_delegate(this);
   handler_->SetController(this);
 }
@@ -276,7 +277,7 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
     NOTREACHED();
 
   SSLManager::OnSSLCertificateError(
-      AsWeakPtr(),
+      weak_ptr_factory_.GetWeakPtr(),
       info->GetGlobalRequestID(),
       info->GetResourceType(),
       request_->url(),
@@ -381,13 +382,15 @@ void ResourceLoader::Resume() {
     case DEFERRED_READ:
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&ResourceLoader::ResumeReading, AsWeakPtr()));
+          base::Bind(&ResourceLoader::ResumeReading,
+                     weak_ptr_factory_.GetWeakPtr()));
       break;
     case DEFERRED_FINISH:
       // Delay self-destruction since we don't know how we were reached.
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&ResourceLoader::CallDidFinishLoading, AsWeakPtr()));
+          base::Bind(&ResourceLoader::CallDidFinishLoading,
+                     weak_ptr_factory_.GetWeakPtr()));
       break;
   }
 }
@@ -434,7 +437,8 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
     // notification from the request, so we have to signal ourselves to finish
     // this request.
     MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&ResourceLoader::ResponseCompleted, AsWeakPtr()));
+        FROM_HERE, base::Bind(&ResourceLoader::ResponseCompleted,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -485,7 +489,8 @@ void ResourceLoader::StartReading(bool is_continuation) {
     // thread in case the URLRequest can provide data synchronously.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&ResourceLoader::OnReadCompleted, AsWeakPtr(),
+        base::Bind(&ResourceLoader::OnReadCompleted,
+                   weak_ptr_factory_.GetWeakPtr(),
                    request_.get(), bytes_read));
   }
 }

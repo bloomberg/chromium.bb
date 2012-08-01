@@ -21,7 +21,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -62,8 +61,7 @@ struct Referrer;
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
-      public ResourceLoaderDelegate,
-      public base::SupportsWeakPtr<ResourceDispatcherHostImpl> {
+      public ResourceLoaderDelegate {
  public:
   ResourceDispatcherHostImpl();
   virtual ~ResourceDispatcherHostImpl();

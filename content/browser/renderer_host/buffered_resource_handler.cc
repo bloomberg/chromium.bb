@@ -86,7 +86,8 @@ BufferedResourceHandler::BufferedResourceHandler(
       read_buffer_size_(0),
       bytes_read_(0),
       must_download_(false),
-      must_download_is_set_(false) {
+      must_download_is_set_(false),
+      weak_ptr_factory_(this) {
 }
 
 BufferedResourceHandler::~BufferedResourceHandler() {
@@ -197,7 +198,7 @@ void BufferedResourceHandler::Resume() {
       MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&BufferedResourceHandler::CallReplayReadCompleted,
-                     AsWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()));
       break;
     case STATE_STARTING:
     case STATE_STREAMING:
@@ -309,7 +310,8 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     if (stale) {
       // Refresh the plugins asynchronously.
       PluginServiceImpl::GetInstance()->GetPlugins(
-          base::Bind(&BufferedResourceHandler::OnPluginsLoaded, AsWeakPtr()));
+          base::Bind(&BufferedResourceHandler::OnPluginsLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
       *defer = true;
       return true;
     }

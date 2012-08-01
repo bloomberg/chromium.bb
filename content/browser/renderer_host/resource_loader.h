@@ -24,8 +24,7 @@ class ResourceRequestInfoImpl;
 // chain of ResourceHandlers, and is the ResourceController for its handler.
 class ResourceLoader : public net::URLRequest::Delegate,
                        public SSLErrorHandler::Delegate,
-                       public ResourceController,
-                       public base::SupportsWeakPtr<ResourceLoader> {
+                       public ResourceController {
  public:
   ResourceLoader(scoped_ptr<net::URLRequest> request,
                  scoped_ptr<ResourceHandler> handler,
@@ -113,6 +112,8 @@ class ResourceLoader : public net::URLRequest::Delegate,
   // consumer.  We are waiting for a notification to complete the transfer, at
   // which point we'll receive a new ResourceHandler.
   bool is_transferring_;
+
+  base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoader);
 };

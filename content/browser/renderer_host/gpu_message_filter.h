@@ -25,8 +25,7 @@ struct GPUInfo;
 // A message filter for messages from the renderer to the GpuProcessHost(UIShim)
 // in the browser. Such messages are typically destined for the GPU process,
 // but need to be mediated by the browser.
-class GpuMessageFilter : public BrowserMessageFilter,
-                         public base::SupportsWeakPtr<GpuMessageFilter> {
+class GpuMessageFilter : public BrowserMessageFilter {
  public:
   GpuMessageFilter(int render_process_id,
                    RenderWidgetHelper* render_widget_helper);
@@ -65,6 +64,8 @@ class GpuMessageFilter : public BrowserMessageFilter,
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
   std::vector<linked_ptr<CreateViewCommandBufferRequest> > pending_requests_;
+
+  base::WeakPtrFactory<GpuMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMessageFilter);
 };

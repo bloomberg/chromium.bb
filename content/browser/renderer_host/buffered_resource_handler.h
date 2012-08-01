@@ -26,8 +26,7 @@ class ResourceDispatcherHostImpl;
 // Used to buffer a request until enough data has been received.
 class BufferedResourceHandler
     : public LayeredResourceHandler,
-      public ResourceController,
-      public base::SupportsWeakPtr<BufferedResourceHandler> {
+      public ResourceController {
  public:
   BufferedResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                           ResourceDispatcherHostImpl* host,
@@ -104,6 +103,8 @@ class BufferedResourceHandler
 
   bool must_download_;
   bool must_download_is_set_;
+
+  base::WeakPtrFactory<BufferedResourceHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceHandler);
 };

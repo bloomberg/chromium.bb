@@ -161,19 +161,19 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };
 
-class RenderWidgetHostViewAura::ResizeLock
-    : public base::SupportsWeakPtr<RenderWidgetHostViewAura::ResizeLock> {
+class RenderWidgetHostViewAura::ResizeLock {
  public:
   ResizeLock(aura::RootWindow* root_window, const gfx::Size new_size)
       : root_window_(root_window),
         new_size_(new_size),
-        compositor_lock_(root_window_->GetCompositorLock()) {
+        compositor_lock_(root_window_->GetCompositorLock()),
+        weak_ptr_factory_(this) {
     root_window_->HoldMouseMoves();
 
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&RenderWidgetHostViewAura::ResizeLock::CancelLock,
-                   AsWeakPtr()),
+                   weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs));
   }
 
@@ -201,6 +201,7 @@ class RenderWidgetHostViewAura::ResizeLock
   aura::RootWindow* root_window_;
   gfx::Size new_size_;
   scoped_refptr<aura::CompositorLock> compositor_lock_;
+  base::WeakPtrFactory<ResizeLock> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeLock);
 };

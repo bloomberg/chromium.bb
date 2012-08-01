@@ -38,7 +38,8 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
     : gpu_process_id_(0),
       render_process_id_(render_process_id),
       share_contexts_(false),
-      render_widget_helper_(render_widget_helper) {
+      render_widget_helper_(render_widget_helper),
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
 #if defined(USE_AURA) || defined(OS_ANDROID)
@@ -113,7 +114,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
       render_process_id_,
       share_contexts_,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
-                 AsWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  reply));
 }
 
@@ -164,7 +165,7 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
       render_process_id_,
       init_params,
       base::Bind(&GpuMessageFilter::CreateCommandBufferCallback,
-                 AsWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  reply));
 }
 
