@@ -383,9 +383,9 @@ class Desktop:
   def launch_host(self, host):
     # Start remoting host
     args = [locate_executable(REMOTING_COMMAND),
-            "--host_config=%s" % (host.config_file)]
+            "--host-config=%s" % (host.config_file)]
     if host.auth.config_file != host.config_file:
-      args.append("--auth_config=%s" % (host.auth.config_file))
+      args.append("--auth-config=%s" % (host.auth.config_file))
     self.host_proc = subprocess.Popen(args, env=self.child_env)
     logging.info(args)
     if not self.host_proc.pid:
