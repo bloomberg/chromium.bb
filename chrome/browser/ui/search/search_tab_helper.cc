@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message.h"
 
 namespace {
 
@@ -33,7 +34,7 @@ SearchTabHelper::SearchTabHelper(
     bool is_search_enabled)
     : WebContentsObserver(contents->web_contents()),
       is_search_enabled_(is_search_enabled),
-      model_(new SearchModel(contents)) {
+      model_(contents) {
   if (!is_search_enabled)
     return;
 
@@ -47,13 +48,30 @@ SearchTabHelper::SearchTabHelper(
 SearchTabHelper::~SearchTabHelper() {
 }
 
+content::WebContents* SearchTabHelper::GetNTPWebContents() {
+  if (!ntp_web_contents_.get()) {
+    ntp_web_contents_.reset(content::WebContents::Create(
+        model_.tab_contents()->profile(),
+        model_.tab_contents()->web_contents()->GetSiteInstance(),
+        MSG_ROUTING_NONE,
+        NULL,
+        NULL));
+    ntp_web_contents_->GetController().LoadURL(
+        GURL(chrome::kChromeUINewTabURL),
+        content::Referrer(),
+        content::PAGE_TRANSITION_START_PAGE,
+        std::string());
+  }
+  return ntp_web_contents_.get();
+}
+
 void SearchTabHelper::OmniboxEditModelChanged(OmniboxEditModel* edit_model) {
   if (!is_search_enabled_)
     return;
 
-  if (model_->mode().is_ntp()) {
+  if (model_.mode().is_ntp()) {
     if (edit_model->user_input_in_progress())
-      model_->SetMode(Mode(Mode::MODE_SEARCH, true));
+      model_.SetMode(Mode(Mode::MODE_SEARCH, true));
     return;
   }
 
@@ -64,7 +82,7 @@ void SearchTabHelper::OmniboxEditModelChanged(OmniboxEditModel* edit_model) {
       (edit_model->has_focus() && edit_model->user_input_in_progress())) {
     mode = Mode::MODE_SEARCH;
   }
-  model_->SetMode(Mode(mode, true));
+  model_.SetMode(Mode(mode, true));
 }
 
 void SearchTabHelper::NavigateToPendingEntry(
@@ -74,6 +92,7 @@ void SearchTabHelper::NavigateToPendingEntry(
     return;
 
   UpdateModel(url);
+  FlushNTP(url);
 }
 
 void SearchTabHelper::Observe(
@@ -84,6 +103,7 @@ void SearchTabHelper::Observe(
   content::LoadCommittedDetails* committed_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
   UpdateModel(committed_details->entry->GetURL());
+  FlushNTP(committed_details->entry->GetURL());
 }
 
 void SearchTabHelper::UpdateModel(const GURL& url) {
@@ -92,7 +112,14 @@ void SearchTabHelper::UpdateModel(const GURL& url) {
     type = Mode::MODE_NTP;
   else if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
     type = Mode::MODE_SEARCH;
-  model_->SetMode(Mode(type, true));
+  model_.SetMode(Mode(type, true));
+}
+
+void SearchTabHelper::FlushNTP(const GURL& url) {
+  if (!IsNTP(url) &&
+      !google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec())) {
+    ntp_web_contents_.reset();
+  }
 }
 
 }  // namespace search

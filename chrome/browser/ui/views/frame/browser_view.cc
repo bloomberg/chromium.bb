@@ -2495,7 +2495,6 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   if (search_view_controller_.get())
     search_view_controller_->SetTabContents(new_contents);
 #endif
-  RestackLocationBarContainer();
 
   UpdateDevToolsForContents(new_contents);
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
@@ -2507,6 +2506,12 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
 
   // Update all the UI bits.
   UpdateTitleBar();
+
+  // Restacking needs to happen after other UI updates. This restores special
+  // "widget" stacking that governs the SearchViewController's NTP "content"
+  // area.
+  RestackLocationBarContainer();
+
   // No need to update Toolbar because it's already updated in
   // browser.cc.
 }

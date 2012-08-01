@@ -340,6 +340,7 @@ void SearchViewController::UpdateState() {
       break;
   }
   SetState(new_state);
+  MaybeLoadNTP();
 }
 
 void SearchViewController::SetState(State state) {
@@ -457,6 +458,9 @@ void SearchViewController::DestroyViews() {
   omnibox_popup_view_parent_->parent()->RemoveChildView(
       omnibox_popup_view_parent_);
 
+  if (content_view_)
+    content_view_->SetWebContents(NULL);
+
   contents_container_->SetOverlay(NULL);
   delete search_container_;
   search_container_ = NULL;
@@ -474,6 +478,14 @@ void SearchViewController::PopupVisibilityChanged() {
       !omnibox_popup_view_parent_->is_child_visible()) {
     UpdateState();
   }
+}
+
+void SearchViewController::MaybeLoadNTP() {
+  if (state_ != STATE_NTP || !content_view_)
+    return;
+
+  content_view_->SetWebContents(
+      tab_contents_->search_tab_helper()->GetNTPWebContents());
 }
 
 chrome::search::SearchModel* SearchViewController::search_model() {

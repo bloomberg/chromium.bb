@@ -102,6 +102,10 @@ class SearchViewController
   // Invoked when the visibility of the omnibox popup changes.
   void PopupVisibilityChanged();
 
+  // Load the NTP from the associated |SearchTabHelper| if in NTP mode
+  // and the current |tab_contents_| has changed.
+  void MaybeLoadNTP();
+
   // Access active search model.
   chrome::search::SearchModel* search_model();
 
