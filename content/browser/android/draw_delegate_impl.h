@@ -21,7 +21,7 @@ class DrawDelegateImpl : public DrawDelegate {
   // DrawDelegate implementation.
   virtual void SetUpdateCallback(
       const SurfaceUpdatedCallback& callback) OVERRIDE;
-  virtual void SetBounds(const gfx::Size& size) OVERRIDE { size_ = size; }
+  virtual void SetBounds(const gfx::Size& size) OVERRIDE;
 
   void SetDrawSurface(gfx::GLSurfaceHandle handle) { handle_ = handle; }
   void OnSurfaceUpdated(uint64 texture, RenderWidgetHostView* view,

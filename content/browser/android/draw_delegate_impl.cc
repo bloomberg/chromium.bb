@@ -29,6 +29,10 @@ void DrawDelegateImpl::SetUpdateCallback(
   draw_callback_ = callback;
 }
 
+void DrawDelegateImpl::SetBounds(const gfx::Size& size) {
+  size_ = size;
+}
+
 void DrawDelegateImpl::OnSurfaceUpdated(
     uint64 texture, RenderWidgetHostView* view,
     const SurfacePresentedCallback& present_callback) {
