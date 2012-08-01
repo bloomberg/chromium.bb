@@ -48,13 +48,13 @@ deps = {
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/third_party/ffmpeg.git' + Var('ffmpeg_hash'),
     'src/third_party/flac':
-        Var('git_url') + '/chromium/deps/flac.git@2ba6d0b1b74de09ae4b1f04399127b4aaa20e070',
+        Var('git_url') + '/chromium/deps/flac.git@4cd5f60958c9e4d5237efaab23478b022dda0984',
     'src/third_party/hunspell':
-        Var('git_url') + '/chromium/deps/hunspell.git@2ced393e9e98786f996382938cc67089b98fa161',
+        Var('git_url') + '/chromium/deps/hunspell.git@36ee406e1db45b3b4cd7b3ca15f5b4872deb89d2',
     'src/third_party/hunspell_dictionaries':
-        Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@b414ff561d7e531c072b6639b9562bdea5d13bc4',
+        Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@152f92516a77117f26de7f0d69cb6532bb560728',
     'src/third_party/icu':
-        Var('git_url') + '/chromium/deps/icu46.git@53ac6db57d9d09e43079f54feec59b735ed23670',
+        Var('git_url') + '/chromium/deps/icu46.git@3785d5dc6ff34e8897752357ea357127ea88159c',
     'src/third_party/jsoncpp/source/include':
         Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b0dd48e02b6e6248328db78a65b5c601f150c349',
     'src/third_party/jsoncpp/source/src/lib_json':
@@ -66,7 +66,7 @@ deps = {
     'src/third_party/libjingle/source':
         Var('git_url') + '/external/libjingle.git@6d81def0de248e9bab5c35643ba8501bd46c4555',
     'src/third_party/libjpeg_turbo':
-        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@2fdc3a8097b6a3f5de84aa9e6c901544d7166dec',
+        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@4c160802ea6f1aa25abdc55f3e9540868420d86e',
     'src/third_party/libphonenumber/src/phonenumbers':
         Var('git_url') + '/external/libphonenumber/cpp/src/phonenumbers.git@a6eef04c15f45d5916ee3429d24665c49148b99b',
     'src/third_party/libphonenumber/src/resources':
@@ -76,7 +76,7 @@ deps = {
     'src/third_party/libsrtp':
         Var('git_url') + '/chromium/deps/libsrtp.git@362c71e8d0dc205a4ad9f4709d42c25864ac872a',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@0f63c1066cd1edc83ea58380069ce0fe25050d26',
+        Var('git_url') + '/chromium/deps/libvpx.git@4efc8c03a3ff45e7f0f584bf54e44f955c7357d8',
     'src/third_party/libyuv':
         Var('git_url') + '/external/libyuv.git@4f45c11aaf05acec716f5d1ad1bb3abaffef9cf6',
     'src/third_party/mozc/chrome/chromeos/renderer':
@@ -104,7 +104,7 @@ deps = {
     'src/third_party/snappy/src':
         Var('git_url') + '/external/snappy.git@5a4a7d94c947c66a7608cfc38258beb32274d9c8',
     'src/third_party/speex':
-        Var('git_url') + '/chromium/deps/speex.git@a79adadda5ed70fce6ddce1f0767fac623a9beb7',
+        Var('git_url') + '/chromium/deps/speex.git@401cf5e65393ed75b735b9e94d9d39501e9b426d',
     'src/third_party/swig/Lib':
         Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
     'src/third_party/trace-viewer':
@@ -132,7 +132,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@633fc66cc99ae5bb92b567c6beafde7a01cfdb49',
     'src/v8':
-        Var('git_url') + '/external/v8.git@ea52b5f5c87edc97dc0632eec996ca2af071317c',
+        Var('git_url') + '/external/v8.git@000f7fbc1dfa59e414332fd2898b5da4d44eedd6',
 }
 
 deps_os = {
@@ -326,7 +326,7 @@ deps_os = {
         'src/third_party/swig/linux':
             Var('git_url') + '/chromium/deps/swig/linux.git@866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
         'src/third_party/xdg-utils':
-            Var('git_url') + '/chromium/deps/xdg-utils.git@7b903508c0dea743114236c35866a9131121ba61',
+            Var('git_url') + '/chromium/deps/xdg-utils.git@92ab58529199057ec7964168b0b625c2f2148f67',
     },
     'win':
     {
@@ -361,7 +361,7 @@ deps_os = {
         'src/third_party/swig/win':
             Var('git_url') + '/chromium/deps/swig/win.git@986f013ba518541adf5c839811efb35630a31031',
         'src/third_party/syzygy/binaries':
-            Var('git_url') + '/external/sawbuck/syzygy/binaries.git@55345ae3c9de0f62c7e3bd9e261b807d8adf7255',
+            Var('git_url') + '/external/sawbuck/syzygy/binaries.git@7f13073ac806b18608d142638e74db7147902dcf',
         'src/third_party/xulrunner-sdk':
             Var('git_url') + '/chromium/deps/xulrunner-sdk.git@e9b241c183fa4e7af838ecd70714069ca0eb150c',
         'src/third_party/yasm/binaries':
