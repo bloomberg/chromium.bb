@@ -71,14 +71,15 @@ FileTransferController.prototype = {
                           !!opt_onlyIntoDirectories));
   },
 
-  attachBreadcrumbsDropTarget: function(breadcrumbs) {
-    breadcrumbs.addEventListener('dragover',
+  attachBreadcrumbsDropTarget: function(breadcrumbsController) {
+    var container = breadcrumbsController.getContainer();
+    container.addEventListener('dragover',
         this.onDragOver_.bind(this, true, null));
-    breadcrumbs.addEventListener('dragenter',
-        this.onDragEnterBreadcrumbs_.bind(this, breadcrumbs));
-    breadcrumbs.addEventListener('dragleave',
+    container.addEventListener('dragenter',
+        this.onDragEnterBreadcrumbs_.bind(this, breadcrumbsController));
+    container.addEventListener('dragleave',
         this.onDragLeave_.bind(this, null));
-    breadcrumbs.addEventListener('drop', this.onDrop_.bind(this, true));
+    container.addEventListener('drop', this.onDrop_.bind(this, true));
   },
 
   /**
@@ -268,20 +269,12 @@ FileTransferController.prototype = {
     }
   },
 
-  onDragEnterBreadcrumbs_: function(breadcrumbs, event) {
-    if (!event.target.classList.contains('breadcrumb-path'))
+  onDragEnterBreadcrumbs_: function(breadcrumbsContainer, event) {
+    var path = breadcrumbsContainer.getTargetPath(event);
+    if (!path)
       return;
+
     this.dragEnterCount_++;
-
-    var items = breadcrumbs.querySelectorAll('.breadcrumb-path');
-    var path = this.directoryModel_.getCurrentRootPath();
-
-    if (event.target != items[0]) {
-      for (var i = 1; items[i - 1] != event.target; i++) {
-        path += '/' + items[i].textContent;
-      }
-    }
-
     this.setDropTarget_(event.target, true, event.dataTransfer, path);
   },
 

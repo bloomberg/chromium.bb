@@ -536,6 +536,7 @@ FileManager.prototype = {
     controller.attachDragSource(this.grid_);
     controller.attachDropTarget(this.grid_);
     controller.attachDropTarget(this.rootsList_, true);
+    controller.attachBreadcrumbsDropTarget(this.breadcrumbs_);
     controller.attachCopyPasteHandlers(this.document_);
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));

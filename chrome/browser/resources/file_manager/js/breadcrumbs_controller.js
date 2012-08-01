@@ -10,6 +10,7 @@
 function BreadcrumbsController(div) {
   this.bc_ = div;
   this.hideLast_ = false;
+  div.addEventListener('click', this.onClick_.bind(this));
 }
 
 /**
@@ -32,6 +33,7 @@ BreadcrumbsController.prototype.setHideLast = function(value) {
  */
 BreadcrumbsController.prototype.update = function(rootPath, path) {
   this.bc_.textContent = '';
+  this.rootPath_ = rootPath;
 
   var relativePath = path.substring(rootPath.length).replace(/\/$/, '');
   var pathNames = relativePath.split('/');
@@ -64,15 +66,11 @@ BreadcrumbsController.prototype.update = function(rootPath, path) {
     div.textContent = i == 0 ? PathUtil.getRootLabel(path) : pathName;
 
     path = path + '/';
-    div.path = path;
 
     this.bc_.appendChild(div);
 
-    if (i == pathNames.length - 1) {
+    if (i == pathNames.length - 1)
       div.classList.add('breadcrumb-last');
-    } else {
-      div.addEventListener('click', this.onClick_.bind(this));
-    }
   }
   this.truncate();
 };
@@ -188,8 +186,43 @@ BreadcrumbsController.prototype.hide = function() {
  * @param {Event} event The click event.
  */
 BreadcrumbsController.prototype.onClick_ = function(event) {
+  var path = this.getTargetPath(event);
+  if (!path)
+    return;
+
   var newEvent = new cr.Event('pathclick');
-  newEvent.path = event.srcElement.path;
+  newEvent.path = path;
   this.dispatchEvent(newEvent);
+};
+
+/**
+ * Returns path associated with the event target. Returns empty string for
+ * inactive elements: separators, empty space and the last chunk.
+ * @param {Event} event The UI event.
+ * @return {string} Full path or empty string.
+ */
+BreadcrumbsController.prototype.getTargetPath = function(event) {
+  if (!event.target.classList.contains('breadcrumb-path') ||
+      event.target.classList.contains('breadcrumb-last')) {
+    return '';
+  }
+
+  var items = this.bc_.querySelectorAll('.breadcrumb-path');
+  var path = this.rootPath_;
+
+  if (event.target != items[0]) {
+    for (var i = 1; items[i - 1] != event.target; i++) {
+      path += '/' + items[i].textContent;
+    }
+  }
+  return path;
+};
+
+/**
+ * Returns the breadcrumbs container.
+ * @return {HTMLElement} Breadcumbs container HTML element.
+ */
+BreadcrumbsController.prototype.getContainer = function() {
+  return this.bc_;
 };
 
