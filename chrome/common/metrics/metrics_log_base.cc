@@ -452,7 +452,7 @@ void MetricsLogBase::RecordHistogramDelta(
     const Histogram::SampleSet& snapshot) {
   DCHECK(!locked_);
   DCHECK_NE(0, snapshot.TotalCount());
-  snapshot.CheckSize(histogram);
+  DCHECK_EQ(histogram.bucket_count(), snapshot.size());
 
   // We will ignore the MAX_INT/infinite value in the last element of range[].
 

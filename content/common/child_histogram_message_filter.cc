@@ -73,7 +73,7 @@ void ChildHistogramMessageFilter::RecordDelta(
     const base::Histogram& histogram,
     const base::Histogram::SampleSet& snapshot) {
   DCHECK_NE(0, snapshot.TotalCount());
-  snapshot.CheckSize(histogram);
+  DCHECK_EQ(histogram.bucket_count(), snapshot.size());
 
   std::string histogram_info =
       base::Histogram::SerializeHistogramInfo(histogram, snapshot);
