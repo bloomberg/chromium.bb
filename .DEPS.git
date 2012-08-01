@@ -319,6 +319,8 @@ deps_os = {
             Var('git_url') + '/chromiumos/platform/system_api.git@715c98d7d0ca9a1f0576fca77cb4a49498d303ae',
         'src/third_party/gold':
             Var('git_url') + '/chromium/deps/gold.git@44ab2e796b8126864b4860eb108dbf5068887063',
+        'src/third_party/libmtp':
+            Var('git_url') + '/chromium/deps/libmtp.git@1a621671bbd6c661653f1cb51b83f5dbded9aea2',
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@88a55e021b5cf8114901c5354894bfec13d13157',
         'src/third_party/openssl':
