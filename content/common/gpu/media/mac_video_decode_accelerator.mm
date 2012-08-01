@@ -102,6 +102,9 @@ MacVideoDecodeAccelerator::MacVideoDecodeAccelerator(
 bool MacVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   DCHECK(CalledOnValidThread());
 
+  if (profile < media::H264PROFILE_MIN || profile > media::H264PROFILE_MAX)
+    return false;
+
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (!io_surface_support)
     return false;
