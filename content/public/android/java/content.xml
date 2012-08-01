@@ -8,19 +8,10 @@
     building content java source code with ant
   </description>
   <!-- set global properties for this build -->
-  <property environment="env"/>
-  <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
-  <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
   <property name="src" location="src"/>
   <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
   <property name="classes.dir" location="${PRODUCT_DIR}/java/${PACKAGE_NAME}"/>
   <property name="jar.dir" location="${out.dir}"/>
-
-  <condition property="location.base"
-             value="${sdk.dir}"
-             else="${sdk.dir}/platforms/android-${sdk.version}">
-    <isset property="env.ANDROID_BUILD_TOP"/>
-  </condition>
 
   <target name="init">
     <!-- Create the time stamp -->
@@ -39,7 +30,7 @@
          lib.jar (see content.gyp:common_aidl). -->
     <javac srcdir="${src}:${out.dir}" destdir="${classes.dir}" debug="true" includeantruntime="false">
       <classpath>
-        <pathelement path="${location.base}/android.jar" />
+        <pathelement path="${ANDROID_SDK}/android.jar" />
         <pathelement path="${jar.dir}/chromium_base.jar" />
         <pathelement path="${jar.dir}/chromium_net.jar" />
       </classpath>

@@ -8,20 +8,11 @@
     building media java source code with ant
   </description>
   <!-- set global properties for this build -->
-  <property environment="env"/>
-  <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
-  <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
   <property name="src" location="src"/>
   <property name="build" location="build"/>
   <property name="dist"  location="dist"/>
   <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
   <property name="dest.dir" location="${PRODUCT_DIR}/java/media"/>
-
-  <condition property="location.base"
-             value="${sdk.dir}"
-             else="${sdk.dir}/platforms/android-${sdk.version}">
-    <isset property="env.ANDROID_BUILD_TOP"/>
-  </condition>
 
   <target name="init">
     <!-- Create the time stamp -->
@@ -36,7 +27,7 @@
     <!-- Compile the java code from ${src} into ${dest.dir} -->
     <javac srcdir="${src}" destdir="${dest.dir}" debug="true" includeantruntime="false">
       <classpath>
-        <pathelement path="${location.base}/android.jar" />
+        <pathelement path="${ANDROID_SDK}/android.jar" />
         <pathelement path="${out.dir}/chromium_base.jar" />
       </classpath>
     </javac>
