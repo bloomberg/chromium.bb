@@ -2947,6 +2947,24 @@ drm_intel_gem_context_destroy(drm_intel_context *ctx)
 	free(ctx);
 }
 
+int
+drm_intel_reg_read(drm_intel_bufmgr *bufmgr,
+		   uint32_t offset,
+		   uint64_t *result)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
+	struct drm_i915_reg_read reg_read;
+	int ret;
+
+	VG_CLEAR(reg_read);
+	reg_read.offset = offset;
+
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_REG_READ, &reg_read);
+
+	*result = reg_read.val;
+	return ret;
+}
+
 
 /**
  * Annotate the given bo for use in aub dumping.

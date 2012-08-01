@@ -241,6 +241,9 @@ void drm_intel_decode_set_head_tail(struct drm_intel_decode *ctx,
 void drm_intel_decode_set_output_file(struct drm_intel_decode *ctx, FILE *out);
 void drm_intel_decode(struct drm_intel_decode *ctx);
 
+int drm_intel_reg_read(drm_intel_bufmgr *bufmgr,
+		       uint32_t offset,
+		       uint64_t *result);
 
 /** @{ Compatibility defines to keep old code building despite the symbol rename
  * from dri_* to drm_intel_*
