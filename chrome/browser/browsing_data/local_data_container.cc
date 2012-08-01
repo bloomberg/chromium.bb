@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
@@ -26,7 +26,8 @@ LocalDataContainer::LocalDataContainer(
     BrowsingDataIndexedDBHelper* indexed_db_helper,
     BrowsingDataFileSystemHelper* file_system_helper,
     BrowsingDataQuotaHelper* quota_helper,
-    BrowsingDataServerBoundCertHelper* server_bound_cert_helper)
+    BrowsingDataServerBoundCertHelper* server_bound_cert_helper,
+    BrowsingDataFlashLSOHelper* flash_lso_helper)
     : app_name_(app_name),
       app_id_(app_id),
       appcache_helper_(appcache_helper),
@@ -38,6 +39,7 @@ LocalDataContainer::LocalDataContainer(
       file_system_helper_(file_system_helper),
       quota_helper_(quota_helper),
       server_bound_cert_helper_(server_bound_cert_helper),
+      flash_lso_helper_(flash_lso_helper),
       model_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
@@ -99,6 +101,12 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
   if (server_bound_cert_helper_) {
     server_bound_cert_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnServerBoundCertModelInfoLoaded,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  if (flash_lso_helper_) {
+    flash_lso_helper_->StartFetching(
+        base::Bind(&LocalDataContainer::OnFlashLSOInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -181,4 +189,11 @@ void LocalDataContainer::OnServerBoundCertModelInfoLoaded(
   server_bound_cert_list_ = cert_list;
   DCHECK(model_);
   model_->PopulateServerBoundCertInfo(this);
+}
+
+void LocalDataContainer::OnFlashLSOInfoLoaded(
+    const FlashLSODomainList& domains) {
+  flash_lso_domain_list_ = domains;
+  DCHECK(model_);
+  model_->PopulateFlashLSOInfo(this);
 }

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_LOCAL_SHARED_OBJECTS_CONTAINER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 
 class CannedBrowsingDataAppCacheHelper;
 class CannedBrowsingDataCookieHelper;
@@ -14,6 +15,7 @@ class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
 class CannedBrowsingDataServerBoundCertHelper;
+class CookiesTreeModel;
 class GURL;
 class Profile;
 
@@ -30,6 +32,10 @@ class LocalSharedObjectsContainer {
 
   // Returns the number of objects for the given |origin|.
   size_t GetObjectCountForDomain(const GURL& url) const;
+
+  // Creates a new CookiesTreeModel for all objects in the container,
+  // copying each of them.
+  scoped_ptr<CookiesTreeModel> CreateCookiesTreeModel() const;
 
   CannedBrowsingDataAppCacheHelper* appcaches() const {
     return appcaches_;

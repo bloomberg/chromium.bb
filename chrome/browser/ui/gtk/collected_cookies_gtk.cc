@@ -213,21 +213,10 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
   TabSpecificContentSettings* content_settings =
       tab_contents_->content_settings();
 
-  const LocalSharedObjectsContainer& allowed_lsos =
+  const LocalSharedObjectsContainer& allowed_data =
       content_settings->allowed_local_shared_objects();
-  ContainerMap apps_map;
-  apps_map[std::string()] = new LocalDataContainer(
-      std::string(), std::string(),
-      allowed_lsos.cookies()->Clone(),
-      allowed_lsos.databases()->Clone(),
-      allowed_lsos.local_storages()->Clone(),
-      allowed_lsos.session_storages()->Clone(),
-      allowed_lsos.appcaches()->Clone(),
-      allowed_lsos.indexed_dbs()->Clone(),
-      allowed_lsos.file_systems()->Clone(),
-      NULL,
-      allowed_lsos.server_bound_certs()->Clone());
-  allowed_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, NULL, true));
+  allowed_cookies_tree_model_ = allowed_data.CreateCookiesTreeModel();
+
   allowed_cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, allowed_cookies_tree_model_.get()));
   allowed_tree_ = gtk_tree_view_new_with_model(
@@ -304,21 +293,10 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
   TabSpecificContentSettings* content_settings =
       tab_contents_->content_settings();
 
-  const LocalSharedObjectsContainer& blocked_lsos =
+  const LocalSharedObjectsContainer& blocked_data =
       content_settings->blocked_local_shared_objects();
-  ContainerMap apps_map;
-  apps_map[std::string()] = new LocalDataContainer(
-      std::string(), std::string(),
-      blocked_lsos.cookies()->Clone(),
-      blocked_lsos.databases()->Clone(),
-      blocked_lsos.local_storages()->Clone(),
-      blocked_lsos.session_storages()->Clone(),
-      blocked_lsos.appcaches()->Clone(),
-      blocked_lsos.indexed_dbs()->Clone(),
-      blocked_lsos.file_systems()->Clone(),
-      NULL,
-      blocked_lsos.server_bound_certs()->Clone());
-  blocked_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, NULL, true));
+  blocked_cookies_tree_model_ = blocked_data.CreateCookiesTreeModel();
+
   blocked_cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, blocked_cookies_tree_model_.get()));
   blocked_tree_ = gtk_tree_view_new_with_model(

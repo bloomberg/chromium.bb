@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -250,6 +251,13 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitServerBoundCert(
     const net::ServerBoundCertStore::ServerBoundCert* server_bound_cert) {
   Init(TYPE_SERVER_BOUND_CERT);
   this->server_bound_cert = server_bound_cert;
+  return *this;
+}
+
+CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitFlashLSO(
+    const std::string& flash_lso_domain) {
+  Init(TYPE_FLASH_LSO);
+  this->flash_lso_domain = flash_lso_domain;
   return *this;
 }
 
@@ -580,6 +588,7 @@ CookieTreeHostNode::CookieTreeHostNode(const GURL& url,
       file_systems_child_(NULL),
       quota_child_(NULL),
       server_bound_certs_child_(NULL),
+      flash_lso_child_(NULL),
       app_id_(app_id),
       app_name_(name),
       url_(url),
@@ -671,6 +680,16 @@ CookieTreeHostNode::GetOrCreateServerBoundCertsNode() {
   server_bound_certs_child_ = new CookieTreeServerBoundCertsNode;
   AddChildSortedByTitle(server_bound_certs_child_);
   return server_bound_certs_child_;
+}
+
+CookieTreeFlashLSONode* CookieTreeHostNode::GetOrCreateFlashLSONode(
+    const std::string& domain) {
+  DCHECK_EQ(GetHost(), domain);
+  if (flash_lso_child_)
+    return flash_lso_child_;
+  flash_lso_child_ = new CookieTreeFlashLSONode(domain);
+  AddChildSortedByTitle(flash_lso_child_);
+  return flash_lso_child_;
 }
 
 void CookieTreeHostNode::CreateContentException(
@@ -810,6 +829,29 @@ void CookieTreeNode::AddChildSortedByTitle(CookieTreeNode* new_child) {
       std::lower_bound(children().begin(), children().end(), new_child,
                        NodeTitleComparator());
   GetModel()->Add(this, new_child, iter - children().begin());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CookieTreeFlashLSONode
+CookieTreeFlashLSONode::CookieTreeFlashLSONode(
+    const std::string& domain)
+    : domain_(domain) {}
+CookieTreeFlashLSONode::~CookieTreeFlashLSONode() {}
+
+void CookieTreeFlashLSONode::DeleteStoredObjects() {
+  // We are one level below the host node.
+  CookieTreeHostNode* host = static_cast<CookieTreeHostNode*>(parent());
+  CHECK_EQ(host->GetDetailedInfo().node_type,
+           CookieTreeNode::DetailedInfo::TYPE_HOST);
+  LocalDataContainer* container =
+      GetModel()->GetLocalDataContainer(host->app_id());
+  CHECK(container);
+
+  container->flash_lso_helper_->DeleteFlashLSOsForSite(domain_);
+}
+
+CookieTreeNode::DetailedInfo CookieTreeFlashLSONode::GetDetailedInfo() const {
+  return DetailedInfo().InitFlashLSO(domain_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1018,6 +1060,12 @@ void CookiesTreeModel::PopulateServerBoundCertInfo(
       LocalDataContainer* container) {
   ScopedBatchUpdateNotifier notifier(this, GetRoot());
   PopulateServerBoundCertInfoWithFilter(container, &notifier, string16());
+}
+
+void CookiesTreeModel::PopulateFlashLSOInfo(
+      LocalDataContainer* container) {
+  ScopedBatchUpdateNotifier notifier(this, GetRoot());
+  PopulateFlashLSOInfoWithFilter(container, &notifier, string16());
 }
 
 void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
@@ -1295,6 +1343,31 @@ void CookiesTreeModel::PopulateQuotaInfoWithFilter(
                                       container->app_id(),
                                       container->app_name());
       host_node->UpdateOrCreateQuotaNode(quota_info);
+    }
+  }
+}
+
+void CookiesTreeModel::PopulateFlashLSOInfoWithFilter(
+    LocalDataContainer* container,
+    ScopedBatchUpdateNotifier* notifier,
+    const string16& filter) {
+  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+
+  if (container->flash_lso_domain_list_.empty())
+    return;
+
+  std::string filter_utf8 = UTF16ToUTF8(filter);
+  notifier->StartBatchUpdate();
+  for (std::vector<std::string>::iterator it =
+           container->flash_lso_domain_list_.begin();
+       it != container->flash_lso_domain_list_.end(); ++it) {
+    if (!filter_utf8.size() || it->find(filter_utf8) != std::string::npos) {
+      // Create a fake origin for GetOrCreateHostNode().
+      GURL origin("http://" + *it);
+      CookieTreeHostNode* host_node =
+          root->GetOrCreateHostNode(origin, container->app_id(),
+                                    container->app_name());
+      host_node->GetOrCreateFlashLSONode(*it);
     }
   }
 }

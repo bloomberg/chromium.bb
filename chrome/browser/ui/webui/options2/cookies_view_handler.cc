@@ -16,6 +16,7 @@
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
@@ -73,6 +74,7 @@ void CookiesViewHandler::GetLocalizedValues(
     { "cookie_indexed_db", IDS_COOKIES_INDEXED_DB },
     { "cookie_local_storage", IDS_COOKIES_LOCAL_STORAGE },
     { "cookie_app_cache", IDS_COOKIES_APPLICATION_CACHE },
+    { "cookie_flash_lso", IDS_COOKIES_FLASH_LSO },
     { "search_cookies", IDS_COOKIES_SEARCH_COOKIES },
     { "remove_cookie", IDS_COOKIES_REMOVE_LABEL },
     { "remove_all_cookie", IDS_COOKIES_REMOVE_ALL_LABEL },
@@ -193,7 +195,8 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         BrowsingDataIndexedDBHelper::Create(profile),
         BrowsingDataFileSystemHelper::Create(profile),
         BrowsingDataQuotaHelper::Create(profile),
-        BrowsingDataServerBoundCertHelper::Create(profile));
+        BrowsingDataServerBoundCertHelper::Create(profile),
+        BrowsingDataFlashLSOHelper::Create(profile));
     cookies_tree_model_.reset(
         new CookiesTreeModel(apps_map,
                              profile->GetExtensionSpecialStoragePolicy(),
@@ -218,7 +221,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
           apps_map[(*it)->id()] = new LocalDataContainer(
               (*it)->name(), (*it)->id(),
               new BrowsingDataCookieHelper(context_getter),
-              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
         }
       }
       app_cookies_tree_model_.reset(

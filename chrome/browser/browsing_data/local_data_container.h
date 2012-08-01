@@ -5,6 +5,11 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_LOCAL_DATA_CONTAINER_H_
 #define CHROME_BROWSER_BROWSING_DATA_LOCAL_DATA_CONTAINER_H_
 
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
@@ -18,8 +23,9 @@
 #include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 #include "net/base/server_bound_cert_store.h"
 
-class LocalDataContainer;
+class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;
+class LocalDataContainer;
 
 namespace net {
 class CanonicalCookie;
@@ -42,6 +48,7 @@ typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
 typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
 typedef net::ServerBoundCertStore::ServerBoundCertList ServerBoundCertList;
 typedef std::map<GURL, std::list<appcache::AppCacheInfo> > AppCacheInfoMap;
+typedef std::vector<std::string> FlashLSODomainList;
 
 } // namespace
 
@@ -64,7 +71,8 @@ class LocalDataContainer {
       BrowsingDataIndexedDBHelper* indexed_db_helper,
       BrowsingDataFileSystemHelper* file_system_helper,
       BrowsingDataQuotaHelper* quota_helper,
-      BrowsingDataServerBoundCertHelper* server_bound_cert_helper);
+      BrowsingDataServerBoundCertHelper* server_bound_cert_helper,
+      BrowsingDataFlashLSOHelper* flash_data_helper);
   virtual ~LocalDataContainer();
 
   // This method must be called to start the process of fetching the resources.
@@ -85,6 +93,7 @@ class LocalDataContainer {
   friend class CookieTreeFileSystemNode;
   friend class CookieTreeQuotaNode;
   friend class CookieTreeServerBoundCertNode;
+  friend class CookieTreeFlashLSONode;
 
   // Callback methods to be invoked when fetching the data is complete.
   void OnAppCacheModelInfoLoaded();
@@ -100,6 +109,7 @@ class LocalDataContainer {
       const FileSystemInfoList& file_system_info);
   void OnQuotaModelInfoLoaded(const QuotaInfoList& quota_info);
   void OnServerBoundCertModelInfoLoaded(const ServerBoundCertList& cert_list);
+  void OnFlashLSOInfoLoaded(const FlashLSODomainList& domains);
 
   // The app name and id, to which this container object is for.
   std::string app_name_;
@@ -116,6 +126,7 @@ class LocalDataContainer {
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
   scoped_refptr<BrowsingDataServerBoundCertHelper> server_bound_cert_helper_;
+  scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
 
   // Storage for all the data that was retrieved through the helper objects.
   // The collected data is used for (re)creating the CookiesTreeModel.
@@ -128,6 +139,7 @@ class LocalDataContainer {
   FileSystemInfoList file_system_info_list_;
   QuotaInfoList quota_info_list_;
   ServerBoundCertList server_bound_cert_list_;
+  FlashLSODomainList flash_lso_domain_list_;
 
   // A delegate, which must outlive this object. The update callbacks use the
   // delegate to deliver the updated data to the CookieTreeModel.

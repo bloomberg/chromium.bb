@@ -254,6 +254,12 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
               server_bound_cert.expiration_time())));
       break;
     }
+    case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO: {
+      dict->SetString(kKeyType, "flash_lso");
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_ICON");
+
+      dict->SetString(kKeyDomain, node.GetDetailedInfo().flash_lso_domain);
+    }
     default:
 #if defined(OS_MACOSX)
       dict->SetString(kKeyIcon, "chrome://theme/IDR_BOOKMARK_BAR_FOLDER");

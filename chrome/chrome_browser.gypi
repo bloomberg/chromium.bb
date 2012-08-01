@@ -353,6 +353,8 @@
         'browser/browsing_data/browsing_data_database_helper.h',
         'browser/browsing_data/browsing_data_file_system_helper.cc',
         'browser/browsing_data/browsing_data_file_system_helper.h',
+        'browser/browsing_data/browsing_data_flash_lso_helper.cc',
+        'browser/browsing_data/browsing_data_flash_lso_helper.h',
         'browser/browsing_data/browsing_data_helper.cc',
         'browser/browsing_data/browsing_data_helper.h',
         'browser/browsing_data/browsing_data_indexed_db_helper.cc',

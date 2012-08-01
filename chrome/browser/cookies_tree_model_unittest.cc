@@ -15,6 +15,7 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data/mock_browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_quota_helper.h"
@@ -70,6 +71,8 @@ class CookiesTreeModelTest : public testing::Test {
         new MockBrowsingDataQuotaHelper(profile_.get());
     mock_browsing_data_server_bound_cert_helper_ =
         new MockBrowsingDataServerBoundCertHelper();
+    mock_browsing_data_flash_lso_helper_ =
+        new MockBrowsingDataFlashLSOHelper(profile_.get());
 
     // It is fine to reuse the profile request context for the app, since
     // the mock cookie helper maintains its own list internally and doesn't
@@ -93,6 +96,7 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_session_storage_helper_ = NULL;
     mock_browsing_data_local_storage_helper_ = NULL;
     mock_browsing_data_database_helper_ = NULL;
+    mock_browsing_data_flash_lso_helper_ = NULL;
     message_loop_.RunAllPending();
   }
 
@@ -110,7 +114,8 @@ class CookiesTreeModelTest : public testing::Test {
         mock_browsing_data_indexed_db_helper_,
         mock_browsing_data_file_system_helper_,
         mock_browsing_data_quota_helper_,
-        mock_browsing_data_server_bound_cert_helper_);
+        mock_browsing_data_server_bound_cert_helper_,
+        mock_browsing_data_flash_lso_helper_);
 
     if (add_app) {
       std::string app_id = "some-random-id";
@@ -118,7 +123,7 @@ class CookiesTreeModelTest : public testing::Test {
       containers_map[app_id] = new LocalDataContainer(
           "Isolated App", app_id,
           mock_browsing_data_cookie_helper_app_,
-          NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+          NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     }
 
     CookiesTreeModel* cookies_model =
@@ -149,6 +154,8 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_server_bound_cert_helper_->AddServerBoundCertSample(
         "sbc2");
     mock_browsing_data_server_bound_cert_helper_->Notify();
+    mock_browsing_data_flash_lso_helper_->AddFlashLSODomain("xyz.com");
+    mock_browsing_data_flash_lso_helper_->Notify();
 
     if (add_app) {
       mock_browsing_data_cookie_helper_app_->
@@ -163,7 +170,7 @@ class CookiesTreeModelTest : public testing::Test {
     {
       SCOPED_TRACE("Initial State 3 cookies, 2 databases, 2 local storages, "
                    "2 session storages, 2 indexed DBs, 3 filesystems, "
-                   "2 quotas, 2 server bound certs");
+                   "2 quotas, 2 server bound certs, 1 Flash LSO");
       // 51 because there's the root, then
       // foo1 -> cookies -> a,
       // foo2 -> cookies -> b,
@@ -183,15 +190,16 @@ class CookiesTreeModelTest : public testing::Test {
       // quotahost2 -> quotahost2,
       // sbc1 -> sbcerts -> sbc1,
       // sbc2 -> sbcerts -> sbc2.
+      // xyz.com -> flash_lsos
       if (!add_app) {
-        EXPECT_EQ(51, cookies_model->GetRoot()->GetTotalNodeCount());
+        EXPECT_EQ(53, cookies_model->GetRoot()->GetTotalNodeCount());
         EXPECT_EQ("A,B,C", GetDisplayedCookies(cookies_model));
       } else {
         // Once we add the app, we have 9 more nodes:
         // app-origin1 -> cookies -> z,
         // app-origin2 -> cookies -> y,
         // app-origin3 -> cookies -> x,
-        EXPECT_EQ(60, cookies_model->GetRoot()->GetTotalNodeCount());
+        EXPECT_EQ(62, cookies_model->GetRoot()->GetTotalNodeCount());
         EXPECT_EQ("A,B,C,Z,Y,X", GetDisplayedCookies(cookies_model));
       }
       EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model));
@@ -207,6 +215,8 @@ class CookiesTreeModelTest : public testing::Test {
                 GetDisplayedQuotas(cookies_model));
       EXPECT_EQ("sbc1,sbc2",
                 GetDisplayedServerBoundCerts(cookies_model));
+      EXPECT_EQ("xyz.com",
+                GetDisplayedFlashLSOs(cookies_model));
     }
     return make_scoped_ptr(cookies_model);
   }
@@ -250,6 +260,8 @@ class CookiesTreeModelTest : public testing::Test {
       case CookieTreeNode::DetailedInfo::TYPE_SERVER_BOUND_CERT:
         return node->GetDetailedInfo(
             ).server_bound_cert->server_identifier() + ",";
+      case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO:
+        return node->GetDetailedInfo().flash_lso_domain + ",";
       default:
         return std::string();
     }
@@ -287,6 +299,11 @@ class CookiesTreeModelTest : public testing::Test {
   std::string GetFileQuotaOfChildren(const CookieTreeNode* node) {
     return GetNodesOfChildren(
         node, CookieTreeNode::DetailedInfo::TYPE_QUOTA);
+  }
+
+  std::string GetFlashLSOsOfChildren(const CookieTreeNode* node) {
+    return GetNodesOfChildren(
+        node, CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO);
   }
 
   // Get the nodes names displayed in the view (if we had one) in the order
@@ -347,6 +364,11 @@ class CookiesTreeModelTest : public testing::Test {
         cookies_model, CookieTreeNode::DetailedInfo::TYPE_SERVER_BOUND_CERT);
   }
 
+  std::string GetDisplayedFlashLSOs(CookiesTreeModel* cookies_model) {
+    return GetDisplayedNodes(
+        cookies_model, CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO);
+  }
+
   // Do not call on the root.
   void DeleteStoredObjects(CookieTreeNode* node) {
     node->DeleteStoredObjects();
@@ -380,6 +402,8 @@ class CookiesTreeModelTest : public testing::Test {
       mock_browsing_data_quota_helper_;
   scoped_refptr<MockBrowsingDataServerBoundCertHelper>
       mock_browsing_data_server_bound_cert_helper_;
+  scoped_refptr<MockBrowsingDataFlashLSOHelper>
+      mock_browsing_data_flash_lso_helper_;
 
   // App helpers.
   scoped_refptr<MockBrowsingDataCookieHelper>
@@ -411,6 +435,8 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
               GetDisplayedQuotas(cookies_model.get()));
     EXPECT_EQ("sbc1,sbc2",
               GetDisplayedServerBoundCerts(cookies_model.get()));
+    EXPECT_EQ("xyz.com",
+              GetDisplayedFlashLSOs(cookies_model.get()));
   }
 
   mock_browsing_data_cookie_helper_->Reset();
@@ -439,6 +465,7 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
     EXPECT_TRUE(mock_browsing_data_indexed_db_helper_->AllDeleted());
     EXPECT_TRUE(mock_browsing_data_file_system_helper_->AllDeleted());
     EXPECT_TRUE(mock_browsing_data_server_bound_cert_helper_->AllDeleted());
+    EXPECT_TRUE(mock_browsing_data_flash_lso_helper_->AllDeleted());
   }
 }
 
@@ -464,10 +491,30 @@ TEST_F(CookiesTreeModelTest, Remove) {
   // 13. `quotahost2`
   // 14. `sbc1`
   // 15. `sbc2`
+  // 16. `xyz.com`
   //
   // Here, we'll remove them one by one, starting from the end, and
   // check that the state makes sense.
 
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(16));
+  {
+    SCOPED_TRACE("`xyz.com` removed.");
+    EXPECT_STREQ("A,B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
+              GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
+              GetDisplayedSessionStorages(cookies_model.get()));
+    EXPECT_EQ("http://fshost1:1/,http://fshost2:2/,http://fshost3:3/",
+              GetDisplayedFileSystems(cookies_model.get()));
+    EXPECT_EQ("http://idbhost1:1/,http://idbhost2:2/",
+              GetDisplayedIndexedDBs(cookies_model.get()));
+    EXPECT_EQ("quotahost1,quotahost2",
+              GetDisplayedQuotas(cookies_model.get()));
+    EXPECT_EQ("sbc1,sbc2",
+              GetDisplayedServerBoundCerts(cookies_model.get()));
+    EXPECT_EQ(51, cookies_model->GetRoot()->GetTotalNodeCount());
+  }
   DeleteStoredObjects(cookies_model->GetRoot()->GetChild(15));
   {
     SCOPED_TRACE("`sbc2` removed.");
@@ -694,9 +741,9 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
   {
     SCOPED_TRACE("First origin removed");
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
-    // 49 because in this case, the origin remains, although the COOKIES
+    // 51 because in this case, the origin remains, although the COOKIES
     // node beneath it has been deleted.
-    EXPECT_EQ(49, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(51, cookies_model->GetRoot()->GetTotalNodeCount());
     EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
     EXPECT_EQ("http://host1:1/,http://host2:2/",
               GetDisplayedLocalStorages(cookies_model.get()));
@@ -726,7 +773,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
               GetDisplayedFileSystems(cookies_model.get()));
     EXPECT_EQ("quotahost1,quotahost2", GetDisplayedQuotas(cookies_model.get()));
     EXPECT_EQ("sbc1,sbc2", GetDisplayedServerBoundCerts(cookies_model.get()));
-    EXPECT_EQ(47, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(49, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 
   DeleteStoredObjects(
@@ -745,7 +792,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
               GetDisplayedFileSystems(cookies_model.get()));
     EXPECT_EQ("quotahost1,quotahost2", GetDisplayedQuotas(cookies_model.get()));
     EXPECT_EQ("sbc1,sbc2", GetDisplayedServerBoundCerts(cookies_model.get()));
-    EXPECT_EQ(45, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(47, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
 
@@ -769,9 +816,9 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
               GetDisplayedFileSystems(cookies_model.get()));
     EXPECT_EQ("quotahost1,quotahost2", GetDisplayedQuotas(cookies_model.get()));
     EXPECT_EQ("sbc1,sbc2", GetDisplayedServerBoundCerts(cookies_model.get()));
-    // 49 because in this case, the origin remains, although the COOKIES
+    // 51 because in this case, the origin remains, although the COOKIES
     // node beneath it has been deleted.
-    EXPECT_EQ(49, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(51, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 
   DeleteStoredObjects(
@@ -790,7 +837,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
               GetDisplayedFileSystems(cookies_model.get()));
     EXPECT_EQ("quotahost1,quotahost2", GetDisplayedQuotas(cookies_model.get()));
     EXPECT_EQ("sbc1,sbc2", GetDisplayedServerBoundCerts(cookies_model.get()));
-    EXPECT_EQ(47, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(49, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 
   DeleteStoredObjects(
@@ -809,7 +856,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
               GetDisplayedFileSystems(cookies_model.get()));
     EXPECT_EQ("quotahost1,quotahost2", GetDisplayedQuotas(cookies_model.get()));
     EXPECT_EQ("sbc1,sbc2", GetDisplayedServerBoundCerts(cookies_model.get()));
-    EXPECT_EQ(45, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(47, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
 
@@ -826,7 +873,8 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
       mock_browsing_data_indexed_db_helper_,
       mock_browsing_data_file_system_helper_,
       mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_);
+      mock_browsing_data_server_bound_cert_helper_,
+      mock_browsing_data_flash_lso_helper_);
   CookiesTreeModel cookies_model(container_map, special_storage_policy_, false);
 
   mock_browsing_data_cookie_helper_->
@@ -916,7 +964,8 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
       mock_browsing_data_indexed_db_helper_,
       mock_browsing_data_file_system_helper_,
       mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_);
+      mock_browsing_data_server_bound_cert_helper_,
+      mock_browsing_data_flash_lso_helper_);
   CookiesTreeModel cookies_model(container_map, special_storage_policy_,false);
 
   mock_browsing_data_cookie_helper_->
@@ -1009,7 +1058,8 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
       mock_browsing_data_indexed_db_helper_,
       mock_browsing_data_file_system_helper_,
       mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_);
+      mock_browsing_data_server_bound_cert_helper_,
+      mock_browsing_data_flash_lso_helper_);
   CookiesTreeModel cookies_model(container_map, special_storage_policy_,false);
 
   mock_browsing_data_cookie_helper_->
@@ -1053,7 +1103,8 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
       mock_browsing_data_indexed_db_helper_,
       mock_browsing_data_file_system_helper_,
       mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_);
+      mock_browsing_data_server_bound_cert_helper_,
+      mock_browsing_data_flash_lso_helper_);
   CookiesTreeModel cookies_model(container_map, special_storage_policy_, false);
 
   mock_browsing_data_cookie_helper_->
@@ -1089,7 +1140,7 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
 }
 
 TEST_F(CookiesTreeModelTest, ContentSettings) {
-  GURL host("http://example.com/");
+  GURL host("http://xyz.com/");
   std::string name = "Drive-By-Web";
   std::string browser_id;
   ContainerMap container_map;
@@ -1104,7 +1155,8 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
       mock_browsing_data_indexed_db_helper_,
       mock_browsing_data_file_system_helper_,
       mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_);
+      mock_browsing_data_server_bound_cert_helper_,
+      mock_browsing_data_flash_lso_helper_);
   CookiesTreeModel cookies_model(container_map, special_storage_policy_, false);
 
   mock_browsing_data_cookie_helper_->AddCookieSamples(host, "A=1");
@@ -1150,9 +1202,9 @@ TEST_F(CookiesTreeModelTest, AppOriginTitle) {
       CreateCookiesTreeModelWithInitialSample(true));
 
   EXPECT_EQ(ASCIIToUTF16("Isolated App, app-origin1"),
-      cookies_model->GetRoot()->GetChild(16)->GetTitle());
-  EXPECT_EQ(ASCIIToUTF16("Isolated App, app-origin2"),
       cookies_model->GetRoot()->GetChild(17)->GetTitle());
+  EXPECT_EQ(ASCIIToUTF16("Isolated App, app-origin2"),
+      cookies_model->GetRoot()->GetChild(18)->GetTitle());
 }
 
 TEST_F(CookiesTreeModelTest, FileSystemFilter) {
@@ -1189,7 +1241,8 @@ TEST_F(CookiesTreeModelTest, CookiesFilter) {
       mock_browsing_data_indexed_db_helper_,
       mock_browsing_data_file_system_helper_,
       mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_);
+      mock_browsing_data_server_bound_cert_helper_,
+      mock_browsing_data_flash_lso_helper_);
   CookiesTreeModel cookies_model(container_map, special_storage_policy_, false);
 
   mock_browsing_data_cookie_helper_->

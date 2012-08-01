@@ -41,6 +41,7 @@ cr.define('options', function() {
                           ['certType', 'label_server_bound_cert_type'],
                           ['created', 'label_server_bound_cert_created'],
                           ['expires', 'label_server_bound_cert_expires']],
+    'flash_lso': [['domain', 'label_cookie_domain']],
   };
 
   /**
@@ -271,6 +272,8 @@ cr.define('options', function() {
         list.push(loadTimeData.getString('cookie_file_system'));
       if (info.serverBoundCerts)
         list.push(loadTimeData.getString('cookie_server_bound_cert'));
+      if (info.flashLSO)
+        list.push(loadTimeData.getString('cookie_flash_lso'));
 
       var text = '';
       for (var i = 0; i < list.length; ++i) {
@@ -484,6 +487,8 @@ cr.define('options', function() {
           info.quota = this.data;
         } else if (this.data.type == 'server_bound_cert') {
           info.serverBoundCerts++;
+        } else if (this.data.type == 'flash_lso') {
+          info.flashLSO = true;
         }
 
         var apps = this.data.appsProtectingThis;

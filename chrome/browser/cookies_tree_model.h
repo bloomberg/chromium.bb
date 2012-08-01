@@ -41,6 +41,7 @@ class CookieTreeDatabaseNode;
 class CookieTreeDatabasesNode;
 class CookieTreeFileSystemNode;
 class CookieTreeFileSystemsNode;
+class CookieTreeFlashLSONode;
 class CookieTreeHostNode;
 class CookieTreeIndexedDBNode;
 class CookieTreeIndexedDBsNode;
@@ -89,6 +90,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
       TYPE_QUOTA,  // This is used for CookieTreeQuotaNode.
       TYPE_SERVER_BOUND_CERTS, // Used for CookieTreeServerBoundCertsNode.
       TYPE_SERVER_BOUND_CERT, // Used for CookieTreeServerBoundCertNode.
+      TYPE_FLASH_LSO,  // This is used for CookieTreeFlashLSONode.
     };
 
     DetailedInfo();
@@ -116,6 +118,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         const BrowsingDataQuotaHelper::QuotaInfo* quota_info);
     DetailedInfo& InitServerBoundCert(
         const net::ServerBoundCertStore::ServerBoundCert* server_bound_cert);
+    DetailedInfo& InitFlashLSO(const std::string& flash_lso_domain);
 
     std::string app_name;
     std::string app_id;
@@ -131,6 +134,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info;
     const BrowsingDataQuotaHelper::QuotaInfo* quota_info;
     const net::ServerBoundCertStore::ServerBoundCert* server_bound_cert;
+    std::string flash_lso_domain;
   };
 
   CookieTreeNode() {}
@@ -204,6 +208,7 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeServerBoundCertsNode* GetOrCreateServerBoundCertsNode();
   CookieTreeQuotaNode* UpdateOrCreateQuotaNode(
       std::list<BrowsingDataQuotaHelper::QuotaInfo>::iterator quota_info);
+  CookieTreeFlashLSONode* GetOrCreateFlashLSONode(const std::string& domain);
 
   std::string canonicalized_host() const { return canonicalized_host_; }
 
@@ -234,6 +239,7 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeFileSystemsNode* file_systems_child_;
   CookieTreeQuotaNode* quota_child_;
   CookieTreeServerBoundCertsNode* server_bound_certs_child_;
+  CookieTreeFlashLSONode* flash_lso_child_;
 
   std::string app_id_;
   std::string app_name_;
@@ -573,6 +579,22 @@ class CookieTreeServerBoundCertsNode : public CookieTreeNode {
   DISALLOW_COPY_AND_ASSIGN(CookieTreeServerBoundCertsNode);
 };
 
+// CookieTreeFlashLSONode ----------------------------------------------------
+class CookieTreeFlashLSONode : public CookieTreeNode {
+ public:
+  explicit CookieTreeFlashLSONode(const std::string& domain);
+  virtual ~CookieTreeFlashLSONode();
+
+  // CookieTreeNode methods:
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
+
+ private:
+  std::string domain_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookieTreeFlashLSONode);
+};
+
 // CookiesTreeModel -----------------------------------------------------------
 class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
  public:
@@ -654,6 +676,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateFileSystemInfo(LocalDataContainer* container);
   void PopulateQuotaInfo(LocalDataContainer* container);
   void PopulateServerBoundCertInfo(LocalDataContainer* container);
+  void PopulateFlashLSOInfo(LocalDataContainer* container);
 
   BrowsingDataCookieHelper* GetCookieHelper(const std::string& app_id);
   LocalDataContainer* GetLocalDataContainer(const std::string& app_id);
@@ -696,6 +719,9 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
       LocalDataContainer* container,
       ScopedBatchUpdateNotifier* notifier,
       const string16& filter);
+  void PopulateFlashLSOInfoWithFilter(LocalDataContainer* container,
+                                      ScopedBatchUpdateNotifier* notifier,
+                                      const string16& filter);
 
   // Map of app ids to LocalDataContainer objects to use when retrieving
   // locally stored data.
