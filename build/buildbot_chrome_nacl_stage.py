@@ -226,14 +226,13 @@ def BuildAndTest(options):
 
   # Download the toolchain(s).
   if options.integration_bot:
-    pnacl_toolchain = ['--pnacl-version',
-                       deps['vars']['pnacl_toolchain_version']]
+    pnacl_toolchain = []
   else:
     pnacl_toolchain = ['--no-pnacl']
   RunCommand([python,
               os.path.join(script_dir, 'download_toolchains.py'),
-              '--no-arm-trusted'] + pnacl_toolchain +
-              ['TOOL_REVISIONS'], nacl_dir, os.environ)
+              '--no-arm-trusted'] + pnacl_toolchain + ['TOOL_REVISIONS'],
+             nacl_dir, os.environ)
 
   CleanTempDir()
 

@@ -25,7 +25,9 @@ set -o errexit
 ARCHIVED_PEXE_TRANSLATOR_REV=9103
 
 # The frontend from this rev will generate pexes for the archived frontend
-# test
+# test. The toolchain downloader expects this information in a specially
+# formatted file. We generate that file in this script from this information,
+# to keep all our versions in one place
 ARCHIVED_TOOLCHAIN_REV=8851
 ARCHIVED_TOOLCHAIN_HASH=c002ed9127700b33a6920bbbdbf3e9920ab2f899
 
@@ -150,10 +152,14 @@ archived-frontend-test() {
   # Get the archived frontend.
   # If the correct cached frontend is in place, the hash will match and the
   # download will be a no-op. Otherwise the downloader will fix it.
+
+  # Generate a toolchain version file for the downloader, and run it
+  echo PNACL_VERSION=${ARCHIVED_TOOLCHAIN_REV} > TEST_TOOL_REVISIONS
+  echo NACL_TOOL_PNACL_LINUX_X86_64_HASH=${ARCHIVED_TOOLCHAIN_HASH} >> \
+    TEST_TOOL_REVISIONS
   ${DOWNLOAD_TOOLCHAINS} --no-x86 --no-arm-trusted --no-pnacl-translator \
-    --pnacl-version=${ARCHIVED_TOOLCHAIN_REV} \
     --toolchain-dir=toolchain/archived_tc \
-    --file-hash ${tc_name} ${ARCHIVED_TOOLCHAIN_HASH} || handle-error
+    TEST_TOOL_REVISIONS
 
   # Save the current toolchain
   mkdir -p toolchain/current_tc
