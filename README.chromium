@@ -1,7 +1,9 @@
 Name: flac
 URL: http://sourceforge.net/projects/flac/files/flac-src/flac-1.2.1-src/flac-1.2.1.tar.gz/download
 Version: 1.2.1
+License: BSD
 License File: COPYING.Xiph
+Security Critical: yes
 
 Description:
 This contains a copy of flac-1.2.1
