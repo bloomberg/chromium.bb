@@ -1776,6 +1776,7 @@
         'jingle_glue/mock_objects.h',
         'protocol/authenticator_test_base.cc',
         'protocol/authenticator_test_base.h',
+        'protocol/buffered_socket_writer_unittest.cc',
         'protocol/clipboard_echo_filter_unittest.cc',
         'protocol/connection_tester.cc',
         'protocol/connection_tester.h',

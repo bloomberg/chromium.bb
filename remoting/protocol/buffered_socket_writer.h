@@ -59,27 +59,33 @@ class BufferedSocketWriterBase : public base::NonThreadSafe {
   void Close();
 
  protected:
-  class PendingPacket;
+  struct PendingPacket;
   typedef std::list<PendingPacket*> DataQueue;
 
   DataQueue queue_;
   int buffer_size_;
 
-  // Removes element from the front of the queue and calls |done_task|
-  // for that element.
-  void PopQueue();
+  // Removes element from the front of the queue and returns |done_task| for
+  // that element. Called from AdvanceBufferPosition() implementation, which
+  // then returns result of this function to its caller.
+  base::Closure PopQueue();
 
   // Following three methods must be implemented in child classes.
-  // GetNextPacket() returns next packet that needs to be written to the
-  // socket. |buffer| must be set to NULL if there is nothing left in the queue.
+
+  // Returns next packet that needs to be written to the socket. Implementation
+  // must set |*buffer| to NULL if there is nothing left in the queue.
   virtual void GetNextPacket(net::IOBuffer** buffer, int* size) = 0;
-  virtual void AdvanceBufferPosition(int written) = 0;
+
+  // Returns closure that must be executed or null closure if the last write
+  // didn't complete any messages.
+  virtual base::Closure AdvanceBufferPosition(int written) = 0;
 
   // This method is called whenever there is an error writing to the socket.
   virtual void OnError(int result) = 0;
 
  private:
   void DoWrite();
+  void HandleWriteResult(int result, bool* write_again);
   void OnWritten(int result);
 
   // This method is called when an error is encountered.
@@ -91,6 +97,8 @@ class BufferedSocketWriterBase : public base::NonThreadSafe {
   bool write_pending_;
 
   bool closed_;
+
+  bool* destroyed_flag_;
 };
 
 class BufferedSocketWriter : public BufferedSocketWriterBase {
@@ -100,7 +108,7 @@ class BufferedSocketWriter : public BufferedSocketWriterBase {
 
  protected:
   virtual void GetNextPacket(net::IOBuffer** buffer, int* size) OVERRIDE;
-  virtual void AdvanceBufferPosition(int written) OVERRIDE;
+  virtual base::Closure AdvanceBufferPosition(int written) OVERRIDE;
   virtual void OnError(int result) OVERRIDE;
 
  private:
@@ -114,7 +122,7 @@ class BufferedDatagramWriter : public BufferedSocketWriterBase {
 
  protected:
   virtual void GetNextPacket(net::IOBuffer** buffer, int* size) OVERRIDE;
-  virtual void AdvanceBufferPosition(int written) OVERRIDE;
+  virtual base::Closure AdvanceBufferPosition(int written) OVERRIDE;
   virtual void OnError(int result) OVERRIDE;
 };
 

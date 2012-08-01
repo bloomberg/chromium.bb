@@ -40,6 +40,9 @@ class FakeSocket : public net::StreamSocket {
 
   const std::string& written_data() const { return written_data_; }
 
+  void set_write_limit(int write_limit) { write_limit_ = write_limit; }
+  void set_async_write(bool async_write) { async_write_ = async_write; }
+  void set_next_write_error(int error) { next_write_error_ = error; }
   void set_next_read_error(int error) { next_read_error_ = error; }
   void AppendInputData(const std::vector<char>& data);
   void PairWith(FakeSocket* peer_socket);
@@ -74,6 +77,15 @@ class FakeSocket : public net::StreamSocket {
   virtual bool GetSSLInfo(net::SSLInfo* ssl_info) OVERRIDE;
 
  private:
+  void DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
+                    const net::CompletionCallback& callback);
+  void DoWrite(net::IOBuffer* buf, int buf_len);
+
+  bool async_write_;
+  bool write_pending_;
+  int write_limit_;
+  int next_write_error_;
+
   int next_read_error_;
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;

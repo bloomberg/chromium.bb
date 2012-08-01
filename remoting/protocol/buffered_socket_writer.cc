@@ -6,40 +6,31 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 
 namespace remoting {
 namespace protocol {
 
-class BufferedSocketWriterBase::PendingPacket {
- public:
+struct BufferedSocketWriterBase::PendingPacket {
   PendingPacket(scoped_refptr<net::IOBufferWithSize> data,
                 const base::Closure& done_task)
-      : data_(data),
-        done_task_(done_task) {
-  }
-  ~PendingPacket() {
-    if (!done_task_.is_null())
-      done_task_.Run();
+      : data(data),
+        done_task(done_task) {
   }
 
-  net::IOBufferWithSize* data() {
-    return data_;
-  }
-
- private:
-  scoped_refptr<net::IOBufferWithSize> data_;
-  base::Closure done_task_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingPacket);
+  scoped_refptr<net::IOBufferWithSize> data;
+  base::Closure done_task;
 };
 
 BufferedSocketWriterBase::BufferedSocketWriterBase()
     : buffer_size_(0),
       socket_(NULL),
       write_pending_(false),
-      closed_(false) {
+      closed_(false),
+      destroyed_flag_(NULL) {
 }
 
 void BufferedSocketWriterBase::Init(net::Socket* socket,
@@ -54,6 +45,7 @@ bool BufferedSocketWriterBase::Write(
     scoped_refptr<net::IOBufferWithSize> data, const base::Closure& done_task) {
   DCHECK(CalledOnValidThread());
   DCHECK(socket_);
+  DCHECK(data.get());
 
   // Don't write after Close().
   if (closed_)
@@ -91,35 +83,51 @@ void BufferedSocketWriterBase::DoWrite() {
         current_packet, current_packet_size,
         base::Bind(&BufferedSocketWriterBase::OnWritten,
                    base::Unretained(this)));
-    if (result >= 0) {
-      AdvanceBufferPosition(result);
+    bool write_again = false;
+    HandleWriteResult(result, &write_again);
+    if (!write_again)
+      return;
+  }
+}
+
+void BufferedSocketWriterBase::HandleWriteResult(int result,
+                                                 bool* write_again) {
+  *write_again = false;
+  if (result < 0) {
+    if (result == net::ERR_IO_PENDING) {
+      write_pending_ = true;
     } else {
-      if (result == net::ERR_IO_PENDING) {
-        write_pending_ = true;
-      } else {
-        HandleError(result);
-        if (!write_failed_callback_.is_null())
-          write_failed_callback_.Run(result);
-      }
+      HandleError(result);
+      if (!write_failed_callback_.is_null())
+        write_failed_callback_.Run(result);
+    }
+    return;
+  }
+
+  base::Closure done_task = AdvanceBufferPosition(result);
+  if (!done_task.is_null()) {
+    bool destroyed = false;
+    destroyed_flag_ = &destroyed;
+    done_task.Run();
+    if (destroyed) {
+      // Stop doing anything if we've been destroyed by the callback.
       return;
     }
+    destroyed_flag_ = NULL;
   }
+
+  *write_again = true;
 }
 
 void BufferedSocketWriterBase::OnWritten(int result) {
   DCHECK(CalledOnValidThread());
+  DCHECK(write_pending_);
   write_pending_ = false;
 
-  if (result < 0) {
-    HandleError(result);
-    if (!write_failed_callback_.is_null())
-      write_failed_callback_.Run(result);
-    return;
-  }
-
-  AdvanceBufferPosition(result);
-
-  DoWrite();
+  bool write_again;
+  HandleWriteResult(result, &write_again);
+  if (write_again)
+    DoWrite();
 }
 
 void BufferedSocketWriterBase::HandleError(int result) {
@@ -146,12 +154,18 @@ void BufferedSocketWriterBase::Close() {
   closed_ = true;
 }
 
-BufferedSocketWriterBase::~BufferedSocketWriterBase() {}
+BufferedSocketWriterBase::~BufferedSocketWriterBase() {
+  if (destroyed_flag_)
+    *destroyed_flag_ = true;
 
-void BufferedSocketWriterBase::PopQueue() {
-  // This also calls |done_task|.
+  STLDeleteElements(&queue_);
+}
+
+base::Closure BufferedSocketWriterBase::PopQueue() {
+  base::Closure result = queue_.front()->done_task;
   delete queue_.front();
   queue_.pop_front();
+  return result;
 }
 
 BufferedSocketWriter::BufferedSocketWriter() {
@@ -165,21 +179,22 @@ void BufferedSocketWriter::GetNextPacket(
       return;  // Nothing to write.
     }
     current_buf_ = new net::DrainableIOBuffer(
-        queue_.front()->data(), queue_.front()->data()->size());
+        queue_.front()->data, queue_.front()->data->size());
   }
 
   *buffer = current_buf_;
   *size = current_buf_->BytesRemaining();
 }
 
-void BufferedSocketWriter::AdvanceBufferPosition(int written) {
+base::Closure BufferedSocketWriter::AdvanceBufferPosition(int written) {
   buffer_size_ -= written;
   current_buf_->DidConsume(written);
 
   if (current_buf_->BytesRemaining() == 0) {
-    PopQueue();
     current_buf_ = NULL;
+    return PopQueue();
   }
+  return base::Closure();
 }
 
 void BufferedSocketWriter::OnError(int result) {
@@ -187,7 +202,6 @@ void BufferedSocketWriter::OnError(int result) {
 }
 
 BufferedSocketWriter::~BufferedSocketWriter() {
-  STLDeleteElements(&queue_);
 }
 
 BufferedDatagramWriter::BufferedDatagramWriter() {
@@ -199,21 +213,22 @@ void BufferedDatagramWriter::GetNextPacket(
     *buffer = NULL;
     return;  // Nothing to write.
   }
-  *buffer = queue_.front()->data();
-  *size = queue_.front()->data()->size();
+  *buffer = queue_.front()->data;
+  *size = queue_.front()->data->size();
 }
 
-void BufferedDatagramWriter::AdvanceBufferPosition(int written) {
-  DCHECK_EQ(written, queue_.front()->data()->size());
-  buffer_size_ -= queue_.front()->data()->size();
-  PopQueue();
+base::Closure BufferedDatagramWriter::AdvanceBufferPosition(int written) {
+  DCHECK_EQ(written, queue_.front()->data->size());
+  buffer_size_ -= queue_.front()->data->size();
+  return PopQueue();
 }
 
 void BufferedDatagramWriter::OnError(int result) {
   // Nothing to do here.
 }
 
-BufferedDatagramWriter::~BufferedDatagramWriter() {}
+BufferedDatagramWriter::~BufferedDatagramWriter() {
+}
 
 }  // namespace protocol
 }  // namespace remoting
