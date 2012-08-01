@@ -326,14 +326,6 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
-  // TODO(shishir): Remove this code after verifying that the same navigation is
-  // not seen multiple times.
-  NavigationMap::const_iterator it =
-      inflight_navigations_.find(request.navigation_id);
-  if (it != inflight_navigations_.end()) {
-    DCHECK(it->first.creation_time != request.navigation_id.creation_time);
-  }
-
   // Cleanup older navigations.
   CleanupAbandonedNavigations(request.navigation_id);
 
@@ -416,7 +408,10 @@ void ResourcePrefetchPredictor::Observe(
       const content::WebContents* web_contents =
           content::Source<content::WebContents>(source).ptr();
       NavigationID navigation_id(*web_contents);
-      OnNavigationComplete(navigation_id);
+      // WebContents can return an empty URL if the navigation entry
+      // corresponding to the navigation has not been created yet.
+      if (!navigation_id.main_frame_url.is_empty())
+        OnNavigationComplete(navigation_id);
       break;
     }
 
