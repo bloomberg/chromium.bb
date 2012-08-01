@@ -5670,7 +5670,7 @@
    bug_138510
    Memcheck:Unaddressable
    fun:_ZN3WTF5DequeI10SavedEventLm0EE6appendIS1_EEvRKT_
-   fun:_ZN11EventSender11leapForwardERKN3WTF6VectorI10CppVariantLm0EEEPS2_
+   fun:_ZN11EventSender*
    fun:_ZN13CppBoundClass14MemberCallbackI11EventSenderE3runERKN3WTF6VectorI10CppVariantLm0EEEPS5_
    fun:_ZN13CppBoundClass6invokeEPvPK10_NPVariantmPS1_
    fun:_ZN11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS3_
@@ -5785,6 +5785,40 @@
    fun:_Znw*
    fun:_ZN5media8Pipeline7DoPauseERKN4base8CallbackIFvvEEE
    fun:_ZN5media8Pipeline8SeekTaskEN4base9TimeDeltaERKNS1_8CallbackIFvNS_14PipelineStatusEEEE
+}
+{
+   bug_139996
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
+   fun:_ZN7WebCore23v8StringToWebCoreStringEN2v86HandleINS0_6StringEEE
+   fun:_ZN7WebCore22v8ValueToWebCoreStringEN2v86HandleINS0_5ValueEEE
+   fun:_ZNK7WebCore10Dictionary3getERKN3WTF6StringERS2_
+   fun:_ZN7WebCore6V8Blob19constructorCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL30Builtin_HandleApiCallConstructENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_139998
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:_mesa_symbol_table_add_symbol
+   fun:_ZN17glsl_symbol_table12add_variableEPKcP11ir_variable
+   fun:_ZL21populate_symbol_tableP9gl_shader
+   fun:_ZL23link_intrastage_shadersP14__GLcontextRecP17gl_shader_programPP9gl_shaderj
+   fun:_Z12link_shadersP14__GLcontextRecP17gl_shader_program
+   fun:_mesa_glsl_link_shader
+   fun:link_program
+   fun:_mesa_LinkProgramARB
+   fun:glLinkProgram
+   fun:_ZN3gpu5gles214ProgramManager11ProgramInfo4LinkEPNS0_13ShaderManagerEPNS0_16ShaderTranslatorES6_PNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgramEjRKNS0_11LinkProgramE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
 
 #-----------------------------------------------------------------------
