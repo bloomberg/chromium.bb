@@ -6,6 +6,7 @@
 import json
 import os
 import re
+import socket
 import subprocess
 
 
@@ -29,6 +30,22 @@ def KillProcess(process):
   process.wait()
 
 
+SEL_LDR_RSP_SOCKET_ADDR = ('localhost', 4014)
+
+
+def EnsurePortIsAvailable(addr=SEL_LDR_RSP_SOCKET_ADDR):
+  # As a sanity check, check that the TCP port is available by binding
+  # to it ourselves (and then unbinding).  Otherwise, we could end up
+  # talking to an old instance of sel_ldr that is still hanging
+  # around, or to some unrelated service that uses the same port
+  # number.  Of course, there is still a race condition because an
+  # unrelated process could bind the port after we unbind.
+  sock = socket.socket()
+  sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
+  sock.bind(addr)
+  sock.close()
+
+
 def LaunchSelLdr(program, name):
   stdout = open(MakeOutFileName(name, '.pout'), 'w')
   stderr = open(MakeOutFileName(name, '.perr'), 'w')
@@ -41,6 +58,7 @@ def LaunchSelLdr(program, name):
     args += ['-a', '--', os.environ['NACL_LD_SO'],
              '--library-path', os.environ['NACL_LIBS']]
   args += [FilenameToUnix(program), name]
+  EnsurePortIsAvailable()
   return subprocess.Popen(args, stdout=stdout, stderr=stderr)
 
 
