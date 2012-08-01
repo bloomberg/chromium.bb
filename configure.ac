@@ -97,15 +97,6 @@ if test x$enable_drm_compositor = xyes; then
 fi
 
 
-AC_ARG_ENABLE(openwfd-compositor, [  --enable-openwfd-compositor],,
-	      enable_openwfd_compositor=no)
-AM_CONDITIONAL(ENABLE_OPENWFD_COMPOSITOR, test x$enable_openwfd_compositor = xyes)
-if test x$enable_openwfd_compositor = xyes; then
-  AC_DEFINE([BUILD_OPENWFD_COMPOSITOR], [1], [Build the OpenWF compositor])
-  PKG_CHECK_MODULES(OPENWFD_COMPOSITOR, [openwfd gbm])
-fi
-
-
 AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor],,
 	      enable_wayland_compositor=yes)
 AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,

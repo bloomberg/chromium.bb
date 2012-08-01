@@ -3500,8 +3500,6 @@ int main(int argc, char *argv[])
 			backend = "wayland-backend.so";
 		else if (getenv("DISPLAY"))
 			backend = "x11-backend.so";
-		else if (getenv("OPENWFD"))
-			backend = "openwfd-backend.so";
 		else
 			backend = "drm-backend.so";
 	}

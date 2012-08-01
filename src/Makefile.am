@@ -70,8 +70,7 @@ module_LTLIBRARIES =				\
 	$(tablet_shell)				\
 	$(x11_backend)				\
 	$(drm_backend)				\
-	$(wayland_backend)			\
-	$(openwfd_backend)
+	$(wayland_backend)
 
 # Do not install, since the binary produced via autotools is unusable.
 # The real backend is built by the Android build system.
@@ -121,14 +120,6 @@ wayland_backend_la_CFLAGS =			\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
 wayland_backend_la_SOURCES = compositor-wayland.c
-endif
-
-if ENABLE_OPENWFD_COMPOSITOR
-openwfd_backend = openwfd-backend.la
-openwfd_backend_la_LDFLAGS = -module -avoid-version
-openwfd_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(OPENWFD_COMPOSITOR_LIBS)
-openwfd_backend_la_CFLAGS = $(OPENWFD_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
-openwfd_backend_la_SOURCES = compositor-openwfd.c tty.c evdev.c evdev.h
 endif
 
 if ENABLE_ANDROID_COMPOSITOR
