@@ -6148,6 +6148,7 @@ malloc_shutdown()
 #define	free(a)		je_free(a)
 #define _msize(p) je_msize(p)
 #define _recalloc(p, n, s) je_recalloc(p, n, s)
+#define memalign(a, s) je_memalign(a, s)
 #endif
 
 ZONE_INLINE
