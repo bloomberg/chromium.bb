@@ -628,7 +628,7 @@ bool Widget::IsAccessibleWidget() const {
   return native_widget_->IsAccessibleWidget();
 }
 
-ThemeProvider* Widget::GetThemeProvider() const {
+ui::ThemeProvider* Widget::GetThemeProvider() const {
   const Widget* root_widget = GetTopLevelWidget();
   if (root_widget && root_widget != this) {
     // Attempt to get the theme provider, and fall back to the default theme

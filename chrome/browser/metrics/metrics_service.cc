@@ -1864,7 +1864,7 @@ bool MetricsService::CanLogNotification(
   // We simply don't log anything to UMA if there is a single incognito
   // session visible. The problem is that we always notify using the orginal
   // profile in order to simplify notification processing.
-  return !browser::IsOffTheRecordSessionActive();
+  return !chrome::IsOffTheRecordSessionActive();
 }
 
 void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {

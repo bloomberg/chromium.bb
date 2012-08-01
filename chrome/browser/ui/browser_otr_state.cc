@@ -6,10 +6,10 @@
 
 #include "chrome/browser/ui/browser_list.h"
 
-namespace browser {
+namespace chrome {
 
 bool IsOffTheRecordSessionActive() {
   return BrowserList::IsOffTheRecordSessionActive();
 }
 
-}
+}  // namespace chrome

@@ -6,10 +6,10 @@
 
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 
-namespace browser {
+namespace chrome {
 
 bool IsOffTheRecordSessionActive() {
   return TabModelList::IsOffTheRecordSessionActive();
 }
 
-}
+}  // namespace chrome
