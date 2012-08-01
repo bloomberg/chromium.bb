@@ -2,14 +2,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "nacl_mounts/mount_node_dir.h"
 
-#include <dirent.h>
 #include <errno.h>
-#include <sys/stat.h>
+#include <string.h>
 
-#include "macros.h"
-#include "auto_lock.h"
-#include "mount_node_dir.h"
+#include "nacl_mounts/osdirent.h"
+#include "nacl_mounts/osstat.h"
+#include "utils/macros.h"
+#include "utils/auto_lock.h"
 
 MountNodeDir::MountNodeDir(Mount* mount, int ino, int dev)
     : MountNode(mount, ino, dev),
@@ -22,7 +23,7 @@ MountNodeDir::~MountNodeDir() {
 
 bool MountNodeDir::Init(int mode, short uid, short gid) {
   bool ok = MountNode::Init(mode, uid, gid);
-  stat_.st_mode |= _S_IFDIR;
+  stat_.st_mode |= S_IFDIR;
   return ok;
 }
 

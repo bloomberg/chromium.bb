@@ -2,14 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
 #ifndef LIBRARIES_NACL_MOUNTS_MOUNT_NODE_H_
 #define LIBRARIES_NACL_MOUNTS_MOUNT_NODE_H_
 
-#include <sys/stat.h>
-
 #include <string>
-#include "ref_object.h"
+
+#include "nacl_mounts/osstat.h"
+#include "utils/ref_object.h"
 
 struct dirent;
 struct stat;

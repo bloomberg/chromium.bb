@@ -25,6 +25,14 @@ NACL_CCFLAGS:=-O0 -g -pthread $(NACL_WARNINGS)
 NACL_CXXFLAGS:= -O0 -g -pthread -std=gnu++98 $(NACL_WARNINGS)
 NACL_LDFLAGS:=-Wl,-as-needed -g -pthread -lppapi_cpp -lppapi 
 
+
+#
+# Compute path to requested NaCl Toolchain
+#
+OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
+TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
+
+
 #
 # Project Settings
 #
@@ -50,15 +58,8 @@ RM:=python $(NACL_SDK_ROOT)/tools/oshelpers.py rm
 #
 ifeq (,$(findstring $(TOOLCHAIN),$(VALID_TOOLCHAINS)))
 $(warning Availbile choices are: $(VALID_TOOLCHAINS))
-$(error Can not use TOOLCHAIN=$(TOOLCHAIN) on this example.)
+$(error Can not use TOOLCHAIN=$(TOOLCHAIN) on this library.)
 endif
-
-
-#
-# Compute path to requested NaCl Toolchain
-#
-OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
-TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
 
 
 #

@@ -2,36 +2,33 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include <dirent.h>
+#include "nacl_mounts/mount_mem.h"
+
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/stat.h>
 #include <string>
-#include <unistd.h>
 
-#include "mount.h"
-#include "mount_mem.h"
-#include "mount_node.h"
-#include "mount_node_dir.h"
-#include "mount_node_mem.h"
-#include "path.h"
-
-#include "auto_lock.h"
-#include "ref_object.h"
+#include "nacl_mounts/mount.h"
+#include "nacl_mounts/mount_node.h"
+#include "nacl_mounts/mount_node_dir.h"
+#include "nacl_mounts/mount_node_mem.h"
+#include "nacl_mounts/osstat.h"
+#include "nacl_mounts/path.h"
+#include "utils/auto_lock.h"
+#include "utils/ref_object.h"
 
 // TODO(noelallen) : Grab/Redefine these in the kernel object once available.
 #define USR_ID 1002
 #define GRP_ID 1003
 
 MountMem::MountMem()
-    : MountFactory(),
-      root_(NULL),
+    : root_(NULL),
       max_ino_(0) {
 }
 
-bool MountMem::Init(int dev, StringMap_t& args) { 
+bool MountMem::Init(int dev, StringMap_t& args) {
   dev_ = dev;
-  root_ = AllocatePath(_S_IREAD | _S_IWRITE);
+  root_ = AllocatePath(S_IREAD | S_IWRITE);
   return (bool) (root_ != NULL);
 }
 
@@ -45,7 +42,7 @@ MountNode* MountMem::AllocatePath(int mode) {
   ino_t ino = AllocateINO();
 
   MountNode *ptr = new MountNodeDir(this, ino, dev_);
-  if (!ptr->Init(mode, 1002, 1003)) { 
+  if (!ptr->Init(mode, USR_ID, GRP_ID)) {
     ptr->Release();
     FreeINO(ino);
     return NULL;
@@ -57,7 +54,8 @@ MountNode* MountMem::AllocateData(int mode) {
   ino_t ino = AllocateINO();
 
   MountNode* ptr = new MountNodeMem(this, ino, dev_);
-  if (!ptr->Init(mode, getuid(), getgid())) { 
+  //if (!ptr->Init(mode, getuid(), getgid())) {
+  if (!ptr->Init(mode, USR_ID, GRP_ID)) {
     ptr->Release();
     FreeINO(ino);
     return NULL;
@@ -119,18 +117,18 @@ MountNode* MountMem::FindNode(const Path& path, int type) {
     node = node->FindChild(path.Part(index));
   }
 
-  // node should be root, a found child, or a failed 'FindChild' 
+  // node should be root, a found child, or a failed 'FindChild'
   // which already has the correct errno set.
   if (NULL == node) return NULL;
 
   // If a directory is expected, but it's not a directory, then fail.
-  if ((type & _S_IFDIR) && !node->IsaDir()) {
+  if ((type & S_IFDIR) && !node->IsaDir()) {
     errno = ENOTDIR;
     return NULL;
   }
 
   // If a file is expected, but it's not a file, then fail.
-  if ((type & _S_IFREG) && node->IsaDir()) {
+  if ((type & S_IFREG) && node->IsaDir()) {
     errno = EISDIR;
     return NULL;
   }
@@ -145,7 +143,7 @@ MountNode* MountMem::Open(const Path& path, int mode) {
 
   if (NULL == node) {
     // Now first find the parent directory to see if we can add it
-    MountNode* parent = FindNode(path.Parent(), _S_IFDIR);
+    MountNode* parent = FindNode(path.Parent(), S_IFDIR);
     if (NULL == parent) return NULL;
 
     // If the node does not exist and we can't create it, fail
@@ -156,7 +154,7 @@ MountNode* MountMem::Open(const Path& path, int mode) {
     node = AllocateData(mode);
     if (NULL == node) return NULL;
 
-    if (parent->AddChild(path.Filename(), node) == -1) {
+    if (parent->AddChild(path.Basename(), node) == -1) {
       // Or if it fails, release it
       node->Release();
       return NULL;
@@ -192,11 +190,11 @@ int MountMem::Close(MountNode* node) {
 
 int MountMem::Unlink(const Path& path) {
   AutoLock lock(&lock_);
-  MountNode* parent = FindNode(path.Parent(), _S_IFDIR);
+  MountNode* parent = FindNode(path.Parent(), S_IFDIR);
 
   if (NULL == parent) return -1;
 
-  MountNode* child = parent->FindChild(path.Filename());
+  MountNode* child = parent->FindChild(path.Basename());
   if (NULL == child) {
     errno = ENOENT;
     return -1;
@@ -205,7 +203,7 @@ int MountMem::Unlink(const Path& path) {
     errno = EISDIR;
     return -1;
   }
-  return parent->RemoveChild(path.Filename());
+  return parent->RemoveChild(path.Basename());
 }
 
 int MountMem::Mkdir(const Path& path, int mode) {
@@ -223,13 +221,13 @@ int MountMem::Mkdir(const Path& path, int mode) {
     return -1;
   }
 
-  MountNode* parent = FindNode(path.Parent(), _S_IFDIR);
+  MountNode* parent = FindNode(path.Parent(), S_IFDIR);
   MountNode* node;
 
   // If we failed to find the parent, the error code is already set.
   if (NULL == parent) return -1;
 
-  node = parent->FindChild(path.Filename());
+  node = parent->FindChild(path.Basename());
   if (NULL != node) {
     errno = EEXIST;
     return -1;
@@ -241,10 +239,10 @@ int MountMem::Mkdir(const Path& path, int mode) {
   // Allocate a node, with a RefCount of 1.  If added to the parent
   // it will get ref counted again.  In either case, release the
   // recount we have on exit.
-  node = AllocatePath(_S_IREAD | _S_IWRITE);
+  node = AllocatePath(S_IREAD | S_IWRITE);
   if (NULL == node) return -1;
 
-  if (parent->AddChild(path.Filename(), node) == -1) {
+  if (parent->AddChild(path.Basename(), node) == -1) {
     node->Release();
     return -1;
   }
@@ -268,14 +266,14 @@ int MountMem::Rmdir(const Path& path) {
     return -1;
   }
 
-  MountNode* parent = FindNode(path.Parent(), _S_IFDIR);
+  MountNode* parent = FindNode(path.Parent(), S_IFDIR);
   MountNode* node;
 
   // If we failed to find the parent, the error code is already set.
   if (NULL == parent) return -1;
 
   // Verify we find a child which is also a directory
-  node = parent->FindChild(path.Filename());
+  node = parent->FindChild(path.Basename());
   if (NULL == node) {
     errno = ENOENT;
     return -1;
@@ -288,5 +286,5 @@ int MountMem::Rmdir(const Path& path) {
     errno = ENOTEMPTY;
     return -1;
   }
-  return parent->RemoveChild(path.Filename());
+  return parent->RemoveChild(path.Basename());
 }

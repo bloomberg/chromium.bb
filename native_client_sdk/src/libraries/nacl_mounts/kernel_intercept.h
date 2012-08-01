@@ -2,12 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#ifndef LIBRARIES_NACL_MOUNTS_KERNEL_INTERCEPT_H_
+#define LIBRARIES_NACL_MOUNTS_KERNEL_INTERCEPT_H_
 
-#ifndef LIBRARIES_NACL_MOUNT_KERNEL_INTERCEPT_H_
-#define LIBRARIES_NACL_MOUNT_KERNEL_INTERCEPT_H_
-
-#include <stdint.h>
-
+#include "nacl_mounts/ostypes.h"
 #include "utils/macros.h"
 
 EXTERN_C_BEGIN
@@ -42,4 +40,4 @@ int ki_close(int fd);
 
 EXTERN_C_END
 
-#endif  // LIBRARIES_NACL_MOUNT_KERNEL_INTERCEPT_H_
+#endif  // LIBRARIES_NACL_MOUNTS_KERNEL_INTERCEPT_H_

@@ -2,12 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "nacl_mounts/path.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <string>
-
-#include "nacl_mounts/path.h"
 
 Path::Path() {}
 
@@ -91,7 +90,6 @@ StringArray_t Path::Split() const {
 // static
 StringArray_t Path::Normalize(const StringArray_t& paths) {
   StringArray_t path_out;
-  int back = 0;
 
   for (size_t index = 0; index < paths.size(); index++) {
     const std::string &curr = paths[index];
@@ -166,7 +164,6 @@ StringArray_t Path::Split(const std::string& path) {
   StringArray_t components;
   size_t offs = 0;
   size_t next = 0;
-  ssize_t cnt  = 0;
 
   if (path[0] == '/') {
     offs = 1;

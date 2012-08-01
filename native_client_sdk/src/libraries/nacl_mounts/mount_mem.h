@@ -5,12 +5,10 @@
 #ifndef LIBRARIES_NACL_MOUNTS_MOUNT_MEM_H_
 #define LIBRARIES_NACL_MOUNTS_MOUNT_MEM_H_
 
-#include <stdint.h>
 #include <map>
 #include <string>
 
 #include "nacl_mounts/mount.h"
-
 
 class MountMem : public MountFactory<MountMem, Mount> {
  protected:
@@ -52,4 +50,3 @@ private:
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_MOUNT_MEM_H_
-

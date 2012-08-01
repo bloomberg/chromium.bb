@@ -11,8 +11,9 @@ NEWLIB_DEFAULTS = """
 NEWLIB_CC?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-gcc -c
 NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c -std=gnu++98
 NEWLIB_LINK?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -Wl,-as-needed
+NEWLIB_LIB?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-ar r
 NEWLIB_DUMP?=$(TC_PATH)/$(OSNAME)_x86_newlib/x86_64-nacl/bin/objdump
-NEWLIB_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS)
+NEWLIB_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
 NEWLIB_LDFLAGS?=-g -pthread
 """
 
@@ -20,10 +21,11 @@ GLIBC_DEFAULTS = """
 GLIBC_CC?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-gcc -c
 GLIBC_CXX?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -c -std=gnu++98
 GLIBC_LINK?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -Wl,-as-needed
+GLIBC_LIB?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-ar r
 GLIBC_DUMP?=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
 GLIBC_PATHS:=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
 GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
-GLIBC_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS)
+GLIBC_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
 GLIBC_LDFLAGS?=-g -pthread
 """
 
@@ -31,8 +33,9 @@ PNACL_DEFAULTS = """
 PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang -c
 PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++ -c -std=gnu++98
 PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++
+PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-ar r
 PNACL_DUMP?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/objdump
-PNACL_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS)
+PNACL_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
 PNACL_LDFLAGS?=-g -pthread
 TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 """
@@ -100,11 +103,6 @@ GLIBC_REMAP+= -n <proj>_<ARCH>.so,<proj>.so
 <TC>_NMF+=<tc>/<proj>_<ARCH>.so
 """
 
-WIN_LIB_RULE = """
-$(NACL_SDK_ROOT)/lib/win_<ARCH>_host/<proj>.lib : <OBJS>
-<TAB>$(<LIB>) /OUT:$@ $^ $(<PROJ>_<EXT>FLAGS) <LIBLIST>
-"""
-
 WIN_LINK_RULE = """
 win/<proj>.dll : <OBJS>
 <TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_<EXT>FLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib $^ <LIBLIST> $(WIN_LDFLAGS)
@@ -114,6 +112,21 @@ HOST_ARGS:=--register-pepper-plugins=$(abspath win/<proj>.dll);application/x-nac
 LAUNCH_HOST: CHECK_FOR_CHROME all
 <TAB>$(CHROME_PATH) $(HOST_ARGS) "localhost:5103/index_win.html"
 """
+
+#
+# Lib rules for various platforms.
+#
+POSIX_LIB_RULE = """
+$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/lib<proj>.a : <OBJS>
+<TAB>$(MKDIR) $(dir $@)
+<TAB>$(<LIB>) $@ $^
+"""
+
+WIN_LIB_RULE = """
+$(NACL_SDK_ROOT)/lib/win_<ARCH>_host/<proj>.lib : <OBJS>
+<TAB>$(<LIB>) /OUT:$@ $^ $(<PROJ>_<EXT>FLAGS) <LIBLIST>
+"""
+
 
 
 NMF_RULE = """
@@ -189,7 +202,7 @@ BUILD_RULES = {
     'CXX' : NACL_CC_RULE,
     'NMF' : NMF_RULE,
     'MAIN': NEXE_LINK_RULE,
-    'LIB': None,
+    'LIB': POSIX_LIB_RULE,
     'SO' : None,
     'TOOL': NACL_TOOL,
   },
@@ -200,7 +213,7 @@ BUILD_RULES = {
     'CXX': NACL_CC_RULE,
     'NMF' : GLIBC_NMF_RULE,
     'MAIN': NEXE_LINK_RULE,
-    'LIB': None,
+    'LIB': POSIX_LIB_RULE,
     'SO': SO_LINK_RULE,
     'TOOL': NACL_TOOL,
   },
@@ -211,7 +224,7 @@ BUILD_RULES = {
     'CXX': NACL_CC_RULE,
     'NMF' : NMF_RULE,
     'MAIN': PEXE_LINK_RULE,
-    'LIB': None,
+    'LIB': POSIX_LIB_RULE,
     'SO': None,
     'TOOL': NACL_TOOL
   },

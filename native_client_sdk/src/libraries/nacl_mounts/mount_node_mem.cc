@@ -2,12 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "nacl_mounts/mount_node_mem.h"
 
 #include <errno.h>
-#include <sys/stat.h>
+#include <string.h>
 
-#include "auto_lock.h"
-#include "mount_node_mem.h"
+#include "nacl_mounts/osstat.h"
+#include "utils/auto_lock.h"
 
 #define BLOCK_SIZE (1 << 16)
 #define BLOCK_MASK (BLOCK_SIZE - 1)
@@ -24,7 +25,7 @@ MountNodeMem::~MountNodeMem() {
 
 bool MountNodeMem::Init(int mode, short uid, short gid) {
   bool ok = MountNode::Init(mode, uid, gid);
-  stat_.st_mode |= _S_IFREG;
+  stat_.st_mode |= S_IFREG;
   return ok;
 }
 
@@ -59,7 +60,7 @@ int MountNodeMem::Truncate(size_t size) {
   // If the current capacity is correct, just adjust and return
   if (need == capacity_) {
     stat_.st_size = static_cast<off_t>(size);
-    0;
+    return 0;
   }
 
   // Attempt to realloc the block

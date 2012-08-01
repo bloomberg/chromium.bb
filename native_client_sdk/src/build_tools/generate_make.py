@@ -283,7 +283,8 @@ DSC_FORMAT = {
     'DATA': (list, '', False),
     'TITLE': (str, '', False),
     'DESC': (str, '', False),
-    'INFO': (str, '', False)
+    'INFO': (str, '', False),
+    'EXPERIMENTAL': (bool, [True, False], False)
 }
 
 
@@ -527,6 +528,8 @@ def main(argv):
       action='store_true', dest='pnacl', default=False)
   parser.add_option('--host', help='Create host examples.',
       action='store_true', dest='host', default=False)
+  parser.add_option('--experimental', help='Create experimental examples.',
+      action='store_true', dest='experimental', default=False)
 
   toolchains = []
   platform = getos.GetPlatform()
@@ -555,6 +558,10 @@ def main(argv):
     desc = LoadProject(filename, toolchains)
     if not desc:
       print 'Skipping %s, not in [%s].' % (filename, ', '.join(toolchains))
+      continue
+
+    if desc.get('EXPERIMENTAL', False) and not options.experimental:
+      print 'Skipping %s, experimental only.' % (filename,)
       continue
 
     srcroot = os.path.dirname(os.path.abspath(filename))

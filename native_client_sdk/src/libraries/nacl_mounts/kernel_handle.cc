@@ -2,14 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "nacl_mounts/kernel_handle.h"
 
 #include <fcntl.h>
 #include <pthread.h>
 
-#include "nacl_mounts/kernel_handle.h"
 #include "nacl_mounts/mount.h"
 #include "nacl_mounts/mount_node.h"
-
 
 // It is only legal to construct a handle while the kernel lock is held.
 KernelHandle::KernelHandle(Mount* mnt, MountNode* node, int mode)
@@ -19,4 +18,3 @@ KernelHandle::KernelHandle(Mount* mnt, MountNode* node, int mode)
       offs_(0) {
   if (mode & O_APPEND) offs_ = node->GetSize();
 }
-

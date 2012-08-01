@@ -2,18 +2,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
 #ifndef LIBRARIES_NACL_MOUNTS_MOUNT_NODE_DIR_H_
 #define LIBRARIES_NACL_MOUNTS_MOUNT_NODE_DIR_H_
 
-#include <dirent.h>
-
 #include <map>
 #include <string>
-#include <vector>
 
 #include "nacl_mounts/mount_node.h"
 
+struct dirent;
 
 class MountNodeDir : public MountNode {
  protected:
@@ -48,4 +45,3 @@ private:
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_MOUNT_NODE_DIR_H_
-

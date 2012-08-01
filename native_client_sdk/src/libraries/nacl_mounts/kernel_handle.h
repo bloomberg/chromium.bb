@@ -2,7 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
 #ifndef LIBRARIES_NACL_MOUNTS_KERNEL_HANDLE_H_
 #define LIBRARIES_NACL_MOUNTS_KERNEL_HANDLE_H_
 
@@ -32,7 +31,7 @@ class KernelHandle : public RefObject {
   friend class KernelObject;
   friend class KernelProxy;
   void Acquire() { RefObject::Acquire(); }
-  bool Release() { return RefObject::Release(); }
+  void Release() { RefObject::Release(); }
   DISALLOW_COPY_AND_ASSIGN(KernelHandle);
 };
 

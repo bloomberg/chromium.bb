@@ -2,12 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
 #ifndef LIBRARIES_NACL_MOUNTS_KERNEL_OBJECT_H_
 #define LIBRARIES_NACL_MOUNTS_KERNEL_OBJECT_H_
 
 #include <pthread.h>
-
 #include <map>
 #include <string>
 #include <vector>
@@ -56,4 +54,3 @@ class KernelObject {
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_KERNEL_OBJECT_H_
-

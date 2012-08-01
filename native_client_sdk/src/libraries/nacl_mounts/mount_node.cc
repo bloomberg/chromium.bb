@@ -2,16 +2,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "nacl_mounts/mount_node.h"
 
-#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <string>
 
-#include "auto_lock.h"
-#include "mount.h"
-#include "mount_node.h"
+#include "nacl_mounts/mount.h"
+#include "utils/auto_lock.h"
 
 MountNode::MountNode(Mount* mount, int ino, int dev)
     : mount_(mount) {
@@ -74,7 +74,7 @@ int MountNode::GetLinks() const {
 }
 
 int MountNode::GetMode() const {
-  return stat_.st_mode & ~_S_IFMT;
+  return stat_.st_mode & ~S_IFMT;
 }
 
 size_t MountNode::GetSize() const {
@@ -82,19 +82,19 @@ size_t MountNode::GetSize() const {
 }
 
 int MountNode::GetType() const {
-  return stat_.st_mode & _S_IFMT;
+  return stat_.st_mode & S_IFMT;
 }
 
 bool MountNode::IsaDir() const {
-  return (stat_.st_mode & _S_IFDIR) != 0;
+  return (stat_.st_mode & S_IFDIR) != 0;
 }
 
 bool MountNode::IsaFile() const {
-  return (stat_.st_mode & _S_IFREG) != 0;
+  return (stat_.st_mode & S_IFREG) != 0;
 }
 
 bool MountNode::IsaTTY() const {
-  return (stat_.st_mode & _S_IFCHR) != 0;
+  return (stat_.st_mode & S_IFCHR) != 0;
 }
 
 
@@ -127,4 +127,3 @@ void MountNode::Unlink() {
   stat_.st_nlink--;
   Release();
 }
-

@@ -18,6 +18,11 @@ class AutoLock {
     if (lock_) pthread_mutex_unlock(lock_);
   }
 
+  void Unlock() {
+    if (lock_) pthread_mutex_unlock(lock_);
+    lock_ = NULL;
+  }
+
  private:
   pthread_mutex_t* lock_;
 };

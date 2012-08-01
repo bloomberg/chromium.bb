@@ -2,12 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include <dirent.h>
+#include "nacl_mounts/kernel_object.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <stdint.h>
-#include <sys/stat.h>
 
 #include <algorithm>
 #include <map>
@@ -15,7 +14,6 @@
 #include <vector>
 
 #include "nacl_mounts/kernel_handle.h"
-#include "nacl_mounts/kernel_object.h"
 #include "nacl_mounts/mount.h"
 #include "nacl_mounts/mount_node.h"
 #include "utils/auto_lock.h"
@@ -34,7 +32,6 @@ Mount* KernelObject::AcquireMountAndPath(const std::string& relpath,
                                          Path* out_path) {
   AutoLock lock(&lock_);
   Mount* mount = NULL;
-  MountNode* node = NULL;
 
   Path abs_path = GetAbsPathLocked(relpath);
 
@@ -150,4 +147,3 @@ Path KernelObject::GetAbsPathLocked(const std::string& path) {
 
   return abs_path;
 }
-

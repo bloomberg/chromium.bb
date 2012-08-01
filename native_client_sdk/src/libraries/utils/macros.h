@@ -6,18 +6,20 @@
 #define LIBRARIES_UTILS_MACROS_H_
 
 /**
-* A macro to disallow the evil copy constructor and operator= functions
-* This should be used in the private: declarations for a class.
-*/
+ * A macro to disallow the evil copy constructor and operator= functions
+ * This should be used in the private: declarations for a class.
+ */
 #define DISALLOW_COPY_AND_ASSIGN(TypeName)      \
   TypeName(const TypeName&);                    \
   void operator=(const TypeName&)
 
+/** returns the size of a member of a struct. */
+#define MEMBER_SIZE(struct_name, member) sizeof(((struct_name*)0)->member)
 
 /**
-* Macros to prevent name mangling of defnitions, allowing them to be
-* referenced from C.
-*/
+ * Macros to prevent name mangling of defnitions, allowing them to be
+ * referenced from C.
+ */
 #ifdef __cplusplus
 # define EXTERN_C_BEGIN  extern "C" {
 # define EXTERN_C_END    }

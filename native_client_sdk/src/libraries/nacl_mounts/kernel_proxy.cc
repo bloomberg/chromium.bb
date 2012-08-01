@@ -2,23 +2,22 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include <dirent.h>
+#include "nacl_mounts/kernel_proxy.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <stdint.h>
-#include <sys/stat.h>
-
+#include <string.h>
 #include <string>
 
 #include "nacl_mounts/kernel_handle.h"
-#include "nacl_mounts/kernel_proxy.h"
 #include "nacl_mounts/mount.h"
 #include "nacl_mounts/mount_mem.h"
 #include "nacl_mounts/mount_node.h"
-#include "nacl_mounts/mount_url.h"
+#include "nacl_mounts/osstat.h"
+// TODO(binji): implement MountURL
+//#include "nacl_mounts/mount_url.h"
 #include "nacl_mounts/path.h"
-
 #include "utils/auto_lock.h"
 #include "utils/ref_object.h"
 
@@ -39,7 +38,8 @@ void KernelProxy::Init() {
   dev_ = 1;
 
   factories_["memfs"] = MountMem::Create;
-  factories_["urlfs"] = MountURL::Create;
+  // TODO(binji): implement MountURL
+  //factories_["urlfs"] = MountURL::Create;
 
   // Create memory mount at root
   StringMap_t smap;
@@ -294,7 +294,7 @@ int KernelProxy::fstat(int fd, struct stat* buf) {
   int ret = handle->node_->GetStat(buf);
   ReleaseHandle(handle);
   return ret;
-};
+}
 
 int KernelProxy::getdents(int fd, void* buf, unsigned int count) {
   KernelHandle* handle = AcquireHandle(fd);

@@ -428,10 +428,11 @@ EXAMPLE_LIST = [
 ]
 
 LIBRARY_LIST = [
-  'pthread',
+  'nacl_mounts',
   'ppapi',
   'ppapi_cpp',
   'ppapi_gles2',
+  'pthread',
 ]
 
 LIB_DICT = {
@@ -440,7 +441,7 @@ LIB_DICT = {
   'win': ['x86_32']
 }
 
-def BuildStepCopyExamples(pepperdir, toolchains):
+def BuildStepCopyExamples(pepperdir, toolchains, build_experimental):
   buildbot_common.BuildStep('Copy examples')
 
   if not os.path.exists(os.path.join(pepperdir, 'tools')):
@@ -481,6 +482,9 @@ def BuildStepCopyExamples(pepperdir, toolchains):
   for library in LIBRARY_LIST:
     dsc = os.path.join(SDK_LIBRARY_DIR, library, 'library.dsc')
     args.append(dsc)
+
+  if build_experimental:
+    args.append('--experimental')
 
   if generate_make.main(args):
     buildbot_common.ErrorExit('Failed to build examples.')
@@ -704,6 +708,9 @@ def main(args):
       action='store_true', dest='archive', default=False)
   parser.add_option('--release', help='PPAPI release version.',
       dest='release', default=None)
+  parser.add_option('--experimental',
+      help='build experimental examples and libraries', action='store_true',
+      dest='build_experimental', default=False)
 
   options, args = parser.parse_args(args[1:])
   platform = getos.GetPlatform()
@@ -748,7 +755,7 @@ def main(args):
   print 'Building PEPPER %s at %s' % (pepper_ver, clnumber)
 
   if options.only_examples:
-    BuildStepCopyExamples(pepperdir, toolchains)
+    BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental)
     BuildStepBuildLibraries(pepperdir, platform)
     BuildStepBuildExamples(pepperdir, platform)
     if options.test_examples:
@@ -766,7 +773,7 @@ def main(args):
     BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
     InstallHeaders(os.path.join(pepperdir, 'include'), None, 'libs')
     BuildStepCopyBuildHelpers(pepperdir, platform)
-    BuildStepCopyExamples(pepperdir, toolchains)
+    BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental)
 
     # Ship with libraries prebuilt, so run that first.
     BuildStepBuildLibraries(pepperdir, platform)

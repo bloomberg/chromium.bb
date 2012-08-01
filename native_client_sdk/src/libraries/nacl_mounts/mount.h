@@ -5,41 +5,18 @@
 #ifndef LIBRARIES_NACL_MOUNTS_MOUNT_H_
 #define LIBRARIES_NACL_MOUNTS_MOUNT_H_
 
-#include <stdint.h>
 #include <map>
 #include <string>
 
-#include "macros.h"
-#include "ref_object.h"
-
 #include "nacl_mounts/mount_node.h"
 #include "nacl_mounts/path.h"
-
-struct dirent;
-struct stat;
+#include "utils/macros.h"
+#include "utils/ref_object.h"
 
 class MountNode;
 class MountManager;
 
 typedef std::map<std::string, std::string> StringMap_t;
-
-template<class C, class P> class MountFactory : public P {
- protected:
-  MountFactory()
-      : P() {}
-
-  static Mount* Create(int dev, StringMap_t& args) {
-    Mount* mnt = new C();
-    if (mnt->Init(dev, args) == false) {
-      delete mnt;
-      return NULL;
-    }
-    return mnt;
-  }
-
-  friend class KernelProxy;
-};
-
 
 
 // Mount serves as the base mounting class that will be used by
@@ -89,17 +66,33 @@ class Mount : public RefObject {
   int dev_;
 
  private:
-  // May only be called by the KernelProxy when the Kernel's 
+  // May only be called by the KernelProxy when the Kernel's
   // lock is held, so we make it private.
   friend class KernelObject;
   friend class KernelProxy;
   void Acquire() { RefObject::Acquire(); }
-  bool Release() { return RefObject::Release(); }
+  void Release() { RefObject::Release(); }
 
   template <class M, class P> friend class MountFactory;
   DISALLOW_COPY_AND_ASSIGN(Mount);
 };
 
 
-#endif  // LIBRARIES_NACL_MOUNTS_MOUNT_H_
+template<class C, class P> class MountFactory : public P {
+ protected:
+  MountFactory()
+      : P() {}
 
+  static Mount* Create(int dev, StringMap_t& args) {
+    Mount* mnt = new C();
+    if (mnt->Init(dev, args) == false) {
+      delete mnt;
+      return NULL;
+    }
+    return mnt;
+  }
+
+  friend class KernelProxy;
+};
+
+#endif  // LIBRARIES_NACL_MOUNTS_MOUNT_H_

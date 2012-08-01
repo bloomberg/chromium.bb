@@ -1,17 +1,14 @@
-/*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#ifndef LIBRARIES_NACL_MOUNTS_PATH_H_
+#define LIBRARIES_NACL_MOUNTS_PATH_H_
 
-#ifndef PACKAGES_LIBRARIES_NACL_MOUNTS_PATH_H_
-#define PACKAGES_LIBRARIES_NACL_MOUNTS_PATH_H_
-
-#include <stdint.h>
 #include <string>
 #include <vector>
 
-#include "macros.h"
+#include "utils/macros.h"
 
 typedef std::vector<std::string> StringArray_t;
 
@@ -67,4 +64,3 @@ class Path {
 };
 
 #endif  // PACKAGES_LIBRARIES_NACL_MOUNTS_PATH_H_
-
