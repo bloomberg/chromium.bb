@@ -44,9 +44,6 @@ XSESSION_COMMAND = None
 
 REMOTING_COMMAND = "remoting_me2me_host"
 
-# Command-line switch for passing the config path to remoting_me2me_host.
-HOST_CONFIG_SWITCH_NAME = "host-config"
-
 # Needs to be an absolute path, since the current working directory is changed
 # when this process self-daemonizes.
 SCRIPT_PATH = os.path.dirname(sys.argv[0])
@@ -148,20 +145,23 @@ class Host:
   server = 'www.googleapis.com'
   url = 'https://' + server + '/chromoting/v1/@me/hosts'
 
-  def __init__(self, config_file):
+  def __init__(self, config_file, auth):
+    """
+    Args:
+      config_file: Host configuration file path
+      auth: Authentication object with credentials for authenticating with the
+        Directory service.
+    """
     self.config_file = config_file
+    self.auth = auth
     self.host_id = str(uuid.uuid1())
     self.host_name = socket.gethostname()
     self.host_secret_hash = None
     self.private_key = None
 
-  def register(self, auth):
+  def register(self):
     """Generates a private key for the stored |host_id|, and registers it with
     the Directory service.
-
-    Args:
-      auth: Authentication object with credentials for authenticating with the
-        Directory service.
 
     Raises:
       urllib2.HTTPError: An error occurred talking to the Directory server
@@ -184,7 +184,7 @@ class Host:
     }
     params = json.dumps(json_data)
     headers = {
-        "Authorization": "GoogleLogin auth=" + auth.chromoting_auth_token,
+        "Authorization": "GoogleLogin auth=" + self.auth.chromoting_auth_token,
         "Content-Type": "application/json",
     }
 
@@ -383,7 +383,8 @@ class Desktop:
   def launch_host(self, host):
     # Start remoting host
     args = [locate_executable(REMOTING_COMMAND),
-            "--%s=%s" % (HOST_CONFIG_SWITCH_NAME, host.config_file)]
+            "--host_config=%s" % (host.config_file),
+            "--auth_config=%s" % (host.auth.config_file)]
     self.host_proc = subprocess.Popen(args, env=self.child_env)
     if not self.host_proc.pid:
       raise Exception("Could not start remoting host")
@@ -692,10 +693,11 @@ def main():
       settings_file.write(options.explicit_config)
       settings_file.close()
 
+  # TODO(sergeyu): Move auth parameters to the host config.
   auth = Authentication(os.path.join(CONFIG_DIR, "auth.json"))
   need_auth_tokens = not auth.load_config()
 
-  host = Host(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash))
+  host = Host(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash), auth)
   register_host = not host.load_config()
 
   # Outside the loop so user doesn't get asked twice.
@@ -726,7 +728,7 @@ def main():
 
       try:
         if register_host:
-          host.register(auth)
+          host.register()
           host.save_config()
       except urllib2.HTTPError, err:
         if err.getcode() == 401:

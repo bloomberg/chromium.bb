@@ -133,7 +133,7 @@
                         Name="$(var.ServiceName)"
                         DisplayName="[chromoting_service_display_name]"
                         Description="[chromoting_service_description]"
-                        Arguments="--auth-config=&quot;[config_files]host.json&quot; --host-config=&quot;[config_files]host.json&quot;"
+                        Arguments="--host-config=&quot;[config_files]host.json&quot;"
                         Start="demand"
                         Account="LocalSystem"
                         ErrorControl="ignore"

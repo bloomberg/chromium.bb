@@ -28,23 +28,23 @@
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/branding.h"
-#include "remoting/host/constants.h"
-#include "remoting/host/video_frame_capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/composite_host_config.h"
+#include "remoting/host/constants.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_user_interface.h"
-#include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/network_settings.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/usage_stats_consent.h"
+#include "remoting/host/video_frame_capturer.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
@@ -70,8 +70,6 @@ const char kApplicationName[] = "chromoting";
 const char kAuthConfigSwitchName[] = "auth-config";
 const char kHostConfigSwitchName[] = "host-config";
 
-const FilePath::CharType kDefaultAuthConfigFile[] =
-    FILE_PATH_LITERAL("auth.json");
 const FilePath::CharType kDefaultHostConfigFile[] =
     FILE_PATH_LITERAL("host.json");
 
@@ -113,23 +111,24 @@ class HostProcess
         &HostProcess::ConfigUpdatedDelayed));
   }
 
-  void InitWithCommandLine(const CommandLine* cmd_line) {
+  bool InitWithCommandLine(const CommandLine* cmd_line) {
     FilePath default_config_dir = remoting::GetConfigDir();
     if (cmd_line->HasSwitch(kAuthConfigSwitchName)) {
-      auth_config_path_ = cmd_line->GetSwitchValuePath(kAuthConfigSwitchName);
-    } else {
-      auth_config_path_ = default_config_dir.Append(kDefaultAuthConfigFile);
+      FilePath path = cmd_line->GetSwitchValuePath(kAuthConfigSwitchName);
+      if (!config_.AddConfigPath(path)) {
+        return false;
+      }
     }
 
+    host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
     if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
       host_config_path_ = cmd_line->GetSwitchValuePath(kHostConfigSwitchName);
-    } else {
-      host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
+    }
+    if (!config_.AddConfigPath(host_config_path_)) {
+      return false;
     }
 
-#if defined(OS_LINUX)
-    VideoFrameCapturer::EnableXDamage(true);
-#endif
+    return true;
   }
 
   void ConfigUpdated() {
@@ -249,34 +248,20 @@ class HostProcess
         base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)));
   }
 
-  // Read Host config from disk, returning true if successful.
+  // Read host config, returning true if successful.
   bool LoadConfig() {
-    JsonHostConfig host_config(host_config_path_);
-    JsonHostConfig auth_config(auth_config_path_);
-
-    FilePath failed_path;
-    if (!host_config.Read()) {
-      failed_path = host_config_path_;
-    } else if (!auth_config.Read()) {
-      failed_path = auth_config_path_;
-    }
-    if (!failed_path.empty()) {
-      LOG(ERROR) << "Failed to read configuration file " << failed_path.value();
-      return false;
-    }
-
-    if (!host_config.GetString(kHostIdConfigPath, &host_id_)) {
+    if (!config_.GetString(kHostIdConfigPath, &host_id_)) {
       LOG(ERROR) << "host_id is not defined in the config.";
       return false;
     }
 
-    if (!key_pair_.Load(host_config)) {
+    if (!key_pair_.Load(config_)) {
       return false;
     }
 
     std::string host_secret_hash_string;
-    if (!host_config.GetString(kHostSecretHashConfigPath,
-                               &host_secret_hash_string)) {
+    if (!config_.GetString(kHostSecretHashConfigPath,
+                           &host_secret_hash_string)) {
       host_secret_hash_string = "plain:";
     }
 
@@ -286,10 +271,10 @@ class HostProcess
     }
 
     // Use an XMPP connection to the Talk network for session signalling.
-    if (!auth_config.GetString(kXmppLoginConfigPath, &xmpp_login_) ||
-        !(auth_config.GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_) ||
-          auth_config.GetString(kOAuthRefreshTokenConfigPath,
-                                &oauth_refresh_token_))) {
+    if (!config_.GetString(kXmppLoginConfigPath, &xmpp_login_) ||
+        !(config_.GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_) ||
+          config_.GetString(kOAuthRefreshTokenConfigPath,
+                            &oauth_refresh_token_))) {
       LOG(ERROR) << "XMPP credentials are not defined in the config.";
       return false;
     }
@@ -298,14 +283,14 @@ class HostProcess
     // depending on whether this is an official build or not.
     // If the client-Id type to use is not specified we default based on
     // the build type.
-    auth_config.GetBoolean(kOAuthUseOfficialClientIdConfigPath,
-                           &oauth_use_official_client_id_);
+    config_.GetBoolean(kOAuthUseOfficialClientIdConfigPath,
+                       &oauth_use_official_client_id_);
 
     if (!oauth_refresh_token_.empty()) {
       xmpp_auth_token_ = "";  // This will be set to the access token later.
       xmpp_auth_service_ = "oauth2";
-    } else if (!auth_config.GetString(kXmppAuthServiceConfigPath,
-                                      &xmpp_auth_service_)) {
+    } else if (!config_.GetString(kXmppAuthServiceConfigPath,
+                                  &xmpp_auth_service_)) {
       // For the me2me host, we default to ClientLogin token for chromiumsync
       // because earlier versions of the host had no HTTP stack with which to
       // request an OAuth2 access token.
@@ -501,8 +486,8 @@ class HostProcess
   scoped_ptr<ChromotingHostContext> context_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
-  FilePath auth_config_path_;
   FilePath host_config_path_;
+  CompositeHostConfig config_;
 
   std::string host_id_;
   HostKeyPair key_pair_;
@@ -579,8 +564,14 @@ int main(int argc, char** argv) {
   // single-threaded.
   net::EnableSSLServerSockets();
 
+#if defined(OS_LINUX)
+    remoting::VideoFrameCapturer::EnableXDamage(true);
+#endif
+
   remoting::HostProcess me2me_host;
-  me2me_host.InitWithCommandLine(cmd_line);
+  if (!me2me_host.InitWithCommandLine(cmd_line)) {
+    return remoting::kInvalidHostConfigurationExitCode;
+  }
 
   return me2me_host.Run();
 }

@@ -45,7 +45,7 @@ run_host() {
     fi
 
     # Execute the host asynchronously
-    "$HOST_EXE" --auth-config="$CONFIG_FILE" --host-config="$CONFIG_FILE" &
+    "$HOST_EXE" --host-config="$CONFIG_FILE" &
     HOST_PID="$!"
 
     # Wait for the host to return and process its exit code.
