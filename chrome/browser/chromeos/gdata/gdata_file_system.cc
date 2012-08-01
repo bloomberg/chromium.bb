@@ -406,19 +406,26 @@ void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
 
 // Callback for GetEntryByResourceIdAsync.
 // Adds |entry| to |results|. Runs |callback| with |results| when
-// |run_callback| is true.
+// |run_callback| is true. When |entry| is not present in our local file system
+// snapshot, it is not added to |results|. Instead, |entry_skipped_callback| is
+// called.
 void AddEntryToSearchResults(
     std::vector<SearchResultInfo>* results,
     const SearchCallback& callback,
+    const base::Closure& entry_skipped_callback,
     GDataFileError error,
     bool run_callback,
     GDataEntry* entry) {
-  // If a result is not present in our local file system snapshot, ignore it.
+  // If a result is not present in our local file system snapshot, invoke
+  // |entry_skipped_callback| and refreshes the snapshot with delta feed.
   // For example, this may happen if the entry has recently been added to the
   // drive (and we still haven't received its delta feed).
   if (entry) {
     const bool is_directory = entry->AsGDataDirectory() != NULL;
     results->push_back(SearchResultInfo(entry->GetFilePath(), is_directory));
+  } else {
+    if (!entry_skipped_callback.is_null())
+      entry_skipped_callback.Run();
   }
 
   if (run_callback) {
@@ -2791,6 +2798,7 @@ void GDataFileSystem::OnSearch(const SearchCallback& callback,
         base::Bind(&AddEntryToSearchResults,
                    results,
                    callback,
+                   base::Bind(&GDataFileSystem::CheckForUpdates, ui_weak_ptr_),
                    error,
                    i+1 == feed->entries().size()));
   }

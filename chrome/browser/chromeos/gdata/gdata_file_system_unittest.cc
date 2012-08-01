@@ -2443,13 +2443,46 @@ TEST_F(GDataFileSystemTest, ContentSearch) {
   EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
-  const SearchResultPair expected_results[] = {
+  const SearchResultPair kExpectedResults[] = {
     { "drive/Directory 1/SubDirectory File 1.txt", false },
     { "drive/Directory 1", true }
   };
 
   SearchCallback callback = base::Bind(&DriveSearchCallback,
-      &message_loop_, expected_results, 2u);
+      &message_loop_, kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults));
+
+  file_system_->Search("foo", callback);
+  message_loop_.Run();  // Wait to get our result.
+}
+
+TEST_F(GDataFileSystemTest, ContentSearchWithNewEntry) {
+  LoadRootFeedDocument("root_feed.json");
+
+  // Search result returning two entries "Directory 1/" and
+  // "Directory 1/SubDirectory Newly Added File.txt". The latter is not
+  // contained in the root feed.
+  mock_doc_service_->set_search_result(
+      "search_result_with_new_entry_feed.json");
+
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
+      .Times(1);
+
+  // As the result of the first Search(), only entries in the current file
+  // system snapshot are expected to be returned.
+  const SearchResultPair kExpectedResults[] = {
+    { "drive/Directory 1", true }
+  };
+
+  // At the same time, unknown entry should trigger delta feed request.
+  // This will cause notification to observers (e.g., File Browser) so that
+  // they can request search again.
+  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "", _, _))
+      .Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
+
+  SearchCallback callback = base::Bind(&DriveSearchCallback,
+      &message_loop_, kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults));
 
   file_system_->Search("foo", callback);
   message_loop_.Run();  // Wait to get our result.
