@@ -73,6 +73,7 @@ class CrxInstaller;
 class Extension;
 class ExtensionCookiesEventRouter;
 class ExtensionManagedModeEventRouter;
+class PushMessagingEventRouter;
 class ExtensionSyncData;
 class ExtensionSystem;
 class ExtensionUpdater;
@@ -516,6 +517,10 @@ class ExtensionService
   }
 #endif
 
+  extensions::PushMessagingEventRouter* push_messaging_event_router() {
+    return push_messaging_event_router_.get();
+  }
+
   // Notify the frontend that there was an error loading an extension.
   // This method is public because UnpackedInstaller and InstalledLoader
   // can post to here.
@@ -813,6 +818,9 @@ class ExtensionService
   scoped_ptr<extensions::ExtensionCookiesEventRouter> cookies_event_router_;
 
   scoped_ptr<ExtensionManagementEventRouter> management_event_router_;
+
+  scoped_ptr<extensions::PushMessagingEventRouter>
+      push_messaging_event_router_;
 
   scoped_ptr<extensions::WebNavigationEventRouter> web_navigation_event_router_;
 

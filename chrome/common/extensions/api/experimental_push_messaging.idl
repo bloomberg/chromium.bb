@@ -1,0 +1,21 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+
+[nodoc] namespace experimental.pushMessaging{
+  dictionary Message {
+    // The subchannel the message was sent on.
+    long subchannelId;
+
+    // The payload associated with the message, if any.
+    DOMString payload;
+  };
+
+  interface Events {
+    // Fired when a push message has been received.
+    // |message| : The details associated with the message.
+    static void onMessage(Message message);
+  };
+};

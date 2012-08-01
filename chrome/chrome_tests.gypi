@@ -2727,6 +2727,7 @@
         'browser/extensions/api/page_capture/page_capture_apitest.cc',
         'browser/extensions/api/permissions/permissions_apitest.cc',
         'browser/extensions/api/proxy/proxy_apitest.cc',
+        'browser/extensions/api/push_messaging/push_messaging_apitest.cc',
         'browser/extensions/api/record/record_api_test.cc',
         'browser/extensions/api/runtime/runtime_apitest.cc',
         'browser/extensions/api/serial/serial_apitest.cc',

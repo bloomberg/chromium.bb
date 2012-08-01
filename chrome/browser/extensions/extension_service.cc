@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
+#include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_sync_data.h"
@@ -497,6 +498,9 @@ void ExtensionService::InitEventRouters() {
   managed_mode_event_router_.reset(
       new extensions::ExtensionManagedModeEventRouter(profile_));
   managed_mode_event_router_->Init();
+  push_messaging_event_router_.reset(
+      new extensions::PushMessagingEventRouter(profile_));
+  push_messaging_event_router_->Init();
 
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(

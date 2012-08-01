@@ -68,6 +68,8 @@ const char kBluetoothOnPowerChanged[] =
     "experimental.bluetooth.onPowerChanged";
 #endif
 
+const char kOnPushMessage[] = "experimental.pushMessaging.onMessage";
+
 }  // namespace event_names
 
 }  // namespace extensions

@@ -73,6 +73,9 @@ extern const char kBluetoothOnDiscoveringChanged[];
 extern const char kBluetoothOnPowerChanged[];
 #endif
 
+// Push messaging.
+extern const char kOnPushMessage[];
+
 }  // namespace event_names
 
 }  // namespace extensions
