@@ -6,8 +6,10 @@
 
 #include <string>
 
+#include "base/format_macros.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -603,7 +605,23 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   if (match.type == AutocompleteMatch::EXTENSION_APP) {
     ExtensionAppProvider::LaunchAppFromOmnibox(match, profile_, disposition);
   } else {
-    controller_->OnAutocompleteAccept(match.destination_url, disposition,
+    GURL destination_url(match.destination_url);
+    // Append the query formulation time (time from when the user first typed a
+    // character into the omnibox to when the user selected a query) to the AQS
+    // parameter if other AQS parameters were already populated.
+    if (template_url && match.search_terms_args.get() &&
+        !match.search_terms_args->assisted_query_stats.empty()) {
+      base::TimeDelta query_formulation_time =
+          base::TimeTicks::Now() - time_user_first_modified_omnibox_;
+      TemplateURLRef::SearchTermsArgs search_terms_args(
+          *match.search_terms_args);
+      search_terms_args.assisted_query_stats +=
+          base::StringPrintf(".%" PRId64,
+                             query_formulation_time.InMilliseconds());
+      destination_url = GURL(template_url->url_ref().
+                             ReplaceSearchTerms(search_terms_args));
+    }
+    controller_->OnAutocompleteAccept(destination_url, disposition,
                                       match.transition, alternate_nav_url);
   }
 
