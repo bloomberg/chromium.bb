@@ -40,7 +40,7 @@ enum OutputState {
 // it.
 class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
  public:
-  OutputConfigurator();
+  explicit OutputConfigurator(bool is_extended_display_enabled);
   virtual ~OutputConfigurator();
 
   OutputState output_state() const { return output_state_; }
@@ -48,7 +48,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Called when the user hits ctrl-F4 to request a display mode change.
   // This method should only return false if it was called in a single-head or
   // headless mode.
-  bool CycleDisplayMode(bool extended_desktop_enabled);
+  bool CycleDisplayMode();
 
   // Called when powerd notifies us that some set of displays should be turned
   // on or off.  This requires enabling or disabling the CRTC associated with
@@ -130,6 +130,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // If this flag is set to false, any attempts to change the output
   // configuration to immediately fail without changing the state.
   bool is_running_on_chrome_os_;
+
+  // Set to true if the extended display flag is enabled.
+  const bool is_extended_display_enabled_;
 
   // The number of outputs in the output_cache_ array.
   int output_count_;

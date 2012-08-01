@@ -407,8 +407,7 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
     case CYCLE_DISPLAY_MODE:
-      ash::Shell::GetInstance()->output_configurator()->CycleDisplayMode(
-          internal::DisplayController::IsExtendedDesktopEnabled());
+      ash::Shell::GetInstance()->output_configurator()->CycleDisplayMode();
       return true;
 #endif
     case OPEN_FEEDBACK_PAGE:

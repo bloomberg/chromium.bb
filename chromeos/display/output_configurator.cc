@@ -222,8 +222,9 @@ static float ComputeDeviceScaleFactor(unsigned int width,
 
 }  // namespace
 
-OutputConfigurator::OutputConfigurator()
+OutputConfigurator::OutputConfigurator(bool is_extended_display_enabled)
     : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()),
+      is_extended_display_enabled_(is_extended_display_enabled),
       output_count_(0),
       output_cache_(NULL),
       mirror_supported_(false),
@@ -275,7 +276,7 @@ OutputConfigurator::OutputConfigurator()
 OutputConfigurator::~OutputConfigurator() {
 }
 
-bool OutputConfigurator::CycleDisplayMode(bool extended_desktop_enabled) {
+bool OutputConfigurator::CycleDisplayMode() {
   VLOG(1) << "CycleDisplayMode";
   if (!is_running_on_chrome_os_)
     return false;
@@ -294,7 +295,7 @@ bool OutputConfigurator::CycleDisplayMode(bool extended_desktop_enabled) {
       new_state = STATE_DUAL_PRIMARY_ONLY;
       break;
     case STATE_DUAL_PRIMARY_ONLY:
-      if (extended_desktop_enabled) {
+      if (is_extended_display_enabled_) {
         if (mirror_supported_)
           new_state = STATE_DUAL_MIRROR;
         else
@@ -721,10 +722,14 @@ bool OutputConfigurator::RecacheAndUseDefaultState() {
 OutputState OutputConfigurator::GetDefaultState() const {
   OutputState state = STATE_HEADLESS;
   if (-1 != primary_output_index_) {
-    if (-1 != secondary_output_index_)
-      state = mirror_supported_ ? STATE_DUAL_MIRROR : STATE_DUAL_PRIMARY_ONLY;
-    else
+    if (-1 != secondary_output_index_) {
+      if (is_extended_display_enabled_ || !mirror_supported_)
+        state = STATE_DUAL_PRIMARY_ONLY;
+      else
+        state = STATE_DUAL_MIRROR;
+    } else {
       state = STATE_SINGLE;
+    }
   }
   return state;
 }

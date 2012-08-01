@@ -180,7 +180,8 @@ Shell::Shell(ShellDelegate* delegate)
       env_filter_(NULL),
       delegate_(delegate),
 #if defined(OS_CHROMEOS)
-      output_configurator_(new chromeos::OutputConfigurator()),
+      output_configurator_(new chromeos::OutputConfigurator(
+          internal::DisplayController::IsExtendedDesktopEnabled())),
 #endif  // defined(OS_CHROMEOS)
       shelf_(NULL),
       panel_layout_manager_(NULL),
