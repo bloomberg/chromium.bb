@@ -71,7 +71,7 @@ class PnaclTranslateThread {
   // service call.
   // (see also the comments in Plugin::~Plugin about ShutdownSubprocesses,
   // but that only handles the main nexe and not the translator nexes.)
-  void RegisterReverseInterface(PluginReverseInterface *interface);
+  void RegisterReverseInterface(PluginReverseInterface *iface);
 
   // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;

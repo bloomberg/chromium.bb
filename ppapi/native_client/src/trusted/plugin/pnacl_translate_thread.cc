@@ -119,9 +119,9 @@ void PnaclTranslateThread::TranslateFailed(const nacl::string& error_string) {
 // called on the translation thread before any RPCs are called, and called
 // again with NULL before the object is destroyed.
 void PnaclTranslateThread::RegisterReverseInterface(
-    PluginReverseInterface *interface) {
+    PluginReverseInterface *iface) {
   nacl::MutexLocker ml(&subprocess_mu_);
-  current_rev_interface_ = interface;
+  current_rev_interface_ = iface;
 }
 
 
