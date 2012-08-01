@@ -2213,7 +2213,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 		surface = container_of(surface_resource->data,
 				       struct weston_surface, surface);
 
-	if (serial < seat->seat.pointer->focus_serial)
+	if (seat->seat.pointer->focus_serial - serial > UINT32_MAX / 2)
 		return;
 
 	if (surface && surface != seat->sprite) {
