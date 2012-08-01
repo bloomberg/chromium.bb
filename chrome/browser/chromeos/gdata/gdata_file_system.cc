@@ -1082,7 +1082,6 @@ void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
   }
 
   error = UpdateFromFeed(*params->feed_list,
-                         FROM_SERVER,
                          params->start_changestamp,
                          params->root_feed_changestamp);
 
@@ -3275,7 +3274,6 @@ GDataFileError GDataFileSystem::RemoveEntryFromFileSystem(
 
 GDataFileError GDataFileSystem::UpdateFromFeed(
     const std::vector<DocumentFeed*>& feed_list,
-    ContentOrigin origin,
     int start_changestamp,
     int root_feed_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -3283,7 +3281,7 @@ GDataFileError GDataFileSystem::UpdateFromFeed(
 
   bool is_delta_feed = start_changestamp != 0;
 
-  directory_service_->set_origin(origin);
+  directory_service_->set_origin(FROM_SERVER);
 
   int delta_feed_changestamp = 0;
   FeedToFileResourceMapUmaStats uma_stats;

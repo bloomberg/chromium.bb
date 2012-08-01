@@ -330,7 +330,6 @@ class GDataFileSystemTest : public testing::Test {
     GURL unused;
     return file_system_->UpdateFromFeed(
         list,
-        FROM_SERVER,
         largest_changestamp,
         root_feed_changestamp_++) == GDATA_FILE_OK;
   }

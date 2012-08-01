@@ -521,7 +521,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // histograms.
   GDataFileError UpdateFromFeed(
       const std::vector<DocumentFeed*>& feed_list,
-      ContentOrigin origin,
       int largest_changestamp,
       int root_feed_changestamp);
 
