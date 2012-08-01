@@ -22,6 +22,13 @@ using content::BrowserThread;
 
 namespace contacts {
 
+namespace {
+
+// LevelDB key used for storing UpdateMetadata messages.
+const char kUpdateMetadataKey[] = "__chrome_update_metadata__";
+
+}  // namespace
+
 ContactDatabase::ContactDatabase() : weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
@@ -54,6 +61,7 @@ void ContactDatabase::Init(const FilePath& database_dir,
 }
 
 void ContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts,
+                                   scoped_ptr<UpdateMetadata> metadata,
                                    bool is_full_update,
                                    SaveCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -63,6 +71,7 @@ void ContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts,
       base::Bind(&ContactDatabase::SaveContactsFromTaskRunner,
                  base::Unretained(this),
                  base::Passed(contacts.Pass()),
+                 base::Passed(metadata.Pass()),
                  is_full_update,
                  success),
       base::Bind(&ContactDatabase::RunSaveCallback,
@@ -73,20 +82,28 @@ void ContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts,
 
 void ContactDatabase::LoadContacts(LoadCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   bool* success = new bool(false);
   scoped_ptr<ScopedVector<Contact> > contacts(new ScopedVector<Contact>);
+  scoped_ptr<UpdateMetadata> metadata(new UpdateMetadata);
+
+  // Extract pointers before we calling Pass() so we can use them below.
   ScopedVector<Contact>* contacts_ptr = contacts.get();
+  UpdateMetadata* metadata_ptr = metadata.get();
+
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ContactDatabase::LoadContactsFromTaskRunner,
                  base::Unretained(this),
                  success,
-                 contacts_ptr),
+                 contacts_ptr,
+                 metadata_ptr),
       base::Bind(&ContactDatabase::RunLoadCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  base::Owned(success),
-                 base::Passed(contacts.Pass())));
+                 base::Passed(contacts.Pass()),
+                 base::Passed(metadata.Pass())));
 }
 
 ContactDatabase::~ContactDatabase() {
@@ -117,9 +134,10 @@ void ContactDatabase::RunSaveCallback(SaveCallback callback,
 void ContactDatabase::RunLoadCallback(
     LoadCallback callback,
     const bool* success,
-    scoped_ptr<ScopedVector<Contact> > contacts) {
+    scoped_ptr<ScopedVector<Contact> > contacts,
+    scoped_ptr<UpdateMetadata> metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback.Run(*success, contacts.Pass());
+  callback.Run(*success, contacts.Pass(), metadata.Pass());
 }
 
 void ContactDatabase::InitFromTaskRunner(const FilePath& database_dir,
@@ -161,6 +179,7 @@ void ContactDatabase::InitFromTaskRunner(const FilePath& database_dir,
 
 void ContactDatabase::SaveContactsFromTaskRunner(
     scoped_ptr<ContactPointers> contacts,
+    scoped_ptr<UpdateMetadata> metadata,
     bool is_full_update,
     bool* success) {
   DCHECK(IsRunByTaskRunner());
@@ -178,7 +197,9 @@ void ContactDatabase::SaveContactsFromTaskRunner(
     scoped_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
     db_iterator->SeekToFirst();
     while (db_iterator->Valid()) {
-      keys_to_delete.insert(db_iterator->key().ToString());
+      std::string key = db_iterator->key().ToString();
+      if (key != kUpdateMetadataKey)
+        keys_to_delete.insert(key);
       db_iterator->Next();
     }
   }
@@ -192,15 +213,24 @@ void ContactDatabase::SaveContactsFromTaskRunner(
   for (ContactPointers::const_iterator it = contacts->begin();
        it != contacts->end(); ++it) {
     const contacts::Contact& contact = **it;
+    if (contact.provider_id() == kUpdateMetadataKey) {
+      LOG(WARNING) << "Skipping contact with reserved ID "
+                   << contact.provider_id();
+      continue;
+    }
     updates.Put(leveldb::Slice(contact.provider_id()),
                 leveldb::Slice(contact.SerializeAsString()));
-    keys_to_delete.erase(contact.provider_id());
+    if (is_full_update)
+      keys_to_delete.erase(contact.provider_id());
   }
 
   for (std::set<std::string>::const_iterator it = keys_to_delete.begin();
        it != keys_to_delete.end(); ++it) {
     updates.Delete(leveldb::Slice(*it));
   }
+
+  updates.Put(leveldb::Slice(kUpdateMetadataKey),
+              leveldb::Slice(metadata->SerializeAsString()));
 
   leveldb::WriteOptions options;
   options.sync = true;
@@ -213,26 +243,37 @@ void ContactDatabase::SaveContactsFromTaskRunner(
 
 void ContactDatabase::LoadContactsFromTaskRunner(
     bool* success,
-    ScopedVector<Contact>* contacts_out) {
+    ScopedVector<Contact>* contacts,
+    UpdateMetadata* metadata) {
   DCHECK(IsRunByTaskRunner());
   DCHECK(success);
-  DCHECK(contacts_out);
+  DCHECK(contacts);
+  DCHECK(metadata);
 
   *success = false;
-  contacts_out->clear();
+  contacts->clear();
+  metadata->Clear();
 
   leveldb::ReadOptions options;
   scoped_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
   db_iterator->SeekToFirst();
   while (db_iterator->Valid()) {
-    scoped_ptr<Contact> contact(new Contact);
     leveldb::Slice value_slice = db_iterator->value();
-    if (!contact->ParseFromArray(value_slice.data(), value_slice.size())) {
-      LOG(WARNING) << "Unable to parse contact "
-                   << db_iterator->key().ToString();
-      return;
+
+    if (db_iterator->key().ToString() == kUpdateMetadataKey) {
+      if (!metadata->ParseFromArray(value_slice.data(), value_slice.size())) {
+        LOG(WARNING) << "Unable to parse metadata";
+        return;
+      }
+    } else {
+      scoped_ptr<Contact> contact(new Contact);
+      if (!contact->ParseFromArray(value_slice.data(), value_slice.size())) {
+        LOG(WARNING) << "Unable to parse contact "
+                     << db_iterator->key().ToString();
+        return;
+      }
+      contacts->push_back(contact.release());
     }
-    contacts_out->push_back(contact.release());
     db_iterator->Next();
   }
 

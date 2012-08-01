@@ -27,6 +27,7 @@ class DB;
 namespace contacts {
 
 class Contact;
+class UpdateMetadata;
 typedef std::vector<const Contact*> ContactPointers;
 
 // Interface for classes providing persistent storage of Contact objects.
@@ -34,7 +35,9 @@ class ContactDatabaseInterface {
  public:
   typedef base::Callback<void(bool success)> InitCallback;
   typedef base::Callback<void(bool success)> SaveCallback;
-  typedef base::Callback<void(bool success, scoped_ptr<ScopedVector<Contact> >)>
+  typedef base::Callback<void(bool success,
+                              scoped_ptr<ScopedVector<Contact> >,
+                              scoped_ptr<UpdateMetadata>)>
       LoadCallback;
 
   ContactDatabaseInterface() {}
@@ -47,12 +50,13 @@ class ContactDatabaseInterface {
   // UI thread when complete.
   virtual void Init(const FilePath& database_dir, InitCallback callback) = 0;
 
-  // Asynchronously saves |contacts| to the database.  If |is_full_update| is
-  // true, all existing contacts in the database not present in |contacts| will
-  // be removed.  |callback| will be invoked on the UI thread when complete.
-  // The caller must not make changes to the underlying passed-in Contact
-  // objects until the callback has been invoked.
+  // Asynchronously saves |contacts| and |metadata| to the database.  If
+  // |is_full_update| is true, all existing contacts in the database not present
+  // in |contacts| will be removed.  |callback| will be invoked on the UI thread
+  // when complete.  The caller must not make changes to the underlying
+  // passed-in Contact objects until the callback has been invoked.
   virtual void SaveContacts(scoped_ptr<ContactPointers> contacts,
+                            scoped_ptr<UpdateMetadata> metadata,
                             bool is_full_update,
                             SaveCallback callback) = 0;
 
@@ -76,6 +80,7 @@ class ContactDatabase : public ContactDatabaseInterface {
   virtual void Init(const FilePath& database_dir,
                     InitCallback callback) OVERRIDE;
   virtual void SaveContacts(scoped_ptr<ContactPointers> contacts,
+                            scoped_ptr<UpdateMetadata> metadata,
                             bool is_full_update,
                             SaveCallback callback) OVERRIDE;
   virtual void LoadContacts(LoadCallback callback) OVERRIDE;
@@ -98,19 +103,22 @@ class ContactDatabase : public ContactDatabaseInterface {
   void RunSaveCallback(SaveCallback callback, const bool* success);
   void RunLoadCallback(LoadCallback callback,
                        const bool* success,
-                       scoped_ptr<ScopedVector<Contact> > contacts);
+                       scoped_ptr<ScopedVector<Contact> > contacts,
+                       scoped_ptr<UpdateMetadata> metadata);
 
   // Initializes the database in |database_dir| and updates |success|.
   void InitFromTaskRunner(const FilePath& database_dir, bool* success);
 
   // Saves |contacts| to disk and updates |success|.
   void SaveContactsFromTaskRunner(scoped_ptr<ContactPointers> contacts,
+                                  scoped_ptr<UpdateMetadata> metadata,
                                   bool is_full_update,
                                   bool* success);
 
   // Loads contacts from disk and updates |success|.
   void LoadContactsFromTaskRunner(bool* success,
-                                  ScopedVector<Contact>* contacts_out);
+                                  ScopedVector<Contact>* contacts,
+                                  UpdateMetadata* metadata);
 
   // Used to run blocking tasks in-order.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

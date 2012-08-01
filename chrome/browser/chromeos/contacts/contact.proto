@@ -97,3 +97,12 @@ message Contact {
   }
   repeated InstantMessagingAddress instant_messaging_addresses = 14;
 }
+
+// Singleton message used by ContactDatabase to store update-related metadata.
+message UpdateMetadata {
+  // Next ID to use: 2
+
+  // Time at which the last successful update was started, as given by
+  // base::Time::ToInternalValue().
+  optional int64 last_update_start_time = 1;
+}

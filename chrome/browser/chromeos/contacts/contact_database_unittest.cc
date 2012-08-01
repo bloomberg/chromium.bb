@@ -77,9 +77,11 @@ class ContactDatabaseTest : public testing::Test {
 
   // Calls ContactDatabase::SaveContacts() and blocks until the operation is
   // complete.
-  void SaveContacts(scoped_ptr<ContactPointers> contacts, bool is_full_update) {
+  void SaveContacts(scoped_ptr<ContactPointers> contacts,
+                    scoped_ptr<UpdateMetadata> metadata,
+                    bool is_full_update) {
     CHECK(db_);
-    db_->SaveContacts(contacts.Pass(), is_full_update,
+    db_->SaveContacts(contacts.Pass(), metadata.Pass(), is_full_update,
                       base::Bind(&ContactDatabaseTest::OnContactsSaved,
                                  base::Unretained(this)));
     message_loop_.Run();
@@ -87,12 +89,14 @@ class ContactDatabaseTest : public testing::Test {
 
   // Calls ContactDatabase::LoadContacts() and blocks until the operation is
   // complete.
-  scoped_ptr<ScopedVector<Contact> > LoadContacts() {
+  void LoadContacts(scoped_ptr<ScopedVector<Contact> >* contacts_out,
+                    scoped_ptr<UpdateMetadata>* metadata_out) {
     CHECK(db_);
     db_->LoadContacts(base::Bind(&ContactDatabaseTest::OnContactsLoaded,
                                  base::Unretained(this)));
     message_loop_.Run();
-    return loaded_contacts_.Pass();
+    contacts_out->swap(loaded_contacts_);
+    metadata_out->swap(loaded_metadata_);
   }
 
  private:
@@ -111,10 +115,12 @@ class ContactDatabaseTest : public testing::Test {
   }
 
   void OnContactsLoaded(bool success,
-                        scoped_ptr<ScopedVector<Contact> > contacts) {
+                        scoped_ptr<ScopedVector<Contact> > contacts,
+                        scoped_ptr<UpdateMetadata> metadata) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     CHECK(success);
     loaded_contacts_.swap(contacts);
+    loaded_metadata_.swap(metadata);
     message_loop_.Quit();
   }
 
@@ -127,9 +133,11 @@ class ContactDatabaseTest : public testing::Test {
   // This class retains ownership of this object.
   ContactDatabase* db_;
 
-  // Contacts returned by the most-recent ContactDatabase::LoadContacts() call.
-  // Used to pass contacts from OnContactsLoaded() to LoadContacts().
+  // Contacts and metadata returned by the most-recent
+  // ContactDatabase::LoadContacts() call.  Used to pass returned values from
+  // OnContactsLoaded() to LoadContacts().
   scoped_ptr<ScopedVector<Contact> > loaded_contacts_;
+  scoped_ptr<UpdateMetadata> loaded_metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(ContactDatabaseTest);
 };
@@ -157,11 +165,18 @@ TEST_F(ContactDatabaseTest, SaveAndReload) {
   SetPhoto(gfx::Size(20, 20), contact.get());
   scoped_ptr<ContactPointers> contacts_to_save(new ContactPointers);
   contacts_to_save->push_back(contact.get());
-  SaveContacts(contacts_to_save.Pass(), true);
 
-  scoped_ptr<ScopedVector<Contact> > loaded_contacts = LoadContacts();
+  const int64 kLastUpdateTime = 1234;
+  scoped_ptr<UpdateMetadata> metadata_to_save(new UpdateMetadata);
+  metadata_to_save->set_last_update_start_time(kLastUpdateTime);
+
+  SaveContacts(contacts_to_save.Pass(), metadata_to_save.Pass(), true);
+  scoped_ptr<ScopedVector<Contact> > loaded_contacts;
+  scoped_ptr<UpdateMetadata> loaded_metadata;
+  LoadContacts(&loaded_contacts, &loaded_metadata);
   EXPECT_EQ(VarContactsToString(1, contact.get()),
             ContactsToString(*loaded_contacts));
+  EXPECT_EQ(kLastUpdateTime, loaded_metadata->last_update_start_time());
 
   // Modify the contact, save it, and check that the loaded contact is also
   // updated.
@@ -175,11 +190,15 @@ TEST_F(ContactDatabaseTest, SaveAndReload) {
   SetPhoto(gfx::Size(64, 64), contact.get());
   contacts_to_save.reset(new ContactPointers);
   contacts_to_save->push_back(contact.get());
-  SaveContacts(contacts_to_save.Pass(), true);
+  metadata_to_save.reset(new UpdateMetadata);
+  const int64 kNewLastUpdateTime = 5678;
+  metadata_to_save->set_last_update_start_time(kNewLastUpdateTime);
+  SaveContacts(contacts_to_save.Pass(), metadata_to_save.Pass(), true);
 
-  loaded_contacts = LoadContacts();
+  LoadContacts(&loaded_contacts, &loaded_metadata);
   EXPECT_EQ(VarContactsToString(1, contact.get()),
             ContactsToString(*loaded_contacts));
+  EXPECT_EQ(kNewLastUpdateTime, loaded_metadata->last_update_start_time());
 }
 
 TEST_F(ContactDatabaseTest, FullAndPartialUpdates) {
@@ -200,8 +219,12 @@ TEST_F(ContactDatabaseTest, FullAndPartialUpdates) {
   scoped_ptr<ContactPointers> contacts_to_save(new ContactPointers);
   contacts_to_save->push_back(contact1.get());
   contacts_to_save->push_back(contact2.get());
-  SaveContacts(contacts_to_save.Pass(), true);
-  scoped_ptr<ScopedVector<Contact> > loaded_contacts = LoadContacts();
+  scoped_ptr<UpdateMetadata> metadata_to_save(new UpdateMetadata);
+  SaveContacts(contacts_to_save.Pass(), metadata_to_save.Pass(), true);
+
+  scoped_ptr<ScopedVector<Contact> > loaded_contacts;
+  scoped_ptr<UpdateMetadata> loaded_metadata;
+  LoadContacts(&loaded_contacts, &loaded_metadata);
   EXPECT_EQ(VarContactsToString(2, contact1.get(), contact2.get()),
             ContactsToString(*loaded_contacts));
 
@@ -211,10 +234,22 @@ TEST_F(ContactDatabaseTest, FullAndPartialUpdates) {
                    "", true, contact2.get());
   contacts_to_save.reset(new ContactPointers);
   contacts_to_save->push_back(contact2.get());
-  SaveContacts(contacts_to_save.Pass(), false);
-  loaded_contacts = LoadContacts();
+  metadata_to_save.reset(new UpdateMetadata);
+  SaveContacts(contacts_to_save.Pass(), metadata_to_save.Pass(), false);
+  LoadContacts(&loaded_contacts, &loaded_metadata);
   EXPECT_EQ(VarContactsToString(2, contact1.get(), contact2.get()),
             ContactsToString(*loaded_contacts));
+
+  // Do an empty partial update and check that the metadata is still updated.
+  contacts_to_save.reset(new ContactPointers);
+  metadata_to_save.reset(new UpdateMetadata);
+  const int64 kLastUpdateTime = 1234;
+  metadata_to_save->set_last_update_start_time(kLastUpdateTime);
+  SaveContacts(contacts_to_save.Pass(), metadata_to_save.Pass(), false);
+  LoadContacts(&loaded_contacts, &loaded_metadata);
+  EXPECT_EQ(VarContactsToString(2, contact1.get(), contact2.get()),
+            ContactsToString(*loaded_contacts));
+  EXPECT_EQ(kLastUpdateTime, loaded_metadata->last_update_start_time());
 
   // Do a full update including just the first contact.  The second contact
   // should be removed from the database.
@@ -225,15 +260,17 @@ TEST_F(ContactDatabaseTest, FullAndPartialUpdates) {
                  "", true, contact1.get());
   contacts_to_save.reset(new ContactPointers);
   contacts_to_save->push_back(contact1.get());
-  SaveContacts(contacts_to_save.Pass(), true);
-  loaded_contacts = LoadContacts();
+  metadata_to_save.reset(new UpdateMetadata);
+  SaveContacts(contacts_to_save.Pass(), metadata_to_save.Pass(), true);
+  LoadContacts(&loaded_contacts, &loaded_metadata);
   EXPECT_EQ(VarContactsToString(1, contact1.get()),
             ContactsToString(*loaded_contacts));
 
   // Do a full update including no contacts.  The database should be cleared.
   contacts_to_save.reset(new ContactPointers);
-  SaveContacts(contacts_to_save.Pass(), true);
-  loaded_contacts = LoadContacts();
+  metadata_to_save.reset(new UpdateMetadata);
+  SaveContacts(contacts_to_save.Pass(), metadata_to_save.Pass(), true);
+  LoadContacts(&loaded_contacts, &loaded_metadata);
   EXPECT_TRUE(loaded_contacts->empty());
 }
 
@@ -254,8 +291,12 @@ TEST_F(ContactDatabaseTest, DeleteWhenCorrupt) {
   InitContact("1", "1", false, contact.get());
   scoped_ptr<ContactPointers> contacts_to_save(new ContactPointers);
   contacts_to_save->push_back(contact.get());
-  SaveContacts(contacts_to_save.Pass(), true);
-  scoped_ptr<ScopedVector<Contact> > loaded_contacts = LoadContacts();
+  scoped_ptr<UpdateMetadata> metadata_to_save(new UpdateMetadata);
+  SaveContacts(contacts_to_save.Pass(), metadata_to_save.Pass(), true);
+
+  scoped_ptr<ScopedVector<Contact> > loaded_contacts;
+  scoped_ptr<UpdateMetadata> loaded_metadata;
+  LoadContacts(&loaded_contacts, &loaded_metadata);
   EXPECT_EQ(VarContactsToString(1, contact.get()),
             ContactsToString(*loaded_contacts));
 }
