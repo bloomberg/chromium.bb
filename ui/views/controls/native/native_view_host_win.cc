@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #include <oleacc.h>
 
 #include "base/logging.h"
+#include "ui/base/win/hidden_window.h"
+#include "ui/base/win/window_impl.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
@@ -43,8 +45,12 @@ void NativeViewHostWin::NativeViewAttached() {
 }
 
 void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
-  if (!destroyed && installed_clip_)
-    UninstallClip();
+  if (!destroyed) {
+    if (installed_clip_)
+      UninstallClip();
+    ClearFocus();
+    SetParent(host_->native_view(), ui::GetHiddenWindow());
+  }
   installed_clip_ = false;
 }
 
@@ -139,6 +145,20 @@ gfx::NativeViewAccessible NativeViewHostWin::GetNativeViewAccessible() {
     return accessible;
   } else {
     return NULL;
+  }
+}
+
+void NativeViewHostWin::ClearFocus() {
+  FocusManager* focus_manager = host_->GetFocusManager();
+  if (!focus_manager || !focus_manager->GetFocusedView())
+    return;
+
+  Widget::Widgets widgets;
+  Widget::GetAllChildWidgets(host_->native_view(), &widgets);
+  for (Widget::Widgets::iterator i = widgets.begin(); i != widgets.end(); ++i) {
+    focus_manager->ViewRemoved((*i)->GetRootView());
+    if (!focus_manager->GetFocusedView())
+      return;
   }
 }
 
