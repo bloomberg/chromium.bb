@@ -128,6 +128,7 @@ class GDataOperationRegistryTest : public testing::Test {
 TEST_F(GDataOperationRegistryTest, OneSuccess) {
   TestObserver observer;
   GDataOperationRegistry registry;
+  registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =
@@ -152,6 +153,7 @@ TEST_F(GDataOperationRegistryTest, OneSuccess) {
 TEST_F(GDataOperationRegistryTest, OneCancel) {
   TestObserver observer;
   GDataOperationRegistry registry;
+  registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =
@@ -172,6 +174,7 @@ TEST_F(GDataOperationRegistryTest, OneCancel) {
 TEST_F(GDataOperationRegistryTest, TwoSuccess) {
   TestObserver observer;
   GDataOperationRegistry registry;
+  registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =
@@ -204,6 +207,7 @@ TEST_F(GDataOperationRegistryTest, TwoSuccess) {
 TEST_F(GDataOperationRegistryTest, ThreeCancel) {
   TestObserver observer;
   GDataOperationRegistry registry;
+  registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =
@@ -234,6 +238,7 @@ TEST_F(GDataOperationRegistryTest, ThreeCancel) {
 TEST_F(GDataOperationRegistryTest, RestartOperation) {
   TestObserver observer;
   GDataOperationRegistry registry;
+  registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =

@@ -143,6 +143,9 @@ class GDataOperationRegistry {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Disables the notification suppression for testing purpose.
+  void DisableNotificationFrequencyControlForTest();
+
  private:
   // Handlers for notifications from Operations.
   friend class Operation;
@@ -157,9 +160,18 @@ class GDataOperationRegistry {
 
   bool IsFileTransferOperation(const Operation* operation) const;
 
+  // Controls the frequency of notifications, not to flood the listeners with
+  // too many events.
+  bool ShouldNotifyStatusNow(const ProgressStatusList& list);
+  // Sends notifications to the observers after checking that the frequency is
+  // not too high by ShouldNotifyStatusNow.
+  void NotifyStatusToObservers();
+
   typedef IDMap<Operation, IDMapOwnPointer> OperationIDMap;
   OperationIDMap in_flight_operations_;
   ObserverList<Observer> observer_list_;
+  base::Time last_notification_;
+  bool do_notification_frequency_control_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataOperationRegistry);
 };

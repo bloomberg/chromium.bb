@@ -9,6 +9,12 @@
 
 using content::BrowserThread;
 
+namespace {
+
+const int64 kNotificationFrequencyInMilliseconds = 1000;
+
+}  // namespace
+
 namespace gdata {
 
 // static
@@ -137,7 +143,8 @@ void GDataOperationRegistry::Operation::NotifyAuthFailed() {
   registry_->OnOperationAuthFailed();
 }
 
-GDataOperationRegistry::GDataOperationRegistry() {
+GDataOperationRegistry::GDataOperationRegistry()
+    : do_notification_frequency_control_(true) {
   in_flight_operations_.set_check_on_null_data(true);
 }
 
@@ -151,6 +158,10 @@ void GDataOperationRegistry::AddObserver(Observer* observer) {
 
 void GDataOperationRegistry::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+void GDataOperationRegistry::DisableNotificationFrequencyControlForTest() {
+  do_notification_frequency_control_ = false;
 }
 
 void GDataOperationRegistry::CancelAll() {
@@ -189,10 +200,8 @@ void GDataOperationRegistry::OnOperationStart(
 
   *id = in_flight_operations_.Add(operation);
   DVLOG(1) << "GDataOperation[" << *id << "] started.";
-  if (IsFileTransferOperation(operation)) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnProgressUpdate(GetProgressStatusList()));
-  }
+  if (IsFileTransferOperation(operation))
+    NotifyStatusToObservers();
 }
 
 void GDataOperationRegistry::OnOperationProgress(OperationID id) {
@@ -203,10 +212,8 @@ void GDataOperationRegistry::OnOperationProgress(OperationID id) {
 
   DVLOG(1) << "GDataOperation[" << id << "] "
            << operation->progress_status().DebugString();
-  if (IsFileTransferOperation(operation)) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnProgressUpdate(GetProgressStatusList()));
-  }
+  if (IsFileTransferOperation(operation))
+    NotifyStatusToObservers();
 }
 
 void GDataOperationRegistry::OnOperationFinish(OperationID id) {
@@ -216,10 +223,8 @@ void GDataOperationRegistry::OnOperationFinish(OperationID id) {
   DCHECK(operation);
 
   DVLOG(1) << "GDataOperation[" << id << "] finished.";
-  if (IsFileTransferOperation(operation)) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnProgressUpdate(GetProgressStatusList()));
-  }
+  if (IsFileTransferOperation(operation))
+    NotifyStatusToObservers();
   in_flight_operations_.Remove(id);
 }
 
@@ -256,10 +261,8 @@ void GDataOperationRegistry::OnOperationResume(
   new_status->operation_id = in_flight_operations_.Add(operation);
   DVLOG(1) << "GDataOperation[" << old_id << " -> " <<
            new_status->operation_id << "] resumed.";
-  if (IsFileTransferOperation(operation)) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnProgressUpdate(GetProgressStatusList()));
-  }
+  if (IsFileTransferOperation(operation))
+    NotifyStatusToObservers();
 }
 
 void GDataOperationRegistry::OnOperationSuspend(OperationID id) {
@@ -269,10 +272,8 @@ void GDataOperationRegistry::OnOperationSuspend(OperationID id) {
   DCHECK(operation);
 
   DVLOG(1) << "GDataOperation[" << id << "] suspended.";
-  if (IsFileTransferOperation(operation)) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnProgressUpdate(GetProgressStatusList()));
-  }
+  if (IsFileTransferOperation(operation))
+    NotifyStatusToObservers();
 }
 
 void GDataOperationRegistry::OnOperationAuthFailed() {
@@ -301,6 +302,47 @@ GDataOperationRegistry::GetProgressStatusList() {
       status_list.push_back(operation->progress_status());
   }
   return status_list;
+}
+
+bool GDataOperationRegistry::ShouldNotifyStatusNow(
+    const ProgressStatusList& list) {
+  if (!do_notification_frequency_control_)
+    return true;
+
+  base::Time now = base::Time::Now();
+
+  // If it is a first event, or some time abnormality is detected, we should
+  // not skip this notification.
+  if (last_notification_.is_null() || now < last_notification_) {
+    last_notification_ = now;
+    return true;
+  }
+
+  // If sufficiently long time has elapsed since the previous event, we should
+  // not skip this notification.
+  if ((now - last_notification_).InMilliseconds() >=
+      kNotificationFrequencyInMilliseconds) {
+    last_notification_ = now;
+    return true;
+  }
+
+  // If important events (OPERATION_STARTED, COMPLETED, or FAILED) are there,
+  // we should not skip this notification.
+  for (size_t i = 0; i < list.size(); ++i) {
+    if (list[i].transfer_state != OPERATION_IN_PROGRESS) {
+      last_notification_ = now;
+      return true;
+    }
+  }
+
+  // Otherwise we can skip it.
+  return false;
+}
+
+void GDataOperationRegistry::NotifyStatusToObservers() {
+  ProgressStatusList list(GetProgressStatusList());
+  if (ShouldNotifyStatusNow(list))
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnProgressUpdate(list));
 }
 
 }  // namespace gdata
