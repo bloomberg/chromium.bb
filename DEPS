@@ -20,7 +20,7 @@ vars = {
 
   "libjingle_revision": "163",
   "libphonenumber_revision": "456",
-  "libvpx_revision": "149032",
+  "libvpx_revision": "149334",
   "lss_revision": "11",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
@@ -72,16 +72,16 @@ deps = {
     "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@146527",
+    "/trunk/deps/third_party/icu46@149334",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@146817",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell@147911",
+   "/trunk/deps/third_party/hunspell@149334",
 
   "src/third_party/hunspell_dictionaries":
-    "/trunk/deps/third_party/hunspell_dictionaries@138928",
+    "/trunk/deps/third_party/hunspell_dictionaries@149334",
 
   "src/third_party/safe_browsing/testing":
     (Var("googlecode_url") % "google-safe-browsing") + "/trunk/testing@110",
@@ -247,16 +247,16 @@ deps = {
     "/trunk/deps/third_party/libsrtp@123853",
 
   "src/third_party/speex":
-    "/trunk/deps/third_party/speex@111570",
+    "/trunk/deps/third_party/speex@149334",
 
   "src/third_party/yasm/source/patched-yasm":
     "/trunk/deps/third_party/yasm/patched-yasm@134927",
 
   "src/third_party/libjpeg_turbo":
-    "/trunk/deps/third_party/libjpeg_turbo@147428",
+    "/trunk/deps/third_party/libjpeg_turbo@149334",
 
   "src/third_party/flac":
-    "/trunk/deps/third_party/flac@120197",
+    "/trunk/deps/third_party/flac@149334",
 
   "src/third_party/pyftpdlib/src":
     (Var("googlecode_url") % "pyftpdlib") + "/trunk@977",
@@ -486,7 +486,7 @@ deps_os = {
       "/trunk/deps/reference_builds/chrome_linux@137712",
 
     "src/third_party/xdg-utils":
-      "/trunk/deps/third_party/xdg-utils@93299",
+      "/trunk/deps/third_party/xdg-utils@149334",
 
     "src/third_party/swig/linux":
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
