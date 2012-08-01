@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "remoting/codec/audio_encoder.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_stub.h"
@@ -19,10 +20,12 @@ AudioScheduler::AudioScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     AudioCapturer* audio_capturer,
+    scoped_ptr<AudioEncoder> audio_encoder,
     protocol::AudioStub* audio_stub)
     : capture_task_runner_(capture_task_runner),
       network_task_runner_(network_task_runner),
       audio_capturer_(audio_capturer),
+      audio_encoder_(audio_encoder.Pass()),
       audio_stub_(audio_stub),
       network_stopped_(false) {
   DCHECK(capture_task_runner_);
@@ -57,10 +60,13 @@ void AudioScheduler::OnClientDisconnected() {
 AudioScheduler::~AudioScheduler() {
 }
 
-void AudioScheduler::NotifyAudioPacketCaptured(scoped_ptr<AudioPacket> packet) {
+void AudioScheduler::NotifyAudioPacketCaptured(
+    scoped_ptr<AudioPacket> packet) {
+  scoped_ptr<AudioPacket> encoded_packet =
+      audio_encoder_->Encode(packet.Pass());
   network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AudioScheduler::DoSendAudioPacket,
-                            this, base::Passed(packet.Pass())));
+                            this, base::Passed(encoded_packet.Pass())));
 }
 
 void AudioScheduler::DoStart() {

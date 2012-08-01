@@ -13,6 +13,8 @@
 #include "remoting/base/encoder.h"
 #include "remoting/base/encoder_row_based.h"
 #include "remoting/base/encoder_vp8.h"
+#include "remoting/codec/audio_encoder.h"
+#include "remoting/codec/audio_encoder_verbatim.h"
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
@@ -220,10 +222,13 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
                                  desktop_environment_->capturer(),
                                  encoder);
   if (client->connection()->session()->config().is_audio_enabled()) {
+    scoped_ptr<AudioEncoder> audio_encoder =
+        CreateAudioEncoder(client->connection()->session()->config());
     audio_scheduler_ = new AudioScheduler(
         context_->capture_task_runner(),
         context_->network_task_runner(),
         desktop_environment_->audio_capturer(),
+        audio_encoder.Pass(),
         client->connection()->audio_stub());
   }
 
@@ -415,6 +420,19 @@ Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig& config) {
   }
 
   return NULL;
+}
+
+// static
+scoped_ptr<AudioEncoder> ChromotingHost::CreateAudioEncoder(
+    const protocol::SessionConfig& config) {
+  const protocol::ChannelConfig& audio_config = config.audio_config();
+
+  if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
+    return scoped_ptr<AudioEncoder>(new AudioEncoderVerbatim());
+  }
+
+  NOTIMPLEMENTED();
+  return scoped_ptr<AudioEncoder>(NULL);
 }
 
 void ChromotingHost::StopScreenRecorder() {

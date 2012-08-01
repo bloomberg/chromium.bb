@@ -21,6 +21,7 @@ class AudioStub;
 }  // namespace protocol
 
 class AudioCapturer;
+class AudioEncoder;
 class AudioPacket;
 
 // A class for controlling AudioCapturer and forwarding audio packets to the
@@ -45,6 +46,7 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       AudioCapturer* audio_capturer,
+      scoped_ptr<AudioEncoder> audio_encoder,
       protocol::AudioStub* audio_stub);
 
   // Stop the recording session.
@@ -74,6 +76,8 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   AudioCapturer* audio_capturer_;
+
+  scoped_ptr<AudioEncoder> audio_encoder_;
 
   protocol::AudioStub* audio_stub_;
 

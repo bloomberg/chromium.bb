@@ -12,6 +12,7 @@ include_rules = [
   # at process start.
   "+net/socket",
 
+  "+remoting/codec",
   "+remoting/protocol",
   "+remoting/jingle_glue",
   "+third_party/jsoncpp",

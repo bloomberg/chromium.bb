@@ -31,6 +31,7 @@ class SessionConfig;
 class CandidateSessionConfig;
 }  // namespace protocol
 
+class AudioEncoder;
 class AudioScheduler;
 class ChromotingHostContext;
 class DesktopEnvironment;
@@ -164,6 +165,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Creates encoder for the specified configuration.
   static Encoder* CreateEncoder(const protocol::SessionConfig& config);
+
+  // Creates an audio encoder for the specified configuration.
+  static scoped_ptr<AudioEncoder> CreateAudioEncoder(
+      const protocol::SessionConfig& config);
 
   virtual ~ChromotingHost();
 

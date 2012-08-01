@@ -1181,6 +1181,11 @@
         'base/stoppable.h',
         'base/util.cc',
         'base/util.h',
+        # TODO(kxing): Seperate the audio and video codec files into a separate
+        # target.
+        'codec/audio_encoder.h',
+        'codec/audio_encoder_verbatim.cc',
+        'codec/audio_encoder_verbatim.h',
       ],
     },  # end of target 'remoting_base'
 

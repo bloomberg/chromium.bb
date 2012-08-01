@@ -279,6 +279,7 @@ void AudioCapturerWin::DoCapture() {
     packet->set_sampling_rate(sampling_rate_);
     packet->set_bytes_per_sample(
         static_cast<AudioPacket::BytesPerSample>(sizeof(int16)));
+    packet->set_encoding(AudioPacket::ENCODING_RAW);
 
     if (!IsPacketOfSilence(packet.get()))
       callback_.Run(packet.Pass());
