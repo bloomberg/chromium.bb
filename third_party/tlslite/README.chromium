@@ -2,6 +2,7 @@ Name: tlslite
 URL: http://trevp.net/tlslite/
 Version: 0.3.8
 Security Critical: No
+License: Public domain
 
 Local Modifications:
 

@@ -1,5 +1,6 @@
 Name: google-jstemplate
 URL: http://code.google.com/p/google-jstemplate/
+License: Apache 2.0
 
 "Template processing that is more suitable for the specific development-time
 and runtime requirements of AJAX based web applications.

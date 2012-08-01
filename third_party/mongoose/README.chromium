@@ -1,7 +1,7 @@
 Name: Mongoose webserver
 Short Name: mongoose
 URL: http://code.google.com/p/mongoose/
-LICENSE: MIT
+License: MIT
 Version: 55cf8bf30cd9
 Release: between 3.0 and 3.1
 Security Critical: no

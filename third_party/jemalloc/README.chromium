@@ -1,6 +1,8 @@
 Name: jemalloc
 URL: http://hg.mozilla.org/mozilla-central/src/memory
 Version: unknown
+License: BSD
+Security Critical: yes
 
 Description:
 This contains Chromium's locally patched copy of Jason Evans' jemalloc package.

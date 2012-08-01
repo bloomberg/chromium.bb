@@ -110,11 +110,13 @@ SPECIAL_CASES = {
     'googleurl': {
         "Name": "google-url",
         "URL": "http://code.google.com/p/google-url/",
+        "License": "BSD and MPL 1.1/GPL 2.0/LGPL 2.1",
         "License File": "LICENSE.txt",
     },
     os.path.join('third_party', 'angle'): {
         "Name": "Almost Native Graphics Layer Engine",
         "URL": "http://code.google.com/p/angleproject/",
+        "License": "BSD",
     },
     os.path.join('third_party', 'cros_system_api'): {
         "Name": "Chromium OS system API",
@@ -136,6 +138,7 @@ SPECIAL_CASES = {
     os.path.join('third_party', 'ots'): {
         "Name": "OTS (OpenType Sanitizer)",
         "URL": "http://code.google.com/p/ots/",
+        "License": "BSD",
     },
     os.path.join('third_party', 'pdfsqueeze'): {
         "Name": "pdfsqueeze",
@@ -160,6 +163,7 @@ SPECIAL_CASES = {
     os.path.join('third_party', 'v8-i18n'): {
         "Name": "Internationalization Library for v8",
         "URL": "http://code.google.com/p/v8-i18n/",
+        "License": "Apache 2.0, BSD and others",
     },
     os.path.join('third_party', 'WebKit'): {
         "Name": "WebKit",
@@ -176,6 +180,7 @@ SPECIAL_CASES = {
     os.path.join('v8', 'strongtalk'): {
         "Name": "Strongtalk",
         "URL": "http://www.strongtalk.org/",
+        "License": "BSD",
         # Absolute path here is resolved as relative to the source root.
         "License File": "/v8/LICENSE.strongtalk",
     },
@@ -208,6 +213,7 @@ def ParseDir(path):
         "License File": "LICENSE",  # Relative path to license text.
         "Name": None,               # Short name (for header on about:credits).
         "URL": None,                # Project home page.
+        "License": None,            # Software license.
         }
 
     # Relative path to a file containing some html we're required to place in

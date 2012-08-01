@@ -1,6 +1,8 @@
 Name: codesighs
 URL: http://hg.mozilla.org/mozilla-central/tools/codesighs
 Version: unknown
+License: MPL 1.1/GPL 2.0/LGPL 2.1
+Security Critical: no
 
 Description:
 This is Chromium's copy of the Mozilla codesighs tool.

@@ -2,6 +2,7 @@ Name: libpng
 URL: http://libpng.org/
 Version: 1.2.45
 Security Critical: yes
+License: libpng license
 
 Description:
 Our custom configuration options are defined in pngusr.h. This was previously

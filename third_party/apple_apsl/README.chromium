@@ -2,6 +2,7 @@ Name: Darwin
 URL: http://www.opensource.apple.com/
 Version: unknown
 Security Critical: yes
+License: Apple Public Source License 2.0
 
 Four files are excerpted here:
 

@@ -3,6 +3,7 @@ URL: http://sourceforge.net/projects/hunspell/files/Hyphen/
 Version: 2.6
 License File: COPYING
 Security Critical: yes
+License: MPL 1.1/GPL 2.0/LGPL 2.1
 
 Description:
 This is a partial copy of Hyphen 2.6 with the following changes:
@@ -12,4 +13,4 @@ This is a partial copy of Hyphen 2.6 with the following changes:
   as expected.
 The patch is in google.patch.
 
-See 'hyphen.tex' for additional requirements regarding that file. 
+See 'hyphen.tex' for additional requirements regarding that file.

@@ -2,6 +2,7 @@ Name: devscripts
 URL: http://anonscm.debian.org/gitweb/?p=devscripts/devscripts.git
 Version: 2.11.7
 Security Critical: no
+License: GPL 2.0
 
 Description:
 This directory contains selected tools from the Debian's devscripts collection.

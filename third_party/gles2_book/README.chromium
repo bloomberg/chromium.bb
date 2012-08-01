@@ -3,12 +3,15 @@ Short Name: opengles-book
 URL: http://opengles-book.com/
 Version: unknown
 Security Critical: no
+License: MIT
 
 Description:
 Code samples from OpenGL ES 2.0 Programming Guide.
 Authors: Aaftab Munshi, Dan Ginsburg, Dave Shreiner
 Publisher: Addison-Wesley Professional
 ISBN: 0321502795
+
+Sample code is MIT licensed - http://www.opengles-book.com/downloads.html
 
 Local Modifications:
   Removed files that chromium did not need:

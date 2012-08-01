@@ -1,6 +1,7 @@
 Name: Python FTP server library
 Short Name: pyftpdlib
 URL: http://code.google.com/p/pyftpdlib/
+License: MIT
 License File: src/LICENSE
 Version: unknown
 Security Critical: no

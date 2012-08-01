@@ -3,6 +3,7 @@ URL: http://www.gtk.org/
 License File: COPYING
 Version: 3.1.4
 Security Critical: yes
+License: LGPL 2
 
 Description:
 This package is used by views/ime/character_composer.cc.

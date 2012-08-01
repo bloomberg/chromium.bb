@@ -2,6 +2,8 @@ Name: ISimpleDOM COM interfaces for accessibility
 Short Name: ISimpleDOM
 URL: http://www.mozilla.org/access/windows/at-apis
 Version: unknown
+License: MPL 1.1/GPL 2.0/LGPL 2.1
+Security Critical: yes
 
 Description:
   This directory contains the ISimpleDOM API, which is needed

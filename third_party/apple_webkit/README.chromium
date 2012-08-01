@@ -3,6 +3,7 @@ URL: http://svn.webkit.org/repository/webkit/trunk/WebKitLibraries/libWebKitSyst
 Version: r106868
 Date: 6 February 2012
 Security Critical: Yes
+License: BSD
 
 Local changes:
 Added the contents of LICENSE to WebKitSystemInterface.h.

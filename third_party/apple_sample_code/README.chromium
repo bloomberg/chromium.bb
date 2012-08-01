@@ -2,6 +2,7 @@ Name: Apple sample code
 URL: http://developer.apple.com/
 Version: unknown
 Security Critical: Yes
+License: Custom license
 
 Local changes:
 * ImageAndTextCell.h: Changed 'image' property to 'retain' mode to fix a crash.

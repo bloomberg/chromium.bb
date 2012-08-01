@@ -4,6 +4,7 @@ URL: http://gperftools.googlecode.com/
 Version: unknown
 Revision: 144
 Security Critical: yes
+License: BSD
 
 Description:
 This contains Chromium's locally patched copy of tcmalloc.

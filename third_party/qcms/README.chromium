@@ -3,6 +3,7 @@ Short Name: qcms
 URL: https://github.com/jrmuizel/qcms/tree/v4
 Version: v4
 Date: 2012-03-13
+License: MIT
 License File: src/COPYING
 Security Critical: yes
 

@@ -24,7 +24,7 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
     return errors
 
   name_pattern = input_api.re.compile(
-    r'^Name: [a-zA-Z0-9_\-\. ]+\r?$',
+    r'^Name: [a-zA-Z0-9_\-\. \(\)]+\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
   shortname_pattern = input_api.re.compile(
     r'^Short Name: [a-zA-Z0-9_\-\.]+\r?$',
@@ -33,7 +33,10 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
     r'^Version: [a-zA-Z0-9_\-\.:]+\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
   release_pattern = input_api.re.compile(
-    r'Security Critical: (yes)|(no)\r?$',
+    r'^Security Critical: (yes)|(no)\r?$',
+    input_api.re.IGNORECASE | input_api.re.MULTILINE)
+  license_pattern = input_api.re.compile(
+    r'^License: .+\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
 
   for f in readmes:
@@ -57,6 +60,12 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
         'Third party README files should contain a \'Security Critical\'\n'
         'field. This field specifies whether the package is built with\n'
         'Chromium. Check README.chromium.template for details.',
+        [f]))
+    if not license_pattern.search(contents):
+      errors.append(output_api.PresubmitError(
+        'Third party README files should contain a \'License\' field.\n'
+        'This field specifies the license used by the package. Check\n'
+        'README.chromium.template for details.',
         [f]))
   return errors
 
