@@ -24,7 +24,8 @@ function canCollapseBeginWithEnd(beginEntry) {
  * Adds a child pre element to the end of |parent|, and writes the
  * formatted contents of |logEntries| to it.
  */
-printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
+printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping,
+                                 logCreationTime) {
   var entries = LogGroupEntry.createArrayFrom(logEntries);
   var tablePrinter = new TablePrinter();
   var parameterOutputter = new ParameterOutputter(tablePrinter);
@@ -32,8 +33,7 @@ printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
   if (entries.length == 0)
     return;
 
-  var startDate = timeutil.convertTimeTicksToDate(entries[0].orig.time);
-  var startTime = startDate.getTime();
+  var startTime = timeutil.convertTimeTicksToTime(entries[0].orig.time);
 
   for (var i = 0; i < entries.length; ++i) {
     var entry = entries[i];
@@ -41,16 +41,8 @@ printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
     // Avoid printing the END for a BEGIN that was immediately before, unless
     // both have extra parameters.
     if (!entry.isEnd() || !canCollapseBeginWithEnd(entry.begin)) {
-      tablePrinter.addRow();
-
-      tablePrinter.addCell('t=');
-      var date = timeutil.convertTimeTicksToDate(entry.orig.time);
-      var tCell = tablePrinter.addCell(date.getTime());
-      tCell.alignRight = true;
-      tablePrinter.addCell(' [st=');
-      var stCell = tablePrinter.addCell(date.getTime() - startTime);
-      stCell.alignRight = true;
-      tablePrinter.addCell('] ');
+      var entryTime = timeutil.convertTimeTicksToTime(entry.orig.time);
+      addRowWithTime(tablePrinter, entryTime, startTime);
 
       for (var j = entry.getDepth(); j > 0; --j)
         tablePrinter.addCell('  ');
@@ -62,6 +54,8 @@ printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
         // Definite time.
         if (entry.end) {
           dt = entry.end.orig.time - entry.orig.time;
+        } else if (logCreationTime != undefined) {
+          dt = (logCreationTime - entryTime) + '+';
         }
         eventText += '  [dt=' + dt + ']';
       }
@@ -80,8 +74,36 @@ printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
     }
   }
 
+  // If viewing a saved log file, add row with just the time the log was
+  // created, if the event never completed.
+  if (logCreationTime != undefined &&
+      entries[entries.length - 1].getDepth() > 0) {
+    addRowWithTime(tablePrinter, logCreationTime, startTime);
+  }
+
   // Format the table for fixed-width text.
   tablePrinter.toText(0, parent);
+}
+
+/**
+ * Adds a new row to the given TablePrinter, and adds five cells containing
+ * information about the time an event occured.
+ * Format is '[t=<UTC time in ms>] [st=<ms since the source started>]'.
+ * @param {TablePrinter} tablePrinter The table printer to add the cells to.
+ * @param {number} eventTime The time the event occured, as a UTC time in
+ *     milliseconds.
+ * @param {number} startTime The time the first event for the source occured,
+ *     as a UTC time in milliseconds.
+ */
+function addRowWithTime(tablePrinter, eventTime, startTime) {
+  tablePrinter.addRow();
+  tablePrinter.addCell('t=');
+  var tCell = tablePrinter.addCell(eventTime);
+  tCell.alignRight = true;
+  tablePrinter.addCell(' [st=');
+  var stCell = tablePrinter.addCell(eventTime - startTime);
+  stCell.alignRight = true;
+  tablePrinter.addCell('] ');
 }
 
 /**

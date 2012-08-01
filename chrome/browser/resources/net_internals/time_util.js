@@ -22,14 +22,25 @@ var timeutil = (function() {
 
   /**
    * The browser gives us times in terms of "time ticks" in milliseconds.
+   * This function converts the tick count to a Javascript "time", which is
+   * the UTC time in milliseconds.
+   *
+   * @param {String} timeTicks A time represented in "time ticks".
+   * @return {number} The Javascript time that |timeTicks| represents.
+   */
+  function convertTimeTicksToTime(timeTicks) {
+    return timeTickOffset + (timeTicks - 0);
+  }
+
+  /**
+   * The browser gives us times in terms of "time ticks" in milliseconds.
    * This function converts the tick count to a Date() object.
    *
    * @param {String} timeTicks A time represented in "time ticks".
    * @return {Date} The time that |timeTicks| represents.
    */
   function convertTimeTicksToDate(timeTicks) {
-    var timeStampMs = timeTickOffset + (timeTicks - 0);
-    return new Date(timeStampMs);
+    return new Date(convertTimeTicksToTime(timeTicks));
   }
 
   /**
@@ -88,6 +99,7 @@ var timeutil = (function() {
 
   return {
     setTimeTickOffset: setTimeTickOffset,
+    convertTimeTicksToTime: convertTimeTicksToTime,
     convertTimeTicksToDate: convertTimeTicksToDate,
     getCurrentTime: getCurrentTime,
     addNodeWithDate: addNodeWithDate,

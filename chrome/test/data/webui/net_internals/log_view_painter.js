@@ -101,7 +101,8 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
     div.innerHTML = '';
     timeutil.setTimeTickOffset(testCase.tickOffset);
     printLogEntriesAsText(testCase.logEntries, div,
-                          testCase.enableSecurityStripping);
+                          testCase.enableSecurityStripping,
+                          testCase.logCreationTime);
 
     // Strip any trailing newlines, since the whitespace when using innerText
     // can be a bit unpredictable.
@@ -112,6 +113,8 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   }
 
   runTestCase(painterTestURLRequest());
+  runTestCase(painterTestURLRequestIncomplete());
+  runTestCase(painterTestURLRequestIncompleteFromLoadedLog());
   runTestCase(painterTestNetError());
   runTestCase(painterTestHexEncodedBytes());
   runTestCase(painterTestCertVerifierJob());
@@ -130,11 +133,13 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
 /**
  * Test case for a URLRequest. This includes custom formatting for load flags,
  * request/response HTTP headers, dependent sources, as well as basic
- * indentation and grouping.
+ * indentation and grouping.  Also makes sure that no extra event is logged
+ * for finished sources when there's a logCreationTime.
  */
 function painterTestURLRequest() {
   var testCase = {};
   testCase.tickOffset = '1337911098446';
+  testCase.logCreationTime = 1338864634013;
 
   testCase.logEntries = [
     {
@@ -746,6 +751,79 @@ function painterTestURLRequest() {
 }
 
 /**
+ * Test case for a URLRequest that was not completed that did not come from a
+ * loaded log file.
+ */
+function painterTestURLRequestIncomplete() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098446';
+
+  testCase.logEntries = [
+    {
+      'phase': EventPhase.PHASE_BEGIN,
+      'source': {
+        'id': 146,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953534778',
+      'type': EventType.REQUEST_ALIVE
+    },
+    {
+      'params': {
+        'load_flags': 128,
+        'method': 'GET',
+        'priority': 4,
+        'url': 'http://www.google.com/'
+      },
+      'phase': EventPhase.PHASE_BEGIN,
+      'source': {
+        'id': 146,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953534910',
+      'type': EventType.URL_REQUEST_START_JOB
+    },
+    {
+      'phase': EventPhase.PHASE_END,
+      'source': {
+        'id': 146,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953534970',
+      'type': EventType.URL_REQUEST_START_JOB
+    },
+  ];
+
+  testCase.expectedText =
+'t=1338864633224 [st=  0] +REQUEST_ALIVE  [dt=?]\n' +
+'t=1338864633356 [st=132]    URL_REQUEST_START_JOB  [dt=60]\n' +
+'                            --> load_flags = 128 (ENABLE_LOAD_TIMING)\n' +
+'                            --> method = "GET"\n' +
+'                            --> priority = 4\n' +
+'                            --> url = "http://www.google.com/"';
+
+  return testCase;
+}
+
+/**
+ * Test case for a URLRequest that was not completed that came from a loaded
+ * log file.
+ */
+function painterTestURLRequestIncompleteFromLoadedLog() {
+  var testCase = painterTestURLRequestIncomplete();
+  testCase.logCreationTime = 1338864634013;
+  testCase.expectedText =
+'t=1338864633224 [st=  0] +REQUEST_ALIVE  [dt=789+]\n' +
+'t=1338864633356 [st=132]    URL_REQUEST_START_JOB  [dt=60]\n' +
+'                            --> load_flags = 128 (ENABLE_LOAD_TIMING)\n' +
+'                            --> method = "GET"\n' +
+'                            --> priority = 4\n' +
+'                            --> url = "http://www.google.com/"\n' +
+'t=1338864634013 [st=789]';
+  return testCase;
+}
+
+/**
  * Tests the custom formatting of net_errors across several different event
  * types.
  */
@@ -1294,7 +1372,7 @@ function painterTestStripCookiesURLRequest() {
   var testCase = painterTestDontStripCookiesURLRequest();
   testCase.enableSecurityStripping = true;
   testCase.expectedText =
-    testCase.expectedText.replace(/MyMagicPony/g, '[value was stripped]');
+      testCase.expectedText.replace(/MyMagicPony/g, '[value was stripped]');
   return testCase;
 }
 

@@ -288,7 +288,7 @@ var SourceEntry = (function() {
         return timeutil.getCurrentTime();
       } else {
         var endTicks = this.entries_[this.entries_.length - 1].time;
-        return timeutil.convertTimeTicksToDate(endTicks).getTime();
+        return timeutil.convertTimeTicksToTime(endTicks);
       }
     },
 
@@ -299,7 +299,7 @@ var SourceEntry = (function() {
      */
     getDuration: function() {
       var startTicks = this.entries_[0].time;
-      var startTime = timeutil.convertTimeTicksToDate(startTicks).getTime();
+      var startTime = timeutil.convertTimeTicksToTime(startTicks);
       var endTime = this.getEndTime();
       return endTime - startTime;
     },
@@ -309,8 +309,10 @@ var SourceEntry = (function() {
      * of |parent|.
      */
     printAsText: function(parent) {
+      // The date will be undefined if not viewing a loaded log file.
       printLogEntriesAsText(this.entries_, parent,
-                            SourceTracker.getInstance().getSecurityStripping());
+                            SourceTracker.getInstance().getSecurityStripping(),
+                            Constants.clientInfo.numericDate);
     }
   };
 
