@@ -29,6 +29,7 @@ struct SSLStatus;
 namespace views {
 class Link;
 class TabbedPane;
+class Widget;
 }
 
 // The views implementation of the website settings UI.
@@ -61,6 +62,7 @@ class WebsiteSettingsPopupView
 
   // views::BubbleDelegate implementations.
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* button,

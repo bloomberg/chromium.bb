@@ -592,6 +592,7 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
       bridge,
       profile,
       tab_contents->content_settings(),
+      tab_contents->infobar_tab_helper(),
       url,
       ssl,
       content::CertStore::GetInstance());

@@ -203,6 +203,12 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Website Settings UI -->
+      <message name="IDS_WEBSITE_SETTINGS_INFOBAR_TEXT" desc="The string shown in the infobar after the user has changed site permissions settings, reminding them to reload the page in order for the new settings to take effect.">
+        New site permissions settings will take effect after reloading the page. 
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
+        Reload
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS" desc="Title of the permissions section of the website settings popup.">
         Permissions
       </message>

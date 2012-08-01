@@ -94,6 +94,7 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
 
   presenter_.reset(new WebsiteSettings(this, profile,
                                        tab_contents->content_settings(),
+                                       tab_contents->infobar_tab_helper(),
                                        url, ssl,
                                        content::CertStore::GetInstance()));
 }

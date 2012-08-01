@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -72,6 +73,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
         cert_id_(0),
         browser_thread_(content::BrowserThread::UI, &message_loop_),
         tab_specific_content_settings_(NULL),
+        infobar_tab_helper_(NULL),
         url_("http://www.example.com") {
   }
 
@@ -95,6 +97,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
 
     tab_specific_content_settings_.reset(
         new TabSpecificContentSettings(contents()));
+    infobar_tab_helper_.reset(new InfoBarTabHelper(contents()));
 
     // Setup the mock cert store.
     EXPECT_CALL(cert_store_, RetrieveCert(cert_id_, _) )
@@ -128,12 +131,13 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   TabSpecificContentSettings* tab_specific_content_settings() {
     return tab_specific_content_settings_.get();
   }
+  InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
 
   WebsiteSettings* website_settings() {
     if (!website_settings_.get()) {
       website_settings_.reset(new WebsiteSettings(
-          mock_ui(), profile(), tab_specific_content_settings_.get(), url(),
-          ssl(), cert_store()));
+          mock_ui(), profile(), tab_specific_content_settings_.get(),
+          infobar_tab_helper_.get(), url(), ssl(), cert_store()));
     }
     return website_settings_.get();
   }
@@ -147,6 +151,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<net::X509Certificate> cert_;
   content::TestBrowserThread browser_thread_;
   scoped_ptr<TabSpecificContentSettings> tab_specific_content_settings_;
+  scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
   MockCertStore cert_store_;
   GURL url_;
 };
@@ -318,4 +323,23 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
             website_settings()->site_identity_status());
   EXPECT_EQ(string16(), website_settings()->organization_name());
+}
+
+TEST_F(WebsiteSettingsTest, NoInfoBar) {
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_EQ(0u, infobar_tab_helper()->infobar_count());
+  website_settings()->OnUIClosing();
+  EXPECT_EQ(0u, infobar_tab_helper()->infobar_count());
+}
+
+TEST_F(WebsiteSettingsTest, ShowInfoBar) {
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_EQ(0u, infobar_tab_helper()->infobar_count());
+  website_settings()->OnSitePermissionChanged(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
+  website_settings()->OnUIClosing();
+  EXPECT_EQ(1u, infobar_tab_helper()->infobar_count());
+
+  infobar_tab_helper()->RemoveInfoBar(
+      infobar_tab_helper()->GetInfoBarDelegateAt(0));
 }

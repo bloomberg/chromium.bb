@@ -21,6 +21,7 @@ class CertStore;
 struct SSLStatus;
 }
 
+class InfoBarTabHelper;
 class HostContentSettingsMap;
 class Profile;
 class WebsiteSettingsUI;
@@ -70,6 +71,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   WebsiteSettings(WebsiteSettingsUI* ui,
                   Profile* profile,
                   TabSpecificContentSettings* tab_specific_content_settings,
+                  InfoBarTabHelper* infobar_tab_helper,
                   const GURL& url,
                   const content::SSLStatus& ssl,
                   content::CertStore* cert_store);
@@ -85,6 +87,9 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
                              bool found_visits,
                              int visit_count,
                              base::Time first_visit);
+
+  // This method is called by the UI when the UI is closing.
+  void OnUIClosing();
 
   // Accessors.
   SiteConnectionStatus site_connection_status() const {
@@ -136,6 +141,13 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // permissions (location, popup, plugin, etc.  permissions) and site specific
   // information (identity, connection status, etc.).
   WebsiteSettingsUI* ui_;
+
+  // The infobar helper of the active tab.
+  InfoBarTabHelper* infobar_helper_;  // Owned by the active tab contents.
+
+  // The flag that controls whether an infobar is displayed after the website
+  // settings UI is closed or not.
+  bool show_info_bar_;
 
   // The Omnibox URL of the website for which to display site permissions and
   // site information.

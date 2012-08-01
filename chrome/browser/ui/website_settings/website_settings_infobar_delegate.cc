@@ -1,0 +1,47 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
+
+#include "base/logging.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+
+WebsiteSettingsInfobarDelegate::WebsiteSettingsInfobarDelegate(
+    InfoBarTabHelper* infobar_helper)
+    : ConfirmInfoBarDelegate(infobar_helper) {
+}
+
+gfx::Image* WebsiteSettingsInfobarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_ALT_NAV_URL);
+}
+
+InfoBarDelegate::Type WebsiteSettingsInfobarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+string16 WebsiteSettingsInfobarDelegate::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INFOBAR_TEXT);
+}
+
+int WebsiteSettingsInfobarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
+string16 WebsiteSettingsInfobarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  DCHECK_EQ(BUTTON_OK, button);
+  return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INFOBAR_BUTTON);
+}
+
+bool WebsiteSettingsInfobarDelegate::Accept() {
+  owner()->web_contents()->GetController().Reload(true);
+  return true;
+}

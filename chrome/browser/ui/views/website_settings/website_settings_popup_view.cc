@@ -41,6 +41,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -322,7 +323,9 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     SizeToContents();
 
     presenter_.reset(new WebsiteSettings(this, profile,
-                                         tab_contents->content_settings(), url,
+                                         tab_contents->content_settings(),
+                                         tab_contents->infobar_tab_helper(),
+                                         url,
                                          ssl,
                                          content::CertStore::GetInstance()));
   }
@@ -342,6 +345,10 @@ gfx::Rect WebsiteSettingsPopupView::GetAnchorRect() {
   gfx::Rect anchor(BubbleDelegateView::GetAnchorRect());
   anchor.Inset(0, anchor_view() ? kLocationIconBottomMargin : 0);
   return anchor;
+}
+
+void WebsiteSettingsPopupView::OnWidgetClosing(views::Widget* widget) {
+  presenter_->OnUIClosing();
 }
 
 void WebsiteSettingsPopupView::ButtonPressed(
