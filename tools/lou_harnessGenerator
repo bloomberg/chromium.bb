@@ -25,7 +25,7 @@ You are expected to read the generated output, paying special attension to the "
 the formal braille standard for your table.
 The reason why they might contain errors is because the liblouis tables may not be conforming with the formal braille standard, and the purpose 
 of the harness files is to catch these edge cases so that the liblouis tables can be improved.
-For input examples please have a look at the files in the tests/harnessSources directory in top of the Liblouis source tree.
+For input examples please have a look at the files in the tests/harnessSources directory at the top of the Liblouis source tree.
 
 @author: Hammer Attila <hammer.attila@infoalap.hu>
 @author: Mesar Hameed <mhameed@src.gnome.org>
@@ -71,7 +71,8 @@ def generate_output_file(translation_table):
         outfile = os.path.splitext(os.path.basename(translation_table[0]))[0]+'_harness.txt'
         if "hyph" in lines[0]:
             outfile = os.path.splitext(os.path.basename(translation_table[0]))[0]+'-hyph_harness.txt'
-
+    if args.directory !=None:
+        return args.directory+outfile
     return outfile
 
 # Helper function: this function generating translation table list from the source harness file tables flag
@@ -138,7 +139,7 @@ def hyphenateword(word, tables, mode):
     else:
         return "".join( list(map(lambda a,b: "-"+a if b=='1' else a, word, hyphen_mask)) )
 
-# Helper function, temporary need generating both translate, backtranslate and hyphenate test dictionaryes flags block
+# Helper function, temporary need generating both translate, backtranslate and hyphenate test dictionaries flags block
 def generate_flags_block():
     translate_tests={}
     backtranslate_tests = {}
@@ -247,16 +248,34 @@ def generate_final_content(lines):
         generated_testcases=generated_testcases+len(hyphenate_tests['data'])
     return generated_testcases
 
+#Helper function: if any directory command line argument were given, make sure directory exists.
+def create_directory(path):
+    if not os.path.exists(path):
+        try:
+            os.makedirs(path)
+        except OSError:
+            print ("You do not have write permission to create the %s directory, \nharness generation aborted." %args.directory[0:len(args.directory)-1])
+            sys.exit()
+    return
+
 #Main program
 # Add support for command line arguments.
 parser = argparse.ArgumentParser(description='Test harness file generator')
 parser.add_argument('-u',action="store_true",dest="unicodebraille",default=False,help='Use unicode braille for output.')
+parser.add_argument('-d',action='store',dest="directory",help="Output directory for the generated harness file(s).")
 parser.add_argument('infiles',action='store',nargs='+',help='Filenames where the source text is stored, wildcards are supported.')
 args = parser.parse_args()
-# Examining existing the gived input files or not.
+
+# Check if output directory command line option was given
+# and if so make sure path ends with the / character.
+if args.directory !=None:
+    if not args.directory.endswith("/"):
+        args.directory=args.directory+"/"
+
+# Make sure the given input files exist.
 for i in args.infiles:
     if not os.path.exists(i):
-        print(('Error: %s file doesn\'t exist.') %i)
+        print(("Error: %s file doesn't exist.") %i)
         sys.exit()
 # End of command line arguments parsing.
 
@@ -264,7 +283,7 @@ for i in args.infiles:
 for i in args.infiles:
     lines=read_input_file(i)
     if not lines[0].startswith("tables: "):
-        print ("The source file %s doesn't declare which translation tables to be used, skipping." %i)
+        print ("The source file %s doesn't declare which translation tables should be used, skipping." %i)
         continue
     print("processing %s source file..." %i)
     translation_table = generate_translation_table_list(lines[0], i)
@@ -275,11 +294,17 @@ for i in args.infiles:
         test = generate_empty_dictionary(translation_table)
         generatedtestcases=generate_final_content(lines)
         if generatedtestcases != 0:
+            # Make sure output directory exists.
+            if args.directory !=None:
+                create_directory(args.directory)            
             try:
                 g=open(outfile, 'w')
                 json.dump(test, g, indent=2, sort_keys=True, ensure_ascii=False)
                 g.close()
             except IOError:
-                print ("You do not have write permission to the current directory, harness generation aborted.")
+                if args.directory !=None:
+                                    print ("You do not have write permission to the %s directory, \nharness generation aborted." %args.directory[0:len(args.directory)-1])
+                else:
+                        print ("You do not have write permission to the current directory, \nharness generation aborted.")
                 sys.exit()
             print("Generated %d testcases, please carefully inspect %s, \nand do any needed manual corrections." %(generatedtestcases, outfile))
