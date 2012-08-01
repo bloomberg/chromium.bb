@@ -298,7 +298,7 @@ bool AppList::Parse(const base::Value& value) {
 ////////////////////////////////////////////////////////////////////////////////
 // FileResource implementation
 
-FileResource::FileResource() {}
+FileResource::FileResource() : file_size_(0) {}
 
 FileResource::~FileResource() {}
 
