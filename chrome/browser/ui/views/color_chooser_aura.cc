@@ -47,6 +47,7 @@ ColorChooserAura::ColorChooserAura(int identifier,
                                    SkColor initial_color)
     : ColorChooser(identifier),
       tab_(tab) {
+  DCHECK(tab_);
   view_ = new views::ColorChooserView(this, initial_color);
   widget_ = views::Widget::CreateWindow(view_);
   widget_->SetAlwaysOnTop(true);
@@ -54,23 +55,24 @@ ColorChooserAura::ColorChooserAura(int identifier,
 }
 
 void ColorChooserAura::OnColorChosen(SkColor color) {
-  if (tab_)
-    tab_->DidChooseColorInColorChooser(identifier(), color);
+  tab_->DidChooseColorInColorChooser(identifier(), color);
 }
 
 void ColorChooserAura::OnColorChooserDialogClosed() {
-  if (tab_)
-    tab_->DidEndColorChooser(identifier());
   view_ = NULL;
   widget_ = NULL;
+  tab_->DidEndColorChooser(identifier());
 }
 
 void ColorChooserAura::End() {
   if (widget_ && widget_->IsVisible()) {
+    view_->set_listener(NULL);
     widget_->Close();
-    tab_ = NULL;
     view_ = NULL;
     widget_ = NULL;
+    // DidEndColorChooser will invoke Browser::DidEndColorChooser, which deletes
+    // this. Take care of the call order.
+    tab_->DidEndColorChooser(identifier());
   }
 }
 

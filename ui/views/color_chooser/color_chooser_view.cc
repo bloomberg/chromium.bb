@@ -339,7 +339,8 @@ void ColorChooserView::OnColorChanged(SkColor color) {
 void ColorChooserView::OnHueChosen(SkScalar hue) {
   hsv_[0] = hue;
   SkColor color = SkHSVToColor(255, hsv_);
-  listener_->OnColorChosen(color);
+  if (listener_)
+    listener_->OnColorChosen(color);
   saturation_value_->OnHueChanged(hue);
   textfield_->SetText(GetColorText(color));
 }
@@ -349,7 +350,8 @@ void ColorChooserView::OnSaturationValueChosen(SkScalar saturation,
   hsv_[1] = saturation;
   hsv_[2] = value;
   SkColor color = SkHSVToColor(255, hsv_);
-  listener_->OnColorChosen(color);
+  if (listener_)
+    listener_->OnColorChosen(color);
   textfield_->SetText(GetColorText(color));
 }
 
@@ -375,7 +377,8 @@ void ColorChooserView::ContentsChanged(Textfield* sender,
   SkColor color = SK_ColorBLACK;
   if (GetColorFromText(new_contents, &color)) {
     SkColorToHSV(color, hsv_);
-    listener_->OnColorChosen(color);
+    if (listener_)
+      listener_->OnColorChosen(color);
     hue_->OnHueChanged(hsv_[0]);
     saturation_value_->OnHueChanged(hsv_[0]);
     saturation_value_->OnSaturationValueChanged(hsv_[1], hsv_[2]);

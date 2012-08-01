@@ -41,6 +41,7 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
   float hue() const { return hsv_[0]; }
   float saturation() const { return hsv_[1]; }
   float value() const { return hsv_[2]; }
+  void set_listener(ColorChooserListener* listener) { listener_ = listener; }
 
  private:
   class HueView;
