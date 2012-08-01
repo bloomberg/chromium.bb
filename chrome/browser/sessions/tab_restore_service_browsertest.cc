@@ -116,7 +116,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     session_service->SetSelectedTabInWindow(window_id, 0);
     if (pinned)
       session_service->SetPinnedState(window_id, tab_id, true);
-    scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());;
+    scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
     entry->SetURL(url1_);
     session_service->UpdateTabNavigation(window_id, tab_id, 0, *entry.get());
   }
@@ -289,9 +289,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreServiceBrowserTest, RestoreApp) {
   const Window* restored_window =
       static_cast<const Window*>(restored_entry);
   EXPECT_EQ(app_name, restored_window->app_name);
-
 }
-#endif
+#endif  // defined(USE_AURA)
 
 // Make sure we persist entries to disk that have post data.
 TEST_F(TabRestoreServiceTest, DontPersistPostData) {
@@ -573,7 +572,8 @@ TEST_F(TabRestoreServiceTest, PruneEntries) {
 
   // Prune older first.
   TabNavigation navigation;
-  navigation.set_virtual_url(GURL("http://recent"));
+  const char kRecentUrl[] = "http://recent";
+  navigation.set_virtual_url(GURL(kRecentUrl));
   navigation.set_title(ASCIIToUTF16("Most recent"));
   Tab* tab = new Tab();
   tab->navigations.push_back(navigation);
@@ -582,7 +582,7 @@ TEST_F(TabRestoreServiceTest, PruneEntries) {
   EXPECT_EQ(max_entries + 1, service_->entries_.size());
   service_->PruneEntries();
   EXPECT_EQ(max_entries, service_->entries_.size());
-  EXPECT_EQ(GURL("http://recent"),
+  EXPECT_EQ(GURL(kRecentUrl),
       static_cast<Tab*>(service_->entries_.front())->
           navigations[0].virtual_url());
 
@@ -598,7 +598,7 @@ TEST_F(TabRestoreServiceTest, PruneEntries) {
   EXPECT_EQ(max_entries + 1, service_->entries_.size());
   service_->PruneEntries();
   EXPECT_EQ(max_entries, service_->entries_.size());
-  EXPECT_EQ(GURL("http://recent"),
+  EXPECT_EQ(GURL(kRecentUrl),
       static_cast<Tab*>(service_->entries_.front())->
           navigations[0].virtual_url());
 
@@ -617,6 +617,7 @@ TEST_F(TabRestoreServiceTest, PruneEntries) {
 
   // Don't prune NTPs that have multiple navigations.
   // (Erase the last NTP first.)
+  delete service_->entries_.front();
   service_->entries_.erase(service_->entries_.begin());
   tab = new Tab();
   tab->current_navigation_index = 1;
