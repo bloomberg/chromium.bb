@@ -17,7 +17,7 @@ import tempfile
 import toolchainbinaries
 
 
-SCRIPT_DIR = os.path.dirname(__file__)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
 
 
@@ -70,7 +70,8 @@ def VersionSelect(versions, flavor):
 def HashKey(flavor):
   """Generate the name of the key for this flavor's hash.
 
-  Arguments:    flavor: kind of tool.
+  Arguments:
+    flavor: kind of tool.
   Returns:
     The string key for the hash.
   """
@@ -269,7 +270,7 @@ def main(args):
 
   # If not provided, default to native_client/toolchain_versions.txt
   if not version_files:
-    version_files = [os.path.join(PARENT_DIR, 'toolchain_versions.txt')]
+    version_files = [os.path.join(PARENT_DIR, 'TOOL_REVISIONS')]
   versions = LoadVersions(version_files[0])
 
   platform_fixed = download_utils.PlatformName()

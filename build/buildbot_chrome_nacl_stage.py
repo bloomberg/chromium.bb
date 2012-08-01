@@ -232,8 +232,8 @@ def BuildAndTest(options):
     pnacl_toolchain = ['--no-pnacl']
   RunCommand([python,
               os.path.join(script_dir, 'download_toolchains.py'),
-              '--x86-version', deps['vars']['x86_toolchain_version'],
-              '--no-arm-trusted'] + pnacl_toolchain, nacl_dir, os.environ)
+              '--no-arm-trusted'] + pnacl_toolchain +
+              ['TOOL_REVISIONS'], nacl_dir, os.environ)
 
   CleanTempDir()
 
