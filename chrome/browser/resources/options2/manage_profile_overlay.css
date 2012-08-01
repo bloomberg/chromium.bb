@@ -7,7 +7,6 @@
 }
 
 .profile-icon-grid-item {
-  border: none !important;
   height: 31px;
   margin: 4px 6px;
   padding: 4px;
@@ -17,6 +16,16 @@
 .profile-icon {
   height: 31px;
   width: 38px;
+}
+
+.profile-name-container {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
 }
 
 #create-profile-name:invalid {
@@ -73,6 +82,17 @@
   padding: 2px;
 }
 
+/* Adds a grey horizontal line below content area  */
+#create-profile-content:after,
+#manage-profile-content:after {
+  background: #c0c0c0;
+  content: '';
+  display: block;
+  height: 1px;
+  margin-top: 20px;
+  width: 100%;
+}
+
 #create-profile-content > :first-child {
   margin-bottom: 10px;
 }
@@ -97,27 +117,6 @@
 #manage-profile-content > :not(:first-child):not(:last-child) {
   margin-bottom: 10px;
   margin-top: 10px;
-}
-
-#create-profile-name-div,
-#manage-profile-name-div {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50%;
-}
-
-#create-profile-name-label,
-#manage-profile-name-label {
-  -webkit-margin-end: 20px;
-}
-
-#create-profile-name,
-#manage-profile-name {
-  -webkit-box-flex: 1;
 }
 
 .action-area-checkbox-container {
