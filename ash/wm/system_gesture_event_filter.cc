@@ -10,6 +10,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/volume_control_delegate.h"
@@ -37,6 +38,10 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/touch/touch_factory.h"
+#endif
 
 namespace {
 using views::Widget;
@@ -527,6 +532,13 @@ bool SystemGestureEventFilter::PreHandleKeyEvent(aura::Window* target,
 
 bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                    aura::MouseEvent* event) {
+#if defined(OS_CHROMEOS)
+  if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
+      ui::TouchFactory::GetInstance()->IsTouchDevicePresent()) {
+    Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+      UMA_MOUSE_DOWN);
+  }
+#endif
   return false;
 }
 

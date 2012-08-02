@@ -4,11 +4,13 @@
 
 #include "ash/touch/touch_uma.h"
 
+#include "ash/shell_delegate.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 
 namespace {
 
@@ -22,6 +24,7 @@ enum GestureActionType {
   GESTURE_DESKTOP_SCROLL,
   GESTURE_DESKTOP_PINCH,
   GESTURE_WEBPAGE_PINCH,
+  GESTURE_WEBPAGE_SCROLL,
 // NOTE: Add new action types only immediately above this line. Also, make sure
 // the enum list in tools/histogram/histograms.xml is updated with any change in
 // here.
@@ -64,6 +67,27 @@ enum UMAEventType {
   UMA_ET_COUNT
 };
 
+struct WindowTouchDetails {
+  // Move and start times of the touch points. The key is the touch-id.
+  std::map<int, base::TimeDelta> last_move_time_;
+  std::map<int, base::TimeDelta> last_start_time_;
+
+  // The last position of the touch points.
+  std::map<int, gfx::Point> last_touch_position_;
+
+  // Last time-stamp of the last touch-end event.
+  base::TimeDelta last_release_time_;
+
+  // Stores the time of the last touch released on this window (if there was a
+  // multi-touch gesture on the window, then this is the release-time of the
+  // last touch on the window).
+  base::TimeDelta last_mt_time_;
+};
+
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowTouchDetails,
+                                 kWindowTouchDetails,
+                                 NULL);
+
 GestureActionType FindGestureActionType(aura::Window* window,
                                         const aura::GestureEvent& event) {
   if (!window || window->GetRootWindow() == window) {
@@ -87,6 +111,8 @@ GestureActionType FindGestureActionType(aura::Window* window,
   if (name == kWebPage) {
     if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
       return GESTURE_WEBPAGE_PINCH;
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_WEBPAGE_SCROLL;
     return GESTURE_UNKNOWN;
   }
 
@@ -220,11 +246,76 @@ void TouchUMA::RecordGestureEvent(aura::Window* target,
                               action,
                               GESTURE_ACTION_COUNT);
   }
+
+  if (event.type() == ui::ET_GESTURE_END &&
+      event.details().touch_points() == 2) {
+    WindowTouchDetails* details = target->GetProperty(kWindowTouchDetails);
+    CHECK(details) << "Window received gesture but no touch events?";
+    details->last_mt_time_ = event.time_stamp();
+  }
 }
 
 void TouchUMA::RecordTouchEvent(aura::Window* target,
                                 const aura::TouchEvent& event) {
-  // TODO(sad|rjkroege): Figure out what to do (heat map?).
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchRadius",
+      static_cast<int>(std::max(event.radius_x(), event.radius_y())),
+      1, 500, 100);
+
+  WindowTouchDetails* details = target->GetProperty(kWindowTouchDetails);
+  if (!details) {
+    details = new WindowTouchDetails;
+    target->SetProperty(kWindowTouchDetails, details);
+  }
+
+  if (event.type() == ui::ET_TOUCH_PRESSED) {
+    Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+        UMA_TOUCHSCREEN_TAP_DOWN);
+
+    details->last_start_time_[event.touch_id()] = event.time_stamp();
+    details->last_touch_position_[event.touch_id()] = event.location();
+
+    if (details->last_release_time_.ToInternalValue()) {
+      // Measuring the interval between a touch-release and the next
+      // touch-start is probably less useful when doing multi-touch (e.g.
+      // gestures, or multi-touch friendly apps). So count this only if the user
+      // hasn't done any multi-touch during the last 30 seconds.
+      base::TimeDelta diff = event.time_stamp() - details->last_mt_time_;
+      if (diff.InSeconds() > 30) {
+        base::TimeDelta gap = event.time_stamp() - details->last_release_time_;
+        UMA_HISTOGRAM_COUNTS_10000("Ash.TouchStartAfterEnd",
+            gap.InMilliseconds());
+      }
+    }
+  } else if (event.type() == ui::ET_TOUCH_RELEASED) {
+    if (details->last_start_time_.count(event.touch_id())) {
+      base::TimeDelta duration = event.time_stamp() -
+                                 details->last_start_time_[event.touch_id()];
+      UMA_HISTOGRAM_COUNTS_100("Ash.TouchDuration", duration.InMilliseconds());
+    }
+    details->last_start_time_.erase(event.touch_id());
+    details->last_move_time_.erase(event.touch_id());
+    details->last_touch_position_.erase(event.touch_id());
+    details->last_release_time_ = event.time_stamp();
+  } else if (event.type() == ui::ET_TOUCH_MOVED) {
+    int distance = 0;
+    if (details->last_touch_position_.count(event.touch_id())) {
+      gfx::Point lastpos = details->last_touch_position_[event.touch_id()];
+      distance = abs(lastpos.x() - event.x()) + abs(lastpos.y() - event.y());
+    }
+
+    if (details->last_move_time_.count(event.touch_id())) {
+      base::TimeDelta move_delay = event.time_stamp() -
+                                   details->last_move_time_[event.touch_id()];
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchMoveInterval",
+                                  move_delay.InMilliseconds(),
+                                  1, 50, 25);
+    }
+
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchMoveSteps", distance, 1, 1000, 50);
+
+    details->last_move_time_[event.touch_id()] = event.time_stamp();
+    details->last_touch_position_[event.touch_id()] = event.location();
+  }
 }
 
 }  // namespace internal

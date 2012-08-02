@@ -930,6 +930,7 @@
 0x4cbb82140919fe65	MostVisited_UrlPinned
 0xa90e38146e0a4399	MostVisited_UrlRemoved
 0xe39ca5075f8cb467	MostVisited_UrlUnpinned
+0x4a0afb1ce16f661e	Mouse_Down
 0xf812385dfcc1a683	MoveBackward
 0xd5980f1362f718dd	MoveBackwardAndModifySelection
 0x8c95fa949833ae3c	MoveDown
@@ -1307,6 +1308,7 @@
 0xb92bc75c64039682	Toolbar_DragStar
 0x8ce9fbd537e4983c	TouchscreenScroll
 0x112c55c811540624	TouchscreenScrollFling
+0x05691d7006369070	Touchscreen_Down
 0x5d7f9a146f393dfc	TrackpadScroll
 0x6f2d421111db4527	TrackpadScrollFling
 0xaf70b1ac863830a4	Transpose

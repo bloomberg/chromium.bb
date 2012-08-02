@@ -347,6 +347,12 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_ACCEL_SEARCH_LWIN:
       content::RecordAction(content::UserMetricsAction("Accel_Search_LWin"));
       break;
+    case ash::UMA_MOUSE_DOWN:
+      content::RecordAction(content::UserMetricsAction("Mouse_Down"));
+      break;
+    case ash::UMA_TOUCHSCREEN_TAP_DOWN:
+      content::RecordAction(content::UserMetricsAction("Touchscreen_Down"));
+      break;
   }
 }
 
