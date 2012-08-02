@@ -63,6 +63,5 @@
 /ffmpeg.props
 /ffmpeg.sln
 /ffmpeg.targets
-/ffmpeg.vcxproj
-/ffmpeg.vcxproj.filters
+/ffmpeg.vcxproj*
 /ffmpeg.xml
