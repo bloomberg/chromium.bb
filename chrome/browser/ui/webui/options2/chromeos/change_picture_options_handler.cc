@@ -44,19 +44,23 @@ namespace {
 // Returns info about extensions for files we support as user images.
 ui::SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
   ui::SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions.resize(5);
+  file_type_info.extensions.resize(1);
 
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("bmp"));
 
-  file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("gif"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("gif"));
 
-  file_type_info.extensions[2].push_back(FILE_PATH_LITERAL("jpg"));
-  file_type_info.extensions[2].push_back(FILE_PATH_LITERAL("jpeg"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("jpg"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("jpeg"));
 
-  file_type_info.extensions[3].push_back(FILE_PATH_LITERAL("png"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("png"));
 
-  file_type_info.extensions[4].push_back(FILE_PATH_LITERAL("tif"));
-  file_type_info.extensions[4].push_back(FILE_PATH_LITERAL("tiff"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("tif"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("tiff"));
+
+  file_type_info.extension_description_overrides.resize(1);
+  file_type_info.extension_description_overrides[0] =
+      l10n_util::GetStringUTF16(IDS_IMAGE_FILES);
 
   return file_type_info;
 }
