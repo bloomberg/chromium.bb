@@ -8,19 +8,32 @@
 
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/time.h"
 #include "content/common/sandbox_linux.h"
 #include "content/common/seccomp_sandbox.h"
+#include "content/common/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
-#if defined(SECCOMP_BPF_SANDBOX)
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#endif
-
 namespace {
+
+void LogSandboxStarted(const std::string& sandbox_name) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  const std::string activated_sandbox =
+      "Activated " + sandbox_name + " sandbox for process type: " +
+      process_type + ".";
+#if defined(OS_CHROMEOS)
+  LOG(WARNING) << activated_sandbox;
+#else
+  VLOG(1) << activated_sandbox;
+#endif
+}
 
 // Implement the command line enabling logic for seccomp-legacy.
 bool IsSeccompLegacyDesired() {
@@ -38,6 +51,17 @@ bool IsSeccompLegacyDesired() {
   return false;
 }
 
+// Our "policy" on whether or not to enable seccomp-legacy. Only renderers are
+// supported.
+bool ShouldEnableSeccompLegacy(const std::string& process_type) {
+  if (IsSeccompLegacyDesired() &&
+      process_type == switches::kRendererProcess) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -46,6 +70,7 @@ LinuxSandbox::LinuxSandbox()
     : proc_fd_(-1),
       pre_initialized_(false),
       seccomp_legacy_supported_(false),
+      seccomp_bpf_supported_(false),
       setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create()) {
   if (setuid_sandbox_client_ == NULL) {
     LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
@@ -64,6 +89,7 @@ LinuxSandbox* LinuxSandbox::GetInstance() {
 void LinuxSandbox::PreinitializeSandboxBegin() {
   CHECK(!pre_initialized_);
   seccomp_legacy_supported_ = false;
+  seccomp_bpf_supported_ = false;
 #if defined(SECCOMP_SANDBOX)
   if (IsSeccompLegacyDesired()) {
     proc_fd_ = open("/proc", O_DIRECTORY | O_RDONLY);
@@ -84,15 +110,16 @@ void LinuxSandbox::PreinitializeSandboxBegin() {
     }
   }
 #endif  // SECCOMP_SANDBOX
-#if defined(SECCOMP_BPF_SANDBOX)
   // Similarly, we "pre-warm" the code that detects supports for seccomp BPF.
   // TODO(jln): Use proc_fd_ here too once we're comfortable it does not create
   // an additional security risk.
-  if (playground2::Sandbox::supportsSeccompSandbox(-1) !=
-      playground2::Sandbox::STATUS_AVAILABLE) {
-    VLOG(1) << "Lacking support for seccomp-bpf sandbox.";
+  if (SandboxSeccompBpf::IsSeccompBpfDesired()) {
+    if (!SandboxSeccompBpf::SupportsSandbox()) {
+      VLOG(1) << "Lacking support for seccomp-bpf sandbox.";
+    } else {
+      seccomp_bpf_supported_ = true;
+    }
   }
-#endif  // SECCOMP_BPF_SANDBOX
   pre_initialized_ = true;
 }
 
@@ -119,7 +146,7 @@ void LinuxSandbox::PreinitializeSandbox(const std::string& process_type) {
   PreinitializeSandboxFinish(process_type);
 }
 
-int LinuxSandbox::GetStatus() {
+int LinuxSandbox::GetStatus() const {
   CHECK(pre_initialized_);
   int sandbox_flags = 0;
   if (setuid_sandbox_client_->IsSandboxed()) {
@@ -129,10 +156,26 @@ int LinuxSandbox::GetStatus() {
     if (setuid_sandbox_client_->IsInNewNETNamespace())
       sandbox_flags |= kSandboxLinuxNetNS;
   }
-  if (seccomp_legacy_supported_) {
+  if (seccomp_legacy_supported() &&
+      ShouldEnableSeccompLegacy(switches::kRendererProcess)) {
+    // We report whether the sandbox will be activated when renderers go
+    // through sandbox initialization.
     sandbox_flags |= kSandboxLinuxSeccomp;
   }
   return sandbox_flags;
+}
+
+bool LinuxSandbox::IsSingleThreaded() const {
+  // TODO(jln): re-implement this properly and use our proc_fd_ if available.
+  // Possibly racy, but it's ok because this is more of a debug check to catch
+  // new threaded situations arising during development.
+  int num_threads = file_util::CountFilesCreatedAfter(
+      FilePath("/proc/self/task"),
+      base::Time::UnixEpoch());
+
+  // We pass the test if we don't know ( == 0), because the setuid sandbox
+  // will prevent /proc access in some contexts.
+  return num_threads == 1 || num_threads == 0;
 }
 
 sandbox::SetuidSandboxClient*
@@ -144,13 +187,14 @@ sandbox::SetuidSandboxClient*
 bool LinuxSandbox::StartSeccompLegacy(const std::string& process_type) {
   if (!pre_initialized_)
     PreinitializeSandbox(process_type);
-  if (ShouldEnableSeccompLegacy(process_type)) {
+  if (seccomp_legacy_supported() && ShouldEnableSeccompLegacy(process_type)) {
     // SupportsSeccompSandbox() returns a cached result, as we already
     // called it earlier in the PreinitializeSandbox(). Thus, it is OK for us
     // to not pass in a file descriptor for "/proc".
 #if defined(SECCOMP_SANDBOX)
     if (SupportsSeccompSandbox(-1)) {
       StartSeccompSandbox();
+      LogSandboxStarted("seccomp-legacy");
       return true;
     }
 #endif
@@ -158,26 +202,28 @@ bool LinuxSandbox::StartSeccompLegacy(const std::string& process_type) {
   return false;
 }
 
-// For seccomp-bpf, we will use the seccomp-bpf policy class.
-// TODO(jln): implement this.
+// For seccomp-bpf, we use the SandboxSeccompBpf class.
 bool LinuxSandbox::StartSeccompBpf(const std::string& process_type) {
-  CHECK(pre_initialized_);
-  NOTREACHED();
-  return false;
+  if (!pre_initialized_)
+    PreinitializeSandbox(process_type);
+  bool started_bpf_sandbox = false;
+  if (seccomp_bpf_supported())
+    started_bpf_sandbox = SandboxSeccompBpf::StartSandbox(process_type);
+
+  if (started_bpf_sandbox)
+    LogSandboxStarted("seccomp-bpf");
+
+  return started_bpf_sandbox;
 }
 
-// Our "policy" on whether or not to enable seccomp-legacy. Only renderers are
-// supported.
-bool LinuxSandbox::ShouldEnableSeccompLegacy(
-    const std::string& process_type) {
+bool LinuxSandbox::seccomp_legacy_supported() const {
   CHECK(pre_initialized_);
-  if (IsSeccompLegacyDesired() &&
-      seccomp_legacy_supported_ &&
-      process_type == switches::kRendererProcess) {
-    return true;
-  } else {
-    return false;
-  }
+  return seccomp_legacy_supported_;
+}
+
+bool LinuxSandbox::seccomp_bpf_supported() const {
+  CHECK(pre_initialized_);
+  return seccomp_bpf_supported_;
 }
 
 }  // namespace content

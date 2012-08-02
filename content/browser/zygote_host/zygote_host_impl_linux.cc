@@ -100,11 +100,13 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
     switches::kVModule,
     switches::kRegisterPepperPlugins,
     switches::kDisableSeccompSandbox,
+    switches::kDisableSeccompFilterSandbox,
     switches::kEnableSeccompSandbox,
     // Zygote process needs to know what resources to have loaded when it
     // becomes a renderer process.
     switches::kForceDeviceScaleFactor,
     switches::kLoad2xResources,
+    switches::kNoSandbox,
   };
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));

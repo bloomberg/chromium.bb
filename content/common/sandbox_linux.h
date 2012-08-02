@@ -5,13 +5,11 @@
 #ifndef CONTENT_COMMON_SANDBOX_LINUX_H_
 #define CONTENT_COMMON_SANDBOX_LINUX_H_
 
+#include <string>
+
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/sandbox_linux.h"
-
-// TODO(jln) move this somewhere else.
-#if defined(__i386__) || defined(__x86_64__)
-#define SECCOMP_BPF_SANDBOX
-#endif
 
 template <typename T> struct DefaultSingletonTraits;
 namespace sandbox { class SetuidSandboxClient; }
@@ -60,7 +58,9 @@ class LinuxSandbox {
   // Since we need to provide the status before the sandboxes are actually
   // started, this returns what will actually happen once the various Start*
   // functions are called from inside a renderer.
-  int GetStatus();
+  int GetStatus() const;
+  // Is the current process single threaded ?
+  bool IsSingleThreaded() const;
 
   // Simple accessor for our instance of the setuid sandbox. Will never return
   // NULL.
@@ -71,21 +71,24 @@ class LinuxSandbox {
   // Check the policy and eventually start the seccomp-legacy sandbox.
   bool StartSeccompLegacy(const std::string& process_type);
   // Check the policy and eventually start the seccomp-bpf sandbox.
-  // TODO(jln): not implemented at the moment.
   bool StartSeccompBpf(const std::string& process_type);
 
  private:
   friend struct DefaultSingletonTraits<LinuxSandbox>;
-  bool ShouldEnableSeccompLegacy(const std::string& process_type);
+
+  // We must have been pre_initialized_ before using either of these.
+  bool seccomp_legacy_supported() const;
+  bool seccomp_bpf_supported() const;
 
   int proc_fd_;
   // Have we been through PreinitializeSandbox or PreinitializeSandboxBegin ?
   bool pre_initialized_;
   bool seccomp_legacy_supported_;  // Accurate if pre_initialized_.
+  bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
-  LinuxSandbox();
+
   ~LinuxSandbox();
-  DISALLOW_COPY_AND_ASSIGN(LinuxSandbox);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(LinuxSandbox);
 };
 
 }  // namespace content
