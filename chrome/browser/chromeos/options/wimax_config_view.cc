@@ -267,7 +267,7 @@ void WimaxConfigView::Init(WimaxNetwork* wimax) {
     passphrase_visible_button_->SetImage(
         views::ImageButton::BS_NORMAL,
         ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD_OFF));
+        GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD));
     passphrase_visible_button_->SetImage(
         views::ImageButton::BS_HOT,
         ResourceBundle::GetSharedInstance().
@@ -275,7 +275,11 @@ void WimaxConfigView::Init(WimaxNetwork* wimax) {
     passphrase_visible_button_->SetToggledImage(
         views::ImageButton::BS_NORMAL,
         ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD_ON));
+        GetImageSkiaNamed(IDR_NETWORK_HIDE_PASSWORD));
+    passphrase_visible_button_->SetToggledImage(
+        views::ImageButton::BS_HOT,
+        ResourceBundle::GetSharedInstance().
+        GetImageSkiaNamed(IDR_NETWORK_HIDE_PASSWORD_HOVER));
     passphrase_visible_button_->SetImageAlignment(
         views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
     layout->AddView(passphrase_visible_button_);

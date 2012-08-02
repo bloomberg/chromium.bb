@@ -87,7 +87,9 @@ html[dir=rtl] #login-header-bar #add-user-button {
 }
 
 html[oobe=new] #login-header-bar #shutdown-button {
-  background-image: url('chrome://theme/IDR_ICON_POWER24_WHITE');
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_ICON_POWER_WHITE') 1x,
+      url('chrome://theme/IDR_ICON_POWER_WHITE@2x') 2x);
 }
 
 #login-header-bar #add-user-button {
@@ -96,5 +98,7 @@ html[oobe=new] #login-header-bar #shutdown-button {
 }
 
 html[oobe=new] #login-header-bar #add-user-button {
-  background-image: url('chrome://theme/IDR_ICON_ADD_USER24_WHITE');
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_ICON_ADD_USER_WHITE') 1x,
+      url('chrome://theme/IDR_ICON_ADD_USER_WHITE@2x') 2x);
 }

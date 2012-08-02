@@ -279,9 +279,9 @@
       </if>
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER24" file="icon_add_user24.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER24_WHITE" file="icon_add_user24_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER_WHITE" file="icon_add_user_white.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_POWER24" file="icon_power24.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_POWER24_WHITE" file="icon_power24_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_POWER_WHITE" file="icon_power_white.png" />
       </if>
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_INCOGNITO_SWITCH_OFF" file="incognito_switch_off.png" />
@@ -411,9 +411,10 @@
       <structure type="chrome_scaled_image" name="IDR_MOBILE" file="mobile.png" />
       <structure type="chrome_scaled_image" name="IDR_MOBILE_LIT" file="mobile_lit.png" />
       <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_NETWORK_HIDE_PASSWORD" file="network_hide_password.png" />
+        <structure type="chrome_scaled_image" name="IDR_NETWORK_HIDE_PASSWORD_HOVER" file="network_hide_password_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD" file="network_show_password.png" />
         <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD_HOVER" file="network_show_password_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD_OFF" file="network_show_password_off.png" />
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD_ON" file="network_show_password_on.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab.png" />
