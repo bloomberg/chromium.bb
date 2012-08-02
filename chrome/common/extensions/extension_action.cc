@@ -61,15 +61,15 @@ int Width(const gfx::Image& image) {
 
 }  // namespace
 
-// Wraps an IconAnimation and implements its ui::AnimationDelegate to erase the
-// animation from a map when the animation ends or is cancelled, causing itself
-// and its owned IconAnimation to be deleted.
-class ExtensionAction::IconAnimationWrapper : public ui::AnimationDelegate {
+// Wraps an IconAnimation and implements its ui::AnimationDelegate to delete
+// itself when the animation ends or is cancelled, causing its owned
+// IconAnimation to be destroyed.
+class ExtensionAction::IconAnimationWrapper
+    : public ui::AnimationDelegate,
+      public base::SupportsWeakPtr<IconAnimationWrapper> {
  public:
-  IconAnimationWrapper(ExtensionAction* owner, int tab_id)
-      : owner_(owner),
-        tab_id_(tab_id),
-        ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {}
+  IconAnimationWrapper()
+      : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {}
 
   virtual ~IconAnimationWrapper() {}
 
@@ -87,12 +87,9 @@ class ExtensionAction::IconAnimationWrapper : public ui::AnimationDelegate {
   }
 
   void Done() {
-    owner_->icon_animation_.erase(tab_id_);
-    // this will now have been deleted.
+    delete this;
   }
 
-  ExtensionAction* owner_;
-  int tab_id_;
   IconAnimation animation_;
 };
 
@@ -344,26 +341,47 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   canvas->Restore();
 }
 
+ExtensionAction::IconAnimationWrapper* ExtensionAction::GetIconAnimationWrapper(
+    int tab_id) const {
+  std::map<int, base::WeakPtr<IconAnimationWrapper> >::iterator it =
+      icon_animation_.find(tab_id);
+  if (it == icon_animation_.end())
+    return NULL;
+  if (it->second)
+    return it->second;
+
+  // Take this opportunity to remove all the NULL IconAnimationWrappers from
+  // icon_animation_.
+  icon_animation_.erase(it);
+  for (it = icon_animation_.begin(); it != icon_animation_.end();) {
+    if (it->second) {
+      ++it;
+    } else {
+      // The WeakPtr is null; remove it from the map.
+      icon_animation_.erase(it++);
+    }
+  }
+  return NULL;
+}
+
 base::WeakPtr<ExtensionAction::IconAnimation> ExtensionAction::GetIconAnimation(
     int tab_id) const {
-  std::map<int, linked_ptr<IconAnimationWrapper> >::const_iterator it =
-      icon_animation_.find(tab_id);
-  return (it != icon_animation_.end()) ? it->second->animation()->AsWeakPtr()
-                                       : base::WeakPtr<IconAnimation>();
+  IconAnimationWrapper* wrapper = GetIconAnimationWrapper(tab_id);
+  return wrapper ? wrapper->animation()->AsWeakPtr()
+      : base::WeakPtr<IconAnimation>();
 }
 
 gfx::Image ExtensionAction::ApplyIconAnimation(int tab_id,
                                                const gfx::Image& orig) const {
-  std::map<int, linked_ptr<IconAnimationWrapper> >::const_iterator it =
-      icon_animation_.find(tab_id);
-  if (it == icon_animation_.end())
+  IconAnimationWrapper* wrapper = GetIconAnimationWrapper(tab_id);
+  if (wrapper == NULL)
     return orig;
-  return gfx::Image(it->second->animation()->Apply(*orig.ToSkBitmap()));
+  return gfx::Image(wrapper->animation()->Apply(*orig.ToSkBitmap()));
 }
 
 void ExtensionAction::RunIconAnimation(int tab_id) {
   IconAnimationWrapper* icon_animation =
-      new IconAnimationWrapper(this, tab_id);
-  icon_animation_[tab_id] = make_linked_ptr(icon_animation);
+      new IconAnimationWrapper();
+  icon_animation_[tab_id] = icon_animation->AsWeakPtr();
   icon_animation->animation()->Start();
 }

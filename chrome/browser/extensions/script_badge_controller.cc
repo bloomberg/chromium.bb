@@ -186,6 +186,7 @@ bool ScriptBadgeController::MarkExtensionExecuting(
   if (!script_badge)
     return false;
 
+  script_badge->SetIsVisible(SessionID::IdForTab(tab_contents_), true);
   script_badge->RunIconAnimation(SessionID::IdForTab(tab_contents_));
 
   return true;

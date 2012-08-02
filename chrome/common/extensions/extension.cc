@@ -823,10 +823,10 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
     string16* error) {
   scoped_ptr<ExtensionAction> result(new ExtensionAction(id(), action_type));
 
-  // Page actions are hidden/disabled by default, and browser actions are
+  // Page/script actions are hidden/disabled by default, and browser actions are
   // visible/enabled by default.
   result->SetIsVisible(ExtensionAction::kDefaultTabId,
-                       action_type != ExtensionAction::TYPE_PAGE);
+                       action_type == ExtensionAction::TYPE_BROWSER);
 
   if (manifest_version_ == 1) {
     const ListValue* icons = NULL;
@@ -2393,8 +2393,6 @@ bool Extension::LoadScriptBadge(string16* error) {
         *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
             IDR_EXTENSIONS_FAVICON).ToSkBitmap());
   }
-
-  script_badge_->SetIsVisible(ExtensionAction::kDefaultTabId, true);
 
   return true;
 }

@@ -235,6 +235,13 @@ class ExtensionAction {
   void RunIconAnimation(int tab_id);
 
  private:
+  class IconAnimationWrapper;
+
+  // Finds the icon animation wrapper for a tab, if any.  If the animation for
+  // this tab has recently completed, also removes up any other dead wrappers
+  // from the map.
+  IconAnimationWrapper* GetIconAnimationWrapper(int tab_id) const;
+
   // If the icon animation is running on tab |tab_id|, applies it to
   // |orig| and returns the result. Otherwise, just returns |orig|.
   gfx::Image ApplyIconAnimation(int tab_id, const gfx::Image& orig) const;
@@ -279,8 +286,13 @@ class ExtensionAction {
   std::map<int, SkColor> badge_text_color_;
   std::map<int, bool> visible_;
 
-  class IconAnimationWrapper;
-  std::map<int, linked_ptr<IconAnimationWrapper> > icon_animation_;
+  // IconAnimationWrappers own themselves so that even if the Extension and
+  // ExtensionAction are destroyed on a non-UI thread, the animation will still
+  // only be touched from the UI thread.  When an animation finishes, it deletes
+  // itself, which causes the WeakPtr in this map to become NULL.
+  // GetIconAnimationWrapper() removes NULLs to prevent the map from growing
+  // without bound.
+  mutable std::map<int, base::WeakPtr<IconAnimationWrapper> > icon_animation_;
 
   std::string default_icon_path_;
 

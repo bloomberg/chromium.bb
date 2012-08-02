@@ -6,7 +6,7 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "tabs", "http://*/*"
+    "tabs", "webNavigation", "http://*/*"
   ],
   "script_badge": {
     "default_popup": "default_popup.html"
