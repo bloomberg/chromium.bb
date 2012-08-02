@@ -24,10 +24,6 @@ function FileManager(dialogDom) {
 
   this.selection = null;
 
-  this.butterTimer_ = null;
-  this.currentButter_ = null;
-  this.butterLastShowTime_ = 0;
-
   this.filesystemObserverId_ = null;
   this.gdataObserverId_ = null;
 
@@ -115,13 +111,6 @@ FileManager.prototype = {
   var IMAGE_HOVER_PREVIEW_SIZE = 200;
 
   /**
-   * The minimum about of time to display the butter bar for, in ms.
-   * Justification is 1000ms for minimum display time plus 300ms for transition
-   * duration.
-   */
-  var MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
-
-  /**
    * Number of milliseconds in a day.
    */
   var MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
@@ -161,33 +150,6 @@ FileManager.prototype = {
     li.__proto__ = GridItem.prototype;
     fileManager.decorateThumbnail_(li, showCheckbox, entry);
   };
-
-  /**
-   * Return a translated string.
-   *
-   * Wrapper function to make dealing with translated strings more concise.
-   * Equivalent to loadTimeData.getString(id).
-   *
-   * @param {string} id The id of the string to return.
-   * @return {string} The translated string.
-   */
-  function str(id) {
-    return loadTimeData.getString(id);
-  }
-
-  /**
-   * Return a translated string with arguments replaced.
-   *
-   * Wrapper function to make dealing with translated strings more concise.
-   * Equivilant to loadTimeData.getStringF(id, ...).
-   *
-   * @param {string} id The id of the string to return.
-   * @param {...string} The values to replace into the string.
-   * @return {string} The translated string with replaced values.
-   */
-  function strf(id, var_args) {
-    return loadTimeData.getStringF.apply(loadTimeData, arguments);
-  }
 
   /**
    * @param {number} code File error code (from FileError object).
@@ -527,6 +489,8 @@ FileManager.prototype = {
     this.copyManager_.addEventListener('copy-operation-complete',
         this.onCopyManagerOperationComplete_.bind(this));
 
+    this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_);
+
     var controller = this.fileTransferController_ = new FileTransferController(
         GridItem.bind(null, this, false /* no checkbox */),
         this.copyManager_,
@@ -613,7 +577,6 @@ FileManager.prototype = {
     this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
     this.spinner_ = this.dialogDom_.querySelector('#spinner-with-text');
     this.showSpinner_(false);
-    this.butter_ = this.dialogDom_.querySelector('.butter-bar');
     this.unmountedPanel_ = this.dialogDom_.querySelector('#unmounted-panel');
 
     this.breadcrumbs_ = new BreadcrumbsController(
@@ -939,106 +902,6 @@ FileManager.prototype = {
       this.currentList_.focus();
   };
 
-  FileManager.prototype.showButter = function(message, opt_options) {
-    var butter = this.butter_;
-    if (opt_options) {
-      if ('actions' in opt_options) {
-        var actions = butter.querySelector('.actions');
-        while (actions.childNodes.length)
-          actions.removeChild(actions.firstChild);
-        for (var label in opt_options.actions) {
-          var link = this.document_.createElement('a');
-          link.addEventListener('click', function() {
-              opt_options.actions[label]();
-              return false;
-          });
-          actions.appendChild(link);
-        }
-        actions.classList.remove('hide-in-butter');
-      }
-      if ('progress' in opt_options) {
-        butter.querySelector('.progress-bar')
-            .classList.remove('hide-in-butter');
-      }
-    }
-
-    var self = this;
-
-    setTimeout(function() {
-      self.currentButter_ = butter;
-      self.updateButter(message, opt_options);
-      self.butterLastShowTime_ = new Date();
-    });
-
-    return butter;
-  };
-
-  FileManager.prototype.showButterError = function(message, opt_options) {
-    var butter = this.showButter(message, opt_options);
-    butter.classList.add('error');
-    return butter;
-  };
-
-  FileManager.prototype.updateButter = function(message, opt_options) {
-    if (!opt_options)
-      opt_options = {};
-
-    var timeout;
-    if ('timeout' in opt_options) {
-      timeout = opt_options.timeout;
-    } else {
-      timeout = 10 * 1000;
-    }
-
-    if (this.butterTimer_)
-      clearTimeout(this.butterTimer_);
-
-    if (timeout) {
-      var self = this;
-      this.butterTimer_ = setTimeout(function() {
-          self.hideButter();
-          self.butterTimer_ = null;
-      }, timeout);
-    }
-
-    var butter = this.currentButter_;
-    butter.querySelector('.butter-message').textContent = message;
-    if (message) {
-      // The butter bar is made visible on the first non-empty message.
-      butter.classList.remove('before-show');
-    }
-    if (opt_options && 'progress' in opt_options) {
-      butter.querySelector('.progress-track').style.width =
-          (opt_options.progress * 100) + '%';
-    }
-
-    butter.style.left = ((this.dialogDom_.clientWidth -
-                          butter.clientWidth) / 2) + 'px';
-  };
-
-  FileManager.prototype.hideButter = function() {
-    if (this.currentButter_) {
-      var delay = Math.max(MINIMUM_BUTTER_DISPLAY_TIME_MS -
-          (new Date() - this.butterLastShowTime_), 0);
-
-      var butter = this.currentButter_;
-
-      setTimeout(function() {
-        butter.classList.add('after-show');
-      }, delay);
-
-      setTimeout(function() {
-          butter.classList.remove('error');
-          butter.classList.remove('after-show');
-          butter.classList.add('before-show');
-          butter.querySelector('.actions').classList.add('hide-in-butter');
-          butter.querySelector('.progress-bar').classList.add('hide-in-butter');
-      }, delay + 1000);
-
-      this.currentButter_ = null;
-    }
-  };
-
   /**
    * Index of selected item in the typeList of the dialog params.
    * @return {number} 1-based index of selected type or 0 if no type selected.
@@ -1265,79 +1128,17 @@ FileManager.prototype = {
         this.fileContextMenu_);
   };
 
-  FileManager.prototype.initButter_ = function() {
-    var self = this;
-    var progress = this.copyManager_.getProgress();
-
-    var options = {progress: progress.percentage, actions: {}, timeout: 0};
-    options.actions[str('CANCEL_LABEL')] = function cancelPaste() {
-      self.copyManager_.requestCancel();
-    };
-    this.showButter(strf('PASTE_ITEMS_REMAINING', progress.pendingItems),
-                    options);
-  };
-
   FileManager.prototype.onCopyProgress_ = function(event) {
-    var progress = this.copyManager_.getProgress();
-
-    if (event.reason == 'BEGIN') {
-      if (this.currentButter_)
-        this.hideButter();
-
-      clearTimeout(this.butterTimeout_);
-      // If the copy process lasts more than 500 ms, we show a progress bar.
-      this.butterTimeout_ = setTimeout(this.initButter_.bind(this), 500);
-      return;
-    }
-    if (event.reason == 'PROGRESS') {
-      // Perform this check inside Progress event handler, avoid to log error
-      // message 'Unknown event reason: PROGRESS' in console.
-      if (this.currentButter_) {
-        var options = {progress: progress.percentage, timeout: 0};
-        this.updateButter(strf('PASTE_ITEMS_REMAINING', progress.pendingItems),
-                          options);
-      }
-      return;
-    }
-    if (event.reason == 'SUCCESS') {
-      clearTimeout(this.butterTimeout_);
-      if (this.currentButter_)
-        this.hideButter();
-    } else if (event.reason == 'ERROR') {
-      clearTimeout(this.butterTimeout_);
-      switch (event.error.reason) {
-        case 'TARGET_EXISTS':
-          var name = event.error.data.name;
-          if (event.error.data.isDirectory)
-            name += '/';
-          this.showButterError(strf('PASTE_TARGET_EXISTS_ERROR', name));
-          break;
-
-        case 'FILESYSTEM_ERROR':
-          if (event.error.data.toGDrive &&
-              event.error.data.code == FileError.QUOTA_EXCEEDED_ERR) {
-            this.hideButter();
-            this.alert.showHtml(
-                strf('GDATA_SERVER_OUT_OF_SPACE_HEADER'),
-                strf('GDATA_SERVER_OUT_OF_SPACE_MESSAGE',
-                    decodeURIComponent(
-                        event.error.data.sourceFileUrl.split('/').pop()),
-                    GOOGLE_DRIVE_BUY_STORAGE));
-          } else {
-            this.showButterError(
-                strf('PASTE_FILESYSTEM_ERROR',
-                      getFileErrorString(event.error.data.code)));
-          }
-          break;
-
-        default:
-          this.showButterError(strf('PASTE_UNEXPECTED_ERROR', event.error));
-          break;
-      }
-    } else if (event.reason == 'CANCELLED') {
-      this.showButter(str('PASTE_CANCELLED'), {timeout: 1000});
-    } else {
-      console.log('Unknown event reason: ' + event.reason);
+    if (event.reason === 'ERROR' &&
+        event.error.reason === 'FILESYSTEM_ERROR' &&
+        event.error.data.toGDrive &&
+        event.error.data.code == FileError.QUOTA_EXCEEDED_ERR) {
+      this.alert.showHtml(
+          strf('GDATA_SERVER_OUT_OF_SPACE_HEADER'),
+          strf('GDATA_SERVER_OUT_OF_SPACE_MESSAGE',
+              decodeURIComponent(
+                  event.error.data.sourceFileUrl.split('/').pop()),
+              GOOGLE_DRIVE_BUY_STORAGE));
     }
 
     // TODO(benchan): Currently, there is no FileWatcher emulation for
@@ -1354,7 +1155,7 @@ FileManager.prototype = {
 
   /**
    * Handler of file manager operations. Update directory model
-   * to reflect operation result iimediatelly (not waiting directory
+   * to reflect operation result immediatelly (not waiting directory
    * update event).
    */
   FileManager.prototype.onCopyManagerOperationComplete_ = function(event) {
@@ -3075,9 +2876,9 @@ FileManager.prototype = {
     var mountError = this.volumeManager_.getMountError(
         PathUtil.getRootPath(entry.fullPath));
     if (mountError == VolumeManager.Error.UNKNOWN_FILESYSTEM) {
-      return this.showButter(str('UNKNOWN_FILESYSTEM_WARNING'));
+      return this.butterBar_.show(str('UNKNOWN_FILESYSTEM_WARNING'));
     } else if (mountError == VolumeManager.Error.UNSUPPORTED_FILESYSTEM) {
-      return this.showButter(str('UNSUPPORTED_FILESYSTEM_WARNING'));
+      return this.butterBar_.show(str('UNSUPPORTED_FILESYSTEM_WARNING'));
     }
 
     return this.directoryModel_.changeDirectory(entry.fullPath);
@@ -3439,10 +3240,8 @@ FileManager.prototype = {
           return;
         }
 
-        if (this.butterTimer_) {
-          // Allow the user to manually dismiss timed butter messages.
+        if (this.butterBar_.hideError()) {
           event.preventDefault();
-          this.hideButter();
           return;
         }
 

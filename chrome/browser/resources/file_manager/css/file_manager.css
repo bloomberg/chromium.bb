@@ -80,7 +80,7 @@ input[type='submit'][disabled]:hover {
   opacity: 0.8;
 }
 
-.butter-bar {
+#butter-bar {
   -webkit-box-align: end;
   -webkit-box-orient: horizontal;
   -webkit-transform: translate3d(0, 1px, 0);
@@ -96,17 +96,17 @@ input[type='submit'][disabled]:hover {
   top: 0;
 }
 
-.butter-bar.before-show {
+#butter-bar.before-show {
   -webkit-transform: translate3d(0, -30px, 0);
   opacity: 0;
 }
 
-.butter-bar.after-show {
+#butter-bar.after-show {
   -webkit-transform: translate3d(0, 50px, 0);
   opacity: 0;
 }
 
-.butter-bar .content {
+#butter-bar .content {
   padding-bottom: 8px;
   padding-right: 5px;
 }
@@ -115,13 +115,13 @@ input[type='submit'][disabled]:hover {
   display: none;
 }
 
-.butter-bar .actions {
+#butter-bar .actions {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   display: -webkit-box;
 }
 
-.butter-bar .actions a {
+#butter-bar .actions a {
   background: center center no-repeat;
   background-image: -webkit-image-set(
     url('../images/files/ui/close_bar.png') 1x,
@@ -132,7 +132,7 @@ input[type='submit'][disabled]:hover {
   width: 12px;
 }
 
-.butter-bar.error {
+#butter-bar.error {
   background-color: rgba(221, 75, 57, 0.2);
   border: 1px solid rgba(221, 75, 57, 0.5);
   border-radius: 2px;

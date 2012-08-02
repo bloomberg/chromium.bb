@@ -51,6 +51,7 @@
 //<include src="path_util.js"/>
 //<include src="util.js"/>
 //<include src="breadcrumbs_controller.js"/>
+//<include src="butter_bar.js"/>
 //<include src="directory_contents.js">
 //<include src="directory_model.js"/>
 //<include src="file_copy_manager_wrapper.js"/>

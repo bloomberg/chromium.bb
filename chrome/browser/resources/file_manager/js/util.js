@@ -610,3 +610,31 @@ util.traverseTree = function(root, callback, max_depth) {
 
   readEntry(root, 0);
 };
+
+/**
+ * Return a translated string.
+ *
+ * Wrapper function to make dealing with translated strings more concise.
+ * Equivalent to loadTimeData.getString(id).
+ *
+ * @param {string} id The id of the string to return.
+ * @return {string} The translated string.
+ */
+function str(id) {
+  return loadTimeData.getString(id);
+}
+
+/**
+ * Return a translated string with arguments replaced.
+ *
+ * Wrapper function to make dealing with translated strings more concise.
+ * Equivilant to loadTimeData.getStringF(id, ...).
+ *
+ * @param {string} id The id of the string to return.
+ * @param {...string} var_args The values to replace into the string.
+ * @return {string} The translated string with replaced values.
+ */
+function strf(id, var_args) {
+  return loadTimeData.getStringF.apply(loadTimeData, arguments);
+}
+
