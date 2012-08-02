@@ -189,6 +189,13 @@
     }
   };
 
+  chrome.test.assertLastError = function(expectedError) {
+    chrome.test.assertEq(typeof(expectedError), 'string');
+    chrome.test.assertTrue(chrome.runtime.lastError != undefined,
+        "No lastError, but expected " + expectedError);
+    chrome.test.assertEq(expectedError, chrome.runtime.lastError.message);
+  }
+
   function safeFunctionApply(func, arguments) {
     try {
       if (func)
@@ -211,10 +218,7 @@
       if (expectedError == null) {
         chrome.test.assertNoLastError();
       } else {
-        chrome.test.assertEq(typeof(expectedError), 'string');
-        chrome.test.assertTrue(chrome.runtime.lastError != undefined,
-            "No lastError, but expected " + expectedError);
-        chrome.test.assertEq(expectedError, chrome.runtime.lastError.message);
+        chrome.test.assertLastError(expectedError);
       }
 
       if (func) {

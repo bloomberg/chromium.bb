@@ -77,6 +77,7 @@ using WebKit::WebView;
 using content::RenderThread;
 using content::RenderView;
 using extensions::APIPermission;
+using extensions::APIPermissionSet;
 using extensions::ApiDefinitionsNatives;
 using extensions::AppWindowCustomBindings;
 using extensions::ContextMenusCustomBindings;
@@ -996,7 +997,9 @@ void ExtensionDispatcher::OnUpdateTabSpecificPermissions(
   if (!extension)
     return;
 
-  extension->SetTabSpecificHostPermissions(tab_id, origin_set);
+  extension->UpdateTabSpecificPermissions(
+      tab_id,
+      new PermissionSet(APIPermissionSet(), origin_set, URLPatternSet()));
 }
 
 void ExtensionDispatcher::OnClearTabSpecificPermissions(
@@ -1006,7 +1009,7 @@ void ExtensionDispatcher::OnClearTabSpecificPermissions(
        it != extension_ids.end(); ++it) {
     const Extension* extension = extensions_.GetByID(*it);
     if (extension)
-      extension->ClearTabSpecificHostPermissions(tab_id);
+      extension->ClearTabSpecificPermissions(tab_id);
   }
 }
 
@@ -1117,7 +1120,24 @@ bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
     return false;
   }
 
-  if (!context->extension() ||
+  if (!context->extension()) {
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::New("Not in an extension.")));
+    return false;
+  }
+
+  // We need to whitelist tabs.executeScript and tabs.insertCSS because they
+  // are granted under special circumstances with the activeTab permission
+  // (note that the browser checks too, so this isn't a security problem).
+  //
+  // Only the browser knows which tab this call will be sent to... sometimes we
+  // *could* figure it out (if the extension gives an explicit tab ID in the
+  // call), but the expected case will be the extension passing through -1,
+  // meaning the active tab, and only the browser safely knows what this is.
+  bool skip_permission_check = (function_name == "tabs.executeScript") ||
+                               (function_name == "tabs.insertCSS");
+
+  if (!skip_permission_check &&
       !context->extension()->HasAPIPermission(function_name)) {
     static const char kMessage[] =
         "You do not have permission to use '%s'. Be sure to declare"

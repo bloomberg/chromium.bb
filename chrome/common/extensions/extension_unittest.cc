@@ -19,6 +19,8 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_sniffer.h"
@@ -28,7 +30,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using extensions::APIPermissionSet;
 using extensions::Extension;
+using extensions::PermissionSet;
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
@@ -870,9 +874,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   scoped_refptr<Extension> extension =
       LoadManifestStrict("script_and_capture", "tab_specific.json");
 
-  EXPECT_EQ(NULL, extension->GetTabSpecificHostPermissions(0));
-  EXPECT_EQ(NULL, extension->GetTabSpecificHostPermissions(1));
-  EXPECT_EQ(NULL, extension->GetTabSpecificHostPermissions(2));
+  EXPECT_FALSE(extension->GetTabSpecificPermissions(0).get());
+  EXPECT_FALSE(extension->GetTabSpecificPermissions(1).get());
+  EXPECT_FALSE(extension->GetTabSpecificPermissions(2).get());
 
   std::set<GURL> no_urls;
 
@@ -881,53 +885,68 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
 
   URLPatternSet allowed_hosts;
-    allowed_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL,
-                                        http_url.spec()));
+  allowed_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL,
+                                      http_url.spec()));
   std::set<GURL> allowed_urls;
-    allowed_urls.insert(http_url);
-    // http_url_with_path() will also be allowed, because Extension should be
-    // considering the security origin of the URL not the URL itself, and
-    // http_url is in allowed_hosts.
-    allowed_urls.insert(http_url_with_path);
+  allowed_urls.insert(http_url);
+  // http_url_with_path() will also be allowed, because Extension should be
+  // considering the security origin of the URL not the URL itself, and
+  // http_url is in allowed_hosts.
+  allowed_urls.insert(http_url_with_path);
 
-  extension->SetTabSpecificHostPermissions(0, allowed_hosts);
-  EXPECT_EQ(allowed_hosts, *extension->GetTabSpecificHostPermissions(0));
+  {
+    scoped_refptr<PermissionSet> permissions(
+        new PermissionSet(APIPermissionSet(), allowed_hosts, URLPatternSet()));
+    extension->UpdateTabSpecificPermissions(0, permissions);
+    EXPECT_EQ(permissions->explicit_hosts(),
+              extension->GetTabSpecificPermissions(0)->explicit_hosts());
+  }
 
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, allowed_urls, 0));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 1));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
 
-  extension->ClearTabSpecificHostPermissions(0);
-  EXPECT_EQ(NULL, extension->GetTabSpecificHostPermissions(0));
+  extension->ClearTabSpecificPermissions(0);
+  EXPECT_FALSE(extension->GetTabSpecificPermissions(0).get());
 
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 0));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 1));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
 
   std::set<GURL> more_allowed_urls = allowed_urls;
-    more_allowed_urls.insert(https_url);
+  more_allowed_urls.insert(https_url);
   URLPatternSet more_allowed_hosts = allowed_hosts;
-    more_allowed_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL,
-                                             https_url.spec()));
+  more_allowed_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL,
+                                           https_url.spec()));
 
-  extension->SetTabSpecificHostPermissions(0, allowed_hosts);
-  EXPECT_EQ(allowed_hosts, *extension->GetTabSpecificHostPermissions(0));
-  extension->SetTabSpecificHostPermissions(1, more_allowed_hosts);
-  EXPECT_EQ(more_allowed_hosts, *extension->GetTabSpecificHostPermissions(1));
+  {
+    scoped_refptr<PermissionSet> permissions(
+        new PermissionSet(APIPermissionSet(), allowed_hosts, URLPatternSet()));
+    extension->UpdateTabSpecificPermissions(0, permissions);
+    EXPECT_EQ(permissions->explicit_hosts(),
+              extension->GetTabSpecificPermissions(0)->explicit_hosts());
+
+    permissions = new PermissionSet(APIPermissionSet(),
+                                    more_allowed_hosts,
+                                    URLPatternSet());
+    extension->UpdateTabSpecificPermissions(1, permissions);
+    EXPECT_EQ(permissions->explicit_hosts(),
+              extension->GetTabSpecificPermissions(1)->explicit_hosts());
+  }
 
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, allowed_urls, 0));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, more_allowed_urls, 1));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
 
-  extension->ClearTabSpecificHostPermissions(0);
-  EXPECT_EQ(NULL, extension->GetTabSpecificHostPermissions(0));
+  extension->ClearTabSpecificPermissions(0);
+  EXPECT_FALSE(extension->GetTabSpecificPermissions(0).get());
 
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 0));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, more_allowed_urls, 1));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
 
-  extension->ClearTabSpecificHostPermissions(1);
-  EXPECT_EQ(NULL, extension->GetTabSpecificHostPermissions(1));
+  extension->ClearTabSpecificPermissions(1);
+  EXPECT_FALSE(extension->GetTabSpecificPermissions(1).get());
 
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 0));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 1));

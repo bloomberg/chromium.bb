@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -29,106 +30,64 @@
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
+using extensions::api::tabs::InjectDetails;
 using extensions::ScriptExecutor;
+using extensions::UserScript;
 
 namespace keys = extensions::tabs_constants;
 
 ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
-    : execute_tab_id_(-1),
-      all_frames_(false),
-      run_at_(extensions::UserScript::DOCUMENT_IDLE) {
+    : execute_tab_id_(-1) {
 }
 
 ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
 
+bool ExecuteCodeInTabFunction::HasPermission() {
+  if (Init() &&
+      extension_->HasAPIPermissionForTab(execute_tab_id_,
+                                         extensions::APIPermission::kTab)) {
+    return true;
+  }
+  return ExtensionFunction::HasPermission();
+}
+
 bool ExecuteCodeInTabFunction::RunImpl() {
-  DictionaryValue* script_info;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &script_info));
-  size_t number_of_value = script_info->size();
-  if (number_of_value == 0) {
+  EXTENSION_FUNCTION_VALIDATE(Init());
+
+  if (!details_->code.get() && !details_->file.get()) {
     error_ = keys::kNoCodeOrFileToExecuteError;
     return false;
-  } else {
-    bool has_code = script_info->HasKey(keys::kCodeKey);
-    bool has_file = script_info->HasKey(keys::kFileKey);
-    if (has_code && has_file) {
-      error_ = keys::kMoreThanOneValuesError;
-      return false;
-    } else if (!has_code && !has_file) {
-      error_ = keys::kNoCodeOrFileToExecuteError;
-      return false;
-    }
+  }
+  if (details_->code.get() && details_->file.get()) {
+    error_ = keys::kMoreThanOneValuesError;
+    return false;
   }
 
-  execute_tab_id_ = -1;
-  Browser* browser = NULL;
   TabContents* contents = NULL;
 
-  // If |tab_id| is specified, look for it. Otherwise default to selected tab
-  // in the current window.
-  Value* tab_value = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &tab_value));
-  if (tab_value->IsType(Value::TYPE_NULL)) {
-    browser = GetCurrentBrowser();
-    if (!browser) {
-      error_ = keys::kNoCurrentWindowError;
-      return false;
-    }
-    if (!ExtensionTabUtil::GetDefaultTab(browser, &contents, &execute_tab_id_))
-      return false;
-  } else {
-    EXTENSION_FUNCTION_VALIDATE(tab_value->GetAsInteger(&execute_tab_id_));
-    if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(),
-                                      include_incognito(),
-                                      &browser, NULL, &contents, NULL)) {
-      return false;
-    }
+  // If |tab_id| is specified, look for the tab. Otherwise default to selected
+  // tab in the current window.
+  CHECK_GE(execute_tab_id_, 0);
+  if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(),
+                                    include_incognito(),
+                                    NULL, NULL, &contents, NULL)) {
+    return false;
   }
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  CHECK(browser);
   CHECK(contents);
   if (!GetExtension()->CanExecuteScriptOnPage(
           contents->web_contents()->GetURL(), execute_tab_id_, NULL, &error_)) {
     return false;
   }
 
-  if (script_info->HasKey(keys::kAllFramesKey)) {
-    if (!script_info->GetBoolean(keys::kAllFramesKey, &all_frames_))
-      return false;
-  }
+  if (details_->code.get())
+    return Execute(*details_->code);
 
-  if (script_info->HasKey(keys::kRunAtKey)) {
-    std::string run_string;
-    EXTENSION_FUNCTION_VALIDATE(script_info->GetString(
-          keys::kRunAtKey, &run_string));
+  CHECK(details_->file.get());
+  resource_ = GetExtension()->GetResource(*details_->file);
 
-    if (run_string == extension_manifest_values::kRunAtDocumentStart)
-      run_at_ = extensions::UserScript::DOCUMENT_START;
-    else if (run_string == extension_manifest_values::kRunAtDocumentEnd)
-      run_at_ = extensions::UserScript::DOCUMENT_END;
-    else if (run_string == extension_manifest_values::kRunAtDocumentIdle)
-      run_at_ = extensions::UserScript::DOCUMENT_IDLE;
-    else
-      EXTENSION_FUNCTION_VALIDATE(false);
-  }
-
-  std::string code_string;
-  if (script_info->HasKey(keys::kCodeKey)) {
-    if (!script_info->GetString(keys::kCodeKey, &code_string))
-      return false;
-  }
-
-  if (!code_string.empty())
-    return Execute(code_string);
-
-  std::string relative_path;
-  if (script_info->HasKey(keys::kFileKey)) {
-    if (!script_info->GetString(keys::kFileKey, &relative_path))
-      return false;
-    resource_ = GetExtension()->GetResource(relative_path);
-  }
   if (resource_.extension_root().empty() || resource_.relative_path().empty()) {
     error_ = keys::kNoCodeOrFileToExecuteError;
     return false;
@@ -161,6 +120,38 @@ void TabsExecuteScriptFunction::OnExecuteCodeFinished(bool success,
     SetResult(result.DeepCopy());
   ExecuteCodeInTabFunction::OnExecuteCodeFinished(success, page_id, error,
                                                   result);
+}
+
+bool ExecuteCodeInTabFunction::Init() {
+  if (details_.get())
+    return true;
+
+  // |tab_id| is optional so it's ok if it's not there.
+  int tab_id = -1;
+  args_->GetInteger(0, &tab_id);
+
+  // |details| are not optional.
+  DictionaryValue* details_value = NULL;
+  if (!args_->GetDictionary(1, &details_value))
+    return false;
+  scoped_ptr<InjectDetails> details(new InjectDetails());
+  if (!InjectDetails::Populate(*details_value, details.get()))
+    return false;
+
+  // If the tab ID is -1 then it needs to be converted to the currently active
+  // tab's ID.
+  if (tab_id == -1) {
+    Browser* browser = GetCurrentBrowser();
+    if (!browser)
+      return false;
+    TabContents* tab_contents = NULL;
+    if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
+      return false;
+  }
+
+  execute_tab_id_ = tab_id;
+  details_ = details.Pass();
+  return true;
 }
 
 void ExecuteCodeInTabFunction::DidLoadFile(bool success,
@@ -252,12 +243,32 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
     NOTREACHED();
   }
 
+  ScriptExecutor::FrameScope frame_scope =
+      details_->all_frames.get() && *details_->all_frames ?
+          ScriptExecutor::ALL_FRAMES :
+          ScriptExecutor::TOP_FRAME;
+
+  UserScript::RunLocation run_at = UserScript::UNDEFINED;
+  switch (details_->run_at) {
+    case InjectDetails::RUN_AT_NONE:
+    case InjectDetails::RUN_AT_DOCUMENT_IDLE:
+      run_at = UserScript::DOCUMENT_IDLE;
+      break;
+    case InjectDetails::RUN_AT_DOCUMENT_START:
+      run_at = UserScript::DOCUMENT_START;
+      break;
+    case InjectDetails::RUN_AT_DOCUMENT_END:
+      run_at = UserScript::DOCUMENT_END;
+      break;
+  }
+  CHECK_NE(UserScript::UNDEFINED, run_at);
+
   contents->extension_tab_helper()->script_executor()->ExecuteScript(
       extension->id(),
       script_type,
       code_string,
-      all_frames_ ? ScriptExecutor::ALL_FRAMES : ScriptExecutor::TOP_FRAME,
-      run_at_,
+      frame_scope,
+      run_at,
       ScriptExecutor::ISOLATED_WORLD,
       base::Bind(&ExecuteCodeInTabFunction::OnExecuteCodeFinished, this));
   return true;

@@ -44,12 +44,16 @@ namespace extensions {
 class WindowController;
 }
 
+#ifdef NDEBUG
 #define EXTENSION_FUNCTION_VALIDATE(test) do { \
     if (!(test)) { \
       bad_message_ = true; \
       return false; \
     } \
   } while (0)
+#else   // NDEBUG
+#define EXTENSION_FUNCTION_VALIDATE(test) CHECK(test)
+#endif  // NDEBUG
 
 #define EXTENSION_FUNCTION_ERROR(error) do { \
     error_ = error; \
@@ -78,6 +82,15 @@ class ExtensionFunction
 
   virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction();
   virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction();
+
+  // Returns true if the function has permission to run.
+  //
+  // The default implementation is to check the Extension's permissions against
+  // what this function requires to run, but some APIs may require finer
+  // grained control, such as tabs.executeScript being allowed for active tabs.
+  //
+  // This will be run after the function has been set up but before Run().
+  virtual bool HasPermission();
 
   // Execute the API. Clients should initialize the ExtensionFunction using
   // SetArgs(), set_request_id(), and the other setters before calling this

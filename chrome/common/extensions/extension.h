@@ -444,6 +444,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   bool HasAPIPermission(APIPermission::ID permission) const;
   bool HasAPIPermission(const std::string& function_name) const;
+  bool HasAPIPermissionForTab(int tab_id, APIPermission::ID permission) const;
 
   const URLPatternSet& GetEffectiveHostPermissions() const;
 
@@ -565,17 +566,16 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Gets the tab-specific host permissions of |tab_id|, or NULL if there
   // aren't any.
-  //
-  // This is a weak pointer. Callers should create a copy before mutating any
-  // tab specific permissions.
-  const URLPatternSet* GetTabSpecificHostPermissions(int tab_id) const;
+  scoped_refptr<const PermissionSet> GetTabSpecificPermissions(int tab_id)
+      const;
 
-  // Sets the tab-specific host permissions of |tab_id| to |permissions|.
-  void SetTabSpecificHostPermissions(int tab_id,
-                                     const URLPatternSet& permissions) const;
+  // Updates the tab-specific permissions of |tab_id| to include those from
+  // |permissions|.
+  void UpdateTabSpecificPermissions(int tab_id,
+                                    const PermissionSet* permissions) const;
 
-  // Clears the tab-specific host permissions of |tab_id|.
-  void ClearTabSpecificHostPermissions(int tab_id) const;
+  // Clears the tab-specific permissions of |tab_id|.
+  void ClearTabSpecificPermissions(int tab_id) const;
 
   // Accessors:
 
@@ -726,19 +726,20 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     void SetActivePermissions(const PermissionSet* active);
     scoped_refptr<const PermissionSet> GetActivePermissions() const;
 
-    const URLPatternSet* GetTabSpecificHostPermissions(int tab_id) const;
-    void SetTabSpecificHostPermissions(int tab_id,
-                                       const URLPatternSet& permissions);
-    void ClearTabSpecificHostPermissions(int tab_id);
+    scoped_refptr<const PermissionSet> GetTabSpecificPermissions(int tab_id)
+        const;
+    void UpdateTabSpecificPermissions(int tab_id,
+                                      const PermissionSet* permissions);
+    void ClearTabSpecificPermissions(int tab_id);
 
    private:
     friend class base::RefCountedThreadSafe<RuntimeData>;
 
     scoped_refptr<const PermissionSet> active_permissions_;
 
-    typedef std::map<int, linked_ptr<const URLPatternSet> >
-        TabHostPermissionsMap;
-    TabHostPermissionsMap tab_specific_host_permissions_;
+    typedef std::map<int, scoped_refptr<const PermissionSet> >
+        TabPermissionsMap;
+    TabPermissionsMap tab_specific_permissions_;
   };
 
   // Chooses the extension ID for an extension based on a variety of criteria.

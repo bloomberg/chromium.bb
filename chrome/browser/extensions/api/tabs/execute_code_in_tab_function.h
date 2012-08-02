@@ -11,6 +11,14 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 
+namespace extensions {
+namespace api {
+namespace tabs {
+struct InjectDetails;
+}  // namespace tabs
+}  // namespace api
+}  // namespace extensions
+
 // Implement API call tabs.executeScript and tabs.insertCSS.
 class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
  public:
@@ -20,6 +28,7 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
   virtual ~ExecuteCodeInTabFunction();
 
   // ExtensionFunction:
+  virtual bool HasPermission() OVERRIDE;
   virtual bool RunImpl() OVERRIDE;
 
   // Message handler.
@@ -29,6 +38,10 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
                                      const ListValue& script_result);
 
  private:
+  // Initialize the |execute_tab_id_| and |details_| if they haven't already
+  // been. Returns whether initialization was successful.
+  bool Init();
+
   // Called when contents from the file whose path is specified in JSON
   // arguments has been loaded.
   void DidLoadFile(bool success, const std::string& data);
@@ -51,16 +64,12 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
   // Id of tab which executes code.
   int execute_tab_id_;
 
+  // The injection details.
+  scoped_ptr<extensions::api::tabs::InjectDetails> details_;
+
   // Contains extension resource built from path of file which is
   // specified in JSON arguments.
   ExtensionResource resource_;
-
-  // If all_frames_ is true, script or CSS text would be injected
-  // to all frames; Otherwise only injected to top main frame.
-  bool all_frames_;
-
-  // The intended time to run the script.
-  extensions::UserScript::RunLocation run_at_;
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {

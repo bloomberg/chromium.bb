@@ -120,6 +120,7 @@ class ExtensionFunctionDispatcher
       extensions::ExtensionAPI* api,
       void* profile,
       IPC::Sender* ipc_sender,
+      content::RenderViewHost* render_view_host,
       int routing_id);
 
   // Helper to send an access denied error to the requesting renderer. Can be

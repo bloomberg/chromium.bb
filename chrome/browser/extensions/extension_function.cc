@@ -83,6 +83,10 @@ IOThreadExtensionFunction* ExtensionFunction::AsIOThreadExtensionFunction() {
   return NULL;
 }
 
+bool ExtensionFunction::HasPermission() {
+  return extension_->HasAPIPermission(name_);
+}
+
 void ExtensionFunction::OnQuotaExceeded() {
   error_ = QuotaLimitHeuristic::kGenericOverQuotaError;
   SendResponse(false);

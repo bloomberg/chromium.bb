@@ -257,7 +257,7 @@ IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdateTabSpecificPermissions,
                      int32 /* page_id (only relevant for the target tab) */,
                      int /* tab_id */,
                      std::string /* extension_id */,
-                     URLPatternSet /* host */)
+                     URLPatternSet /* hosts */)
 
 // Tell the renderer to clear tab-specific permissions for some extensions.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_ClearTabSpecificPermissions,

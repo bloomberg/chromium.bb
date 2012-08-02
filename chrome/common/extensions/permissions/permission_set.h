@@ -70,7 +70,6 @@ class PermissionSet
   // Gets the API permissions in this set, plus any that have implicit access
   // (such as APIs that require no permissions, or APIs with functions that
   // require no permissions).
-  // TODO(kalman): return scoped_ptr to avoid copying.
   std::set<std::string> GetAPIsWithAnyAccessAsStrings() const;
 
   // Returns whether this namespace has any functions which the extension has

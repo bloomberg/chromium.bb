@@ -84,8 +84,9 @@ class ActiveTabTest : public TabContentsTestHarness {
   bool IsAllowed(const scoped_refptr<const Extension>& extension,
                  const GURL& url,
                  int tab_id) {
-    return (extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) &&
-            extension->CanCaptureVisiblePage(url, tab_id, NULL));
+    return extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) &&
+           extension->CanCaptureVisiblePage(url, tab_id, NULL) &&
+           HasTabsPermission(extension, tab_id);
   }
 
   bool IsBlocked(const scoped_refptr<const Extension>& extension,
@@ -96,8 +97,18 @@ class ActiveTabTest : public TabContentsTestHarness {
   bool IsBlocked(const scoped_refptr<const Extension>& extension,
                  const GURL& url,
                  int tab_id) {
-    return (!extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) &&
-            !extension->CanCaptureVisiblePage(url, tab_id, NULL));
+    // Note: can't check HasTabsPermission because it isn't URL specific.
+    return !extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) &&
+           !extension->CanCaptureVisiblePage(url, tab_id, NULL);
+  }
+
+  bool HasTabsPermission(const scoped_refptr<const Extension>& extension) {
+    return HasTabsPermission(extension, tab_id());
+  }
+
+  bool HasTabsPermission(const scoped_refptr<const Extension>& extension,
+                         int tab_id) {
+    return extension->HasAPIPermissionForTab(tab_id, APIPermission::kTab);
   }
 
   // An extension with the activeTab permission.
@@ -122,6 +133,10 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   EXPECT_TRUE(IsBlocked(another_extension, google));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, google));
 
+  EXPECT_FALSE(HasTabsPermission(extension));
+  EXPECT_FALSE(HasTabsPermission(another_extension));
+  EXPECT_FALSE(HasTabsPermission(extension_without_active_tab));
+
   active_tab_permission_manager()->GrantIfRequested(extension);
   active_tab_permission_manager()->GrantIfRequested(
       extension_without_active_tab);
@@ -135,8 +150,8 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   // Other subdomains shouldn't be given access.
   GURL mail_google("http://mail.google.com");
   EXPECT_TRUE(IsBlocked(extension, mail_google));
-  EXPECT_TRUE(IsBlocked(another_extension, google));
-  EXPECT_TRUE(IsBlocked(extension_without_active_tab, google));
+  EXPECT_TRUE(IsBlocked(another_extension, mail_google));
+  EXPECT_TRUE(IsBlocked(extension_without_active_tab, mail_google));
 
   // Reloading the page should clear the active permissions.
   Reload();
@@ -144,6 +159,10 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   EXPECT_TRUE(IsBlocked(extension, google));
   EXPECT_TRUE(IsBlocked(another_extension, google));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, google));
+
+  EXPECT_FALSE(HasTabsPermission(extension));
+  EXPECT_FALSE(HasTabsPermission(another_extension));
+  EXPECT_FALSE(HasTabsPermission(extension_without_active_tab));
 
   // But they should still be able to be granted again.
   active_tab_permission_manager()->GrantIfRequested(extension);
@@ -178,6 +197,10 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   EXPECT_TRUE(IsBlocked(extension, chromium));
   EXPECT_TRUE(IsBlocked(another_extension, chromium));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, chromium));
+
+  EXPECT_FALSE(HasTabsPermission(extension));
+  EXPECT_FALSE(HasTabsPermission(another_extension));
+  EXPECT_FALSE(HasTabsPermission(extension_without_active_tab));
 
   // Should be able to grant to multiple extensions at the same time (if they
   // have the activeTab permission, of course).
@@ -250,6 +273,7 @@ TEST_F(ActiveTabTest, OnlyActiveTab) {
 
   EXPECT_TRUE(IsAllowed(extension, google, tab_id()));
   EXPECT_TRUE(IsBlocked(extension, google, tab_id() + 1));
+  EXPECT_FALSE(HasTabsPermission(extension, tab_id() + 1));
 }
 
 TEST_F(ActiveTabTest, NavigateInPage) {

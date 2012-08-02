@@ -49,19 +49,18 @@ void ActiveTabPermissionManager::GrantIfRequested(const Extension* extension) {
     return;
   }
 
-  URLPatternSet new_permissions;
-  const URLPatternSet* old_permissions =
-      extension->GetTabSpecificHostPermissions(tab_id_);
-  if (old_permissions)
-    new_permissions.AddPatterns(*old_permissions);
+  APIPermissionSet new_apis;
+  new_apis.insert(APIPermission::kTab);
+  URLPatternSet new_hosts;
+  new_hosts.AddPattern(pattern);
 
-  new_permissions.AddPattern(pattern);
+  extension->UpdateTabSpecificPermissions(
+      tab_id_, new PermissionSet(new_apis, new_hosts, URLPatternSet()));
   granted_extensions_.Insert(extension);
-  extension->SetTabSpecificHostPermissions(tab_id_, new_permissions);
   Send(new ExtensionMsg_UpdateTabSpecificPermissions(GetPageID(),
                                                      tab_id_,
                                                      extension->id(),
-                                                     new_permissions));
+                                                     new_hosts));
 }
 
 bool ActiveTabPermissionManager::IsGranted(const Extension* extension) {
@@ -102,7 +101,7 @@ void ActiveTabPermissionManager::ClearActiveExtensionsAndNotify() {
 
   for (ExtensionSet::const_iterator it = granted_extensions_.begin();
        it != granted_extensions_.end(); ++it) {
-    (*it)->ClearTabSpecificHostPermissions(tab_id_);
+    (*it)->ClearTabSpecificPermissions(tab_id_);
     extension_ids.push_back((*it)->id());
   }
 

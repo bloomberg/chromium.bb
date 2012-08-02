@@ -3469,17 +3469,26 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,
   return true;
 }
 
-bool Extension::HasAPIPermission(
-    APIPermission::ID permission) const {
+bool Extension::HasAPIPermission(APIPermission::ID permission) const {
   base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions()->HasAPIPermission(permission);
 }
 
-bool Extension::HasAPIPermission(
-    const std::string& function_name) const {
+bool Extension::HasAPIPermission(const std::string& function_name) const {
   base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions()->
       HasAccessToFunction(function_name);
+}
+
+bool Extension::HasAPIPermissionForTab(int tab_id,
+                                       APIPermission::ID permission) const {
+  base::AutoLock auto_lock(runtime_data_lock_);
+  if (runtime_data_.GetActivePermissions()->HasAPIPermission(permission))
+    return true;
+  scoped_refptr<const PermissionSet> tab_specific_permissions =
+      runtime_data_.GetTabSpecificPermissions(tab_id);
+  return tab_specific_permissions.get() &&
+         tab_specific_permissions->HasAPIPermission(permission);
 }
 
 const URLPatternSet& Extension::GetEffectiveHostPermissions() const {
@@ -3579,10 +3588,10 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
 
   // If a tab ID is specified, try the tab-specific permissions.
   if (tab_id >= 0) {
-    const URLPatternSet* tab_permissions =
-        runtime_data_.GetTabSpecificHostPermissions(tab_id);
-    if (tab_permissions &&
-        tab_permissions->MatchesSecurityOrigin(page_url)) {
+    scoped_refptr<const PermissionSet> tab_permissions =
+        runtime_data_.GetTabSpecificPermissions(tab_id);
+    if (tab_permissions.get() &&
+        tab_permissions->explicit_hosts().MatchesSecurityOrigin(page_url)) {
       return true;
     }
   }
@@ -3652,10 +3661,10 @@ bool Extension::CanCaptureVisiblePage(const GURL& page_url,
                                       int tab_id,
                                       std::string *error) const {
   if (tab_id >= 0) {
-    const URLPatternSet* tab_permissions =
-        GetTabSpecificHostPermissions(tab_id);
-    if (tab_permissions &&
-        tab_permissions->MatchesSecurityOrigin(page_url)) {
+    scoped_refptr<const PermissionSet> tab_permissions =
+        GetTabSpecificPermissions(tab_id);
+    if (tab_permissions.get() &&
+        tab_permissions->explicit_hosts().MatchesSecurityOrigin(page_url)) {
       return true;
     }
   }
@@ -3814,22 +3823,22 @@ bool Extension::HasContentScriptAtURL(const GURL& url) const {
   return false;
 }
 
-const URLPatternSet* Extension::GetTabSpecificHostPermissions(
+scoped_refptr<const PermissionSet> Extension::GetTabSpecificPermissions(
     int tab_id) const {
   base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetTabSpecificHostPermissions(tab_id);
+  return runtime_data_.GetTabSpecificPermissions(tab_id);
 }
 
-void Extension::SetTabSpecificHostPermissions(
+void Extension::UpdateTabSpecificPermissions(
     int tab_id,
-    const URLPatternSet& permissions) const {
+    const PermissionSet* permissions) const {
   base::AutoLock auto_lock(runtime_data_lock_);
-  runtime_data_.SetTabSpecificHostPermissions(tab_id, permissions);
+  runtime_data_.UpdateTabSpecificPermissions(tab_id, permissions);
 }
 
-void Extension::ClearTabSpecificHostPermissions(int tab_id) const {
+void Extension::ClearTabSpecificPermissions(int tab_id) const {
   base::AutoLock auto_lock(runtime_data_lock_);
-  runtime_data_.ClearTabSpecificHostPermissions(tab_id);
+  runtime_data_.ClearTabSpecificPermissions(tab_id);
 }
 
 bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) {
@@ -3871,25 +3880,29 @@ void Extension::RuntimeData::SetActivePermissions(
   active_permissions_ = active;
 }
 
-const URLPatternSet*
-    Extension::RuntimeData::GetTabSpecificHostPermissions(int tab_id) const {
+scoped_refptr<const PermissionSet>
+    Extension::RuntimeData::GetTabSpecificPermissions(int tab_id) const {
   CHECK_GE(tab_id, 0);
-  TabHostPermissionsMap::const_iterator it =
-      tab_specific_host_permissions_.find(tab_id);
-  return (it != tab_specific_host_permissions_.end()) ? it->second.get() : NULL;
+  TabPermissionsMap::const_iterator it = tab_specific_permissions_.find(tab_id);
+  return (it != tab_specific_permissions_.end()) ? it->second : NULL;
 }
 
-void Extension::RuntimeData::SetTabSpecificHostPermissions(
+void Extension::RuntimeData::UpdateTabSpecificPermissions(
     int tab_id,
-    const URLPatternSet& hosts) {
+    const PermissionSet* permissions) {
   CHECK_GE(tab_id, 0);
-  tab_specific_host_permissions_[tab_id] =
-      make_linked_ptr(new URLPatternSet(hosts));
+  if (tab_specific_permissions_.count(tab_id)) {
+    tab_specific_permissions_[tab_id] = PermissionSet::CreateUnion(
+        tab_specific_permissions_[tab_id],
+        permissions);
+  } else {
+    tab_specific_permissions_[tab_id] = permissions;
+  }
 }
 
-void Extension::RuntimeData::ClearTabSpecificHostPermissions(int tab_id) {
+void Extension::RuntimeData::ClearTabSpecificPermissions(int tab_id) {
   CHECK_GE(tab_id, 0);
-  tab_specific_host_permissions_.erase(tab_id);
+  tab_specific_permissions_.erase(tab_id);
 }
 
 UnloadedExtensionInfo::UnloadedExtensionInfo(

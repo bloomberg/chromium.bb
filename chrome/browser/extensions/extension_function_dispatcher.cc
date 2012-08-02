@@ -136,7 +136,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                               extension_info_map->process_map(),
                               g_global_io_data.Get().api.get(),
                               profile,
-                              ipc_sender, routing_id));
+                              ipc_sender, NULL, routing_id));
   if (!function) {
     LogFailure(extension, params.name, kAccessDenied);
     return;
@@ -193,7 +193,7 @@ void ExtensionFunctionDispatcher::Dispatch(
                               render_view_host->GetProcess()->GetID(),
                               *(service->process_map()),
                               extensions::ExtensionAPI::GetSharedInstance(),
-                              profile(), render_view_host,
+                              profile(), render_view_host, render_view_host,
                               render_view_host->GetRoutingID()));
   if (!function) {
     LogFailure(extension, params.name, kAccessDenied);
@@ -206,7 +206,6 @@ void ExtensionFunctionDispatcher::Dispatch(
     NOTREACHED();
     return;
   }
-  function_ui->SetRenderViewHost(render_view_host);
   function_ui->set_dispatcher(AsWeakPtr());
   function_ui->set_profile(profile_);
   function->set_include_incognito(service->CanCrossIncognito(extension));
@@ -251,6 +250,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     extensions::ExtensionAPI* api,
     void* profile,
     IPC::Sender* ipc_sender,
+    RenderViewHost* render_view_host,
     int routing_id) {
   if (!extension) {
     LOG(ERROR) << "Specified extension does not exist.";
@@ -267,13 +267,6 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     return NULL;
   }
 
-  if (!extension->HasAPIPermission(params.name)) {
-    LOG(ERROR) << "Extension " << extension->id() << " does not have "
-               << "permission to function: " << params.name;
-    SendAccessDenied(ipc_sender, routing_id, params.request_id);
-    return NULL;
-  }
-
   ExtensionFunction* function =
       ExtensionFunctionRegistry::GetInstance()->NewFunction(params.name);
   function->SetArgs(&params.arguments);
@@ -283,6 +276,20 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_user_gesture(params.user_gesture);
   function->set_extension(extension);
   function->set_profile_id(profile);
+
+  UIThreadExtensionFunction* function_ui =
+      function->AsUIThreadExtensionFunction();
+  if (function_ui) {
+    function_ui->SetRenderViewHost(render_view_host);
+  }
+
+  if (!function->HasPermission()) {
+    LOG(ERROR) << "Extension " << extension->id() << " does not have "
+               << "permission to function: " << params.name;
+    SendAccessDenied(ipc_sender, routing_id, params.request_id);
+    return NULL;
+  }
+
   return function;
 }
 
