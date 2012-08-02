@@ -390,6 +390,9 @@ extern const char kDriveScheme[];
 #endif
 #if defined(OS_ANDROID)
 extern const char kContentScheme[];
+// Special Android file paths.
+extern const char kAndroidAssetPath[];
+extern const char kAndroidResourcePath[];
 #endif
 
 #if defined(OS_CHROMEOS)
