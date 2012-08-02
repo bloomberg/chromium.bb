@@ -99,6 +99,7 @@ class ResourcePrefetchPredictor
     // Only for responses.
     std::string mime_type;
     bool was_cached;
+    GURL redirect_url;  // Empty unless request was redirected to a valid url.
   };
 
   ResourcePrefetchPredictor(const Config& config, Profile* profile);

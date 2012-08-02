@@ -152,9 +152,10 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   throttles);
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (io_data->resource_prefetch_predictor_observer())
+  if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
         request, resource_type, child_id, route_id);
+  }
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
@@ -360,6 +361,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 }
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
+    const GURL& redirect_url,
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     content::ResourceResponse* response) {
@@ -376,9 +378,10 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
 #endif
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (io_data->resource_prefetch_predictor_observer())
+  if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
-        request);
+        redirect_url, request);
+  }
 }
 
 void ChromeResourceDispatcherHostDelegate::OnFieldTrialGroupFinalized(

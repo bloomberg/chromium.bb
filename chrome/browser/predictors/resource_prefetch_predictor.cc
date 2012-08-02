@@ -85,11 +85,12 @@ ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary()
 
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary(
     const URLRequestSummary& other)
-      : navigation_id(other.navigation_id),
-        resource_url(other.resource_url),
-        resource_type(other.resource_type),
-        mime_type(other.mime_type),
-        was_cached(other.was_cached) {
+        : navigation_id(other.navigation_id),
+          resource_url(other.resource_url),
+          resource_type(other.resource_type),
+          mime_type(other.mime_type),
+          was_cached(other.was_cached),
+          redirect_url(other.redirect_url) {
 }
 
 ResourcePrefetchPredictor::URLRequestSummary::~URLRequestSummary() {
@@ -348,7 +349,20 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
     const URLRequestSummary& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Remove the older navigation.
   inflight_navigations_.erase(response.navigation_id);
+
+  // A redirect will not lead to another OnMainFrameRequest call, so record the
+  // redirect url as a new navigation.
+
+  // The redirect url may be empty if the url was invalid.
+  if (response.redirect_url.is_empty())
+    return;
+
+  NavigationID navigation_id(response.navigation_id);
+  navigation_id.main_frame_url = response.redirect_url;
+  inflight_navigations_.insert(std::make_pair(
+      navigation_id, std::vector<URLRequestSummary>()));
 }
 
 void ResourcePrefetchPredictor::OnSubresourceResponse(

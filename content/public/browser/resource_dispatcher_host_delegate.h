@@ -109,6 +109,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
 
   // Informs the delegate that a request has been redirected.
   virtual void OnRequestRedirected(
+      const GURL& redirect_url,
       net::URLRequest* request,
       ResourceContext* resource_context,
       ResourceResponse* response);

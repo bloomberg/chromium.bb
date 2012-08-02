@@ -8,6 +8,7 @@
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
+#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -89,14 +90,18 @@ void ResourcePrefetchPredictorObserver::OnRequestStarted(
 }
 
 void ResourcePrefetchPredictorObserver::OnRequestRedirected(
+    const GURL& redirect_url,
     net::URLRequest* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!ResourcePrefetchPredictor::ShouldRecordRedirect(request))
     return;
+
   ResourcePrefetchPredictor::URLRequestSummary summary;
   if (!SummarizeResponse(request, &summary))
     return;
+
+  summary.redirect_url = redirect_url;
 
   BrowserThread::PostTask(
       BrowserThread::UI,

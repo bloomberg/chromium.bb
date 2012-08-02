@@ -14,6 +14,8 @@ namespace net {
 class URLRequest;
 }
 
+class GURL;
+
 namespace chrome_browser_net {
 
 // Observes resource requests in the ResourceDispatcherHostDelegate and notifies
@@ -33,7 +35,7 @@ class ResourcePrefetchPredictorObserver  {
                         ResourceType::Type resource_type,
                         int child_id,
                         int route_id);
-  void OnRequestRedirected(net::URLRequest* request);
+  void OnRequestRedirected(const GURL& redirect_url, net::URLRequest* request);
   void OnResponseStarted(net::URLRequest* request);
 
  private:

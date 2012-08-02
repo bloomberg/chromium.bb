@@ -48,7 +48,8 @@ bool SyncResourceHandler::OnRequestRedirected(
     ResourceResponse* response,
     bool* defer) {
   if (rdh_->delegate()) {
-    rdh_->delegate()->OnRequestRedirected(request_, filter_->resource_context(),
+    rdh_->delegate()->OnRequestRedirected(new_url, request_,
+                                          filter_->resource_context(),
                                           response);
   }
 

@@ -144,7 +144,8 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
   *defer = did_defer_ = true;
 
   if (rdh_->delegate()) {
-    rdh_->delegate()->OnRequestRedirected(request_, filter_->resource_context(),
+    rdh_->delegate()->OnRequestRedirected(new_url, request_,
+                                          filter_->resource_context(),
                                           response);
   }
 

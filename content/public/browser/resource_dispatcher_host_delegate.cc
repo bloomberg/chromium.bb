@@ -75,6 +75,7 @@ void ResourceDispatcherHostDelegate::OnResponseStarted(
 }
 
 void ResourceDispatcherHostDelegate::OnRequestRedirected(
+    const GURL& redirect_url,
     net::URLRequest* request,
     ResourceContext* resource_context,
     ResourceResponse* response) {

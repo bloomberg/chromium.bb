@@ -81,6 +81,7 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceResponse* response,
       IPC::Sender* sender) OVERRIDE;
   virtual void OnRequestRedirected(
+      const GURL& redirect_url,
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::ResourceResponse* response) OVERRIDE;
