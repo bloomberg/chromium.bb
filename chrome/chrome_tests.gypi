@@ -2271,6 +2271,15 @@
             '../ui/aura/aura.gyp:test_support_aura',
           ],
         }],
+        ['OS=="linux" and buildtype=="Official" and target_arch=="ia32"', {
+          'configurations': {
+            'Release': {
+              'ldflags': [
+                '-Wl,--strip-debug',
+              ],
+            },
+          },
+        }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
