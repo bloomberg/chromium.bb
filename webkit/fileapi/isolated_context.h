@@ -88,7 +88,7 @@ class FILEAPI_EXPORT IsolatedContext {
   // cracked into '/a/b/dir/foo'.
   //
   // Note that the path in |fileset| that contains '..' or is not an
-  // absolute path is skipped and is not registerred.
+  // absolute path is skipped and is not registered.
   std::string RegisterDraggedFileSystem(const FileInfoSet& files);
 
   // Registers a new isolated filesystem for a given |path| of filesystem
@@ -101,11 +101,15 @@ class FILEAPI_EXPORT IsolatedContext {
                                         const FilePath& path,
                                         std::string* register_name);
 
-  // Revokes filesystem specified by the given filesystem_id.
+  // Revokes all filesystem(s) registered for the given path.
+  // This is assumed to be called when the registered path becomes
+  // globally invalid, e.g. when a device for the path is detached.
+  //
   // Note that this revokes the filesystem no matter how many references it has.
-  // It is ok to call this on the filesystem that has been already deleted
-  // (if its reference count had reached 0).
-  void RevokeFileSystem(const std::string& filesystem_id);
+  // It is ok to call this for the path that has no associated filesystems.
+  // Note that this only works for the filesystems registered by
+  // |RegisterFileSystemForPath|.
+  void RevokeFileSystemByPath(const FilePath& path);
 
   // Adds a reference to a filesystem specified by the given filesystem_id.
   void AddReference(const std::string& filesystem_id);
@@ -113,13 +117,13 @@ class FILEAPI_EXPORT IsolatedContext {
   // Removes a reference to a filesystem specified by the given filesystem_id.
   // If the reference count reaches 0 the isolated context gets destroyed.
   // It is ok to call this on the filesystem that has been already deleted
-  // (e.g. by RevokeFileSystem).
+  // (e.g. by RevokeFileSystemByPath).
   void RemoveReference(const std::string& filesystem_id);
 
   // Cracks the given |virtual_path| (which should look like
   // "/<filesystem_id>/<registered_name>/<relative_path>") and populates
   // the |filesystem_id| and |path| if the embedded <filesystem_id>
-  // is registerred to this context.  |root_path| is also populated to have
+  // is registered to this context.  |root_path| is also populated to have
   // the registered root (toplevel) file info for the |virtual_path|.
   //
   // Returns false if the given virtual_path or the cracked filesystem_id
@@ -155,26 +159,39 @@ class FILEAPI_EXPORT IsolatedContext {
   // Represents each isolated file system instance.
   class Instance {
    public:
+    // For a single-path file system, which could be registered by
+    // IsolatedContext::RegisterFileSystemForPath().
+    // Most of isolated file system contexts should be of this type.
     Instance(FileSystemType type, const FileInfo& file_info);
-    explicit Instance(const std::set<FileInfo>& dragged_files);
+
+    // For a multi-paths file system.  As of writing only file system
+    // type which could have multi-paths is Dragged file system, and
+    // could be registered by IsolatedContext::RegisterDraggedFileSystem().
+    Instance(FileSystemType type, const std::set<FileInfo>& files);
+
     ~Instance();
 
     FileSystemType type() const { return type_; }
     const FileInfo& file_info() const { return file_info_; }
-    const std::set<FileInfo>& dragged_files() const { return dragged_files_; }
+    const std::set<FileInfo>& files() const { return files_; }
     int ref_counts() const { return ref_counts_; }
 
     void AddRef() { ++ref_counts_; }
     void RemoveRef() { --ref_counts_; }
 
-    bool ResolvePathForName(const std::string& name, FilePath* path);
+    bool ResolvePathForName(const std::string& name, FilePath* path) const;
+
+    // Returns true if the instance is a single-path instance.
+    bool IsSinglePathInstance() const;
 
    private:
     const FileSystemType type_;
+
+    // For single-path instance.
     const FileInfo file_info_;
 
-    // For dragged file system.
-    const std::set<FileInfo> dragged_files_;
+    // For multiple-path instance (e.g. dragged file system).
+    const std::set<FileInfo> files_;
 
     // Reference counts. Note that an isolated filesystem is created with ref==0
     // and will get deleted when the ref count reaches <=0.
@@ -184,6 +201,9 @@ class FILEAPI_EXPORT IsolatedContext {
   };
 
   typedef std::map<std::string, Instance*> IDToInstance;
+
+  // Reverse map from registered path to IDs.
+  typedef std::map<FilePath, std::set<std::string> > PathToID;
 
   // Obtain an instance of this class via GetInstance().
   IsolatedContext();
@@ -196,6 +216,7 @@ class FILEAPI_EXPORT IsolatedContext {
   mutable base::Lock lock_;
 
   IDToInstance instance_map_;
+  PathToID path_to_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedContext);
 };

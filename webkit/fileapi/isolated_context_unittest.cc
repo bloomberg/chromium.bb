@@ -58,11 +58,12 @@ class IsolatedContextTest : public testing::Test {
       names_.push_back(name);
     }
     id_ = IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
+    IsolatedContext::GetInstance()->AddReference(id_);
     ASSERT_FALSE(id_.empty());
   }
 
   void TearDown() {
-    IsolatedContext::GetInstance()->RevokeFileSystem(id_);
+    IsolatedContext::GetInstance()->RemoveReference(id_);
   }
 
   IsolatedContext* isolated_context() const {
@@ -109,8 +110,9 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   FilePath path;
   ASSERT_FALSE(isolated_context()->GetRegisteredPath(id_, &path));
 
-  // Revoking the current one and registering a new one.
-  isolated_context()->RevokeFileSystem(id_);
+  // Deref the current one and registering a new one.
+  isolated_context()->RemoveReference(id_);
+
   std::string id2 = isolated_context()->RegisterFileSystemForPath(
       kFileSystemTypeIsolated, FilePath(DRIVE FPL("/foo")), NULL);
 
@@ -119,10 +121,31 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(id_, &toplevels));
 
   // Make sure the GetRegisteredPath returns true only for the new one.
-  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id2, &path));
   ASSERT_FALSE(isolated_context()->GetRegisteredPath(id_, &path));
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id2, &path));
 
-  isolated_context()->RevokeFileSystem(id2);
+  // Try registering two more file systems for the same path as id2.
+  std::string id3 = isolated_context()->RegisterFileSystemForPath(
+      kFileSystemTypeIsolated, path, NULL);
+  std::string id4 = isolated_context()->RegisterFileSystemForPath(
+      kFileSystemTypeIsolated, path, NULL);
+
+  // Remove file system for id4.
+  isolated_context()->AddReference(id4);
+  isolated_context()->RemoveReference(id4);
+
+  // Only id4 should become invalid now.
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id2, &path));
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id3, &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id4, &path));
+
+  // Revoke the file systems by path.
+  isolated_context()->RevokeFileSystemByPath(path);
+
+  // Now all the file systems associated to the path must be invalid.
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id2, &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id3, &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id4, &path));
 }
 
 TEST_F(IsolatedContextTest, CrackWithRelativePaths) {

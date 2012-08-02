@@ -186,6 +186,8 @@ void MediaFileSystemRegistry::RevokeMediaFileSystem(const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   IsolatedContext* isolated_context = IsolatedContext::GetInstance();
+  isolated_context->RevokeFileSystemByPath(path);
+
   for (ChildIdToMediaFSMap::iterator child_it = media_fs_map_.begin();
        child_it != media_fs_map_.end();
        ++child_it) {
@@ -193,7 +195,6 @@ void MediaFileSystemRegistry::RevokeMediaFileSystem(const FilePath& path) {
     MediaPathToFSIDMap::iterator media_path_it = child_map.find(path);
     if (media_path_it == child_map.end())
       continue;
-    isolated_context->RevokeFileSystem(media_path_it->second);
     child_map.erase(media_path_it);
   }
 }

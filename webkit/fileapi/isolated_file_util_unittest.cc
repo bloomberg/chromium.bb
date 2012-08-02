@@ -75,10 +75,12 @@ class IsolatedFileUtilTest : public testing::Test {
     // For cross-FileUtil copy/move tests.
     other_file_util_.reset(new LocalFileUtil());
     other_file_util_helper_.SetUp(file_system_context_, other_file_util_.get());
+
+    isolated_context()->AddReference(filesystem_id_);
   }
 
   void TearDown() {
-    isolated_context()->RevokeFileSystem(filesystem_id_);
+    isolated_context()->RemoveReference(filesystem_id_);
     other_file_util_helper_.TearDown();
   }
 

@@ -39,6 +39,31 @@ FilePath::StringType GetRegisterNameForPath(const FilePath& path) {
 #endif
 }
 
+bool IsSinglePathIsolatedFileSystem(FileSystemType type) {
+  switch (type) {
+    // As of writing dragged file system is the only filesystem
+    // which could have multiple toplevel paths.
+    case kFileSystemTypeDragged:
+      return false;
+
+    // Regular file systems.
+    case kFileSystemTypeIsolated:
+    case kFileSystemTypeNativeMedia:
+    case kFileSystemTypeDeviceMedia:
+    case kFileSystemTypeTemporary:
+    case kFileSystemTypePersistent:
+    case kFileSystemTypeExternal:
+    case kFileSystemTypeTest:
+      return true;
+
+    case kFileSystemTypeUnknown:
+      NOTREACHED();
+      return true;
+  }
+  NOTREACHED();
+  return true;
+}
+
 }
 
 static base::LazyInstance<IsolatedContext>::Leaky g_isolated_context =
@@ -91,27 +116,36 @@ IsolatedContext::Instance::Instance(FileSystemType type,
                                     const FileInfo& file_info)
     : type_(type),
       file_info_(file_info),
-      ref_counts_(0) {}
+      ref_counts_(0) {
+  DCHECK(IsSinglePathIsolatedFileSystem(type_));
+}
 
-IsolatedContext::Instance::Instance(const std::set<FileInfo>& dragged_files)
-    : type_(kFileSystemTypeDragged),
-      dragged_files_(dragged_files),
-      ref_counts_(0) {}
+IsolatedContext::Instance::Instance(FileSystemType type,
+                                    const std::set<FileInfo>& files)
+    : type_(type),
+      files_(files),
+      ref_counts_(0) {
+  DCHECK(!IsSinglePathIsolatedFileSystem(type_));
+}
 
 IsolatedContext::Instance::~Instance() {}
 
 bool IsolatedContext::Instance::ResolvePathForName(const std::string& name,
-                                                   FilePath* path) {
-  if (type_ != kFileSystemTypeDragged) {
+                                                   FilePath* path) const {
+  if (IsSinglePathIsolatedFileSystem(type_)) {
     *path = file_info_.path;
     return file_info_.name == name;
   }
-  std::set<FileInfo>::const_iterator found = dragged_files_.find(
+  std::set<FileInfo>::const_iterator found = files_.find(
       FileInfo(name, FilePath()));
-  if (found == dragged_files_.end())
+  if (found == files_.end())
     return false;
   *path = found->path;
   return true;
+}
+
+bool IsolatedContext::Instance::IsSinglePathInstance() const {
+  return IsSinglePathIsolatedFileSystem(type_);
 }
 
 //--------------------------------------------------------------------------
@@ -125,7 +159,8 @@ std::string IsolatedContext::RegisterDraggedFileSystem(
     const FileInfoSet& files) {
   base::AutoLock locker(lock_);
   std::string filesystem_id = GetNewFileSystemId();
-  instance_map_[filesystem_id] = new Instance(files.fileset());
+  instance_map_[filesystem_id] = new Instance(
+      kFileSystemTypeDragged, files.fileset());
   return filesystem_id;
 }
 
@@ -146,16 +181,25 @@ std::string IsolatedContext::RegisterFileSystemForPath(
   base::AutoLock locker(lock_);
   std::string filesystem_id = GetNewFileSystemId();
   instance_map_[filesystem_id] = new Instance(type, FileInfo(name, path));
+  path_to_id_map_[path].insert(filesystem_id);
   return filesystem_id;
 }
 
-void IsolatedContext::RevokeFileSystem(const std::string& filesystem_id) {
+void IsolatedContext::RevokeFileSystemByPath(const FilePath& path) {
   base::AutoLock locker(lock_);
-  IDToInstance::iterator found = instance_map_.find(filesystem_id);
-  if (found == instance_map_.end())
+  PathToID::iterator ids_iter = path_to_id_map_.find(path);
+  if (ids_iter == path_to_id_map_.end())
     return;
-  delete found->second;
-  instance_map_.erase(found);
+  std::set<std::string>& ids = ids_iter->second;
+  for (std::set<std::string>::iterator iter = ids.begin();
+       iter != ids.end(); ++iter) {
+    IDToInstance::iterator found = instance_map_.find(*iter);
+    if (found != instance_map_.end()) {
+      delete found->second;
+      instance_map_.erase(found);
+    }
+  }
+  path_to_id_map_.erase(ids_iter);
 }
 
 void IsolatedContext::AddReference(const std::string& filesystem_id) {
@@ -167,14 +211,23 @@ void IsolatedContext::AddReference(const std::string& filesystem_id) {
 void IsolatedContext::RemoveReference(const std::string& filesystem_id) {
   base::AutoLock locker(lock_);
   // This could get called for non-existent filesystem if it has been
-  // already deleted by RevokeFileSystem.
+  // already deleted by RevokeFileSystemByPath.
   IDToInstance::iterator found = instance_map_.find(filesystem_id);
   if (found == instance_map_.end())
     return;
-  DCHECK(found->second->ref_counts() > 0);
-  found->second->RemoveRef();
-  if (found->second->ref_counts() == 0) {
-    delete found->second;
+  Instance* instance = found->second;
+  DCHECK(instance->ref_counts() > 0);
+  instance->RemoveRef();
+  if (instance->ref_counts() == 0) {
+    if (instance->IsSinglePathInstance()) {
+      PathToID::iterator ids_iter = path_to_id_map_.find(
+          instance->file_info().path);
+      DCHECK(ids_iter != path_to_id_map_.end());
+      ids_iter->second.erase(filesystem_id);
+      if (ids_iter->second.empty())
+        path_to_id_map_.erase(ids_iter);
+    }
+    delete instance;
     instance_map_.erase(found);
   }
 }
@@ -229,8 +282,8 @@ bool IsolatedContext::GetDraggedFileInfo(
   if (found == instance_map_.end() ||
       found->second->type() != kFileSystemTypeDragged)
     return false;
-  files->assign(found->second->dragged_files().begin(),
-                found->second->dragged_files().end());
+  files->assign(found->second->files().begin(),
+                found->second->files().end());
   return true;
 }
 
@@ -239,8 +292,7 @@ bool IsolatedContext::GetRegisteredPath(
   DCHECK(path);
   base::AutoLock locker(lock_);
   IDToInstance::const_iterator found = instance_map_.find(filesystem_id);
-  if (found == instance_map_.end() ||
-      found->second->type() == kFileSystemTypeDragged)
+  if (found == instance_map_.end() || !found->second->IsSinglePathInstance())
     return false;
   *path = found->second->file_info().path;
   return true;
