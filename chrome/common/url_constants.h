@@ -73,6 +73,7 @@ extern const char kChromeUIVersionURL[];
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIActivationMessage[];
 extern const char kChromeUIChooseMobileNetworkURL[];
+extern const char kChromeUIDiagnosticsURL[];
 extern const char kChromeUIDiscardsURL[];
 extern const char kChromeUIIdleLogoutDialogURL[];
 extern const char kChromeUIImageBurnerURL[];
@@ -204,6 +205,7 @@ extern const char kChromeUISandboxHost[];
 extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIChooseMobileNetworkHost[];
 extern const char kChromeUICryptohomeHost[];
+extern const char kChromeUIDiagnosticsHost[];
 extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIIdleLogoutDialogHost[];
 extern const char kChromeUIImageBurnerHost[];

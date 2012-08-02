@@ -3927,6 +3927,8 @@
         'browser/ui/webui/chromeos/cryptohome_ui.h',
         'browser/ui/webui/chromeos/cryptohome_web_ui_handler.cc',
         'browser/ui/webui/chromeos/cryptohome_web_ui_handler.h',
+        'browser/ui/webui/chromeos/diagnostics/diagnostics_ui.cc',
+        'browser/ui/webui/chromeos/diagnostics/diagnostics_ui.h',
         'browser/ui/webui/chromeos/imageburner/imageburner_ui.cc',
         'browser/ui/webui/chromeos/imageburner/imageburner_ui.h',
         'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',

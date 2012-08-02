@@ -82,6 +82,7 @@ const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
 const char kChromeUIChooseMobileNetworkURL[] =
     "chrome://choose-mobile-network/";
+const char kChromeUIDiagnosticsURL[] = "chrome://diagnostics/";
 const char kChromeUIDiscardsURL[] = "chrome://discards/";
 const char kChromeUIIdleLogoutDialogURL[] = "chrome://idle-logout/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
@@ -215,6 +216,7 @@ const char kChromeUISandboxHost[] = "sandbox";
 const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICryptohomeHost[] = "cryptohome";
+const char kChromeUIDiagnosticsHost[] = "diagnostics";
 const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIIdleLogoutDialogHost[] = "idle-logout";
 const char kChromeUIImageBurnerHost[] = "imageburner";
