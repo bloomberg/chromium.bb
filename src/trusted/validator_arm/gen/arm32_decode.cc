@@ -42,13 +42,11 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LoadBasedMemoryDouble_instance_()
   , LoadBasedOffsetMemory_instance_()
   , LoadBasedOffsetMemoryDouble_instance_()
-  , LoadCoprocessor_instance_()
   , LoadMultiple_instance_()
   , LoadVectorRegister_instance_()
   , LoadVectorRegisterList_instance_()
   , MaskAddress_instance_()
   , MoveDoubleFromCoprocessor_instance_()
-  , MoveFromCoprocessor_instance_()
   , MoveVfpRegisterOp_instance_()
   , MoveVfpRegisterOpWithTypeSel_instance_()
   , Roadblock_instance_()
@@ -58,7 +56,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreBasedMemoryRtBits0To3_instance_()
   , StoreBasedOffsetMemory_instance_()
   , StoreBasedOffsetMemoryDouble_instance_()
-  , StoreCoprocessor_instance_()
   , StoreRegisterList_instance_()
   , StoreVectorRegister_instance_()
   , StoreVectorRegisterList_instance_()
@@ -2737,30 +2734,26 @@ const ClassDecoder& Arm32DecoderState::decode_sync(
 const ClassDecoder& Arm32DecoderState::decode_unconditional(
      const Instruction insn) const
 {
-  if ((insn.Bits() & 0x0FF00000) == 0x0C400000 /* op1(27:20) == 11000100 */) {
-    return CoprocessorOp_instance_;
-  }
-
-  if ((insn.Bits() & 0x0FF00000) == 0x0C500000 /* op1(27:20) == 11000101 */) {
-    return MoveDoubleFromCoprocessor_instance_;
-  }
-
   if ((insn.Bits() & 0x0FB00000) == 0x0C200000 /* op1(27:20) == 11000x10 */) {
-    return StoreCoprocessor_instance_;
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x0FB00000) == 0x0C300000 /* op1(27:20) == 11000x11 */ &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */) {
-    return LoadCoprocessor_instance_;
+    return Forbidden_instance_;
+  }
+
+  if ((insn.Bits() & 0x0FE00000) == 0x0C400000 /* op1(27:20) == 1100010x */) {
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x0F900000) == 0x0C800000 /* op1(27:20) == 11001xx0 */) {
-    return StoreCoprocessor_instance_;
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x0F900000) == 0x0C900000 /* op1(27:20) == 11001xx1 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */) {
-    return LoadCoprocessor_instance_;
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x0E500000) == 0x08100000 /* op1(27:20) == 100xx0x1 */) {
@@ -2772,22 +2765,12 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional(
   }
 
   if ((insn.Bits() & 0x0F100000) == 0x0D000000 /* op1(27:20) == 1101xxx0 */) {
-    return StoreCoprocessor_instance_;
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x0F100000) == 0x0D100000 /* op1(27:20) == 1101xxx1 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */) {
-    return LoadCoprocessor_instance_;
-  }
-
-  if ((insn.Bits() & 0x0F100000) == 0x0E000000 /* op1(27:20) == 1110xxx0 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */) {
-    return CoprocessorOp_instance_;
-  }
-
-  if ((insn.Bits() & 0x0F100000) == 0x0E100000 /* op1(27:20) == 1110xxx1 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */) {
-    return MoveFromCoprocessor_instance_;
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x0F000000) == 0x0E000000 /* op1(27:20) == 1110xxxx */ &&
@@ -2795,7 +2778,13 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional(
     return CoprocessorOp_instance_;
   }
 
-  if ((insn.Bits() & 0x0E000000) == 0x0A000000 /* op1(27:20) == 101xxxxx */) {
+  if ((insn.Bits() & 0x0F000000) == 0x0E000000 /* op1(27:20) == 1110xxxx */ &&
+      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */) {
+    return Forbidden_instance_;
+  }
+
+  if ((insn.Bits() & 0x0E000000) == 0x0A000000 /* op1(27:20) == 101xxxxx */ &&
+      (insn.Bits() & 0xFE000000) == 0xFA000000 /* $pattern(31:0) == 1111101xxxxxxxxxxxxxxxxxxxxxxxxx */) {
     return Forbidden_instance_;
   }
 

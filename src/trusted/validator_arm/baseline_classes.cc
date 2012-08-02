@@ -14,6 +14,18 @@
 
 namespace nacl_arm_dec {
 
+// UncondNop
+SafetyLevel UncondNop::safety(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList UncondNop::defs(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
+// CondNop
 SafetyLevel CondNop::safety(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;

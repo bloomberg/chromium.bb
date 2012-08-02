@@ -181,13 +181,11 @@ class Arm32DecoderState : DecoderState {
   const LoadBasedMemoryDouble LoadBasedMemoryDouble_instance_;
   const LoadBasedOffsetMemory LoadBasedOffsetMemory_instance_;
   const LoadBasedOffsetMemoryDouble LoadBasedOffsetMemoryDouble_instance_;
-  const LoadCoprocessor LoadCoprocessor_instance_;
   const LoadMultiple LoadMultiple_instance_;
   const LoadVectorRegister LoadVectorRegister_instance_;
   const LoadVectorRegisterList LoadVectorRegisterList_instance_;
   const MaskAddress MaskAddress_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
-  const MoveFromCoprocessor MoveFromCoprocessor_instance_;
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
   const Roadblock Roadblock_instance_;
@@ -197,7 +195,6 @@ class Arm32DecoderState : DecoderState {
   const StoreBasedMemoryRtBits0To3 StoreBasedMemoryRtBits0To3_instance_;
   const StoreBasedOffsetMemory StoreBasedOffsetMemory_instance_;
   const StoreBasedOffsetMemoryDouble StoreBasedOffsetMemoryDouble_instance_;
-  const StoreCoprocessor StoreCoprocessor_instance_;
   const StoreRegisterList StoreRegisterList_instance_;
   const StoreVectorRegister StoreVectorRegister_instance_;
   const StoreVectorRegisterList StoreVectorRegisterList_instance_;

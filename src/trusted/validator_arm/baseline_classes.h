@@ -29,6 +29,56 @@
  */
 namespace nacl_arm_dec {
 
+// Models an unconditional nop.
+// Nop<c>
+// +--------+--------------------------------------------------------+
+// |31302918|272625242322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------------------------------------------------+
+// |  cond  |                                                        |
+// +--------+--------------------------------------------------------+
+//
+// if cond!=1111 then UNDEFINED.
+class UncondNop : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline UncondNop() : ClassDecoder() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UncondNop);
+};
+
+
+// Models an unconditional nop that is always unsafe (i.e. one of:
+// Forbidden, Undefined, Deprecated, and Unpredictable).
+class UnsafeUncondNop : public UncondNop {
+ public:
+  explicit inline UnsafeUncondNop(SafetyLevel safety)
+      : UncondNop(), safety_(safety) {}
+  virtual SafetyLevel safety(Instruction i) const {
+    UNREFERENCED_PARAMETER(i);
+    return safety_;
+  }
+
+ private:
+  SafetyLevel safety_;  // The unsafe value to return.
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeUncondNop);
+};
+
+
+// Models an unconditional forbidden UnsafeCondNop.
+class ForbiddenUncondNop : public UnsafeUncondNop {
+ public:
+  explicit inline ForbiddenUncondNop() : UnsafeUncondNop(FORBIDDEN) {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(ForbiddenUncondNop);
+};
+
 // Models a (conditional) nop.
 // Nop<c>
 // +--------+--------------------------------------------------------+

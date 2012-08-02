@@ -19,6 +19,42 @@
 namespace nacl_arm_test {
 
 // Implements an Arm32DecoderTester with a parse precondition that
+// the conditions bits (28-31) are 1111.
+class UncondDecoderTester : public Arm32DecoderTester {
+ public:
+  explicit inline UncondDecoderTester(const NamedClassDecoder& decoder)
+      : Arm32DecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ protected:
+  // Used to get the conditional bits out of the instruction.
+  nacl_arm_dec::UncondNop cond_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UncondDecoderTester);
+};
+
+// Implements a decoder tester for an UnsafeUncondNop
+class UnsafeUncondNopTester : public UncondDecoderTester {
+ public:
+  explicit inline UnsafeUncondNopTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder),
+        expected_decoder_(nacl_arm_dec::UNKNOWN) {}
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::UnsafeUncondNop expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeUncondNopTester);
+};
+
+// Implements an Arm32DecoderTester with a parse precondition that
 // the conditions bits (28-31) are defined.
 class CondDecoderTester : public Arm32DecoderTester {
  public:
@@ -37,10 +73,12 @@ class CondDecoderTester : public Arm32DecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(CondDecoderTester);
 };
 
-// Implements a decoder tester for an UnsafeClassDecoder
+// Implements a decoder tester for an UnsafeCondNop
 class UnsafeCondNopTester : public CondDecoderTester {
  public:
-  explicit UnsafeCondNopTester(const NamedClassDecoder& decoder);
+  explicit inline UnsafeCondNopTester(const NamedClassDecoder& decoder)
+      : CondDecoderTester(decoder),
+        expected_decoder_(nacl_arm_dec::UNKNOWN) {}
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 

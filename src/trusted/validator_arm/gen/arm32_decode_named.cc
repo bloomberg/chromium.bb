@@ -2363,53 +2363,47 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_sync(
 const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional(
      const nacl_arm_dec::Instruction insn) const {
 
-  if ((insn.Bits() & 0x0FF00000) == 0x0C400000 /* op1(27:20) == 11000100 */)
-    return CoprocessorOp_None_instance_;
-
-  if ((insn.Bits() & 0x0FF00000) == 0x0C500000 /* op1(27:20) == 11000101 */)
-    return MoveDoubleFromCoprocessor_None_instance_;
-
   if ((insn.Bits() & 0x0FB00000) == 0x0C200000 /* op1(27:20) == 11000x10 */)
-    return StoreCoprocessor_None_instance_;
+    return ForbiddenUncondNop_None_instance_;
 
   if ((insn.Bits() & 0x0FB00000) == 0x0C300000 /* op1(27:20) == 11000x11 */ &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
-    return LoadCoprocessor_None_instance_;
+    return ForbiddenUncondNop_None_instance_;
+
+  if ((insn.Bits() & 0x0FE00000) == 0x0C400000 /* op1(27:20) == 1100010x */)
+    return ForbiddenUncondNop_None_instance_;
 
   if ((insn.Bits() & 0x0F900000) == 0x0C800000 /* op1(27:20) == 11001xx0 */)
-    return StoreCoprocessor_None_instance_;
+    return ForbiddenUncondNop_None_instance_;
 
   if ((insn.Bits() & 0x0F900000) == 0x0C900000 /* op1(27:20) == 11001xx1 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return LoadCoprocessor_None_instance_;
+    return ForbiddenUncondNop_None_instance_;
 
   if ((insn.Bits() & 0x0E500000) == 0x08100000 /* op1(27:20) == 100xx0x1 */)
-    return Forbidden_None_instance_;
+    return ForbiddenUncondNop_None_instance_;
 
   if ((insn.Bits() & 0x0E500000) == 0x08400000 /* op1(27:20) == 100xx1x0 */)
-    return Forbidden_None_instance_;
+    return ForbiddenUncondNop_None_instance_;
 
   if ((insn.Bits() & 0x0F100000) == 0x0D000000 /* op1(27:20) == 1101xxx0 */)
-    return StoreCoprocessor_None_instance_;
+    return ForbiddenUncondNop_None_instance_;
 
   if ((insn.Bits() & 0x0F100000) == 0x0D100000 /* op1(27:20) == 1101xxx1 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return LoadCoprocessor_None_instance_;
-
-  if ((insn.Bits() & 0x0F100000) == 0x0E000000 /* op1(27:20) == 1110xxx0 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */)
-    return CoprocessorOp_None_instance_;
-
-  if ((insn.Bits() & 0x0F100000) == 0x0E100000 /* op1(27:20) == 1110xxx1 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */)
-    return MoveFromCoprocessor_None_instance_;
+    return ForbiddenUncondNop_None_instance_;
 
   if ((insn.Bits() & 0x0F000000) == 0x0E000000 /* op1(27:20) == 1110xxxx */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* op(4:4) == 0 */)
     return CoprocessorOp_None_instance_;
 
-  if ((insn.Bits() & 0x0E000000) == 0x0A000000 /* op1(27:20) == 101xxxxx */)
-    return Forbidden_None_instance_;
+  if ((insn.Bits() & 0x0F000000) == 0x0E000000 /* op1(27:20) == 1110xxxx */ &&
+      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */)
+    return ForbiddenUncondNop_None_instance_;
+
+  if ((insn.Bits() & 0x0E000000) == 0x0A000000 /* op1(27:20) == 101xxxxx */ &&
+      (insn.Bits() & 0xFE000000) == 0xFA000000 /* $pattern(31:0) == 1111101xxxxxxxxxxxxxxxxxxxxxxxxx */)
+    return ForbiddenUncondNop_Blx_Rule_23_A2_P58_instance_;
 
   if ((insn.Bits() & 0x08000000) == 0x00000000 /* op1(27:20) == 0xxxxxxx */)
     return decode_misc_hints_simd(insn);

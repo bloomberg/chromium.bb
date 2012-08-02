@@ -1428,6 +1428,15 @@ class ForbiddenCondNopTester_Wfi_Rule_412_A1_P810_
   {}
 };
 
+class ForbiddenUncondNopTester_Blx_Rule_23_A2_P58_
+    : public UnsafeUncondNopTester {
+ public:
+  ForbiddenUncondNopTester_Blx_Rule_23_A2_P58_()
+    : UnsafeUncondNopTester(
+      state_.ForbiddenUncondNop_Blx_Rule_23_A2_P58_instance_)
+  {}
+};
+
 class Load2RegisterImm12OpTester_Ldr_Rule_58_A1_P120_NotRnIsPc
     : public LoadStore2RegisterImm12OpTesterNotRnIsPc {
  public:
@@ -3546,6 +3555,14 @@ TEST_F(Arm32DecoderStateTests,
   NamedForbidden_Wfi_Rule_412_A1_P810 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0011001000001111000000000011");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenUncondNopTester_Blx_Rule_23_A2_P58__1111101hiiiiiiiiiiiiiiiiiiiiiiii_Test) {
+  ForbiddenUncondNopTester_Blx_Rule_23_A2_P58_ baseline_tester;
+  NamedForbidden_Blx_Rule_23_A2_P58 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111101hiiiiiiiiiiiiiiiiiiiiiiii");
 }
 
 TEST_F(Arm32DecoderStateTests,

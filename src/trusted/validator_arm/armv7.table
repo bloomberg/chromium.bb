@@ -113,6 +113,7 @@
 class BreakPointAndConstantPoolHead : Immediate16Use
 class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
 class ForbiddenCondNop : UnsafeCondNop
+class ForbiddenUncondNop : UnsafeUncondNop
 class LoadRegisterList : LoadStoreRegisterList      
 class LoadStoreVectorRegister : LoadStoreVectorOp
 class LoadVectorRegister : LoadStoreVectorRegister
@@ -1510,28 +1511,47 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 # Note: We currently only allow floating point (and advanced SIMD) 
 # coprocessor operations (coproc=101x).
 #
-# TODO(karl): Should we be allowing any of these coprocessor instructions?
-#             It appears that many of these may not be coprocessor
-#             10/11 specific.
+# Note: Most instructions in this table are forbidden because they
+# aren't specific to the Vfp coprocessors (10, 11).
 | op1(27:20) op(4) Rn(19:16)
 | 0xxx_xxxx  -     -         ->misc_hints_simd
-| 100x_x1x0  -     -         =Forbidden         # SRS
-| 100x_x0x1  -     -         =Forbidden         # RFE
-| 101x_xxxx  -     -         =Forbidden         # BLX(immediate)
-| 1100_0x11  -     ~1111     =LoadCoprocessor(v5)   # LDC(immed), LDC2(immed)
-| 1100_1xx1  -     1111      =LoadCoprocessor(v5)   # LDC(literal),
-                                                    # LDC2(literal)
-| 1101_xxx1  -     1111      =LoadCoprocessor(v5)   # LDC(literal),
-                                                    # LDC2(literal)
-| 1100_0x10  -     -         =StoreCoprocessor(v5)  # STC, STC2
+# Note: These instructions are not allowed for any coprocessor.
+| 100x_x1x0  -     -         = ForbiddenUncondNop # SRS B6-20
+                             => Forbidden (v6)
+| 100x_x0x1  -     -         = ForbiddenUncondNop # RFE B6-16
+                             => Forbidden (v6)
+# Note: The following version of blx is forbidden because it
+# can allow branches to lables divisible by 2, which may be the
+# middle of an ARM instruction.
+| 101x_xxxx  -     -         = ForbiddenUncondNop => Forbidden
+                             Blx_Rule_23_A2_P58
+                             1111101hiiiiiiiiiiiiiiiiiiiiiiii
+# The following are load/store instructions to corresponding coprocessor
+# registers. These are (currently) forbidden, since Vfp (coprocessor 10, 11)
+# have explicit instructions for loading/storing values
+# into Vfp registers.
+| 1100_0x11  -     ~1111     = ForbiddenUncondNop # LDC(immed),
+                             => Forbidden (v5)    # LDC2(immed) A8-106
+| 1100_1xx1  -     1111      = ForbiddenUncondNop # LDC(literal),
+                             => Forbidden (v5)    # LDC2(literal) A8-108
+| 1101_xxx1  -     1111      = ForbiddenUncondNop # LDC(literal),
+                             => Forbidden (v5)    # LDC2(literal) A8-106
+| 1100_0x10  -     -         = ForbiddenUncondNop # STC, STC2 A8-372
+                             => Forbidden (v5)
 | 1100_1xx0  -     -         "
 | 1101_xxx0  -     -         "
-| 1100_0100  -     -         =CoprocessorOp(v6)  # MCRR, MCRR2
-| 1100_0101  -     -         =MoveDoubleFromCoprocessor(v6)  # MRRC, MRRC2
-| 1110_xxxx  0     -         =CoprocessorOp(v5)  # CDP, CDP2
-| 1110_xxx0  1     -         =CoprocessorOp(v5)  # MCR, MCR2
-| 1110_xxx1  1     -         =MoveFromCoprocessor(v5)  # MRC, MRC2
-| else:                      =Undefined         # Note on page A5-30
+| 1100_0100  -     -         = ForbiddenUncondNop # MCRR, MCRR2 A8-188
+                             => Forbidden (v6)
+| 1100_0101  -     -         = ForbiddenUncondNop # MRRC, MRRC2 A8-204
+                             => Forbidden (v6)
+| 1110_xxx0  1     -         = ForbiddenUncondNop # MCR, MCR2 A8-186
+                             => Forbidden (v5)
+| 1110_xxx1  1     -         = ForbiddenUncondNop # MRC, MRC2 A8-202
+                             => Forbidden (v5)
+# The following applies a coprocessor operation, which we currently
+# only allow for coprocessors 10 and 11.
+| 1110_xxxx  0     -         = CoprocessorOp (v5) # CDP, CDP2 A8-68
+| else:                      = Undefined          # Note on page A5-30
 +--
 
 +-- misc_hints_simd (See Section A5.7.1)
