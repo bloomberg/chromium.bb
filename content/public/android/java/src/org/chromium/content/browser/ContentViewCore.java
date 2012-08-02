@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ActionMode;
@@ -14,6 +15,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.webkit.DownloadListener;
 
 import org.chromium.base.CalledByNative;
@@ -25,6 +28,7 @@ import org.chromium.content.browser.ZoomManager;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content.common.TraceEvent;
 
+import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 
 /**
@@ -178,6 +182,9 @@ public class ContentViewCore implements MotionEventDelegate {
     // over DownloadListener.
     private ContentViewDownloadDelegate mDownloadDelegate;
 
+    // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
+    private final AccessibilityInjector mAccessibilityInjector;
+
     /**
      * Enable multi-process ContentView. This should be called by the application before
      * constructing any ContentView instances. If enabled, ContentView will run renderers in
@@ -234,6 +241,9 @@ public class ContentViewCore implements MotionEventDelegate {
         // enableMultiProcess() or the platform browser called initChromiumBrowserProcess().
         AndroidBrowserProcess.initContentViewProcess(
                 context, AndroidBrowserProcess.MAX_RENDERERS_SINGLE_PROCESS);
+
+        mAccessibilityInjector = AccessibilityInjector.newInstance(this);
+        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
 
         initialize(context, nativeWebContents, personality);
     }
@@ -368,6 +378,7 @@ public class ContentViewCore implements MotionEventDelegate {
      *                       omnibox can report suggestions correctly.
      */
     public void loadUrlWithoutUrlSanitization(String url, int pageTransition) {
+        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
         if (mNativeContentViewCore != 0) {
             if (isPersonalityView()) {
                 nativeLoadUrlWithoutUrlSanitizationWithUserAgentOverride(
@@ -484,6 +495,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * Reload the current page.
      */
     public void reload() {
+        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
         if (mNativeContentViewCore != 0) nativeReload(mNativeContentViewCore);
     }
 
@@ -605,19 +617,35 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
-     * This method should be called when the containing activity is paused
+     * This method should be called when the containing activity is paused.
      */
     public void onActivityPause() {
         TraceEvent.begin();
         hidePopupDialog();
+        setAccessibilityState(false);
         TraceEvent.end();
     }
 
     /**
-     * Called when the ContentView is hidden.
+     * This method should be called when the containing activity is resumed.
+     */
+    public void onActivityResume() {
+        setAccessibilityState(true);
+    }
+
+    /**
+     * To be called when the ContentView is shown.
+     */
+    public void onShow() {
+        setAccessibilityState(true);
+    }
+
+    /**
+     * To be called when the ContentView is hidden.
      */
     public void onHide() {
         hidePopupDialog();
+        setAccessibilityState(false);
     }
 
     /**
@@ -643,6 +671,22 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private void hidePopupDialog() {
         SelectPopupDialog.hide(this);
+    }
+
+    /**
+     * @see View#onAttachedToWindow()
+     */
+    @SuppressWarnings("javadoc")
+    protected void onAttachedToWindow() {
+        setAccessibilityState(true);
+    }
+
+    /**
+     * @see View#onDetachedFromWindow()
+     */
+    @SuppressWarnings("javadoc")
+    protected void onDetachedFromWindow() {
+        setAccessibilityState(false);
     }
 
     // End FrameLayout overrides.
@@ -1010,6 +1054,57 @@ public class ContentViewCore implements MotionEventDelegate {
     @CalledByNative
     private void startContentIntent(String contentUrl) {
         getContentViewClient().onStartContentIntent(getContext(), contentUrl);
+    }
+
+    /**
+     * Determines whether or not this ContentViewCore can handle this accessibility action.
+     * @param action The action to perform.
+     * @return Whether or not this action is supported.
+     */
+    public boolean supportsAccessibilityAction(int action) {
+        return mAccessibilityInjector.supportsAccessibilityAction(action);
+    }
+
+    /**
+     * Attempts to perform an accessibility action on the web content.  If the accessibility action
+     * cannot be processed, it returns {@code null}, allowing the caller to know to call the
+     * super {@link View#performAccessibilityAction(int, Bundle)} method and use that return value.
+     * Otherwise the return value from this method should be used.
+     * @param action The action to perform.
+     * @param arguments Optional action arguments.
+     * @return Whether the action was performed or {@code null} if the call should be delegated to
+     *         the super {@link View} class.
+     */
+    public boolean performAccessibilityAction(int action, Bundle arguments) {
+        if (mAccessibilityInjector.supportsAccessibilityAction(action)) {
+            return mAccessibilityInjector.performAccessibilityAction(action, arguments);
+        }
+
+        return false;
+    }
+
+    /**
+     * @see View#onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo)
+     */
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+        mAccessibilityInjector.onInitializeAccessibilityNodeInfo(info);
+
+        // TODO(dtrainor): Upstream accessibility scrolling event information once that data is
+        // available in ContentViewCore.  Currently internal scrolling variables aren't upstreamed.
+    }
+
+    /**
+     * @see View#onInitializeAccessibilityEvent(AccessibilityEvent)
+     */
+    public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
+        event.setClassName(this.getClass().getName());
+    }
+
+    /**
+     * Enable or disable accessibility features.
+     */
+    public void setAccessibilityState(boolean state) {
+        mAccessibilityInjector.setScriptEnabled(state);
     }
 
     // The following methods are implemented at native side.

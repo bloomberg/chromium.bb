@@ -7,12 +7,17 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
+
+import org.chromium.content.browser.ContentViewCore;
 
 /**
  * The containing view for {@link ContentViewCore} that exists in the Android UI hierarchy and
@@ -94,21 +99,55 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     private ContentViewCore mContentViewCore;
 
-    public ContentView(Context context, int nativeWebContents, int personality) {
-        this(context, nativeWebContents, null, android.R.attr.webViewStyle, personality);
+    /**
+     * Creates an instance of a ContentView.
+     * @param context The Context the view is running in, through which it can
+     *                access the current theme, resources, etc.
+     * @param nativeWebContents A pointer to the native web contents.
+     * @param personality One of {@link #PERSONALITY_CHROME} or {@link #PERSONALITY_VIEW}.
+     * @return A ContentView instance.
+     */
+    public static ContentView newInstance(Context context, int nativeWebContents, int personality) {
+        return newInstance(context, nativeWebContents, null, android.R.attr.webViewStyle,
+                personality);
     }
 
-    public ContentView(Context context, int nativeWebContents, AttributeSet attrs) {
+    /**
+     * Creates an instance of a ContentView.
+     * @param context The Context the view is running in, through which it can
+     *                access the current theme, resources, etc.
+     * @param nativeWebContents A pointer to the native web contents.
+     * @param attrs The attributes of the XML tag that is inflating the view.
+     * @return A ContentView instance.
+     */
+    public static ContentView newInstance(Context context, int nativeWebContents,
+            AttributeSet attrs) {
         // TODO(klobag): use the WebViewStyle as the default style for now. It enables scrollbar.
         // When ContentView is moved to framework, we can define its own style in the res.
-        this(context, nativeWebContents, attrs, android.R.attr.webViewStyle);
+        return newInstance(context, nativeWebContents, attrs, android.R.attr.webViewStyle);
     }
 
-    public ContentView(Context context, int nativeWebContents, AttributeSet attrs, int defStyle) {
-        this(context, nativeWebContents, attrs, defStyle, PERSONALITY_VIEW);
+    /**
+     * Creates an instance of a ContentView.
+     * @param context The Context the view is running in, through which it can
+     *                access the current theme, resources, etc.
+     * @param nativeWebContents A pointer to the native web contents.
+     * @param attrs The attributes of the XML tag that is inflating the view.
+     * @param defStyle The default style to apply to this view.
+     * @return A ContentView instance.
+     */
+    public static ContentView newInstance(Context context, int nativeWebContents,
+            AttributeSet attrs, int defStyle) {
+        return newInstance(context, nativeWebContents, attrs, defStyle, PERSONALITY_VIEW);
     }
 
-    private ContentView(Context context, int nativeWebContents, AttributeSet attrs, int defStyle,
+    private static ContentView newInstance(Context context, int nativeWebContents,
+            AttributeSet attrs, int defStyle, int personality) {
+        // TODO(dtrainor): Upstream JellyBean version of AccessibilityInjector when SDK is 16.
+        return new ContentView(context, nativeWebContents, attrs, defStyle, personality);
+    }
+
+    protected ContentView(Context context, int nativeWebContents, AttributeSet attrs, int defStyle,
             int personality) {
         super(context, attrs, defStyle);
 
@@ -320,6 +359,34 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     /**
+     * This method should be called when the containing activity is paused.
+     **/
+    public void onActivityPause() {
+        mContentViewCore.onActivityPause();
+    }
+
+    /**
+     * This method should be called when the containing activity is resumed.
+     **/
+    public void onActivityResume() {
+        mContentViewCore.onActivityResume();
+    }
+
+    /**
+     * To be called when the ContentView is shown.
+     **/
+    public void onShow() {
+        mContentViewCore.onShow();
+    }
+
+    /**
+     * To be called when the ContentView is hidden.
+     **/
+    public void onHide() {
+        mContentViewCore.onHide();
+    }
+
+    /**
      * Return the ContentSettings object used to control the settings for this
      * WebView.
      *
@@ -361,6 +428,30 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     @Override
     public boolean awakenScrollBars() {
         return super.awakenScrollBars();
+    }
+
+    @Override
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+        super.onInitializeAccessibilityNodeInfo(info);
+        mContentViewCore.onInitializeAccessibilityNodeInfo(info);
+    }
+
+    @Override
+    public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
+        super.onInitializeAccessibilityEvent(event);
+        mContentViewCore.onInitializeAccessibilityEvent(event);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mContentViewCore.onAttachedToWindow();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mContentViewCore.onDetachedFromWindow();
     }
 
     void updateMultiTouchZoomSupport() {

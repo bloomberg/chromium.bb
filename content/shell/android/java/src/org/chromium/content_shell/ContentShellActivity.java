@@ -99,6 +99,22 @@ public class ContentShellActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onPause() {
+        ContentView view = getActiveContentView();
+        if (view != null) view.onActivityPause();
+
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        ContentView view = getActiveContentView();
+        if (view != null) view.onActivityResume();
+    }
+
     private static String getUrlFromIntent(Intent intent) {
         return intent != null ? intent.getDataString() : null;
     }
@@ -116,6 +132,15 @@ public class ContentShellActivity extends Activity {
      */
     public Shell getActiveShell() {
         return mShellManager != null ? mShellManager.getActiveShell() : null;
+    }
+
+    /**
+     * @return The {@link ContentView} owned by the currently visible {@link Shell} or null if one
+     *         is not showing.
+     */
+    public ContentView getActiveContentView() {
+        Shell shell = getActiveShell();
+        return shell != null ? shell.getContentView() : null;
     }
 
     private void initializeContentViewResources() {

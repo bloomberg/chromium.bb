@@ -86,9 +86,14 @@ public class ShellManager extends FrameLayout {
         shellView.setSurfaceView(mSurfaceView);
 
         removeAllViews();
+        if (mActiveShell != null && mActiveShell.getContentView() != null) {
+            mActiveShell.getContentView().onHide();
+        }
+
         addView(shellView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         mActiveShell = shellView;
+        if (mActiveShell.getContentView() != null) mActiveShell.getContentView().onShow();
 
         return shellView;
     }
