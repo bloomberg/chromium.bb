@@ -46,6 +46,16 @@ class IntegrationTest(unittest.TestCase):
     self.assertEqual(404, bad_response.status)
     self.assertTrue(bad_response.out.getvalue())
 
+  def testLocales(self):
+    # Use US English, Spanish, and Arabic.
+    for lang in ['en-US', 'es', 'ar']:
+      request = _MockRequest('samples.html')
+      request.headers['Accept-Language'] = lang + ';q=0.8'
+      response = _MockResponse()
+      Handler(request, response, local_path='../..').get()
+      self.assertEqual(200, response.status)
+      self.assertTrue(response.out.getvalue())
+
   def testWarmupRequest(self):
     for branch in ['dev', 'trunk', 'beta', 'stable']:
       handler.BRANCH_UTILITY_MEMCACHE.Set(
