@@ -204,6 +204,9 @@ class MockPluginDelegate : public PluginDelegate {
                                const EnumerateDevicesCallback& callback);
   virtual webkit_glue::ClipboardClient* CreateClipboardClient() const;
   virtual std::string GetDeviceID();
+  virtual PP_FlashLSORestrictions GetLocalDataRestrictions(
+      const GURL& document_url,
+      const GURL& plugin_url);
 };
 
 }  // namespace ppapi

@@ -25,6 +25,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/shared_impl/dir_contents.h"
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -664,6 +665,11 @@ class PluginDelegate {
 
   // Returns a Device ID
   virtual std::string GetDeviceID() = 0;
+
+  // Returns restrictions on local data handled by the plug-in.
+  virtual PP_FlashLSORestrictions GetLocalDataRestrictions(
+      const GURL& document_url,
+      const GURL& plugin_url) = 0;
 };
 
 }  // namespace ppapi

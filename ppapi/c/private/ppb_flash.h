@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Mon Jun 25 12:46:59 2012. */
+/* From private/ppb_flash.idl modified Mon Jul 30 22:15:54 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -39,6 +39,22 @@
  * @addtogroup Enums
  * @{
  */
+typedef enum {
+  /**
+   * No restrictions on Flash LSOs.
+   */
+  PP_FLASHLSORESTRICTIONS_NONE = 1,
+  /**
+   * Don't allow access to Flash LSOs.
+   */
+  PP_FLASHLSORESTRICTIONS_BLOCK = 2,
+  /**
+   * Store Flash LSOs in memory only.
+   */
+  PP_FLASHLSORESTRICTIONS_IN_MEMORY = 3
+} PP_FlashLSORestrictions;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashLSORestrictions, 4);
+
 typedef enum {
   /**
    * Specifies if the system likely supports 3D hardware acceleration.
@@ -80,7 +96,12 @@ typedef enum {
   /**
    * Specifies the number of CPU cores that are present on the system.
    */
-  PP_FLASHSETTING_NUMCORES = 5
+  PP_FLASHSETTING_NUMCORES = 5,
+  /**
+   * Specifies restrictions on how flash should handle LSOs. The result is an
+   * int from <code>PP_FlashLSORestrictions</code>.
+   */
+  PP_FLASHSETTING_LSORESTRICTIONS = 6
 } PP_FlashSetting;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
 

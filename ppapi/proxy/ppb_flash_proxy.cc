@@ -126,6 +126,8 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgGetDeviceID)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_InvokePrinting,
                         OnHostMsgInvokePrinting)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetSetting,
+                        OnHostMsgGetSetting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
@@ -304,6 +306,12 @@ PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
           PluginGlobals::Get()->plugin_proxy_delegate()->GetUILanguage());
     case PP_FLASHSETTING_NUMCORES:
       return PP_MakeInt32(plugin_dispatcher->preferences().number_of_cpu_cores);
+    case PP_FLASHSETTING_LSORESTRICTIONS: {
+      ReceiveSerializedVarReturnValue result;
+      dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetSetting(
+          API_ID_PPB_FLASH, instance, setting, &result));
+      return result.Return(dispatcher());
+    }
   }
   return PP_MakeUndefined();
 }
@@ -829,6 +837,19 @@ void PPB_Flash_Proxy::OnHostMsgQueryFileRef(
   }
   *result = enter.functions()->GetFlashAPI()->QueryFileRef(
       instance, host_resource.host_resource(), info);
+}
+
+void PPB_Flash_Proxy::OnHostMsgGetSetting(PP_Instance instance,
+                                          PP_FlashSetting setting,
+                                          SerializedVarReturnValue id) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    id.Return(dispatcher(),
+              enter.functions()->GetFlashAPI()->GetSetting(
+                  instance, setting));
+  } else {
+    id.Return(dispatcher(), PP_MakeUndefined());
+  }
 }
 
 void PPB_Flash_Proxy::OnHostMsgGetDeviceID(PP_Instance instance,

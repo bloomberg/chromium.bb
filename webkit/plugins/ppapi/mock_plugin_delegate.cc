@@ -460,5 +460,11 @@ std::string MockPluginDelegate::GetDeviceID() {
   return std::string();
 }
 
+PP_FlashLSORestrictions MockPluginDelegate::GetLocalDataRestrictions(
+    const GURL& document_url,
+    const GURL& plugin_url) {
+  return PP_FLASHLSORESTRICTIONS_NONE;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

@@ -27,6 +27,9 @@
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkTemplates.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/clipboard_client.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
@@ -249,9 +252,18 @@ int32_t PPB_Flash_Impl::GetSettingInt(PP_Instance instance,
 }
 
 PP_Var PPB_Flash_Impl::GetSetting(PP_Instance instance,
-                                   PP_FlashSetting setting) {
-  // No current settings are supported in-process.
-  return PP_MakeUndefined();
+                                  PP_FlashSetting setting) {
+  switch(setting) {
+    case PP_FLASHSETTING_LSORESTRICTIONS: {
+      return PP_MakeInt32(
+          instance_->delegate()->GetLocalDataRestrictions(
+              instance_->container()->element().document().url(),
+              instance_->plugin_url()));
+    }
+    default:
+      // No other settings are supported in-process.
+      return PP_MakeUndefined();
+  }
 }
 
 PP_Bool PPB_Flash_Impl::SetCrashData(PP_Instance instance,

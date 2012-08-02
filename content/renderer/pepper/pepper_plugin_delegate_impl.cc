@@ -1402,6 +1402,16 @@ std::string PepperPluginDelegateImpl::GetDeviceID() {
   return result;
 }
 
+PP_FlashLSORestrictions PepperPluginDelegateImpl::GetLocalDataRestrictions(
+    const GURL& document_url,
+    const GURL& plugin_url) {
+  PP_FlashLSORestrictions restrictions = PP_FLASHLSORESTRICTIONS_NONE;
+  render_view_->Send(
+      new PepperMsg_GetLocalDataRestrictions(document_url, plugin_url,
+                                             &restrictions));
+  return restrictions;
+}
+
 base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
     uint32_t size) {
   if (size == 0)

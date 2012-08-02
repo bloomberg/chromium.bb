@@ -379,6 +379,9 @@ class PepperPluginDelegateImpl
       const EnumerateDevicesCallback& callback) OVERRIDE;
   virtual webkit_glue::ClipboardClient* CreateClipboardClient() const OVERRIDE;
   virtual std::string GetDeviceID() OVERRIDE;
+  virtual PP_FlashLSORestrictions GetLocalDataRestrictions(
+      const GURL& document_url,
+      const GURL& plugin_url) OVERRIDE;
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

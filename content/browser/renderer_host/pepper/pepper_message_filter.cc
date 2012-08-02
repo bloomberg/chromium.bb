@@ -182,6 +182,8 @@ if (process_type_ == PLUGIN) {
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_UpdateActivity, OnUpdateActivity)
     IPC_MESSAGE_HANDLER(PepperMsg_GetDeviceID, OnGetDeviceID)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashDeviceID_Get, OnGetDeviceIDAsync)
+    IPC_MESSAGE_HANDLER(PepperMsg_GetLocalDataRestrictions,
+                        OnGetLocalDataRestrictions)
 
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -712,6 +714,26 @@ void PepperMessageFilter::OnGetDeviceIDAsync(int32_t routing_id,
                                               result.empty() ? PP_ERROR_FAILED
                                                              : PP_OK,
                                               result));
+}
+
+void PepperMessageFilter::OnGetLocalDataRestrictions(
+    const GURL& document_url,
+    const GURL& plugin_url,
+    PP_FlashLSORestrictions* restrictions) {
+  content::ContentBrowserClient* client =
+      content::GetContentClient()->browser();
+  if (!client->AllowPluginLocalDataAccess(document_url, plugin_url,
+                                          resource_context_)) {
+    *restrictions = PP_FLASHLSORESTRICTIONS_BLOCK;
+    return;
+  }
+
+  if (client->AllowPluginLocalDataSessionOnly(plugin_url, resource_context_)) {
+    *restrictions = PP_FLASHLSORESTRICTIONS_IN_MEMORY;
+    return;
+  }
+
+  *restrictions = PP_FLASHLSORESTRICTIONS_NONE;
 }
 
 void PepperMessageFilter::GetFontFamiliesComplete(

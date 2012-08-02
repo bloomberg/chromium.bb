@@ -23,6 +23,7 @@
 #include "net/socket/stream_socket.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
@@ -219,6 +220,9 @@ class PepperMessageFilter
   void OnUpdateActivity();
   void OnGetDeviceID(std::string* id);
   void OnGetDeviceIDAsync(int32_t routing_id, PP_Resource resource);
+  void OnGetLocalDataRestrictions(const GURL& document_url,
+                                  const GURL& plugin_url,
+                                  PP_FlashLSORestrictions* restrictions);
 
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,

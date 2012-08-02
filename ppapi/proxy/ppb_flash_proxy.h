@@ -178,6 +178,9 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                              int32_t* result);
   void OnHostMsgGetDeviceID(PP_Instance instance,
                             SerializedVarReturnValue id);
+  void OnHostMsgGetSetting(PP_Instance instance,
+                           PP_FlashSetting setting,
+                           SerializedVarReturnValue result);
   void OnHostMsgInvokePrinting(PP_Instance instance);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Proxy);
