@@ -55,19 +55,19 @@ if __name__ == '__main__':
   parser = optparse.OptionParser(
       description='Runs a server to preview the extension documentation.',
       usage='usage: %prog [option]...')
-  parser.add_option('-p', '--port', default=8000,
+  parser.add_option('-p', '--port', default="8000",
       help='port to run the server on')
 
   (opts, argv) = parser.parse_args()
 
-  try:
-    print('Starting previewserver on port %d' % opts.port)
-    print('The extension documentation can be found at:')
-    print('')
-    print('  http://localhost:%d' % opts.port)
-    print('')
+  print('Starting previewserver on port %s' % opts.port)
+  print('The extension documentation can be found at:')
+  print('')
+  print('  http://localhost:%s' % opts.port)
+  print('')
 
-    server = HTTPServer(('', int(opts.port)), RequestHandler)
+  server = HTTPServer(('', int(opts.port)), RequestHandler)
+  try:
     server.serve_forever()
   except KeyboardInterrupt:
     pass
