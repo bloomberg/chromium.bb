@@ -382,7 +382,7 @@
         '../third_party/skia/src/gpu/GrBinHashKey.h',
         '../third_party/skia/src/gpu/GrBufferAllocPool.cpp',
         '../third_party/skia/src/gpu/GrBufferAllocPool.h',
-        '../third_party/skia/src/gpu/GrClip.cpp',
+        '../third_party/skia/src/gpu/GrClipData.cpp',
         '../third_party/skia/src/gpu/GrClipMaskManager.cpp',
         '../third_party/skia/src/gpu/GrClipMaskManager.h',
         '../third_party/skia/src/gpu/GrContext.cpp',
@@ -701,8 +701,7 @@
         '../third_party/skia/include/effects/SkTransparentShader.h',
 
         '../third_party/skia/include/gpu/GrAARectRenderer.h',
-        '../third_party/skia/include/gpu/GrClip.h',
-        '../third_party/skia/include/gpu/GrClipIterator.h',
+        '../third_party/skia/include/gpu/GrClipData.h',
         '../third_party/skia/include/gpu/GrColor.h',
         '../third_party/skia/include/gpu/GrConfig.h',
         '../third_party/skia/include/gpu/GrContext.h',
