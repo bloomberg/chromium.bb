@@ -254,13 +254,6 @@ function bb_run_tests {
   build/android/run_tests.py --xvfb --verbose
 }
 
-# Run simple content shell test on device.
-function bb_run_content_shell_test {
-  echo "@@@BUILD_STEP Run simple content shell test on actual hardware@@@"
-  content/shell/android/simple_content_shell_test.sh \
-    "${SRC_ROOT}"/out/Release/content_shell/ContentShell-debug.apk
-}
-
 # Run instrumentation test.
 # Args:
 #   $1: TEST_APK.
@@ -282,8 +275,9 @@ function bb_run_content_shell_instrumentation_test {
   build/android/adb_install_content_shell
   local TEST_APK="content_shell_test/ContentShellTest-debug"
   # Use -I to install the test apk only on the first run.
+  # TODO(bulach): remove the second once we have a Smoke test.
   bb_run_instrumentation_test ${TEST_APK} "-I -A Smoke"
-  bb_run_instrumentation_test ${TEST_APK} "-A SmallTest"
+  bb_run_instrumentation_test ${TEST_APK} "-I -A SmallTest"
   bb_run_instrumentation_test ${TEST_APK} "-A MediumTest"
   bb_run_instrumentation_test ${TEST_APK} "-A LargeTest"
 }
