@@ -397,8 +397,8 @@ void ExtensionDispatcher::WebKitInitialized() {
   for (std::set<std::string>::iterator iter = active_extension_ids_.begin();
        iter != active_extension_ids_.end(); ++iter) {
     const Extension* extension = extensions_.GetByID(*iter);
-    if (extension)
-      InitOriginPermissions(extension);
+    CHECK(extension);
+    InitOriginPermissions(extension);
   }
 
   is_webkit_initialized_ = true;
@@ -537,6 +537,8 @@ void ExtensionDispatcher::OnLoaded(
 
 void ExtensionDispatcher::OnUnloaded(const std::string& id) {
   extensions_.Remove(id);
+  active_extension_ids_.erase(id);
+
   // If the extension is later reloaded with a different set of permissions,
   // we'd like it to get a new isolated world ID, so that it can pick up the
   // changed origin whitelist.
@@ -554,8 +556,11 @@ void ExtensionDispatcher::OnSetScriptingWhitelist(
 
 bool ExtensionDispatcher::IsExtensionActive(
     const std::string& extension_id) const {
-  return active_extension_ids_.find(extension_id) !=
-      active_extension_ids_.end();
+  bool is_active =
+      active_extension_ids_.find(extension_id) != active_extension_ids_.end();
+  if (is_active)
+    CHECK(extensions_.Contains(extension_id));
+  return is_active;
 }
 
 bool ExtensionDispatcher::AllowScriptExtension(
@@ -838,7 +843,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
     module_system->Require("platformApp");
 
   if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
-      extension && extension->HasAPIPermission(APIPermission::kBrowserTag)) {
+      extension->HasAPIPermission(APIPermission::kBrowserTag)) {
     module_system->Require("browserTag");
   }
 
@@ -885,16 +890,14 @@ void ExtensionDispatcher::WillReleaseScriptContext(
 void ExtensionDispatcher::OnActivateExtension(
     const std::string& extension_id) {
   active_extension_ids_.insert(extension_id);
+  const Extension* extension = extensions_.GetByID(extension_id);
+  CHECK(extension);
 
   // This is called when starting a new extension page, so start the idle
   // handler ticking.
   RenderThread::Get()->ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayMs);
 
   UpdateActiveExtensions();
-
-  const Extension* extension = extensions_.GetByID(extension_id);
-  if (!extension)
-    return;
 
   if (is_webkit_initialized_)
     InitOriginPermissions(extension);
@@ -1072,8 +1075,10 @@ Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
     const std::string& extension_id,
     int extension_group,
     const ExtensionURLInfo& url_info) {
-  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS)
-    return Feature::CONTENT_SCRIPT_CONTEXT;
+  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS) {
+    return extensions_.Contains(extension_id) ?
+        Feature::CONTENT_SCRIPT_CONTEXT : Feature::UNSPECIFIED_CONTEXT;
+  }
 
   // We have an explicit check for sandboxed pages first since:
   // 1. Sandboxed pages run in the same process as regular extension pages, so
