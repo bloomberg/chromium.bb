@@ -45,7 +45,8 @@ TEST(FrameNavigationStateTest, TrackFrame) {
   EXPECT_EQ(frame_id1, navigation_state.GetMainFrameID());
 
   // Drop the frames.
-  navigation_state.StopTrackingFramesInRVH(fake_rvh);
+  navigation_state.StopTrackingFramesInRVH(fake_rvh,
+                                           FrameNavigationState::FrameID());
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_FALSE(navigation_state.IsValidFrame(frame_id1));
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));

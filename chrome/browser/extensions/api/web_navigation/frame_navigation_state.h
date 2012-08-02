@@ -57,8 +57,10 @@ class FrameNavigationState {
                   bool is_main_frame,
                   bool is_error_page);
 
-  // Stops tracking all frames for a given RenderViewHost.
-  void StopTrackingFramesInRVH(content::RenderViewHost* render_view_host);
+  // Stops tracking all frames but the frame with |id_to_skip| for a given
+  // RenderViewHost.
+  void StopTrackingFramesInRVH(content::RenderViewHost* render_view_host,
+                               FrameID id_to_skip);
 
   // Update the URL associated with a given frame.
   void UpdateFrame(FrameID frame_id, const GURL& url);

@@ -103,10 +103,12 @@ void FrameNavigationState::TrackFrame(FrameID frame_id,
 }
 
 void FrameNavigationState::StopTrackingFramesInRVH(
-    content::RenderViewHost* render_view_host) {
+    content::RenderViewHost* render_view_host,
+    FrameID id_to_skip) {
   for (std::set<FrameID>::iterator frame = frame_ids_.begin();
        frame != frame_ids_.end();) {
-    if (frame->render_view_host != render_view_host) {
+    if (frame->render_view_host != render_view_host ||
+        *frame == id_to_skip) {
       ++frame;
       continue;
     }
@@ -182,8 +184,10 @@ bool FrameNavigationState::GetNavigationCompleted(FrameID frame_id) const {
 void FrameNavigationState::SetNavigationCommitted(FrameID frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].is_committed = true;
-  if (frame_state_map_[frame_id].is_main_frame)
+  if (frame_state_map_[frame_id].is_main_frame) {
+    DCHECK_EQ(1u, frame_ids_.size());
     main_frame_id_ = frame_id;
+  }
 }
 
 bool FrameNavigationState::GetNavigationCommitted(FrameID frame_id) const {

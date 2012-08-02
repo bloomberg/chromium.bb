@@ -101,9 +101,11 @@ class WebNavigationTabObserver : public content::NotificationObserver,
 
   // Creates and sends onErrorOccurred events for all on-going navigations. If
   // |render_view_host| is non-NULL, only generates events for frames in this
-  // render view host.
+  // render view host. If |id_to_skip| is given, no events are sent for that
+  // frame.
   void SendErrorEvents(content::WebContents* web_contents,
-                       content::RenderViewHost* render_view_host);
+                       content::RenderViewHost* render_view_host,
+                       FrameNavigationState::FrameID id_to_skip);
 
   // Tracks the state of the frames we are sending events for.
   FrameNavigationState navigation_state_;

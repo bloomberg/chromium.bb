@@ -317,7 +317,8 @@ void WebNavigationTabObserver::Observe(
         pending_render_view_host_ = NULL;
       else
         return;
-      SendErrorEvents(web_contents(), render_view_host);
+      SendErrorEvents(
+          web_contents(), render_view_host, FrameNavigationState::FrameID());
       break;
     }
 
@@ -331,8 +332,11 @@ void WebNavigationTabObserver::AboutToNavigateRenderView(
   if (!render_view_host_) {
     render_view_host_ = render_view_host;
   } else if (render_view_host != render_view_host_) {
-    if (pending_render_view_host_)
-      SendErrorEvents(web_contents(), pending_render_view_host_);
+    if (pending_render_view_host_) {
+      SendErrorEvents(web_contents(),
+                      pending_render_view_host_,
+                      FrameNavigationState::FrameID());
+    }
     pending_render_view_host_ = render_view_host;
   }
 }
@@ -372,12 +376,15 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   if (render_view_host != render_view_host_ &&
       render_view_host != pending_render_view_host_)
     return;
-  if (render_view_host != render_view_host_)
-    SendErrorEvents(web_contents(), render_view_host_);
+  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  FrameNavigationState::FrameID id_to_skip;
+  if (render_view_host == render_view_host_)
+    id_to_skip = frame_id;
+  if (is_main_frame)
+    SendErrorEvents(web_contents(), render_view_host_, id_to_skip);
   render_view_host_ = render_view_host;
   pending_render_view_host_ = NULL;
 
-  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
 
@@ -449,8 +456,10 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
         web_contents(), render_view_host->GetProcess()->GetID(), validated_url,
         frame_num, is_main_frame, error_code);
   }
-  if (stop_tracking_frames)
-    navigation_state_.StopTrackingFramesInRVH(render_view_host);
+  if (stop_tracking_frames) {
+    navigation_state_.StopTrackingFramesInRVH(render_view_host,
+                                              FrameNavigationState::FrameID());
+  }
 }
 
 void WebNavigationTabObserver::DocumentLoadedInFrame(
@@ -537,28 +546,31 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 void WebNavigationTabObserver::WebContentsDestroyed(content::WebContents* tab) {
   g_tab_observer.Get().erase(tab);
   registrar_.RemoveAll();
-  SendErrorEvents(tab, NULL);
+  SendErrorEvents(tab, NULL, FrameNavigationState::FrameID());
 }
 
 void WebNavigationTabObserver::SendErrorEvents(
     content::WebContents* web_contents,
-    content::RenderViewHost* render_view_host) {
+    content::RenderViewHost* render_view_host,
+    FrameNavigationState::FrameID id_to_skip) {
   for (FrameNavigationState::const_iterator frame = navigation_state_.begin();
        frame != navigation_state_.end(); ++frame) {
     if (!navigation_state_.GetNavigationCompleted(*frame) &&
         navigation_state_.CanSendEvents(*frame) &&
+        *frame != id_to_skip &&
         (!render_view_host || frame->render_view_host == render_view_host)) {
+      navigation_state_.SetErrorOccurredInFrame(*frame);
       helpers::DispatchOnErrorOccurred(
-        web_contents,
-        frame->render_view_host->GetProcess()->GetID(),
-        navigation_state_.GetUrl(*frame),
-        frame->frame_num,
-        navigation_state_.IsMainFrame(*frame),
-        net::ERR_ABORTED);
+          web_contents,
+          frame->render_view_host->GetProcess()->GetID(),
+          navigation_state_.GetUrl(*frame),
+          frame->frame_num,
+          navigation_state_.IsMainFrame(*frame),
+          net::ERR_ABORTED);
     }
   }
   if (render_view_host)
-    navigation_state_.StopTrackingFramesInRVH(render_view_host);
+    navigation_state_.StopTrackingFramesInRVH(render_view_host, id_to_skip);
 }
 
 // See also NavigationController::IsURLInPageNavigation.
