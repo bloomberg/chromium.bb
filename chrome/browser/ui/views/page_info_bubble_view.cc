@@ -49,7 +49,7 @@ const int kIconVerticalOffset = -7;
 
 // The duration of the animation that resizes the bubble once the async
 // information is provided through the ModelChanged event.
-const int kPageInfoSlideDuration = 1450;
+const int kPageInfoSlideDuration = 250;
 
 // A section contains an image that shows a status (good or bad), a title, an
 // optional head-line (in bold) and a description.
@@ -68,9 +68,9 @@ class Section : public views::View,
   void SetAnimationStage(double animation_stage);
 
   // views::View methods:
-  virtual int GetHeightForWidth(int w);
-  virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
 
   // views::LinkListener methods:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
