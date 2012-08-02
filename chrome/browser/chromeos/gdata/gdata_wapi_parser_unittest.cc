@@ -20,14 +20,6 @@ using base::Value;
 using base::DictionaryValue;
 using base::ListValue;
 
-#define IF_EXPECT_EQ(arg1, arg2) \
-  EXPECT_EQ(arg1, arg2); \
-  if (arg1 == arg2)
-
-#define IF_EXPECT_TRUE(arg) \
-  EXPECT_TRUE(arg); \
-  if (arg)
-
 namespace gdata {
 
 class GDataWAPIParserTest : public testing::Test {
@@ -96,27 +88,24 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   EXPECT_EQ(update_time, feed->updated_time());
 
   // Check authors.
-  IF_EXPECT_EQ(1U, feed->authors().size()) {
-    EXPECT_EQ(ASCIIToUTF16("tester"), feed->authors()[0]->name());
-    EXPECT_EQ("tester@testing.com", feed->authors()[0]->email());
-  }
+  ASSERT_EQ(1U, feed->authors().size());
+  EXPECT_EQ(ASCIIToUTF16("tester"), feed->authors()[0]->name());
+  EXPECT_EQ("tester@testing.com", feed->authors()[0]->email());
 
   // Check links.
-  IF_EXPECT_EQ(6U, feed->links().size()) {
-    const Link* self_link = feed->GetLinkByType(Link::SELF);
-    IF_EXPECT_TRUE(self_link) {
-      EXPECT_EQ("https://self_link/", self_link->href().spec());
-      EXPECT_EQ("application/atom+xml", self_link->mime_type());
-    }
-  }
+  ASSERT_EQ(6U, feed->links().size());
+  const Link* self_link = feed->GetLinkByType(Link::SELF);
+  ASSERT_TRUE(self_link);
+  EXPECT_EQ("https://self_link/", self_link->href().spec());
+  EXPECT_EQ("application/atom+xml", self_link->mime_type());
+
 
   const Link* resumable_link =
       feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
-  IF_EXPECT_TRUE(resumable_link) {
-    EXPECT_EQ("https://resumable_create_media_link/",
-              resumable_link->href().spec());
-    EXPECT_EQ("application/atom+xml", resumable_link->mime_type());
-  }
+  ASSERT_TRUE(resumable_link);
+  EXPECT_EQ("https://resumable_create_media_link/",
+            resumable_link->href().spec());
+  EXPECT_EQ("application/atom+xml", resumable_link->mime_type());
 
   // Check entries.
   ASSERT_EQ(4U, feed->entries().size());
@@ -138,14 +127,13 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   EXPECT_EQ(entry1_update_time, folder_entry->updated_time());
   EXPECT_EQ(entry1_publish_time, folder_entry->published_time());
 
-  IF_EXPECT_EQ(1U, folder_entry->authors().size()) {
-    EXPECT_EQ(ASCIIToUTF16("entry_tester"), folder_entry->authors()[0]->name());
-    EXPECT_EQ("entry_tester@testing.com", folder_entry->authors()[0]->email());
-    EXPECT_EQ("https://1_folder_content_url/",
-              folder_entry->content_url().spec());
-    EXPECT_EQ("application/atom+xml;type=feed",
-              folder_entry->content_mime_type());
-  }
+  ASSERT_EQ(1U, folder_entry->authors().size());
+  EXPECT_EQ(ASCIIToUTF16("entry_tester"), folder_entry->authors()[0]->name());
+  EXPECT_EQ("entry_tester@testing.com", folder_entry->authors()[0]->email());
+  EXPECT_EQ("https://1_folder_content_url/",
+            folder_entry->content_url().spec());
+  EXPECT_EQ("application/atom+xml;type=feed",
+            folder_entry->content_mime_type());
 
   ASSERT_EQ(1U, folder_entry->feed_links().size());
   const FeedLink* feed_link = folder_entry->feed_links()[0];
@@ -154,69 +142,60 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
 
   const Link* entry1_alternate_link =
       folder_entry->GetLinkByType(Link::ALTERNATE);
-  IF_EXPECT_TRUE(entry1_alternate_link) {
-    EXPECT_EQ("https://1_folder_alternate_link/",
-              entry1_alternate_link->href().spec());
-    EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
-  }
+  ASSERT_TRUE(entry1_alternate_link);
+  EXPECT_EQ("https://1_folder_alternate_link/",
+            entry1_alternate_link->href().spec());
+  EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
   const Link* entry1_edit_link = folder_entry->GetLinkByType(Link::EDIT);
-  IF_EXPECT_TRUE(entry1_edit_link) {
-    EXPECT_EQ("https://1_edit_link/", entry1_edit_link->href().spec());
-    EXPECT_EQ("application/atom+xml", entry1_edit_link->mime_type());
-  }
+  ASSERT_TRUE(entry1_edit_link);
+  EXPECT_EQ("https://1_edit_link/", entry1_edit_link->href().spec());
+  EXPECT_EQ("application/atom+xml", entry1_edit_link->mime_type());
 
   // Check a file entry.
   const DocumentEntry* file_entry = feed->entries()[1];
-  IF_EXPECT_TRUE(file_entry) {
-    EXPECT_EQ(DocumentEntry::FILE, file_entry->kind());
-    EXPECT_EQ(ASCIIToUTF16("filename.m4a"), file_entry->filename());
-    EXPECT_EQ(ASCIIToUTF16("sugg_file_name.m4a"),
-              file_entry->suggested_filename());
-    EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce", file_entry->file_md5());
-    EXPECT_EQ(892721, file_entry->file_size());
-    const Link* file_parent_link = file_entry->GetLinkByType(Link::PARENT);
-    IF_EXPECT_TRUE(file_parent_link) {
-      EXPECT_EQ("https://file_link_parent/", file_parent_link->href().spec());
-      EXPECT_EQ("application/atom+xml", file_parent_link->mime_type());
-      EXPECT_EQ(ASCIIToUTF16("Medical"), file_parent_link->title());
-    }
-    const Link* file_open_with_link =
-      file_entry->GetLinkByType(Link::OPEN_WITH);
-    IF_EXPECT_TRUE(file_open_with_link) {
-      EXPECT_EQ("https://xml_file_entry_open_with_link/",
-                file_open_with_link->href().spec());
-      EXPECT_EQ("application/atom+xml", file_open_with_link->mime_type());
-      EXPECT_EQ("the_app_id", file_open_with_link->app_id());
-    }
+  ASSERT_TRUE(file_entry);
+  EXPECT_EQ(DocumentEntry::FILE, file_entry->kind());
+  EXPECT_EQ(ASCIIToUTF16("filename.m4a"), file_entry->filename());
+  EXPECT_EQ(ASCIIToUTF16("sugg_file_name.m4a"),
+            file_entry->suggested_filename());
+  EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce", file_entry->file_md5());
+  EXPECT_EQ(892721, file_entry->file_size());
+  const Link* file_parent_link = file_entry->GetLinkByType(Link::PARENT);
+  ASSERT_TRUE(file_parent_link);
+  EXPECT_EQ("https://file_link_parent/", file_parent_link->href().spec());
+  EXPECT_EQ("application/atom+xml", file_parent_link->mime_type());
+  EXPECT_EQ(ASCIIToUTF16("Medical"), file_parent_link->title());
+  const Link* file_open_with_link =
+    file_entry->GetLinkByType(Link::OPEN_WITH);
+  ASSERT_TRUE(file_open_with_link);
+  EXPECT_EQ("https://xml_file_entry_open_with_link/",
+            file_open_with_link->href().spec());
+  EXPECT_EQ("application/atom+xml", file_open_with_link->mime_type());
+  EXPECT_EQ("the_app_id", file_open_with_link->app_id());
 
-    const Link* file_unknown_link = file_entry->GetLinkByType(Link::UNKNOWN);
-    IF_EXPECT_TRUE(file_unknown_link) {
-      EXPECT_EQ("https://xml_file_fake_entry_open_with_link/",
-                file_unknown_link->href().spec());
-      EXPECT_EQ("application/atom+xml", file_unknown_link->mime_type());
-      EXPECT_EQ("", file_unknown_link->app_id());
-    }
-
-  }
+  const Link* file_unknown_link = file_entry->GetLinkByType(Link::UNKNOWN);
+  ASSERT_TRUE(file_unknown_link);
+  EXPECT_EQ("https://xml_file_fake_entry_open_with_link/",
+            file_unknown_link->href().spec());
+  EXPECT_EQ("application/atom+xml", file_unknown_link->mime_type());
+  EXPECT_EQ("", file_unknown_link->app_id());
 
   // Check a file entry.
   const DocumentEntry* document_entry = feed->entries()[2];
-  IF_EXPECT_TRUE(document_entry) {
-    EXPECT_EQ(DocumentEntry::DOCUMENT, document_entry->kind());
-    EXPECT_TRUE(document_entry->is_hosted_document());
-    EXPECT_TRUE(document_entry->is_google_document());
-    EXPECT_FALSE(document_entry->is_external_document());
-  }
+  ASSERT_TRUE(document_entry);
+  EXPECT_EQ(DocumentEntry::DOCUMENT, document_entry->kind());
+  EXPECT_TRUE(document_entry->is_hosted_document());
+  EXPECT_TRUE(document_entry->is_google_document());
+  EXPECT_FALSE(document_entry->is_external_document());
 
   // Check an external document entry.
   const DocumentEntry* app_entry = feed->entries()[3];
-  IF_EXPECT_TRUE(app_entry) {
-    EXPECT_EQ(DocumentEntry::EXTERNAL_APP, app_entry->kind());
-    EXPECT_TRUE(app_entry->is_hosted_document());
-    EXPECT_TRUE(app_entry->is_external_document());
-    EXPECT_FALSE(app_entry->is_google_document());
-  }
+  ASSERT_TRUE(app_entry);
+  EXPECT_EQ(DocumentEntry::EXTERNAL_APP, app_entry->kind());
+  EXPECT_TRUE(app_entry->is_hosted_document());
+  EXPECT_TRUE(app_entry->is_external_document());
+  EXPECT_FALSE(app_entry->is_google_document());
 }
 
 
@@ -248,57 +227,49 @@ TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
             entry->content_mime_type());
 
   // Check feed links.
-  IF_EXPECT_EQ(2U, entry->feed_links().size()) {
-    const FeedLink* feed_link_1 = entry->feed_links()[0];
-    IF_EXPECT_TRUE(feed_link_1) {
-      EXPECT_EQ(FeedLink::ACL, feed_link_1->type());
-    }
-    const FeedLink* feed_link_2 = entry->feed_links()[1];
-    IF_EXPECT_TRUE(feed_link_2) {
-      EXPECT_EQ(FeedLink::REVISIONS, feed_link_2->type());
-    }
-  }
+  ASSERT_EQ(2U, entry->feed_links().size());
+  const FeedLink* feed_link_1 = entry->feed_links()[0];
+  ASSERT_TRUE(feed_link_1);
+  EXPECT_EQ(FeedLink::ACL, feed_link_1->type());
+
+  const FeedLink* feed_link_2 = entry->feed_links()[1];
+  ASSERT_TRUE(feed_link_2);
+  EXPECT_EQ(FeedLink::REVISIONS, feed_link_2->type());
 
   // Check links.
-  IF_EXPECT_EQ(9U, entry->links().size()) {
-    const Link* entry1_alternate_link = entry->GetLinkByType(Link::ALTERNATE);
-    IF_EXPECT_TRUE(entry1_alternate_link) {
-      EXPECT_EQ("https://xml_file_entry_id_alternate_link/",
-                entry1_alternate_link->href().spec());
-      EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
-    }
+  ASSERT_EQ(9U, entry->links().size());
+  const Link* entry1_alternate_link = entry->GetLinkByType(Link::ALTERNATE);
+  ASSERT_TRUE(entry1_alternate_link);
+  EXPECT_EQ("https://xml_file_entry_id_alternate_link/",
+            entry1_alternate_link->href().spec());
+  EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
-    const Link* entry1_edit_link = entry->GetLinkByType(Link::EDIT_MEDIA);
-    IF_EXPECT_TRUE(entry1_edit_link) {
-      EXPECT_EQ("https://xml_file_entry_id_edit_media_link/",
-                entry1_edit_link->href().spec());
-      EXPECT_EQ("application/x-tar", entry1_edit_link->mime_type());
-    }
+  const Link* entry1_edit_link = entry->GetLinkByType(Link::EDIT_MEDIA);
+  ASSERT_TRUE(entry1_edit_link);
+  EXPECT_EQ("https://xml_file_entry_id_edit_media_link/",
+            entry1_edit_link->href().spec());
+  EXPECT_EQ("application/x-tar", entry1_edit_link->mime_type());
 
-    const Link* entry1_self_link = entry->GetLinkByType(Link::SELF);
-    IF_EXPECT_TRUE(entry1_self_link) {
-      EXPECT_EQ("https://xml_file_entry_id_self_link/",
-                entry1_self_link->href().spec());
-      EXPECT_EQ("application/atom+xml", entry1_self_link->mime_type());
-      EXPECT_EQ("", entry1_self_link->app_id());
-    }
+  const Link* entry1_self_link = entry->GetLinkByType(Link::SELF);
+  ASSERT_TRUE(entry1_self_link);
+  EXPECT_EQ("https://xml_file_entry_id_self_link/",
+            entry1_self_link->href().spec());
+  EXPECT_EQ("application/atom+xml", entry1_self_link->mime_type());
+  EXPECT_EQ("", entry1_self_link->app_id());
 
-    const Link* entry1_open_with_link = entry->GetLinkByType(Link::OPEN_WITH);
-    IF_EXPECT_TRUE(entry1_open_with_link) {
-      EXPECT_EQ("https://xml_file_entry_open_with_link/",
-                entry1_open_with_link->href().spec());
-      EXPECT_EQ("application/atom+xml", entry1_open_with_link->mime_type());
-      EXPECT_EQ("the_app_id", entry1_open_with_link->app_id());
-    }
+  const Link* entry1_open_with_link = entry->GetLinkByType(Link::OPEN_WITH);
+  ASSERT_TRUE(entry1_open_with_link);
+  EXPECT_EQ("https://xml_file_entry_open_with_link/",
+            entry1_open_with_link->href().spec());
+  EXPECT_EQ("application/atom+xml", entry1_open_with_link->mime_type());
+  EXPECT_EQ("the_app_id", entry1_open_with_link->app_id());
 
-    const Link* entry1_unknown_link = entry->GetLinkByType(Link::UNKNOWN);
-    IF_EXPECT_TRUE(entry1_unknown_link) {
-      EXPECT_EQ("https://xml_file_fake_entry_open_with_link/",
-                entry1_unknown_link->href().spec());
-      EXPECT_EQ("application/atom+xml", entry1_unknown_link->mime_type());
-      EXPECT_EQ("", entry1_unknown_link->app_id());
-    }
-  }
+  const Link* entry1_unknown_link = entry->GetLinkByType(Link::UNKNOWN);
+  ASSERT_TRUE(entry1_unknown_link);
+  EXPECT_EQ("https://xml_file_fake_entry_open_with_link/",
+            entry1_unknown_link->href().spec());
+  EXPECT_EQ("application/atom+xml", entry1_unknown_link->mime_type());
+  EXPECT_EQ("", entry1_unknown_link->app_id());
 
   // Check a file properties.
   EXPECT_EQ(DocumentEntry::FILE, entry->kind());
@@ -328,54 +299,51 @@ TEST_F(GDataWAPIParserTest, AccountMetadataFeedParser) {
   const InstalledApp* first_app = feed->installed_apps()[0];
   const InstalledApp* second_app = feed->installed_apps()[1];
 
-  IF_EXPECT_TRUE(first_app) {
-    EXPECT_EQ("Drive App 1", UTF16ToUTF8(first_app->app_name()));
-    EXPECT_EQ("Drive App Object 1", UTF16ToUTF8(first_app->object_type()));
-    EXPECT_TRUE(first_app->supports_create());
-    EXPECT_EQ("https://chrome.google.com/webstore/detail/abcdefabcdef",
-              first_app->GetProductUrl().spec());
-    IF_EXPECT_EQ(2U, first_app->primary_mimetypes().size()) {
-      EXPECT_EQ("application/test_type_1",
-                *first_app->primary_mimetypes()[0]);
-      EXPECT_EQ("application/vnd.google-apps.drive-sdk.11111111",
-                *first_app->primary_mimetypes()[1]);
-    }
-    IF_EXPECT_EQ(1U, first_app->secondary_mimetypes().size()) {
-      EXPECT_EQ("image/jpeg", *first_app->secondary_mimetypes()[0]);
-    }
-    IF_EXPECT_EQ(2U, first_app->primary_extensions().size()) {
-      EXPECT_EQ("ext_1", *first_app->primary_extensions()[0]);
-      EXPECT_EQ("ext_2", *first_app->primary_extensions()[1]);
-    }
-    IF_EXPECT_EQ(1U, first_app->secondary_extensions().size()) {
-      EXPECT_EQ("ext_3", *first_app->secondary_extensions()[0]);
-    }
-    IF_EXPECT_EQ(1U, first_app->app_icons().size()) {
-      EXPECT_EQ(AppIcon::DOCUMENT, first_app->app_icons()[0]->category());
-      EXPECT_EQ(16, first_app->app_icons()[0]->icon_side_length());
-      GURL icon_url = first_app->app_icons()[0]->GetIconURL();
-      EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
-                icon_url.spec());
-      InstalledApp::IconList icons =
-          first_app->GetIconsForCategory(AppIcon::DOCUMENT);
-      EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
-                icons[0].second.spec());
-      icons = first_app->GetIconsForCategory(AppIcon::SHARED_DOCUMENT);
-      EXPECT_TRUE(icons.empty());
-    }
-  }
+  ASSERT_TRUE(first_app);
+  EXPECT_EQ("Drive App 1", UTF16ToUTF8(first_app->app_name()));
+  EXPECT_EQ("Drive App Object 1", UTF16ToUTF8(first_app->object_type()));
+  EXPECT_TRUE(first_app->supports_create());
+  EXPECT_EQ("https://chrome.google.com/webstore/detail/abcdefabcdef",
+            first_app->GetProductUrl().spec());
 
-  IF_EXPECT_TRUE(second_app) {
-    EXPECT_EQ("Drive App 2", UTF16ToUTF8(second_app->app_name()));
-    EXPECT_EQ("Drive App Object 2", UTF16ToUTF8(second_app->object_type()));
-    EXPECT_EQ("https://chrome.google.com/webstore/detail/deadbeefdeadbeef",
-              second_app->GetProductUrl().spec());
-    EXPECT_FALSE(second_app->supports_create());
-    EXPECT_EQ(2U, second_app->primary_mimetypes().size());
-    EXPECT_EQ(0U, second_app->secondary_mimetypes().size());
-    EXPECT_EQ(1U, second_app->primary_extensions().size());
-    EXPECT_EQ(0U, second_app->secondary_extensions().size());
-  }
+  ASSERT_EQ(2U, first_app->primary_mimetypes().size());
+  EXPECT_EQ("application/test_type_1",
+            *first_app->primary_mimetypes()[0]);
+  EXPECT_EQ("application/vnd.google-apps.drive-sdk.11111111",
+            *first_app->primary_mimetypes()[1]);
+
+  ASSERT_EQ(1U, first_app->secondary_mimetypes().size());
+  EXPECT_EQ("image/jpeg", *first_app->secondary_mimetypes()[0]);
+
+  ASSERT_EQ(2U, first_app->primary_extensions().size());
+  EXPECT_EQ("ext_1", *first_app->primary_extensions()[0]);
+  EXPECT_EQ("ext_2", *first_app->primary_extensions()[1]);
+
+  ASSERT_EQ(1U, first_app->secondary_extensions().size());
+  EXPECT_EQ("ext_3", *first_app->secondary_extensions()[0]);
+
+  ASSERT_EQ(1U, first_app->app_icons().size());
+  EXPECT_EQ(AppIcon::DOCUMENT, first_app->app_icons()[0]->category());
+  EXPECT_EQ(16, first_app->app_icons()[0]->icon_side_length());
+  GURL icon_url = first_app->app_icons()[0]->GetIconURL();
+  EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png", icon_url.spec());
+  InstalledApp::IconList icons =
+    first_app->GetIconsForCategory(AppIcon::DOCUMENT);
+  EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
+            icons[0].second.spec());
+  icons = first_app->GetIconsForCategory(AppIcon::SHARED_DOCUMENT);
+  EXPECT_TRUE(icons.empty());
+
+  ASSERT_TRUE(second_app);
+  EXPECT_EQ("Drive App 2", UTF16ToUTF8(second_app->app_name()));
+  EXPECT_EQ("Drive App Object 2", UTF16ToUTF8(second_app->object_type()));
+  EXPECT_EQ("https://chrome.google.com/webstore/detail/deadbeefdeadbeef",
+            second_app->GetProductUrl().spec());
+  EXPECT_FALSE(second_app->supports_create());
+  EXPECT_EQ(2U, second_app->primary_mimetypes().size());
+  EXPECT_EQ(0U, second_app->secondary_mimetypes().size());
+  EXPECT_EQ(1U, second_app->primary_extensions().size());
+  EXPECT_EQ(0U, second_app->secondary_extensions().size());
 }
 
 // Test file extension checking in DocumentEntry::HasDocumentExtension().
