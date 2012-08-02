@@ -29,57 +29,64 @@ function exitFullscreen() {
 // callback that the click has registered and the mouse lock state has changed.
 function lockMouse1(callback) {
   console.log("lockMouse1()");
-  navigator.webkitPointer.lock(document.getElementById("lockTarget1"),
-    function() {
-      console.log("lock success");
-      if (callback) {
-        callback("success");
-      }
-    },
-    function() {
-      console.log("lock failed");
-      if (callback) {
-        callback("failure");
-      }
+  var target = document.getElementById("lockTarget1");
+
+  function failure() {
+    console.log("lock failed");
+    if (callback) {
+      callback("failure");
     }
-  );
+  };
+  function possibleSuccess() {
+    if (document.webkitPointerLockElement == target) {
+      console.log("lock success");
+      if (callback)
+        callback("success");
+    } else {
+      failure();
+    }
+  };
+  document.onwebkitpointerlockchange = possibleSuccess;
+  document.onwebkitpointerlockerror = failure;
+  target.webkitRequestPointerLock();
 }
 
-var lock_result1 = "";
 // In the PyAuto test the fullscreen is initiated, accepted and enters into a
-// wait state reading the value of lock_result1. One of the two asynchronous
+// wait state reading the value of lock_result. One of the two asynchronous
 // functions in the JS will be executed. The PyAuto code waits for lock_result
 // to return "success" or "failure". Sample PyAuto code:
 // lock_result = self._driver.execute_script('lockMouse1AndSetLockResult()')
-function lockMouse1AndSetLockResult() {
-  console.log("lockMouse1AndSetLockResult()");
-  lock_result1 = "";
-  navigator.webkitPointer.lock(document.getElementById("lockTarget1"),
-    function() {
+function lockMouseAndSetLockResult(targetId) {
+  var target = document.getElementById(targetId);
+  lock_result = "";
+
+  function failure() {
+    console.log("lock failed");
+    lock_result = "failure"
+  };
+  function possibleSuccess() {
+    if (document.webkitPointerLockElement == target) {
       console.log("lock success");
       lock_result = "success"
-    },
-    function() {
-      console.log("lock failed");
-      lock_result = "failure"
+    } else {
+      failure();
     }
-  );
+  };
+  document.onwebkitpointerlockchange = possibleSuccess;
+  document.onwebkitpointerlockerror = failure;
+  target.webkitRequestPointerLock();
+}
+
+function lockMouse1AndSetLockResult() {
+  console.log("lockMouse1AndSetLockResult()");
+  lockMouseAndSetLockResult("lockTarget1");
 }
 
 // When mouse lock is initiated and accepted, PyAuto test will wait for the
 // lock_result to return "success" or "failure" to initiate the next action.
 function lockMouse2() {
   console.log("lockMouse2()");
-  navigator.webkitPointer.lock(document.getElementById("lockTarget2"),
-    function() {
-      console.log("lock success");
-      lock_result = "success"
-    },
-    function() {
-      console.log("lock failed")
-      lock_result = "failure"
-    }
-  );
+  lockMouseAndSetLockResult("lockTarget2");
 }
 
 function delayedLockMouse1() {
@@ -97,7 +104,7 @@ function spamLockMouse2() {
 
 function unlockMouse() {
   console.log("unlockMouse()");
-  navigator.webkitPointer.unlock();
+  document.webkitExitPointerLock();
 }
 
 function enterFullscreenAndLockMouse1() {

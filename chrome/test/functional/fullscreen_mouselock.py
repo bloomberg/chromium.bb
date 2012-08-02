@@ -339,6 +339,7 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     self.assertTrue(
         self.WaitUntil(lambda: self.IsMouseLockPermissionRequested()))
     self.AcceptCurrentFullscreenOrMouseLockRequest()
+    self.assertTrue(self.WaitUntil(self.IsMouseLocked))
     # Waits until lock_result gets 'success' or 'failure'.
     lock_result = self._driver.execute_script('return lock_result')
     self.assertEqual(
