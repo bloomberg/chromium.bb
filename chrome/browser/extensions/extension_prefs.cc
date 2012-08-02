@@ -178,6 +178,15 @@ const char kFilteredEvents[] = "filtered_events";
 // Persisted value for omnibox.setDefaultSuggestion.
 const char kOmniboxDefaultSuggestion[] = "omnibox_default_suggestion";
 
+// List of media gallery permissions.
+const char kMediaGalleriesPermissions[] = "media_galleries_permissions";
+
+// Key for Media Gallery ID.
+const char kMediaGalleryIdKey[] = "id";
+
+// Key for Media Gallery Permission Value.
+const char kMediaGalleryHasPermissionKey[] = "has_permission";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1148,6 +1157,121 @@ void ExtensionPrefs::SetLaunchType(const std::string& extension_id,
                                    LaunchType launch_type) {
   UpdateExtensionPref(extension_id, kPrefLaunchType,
       Value::CreateIntegerValue(static_cast<int>(launch_type)));
+}
+
+namespace {
+
+bool GetMediaGalleryPermissionFromDictionary(
+    const DictionaryValue* dict,
+    MediaGalleryPermission* out_permission) {
+  std::string string_id;
+  if (dict->GetString(kMediaGalleryIdKey, &string_id) &&
+      base::StringToUint64(string_id, &out_permission->pref_id) &&
+      dict->GetBoolean(kMediaGalleryHasPermissionKey,
+                       &out_permission->has_permission)) {
+    return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+void RemoveMediaGalleryPermissionsFromExtension(PrefService* prefs,
+                                                const std::string& extension_id,
+                                                MediaGalleryPrefId gallery_id) {
+  ScopedExtensionPrefUpdate update(prefs, extension_id);
+  DictionaryValue* extension_dict = update.Get();
+  ListValue* permissions = NULL;
+  if (!extension_dict->GetList(kMediaGalleriesPermissions, &permissions))
+    return;
+
+  for (ListValue::iterator it = permissions->begin();
+       it != permissions->end();
+       ++it) {
+    const DictionaryValue* dict = NULL;
+    if (!(*it)->GetAsDictionary(&dict))
+      continue;
+    MediaGalleryPermission perm;
+    if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
+      continue;
+    if (perm.pref_id == gallery_id) {
+      permissions->Erase(it, NULL);
+      return;
+    }
+  }
+}
+
+}  // namespace
+
+void ExtensionPrefs::SetMediaGalleryPermission(const std::string& extension_id,
+                                               MediaGalleryPrefId gallery,
+                                               bool has_access) {
+  ScopedExtensionPrefUpdate update(prefs_, extension_id);
+  DictionaryValue* extension_dict = update.Get();
+  ListValue* permissions = NULL;
+  if (!extension_dict->GetList(kMediaGalleriesPermissions, &permissions)) {
+    permissions = new ListValue;
+    extension_dict->Set(kMediaGalleriesPermissions, permissions);
+  } else {
+    // If the gallery is already in the list, update the permission.
+    for (ListValue::const_iterator it = permissions->begin();
+         it != permissions->end();
+         ++it) {
+      DictionaryValue* dict = NULL;
+      if (!(*it)->GetAsDictionary(&dict))
+        continue;
+      MediaGalleryPermission perm;
+      if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
+        continue;
+      if (perm.pref_id == gallery) {
+        dict->SetBoolean(kMediaGalleryHasPermissionKey, has_access);
+        return;
+      }
+    }
+  }
+
+  DictionaryValue* dict = new DictionaryValue;
+  dict->SetString(kMediaGalleryIdKey, base::Uint64ToString(gallery));
+  dict->SetBoolean(kMediaGalleryHasPermissionKey, has_access);
+  permissions->Append(dict);
+}
+
+std::vector<MediaGalleryPermission> ExtensionPrefs::GetMediaGalleryPermissions(
+        const std::string& extension_id) {
+  std::vector<MediaGalleryPermission> result;
+  const ListValue* permissions = NULL;
+  if (ReadExtensionPrefList(extension_id, kMediaGalleriesPermissions,
+                            &permissions)) {
+    for (ListValue::const_iterator it = permissions->begin();
+         it != permissions->end();
+         ++it) {
+      DictionaryValue* dict = NULL;
+      if (!(*it)->GetAsDictionary(&dict))
+        continue;
+      MediaGalleryPermission perm;
+      if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
+        continue;
+      result.push_back(perm);
+    }
+  }
+  return result;
+}
+
+void ExtensionPrefs::RemoveMediaGalleryPermissions(
+    MediaGalleryPrefId gallery_id) {
+  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  if (!extensions)
+    return;
+
+  for (DictionaryValue::key_iterator it = extensions->begin_keys();
+       it != extensions->end_keys();
+       ++it) {
+    const std::string& id(*it);
+    if (!Extension::IdIsValid(id)) {
+      NOTREACHED();
+      continue;
+    }
+    RemoveMediaGalleryPermissionsFromExtension(prefs_, id, gallery_id);
+  }
 }
 
 bool ExtensionPrefs::DoesExtensionHaveState(

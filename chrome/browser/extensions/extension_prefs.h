@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/extensions/management_policy.h"
+#include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/string_ordinal.h"
@@ -320,6 +321,14 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   extension_misc::LaunchContainer GetLaunchContainer(
       const Extension* extension,
       LaunchType default_pref_value);
+
+  // Set and retrieve permissions for media galleries as identified by the
+  // gallery id.
+  void SetMediaGalleryPermission(const std::string& extension_id,
+                                 MediaGalleryPrefId gallery, bool has_access);
+  std::vector<MediaGalleryPermission> GetMediaGalleryPermissions(
+      const std::string& extension_id);
+  void RemoveMediaGalleryPermissions(MediaGalleryPrefId gallery_id);
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved

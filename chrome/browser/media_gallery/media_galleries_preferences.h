@@ -13,12 +13,19 @@
 #include "base/string16.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
+class PrefService;
+class Profile;
+
 namespace base {
 class DictionaryValue;
 }
 
-class PrefService;
-class Profile;
+typedef uint64 MediaGalleryPrefId;
+
+struct MediaGalleryPermission {
+  MediaGalleryPrefId pref_id;
+  bool has_permission;
+};
 
 struct MediaGallery {
   MediaGallery();
