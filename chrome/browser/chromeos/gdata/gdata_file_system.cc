@@ -735,9 +735,8 @@ GDataFileSystem::GDataFileSystem(
       webapps_registry_(webapps_registry),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
-      ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()),
-      blocking_task_runner_(blocking_task_runner) {
+      blocking_task_runner_(blocking_task_runner),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -765,7 +764,7 @@ void GDataFileSystem::CheckForUpdates() {
         directory_service_->largest_changestamp(),
         directory_service_->root()->GetFilePath(),
         base::Bind(&GDataFileSystem::OnUpdateChecked,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    initial_origin));
   }
 }
@@ -807,7 +806,7 @@ void GDataFileSystem::StartUpdates() {
                       base::TimeDelta::FromSeconds(
                           kGDataUpdateCheckIntervalInSec),
                       base::Bind(&GDataFileSystem::CheckForUpdates,
-                          ui_weak_ptr_));
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GDataFileSystem::StopUpdates() {
@@ -823,7 +822,7 @@ void GDataFileSystem::GetEntryInfoByResourceId(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::GetEntryInfoByResourceIdOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  resource_id,
                  CreateRelayCallback(callback)));
 }
@@ -834,7 +833,7 @@ void GDataFileSystem::GetEntryInfoByResourceIdOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   directory_service_->GetEntryByResourceIdAsync(resource_id,
       base::Bind(&GDataFileSystem::GetEntryInfoByEntryOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -869,7 +868,7 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     AddObserver(new InitialLoadObserver(
         this,
         base::Bind(&GDataFileSystem::FindEntryByPathSyncOnUIThread,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    search_file_path,
                    callback)));
     return;
@@ -882,7 +881,7 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
         search_file_path,
         // This is the initial load, hence we'll notify when it's done.
         base::Bind(&GDataFileSystem::RunAndNotifyInitialLoadFinished,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    callback));
     return;
   }
@@ -892,7 +891,7 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&GDataFileSystem::FindEntryByPathSyncOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  search_file_path,
                  callback));
 }
@@ -918,7 +917,7 @@ void GDataFileSystem::ReloadFeedFromServerIfNeeded(
   // there at all.
   documents_service_->GetAccountMetadata(
       base::Bind(&GDataFileSystem::OnGetAccountMetadata,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  initial_origin,
                  local_changestamp,
                  search_file_path,
@@ -945,7 +944,7 @@ void GDataFileSystem::OnGetAccountMetadata(
                        std::string() /* no directory resource ID */,
                        callback,
                        base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
-                                  ui_weak_ptr_));
+                                  weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -974,7 +973,7 @@ void GDataFileSystem::OnGetAccountMetadata(
                        std::string() /* no directory resource ID */,
                        callback,
                        base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
-                                  ui_weak_ptr_));
+                                  weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -1012,7 +1011,7 @@ void GDataFileSystem::OnGetAccountMetadata(
                      std::string() /* no directory resource ID */,
                      callback,
                      base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
-                                ui_weak_ptr_));
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GDataFileSystem::LoadFeedFromServer(
@@ -1038,7 +1037,7 @@ void GDataFileSystem::LoadFeedFromServer(
       search_query,
       directory_resource_id,
       base::Bind(&GDataFileSystem::OnGetDocuments,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  initial_origin,
                  feed_load_callback,
                  base::Owned(new GetDocumentsParams(start_changestamp,
@@ -1092,7 +1091,7 @@ void GDataFileSystem::TransferFileFromRemoteToLocal(
 
   GetFileByPath(remote_src_file_path,
       base::Bind(&GDataFileSystem::OnGetFileCompleteForTransferFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  local_dest_file_path,
                  callback),
       GetDownloadDataCallback());
@@ -1109,7 +1108,7 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
       remote_dest_file_path.DirName(),
       base::Bind(
           &GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo,
-          ui_weak_ptr_,
+          weak_ptr_factory_.GetWeakPtr(),
           local_src_file_path,
           remote_dest_file_path,
           callback));
@@ -1149,7 +1148,7 @@ void GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo(
                  local_src_file_path,
                  resource_id),
       base::Bind(&GDataFileSystem::TransferFileForResourceId,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  local_src_file_path,
                  remote_dest_file_path,
                  callback,
@@ -1200,7 +1199,7 @@ void GDataFileSystem::TransferRegularFile(
                  file_size,
                  content_type),
       base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  StartFileUploadParams(local_file_path,
                                        remote_dest_file_path,
                                        callback),
@@ -1233,7 +1232,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
       params.remote_file_path.DirName(),
       base::Bind(
           &GDataFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo,
-          ui_weak_ptr_,
+          weak_ptr_factory_.GetWeakPtr(),
           params,
           *file_size,
           *content_type));
@@ -1271,7 +1270,7 @@ void GDataFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo(
 
   upload_file_info->completion_callback =
       base::Bind(&GDataFileSystem::OnTransferCompleted,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params.callback);
 
   uploader_->UploadNewFile(upload_file_info.Pass());
@@ -1302,7 +1301,7 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::CopyOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                src_file_path,
                                dest_file_path,
                                CreateRelayCallback(callback)));
@@ -1358,7 +1357,7 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
   // copying of regular files directly on the server side.
   GetFileByPath(src_file_path,
                 base::Bind(&GDataFileSystem::OnGetFileCompleteForCopy,
-                           ui_weak_ptr_,
+                           weak_ptr_factory_.GetWeakPtr(),
                            dest_file_path,
                            callback),
                 GetDownloadDataCallback());
@@ -1391,7 +1390,7 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&GDataFileSystem::TransferRegularFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  local_file_path, remote_dest_file_path,
                  base::Bind(OnTransferRegularFileCompleteForCopy,
                             callback,
@@ -1440,7 +1439,7 @@ void GDataFileSystem::CopyDocumentToDirectory(
 
   documents_service_->CopyDocument(resource_id, new_name,
       base::Bind(&GDataFileSystem::OnCopyDocumentCompleted,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  dir_path,
                  callback));
 }
@@ -1463,7 +1462,7 @@ void GDataFileSystem::Rename(const FilePath& file_path,
   GetEntryInfoByPath(file_path,
                      base::Bind(
                          &GDataFileSystem::RenameAfterGetEntryInfo,
-                         ui_weak_ptr_,
+                         weak_ptr_factory_.GetWeakPtr(),
                          file_path,
                          new_name,
                          callback));
@@ -1501,7 +1500,7 @@ void GDataFileSystem::RenameAfterGetEntryInfo(
       GURL(entry_proto->edit_url()),
       file_name,
       base::Bind(&GDataFileSystem::OnRenameResourceCompleted,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  file_name,
                  callback));
@@ -1513,7 +1512,7 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::MoveOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                src_file_path,
                                dest_file_path,
                                CreateRelayCallback(callback)));
@@ -1549,7 +1548,7 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
   if (src_file_path.DirName() == dest_parent_path) {
     FilePathUpdateCallback final_file_path_update_callback =
         base::Bind(&GDataFileSystem::OnFilePathUpdated,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    callback);
 
     Rename(src_file_path, dest_file_path.BaseName().value(),
@@ -1568,13 +1567,13 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
   //    directory of |dest_file_path|.
   FilePathUpdateCallback add_file_to_directory_callback =
       base::Bind(&GDataFileSystem::AddEntryToDirectory,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  dest_file_path.DirName(),
                  callback);
 
   FilePathUpdateCallback remove_file_from_directory_callback =
       base::Bind(&GDataFileSystem::RemoveEntryFromDirectory,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  src_file_path.DirName(),
                  add_file_to_directory_callback);
 
@@ -1613,7 +1612,7 @@ void GDataFileSystem::AddEntryToDirectory(
       dir_entry->content_url(),
       entry->edit_url(),
       base::Bind(&GDataFileSystem::OnAddEntryToDirectoryCompleted,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  file_path,
                  dir_path));
@@ -1652,7 +1651,7 @@ void GDataFileSystem::RemoveEntryFromDirectory(
       entry->edit_url(),
       entry->resource_id(),
       base::Bind(&GDataFileSystem::OnRemoveEntryFromDirectoryCompleted,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  file_path,
                  dir_path));
@@ -1664,7 +1663,7 @@ void GDataFileSystem::Remove(const FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::RemoveOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                file_path,
                                is_recursive,
                                CreateRelayCallback(callback)));
@@ -1680,7 +1679,7 @@ void GDataFileSystem::RemoveOnUIThread(
   GetEntryInfoByPath(file_path,
                      base::Bind(
                          &GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo,
-                         ui_weak_ptr_,
+                         weak_ptr_factory_.GetWeakPtr(),
                          file_path,
                          is_recursive,
                          callback));
@@ -1706,7 +1705,7 @@ void GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
   documents_service_->DeleteDocument(
       GURL(entry_proto->edit_url()),
       base::Bind(&GDataFileSystem::OnRemovedDocument,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  file_path));
 }
@@ -1719,7 +1718,7 @@ void GDataFileSystem::CreateDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::CreateDirectoryOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                directory_path,
                                is_exclusive,
                                is_recursive,
@@ -1784,7 +1783,7 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
       last_parent_dir_url,
       first_missing_path.BaseName().value(),
       base::Bind(&GDataFileSystem::OnCreateDirectoryCompleted,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  CreateDirectoryParams(
                      first_missing_path,
                      directory_path,
@@ -1799,7 +1798,7 @@ void GDataFileSystem::CreateFile(const FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::CreateFileOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                file_path,
                                is_exclusive,
                                CreateRelayCallback(callback)));
@@ -1815,7 +1814,7 @@ void GDataFileSystem::CreateFileOnUIThread(
   FindEntryByPathAsyncOnUIThread(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfoForCreateFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  is_exclusive,
                  callback));
@@ -1869,7 +1868,7 @@ void GDataFileSystem::GetFileByPath(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::GetFileByPathOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  CreateRelayCallback(get_file_callback),
                  CreateRelayCallback(get_download_data_callback)));
@@ -1884,7 +1883,7 @@ void GDataFileSystem::GetFileByPathOnUIThread(
   GetEntryInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForGetFileByPath,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  CreateRelayCallback(get_file_callback),
                  CreateRelayCallback(get_download_data_callback)));
@@ -1974,7 +1973,7 @@ void GDataFileSystem::GetResolvedFileByPath(
       entry_proto->file_specific_info().file_md5(),
       base::Bind(
           &GDataFileSystem::OnGetFileFromCache,
-          ui_weak_ptr_,
+          weak_ptr_factory_.GetWeakPtr(),
           GetFileFromCacheParams(
               file_path,
               local_tmp_path,
@@ -1994,7 +1993,7 @@ void GDataFileSystem::GetFileByResourceId(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::GetFileByResourceIdOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  resource_id,
                  CreateRelayCallback(get_file_callback),
                  CreateRelayCallback(get_download_data_callback)));
@@ -2008,7 +2007,7 @@ void GDataFileSystem::GetFileByResourceIdOnUIThread(
 
   directory_service_->GetEntryByResourceIdAsync(resource_id,
       base::Bind(&GDataFileSystem::GetFileByEntryOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  get_file_callback,
                  get_download_data_callback));
 }
@@ -2076,7 +2075,7 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
   documents_service_->GetDocumentEntry(
       resource_id,
       base::Bind(&GDataFileSystem::OnGetDocumentEntry,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  cache_file_path,
                  GetFileFromCacheParams(params.virtual_file_path,
                                         params.local_tmp_path,
@@ -2137,7 +2136,7 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
                  file_size,
                  has_enough_space),
       base::Bind(&GDataFileSystem::StartDownloadFileIfEnoughSpace,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params,
                  content_url,
                  cache_file_path,
@@ -2168,7 +2167,7 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
       params.local_tmp_path,
       content_url,
       base::Bind(&GDataFileSystem::OnFileDownloaded,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params),
       params.get_download_data_callback);
 }
@@ -2179,7 +2178,7 @@ void GDataFileSystem::GetEntryInfoByPath(const FilePath& file_path,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  CreateRelayCallback(callback)));
 }
@@ -2192,7 +2191,7 @@ void GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread(
   FindEntryByPathAsyncOnUIThread(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfo,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -2221,7 +2220,7 @@ void GDataFileSystem::ReadDirectoryByPath(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  CreateRelayCallback(callback)));
 }
@@ -2234,7 +2233,7 @@ void GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread(
   FindEntryByPathAsyncOnUIThread(
       file_path,
       base::Bind(&GDataFileSystem::OnReadDirectory,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -2286,7 +2285,7 @@ void GDataFileSystem::RequestDirectoryRefresh(const FilePath& file_path) {
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::RequestDirectoryRefreshOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path));
 }
 
@@ -2299,7 +2298,7 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
       file_path,
       base::Bind(
           &GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo,
-          ui_weak_ptr_,
+          weak_ptr_factory_.GetWeakPtr(),
           file_path));
 }
 
@@ -2324,7 +2323,7 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
                      entry_proto->resource_id(),
                      FindEntryCallback(),  // Not used.
                      base::Bind(&GDataFileSystem::OnRequestDirectoryRefresh,
-                                ui_weak_ptr_));
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GDataFileSystem::OnRequestDirectoryRefresh(
@@ -2357,7 +2356,7 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
 
   directory_service_->GetEntryByResourceIdAsync(params->directory_resource_id,
       base::Bind(&GDataFileSystem::RequestDirectoryRefreshByEntry,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  directory_path,
                  params->directory_resource_id,
                  file_map));
@@ -2403,7 +2402,7 @@ void GDataFileSystem::UpdateFileByResourceId(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::UpdateFileByResourceIdOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  resource_id,
                  CreateRelayCallback(callback)));
 }
@@ -2415,7 +2414,7 @@ void GDataFileSystem::UpdateFileByResourceIdOnUIThread(
 
   directory_service_->GetEntryByResourceIdAsync(resource_id,
       base::Bind(&GDataFileSystem::UpdateFileByEntryOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -2437,7 +2436,7 @@ void GDataFileSystem::UpdateFileByEntryOnUIThread(
       file->resource_id(),
       file->file_md5(),
       base::Bind(&GDataFileSystem::OnGetFileCompleteForUpdateFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -2467,7 +2466,7 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFile(
                  get_size_error,
                  file_size),
       base::Bind(&GDataFileSystem::OnGetFileSizeCompleteForUpdateFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  resource_id,
                  md5,
@@ -2493,7 +2492,7 @@ void GDataFileSystem::OnGetFileSizeCompleteForUpdateFile(
 
   directory_service_->GetEntryByResourceIdAsync(resource_id,
       base::Bind(&GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry,
-          ui_weak_ptr_,
+          weak_ptr_factory_.GetWeakPtr(),
           callback,
           md5,
           *file_size,
@@ -2522,7 +2521,7 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry(
       file_size,
       file->content_mime_type(),
       base::Bind(&GDataFileSystem::OnUpdatedFileUploaded,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -2552,7 +2551,7 @@ void GDataFileSystem::GetAvailableSpace(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::GetAvailableSpaceOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                CreateRelayCallback(callback)));
 }
 
@@ -2562,7 +2561,7 @@ void GDataFileSystem::GetAvailableSpaceOnUIThread(
 
   documents_service_->GetAccountMetadata(
       base::Bind(&GDataFileSystem::OnGetAvailableSpace,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -2692,7 +2691,8 @@ void GDataFileSystem::OnSearch(const SearchCallback& callback,
         base::Bind(&AddEntryToSearchResults,
                    results,
                    callback,
-                   base::Bind(&GDataFileSystem::CheckForUpdates, ui_weak_ptr_),
+                   base::Bind(&GDataFileSystem::CheckForUpdates,
+                              weak_ptr_factory_.GetWeakPtr()),
                    error,
                    i+1 == feed->entries().size()));
   }
@@ -2703,7 +2703,7 @@ void GDataFileSystem::Search(const std::string& search_query,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::SearchAsyncOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                search_query,
                                CreateRelayCallback(callback)));
 }
@@ -2727,7 +2727,8 @@ void GDataFileSystem::SearchAsyncOnUIThread(
                      std::string(),  // No directory resource ID.
                      FindEntryCallback(),  // Not used.
                      base::Bind(&GDataFileSystem::OnSearch,
-                                ui_weak_ptr_, callback));
+                                weak_ptr_factory_.GetWeakPtr(),
+                                callback));
 }
 
 void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
@@ -2805,7 +2806,7 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
         params->search_query,
         params->directory_resource_id,
         base::Bind(&GDataFileSystem::OnGetDocuments,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    initial_origin,
                    callback,
                    base::Owned(
@@ -2844,7 +2845,7 @@ void GDataFileSystem::LoadRootFeedFromCache(
   BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
       base::Bind(&LoadProtoOnBlockingPool, path, params),
       base::Bind(&GDataFileSystem::OnProtoLoaded,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(params)));
 }
 
@@ -3074,7 +3075,7 @@ void GDataFileSystem::OnFileDownloaded(
         params.resource_id,
         params.md5,
         base::Bind(&GDataFileSystem::UnpinIfPinned,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    params.resource_id,
                    params.md5));
   }
@@ -3096,7 +3097,7 @@ void GDataFileSystem::OnFileDownloaded(
                  0,
                  has_enough_space),
       base::Bind(&GDataFileSystem::OnFileDownloadedAndSpaceChecked,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params,
                  status,
                  content_url,
@@ -3137,7 +3138,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
           downloaded_file_path,
           GDataCache::FILE_OPERATION_MOVE,
           base::Bind(&GDataFileSystem::OnDownloadStoredToCache,
-                     ui_weak_ptr_));
+                     weak_ptr_factory_.GetWeakPtr()));
     } else {
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
@@ -3430,7 +3431,7 @@ void GDataFileSystem::AddUploadedFile(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&GDataFileSystem::AddUploadedFileOnUIThread,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  upload_mode,
                  virtual_dir_path,
                  base::Passed(&entry),
@@ -3556,7 +3557,7 @@ void GDataFileSystem::OpenFile(const FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::OpenFileOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                file_path,
                                CreateRelayCallback(callback)));
 }
@@ -3581,10 +3582,10 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
   GetEntryInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForOpenFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  base::Bind(&GDataFileSystem::OnOpenFileFinished,
-                            ui_weak_ptr_,
+                            weak_ptr_factory_.GetWeakPtr(),
                             file_path,
                             callback)));
 }
@@ -3617,7 +3618,7 @@ void GDataFileSystem::OnGetEntryInfoCompleteForOpenFile(
   GetResolvedFileByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetFileCompleteForOpenFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  GetFileCompleteForOpenParams(
                      entry_proto->resource_id(),
@@ -3649,7 +3650,7 @@ void GDataFileSystem::OnGetFileCompleteForOpenFile(
       entry_proto.resource_id,
       entry_proto.md5,
       base::Bind(&GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -3686,7 +3687,7 @@ void GDataFileSystem::CloseFile(const FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::CloseFileOnUIThread,
-                               ui_weak_ptr_,
+                               weak_ptr_factory_.GetWeakPtr(),
                                file_path,
                                CreateRelayCallback(callback)));
 }
@@ -3708,10 +3709,10 @@ void GDataFileSystem::CloseFileOnUIThread(
   GetEntryInfoByPathAsyncOnUIThread(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForCloseFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  base::Bind(&GDataFileSystem::OnCloseFileFinished,
-                            ui_weak_ptr_,
+                            weak_ptr_factory_.GetWeakPtr(),
                             file_path,
                             callback)));
 }
@@ -3736,7 +3737,7 @@ void GDataFileSystem::OnGetEntryInfoCompleteForCloseFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5(),
       base::Bind(&GDataFileSystem::OnGetCacheFilePathCompleteForCloseFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  callback));
 }
@@ -3768,7 +3769,7 @@ void GDataFileSystem::OnGetCacheFilePathCompleteForCloseFile(
                  base::Unretained(file_info),
                  base::Unretained(get_file_info_result)),
       base::Bind(&GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  base::Owned(file_info),
                  base::Owned(get_file_info_result),
@@ -3793,7 +3794,7 @@ void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
   FindEntryByPathAsyncOnUIThread(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryCompleteForCloseFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  *file_info,
                  callback));
@@ -3840,7 +3841,7 @@ void GDataFileSystem::OnGetEntryCompleteForCloseFile(
       file->resource_id(),
       file->file_md5(),
       base::Bind(&GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -3894,7 +3895,9 @@ void GDataFileSystem::CheckLocalModificationAndRun(
       md5,
       base::Bind(
           &GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry,
-          ui_weak_ptr_, base::Passed(&entry_proto), callback));
+          weak_ptr_factory_.GetWeakPtr(),
+          base::Passed(&entry_proto),
+          callback));
 }
 
 void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
@@ -3919,7 +3922,9 @@ void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
       md5,
       base::Bind(
           &GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheFile,
-          ui_weak_ptr_, base::Passed(&entry_proto), callback));
+          weak_ptr_factory_.GetWeakPtr(),
+          base::Passed(&entry_proto),
+          callback));
 }
 
 void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
@@ -3949,7 +3954,7 @@ void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
                  base::Unretained(file_info),
                  base::Unretained(get_file_info_result)),
       base::Bind(&GDataFileSystem::CheckLocalModificationAndRunAfterGetFileInfo,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&entry_proto),
                  callback,
                  base::Owned(file_info),
