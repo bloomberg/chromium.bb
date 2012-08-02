@@ -3687,6 +3687,25 @@ void RenderViewImpl::openFileSystem(
       size, create, new WebFileSystemCallbackDispatcher(callbacks));
 }
 
+void RenderViewImpl::deleteFileSystem(
+    WebFrame* frame,
+    WebFileSystem::Type type ,
+    WebFileSystemCallbacks* callbacks) {
+  DCHECK(callbacks);
+
+  WebSecurityOrigin origin = frame->document().securityOrigin();
+  if (origin.isUnique()) {
+    // Unique origins cannot store persistent state.
+    callbacks->didSucceed();
+    return;
+  }
+
+  ChildThread::current()->file_system_dispatcher()->DeleteFileSystem(
+      GURL(origin.toString()),
+      static_cast<fileapi::FileSystemType>(type),
+      new WebFileSystemCallbackDispatcher(callbacks));
+}
+
 void RenderViewImpl::queryStorageUsageAndQuota(
     WebFrame* frame,
     WebStorageQuotaType type,

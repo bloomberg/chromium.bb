@@ -635,6 +635,9 @@ class RenderViewImpl : public RenderWidget,
                               long long size,
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
+  virtual void deleteFileSystem(WebKit::WebFrame* frame,
+                                WebKit::WebFileSystem::Type type,
+                                WebKit::WebFileSystemCallbacks* callbacks);
   virtual void queryStorageUsageAndQuota(
       WebKit::WebFrame* frame,
       WebKit::WebStorageQuotaType type,

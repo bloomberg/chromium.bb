@@ -40,6 +40,9 @@ class FileSystemDispatcher : public IPC::Listener {
                       long long size,
                       bool create,
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
+  bool DeleteFileSystem(const GURL& origin_url,
+                        fileapi::FileSystemType type,
+                        fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool Move(const GURL& src_path,
             const GURL& dest_path,
             fileapi::FileSystemCallbackDispatcher* dispatcher);

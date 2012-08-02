@@ -60,6 +60,12 @@ IPC_MESSAGE_CONTROL5(FileSystemHostMsg_Open,
                      int64 /* requested_size */,
                      bool /* create */)
 
+// WebFrameClient::deleteFileSystem() message.
+IPC_MESSAGE_CONTROL3(FileSystemHostMsg_DeleteFileSystem,
+                     int /* request_id */,
+                     GURL /* origin_url */,
+                     fileapi::FileSystemType /* type */)
+
 // WebFileSystem::move() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Move,
                      int /* request_id */,

@@ -150,6 +150,7 @@ bool FileAPIMessageFilter::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(FileAPIMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Open, OnOpen)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_DeleteFileSystem, OnDeleteFileSystem)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Move, OnMove)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Copy, OnCopy)
     IPC_MESSAGE_HANDLER(FileSystemMsg_Remove, OnRemove)
@@ -205,6 +206,15 @@ void FileAPIMessageFilter::OnOpen(
   }
   context_->OpenFileSystem(origin_url, type, create, base::Bind(
       &FileAPIMessageFilter::DidOpenFileSystem, this, request_id));
+}
+
+void FileAPIMessageFilter::OnDeleteFileSystem(
+    int request_id,
+    const GURL& origin_url,
+    fileapi::FileSystemType type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  context_->DeleteFileSystem(origin_url, type, base::Bind(
+      &FileAPIMessageFilter::DidDeleteFileSystem, this, request_id));
 }
 
 void FileAPIMessageFilter::OnMove(
@@ -650,6 +660,17 @@ void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
     Send(new FileSystemMsg_DidFail(request_id, result));
   }
   // For OpenFileSystem we do not create a new operation, so no unregister here.
+}
+
+void FileAPIMessageFilter::DidDeleteFileSystem(
+    int request_id,
+    base::PlatformFileError result) {
+  if (result == base::PLATFORM_FILE_OK)
+    Send(new FileSystemMsg_DidSucceed(request_id));
+  else
+    Send(new FileSystemMsg_DidFail(request_id, result));
+  // For DeleteFileSystem we do not create a new operation,
+  // so no unregister here.
 }
 
 void FileAPIMessageFilter::DidCreateSnapshot(

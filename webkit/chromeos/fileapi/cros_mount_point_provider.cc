@@ -138,6 +138,15 @@ fileapi::FileSystemQuotaUtil* CrosMountPointProvider::GetQuotaUtil() {
   return NULL;
 }
 
+void CrosMountPointProvider::DeleteFileSystem(
+    const GURL& origin_url,
+    fileapi::FileSystemType type,
+    fileapi::FileSystemContext* context,
+    const DeleteFileSystemCallback& callback) {
+  NOTREACHED();
+  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+}
+
 bool CrosMountPointProvider::HasMountPoint(const FilePath& mount_point) {
   base::AutoLock locker(mount_point_map_lock_);
   MountPointMap::const_iterator iter = mount_point_map_.find(

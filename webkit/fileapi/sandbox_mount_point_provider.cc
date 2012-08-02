@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/task_runner_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
@@ -268,16 +269,9 @@ void MigrateIfNeeded(
     MigrateAllOldFileSystems(file_util, old_base_path);
 }
 
-void PassPointerErrorByValue(
-    const base::Callback<void(PlatformFileError)>& callback,
-    PlatformFileError* error_ptr) {
-  DCHECK(error_ptr);
-  callback.Run(*error_ptr);
-}
-
 void DidValidateFileSystemRoot(
     base::WeakPtr<SandboxMountPointProvider> mount_point_provider,
-    const base::Callback<void(PlatformFileError)>& callback,
+    const FileSystemMountPointProvider::ValidateFileSystemCallback& callback,
     base::PlatformFileError* error) {
   if (mount_point_provider.get())
     mount_point_provider.get()->CollectOpenFileSystemMetrics(*error);
@@ -459,6 +453,24 @@ FileSystemQuotaUtil* SandboxMountPointProvider::GetQuotaUtil() {
   return this;
 }
 
+void SandboxMountPointProvider::DeleteFileSystem(
+    const GURL& origin_url,
+    FileSystemType type,
+    FileSystemContext* context,
+    const DeleteFileSystemCallback& callback) {
+  base::PostTaskAndReplyWithResult(
+      context->file_task_runner(),
+      FROM_HERE,
+      // It is safe to pass Unretained(this) since context owns it.
+      base::Bind(&SandboxMountPointProvider::DeleteOriginDataOnFileThread,
+                 base::Unretained(this),
+                 make_scoped_refptr(context),
+                 base::Unretained(context->quota_manager_proxy()),
+                 origin_url,
+                 type),
+      callback);
+}
+
 FilePath SandboxMountPointProvider::old_base_path() const {
   return profile_path_.Append(kOldFileSystemDirectory);
 }
@@ -490,7 +502,8 @@ FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
   return path;
 }
 
-bool SandboxMountPointProvider::DeleteOriginDataOnFileThread(
+base::PlatformFileError
+SandboxMountPointProvider::DeleteOriginDataOnFileThread(
     FileSystemContext* file_system_context,
     QuotaManagerProxy* proxy,
     const GURL& origin_url,
@@ -509,7 +522,10 @@ bool SandboxMountPointProvider::DeleteOriginDataOnFileThread(
         FileSystemTypeToQuotaStorageType(type),
         -usage);
   }
-  return result;
+
+  if (result)
+    return base::PLATFORM_FILE_OK;
+  return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 void SandboxMountPointProvider::GetOriginsForTypeOnFileThread(

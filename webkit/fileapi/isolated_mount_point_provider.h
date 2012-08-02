@@ -20,8 +20,8 @@ class NativeMediaFileUtil;
 
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
-  typedef FileSystemMountPointProvider::ValidateFileSystemCallback
-      ValidateFileSystemCallback;
+  using FileSystemMountPointProvider::ValidateFileSystemCallback;
+  using FileSystemMountPointProvider::DeleteFileSystemCallback;
 
   IsolatedMountPointProvider();
   virtual ~IsolatedMountPointProvider();
@@ -48,14 +48,19 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
       const FileSystemURL& url,
       FileSystemContext* context) const OVERRIDE;
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
-    const FileSystemURL& url,
-    int64 offset,
-    FileSystemContext* context) const OVERRIDE;
+      const FileSystemURL& url,
+      int64 offset,
+      FileSystemContext* context) const OVERRIDE;
   virtual FileStreamWriter* CreateFileStreamWriter(
-    const FileSystemURL& url,
-    int64 offset,
-    FileSystemContext* context) const OVERRIDE;
+      const FileSystemURL& url,
+      int64 offset,
+      FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+  virtual void DeleteFileSystem(
+      const GURL& origin_url,
+      FileSystemType type,
+      FileSystemContext* context,
+      const DeleteFileSystemCallback& callback) OVERRIDE;
 
  private:
   scoped_ptr<MediaPathFilter> media_path_filter_;

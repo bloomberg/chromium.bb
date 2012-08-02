@@ -41,8 +41,8 @@ class FILEAPI_EXPORT SandboxMountPointProvider
     : public FileSystemMountPointProvider,
       public FileSystemQuotaUtil {
  public:
-  typedef FileSystemMountPointProvider::ValidateFileSystemCallback
-      ValidateFileSystemCallback;
+  using FileSystemMountPointProvider::ValidateFileSystemCallback;
+  using FileSystemMountPointProvider::DeleteFileSystemCallback;
 
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.
@@ -104,6 +104,11 @@ class FILEAPI_EXPORT SandboxMountPointProvider
       int64 offset,
       FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+  virtual void DeleteFileSystem(
+      const GURL& origin_url,
+      FileSystemType type,
+      FileSystemContext* context,
+      const DeleteFileSystemCallback& callback) OVERRIDE;
 
   FilePath old_base_path() const;
   FilePath new_base_path() const;
@@ -126,7 +131,7 @@ class FILEAPI_EXPORT SandboxMountPointProvider
 
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.
-  bool DeleteOriginDataOnFileThread(
+  base::PlatformFileError DeleteOriginDataOnFileThread(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,

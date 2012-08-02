@@ -36,10 +36,11 @@ QuotaClient* CreateQuotaClient(
   return new FileSystemQuotaClient(context, is_incognito);
 }
 
-void DidOpenFileSystem(FileSystemContext::OpenFileSystemCallback callback,
-                       const GURL& filesystem_root,
-                       const std::string& filesystem_name,
-                       base::PlatformFileError error) {
+void DidOpenFileSystem(
+    const FileSystemContext::OpenFileSystemCallback& callback,
+    const GURL& filesystem_root,
+    const std::string& filesystem_name,
+    base::PlatformFileError error) {
   callback.Run(error, filesystem_name, filesystem_root);
 }
 
@@ -78,22 +79,12 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
 
   // Delete temporary and persistent data.
   return
-      sandbox_provider()->DeleteOriginDataOnFileThread(
-          this, quota_manager_proxy(), origin_url, kFileSystemTypeTemporary) &&
-      sandbox_provider()->DeleteOriginDataOnFileThread(
-          this, quota_manager_proxy(), origin_url, kFileSystemTypePersistent);
-}
-
-bool FileSystemContext::DeleteDataForOriginAndTypeOnFileThread(
-    const GURL& origin_url, FileSystemType type) {
-  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  if (type == fileapi::kFileSystemTypeTemporary ||
-      type == fileapi::kFileSystemTypePersistent) {
-    DCHECK(sandbox_provider());
-    return sandbox_provider()->DeleteOriginDataOnFileThread(
-        this, quota_manager_proxy(), origin_url, type);
-  }
-  return false;
+      (sandbox_provider()->DeleteOriginDataOnFileThread(
+          this, quota_manager_proxy(), origin_url, kFileSystemTypeTemporary) ==
+       base::PLATFORM_FILE_OK) &&
+      (sandbox_provider()->DeleteOriginDataOnFileThread(
+          this, quota_manager_proxy(), origin_url, kFileSystemTypePersistent) ==
+       base::PLATFORM_FILE_OK);
 }
 
 FileSystemQuotaUtil*
@@ -151,7 +142,7 @@ void FileSystemContext::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
     bool create,
-    OpenFileSystemCallback callback) {
+    const OpenFileSystemCallback& callback) {
   DCHECK(!callback.is_null());
 
   FileSystemMountPointProvider* mount_point_provider =
@@ -167,6 +158,20 @@ void FileSystemContext::OpenFileSystem(
   mount_point_provider->ValidateFileSystemRoot(
       origin_url, type, create,
       base::Bind(&DidOpenFileSystem, callback, root_url, name));
+}
+
+void FileSystemContext::DeleteFileSystem(
+    const GURL& origin_url,
+    FileSystemType type,
+    const DeleteFileSystemCallback& callback) {
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider) {
+    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    return;
+  }
+
+  mount_point_provider->DeleteFileSystem(origin_url, type, this, callback);
 }
 
 FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(

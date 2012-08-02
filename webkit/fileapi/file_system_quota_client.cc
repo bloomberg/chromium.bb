@@ -18,6 +18,7 @@
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 using base::SequencedTaskRunner;
 using quota::QuotaThreadTask;
@@ -152,8 +153,13 @@ class FileSystemQuotaClient::DeleteOriginTask
 
   // QuotaThreadTask:
   virtual void RunOnTargetThread() OVERRIDE {
-    if (file_system_context_->DeleteDataForOriginAndTypeOnFileThread(
-            origin_, type_))
+    base::PlatformFileError result =
+        file_system_context_->sandbox_provider()->DeleteOriginDataOnFileThread(
+            file_system_context_,
+            file_system_context_->quota_manager_proxy(),
+            origin_,
+            type_);
+    if (result == base::PLATFORM_FILE_OK)
       status_ = quota::kQuotaStatusOk;
     else
       status_ = quota::kQuotaErrorInvalidModification;

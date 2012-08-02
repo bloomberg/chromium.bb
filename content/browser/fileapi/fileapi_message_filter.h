@@ -78,6 +78,9 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
               fileapi::FileSystemType type,
               int64 requested_size,
               bool create);
+  void OnDeleteFileSystem(int request_id,
+                          const GURL& origin_url,
+                          fileapi::FileSystemType type);
   void OnMove(int request_id,
               const GURL& src_path,
               const GURL& dest_path);
@@ -146,6 +149,8 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
                          base::PlatformFileError result,
                          const std::string& name,
                          const GURL& root);
+  void DidDeleteFileSystem(int request_id,
+                           base::PlatformFileError result);
   void DidCreateSnapshot(
       int request_id,
       const base::Callback<void(const FilePath&)>& register_file_callback,

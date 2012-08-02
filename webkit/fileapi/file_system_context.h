@@ -66,8 +66,6 @@ class FILEAPI_EXPORT FileSystemContext
       const FileSystemOptions& options);
 
   bool DeleteDataForOriginOnFileThread(const GURL& origin_url);
-  bool DeleteDataForOriginAndTypeOnFileThread(const GURL& origin_url,
-                                              FileSystemType type);
 
   quota::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
@@ -108,6 +106,10 @@ class FILEAPI_EXPORT FileSystemContext
                               const std::string& name,
                               const GURL& root)> OpenFileSystemCallback;
 
+  // Used for DeleteFileSystem.
+  typedef base::Callback<void(base::PlatformFileError result)>
+      DeleteFileSystemCallback;
+
   // Opens the filesystem for the given |origin_url| and |type|, and dispatches
   // the DidOpenFileSystem callback of the given |dispatcher|.
   // If |create| is true this may actually set up a filesystem instance
@@ -117,7 +119,13 @@ class FILEAPI_EXPORT FileSystemContext
       const GURL& origin_url,
       FileSystemType type,
       bool create,
-      OpenFileSystemCallback callback);
+      const OpenFileSystemCallback& callback);
+
+  // Deletes the filesystem for the given |origin_url| and |type|.
+  void DeleteFileSystem(
+      const GURL& origin_url,
+      FileSystemType type,
+      const DeleteFileSystemCallback& callback);
 
   // Creates a new FileSystemOperation instance by cracking
   // the given filesystem URL |url| to get an appropriate MountPointProvider

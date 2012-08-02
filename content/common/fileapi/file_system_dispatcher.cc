@@ -53,6 +53,19 @@ bool FileSystemDispatcher::OpenFileSystem(
   return true;
 }
 
+bool FileSystemDispatcher::DeleteFileSystem(
+    const GURL& origin_url,
+    fileapi::FileSystemType type,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  int request_id = dispatchers_.Add(dispatcher);
+  if (!ChildThread::current()->Send(new FileSystemHostMsg_DeleteFileSystem(
+          request_id, origin_url, type))) {
+    dispatchers_.Remove(request_id);
+    return false;
+  }
+  return true;
+}
+
 bool FileSystemDispatcher::Move(
     const GURL& src_path,
     const GURL& dest_path,
