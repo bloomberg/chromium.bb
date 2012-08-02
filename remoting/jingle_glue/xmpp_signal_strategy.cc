@@ -5,8 +5,11 @@
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "jingle/glue/chrome_async_socket.h"
 #include "jingle/glue/task_pump.h"
 #include "jingle/glue/xmpp_client_socket_factory.h"
@@ -55,6 +58,12 @@ XmppSignalStrategy::XmppSignalStrategy(
 
 XmppSignalStrategy::~XmppSignalStrategy() {
   Disconnect();
+
+  // Destroying task runner will destroy XmppClient, but XmppClient may be on
+  // the stack and it doesn't handle this case properly, so we need to delay
+  // destruction.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, task_runner_.release());
 }
 
 void XmppSignalStrategy::Connect() {
