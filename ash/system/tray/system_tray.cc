@@ -417,8 +417,12 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            shelf_alignment());
     init_params.can_activate = can_activate;
-    if (detailed)
+    if (detailed) {
+      // This is the case where a volume control or brightness control bubble
+      // is created.
       init_params.max_height = default_bubble_height_;
+      init_params.arrow_color = kBackgroundColor;
+    }
     init_params.arrow_offset = arrow_offset;
     bubble_->InitView(anchor, init_params, delegate->GetUserLoginStatus());
   }
