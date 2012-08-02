@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
@@ -542,6 +543,13 @@ void HostNPScriptObject::FinishConnectNetworkThread(
     return;
   }
 
+  // Check the host domain policy.
+  if (!required_host_domain_.empty() &&
+      !EndsWith(uid, std::string("@") + required_host_domain_, false)) {
+    SetState(kError);
+    return;
+  }
+
   // Verify that DesktopEnvironment has been created.
   if (desktop_environment_.get() == NULL) {
     SetState(kError);
@@ -876,11 +884,14 @@ void HostNPScriptObject::DisconnectInternal() {
       return;
 
     default:
-      DCHECK(host_);
       SetState(kDisconnecting);
 
+      if (!host_) {
+        OnShutdownFinished();
+        return;
+      }
       // ChromotingHost::Shutdown() may destroy SignalStrategy
-      // synchronously, bug SignalStrategy::Listener handlers are not
+      // synchronously, but SignalStrategy::Listener handlers are not
       // allowed to destroy SignalStrategy, so post task to call
       // Shutdown() later.
       host_context_->network_task_runner()->PostTask(
@@ -888,6 +899,7 @@ void HostNPScriptObject::DisconnectInternal() {
               &ChromotingHost::Shutdown, host_,
               base::Bind(&HostNPScriptObject::OnShutdownFinished,
                          base::Unretained(this))));
+      return;
   }
 }
 
@@ -907,23 +919,32 @@ void HostNPScriptObject::OnPolicyUpdate(
     return;
   }
 
-  bool bool_value;
+  bool nat_policy;
   if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
-                           &bool_value)) {
-    OnNatPolicyUpdate(bool_value);
+                           &nat_policy)) {
+    UpdateNatPolicy(nat_policy);
+  }
+  std::string host_domain;
+  if (policies->GetString(policy_hack::PolicyWatcher::kHostDomainPolicyName,
+                          &host_domain)) {
+    UpdateHostDomainPolicy(host_domain);
+  }
+
+  {
+    base::AutoLock lock(nat_policy_lock_);
+    policy_received_ = true;
+  }
+
+  if (!pending_connect_.is_null()) {
+    pending_connect_.Run();
+    pending_connect_.Reset();
   }
 }
 
-void HostNPScriptObject::OnNatPolicyUpdate(bool nat_traversal_enabled) {
-  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
-    host_context_->network_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&HostNPScriptObject::OnNatPolicyUpdate,
-                   base::Unretained(this), nat_traversal_enabled));
-    return;
-  }
+void HostNPScriptObject::UpdateNatPolicy(bool nat_traversal_enabled) {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  VLOG(2) << "OnNatPolicyUpdate: " << nat_traversal_enabled;
+  VLOG(2) << "UpdateNatPolicy: " << nat_traversal_enabled;
 
   // When transitioning from enabled to disabled, force disconnect any
   // existing session.
@@ -933,16 +954,24 @@ void HostNPScriptObject::OnNatPolicyUpdate(bool nat_traversal_enabled) {
 
   {
     base::AutoLock lock(nat_policy_lock_);
-    policy_received_ = true;
     nat_traversal_enabled_ = nat_traversal_enabled;
   }
 
   UpdateWebappNatPolicy(nat_traversal_enabled_);
+}
 
-  if (!pending_connect_.is_null()) {
-    pending_connect_.Run();
-    pending_connect_.Reset();
+void HostNPScriptObject::UpdateHostDomainPolicy(
+    const std::string& host_domain) {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+
+  VLOG(2) << "UpdateHostDomainPolicy: " << host_domain;
+
+  // When setting a host domain policy, force disconnect any existing session.
+  if (!host_domain.empty() && state_ != kStarting) {
+    DisconnectInternal();
   }
+
+  required_host_domain_ = host_domain;
 }
 
 void HostNPScriptObject::OnReceivedSupportID(

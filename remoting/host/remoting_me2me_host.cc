@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_native_library.h"
+#include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -308,9 +309,28 @@ class HostProcess
     }
 
     bool bool_value;
+    std::string string_value;
+    if (policies->GetString(policy_hack::PolicyWatcher::kHostDomainPolicyName,
+                            &string_value)) {
+      OnHostDomainPolicyUpdate(string_value);
+    }
     if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
                              &bool_value)) {
       OnNatPolicyUpdate(bool_value);
+    }
+  }
+
+  void OnHostDomainPolicyUpdate(const std::string& host_domain) {
+    if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+      context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
+          &HostProcess::OnHostDomainPolicyUpdate, base::Unretained(this),
+          host_domain));
+      return;
+    }
+
+    if (!host_domain.empty() &&
+        !EndsWith(xmpp_login_, std::string("@") + host_domain, false)) {
+      Shutdown(kInvalidHostDomainExitCode);
     }
   }
 
@@ -339,6 +359,9 @@ class HostProcess
   void StartHost() {
     DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
     DCHECK(!host_);
+
+    if (shutting_down_)
+      return;
 
     if (!signal_strategy_.get()) {
       signal_strategy_.reset(
@@ -464,8 +487,12 @@ class HostProcess
 
     shutting_down_ = true;
     exit_code_ = exit_code;
-    host_->Shutdown(base::Bind(
-        &HostProcess::OnShutdownFinished, base::Unretained(this)));
+    if (host_) {
+      host_->Shutdown(base::Bind(
+          &HostProcess::OnShutdownFinished, base::Unretained(this)));
+    } else {
+      OnShutdownFinished();
+    }
   }
 
   void OnShutdownFinished() {

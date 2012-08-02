@@ -874,6 +874,10 @@ def main():
         except:
           pass
         return 0
+      elif os.WEXITSTATUS(status) == 5:
+        logging.info("Host domain is blocked by policy - exiting.")
+        os.remove(host.config_file)
+        return 0
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG)

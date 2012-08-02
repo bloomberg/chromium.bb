@@ -48,7 +48,7 @@ class PolicyWatcher;
 // NPAPI plugin implementation for remoting host script object.
 // HostNPScriptObject creates threads that are required to run
 // ChromotingHost and starts/stops the host on those threads. When
-// destroyed it sychronously shuts down the host and all threads.
+// destroyed it synchronously shuts down the host and all threads.
 class HostNPScriptObject : public HostStatusObserver {
  public:
   HostNPScriptObject(NPP plugin, NPObject* parent,
@@ -213,7 +213,10 @@ class HostNPScriptObject : public HostStatusObserver {
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
 
   // Called when the nat traversal policy is updated.
-  void OnNatPolicyUpdate(bool nat_traversal_enabled);
+  void UpdateNatPolicy(bool nat_traversal_enabled);
+
+  // Called when the host domain policy is updated.
+  void UpdateHostDomainPolicy(const std::string& host_domain);
 
   void LocalizeStrings(NPObject* localize_func);
 
@@ -328,6 +331,9 @@ class HostNPScriptObject : public HostStatusObserver {
 
   // Host the current nat traversal policy setting.
   bool nat_traversal_enabled_;
+
+  // The host domain policy setting.
+  std::string required_host_domain_;
 
   // Indicates whether or not a policy has ever been read. This is to ensure
   // that on startup, we do not accidentally start a connection before we have
