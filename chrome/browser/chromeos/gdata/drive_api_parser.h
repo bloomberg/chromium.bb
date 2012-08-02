@@ -142,7 +142,8 @@ class AppResource {
   const std::string& name() const { return name_; }
 
   // Returns the name of the type of object this application creates.
-  // This can be any string.  TODO(kochi): figure out how to use this value.
+  // This is used for displaying in "Create" menu item for this app.
+  // If empty, application name is used instead.
   const std::string& object_type() const { return object_type_; }
 
   // Returns whether this application suuports creating new objects.

@@ -787,6 +787,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& cache_file_path);
+
   // Callback for getting the size of the cache file in the blocking pool.
   void OnGetFileSizeCompleteForUpdateFile(
       const FileOperationCallback& callback,
@@ -795,6 +796,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& cache_file_path,
       GDataFileError* error,
       int64* file_size);
+
   // Callback for GDataRootDirectory::GetEntryByResourceIdAsync.
   void OnGetFileCompleteForUpdateFileByEntry(
     const FileOperationCallback& callback,
@@ -802,7 +804,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
     int64 file_size,
     const FilePath& cache_file_path,
     GDataEntry* entry);
-
 
   // Called when GDataUploader::UploadUpdatedFile() is completed for
   // UpdateFileByResourceId().

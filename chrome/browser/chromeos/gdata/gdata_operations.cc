@@ -157,7 +157,6 @@ GetDocumentsOperation::GetDocumentsOperation(
     int start_changestamp,
     const std::string& search_string,
     const std::string& directory_resource_id,
-
     const GetDataCallback& callback)
     : GetDataOperation(registry, profile, callback),
       start_changestamp_(start_changestamp),

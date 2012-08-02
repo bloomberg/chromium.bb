@@ -101,7 +101,7 @@ void GDataEntry::SetBaseNameFromTitle() {
   base_name_ = EscapeUtf8FileName(title_);
 }
 
-// static.
+// static
 GDataEntry* GDataEntry::FromDocumentEntry(
     GDataDirectory* parent,
     DocumentEntry* doc,
@@ -115,7 +115,7 @@ GDataEntry* GDataEntry::FromDocumentEntry(
   return NULL;
 }
 
-// static.
+// static
 std::string GDataEntry::EscapeUtf8FileName(const std::string& input) {
   std::string output;
   if (ReplaceChars(input, kSlash, std::string(kEscapedSlash), &output))
@@ -124,7 +124,7 @@ std::string GDataEntry::EscapeUtf8FileName(const std::string& input) {
   return input;
 }
 
-// static.
+// static
 std::string GDataEntry::UnescapeUtf8FileName(const std::string& input) {
   std::string output = input;
   ReplaceSubstringsAfterOffset(&output, 0, std::string(kEscapedSlash), kSlash);
@@ -156,7 +156,7 @@ void GDataFile::SetBaseNameFromTitle() {
   }
 }
 
-// static.
+// static
 GDataEntry* GDataFile::FromDocumentEntry(
     GDataDirectory* parent,
     DocumentEntry* doc,
