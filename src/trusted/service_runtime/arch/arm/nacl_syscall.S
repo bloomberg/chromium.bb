@@ -51,18 +51,10 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 
   /*
    * Fetch the thread-local variable holding the thread index.
-   * TODO(mcgrathr): On newer ARM chips, perhaps detectable by some #if
-   * (ones where -mtp=auto chooses -mtp=cp15), we could directly use:
-   *    mrc p15, 0, r0, c13, c0, 3
-   * instead of the call here.
-   *
-   * __aeabi_read_tp is not allowed to clobber any registers but r0.
-   * We're also sure that this call doesn't use the stack, which would
-   * be unsafe since it's the untrusted stack and could be clobbered
-   * by a racing thread to hijack us.  We verify that in the platform
-   * qualification tests, for paranoia's sake.
+   * This funny instruction is what the compiler generates for -mtp=cp15,
+   * which is the default for ARMv7 code generation.
    */
-  bl  __aeabi_read_tp
+  mrc  p15, 0, r0, c13, c0, 3
   ldr  r0, [r0, r3]
 
 #ifdef __PIC__

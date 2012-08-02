@@ -9,9 +9,6 @@
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-#include "native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h"
-#endif
 
 NaClErrorCode NaClRunSelQualificationTests() {
   if (!NaClOsIsSupported()) {
@@ -25,12 +22,6 @@ NaClErrorCode NaClRunSelQualificationTests() {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   if (NaCl_ThisCPUIsBlacklisted()) {
     return LOAD_UNSUPPORTED_CPU;
-  }
-#endif
-
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  if (!NaClQualifyReadTp()) {
-    return LOAD_UNSUPPORTED_OS_PLATFORM;
   }
 #endif
 

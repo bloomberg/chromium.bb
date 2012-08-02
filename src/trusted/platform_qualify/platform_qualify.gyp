@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -64,7 +64,6 @@
           ['target_arch=="arm"', {
             'sources': [
               'arch/arm/nacl_dep_qualify_arch.c',
-              'arch/arm/nacl_qualify_read_tp.c',
             ],
           }],
         ],
