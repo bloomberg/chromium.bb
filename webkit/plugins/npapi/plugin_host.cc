@@ -803,9 +803,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       break;
     }
     case NPNVsupportsCoreGraphicsBool:
-#ifndef NP_NO_CARBON
-    case NPNVsupportsCarbonBool:
-#endif
     case NPNVsupportsCocoaBool: {
       // These drawing and event models are always supported.
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
@@ -820,12 +817,15 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
+#ifndef NP_NO_CARBON
+    case NPNVsupportsCarbonBool:
+#endif
 #ifndef NP_NO_QUICKDRAW
     case NPNVsupportsQuickDrawBool:
 #endif
     case NPNVsupportsOpenGLBool: {
-      // These drawing models are never supported. OpenGL was never widely
-      // supported, and QuickDraw has been deprecated for years.
+      // These models are never supported. OpenGL was never widely supported,
+      // and QuickDraw and Carbon have been deprecated for quite some time.
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
       *supports_model = false;
       rv = NPERR_NO_ERROR;
@@ -910,16 +910,11 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
       return NPERR_GENERIC_ERROR;
     }
     case NPPVpluginEventModel: {
-      // we support Carbon and Cocoa event models
+      // Only the Cocoa event model is supported.
       int model = reinterpret_cast<int>(value);
-      switch (model) {
-#ifndef NP_NO_CARBON
-        case NPEventModelCarbon:
-#endif
-        case NPEventModelCocoa:
-          plugin->set_event_model(static_cast<NPEventModel>(model));
-          return NPERR_NO_ERROR;
-          break;
+      if (model == NPEventModelCocoa) {
+        plugin->set_event_model(static_cast<NPEventModel>(model));
+        return NPERR_NO_ERROR;
       }
       return NPERR_GENERIC_ERROR;
     }
