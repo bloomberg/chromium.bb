@@ -24,9 +24,10 @@ class ProviderImpl : public Provider {
  public:
   typedef DataFetcher* (*DataFetcherFactory)();
 
-  // Create a ProviderImpl that uses the NULL-terminated factories array to find
-  // a DataFetcher that can provide orientation data.
-  CONTENT_EXPORT ProviderImpl(const DataFetcherFactory factories[]);
+  // Create a ProviderImpl that uses the factory to create a DataFetcher that
+  // can provide orientation data. A NULL DataFetcherFactory indicates that
+  // there are no DataFetchers for this OS.
+  CONTENT_EXPORT ProviderImpl(DataFetcherFactory factory);
 
   // From Provider.
   virtual void AddObserver(Observer* observer) OVERRIDE;
@@ -52,7 +53,7 @@ class ProviderImpl : public Provider {
   MessageLoop* creator_loop_;
 
   // Members below are only to be used from the creator_loop_.
-  std::vector<DataFetcherFactory> factories_;
+  DataFetcherFactory factory_;
   std::set<Observer*> observers_;
   Orientation last_notification_;
 

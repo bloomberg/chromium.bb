@@ -165,17 +165,10 @@ class DeviceOrientationProviderTest : public testing::Test {
   }
 
   // Initialize the test fixture with a ProviderImpl that uses the
-  // DataFetcherFactories in the null-terminated factories array.
-  void Init(ProviderImpl::DataFetcherFactory* factories) {
-    provider_ = new ProviderImpl(factories);
-    Provider::SetInstanceForTests(provider_);
-  }
-
-  // Initialize the test fixture with a ProviderImpl that uses the
   // DataFetcherFactory factory.
   void Init(ProviderImpl::DataFetcherFactory factory) {
-    ProviderImpl::DataFetcherFactory factories[] = { factory, NULL };
-    Init(factories);
+    provider_ = new ProviderImpl(factory);
+    Provider::SetInstanceForTests(provider_);
   }
 
  protected:

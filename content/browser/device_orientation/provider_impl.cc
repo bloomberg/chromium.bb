@@ -47,7 +47,7 @@ class ProviderImpl::PollingThread : public base::Thread {
   virtual ~PollingThread();
 
   // Method for finding a suitable DataFetcher and starting the polling.
-  void Initialize(const std::vector<DataFetcherFactory>& factories);
+  void Initialize(DataFetcherFactory factory);
 
  private:
   // Method for polling a DataFetcher.
@@ -86,13 +86,11 @@ ProviderImpl::PollingThread::PollingThread(
 ProviderImpl::PollingThread::~PollingThread() {
 }
 
-void ProviderImpl::PollingThread::Initialize(
-    const std::vector<DataFetcherFactory>& factories) {
+void ProviderImpl::PollingThread::Initialize(DataFetcherFactory factory) {
   DCHECK(MessageLoop::current() == message_loop());
 
-  typedef std::vector<DataFetcherFactory>::const_iterator Iterator;
-  for (Iterator i = factories.begin(); i != factories.end(); ++i) {
-    DataFetcherFactory factory = *i;
+  if (factory != NULL) {
+    // Try to use factory to create a fetcher that can provide orientation data.
     scoped_ptr<DataFetcher> fetcher(factory());
     Orientation orientation;
 
@@ -183,12 +181,11 @@ base::TimeDelta ProviderImpl::PollingThread::SamplingInterval() const {
   return base::TimeDelta::FromMilliseconds(kDesiredSamplingIntervalMs);
 }
 
-ProviderImpl::ProviderImpl(const DataFetcherFactory factories[])
+ProviderImpl::ProviderImpl(DataFetcherFactory factory)
     : creator_loop_(MessageLoop::current()),
+      factory_(factory),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       polling_thread_(NULL) {
-  for (const DataFetcherFactory* fp = factories; *fp; ++fp)
-    factories_.push_back(*fp);
 }
 
 ProviderImpl::~ProviderImpl() {
@@ -251,7 +248,7 @@ void ProviderImpl::ScheduleInitializePollingThread() {
   polling_loop->PostTask(FROM_HERE,
                          base::Bind(&PollingThread::Initialize,
                                     base::Unretained(polling_thread_),
-                                    factories_));
+                                    factory_));
 }
 
 void ProviderImpl::DoNotify(const Orientation& orientation) {

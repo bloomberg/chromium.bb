@@ -22,16 +22,15 @@ namespace device_orientation {
 Provider* Provider::GetInstance() {
   if (!instance_) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const ProviderImpl::DataFetcherFactory default_factories[] = {
-#if defined(OS_MACOSX)
-      AccelerometerMac::Create,
-#elif defined(OS_ANDROID)
-      DataFetcherImplAndroid::Create,
-#endif
-      NULL
-    };
+    ProviderImpl::DataFetcherFactory default_factory = NULL;
 
-    instance_ = new ProviderImpl(default_factories);
+#if defined(OS_MACOSX)
+    default_factory = AccelerometerMac::Create;
+#elif defined(OS_ANDROID)
+    default_factory = DataFetcherImplAndroid::Create;
+#endif
+
+    instance_ = new ProviderImpl(default_factory);
   }
   return instance_;
 }
