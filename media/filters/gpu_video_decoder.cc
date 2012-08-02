@@ -36,6 +36,13 @@ GpuVideoDecoder::BufferPair::BufferPair(
 
 GpuVideoDecoder::BufferPair::~BufferPair() {}
 
+GpuVideoDecoder::BufferData::BufferData(
+    int32 bbid, base::TimeDelta ts, const gfx::Size& ns)
+    : bitstream_buffer_id(bbid), timestamp(ts), natural_size(ns) {
+}
+
+GpuVideoDecoder::BufferData::~BufferData() {}
+
 GpuVideoDecoder::GpuVideoDecoder(
     MessageLoop* message_loop,
     MessageLoop* vda_loop,
@@ -155,8 +162,6 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
   if (config.codec() == kCodecH264)
     demuxer_stream_->EnableBitstreamConverter();
 
-  natural_size_ = config.natural_size();
-
   DVLOG(1) << "GpuVideoDecoder::Initialize() succeeded.";
   vda_loop_proxy_->PostTaskAndReply(
       FROM_HERE,
@@ -258,39 +263,39 @@ void GpuVideoDecoder::RequestBufferDecode(
   bool inserted = bitstream_buffers_in_decoder_.insert(std::make_pair(
       bitstream_buffer.id(), BufferPair(shm_buffer, buffer))).second;
   DCHECK(inserted);
-  RecordBufferTimeData(bitstream_buffer, *buffer);
+  RecordBufferData(bitstream_buffer, *buffer);
 
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Decode, weak_vda_, bitstream_buffer));
 }
 
-void GpuVideoDecoder::RecordBufferTimeData(
+void GpuVideoDecoder::RecordBufferData(
     const BitstreamBuffer& bitstream_buffer, const Buffer& buffer) {
-  input_buffer_time_data_.push_front(BufferTimeData(
-      bitstream_buffer.id(), buffer.GetTimestamp()));
+  input_buffer_data_.push_front(BufferData(
+      bitstream_buffer.id(), buffer.GetTimestamp(),
+      demuxer_stream_->video_decoder_config().natural_size()));
   // Why this value?  Because why not.  avformat.h:MAX_REORDER_DELAY is 16, but
   // that's too small for some pathological B-frame test videos.  The cost of
   // using too-high a value is low (192 bits per extra slot).
-  static const size_t kMaxInputBufferTimeDataSize = 128;
+  static const size_t kMaxInputBufferDataSize = 128;
   // Pop from the back of the list, because that's the oldest and least likely
   // to be useful in the future data.
-  if (input_buffer_time_data_.size() > kMaxInputBufferTimeDataSize)
-    input_buffer_time_data_.pop_back();
+  if (input_buffer_data_.size() > kMaxInputBufferDataSize)
+    input_buffer_data_.pop_back();
 }
 
-base::TimeDelta GpuVideoDecoder::GetBufferTimestamp(int32 id) {
-  for (std::list<BufferTimeData>::const_iterator it =
-           input_buffer_time_data_.begin(); it != input_buffer_time_data_.end();
+void GpuVideoDecoder::GetBufferData(int32 id, base::TimeDelta* timestamp,
+                                    gfx::Size* natural_size) {
+  for (std::list<BufferData>::const_iterator it =
+           input_buffer_data_.begin(); it != input_buffer_data_.end();
        ++it) {
-    if (it->first == id)
-      return it->second;
+    if (it->bitstream_buffer_id != id)
+      continue;
+    *timestamp = it->timestamp;
+    *natural_size = it->natural_size;
+    return;
   }
   NOTREACHED() << "Missing bitstreambuffer id: " << id;
-  return kNoTimestamp();
-}
-
-const gfx::Size& GpuVideoDecoder::natural_size() {
-  return natural_size_;
 }
 
 bool GpuVideoDecoder::HasAlpha() const {
@@ -376,11 +381,13 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   const PictureBuffer& pb = it->second;
 
   // Update frame's timestamp.
-  base::TimeDelta timestamp = GetBufferTimestamp(picture.bitstream_buffer_id());
+  base::TimeDelta timestamp;
+  gfx::Size natural_size;
+  GetBufferData(picture.bitstream_buffer_id(), &timestamp, &natural_size);
   DCHECK(decoder_texture_target_);
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
-      pb.texture_id(), decoder_texture_target_, pb.size().width(),
-      pb.size().height(), timestamp,
+      pb.texture_id(), decoder_texture_target_, pb.size(), natural_size,
+      timestamp,
       base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
                  picture.picture_buffer_id())));
 
@@ -525,7 +532,7 @@ void GpuVideoDecoder::NotifyResetDone() {
 
   // This needs to happen after the Reset() on vda_ is done to ensure pictures
   // delivered during the reset can find their time data.
-  input_buffer_time_data_.clear();
+  input_buffer_data_.clear();
 
   if (!pending_reset_cb_.is_null())
     base::ResetAndReturn(&pending_reset_cb_).Run();

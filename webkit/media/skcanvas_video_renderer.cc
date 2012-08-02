@@ -109,19 +109,19 @@ static void FastPaint(
   DCHECK_NE(0, dest_rect.width());
   DCHECK_NE(0, dest_rect.height());
   size_t frame_clip_width = local_dest_irect.width() *
-      video_frame->width() / local_dest_irect_saved.width();
+      video_frame->data_size().width() / local_dest_irect_saved.width();
   size_t frame_clip_height = local_dest_irect.height() *
-      video_frame->height() / local_dest_irect_saved.height();
+      video_frame->data_size().height() / local_dest_irect_saved.height();
 
   // Project the "left" and "top" of the final destination rect to local
   // coordinates of the video frame, use these values to find the offsets
   // in the video frame to start reading.
   size_t frame_clip_left =
       (local_dest_irect.fLeft - local_dest_irect_saved.fLeft) *
-      video_frame->width() / local_dest_irect_saved.width();
+      video_frame->data_size().width() / local_dest_irect_saved.width();
   size_t frame_clip_top =
       (local_dest_irect.fTop - local_dest_irect_saved.fTop) *
-      video_frame->height() / local_dest_irect_saved.height();
+      video_frame->data_size().height() / local_dest_irect_saved.height();
 
   // Use the "left" and "top" of the destination rect to locate the offset
   // in Y, U and V planes.
@@ -171,11 +171,11 @@ static void ConvertVideoFrameToBitmap(
 
   // Check if |bitmap| needs to be (re)allocated.
   if (bitmap->isNull() ||
-      bitmap->width() != static_cast<int>(video_frame->width()) ||
-      bitmap->height() != static_cast<int>(video_frame->height())) {
+      bitmap->width() != video_frame->data_size().width() ||
+      bitmap->height() != video_frame->data_size().height()) {
     bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                      video_frame->width(),
-                      video_frame->height());
+                      video_frame->data_size().width(),
+                      video_frame->data_size().height());
     bitmap->allocPixels();
     bitmap->setIsVolatile(true);
   }
@@ -188,8 +188,8 @@ static void ConvertVideoFrameToBitmap(
                            video_frame->data(media::VideoFrame::kUPlane),
                            video_frame->data(media::VideoFrame::kVPlane),
                            static_cast<uint8*>(bitmap->getPixels()),
-                           video_frame->width(),
-                           video_frame->height(),
+                           video_frame->data_size().width(),
+                           video_frame->data_size().height(),
                            video_frame->stride(media::VideoFrame::kYPlane),
                            video_frame->stride(media::VideoFrame::kUPlane),
                            bitmap->rowBytes(),

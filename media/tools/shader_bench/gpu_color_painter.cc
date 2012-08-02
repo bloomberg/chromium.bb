@@ -104,13 +104,15 @@ void GPUColorWithLuminancePainter::Initialize(int width, int height) {
 
 void GPUColorWithLuminancePainter::Paint(
     scoped_refptr<media::VideoFrame> video_frame) {
+  int width = video_frame->data_size().width();
+  int height = video_frame->data_size().height();
   for (unsigned int i = 0; i < kNumYUVPlanes; ++i) {
-    unsigned int width = (i == media::VideoFrame::kYPlane) ?
-        video_frame->width() : video_frame->width() / 2;
-    unsigned int height = (i == media::VideoFrame::kYPlane) ?
-        video_frame->height() : video_frame->height() / 2;
+    unsigned int plane_width =
+        (i == media::VideoFrame::kYPlane) ? width : width / 2;
+    unsigned int plane_height =
+        (i == media::VideoFrame::kYPlane) ? height : height / 2;
     glBindTexture(GL_TEXTURE_2D, textures_[i]);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, plane_width, plane_height,
                     GL_LUMINANCE, GL_UNSIGNED_BYTE, video_frame->data(i));
   }
 

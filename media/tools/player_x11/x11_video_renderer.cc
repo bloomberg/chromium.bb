@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,8 +84,8 @@ X11VideoRenderer::~X11VideoRenderer() {
 }
 
 void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
-  int width = video_frame->width();
-  int height = video_frame->height();
+  int width = video_frame->data_size().width();
+  int height = video_frame->data_size().height();
 
   if (!image_)
     Initialize(width, height);
@@ -110,8 +110,8 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
                            video_frame->data(media::VideoFrame::kUPlane),
                            video_frame->data(media::VideoFrame::kVPlane),
                            (uint8*)image_->data,
-                           video_frame->width(),
-                           video_frame->height(),
+                           video_frame->data_size().width(),
+                           video_frame->data_size().height(),
                            video_frame->stride(media::VideoFrame::kYPlane),
                            video_frame->stride(media::VideoFrame::kUPlane),
                            image_->bytes_per_line,

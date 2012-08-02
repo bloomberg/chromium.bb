@@ -102,11 +102,6 @@ void RTCVideoDecoder::Stop(const base::Closure& closure) {
   closure.Run();
 }
 
-const gfx::Size& RTCVideoDecoder::natural_size() {
-  // TODO(vrk): Return natural size when aspect ratio support is implemented.
-  return visible_size_;
-}
-
 void RTCVideoDecoder::PrepareForShutdownHack() {
   if (!video_decoder_thread_->RunsTasksOnCurrentThread()) {
     video_decoder_thread_->PostTask(
@@ -159,8 +154,8 @@ void RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   // TODO(scherkus): migrate this to proper buffer recycling.
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                     visible_size_.width(),
-                                     visible_size_.height(),
+                                     visible_size_,
+                                     visible_size_,
                                      timestamp - start_time_);
   last_frame_timestamp_ = timestamp;
 

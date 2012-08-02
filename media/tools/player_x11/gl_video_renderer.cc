@@ -121,7 +121,8 @@ GlVideoRenderer::~GlVideoRenderer() {
 
 void GlVideoRenderer::Paint(media::VideoFrame* video_frame) {
   if (!gl_context_)
-    Initialize(video_frame->width(), video_frame->height());
+    Initialize(video_frame->data_size().width(),
+               video_frame->data_size().height());
 
   // Convert YUV frame to RGB.
   DCHECK(video_frame->format() == media::VideoFrame::YV12 ||

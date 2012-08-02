@@ -67,7 +67,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
-  virtual const gfx::Size& natural_size() OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
   virtual void PrepareForShutdownHack() OVERRIDE;
 
@@ -117,9 +116,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Indicate the picturebuffer can be reused by the decoder.
   void ReusePictureBuffer(int64 picture_buffer_id);
 
-  void RecordBufferTimeData(
+  void RecordBufferData(
       const BitstreamBuffer& bitstream_buffer, const Buffer& buffer);
-  base::TimeDelta GetBufferTimestamp(int32 id);
+  void GetBufferData(int32 id, base::TimeDelta* timetamp,
+                     gfx::Size* natural_size);
 
   // Set |vda_| and |weak_vda_| on the VDA thread (in practice the render
   // thread).
@@ -141,10 +141,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   void PutSHM(SHMBuffer* shm_buffer);
 
   StatisticsCB statistics_cb_;
-
-  // TODO(scherkus): I think this should be calculated by VideoRenderers based
-  // on information provided by VideoDecoders (i.e., aspect ratio).
-  gfx::Size natural_size_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
@@ -194,9 +190,15 @@ class MEDIA_EXPORT GpuVideoDecoder
   // The texture target used for decoded pictures.
   uint32 decoder_texture_target_;
 
-  // Maintains bitstream buffer ID to timestamp mappings.
-  typedef std::pair<int32, base::TimeDelta> BufferTimeData;
-  std::list<BufferTimeData> input_buffer_time_data_;
+  struct BufferData {
+    BufferData(int32 bbid, base::TimeDelta ts,
+               const gfx::Size& natural_size);
+    ~BufferData();
+    int32 bitstream_buffer_id;
+    base::TimeDelta timestamp;
+    gfx::Size natural_size;
+  };
+  std::list<BufferData> input_buffer_data_;
 
   // picture_buffer_id and the frame wrapping the corresponding Picture, for
   // frames that have been decoded but haven't been requested by a Read() yet.

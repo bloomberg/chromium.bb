@@ -34,7 +34,7 @@ static double BenchmarkSkia() {
   ScopedVector<SkBitmap> dest_frames;
   for (int i = 0; i < num_buffers; i++) {
     source_frames.push_back(
-        VideoFrame::CreateBlackFrame(source_width, source_height));
+        VideoFrame::CreateBlackFrame(gfx::Size(source_width, source_height)));
 
     SkBitmap* bitmap = new SkBitmap();
     bitmap->setConfig(SkBitmap::kARGB_8888_Config,
@@ -118,12 +118,11 @@ static double BenchmarkFilter(media::ScaleFilter filter) {
 
   for (int i = 0; i < num_buffers; i++) {
     source_frames.push_back(
-        VideoFrame::CreateBlackFrame(source_width, source_height));
+        VideoFrame::CreateBlackFrame(gfx::Size(source_width, source_height)));
 
+    gfx::Size dest_size(dest_width, dest_height);
     dest_frames.push_back(
-        VideoFrame::CreateFrame(VideoFrame::RGB32,
-                                dest_width,
-                                dest_height,
+        VideoFrame::CreateFrame(VideoFrame::RGB32, dest_size, dest_size,
                                 TimeDelta::FromSeconds(0)));
   }
 
@@ -157,12 +156,11 @@ static double BenchmarkScaleWithRect() {
 
   for (int i = 0; i < num_buffers; i++) {
     source_frames.push_back(
-        VideoFrame::CreateBlackFrame(source_width, source_height));
+        VideoFrame::CreateBlackFrame(gfx::Size(source_width, source_height)));
 
+    gfx::Size dest_size(dest_width, dest_height);
     dest_frames.push_back(
-        VideoFrame::CreateFrame(VideoFrame::RGB32,
-                                dest_width,
-                                dest_height,
+        VideoFrame::CreateFrame(VideoFrame::RGB32, dest_size, dest_size,
                                 TimeDelta::FromSeconds(0)));
   }
 

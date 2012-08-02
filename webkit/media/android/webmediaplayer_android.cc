@@ -453,7 +453,8 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   natural_size_.height = height;
   if (texture_id_) {
     video_frame_.reset(new WebVideoFrameImpl(VideoFrame::WrapNativeTexture(
-        texture_id_, kGLTextureExternalOES, width, height, base::TimeDelta(),
+        texture_id_, kGLTextureExternalOES, natural_size_, natural_size_,
+        base::TimeDelta(),
         base::Closure())));
   }
 }

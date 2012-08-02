@@ -39,7 +39,6 @@ class CONTENT_EXPORT CaptureVideoDecoder
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
-  virtual const gfx::Size& natural_size() OVERRIDE;
   virtual void PrepareForShutdownHack() OVERRIDE;
 
   // VideoCapture::EventHandler implementation.

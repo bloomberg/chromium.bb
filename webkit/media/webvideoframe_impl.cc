@@ -48,13 +48,13 @@ WebVideoFrame::Format WebVideoFrameImpl::format() const {
 
 unsigned WebVideoFrameImpl::width() const {
   if (video_frame_.get())
-    return video_frame_->width();
+    return video_frame_->data_size().width();
   return 0;
 }
 
 unsigned WebVideoFrameImpl::height() const {
   if (video_frame_.get())
-    return video_frame_->height();
+    return video_frame_->data_size().height();
   return 0;
 }
 

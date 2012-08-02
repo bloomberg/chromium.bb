@@ -24,25 +24,23 @@ static const int kHeight = 144;
 static const int kFPS = 30;
 static const media::VideoCaptureSessionId kVideoStreamId = 1;
 
-ACTION_P3(CreateDataBufferFromCapture, decoder, vc_impl, data_buffer_number) {
-  for (int i = 0; i < data_buffer_number; i++) {
-    media::VideoCapture::VideoFrameBuffer* buffer;
-    buffer = new media::VideoCapture::VideoFrameBuffer();
-    buffer->width = arg1.width;
-    buffer->height = arg1.height;
-    int length = buffer->width * buffer->height * 3 / 2;
-    buffer->memory_pointer = new uint8[length];
-    buffer->buffer_size = length;
-    decoder->OnBufferReady(vc_impl, buffer);
-  }
-}
-
 ACTION(DeleteDataBuffer) {
   delete[] arg0->memory_pointer;
 }
 
 ACTION_P2(CaptureStopped, decoder, vc_impl) {
   decoder->OnStopped(vc_impl);
+}
+
+MATCHER_P2(HasSize, width, height, "") {
+  EXPECT_EQ(arg->data_size().width(), width);
+  EXPECT_EQ(arg->data_size().height(), height);
+  EXPECT_EQ(arg->natural_size().width(), width);
+  EXPECT_EQ(arg->natural_size().height(), height);
+  return (arg->data_size().width() == width) &&
+      (arg->data_size().height() == height) &&
+      (arg->natural_size().width() == width) &&
+      (arg->natural_size().height() == height);
 }
 
 class MockVideoCaptureImpl : public VideoCaptureImpl {
@@ -119,25 +117,17 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   }
 
   void Initialize() {
-    // Issue a read.
-    EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
-    decoder_->Read(read_cb_);
-
     EXPECT_CALL(*vc_manager_, AddDevice(_, _))
         .WillOnce(Return(vc_impl_.get()));
-    int buffer_count = 1;
-    EXPECT_CALL(*vc_impl_, StartCapture(capture_client(), _))
-        .Times(1)
-        .WillOnce(CreateDataBufferFromCapture(capture_client(),
-                                              vc_impl_.get(),
-                                              buffer_count));
-    EXPECT_CALL(*vc_impl_, FeedBuffer(_))
-        .Times(buffer_count)
-        .WillRepeatedly(DeleteDataBuffer());
-
+    EXPECT_CALL(*vc_impl_, StartCapture(capture_client(), _));
     decoder_->Initialize(NULL,
                          media::NewExpectedStatusCB(media::PIPELINE_OK),
                          NewStatisticsCB());
+
+    EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk,
+                                  HasSize(kWidth, kHeight)));
+        decoder_->Read(read_cb_);
+    SendBufferToDecoder(gfx::Size(kWidth, kHeight));
     message_loop_->RunAllPending();
   }
 
@@ -153,6 +143,20 @@ class CaptureVideoDecoderTest : public ::testing::Test {
 
   media::VideoCapture::EventHandler* capture_client() {
     return static_cast<media::VideoCapture::EventHandler*>(decoder_);
+  }
+
+  void SendBufferToDecoder(const gfx::Size& size) {
+    scoped_refptr<media::VideoCapture::VideoFrameBuffer> buffer =
+        new media::VideoCapture::VideoFrameBuffer();
+    buffer->width = size.width();
+    buffer->height = size.height();
+    int length = buffer->width * buffer->height * 3 / 2;
+    buffer->memory_pointer = new uint8[length];
+    buffer->buffer_size = length;
+
+    EXPECT_CALL(*vc_impl_, FeedBuffer(_))
+        .WillOnce(DeleteDataBuffer());
+    decoder_->OnBufferReady(vc_impl_.get(), buffer);
   }
 
   MOCK_METHOD2(FrameReady, void(media::VideoDecoder::DecoderStatus status,
@@ -175,11 +179,8 @@ class CaptureVideoDecoderTest : public ::testing::Test {
 TEST_F(CaptureVideoDecoderTest, ReadAndReset) {
   // Test basic initialize and teardown sequence.
   Initialize();
-  // Natural size should be initialized to default capability.
-  EXPECT_EQ(kWidth, decoder_->natural_size().width());
-  EXPECT_EQ(kHeight, decoder_->natural_size().height());
-
-  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk,
+                                HasSize(kWidth, kHeight)));
   decoder_->Read(read_cb_);
   decoder_->Reset(media::NewExpectedClosure());
   message_loop_->RunAllPending();
@@ -200,10 +201,13 @@ TEST_F(CaptureVideoDecoderTest, OnDeviceInfoReceived) {
   params.session_id = kVideoStreamId;
 
   decoder_->OnDeviceInfoReceived(vc_impl_.get(), params);
-  message_loop_->RunAllPending();
 
-  EXPECT_EQ(expected_size.width(), decoder_->natural_size().width());
-  EXPECT_EQ(expected_size.height(), decoder_->natural_size().height());
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk,
+                                HasSize(expected_size.width(),
+                                        expected_size.height())));
+  decoder_->Read(read_cb_);
+  SendBufferToDecoder(expected_size);
+  message_loop_->RunAllPending();
 
   Stop();
 }
@@ -213,7 +217,8 @@ TEST_F(CaptureVideoDecoderTest, ReadAndShutdown) {
   // teardown the pipeline) even when there's no input frame.
   Initialize();
 
-  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _)).Times(2);
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk,
+                                HasSize(0, 0))).Times(2);
   decoder_->Read(read_cb_);
   decoder_->PrepareForShutdownHack();
   decoder_->Read(read_cb_);
@@ -221,4 +226,3 @@ TEST_F(CaptureVideoDecoderTest, ReadAndShutdown) {
 
   Stop();
 }
-

@@ -42,9 +42,8 @@ class CONTENT_EXPORT RTCVideoDecoder
                           const media::PipelineStatusCB& status_cb,
                           const media::StatisticsCB& statistics_cb) OVERRIDE;
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual void Reset(const base::Closure& clusure) OVERRIDE;
-  virtual void Stop(const base::Closure& clusure) OVERRIDE;
-  virtual const gfx::Size& natural_size() OVERRIDE;
+  virtual void Reset(const base::Closure& closure) OVERRIDE;
+  virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual void PrepareForShutdownHack() OVERRIDE;
 
   // webrtc::VideoRendererInterface implementation

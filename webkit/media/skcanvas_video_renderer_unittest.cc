@@ -76,9 +76,11 @@ class SkCanvasVideoRendererTest : public testing::Test {
 };
 
 SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
-    : natural_frame_(VideoFrame::CreateBlackFrame(kWidth, kHeight)),
-      larger_frame_(VideoFrame::CreateBlackFrame(kWidth * 2, kHeight * 2)),
-      smaller_frame_(VideoFrame::CreateBlackFrame(kWidth / 2, kHeight / 2)),
+    : natural_frame_(VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight))),
+      larger_frame_(VideoFrame::CreateBlackFrame(
+          gfx::Size(kWidth * 2, kHeight * 2))),
+      smaller_frame_(VideoFrame::CreateBlackFrame(
+          gfx::Size(kWidth / 2, kHeight / 2))),
       fast_path_device_(SkBitmap::kARGB_8888_Config, kWidth, kHeight, true),
       fast_path_canvas_(&fast_path_device_),
       slow_path_device_(SkBitmap::kARGB_8888_Config, kWidth, kHeight, false),

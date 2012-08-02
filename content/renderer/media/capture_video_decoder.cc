@@ -61,10 +61,6 @@ void CaptureVideoDecoder::Stop(const base::Closure& closure) {
       base::Bind(&CaptureVideoDecoder::StopOnDecoderThread, this, closure));
 }
 
-const gfx::Size& CaptureVideoDecoder::natural_size() {
-  return natural_size_;
-}
-
 void CaptureVideoDecoder::PrepareForShutdownHack() {
   message_loop_proxy_->PostTask(
       FROM_HERE,
@@ -139,6 +135,7 @@ void CaptureVideoDecoder::InitializeOnDecoderThread(
 }
 
 void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& read_cb) {
+  DCHECK_NE(state_, kUnInitialized);
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   CHECK(read_cb_.is_null());
   read_cb_ = read_cb;
@@ -152,8 +149,7 @@ void CaptureVideoDecoder::ResetOnDecoderThread(const base::Closure& closure) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (!read_cb_.is_null()) {
     scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::CreateBlackFrame(natural_size_.width(),
-                                            natural_size_.height());
+        media::VideoFrame::CreateBlackFrame(natural_size_);
     DeliverFrame(video_frame);
   }
   closure.Run();
@@ -240,8 +236,7 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
   // TODO(scherkus): migrate this to proper buffer recycling.
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                     natural_size_.width(),
-                                     natural_size_.height(),
+                                     natural_size_, natural_size_,
                                      buf->timestamp - start_time_);
 
   last_frame_timestamp_ = buf->timestamp;
