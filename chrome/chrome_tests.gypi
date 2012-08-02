@@ -4585,6 +4585,7 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_java',
+            '../net/net.gyp:net_java',
             'unit_tests',
           ],
           'variables': {
@@ -4592,6 +4593,7 @@
             'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)unit_tests<(SHARED_LIB_SUFFIX)',
             'input_jars_paths': [
               '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
+              '<(PRODUCT_DIR)/lib.java/chromium_net.jar',
              ],
           },
           'includes': [ '../build/apk_test.gypi' ],

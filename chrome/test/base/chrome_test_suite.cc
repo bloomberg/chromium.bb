@@ -31,6 +31,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "net/android/net_jni_registrar.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
@@ -181,6 +186,11 @@ void ChromeTestSuite::Initialize() {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
   chrome_browser_application_mac::RegisterBrowserCrApp();
+#endif
+
+#if defined(OS_ANDROID)
+  // Register JNI bindings for android.
+  net::android::RegisterJni(base::android::AttachCurrentThread());
 #endif
 
   chrome::RegisterPathProvider();
