@@ -9,8 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 
-class GURL;
-
 namespace fileapi {
 
 typedef base::Callback<
