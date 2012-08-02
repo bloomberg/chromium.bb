@@ -324,7 +324,8 @@ GDataCache::GDataCache(const FilePath& cache_root_path,
     : cache_root_path_(cache_root_path),
       cache_paths_(GetCachePaths(cache_root_path_)),
       blocking_task_runner_(blocking_task_runner),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ui_weak_ptr_factory_(this),
+      ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -541,7 +542,7 @@ void GDataCache::PinOnUIThread(const std::string& resource_id,
                  GDataCache::FILE_OPERATION_MOVE,
                  error),
       base::Bind(&GDataCache::OnPinned,
-                 weak_ptr_factory_.GetWeakPtr(),
+                 ui_weak_ptr_,
                  base::Owned(error),
                  resource_id,
                  md5,
@@ -563,7 +564,7 @@ void GDataCache::UnpinOnUIThread(const std::string& resource_id,
                  GDataCache::FILE_OPERATION_MOVE,
                  error),
       base::Bind(&GDataCache::OnUnpinned,
-                 weak_ptr_factory_.GetWeakPtr(),
+                 ui_weak_ptr_,
                  base::Owned(error),
                  resource_id,
                  md5,
@@ -633,7 +634,7 @@ void GDataCache::CommitDirtyOnUIThread(const std::string& resource_id,
                  GDataCache::FILE_OPERATION_MOVE,
                  error),
       base::Bind(&GDataCache::OnCommitDirty,
-                 weak_ptr_factory_.GetWeakPtr(),
+                 ui_weak_ptr_,
                  base::Owned(error),
                  resource_id,
                  md5,
@@ -718,7 +719,7 @@ void GDataCache::DestroyOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Invalidate the weak pointer.
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  ui_weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Destroy myself on the blocking pool.
   blocking_task_runner_->PostTask(

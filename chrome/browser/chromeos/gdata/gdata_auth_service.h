@@ -98,10 +98,8 @@ class GDataAuthService : public content::NotificationObserver {
   ObserverList<Observer> observers_;
 
   content::NotificationRegistrar registrar_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<GDataAuthService> weak_ptr_factory_;
+  base::WeakPtr<GDataAuthService> weak_ptr_bound_to_ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataAuthService);
 };

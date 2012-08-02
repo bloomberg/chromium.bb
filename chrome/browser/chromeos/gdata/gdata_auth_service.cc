@@ -41,7 +41,8 @@ void GDataAuthService::Initialize(Profile* profile) {
 
 GDataAuthService::GDataAuthService()
     : profile_(NULL),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_bound_to_ui_thread_(weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -62,11 +63,11 @@ void GDataAuthService::StartAuthentication(
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&GDataAuthService::StartAuthenticationOnUIThread,
-                   weak_ptr_factory_.GetWeakPtr(),
+                   weak_ptr_bound_to_ui_thread_,
                    registry,
                    relay_proxy,
                    base::Bind(&GDataAuthService::OnAuthCompleted,
-                              weak_ptr_factory_.GetWeakPtr(),
+                              weak_ptr_bound_to_ui_thread_,
                               relay_proxy,
                               callback)));
   } else {

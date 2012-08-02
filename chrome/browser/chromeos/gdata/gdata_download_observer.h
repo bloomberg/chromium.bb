@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H__
+#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H__
 
 #include <map>
 
@@ -155,8 +155,6 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   typedef std::map<int32, content::DownloadItem*> DownloadMap;
   DownloadMap pending_downloads_;
 
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<GDataDownloadObserver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDownloadObserver);
@@ -164,4 +162,4 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H__

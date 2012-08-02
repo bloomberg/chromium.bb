@@ -17,7 +17,8 @@ GDataOperationRunner::GDataOperationRunner(Profile* profile)
     : profile_(profile),
       auth_service_(new GDataAuthService()),
       operation_registry_(new GDataOperationRegistry()),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this),
+      weak_ptr_bound_to_ui_thread_(weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   auth_service_->AddObserver(this);
 }
@@ -49,7 +50,7 @@ void GDataOperationRunner::StartOperationWithRetry(
   // The re-authenticatation callback will run on UI thread.
   operation->SetReAuthenticateCallback(
       base::Bind(&GDataOperationRunner::RetryOperation,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_bound_to_ui_thread_));
   StartOperation(operation);
 }
 
@@ -61,7 +62,7 @@ void GDataOperationRunner::StartOperation(GDataOperationInterface* operation) {
     auth_service_->StartAuthentication(
         operation_registry_.get(),
         base::Bind(&GDataOperationRunner::OnOperationAuthRefresh,
-                   weak_ptr_factory_.GetWeakPtr(),
+                   weak_ptr_bound_to_ui_thread_,
                    operation));
     return;
   }
