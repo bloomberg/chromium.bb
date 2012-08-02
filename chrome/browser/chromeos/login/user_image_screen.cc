@@ -116,8 +116,10 @@ void UserImageScreen::StopCamera() {
 
 void UserImageScreen::OnPhotoTaken(const gfx::ImageSkia& image) {
   UserManager* user_manager = UserManager::Get();
+  // TODO(ivankr): once old camera UI is gone, there's raw data in image
+  // decoder, pass UserImage and user it instead.
   user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(),
-                              UserImage(image));
+                              UserImage::CreateAndEncode(image));
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 

@@ -47,6 +47,7 @@ void User::SetImage(const UserImage& user_image, int image_index) {
   user_image_ = user_image;
   image_index_ = image_index;
   image_is_stub_ = false;
+  DCHECK(HasDefaultImage() || user_image.has_raw_image());
 }
 
 void User::SetImageURL(const GURL& image_url) {
@@ -68,6 +69,10 @@ std::string User::GetAccountName(bool use_display_email) const {
     return GetUserName(display_email_);
   else
     return GetUserName(email_);
+}
+
+bool User::HasDefaultImage() const {
+  return image_index_ >= 0 && image_index_ < kDefaultImagesCount;
 }
 
 string16 User::GetDisplayName() const {

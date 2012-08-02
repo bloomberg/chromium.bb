@@ -66,9 +66,8 @@ class User {
   // The image for this user.
   const gfx::ImageSkia& image() const { return user_image_.image(); }
 
-  bool has_default_image() const {
-    return image_index_ >= 0 && image_index_ < kDefaultImagesCount;
-  }
+  // Whether the user has a default image.
+  bool HasDefaultImage() const;
 
   int image_index() const { return image_index_; }
   bool has_raw_image() const { return user_image_.has_raw_image(); }

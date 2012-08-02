@@ -518,7 +518,8 @@ void PhotoCaptureObserver::OnCapturingStopped(
 
   // Set up an observer for UserManager (it will delete itself).
   user_manager->AddObserver(this);
-  user_manager->SaveUserImage(user.email(), chromeos::UserImage(photo));
+  user_manager->SaveUserImage(
+      user.email(), chromeos::UserImage::CreateAndEncode(photo));
 }
 
 void PhotoCaptureObserver::LocalStateChanged(

@@ -23,6 +23,13 @@ bool IsAnimatedImage(const UserImage::RawImage& data) {
 
 }  // namespace
 
+// static
+UserImage UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
+  RawImage raw_image;
+  return gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &raw_image) ?
+      UserImage(image, raw_image) : UserImage(image);
+}
+
 UserImage::UserImage()
     : has_raw_image_(false),
       has_animated_image_(false) {
@@ -51,5 +58,9 @@ UserImage::UserImage(const gfx::ImageSkia& image,
 }
 
 UserImage::~UserImage() {}
+
+void UserImage::DiscardRawImage() {
+  RawImage().swap(raw_image_);  // Clear |raw_image_|.
+}
 
 }  // namespace chromeos

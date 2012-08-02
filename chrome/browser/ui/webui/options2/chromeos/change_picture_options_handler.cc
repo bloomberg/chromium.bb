@@ -302,7 +302,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
 
     DCHECK(!previous_image_.empty());
     user_manager->SaveUserImage(user.email(),
-                                chromeos::UserImage(previous_image_));
+                                UserImage::CreateAndEncode(previous_image_));
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               kHistogramImageOld,
@@ -361,8 +361,10 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
 
 void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
   UserManager* user_manager = UserManager::Get();
+  // TODO(ivankr): once old camera UI is gone, there's always raw data in
+  // |image_decoder_|, pass UserImage and user it instead.
   user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(),
-                              chromeos::UserImage(photo));
+                              UserImage::CreateAndEncode(photo));
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);

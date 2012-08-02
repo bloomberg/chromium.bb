@@ -73,7 +73,7 @@ base::RefCountedMemory* UserImageSource::GetUserImage(
       return new base::RefCountedBytes(user->animated_image());
     } else if (user->has_raw_image()) {
       return new base::RefCountedBytes(user->raw_image());
-    } else if (user->has_default_image()) {
+    } else if (user->HasDefaultImage()) {
       return ResourceBundle::GetSharedInstance().
           LoadDataResourceBytes(kDefaultImageResources[user->image_index()],
                                 scale_factor);

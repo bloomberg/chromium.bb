@@ -20,6 +20,10 @@ class UserImage {
   // TODO(ivankr): replace with RefCountedMemory to prevent copying.
   typedef std::vector<unsigned char> RawImage;
 
+  // Creates a new instance from a given still frame and tries to encode raw
+  // representation for it.
+  static UserImage CreateAndEncode(const gfx::ImageSkia& image);
+
   // Create instance with an empty still frame and no raw data.
   UserImage();
 
@@ -39,6 +43,9 @@ class UserImage {
   // Optional raw representation of the still image.
   bool has_raw_image() const { return has_raw_image_; }
   const RawImage& raw_image() const { return raw_image_; }
+
+  // Discards the stored raw image, freeing used memory.
+  void DiscardRawImage();
 
   // Optional raw representation of the animated image.
   bool has_animated_image() const { return has_animated_image_; }

@@ -25,7 +25,7 @@ class UserImage;
 class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
                         public ImageDecoder::Delegate {
  public:
-  // Callback used to inidicate that image has been loaded.
+  // Callback used to indicate that image has been loaded.
   typedef base::Callback<void(const UserImage& user_image)> LoadedCallback;
 
   UserImageLoader();
@@ -34,8 +34,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   // |loaded_cb| when image has been successfully loaded.
   // If |size| is positive, image is cropped and (if needed) downsized to
   // |size|x|size| pixels.
-  // If |load_raw_image| is true, raw image is also passed to callback.
-  void Start(const std::string& filepath, int size, bool load_raw_image,
+  void Start(const std::string& filepath, int size,
              const LoadedCallback& loaded_cb);
 
  private:
@@ -43,12 +42,11 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // Contains attributes we need to know about each image we decode.
   struct ImageInfo {
-    ImageInfo(int size, bool load_raw_image, const LoadedCallback& loaded_cb);
+    ImageInfo(int size, const LoadedCallback& loaded_cb);
     ~ImageInfo();
 
-    int size;
-    bool load_raw_image;
-    LoadedCallback loaded_cb;
+    const int size;
+    const LoadedCallback loaded_cb;
   };
 
   typedef std::map<const ImageDecoder*, ImageInfo> ImageInfoMap;

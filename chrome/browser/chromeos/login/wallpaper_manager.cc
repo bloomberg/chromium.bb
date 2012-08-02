@@ -114,7 +114,7 @@ void WallpaperManager::SetLastSelectedUser(
 void WallpaperManager::SetWallpaperFromFilePath(const std::string& path,
                                                 ash::WallpaperLayout layout) {
   image_loader_->Start(
-      path, 0, false,
+      path, 0,
       base::Bind(&WallpaperManager::OnWallpaperLoaded,
                  base::Unretained(this), layout));
 }
