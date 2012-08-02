@@ -16,7 +16,6 @@ import stat
 import sys
 import textwrap
 import urlparse
-import urllib
 import urllib2
 
 try:
@@ -756,6 +755,13 @@ def LoadCodereviewSettingsFromFile(fileobj):
             keyvals['ORIGIN_URL_CONFIG']])
 
 
+def urlretrieve(source, destination):
+  """urllib is broken for SSL connections via a proxy therefore we
+  can't use urllib.urlretrieve()."""
+  with open(destination, 'w') as f:
+    f.write(urllib2.urlopen(source).read())
+
+
 def DownloadHooks(force):
   """downloads hooks
 
@@ -773,7 +779,7 @@ def DownloadHooks(force):
         return
       os.remove(dst)
     try:
-      urllib.urlretrieve(src, dst)
+      urlretrieve(src, dst)
       os.chmod(dst, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
     except Exception:
       if os.path.exists(dst):

@@ -431,7 +431,7 @@ class TestGitCl(TestCase):
       # others paths, such as /usr/share/locale/....
       return True
     self.mock(git_cl.os.path, 'exists', Exists)
-    self.mock(git_cl.urllib, 'urlretrieve', self._mocked_call)
+    self.mock(git_cl, 'urlretrieve', self._mocked_call)
     self.calls = [
         ((['git', 'config', 'rietveld.server', 'gerrit.chromium.org'],), ''),
         ((['git', 'config', '--unset-all', 'rietveld.cc'],), ''),
