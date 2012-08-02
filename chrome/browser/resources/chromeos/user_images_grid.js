@@ -329,7 +329,10 @@ cr.define('options', function() {
         this.removeItem(this.cameraImage_);
         this.cameraImage_ = null;
       }
-      this.focus();
+
+      // Set focus to the grid, unless focus is on the OK button.
+      if (!document.activeElement || document.activeElement.tagName != 'BUTTON')
+        this.focus();
     },
 
     /**
