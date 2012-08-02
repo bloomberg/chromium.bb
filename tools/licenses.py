@@ -95,6 +95,7 @@ PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
 ADDITIONAL_PATHS = (
     os.path.join('googleurl'),
     os.path.join('native_client_sdk'),
+    os.path.join('ppapi'),
     # The directory with the word list for Chinese and Japanese segmentation
     # with different license terms than ICU.
     os.path.join('third_party','icu','source','data','brkitr'),
