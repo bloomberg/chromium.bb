@@ -183,8 +183,7 @@ void WebstoreInlineInstaller::BeginInstall() {
   // (it is the page that caused this request to happen) and so that we can
   // track top sites that trigger inline install requests.
   webstore_data_url_fetcher_->SetReferrer(requestor_url_.spec());
-  webstore_data_url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                           net::LOAD_DO_NOT_SAVE_COOKIES |
+  webstore_data_url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                            net::LOAD_DISABLE_CACHE);
   webstore_data_url_fetcher_->Start();
 }
