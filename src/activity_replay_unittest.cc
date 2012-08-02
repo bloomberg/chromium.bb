@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ TEST(ActivityReplayTest, DISABLED_SimpleTest) {
   // Dump the new log
   const string kOutSwitchName = "outfile";
   if (cl->HasSwitch(kOutSwitchName))
-    static_cast<LoggingFilterInterpreter*>(interpreter)->log_.Dump(
+    static_cast<LoggingFilterInterpreter*>(interpreter)->Dump(
         cl->GetSwitchValueASCII(kOutSwitchName).c_str());
 
   DeleteGestureInterpreter(c_interpreter);
