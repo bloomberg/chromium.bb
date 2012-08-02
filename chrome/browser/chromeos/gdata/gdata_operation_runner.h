@@ -69,8 +69,10 @@ class GDataOperationRunner : public GDataAuthService::Observer {
 
   scoped_ptr<GDataAuthService> auth_service_;
   scoped_ptr<GDataOperationRegistry> operation_registry_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<GDataOperationRunner> weak_ptr_factory_;
-  base::WeakPtr<GDataOperationRunner> weak_ptr_bound_to_ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataOperationRunner);
 };

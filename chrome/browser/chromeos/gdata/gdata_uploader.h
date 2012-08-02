@@ -134,8 +134,9 @@ class GDataUploader : public GDataUploaderInterface {
   typedef std::map<int, UploadFileInfo*> UploadFileInfoMap;
   UploadFileInfoMap pending_uploads_;
 
-  // Factory for various callbacks.
-  base::WeakPtrFactory<GDataUploader> uploader_factory_;
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<GDataUploader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataUploader);
 };

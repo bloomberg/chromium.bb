@@ -196,6 +196,8 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
   // True if the sync loop is running.
   bool sync_loop_is_running_;
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<GDataSyncClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataSyncClient);

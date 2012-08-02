@@ -33,7 +33,7 @@ namespace gdata {
 GDataUploader::GDataUploader(DocumentsServiceInterface* documents_service)
   : documents_service_(documents_service),
     next_upload_id_(0),
-    ALLOW_THIS_IN_INITIALIZER_LIST(uploader_factory_(this)) {
+    ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 GDataUploader::~GDataUploader() {
@@ -194,7 +194,7 @@ void GDataUploader::OpenFile(UploadFileInfo* upload_file_info) {
       base::PLATFORM_FILE_READ |
       base::PLATFORM_FILE_ASYNC,
       base::Bind(&GDataUploader::OpenCompletionCallback,
-                 uploader_factory_.GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
 }
@@ -247,7 +247,7 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
                            upload_file_info->initial_upload_location,
                            upload_file_info->gdata_path),
       base::Bind(&GDataUploader::OnUploadLocationReceived,
-                 uploader_factory_.GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
 }
 
@@ -321,7 +321,7 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(&GDataUploader::ResumeUpload,
-                   uploader_factory_.GetWeakPtr(),
+                   weak_ptr_factory_.GetWeakPtr(),
                    upload_file_info->upload_id));
     return;
   }
@@ -330,7 +330,7 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
       upload_file_info->buf,
       bytes_to_read,
       base::Bind(&GDataUploader::ReadCompletionCallback,
-                 uploader_factory_.GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id,
                  bytes_to_read));
 }
@@ -375,7 +375,7 @@ void GDataUploader::ResumeUpload(int upload_id) {
                          upload_file_info->upload_location,
                          upload_file_info->gdata_path),
       base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
-                 uploader_factory_.GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
 }
 

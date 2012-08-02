@@ -430,13 +430,12 @@ class GDataCache {
   // The cache state data. This member must be access only on the blocking pool.
   scoped_ptr<GDataCacheMetadata> metadata_;
 
-  // WeakPtrFactory and WeakPtr bound to the UI thread.
-  base::WeakPtrFactory<GDataCache> ui_weak_ptr_factory_;
-  base::WeakPtr<GDataCache> ui_weak_ptr_;
-
   // List of observers, this member must be accessed on UI thread.
   ObserverList<Observer> observers_;
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<GDataCache> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(GDataCache);
 };
 

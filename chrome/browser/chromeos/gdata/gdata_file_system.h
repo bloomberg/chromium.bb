@@ -874,13 +874,17 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 
-  // WeakPtrFactory and WeakPtr bound to the UI thread.
-  base::WeakPtrFactory<GDataFileSystem> ui_weak_ptr_factory_;
-  base::WeakPtr<GDataFileSystem> ui_weak_ptr_;
-
   ObserverList<Observer> observers_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  // WeakPtrFactory and WeakPtr bound to the UI thread.
+  // Note: These should remain the last member so they'll be destroyed and
+  // invalidate the weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<GDataFileSystem> ui_weak_ptr_factory_;
+  // Unlike other classes, we need this as we need this to redirect a task
+  // from IO thread to UI thread.
+  base::WeakPtr<GDataFileSystem> ui_weak_ptr_;
 };
 
 }  // namespace gdata
