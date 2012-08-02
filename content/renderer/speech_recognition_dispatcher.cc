@@ -121,38 +121,39 @@ void SpeechRecognitionDispatcher::OnAudioEnded(int request_id) {
   recognizer_client_->didEndAudio(GetHandleFromID(request_id));
 }
 
+static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
+    content::SpeechRecognitionErrorCode e) {
+  switch (e) {
+    case content::SPEECH_RECOGNITION_ERROR_NONE:
+      NOTREACHED();
+      return WebSpeechRecognizerClient::OtherError;
+    case content::SPEECH_RECOGNITION_ERROR_ABORTED:
+      return WebSpeechRecognizerClient::AbortedError;
+    case content::SPEECH_RECOGNITION_ERROR_AUDIO:
+      return WebSpeechRecognizerClient::AudioCaptureError;
+    case content::SPEECH_RECOGNITION_ERROR_NETWORK:
+      return WebSpeechRecognizerClient::NetworkError;
+    case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
+      return WebSpeechRecognizerClient::NoSpeechError;
+    case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:
+      NOTREACHED();
+      return WebSpeechRecognizerClient::OtherError;
+    case content::SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR:
+      return WebSpeechRecognizerClient::BadGrammarError;
+  }
+  NOTREACHED();
+  return WebSpeechRecognizerClient::OtherError;
+}
+
 void SpeechRecognitionDispatcher::OnErrorOccurred(
     int request_id, const SpeechRecognitionError& error) {
   if (error.code == content::SPEECH_RECOGNITION_ERROR_NO_MATCH) {
     recognizer_client_->didReceiveNoMatch(GetHandleFromID(request_id),
                                           WebSpeechRecognitionResult());
   } else {
-    // TODO(primiano): speech_recognition_error.h must be updated to match the
-    // new enums defined in the the API specs (thus removing the code below).
-    WebSpeechRecognizerClient::ErrorCode wk_error_code;
-    switch (error.code) {
-      case content::SPEECH_RECOGNITION_ERROR_ABORTED:
-        wk_error_code = WebSpeechRecognizerClient::AbortedError;
-        break;
-      case content::SPEECH_RECOGNITION_ERROR_AUDIO:
-        wk_error_code = WebSpeechRecognizerClient::AudioCaptureError;
-        break;
-      case content::SPEECH_RECOGNITION_ERROR_NETWORK:
-        wk_error_code = WebSpeechRecognizerClient::NetworkError;
-        break;
-      case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
-        wk_error_code = WebSpeechRecognizerClient::NoSpeechError;
-        break;
-      case content::SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR:
-        wk_error_code = WebSpeechRecognizerClient::BadGrammarError;
-        break;
-      default:
-        NOTREACHED();
-        wk_error_code = WebSpeechRecognizerClient::OtherError;
-    }
     recognizer_client_->didReceiveError(GetHandleFromID(request_id),
                                         WebString(), // TODO(primiano): message?
-                                        wk_error_code);
+                                        WebKitErrorCode(error.code));
   }
 }
 
