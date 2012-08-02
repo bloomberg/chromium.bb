@@ -3527,34 +3527,30 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
     GDataCache::FileOperationType cache_operation,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+
+  // ScopedClosureRunner ensures that the specified callback is always invoked
+  // upon return or passed on.
+  base::ScopedClosureRunner callback_runner(callback);
 
   if (!entry.get()) {
     NOTREACHED();
-    callback.Run();
     return;
   }
 
   GDataEntry* dir_entry = directory_service_->FindEntryByPathSync(
       virtual_dir_path);
-  if (!dir_entry) {
-    callback.Run();
+  if (!dir_entry)
     return;
-  }
 
   GDataDirectory* parent_dir  = dir_entry->AsGDataDirectory();
-  if (!parent_dir) {
-    callback.Run();
+  if (!parent_dir)
     return;
-  }
 
   scoped_ptr<GDataEntry> new_entry(
       GDataEntry::FromDocumentEntry(
           parent_dir, entry.get(), directory_service_.get()));
-  if (!new_entry.get()) {
-    callback.Run();
+  if (!new_entry.get())
     return;
-  }
 
   if (upload_mode == UPLOAD_EXISTING_FILE) {
     // Remove an existing entry, which should be present.
@@ -3579,13 +3575,13 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
                             file_content_path,
                             cache_operation,
                             base::Bind(&OnCacheUpdatedForAddUploadedFile,
-                                       callback));
+                                       callback_runner.Release()));
   } else if (upload_mode == UPLOAD_EXISTING_FILE) {
     // Clear the dirty bit if we have updated an existing file.
     cache_->ClearDirtyOnUIThread(resource_id,
                                  md5,
                                  base::Bind(&OnCacheUpdatedForAddUploadedFile,
-                                            callback));
+                                            callback_runner.Release()));
   } else {
     NOTREACHED() << "Unexpected upload mode: " << upload_mode;
   }
