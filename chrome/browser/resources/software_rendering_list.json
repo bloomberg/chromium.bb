@@ -68,7 +68,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.6",
+  "version": "2.7",
   "entries": [
     {
       "id": 1,
@@ -689,6 +689,19 @@
         "op": "<",
         "number": "7"
       },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 46,
+      "description": "ATI FireMV 2400 cards on Windows are buggy.",
+      "cr_bugs": [124152],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x3151"],
       "blacklist": [
         "all"
       ]
