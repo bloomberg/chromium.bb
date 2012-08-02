@@ -197,6 +197,7 @@ class Builder(object):
                            define.startswith('NACL_WINDOWS=') or
                            define.startswith('NACL_OSX=') or
                            define.startswith('NACL_LINUX=') or
+                           define.startswith('COMPONENT_BUILD=') or
                            'WIN32' in define or
                            'WINDOWS' in define or
                            'WINVER' in define)]
