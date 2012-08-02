@@ -22,36 +22,31 @@
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"
+#include "sync/notifier/invalidation_util.h"
 #include "sync/protocol/sync_protocol_error.h"
-
-namespace syncer {
-class Encryptor;
-struct Experiments;
-class ExtensionsActivityMonitor;
-class InternalComponentsFactory;
-class JsBackend;
-class JsEventHandler;
-class SyncScheduler;
-class UnrecoverableErrorHandler;
-
-namespace sessions {
-class SyncSessionSnapshot;
-}  // namespace sessions
-}  // namespace syncer
-
-namespace syncer {
-class SyncNotifier;
-}  // namespace syncer
 
 namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
 
 namespace syncer {
-
 class BaseTransaction;
+class Encryptor;
+struct Experiments;
+class ExtensionsActivityMonitor;
 class HttpPostProviderFactory;
+class InternalComponentsFactory;
+class JsBackend;
+class JsEventHandler;
+class SyncNotifier;
+class SyncNotifierObserver;
+class SyncScheduler;
+class UnrecoverableErrorHandler;
 struct UserShare;
+
+namespace sessions {
+class SyncSessionSnapshot;
+}  // namespace sessions
 
 // Used by SyncManager::OnConnectionStatusChange().
 enum ConnectionStatus {
@@ -410,6 +405,11 @@ class SyncManager {
   // Called when the user disables or enables a sync type.
   virtual void UpdateEnabledTypes(
       const ModelTypeSet& enabled_types) = 0;
+
+  // Forwards to the underlying notifier (see
+  // SyncNotifier::UpdateRegisteredIds()).
+  virtual void UpdateRegisteredInvalidationIds(
+      SyncNotifierObserver* handler, const ObjectIdSet& ids) = 0;
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(

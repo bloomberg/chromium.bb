@@ -480,11 +480,13 @@
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         'syncapi_core',
+        'sync_notifier',
         'test_support_sync',
       ],
       'export_dependent_settings': [
         '../testing/gtest.gyp:gtest',
         'syncapi_core',
+        'sync_notifier',
         'test_support_sync',
       ],
       'sources': [
@@ -706,7 +708,7 @@
           'internal_api/js_mutation_event_observer_unittest.cc',
           'internal_api/js_sync_manager_observer_unittest.cc',
           'internal_api/syncapi_server_connection_manager_unittest.cc',
-          'internal_api/syncapi_unittest.cc',
+          'internal_api/sync_manager_impl_unittest.cc',
         ],
       },
     },

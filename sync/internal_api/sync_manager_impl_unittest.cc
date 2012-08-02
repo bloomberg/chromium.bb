@@ -23,8 +23,8 @@
 #include "base/test/values_test_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/engine/sync_scheduler.h"
+#include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
@@ -36,8 +36,8 @@
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
-#include "sync/internal_api/syncapi_internal.h"
 #include "sync/internal_api/sync_manager_impl.h"
+#include "sync/internal_api/syncapi_internal.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_backend.h"
 #include "sync/js/js_event_handler.h"
@@ -60,9 +60,9 @@
 #include "sync/syncable/syncable_id.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/test/callback_counter.h"
+#include "sync/test/engine/fake_sync_scheduler.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/test/fake_extensions_activity_monitor.h"
-#include "sync/test/engine/fake_sync_scheduler.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/extensions_activity_monitor.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
@@ -696,8 +696,8 @@ class SyncManagerObserverMock : public SyncManager::Observer {
 
 class SyncNotifierMock : public SyncNotifier {
  public:
-  MOCK_METHOD2(UpdateRegisteredIds, void(SyncNotifierObserver*,
-                                         const ObjectIdSet&));
+  MOCK_METHOD2(UpdateRegisteredIds,
+               void(SyncNotifierObserver*, const ObjectIdSet&));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials,
@@ -782,8 +782,7 @@ class SyncManagerTest : public testing::Test,
 
   void TearDown() {
     sync_manager_.RemoveObserver(&observer_);
-    EXPECT_CALL(*sync_notifier_mock_,
-                UpdateRegisteredIds(_, ObjectIdSet()));
+    EXPECT_CALL(*sync_notifier_mock_, UpdateRegisteredIds(_, ObjectIdSet()));
     sync_manager_.ShutdownOnSyncThread();
     sync_notifier_mock_ = NULL;
     PumpLoop();
@@ -959,8 +958,14 @@ TEST_F(SyncManagerTest, UpdateEnabledTypes) {
   const ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
 
   EXPECT_CALL(*sync_notifier_mock_,
-              UpdateRegisteredIds(_, ModelTypeSetToObjectIdSet(enabled_types)));
+              UpdateRegisteredIds(
+                  _, ModelTypeSetToObjectIdSet(enabled_types)));
   sync_manager_.UpdateEnabledTypes(enabled_types);
+}
+
+TEST_F(SyncManagerTest, UpdateRegisteredInvalidationIds) {
+  EXPECT_CALL(*sync_notifier_mock_, UpdateRegisteredIds(NULL, ObjectIdSet()));
+  sync_manager_.UpdateRegisteredInvalidationIds(NULL, ObjectIdSet());
 }
 
 TEST_F(SyncManagerTest, ProcessJsMessage) {

@@ -21,9 +21,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/test_browser_thread.h"
+#include "google/cacheinvalidation/include/types.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
+#include "sync/notifier/mock_sync_notifier_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
@@ -40,6 +42,7 @@ using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
 using testing::AtMost;
+using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
 
@@ -82,7 +85,7 @@ class ProfileSyncServiceTest : public testing::Test {
 
   void StartSyncService() {
     StartSyncServiceAndSetInitialSyncEnded(
-        true, true, false, true, true, syncer::STORAGE_IN_MEMORY);
+        true, true, false, true, syncer::STORAGE_IN_MEMORY);
   }
 
   void StartSyncServiceAndSetInitialSyncEnded(
@@ -90,7 +93,6 @@ class ProfileSyncServiceTest : public testing::Test {
       bool issue_auth_token,
       bool synchronous_sync_configuration,
       bool sync_setup_completed,
-      bool expect_create_dtm,
       syncer::StorageOption storage_option) {
     if (!service_.get()) {
       SigninManager* signin =
@@ -113,14 +115,9 @@ class ProfileSyncServiceTest : public testing::Test {
       if (!sync_setup_completed)
         profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
-      if (expect_create_dtm) {
-        // Register the bookmark data type.
-        EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
-            WillOnce(ReturnNewDataTypeManager());
-      } else {
-        EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
-            Times(0);
-      }
+      // Register the bookmark data type.
+      ON_CALL(*factory, CreateDataTypeManager(_, _)).
+          WillByDefault(ReturnNewDataTypeManager());
 
       if (issue_auth_token) {
         IssueTestTokens();
@@ -252,7 +249,7 @@ TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsControllerHandlersDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true,
+  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true,
                                          syncer::STORAGE_IN_MEMORY);
 
   StrictMock<syncer::MockJsEventHandler> event_handler;
@@ -294,7 +291,7 @@ TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsControllerProcessJsMessageBasicDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true,
+  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true,
                                          syncer::STORAGE_IN_MEMORY);
 
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
@@ -337,7 +334,7 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   ASSERT_NE(-1,
             file_util::WriteFile(sync_file3, nonsense3, strlen(nonsense3)));
 
-  StartSyncServiceAndSetInitialSyncEnded(false, false, true, false, true,
+  StartSyncServiceAndSetInitialSyncEnded(false, false, true, false,
                                          syncer::STORAGE_ON_DISK);
   EXPECT_FALSE(service_->HasSyncSetupCompleted());
   EXPECT_FALSE(service_->sync_initialized());
@@ -365,11 +362,68 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
 // recreate it.  This test is useful mainly when it is run under valgrind.  Its
 // expectations are not very interesting.
 TEST_F(ProfileSyncServiceTest, FailToOpenDatabase) {
-  StartSyncServiceAndSetInitialSyncEnded(false, true, true, true, false,
+  StartSyncServiceAndSetInitialSyncEnded(false, true, true, true,
                                          syncer::STORAGE_INVALID);
 
   // The backend is not ready.  Ensure the PSS knows this.
   EXPECT_FALSE(service_->sync_initialized());
+}
+
+// Register for some IDs with the ProfileSyncService and trigger some
+// invalidation messages.  They should be received by the observer.
+// Then unregister and trigger the invalidation messages again.  Those
+// shouldn't be received by the observer.
+TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
+  StartSyncService();
+
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(1, "id1"));
+  ids.insert(invalidation::ObjectId(2, "id2"));
+  const syncer::ObjectIdPayloadMap& payloads =
+      syncer::ObjectIdSetToPayloadMap(ids, "payload");
+
+  StrictMock<syncer::MockSyncNotifierObserver> observer;
+  EXPECT_CALL(observer, OnNotificationsEnabled());
+  EXPECT_CALL(observer, OnNotificationsDisabled(
+      syncer::TRANSIENT_NOTIFICATION_ERROR));
+  EXPECT_CALL(observer, OnIncomingNotification(
+      payloads, syncer::REMOTE_NOTIFICATION));
+
+  service_->UpdateRegisteredInvalidationIds(&observer, ids);
+
+  SyncBackendHostForProfileSyncTest* const backend =
+      service_->GetBackendForTest();
+
+  backend->EmitOnNotificationsEnabled();
+  backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
+  backend->EmitOnIncomingNotification(payloads, syncer::REMOTE_NOTIFICATION);
+
+  Mock::VerifyAndClearExpectations(&observer);
+
+  service_->UpdateRegisteredInvalidationIds(&observer, syncer::ObjectIdSet());
+
+  backend->EmitOnNotificationsEnabled();
+  backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
+  backend->EmitOnIncomingNotification(payloads, syncer::REMOTE_NOTIFICATION);
+}
+
+// Register for some IDs with the ProfileSyncService, restart sync,
+// and trigger some invalidation messages.  They should still be
+// received by the observer.
+TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
+  StartSyncService();
+
+  StrictMock<syncer::MockSyncNotifierObserver> observer;
+  EXPECT_CALL(observer, OnNotificationsEnabled());
+
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(3, "id3"));
+  service_->UpdateRegisteredInvalidationIds(&observer, ids);
+
+  service_->StopAndSuppress();
+  service_->UnsuppressAndStart();
+
+  service_->GetBackendForTest()->EmitOnNotificationsEnabled();
 }
 
 }  // namespace

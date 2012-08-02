@@ -33,6 +33,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
  public:
   // |synchronous_init| causes initialization to block until the syncapi has
   //     completed setting itself up and called us back.
+  // TOOD(akalin): Remove |synchronous_init| (http://crbug.com/140354).
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
@@ -61,7 +62,13 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   static void SetHistoryServiceExpectations(ProfileMock* profile);
 
   void SetInitialSyncEndedForAllTypes();
-  void dont_set_initial_sync_ended_on_init();
+
+  void EmitOnNotificationsEnabled();
+  void EmitOnNotificationsDisabled(
+      syncer::NotificationsDisabledReason reason);
+  void EmitOnIncomingNotification(
+      const syncer::ObjectIdPayloadMap& id_payloads,
+      const syncer::IncomingNotificationSource source);
 
  protected:
   virtual void InitCore(const DoInitializeOptions& options) OVERRIDE;

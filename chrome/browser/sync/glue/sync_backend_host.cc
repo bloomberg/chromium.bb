@@ -43,8 +43,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/internal_components_factory_impl.h"
 #include "sync/internal_api/public/http_bridge.h"
+#include "sync/internal_api/public/internal_components_factory_impl.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -78,7 +78,8 @@ using syncer::SyncCredentials;
 
 class SyncBackendHost::Core
     : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
-      public syncer::SyncManager::Observer {
+      public syncer::SyncManager::Observer,
+      public syncer::SyncNotifierObserver {
  public:
   Core(const std::string& name,
        const FilePath& sync_data_folder_path,
@@ -110,6 +111,14 @@ class SyncBackendHost::Core
   virtual void OnActionableError(
       const syncer::SyncProtocolError& sync_error) OVERRIDE;
 
+  // syncer::SyncNotifierObserver implementation.
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      syncer::NotificationsDisabledReason reason) OVERRIDE;
+  virtual void OnIncomingNotification(
+      const syncer::ObjectIdPayloadMap& id_payloads,
+      syncer::IncomingNotificationSource source) OVERRIDE;
+
   // Note:
   //
   // The Do* methods are the various entry points from our
@@ -122,8 +131,12 @@ class SyncBackendHost::Core
   void DoInitialize(const DoInitializeOptions& options);
 
   // Called to perform credential update on behalf of
-  // SyncBackendHost::UpdateCredentials
+  // SyncBackendHost::UpdateCredentials.
   void DoUpdateCredentials(const syncer::SyncCredentials& credentials);
+
+  // Called to update the given registered ids on behalf of
+  // SyncBackendHost::UpdateRegisteredInvalidationIds.
+  void DoUpdateRegisteredInvalidationIds(const syncer::ObjectIdSet& ids);
 
   // Called to tell the syncapi to start syncing (generally after
   // initialization and authentication).
@@ -421,6 +434,15 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoUpdateCredentials, core_.get(),
                  credentials));
+}
+
+void SyncBackendHost::UpdateRegisteredInvalidationIds(
+    const syncer::ObjectIdSet& ids) {
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK(sync_thread_.IsRunning());
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds,
+                 core_.get(), ids));
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
@@ -871,6 +893,8 @@ void SyncBackendHost::Core::OnInitializationComplete(
 
   if (!success) {
     sync_manager_->RemoveObserver(this);
+    sync_manager_->UpdateRegisteredInvalidationIds(
+        this, syncer::ObjectIdSet());
     sync_manager_->ShutdownOnSyncThread();
     sync_manager_.reset();
   }
@@ -980,6 +1004,35 @@ void SyncBackendHost::Core::OnActionableError(
       sync_error);
 }
 
+void SyncBackendHost::Core::OnNotificationsEnabled() {
+  if (!sync_loop_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  host_.Call(FROM_HERE,
+             &SyncBackendHost::HandleNotificationsEnabledOnFrontendLoop);
+}
+
+void SyncBackendHost::Core::OnNotificationsDisabled(
+    syncer::NotificationsDisabledReason reason) {
+  if (!sync_loop_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  host_.Call(FROM_HERE,
+             &SyncBackendHost::HandleNotificationsDisabledOnFrontendLoop,
+             reason);
+}
+
+void SyncBackendHost::Core::OnIncomingNotification(
+    const syncer::ObjectIdPayloadMap& id_payloads,
+    syncer::IncomingNotificationSource source) {
+  if (!sync_loop_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  host_.Call(FROM_HERE,
+             &SyncBackendHost::HandleIncomingNotificationOnFrontendLoop,
+             id_payloads, source);
+}
+
 void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   DCHECK(!sync_loop_);
   sync_loop_ = options.sync_loop;
@@ -1030,7 +1083,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       &encryptor_,
       options.unrecoverable_error_handler,
       options.report_unrecoverable_error_function);
-  LOG_IF(ERROR, !success) << "Syncapi initialization failed!";
+  LOG_IF(ERROR, !success) << "Sync manager initialization failed!";
 
   // Now check the command line to see if we need to simulate an
   // unrecoverable error for testing purpose. Note the error is thrown
@@ -1048,6 +1101,19 @@ void SyncBackendHost::Core::DoUpdateCredentials(
     const SyncCredentials& credentials) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->UpdateCredentials(credentials);
+}
+
+void SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds(
+    const syncer::ObjectIdSet& ids) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  // |sync_manager_| may end up being NULL here in tests (in
+  // synchronous initialization mode) since this is called during
+  // shutdown.
+  //
+  // TODO(akalin): Fix this behavior.
+  if (sync_manager_.get()) {
+    sync_manager_->UpdateRegisteredInvalidationIds(this, ids);
+  }
 }
 
 void SyncBackendHost::Core::DoStartSyncing(
@@ -1095,6 +1161,8 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (sync_manager_.get()) {
     save_changes_timer_.reset();
+    sync_manager_->UpdateRegisteredInvalidationIds(
+        this, syncer::ObjectIdSet());
     sync_manager_->ShutdownOnSyncThread();
     sync_manager_->RemoveObserver(this);
     sync_manager_.reset();
@@ -1311,6 +1379,30 @@ void SyncBackendHost::HandleActionableErrorEventOnFrontendLoop(
     return;
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   frontend_->OnActionableError(sync_error);
+}
+
+void SyncBackendHost::HandleNotificationsEnabledOnFrontendLoop() {
+  if (!frontend_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  frontend_->OnNotificationsEnabled();
+}
+
+void SyncBackendHost::HandleNotificationsDisabledOnFrontendLoop(
+    syncer::NotificationsDisabledReason reason) {
+  if (!frontend_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  frontend_->OnNotificationsDisabled(reason);
+}
+
+void SyncBackendHost::HandleIncomingNotificationOnFrontendLoop(
+    const syncer::ObjectIdPayloadMap& id_payloads,
+    syncer::IncomingNotificationSource source) {
+  if (!frontend_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  frontend_->OnIncomingNotification(id_payloads, source);
 }
 
 bool SyncBackendHost::CheckPassphraseAgainstCachedPendingKeys(

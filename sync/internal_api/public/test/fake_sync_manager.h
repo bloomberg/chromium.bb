@@ -7,11 +7,14 @@
 
 #include <string>
 
-#include "sync/internal_api/public/sync_manager.h"
-
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "sync/internal_api/public/sync_manager.h"
+#include "sync/notifier/sync_notifier_helper.h"
 
-class MessageLoop;
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace syncer {
 
@@ -50,6 +53,17 @@ class FakeSyncManager : public SyncManager {
   // called.
   ModelTypeSet GetAndResetEnabledTypes();
 
+  // Posts a method to invalidate the given IDs on the sync thread.
+  void Invalidate(
+    const ObjectIdPayloadMap& id_payloads,
+    IncomingNotificationSource source);
+
+  // Posts a method to enable notifications on the sync thread.
+  void EnableNotifications();
+
+  // Posts a method to disable notifications on the sync thread.
+  void DisableNotifications(NotificationsDisabledReason reason);
+
   // SyncManager implementation.
   // Note: we treat whatever message loop this is called from as the sync
   // loop for purposes of callbacks.
@@ -81,6 +95,8 @@ class FakeSyncManager : public SyncManager {
   virtual bool PurgePartiallySyncedTypes() OVERRIDE;
   virtual void UpdateCredentials(const SyncCredentials& credentials) OVERRIDE;
   virtual void UpdateEnabledTypes(const ModelTypeSet& types) OVERRIDE;
+  virtual void UpdateRegisteredInvalidationIds(
+      SyncNotifierObserver* handler, const ObjectIdSet& ids) OVERRIDE;
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void SetEncryptionPassphrase(const std::string& passphrase,
@@ -108,6 +124,14 @@ class FakeSyncManager : public SyncManager {
   virtual bool HasUnsyncedItems() OVERRIDE;
 
  private:
+  void InvalidateOnSyncThread(
+      const ObjectIdPayloadMap& id_payloads,
+      IncomingNotificationSource source);
+  void EnableNotificationsOnSyncThread();
+  void DisableNotificationsOnSyncThread(NotificationsDisabledReason reason);
+
+  scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
+
   ObserverList<SyncManager::Observer> observers_;
 
   // Faked directory state.
@@ -125,8 +149,8 @@ class FakeSyncManager : public SyncManager {
   // The set of types that have been enabled.
   ModelTypeSet enabled_types_;
 
-  // For StopSyncingForShutdown's callback.
-  MessageLoop* sync_loop_;
+  // Faked notifier state.
+  SyncNotifierHelper notifier_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncManager);
 };

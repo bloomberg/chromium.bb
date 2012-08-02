@@ -422,6 +422,15 @@ void ProfileSyncService::StartUp() {
   // be there.
   InitializeBackend(!HasSyncSetupCompleted());
 
+  // |backend_| may end up being NULL here in tests (in synchronous
+  // initialization mode).
+  //
+  // TODO(akalin): Fix this horribly non-intuitive behavior (see
+  // http://crbug.com/140354).
+  if (backend_.get()) {
+    backend_->UpdateRegisteredInvalidationIds(all_registered_ids_);
+  }
+
   if (!sync_global_error_.get()) {
 #if !defined(OS_ANDROID)
     sync_global_error_.reset(new SyncGlobalError(this, signin()));
@@ -429,6 +438,17 @@ void ProfileSyncService::StartUp() {
     GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
         sync_global_error_.get());
     AddObserver(sync_global_error_.get());
+  }
+}
+
+void ProfileSyncService::UpdateRegisteredInvalidationIds(
+    syncer::SyncNotifierObserver* handler,
+    const syncer::ObjectIdSet& ids) {
+  all_registered_ids_ = notifier_helper_.UpdateRegisteredIds(handler, ids);
+  // If |backend_| is NULL, its registered IDs will be updated when
+  // it's created and initialized.
+  if (backend_.get()) {
+    backend_->UpdateRegisteredInvalidationIds(all_registered_ids_);
   }
 }
 
@@ -442,8 +462,10 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // applying changes to the sync db that wouldn't get applied via
   // ChangeProcessors, leading to back-from-the-dead bugs.
   base::Time shutdown_start_time = base::Time::Now();
-  if (backend_.get())
+  if (backend_.get()) {
     backend_->StopSyncingForShutdown();
+    backend_->UpdateRegisteredInvalidationIds(syncer::ObjectIdSet());
+  }
 
   // Stop all data type controllers, if needed.  Note that until Stop
   // completes, it is possible in theory to have a ChangeProcessor apply a
@@ -634,6 +656,21 @@ void ProfileSyncService::DisableBrokenDatatype(
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
                  weak_factory_.GetWeakPtr()));
+}
+
+void ProfileSyncService::OnNotificationsEnabled() {
+  notifier_helper_.EmitOnNotificationsEnabled();
+}
+
+void ProfileSyncService::OnNotificationsDisabled(
+    syncer::NotificationsDisabledReason reason) {
+  notifier_helper_.EmitOnNotificationsDisabled(reason);
+}
+
+void ProfileSyncService::OnIncomingNotification(
+    const syncer::ObjectIdPayloadMap& id_payloads,
+    syncer::IncomingNotificationSource source) {
+  notifier_helper_.DispatchInvalidationsToHandlers(id_payloads, source);
 }
 
 void ProfileSyncService::OnBackendInitialized(

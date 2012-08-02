@@ -27,6 +27,7 @@
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/sync_notifier_factory.h"
+#include "sync/notifier/sync_notifier_observer.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 
@@ -51,7 +52,7 @@ class SyncPrefs;
 // activity.
 // NOTE: All methods will be invoked by a SyncBackendHost on the same thread
 // used to create that SyncBackendHost.
-class SyncFrontend {
+class SyncFrontend : public syncer::SyncNotifierObserver {
  public:
   SyncFrontend() {}
 
@@ -175,8 +176,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       syncer::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function);
 
-  // Called from |frontend_loop| to update SyncCredentials.
+  // Called on |frontend_loop| to update SyncCredentials.
   void UpdateCredentials(const syncer::SyncCredentials& credentials);
+
+  // Registers the underlying frontend for the given IDs to the
+  // underlying notifier.
+  void UpdateRegisteredInvalidationIds(const syncer::ObjectIdSet& ids);
 
   // This starts the SyncerThread running a Syncer object to communicate with
   // sync servers.  Until this is called, no changes will leave or enter this
@@ -349,6 +354,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success,
       syncer::ModelTypeSet restored_types);
 
+  SyncFrontend* frontend() { return frontend_; }
+
  private:
   // The real guts of SyncBackendHost, to keep the public client API clean.
   class Core;
@@ -459,6 +466,14 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void HandleNigoriConfigurationCompletedOnFrontendLoop(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       syncer::ModelTypeSet failed_configuration_types);
+
+  // syncer::SyncNotifierObserver-like functions.
+  void HandleNotificationsEnabledOnFrontendLoop();
+  void HandleNotificationsDisabledOnFrontendLoop(
+      syncer::NotificationsDisabledReason reason);
+  void HandleIncomingNotificationOnFrontendLoop(
+      const syncer::ObjectIdPayloadMap& id_payloads,
+      syncer::IncomingNotificationSource source);
 
   // Must be called on |frontend_loop_|.  |done_callback| is called on
   // |frontend_loop_|.

@@ -74,7 +74,6 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   test_options.internal_components_factory =
       new TestInternalComponentsFactory(storage);
   SyncBackendHost::InitCore(test_options);
-  // TODO(akalin): Figure out a better way to do this.
   if (synchronous_init_) {
     // The SyncBackend posts a task to the current loop when
     // initialization completes.
@@ -140,6 +139,21 @@ void SyncBackendHostForProfileSyncTest::SetInitialSyncEndedForAllTypes() {
     directory->set_initial_sync_ended_for_type(
         syncer::ModelTypeFromInt(i), true);
   }
+}
+
+void SyncBackendHostForProfileSyncTest::EmitOnNotificationsEnabled() {
+  frontend()->OnNotificationsEnabled();
+}
+
+void SyncBackendHostForProfileSyncTest::EmitOnNotificationsDisabled(
+    syncer::NotificationsDisabledReason reason) {
+  frontend()->OnNotificationsDisabled(reason);
+}
+
+void SyncBackendHostForProfileSyncTest::EmitOnIncomingNotification(
+    const syncer::ObjectIdPayloadMap& id_payloads,
+    const syncer::IncomingNotificationSource source) {
+  frontend()->OnIncomingNotification(id_payloads, source);
 }
 
 }  // namespace browser_sync

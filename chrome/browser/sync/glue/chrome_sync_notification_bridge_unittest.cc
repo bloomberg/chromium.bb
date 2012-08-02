@@ -5,8 +5,8 @@
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -53,12 +53,8 @@ class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
         expected_payloads_(expected_payloads),
         expected_source_(expected_source) {
     DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-    // TODO(dcheng): We might want a function to go from ObjectIdPayloadMap ->
-    // ObjectIdSet to avoid this rather long incantation...
-    const syncer::ObjectIdSet& ids = syncer::ModelTypeSetToObjectIdSet(
-        syncer::ModelTypePayloadMapToEnumSet(
-            syncer::ObjectIdPayloadMapToModelTypePayloadMap(
-                expected_payloads)));
+    const syncer::ObjectIdSet& ids =
+        syncer::ObjectIdPayloadMapToSet(expected_payloads);
     bridge_->UpdateRegisteredIds(this, ids);
   }
 

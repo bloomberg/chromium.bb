@@ -38,6 +38,7 @@
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/js/sync_js_controller.h"
+#include "sync/notifier/sync_notifier_helper.h"
 
 class Profile;
 class ProfileSyncComponentsFactory;
@@ -252,6 +253,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Whether sync is enabled by user or not.
   virtual bool HasSyncSetupCompleted() const;
   virtual void SetSyncSetupCompleted();
+
+  // syncer::SyncNotifier implementation (via SyncFrontend).
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      syncer::NotificationsDisabledReason reason) OVERRIDE;
+  virtual void OnIncomingNotification(
+      const syncer::ObjectIdPayloadMap& id_payloads,
+      syncer::IncomingNotificationSource source) OVERRIDE;
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized(
@@ -542,6 +551,16 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
 
+  // Updates the set of ObjectIds associated with a given
+  // |handler|. Passing an empty ObjectIdSet will unregister
+  // |handler|. There should be at most one handler registered per
+  // object id.
+  //
+  // The handler -> registered ids map is persisted across restarts of
+  // sync.
+  void UpdateRegisteredInvalidationIds(syncer::SyncNotifierObserver* handler,
+                                       const syncer::ObjectIdSet& ids);
+
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
@@ -815,6 +834,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Factory the backend will use to build the SyncManager.
   syncer::SyncManagerFactory sync_manager_factory_;
+
+  // The set of all registered IDs.
+  syncer::ObjectIdSet all_registered_ids_;
+
+  // Dispatches invalidations to handlers.
+  syncer::SyncNotifierHelper notifier_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

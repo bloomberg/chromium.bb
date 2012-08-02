@@ -22,9 +22,10 @@ class SyncNotifier {
   SyncNotifier() {}
   virtual ~SyncNotifier() {}
 
-  // Updates the set of ObjectIds associated with a given |handler|. Passing an
-  // empty ObjectIdSet will unregister |handler|. If two different handlers
-  // attempt to register for the same object ID, the first registration wins.
+  // Updates the set of ObjectIds associated with a given
+  // |handler|. Passing an empty ObjectIdSet will unregister
+  // |handler|. There should be at most one handler registered per
+  // object id.
   virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
                                    const ObjectIdSet& ids) = 0;
 

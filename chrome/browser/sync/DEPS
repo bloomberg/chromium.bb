@@ -1,8 +1,11 @@
 include_rules = [
-  # For files not in a subdirectory (what a mess!).
+  # Used by tests.
+  "+google/cacheinvalidation",
+
+  # For files not in a subdirectory.
   "+sync/internal_api/public",
   "+sync/js",
-  "+sync/notifier/invalidation_state_tracker.h",
+  "+sync/notifier",
 
   # TODO(tim): Remove everything below. Bug 131130.
   "+sync/util/cryptographer.h",

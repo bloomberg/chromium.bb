@@ -6,6 +6,7 @@
 
 #include <cstddef>
 
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "google/cacheinvalidation/include/types.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -21,6 +23,8 @@
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/test/fake_sync_manager.h"
 #include "sync/internal_api/public/util/experiments.h"
+#include "sync/notifier/mock_sync_notifier_observer.h"
+#include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
@@ -31,6 +35,7 @@ using content::BrowserThread;
 using syncer::FakeSyncManager;
 using syncer::SyncManager;
 using ::testing::InvokeWithoutArgs;
+using ::testing::StrictMock;
 using ::testing::_;
 
 namespace browser_sync {
@@ -53,6 +58,12 @@ class MockSyncFrontend : public SyncFrontend {
  public:
   virtual ~MockSyncFrontend() {}
 
+  MOCK_METHOD0(OnNotificationsEnabled, void());
+  MOCK_METHOD1(OnNotificationsDisabled,
+               void(syncer::NotificationsDisabledReason));
+  MOCK_METHOD2(OnIncomingNotification,
+               void(const syncer::ObjectIdPayloadMap&,
+                    syncer::IncomingNotificationSource));
   MOCK_METHOD2(OnBackendInitialized,
                void(const syncer::WeakHandle<syncer::JsBackend>&, bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
@@ -140,7 +151,7 @@ class SyncBackendHostTest : public testing::Test {
     sync_prefs_.reset();
     invalidator_storage_.reset();
     profile_.reset();
-    // Pump messages posted by the sync core thread (which may end up
+    // Pump messages posted by the sync thread (which may end up
     // posting on the IO thread).
     ui_loop_.RunAllPending();
     io_thread_.Stop();
@@ -538,6 +549,64 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
   EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
+}
+
+// Register for some IDs and trigger an invalidation.  This should
+// propagate all the way to the frontend.
+TEST_F(SyncBackendHostTest, Invalidate) {
+  InitializeBackend();
+
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(1, "id1"));
+  ids.insert(invalidation::ObjectId(2, "id2"));
+  const syncer::ObjectIdPayloadMap& id_payloads =
+      syncer::ObjectIdSetToPayloadMap(ids, "payload");
+
+  EXPECT_CALL(
+      mock_frontend_,
+      OnIncomingNotification(id_payloads, syncer::REMOTE_NOTIFICATION))
+      .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+
+  backend_->UpdateRegisteredInvalidationIds(ids);
+  fake_manager_->Invalidate(id_payloads, syncer::REMOTE_NOTIFICATION);
+  ui_loop_.PostDelayedTask(
+      FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
+  ui_loop_.Run();
+}
+
+// Register for some IDs and turn on notifications.  This should
+// propagate all the way to the frontend.
+TEST_F(SyncBackendHostTest, EnableNotifications) {
+  InitializeBackend();
+
+  EXPECT_CALL(mock_frontend_, OnNotificationsEnabled())
+      .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(3, "id3"));
+  backend_->UpdateRegisteredInvalidationIds(ids);
+  fake_manager_->EnableNotifications();
+  ui_loop_.PostDelayedTask(
+      FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
+  ui_loop_.Run();
+}
+
+// Register for some IDs and turn off notifications.  This should
+// propagate all the way to the frontend.
+TEST_F(SyncBackendHostTest, DisableNotifications) {
+  InitializeBackend();
+
+  EXPECT_CALL(mock_frontend_,
+              OnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR))
+      .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(4, "id4"));
+  backend_->UpdateRegisteredInvalidationIds(ids);
+  fake_manager_->DisableNotifications(syncer::TRANSIENT_NOTIFICATION_ERROR);
+  ui_loop_.PostDelayedTask(
+      FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
+  ui_loop_.Run();
 }
 
 }  // namespace

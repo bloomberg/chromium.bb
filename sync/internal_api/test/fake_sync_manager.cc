@@ -4,19 +4,26 @@
 
 #include "sync/internal_api/public/test/fake_sync_manager.h"
 
-#include "base/message_loop.h"
+#include <cstddef>
+
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/util/weak_handle.h"
+#include "sync/notifier/notifications_disabled_reason.h"
+#include "sync/notifier/object_id_payload_map.h"
 #include "sync/notifier/sync_notifier.h"
 
 namespace syncer {
 
-FakeSyncManager::FakeSyncManager() {
-}
+FakeSyncManager::FakeSyncManager() {}
 
-FakeSyncManager::~FakeSyncManager() {
-}
+FakeSyncManager::~FakeSyncManager() {}
 
 void FakeSyncManager::set_initial_sync_ended_types(ModelTypeSet types) {
   initial_sync_ended_types_ = types;
@@ -48,6 +55,36 @@ ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
   return enabled_types;
 }
 
+void FakeSyncManager::Invalidate(
+    const ObjectIdPayloadMap& id_payloads,
+    IncomingNotificationSource source) {
+  if (!sync_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeSyncManager::InvalidateOnSyncThread,
+                 base::Unretained(this), id_payloads, source))) {
+    NOTREACHED();
+  }
+}
+
+void FakeSyncManager::EnableNotifications() {
+  if (!sync_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeSyncManager::EnableNotificationsOnSyncThread,
+                 base::Unretained(this)))) {
+    NOTREACHED();
+  }
+}
+
+void FakeSyncManager::DisableNotifications(
+    NotificationsDisabledReason reason) {
+  if (!sync_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeSyncManager::DisableNotificationsOnSyncThread,
+                 base::Unretained(this), reason))) {
+    NOTREACHED();
+  }
+}
+
 bool FakeSyncManager::Init(
     const FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,
@@ -69,7 +106,7 @@ bool FakeSyncManager::Init(
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function) {
-  sync_loop_ = MessageLoop::current();
+  sync_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   PurgePartiallySyncedTypes();
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
@@ -111,6 +148,11 @@ void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {
 
 void FakeSyncManager::UpdateEnabledTypes(const ModelTypeSet& types) {
   enabled_types_ = types;
+}
+
+void FakeSyncManager::UpdateRegisteredInvalidationIds(
+    SyncNotifierObserver* handler, const ObjectIdSet& ids) {
+  notifier_helper_.UpdateRegisteredIds(handler, ids);
 }
 
 void FakeSyncManager::StartSyncingNormally(
@@ -187,11 +229,13 @@ void FakeSyncManager::SaveChanges() {
 }
 
 void FakeSyncManager::StopSyncingForShutdown(const base::Closure& callback) {
-  sync_loop_->PostTask(FROM_HERE, callback);
+  if (!sync_task_runner_->PostTask(FROM_HERE, callback)) {
+    NOTREACHED();
+  }
 }
 
 void FakeSyncManager::ShutdownOnSyncThread() {
-  // Do nothing.
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
 }
 
 UserShare* FakeSyncManager::GetUserShare() {
@@ -217,5 +261,22 @@ bool FakeSyncManager::HasUnsyncedItems() {
   return false;
 }
 
-}  // namespace syncer
+void FakeSyncManager::InvalidateOnSyncThread(
+    const ObjectIdPayloadMap& id_payloads,
+    IncomingNotificationSource source) {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  notifier_helper_.DispatchInvalidationsToHandlers(id_payloads, source);
+}
 
+void FakeSyncManager::EnableNotificationsOnSyncThread() {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  notifier_helper_.EmitOnNotificationsEnabled();
+}
+
+void FakeSyncManager::DisableNotificationsOnSyncThread(
+    NotificationsDisabledReason reason) {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  notifier_helper_.EmitOnNotificationsDisabled(reason);
+}
+
+}  // namespace syncer

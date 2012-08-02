@@ -18,6 +18,11 @@ typedef std::map<invalidation::ObjectId,
                  std::string,
                  ObjectIdLessThan> ObjectIdPayloadMap;
 
+// Converts between ObjectIdPayloadMaps and ObjectIdSets.
+ObjectIdSet ObjectIdPayloadMapToSet(const ObjectIdPayloadMap& id_payloads);
+ObjectIdPayloadMap ObjectIdSetToPayloadMap(
+    ObjectIdSet ids, const std::string& payload);
+
 // Converts between ObjectIdPayloadMaps and ModelTypePayloadMaps.
 ModelTypePayloadMap ObjectIdPayloadMapToModelTypePayloadMap(
     const ObjectIdPayloadMap& id_payloads);

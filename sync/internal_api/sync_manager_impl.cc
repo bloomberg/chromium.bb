@@ -733,8 +733,15 @@ void SyncManagerImpl::UpdateCredentials(
 void SyncManagerImpl::UpdateEnabledTypes(
     const ModelTypeSet& enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  sync_notifier_->UpdateRegisteredIds(this,
-                                      ModelTypeSetToObjectIdSet(enabled_types));
+  sync_notifier_->UpdateRegisteredIds(
+      this,
+      ModelTypeSetToObjectIdSet(enabled_types));
+}
+
+void SyncManagerImpl::UpdateRegisteredInvalidationIds(
+    SyncNotifierObserver* handler, const ObjectIdSet& ids) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  sync_notifier_->UpdateRegisteredIds(handler, ids);
 }
 
 void SyncManagerImpl::SetEncryptionPassphrase(
