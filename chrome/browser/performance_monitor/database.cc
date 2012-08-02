@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
@@ -377,6 +378,23 @@ std::vector<std::string> Database::GetActiveActivities(
       results.push_back(split_key.activity);
   }
   return results;
+}
+
+bool Database::GetRecentStatsForActivityAndMetric(
+    const std::string& activity,
+    MetricType metric,
+    MetricInfo* info) {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  std::string recent_map_key = CreateRecentMapKey(metric, activity);
+  if (!ContainsKey(recent_map_, recent_map_key))
+    return false;
+  std::string recent_key = recent_map_[recent_map_key];
+
+  std::string result;
+  leveldb::Status status = recent_db_->Get(read_options_, recent_key, &result);
+  if (status.ok())
+    *info = MetricInfo(SplitRecentKey(recent_key).time, result);
+  return status.ok();
 }
 
 Database::MetricInfoVector Database::GetStatsForActivityAndMetric(

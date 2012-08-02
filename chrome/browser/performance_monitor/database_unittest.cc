@@ -285,6 +285,23 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetActiveMetrics) {
   EXPECT_EQ(expected_metrics, active_metrics);
 }
 
+TEST_F(PerformanceMonitorDatabaseMetricTest, GetRecentMetric) {
+  MetricInfo stat;
+  ASSERT_TRUE(db_->GetRecentStatsForActivityAndMetric(activity_,
+      METRIC_PRIVATE_MEMORY_USAGE, &stat));
+  EXPECT_EQ(3000000, stat.value);
+
+  ASSERT_TRUE(db_->GetRecentStatsForActivityAndMetric(METRIC_CPU_USAGE, &stat));
+  EXPECT_EQ(50.5, stat.value);
+
+  ScopedTempDir dir;
+  CHECK(dir.CreateUniqueTempDir());
+  scoped_ptr<Database> db = Database::Create(dir.path());
+  CHECK(db.get());
+  db->set_clock(scoped_ptr<Database::Clock>(new TestingClock()));
+  EXPECT_FALSE(db->GetRecentStatsForActivityAndMetric(METRIC_CPU_USAGE, &stat));
+}
+
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetState) {
   std::string key("version");
   std::string value("1.0.0.0.1");

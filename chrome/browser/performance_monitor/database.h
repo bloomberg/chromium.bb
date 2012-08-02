@@ -158,6 +158,18 @@ class Database {
   std::vector<std::string> GetActiveActivities(MetricType metric_type,
                                                const base::Time& start);
 
+  // Populate info with the most recent activity. Return false if populate
+  // was unsuccessful.
+  bool GetRecentStatsForActivityAndMetric(const std::string& activity,
+                                          MetricType metric,
+                                          MetricInfo* info);
+
+  bool GetRecentStatsForActivityAndMetric(MetricType metric, MetricInfo* info) {
+    return GetRecentStatsForActivityAndMetric(kProcessChromeAggregate,
+                                              metric,
+                                              info);
+  }
+
   // Query given |metric_type| and |activity|.
   MetricInfoVector GetStatsForActivityAndMetric(const std::string& activity,
                                                 MetricType metric_type,
