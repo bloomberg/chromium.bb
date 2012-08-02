@@ -47,9 +47,10 @@ class TempFile {
 
   // Accessors.
   // The nacl::DescWrapper* for the writeable version of the file.
-  nacl::DescWrapper* get_wrapper() { return wrapper_.get(); }
-  nacl::DescWrapper* release_wrapper() {
-    return wrapper_.release();
+  nacl::DescWrapper* write_wrapper() { return write_wrapper_.get(); }
+  nacl::DescWrapper* read_wrapper() { return read_wrapper_.get(); }
+  nacl::DescWrapper* release_read_wrapper() {
+    return read_wrapper_.release();
   }
 
   // For quota management.
@@ -61,7 +62,8 @@ class TempFile {
   NACL_DISALLOW_COPY_AND_ASSIGN(TempFile);
 
   Plugin* plugin_;
-  nacl::scoped_ptr<nacl::DescWrapper> wrapper_;
+  nacl::scoped_ptr<nacl::DescWrapper> read_wrapper_;
+  nacl::scoped_ptr<nacl::DescWrapper> write_wrapper_;
 
   // An identifier string used for quota request processing.  The quota
   // interface needs a string that is unique per sel_ldr instance only, so

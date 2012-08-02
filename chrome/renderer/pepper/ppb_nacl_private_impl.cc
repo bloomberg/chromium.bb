@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/chrome_render_process_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
@@ -20,6 +21,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_restrict_dispatch_group.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
@@ -307,6 +309,10 @@ PP_FileHandle CreateTemporaryFile(PP_Instance instance) {
   return handle;
 }
 
+PP_Bool IsOffTheRecord() {
+  return PP_FromBool(ChromeRenderProcessObserver::is_incognito_process());
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -315,7 +321,8 @@ const PPB_NaCl_Private nacl_interface = {
   &EnableBackgroundSelLdrLaunch,
   &BrokerDuplicateHandle,
   &GetReadonlyPnaclFD,
-  &CreateTemporaryFile
+  &CreateTemporaryFile,
+  &IsOffTheRecord
 };
 
 }  // namespace
