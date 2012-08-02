@@ -490,6 +490,18 @@ def choose_x_session():
   if XSESSION_COMMAND is not None:
     return XSESSION_COMMAND
 
+  # Use a custom startup file if present
+  startup_file = os.path.expanduser("~/.chrome-remote-desktop-session")
+  if os.path.exists(startup_file):
+    # Use the same logic that a Debian system typically uses with ~/.xsession
+    # (see /etc/X11/Xsession.d/50x11-common_determine-startup), to determine
+    # exactly how to run this file.
+    if os.access(startup_file, os.X_OK):
+      return startup_file
+    else:
+      shell = os.environ.get("SHELL", "sh")
+      return [shell, startup_file]
+
   # Unity-2d would normally be the preferred choice on Ubuntu 12.04.  At the
   # time of writing, this session does not work properly (missing launcher and
   # panel), so gnome-session-fallback is used in preference.
