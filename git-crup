@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,6 +13,12 @@ pull=pull
 pull_args=
 hooks=yes
 
+if ( echo test | xargs --max-lines=1 true 2>/dev/null ); then
+  max_lines="--max-lines=1"
+else
+  max_lines="-L 1"
+fi
+
 usage() {
   cat <<EOF 1>&2
 Usage: git-crup [-n|--dry-run] [--fetch] [-j|--jobs [jobs]]
@@ -25,30 +31,32 @@ parallel_update() {
     cd "$1"
     $ECHO git $pull $pull_args origin
     $ECHO git submodule sync
-    if ( echo test | xargs --max-lines=1 true 2>/dev/null ); then
-      max_lines="--max-lines=1"
-    else
-      max_lines="-L 1"
-    fi
-    if ( echo test | xargs -P "$j" true 2>/dev/null )
-    then
+    if test "$xargs_parallel" = "yes"; then
       git ls-files -s | grep ^160000 | awk '{print $4}' |
       xargs $max_lines -P "$j" $ECHO git submodule update --init
     else
-      echo "Warn: parallel execution is not supported on this platform."
       $ECHO git submodule update --init
     fi )
 }
 
 while test $# -ne 0; do
   case "$1" in
+    -j[0-9]*)
+      j=$(echo "$1" | cut -c3-)
+      ;;
+    --jobs=[0-9]*)
+      j=$(echo "$1" | cut -c8-)
+      ;;
     -j|--jobs)
-      if test -n "$2"; then
-        j="$2"
-        shift
-      else
-        j=0
-      fi
+      case "$2" in
+        ''|-*)
+          j=0
+          ;;
+        *)
+          j="$2"
+          shift
+          ;;
+      esac
       ;;
     -n|--dry-run)
       ECHO=echo
@@ -80,6 +88,15 @@ done
 if test "$PWD" = "/"; then
   echo "Could not find the root of your checkout; aborting." 1>&2
   exit 1
+fi
+
+if ( echo test test | xargs -P 2 true 2>/dev/null ); then
+  xargs_parallel=yes
+else
+  if test "$j" != "1"; then
+    echo "Warning: parallel execution is not supported on this platform." 1>&2
+  fi
+  xargs_parallel=no
 fi
 
 ls -d */.git |
