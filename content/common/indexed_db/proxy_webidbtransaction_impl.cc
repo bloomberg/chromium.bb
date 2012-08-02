@@ -30,13 +30,6 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
       idb_transaction_id_));
 }
 
-int RendererWebIDBTransactionImpl::mode() const {
-  int mode;
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionMode(
-      idb_transaction_id_, &mode));
-  return mode;
-}
-
 WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
     const WebString& name,
     WebKit::WebExceptionCode& ec) {

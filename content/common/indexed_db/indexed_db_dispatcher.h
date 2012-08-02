@@ -82,12 +82,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const string16& origin,
       WebKit::WebFrame* web_frame);
 
-  void RequestIDBCursorUpdate(
-      const content::SerializedScriptValue& value,
-      WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 idb_cursor_id,
-      WebKit::WebExceptionCode* ec);
-
   void RequestIDBCursorAdvance(
       unsigned long count,
       WebKit::WebIDBCallbacks* callbacks_ptr,

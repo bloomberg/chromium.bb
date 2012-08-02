@@ -47,15 +47,4 @@ TEST(IndexedDBDispatcherTest, ValueSizeTest) {
         &ec);
     EXPECT_NE(ec, 0);
   }
-
-  {
-    IndexedDBDispatcher dispatcher;
-    WebKit::WebExceptionCode ec = 0;
-    dispatcher.RequestIDBCursorUpdate(
-        value,
-        static_cast<WebKit::WebIDBCallbacks*>(NULL),
-        dummy_id,
-        &ec);
-    EXPECT_NE(ec, 0);
-  }
 }

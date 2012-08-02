@@ -61,23 +61,6 @@ void RendererWebIDBObjectStoreImpl::get(
       idb_object_store_id_, transaction, &ec);
 }
 
-void RendererWebIDBObjectStoreImpl::put(
-    const WebSerializedScriptValue& value,
-    const WebIDBKey& key,
-    PutMode put_mode,
-    WebIDBCallbacks* callbacks,
-    const WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  WebVector<WebString> emptyIndexNames;
-  WebVector<WebVector<WebIDBKey> > emptyIndexKeys;
-  dispatcher->RequestIDBObjectStorePut(
-      SerializedScriptValue(value), IndexedDBKey(key),
-      put_mode, callbacks, idb_object_store_id_, transaction,
-      emptyIndexNames, emptyIndexKeys, &ec);
-}
-
 void RendererWebIDBObjectStoreImpl::putWithIndexKeys(
     const WebSerializedScriptValue& value,
     const WebIDBKey& key,

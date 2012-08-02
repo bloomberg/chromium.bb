@@ -4,6 +4,8 @@
 
 #include "content/common/indexed_db/proxy_webidbcursor_impl.h"
 
+#include <vector>
+
 #include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
@@ -45,15 +47,6 @@ WebIDBKey RendererWebIDBCursorImpl::primaryKey() const {
 
 WebSerializedScriptValue RendererWebIDBCursorImpl::value() const {
   return value_;
-}
-
-void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,
-                                      WebIDBCallbacks* callbacks,
-                                      WebExceptionCode& ec) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBCursorUpdate(
-      SerializedScriptValue(value), callbacks, idb_cursor_id_, &ec);
 }
 
 void RendererWebIDBCursorImpl::advance(unsigned long count,
@@ -150,7 +143,7 @@ void RendererWebIDBCursorImpl::SetPrefetchData(
 
 void RendererWebIDBCursorImpl::CachedContinue(
     WebKit::WebIDBCallbacks* callbacks) {
-  DCHECK(prefetch_keys_.size() > 0);
+  DCHECK_GT(prefetch_keys_.size(), 0ul);
   DCHECK(prefetch_primary_keys_.size() == prefetch_keys_.size());
   DCHECK(prefetch_values_.size() == prefetch_keys_.size());
 

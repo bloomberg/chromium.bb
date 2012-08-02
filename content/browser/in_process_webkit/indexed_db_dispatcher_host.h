@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
@@ -96,10 +97,6 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
   template <class ReturnType>
   ReturnType* GetOrTerminateProcess(
     IDMap<ReturnType, IDMapOwnPointer>* map, int32 return_object_id);
-
-  template <typename ReplyType, typename WebObjectType, typename Method>
-  void SyncGetter(IDMap<WebObjectType, IDMapOwnPointer>* map, int32 object_id,
-                  ReplyType* reply, Method method);
 
   template <typename ObjectType>
   void DestroyObject(IDMap<ObjectType, IDMapOwnPointer>* map, int32 object_id);
@@ -283,7 +280,6 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
 
     void OnCommit(int32 transaction_id);
     void OnAbort(int32 transaction_id);
-    void OnMode(int32 transaction_id, int* mode);
     void OnObjectStore(int32 transaction_id,
                        const string16& name,
                        int32* object_store_id,

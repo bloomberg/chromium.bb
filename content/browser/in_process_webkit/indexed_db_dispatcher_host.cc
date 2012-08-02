@@ -4,6 +4,8 @@
 
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -61,7 +63,6 @@ void DeleteOnWebKitThread(T* obj) {
                                  FROM_HERE, obj))
     delete obj;
 }
-
 }
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
@@ -276,17 +277,6 @@ ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
     BadMessageReceived();
   }
   return return_object;
-}
-
-template <typename ReplyType, typename MapObjectType, typename Method>
-void IndexedDBDispatcherHost::SyncGetter(
-    IDMap<MapObjectType, IDMapOwnPointer>* map, int32 object_id,
-    ReplyType* reply, Method method) {
-  MapObjectType* object = GetOrTerminateProcess(map, object_id);
-  if (!object)
-      return;
-
-  *reply = (object->*method)();
 }
 
 template <typename ObjectType>
@@ -765,8 +755,8 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnClear(
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(
-   const IndexedDBHostMsg_ObjectStoreCreateIndex_Params& params,
-   int32* index_id, WebKit::WebExceptionCode* ec) {
+    const IndexedDBHostMsg_ObjectStoreCreateIndex_Params& params,
+    int32* index_id, WebKit::WebExceptionCode* ec) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, params.idb_object_store_id);
@@ -885,7 +875,6 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::CursorDispatcherHost,
                            message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorUpdate, OnUpdate)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorAdvance, OnAdvance)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetch, OnPrefetch)
@@ -929,23 +918,6 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnValue(
     return;
 
   *script_value = SerializedScriptValue(idb_cursor->value());
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
-    int32 cursor_id,
-    int32 thread_id,
-    int32 response_id,
-    const SerializedScriptValue& value,
-    WebKit::WebExceptionCode* ec) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, cursor_id);
-  if (!idb_cursor)
-    return;
-
-  *ec = 0;
-  idb_cursor->update(
-      value, new IndexedDBCallbacks<WebIDBKey>(parent_, thread_id, response_id),
-      *ec);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
@@ -1059,7 +1031,6 @@ bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionCommit, OnCommit)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionAbort, OnAbort)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionMode, OnMode)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionObjectStore, OnObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionDidCompleteTaskEvents,
                         OnDidCompleteTaskEvents)
@@ -1092,17 +1063,6 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnAbort(
     return;
 
   idb_transaction->abort();
-}
-
-void IndexedDBDispatcherHost::TransactionDispatcherHost::OnMode(
-    int32 transaction_id,
-    int* mode) {
-  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
-      &map_, transaction_id);
-  if (!idb_transaction)
-    return;
-
-  *mode = idb_transaction->mode();
 }
 
 void IndexedDBDispatcherHost::TransactionDispatcherHost::OnObjectStore(

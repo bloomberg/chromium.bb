@@ -279,14 +279,6 @@ IPC_MESSAGE_CONTROL4(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
 
 // Indexed DB messages sent from the renderer to the browser.
 
-// WebIDBCursor::update() message.
-IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_CursorUpdate,
-                     int32, /* idb_cursor_id */
-                     int32, /* thread_id */
-                     int32, /* response_id */
-                     content::SerializedScriptValue, /* value */
-                     WebKit::WebExceptionCode /* ec */)
-
 // WebIDBCursor::advance() message.
 IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_CursorAdvance,
                      int32, /* idb_cursor_id */
@@ -523,11 +515,6 @@ IPC_SYNC_MESSAGE_CONTROL2_2(IndexedDBHostMsg_TransactionObjectStore,
                             string16, /* name */
                             int32, /* object_store_id */
                             WebKit::WebExceptionCode /* ec */)
-
-// WebIDBTransaction::mode() message.
-IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_TransactionMode,
-                            int32, /* idb_transaction_id */
-                            int /* mode */)
 
 // WebIDBTransaction::commit() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionCommit,

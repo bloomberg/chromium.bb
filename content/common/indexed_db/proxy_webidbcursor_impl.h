@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBCURSOR_IMPL_H_
 
 #include <deque>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "content/common/indexed_db/indexed_db_key.h"
@@ -17,15 +18,12 @@
 
 class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
  public:
-  RendererWebIDBCursorImpl(int32 idb_cursor_id);
+  explicit RendererWebIDBCursorImpl(int32 idb_cursor_id);
   virtual ~RendererWebIDBCursorImpl();
 
   virtual WebKit::WebIDBKey key() const;
   virtual WebKit::WebIDBKey primaryKey() const;
   virtual WebKit::WebSerializedScriptValue value() const;
-  virtual void update(const WebKit::WebSerializedScriptValue& value,
-                      WebKit::WebIDBCallbacks* callback,
-                      WebKit::WebExceptionCode& ec);
   virtual void advance(unsigned long count,
                        WebKit::WebIDBCallbacks* callback,
                        WebKit::WebExceptionCode& ec);
