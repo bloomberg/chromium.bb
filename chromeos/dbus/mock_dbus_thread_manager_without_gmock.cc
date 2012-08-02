@@ -193,4 +193,8 @@ IBusEngineService* MockDBusThreadManagerWithoutGMock::GetIBusEngineService(
   return mock_ibus_engine_service_.get();
 }
 
+void MockDBusThreadManagerWithoutGMock::RemoveIBusEngineService(
+    const dbus::ObjectPath& object_path) {
+}
+
 }  // namespace chromeos

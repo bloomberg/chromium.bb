@@ -244,6 +244,9 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual IBusEngineService* GetIBusEngineService(
       const dbus::ObjectPath& object_path) = 0;
 
+  // Removes the ibus engine services for |object_path|.
+  virtual void RemoveIBusEngineService(const dbus::ObjectPath& object_path) = 0;
+
   virtual ~DBusThreadManager();
 
  protected:
