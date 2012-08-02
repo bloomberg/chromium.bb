@@ -1,7 +1,7 @@
 Name: mesa
 Version: 7.9
 URL: http://www.mesa3d.org/
-License File: MesaLib/docs/COPYING
+License: MIT and LGPL v2
 Security Critical: Yes
 
 Description:
@@ -13,8 +13,9 @@ Ext headers       include/GL/glext.h
                   include/GL/glxext.h
 SGI GLU library   src/glu/sgi/
 
-The license is in MesaLib/docs/license.html.
- 
+The license file in this directory is derived from MesaLib/docs/license.html
+and MesaLib/docs/COPYING.
+
 Modifications made with initial commit:
 - Converted to utf-8 with: vim +"argdo write ++enc=utf-8" *.c
 
