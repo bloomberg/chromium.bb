@@ -23,7 +23,10 @@
             "description": "Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out.",
             "items": { "type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"] }
           },
-          "instanceType": { "type": "string", "enum": ["declarativeWebRequest.RequestMatcher"] }
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RequestMatcher"],
+            "nodoc": true
+          }
         }
       },
       {
@@ -31,7 +34,10 @@
         "description": "Declarative event action that cancels a network request.",
         "type": "object",
         "properties": {
-          "instanceType": { "type": "string", "enum": ["declarativeWebRequest.CancelRequest"] }
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.CancelRequest"],
+            "nodoc": true
+          }
         }
       },
       {
@@ -39,7 +45,10 @@
         "description": "Declarative event action that redirects a network request.",
         "type": "object",
         "properties": {
-          "instanceType": { "type": "string", "enum": ["declarativeWebRequest.RedirectRequest"] },
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RedirectRequest"],
+            "nodoc": true
+          },
           "redirectUrl": { "type": "string", "description": "Destination to where the request is redirected."}
         }
       },
