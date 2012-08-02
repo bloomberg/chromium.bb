@@ -1487,9 +1487,3 @@
    ...
    fun:base::PlatformThread::SetName
 }
-{
-   bug_140041
-   Heapcheck:Leak
-   fun:WebsiteSettings::OnUIClosing
-   fun:WebsiteSettingsTest_ShowInfoBar_Test::TestBody
-}

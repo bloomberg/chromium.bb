@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
@@ -341,6 +342,14 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   website_settings()->OnUIClosing();
   EXPECT_EQ(1u, infobar_tab_helper()->infobar_count());
 
-  infobar_tab_helper()->RemoveInfoBar(
+  // Removing an |InfoBarDelegate| from the |InfoBarTabHelper| does not delete
+  // it. Hence the |delegate| must be cleaned up after it was removed from the
+  // |infobar_tab_helper|.
+  scoped_ptr<InfoBarDelegate> delegate(
       infobar_tab_helper()->GetInfoBarDelegateAt(0));
+  infobar_tab_helper()->RemoveInfoBar(delegate.get());
+  // Right now InfoBarDelegates delete themselves via
+  // InfoBarClosed(); once InfoBars own their delegates, this can become a
+  // simple reset() call
+  delegate.release()->InfoBarClosed();
 }

@@ -5841,13 +5841,6 @@
    fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
 {
-   bug_140041
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15WebsiteSettings11OnUIClosingEv
-   fun:_ZN36WebsiteSettingsTest_ShowInfoBar_Test8TestBodyEv
-}
-{
    bug_140196
    Memcheck:Uninitialized
    fun:_ZNK12SkDescriptor6equalsERKS_
