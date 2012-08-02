@@ -665,7 +665,7 @@ TEST(PermissionsTest, DefaultFunctionAccess) {
 }
 
 // Tests the default permissions (empty API permission set).
-TEST(PermissionSetTest, DefaultAnyAPIAccess) {
+TEST(PermissionsTest, DefaultAnyAPIAccess) {
   const struct {
     const char* api_name;
     bool expect_success;
@@ -700,8 +700,7 @@ TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
 
   extension = LoadManifest("permissions", "many-hosts.json");
-  std::vector<string16> warnings =
-      extension->GetActivePermissions()->GetWarningMessages();
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Access your data on encrypted.google.com and www.google.com",
             UTF16ToUTF8(warnings[0]));
@@ -712,8 +711,7 @@ TEST(PermissionsTest, GetWarningMessages_Plugins) {
   scoped_refptr<PermissionSet> permissions;
 
   extension = LoadManifest("permissions", "plugins.json");
-  std::vector<string16> warnings =
-      extension->GetActivePermissions()->GetWarningMessages();
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
   // We don't parse the plugins key on Chrome OS, so it should not ask for any
   // permissions.
 #if defined(OS_CHROMEOS)
@@ -732,7 +730,8 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   PermissionSet* set =
       const_cast<PermissionSet*>(
           extension->GetActivePermissions().get());
-  std::vector<string16> warnings = set->GetWarningMessages();
+  std::vector<string16> warnings =
+      set->GetWarningMessages(extension->GetType());
   EXPECT_FALSE(Contains(warnings, "Use your microphone"));
   EXPECT_FALSE(Contains(warnings, "Use your camera"));
   EXPECT_TRUE(Contains(warnings, "Use your microphone and camera"));
@@ -741,7 +740,7 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
 
   // Just audio present.
   set->apis_.erase(APIPermission::kVideoCapture);
-  warnings = set->GetWarningMessages();
+  warnings = set->GetWarningMessages(extension->GetType());
   EXPECT_EQ(combined_size, warnings.size());
   EXPECT_EQ(combined_index, IndexOf(warnings, "Use your microphone"));
   EXPECT_FALSE(Contains(warnings, "Use your camera"));
@@ -750,11 +749,25 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   // Just video present.
   set->apis_.erase(APIPermission::kAudioCapture);
   set->apis_.insert(APIPermission::kVideoCapture);
-  warnings = set->GetWarningMessages();
+  warnings = set->GetWarningMessages(extension->GetType());
   EXPECT_EQ(combined_size, warnings.size());
   EXPECT_FALSE(Contains(warnings, "Use your microphone"));
   EXPECT_FALSE(Contains(warnings, "Use your microphone and camera"));
   EXPECT_TRUE(Contains(warnings, "Use your camera"));
+}
+
+TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
+  scoped_refptr<Extension> extension;
+
+  extension = LoadManifest("permissions", "platform_app_hosts.json");
+  EXPECT_TRUE(extension->is_platform_app());
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+  ASSERT_EQ(0u, warnings.size());
+
+  extension = LoadManifest("permissions", "platform_app_all_urls.json");
+  EXPECT_TRUE(extension->is_platform_app());
+  warnings = extension->GetPermissionMessageStrings();
+  ASSERT_EQ(0u, warnings.size());
 }
 
 TEST(PermissionsTest, GetDistinctHostsForDisplay) {

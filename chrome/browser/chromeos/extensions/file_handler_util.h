@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/platform_file.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern_set.h"

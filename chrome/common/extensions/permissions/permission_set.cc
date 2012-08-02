@@ -264,8 +264,8 @@ std::set<std::string>
   return GetDistinctHosts(effective_hosts_, true, true);
 }
 
-PermissionMessages
-    PermissionSet::GetPermissionMessages() const {
+PermissionMessages PermissionSet::GetPermissionMessages(
+    Extension::Type extension_type) const {
   PermissionMessages messages;
 
   if (HasEffectiveFullAccess()) {
@@ -275,14 +275,18 @@ PermissionMessages
     return messages;
   }
 
-  if (HasEffectiveAccessToAllHosts()) {
-    messages.push_back(PermissionMessage(
-        PermissionMessage::kHostsAll,
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
-  } else {
-    std::set<std::string> hosts = GetDistinctHostsForDisplay();
-    if (!hosts.empty())
-      messages.push_back(PermissionMessage::CreateFromHostList(hosts));
+  // Since platform apps always use isolated storage, they can't (silently)
+  // access user data on other domains, so there's no need to prompt.
+  if (extension_type != Extension::TYPE_PLATFORM_APP) {
+    if (HasEffectiveAccessToAllHosts()) {
+      messages.push_back(PermissionMessage(
+          PermissionMessage::kHostsAll,
+          l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
+    } else {
+      std::set<std::string> hosts = GetDistinctHostsForDisplay();
+      if (!hosts.empty())
+        messages.push_back(PermissionMessage::CreateFromHostList(hosts));
+    }
   }
 
   std::set<PermissionMessage> simple_msgs =
@@ -292,9 +296,10 @@ PermissionMessages
   return messages;
 }
 
-std::vector<string16> PermissionSet::GetWarningMessages() const {
+std::vector<string16> PermissionSet::GetWarningMessages(
+    Extension::Type extension_type) const {
   std::vector<string16> messages;
-  PermissionMessages permissions = GetPermissionMessages();
+  PermissionMessages permissions = GetPermissionMessages(extension_type);
 
   bool audio_capture = false;
   bool video_capture = false;

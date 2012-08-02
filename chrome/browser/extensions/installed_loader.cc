@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_prefs.h"

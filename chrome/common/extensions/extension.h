@@ -24,7 +24,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/permission_message.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
@@ -51,6 +52,7 @@ FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
 namespace extensions {
 
 class Manifest;
+class PermissionSet;
 
 typedef std::set<std::string> OAuth2Scopes;
 

@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
@@ -3519,10 +3520,12 @@ bool Extension::HasFullPermissions() const {
 
 PermissionMessages Extension::GetPermissionMessages() const {
   base::AutoLock auto_lock(runtime_data_lock_);
-  if (IsTrustedId(id()))
+  if (IsTrustedId(id())) {
     return PermissionMessages();
-  else
-    return runtime_data_.GetActivePermissions()->GetPermissionMessages();
+  } else {
+    return runtime_data_.GetActivePermissions()->GetPermissionMessages(
+        GetType());
+  }
 }
 
 std::vector<string16> Extension::GetPermissionMessageStrings() const {
@@ -3530,7 +3533,7 @@ std::vector<string16> Extension::GetPermissionMessageStrings() const {
   if (IsTrustedId(id()))
     return std::vector<string16>();
   else
-    return runtime_data_.GetActivePermissions()->GetWarningMessages();
+    return runtime_data_.GetActivePermissions()->GetWarningMessages(GetType());
 }
 
 void Extension::SetActivePermissions(

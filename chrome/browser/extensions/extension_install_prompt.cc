@@ -28,6 +28,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/chromium_strings.h"
@@ -468,8 +469,10 @@ void ExtensionInstallPrompt::OnMintTokenFailure(
 void ExtensionInstallPrompt::ShowConfirmation() {
   prompt_.set_type(prompt_type_);
 
-  if (permissions_)
-    prompt_.SetPermissions(permissions_->GetWarningMessages());
+  if (permissions_) {
+    prompt_.SetPermissions(
+        permissions_->GetWarningMessages(extension_->GetType()));
+  }
 
   switch (prompt_type_) {
     case PERMISSIONS_PROMPT:

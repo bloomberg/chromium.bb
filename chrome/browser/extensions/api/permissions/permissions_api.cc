@@ -201,8 +201,9 @@ bool RequestPermissionsFunction::RunImpl() {
   // We don't need to show the prompt if there are no new warnings, or if
   // we're skipping the confirmation UI. All extension types but INTERNAL
   // are allowed to silently increase their permission level.
-  if (auto_confirm_for_tests == PROCEED ||
-      requested_permissions_->GetWarningMessages().size() == 0) {
+  bool has_no_warnings = requested_permissions_->GetWarningMessages(
+      GetExtension()->GetType()).size() == 0;
+  if (auto_confirm_for_tests == PROCEED || has_no_warnings) {
     InstallUIProceed();
   } else if (auto_confirm_for_tests == ABORT) {
     // Pretend the user clicked cancel.
