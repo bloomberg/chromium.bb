@@ -14,10 +14,15 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import optparse
 import os
+import shutil
 from StringIO import StringIO
 import sys
 import urlparse
 
+import build_server
+# Copy all the files necessary to run the server. These are cleaned up when the
+# server quits.
+build_server.main()
 from handler import Handler
 
 class Response(object):
@@ -71,3 +76,4 @@ if __name__ == '__main__':
     server.serve_forever()
   finally:
     server.socket.close()
+    shutil.rmtree(os.path.join(sys.argv[0].rsplit(os.sep, 1)[0], 'third_party'))
