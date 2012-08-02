@@ -405,3 +405,7 @@ span.displayModeWarning {
 #filtered_apis * {
   color: #50A9D5;
 }
+
+#skipto {
+  display: none;
+}
