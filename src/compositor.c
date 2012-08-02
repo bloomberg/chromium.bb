@@ -1101,7 +1101,7 @@ surface_accumulate_damage(struct weston_surface *surface,
 }
 
 static void
-weston_output_repaint(struct weston_output *output, int msecs)
+weston_output_repaint(struct weston_output *output, uint32_t msecs)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es;
@@ -1198,7 +1198,7 @@ weston_compositor_read_input(int fd, uint32_t mask, void *data)
 }
 
 WL_EXPORT void
-weston_output_finish_frame(struct weston_output *output, int msecs)
+weston_output_finish_frame(struct weston_output *output, uint32_t msecs)
 {
 	struct weston_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop =

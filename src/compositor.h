@@ -536,7 +536,7 @@ void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below);
 
 void
-weston_output_finish_frame(struct weston_output *output, int msecs);
+weston_output_finish_frame(struct weston_output *output, uint32_t msecs);
 void
 weston_output_schedule_repaint(struct weston_output *output);
 void
