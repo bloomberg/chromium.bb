@@ -679,7 +679,15 @@ bool WebMediaPlayerImpl::sourceAppend(const WebKit::WebString& id,
                                       const unsigned char* data,
                                       unsigned length) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  return proxy_->DemuxerAppend(id.utf8().data(), data, length);
+
+  float old_duration = duration();
+  if (!proxy_->DemuxerAppend(id.utf8().data(), data, length))
+    return false;
+
+  if (old_duration != duration())
+    GetClient()->durationChanged();
+
+  return true;
 }
 
 bool WebMediaPlayerImpl::sourceAbort(const WebKit::WebString& id) {
@@ -705,7 +713,11 @@ void WebMediaPlayerImpl::sourceEndOfStream(
       NOTIMPLEMENTED();
   }
 
+  float old_duration = duration();
   proxy_->DemuxerEndOfStream(pipeline_status);
+
+  if (old_duration != duration())
+    GetClient()->durationChanged();
 }
 
 WebKit::WebMediaPlayer::MediaKeyException
