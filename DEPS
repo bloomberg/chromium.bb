@@ -505,7 +505,7 @@ deps_os = {
       "/trunk/deps/third_party/gold@124239",
 
     "src/third_party/libmtp":
-      "/trunk/deps/third_party/libmtp@149471",
+      "/trunk/deps/third_party/libmtp@149713",
 
     # For Chromium OS.
     "src/third_party/cros_system_api":
