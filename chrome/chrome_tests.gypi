@@ -1083,6 +1083,8 @@
         'browser/chromeos/contacts/contact_database_unittest.cc',
         'browser/chromeos/contacts/contact_test_util.cc',
         'browser/chromeos/contacts/contact_test_util.h',
+        'browser/chromeos/contacts/fake_contact_database.cc',
+        'browser/chromeos/contacts/fake_contact_database.h',
         'browser/chromeos/cros/cros_network_functions_unittest.cc',
         'browser/chromeos/cros/network_constants.h',
         'browser/chromeos/cros/network_library.cc',
