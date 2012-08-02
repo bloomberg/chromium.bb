@@ -608,10 +608,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Save filesystem as proto file.
   void SaveFileSystemAsProto();
 
-  // Notifies events to observers on UI thread.
-  void NotifyDirectoryChanged(const FilePath& directory_path);
-  void NotifyDocumentFeedFetched(int num_accumulated_entries);
-
   // Runs the callback and notifies that the initial load is finished.
   void RunAndNotifyInitialLoadFinished(
     const FindEntryCallback& callback,

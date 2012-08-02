@@ -2392,7 +2392,7 @@ void GDataFileSystem::RequestDirectoryRefreshByEntry(
   // Note that there may be no change in the directory, but it's expensive to
   // check if the new metadata matches the existing one, so we just always
   // notify that the directory is changed.
-  NotifyDirectoryChanged(directory_path);
+  FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(directory_path));
   DVLOG(1) << "Directory refreshed: " << directory_path.value();
 }
 
@@ -2790,7 +2790,10 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
   int num_accumulated_entries = 0;
   for (size_t i = 0; i < params->feed_list->size(); ++i)
     num_accumulated_entries += params->feed_list->at(i)->entries().size();
-  NotifyDocumentFeedFetched(num_accumulated_entries);
+
+  // Notify the observers that a document feed is fetched.
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDocumentFeedFetched(num_accumulated_entries));
 
   // Check if we need to collect more data to complete the directory list.
   if (params->should_fetch_multiple_feeds && has_next_feed_url &&
@@ -3188,7 +3191,8 @@ GDataFileError GDataFileSystem::RenameFileOnFilesystem(
 
   *updated_file_path = entry->GetFilePath();
 
-  NotifyDirectoryChanged(updated_file_path->DirName());
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDirectoryChanged(updated_file_path->DirName()));
   return GDATA_FILE_OK;
 }
 
@@ -3208,7 +3212,7 @@ GDataFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
   if (!dir->TakeEntry(entry))
     return GDATA_FILE_ERROR_FAILED;
 
-  NotifyDirectoryChanged(dir_path);
+  FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(dir_path));
   return GDATA_FILE_OK;
 }
 
@@ -3236,7 +3240,8 @@ GDataFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
 
   *updated_file_path = entry->GetFilePath();
 
-  NotifyDirectoryChanged(updated_file_path->DirName());
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDirectoryChanged(updated_file_path->DirName()));
   return GDATA_FILE_OK;
 }
 
@@ -3278,7 +3283,7 @@ GDataFileError GDataFileSystem::UpdateFromFeed(
   if (should_notify_directory_changed) {
     for (std::set<FilePath>::iterator dir_iter = changed_dirs.begin();
         dir_iter != changed_dirs.end(); ++dir_iter) {
-      NotifyDirectoryChanged(*dir_iter);
+      FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(*dir_iter));
     }
   }
 
@@ -3297,23 +3302,6 @@ void GDataFileSystem::RemoveStaleEntryOnUpload(const std::string& resource_id,
   } else {
     LOG(ERROR) << "Entry for the existing file not found: " << resource_id;
   }
-}
-
-void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DVLOG(1) << "Content changed of " << directory_path.value();
-  // Notify the observers that content of |directory_path| has been changed.
-  FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(directory_path));
-}
-
-void GDataFileSystem::NotifyDocumentFeedFetched(int num_accumulated_entries) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DVLOG(1) << "Document feed fetched: " << num_accumulated_entries;
-  // Notify the observers that a document feed is fetched.
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnDocumentFeedFetched(num_accumulated_entries));
 }
 
 void GDataFileSystem::RunAndNotifyInitialLoadFinished(
@@ -3361,7 +3349,7 @@ GDataFileError GDataFileSystem::AddNewDirectory(
 
   parent_dir->AddEntry(new_entry);
 
-  NotifyDirectoryChanged(directory_path);
+  FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(directory_path));
   return GDATA_FILE_OK;
 }
 
@@ -3423,7 +3411,8 @@ GDataFileError GDataFileSystem::RemoveEntryFromGData(
   if (!parent_dir->RemoveEntry(entry))
     return GDATA_FILE_ERROR_NOT_FOUND;
 
-  NotifyDirectoryChanged(parent_dir->GetFilePath());
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDirectoryChanged(parent_dir->GetFilePath()));
   return GDATA_FILE_OK;
 }
 
@@ -3500,7 +3489,8 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
   const std::string& md5 = file->file_md5();
   parent_dir->AddEntry(new_entry.release());
 
-  NotifyDirectoryChanged(virtual_dir_path);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDirectoryChanged(virtual_dir_path));
 
   if (upload_mode == UPLOAD_NEW_FILE) {
     // Add the file to the cache if we have uploaded a new file.
@@ -3548,7 +3538,7 @@ void GDataFileSystem::SetHideHostedDocuments(bool hide) {
   const FilePath root_path = directory_service_->root()->GetFilePath();
 
   // Kick off directory refresh when this setting changes.
-  NotifyDirectoryChanged(root_path);
+  FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(root_path));
 }
 
 //============= GDataFileSystem: internal helper functions =====================
