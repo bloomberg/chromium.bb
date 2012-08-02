@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -78,7 +79,8 @@ void BookmarkDataTypeController::CreateSyncComponents() {
 // Check that both the bookmark model and the history service (for favicons)
 // are loaded.
 bool BookmarkDataTypeController::DependentsLoaded() {
-  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(profile_);
   if (!bookmark_model || !bookmark_model->IsLoaded())
     return false;
 

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
@@ -39,11 +40,14 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
 
+namespace {
+
 class BookmarkModelMock : public BookmarkModel {
  public:
   BookmarkModelMock() : BookmarkModel(NULL) {}
   MOCK_CONST_METHOD0(IsLoaded, bool(void));
 };
+
 
 class HistoryMock : public HistoryService {
  public:
@@ -54,10 +58,17 @@ class HistoryMock : public HistoryService {
   virtual ~HistoryMock() {}
 };
 
+ProfileKeyedService* BuildBookmarkModel(
+      Profile* profile) {
+  return new BookmarkModelMock;
+}
+
 scoped_refptr<RefcountedProfileKeyedService> BuildHistoryService(
       Profile* profile) {
   return new HistoryMock(profile);
 }
+
+}  // namespace
 
 class SyncBookmarkDataTypeControllerTest : public testing::Test {
  public:
@@ -70,6 +81,9 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
     history_service_ = static_cast<HistoryMock*>(
         HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, BuildHistoryService).get());
+    bookmark_model_ = static_cast<BookmarkModelMock*>(
+        BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
+            &profile_, BuildBookmarkModel));
     profile_sync_factory_.reset(
         new ProfileSyncComponentsFactoryMock(model_associator_,
                                    change_processor_));
@@ -81,9 +95,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
 
  protected:
   void SetStartExpectations() {
-    EXPECT_CALL(profile_, GetBookmarkModel()).
-        WillRepeatedly(Return(&bookmark_model_));
-    EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*bookmark_model_, IsLoaded()).WillRepeatedly(Return(true));
     EXPECT_CALL(*history_service_,
                 BackendLoaded()).WillRepeatedly(Return(true));
     EXPECT_CALL(model_load_callback_, Run(_, _));
@@ -120,7 +132,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileMock profile_;
-  BookmarkModelMock bookmark_model_;
+  BookmarkModelMock* bookmark_model_;
   HistoryMock* history_service_;
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
@@ -146,7 +158,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartDependentsReady) {
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   SetStartExpectations();
-  EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
   SetAssociateExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
@@ -154,8 +166,8 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
         base::Bind(&ModelLoadCallbackMock::Run,
                    base::Unretained(&model_load_callback_)));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, bookmark_dtc_->state());
-  testing::Mock::VerifyAndClearExpectations(&bookmark_model_);
-  EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(true));
+  testing::Mock::VerifyAndClearExpectations(bookmark_model_);
+  EXPECT_CALL(*bookmark_model_, IsLoaded()).WillRepeatedly(Return(true));
 
   // Send the notification that the bookmark model has started.
   content::NotificationService::current()->Notify(
@@ -202,7 +214,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartFirstRun) {
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartBusy) {
-  EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
   EXPECT_CALL(*history_service_, BackendLoaded()).WillRepeatedly(Return(false));
 
   EXPECT_CALL(model_load_callback_, Run(_, _));
@@ -259,7 +271,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest,
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartAborted) {
-  EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
   EXPECT_CALL(*history_service_, BackendLoaded()).WillRepeatedly(Return(false));
 
   EXPECT_CALL(model_load_callback_, Run(_, _));

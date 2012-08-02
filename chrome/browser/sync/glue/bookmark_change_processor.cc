@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -45,7 +46,7 @@ BookmarkChangeProcessor::BookmarkChangeProcessor(
 void BookmarkChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!bookmark_model_);
-  bookmark_model_ = profile->GetBookmarkModel();
+  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
   DCHECK(bookmark_model_->IsLoaded());
   bookmark_model_->AddObserver(this);
 }

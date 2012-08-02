@@ -21,6 +21,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -350,7 +351,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   void LoadBookmarkModel(LoadOption load, SaveOption save) {
     bool delete_bookmarks = load == DELETE_EXISTING_STORAGE;
     profile_.CreateBookmarkModel(delete_bookmarks);
-    model_ = profile_.GetBookmarkModel();
+    model_ = BookmarkModelFactory::GetForProfile(&profile_);
     // Wait for the bookmarks model to load.
     profile_.BlockUntilBookmarkModelLoaded();
     // This noticeably speeds up the unit tests that request it.
@@ -362,7 +363,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   void StartSync() {
     // Set up model associator.
     model_associator_.reset(new TestBookmarkModelAssociator(
-        profile_.GetBookmarkModel(),
+        BookmarkModelFactory::GetForProfile(&profile_),
         test_user_share_.user_share(),
         &mock_error_handler_));
     syncer::SyncError error = model_associator_->AssociateModels();

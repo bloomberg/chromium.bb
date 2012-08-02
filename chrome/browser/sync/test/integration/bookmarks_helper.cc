@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -257,7 +258,7 @@ void FindNodeInVerifier(BookmarkModel* foreign_model,
 namespace bookmarks_helper {
 
 BookmarkModel* GetBookmarkModel(int index) {
-  return test()->GetProfile(index)->GetBookmarkModel();
+  return BookmarkModelFactory::GetForProfile(test()->GetProfile(index));
 }
 
 const BookmarkNode* GetBookmarkBarNode(int index) {

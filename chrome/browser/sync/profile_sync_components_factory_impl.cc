@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -270,7 +271,7 @@ ProfileSyncComponentsFactory::SyncComponents
         ProfileSyncService* profile_sync_service,
         DataTypeErrorHandler* error_handler) {
   BookmarkModel* bookmark_model =
-      profile_sync_service->profile()->GetBookmarkModel();
+      BookmarkModelFactory::GetForProfile(profile_sync_service->profile());
   syncer::UserShare* user_share = profile_sync_service->GetUserShare();
   // TODO(akalin): We may want to propagate this switch up eventually.
 #if defined(OS_ANDROID)

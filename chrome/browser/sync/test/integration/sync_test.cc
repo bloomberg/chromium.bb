@@ -18,6 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/password_manager/encryptor.h"
@@ -296,7 +297,7 @@ void SyncTest::InitializeInstance(int index) {
                                          << index << ".";
 
   ui_test_utils::WaitForBookmarkModelToLoad(
-      GetProfile(index)->GetBookmarkModel());
+      BookmarkModelFactory::GetForProfile(GetProfile(index)));
 
   ui_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(GetProfile(index)));
