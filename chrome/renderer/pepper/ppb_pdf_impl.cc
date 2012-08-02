@@ -29,7 +29,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "unicode/usearch.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -151,46 +154,6 @@ PP_Var GetLocalizedString(PP_Instance instance_id,
   }
 
   return ppapi::StringVar::StringToPPVar(rv);
-}
-
-PP_Resource GetResourceImage(PP_Instance instance_id,
-                             PP_ResourceImage image_id) {
-  int res_id = 0;
-  for (size_t i = 0; i < arraysize(kResourceImageMap); ++i) {
-    if (kResourceImageMap[i].pp_id == image_id) {
-      res_id = kResourceImageMap[i].res_id;
-      break;
-    }
-  }
-  if (res_id == 0)
-    return 0;
-
-  SkBitmap* res_bitmap =
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
-
-  // Validate the instance.
-  if (!content::GetHostGlobals()->GetInstance(instance_id))
-    return 0;
-  scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
-      new webkit::ppapi::PPB_ImageData_Impl(
-          instance_id,
-          webkit::ppapi::PPB_ImageData_Impl::PLATFORM));
-  if (!image_data->Init(
-          webkit::ppapi::PPB_ImageData_Impl::GetNativeImageDataFormat(),
-          res_bitmap->width(), res_bitmap->height(), false)) {
-    return 0;
-  }
-
-  webkit::ppapi::ImageDataAutoMapper mapper(image_data);
-  if (!mapper.is_valid())
-    return 0;
-
-  skia::PlatformCanvas* canvas = image_data->GetPlatformCanvas();
-  // Note: Do not skBitmap::copyTo the canvas bitmap directly because it will
-  // ignore the allocated pixels in shared memory and re-allocate a new buffer.
-  canvas->writePixels(*res_bitmap, 0, 0);
-
-  return image_data->GetReference();
 }
 
 PP_Resource GetFontFileWithFallback(
@@ -363,6 +326,66 @@ PP_Bool IsFeatureEnabled(PP_PDFFeature feature) {
   return result;
 }
 
+PP_Resource GetResourceImageForScale(PP_Instance instance_id,
+                                     PP_ResourceImage image_id,
+                                     float scale) {
+  int res_id = 0;
+  for (size_t i = 0; i < arraysize(kResourceImageMap); ++i) {
+    if (kResourceImageMap[i].pp_id == image_id) {
+      res_id = kResourceImageMap[i].res_id;
+      break;
+    }
+  }
+  if (res_id == 0)
+    return 0;
+
+  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
+
+  gfx::ImageSkia* res_image_skia =
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(res_id);
+
+  if (!res_image_skia)
+    return 0;
+
+  // Validate the instance.
+  if (!content::GetHostGlobals()->GetInstance(instance_id))
+    return 0;
+
+  if (!res_image_skia->HasRepresentation(scale_factor))
+    return 0;
+
+  gfx::ImageSkiaRep image_skia_rep = res_image_skia->GetRepresentation(
+      scale_factor);
+
+  scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
+      new webkit::ppapi::PPB_ImageData_Impl(
+          instance_id,
+          webkit::ppapi::PPB_ImageData_Impl::PLATFORM));
+  if (!image_data->Init(
+          webkit::ppapi::PPB_ImageData_Impl::GetNativeImageDataFormat(),
+          image_skia_rep.pixel_width(),
+          image_skia_rep.pixel_height(),
+          false)) {
+    return 0;
+  }
+
+  webkit::ppapi::ImageDataAutoMapper mapper(image_data);
+  if (!mapper.is_valid())
+    return 0;
+
+  skia::PlatformCanvas* canvas = image_data->GetPlatformCanvas();
+  // Note: Do not skBitmap::copyTo the canvas bitmap directly because it will
+  // ignore the allocated pixels in shared memory and re-allocate a new buffer.
+  canvas->writePixels(image_skia_rep.sk_bitmap(), 0, 0);
+
+  return image_data->GetReference();
+}
+
+PP_Resource GetResourceImage(PP_Instance instance_id,
+                             PP_ResourceImage image_id) {
+  return GetResourceImageForScale(instance_id, image_id, 1.0f);
+}
+
 const PPB_PDF ppb_pdf = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -377,7 +400,8 @@ const PPB_PDF ppb_pdf = {
   &HasUnsupportedFeature,
   &SaveAs,
   &PPB_PDF_Impl::InvokePrintingForInstance,
-  &IsFeatureEnabled
+  &IsFeatureEnabled,
+  &GetResourceImageForScale
 };
 
 }  // namespace

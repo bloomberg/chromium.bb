@@ -169,6 +169,12 @@ struct PPB_PDF {
   void (*Print)(PP_Instance instance);
 
   PP_Bool(*IsFeatureEnabled)(PP_PDFFeature feature);
+
+  // Returns a resource image appropriate for a device with |scale| density.
+  // Returns 0 (NULL resource) if there is no resource at that scale
+  PP_Resource (*GetResourceImageForScale)(PP_Instance instance,
+                                          PP_ResourceImage image_id,
+                                          float scale);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_
