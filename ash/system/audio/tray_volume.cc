@@ -263,6 +263,8 @@ void TrayVolume::OnMuteToggled() {
 
   if (volume_view_)
     volume_view_->Update();
+  else
+    PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
 }  // namespace internal
