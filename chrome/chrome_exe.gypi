@@ -415,7 +415,14 @@
               'dependencies': [
                 '../pdf/pdf.gyp:pdf',
               ],
-            }],
+              'conditions': [
+                ['OS=="linux" and linux_dump_symbols==1', {
+                  'dependencies': [
+                    '../pdf/pdf.gyp:pdf_linux_symbols',
+                  ],
+                }], # OS=="linux" and linux_dump_symbols==1
+              ],
+            }], # internal_pdf
           ],
           'dependencies': [
             'chrome_resources.gyp:packed_extra_resources',
