@@ -137,9 +137,6 @@ pr22061-4.c
 # ======================================================================
 # wont fixes - complex va_arg (e.g. structs passed as va_args)
 # ======================================================================
-# va_arg structure passing codegen on arm
-20030914-2.c arm,O0
-va-arg-4.c arm
 # complex va_arg
 920625-1.c
 # complex va_arg

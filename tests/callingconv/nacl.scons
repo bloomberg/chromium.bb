@@ -47,13 +47,9 @@ settings = {
 if env.Bit('bitcode'):
   settings['allow_struct_va_arg'] = 0
 
-# Structure passing in PNaCl is broken.
-# On X86-64, the ABI is not implemented / different.
+# Structure passing for PNaCl X86-64 has a different ABI.
 # BUG: http://code.google.com/p/nativeclient/issues/detail?id=1902
-# Passing structs to a var-arg function (as a non-var-arg argument)
-# may be wrong for ARM:
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2746
-if env.Bit('bitcode') and (env.Bit('target_arm') or env.Bit('target_x86_64')):
+if env.Bit('bitcode') and env.Bit('target_x86_64'):
   settings['allow_struct'] = 0
 
 # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2378
