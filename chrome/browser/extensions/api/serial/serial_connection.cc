@@ -54,10 +54,11 @@ void SerialConnection::Close() {
   }
 }
 
-int SerialConnection::Read(uint8* byte) {
-  DCHECK(byte);
+int SerialConnection::Read(scoped_refptr<net::IOBufferWithSize> io_buffer) {
+  DCHECK(io_buffer->data());
   return base::ReadPlatformFileAtCurrentPos(file_,
-                                            reinterpret_cast<char*>(byte), 1);
+                                            io_buffer->data(),
+                                            io_buffer->size());
 }
 
 int SerialConnection::Write(scoped_refptr<net::IOBuffer> io_buffer,

@@ -30,6 +30,9 @@ namespace experimental.serial {
 
   dictionary ReadInfo {
     // The number of bytes received, or a negative number if an error occurred.
+    // This number will be smaller than the number of bytes requested in the
+    // original read call if the call would need to block to read that number
+    // of bytes.
     long bytesRead;
 
     // The data received.
@@ -100,8 +103,11 @@ namespace experimental.serial {
 
     // Reads a byte from the given connection.
     // |connectionId| : The id of the connection.
-    // |callback| : Called when the byte has been read or the read blocked.
+    // |bytesToRead| : The number of bytes to read.
+    // |callback| : Called when all the requested bytes have been read or
+    //              when the read blocks.
     static void read(long connectionId,
+                     long bytesToRead,
                      ReadCallback callback);
 
     // Writes a string to the given connection.

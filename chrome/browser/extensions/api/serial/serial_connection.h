@@ -36,7 +36,7 @@ class SerialConnection : public ApiResource {
   virtual void Close();
   virtual void Flush();
 
-  virtual int Read(uint8* byte);
+  virtual int Read(scoped_refptr<net::IOBufferWithSize> io_buffer);
   virtual int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count);
 
   struct ControlSignals {

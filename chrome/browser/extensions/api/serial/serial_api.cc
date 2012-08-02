@@ -18,6 +18,7 @@ const char kConnectionIdKey[] = "connectionId";
 const char kPortsKey[] = "ports";
 const char kDataKey[] = "data";
 const char kBytesReadKey[] = "bytesRead";
+const char kBytesToReadKey[] = "bytesToRead";
 const char kBytesWrittenKey[] = "bytesWritten";
 const char kBitrateKey[] = "bitrate";
 const char kOptionsKey[] = "options";
@@ -29,6 +30,8 @@ const char kCtsKey[] = "cts";
 
 const char kErrorGetControlSignalsFailed[] = "Failed to get control signals.";
 const char kErrorSetControlSignalsFailed[] = "Failed to set control signals.";
+const char kSerialReadInvalidBytesToRead[] = "Number of bytes to read must "
+    "be a positive number less than 1,048,576.";
 
 SerialAsyncApiFunction::SerialAsyncApiFunction()
     : manager_(NULL) {
@@ -196,16 +199,22 @@ bool SerialReadFunction::Prepare() {
 
   params_ = api::experimental_serial::Read::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
+  if (params_->bytes_to_read <= 0 || params_->bytes_to_read >= 1024 * 1024) {
+    error_ = kSerialReadInvalidBytesToRead;
+    return false;
+  }
 
   return true;
 }
 
 void SerialReadFunction::Work() {
-  uint8 byte = '\0';
   int bytes_read = -1;
-  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
+  scoped_refptr<net::IOBufferWithSize> io_buffer(
+      new net::IOBufferWithSize(params_->bytes_to_read));
+  SerialConnection* serial_connection(manager_->Get(params_->connection_id));
+
   if (serial_connection)
-    bytes_read = serial_connection->Read(&byte);
+    bytes_read = serial_connection->Read(io_buffer);
 
   DictionaryValue* result = new DictionaryValue();
 
@@ -215,7 +224,7 @@ void SerialReadFunction::Work() {
     bytes_read = 0;
   result->SetInteger(kBytesReadKey, bytes_read);
   result->Set(kDataKey, base::BinaryValue::CreateWithCopiedBuffer(
-      reinterpret_cast<char*>(&byte), bytes_read));
+      io_buffer->data(), bytes_read));
   SetResult(result);
 }
 

@@ -7,14 +7,27 @@ function shouldSkipPort(portName) {
   return portName.match(/[Bb]luetooth/);
 }
 
+var createTestArrayBuffer = function() {
+  var bufferSize = 8;
+  var buffer = new ArrayBuffer(bufferSize);
+
+  var uint8View = new Uint8Array(buffer);
+  for (var i = 0; i < bufferSize; i++) {
+    uint8View[i] = 42 + i * 2;  // An arbitrary pattern.
+  }
+  return buffer;
+}
+
 var testSerial = function() {
   var serialPort = null;
   var connectionId = -1;
-  var testBuffer = new ArrayBuffer(1);
   var readTries = 10;
-
-  var uint8View = new Uint8Array(testBuffer);
-  uint8View[0] = 42;
+  var writeBuffer = createTestArrayBuffer();
+  var writeBufferUint8View = new Uint8Array(writeBuffer);
+  var bufferLength = writeBufferUint8View.length;
+  var readBuffer = new ArrayBuffer(bufferLength);
+  var readBufferUint8View = new Uint8Array(readBuffer);
+  var bytesToRead = bufferLength;
 
   var operation = 0;
   var doNextOperation = function() {
@@ -38,10 +51,10 @@ var testSerial = function() {
                                                    onGetControlSignals);
       break;
       case 4:
-      chrome.experimental.serial.write(connectionId, testBuffer, onWrite);
+      chrome.experimental.serial.write(connectionId, writeBuffer, onWrite);
       break;
       case 5:
-      chrome.experimental.serial.read(connectionId, onRead);
+      chrome.experimental.serial.read(connectionId, bytesToRead, onRead);
       break;
       case 6:
       chrome.experimental.serial.flush(connectionId, onFlush);
@@ -78,27 +91,30 @@ var testSerial = function() {
   }
 
   var onRead = function(readInfo) {
-    if (readInfo.bytesRead == 1) {
-      var messageUint8View = new Uint8Array(readInfo.data);
-      chrome.test.assertEq(uint8View[0], messageUint8View[0],
-                           'Byte read was not equal to byte written.');
+    bytesToRead -= readInfo.bytesRead;
+    var readBufferIndex = bufferLength - readInfo.bytesRead;
+    var messageUint8View = new Uint8Array(readInfo.data);
+    for (var i = 0; i < readInfo.bytesRead; i++) {
+      readBufferUint8View[i + readBufferIndex] = messageUint8View[i];
+    }
+    if (bytesToRead == 0) {
+      chrome.test.assertEq(writeBufferUint8View, readBufferUint8View,
+                           'Buffer read was not equal to buffer written.');
       doNextOperation();
     } else {
       if (--readTries > 0)
         setTimeout(repeatOperation, 100);
       else
-        chrome.test.assertTrue(false,
-                               'read() failed to return bytesRead 1.');
+        chrome.test.assertTrue(
+            false,
+            'read() failed to return requested number of bytes.');
     }
   };
 
   var onWrite = function(writeInfo) {
-    chrome.test.assertEq(1, writeInfo.bytesWritten,
+    chrome.test.assertEq(bufferLength, writeInfo.bytesWritten,
                          'Failed to write byte.');
-    if (writeInfo.bytesWritten == 1)
-      doNextOperation();
-    else
-      skipToTearDown();
+    doNextOperation();
   };
 
   var onGetControlSignals = function(options) {

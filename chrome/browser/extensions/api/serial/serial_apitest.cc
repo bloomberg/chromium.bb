@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -74,19 +75,22 @@ class FakeEchoSerialConnection : public SerialConnection {
 
   virtual void Flush() {
     DCHECK(opened_);
-    read_index_ = write_index_ = 0;
+    buffer_.clear();
   }
 
-  virtual int Read(uint8* byte) {
-    DCHECK(byte);
+  virtual int Read(scoped_refptr<net::IOBufferWithSize> io_buffer) {
+    DCHECK(io_buffer->data());
 
-    if (read_index_ >= write_index_) {
+    if (buffer_.empty()) {
       return 0;
     }
-    *byte = ring_buffer_[read_index_++];
-    if (read_index_ == BUFFER_SIZE)
-      read_index_ = 0;
-    return 1;
+    char *data = io_buffer->data();
+    int bytes_to_copy = io_buffer->size();
+    while (bytes_to_copy-- && !buffer_.empty()) {
+      *data++ = buffer_.front();
+      buffer_.pop_front();
+    }
+    return io_buffer->size();
   }
 
   virtual int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
@@ -95,11 +99,8 @@ class FakeEchoSerialConnection : public SerialConnection {
 
     char *data = io_buffer->data();
     int count = byte_count;
-    while (count--) {
-      ring_buffer_[write_index_++] = *data++;
-      if (write_index_ == BUFFER_SIZE)
-        write_index_ = 0;
-    }
+    while (count--)
+      buffer_.push_back(*data++);
     return byte_count;
   }
 
@@ -107,11 +108,8 @@ class FakeEchoSerialConnection : public SerialConnection {
   MOCK_METHOD1(SetControlSignals, bool(const ControlSignals &));
 
  private:
-  enum { BUFFER_SIZE = 256 };
   bool opened_;
-  char ring_buffer_[BUFFER_SIZE];
-  int read_index_;
-  int write_index_;
+  std::deque<char> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeEchoSerialConnection);
 };
