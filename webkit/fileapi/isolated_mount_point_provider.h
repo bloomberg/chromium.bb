@@ -15,6 +15,8 @@ namespace fileapi {
 class DraggedFileUtil;
 class IsolatedContext;
 class IsolatedFileUtil;
+class MediaPathFilter;
+class NativeMediaFileUtil;
 
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
@@ -56,8 +58,11 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
  private:
+  scoped_ptr<MediaPathFilter> media_path_filter_;
+
   scoped_ptr<IsolatedFileUtil> isolated_file_util_;
   scoped_ptr<DraggedFileUtil> dragged_file_util_;
+  scoped_ptr<NativeMediaFileUtil> native_media_file_util_;
 };
 
 }  // namespace fileapi

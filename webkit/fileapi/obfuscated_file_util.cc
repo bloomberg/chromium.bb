@@ -960,21 +960,13 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   // Delete the origin directory if the deleted one was the last remaining
   // type for the origin, i.e. if the *other* type doesn't exist.
   FileSystemType other_type = kFileSystemTypeUnknown;
-  switch (type) {
-    case kFileSystemTypeTemporary:
-      other_type = kFileSystemTypePersistent;
-      break;
-    case kFileSystemTypePersistent:
-      other_type = kFileSystemTypeTemporary;
-      break;
-    // These types shouldn't be used.
-    case kFileSystemTypeUnknown:
-    case kFileSystemTypeIsolated:
-    case kFileSystemTypeExternal:
-    case kFileSystemTypeTest:
-    case kFileSystemTypeDragged:
-      NOTREACHED();
-  }
+  if (type == kFileSystemTypeTemporary)
+    other_type = kFileSystemTypePersistent;
+  else if (type == kFileSystemTypePersistent)
+    other_type = kFileSystemTypeTemporary;
+  else
+    NOTREACHED();
+
   if (!file_util::DirectoryExists(
           origin_path.Append(GetDirectoryNameForType(other_type)))) {
     InitOriginDatabase(false);

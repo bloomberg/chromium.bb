@@ -124,6 +124,8 @@ FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
       return external_provider_.get();
     case kFileSystemTypeIsolated:
     case kFileSystemTypeDragged:
+    case kFileSystemTypeNativeMedia:
+    case kFileSystemTypeDeviceMedia:
       return isolated_provider_.get();
     default:
       if (provider_map_.find(type) != provider_map_.end())

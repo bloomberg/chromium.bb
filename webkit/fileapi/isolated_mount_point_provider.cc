@@ -21,6 +21,8 @@
 #include "webkit/fileapi/isolated_file_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/fileapi/local_file_system_operation.h"
+#include "webkit/fileapi/media/media_path_filter.h"
+#include "webkit/fileapi/media/native_media_file_util.h"
 #include "webkit/fileapi/native_file_util.h"
 
 namespace fileapi {
@@ -34,8 +36,10 @@ IsolatedContext* isolated_context() {
 }  // namespace
 
 IsolatedMountPointProvider::IsolatedMountPointProvider()
-    : isolated_file_util_(new IsolatedFileUtil()),
-      dragged_file_util_(new DraggedFileUtil()) {
+    : media_path_filter_(new MediaPathFilter()),
+      isolated_file_util_(new IsolatedFileUtil()),
+      dragged_file_util_(new DraggedFileUtil()),
+      native_media_file_util_(new NativeMediaFileUtil()) {
 }
 
 IsolatedMountPointProvider::~IsolatedMountPointProvider() {
@@ -76,10 +80,23 @@ bool IsolatedMountPointProvider::IsRestrictedFileName(
 
 FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
     FileSystemType type) {
-  if (type == kFileSystemTypeDragged)
-    return dragged_file_util_.get();
-  else
-    return isolated_file_util_.get();
+  switch (type) {
+    case kFileSystemTypeIsolated:
+      return isolated_file_util_.get();
+    case kFileSystemTypeDragged:
+      return dragged_file_util_.get();
+    case kFileSystemTypeNativeMedia:
+      return native_media_file_util_.get();
+
+    case kFileSystemTypeDeviceMedia:
+    case kFileSystemTypeTemporary:
+    case kFileSystemTypePersistent:
+    case kFileSystemTypeExternal:
+    case kFileSystemTypeTest:
+    case kFileSystemTypeUnknown:
+      NOTREACHED();
+  }
+  return NULL;
 }
 
 FilePath IsolatedMountPointProvider::GetPathForPermissionsCheck(
@@ -95,6 +112,9 @@ IsolatedMountPointProvider::CreateFileSystemOperation(
     FileSystemContext* context) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
+  if (url.type() == kFileSystemTypeNativeMedia ||
+      url.type() == kFileSystemTypeDeviceMedia)
+    operation_context->set_media_path_filter(media_path_filter_.get());
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 

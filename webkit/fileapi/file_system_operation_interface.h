@@ -74,12 +74,15 @@ class FileSystemOperationInterface {
            base::PlatformFile file,
            base::ProcessHandle peer_handle)> OpenFileCallback;
 
+  // Used for ReadDirectoryCallback.
+  typedef std::vector<base::FileUtilProxy::Entry> FileEntryList;
+
   // Used for ReadDirectory(). |result| is the return code of the operation,
   // |file_list| is the list of files read, and |has_more| is true if some files
   // are yet to be read.
   typedef base::Callback<
       void(base::PlatformFileError result,
-           const std::vector<base::FileUtilProxy::Entry>& file_list,
+           const FileEntryList& file_list,
            bool has_more)> ReadDirectoryCallback;
 
   // Used for CreateSnapshotFile(). (Please see the comment at

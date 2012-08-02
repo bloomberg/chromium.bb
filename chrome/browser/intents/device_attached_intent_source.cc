@@ -4,6 +4,8 @@
 
 #include "chrome/browser/intents/device_attached_intent_source.h"
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -54,7 +56,7 @@ void DeviceAttachedIntentSource::OnMediaDeviceAttached(
   // TODO(kinuko, kmadhusu): Use a different file system type for MTP.
   const std::string filesystem_id =
       fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-          fileapi::kFileSystemTypeIsolated, device_path, &device_name);
+          fileapi::kFileSystemTypeNativeMedia, device_path, &device_name);
 
   CHECK(!filesystem_id.empty());
   webkit_glue::WebIntentData intent(

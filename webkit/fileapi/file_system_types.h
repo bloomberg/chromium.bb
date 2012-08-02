@@ -37,6 +37,14 @@ enum FileSystemType {
   // Internal filesystem types, which are not exposed to WebKit but are
   // accessible via Isolated file system.
   kFileSystemTypeDragged,
+
+  // Indicates media filesystem which we can access with same manner to
+  // regular filesystem.
+  kFileSystemTypeNativeMedia,
+
+  // Indicates media filesystem to which we need special protocol to access,
+  // such as MTP or PTP.
+  kFileSystemTypeDeviceMedia,
 };
 
 }  // namespace fileapi

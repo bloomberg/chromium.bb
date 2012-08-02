@@ -19,6 +19,8 @@ class SequencedTaskRunner;
 
 namespace fileapi {
 
+class MediaPathFilter;
+
 class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
  public:
   explicit FileSystemOperationContext(FileSystemContext* context);
@@ -35,10 +37,19 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
 
   base::SequencedTaskRunner* file_task_runner() const;
 
+  void set_media_path_filter(MediaPathFilter* media_path_filter) {
+    media_path_filter_ = media_path_filter;
+  }
+
+  MediaPathFilter* media_path_filter() {
+    return media_path_filter_;
+  }
+
  private:
   scoped_refptr<FileSystemContext> file_system_context_;
 
   int64 allowed_bytes_growth_;
+  MediaPathFilter* media_path_filter_;
 };
 
 }  // namespace fileapi

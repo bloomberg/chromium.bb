@@ -157,6 +157,8 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
     return GURL(url + "/");
   case kFileSystemTypeUnknown:
   case kFileSystemTypeDragged:
+  case kFileSystemTypeNativeMedia:
+  case kFileSystemTypeDeviceMedia:
     NOTREACHED();
   }
   NOTREACHED();
