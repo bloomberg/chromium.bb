@@ -166,6 +166,47 @@ $(BINUTILS_STAMP): $(BINUTILS_TARBALL) | $(OUT_DIRS)
 	rm -rf $(OUT)/build/$(BINUTILS_VER)
 	cd $(OUT)/build && \
 	  tar jxf $(CURDIR)/$(OUT)/tarballs/$(BINUTILS_VER).tar.bz2
+	printf -- "--- $(OUT)/build/$(BINUTILS_VER)/opcodes/i386-dis.c\n\
+	+++ $(OUT)/build/$(BINUTILS_VER)/opcodes/i386-dis.c\n\
+	@@ -2614,6 +2614,12 @@\n\
+	   {\n\
+	     { \"prefetch\",	{ Mb } },\n\
+	     { \"prefetchw\",	{ Mb } },\n\
+	+    { Bad_Opcode },\n\
+	+    { \"prefetch_modified\",	{ Mb } },\n\
+	+    { Bad_Opcode },\n\
+	+    { Bad_Opcode },\n\
+	+    { Bad_Opcode },\n\
+	+    { Bad_Opcode },\n\
+	   },\n\
+	   /* REG_0F18 */\n\
+	   {\n\
+	--- $(OUT)/build/$(BINUTILS_VER)/opcodes/i386-opc.tbl\n\
+	+++ $(OUT)/build/$(BINUTILS_VER)/opcodes/i386-opc.tbl\n\
+	@@ -2954,2 +2954,3 @@\n\
+	 prefetchw, 1, 0xf0d, 0x1, 2, Cpu3dnow, Modrm|IgnoreSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Byte|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }\n\
+	+prefetch_modified, 1, 0xf0d, 0x3, 2, Cpu3dnow, Modrm|IgnoreSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Byte|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }\n\
+	 femms, 0, 0xf0e, None, 2, Cpu3dnow, No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { 0 }\n\
+	--- $(OUT)/build/$(BINUTILS_VER)/opcodes/i386-tbl.h\n\
+	+++ $(OUT)/build/$(BINUTILS_VER)/opcodes/i386-tbl.h\n\
+	@@ -35744,6 +35744,16 @@\n\
+	     { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \n\
+	 	  1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, \n\
+	 	  0, 0, 1, 0, 0, 0 } } } },\n\
+	+  { \"prefetch_modified\", 1, 0xf0d, 0x3, 2,\n\
+	+    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, \n\
+	+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \n\
+	+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },\n\
+	+    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, \n\
+	+      1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \n\
+	+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },\n\
+	+    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \n\
+	+	  1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, \n\
+	+	  0, 0, 1, 0, 0, 0 } } } },\n\
+	   { \"femms\", 0, 0xf0e, None, 2,\n\
+	     { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, \n\
+	         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \n" | \
+	patch -p0
 	rm -rf $(BINUTILS_BUILD_DIR)
 	mkdir -p $(BINUTILS_BUILD_DIR)
 	cd $(BINUTILS_BUILD_DIR) && \

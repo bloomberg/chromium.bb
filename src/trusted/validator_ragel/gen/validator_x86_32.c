@@ -1492,16 +1492,29 @@ case 17:
 		case 5u: goto tr52;
 		case 12u: goto tr51;
 		case 13u: goto tr52;
+		case 28u: goto tr51;
+		case 29u: goto tr52;
 		case 68u: goto tr54;
 		case 76u: goto tr54;
+		case 92u: goto tr54;
 		case 132u: goto tr55;
 		case 140u: goto tr55;
+		case 156u: goto tr55;
 	}
 	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 15u )
+		if ( (*( current_position)) > 15u ) {
+			if ( 24u <= (*( current_position)) && (*( current_position)) <= 31u )
+				goto tr50;
+		} else
 			goto tr50;
 	} else if ( (*( current_position)) > 79u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+		if ( (*( current_position)) < 128u ) {
+			if ( 88u <= (*( current_position)) && (*( current_position)) <= 95u )
+				goto tr53;
+		} else if ( (*( current_position)) > 143u ) {
+			if ( 152u <= (*( current_position)) && (*( current_position)) <= 159u )
+				goto tr52;
+		} else
 			goto tr52;
 	} else
 		goto tr53;

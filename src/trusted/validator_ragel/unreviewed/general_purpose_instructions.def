@@ -633,6 +633,11 @@ popfq, 0x9d, amd64 nacl-forbidden
 ######## PREFETCH/PREFETCHW ####################################################
 prefetch Mb, 0x0f 0x0d /0, CPUFeature_3DPRFTCH no_memory_access
 prefetchw Mb, 0x0f 0x0d /1, CPUFeature_3DPRFTCH no_memory_access
+# Bug-to-bug compatibility.  AMD manual desribes this opcode as “reserved” in
+# one place (and clarifies that it's aliased to prefetch for the compatibility)
+# and as “invalid” in another place.  We are doing what old validator is doing
+# and accept it.
+prefetch_modified Mb, 0x0f 0x0d /3, CPUFeature_3DPRFTCH no_memory_access
 ######## PREFETCHlevel #########################################################
 prefetchnta Mb, 0x0f 0x18 /0, no_memory_access
 prefetcht0 Mb, 0x0f 0x18 /1, no_memory_access

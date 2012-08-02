@@ -767,6 +767,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         (!strcmp(instruction_name, "prefetcht1")) ||
         (!strcmp(instruction_name, "prefetcht2")) ||
         (!strcmp(instruction_name, "prefetchw")) ||
+        (!strcmp(instruction_name, "prefetch_modified")) ||
         (!strcmp(instruction_name, "seta")) ||
         (!strcmp(instruction_name, "setae")) ||
         (!strcmp(instruction_name, "setbe")) ||

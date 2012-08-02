@@ -6668,25 +6668,11 @@ st26:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof26;
 case 26:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr82;
-		case 5u: goto tr83;
-		case 12u: goto tr82;
-		case 13u: goto tr83;
-		case 68u: goto tr85;
-		case 76u: goto tr85;
-		case 132u: goto tr87;
-		case 140u: goto tr87;
+	{
+		static const unsigned char jump_table[] = { 42, 42, 42, 42, 43, 44, 42, 42, 42, 42, 42, 42, 43, 44, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 42, 42, 42, 42, 43, 44, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 45, 45, 45, 45, 46, 45, 45, 45, 45, 45, 45, 45, 46, 45, 45, 45, 0, 0, 0, 0, 0, 0, 0, 0, 45, 45, 45, 45, 46, 45, 45, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 47, 47, 47, 48, 47, 47, 47, 47, 47, 47, 47, 48, 47, 47, 47, 0, 0, 0, 0, 0, 0, 0, 0, 47, 47, 47, 47, 48, 47, 47, 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		( current_state) = jump_table[(*( current_position))] + 953;
+		goto _again;
 	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 15u )
-			goto tr81;
-	} else if ( (*( current_position)) > 79u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-			goto tr86;
-	} else
-		goto tr84;
-	goto tr39;
 tr82:
 	{
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
@@ -9860,9 +9846,9 @@ st156:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof156;
 case 156:
-	if ( (*( current_position)) <= 127u )
-		goto tr34;
-	goto tr41;
+	if ( 128u <= (*( current_position)) )
+		goto tr41;
+	goto tr34;
 tr326:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
