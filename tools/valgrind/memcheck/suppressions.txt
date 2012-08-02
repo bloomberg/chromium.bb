@@ -5820,6 +5820,13 @@
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
    fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
+{
+   bug_140041
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15WebsiteSettings11OnUIClosingEv
+   fun:_ZN36WebsiteSettingsTest_ShowInfoBar_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
