@@ -137,6 +137,7 @@
     "chrome.experimental.bluetooth.startDiscovery": "experimental.bluetooth.html#method-startDiscovery",
     "chrome.experimental.bluetooth.stopDiscovery": "experimental.bluetooth.html#method-stopDiscovery",
     "chrome.experimental.bluetooth.write": "experimental.bluetooth.html#method-write",
+    "chrome.experimental.commands.onCommand": "experimental.commands.html#event-onCommand",
     "chrome.experimental.devtools.audits.AuditCategory.onAuditStarted": "experimental.devtools.audits.html#event-AuditCategory-onAuditStarted",
     "chrome.experimental.devtools.audits.AuditResultNode.addChild": "experimental.devtools.audits.html#method-AuditResultNode-addChild",
     "chrome.experimental.devtools.audits.AuditResults.addResult": "experimental.devtools.audits.html#method-AuditResults-addResult",
@@ -154,7 +155,6 @@
     "chrome.experimental.identity.getAuthToken": "experimental.identity.html#method-getAuthToken",
     "chrome.experimental.identity.launchWebAuthFlow": "experimental.identity.html#method-launchWebAuthFlow",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
-    "chrome.experimental.keybinding.onCommand": "experimental.keybinding.html#event-onCommand",
     "chrome.experimental.mediaGalleries.assembleMediaFile": "experimental.mediaGalleries.html#method-assembleMediaFile",
     "chrome.experimental.mediaGalleries.extractEmbeddedThumbnails": "experimental.mediaGalleries.html#method-extractEmbeddedThumbnails",
     "chrome.experimental.offscreenTabs.create": "experimental.offscreenTabs.html#method-create",
@@ -1136,7 +1136,6 @@
         "chrome.browserAction.onClicked",
         "chrome.browserAction.setBadgeText",
         "chrome.declarativeWebRequest.onRequest",
-        "chrome.experimental.keybinding.onCommand",
         "chrome.extension.onMessage",
         "chrome.extension.sendMessage",
         "chrome.runtime.onInstalled",
@@ -1165,7 +1164,7 @@
       "protocols": [
         "http://"
       ],
-      "search_string": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE ALARMS BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.DECLARATIVEWEBREQUEST.ONREQUEST CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.RUNTIME.ONINSTALLED CHROME.RUNTIME.ONSUSPEND CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
+      "search_string": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE ALARMS BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.DECLARATIVEWEBREQUEST.ONREQUEST CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.RUNTIME.ONINSTALLED CHROME.RUNTIME.ONSUSPEND CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
       "source_files": [
         "background.js",
         "content.js",
