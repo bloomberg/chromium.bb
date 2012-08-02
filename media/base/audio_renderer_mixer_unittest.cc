@@ -410,12 +410,12 @@ TEST_P(AudioRendererMixerTest, OnRenderError) {
 INSTANTIATE_TEST_CASE_P(
     AudioRendererMixerTest, AudioRendererMixerTest, testing::Values(
         // No resampling.
-        std::tr1::make_tuple(44100, 44100, 0.000000477),
+        std::tr1::make_tuple(44100, 44100, 0.00000048),
 
         // Upsampling.
-        std::tr1::make_tuple(44100, 48000, 0.0329405),
+        std::tr1::make_tuple(44100, 48000, 0.033),
 
         // Downsampling.
-        std::tr1::make_tuple(48000, 41000, 0.0410239)));
+        std::tr1::make_tuple(48000, 41000, 0.042)));
 
 }  // namespace media
