@@ -26,5 +26,16 @@
          },
       },
     },
+    # |generated_uuid_test| tests an ability to pass a define to midl.exe
+    {
+      'target_name': 'generated_uuid_test',
+      'type': 'static_library',
+      'defines': [
+        'GENERATED_UUID=ea6cba74-40a8-4c13-abeb-3c121884bbfd'
+      ],
+      'sources': [
+        'generated_uuid.idl',
+      ],
+    },
   ],
 }
