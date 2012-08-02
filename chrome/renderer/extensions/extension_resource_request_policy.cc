@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/extensions/extension.h"
@@ -47,31 +48,60 @@ bool ExtensionResourceRequestPolicy::CanRequestResource(
     return false;
   }
 
-  // Disallow loading of extension resources which are not explicitely listed
-  // as web accessible if the manifest version is 2 or greater.
-  if (!extension->IsResourceWebAccessible(resource_url.path()) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableExtensionsResourceWhitelist)) {
-    GURL frame_url = frame->document().url();
-    GURL page_url = frame->top()->document().url();
+  GURL frame_url = frame->document().url();
 
-    // Exceptions are:
-    // - empty origin (needed for some edge cases when we have empty origins)
-    bool is_empty_origin = frame_url.is_empty();
-    // - extensions requesting their own resources (frame_url check is for
-    //     images, page_url check is for iframes)
-    bool is_own_resource = frame_url.GetOrigin() == extension->url() ||
-        page_url.GetOrigin() == extension->url();
-    // - devtools (chrome-extension:// URLs are loaded into frames of devtools
-    //     to support the devtools extension APIs)
-    bool is_dev_tools = page_url.SchemeIs(chrome::kChromeDevToolsScheme) &&
-        !extension->devtools_url().is_empty();
+  // In the case of loading a frame, frame* points to the frame being loaded,
+  // not the containing frame. This means that frame->document().url() ends up
+  // not being useful to us.
+  //
+  // WebKit doesn't currently pass us enough information to know when we're a
+  // frame, so we hack it by checking for 'about:blank', which should only
+  // happen in this situation.
+  //
+  // TODO(aa): Fix WebKit to pass the context of the load: crbug.com/139788.
+  if (frame_url == GURL(chrome::kAboutBlankURL) && frame->parent())
+      frame_url = frame->parent()->document().url();
 
-    if (!is_empty_origin && !is_own_resource && !is_dev_tools) {
+  bool extension_has_access_to_frame =
+      extension->GetEffectiveHostPermissions().MatchesURL(frame_url);
+  bool frame_has_empty_origin = frame_url.is_empty();
+  bool frame_is_data_url = frame_url.SchemeIs(chrome::kDataScheme);
+  bool frame_is_devtools = frame_url.SchemeIs(chrome::kChromeDevToolsScheme) &&
+      !extension->devtools_url().is_empty();
+  bool frame_is_extension = frame_url.SchemeIs(chrome::kExtensionScheme);
+  bool is_own_resource = frame_url.GetOrigin() == extension->url();
+  bool is_resource_nacl_manifest =
+      extension->IsResourceNaClManifest(resource_url.path());
+  bool is_resource_web_accessible =
+      extension->IsResourceWebAccessible(resource_url.path()) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableExtensionsResourceWhitelist);
+
+  // Given that the goal here is to prevent malicious injection of a benign
+  // extension's content into a context where it might be damaging, allowing
+  // unvalidated "nexe" resources is low-risk. If a mechanism for synchronously
+  // validating that the "nexe" is a NaCl executable appears, we should use it.
+  bool is_resource_nexe = extension->HasNaClModules() &&
+      EndsWith(resource_url.path(), ".nexe", true);
+
+  if (!frame_has_empty_origin && !frame_is_devtools && !is_own_resource) {
+    if (!is_resource_web_accessible) {
       std::string message = base::StringPrintf(
           "Denying load of %s. Resources must be listed in the "
           "web_accessible_resources manifest key in order to be loaded by "
           "pages outside the extension.",
+          resource_url.spec().c_str());
+      frame->addMessageToConsole(
+          WebKit::WebConsoleMessage(WebKit::WebConsoleMessage::LevelError,
+                                    WebKit::WebString::fromUTF8(message)));
+      return false;
+    }
+
+    if (!extension_has_access_to_frame && !frame_is_extension &&
+        !frame_is_data_url && !is_resource_nacl_manifest && !is_resource_nexe) {
+      std::string message = base::StringPrintf(
+          "Denying load of %s. An extension's resources can only be loaded "
+          "into a page for which the extension has explicit host permissions.",
           resource_url.spec().c_str());
       frame->addMessageToConsole(
           WebKit::WebConsoleMessage(WebKit::WebConsoleMessage::LevelError,
