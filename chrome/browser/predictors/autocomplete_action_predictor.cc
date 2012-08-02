@@ -94,8 +94,8 @@ AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
   } else {
     // Request the in-memory database from the history to force it to load so
     // it's available as soon as possible.
-    HistoryService* history_service =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
     if (history_service)
       history_service->InMemoryDatabase();
 

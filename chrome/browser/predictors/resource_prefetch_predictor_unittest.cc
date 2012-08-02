@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/url_database.h"
@@ -175,8 +176,9 @@ ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() {
 void ResourcePrefetchPredictorTest::SetUp() {
   profile_.CreateHistoryService(true, false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
-  EXPECT_TRUE(profile_.GetHistoryService(Profile::EXPLICIT_ACCESS));
-  url_db_ = profile_.GetHistoryService(
+  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(&profile_,
+                                                   Profile::EXPLICIT_ACCESS));
+  url_db_ = HistoryServiceFactory::GetForProfile(&profile_,
       Profile::EXPLICIT_ACCESS)->InMemoryDatabase();
 
   // Initialize the predictor with empty data.

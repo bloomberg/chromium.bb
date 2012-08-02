@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/predictors/predictor_database.h"
@@ -127,8 +128,8 @@ void ResourcePrefetchPredictor::LazilyInitialize() {
 
   // Request the in-memory database from the history to force it to load so it's
   // available as soon as possible.
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS);
   if (history_service)
     history_service->InMemoryDatabase();
 
@@ -167,7 +168,9 @@ void ResourcePrefetchPredictor::CreateCaches(
   }
 
   // Add notifications for history loading if it is not ready.
-  if (!profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)) {
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+    profile_, Profile::EXPLICIT_ACCESS);
+  if (!history_service) {
     notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
                                 content::Source<Profile>(profile_));
   } else {
@@ -462,8 +465,8 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
   DCHECK_EQ(initialization_state_, INITIALIZING);
 
   // Update the data with last visit info from in memory history db.
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS);
   DCHECK(history_service);
   history::URLDatabase* url_db = history_service->InMemoryDatabase();
   if (url_db) {
@@ -506,8 +509,8 @@ bool ResourcePrefetchPredictor::ShouldTrackUrl(const GURL& url) {
   if (url_table_cache_.find(url) != url_table_cache_.end())
     return true;
 
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS);
   DCHECK(history_service);
   history::URLDatabase* url_db = history_service->InMemoryDatabase();
   if (!url_db)
