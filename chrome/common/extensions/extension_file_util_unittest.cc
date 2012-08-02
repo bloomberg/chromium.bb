@@ -528,6 +528,48 @@ TEST(ExtensionFileUtil, WarnOnPrivateKey) {
                   "extension includes the key file.*ext_root.a_key.pem"));
 }
 
+TEST(ExtensionFileUtil, CheckZeroLengthImageFile) {
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+
+  // Try to install an extension with a zero-length icon file.
+  FilePath ext_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("bad")
+      .AppendASCII("Extensions")
+      .AppendASCII("ffffffffffffffffffffffffffffffff");
+
+  std::string error;
+  scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
+      ext_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension == NULL);
+  ASSERT_STREQ("Could not load extension icon 'icon.png'.",
+      error.c_str());
+
+  // Try to install an extension with a zero-length browser action icon file.
+  ext_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("bad")
+      .AppendASCII("Extensions")
+      .AppendASCII("gggggggggggggggggggggggggggggggg");
+
+  scoped_refptr<Extension> extension2(extension_file_util::LoadExtension(
+      ext_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension2 == NULL);
+  ASSERT_STREQ("Could not load icon 'icon.png' for browser action.",
+      error.c_str());
+
+  // Try to install an extension with a zero-length page action icon file.
+  ext_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("bad")
+      .AppendASCII("Extensions")
+      .AppendASCII("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+
+  scoped_refptr<Extension> extension3(extension_file_util::LoadExtension(
+      ext_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension3 == NULL);
+  ASSERT_STREQ("Could not load icon 'icon.png' for page action.",
+      error.c_str());
+}
+
 // TODO(aa): More tests as motivation allows. Maybe steal some from
 // ExtensionService? Many of them could probably be tested here without the
 // MessageLoop shenanigans.

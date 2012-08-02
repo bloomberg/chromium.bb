@@ -62,6 +62,9 @@ scoped_refptr<extensions::Extension> LoadExtension(
 base::DictionaryValue* LoadManifest(const FilePath& extension_root,
                                     std::string* error);
 
+// Returns true if the given file path exists and is not zero-length.
+bool ValidateFilePath(const FilePath& path);
+
 // Returns true if the given extension object is valid and consistent.
 // May also append a series of warning messages to |warnings|, but they
 // should not prevent the extension from running.

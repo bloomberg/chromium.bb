@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
@@ -220,6 +221,17 @@ std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir) {
   return result;
 }
 
+bool ValidateFilePath(const FilePath& path) {
+  int64 size = 0;
+  if (!file_util::PathExists(path) ||
+      !file_util::GetFileSize(path, &size) ||
+      size == 0) {
+    return false;
+  }
+
+  return true;
+}
+
 bool ValidateExtension(const Extension* extension,
                        std::string* error,
                        Extension::InstallWarningVector* warnings) {
@@ -229,7 +241,7 @@ bool ValidateExtension(const Extension* extension,
        iter != extension->icons().map().end();
        ++iter) {
     const FilePath path = extension->GetResource(iter->second).GetFilePath();
-    if (!file_util::PathExists(path)) {
+    if (!ValidateFilePath(path)) {
       *error =
           l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_ICON_FAILED,
                                     UTF8ToUTF16(iter->second));
@@ -307,7 +319,7 @@ bool ValidateExtension(const Extension* extension,
     }
   }
 
-  // Validate icon location for page actions.
+  // Validate icon location and icon file size for page actions.
   ExtensionAction* page_action = extension->page_action();
   if (page_action) {
     std::vector<std::string> icon_paths(*page_action->icon_paths());
@@ -315,7 +327,8 @@ bool ValidateExtension(const Extension* extension,
       icon_paths.push_back(page_action->default_icon_path());
     for (std::vector<std::string>::iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
-      if (!file_util::PathExists(extension->GetResource(*iter).GetFilePath())) {
+      const FilePath path = extension->GetResource(*iter).GetFilePath();
+      if (!ValidateFilePath(path)) {
         *error =
             l10n_util::GetStringFUTF8(
                 IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED,
@@ -325,18 +338,20 @@ bool ValidateExtension(const Extension* extension,
     }
   }
 
-  // Validate icon location for browser actions.
+  // Validate icon location and icon file size for browser actions.
   // Note: browser actions don't use the icon_paths().
   ExtensionAction* browser_action = extension->browser_action();
   if (browser_action) {
     std::string path = browser_action->default_icon_path();
-    if (!path.empty() &&
-        !file_util::PathExists(extension->GetResource(path).GetFilePath())) {
+    if (!path.empty()) {
+      const FilePath file_path = extension->GetResource(path).GetFilePath();
+      if (!ValidateFilePath(file_path)) {
         *error =
             l10n_util::GetStringFUTF8(
                 IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED,
                 UTF8ToUTF16(path));
         return false;
+      }
     }
   }
 
