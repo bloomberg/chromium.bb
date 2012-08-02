@@ -51,6 +51,9 @@ class RequestHandler(BaseHTTPRequestHandler):
     response = Response()
     Handler(request, response, local_path=_GetLocalPath()).get()
     content = response.out.getvalue()
+
+    self.send_response(response.status)
+    self.end_headers()
     if isinstance(content, str):
       self.wfile.write(content)
     else:
