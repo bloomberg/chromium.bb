@@ -14,6 +14,7 @@
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -218,6 +219,11 @@ gfx::Point RootWindow::GetHostOrigin() const {
 }
 
 void RootWindow::SetCursor(gfx::NativeCursor cursor) {
+  // If a drag is in progress, the DragDropClient should override the cursor.
+  client::DragDropClient* dnd_client = client::GetDragDropClient(this);
+  if (dnd_client && dnd_client->IsDragDropInProgress())
+    cursor = dnd_client->GetDragCursor();
+
   last_cursor_ = cursor;
   // A lot of code seems to depend on NULL cursors actually showing an arrow,
   // so just pass everything along to the host.

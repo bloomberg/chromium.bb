@@ -57,6 +57,7 @@ class ASH_EXPORT DragDropController
                     const aura::LocatedEvent& event) OVERRIDE;
   virtual void DragCancel() OVERRIDE;
   virtual bool IsDragDropInProgress() OVERRIDE;
+  virtual gfx::NativeCursor GetDragCursor() OVERRIDE;
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
@@ -88,6 +89,7 @@ class ASH_EXPORT DragDropController
   gfx::Point drag_image_offset_;
   const ui::OSExchangeData* drag_data_;
   int drag_operation_;
+  gfx::NativeCursor drag_cursor_;
 
   // Window that is currently under the drag cursor.
   aura::Window* drag_window_;

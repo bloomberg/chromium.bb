@@ -64,6 +64,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
   if (capture_window)
     capture_window->ReleaseCapture();
   drag_drop_in_progress_ = true;
+  drag_cursor_ = ui::kCursorPointer;
 
   drag_data_ = &data;
   drag_operation_ = operation;
@@ -128,6 +129,7 @@ void DragDropController::DragUpdate(aura::Window* target,
         cursor = ui::kCursorAlias;
       else if (op & ui::DragDropTypes::DRAG_MOVE)
         cursor = ui::kCursorMove;
+      drag_cursor_ = cursor;
       ash::Shell::GetInstance()->cursor_manager()->SetCursor(cursor);
     }
   }
@@ -141,6 +143,7 @@ void DragDropController::DragUpdate(aura::Window* target,
 
 void DragDropController::Drop(aura::Window* target,
                               const aura::LocatedEvent& event) {
+  drag_cursor_ = ui::kCursorPointer;
   ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
 
@@ -170,6 +173,7 @@ void DragDropController::Drop(aura::Window* target,
 }
 
 void DragDropController::DragCancel() {
+  drag_cursor_ = ui::kCursorPointer;
   ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
 
   // |drag_window_| can be NULL if we have just started the drag and have not
@@ -191,6 +195,10 @@ bool DragDropController::IsDragDropInProgress() {
   return drag_drop_in_progress_;
 }
 
+gfx::NativeCursor DragDropController::GetDragCursor() {
+  return drag_cursor_;
+}
+
 bool DragDropController::PreHandleKeyEvent(aura::Window* target,
                                            aura::KeyEvent* event) {
   if (drag_drop_in_progress_ && event->key_code() == ui::VKEY_ESCAPE) {
@@ -210,9 +218,6 @@ bool DragDropController::PreHandleMouseEvent(aura::Window* target,
       break;
     case ui::ET_MOUSE_RELEASED:
       Drop(target, *event);
-      break;
-    case ui::ET_MOUSE_EXITED:
-      DragCancel();
       break;
     default:
       // We could reach here if the user drops outside the root window.
