@@ -127,8 +127,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Set path in repository to keep latest approved LKGM manifest.
   LKGM_PATH = 'LKGM/lkgm.xml'
 
-  def __init__(self, source_repo, manifest_repo, build_name,
-               build_type, incr_type, force, dry_run=True):
+  def __init__(self, source_repo, manifest_repo, build_name, build_type,
+               incr_type, force, branch, dry_run=True):
     """Initialize an LKGM Manager.
 
     Args:
@@ -138,7 +138,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
         build_name=build_name, incr_type=incr_type, force=force,
-        dry_run=dry_run)
+        branch=branch, dry_run=dry_run)
 
     self.lkgm_path = os.path.join(self.manifest_dir, self.LKGM_PATH)
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare

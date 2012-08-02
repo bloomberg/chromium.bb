@@ -142,8 +142,8 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     repo = repository.RepoRepository(
       self.source_repo, self.tmpdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-      repo, self.manifest_version_url, self.build_name,
-      self.incr_type, force=False, dry_run=True)
+      repo, self.manifest_version_url, self.build_name, self.incr_type,
+      force=False, branch=self.branch, dry_run=True)
 
     stages.ManifestVersionedSyncStage.manifest_manager = self.manager
 
@@ -237,11 +237,11 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     repo = repository.RepoRepository(
       self.source_repo, self.tmpdir, self.branch)
     self.manager = lkgm_manager.LKGMManager(
-      repo, self.manifest_version_url, self.build_name,
-      self.build_type, incr_type='branch', force=False, dry_run=True)
+      repo, self.manifest_version_url, self.build_name, self.build_type,
+      incr_type='branch', force=False, branch=self.branch, dry_run=True)
     self.sub_manager = lkgm_manager.LKGMManager(
-      repo, self.manifest_version_url, self.build_name,
-      self.build_type, incr_type='branch', force=False, dry_run=True)
+      repo, self.manifest_version_url, self.build_name, self.build_type,
+      incr_type='branch', force=False, branch=self.branch, dry_run=True)
 
     stages.ManifestVersionedSyncStage.manifest_manager = self.manager
     stages.LKGMCandidateSyncStage.sub_manager = self.manager

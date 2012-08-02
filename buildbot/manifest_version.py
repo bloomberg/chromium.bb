@@ -345,15 +345,16 @@ class BuildSpecsManager(object):
   # Max timeout before assuming other builders have failed.
   LONG_MAX_TIMEOUT_SECONDS = 1200
 
-  def __init__(self, source_repo, manifest_repo, build_name,
-               incr_type, force, dry_run=True):
+  def __init__(self, source_repo, manifest_repo, build_name, incr_type, force,
+               branch, dry_run=True):
     """Initializes a build specs manager.
     Args:
       source_repo: Repository object for the source code.
       manifest_repo:  Manifest repository for manifest versions / buildspecs.
       build_name: Identifier for the build.  Must match cbuildbot_config.
-      incr_type: part of the version to increment. 'patch or branch'
+      incr_type: How we should increment this version - build|branch|patch
       force: Create a new manifest even if there are no changes.
+      branch: Branch this builder is running on.
       dry_run: Whether we actually commit changes we make or not.
     """
     self.cros_source = source_repo
@@ -367,6 +368,7 @@ class BuildSpecsManager(object):
     self.build_name = build_name
     self.incr_type = incr_type
     self.force = force
+    self.branch = branch
     self.dry_run = dry_run
 
     # Directories and specifications are set once we load the specs.
@@ -492,7 +494,11 @@ class BuildSpecsManager(object):
   def PublishManifest(self, manifest, version):
     """Publishes the manifest as the manifest for the version to others."""
     logging.info('Publishing build spec for: %s', version)
-    commit_message = 'Automatic: Start %s %s' % (self.build_name, version)
+
+    # Note: This commit message is used by master.cfg for figuring out when to
+    #       trigger slave builders.
+    commit_message = 'Automatic: Start %s %s %s' % (self.build_name,
+                                                    self.branch, version)
 
     # Copy the manifest into the manifest repository.
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)

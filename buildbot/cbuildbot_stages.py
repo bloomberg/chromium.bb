@@ -451,6 +451,7 @@ class ManifestVersionedSyncStage(SyncStage):
             build_name=self._bot_id,
             incr_type=increment,
             force=self._force,
+            branch=self._target_manifest_branch,
             dry_run=dry_run)
 
   def GetNextManifest(self):
@@ -514,6 +515,7 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
         build_type=self._build_config['build_type'],
         incr_type=increment,
         force=self._force,
+        branch=self._target_manifest_branch,
         dry_run=self._options.debug)
 
   def Initialize(self):
