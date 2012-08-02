@@ -262,9 +262,11 @@ class Namespace(object):
   dictionary that the JSON schema compiler expects to see.
   '''
 
-  def __init__(self, namespace_node, nodoc=False, permissions=None):
+  def __init__(self, namespace_node, nodoc=False, permissions=None,
+               internal=False):
     self.namespace = namespace_node
     self.nodoc = nodoc
+    self.internal = internal
     self.events = []
     self.functions = []
     self.types = []
@@ -291,6 +293,7 @@ class Namespace(object):
             'documentation_permissions_required': self.permissions,
             'types': self.types,
             'functions': self.functions,
+            'internal': self.internal,
             'events': self.events}
 
   def process_interface(self, node):
@@ -313,11 +316,14 @@ class IDLSchema(object):
   def process(self):
     namespaces = []
     nodoc = False
+    internal = False
     permissions = None
     for node in self.idl:
       if node.cls == 'Namespace':
-        namespace = Namespace(node, nodoc, permissions)
+        namespace = Namespace(node, nodoc, permissions, internal)
         namespaces.append(namespace.process())
+        nodoc = False
+        internal = False
       elif node.cls == 'Copyright':
         continue
       elif node.cls == 'Comment':
@@ -327,6 +333,8 @@ class IDLSchema(object):
           nodoc = bool(node.value)
         elif node.name == 'permissions':
           permission = node.value.split(',')
+        elif node.name == 'internal':
+          internal = bool(node.value)
         else:
           continue
       else:

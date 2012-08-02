@@ -84,6 +84,12 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertTrue(func is not None)
     self.assertTrue(func['nocompile'])
 
+  def testInternalNamespace(self):
+    idl_basics  = self.idl_basics
+    self.assertEquals('idl_basics', idl_basics['namespace'])
+    self.assertTrue(idl_basics['internal'])
+    self.assertFalse(idl_basics['nodoc'])
+
   def testFunctionComment(self):
     schema = self.idl_basics
     func = getFunction(schema, 'function3')
