@@ -15,6 +15,7 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_views.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -171,16 +172,12 @@ class IMENotificationView : public TrayNotificationView {
  public:
   explicit IMENotificationView(TrayIME* tray)
       : TrayNotificationView(tray, IDR_AURA_UBER_TRAY_IME) {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
-    IMEInfo current;
-    delegate->GetCurrentIME(&current);
+    InitView(GetLabel());
+  }
 
-    // TODO(zork): Use IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE for
-    // third party IMEs
-    InitView(new views::Label(
-        l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE,
-            current.short_name)));
+  void UpdateLabel() {
+    RestartAutoCloseTimer();
+    UpdateView(GetLabel());
   }
 
   void StartAutoCloseTimer(int seconds) {
@@ -211,6 +208,20 @@ class IMENotificationView : public TrayNotificationView {
   void Close() {
     tray()->HideNotificationView();
   }
+
+  views::Label* GetLabel() {
+    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    IMEInfo current;
+    delegate->GetCurrentIME(&current);
+
+    // TODO(zork): Use IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE for
+    // third party IMEs
+    return new views::Label(
+        l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE,
+            current.short_name));
+  }
+
 
   int autoclose_delay_;
   base::OneShotTimer<IMENotificationView> autoclose_;
@@ -319,8 +330,12 @@ void TrayIME::OnIMERefresh(bool show_message) {
   if (detailed_)
     detailed_->Update(list, property_list);
 
-  if (list.size() > 1 && show_message && !message_shown_) {
-    if (!notification_) {
+  if (list.size() > 1 && show_message) {
+    // If the notification is still visible, hide it and clear the flag so it is
+    // refreshed.
+    if (notification_) {
+      notification_->UpdateLabel();
+    } else if (!Shell::GetInstance()->shelf()->IsVisible() || !message_shown_) {
       ShowNotificationView();
       message_shown_ = true;
     }
