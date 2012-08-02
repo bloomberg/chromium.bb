@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 
-#include <algorithm>
 #include <list>
 #include <string>
 #include <utility>
@@ -16,10 +15,8 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/string_number_conversions.h"
@@ -56,13 +53,11 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
-#include "net/base/escape.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/transport_security_state.h"
-#include "net/base/x509_cert_types.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
@@ -72,17 +67,16 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #endif
-#ifdef OS_WIN
+#if defined(OS_WIN)
 #include "chrome/browser/net/service_providers_win.h"
 #endif
 
@@ -160,7 +154,7 @@ ChromeWebUIDataSource* CreateNetInternalsHTMLSource() {
   return source;
 }
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 // Small helper class used to create temporary log file and pass its
 // handle and error status to callback.
 // Use case:
@@ -298,7 +292,7 @@ void StoreDebugLogs(const StoreDebugLogsCallback& callback) {
           base::Bind(&WriteDebugLogToFile, callback)), false);
   DCHECK(posted);
 }
-#endif  // OS_CHROMEOS
+#endif  // defined(OS_CHROMEOS)
 
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
@@ -328,7 +322,7 @@ class NetInternalsMessageHandler
   void OnRendererReady(const ListValue* list);
   void OnClearBrowserCache(const ListValue* list);
   void OnGetPrerenderInfo(const ListValue* list);
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   void OnRefreshSystemLogs(const ListValue* list);
   void OnGetSystemLog(const ListValue* list);
   void OnImportONCFile(const ListValue* list);
@@ -342,7 +336,7 @@ class NetInternalsMessageHandler
  private:
   class IOThreadImpl;
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   // Class that is used for getting network related ChromeOS logs.
   // Logs are fetched from ChromeOS libcros on user request, and only when we
   // don't yet have a copy of logs. If a copy is present, we send back data from
@@ -395,14 +389,14 @@ class NetInternalsMessageHandler
     // Libcros request handle.
     CancelableRequestProvider::Handle syslogs_request_id_;
   };
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   // This is the "real" message handler, which lives on the IO thread.
   scoped_refptr<IOThreadImpl> proxy_;
 
   base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   // Class that handles getting and filtering system logs.
   scoped_ptr<SystemLogsGetter> syslogs_getter_;
 #endif
@@ -473,7 +467,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnGetSpdySessionInfo(const ListValue* list);
   void OnGetSpdyStatus(const ListValue* list);
   void OnGetSpdyAlternateProtocolMappings(const ListValue* list);
-#ifdef OS_WIN
+#if defined(OS_WIN)
   void OnGetServiceProviders(const ListValue* list);
 #endif
   void OnGetHttpPipeliningStatus(const ListValue* list);
@@ -496,9 +490,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   // file, the message will be ignored.  Note that this can be called from any
   // thread.
   void SendJavascriptCommand(const std::string& command, Value* arg);
-
-  // Helper that runs |method| with |arg|, and deletes |arg| on completion.
-  void DispatchToMessageHandler(ListValue* arg, MessageHandler method);
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
@@ -567,7 +558,7 @@ void NetInternalsMessageHandler::RegisterMessages() {
 
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             profile->GetRequestContext());
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   syslogs_getter_.reset(new SystemLogsGetter(this,
       chromeos::system::SyslogsProvider::GetInstance()));
 #endif
@@ -660,7 +651,7 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "getSpdyAlternateProtocolMappings",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetSpdyAlternateProtocolMappings, proxy_));
-#ifdef OS_WIN
+#if defined(OS_WIN)
   web_ui()->RegisterMessageCallback(
       "getServiceProviders",
       base::Bind(&IOThreadImpl::CallbackHelper,
@@ -683,7 +674,7 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "getPrerenderInfo",
       base::Bind(&NetInternalsMessageHandler::OnGetPrerenderInfo,
                  base::Unretained(this)));
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "refreshSystemLogs",
       base::Bind(&NetInternalsMessageHandler::OnRefreshSystemLogs,
@@ -753,7 +744,7 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
 }
 
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 ////////////////////////////////////////////////////////////////////////////////
 //
 // NetInternalsMessageHandler::SystemLogsGetter
@@ -847,7 +838,8 @@ void NetInternalsMessageHandler::SystemLogsGetter::SendLogs(
 
   handler_->SendJavascriptCommand("getSystemLogCallback", result);
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // NetInternalsMessageHandler::IOThreadImpl
@@ -876,16 +868,13 @@ void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We need to make a copy of the value in order to pass it over to the IO
-  // thread. We will delete this in IOThreadImpl::DispatchMessageHandler().
-  ListValue* list_copy =
-      static_cast<ListValue*>(list ? list->DeepCopy() : NULL);
+  // thread. |list_copy| will be deleted when the task is destroyed. The called
+  // |method| cannot take ownership of |list_copy|.
+  ListValue* list_copy = (list && list->GetSize()) ? list->DeepCopy() : NULL;
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(method, io_thread, list_copy))) {
-    // Failed posting the task, avoid leaking |list_copy|.
-    delete list_copy;
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(method, io_thread, base::Owned(list_copy)));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::Detach() {
@@ -919,6 +908,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
     const ListValue* list) {
+  DCHECK(!list);
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::ProxyService* proxy_service = context->proxy_service();
 
@@ -933,6 +923,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
     const ListValue* list) {
+  DCHECK(!list);
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   context->proxy_service()->ForceReloadProxyConfig();
 
@@ -942,6 +933,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
     const ListValue* list) {
+  DCHECK(!list);
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
 
   const net::ProxyRetryInfoMap& bad_proxies_map =
@@ -967,6 +959,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
     const ListValue* list) {
+  DCHECK(!list);
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   context->proxy_service()->ClearBadProxiesCache();
 
@@ -976,6 +969,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
     const ListValue* list) {
+  DCHECK(!list);
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::HostCache* cache = GetHostResolverCache(context);
 
@@ -1038,6 +1032,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnRunIPv6Probe(
     const ListValue* list) {
+  DCHECK(!list);
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::HostResolver* resolver = context->host_resolver();
 
@@ -1049,6 +1044,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRunIPv6Probe(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
     const ListValue* list) {
+  DCHECK(!list);
   net::HostCache* cache =
       GetHostResolverCache(context_getter_->GetURLRequestContext());
 
@@ -1061,6 +1057,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnEnableIPv6(
     const ListValue* list) {
+  DCHECK(!list);
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::HostResolver* host_resolver = context->host_resolver();
 
@@ -1107,7 +1104,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
   // |list| should be: [<domain to query>].
   std::string domain;
   CHECK(list->GetString(0, &domain));
-  DictionaryValue* result = new(DictionaryValue);
+  DictionaryValue* result = new DictionaryValue();
 
   if (!IsStringASCII(domain)) {
     result->SetString("error", "non-ASCII domain name");
@@ -1171,7 +1168,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
     std::vector<std::string> type_and_b64s;
     base::SplitString(hashes_str, ',', &type_and_b64s);
     for (std::vector<std::string>::const_iterator
-         i = type_and_b64s.begin(); i != type_and_b64s.end(); i++) {
+         i = type_and_b64s.begin(); i != type_and_b64s.end(); ++i) {
       std::string type_and_b64;
       RemoveChars(*i, " \t\r\n", &type_and_b64);
       net::SHA1Fingerprint hash;
@@ -1204,6 +1201,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
     const ListValue* list) {
+  DCHECK(!list);
   DictionaryValue* info_dict = new DictionaryValue();
   DictionaryValue* stats_dict = new DictionaryValue();
 
@@ -1227,6 +1225,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
     const ListValue* list) {
+  DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(context_getter_->GetURLRequestContext());
 
@@ -1240,6 +1239,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnFlushSocketPools(
     const ListValue* list) {
+  DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(context_getter_->GetURLRequestContext());
 
@@ -1249,6 +1249,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnFlushSocketPools(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnCloseIdleSockets(
     const ListValue* list) {
+  DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(context_getter_->GetURLRequestContext());
 
@@ -1258,19 +1259,18 @@ void NetInternalsMessageHandler::IOThreadImpl::OnCloseIdleSockets(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdySessionInfo(
     const ListValue* list) {
+  DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(context_getter_->GetURLRequestContext());
 
-  Value* spdy_info = NULL;
-  if (http_network_session) {
-    spdy_info = http_network_session->SpdySessionPoolInfoToValue();
-  }
-
+  Value* spdy_info = http_network_session ?
+      http_network_session->SpdySessionPoolInfoToValue() : NULL;
   SendJavascriptCommand("receivedSpdySessionInfo", spdy_info);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
     const ListValue* list) {
+  DCHECK(!list);
   DictionaryValue* status_dict = new DictionaryValue();
 
   status_dict->Set("spdy_enabled",
@@ -1302,6 +1302,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
 void
 NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyAlternateProtocolMappings(
     const ListValue* list) {
+  DCHECK(!list);
   ListValue* dict_list = new ListValue();
 
   const net::HttpServerProperties& http_server_properties =
@@ -1321,9 +1322,10 @@ NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyAlternateProtocolMappings(
   SendJavascriptCommand("receivedSpdyAlternateProtocolMappings", dict_list);
 }
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
     const ListValue* list) {
+  DCHECK(!list);
 
   DictionaryValue* service_providers = new DictionaryValue();
 
@@ -1362,8 +1364,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
 }
 #endif
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 void NetInternalsMessageHandler::OnRefreshSystemLogs(const ListValue* list) {
+  DCHECK(!list);
   DCHECK(syslogs_getter_.get());
   syslogs_getter_->DeleteSystemLogs();
   syslogs_getter_->LoadSystemLogs();
@@ -1399,6 +1402,7 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
 }
 
 void NetInternalsMessageHandler::OnStoreDebugLogs(const ListValue* list) {
+  DCHECK(!list);
   StoreDebugLogs(
       base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
                  AsWeakPtr()));
@@ -1439,10 +1443,11 @@ void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
   SendJavascriptCommand("receivedSetNetworkDebugMode",
                         Value::CreateStringValue(status));
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpPipeliningStatus(
     const ListValue* list) {
+  DCHECK(!list);
   DictionaryValue* status_dict = new DictionaryValue();
 
   status_dict->Set("pipelining_enabled",
@@ -1570,13 +1575,6 @@ NetInternalsMessageHandler::IOThreadImpl::OnCompletedConnectionTestSuite() {
   SendJavascriptCommand(
       "receivedCompletedConnectionTestSuite",
       NULL);
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(
-    ListValue* arg, MessageHandler method) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  (this->*method)(arg);
-  delete arg;
 }
 
 // Note that this can be called from ANY THREAD.
