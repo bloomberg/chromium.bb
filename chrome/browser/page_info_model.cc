@@ -241,18 +241,15 @@ PageInfoModel::PageInfoModel(Profile* profile,
         IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS,
         ASCIIToUTF16(cipher), ASCIIToUTF16(mac), ASCIIToUTF16(key_exchange));
 
-    description += ASCIIToUTF16("\n\n");
     uint8 compression_id =
         net::SSLConnectionStatusToCompression(ssl.connection_status);
     if (compression_id) {
       const char* compression;
       net::SSLCompressionToString(&compression, compression_id);
+      description += ASCIIToUTF16("\n\n");
       description += l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_COMPRESSION_DETAILS,
           ASCIIToUTF16(compression));
-    } else {
-      description += l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_NO_COMPRESSION);
     }
 
     if (did_fallback) {
