@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 
+#include <map>
+#include <string>
 #include "base/message_loop.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
 #include "dbus/message.h"
@@ -19,14 +21,42 @@ using ::testing::_;
 
 namespace chromeos {
 
-class MockCreateEngineHandler {
+class SynchronousCreateEngineHandler {
  public:
-  MOCK_METHOD1(Run, dbus::ObjectPath(const std::string& engine_name));
+  explicit SynchronousCreateEngineHandler(const dbus::ObjectPath& path)
+      : path_(path) {}
+
+  void Run(const IBusEngineFactoryService::CreateEngineResponseSender& sender) {
+    sender.Run(path_);
+  }
+
+ private:
+  dbus::ObjectPath path_;
+
+  DISALLOW_COPY_AND_ASSIGN(SynchronousCreateEngineHandler);
+};
+
+class AsynchronousCreateEngineHandler {
+ public:
+  AsynchronousCreateEngineHandler(const dbus::ObjectPath& path,
+                                  MessageLoop* message_loop)
+      : path_(path),
+        message_loop_(message_loop) {}
+
+  void Run(const IBusEngineFactoryService::CreateEngineResponseSender& sender) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(sender, path_));
+  }
+
+ private:
+  dbus::ObjectPath path_;
+  MessageLoop* message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousCreateEngineHandler);
 };
 
 class MockCreateEngineResponseSender {
  public:
-  MockCreateEngineResponseSender(const dbus::ObjectPath expected_path)
+  explicit MockCreateEngineResponseSender(const dbus::ObjectPath& expected_path)
       : expected_path_(expected_path) {}
   MOCK_METHOD1(Run, void(dbus::Response*));
 
@@ -108,7 +138,7 @@ class IBusEngineFactoryServiceTest : public testing::Test {
   }
 };
 
-TEST_F(IBusEngineFactoryServiceTest, CreateEngineTest) {
+TEST_F(IBusEngineFactoryServiceTest, SyncCreateEngineTest) {
   // Set expectations.
   const char kSampleEngine[] = "Sample Engine";
   const dbus::ObjectPath kObjectPath("/org/freedesktop/IBus/Engine/10");
@@ -118,12 +148,12 @@ TEST_F(IBusEngineFactoryServiceTest, CreateEngineTest) {
           Invoke(&response_sender,
                  &MockCreateEngineResponseSender::CheckCreateEngineResponse));
 
+  SynchronousCreateEngineHandler handler(kObjectPath);
   // Set handler expectations.
-  MockCreateEngineHandler handler;
-  EXPECT_CALL(handler, Run(StrEq(kSampleEngine)))
-      .WillOnce(Return(kObjectPath));
-  service_->SetCreateEngineHandler(base::Bind(&MockCreateEngineHandler::Run,
-                                             base::Unretained(&handler)));
+  service_->SetCreateEngineHandler(
+      kSampleEngine,
+      base::Bind(&SynchronousCreateEngineHandler::Run,
+                 base::Unretained(&handler)));
   message_loop_.RunAllPending();
 
   // Invoke method call.
@@ -142,12 +172,53 @@ TEST_F(IBusEngineFactoryServiceTest, CreateEngineTest) {
                  base::Unretained(&response_sender)));
 
   // Unset the handler so expect not calling handler.
-  service_->UnsetCreateEngineHandler();
+  service_->UnsetCreateEngineHandler(kSampleEngine);
   method_exported_map_[ibus::engine_factory::kCreateEngineMethod].Run(
       &method_call,
       base::Bind(&MockCreateEngineResponseSender::CheckCreateEngineResponse,
                  base::Unretained(&response_sender)));
+  message_loop_.RunAllPending();
+}
 
+TEST_F(IBusEngineFactoryServiceTest, AsyncCreateEngineTest) {
+  // Set expectations.
+  const char kSampleEngine[] = "Sample Engine";
+  const dbus::ObjectPath kObjectPath("/org/freedesktop/IBus/Engine/10");
+  MockCreateEngineResponseSender response_sender(kObjectPath);
+  EXPECT_CALL(response_sender, Run(_))
+      .WillOnce(
+          Invoke(&response_sender,
+                 &MockCreateEngineResponseSender::CheckCreateEngineResponse));
+
+  AsynchronousCreateEngineHandler handler(kObjectPath, &message_loop_);
+  // Set handler expectations.
+  service_->SetCreateEngineHandler(
+      kSampleEngine,
+      base::Bind(&AsynchronousCreateEngineHandler::Run,
+                 base::Unretained(&handler)));
+  message_loop_.RunAllPending();
+
+  // Invoke method call.
+  dbus::MethodCall method_call(
+      ibus::engine_factory::kServiceInterface,
+      ibus::engine_factory::kCreateEngineMethod);
+  method_call.SetSerial(10);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kSampleEngine);
+  ASSERT_FALSE(
+      method_exported_map_[ibus::engine_factory::kCreateEngineMethod]
+          .is_null());
+  method_exported_map_[ibus::engine_factory::kCreateEngineMethod].Run(
+      &method_call,
+      base::Bind(&MockCreateEngineResponseSender::Run,
+                 base::Unretained(&response_sender)));
+
+  // Unset the handler so expect not calling handler.
+  service_->UnsetCreateEngineHandler(kSampleEngine);
+  method_exported_map_[ibus::engine_factory::kCreateEngineMethod].Run(
+      &method_call,
+      base::Bind(&MockCreateEngineResponseSender::CheckCreateEngineResponse,
+                 base::Unretained(&response_sender)));
   message_loop_.RunAllPending();
 }
 

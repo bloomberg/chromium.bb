@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_IBUS_MOCK_IBUS_ENGINE_FACTORY_SERVICE_H_
 #define CHROMEOS_DBUS_IBUS_MOCK_IBUS_ENGINE_FACTORY_SERVICE_H_
 
+#include <string>
 #include "base/basictypes.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 
@@ -15,8 +16,10 @@ class MockIBusEngineFactoryService : public IBusEngineFactoryService {
   virtual ~MockIBusEngineFactoryService();
 
   virtual void SetCreateEngineHandler(
+      const std::string& engine_id,
       const CreateEngineHandler& create_engine_handler) OVERRIDE;
-  virtual void UnsetCreateEngineHandler() OVERRIDE;
+  virtual void UnsetCreateEngineHandler(
+      const std::string& engine_id) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MockIBusEngineFactoryService);
 };

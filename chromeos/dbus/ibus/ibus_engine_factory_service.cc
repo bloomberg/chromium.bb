@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 
+#include <map>
+#include <string>
+
 #include "base/string_number_conversions.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
 #include "dbus/bus.h"
@@ -17,7 +20,6 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
   explicit IBusEngineFactoryServiceImpl(dbus::Bus* bus)
       : bus_(bus),
         weak_ptr_factory_(this) {
-
     exported_object_ = bus_->GetExportedObject(
         dbus::ObjectPath(ibus::engine_factory::kServicePath));
 
@@ -37,14 +39,16 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
 
   // IBusEngineFactoryService override.
   virtual void SetCreateEngineHandler(
+      const std::string& engine_id,
       const CreateEngineHandler& create_engine_handler) OVERRIDE {
-    DCHECK(!create_engine_handler.is_null());
-    create_engine_handler_ = create_engine_handler;
+    DCHECK(!create_engine_callback_map_[engine_id].is_null());
+    create_engine_callback_map_[engine_id] = create_engine_handler;
   }
 
   // IBusEngineFactoryService override.
-  virtual void UnsetCreateEngineHandler() OVERRIDE {
-    create_engine_handler_.Reset();
+  virtual void UnsetCreateEngineHandler(
+      const std::string& engine_id) OVERRIDE {
+    create_engine_callback_map_[engine_id].Reset();
   }
 
  private:
@@ -62,15 +66,26 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
       LOG(ERROR) << "Expected argument is string.";
       return;
     }
-    if(create_engine_handler_.is_null()) {
-      LOG(WARNING) << "The CreateEngine handler is NULL.";
+    if (create_engine_callback_map_[engine_name].is_null()) {
+      LOG(WARNING) << "The CreateEngine handler for " << engine_name
+                   << " is NULL.";
     } else {
-      dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-      dbus::MessageWriter writer(response);
-      const dbus::ObjectPath path = create_engine_handler_.Run(engine_name);
-      writer.AppendObjectPath(path);
-      response_sender.Run(response);
+      create_engine_callback_map_[engine_name].Run(
+          base::Bind(&IBusEngineFactoryServiceImpl::CreateEngineSendReply,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     dbus::Response::FromMethodCall(method_call),
+                     response_sender));
     }
+  }
+
+  // Sends reply message for CreateEngine method call.
+  void CreateEngineSendReply(
+      dbus::Response* response,
+      const dbus::ExportedObject::ResponseSender response_sender,
+      const dbus::ObjectPath& path) {
+    dbus::MessageWriter writer(response);
+    writer.AppendObjectPath(path);
+    response_sender.Run(response);
   }
 
   // Called when the CreateEngine method is exported.
@@ -82,7 +97,7 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
   }
 
   // CreateEngine method call handler.
-  CreateEngineHandler create_engine_handler_;
+  std::map<std::string, CreateEngineHandler> create_engine_callback_map_;
 
   dbus::Bus* bus_;
   scoped_refptr<dbus::ExportedObject> exported_object_;
@@ -98,8 +113,10 @@ class IBusEngineFactoryServiceStubImpl : public IBusEngineFactoryService {
 
   // IBusEngineFactoryService overrides.
   virtual void SetCreateEngineHandler(
+      const std::string& engine_id,
       const CreateEngineHandler& create_engine_handler) OVERRIDE {}
-  virtual void UnsetCreateEngineHandler() OVERRIDE {}
+  virtual void UnsetCreateEngineHandler(
+      const std::string& engine_id) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IBusEngineFactoryServiceStubImpl);

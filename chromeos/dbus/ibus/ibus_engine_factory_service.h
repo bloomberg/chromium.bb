@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_IBUS_IBUS_ENGINE_FACTORY_SERVICE_H_
 #define CHROMEOS_DBUS_IBUS_IBUS_ENGINE_FACTORY_SERVICE_H_
 
+#include <string>
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
@@ -22,20 +23,22 @@ namespace chromeos {
 // service if the extension IME is enabled.
 class CHROMEOS_EXPORT IBusEngineFactoryService {
  public:
-  // The CreateEngine message accepts |engine_id| which identifies the engine
-  // module(ex. "mozc"), and returns an ObjectPath. The ibus-daemon will send
-  // dbus message to returned ObjectPath for engine processing.
-  typedef base::Callback<dbus::ObjectPath (const std::string& engine_id)>
+  typedef base::Callback<void(const dbus::ObjectPath& path)>
+      CreateEngineResponseSender;
+  typedef base::Callback<void(const CreateEngineResponseSender& sender)>
       CreateEngineHandler;
 
   virtual ~IBusEngineFactoryService();
 
-  // Sets CreateEngine method call handler.
+  // Sets CreateEngine method call handler for |engine_id|. If ibus-daemon calls
+  // CreateEngine message with |engine_id|, the |create_engine_handler| will be
+  // called.
   virtual void SetCreateEngineHandler(
+      const std::string& engine_id,
       const CreateEngineHandler& create_engine_handler) = 0;
 
-  // Unsets CreateEngine method call handler.
-  virtual void UnsetCreateEngineHandler() = 0;
+  // Unsets CreateEngine method call handler for |engine_id|.
+  virtual void UnsetCreateEngineHandler(const std::string& engine_id) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, accesses the sigleton via DBusThreadManager::Get().
