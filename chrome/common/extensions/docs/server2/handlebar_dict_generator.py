@@ -67,14 +67,15 @@ class HandlebarDictGenerator(object):
           { 'href': ref_dict['href'], 'text': ref_dict['text'], 'rest': rest })
     return ''.join(formatted_description)
 
-  def Generate(self):
+  def Generate(self, samples):
     try:
       return {
         'name': self._namespace.name,
         'types': map(self._GenerateType, self._namespace.types.values()),
         'functions': self._GenerateFunctions(self._namespace.functions),
         'events': map(self._GenerateEvent, self._namespace.events.values()),
-        'properties': self._GenerateProperties(self._namespace.properties)
+        'properties': self._GenerateProperties(self._namespace.properties),
+        'samples': samples,
       }
     except Exception as e:
       logging.error(e)

@@ -39,7 +39,7 @@ class TemplateDataSource(object):
     """
     def __init__(self,
                  branch,
-                 api_data_source,
+                 api_data_source_factory,
                  api_list_data_source,
                  intro_data_source,
                  samples_data_source_factory,
@@ -49,7 +49,7 @@ class TemplateDataSource(object):
       self._branch_info = _MakeBranchDict(branch)
       self._static_resources = ((('/' + branch) if branch != 'local' else '') +
                                 '/static')
-      self._api_data_source = api_data_source
+      self._api_data_source_factory = api_data_source_factory
       self._api_list_data_source = api_list_data_source
       self._intro_data_source = intro_data_source
       self._samples_data_source_factory = samples_data_source_factory
@@ -60,16 +60,17 @@ class TemplateDataSource(object):
     def Create(self, request):
       """Returns a new TemplateDataSource bound to |request|.
       """
-      return TemplateDataSource(self._branch_info,
-                                self._static_resources,
-                                self._api_data_source,
-                                self._api_list_data_source,
-                                self._intro_data_source,
-                                self._samples_data_source_factory,
-                                self._cache,
-                                self._public_template_path,
-                                self._private_template_path,
-                                request)
+      return TemplateDataSource(
+          self._branch_info,
+          self._static_resources,
+          self._api_data_source_factory.Create(request),
+          self._api_list_data_source,
+          self._intro_data_source,
+          self._samples_data_source_factory.Create(request),
+          self._cache,
+          self._public_template_path,
+          self._private_template_path,
+          request)
 
   def __init__(self,
                branch_info,
@@ -77,17 +78,17 @@ class TemplateDataSource(object):
                api_data_source,
                api_list_data_source,
                intro_data_source,
-               samples_data_source_factory,
+               samples_data_source,
                cache,
                public_template_path,
                private_template_path,
                request):
     self._branch_info = branch_info
     self._static_resources = static_resources
-    self._api_data_source = api_data_source
     self._api_list_data_source = api_list_data_source
     self._intro_data_source = intro_data_source
-    self._samples_data_source = samples_data_source_factory.Create(request)
+    self._samples_data_source = samples_data_source
+    self._api_data_source = api_data_source
     self._cache = cache
     self._public_template_path = public_template_path
     self._private_template_path = private_template_path

@@ -101,8 +101,8 @@
       "description": "Gets stuff."
     }
   ],
-  "properties": [],
   "name": "tester",
+  "properties": [],
   "types": [
     {
       "functions": [],
@@ -159,5 +159,6 @@
       ],
       "description": "A cool event."
     }
-  ]
+  ],
+  "samples": []
 }

@@ -11,6 +11,10 @@ from file_system_cache import FileSystemCache
 from local_file_system import LocalFileSystem
 from api_data_source import APIDataSource
 
+class FakeSamplesDataSource:
+  def Create(self, request):
+    return {}
+
 class APIDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join('test_data', 'test_json')
@@ -21,11 +25,14 @@ class APIDataSourceTest(unittest.TestCase):
 
   def testSimple(self):
     cache_builder = FileSystemCache.Builder(LocalFileSystem(self._base_path))
-    data_source = APIDataSource(cache_builder, './')
+    data_source_factory = APIDataSource.Factory(cache_builder,
+                                                './',
+                                                FakeSamplesDataSource())
+    data_source = data_source_factory.Create({})
 
     # Take the dict out of the list.
     expected = json.loads(self._ReadLocalFile('expected_test_file.json'))
-    expected.update({ 'permissions': None })
+    expected['permissions'] = None
     self.assertEqual(expected, data_source['test_file'])
     self.assertEqual(expected, data_source['testFile'])
     self.assertEqual(expected, data_source['testFile.html'])

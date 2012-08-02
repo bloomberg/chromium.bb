@@ -68,7 +68,6 @@ def _GetInstanceForBranch(branch, local_path):
                                      AppEngineMemcache(branch))
 
   cache_builder = FileSystemCache.Builder(file_system)
-  api_data_source = APIDataSource(cache_builder, API_PATH)
   api_list_data_source = APIListDataSource(cache_builder,
                                            file_system,
                                            API_PATH,
@@ -79,9 +78,12 @@ def _GetInstanceForBranch(branch, local_path):
                                                           file_system,
                                                           cache_builder,
                                                           EXAMPLES_PATH)
+  api_data_source_factory = APIDataSource.Factory(cache_builder,
+                                                  API_PATH,
+                                                  samples_data_source_factory)
   template_data_source_factory = TemplateDataSource.Factory(
       branch,
-      api_data_source,
+      api_data_source_factory,
       api_list_data_source,
       intro_data_source,
       samples_data_source_factory,

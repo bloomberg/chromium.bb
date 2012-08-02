@@ -26,3 +26,9 @@
     {{/}}
   {{/api.events}}
 </div>
+<a name="samples"></a>
+{{?api.samples}}<h2>Sample extensions that use chrome.{{api.name}}</h2>{{/}}
+{{#api.samples}}
+  <a name="sample-{{?prefix}}{{prefix}}-{{/}}{{name}}"></a>
+  <li><b><a href="{{path}}.zip">{{name}}</a></b> &ndash; {{description}}</li>
+{{/}}

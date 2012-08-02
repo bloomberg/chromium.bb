@@ -15,6 +15,13 @@ from third_party.handlebar import Handlebar
 class _FakeRequest(object):
     pass
 
+class _FakeApiDataSourceFactory(object):
+  def __init__(self, input_dict):
+    self._input_dict = input_dict
+
+  def Create(self, samples):
+    return self._input_dict
+
 class _FakeSamplesDataSource(object):
   def Create(self, request):
     return {}
@@ -22,7 +29,7 @@ class _FakeSamplesDataSource(object):
 class TemplateDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join('test_data', 'template_data_source')
-    self._fake_api_data_source = {}
+    self._fake_api_data_source_factory = _FakeApiDataSourceFactory({})
     self._fake_api_list_data_source = {}
     self._fake_intro_data_source = {}
     self._fake_samples_data_source = _FakeSamplesDataSource()
@@ -40,7 +47,7 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def _CreateTemplateDataSource(self, input_dict, cache_builder):
     return (TemplateDataSource.Factory('fake_branch',
-                                       input_dict,
+                                       _FakeApiDataSourceFactory(input_dict),
                                        self._fake_api_list_data_source,
                                        self._fake_intro_data_source,
                                        self._fake_samples_data_source,
@@ -53,8 +60,8 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'simple')
     fetcher = LocalFileSystem(self._base_path)
     cache_builder = FileSystemCache.Builder(fetcher)
-    t_data_source = self._CreateTemplateDataSource(self._fake_api_data_source,
-                                                    cache_builder)
+    t_data_source = self._CreateTemplateDataSource(
+        self._fake_api_data_source_factory, cache_builder)
     template_a1 = Handlebar(self._ReadLocalFile('test1.html'))
     self.assertEqual(template_a1.render({}, {'templates': {}}).text,
         t_data_source['test1'].render({}, {'templates': {}}).text)
@@ -69,8 +76,8 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'partials')
     fetcher = LocalFileSystem(self._base_path)
     cache_builder = FileSystemCache.Builder(fetcher)
-    t_data_source = self._CreateTemplateDataSource(self._fake_api_data_source,
-                                                    cache_builder)
+    t_data_source = self._CreateTemplateDataSource(
+        self._fake_api_data_source_factory, cache_builder)
     self.assertEqual(
         self._ReadLocalFile('test_expected.html'),
         t_data_source['test_tmpl'].render(

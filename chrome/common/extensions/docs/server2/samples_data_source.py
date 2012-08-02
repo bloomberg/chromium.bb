@@ -111,6 +111,12 @@ class SamplesDataSource(object):
     self._samples_path = samples_path
     self._request = request
 
+  def GetSamplesForAPI(self, api_name):
+    samples = self.values()
+    api_search = '.' + api_name + '.'
+    return [sample for sample in samples
+            if any(api_search in api['name'] for api in sample['api_calls'])]
+
   def _GetAcceptedLanguages(self):
     accept_language = self._request.headers.get('Accept-Language', None)
     if accept_language is None:
@@ -120,6 +126,9 @@ class SamplesDataSource(object):
 
   def __getitem__(self, key):
     return self.get(key)
+
+  def values(self):
+    return self.get('')
 
   def get(self, key):
     samples_list = self._cache.GetFromFileListing(self._samples_path + '/')
