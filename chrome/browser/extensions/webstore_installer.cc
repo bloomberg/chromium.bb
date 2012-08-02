@@ -188,6 +188,7 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
   download_url_ = GetWebstoreInstallURL(id, flags & FLAG_INLINE_INSTALL ?
       kInlineInstallSource : kDefaultInstallSource);
 
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,

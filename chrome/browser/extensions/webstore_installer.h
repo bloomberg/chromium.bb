@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
@@ -29,9 +30,10 @@ class NavigationController;
 namespace extensions {
 
 // Downloads and installs extensions from the web store.
-class WebstoreInstaller : public content::NotificationObserver,
-                          public content::DownloadItem::Observer,
-                          public base::RefCounted<WebstoreInstaller> {
+class WebstoreInstaller :public content::NotificationObserver,
+                         public content::DownloadItem::Observer,
+                         public base::RefCountedThreadSafe<
+  WebstoreInstaller, content::BrowserThread::DeleteOnUIThread> {
  public:
   enum Flag {
     FLAG_NONE = 0,
@@ -125,7 +127,9 @@ class WebstoreInstaller : public content::NotificationObserver,
   static void SetDownloadDirectoryForTests(FilePath* directory);
 
  private:
-  friend class base::RefCounted<WebstoreInstaller>;
+  friend struct content::BrowserThread::DeleteOnThread<
+   content::BrowserThread::UI>;
+  friend class base::DeleteHelper<WebstoreInstaller>;
   virtual ~WebstoreInstaller();
 
   // DownloadManager::DownloadUrl callback.
