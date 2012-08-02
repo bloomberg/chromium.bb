@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_utils.h"
 #include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
 #include "chromeos/dbus/bluetooth_out_of_band_client.h"
 
@@ -50,6 +51,7 @@ const char kCouldNotSetOutOfBandPairingData[] =
     "Could not set Out Of Band Pairing Data";
 const char kFailedToConnect[] = "Connection failed";
 const char kInvalidDevice[] = "Invalid device";
+const char kInvalidUuid[] = "Invalid UUID";
 const char kServiceDiscoveryFailed[] = "Service discovery failed";
 const char kSocketNotFoundError[] = "Socket not found: invalid socket id";
 const char kStartDiscoveryFailed[] =
@@ -111,6 +113,15 @@ bool BluetoothGetDevicesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const experimental_bluetooth::GetDevicesOptions& options = params->options;
 
+  std::string uuid;
+  if (options.uuid.get() != NULL) {
+    uuid = chromeos::bluetooth_utils::CanonicalUuid(*options.uuid.get());
+    if (uuid.empty()) {
+      SetError(kInvalidUuid);
+      return false;
+    }
+  }
+
   ListValue* matches = new ListValue;
   SetResult(matches);
 
@@ -122,8 +133,7 @@ bool BluetoothGetDevicesFunction::RunImpl() {
       i != devices.end(); ++i) {
     chromeos::BluetoothDevice* device = *i;
 
-    if (options.uuid.get() != NULL &&
-        !(device->ProvidesServiceWithUUID(*(options.uuid))))
+    if (!uuid.empty() && !(device->ProvidesServiceWithUUID(uuid)))
       continue;
 
     if (options.name.get() == NULL) {
@@ -179,7 +189,6 @@ bool BluetoothGetServicesFunction::RunImpl() {
   chromeos::BluetoothDevice* device =
       GetMutableAdapter(profile())->GetDevice(options.device_address);
   if (!device) {
-    SendResponse(false);
     SetError(kInvalidDevice);
     return false;
   }
@@ -222,19 +231,25 @@ bool BluetoothConnectFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const experimental_bluetooth::ConnectOptions& options = params->options;
 
+  std::string uuid = chromeos::bluetooth_utils::CanonicalUuid(
+      options.service_uuid);
+  if (uuid.empty()) {
+    SetError(kInvalidUuid);
+    return false;
+  }
+
   chromeos::BluetoothDevice* device =
       GetMutableAdapter(profile())->GetDevice(options.device_address);
   if (!device) {
-    SendResponse(false);
     SetError(kInvalidDevice);
     return false;
   }
 
-  device->ConnectToService(options.service_uuid,
+  device->ConnectToService(uuid,
       base::Bind(&BluetoothConnectFunction::ConnectToServiceCallback,
                  this,
                  device,
-                 options.service_uuid));
+                 uuid));
   return true;
 }
 
@@ -367,7 +382,6 @@ bool BluetoothSetOutOfBandPairingDataFunction::RunImpl() {
   chromeos::BluetoothDevice* device =
       GetMutableAdapter(profile())->GetDevice(address);
   if (!device) {
-    SendResponse(false);
     SetError(kInvalidDevice);
     return false;
   }

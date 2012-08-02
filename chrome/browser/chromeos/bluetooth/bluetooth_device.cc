@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_service_record.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
@@ -193,9 +194,9 @@ void BluetoothDevice::GetServiceRecords(const ServiceRecordsCallback& callback,
 
 bool BluetoothDevice::ProvidesServiceWithUUID(const std::string& uuid) const {
   const BluetoothDevice::ServiceList& services = GetServices();
-  for (BluetoothDevice::ServiceList::const_iterator j = services.begin();
-      j != services.end(); ++j) {
-    if (*j == uuid)
+  for (BluetoothDevice::ServiceList::const_iterator iter = services.begin();
+      iter != services.end(); ++iter) {
+    if (bluetooth_utils::CanonicalUuid(*iter) == uuid)
       return true;
   }
   return false;

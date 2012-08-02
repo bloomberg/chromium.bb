@@ -192,7 +192,8 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   void GetServiceRecords(const ServiceRecordsCallback& callback,
                          const ErrorCallback& error_callback);
 
-  // Indicates whether this device provides the given service.
+  // Indicates whether this device provides the given service.  |uuid| should
+  // be in canonical form (see bluetooth_utils::CanonicalUuid).
   virtual bool ProvidesServiceWithUUID(const std::string& uuid) const;
 
   // The ProvidesServiceCallback is used by ProvidesServiceWithName to indicate

@@ -75,6 +75,8 @@ class BluetoothApiTest : public PlatformAppApiTest {
   scoped_refptr<Extension> empty_extension_;
 };
 
+// This is the canonical UUID for the short UUID 0010.
+static const char kCanonicalUuid[] = "00000010-0000-1000-8000-00805f9b34fb";
 static const char kOutOfBandPairingDataHash[] = "0123456789ABCDEh";
 static const char kOutOfBandPairingDataRandomizer[] = "0123456789ABCDEr";
 
@@ -140,9 +142,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   devices.push_back(device1_.get());
   devices.push_back(device2_.get());
 
-  EXPECT_CALL(*device1_, ProvidesServiceWithUUID("foo"))
+  EXPECT_CALL(*device1_, ProvidesServiceWithUUID(kCanonicalUuid))
       .WillOnce(testing::Return(false));
-  EXPECT_CALL(*device2_, ProvidesServiceWithUUID("foo"))
+  EXPECT_CALL(*device2_, ProvidesServiceWithUUID(kCanonicalUuid))
       .WillOnce(testing::Return(true));
 
   EXPECT_CALL(*mock_adapter_, GetDevices())
@@ -153,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
         get_devices,
-        "[{\"uuid\":\"foo\"}]",
+        "[{\"uuid\":\"0010\"}]",
         browser()));
 
   ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
@@ -196,6 +198,16 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   ASSERT_TRUE(result->GetAsList(&list));
 
   EXPECT_EQ(2u, list->GetSize());
+
+  // Try again with an error
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+
+  get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
+  std::string error(
+      utils::RunFunctionAndReturnError(get_devices,
+                                       "[{\"uuid\":\"foo\"}]",
+                                       browser()));
+  EXPECT_FALSE(error.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
