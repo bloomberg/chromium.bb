@@ -126,7 +126,7 @@ class HandlebarDictGenerator(object):
     if not callback:
       return None
     callback_dict = {
-      'name': 'callback',
+      'name': callback.name,
       'description': self._FormatDescription(callback.description),
       'simple_type': {'simple_type': 'function'},
       'optional': callback.optional,

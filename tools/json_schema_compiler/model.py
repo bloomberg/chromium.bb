@@ -129,14 +129,27 @@ class Function(object):
     self.optional = json.get('optional', False)
     self.parent = parent
     self.nocompile = json.get('nocompile')
+
+    callback_param = None
     for param in json.get('parameters', []):
+      def GeneratePropertyFromParam(p):
+        return Property(self,
+                        p['name'], p,
+                        from_json=from_json,
+                        from_client=from_client)
+
       if param.get('type') == 'function':
-        if self.callback:
-          raise ParseException(self, self.name + " has more than one callback")
-        self.callback = Function(self, param, from_client=True)
+        if callback_param:
+          # No ParseException because the webstore has this.
+          # Instead, pretend all intermediate callbacks are properties.
+          self.params.append(GeneratePropertyFromParam(callback_param))
+        callback_param = param
       else:
-        self.params.append(Property(self, param['name'], param,
-            from_json=from_json, from_client=from_client))
+        self.params.append(GeneratePropertyFromParam(param))
+
+    if callback_param:
+      self.callback = Function(self, callback_param, from_client=True)
+
     self.returns = None
     if 'returns' in json:
       self.returns = Property(self, 'return', json['returns'])
