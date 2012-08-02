@@ -21,6 +21,7 @@ import optparse
 import os
 import re
 import sys
+import socket
 import time
 
 from chromite.buildbot import constants
@@ -29,7 +30,10 @@ from chromite.lib import cros_build_lib
 from chromite.lib.cros_build_lib import RunCommand, Info, Warning
 from chromite.scripts import cros_mark_as_stable
 
-BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
+if socket.getfqdn().endswith('.golo.chromium.org'):
+  BASE_CHROME_SVN_URL = 'svn://svn-mirror.golo.chromium.org/chrome'
+else:
+  BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
 
 # Helper regex's for finding ebuilds.
 _CHROME_VERSION_REGEX = '\d+\.\d+\.\d+\.\d+'
