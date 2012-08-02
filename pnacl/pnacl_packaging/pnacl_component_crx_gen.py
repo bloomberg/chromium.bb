@@ -104,10 +104,14 @@ BUILD_PLATFORM = GetBuildPlatform()
 
 class CRXGen(object):
   """ Generate a CRX file. Can generate a fresh CRX and private key, or
-  create a version of new CRX with the same AppID, using an existing private
-  key. NOTE: We use the chrome binary to do CRX packing. There is also a bash
+  create a version of new CRX with the same AppID, using an existing
+  private key.
+
+  NOTE: We use the chrome binary to do CRX packing. There is also a bash
   script available at: http://code.google.com/chrome/extensions/crx.html
   but it is not featureful (doesn't know how to generate private keys).
+
+  We should probably make a version of this that doesn't require chrome.
   """
 
   @staticmethod
@@ -180,14 +184,18 @@ class PnaclPackaging(object):
 
   @staticmethod
   def GenerateManifests(target_dir, version, arch, web_accessible,
+                        all_host_permissions,
                         manifest_key=None):
     PnaclPackaging.GenerateExtensionManifest(target_dir, version,
-                              web_accessible, manifest_key)
+                                             web_accessible,
+                                             all_host_permissions,
+                                             manifest_key)
     PnaclPackaging.GeneratePnaclInfo(target_dir, version, arch)
 
   @staticmethod
   def GenerateExtensionManifest(target_dir, version,
-                                web_accessible, manifest_key):
+                                web_accessible, all_host_permissions,
+                                manifest_key):
     manifest_template_fd = open(PnaclPackaging.manifest_template, 'r')
     manifest_template = manifest_template_fd.read()
     manifest_template_fd.close()
@@ -198,6 +206,8 @@ class PnaclPackaging(object):
           [ '    "%s"' % to_quote for to_quote in web_accessible ])
     if manifest_key is not None:
       extra += '  "key": "%s",\n' % manifest_key
+    if all_host_permissions:
+      extra += '  "permissions": ["http://*/"],\n'
     output_fd.write(manifest_template % { "version" : version,
                                           "extra" : extra, })
     output_fd.close()
@@ -316,7 +326,8 @@ def GeneratePrivateKey():
   PnaclPackaging.GenerateManifests(ext_dir,
                                    '0.0.0.0',
                                    'dummy_arch',
-                                   [])
+                                   [],
+                                   False)
   CRXGen.RunCRXGen(ext_dir)
   shutil.copy2(J(tempdir, 'dummy_extension.pem'),
                PnaclDirs.OutputDir())
@@ -325,9 +336,10 @@ def GeneratePrivateKey():
          PnaclDirs.OutputDir())
 
 
-def BuildArchCRX(version_quad, arch, lib_overrides, options):
+def BuildArchCRXForComponentUpdater(version_quad, arch, lib_overrides, options):
   """ Build an architecture specific version for the chrome component
-  install (an actual CRX, vs a zip file).
+  install (an actual CRX, vs a zip file).  Though this is a CRX,
+  it is not used as a chrome extension as the CWS and unpacked version.
   """
   parent_dir, target_dir = PnaclDirs.OutputArchDir(arch)
 
@@ -361,13 +373,15 @@ def BuildArchCRX(version_quad, arch, lib_overrides, options):
   if options.unpacked_only:
     return
 
-  web_accessible = GetWebAccessibleResources(parent_dir)
-
   # Generate manifest one level up (to have layout look like the "all" package).
+  # NOTE: this does not have 'web_accessible_resources' and does not have
+  # the all_host_permissions, since it isn't used via chrome-extension://
+  # URL requests.
   PnaclPackaging.GenerateManifests(parent_dir,
                                    version_quad,
                                    arch,
-                                   web_accessible)
+                                   [],
+                                   False)
   CRXGen.RunCRXGen(parent_dir, options.prev_priv_key)
 
 
@@ -398,7 +412,8 @@ def BuildCWSZip(version_quad):
   PnaclPackaging.GenerateManifests(target_dir,
                                    version_quad,
                                    'all',
-                                   web_accessible)
+                                   web_accessible,
+                                   True)
   target_zip = J(PnaclDirs.OutputDir(), 'pnacl_all.zip')
   zipf = zipfile.ZipFile(target_zip, 'w', compression=zipfile.ZIP_DEFLATED)
   ZipDirectory(target_dir, zipf)
@@ -418,6 +433,7 @@ def BuildUnpacked(version_quad):
                                    version_quad,
                                    'all',
                                    web_accessible,
+                                   True,
                                    PnaclPackaging.WEBSTORE_PUBLIC_KEY)
 
 
@@ -425,11 +441,11 @@ def BuildAll(version_quad, lib_overrides, options):
   """ Package the pnacl components 3 ways.
   1) Arch-specific CRXes that can be queried by Omaha.
   2) A zip containing all arch files for the Chrome Webstore.
-  3) An unpacked extesion with all arch files for offline testing.
+  3) An unpacked extension with all arch files for offline testing.
   """
   StepBanner("BUILD_ALL", "Packaging for version: %s" % version_quad)
   for arch in ARCHES:
-    BuildArchCRX(version_quad, arch, lib_overrides, options)
+    BuildArchCRXForComponentUpdater(version_quad, arch, lib_overrides, options)
   LayoutAllDir(version_quad)
   if not options.unpacked_only:
     BuildCWSZip(version_quad)
