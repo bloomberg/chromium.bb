@@ -3,6 +3,7 @@ URL: http://xmlsoft.org/XSLT
 Version: 1.1.26
 Security Critical: yes
 License: MIT
+License File: Copyright
 
 Description:
 This directory contains a partial snapshot of the libxslt library
