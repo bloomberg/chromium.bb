@@ -137,6 +137,7 @@ cr.define('options.system.bluetooth', function() {
      * @return {boolean} True if the devies was successfully added or updated.
      */
     appendDevice: function(device) {
+      var selectedDevice = this.getSelectedDevice_();
       var index = this.find(device.address);
       if (index == undefined) {
         this.dataModel.push(device);
@@ -146,6 +147,8 @@ cr.define('options.system.bluetooth', function() {
         this.redrawItem(index);
       }
       this.updateListVisibility_();
+      if (selectedDevice)
+        this.setSelectedDevice_(selectedDevice);
       return true;
     },
 
@@ -154,12 +157,42 @@ cr.define('options.system.bluetooth', function() {
      * is hidden is not properly rendered when the list becomes visible. In
      * addition, deleting a single item from the list results in a stale cache
      * requiring an invalidation.
+     * @param {String=} opt_selection Optional address of device to select
+     *     after refreshing the list.
      */
-    refresh: function() {
+    refresh: function(opt_selection) {
       // TODO(kevers): Investigate if the root source of the problems can be
       // fixed in cr.ui.list.
+      var selectedDevice = opt_selection ? opt_selection :
+          this.getSelectedDevice_();
       this.invalidate();
       this.redraw();
+      if (selectedDevice)
+        this.setSelectedDevice_(selectedDevice);
+    },
+
+    /**
+     * Retrieves the address of the selected device, or null if no device is
+     * selected.
+     * @return {?String} Address of selected device or null.
+     * @private
+     */
+    getSelectedDevice_: function() {
+      var selection = this.selectedItem;
+      if (selection)
+        return selection.address;
+      return null;
+    },
+
+    /**
+     * Selects the device with the matching address.
+     * @param {String} address The unique address of the device.
+     * @private
+     */
+    setSelectedDevice_: function(address) {
+      var index = this.find(address);
+      if (index != undefined)
+        this.selectionModel.selectRange(index, index);
     },
 
     /**
@@ -267,8 +300,9 @@ cr.define('options.system.bluetooth', function() {
 
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
+      var selectedDevice = this.getSelectedDevice_();
       this.dataModel.splice(index, 1);
-      this.refresh();
+      this.refresh(selectedDevice);
       this.updateListVisibility_();
     },
 
