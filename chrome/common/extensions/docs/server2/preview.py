@@ -69,7 +69,5 @@ if __name__ == '__main__':
   server = HTTPServer(('', int(opts.port)), RequestHandler)
   try:
     server.serve_forever()
-  except KeyboardInterrupt:
-    pass
   finally:
     server.socket.close()

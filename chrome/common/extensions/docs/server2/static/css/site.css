@@ -1,3 +1,8 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 body {
   color: #333;
   font: 13px/22px 'Open Sans',arial,sans-serif;
@@ -38,7 +43,6 @@ p.warning {
 a, a:link {
   text-decoration: none;
   color: black;
-  font-weight: 600;
 }
 
 a:visited {
@@ -119,19 +123,6 @@ dd {
   font-weight: normal;
 }
 
-.hidden,
-.hidden *,
-#skipto,
-#skipto * {
-  position: relative;
-  top: -9999px;
-  left: -9999px;
-  height: 0;
-  width: 0;
-  overflow: hidden;
-  z-index: 3;
-}
-
 .displayModeWarning {
   background-color: #FF7735;
   color: white;
@@ -187,8 +178,7 @@ span.displayModeWarning {
   height: 45px;
   text-transform: uppercase;
   white-space: nowrap;
-  float: none;
-  display: inline;
+  display: inline-block;
   margin: 0;
   padding: 0;
 }
@@ -202,14 +192,7 @@ span.displayModeWarning {
 }
 
 #gc-topnav li a {
-  width: 108px;
-  height: 45px;
-  background: white;
-  border: 0 solid #39C;
-  display: inline-block;
-  z-index: 2;
   color: #333;
-  text-decoration: none;
 }
 
 #gc-topnav div {
@@ -247,13 +230,6 @@ span.displayModeWarning {
   font-weight: bold;
   margin: 1.5em 0 0 0;
   top: 0em;
-}
-
-#gc-pagecontent h4 {
-  font-size: 110%;
-  margin: .7em 0 0 0;
-  position: relative;
-  top: .4em;
 }
 
 #gc-pagecontent h1.page_title,
@@ -295,16 +271,29 @@ span.displayModeWarning {
 }
 
 #gc-toc ul {
+  border-bottom: 1px solid #E5E5E5;
   padding: 2.9em 0 0;
   margin: 0;
   line-height: 120%;
   list-style: none;
 }
 
+#gc-toc > ul {
+  border-bottom: none;
+}
+
 #gc-toc ul li {
-  padding: 8px 0;
+  padding-bottom: 10px;
   margin: 0;
   position: relative;
+}
+
+#gc-toc ul li ul li ul {
+  margin-top: 10px;
+  margin-left: 25px;
+  padding-left: 0;
+  border-bottom: 0;
+  list-style: url(../images/sidearrow.png);
 }
 
 #gc-toc ol ul {
@@ -312,13 +301,9 @@ span.displayModeWarning {
 }
 
 #gc-toc ul li li {
-  border-top: none;
+  /* Cancel the border-bottom on #gc-toc ul. */
+  border-bottom: none;
   padding-left: 10px;
-}
-
-#gc-toc li a {
-  font-weight: normal;
-  text-decoration: none;
 }
 
 #gc-toc h2 {
@@ -340,6 +325,7 @@ span.displayModeWarning {
   width: 9px;
   height: 9px;
   position: absolute;
+  top: -1px;
   right: 4px;
   text-decoration: none;
   margin: 8px 1px 4px -13px;
@@ -348,6 +334,10 @@ span.displayModeWarning {
 
 #gc-toc .toggle.selected {
   background-position: 0 -9px;
+}
+
+#gc-toc .toggle:active {
+  top: 0px;
 }
 
 #gc-toc ul .leftNavSelected {
@@ -365,15 +355,53 @@ span.displayModeWarning {
   padding: 0;
 }
 
+#toc {
+  background-color: #E8EDEB;
+  float: right;
+  margin: 5px 0px 5px 20px;
+  padding: 5px;
+  width: 250px;
+}
+
+#toc * {
+  padding: 0;
+  list-style: none;
+}
+
+#toc h2 {
+  font-weight: bold;
+  font-size: 100%;
+  margin: 0;
+  border: none;
+  background-color: #E8EDEB;
+  padding: 0;
+}
+
+#toc ol {
+  margin: 1em 0 0 0;
+}
+
+#toc ol li {
+  margin: .4em 0 0 1em;
+}
+
+#toc ol li ol {
+  margin: 0;
+}
+
+#toc ol li ol li {
+  margin: .1em 0 0 1em;
+}
+
 .filtered_item {
   line-height: 6px;
 }
 
 #filtered_apis {
-  margin-top: -5px;
-  padding-bottom: 5px;
+  margin-top: 5px;
 }
 
+/* Specificity hack to override the "a" rule. */
 #filtered_apis * {
   color: #50A9D5;
 }
