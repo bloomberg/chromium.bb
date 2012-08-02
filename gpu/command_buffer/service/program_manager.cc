@@ -394,7 +394,7 @@ void ProgramManager::DoCompileShader(ShaderManager::ShaderInfo* info,
     info->FlagSourceAsCompiled(false);
     UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheHitTime",
                                 (base::Time::Now() - before).InMicroseconds(),
-                                100,
+                                0,
                                 TimeDelta::FromSeconds(1).InMicroseconds(),
                                 50);
     return;
@@ -402,7 +402,7 @@ void ProgramManager::DoCompileShader(ShaderManager::ShaderInfo* info,
   ForceCompileShader(info->source(), info, translator, feature_info);
   UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheMissTime",
                               (base::Time::Now() - before).InMicroseconds(),
-                              100,
+                              0,
                               TimeDelta::FromSeconds(1).InMicroseconds(),
                               50);
 }
@@ -548,14 +548,14 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheMissTime",
           (base::Time::Now() - before_time).InMicroseconds(),
-          100,
-          TimeDelta::FromSeconds(1).InMicroseconds(),
+          0,
+          TimeDelta::FromSeconds(10).InMicroseconds(),
           50);
     } else if (cache) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheHitTime",
           (base::Time::Now() - before_time).InMicroseconds(),
-          100,
+          0,
           TimeDelta::FromSeconds(1).InMicroseconds(),
           50);
     }
