@@ -174,7 +174,10 @@ void CHROMEOS_EXPORT AppendIBusPropertyList(
 
 ///////////////////////////////////////////////////////////////////////////////
 // IBusProperty
-IBusProperty::IBusProperty() {
+IBusProperty::IBusProperty()
+    : type_(IBUS_PROPERTY_TYPE_NORMAL),
+      visible_(false),
+      checked_(false) {
 }
 
 IBusProperty::~IBusProperty() {

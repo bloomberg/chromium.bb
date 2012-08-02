@@ -14,6 +14,11 @@ namespace chromeos {
 // TODO(nona): Remove ibus namespace after complete libibus removal.
 namespace ibus {
 
+namespace {
+// The default entry number of a page in IBusLookupTable.
+const int kDefaultPageSize = 9;
+}  // namespace
+
 void AppendIBusLookupTable(const IBusLookupTable& table,
                            dbus::MessageWriter* writer) {
   IBusObjectWriter ibus_lookup_table_writer("IBusLookupTable",
@@ -197,7 +202,7 @@ bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
 ///////////////////////////////////////////////////////////////////////////////
 // IBusLookupTable
 IBusLookupTable::IBusLookupTable()
-    : page_size_(0),
+    : page_size_(kDefaultPageSize),
       cursor_position_(0),
       is_cursor_visible_(true),
       orientation_(IBUS_LOOKUP_TABLE_ORIENTATION_HORIZONTAL) {
