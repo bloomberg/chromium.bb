@@ -40,6 +40,12 @@
 - (void)addOrRemoveButtonIfNecessary;
 @end
 
+// Declare a 10.7+ private API.
+// NSThemeFrame < NSTitledFrame < NSFrameView < NSView.
+@interface NSView (NSThemeFrame)
+- (void)_tileTitlebarAndRedisplay:(BOOL)redisplay;
+@end
+
 namespace AvatarButtonControllerInternal {
 
 class Observer : public content::NotificationObserver {
@@ -288,6 +294,15 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   [self.view setHidden:count < 2];
 
   [static_cast<BrowserWindowController*>(wc) layoutSubviews];
+
+  // If the avatar is being added or removed, then the Lion fullscreen button
+  // needs to be adjusted. Since the fullscreen button is positioned by
+  // FramedBrowserWindow using private APIs, the easiest way to update the
+  // position of the button is through this private API. Resizing the window
+  // also works, but invoking |-display| does not.
+  NSView* themeFrame = [[[wc window] contentView] superview];
+  if ([themeFrame respondsToSelector:@selector(_tileTitlebarAndRedisplay:)])
+    [themeFrame _tileTitlebarAndRedisplay:YES];
 }
 
 // Testing /////////////////////////////////////////////////////////////////////
