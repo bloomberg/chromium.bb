@@ -9,16 +9,15 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/sys_byteorder.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
+#include "crypto/random.h"
 #include "crypto/symmetric_key.h"
 
 using base::Base64Encode;
 using base::Base64Decode;
-using base::RandInt;
 using crypto::Encryptor;
 using crypto::HMAC;
 using crypto::SymmetricKey;
@@ -154,20 +153,13 @@ bool Nigori::Permute(Type type, const std::string& name,
   return Base64Encode(output, permuted);
 }
 
-std::string GenerateRandomString(size_t size) {
-  // TODO(albertb): Use a secure random function.
-  std::string random(size, 0);
-  for (size_t i = 0; i < size; ++i)
-    random[i] = RandInt(0, 0xff);
-  return random;
-}
-
 // Enc[Kenc,Kmac](value)
 bool Nigori::Encrypt(const std::string& value, std::string* encrypted) const {
   if (0U >= value.size())
     return false;
 
-  std::string iv = GenerateRandomString(kIvSize);
+  std::string iv;
+  crypto::RandBytes(WriteInto(&iv, kIvSize + 1), kIvSize);
 
   Encryptor encryptor;
   if (!encryptor.Init(encryption_key_.get(), Encryptor::CBC, iv))
