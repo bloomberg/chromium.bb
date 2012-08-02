@@ -240,6 +240,13 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // chrome-extension-resource: resources should be allowed to receive CORS
   // requests.
   WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_resource_scheme);
+
+  // chrome-extension: resources should bypass Content Security Policy checks
+  // when included in protected resources.
+  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
+      extension_scheme);
+  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
+      extension_resource_scheme);
 }
 
 void ChromeContentRendererClient::RenderViewCreated(

@@ -217,6 +217,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   EXPECT_EQ("Loading CER:// failed.", result);
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
+                       WebAccessibleResourcesWithCSP) {
+  std::string result;
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(LoadExtension(test_data_dir_
+      .AppendASCII("extension_resource_request_policy")
+      .AppendASCII("web_accessible")));
+
+  GURL accessible_resource_with_csp(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "web_accessible/accessible_resource_with_csp.html"));
+  ui_test_utils::NavigateToURL(browser(), accessible_resource_with_csp);
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+    chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(document.title)",
+    &result));
+  EXPECT_EQ("Loaded", result);
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
   // Load another extension, which the test one shouldn't be able to get
   // resources from.
