@@ -7,25 +7,27 @@
 
 namespace performance_monitor {
 
-// TODO(chebert): i18n on all constants.
+// Constants which are used by the PerformanceMonitor and its related classes.
+// The constants should be documented alongside the definition of their values
+// in the .cc file.
+
 extern const char kMetricNotFoundError[];
-
-// Any metric that is not associated with a specific activity will use this as
-// its activity.
 extern const char kProcessChromeAggregate[];
+extern const int kGatherIntervalInMinutes;
 
-// Metrics keys for statistics gathering.
+// State tokens
+extern const char kStateChromeVersion[];
+extern const char kStateProfilePrefix[];
+
+// Metric details
 extern const char kMetricCPUUsageName[];
 extern const char kMetricCPUUsageDescription[];
 extern const char kMetricCPUUsageUnits[];
 extern const double kMetricCPUUsageTickSize;
-
 extern const char kMetricPrivateMemoryUsageName[];
 extern const char kMetricPrivateMemoryUsageDescription[];
 extern const char kMetricPrivateMemoryUsageUnits[];
 extern const double kMetricPrivateMemoryUsageTickSize;
-
-extern const char kStateChromeVersion[];
 
 }  // namespace performance_monitor
 

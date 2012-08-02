@@ -4,10 +4,13 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
@@ -15,10 +18,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -26,6 +32,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 
 using extensions::Extension;
 using performance_monitor::Event;
@@ -195,6 +202,65 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
  protected:
   ScopedTempDir db_dir_;
   PerformanceMonitor* performance_monitor_;
+};
+
+class PerformanceMonitorUncleanExitBrowserTest
+    : public PerformanceMonitorBrowserTest {
+ public:
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
+    FilePath user_data_directory;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+
+    // On CrOS, if we are "logged in" with the --login-profile switch,
+    // the default profile will be different. We check if we are logged in, and,
+    // if we are, we use that profile name instead. (Note: trybots will
+    // typically be logged in with 'user'.)
+#if defined(OS_CHROMEOS)
+    const CommandLine command_line = *CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(switches::kLoginProfile)) {
+      first_profile_name_ =
+          command_line.GetSwitchValueASCII(switches::kLoginProfile);
+    } else {
+      first_profile_name_ = chrome::kInitialProfile;
+    }
+#else
+    first_profile_name_ = chrome::kInitialProfile;
+#endif
+
+    FilePath first_profile =
+        user_data_directory.AppendASCII(first_profile_name_);
+    CHECK(file_util::CreateDirectory(first_profile));
+
+    FilePath stock_prefs_file;
+    PathService::Get(chrome::DIR_TEST_DATA, &stock_prefs_file);
+    stock_prefs_file = stock_prefs_file.AppendASCII("performance_monitor")
+                                       .AppendASCII("unclean_exit_prefs");
+    CHECK(file_util::PathExists(stock_prefs_file));
+
+    FilePath first_profile_prefs_file =
+        first_profile.Append(chrome::kPreferencesFilename);
+    CHECK(file_util::CopyFile(stock_prefs_file, first_profile_prefs_file));
+    CHECK(file_util::PathExists(first_profile_prefs_file));
+
+    second_profile_name_ =
+        std::string(chrome::kMultiProfileDirPrefix)
+        .append(base::IntToString(1));
+
+    FilePath second_profile =
+        user_data_directory.AppendASCII(second_profile_name_);
+    CHECK(file_util::CreateDirectory(second_profile));
+
+    FilePath second_profile_prefs_file =
+        second_profile.Append(chrome::kPreferencesFilename);
+    CHECK(file_util::CopyFile(stock_prefs_file, second_profile_prefs_file));
+    CHECK(file_util::PathExists(second_profile_prefs_file));
+
+    return true;
+  }
+
+ protected:
+  std::string first_profile_name_;
+  std::string second_profile_name_;
 };
 
 // Test that PerformanceMonitor will correctly record an extension installation
@@ -411,14 +477,77 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, KilledByOSEvent) {
 }
 #endif  // !defined(OS_WIN)
 
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
-                       DISABLED_RendererCrashEvent) {
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
+  content::WindowedNotificationObserver windowed_observer(
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      content::NotificationService::AllSources());
+
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));
+
+  windowed_observer.Wait();
 
   std::vector<linked_ptr<Event> > events = GetEvents();
   ASSERT_EQ(1u, events.size());
 
   CheckEventType(EVENT_RENDERER_CRASH, events[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
+                       OneProfileUncleanExit) {
+  // Initialize the database value (if there's no value in the database, it
+  // can't determine the last active time of the profile, and doesn't insert
+  // the event).
+  const std::string time = "12985807272597591";
+  AddStateValue(kStateProfilePrefix + first_profile_name_, time);
+
+  performance_monitor()->CheckForUncleanExits();
+  content::RunAllPendingInMessageLoop();
+
+  std::vector<linked_ptr<Event> > events = GetEvents();
+
+  const size_t kNumEvents = 1;
+  ASSERT_EQ(kNumEvents, events.size());
+
+  CheckEventType(EVENT_UNCLEAN_EXIT, events[0]);
+
+  std::string event_profile;
+  ASSERT_TRUE(events[0]->data()->GetString("profileName", &event_profile));
+  ASSERT_EQ(first_profile_name_, event_profile);
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
+                       TwoProfileUncleanExit) {
+  FilePath second_profile_path;
+  PathService::Get(chrome::DIR_USER_DATA, &second_profile_path);
+  second_profile_path = second_profile_path.AppendASCII(second_profile_name_);
+
+  const std::string time1 = "12985807272597591";
+  const std::string time2 = "12985807272599918";
+
+  // Initialize the database.
+  AddStateValue(kStateProfilePrefix + first_profile_name_, time1);
+  AddStateValue(kStateProfilePrefix + second_profile_name_, time2);
+
+  performance_monitor()->CheckForUncleanExits();
+  content::RunAllPendingInMessageLoop();
+
+  // Load the second profile, which has also exited uncleanly.
+  g_browser_process->profile_manager()->GetProfile(second_profile_path);
+  content::RunAllPendingInMessageLoop();
+
+  std::vector<linked_ptr<Event> > events = GetEvents();
+
+  const size_t kNumEvents = 2;
+  ASSERT_EQ(kNumEvents, events.size());
+  CheckEventType(EVENT_UNCLEAN_EXIT, events[0]);
+  CheckEventType(EVENT_UNCLEAN_EXIT, events[1]);
+
+  std::string event_profile;
+  ASSERT_TRUE(events[0]->data()->GetString("profileName", &event_profile));
+  ASSERT_EQ(first_profile_name_, event_profile);
+
+  ASSERT_TRUE(events[1]->data()->GetString("profileName", &event_profile));
+  ASSERT_EQ(second_profile_name_, event_profile);
 }
 
 }  // namespace performance_monitor
