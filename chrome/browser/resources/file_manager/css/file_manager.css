@@ -358,6 +358,10 @@ div.root-eject:hover {
   -webkit-margin-start: 20px;
 }
 
+#file-type {
+  -webkit-margin-end: 10px;
+}
+
 /* The container for breadcrumb elements. */
 .breadcrumbs {
   -webkit-box-align: center;
