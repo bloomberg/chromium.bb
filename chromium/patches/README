@@ -1,7 +1,11 @@
-Current Status as of Jun 14, 2012
+Current Status as of Aug 2, 2012
 
 
 Upstream cherry-picks:
+4c53bbe probe_codec: fix memory corruption
+26595cb vorbisdec: fix heap buffer overflow.
+86e35cd flacdec: fix memleaks
+
 
 Current patches:
 
