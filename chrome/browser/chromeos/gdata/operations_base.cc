@@ -366,7 +366,7 @@ GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
                                    const GetDataCallback& callback)
     : UrlFetchOperationBase(registry, profile),
       callback_(callback),
-      weak_ptr_factory_(this) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 GetDataOperation::~GetDataOperation() {}
